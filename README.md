@@ -1,5 +1,7 @@
 # FretFlow
 
+**[🎸 Live Demo](https://iecg.github.io/fretboard-app/)**
+
 An interactive guitar fretboard learning tool built with React, TypeScript, and Vite.
 
 ![FretFlow screenshot](public/screenshot.png)
