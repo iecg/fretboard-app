@@ -556,7 +556,7 @@ function App() {
         {/* Col 2: Circle of Fifths + Chord Root */}
         <div className="control-group col-span-2">
           <div className="group-header">
-            <h2>Root Note</h2>
+            <h2>Key</h2>
           </div>
           <CircleOfFifths
             rootNote={rootNote}

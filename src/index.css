@@ -53,8 +53,9 @@
   --radius-xl: 1rem;
 
   /* Transitions */
-  --transition-fast: 0.15s ease-out;
+  --transition-fast: 0.12s ease-out;
   --transition-base: 0.2s ease;
+  --transition-slow: 0.3s ease;
   /* CAGED shape colors */
   --caged-e: #ef4444;
   --caged-d: #eab308;
@@ -83,11 +84,7 @@ body {
   min-height: 100vh;
 }
 
-*, *::before, *::after {
-  transition-property: color, background-color, fill, border-color, opacity;
-  transition-duration: var(--transition-base);
-  transition-timing-function: ease;
-}
+/* Removed global wildcard transition — per-element transitions declared in App.css */
 
 #root {
   width: 100%;
