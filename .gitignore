@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+.vbw-planning/
+
+.claude/
+
+CLAUDE.md
