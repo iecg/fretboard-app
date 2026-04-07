@@ -424,6 +424,11 @@ export function Fretboard({
                       displayValue = getNoteDisplay(noteName, rootNote);
                     }
 
+                    const enharmonicValue: string | null =
+                      displayFormat === "notes"
+                        ? (ENHARMONICS[displayValue] ?? null)
+                        : null;
+
                     const isWrapped = wrappedNotes.has(`${stringIndex}-${fretIndex}`);
 
                     const isInsideAnyPolygon = shapePolygons.some(poly => {
@@ -457,7 +462,12 @@ export function Fretboard({
                           )}
                           style={applyDimOpacity ? { opacity: 0.8 } : undefined}
                         >
-                          {displayFormat !== "none" && displayValue}
+                          {displayFormat !== "none" && enharmonicValue && (
+                            <span className="note-enharmonic">{enharmonicValue}</span>
+                          )}
+                          {displayFormat !== "none" && (
+                            <span className="note-main-label">{displayValue}</span>
+                          )}
                         </div>
                       </div>
                     );
