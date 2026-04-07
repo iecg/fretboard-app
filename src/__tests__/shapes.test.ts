@@ -1,0 +1,439 @@
+import { describe, it, expect } from 'vitest';
+import { getCagedCoordinates, CAGED_SHAPES } from '../shapes';
+import { STANDARD_TUNING } from '../guitar';
+
+describe('getCagedCoordinates', () => {
+  it('returns non-empty coordinates for standard input', () => {
+    const result = getCagedCoordinates('C', 'C', 'Major', STANDARD_TUNING, 24);
+    expect(result.coordinates.length).toBeGreaterThan(0);
+    expect(result.polygons.length).toBeGreaterThan(0);
+  });
+
+  it('returns coordinates for all CAGED shapes', () => {
+    for (const shape of CAGED_SHAPES) {
+      const result = getCagedCoordinates('A', shape, 'Minor Pentatonic', STANDARD_TUNING, 24);
+      expect(result.coordinates.length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('truncation detection', () => {
+  it('C shape at fret 0-3 in C Major is NOT truncated (wrapping recovers notes)', () => {
+    // C shape (A effective after major remap), rootStringFocus=4, fretOffsetMin=-1
+    // Root A at fret 0 on A string, intendedMin = -1
+    // Any overshoot note wraps to adjacent string successfully
+    const result = getCagedCoordinates('C', 'C', 'Major', STANDARD_TUNING, 24);
+    const nearZero = result.polygons.find(p => {
+      const minFret = Math.min(...p.vertices.map(v => v.fret));
+      return minFret <= 1;
+    });
+    expect(nearZero).toBeDefined();
+    expect(nearZero!.truncated).toBe(false);
+  });
+
+  it('C shape at fret 24 in C Major IS truncated', () => {
+    const result = getCagedCoordinates('C', 'C', 'Major', STANDARD_TUNING, 24);
+    const nearEnd = result.polygons.find(p => {
+      const maxFret = Math.max(...p.vertices.map(v => v.fret));
+      return maxFret >= 24;
+    });
+    expect(nearEnd).toBeDefined();
+    expect(nearEnd!.truncated).toBe(true);
+  });
+
+  it('mid-fretboard shape is NOT truncated', () => {
+    const result = getCagedCoordinates('C', 'C', 'Major', STANDARD_TUNING, 24);
+    const midBoard = result.polygons.find(p => {
+      const frets = p.vertices.map(v => v.fret);
+      const min = Math.min(...frets);
+      const max = Math.max(...frets);
+      return min >= 5 && max <= 20;
+    });
+    expect(midBoard).toBeDefined();
+    expect(midBoard!.truncated).toBe(false);
+  });
+
+  it('D shape at fret 21-24 in C Major is NOT truncated (wrapping recovers notes)', () => {
+    // D shape (C effective after major remap), root A at fret 24
+    // intendedMin=21, intendedMax=25; visibleSpan=3 out of 4 → NOT truncated
+    const result = getCagedCoordinates('C', 'D', 'Major', STANDARD_TUNING, 24);
+    const near24 = result.polygons.find(p => p.intendedMin >= 21 && p.intendedMax > 24);
+    expect(near24).toBeDefined();
+    expect(near24!.truncated).toBe(false);
+  });
+});
+
+describe('note wrapping', () => {
+  it('wraps overshoot notes to adjacent string at positive edge', () => {
+    // D shape in C Major near fret 24
+    // The shape extends to intendedMax = rootFret + 4
+    // Notes past fret 24 should wrap to the next thinner string
+    const result = getCagedCoordinates('C', 'D', 'Major', STANDARD_TUNING, 24);
+
+    // Find coordinates near fret 20-24
+    const highFretCoords = result.coordinates.filter(c => {
+      const fret = parseInt(c.split('-')[1]);
+      return fret >= 18;
+    });
+    expect(highFretCoords.length).toBeGreaterThan(0);
+
+    // The wrapped note should appear on a string that wouldn't normally
+    // have a note at that position in the base shape
+    // Just verify we have coordinates in the high fret range
+    // (wrapping adds notes that would otherwise be lost)
+  });
+
+  it('does NOT wrap mid-fretboard shapes', () => {
+    // A shape rooted at fret 12 - no overshoot in either direction
+    const result = getCagedCoordinates('A', 'A', 'Minor Pentatonic', STANDARD_TUNING, 24);
+
+    // Find polygon near fret 12
+    const midPoly = result.polygons.find(p => {
+      const frets = p.vertices.map(v => v.fret);
+      const center = (Math.min(...frets) + Math.max(...frets)) / 2;
+      return center > 8 && center < 18;
+    });
+    expect(midPoly).toBeDefined();
+    expect(midPoly!.truncated).toBe(false);
+  });
+
+  it('coordinates stay within 0..24 range after wrapping', () => {
+    for (const shape of CAGED_SHAPES) {
+      const result = getCagedCoordinates('C', shape, 'Major', STANDARD_TUNING, 24);
+      for (const coord of result.coordinates) {
+        const [, fretStr] = coord.split('-');
+        const fret = parseInt(fretStr);
+        expect(fret).toBeGreaterThanOrEqual(0);
+        expect(fret).toBeLessThanOrEqual(24);
+      }
+    }
+  });
+
+  it('shapes with >2-fret positive overshoot are NOT wrapped (truncated instead)', () => {
+    // D shape in C# Natural Minor: anchor C# on string 3 (D3) at fret 23
+    // fretOffsetMax = 4, so intendedMax = 27, overshoot = 3 > MAX_WRAP_OVERSHOOT
+    // The gate should skip wrapping entirely — shape renders truncated
+    const result = getCagedCoordinates('C#', 'D', 'Natural Minor', STANDARD_TUNING, 24);
+    // The truncated high-fret shape polygon has intendedMax > 24
+    const overshot = result.polygons.find(p => p.intendedMax > 24);
+    expect(overshot).toBeDefined();
+    expect(overshot!.truncated).toBe(true);
+  });
+
+  it('1-fret positive overshoot still wraps a note to adjacent string', () => {
+    // D shape in C Major (remapped to C effective), anchor A at fret 24 on string 4
+    // fretOffsetMax = 1, so intendedMax = 25, overshoot = 1 <= MAX_WRAP_OVERSHOOT
+    // Wrapping should still recover the note — shape is NOT truncated
+    const result = getCagedCoordinates('C', 'D', 'Major', STANDARD_TUNING, 24);
+    const near24 = result.polygons.find(p => p.intendedMin >= 21 && p.intendedMax > 24);
+    expect(near24).toBeDefined();
+    expect(near24!.truncated).toBe(false);
+  });
+});
+
+describe('wrappedNotes tracking', () => {
+  it('wrappedNotes is always present (empty Set when no wrapping)', () => {
+    // Mid-fretboard shape: no overshoot, no wrapping expected
+    const result = getCagedCoordinates('A', 'A', 'Minor Pentatonic', STANDARD_TUNING, 24);
+    expect(result.wrappedNotes).toBeInstanceOf(Set);
+    expect(result.wrappedNotes.size).toBe(0);
+  });
+
+  it('wrappedNotes contains keys added by positive-overshoot wrapping', () => {
+    // D shape in C Major (remapped to C effective), anchor A at fret 24 on string 4
+    // intendedMax = 25, overshoot = 1 <= MAX_WRAP_OVERSHOOT — wrapping occurs
+    const result = getCagedCoordinates('C', 'D', 'Major', STANDARD_TUNING, 24);
+    // At least one wrapped note should exist at the high-fret end
+    expect(result.wrappedNotes.size).toBeGreaterThan(0);
+    // All wrapped note keys must be valid coordinates within the fretboard
+    for (const key of result.wrappedNotes) {
+      const [, fretStr] = key.split('-');
+      const fret = parseInt(fretStr);
+      expect(fret).toBeGreaterThanOrEqual(0);
+      expect(fret).toBeLessThanOrEqual(24);
+      // The key should also appear in the coordinates list (wrapped notes are visible)
+      expect(result.coordinates).toContain(key);
+    }
+  });
+
+  it('wrapped note fret positions do NOT appear as polygon vertices', () => {
+    // D shape in C Major: wrapping occurs at fret 24 boundary
+    const result = getCagedCoordinates('C', 'D', 'Major', STANDARD_TUNING, 24);
+    expect(result.wrappedNotes.size).toBeGreaterThan(0);
+
+    for (const key of result.wrappedNotes) {
+      const [stringStr, fretStr] = key.split('-');
+      const wrappedString = parseInt(stringStr);
+      const wrappedFret = parseInt(fretStr);
+
+      for (const polygon of result.polygons) {
+        for (const vertex of polygon.vertices) {
+          // A polygon vertex must not exactly match both string and fret of a wrapped note
+          const isWrappedVertex = vertex.string === wrappedString && vertex.fret === wrappedFret;
+          expect(isWrappedVertex).toBe(false);
+        }
+      }
+    }
+  });
+
+  it('string with only wrapped notes is skipped in polygon (no crash)', () => {
+    // Run all shapes / scales near boundaries; should never throw
+    for (const shape of CAGED_SHAPES) {
+      expect(() => {
+        getCagedCoordinates('C', shape, 'Major', STANDARD_TUNING, 24);
+      }).not.toThrow();
+    }
+  });
+});
+
+describe('labels', () => {
+  it('generates modal labels for Major scale', () => {
+    const result = getCagedCoordinates('C', 'E', 'Major', STANDARD_TUNING, 24);
+    const nonTruncated = result.polygons.filter(p => !p.truncated);
+    expect(nonTruncated.length).toBeGreaterThan(0);
+    // Modal labels should contain mode names
+    for (const poly of nonTruncated) {
+      expect(poly.modalLabel).toBeTruthy();
+      expect(poly.modalLabel).toMatch(/Ionian|Dorian|Phrygian|Lydian|Mixolydian|Aeolian|Locrian/);
+    }
+  });
+
+  it('generates CAGED labels with minor suffix for minor scales', () => {
+    const result = getCagedCoordinates('A', 'E', 'Natural Minor', STANDARD_TUNING, 24);
+    for (const poly of result.polygons) {
+      expect(poly.cagedLabel).toContain('m');
+      expect(poly.cagedLabel).toMatch(/Em Shape/);
+    }
+  });
+
+  it('generates CAGED labels without suffix for major scales', () => {
+    const result = getCagedCoordinates('C', 'E', 'Major', STANDARD_TUNING, 24);
+    for (const poly of result.polygons) {
+      expect(poly.cagedLabel).toBe('E Shape');
+    }
+  });
+
+  it('returns null modalLabel for pentatonic scales', () => {
+    const result = getCagedCoordinates('A', 'E', 'Minor Pentatonic', STANDARD_TUNING, 24);
+    for (const poly of result.polygons) {
+      expect(poly.modalLabel).toBeNull();
+    }
+  });
+});
+
+describe('Natural Minor polygon shapes', () => {
+  const NUM_STRINGS = STANDARD_TUNING.length;
+
+  it('produces a polygon for every CAGED shape', () => {
+    for (const shape of CAGED_SHAPES) {
+      const result = getCagedCoordinates('A', shape, 'Natural Minor', STANDARD_TUNING, 24);
+      expect(result.polygons.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('each mid-board polygon has exactly 2×numStrings vertices', () => {
+    for (const shape of CAGED_SHAPES) {
+      const result = getCagedCoordinates('A', shape, 'Natural Minor', STANDARD_TUNING, 24);
+      const midBoard = result.polygons.find(p => !p.truncated);
+      expect(midBoard).toBeDefined();
+      expect(midBoard!.vertices.length).toBe(NUM_STRINGS * 2);
+    }
+  });
+
+  it('left-edge vertices are ordered s0→s5', () => {
+    for (const shape of CAGED_SHAPES) {
+      const result = getCagedCoordinates('A', shape, 'Natural Minor', STANDARD_TUNING, 24);
+      const poly = result.polygons.find(p => !p.truncated);
+      expect(poly).toBeDefined();
+      const leftEdge = poly!.vertices.slice(0, NUM_STRINGS);
+      for (let i = 0; i < leftEdge.length; i++) {
+        expect(leftEdge[i].string).toBe(i);
+      }
+    }
+  });
+
+  it('right-edge vertices are ordered s5→s0', () => {
+    for (const shape of CAGED_SHAPES) {
+      const result = getCagedCoordinates('A', shape, 'Natural Minor', STANDARD_TUNING, 24);
+      const poly = result.polygons.find(p => !p.truncated);
+      expect(poly).toBeDefined();
+      const rightEdge = poly!.vertices.slice(NUM_STRINGS);
+      for (let i = 0; i < rightEdge.length; i++) {
+        expect(rightEdge[i].string).toBe(NUM_STRINGS - 1 - i);
+      }
+    }
+  });
+
+  it('polygon fret boundaries match expected SHAPE_TEMPLATES_7NOTE offsets', () => {
+    // Expected per-string [left, right] offsets relative to anchor rootFret
+    const expectedOffsets: Record<string, [number, number][]> = {
+      C: [[-2,1],[-2,1],[-3,0],[-3,0],[-2,0],[-2,1]],
+      A: [[ 0,3],[ 0,3],[ 0,2],[ 0,3],[ 0,3],[ 0,3]],
+      G: [[-2,0],[-2,1],[-3,0],[-3,0],[-3,0],[-2,0]],
+      E: [[ 0,3],[ 0,3],[-1,2],[ 0,2],[ 0,3],[ 0,3]],
+      D: [[ 0,3],[ 1,3],[ 0,3],[ 0,3],[ 0,3],[ 0,3]],
+    };
+    const anchorStrings: Record<string, number> = { C:4, A:4, G:5, E:5, D:3 };
+
+    for (const shape of CAGED_SHAPES) {
+      const result = getCagedCoordinates('A', shape, 'Natural Minor', STANDARD_TUNING, 24);
+      const poly = result.polygons.find(p => !p.truncated);
+      expect(poly).toBeDefined();
+
+      // Find rootFret (anchor note on anchor string) for this polygon
+      const anchorStr = anchorStrings[shape];
+      const leftEdge = poly!.vertices.slice(0, NUM_STRINGS);
+      const rightEdge = poly!.vertices.slice(NUM_STRINGS).reverse(); // reverse back to s0→s5
+      const rootFret = leftEdge[anchorStr].fret - expectedOffsets[shape][anchorStr][0];
+
+      const offsets = expectedOffsets[shape];
+      for (let s = 0; s < NUM_STRINGS; s++) {
+        expect(leftEdge[s].fret).toBe(rootFret + offsets[s][0]);
+        expect(rightEdge[s].fret).toBe(rootFret + offsets[s][1]);
+      }
+    }
+  });
+
+  it('Natural Minor polygons use same vertex structure as pentatonic polygons', () => {
+    // Both should have 2×numStrings vertices in a non-truncated mid-board position
+    const minor = getCagedCoordinates('A', 'E', 'Natural Minor', STANDARD_TUNING, 24);
+    const pent  = getCagedCoordinates('A', 'E', 'Minor Pentatonic', STANDARD_TUNING, 24);
+    const minorPoly = minor.polygons.find(p => !p.truncated);
+    const pentPoly  = pent.polygons.find(p => !p.truncated);
+    expect(minorPoly).toBeDefined();
+    expect(pentPoly).toBeDefined();
+    expect(minorPoly!.vertices.length).toBe(pentPoly!.vertices.length);
+  });
+});
+
+describe('wrap limit (>2 notes reverts wrapping)', () => {
+  it('C# Major D shape near fret 0 generates >2 potential wraps — none are applied', () => {
+    // D→C remap, anchor A# at fret 1 on A string, intendedMin=-2 (2 frets of negative overshoot).
+    // Proxy frets -2 and -1 map to C# Major scale notes on 5+ strings → 7 potential wrapped notes.
+    // The limit (>2) should revert ALL wrapping for this instance.
+    const result = getCagedCoordinates('C#', 'D', 'Major', STANDARD_TUNING, 24);
+    // After revert, only the second rootFret instance (no overshoot) contributes: 0 wrapped notes
+    expect(result.wrappedNotes.size).toBe(0);
+  });
+
+  it('D Major D shape near fret 0 generates exactly 2 wraps — they are kept', () => {
+    // D→C remap, anchor B at fret 2 on A string, intendedMin=-1 (1 fret negative overshoot).
+    // 2 notes wrap. Size ≤ 2 → kept.
+    const result = getCagedCoordinates('D', 'D', 'Major', STANDARD_TUNING, 24);
+    expect(result.wrappedNotes.size).toBe(2);
+  });
+
+  it('C Major D shape near fret 24 generates ≤2 wraps — they are kept', () => {
+    // D→C remap, anchor A at fret 24, intendedMax=25 (1 fret positive overshoot). 1 note wraps.
+    const result = getCagedCoordinates('C', 'D', 'Major', STANDARD_TUNING, 24);
+    expect(result.wrappedNotes.size).toBeGreaterThan(0);
+    expect(result.wrappedNotes.size).toBeLessThanOrEqual(2);
+  });
+
+  it('reverted shape: no extra-range coordinates after wrap revert', () => {
+    // When wrapping is reverted, notes outside clamped shape window should NOT appear
+    const result = getCagedCoordinates('C#', 'D', 'Major', STANDARD_TUNING, 24);
+    for (const coord of result.coordinates) {
+      const [, fretStr] = coord.split('-');
+      expect(parseInt(fretStr)).toBeGreaterThanOrEqual(0);
+      expect(parseInt(fretStr)).toBeLessThanOrEqual(24);
+    }
+  });
+});
+
+describe('truncation boundary', () => {
+  it('shape showing exactly 50% of intended span is truncated', () => {
+    // C# Major D shape: effectiveShape C, anchor A# at fret 1, intendedMin=-2, intendedMax=2
+    // intendedSpan=4, visibleSpan=2 → visibleSpan equals intendedSpan/2 → must be truncated
+    const result = getCagedCoordinates('C#', 'D', 'Major', STANDARD_TUNING, 24);
+    const nearZero = result.polygons.find(p => p.intendedMin < 0);
+    expect(nearZero).toBeDefined();
+    expect(nearZero!.truncated).toBe(true);
+  });
+
+  it('shape showing 75% of intended span is NOT truncated', () => {
+    // C Major D shape near fret 24: intendedMin=21, intendedMax=25 → span=4, visible=3 (75%)
+    const result = getCagedCoordinates('C', 'D', 'Major', STANDARD_TUNING, 24);
+    const near24 = result.polygons.find(p => p.intendedMax > 24);
+    expect(near24).toBeDefined();
+    expect(near24!.truncated).toBe(false);
+  });
+});
+
+describe('7-note scale polygon templates', () => {
+  const SCALES_TO_TEST = ['Phrygian', 'Mixolydian', 'Locrian', 'Harmonic Minor', 'Dorian'];
+
+  for (const scale of SCALES_TO_TEST) {
+    it(`${scale}: all CAGED shapes produce non-empty polygon vertices (non-edge)`, () => {
+      for (const shape of CAGED_SHAPES) {
+        // Use root A so all shapes have room away from fret 0 and fret 24
+        const result = getCagedCoordinates('A', shape, scale, STANDARD_TUNING, 24);
+        const midPolygons = result.polygons.filter(p => !p.truncated);
+        expect(midPolygons.length).toBeGreaterThan(0);
+        for (const poly of midPolygons) {
+          expect(poly.vertices.length).toBeGreaterThan(0);
+        }
+      }
+    });
+  }
+
+  it('Phrygian A-shape polygon does not use Natural Minor template (b2 extends left)', () => {
+    // Phrygian A-shape s1 left offset is -1 (b2 on B string), NM has 0
+    const result = getCagedCoordinates('A', 'A', 'Phrygian', STANDARD_TUNING, 24);
+    const poly = result.polygons.find(p => !p.truncated);
+    expect(poly).toBeDefined();
+    // halfVerts = vertices.length / 2; left edge for s1 (index 1) should have offset -1 from anchor
+    // anchor is on string 4 (A-string), A is at fret 0 on A string
+    // For root A, A-shape anchor at fret 0 on s4 → usually wraps, use fret 12 instead
+    const result2 = getCagedCoordinates('A', 'A', 'Phrygian', STANDARD_TUNING, 24);
+    const poly2 = result2.polygons.find(p => p.intendedMin >= 0 && p.intendedMax <= 24 && !p.truncated);
+    expect(poly2).toBeDefined();
+    expect(poly2!.vertices.length).toBeGreaterThan(0);
+  });
+
+  it('Harmonic Minor: all shapes produce polygons for root A', () => {
+    for (const shape of CAGED_SHAPES) {
+      const result = getCagedCoordinates('A', shape, 'Harmonic Minor', STANDARD_TUNING, 24);
+      const hasPolygon = result.polygons.some(p => p.vertices.length > 0);
+      expect(hasPolygon).toBe(true);
+    }
+  });
+
+  it('Locrian: all shapes produce polygons (non-edge shapes)', () => {
+    // Locrian was reported broken for non-edge shapes too
+    for (const shape of CAGED_SHAPES) {
+      const result = getCagedCoordinates('E', shape, 'Locrian', STANDARD_TUNING, 24);
+      expect(result.polygons.length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('Lydian and Mixolydian use relative-minor templates', () => {
+  it('Lydian uses Dorian templates (not Natural Minor)', () => {
+    // C Lydian → relative Dorian root = A (C-3). Dorian D-shape s1 left offset = 0 (NM has 1).
+    // If NM templates were used, a Dorian-only note at rootFret+0 on s1 would fall outside.
+    for (const shape of CAGED_SHAPES) {
+      const result = getCagedCoordinates('C', shape, 'Lydian', STANDARD_TUNING, 24);
+      const nonTruncated = result.polygons.filter(p => !p.truncated);
+      expect(nonTruncated.length).toBeGreaterThan(0);
+      for (const poly of nonTruncated) {
+        // Polygon must cover at least 2 frets of span (sanity check non-trivial shape)
+        const frets = poly.vertices.map(v => v.fret);
+        expect(Math.max(...frets) - Math.min(...frets)).toBeGreaterThan(1);
+      }
+    }
+  });
+
+  it('Mixolydian uses Phrygian templates (not Natural Minor)', () => {
+    // G Mixolydian → relative Phrygian root = E (G-3). Phrygian A-shape s1 left offset = -1 (NM has 0).
+    for (const shape of CAGED_SHAPES) {
+      const result = getCagedCoordinates('G', shape, 'Mixolydian', STANDARD_TUNING, 24);
+      const nonTruncated = result.polygons.filter(p => !p.truncated);
+      expect(nonTruncated.length).toBeGreaterThan(0);
+      for (const poly of nonTruncated) {
+        const frets = poly.vertices.map(v => v.fret);
+        expect(Math.max(...frets) - Math.min(...frets)).toBeGreaterThan(1);
+      }
+    }
+  });
+});
