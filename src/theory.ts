@@ -1,5 +1,9 @@
 export const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
+export const INTERVAL_NAMES = [
+  "1", "b2", "2", "b3", "3", "4", "b5", "5", "b6", "6", "b7", "7",
+] as const;
+
 export const ENHARMONICS: Record<string, string> = {
   'C#': 'Db', 'D#': 'Eb', 'F#': 'Gb', 'G#': 'Ab', 'A#': 'Bb',
   'Db': 'C#', 'Eb': 'D#', 'Gb': 'F#', 'Ab': 'G#', 'Bb': 'A#'
@@ -16,8 +20,11 @@ export const SCALES: Record<string, number[]> = {
   'Minor Blues': [0, 3, 5, 6, 7, 10],
   'Major Blues': [0, 2, 3, 4, 7, 9],
   'Dorian': [0, 2, 3, 5, 7, 9, 10],
+  'Phrygian': [0, 1, 3, 5, 7, 8, 10],
+  'Lydian': [0, 2, 4, 6, 7, 9, 11],
   'Mixolydian': [0, 2, 4, 5, 7, 9, 10],
-  'Harmonic Minor': [0, 2, 3, 5, 7, 8, 11]
+  'Locrian': [0, 1, 3, 5, 6, 8, 10],
+  'Harmonic Minor': [0, 2, 3, 5, 7, 8, 11],
 };
 
 export const CHORDS: Record<string, number[]> = {
@@ -66,6 +73,32 @@ export function getChordNotes(rootNote: string, chordName: string): string[] {
   const intervals = CHORDS[chordName];
   if (!intervals) return [];
   return getIntervalNotes(rootNote, intervals);
+}
+
+/**
+ * Returns notes in the current scale that diverge from the reference scale.
+ * Reference: Major for major-quality modes, Natural Minor for minor-quality modes.
+ * Blues scales use their existing blue note logic instead.
+ */
+export function getDivergentNotes(rootNote: string, scaleName: string): string[] {
+  const intervals = SCALES[scaleName];
+  if (!intervals || scaleName.includes('Blues')) return [];
+
+  // Pentatonic scales are subsets, not modes — no divergence to show
+  if (scaleName === 'Major Pentatonic' || scaleName === 'Minor Pentatonic') return [];
+  // Major and Natural Minor are the references themselves
+  if (scaleName === 'Major' || scaleName === 'Natural Minor') return [];
+
+  const isMajorQuality = intervals.includes(4); // contains major 3rd
+  const refIntervals = isMajorQuality ? SCALES['Major'] : SCALES['Natural Minor'];
+
+  const rootIdx = NOTES.indexOf(rootNote);
+  if (rootIdx === -1) return [];
+
+  const refSet = new Set(refIntervals);
+  return intervals
+    .filter(interval => !refSet.has(interval))
+    .map(interval => NOTES[(rootIdx + interval) % 12]);
 }
 
 // Key signature accidental counts (positive = sharps, negative = flats)
