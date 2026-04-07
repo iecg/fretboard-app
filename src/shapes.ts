@@ -1,5 +1,19 @@
-import { getScaleNotes } from "./theory";
+import { getScaleNotes, SCALES, NOTES, getNoteDisplay } from "./theory";
 import { getFretboardNotes } from "./guitar";
+
+/** Mode names for degrees of the major scale (Ionian through Locrian). */
+const MAJOR_MODE_NAMES = [
+  'Ionian', 'Dorian', 'Phrygian', 'Lydian', 'Mixolydian', 'Aeolian', 'Locrian',
+];
+
+/**
+ * Mode offset: which degree of the major scale this scale starts on.
+ * E.g. Dorian starts on degree 1 (the 2nd note of the parent major scale).
+ */
+const MODE_OFFSETS: Record<string, number> = {
+  'Major': 0, 'Dorian': 1, 'Phrygian': 2, 'Lydian': 3,
+  'Mixolydian': 4, 'Natural Minor': 5, 'Locrian': 6,
+};
 
 export type CagedShape = "C" | "A" | "G" | "E" | "D";
 export const CAGED_SHAPES: CagedShape[] = ["C", "A", "G", "E", "D"];
@@ -15,25 +29,399 @@ export const CAGED_SHAPE_COLORS: Record<
   G: { solid: "var(--caged-g)", bg: "var(--caged-g-bg)" },
 };
 
-/** A single cell's background color info for gradient-aware rendering. */
-export interface CellColor {
+/** A vertex in fret/string coordinates. */
+export interface ShapeVertex {
+  fret: number;
+  string: number;
+}
+
+/** A shape polygon ready for rendering — an ordered list of vertices. */
+export interface ShapePolygon {
+  vertices: ShapeVertex[];
+  shape: CagedShape;
   color: string;
-  isLeftEdge: boolean;
-  isRightEdge: boolean;
-  /** When two shapes share a cell: left-half uses this color, right-half uses `color`. */
-  splitColor?: string;
+  cagedLabel: string;
+  modalLabel: string | null;
+  /** Whether the shape was truncated by fret boundaries (fret 0 or max fret). */
+  truncated: boolean;
+  /** Full intended fret range before clamping to fretboard boundaries. Used for label centering. */
+  intendedMin: number;
+  intendedMax: number;
 }
 
 export interface ShapeResult {
   coordinates: string[];
   bounds: { minFret: number; maxFret: number }[];
-  cellColorMap?: Record<string, CellColor>;
+  polygons: ShapePolygon[];
+  wrappedNotes: Set<string>;
 }
 
 /**
- * Procedurally computes CAGED shape coordinates (for chords/arpeggios or scales).
- * It locates the shape boxes on the neck, replicating at octave intervals (+12 frets).
+ * Fixed polygon outline templates for pentatonic/blues CAGED shapes.
+ * Each template defines per-string [leftOffset, rightOffset] from anchor fret.
  */
+interface ShapeTemplate {
+  anchorString: number;
+  perString: [number, number][];
+}
+
+/**
+ * Fixed polygon outline templates for 7-note (diatonic minor) CAGED shapes.
+ * All offsets verified computationally for all 12 roots in non-truncated positions.
+ * B-string (s1) and G-string (s2) shifts are baked into the per-string offsets.
+ * Used by Natural Minor and major-quality scales (Mixolydian, Lydian, Major) after
+ * their remap to relative minor anchor.
+ */
+const SHAPE_TEMPLATES_7NOTE: Record<CagedShape, ShapeTemplate> = {
+  C: { anchorString: 4, perString: [[-2,1],[-2,1],[-3,0],[-3,0],[-2,0],[-2,1]] },
+  A: { anchorString: 4, perString: [[0,3],[0,3],[0,2],[0,3],[0,3],[0,3]] },
+  G: { anchorString: 5, perString: [[-2,0],[-2,1],[-3,0],[-3,0],[-3,0],[-2,0]] },
+  E: { anchorString: 5, perString: [[0,3],[0,3],[-1,2],[0,2],[0,3],[0,3]] },
+  D: { anchorString: 3, perString: [[0,3],[1,3],[0,3],[0,3],[0,3],[0,3]] },
+};
+
+/** Dorian mode templates (natural 6, b3/b7 minor quality). */
+const SHAPE_TEMPLATES_DORIAN: Record<CagedShape, ShapeTemplate> = {
+  C: { anchorString: 4, perString: [[-2,0],[-2,1],[-3,0],[-3,0],[-3,0],[-2,0]] },
+  A: { anchorString: 4, perString: [[0,3],[0,3],[-1,2],[0,2],[0,3],[0,3]] },
+  G: { anchorString: 5, perString: [[-3,0],[-2,0],[-3,0],[-3,0],[-3,0],[-3,0]] },
+  E: { anchorString: 5, perString: [[0,3],[0,3],[-1,2],[-1,2],[0,2],[0,3]] },
+  D: { anchorString: 3, perString: [[0,3],[0,3],[0,4],[0,3],[0,3],[0,3]] },
+};
+
+/** Phrygian mode templates (b2, b3, b6, b7 — minor quality). */
+const SHAPE_TEMPLATES_PHRYGIAN: Record<CagedShape, ShapeTemplate> = {
+  C: { anchorString: 4, perString: [[-2,1],[-2,1],[-3,0],[-2,0],[-2,1],[-2,1]] },
+  A: { anchorString: 4, perString: [[0,3],[-1,3],[0,3],[0,3],[0,3],[0,3]] },
+  G: { anchorString: 5, perString: [[-2,1],[-2,1],[-3,0],[-3,0],[-2,0],[-2,1]] },
+  E: { anchorString: 5, perString: [[0,3],[0,3],[0,2],[0,3],[0,3],[0,3]] },
+  D: { anchorString: 3, perString: [[1,3],[1,4],[0,3],[0,3],[0,3],[1,3]] },
+};
+
+/** Locrian mode templates (b2, b3, b5, b6, b7 — minor quality). */
+const SHAPE_TEMPLATES_LOCRIAN: Record<CagedShape, ShapeTemplate> = {
+  C: { anchorString: 4, perString: [[-2,1],[-2,1],[-2,0],[-2,1],[-2,1],[-2,1]] },
+  A: { anchorString: 4, perString: [[-1,3],[-1,3],[0,3],[0,3],[0,3],[-1,3]] },
+  G: { anchorString: 5, perString: [[-2,1],[-2,1],[-3,0],[-2,0],[-2,1],[-2,1]] },
+  E: { anchorString: 5, perString: [[0,3],[-1,3],[0,3],[0,3],[0,3],[0,3]] },
+  D: { anchorString: 3, perString: [[1,4],[1,4],[0,3],[0,3],[1,3],[1,4]] },
+};
+
+/** Harmonic Minor templates (natural 5, raised 7th creates augmented 2nd). */
+const SHAPE_TEMPLATES_HARMONIC_MINOR: Record<CagedShape, ShapeTemplate> = {
+  C: { anchorString: 4, perString: [[-2,1],[-3,1],[-3,1],[-3,0],[-1,0],[-2,1]] },
+  A: { anchorString: 4, perString: [[0,1],[0,3],[1,2],[0,3],[-1,3],[0,1]] },
+  G: { anchorString: 5, perString: [[-1,0],[-2,1],[-3,0],[-3,1],[-3,0],[-1,0]] },
+  E: { anchorString: 5, perString: [[-1,3],[0,1],[-1,2],[1,2],[0,3],[-1,3]] },
+  D: { anchorString: 3, perString: [[0,3],[2,3],[0,3],[0,3],[0,4],[0,3]] },
+};
+
+/** Select the appropriate fixed template set for a 7-note scale. */
+function get7NoteTemplate(scaleName: string): Record<CagedShape, ShapeTemplate> {
+  switch (scaleName) {
+    case 'Dorian':        return SHAPE_TEMPLATES_DORIAN;
+    case 'Phrygian':      return SHAPE_TEMPLATES_PHRYGIAN;
+    case 'Locrian':       return SHAPE_TEMPLATES_LOCRIAN;
+    case 'Harmonic Minor':return SHAPE_TEMPLATES_HARMONIC_MINOR;
+    // Major-quality scales remapped to their relative minor mode:
+    case 'Lydian':        return SHAPE_TEMPLATES_DORIAN;     // Lydian → relative Dorian
+    case 'Mixolydian':    return SHAPE_TEMPLATES_PHRYGIAN;   // Mixolydian → relative Phrygian
+    default:              return SHAPE_TEMPLATES_7NOTE; // Natural Minor + Major (→ Aeolian)
+  }
+}
+
+const SHAPE_TEMPLATES_PENT: Record<CagedShape, ShapeTemplate> = {
+  C: {
+    anchorString: 4,
+    perString: [
+      [-2, 0],  // s0
+      [-2, 1],  // s1
+      [-3, 0],  // s2
+      [-2, 0],  // s3
+      [-2, 0],  // s4
+      [-2, 0],  // s5
+    ],
+  },
+  A: {
+    anchorString: 4,
+    perString: [
+      [0, 3],  // s0
+      [1, 3],  // s1
+      [0, 2],  // s2
+      [0, 2],  // s3
+      [0, 3],  // s4
+      [0, 3],  // s5
+    ],
+  },
+  G: {
+    anchorString: 5,
+    perString: [
+      [-2, 0],  // s0
+      [-2, 0],  // s1
+      [-3, 0],  // s2
+      [-3, 0],  // s3
+      [-2, 0],  // s4
+      [-2, 0],  // s5
+    ],
+  },
+  E: {
+    anchorString: 5,
+    perString: [
+      [0, 3],  // s0
+      [0, 3],  // s1
+      [0, 2],  // s2
+      [0, 2],  // s3
+      [0, 2],  // s4
+      [0, 3],  // s5
+    ],
+  },
+  D: {
+    anchorString: 3,
+    perString: [
+      [1, 3],  // s0
+      [1, 3],  // s1
+      [0, 2],  // s2
+      [0, 3],  // s3
+      [0, 3],  // s4
+      [1, 3],  // s5
+    ],
+  },
+};
+
+interface ShapeConfig {
+  rootStringFocus: number;
+  fretOffsetMin: number;
+  fretOffsetMax: number;
+  maxNotesPerString?: Partial<Record<number, number>>;
+}
+
+const SHAPE_CONFIGS: Record<CagedShape, ShapeConfig> = {
+  C: { rootStringFocus: 4, fretOffsetMin: -3, fretOffsetMax: 1 },
+  A: { rootStringFocus: 4, fretOffsetMin: -1, fretOffsetMax: 3 },
+  G: {
+    rootStringFocus: 5,
+    fretOffsetMin: -3,
+    fretOffsetMax: 1,
+    maxNotesPerString: { 2: 2 },
+  },
+  E: { rootStringFocus: 5, fretOffsetMin: -1, fretOffsetMax: 3 },
+  D: {
+    rootStringFocus: 3,
+    fretOffsetMin: 0,
+    fretOffsetMax: 4,
+    maxNotesPerString: { 3: 2 },
+  },
+};
+
+// For major-quality scales, shapes must be remapped via relative minor
+const MAJOR_TO_MINOR_SHAPE: Record<CagedShape, CagedShape> = {
+  C: 'A', A: 'G', G: 'E', E: 'D', D: 'C',
+};
+
+function isMajorScale(scaleName: string): boolean {
+  const intervals = SCALES[scaleName];
+  return intervals ? intervals.includes(4) : false;
+}
+
+function getRelativeMinorRoot(majorRoot: string): string {
+  const idx = NOTES.indexOf(majorRoot);
+  return NOTES[(idx + 9) % 12];
+}
+
+/**
+ * Deduplicate notes across adjacent strings within a shape.
+ * When the same note name appears on two adjacent strings, keep the one
+ * closest to its neighbors on that string. Blue notes are exempt.
+ */
+function deduplicateAdjacentStrings(
+  perStringNotes: number[][],
+  layout: string[][],
+  blueNoteName: string | null,
+) {
+  for (let s = 0; s < perStringNotes.length - 1; s++) {
+    const upper = perStringNotes[s];
+    const lower = perStringNotes[s + 1];
+    if (!upper.length || !lower.length) continue;
+
+    // Build a set of note names on each string for fast lookup
+    const upperNotes = new Map<string, number[]>(); // noteName -> [fret indices into upper array]
+    for (let i = 0; i < upper.length; i++) {
+      const name = layout[s][upper[i]];
+      if (!upperNotes.has(name)) upperNotes.set(name, []);
+      upperNotes.get(name)!.push(i);
+    }
+
+    const toRemoveUpper = new Set<number>();
+    const toRemoveLower = new Set<number>();
+
+    for (let j = 0; j < lower.length; j++) {
+      const name = layout[s + 1][lower[j]];
+      if (name === blueNoteName) continue;
+      const upperIndices = upperNotes.get(name);
+      if (!upperIndices) continue;
+
+      // This note name exists on both strings — resolve each pair
+      for (const i of upperIndices) {
+        if (toRemoveUpper.has(i)) continue;
+
+        // Distance to nearest neighbor on upper string
+        const upperDist = Math.min(
+          i > 0 ? upper[i] - upper[i - 1] : Infinity,
+          i < upper.length - 1 ? upper[i + 1] - upper[i] : Infinity,
+        );
+        // Distance to nearest neighbor on lower string
+        const lowerDist = Math.min(
+          j > 0 ? lower[j] - lower[j - 1] : Infinity,
+          j < lower.length - 1 ? lower[j + 1] - lower[j] : Infinity,
+        );
+
+        if (upperDist >= lowerDist) {
+          toRemoveUpper.add(i);
+        } else {
+          toRemoveLower.add(j);
+        }
+      }
+    }
+
+    // Remove marked indices (reverse order to preserve indices)
+    if (toRemoveUpper.size > 0) {
+      const filtered = upper.filter((_, i) => !toRemoveUpper.has(i));
+      perStringNotes[s] = filtered;
+    }
+    if (toRemoveLower.size > 0) {
+      const filtered = lower.filter((_, i) => !toRemoveLower.has(i));
+      perStringNotes[s + 1] = filtered;
+    }
+  }
+}
+
+/** Maximum overshoot (in frets) that wrapping will attempt to recover. */
+const MAX_WRAP_OVERSHOOT = 2;
+
+/**
+ * Wrap notes that overshoot fretboard edges to adjacent strings.
+ * Returns the number of notes that couldn't be wrapped (truly lost) and a Set
+ * of coordinate keys ("stringIndex-fretIndex") for every note placed by wrapping.
+ * Called after note collection, before deduplication.
+ */
+function wrapOvershootNotes(
+  perStringNotes: number[][],
+  layout: string[][],
+  validNotes: string[],
+  intendedMin: number,
+  intendedMax: number,
+  shapeMin: number,
+  shapeMax: number,
+  frets: number,
+): { unwrapped: number; wrappedNotes: Set<string> } {
+  const numStrings = layout.length;
+  const shapeCenter = (shapeMin + shapeMax) / 2;
+  let unwrapped = 0;
+  const wrappedNotes = new Set<string>();
+
+  // Search margin: allow wrapped notes slightly outside the strict shape range
+  const wrapSearchMin = Math.max(0, shapeMin - 2);
+  const wrapSearchMax = Math.min(frets, shapeMax + 2);
+
+  // Positive overshoot: wrap to thinner string (s-1)
+  // Only check strings that have notes in the shape
+  // Skip if overshoot exceeds MAX_WRAP_OVERSHOOT — large overshoots produce unrecognizable shapes
+  if (intendedMax > frets && intendedMax - frets <= MAX_WRAP_OVERSHOOT) {
+    for (let s = numStrings - 1; s >= 0; s--) {
+      if (perStringNotes[s].length === 0) continue; // string not used in shape
+      const target = s - 1;
+      for (let f = frets + 1; f <= intendedMax; f++) {
+        const proxyFret = ((f % 12) + 12) % 12;
+        const noteName = layout[s][proxyFret];
+        if (!validNotes.includes(noteName)) continue;
+        if (target < 0) continue; // topmost string — can't wrap further up
+        let bestFret = -1;
+        let bestDist = Infinity;
+        for (let tf = wrapSearchMin; tf <= wrapSearchMax; tf++) {
+          if (layout[target][tf] === noteName) {
+            const dist = Math.abs(tf - shapeCenter);
+            if (dist < bestDist) {
+              bestDist = dist;
+              bestFret = tf;
+            }
+          }
+        }
+        if (bestFret >= 0) {
+          perStringNotes[target].push(bestFret);
+          wrappedNotes.add(`${target}-${bestFret}`);
+        } else {
+          unwrapped++;
+        }
+      }
+    }
+  }
+
+  // Negative overshoot: wrap to thicker string (s+1)
+  // Skip if overshoot exceeds MAX_WRAP_OVERSHOOT — large overshoots produce unrecognizable shapes
+  if (intendedMin < 0 && -intendedMin <= MAX_WRAP_OVERSHOOT) {
+    for (let s = 0; s < numStrings; s++) {
+      if (perStringNotes[s].length === 0) continue; // string not used in shape
+      const target = s + 1;
+      for (let f = intendedMin; f < 0; f++) {
+        const proxyFret = ((f % 12) + 12) % 12;
+        const noteName = layout[s][proxyFret];
+        if (!validNotes.includes(noteName)) continue;
+        if (target >= numStrings) continue; // bottommost string — can't wrap further down
+        let bestFret = -1;
+        let bestDist = Infinity;
+        for (let tf = wrapSearchMin; tf <= wrapSearchMax; tf++) {
+          if (layout[target][tf] === noteName) {
+            const dist = Math.abs(tf - shapeCenter);
+            if (dist < bestDist) {
+              bestDist = dist;
+              bestFret = tf;
+            }
+          }
+        }
+        if (bestFret >= 0) {
+          perStringNotes[target].push(bestFret);
+          wrappedNotes.add(`${target}-${bestFret}`);
+        } else {
+          unwrapped++;
+        }
+      }
+    }
+  }
+
+  // Sort and deduplicate each string
+  for (let s = 0; s < numStrings; s++) {
+    perStringNotes[s] = [...new Set(perStringNotes[s])].sort((a, b) => a - b);
+  }
+
+  return { unwrapped, wrappedNotes };
+}
+
+/**
+ * Build polygon vertices from per-string note boundaries.
+ * Left edge top→bottom, right edge bottom→top.
+ * Wrapped notes are excluded from edge vertex selection so the polygon
+ * reflects the core shape position without extension at fret boundaries.
+ */
+function buildPolygonFromNotes(
+  perStringNotes: number[][],
+  numStrings: number,
+  wrappedNotes: Set<string> = new Set(),
+): ShapeVertex[] {
+  const leftEdge: ShapeVertex[] = [];
+  const rightEdge: ShapeVertex[] = [];
+
+  for (let s = 0; s < numStrings; s++) {
+    const notes = perStringNotes[s];
+    if (notes.length === 0) continue;
+    const nonWrapped = notes.filter(f => !wrappedNotes.has(`${s}-${f}`));
+    if (nonWrapped.length === 0) continue;
+    leftEdge.push({ fret: nonWrapped[0], string: s });
+    rightEdge.push({ fret: nonWrapped[nonWrapped.length - 1], string: s });
+  }
+
+  return [...leftEdge, ...rightEdge.reverse()];
+}
+
 export function getCagedCoordinates(
   rootNote: string,
   shape: CagedShape,
@@ -44,95 +432,148 @@ export function getCagedCoordinates(
   const validNotes = getScaleNotes(rootNote, scaleName);
   const layout = getFretboardNotes(tuning, frets);
 
-  let rootStringFocus = 5;
-  let fretOffsetMin = 0;
-  let fretOffsetMax = 0;
+  const useMajorRemap = isMajorScale(scaleName);
+  const effectiveShape = useMajorRemap ? MAJOR_TO_MINOR_SHAPE[shape] : shape;
+  const anchorNote = useMajorRemap ? getRelativeMinorRoot(rootNote) : rootNote;
 
-  switch (shape) {
-    case "C":
-      rootStringFocus = 4;
-      fretOffsetMin = -3;
-      fretOffsetMax = 1;
-      break;
-    case "A":
-      rootStringFocus = 4;
-      fretOffsetMin = -1;
-      fretOffsetMax = 3;
-      break;
-    case "G":
-      rootStringFocus = 5;
-      fretOffsetMin = -3;
-      fretOffsetMax = 1;
-      break;
-    case "E":
-      rootStringFocus = 5;
-      fretOffsetMin = -1;
-      fretOffsetMax = 3;
-      break;
-    case "D":
-      rootStringFocus = 3;
-      fretOffsetMin = 0;
-      fretOffsetMax = 4;
-      break;
-  }
+  const { rootStringFocus, fretOffsetMin, fretOffsetMax, maxNotesPerString = {} } =
+    SHAPE_CONFIGS[effectiveShape];
 
-  // Find all instances of root on the target string up to the max frets
+  // Find all instances of anchor note on the target string
   const rootFrets: number[] = [];
   let searchFret = 0;
   while (searchFret <= frets) {
-    const rf = layout[rootStringFocus].indexOf(rootNote, searchFret);
+    const rf = layout[rootStringFocus].indexOf(anchorNote, searchFret);
     if (rf === -1) break;
-    if (rf + fretOffsetMin >= 0) {
-      rootFrets.push(rf);
-    }
+    rootFrets.push(rf);
     searchFret = rf + 1;
   }
 
   const coordinates: Set<string> = new Set();
   const bounds: { minFret: number; maxFret: number }[] = [];
+  const allWrappedNotes = new Set<string>();
+
+  // Determine blue note (exempt from dedup) for blues scales
+  const blueNoteIntervals: Record<string, number> = { 'Minor Blues': 6, 'Major Blues': 3 };
+  const blueInterval = blueNoteIntervals[scaleName];
+  const blueNoteName = blueInterval != null
+    ? NOTES[(NOTES.indexOf(rootNote) + blueInterval) % 12]
+    : null;
+
+  // Determine template strategy
+  const scaleIntervals = SCALES[scaleName];
+  const isBlues = scaleName.includes('Blues');
+  const usePentTemplate = isBlues || (scaleIntervals && scaleIntervals.length <= 5);
+  const use7NoteTemplate = !usePentTemplate && (scaleIntervals?.length === 7);
+
+  const color = CAGED_SHAPE_COLORS[shape].bg;
+  const polygons: ShapePolygon[] = [];
 
   for (const rootFret of rootFrets) {
-    const minFret = Math.max(0, rootFret + fretOffsetMin);
-    const maxFret = Math.min(frets, rootFret + fretOffsetMax);
+    const intendedMin = rootFret + fretOffsetMin;
+    const intendedMax = rootFret + fretOffsetMax;
+    const shapeMin = Math.max(0, intendedMin);
+    const shapeMax = Math.min(frets, intendedMax);
 
-    bounds.push({ minFret, maxFret });
+    bounds.push({ minFret: shapeMin, maxFret: shapeMax });
 
+    // Collect notes per string
+    const perStringNotes: number[][] = [];
     for (let s = 0; s < tuning.length; s++) {
-      for (let f = minFret; f <= maxFret; f++) {
-        const noteAtPos = layout[s][f];
-        if (validNotes.includes(noteAtPos)) {
-          coordinates.add(`${s}-${f}`);
+      const stringNotes: number[] = [];
+      for (let f = shapeMin; f <= shapeMax; f++) {
+        if (validNotes.includes(layout[s][f])) {
+          stringNotes.push(f);
         }
+      }
+      const cap = validNotes.length <= 5 ? maxNotesPerString[s] : undefined;
+      perStringNotes.push(cap != null ? stringNotes.slice(0, cap) : stringNotes);
+    }
+
+    // Wrap overshoot notes to adjacent strings; returns count of unwrapped notes and Set of wrapped keys.
+    // Snapshot state before wrapping so we can revert if too many notes wrap.
+    const preWrapNotes = perStringNotes.map(arr => [...arr]);
+    const { wrappedNotes: shapeWrapped } = wrapOvershootNotes(
+      perStringNotes, layout, validNotes, intendedMin, intendedMax, shapeMin, shapeMax, frets,
+    );
+    // Wrap limit: if more than 2 notes would wrap, the shape is cluttered — revert entirely
+    if (shapeWrapped.size > 2) {
+      for (let s = 0; s < perStringNotes.length; s++) {
+        perStringNotes[s] = preWrapNotes[s];
+      }
+      // shapeWrapped is discarded — do not add to allWrappedNotes
+    } else {
+      for (const key of shapeWrapped) allWrappedNotes.add(key);
+    }
+
+    // Shape is truncated if half or more of the intended fret range is outside the fretboard
+    const intendedSpan = intendedMax - intendedMin;
+    const visibleSpan = shapeMax - shapeMin;
+    const truncated = intendedSpan > 0 && visibleSpan <= intendedSpan / 2;
+
+    // Deduplicate for 7-note scales
+    if (validNotes.length > 5) {
+      deduplicateAdjacentStrings(perStringNotes, layout, blueNoteName);
+    }
+
+    // Add to coordinates
+    for (let s = 0; s < tuning.length; s++) {
+      for (const f of perStringNotes[s]) {
+        coordinates.add(`${s}-${f}`);
       }
     }
-    // Anchor the root note even if it's not technically in the scale (safety)
     coordinates.add(`${rootStringFocus}-${rootFret}`);
-  }
 
-  const cellColorMap: Record<string, CellColor> = {};
-  const color = CAGED_SHAPE_COLORS[shape].bg;
+    // Compute labels
+    const isMinorQuality = !isMajorScale(scaleName);
+    const cagedLabel = `${shape}${isMinorQuality ? 'm' : ''} Shape`;
 
-  for (const rootFret of rootFrets) {
-    const minFret = Math.max(0, rootFret + fretOffsetMin);
-    const maxFret = Math.min(frets, rootFret + fretOffsetMax);
-
-    for (let s = 0; s < tuning.length; s++) {
-      let stringMin = maxFret + 1;
-      let stringMax = minFret - 1;
-      for (let f = minFret; f <= maxFret; f++) {
-        if (validNotes.includes(layout[s][f])) {
-          stringMin = Math.min(stringMin, f);
-          stringMax = Math.max(stringMax, f);
-        }
+    let modalLabel: string | null = null;
+    const bottomString = tuning.length - 1;
+    const bottomNotes = perStringNotes[bottomString];
+    if (bottomNotes.length > 0) {
+      const startNote = layout[bottomString][bottomNotes[0]];
+      const startNoteDisplay = getNoteDisplay(startNote, rootNote);
+      const degreeIdx = validNotes.indexOf(startNote);
+      const modeOffset = MODE_OFFSETS[scaleName];
+      if (degreeIdx >= 0 && modeOffset != null) {
+        const absoluteDegree = (degreeIdx + modeOffset) % 7;
+        modalLabel = `${startNoteDisplay} ${MAJOR_MODE_NAMES[absoluteDegree]}`;
       }
-      if (stringMin <= stringMax) {
-        for (let f = stringMin; f <= stringMax; f++) {
-          cellColorMap[`${s}-${f}`] = {
-            color,
-            isLeftEdge: f === stringMin,
-            isRightEdge: f === stringMax,
-          };
-        }
+    }
+
+    // Build polygon
+    if (usePentTemplate) {
+      // Use fixed pentatonic template
+      const template = SHAPE_TEMPLATES_PENT[effectiveShape];
+      const leftEdge: ShapeVertex[] = template.perString.map(([l], s) => ({
+        fret: rootFret + l,
+        string: s,
+      }));
+      const rightEdge: ShapeVertex[] = template.perString.map(([, r], s) => ({
+        fret: rootFret + r,
+        string: s,
+      })).reverse();
+
+      polygons.push({ vertices: [...leftEdge, ...rightEdge], shape, color, cagedLabel, modalLabel, truncated, intendedMin, intendedMax });
+    } else if (use7NoteTemplate) {
+      // Use scale-specific fixed 7-note template
+      const template = get7NoteTemplate(scaleName)[effectiveShape];
+      const leftEdge: ShapeVertex[] = template.perString.map(([l], s) => ({
+        fret: rootFret + l,
+        string: s,
+      }));
+      const rightEdge: ShapeVertex[] = template.perString.map(([, r], s) => ({
+        fret: rootFret + r,
+        string: s,
+      })).reverse();
+
+      polygons.push({ vertices: [...leftEdge, ...rightEdge], shape, color, cagedLabel, modalLabel, truncated, intendedMin, intendedMax });
+    } else {
+      // Dynamic polygon from actual note positions (modes other than Natural Minor)
+      const vertices = buildPolygonFromNotes(perStringNotes, tuning.length, allWrappedNotes);
+      if (vertices.length > 0) {
+        polygons.push({ vertices, shape, color, cagedLabel, modalLabel, truncated, intendedMin, intendedMax });
       }
     }
   }
@@ -140,14 +581,13 @@ export function getCagedCoordinates(
   return {
     coordinates: Array.from(coordinates),
     bounds,
-    cellColorMap,
+    polygons,
+    wrappedNotes: allWrappedNotes,
   };
 }
 
 /**
  * Procedurally computes 3 Notes Per String (3NPS) scale patterns dynamically.
- * Starts from the requested position (scale degree 1-7), mapping exactly 3 adjacent
- * scale notes per string moving strictly vertically.
  */
 export function get3NPSCoordinates(
   rootNote: string,
@@ -157,26 +597,22 @@ export function get3NPSCoordinates(
   position: number,
 ): ShapeResult {
   const scaleNotes = getScaleNotes(rootNote, scalePattern);
-  if (scaleNotes.length === 0) return { coordinates: [], bounds: [] };
+  if (scaleNotes.length === 0) return { coordinates: [], bounds: [], polygons: [], wrappedNotes: new Set() };
 
   const layout = getFretboardNotes(tuning, frets);
 
-  // Starting note for the chosen position
   const startNote = scaleNotes[(position - 1) % scaleNotes.length];
-
-  // Start on lowest string
   const startString = tuning.length - 1;
   let currentFretFocus = layout[startString].indexOf(startNote);
   if (currentFretFocus === -1) {
     currentFretFocus = layout[startString].indexOf(startNote, 1);
   }
 
-  if (currentFretFocus === -1) return { coordinates: [], bounds: [] };
+  if (currentFretFocus === -1) return { coordinates: [], bounds: [], polygons: [], wrappedNotes: new Set() };
 
   const boundingBoxes: { minFret: number; maxFret: number }[] = [];
   const allCoords = [];
 
-  // Replicate across 12-fret boundaries just like CAGED
   const focusFrets = [];
   let sFret = currentFretFocus;
   while (sFret <= frets) {
@@ -209,7 +645,6 @@ export function get3NPSCoordinates(
           lastFretAdded = f;
         }
       }
-      // Update logic to track diagonal movement slightly, pulling towards the top strings
       if (lastFretAdded !== -1) {
         localFocus = lastFretAdded - 1;
       }
@@ -227,5 +662,7 @@ export function get3NPSCoordinates(
   return {
     coordinates: allCoords,
     bounds: boundingBoxes,
+    polygons: [],
+    wrappedNotes: new Set(),
   };
 }
