@@ -64,3 +64,9 @@ Build for production:
 ```bash
 npm run build
 ```
+
+## Support
+
+If you find FretFlow useful, consider supporting its development:
+
+[![ko-fi](https://storage.ko-fi.com/cdn/brandasset/v2/support_me_on_kofi_badge_blue.png)](https://ko-fi.com/E1E01XFJ0G)

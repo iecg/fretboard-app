@@ -130,6 +130,34 @@
   color: var(--text-muted);
 }
 
+.kofi-header-btn {
+  display: flex;
+  align-items: center;
+  opacity: 0.85;
+  transition: opacity 0.2s, transform 0.2s;
+  margin-right: var(--space-2);
+}
+
+.kofi-header-btn:hover {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.kofi-btn-desktop {
+  height: 36px;
+  display: block;
+}
+
+.kofi-btn-mobile {
+  height: 32px;
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .kofi-btn-desktop { display: none; }
+  .kofi-btn-mobile { display: block; }
+}
+
 /* Main Fretboard */
 .main-fretboard {
   width: 100%;
