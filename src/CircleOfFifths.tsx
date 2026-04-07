@@ -1,4 +1,4 @@
-import { CIRCLE_OF_FIFTHS, CIRCLE_DISPLAY_LABELS, getKeySignature } from "./theory";
+import { CIRCLE_OF_FIFTHS, ENHARMONICS, getNoteDisplay, getKeySignature, SCALES } from "./theory";
 
 const SIZE = 320;
 const CX = SIZE / 2;
@@ -6,20 +6,47 @@ const CY = SIZE / 2;
 const OUTER_RADIUS = SIZE * 0.48;
 const INNER_RADIUS = SIZE * 0.26;
 const LABEL_RADIUS = SIZE * 0.39;
-const DEGREE_RADIUS = SIZE * 0.33;
+const DEGREE_RADIUS = SIZE * 0.31;
 
-function getDisplayLabel(note: string, rootNote: string): string {
-  if (note === 'F#' && rootNote !== 'F#') return CIRCLE_DISPLAY_LABELS[note] || note;
-  if (note === 'F#' && rootNote === 'F#') return 'F#';
-  return CIRCLE_DISPLAY_LABELS[note] || note;
+function getCircleNoteLabels(note: string, rootNote: string): { primary: string; enharmonic: string | null } {
+  if (!note.includes('#')) return { primary: note, enharmonic: null };
+  // F# root is enharmonically Gb — use flat-key spelling throughout
+  const effectiveRoot = rootNote === 'F#' ? 'Gb' : rootNote;
+  const primary = getNoteDisplay(note, effectiveRoot);
+  const enharmonic = ENHARMONICS[primary] ?? ENHARMONICS[note] ?? null;
+  return { primary, enharmonic };
+}
+
+// Scale degrees keyed by chromatic semitone interval from root
+const MODE_DEGREES: Record<string, Record<number, string>> = {
+  // Major modes
+  'Major':           { 0: "I", 2: "ii", 4: "iii", 5: "IV", 7: "V", 9: "vi", 11: "vii°" },
+  'Lydian':          { 0: "I", 2: "II", 4: "iii", 6: "iv°", 7: "V", 9: "vi", 11: "vii" },
+  'Mixolydian':      { 0: "I", 2: "ii", 4: "iii°", 5: "IV", 7: "v", 9: "vi", 10: "VII" },
+  // Minor modes
+  'Natural Minor':   { 0: "i", 2: "ii°", 3: "III", 5: "iv", 7: "v", 8: "VI", 10: "VII" },
+  'Dorian':          { 0: "i", 2: "ii", 3: "III", 5: "IV", 7: "v", 9: "vi°", 10: "VII" },
+  'Phrygian':        { 0: "i", 1: "II", 3: "III", 5: "iv", 7: "v°", 8: "VI", 10: "vii" },
+  'Locrian':         { 0: "i°", 1: "II", 3: "iii", 5: "iv", 6: "V", 8: "VI", 10: "vii" },
+  'Harmonic Minor':  { 0: "i", 2: "ii°", 3: "III+", 5: "iv", 7: "V", 8: "VI", 11: "vii°" },
+};
+
+// Fallback: major-quality scales use Major degrees, minor-quality use Natural Minor
+function getDegreesForScale(scaleName: string): Record<number, string> {
+  if (MODE_DEGREES[scaleName]) return MODE_DEGREES[scaleName];
+  const intervals = SCALES[scaleName];
+  if (intervals && intervals.includes(4)) return MODE_DEGREES['Major'];
+  return MODE_DEGREES['Natural Minor'];
 }
 
 export function CircleOfFifths({
   rootNote,
   setRootNote,
+  scaleName = "Major",
 }: {
   rootNote: string;
   setRootNote: (n: string) => void;
+  scaleName?: string;
 }) {
   const rootIndex = CIRCLE_OF_FIFTHS.indexOf(rootNote);
 
@@ -54,16 +81,6 @@ export function CircleOfFifths({
               stroke="var(--surface-highlight)"
               strokeWidth={1}
               onClick={() => setRootNote(note)}
-              role="button"
-              tabIndex={0}
-              aria-label={`Select ${note}`}
-              aria-pressed={isActive}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  setRootNote(note);
-                }
-              }}
             />
           );
         })}
@@ -78,25 +95,17 @@ export function CircleOfFifths({
           const isActive = rootNote === note;
 
           const intervalIndex = (index - rootIndex + 12) % 12;
-          let degreeStr = "";
-          switch (intervalIndex) {
-            case 0: degreeStr = "I"; break;
-            case 1: degreeStr = "V"; break;
-            case 2: degreeStr = "ii"; break;
-            case 3: degreeStr = "vi"; break;
-            case 4: degreeStr = "iii"; break;
-            case 5: degreeStr = "vii°"; break;
-            case 11: degreeStr = "IV"; break;
-          }
+          const chromaticInterval = (intervalIndex * 7) % 12;
+          const degreeMap = getDegreesForScale(scaleName);
+          const degreeStr = degreeMap[chromaticInterval] ?? "";
 
-          const label = getDisplayLabel(note, rootNote);
-          const parts = label.split('/');
+          const { primary, enharmonic } = getCircleNoteLabels(note, rootNote);
           const noteFontSize = isActive ? SIZE * 0.055 : SIZE * 0.048;
           const degreeFontSize = SIZE * 0.032;
 
           return (
             <g key={`text-group-${note}`} style={{ pointerEvents: "none" }}>
-              {parts.length > 1 ? (
+              {enharmonic !== null ? (
                 <text
                   x={lx} y={ly}
                   dominantBaseline="middle" textAnchor="middle"
@@ -104,8 +113,8 @@ export function CircleOfFifths({
                   fontWeight="bold"
                   fill={isActive ? "var(--text-main)" : "var(--text-muted)"}
                 >
-                  <tspan x={lx} dy="-0.5em">{parts[0]}</tspan>
-                  <tspan x={lx} dy="1em" fontSize={noteFontSize * 0.85}>{parts[1]}</tspan>
+                  <tspan x={lx} dy="-0.3em">{primary}</tspan>
+                  <tspan x={lx} dy="0.9em" fontSize={noteFontSize * 0.55} opacity={0.4} fontWeight="500">{enharmonic}</tspan>
                 </text>
               ) : (
                 <text
@@ -115,7 +124,7 @@ export function CircleOfFifths({
                   fontWeight="bold"
                   fill={isActive ? "var(--text-main)" : "var(--text-muted)"}
                 >
-                  {label}
+                  {primary}
                 </text>
               )}
 
@@ -123,10 +132,10 @@ export function CircleOfFifths({
                 <text
                   x={dx} y={dy}
                   dominantBaseline="middle" textAnchor="middle"
-                  fill="var(--accent-primary)"
+                  fill={isActive ? "var(--text-main)" : "var(--accent-primary)"}
                   fontSize={degreeFontSize}
                   fontWeight="bold"
-                  opacity={isActive ? 1 : 0.6}
+                  opacity={isActive ? 0.9 : 0.6}
                 >
                   {degreeStr}
                 </text>

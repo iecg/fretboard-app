@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { clsx } from "clsx";
 import {
   getFretboardNotes,
@@ -7,66 +7,108 @@ import {
   STANDARD_FRET_MARKERS,
   parseNote,
 } from "./guitar";
-import { NOTES, ENHARMONICS, getNoteDisplay } from "./theory";
+import { NOTES, ENHARMONICS, getNoteDisplay, INTERVAL_NAMES } from "./theory";
 import { synth } from "./audio";
-import type { CellColor } from "./shapes";
-
-const INTERVAL_NAMES = [
-  "1", "b2", "2", "b3", "3", "4", "b5", "5", "b6", "6", "b7", "7",
-];
+import type { ShapePolygon } from "./shapes";
 
 const STRING_ROW_PX = 40;
-const FRET_COL_MIN_PX = 45;
-const ZOOM_MIN = 30;
-const ZOOM_MAX = 80;
-const ZOOM_STEP = 5;
+const ZOOM_MAX_PCT = 300;
 
 interface FretboardProps {
   tuning: string[];
   startFret?: number;
   endFret?: number;
+  maxFret?: number;
   highlightNotes: string[];
   rootNote: string;
-  displayFormat?: "notes" | "degrees";
+  displayFormat?: "notes" | "degrees" | "none";
   boxBounds?: { minFret: number; maxFret: number }[];
   chordTones?: string[];
+  chordFretSpread?: number;
+  onChordFretSpreadChange?: (spread: number) => void;
   hideNonChordNotes?: boolean;
-  cellColorMap?: Record<string, CellColor>;
+  colorNotes?: string[];
+  shapePolygons?: ShapePolygon[];
+  shapeLabels?: "modal" | "caged" | "none";
+  wrappedNotes?: Set<string>;
   fretZoom?: number;
   onZoomChange?: (zoom: number) => void;
+  onFretStartChange?: (fret: number) => void;
+  onFretEndChange?: (fret: number) => void;
   onFretClick?: (stringIndex: number, fretIndex: number, noteName: string) => void;
 }
 
 export function Fretboard({
   tuning,
   startFret = 0,
-  endFret = 22,
+  endFret = 24,
+  maxFret = 24,
   highlightNotes,
   rootNote,
   displayFormat = "notes",
-  boxBounds: _boxBounds = [],
+  boxBounds = [],
   chordTones = [],
+  chordFretSpread = 0,
+  onChordFretSpreadChange,
   hideNonChordNotes = false,
-  cellColorMap = {},
-  fretZoom = FRET_COL_MIN_PX,
+  colorNotes = [],
+  shapePolygons = [],
+  shapeLabels = "none",
+  wrappedNotes = new Set<string>(),
+  fretZoom = 100,
   onZoomChange,
+  onFretStartChange,
+  onFretEndChange,
   onFretClick,
 }: FretboardProps) {
-  const fretboardLayout = getFretboardNotes(tuning, Math.max(endFret, 24));
+  const fretboardLayout = getFretboardNotes(tuning, Math.max(endFret, maxFret));
   const fretCount = endFret - startFret;
+
+  // Measure container width to compute auto-fill zoom
+  const [containerWidth, setContainerWidth] = useState(0);
+  const totalColumns = fretCount + 1; // includes fret 0
+  const autoFitZoom = containerWidth > 0 && totalColumns > 0
+    ? Math.floor(containerWidth / totalColumns)
+    : 30;
+  // fretZoom is a percentage: 100 = auto-fit, 110 = 10% larger, etc.
+  const effectiveZoom = fretZoom <= 100
+    ? autoFitZoom
+    : Math.round(autoFitZoom * fretZoom / 100);
 
   // Drag-to-scroll — deferred pointer capture so taps reach note-bubbles
   const scrollRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
+  const [isDragging, setIsDragging] = useState(false);
   const pendingPointerId = useRef<number | null>(null);
   const pendingTarget = useRef<Element | null>(null);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
   const dragDistance = useRef(0);
 
+  const [hasOverflow, setHasOverflow] = useState(false);
+
+  // Measure container width synchronously before paint to avoid flash on load
+  useLayoutEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setContainerWidth(el.clientWidth);
+    const ro = new ResizeObserver(() => setContainerWidth(el.clientWidth));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Recheck overflow whenever neck width or container width changes
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setHasOverflow(el.scrollWidth > el.clientWidth + 1);
+  }, [effectiveZoom, fretCount, containerWidth]);
+
   const handlePointerDown = (e: React.PointerEvent) => {
+    if (!hasOverflow) return;
     if (!scrollRef.current) return;
     isDraggingRef.current = false;
+    setIsDragging(false);
     pendingPointerId.current = e.pointerId;
     pendingTarget.current = e.currentTarget;
     setStartX(e.pageX - scrollRef.current.offsetLeft);
@@ -80,6 +122,7 @@ export function Fretboard({
     // Only start capturing once we've detected real drag motion
     if (!isDraggingRef.current && dragDistance.current > 3) {
       isDraggingRef.current = true;
+      setIsDragging(true);
       pendingTarget.current?.setPointerCapture(pendingPointerId.current);
     }
     if (!isDraggingRef.current) return;
@@ -91,16 +134,15 @@ export function Fretboard({
 
   const handlePointerUp = () => {
     isDraggingRef.current = false;
+    setIsDragging(false);
     pendingPointerId.current = null;
     pendingTarget.current = null;
   };
 
   const scrollToFret = (fret: number) => {
     if (!scrollRef.current) return;
-    // fret 0 column is 4rem wide; subsequent frets use fretZoom px each
-    const fretZeroWidth = 64; // 4rem in px (matches .fret-zero-cell width)
-    const offset = fret === 0 ? 0 : fretZeroWidth + (fret - 1) * fretZoom;
-    scrollRef.current.scrollTo({ left: offset - 20, behavior: "smooth" });
+    const offset = (fret - startFret) * effectiveZoom;
+    scrollRef.current.scrollTo({ left: Math.max(0, offset - 20), behavior: "smooth" });
   };
 
   const handleFretClick = (stringIndex: number, fretIndex: number, noteName: string) => {
@@ -113,28 +155,139 @@ export function Fretboard({
 
   const hasChordOverlay = chordTones.length > 0;
 
+  const NECK_BORDER = 4; // matches border width in CSS
+  const neckWidth = totalColumns * effectiveZoom;
+  // Half a row padding above first string and below last string
+  const neckHeight = tuning.length * STRING_ROW_PX;
+
+  // Uniform fret X: every fret (including 0) is the same width
+  const fretToX = (fret: number) => (fret - startFret + 0.5) * effectiveZoom;
+
+  // String center Y: centers at 20, 60, 100, 140, 180, 220 for 6 strings
+  const stringCenterY = (s: number) => STRING_ROW_PX / 2 + s * STRING_ROW_PX;
+
+  // Build SVG polygon points from shape vertex data
+  const svgPolygons = shapePolygons.map((poly, polyIdx) => {
+    if (poly.vertices.length === 0) {
+      return { points: '', color: poly.color, key: `${poly.shape}-${polyIdx}`, poly, centerX: 0 };
+    }
+
+    // Convert vertices to pixel coordinates, adding top/bottom caps
+    const pixelPoints: string[] = [];
+
+    // The vertices are already ordered: left edge top→bottom, then right edge bottom→top
+    // We need to insert vertical caps at the top and bottom transitions
+    const verts = poly.vertices;
+    const halfVerts = verts.length / 2; // left edge: first half, right edge: second half
+
+    // Clamped fret boundaries that were used when collecting notes
+    const clampedMin = Math.max(0, poly.intendedMin);
+    const clampedMax = Math.min(maxFret, poly.intendedMax);
+
+    // Resolve the fret value for a vertex, extending it beyond the fretboard edge when
+    // the shape was truncated. A left-edge vertex sitting at clampedMin was clamped from
+    // intendedMin; replace it with the unclamped value so the polygon continues off-screen.
+    // The fretboard-neck's overflow:hidden clips the excess visually.
+    const resolveLeftFret = (fret: number) =>
+      fret === clampedMin && poly.intendedMin < clampedMin ? poly.intendedMin : fret;
+    const resolveRightFret = (fret: number) =>
+      fret === clampedMax && poly.intendedMax > clampedMax ? poly.intendedMax : fret;
+
+    // Left edge: vertices 0..halfVerts-1 (s0→s5)
+    // Insert top cap before first left vertex
+    const firstLeft = verts[0];
+    pixelPoints.push(`${fretToX(resolveLeftFret(firstLeft.fret))},0`);
+
+    for (let i = 0; i < halfVerts; i++) {
+      pixelPoints.push(`${fretToX(resolveLeftFret(verts[i].fret))},${stringCenterY(verts[i].string)}`);
+    }
+
+    // Insert bottom cap after last left vertex (s5)
+    const lastLeft = verts[halfVerts - 1];
+    pixelPoints.push(`${fretToX(resolveLeftFret(lastLeft.fret))},${neckHeight}`);
+
+    // Right edge: vertices halfVerts..end (s5→s0)
+    const firstRight = verts[halfVerts];
+    pixelPoints.push(`${fretToX(resolveRightFret(firstRight.fret))},${neckHeight}`);
+
+    for (let i = halfVerts; i < verts.length; i++) {
+      pixelPoints.push(`${fretToX(resolveRightFret(verts[i].fret))},${stringCenterY(verts[i].string)}`);
+    }
+
+    // Insert top cap after last right vertex (s0)
+    const lastRight = verts[verts.length - 1];
+    pixelPoints.push(`${fretToX(resolveRightFret(lastRight.fret))},0`);
+
+    const points = pixelPoints.join(' ');
+
+    // Center label on the low E string (string 5) span midpoint.
+    // verts[halfVerts-1] is the last left-edge vertex (s5 for full polygons),
+    // verts[halfVerts] is the first right-edge vertex (s5 for full polygons).
+    const s5Left = verts[halfVerts - 1].fret;
+    const s5Right = verts[halfVerts].fret;
+    const s5Center = (s5Left + s5Right) / 2;
+    // Clamp to visible fretboard so the label stays on screen
+    const clampedCenter = Math.max(startFret, Math.min(endFret, s5Center));
+    const centerX = fretToX(clampedCenter);
+
+    return { points, color: poly.color, key: `${poly.shape}-${polyIdx}`, poly, centerX };
+  });
+
+
   return (
     <div className="fretboard-outer">
       {/* Toolbar */}
       <div className="fretboard-toolbar">
         <div className="viewport-jumps">
-          <span className="section-label">Jump</span>
+          <span className="section-label">Go to</span>
           {[["Open", 0], ["Mid", 5], ["High", 12]] .map(([label, fret]) => (
             <button key={label as string} className="toolbar-btn"
+              disabled={(fret as number) < startFret || (fret as number) > endFret}
               onClick={() => scrollToFret(fret as number)}>
               {label}
             </button>
           ))}
         </div>
+        <div className="fret-range-controls">
+          <span className="section-label">Frets</span>
+          <button className="toolbar-btn"
+            onClick={() => onFretStartChange?.(Math.max(0, startFret - 1))}
+            disabled={startFret <= 0}>◀</button>
+          <span className="toolbar-range-val">{startFret}</span>
+          <button className="toolbar-btn"
+            onClick={() => onFretStartChange?.(Math.min(endFret - 1, startFret + 1))}
+            disabled={startFret >= endFret - 1}>▶</button>
+          <span className="toolbar-range-sep">—</span>
+          <button className="toolbar-btn"
+            onClick={() => onFretEndChange?.(Math.max(startFret + 1, endFret - 1))}
+            disabled={endFret <= startFret + 1}>◀</button>
+          <span className="toolbar-range-val">{endFret}</span>
+          <button className="toolbar-btn"
+            onClick={() => onFretEndChange?.(Math.min(maxFret, endFret + 1))}
+            disabled={endFret >= maxFret}>▶</button>
+        </div>
         <div className="zoom-controls">
           <span className="section-label">Zoom</span>
           <button className="toolbar-btn"
-            onClick={() => onZoomChange?.(Math.max(ZOOM_MIN, fretZoom - ZOOM_STEP))}
-            disabled={fretZoom <= ZOOM_MIN}>−</button>
+            onClick={() => onZoomChange?.(Math.max(100, fretZoom - 10))}
+            disabled={fretZoom <= 100}>−</button>
+          <span className="toolbar-range-val">{fretZoom <= 100 ? "Auto" : `${fretZoom}%`}</span>
           <button className="toolbar-btn"
-            onClick={() => onZoomChange?.(Math.min(ZOOM_MAX, fretZoom + ZOOM_STEP))}
-            disabled={fretZoom >= ZOOM_MAX}>+</button>
+            onClick={() => onZoomChange?.(Math.min(ZOOM_MAX_PCT, fretZoom + 10))}
+            disabled={fretZoom >= ZOOM_MAX_PCT}>+</button>
         </div>
+        {hasChordOverlay && shapePolygons.length > 0 && (
+          <div className="fret-range-controls">
+            <span className="section-label">Chord Spread</span>
+            <button className="toolbar-btn"
+              onClick={() => onChordFretSpreadChange?.(Math.max(0, chordFretSpread - 1))}
+              disabled={chordFretSpread <= 0}>−</button>
+            <span className="toolbar-range-val">{chordFretSpread}</span>
+            <button className="toolbar-btn"
+              onClick={() => onChordFretSpreadChange?.(Math.min(4, chordFretSpread + 1))}
+              disabled={chordFretSpread >= 4}>+</button>
+          </div>
+        )}
       </div>
 
       {/* Scrollable fretboard */}
@@ -145,26 +298,37 @@ export function Fretboard({
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
-        style={{ cursor: isDraggingRef.current ? "grabbing" : "grab" }}
+        style={{ cursor: hasOverflow ? (isDragging ? "grabbing" : "grab") : "default" }}
       >
+        {/* Fret numbers above neck */}
+        <div className="fret-numbers-row" style={{ width: `${neckWidth + NECK_BORDER * 2}px`, paddingLeft: `${NECK_BORDER}px` }}>
+          {Array.from({ length: totalColumns }).map((_, idx) => {
+            const fretIndex = startFret + idx;
+            return (
+              <span key={`fn-${fretIndex}`} className="fret-number" style={{ width: `${effectiveZoom}px` }}>
+                {fretIndex}
+              </span>
+            );
+          })}
+        </div>
+
         <div
           className="fretboard-neck"
           style={{
-            height: `${tuning.length * STRING_ROW_PX + 20}px`,
-            minWidth: `${64 + fretCount * fretZoom}px`,
+            height: `${neckHeight + NECK_BORDER * 2}px`,
+            width: `${neckWidth + NECK_BORDER * 2}px`,
           }}
         >
           {/* Fret backgrounds/markers */}
           <div className="fret-backgrounds">
-            {Array.from({ length: fretCount + 1 }).map((_, idx) => {
+            {Array.from({ length: totalColumns }).map((_, idx) => {
               const fretIndex = startFret + idx;
               return (
                 <div
                   key={`fret-bg-${fretIndex}`}
                   className={clsx("fret-column", fretIndex === 0 ? "fret-zero" : "fret-standard")}
-                  style={fretIndex > 0 ? { width: `${fretZoom}px` } : undefined}
+                  style={{ width: `${effectiveZoom}px` }}
                 >
-                  <span className="fret-number">{fretIndex}</span>
                   {STANDARD_FRET_MARKERS.includes(fretIndex) && (
                     <div className="fret-marker-container">
                       {fretIndex === 12 || fretIndex === 24 ? (
@@ -182,14 +346,28 @@ export function Fretboard({
             })}
           </div>
 
+          {/* CAGED shape background polygons */}
+          {svgPolygons.length > 0 && (
+            <svg
+              className="shape-polygons-overlay"
+              width={neckWidth}
+              height={neckHeight}
+              style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', zIndex: 1 }}
+            >
+              {svgPolygons.map(({ points, color, key }) => (
+                <polygon key={key} points={points} fill={color} stroke="none" />
+              ))}
+            </svg>
+          )}
+
           {/* Strings and Notes */}
           <div className="strings-container">
             {tuning.map((openString, stringIndex) => (
               <div key={`string-${stringIndex}`} className="string-row">
                 <div className="string-line"
-                  style={{ height: `${(tuning.length - stringIndex) * 0.4 + 1.5}px` }} />
+                  style={{ height: `${(stringIndex + 1) * 0.4 + 1.5}px` }} />
                 <div className="string-notes">
-                  {Array.from({ length: fretCount + 1 }).map((_, idx) => {
+                  {Array.from({ length: totalColumns }).map((_, idx) => {
                     const fretIndex = startFret + idx;
                     const noteName = fretboardLayout[stringIndex][fretIndex];
 
@@ -201,11 +379,22 @@ export function Fretboard({
                       noteName === rootNote ||
                       ENHARMONICS[noteName] === rootNote ||
                       ENHARMONICS[rootNote] === noteName;
+                    const isColorNote = colorNotes.length > 0 && colorNotes.some(cn =>
+                      noteName === cn ||
+                      ENHARMONICS[noteName] === cn ||
+                      ENHARMONICS[cn] === noteName
+                    );
 
                     // 3-tier visual logic
+                    // When CAGED shapes + chord overlay are active, filter chord notes by fret spread
+                    const isChordInRange = !hasChordOverlay || !shapePolygons.length ||
+                      boxBounds.some(b => fretIndex >= b.minFret - chordFretSpread && fretIndex <= b.maxFret + chordFretSpread);
+
                     let noteClass: string;
-                    if (isRoot && (isHighlighted || isChordTone)) {
+                    if (isRoot && (isHighlighted || (isChordTone && isChordInRange))) {
                       noteClass = "root-active";
+                    } else if (isColorNote && isHighlighted) {
+                      noteClass = "note-blue";
                     } else if (isHighlighted && isChordTone) {
                       noteClass = "chord-tone";
                     } else if (isHighlighted && !hasChordOverlay) {
@@ -213,8 +402,12 @@ export function Fretboard({
                     } else if (isHighlighted && hasChordOverlay) {
                       // Scale-only note when chord overlay active; may be hidden by hideNonChordNotes
                       noteClass = "note-scale-only";
-                    } else if (!isHighlighted && isChordTone) {
+                    } else if (!isHighlighted && isChordTone && isChordInRange) {
                       noteClass = "chord-outside";
+                    } else if (isColorNote && shapePolygons.length > 0 &&
+                               boxBounds.some(b => fretIndex >= b.minFret - 1 && fretIndex <= b.maxFret + 1)) {
+                      // Blue note within 1 fret of a CAGED shape — shown at reduced opacity
+                      noteClass = "note-blue";
                     } else {
                       noteClass = "note-inactive";
                     }
@@ -231,30 +424,29 @@ export function Fretboard({
                       displayValue = getNoteDisplay(noteName, rootNote);
                     }
 
-                    // Build cell background style from CellColor
-                    const cellColor = cellColorMap[`${stringIndex}-${fretIndex}`];
-                    let cellStyle: React.CSSProperties | undefined;
-                    if (cellColor) {
-                      if (cellColor.splitColor) {
-                        cellStyle = { background: `linear-gradient(to right, ${cellColor.splitColor} 50%, ${cellColor.color} 50%)` };
-                      } else if (cellColor.isLeftEdge && cellColor.isRightEdge) {
-                        cellStyle = { background: `linear-gradient(to right, transparent 25%, ${cellColor.color} 25%, ${cellColor.color} 75%, transparent 75%)` };
-                      } else if (cellColor.isLeftEdge) {
-                        cellStyle = { background: `linear-gradient(to right, transparent 50%, ${cellColor.color} 50%)` };
-                      } else if (cellColor.isRightEdge) {
-                        cellStyle = { background: `linear-gradient(to right, ${cellColor.color} 50%, transparent 50%)` };
-                      } else {
-                        cellStyle = { backgroundColor: cellColor.color };
-                      }
-                    }
+                    const isWrapped = wrappedNotes.has(`${stringIndex}-${fretIndex}`);
+
+                    const isInsideAnyPolygon = shapePolygons.some(poly => {
+                      const leftFret = poly.vertices[stringIndex]?.fret;
+                      const rightFret = poly.vertices[poly.vertices.length - 1 - stringIndex]?.fret;
+                      return leftFret !== undefined && rightFret !== undefined &&
+                        fretIndex >= leftFret && fretIndex <= rightFret;
+                    });
+
+                    const applyDimOpacity =
+                      (shapePolygons.length > 0 && !isInsideAnyPolygon && (
+                        noteClass === "note-blue" ||
+                        noteClass === "chord-outside" ||
+                        noteClass === "chord-tone" ||
+                        noteClass === "root-active"
+                      )) ||
+                      (isWrapped && isHighlighted);
 
                     return (
                       <div
                         key={`note-${stringIndex}-${fretIndex}`}
-                        className={clsx("note-cell", fretIndex === 0 ? "fret-zero-cell" : "fret-standard-cell")}
-                        style={fretIndex > 0
-                          ? { ...cellStyle, width: `${fretZoom}px` }
-                          : cellStyle}
+                        className="note-cell"
+                        style={{ width: `${effectiveZoom}px` }}
                       >
                         <div
                           onClick={() => handleFretClick(stringIndex, fretIndex, noteName)}
@@ -263,8 +455,9 @@ export function Fretboard({
                             noteClass,
                             noteClass === "note-scale-only" && hideNonChordNotes && "hidden"
                           )}
+                          style={applyDimOpacity ? { opacity: 0.8 } : undefined}
                         >
-                          {displayValue}
+                          {displayFormat !== "none" && displayValue}
                         </div>
                       </div>
                     );
@@ -274,6 +467,25 @@ export function Fretboard({
             ))}
           </div>
         </div>
+
+        {/* Shape labels below fretboard */}
+        {shapeLabels !== "none" && svgPolygons.length > 0 && (
+          <div className="shape-labels-row" style={{ width: `${neckWidth + NECK_BORDER * 2}px` }}>
+            {svgPolygons.map(({ key, poly, centerX }) => {
+              if (poly.truncated) return null;
+              const text = shapeLabels === "modal" ? (poly.modalLabel ?? poly.cagedLabel) : poly.cagedLabel;
+              return (
+                <span
+                  key={key}
+                  className="shape-label"
+                  style={{ left: `${centerX + NECK_BORDER}px` }}
+                >
+                  {text}
+                </span>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

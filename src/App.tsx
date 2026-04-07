@@ -1,15 +1,18 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Fretboard } from "./Fretboard";
 import {
   SCALES,
-  CHORDS,
   NOTES,
+  INTERVAL_NAMES,
+  CHORDS,
   getScaleNotes,
   getChordNotes,
+  getIntervalNotes,
   getNoteDisplay,
+  getDivergentNotes,
 } from "./theory";
 import { STANDARD_TUNING, TUNINGS } from "./guitar";
-import { Music, Settings2, Volume2, VolumeX, ChevronDown } from "lucide-react";
+import { Music, Settings2, Volume2, VolumeX, ChevronDown, RotateCcw } from "lucide-react";
 import { synth } from "./audio";
 import { CircleOfFifths } from "./CircleOfFifths";
 import {
@@ -17,11 +20,27 @@ import {
   getCagedCoordinates,
   get3NPSCoordinates,
   type CagedShape,
-  type CellColor,
+  type ShapePolygon,
 } from "./shapes";
 import "./App.css";
 
 type FingeringPattern = "all" | "caged" | "3nps";
+
+// Chord interval filter presets — sets of allowed semitone intervals from chord root
+const CHORD_INTERVAL_FILTERS: Record<string, Set<number>> = {
+  'All':           new Set([0,1,2,3,4,5,6,7,8,9,10,11]),
+  'Triad':         new Set([0, 3, 4, 6, 7, 8]),
+  '7th Chord':     new Set([0, 3, 4, 6, 7, 8, 10, 11]),
+  'Power Chord':   new Set([0, 7]),
+  'Guide Tones':   new Set([3, 4, 10, 11]),
+  'Shell Voicing': new Set([0, 3, 4, 10, 11]),
+  'Root & 3rd':    new Set([0, 3, 4]),
+  'Root & 5th':    new Set([0, 6, 7, 8]),
+  'Root & 7th':    new Set([0, 10, 11]),
+  '3rd & 5th':     new Set([3, 4, 6, 7, 8]),
+  '3rd & 7th':     new Set([3, 4, 10, 11]),
+};
+const CHORD_FILTER_OPTIONS = Object.keys(CHORD_INTERVAL_FILTERS);
 
 // Inline dropdown drawer component
 function DrawerSelector({
@@ -33,13 +52,26 @@ function DrawerSelector({
 }: {
   label: string;
   value: string | null;
-  options: string[];
+  options: (string | { divider: string })[];
   onSelect: (opt: string | null) => void;
   nullable?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
   return (
-    <div className="drawer-selector">
+    <div className="drawer-selector" ref={containerRef}>
       <button className="drawer-trigger" onClick={() => setOpen((o) => !o)}>
         <span className="drawer-label">{label}</span>
         <span className="drawer-value">{value ?? "None"}</span>
@@ -55,22 +87,51 @@ function DrawerSelector({
               None
             </button>
           )}
-          {options.map((opt) => (
-            <button
-              key={opt}
-              className={`drawer-option ${value === opt ? "active" : ""}`}
-              onClick={() => { onSelect(opt); setOpen(false); }}
-            >
-              {opt}
-            </button>
-          ))}
+          {options.map((opt, i) =>
+            typeof opt === 'string' ? (
+              <button
+                key={opt}
+                className={`drawer-option ${value === opt ? "active" : ""}`}
+                onClick={() => { onSelect(opt); setOpen(false); }}
+              >
+                {opt}
+              </button>
+            ) : (
+              <div key={`div-${i}`} className="drawer-divider">{opt.divider}</div>
+            )
+          )}
         </div>
       )}
     </div>
   );
 }
 
+const SCALE_OPTIONS: (string | { divider: string })[] = [
+  { divider: 'Major Modes' },
+  'Major', 'Lydian', 'Mixolydian',
+  { divider: 'Minor Modes' },
+  'Natural Minor', 'Dorian', 'Phrygian', 'Locrian',
+  { divider: 'Harmonic' },
+  'Harmonic Minor',
+  { divider: 'Pentatonic' },
+  'Minor Pentatonic', 'Major Pentatonic',
+  { divider: 'Blues' },
+  'Minor Blues', 'Major Blues',
+];
+
+const CHORD_OPTIONS: (string | { divider: string })[] = [
+  { divider: 'Triads' },
+  'Major Triad', 'Minor Triad', 'Diminished Triad',
+  { divider: 'Seventh Chords' },
+  'Major 7th', 'Minor 7th', 'Dominant 7th',
+  { divider: 'Other' },
+  'Power Chord (5)',
+];
+
+
 function App() {
+  const END_FRET = 24;
+
   // Scale
   const [rootNote, setRootNote] = useState<string>("C");
   const [scaleName, setScaleName] = useState<string>("Major");
@@ -80,21 +141,25 @@ function App() {
   const [chordType, setChordType] = useState<string | null>(null);
   const [linkChordRoot, setLinkChordRoot] = useState<boolean>(true);
   const [hideNonChordNotes, setHideNonChordNotes] = useState<boolean>(false);
+  const [chordFretSpread, setChordFretSpread] = useState<number>(0);
+  const [chordIntervalFilter, setChordIntervalFilter] = useState<string>("All");
 
   // Fingering
   const [fingeringPattern, setFingeringPattern] = useState<FingeringPattern>("all");
-  const [cagedShape, setCagedShape] = useState<CagedShape | "all">("all");
+  const [cagedShapes, setCagedShapes] = useState<Set<CagedShape>>(new Set(CAGED_SHAPES));
   const [npsPosition, setNpsPosition] = useState<number>(0);
 
   // Display
-  const [displayFormat, setDisplayFormat] = useState<"notes" | "degrees">("notes");
+  const [displayFormat, setDisplayFormat] = useState<"notes" | "degrees" | "none">("notes");
+  const [shapeLabels, setShapeLabels] = useState<"modal" | "caged" | "none">("none");
   const [tuningName, setTuningName] = useState<string>("Standard");
-  const [fretZoom, setFretZoom] = useState<number>(45);
+  const [fretZoom, setFretZoom] = useState<number>(100);
+  const [fretStart, setFretStart] = useState<number>(0);
+  const [fretEnd, setFretEnd] = useState<number>(END_FRET);
 
   // Audio
   const [isMuted, setIsMuted] = useState<boolean>(false);
 
-  const END_FRET = 22;
   const currentTuning = TUNINGS[tuningName] || STANDARD_TUNING;
 
   // When root note changes, keep chord root linked if toggled
@@ -109,44 +174,66 @@ function App() {
     synth.setMute(nextMute);
   };
 
+  const handleReset = () => {
+    setRootNote("C");
+    setScaleName("Major");
+    setChordRoot("C");
+    setChordType(null);
+    setLinkChordRoot(true);
+    setHideNonChordNotes(false);
+    setChordFretSpread(0);
+    setChordIntervalFilter("All");
+    setFingeringPattern("all");
+    setCagedShapes(new Set(CAGED_SHAPES));
+    setNpsPosition(0);
+    setDisplayFormat("notes");
+    setShapeLabels("none");
+    setTuningName("Standard");
+    setFretZoom(100);
+    setFretStart(0);
+    setFretEnd(END_FRET);
+  };
+
   // Compute active chord tones (independent of scale)
   const chordTones = useMemo(() => {
     if (!chordType) return [];
     return getChordNotes(chordRoot, chordType);
   }, [chordRoot, chordType]);
 
-  const { highlightNotes, boxBounds, cellColorMap } = useMemo(() => {
+  // Apply interval filter to chord tones (always preserve root)
+  const filteredChordTones = useMemo(() => {
+    if (!chordType || chordIntervalFilter === 'All') return chordTones;
+    const allowed = CHORD_INTERVAL_FILTERS[chordIntervalFilter];
+    const intervals = CHORDS[chordType];
+    if (!intervals || !allowed) return chordTones;
+    const filtered = intervals.filter(i => allowed.has(i));
+    // Always include root (interval 0) so root-active classification stays anchored
+    if (!filtered.includes(0)) filtered.unshift(0);
+    return getIntervalNotes(chordRoot, filtered);
+  }, [chordRoot, chordType, chordIntervalFilter, chordTones]);
+
+  const { highlightNotes, boxBounds, shapePolygons, wrappedNotes } = useMemo(() => {
     let coords: string[] = [];
     let bounds: { minFret: number; maxFret: number }[] = [];
-    let colorMap: Record<string, CellColor> = {};
+    let polygons: ShapePolygon[] = [];
+    const mergedWrappedNotes = new Set<string>();
 
     if (fingeringPattern === "caged") {
-      if (cagedShape === "all") {
-        const allCoords = new Set<string>();
-        const allBounds: { minFret: number; maxFret: number }[] = [];
-        const mergedColorMap: Record<string, CellColor> = {};
-        for (const shape of CAGED_SHAPES) {
-          const res = getCagedCoordinates(rootNote, shape, scaleName, currentTuning, 24);
-          res.coordinates.forEach((c) => allCoords.add(c));
-          allBounds.push(...res.bounds);
-          for (const [key, entry] of Object.entries(res.cellColorMap ?? {})) {
-            const existing = mergedColorMap[key];
-            if (existing && existing.isRightEdge && entry.isLeftEdge) {
-              mergedColorMap[key] = { color: entry.color, isLeftEdge: false, isRightEdge: false, splitColor: existing.color };
-            } else {
-              mergedColorMap[key] = entry;
-            }
-          }
-        }
-        coords = Array.from(allCoords);
-        bounds = allBounds;
-        colorMap = mergedColorMap;
-      } else {
-        const res = getCagedCoordinates(rootNote, cagedShape, scaleName, currentTuning, 24);
-        coords = res.coordinates;
-        bounds = res.bounds;
-        colorMap = res.cellColorMap ?? {};
+      const shapesToRender = CAGED_SHAPES.filter(s => cagedShapes.has(s));
+      const allCoords = new Set<string>();
+      const allBounds: { minFret: number; maxFret: number }[] = [];
+      const allPolygons: ShapePolygon[] = [];
+      for (const shape of shapesToRender) {
+        const res = getCagedCoordinates(rootNote, shape, scaleName, currentTuning, 24);
+        res.coordinates.forEach((c) => allCoords.add(c));
+        allBounds.push(...res.bounds);
+        allPolygons.push(...res.polygons);
+        res.wrappedNotes.forEach((k) => mergedWrappedNotes.add(k));
       }
+
+      coords = Array.from(allCoords);
+      bounds = allBounds;
+      polygons = allPolygons;
     } else if (fingeringPattern === "3nps") {
       if (npsPosition === 0) {
         coords = getScaleNotes(rootNote, scaleName);
@@ -159,8 +246,26 @@ function App() {
       coords = getScaleNotes(rootNote, scaleName);
     }
 
-    return { highlightNotes: coords, boxBounds: bounds, cellColorMap: colorMap };
-  }, [rootNote, scaleName, fingeringPattern, cagedShape, npsPosition, currentTuning]);
+    return { highlightNotes: coords, boxBounds: bounds, shapePolygons: polygons, wrappedNotes: mergedWrappedNotes };
+  }, [rootNote, scaleName, fingeringPattern, cagedShapes, npsPosition, currentTuning]);
+
+  // Compute color notes: blue notes for blues scales, divergent notes for modal scales
+  const colorNotes = useMemo(() => {
+    const intervals = SCALES[scaleName];
+    if (!intervals) return [];
+    // Minor Blues: blue note is b5 (interval 6)
+    if (scaleName === 'Minor Blues') {
+      const rootIdx = NOTES.indexOf(rootNote);
+      return rootIdx >= 0 ? [NOTES[(rootIdx + 6) % 12]] : [];
+    }
+    // Major Blues: blue note is b3 (interval 3)
+    if (scaleName === 'Major Blues') {
+      const rootIdx = NOTES.indexOf(rootNote);
+      return rootIdx >= 0 ? [NOTES[(rootIdx + 3) % 12]] : [];
+    }
+    // Modal scales: notes that diverge from the reference major/minor
+    return getDivergentNotes(rootNote, scaleName);
+  }, [rootNote, scaleName]);
 
   const summaryNotes = useMemo(() => getScaleNotes(rootNote, scaleName), [rootNote, scaleName]);
 
@@ -168,10 +273,6 @@ function App() {
     const root = getNoteDisplay(rootNote, rootNote);
     let label = `${root} ${scaleName}`;
     if (chordType) label += ` + ${getNoteDisplay(chordRoot, chordRoot)} ${chordType}`;
-    if (fingeringPattern === "caged")
-      label += cagedShape === "all" ? " — All CAGED" : ` — ${cagedShape} Shape`;
-    else if (fingeringPattern === "3nps")
-      label += npsPosition === 0 ? " — All Positions" : ` — Position ${npsPosition}`;
     return label;
   })();
 
@@ -188,9 +289,17 @@ function App() {
             <p>Interactive Fretboard & Music Theory</p>
           </div>
         </div>
-        <button onClick={toggleMute} className="mute-btn" title={isMuted ? "Unmute" : "Mute"}>
-          {isMuted ? <VolumeX className="icon icon-muted" /> : <Volume2 className="icon icon-active" />}
-        </button>
+        <div className="header-actions">
+          <button className="mute-btn" title="Settings" disabled style={{ opacity: 0.4, cursor: 'default' }}>
+            <Settings2 className="icon" />
+          </button>
+          <button onClick={handleReset} className="mute-btn" title="Reset to defaults">
+            <RotateCcw className="icon" />
+          </button>
+          <button onClick={toggleMute} className="mute-btn" title={isMuted ? "Unmute" : "Mute"}>
+            {isMuted ? <VolumeX className="icon icon-muted" /> : <Volume2 className="icon icon-active" />}
+          </button>
+        </div>
       </header>
 
       {/* Main Fretboard */}
@@ -199,14 +308,23 @@ function App() {
           tuning={currentTuning}
           highlightNotes={highlightNotes}
           rootNote={rootNote}
-          endFret={END_FRET}
+          startFret={fretStart}
+          endFret={fretEnd}
           boxBounds={boxBounds}
-          chordTones={chordTones}
+          chordTones={filteredChordTones}
+          chordFretSpread={chordFretSpread}
+          onChordFretSpreadChange={setChordFretSpread}
           hideNonChordNotes={hideNonChordNotes}
+          colorNotes={colorNotes}
           displayFormat={displayFormat}
-          cellColorMap={cellColorMap}
+          shapePolygons={shapePolygons}
+          shapeLabels={shapeLabels}
           fretZoom={fretZoom}
           onZoomChange={setFretZoom}
+          onFretStartChange={setFretStart}
+          onFretEndChange={setFretEnd}
+          maxFret={END_FRET}
+          wrappedNotes={wrappedNotes}
         />
       </main>
 
@@ -230,15 +348,48 @@ function App() {
           </div>
 
           {fingeringPattern === "caged" && (
-            <div className="control-section">
-              <span className="section-label">Shape</span>
-              <div className="toggle-group">
-                <button className={`toggle-btn ${cagedShape === "all" ? "active" : ""}`} onClick={() => setCagedShape("all")}>All</button>
-                {CAGED_SHAPES.map((s) => (
-                  <button key={s} className={`toggle-btn ${cagedShape === s ? "active" : ""}`} onClick={() => setCagedShape(s)}>{s}</button>
-                ))}
+            <>
+              <div className="control-section">
+                <span className="section-label">Shape</span>
+                <div className="toggle-group">
+                  <button
+                    className={`toggle-btn ${cagedShapes.size === CAGED_SHAPES.length ? "active" : ""}`}
+                    onClick={() => setCagedShapes(new Set(CAGED_SHAPES))}>All</button>
+                  {CAGED_SHAPES.map((s) => (
+                    <button
+                      key={s}
+                      className={`toggle-btn ${cagedShapes.has(s) ? "active" : ""}`}
+                      onClick={(e) => {
+                        if (e.shiftKey) {
+                          setCagedShapes(prev => {
+                            const next = new Set(prev);
+                            if (next.has(s)) {
+                              if (next.size > 1) next.delete(s);
+                            } else {
+                              next.add(s);
+                            }
+                            return next;
+                          });
+                        } else {
+                          setCagedShapes(new Set([s]));
+                        }
+                      }}
+                    >{s}</button>
+                  ))}
+                </div>
               </div>
-            </div>
+              <div className="control-section">
+                <span className="section-label">Shape Labels</span>
+                <div className="toggle-group">
+                  {(["none", "caged", "modal"] as const).map((opt) => (
+                    <button key={opt} className={`toggle-btn ${shapeLabels === opt ? "active" : ""}`}
+                      onClick={() => setShapeLabels(opt)}>
+                      {opt === "none" ? "None" : opt === "caged" ? "CAGED" : "Modal"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
           )}
 
           {fingeringPattern === "3nps" && (
@@ -254,23 +405,23 @@ function App() {
           )}
 
           <div className="control-section">
-            <span className="section-label">Display</span>
+            <span className="section-label">Note Labels</span>
             <div className="toggle-group">
-              {(["notes", "degrees"] as const).map((fmt) => (
+              {(["notes", "degrees", "none"] as const).map((fmt) => (
                 <button key={fmt} className={`toggle-btn ${displayFormat === fmt ? "active" : ""}`}
                   onClick={() => setDisplayFormat(fmt)}>
-                  {fmt === "notes" ? "Notes" : "Intervals"}
+                  {fmt === "notes" ? "Notes" : fmt === "degrees" ? "Intervals" : "None"}
                 </button>
               ))}
             </div>
           </div>
 
-          <label className="tuning-select-label">
-            <span>Tuning</span>
-            <select value={tuningName} onChange={(e) => setTuningName(e.target.value)} className="tuning-select">
-              {Object.keys(TUNINGS).map((pt) => <option key={pt} value={pt}>{pt}</option>)}
-            </select>
-          </label>
+          <DrawerSelector
+            label="Tuning"
+            value={tuningName}
+            options={Object.keys(TUNINGS)}
+            onSelect={(v) => v && setTuningName(v)}
+          />
         </div>
 
         {/* Col 2: Circle of Fifths + Chord Root */}
@@ -279,7 +430,7 @@ function App() {
             <h2>Root Note</h2>
             <span className="badge">Interactive Circle</span>
           </div>
-          <CircleOfFifths rootNote={rootNote} setRootNote={handleSetRootNote} />
+          <CircleOfFifths rootNote={rootNote} setRootNote={handleSetRootNote} scaleName={scaleName} />
         </div>
 
         {/* Col 3: Scale & Chord drawers */}
@@ -289,14 +440,14 @@ function App() {
           <DrawerSelector
             label="Scale"
             value={scaleName}
-            options={Object.keys(SCALES)}
+            options={SCALE_OPTIONS}
             onSelect={(v) => v && setScaleName(v)}
           />
 
           <DrawerSelector
             label="Chord Overlay"
             value={chordType}
-            options={Object.keys(CHORDS)}
+            options={CHORD_OPTIONS}
             onSelect={(v) => { setChordType(v); if (v && linkChordRoot) setChordRoot(rootNote); }}
             nullable
           />
@@ -330,8 +481,15 @@ function App() {
               <label className="link-toggle">
                 <input type="checkbox" checked={hideNonChordNotes}
                   onChange={(e) => setHideNonChordNotes(e.target.checked)} />
-                <span>Arpeggio view (hide scale)</span>
+                <span>Chord only (hide scale)</span>
               </label>
+
+              <DrawerSelector
+                label="Interval Filter"
+                value={chordIntervalFilter}
+                options={CHORD_FILTER_OPTIONS}
+                onSelect={(v) => v && setChordIntervalFilter(v)}
+              />
             </>
           )}
         </div>
@@ -341,9 +499,19 @@ function App() {
       <div className="summary-area">
         <div className="summary-title">{summaryLabel}:</div>
         <div className="summary-notes">
-          {summaryNotes.map((n, i) => (
-            <span key={i} className="summary-note">{getNoteDisplay(n, rootNote)}</span>
-          ))}
+          {summaryNotes.map((n, i) => {
+            const rootIdx = NOTES.indexOf(rootNote);
+            const noteIdx = NOTES.indexOf(n);
+            const degree = rootIdx !== -1 && noteIdx !== -1
+              ? INTERVAL_NAMES[(noteIdx - rootIdx + 12) % 12]
+              : null;
+            return (
+              <span key={i} className="summary-note">
+                <span className="summary-note-name">{getNoteDisplay(n, rootNote)}</span>
+                {degree && <span className="summary-note-degree">{degree}</span>}
+              </span>
+            );
+          })}
         </div>
       </div>
     </div>
