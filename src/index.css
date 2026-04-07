@@ -94,6 +94,8 @@ body {
   height: 100vh;
   display: flex;
   flex-direction: column;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* Mobile: allow page scroll instead of viewport-fit */

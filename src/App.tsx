@@ -333,7 +333,7 @@ function App() {
 
         {/* Col 1: Settings */}
         <div className="control-group">
-          <h2><Settings2 className="icon" /> Settings</h2>
+          <h2><Settings2 className="icon" /></h2>
 
           <div className="control-section">
             <span className="section-label">Fingering Pattern</span>
@@ -428,7 +428,6 @@ function App() {
         <div className="control-group col-span-2">
           <div className="group-header">
             <h2>Root Note</h2>
-            <span className="badge">Interactive Circle</span>
           </div>
           <CircleOfFifths rootNote={rootNote} setRootNote={handleSetRootNote} scaleName={scaleName} />
         </div>
