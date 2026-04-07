@@ -1,0 +1,132 @@
+import { describe, it, expect } from 'vitest';
+import {
+  SCALES,
+  getScaleNotes,
+  getChordNotes,
+  getNoteIndex,
+  getNoteDisplay,
+  getIntervalNotes,
+  getDivergentNotes,
+  getKeySignature,
+} from '../theory';
+
+describe('getNoteIndex', () => {
+  it('returns correct index for sharp notes', () => {
+    expect(getNoteIndex('C')).toBe(0);
+    expect(getNoteIndex('E')).toBe(4);
+    expect(getNoteIndex('B')).toBe(11);
+  });
+
+  it('handles flat enharmonics', () => {
+    expect(getNoteIndex('Db')).toBe(getNoteIndex('C#'));
+    expect(getNoteIndex('Bb')).toBe(getNoteIndex('A#'));
+  });
+});
+
+describe('getNoteDisplay', () => {
+  it('shows sharps for sharp keys', () => {
+    expect(getNoteDisplay('C#', 'G')).toBe('C#');
+    expect(getNoteDisplay('F#', 'D')).toBe('F#');
+  });
+
+  it('shows flats for flat keys', () => {
+    expect(getNoteDisplay('C#', 'F')).toBe('Db');
+    expect(getNoteDisplay('A#', 'Bb')).toBe('Bb');
+  });
+});
+
+describe('getIntervalNotes', () => {
+  it('computes notes from intervals', () => {
+    expect(getIntervalNotes('C', [0, 4, 7])).toEqual(['C', 'E', 'G']);
+  });
+
+  it('wraps around octave', () => {
+    expect(getIntervalNotes('A', [0, 4, 7])).toEqual(['A', 'C#', 'E']);
+  });
+});
+
+describe('getScaleNotes', () => {
+  it('returns C Major notes', () => {
+    expect(getScaleNotes('C', 'Major')).toEqual(['C', 'D', 'E', 'F', 'G', 'A', 'B']);
+  });
+
+  it('returns A Minor Pentatonic notes', () => {
+    expect(getScaleNotes('A', 'Minor Pentatonic')).toEqual(['A', 'C', 'D', 'E', 'G']);
+  });
+
+  it('returns empty for unknown scale', () => {
+    expect(getScaleNotes('C', 'NonExistent')).toEqual([]);
+  });
+});
+
+describe('getChordNotes', () => {
+  it('returns C Major Triad', () => {
+    expect(getChordNotes('C', 'Major Triad')).toEqual(['C', 'E', 'G']);
+  });
+
+  it('returns A Minor 7th', () => {
+    expect(getChordNotes('A', 'Minor 7th')).toEqual(['A', 'C', 'E', 'G']);
+  });
+});
+
+describe('getDivergentNotes', () => {
+  it('returns empty for Major scale (reference itself)', () => {
+    expect(getDivergentNotes('C', 'Major')).toEqual([]);
+  });
+
+  it('returns empty for Natural Minor (reference itself)', () => {
+    expect(getDivergentNotes('A', 'Natural Minor')).toEqual([]);
+  });
+
+  it('returns raised 6th for Dorian (vs Natural Minor)', () => {
+    // Dorian has interval 9 (major 6th), Natural Minor has 8 (minor 6th)
+    const divergent = getDivergentNotes('D', 'Dorian');
+    expect(divergent).toEqual(['B']); // B is the raised 6th in D Dorian
+  });
+
+  it('returns raised 4th for Lydian (vs Major)', () => {
+    const divergent = getDivergentNotes('F', 'Lydian');
+    expect(divergent).toEqual(['B']); // B is the raised 4th in F Lydian
+  });
+
+  it('returns lowered 7th for Mixolydian (vs Major)', () => {
+    const divergent = getDivergentNotes('G', 'Mixolydian');
+    expect(divergent).toEqual(['F']); // F is the lowered 7th in G Mixolydian
+  });
+
+  it('returns empty for pentatonic scales', () => {
+    expect(getDivergentNotes('C', 'Minor Pentatonic')).toEqual([]);
+    expect(getDivergentNotes('C', 'Major Pentatonic')).toEqual([]);
+  });
+
+  it('returns empty for blues scales', () => {
+    expect(getDivergentNotes('A', 'Minor Blues')).toEqual([]);
+  });
+});
+
+describe('getKeySignature', () => {
+  it('returns 0 for C', () => {
+    expect(getKeySignature('C')).toBe(0);
+  });
+
+  it('returns positive for sharp keys', () => {
+    expect(getKeySignature('G')).toBe(1);
+    expect(getKeySignature('D')).toBe(2);
+  });
+
+  it('returns negative for flat keys', () => {
+    expect(getKeySignature('F')).toBe(-1);
+    expect(getKeySignature('Bb')).toBe(-2);
+  });
+});
+
+describe('SCALES constant', () => {
+  it('has expected number of scales', () => {
+    expect(Object.keys(SCALES).length).toBeGreaterThanOrEqual(12);
+  });
+
+  it('Major scale has 7 intervals starting from 0', () => {
+    expect(SCALES['Major']).toHaveLength(7);
+    expect(SCALES['Major'][0]).toBe(0);
+  });
+});
