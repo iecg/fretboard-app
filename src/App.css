@@ -97,6 +97,12 @@
   flex-shrink: 0;
 }
 
+.header-actions {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
 .mute-btn:hover {
   background-color: var(--surface-highlight);
   transform: scale(1.05);
@@ -135,7 +141,7 @@
   position: relative;
   width: 100%;
   overflow-x: auto;
-  padding: var(--space-4) var(--space-2);
+  padding: var(--space-4) var(--space-2) 0;
 }
 
 .fretboard-neck {
@@ -144,6 +150,23 @@
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   border: 4px solid var(--fretboard-border);
   background-color: var(--fretboard-wood);
+  overflow: hidden;
+}
+
+/* Shape labels below fretboard */
+.shape-labels-row {
+  position: relative;
+  height: 1.5rem;
+  margin-top: var(--space-1);
+}
+
+.shape-label {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
 }
 
 /* Dynamic Box Overlays behind strings */
@@ -165,22 +188,26 @@
 }
 
 .fret-zero {
-  width: 4rem;
   background-color: var(--fret-nut-bg);
-  border-right: 8px solid var(--fret-nut-wire);
+  border-right: 4px solid var(--fret-nut-wire);
 }
 
 .fret-standard {
-  flex: 1;
   border-right: 2px solid var(--fret-wire);
 }
 
+.fret-numbers-row {
+  display: flex;
+}
+
 .fret-number {
-  position: absolute;
-  top: -1.5rem;
   font-size: 0.75rem;
   font-weight: 700;
   color: var(--text-muted);
+  user-select: none;
+  -webkit-user-select: none;
+  text-align: center;
+  flex-shrink: 0;
 }
 
 .fret-marker-container {
@@ -210,8 +237,6 @@
   inset: 0;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: var(--space-2) 0;
 }
 
 .string-row {
@@ -219,7 +244,7 @@
   width: 100%;
   display: flex;
   align-items: center;
-  height: 2.5rem;
+  height: 40px;
 }
 
 .string-line {
@@ -245,13 +270,6 @@
   align-items: center;
 }
 
-.fret-zero-cell {
-  width: 4rem;
-}
-
-.fret-standard-cell {
-  flex: 1;
-}
 
 .note-bubble {
   width: 2rem;
@@ -265,6 +283,7 @@
   transition: all var(--transition-fast);
   cursor: pointer;
   user-select: none;
+  -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -278,6 +297,12 @@
   color: white;
   background-color: var(--accent-primary);
   box-shadow: var(--shadow-note-active);
+}
+
+.note-blue {
+  color: white;
+  background-color: #9333ea;
+  box-shadow: 0 0 8px rgba(147, 51, 234, 0.5);
 }
 
 .note-dimmed {
@@ -332,15 +357,14 @@
   border: 1px solid var(--surface-highlight);
   flex: 1 1 0;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .control-group {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: visible;
   min-width: 0;
   flex: 1;
 }
@@ -581,17 +605,32 @@
 .summary-notes {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: var(--space-3);
 }
 
 .summary-note {
-  padding: var(--space-1) var(--space-2);
+  padding: var(--space-2) var(--space-3);
   background-color: var(--surface-raised);
   border-radius: var(--radius-sm);
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
   font-weight: 700;
   box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
   transition: transform var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.summary-note-name {
+  line-height: 1.2;
+}
+
+.summary-note-degree {
+  font-size: 0.7rem;
+  font-weight: 500;
+  opacity: 0.65;
+  line-height: 1;
 }
 
 .summary-note:first-child {
@@ -635,7 +674,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto 1fr;
-    overflow: hidden;
+    overflow: visible;
   }
 
   /* Circle of Fifths spans full bottom row */
@@ -737,13 +776,29 @@
   padding: 0 var(--space-3);
   gap: var(--space-4);
   margin-bottom: var(--space-1);
+  flex-wrap: wrap;
 }
 
 .viewport-jumps,
-.zoom-controls {
+.zoom-controls,
+.fret-range-controls {
   display: flex;
   align-items: center;
   gap: var(--space-1);
+}
+
+.toolbar-range-val {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--text-main);
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+.toolbar-range-sep {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  padding: 0 var(--space-1);
 }
 
 .toolbar-btn {
@@ -776,15 +831,16 @@
 }
 
 .note-scale-dimmed {
-  color: var(--text-muted);
+  color: var(--text-main);
   background-color: var(--surface-highlight);
-  opacity: 1;
+  opacity: 0.5;
+  border: 1px dashed var(--accent-primary);
 }
 
 .note-scale-only {
-  color: var(--text-muted);
+  color: var(--text-main);
   background-color: var(--surface-highlight);
-  opacity: 1;
+  opacity: 0.85;
 }
 
 .note-scale-only.hidden,
@@ -795,9 +851,9 @@
 
 .chord-outside {
   color: var(--accent-secondary);
-  background-color: transparent;
-  border: 2px dashed var(--accent-secondary);
-  opacity: 0.85;
+  background-color: rgba(255, 159, 10, 0.2);
+  border: 2px solid var(--accent-secondary);
+  opacity: 1;
 }
 
 /* ===== Drawer Selector ===== */
@@ -827,8 +883,6 @@
 
 .drawer-trigger.open {
   border-color: var(--accent-primary);
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
 }
 
 .drawer-label {
@@ -853,6 +907,7 @@
   color: var(--text-muted);
   transition: transform var(--transition-fast);
   flex-shrink: 0;
+  transform: rotate(0deg);
 }
 
 .drawer-chevron.open {
@@ -861,17 +916,15 @@
 
 .drawer-options {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 4px);
   left: 0;
   right: 0;
   z-index: 50;
   background: var(--surface-base);
-  border: 1px solid var(--accent-primary);
-  border-top: none;
-  border-bottom-left-radius: var(--radius-md);
-  border-bottom-right-radius: var(--radius-md);
+  border: 1px solid var(--surface-highlight);
+  border-radius: var(--radius-md);
   box-shadow: 0 10px 25px rgba(0,0,0,0.45);
-  max-height: 180px;
+  max-height: 240px;
   overflow-y: auto;
   padding: var(--space-1);
   display: flex;
@@ -901,6 +954,18 @@
   background: var(--accent-primary);
   color: white;
   font-weight: 500;
+}
+
+.drawer-divider {
+  padding: var(--space-1) var(--space-3);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.55;
+  pointer-events: none;
+  margin-top: var(--space-1);
 }
 
 /* ===== Chord Root Row ===== */

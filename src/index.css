@@ -67,6 +67,7 @@
   --caged-a-bg: rgba(59, 130, 246, 0.18);
   --caged-g-bg: rgba(168, 85, 247, 0.18);
 
+
   background-color: var(--bg-color);
   color: var(--text-main);
 
@@ -80,6 +81,12 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+}
+
+*, *::before, *::after {
+  transition-property: color, background-color, fill, border-color, opacity;
+  transition-duration: var(--transition-base);
+  transition-timing-function: ease;
 }
 
 #root {
