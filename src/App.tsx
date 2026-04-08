@@ -164,36 +164,72 @@ function App() {
   const END_FRET = 24;
 
   // Scale
-  const [rootNote, setRootNote] = useState<string>("C");
-  const [scaleName, setScaleName] = useState<string>("Major");
+  const [rootNote, setRootNote] = useState<string>(() => localStorage.getItem('rootNote') ?? 'C');
+  const [scaleName, setScaleName] = useState<string>(() => localStorage.getItem('scaleName') ?? 'Major');
 
   // Chord overlay — fully independent
-  const [chordRoot, setChordRoot] = useState<string>("C");
-  const [chordType, setChordType] = useState<string | null>(null);
-  const [linkChordRoot, setLinkChordRoot] = useState<boolean>(true);
-  const [hideNonChordNotes, setHideNonChordNotes] = useState<boolean>(false);
-  const [chordFretSpread, setChordFretSpread] = useState<number>(0);
-  const [chordIntervalFilter, setChordIntervalFilter] = useState<string>("All");
+  const [chordRoot, setChordRoot] = useState<string>(() => localStorage.getItem('chordRoot') ?? 'C');
+  const [chordType, setChordType] = useState<string | null>(() => {
+    const saved = localStorage.getItem('chordType');
+    return saved !== null ? (saved === '' ? null : saved) : null;
+  });
+  const [linkChordRoot, setLinkChordRoot] = useState<boolean>(() => {
+    const saved = localStorage.getItem('linkChordRoot');
+    return saved !== null ? saved === 'true' : true;
+  });
+  const [hideNonChordNotes, setHideNonChordNotes] = useState<boolean>(() => {
+    const saved = localStorage.getItem('hideNonChordNotes');
+    return saved !== null ? saved === 'true' : false;
+  });
+  const [chordFretSpread, setChordFretSpread] = useState<number>(() => {
+    const saved = localStorage.getItem('chordFretSpread');
+    return saved !== null ? Number(saved) : 0;
+  });
+  const [chordIntervalFilter, setChordIntervalFilter] = useState<string>(() => localStorage.getItem('chordIntervalFilter') ?? 'All');
 
   // Fingering
-  const [fingeringPattern, setFingeringPattern] =
-    useState<FingeringPattern>("all");
-  const [cagedShapes, setCagedShapes] = useState<Set<CagedShape>>(
-    new Set(CAGED_SHAPES),
-  );
-  const [npsPosition, setNpsPosition] = useState<number>(0);
+  const [fingeringPattern, setFingeringPattern] = useState<FingeringPattern>(() => {
+    const saved = localStorage.getItem('fingeringPattern');
+    return (saved as FingeringPattern) ?? 'all';
+  });
+  const [cagedShapes, setCagedShapes] = useState<Set<CagedShape>>(() => {
+    const saved = localStorage.getItem('cagedShapes');
+    if (saved !== null) {
+      try {
+        return new Set(JSON.parse(saved) as CagedShape[]);
+      } catch {
+        // fall through to default
+      }
+    }
+    return new Set(CAGED_SHAPES);
+  });
+  const [npsPosition, setNpsPosition] = useState<number>(() => {
+    const saved = localStorage.getItem('npsPosition');
+    return saved !== null ? Number(saved) : 0;
+  });
 
   // Display
-  const [displayFormat, setDisplayFormat] = useState<
-    "notes" | "degrees" | "none"
-  >("notes");
-  const [shapeLabels, setShapeLabels] = useState<"modal" | "caged" | "none">(
-    "none",
-  );
-  const [tuningName, setTuningName] = useState<string>("Standard");
-  const [fretZoom, setFretZoom] = useState<number>(100);
-  const [fretStart, setFretStart] = useState<number>(0);
-  const [fretEnd, setFretEnd] = useState<number>(END_FRET);
+  const [displayFormat, setDisplayFormat] = useState<"notes" | "degrees" | "none">(() => {
+    const saved = localStorage.getItem('displayFormat');
+    return (saved as "notes" | "degrees" | "none") ?? 'notes';
+  });
+  const [shapeLabels, setShapeLabels] = useState<"modal" | "caged" | "none">(() => {
+    const saved = localStorage.getItem('shapeLabels');
+    return (saved as "modal" | "caged" | "none") ?? 'none';
+  });
+  const [tuningName, setTuningName] = useState<string>(() => localStorage.getItem('tuningName') ?? 'Standard');
+  const [fretZoom, setFretZoom] = useState<number>(() => {
+    const saved = localStorage.getItem('fretZoom');
+    return saved !== null ? Number(saved) : 100;
+  });
+  const [fretStart, setFretStart] = useState<number>(() => {
+    const saved = localStorage.getItem('fretStart');
+    return saved !== null ? Number(saved) : 0;
+  });
+  const [fretEnd, setFretEnd] = useState<number>(() => {
+    const saved = localStorage.getItem('fretEnd');
+    return saved !== null ? Number(saved) : END_FRET;
+  });
 
   // Accidentals
   const [useFlats, setUseFlats] = useState<boolean>(() => {
@@ -202,7 +238,57 @@ function App() {
   });
 
   // Audio
-  const [isMuted, setIsMuted] = useState<boolean>(false);
+  const [isMuted, setIsMuted] = useState<boolean>(() => {
+    const saved = localStorage.getItem('isMuted');
+    return saved !== null ? saved === 'true' : false;
+  });
+
+  // Viewport / mobile detection
+  const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
+  useEffect(() => {
+    const handler = () => setViewportWidth(window.innerWidth);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+  const isMobile = viewportWidth < 768;
+
+  // Mobile tab state
+  const [mobileTab, setMobileTab] = useState<'key' | 'scale' | 'settings'>(() => {
+    const saved = localStorage.getItem('mobileTab');
+    return (saved as 'key' | 'scale' | 'settings') ?? 'key';
+  });
+
+  // Persist all user state to localStorage
+  useEffect(() => {
+    localStorage.setItem('rootNote', rootNote);
+    localStorage.setItem('scaleName', scaleName);
+    localStorage.setItem('chordRoot', chordRoot);
+    localStorage.setItem('chordType', chordType ?? '');
+    localStorage.setItem('linkChordRoot', String(linkChordRoot));
+    localStorage.setItem('hideNonChordNotes', String(hideNonChordNotes));
+    localStorage.setItem('chordFretSpread', String(chordFretSpread));
+    localStorage.setItem('chordIntervalFilter', chordIntervalFilter);
+    localStorage.setItem('fingeringPattern', fingeringPattern);
+    localStorage.setItem('cagedShapes', JSON.stringify(Array.from(cagedShapes)));
+    localStorage.setItem('npsPosition', String(npsPosition));
+    localStorage.setItem('displayFormat', displayFormat);
+    localStorage.setItem('shapeLabels', shapeLabels);
+    localStorage.setItem('tuningName', tuningName);
+    localStorage.setItem('fretZoom', String(fretZoom));
+    localStorage.setItem('fretStart', String(fretStart));
+    localStorage.setItem('fretEnd', String(fretEnd));
+    localStorage.setItem('useFlats', String(useFlats));
+    localStorage.setItem('isMuted', String(isMuted));
+    localStorage.setItem('mobileTab', mobileTab);
+  }, [rootNote, scaleName, chordRoot, chordType, linkChordRoot, hideNonChordNotes,
+      chordFretSpread, chordIntervalFilter, fingeringPattern, cagedShapes, npsPosition,
+      displayFormat, shapeLabels, tuningName, fretZoom, fretStart, fretEnd, useFlats, isMuted, mobileTab]);
+
+  // Sync persisted mute state to audio synth on mount
+  useEffect(() => {
+    synth.setMute(isMuted);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // intentionally only on mount
 
   const currentTuning = TUNINGS[tuningName] || STANDARD_TUNING;
 
@@ -219,6 +305,7 @@ function App() {
   };
 
   const handleReset = () => {
+    localStorage.clear();
     setRootNote("C");
     setScaleName("Major");
     setChordRoot("C");
@@ -237,7 +324,9 @@ function App() {
     setFretStart(0);
     setFretEnd(END_FRET);
     setUseFlats(false);
-    localStorage.setItem('useFlats', 'false');
+    setIsMuted(false);
+    synth.setMute(false);
+    setMobileTab('key');
   };
 
   // Compute active chord tones (independent of scale)
@@ -359,6 +448,301 @@ function App() {
       .filter(n => chordToneSet.has(n));
   }, [chordType, chordTones, chordRoot]);
 
+  // Summary notes content (shared between mobile Key tab and desktop summary area)
+  const summaryContent = (
+    <div className="summary-area">
+      <div className="summary-row">
+        <div className="summary-row-label">{scaleLabel}</div>
+        <div className="summary-notes">
+          {summaryNotes.map((n, i) => {
+            const rootIdx = NOTES.indexOf(rootNote);
+            const noteIdx = NOTES.indexOf(n);
+            const chromaticInterval = rootIdx !== -1 && noteIdx !== -1 ? (noteIdx - rootIdx + 12) % 12 : -1;
+            const degree = chromaticInterval !== -1 ? INTERVAL_NAMES[chromaticInterval] : null;
+            const degreeMap = getDegreesForScale(scaleName);
+            const romanNumeral = chromaticInterval !== -1 ? degreeMap[chromaticInterval] : undefined;
+            const degreeColor = romanNumeral ? DEGREE_COLORS[romanNumeral] : undefined;
+            return (
+              <span key={i} className="summary-note" style={degreeColor ? { outline: `2px solid ${degreeColor}`, outlineOffset: '-2px' } : undefined}>
+                <span className="summary-note-name">
+                  {formatAccidental(getNoteDisplayInScale(n, rootNote, SCALES[scaleName] || [], useFlats))}
+                </span>
+                {degree && (
+                  <span className="summary-note-degree" style={{ color: degreeColor }}>{formatAccidental(degree)}</span>
+                )}
+              </span>
+            );
+          })}
+        </div>
+      </div>
+      {chordLabel && (
+        <div className="summary-row summary-row--chord">
+          <div className="summary-row-label">{chordLabel}</div>
+          <div className="summary-notes">
+            {chordSummaryNotes.map((n, i) => {
+              const rootIdx = NOTES.indexOf(chordRoot);
+              const noteIdx = NOTES.indexOf(n);
+              const chromaticInterval = rootIdx !== -1 && noteIdx !== -1 ? (noteIdx - rootIdx + 12) % 12 : -1;
+              const degree = chromaticInterval !== -1 ? INTERVAL_NAMES[chromaticInterval] : null;
+              const degreeMap = getDegreesForScale(scaleName);
+              const romanNumeral = chromaticInterval !== -1 ? degreeMap[chromaticInterval] : undefined;
+              const degreeColor = romanNumeral ? DEGREE_COLORS[romanNumeral] : undefined;
+              return (
+                <span key={i} className="summary-note summary-note--chord" style={degreeColor ? { outline: `2px solid ${degreeColor}`, outlineOffset: '-2px' } : undefined}>
+                  <span className="summary-note-name">
+                    {formatAccidental(getNoteDisplay(n, chordRoot, useFlats))}
+                  </span>
+                  {degree && (
+                    <span className="summary-note-degree" style={{ color: degreeColor }}>{formatAccidental(degree)}</span>
+                  )}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  // Mobile tab content — Key tab (CoF + accidental toggle + summary)
+  const keyTabContent = (
+    <div className="mobile-tab-panel mobile-key-tab">
+      <div className="cof-container">
+        <CircleOfFifths
+          rootNote={rootNote}
+          setRootNote={handleSetRootNote}
+          scaleName={scaleName}
+          useFlats={useFlats}
+        />
+        <button
+          className="accidental-toggle cof-toggle"
+          onClick={() => setUseFlats(prev => !prev)}
+          title={useFlats ? 'Showing flats — click for sharps' : 'Showing sharps — click for flats'}
+        >
+          {useFlats ? '♭' : '♯'}
+        </button>
+      </div>
+      {summaryContent}
+    </div>
+  );
+
+  // Mobile tab content — Scale & Chord tab
+  const scaleChordTabContent = (
+    <div className="mobile-tab-panel mobile-scale-chord-tab">
+      <DrawerSelector
+        label="Scale"
+        value={scaleName}
+        options={SCALE_OPTIONS}
+        onSelect={(v) => v && setScaleName(v)}
+      />
+
+      <DrawerSelector
+        label="Chord Overlay"
+        value={chordType}
+        options={CHORD_OPTIONS}
+        onSelect={(v) => {
+          setChordType(v);
+          if (v && linkChordRoot) setChordRoot(rootNote);
+        }}
+        nullable
+      />
+
+      {chordType && (
+        <>
+          <div className="chord-root-row">
+            <label className="link-toggle">
+              <input
+                type="checkbox"
+                checked={linkChordRoot}
+                onChange={(e) => {
+                  setLinkChordRoot(e.target.checked);
+                  if (e.target.checked) setChordRoot(rootNote);
+                }}
+              />
+              <span>Link chord root to scale</span>
+            </label>
+            {!linkChordRoot && (
+              <>
+                <span className="section-label">Chord Root</span>
+                <div className="note-grid">
+                  {NOTES.map((n) => (
+                    <button
+                      key={n}
+                      className={`note-btn ${chordRoot === n ? "active" : ""}`}
+                      onClick={() => setChordRoot(n)}
+                    >
+                      {formatAccidental(getNoteDisplay(n, n, useFlats))}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          <label className="link-toggle">
+            <input
+              type="checkbox"
+              checked={hideNonChordNotes}
+              onChange={(e) => setHideNonChordNotes(e.target.checked)}
+            />
+            <span>Chord only (hide scale)</span>
+          </label>
+
+          <DrawerSelector
+            label="Interval Filter"
+            value={chordIntervalFilter}
+            options={CHORD_FILTER_OPTIONS}
+            onSelect={(v) => v && setChordIntervalFilter(v)}
+          />
+        </>
+      )}
+    </div>
+  );
+
+  // Mobile tab content — Settings tab
+  const settingsTabContent = (
+    <div className="mobile-tab-panel mobile-settings-tab">
+      <div className="control-section">
+        <span className="section-label">Fingering Pattern</span>
+        <div className="toggle-group">
+          {(["all", "caged", "3nps"] as FingeringPattern[]).map((fp) => (
+            <button
+              key={fp}
+              className={`toggle-btn ${fingeringPattern === fp ? "active" : ""}`}
+              onClick={() => setFingeringPattern(fp)}
+            >
+              {fp === "all" ? "All" : fp.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {fingeringPattern === "caged" && (
+        <>
+          <div className="control-section">
+            <span className="section-label">Shape</span>
+            <div className="toggle-group">
+              <button
+                className={`toggle-btn ${cagedShapes.size === CAGED_SHAPES.length ? "active" : ""}`}
+                onClick={() => setCagedShapes(new Set(CAGED_SHAPES))}
+              >
+                All
+              </button>
+              {CAGED_SHAPES.map((s) => (
+                <button
+                  key={s}
+                  className={`toggle-btn ${cagedShapes.has(s) ? "active" : ""}`}
+                  onClick={(e) => {
+                    if (e.shiftKey) {
+                      setCagedShapes((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(s)) {
+                          if (next.size > 1) next.delete(s);
+                        } else {
+                          next.add(s);
+                        }
+                        return next;
+                      });
+                    } else {
+                      setCagedShapes(new Set([s]));
+                    }
+                  }}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="control-section">
+            <span className="section-label">Shape Labels</span>
+            <div className="toggle-group">
+              {(["none", "caged", "modal"] as const).map((opt) => (
+                <button
+                  key={opt}
+                  className={`toggle-btn ${shapeLabels === opt ? "active" : ""}`}
+                  onClick={() => setShapeLabels(opt)}
+                >
+                  {opt === "none"
+                    ? "None"
+                    : opt === "caged"
+                      ? "CAGED"
+                      : "Modal"}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
+      {fingeringPattern === "3nps" && (
+        <div className="control-section">
+          <span className="section-label">Position</span>
+          <div className="toggle-group">
+            <button
+              className={`toggle-btn ${npsPosition === 0 ? "active" : ""}`}
+              onClick={() => setNpsPosition(0)}
+            >
+              All
+            </button>
+            {[1, 2, 3, 4, 5, 6, 7].map((p) => (
+              <button
+                key={p}
+                className={`toggle-btn ${npsPosition === p ? "active" : ""}`}
+                onClick={() => setNpsPosition(p)}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="control-section">
+        <span className="section-label">Note Labels</span>
+        <div className="toggle-group">
+          {(["notes", "degrees", "none"] as const).map((fmt) => (
+            <button
+              key={fmt}
+              className={`toggle-btn ${displayFormat === fmt ? "active" : ""}`}
+              onClick={() => setDisplayFormat(fmt)}
+            >
+              {fmt === "notes"
+                ? "Notes"
+                : fmt === "degrees"
+                  ? "Intervals"
+                  : "None"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <DrawerSelector
+        label="Tuning"
+        value={tuningName}
+        options={Object.keys(TUNINGS)}
+        onSelect={(v) => v && setTuningName(v)}
+      />
+
+      <div className="control-section">
+        <span className="section-label">Fret Range</span>
+        <div className="fret-range-mobile">
+          <div className="fret-range-group">
+            <span className="fret-range-label">Start</span>
+            <button className="toolbar-btn" onClick={() => setFretStart(s => Math.max(0, s - 1))} disabled={fretStart <= 0}>−</button>
+            <span className="toolbar-range-val">{fretStart}</span>
+            <button className="toolbar-btn" onClick={() => setFretStart(s => Math.min(fretEnd - 1, s + 1))} disabled={fretStart >= fretEnd - 1}>+</button>
+          </div>
+          <div className="fret-range-group">
+            <span className="fret-range-label">End</span>
+            <button className="toolbar-btn" onClick={() => setFretEnd(e => Math.max(fretStart + 1, e - 1))} disabled={fretEnd <= fretStart + 1}>−</button>
+            <span className="toolbar-range-val">{fretEnd}</span>
+            <button className="toolbar-btn" onClick={() => setFretEnd(e => Math.min(END_FRET, e + 1))} disabled={fretEnd >= END_FRET}>+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="app-container">
       {/* Header */}
@@ -447,6 +831,40 @@ function App() {
           scaleName={scaleName}
         />
       </main>
+
+      {/* Summary bar — desktop only (mobile shows it in Key tab) */}
+      {!isMobile && summaryContent}
+
+      {/* Mobile inline tab bar + content — hidden on desktop */}
+      {isMobile && (
+        <>
+          <div className="mobile-tab-bar">
+            <button
+              className={`mobile-tab ${mobileTab === 'key' ? 'active' : ''}`}
+              onClick={() => setMobileTab('key')}
+            >
+              Key
+            </button>
+            <button
+              className={`mobile-tab ${mobileTab === 'scale' ? 'active' : ''}`}
+              onClick={() => setMobileTab('scale')}
+            >
+              Scale
+            </button>
+            <button
+              className={`mobile-tab ${mobileTab === 'settings' ? 'active' : ''}`}
+              onClick={() => setMobileTab('settings')}
+            >
+              Settings
+            </button>
+          </div>
+          <div className="mobile-tab-content">
+            {mobileTab === 'key' && keyTabContent}
+            {mobileTab === 'scale' && scaleChordTabContent}
+            {mobileTab === 'settings' && settingsTabContent}
+          </div>
+        </>
+      )}
 
       {/* Controls Panel */}
       <div className="controls-panel">
@@ -577,13 +995,15 @@ function App() {
         {/* Col 2: Circle of Fifths + Chord Root */}
         <div className="control-group col-span-2 key-column">
           <h2>Key</h2>
-          <button
-            className="accidental-toggle"
-            onClick={() => setUseFlats(prev => { const next = !prev; localStorage.setItem('useFlats', String(next)); return next; })}
-            title={useFlats ? 'Showing flats — click for sharps' : 'Showing sharps — click for flats'}
-          >
-            {useFlats ? '♭' : '♯'}
-          </button>
+          {!isMobile && (
+            <button
+              className="accidental-toggle"
+              onClick={() => setUseFlats(prev => !prev)}
+              title={useFlats ? 'Showing flats — click for sharps' : 'Showing sharps — click for flats'}
+            >
+              {useFlats ? '♭' : '♯'}
+            </button>
+          )}
           <CircleOfFifths
             rootNote={rootNote}
             setRootNote={handleSetRootNote}
@@ -666,62 +1086,6 @@ function App() {
         </div>
       </div>
 
-      {/* Summary bar */}
-      <div className="summary-area">
-        {/* Row 1: scale notes — always visible */}
-        <div className="summary-row">
-          <div className="summary-row-label">{scaleLabel}</div>
-          <div className="summary-notes">
-            {summaryNotes.map((n, i) => {
-              const rootIdx = NOTES.indexOf(rootNote);
-              const noteIdx = NOTES.indexOf(n);
-              const chromaticInterval = rootIdx !== -1 && noteIdx !== -1 ? (noteIdx - rootIdx + 12) % 12 : -1;
-              const degree = chromaticInterval !== -1 ? INTERVAL_NAMES[chromaticInterval] : null;
-              const degreeMap = getDegreesForScale(scaleName);
-              const romanNumeral = chromaticInterval !== -1 ? degreeMap[chromaticInterval] : undefined;
-              const degreeColor = romanNumeral ? DEGREE_COLORS[romanNumeral] : undefined;
-              return (
-                <span key={i} className="summary-note" style={degreeColor ? { outline: `2px solid ${degreeColor}`, outlineOffset: '-2px' } : undefined}>
-                  <span className="summary-note-name">
-                    {formatAccidental(getNoteDisplayInScale(n, rootNote, SCALES[scaleName] || [], useFlats))}
-                  </span>
-                  {degree && (
-                    <span className="summary-note-degree" style={{ color: degreeColor }}>{degree}</span>
-                  )}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Row 2: chord overlay notes — only when chord active */}
-        {chordLabel && (
-          <div className="summary-row summary-row--chord">
-            <div className="summary-row-label">{chordLabel}</div>
-            <div className="summary-notes">
-              {chordSummaryNotes.map((n, i) => {
-                const rootIdx = NOTES.indexOf(chordRoot);
-                const noteIdx = NOTES.indexOf(n);
-                const chromaticInterval = rootIdx !== -1 && noteIdx !== -1 ? (noteIdx - rootIdx + 12) % 12 : -1;
-                const degree = chromaticInterval !== -1 ? INTERVAL_NAMES[chromaticInterval] : null;
-                const degreeMap = getDegreesForScale(scaleName);
-                const romanNumeral = chromaticInterval !== -1 ? degreeMap[chromaticInterval] : undefined;
-                const degreeColor = romanNumeral ? DEGREE_COLORS[romanNumeral] : undefined;
-                return (
-                  <span key={i} className="summary-note summary-note--chord" style={degreeColor ? { outline: `2px solid ${degreeColor}`, outlineOffset: '-2px' } : undefined}>
-                    <span className="summary-note-name">
-                      {formatAccidental(getNoteDisplay(n, chordRoot, useFlats))}
-                    </span>
-                    {degree && (
-                      <span className="summary-note-degree" style={{ color: degreeColor }}>{degree}</span>
-                    )}
-                  </span>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   );
 }

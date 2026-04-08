@@ -146,7 +146,7 @@ export function CircleOfFifths({
                   fill={isActive ? "var(--text-main)" : "var(--text-muted)"}
                 >
                   <tspan x={lx} dy="-0.3em" stroke="rgba(0,0,0,0.3)" strokeWidth="2" paintOrder="stroke">{primary}</tspan>
-                  <tspan x={lx} dy="0.9em" fontSize={noteFontSize * 0.55} fontWeight="500" fill="rgba(255,255,255,0.85)" stroke="rgba(0,0,0,0.6)" strokeWidth="2.5" paintOrder="stroke">{enharmonic}</tspan>
+                  <tspan x={lx} dy="0.9em" fontSize={noteFontSize * 0.65} fontWeight="500" fill="rgba(255,255,255,0.85)" stroke="rgba(0,0,0,0.6)" strokeWidth="2.5" paintOrder="stroke">{enharmonic}</tspan>
                 </text>
               ) : (
                 <text

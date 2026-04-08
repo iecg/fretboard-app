@@ -58,6 +58,12 @@ export function formatAccidental(s: string): string {
   return s.replace(/##/g, '𝄪').replace(/#/g, '♯').replace(/bb/g, '𝄫').replace(/b/g, '♭');
 }
 
+// For interval labels like b3, b5, b7 — keep lowercase 'b' which reads better
+// inline with small digits. Only replace # with ♯.
+export function formatIntervalAccidental(s: string): string {
+  return s.replace(/##/g, '𝄪').replace(/#/g, '♯');
+}
+
 const LETTER_NAMES = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
 const LETTER_PITCHES: Record<string, number> = { 'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11 };
 

@@ -68,16 +68,28 @@ export function Fretboard({
   const fretboardLayout = getFretboardNotes(tuning, Math.max(endFret, maxFret));
   const fretCount = endFret - startFret;
 
-  // Measure container width to compute auto-fill zoom
+  // Track viewport width to detect mobile
+  const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
+  useEffect(() => {
+    const handleResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+  const isMobile = viewportWidth < 768;
+
+  // Measure container width to compute auto-fill zoom (desktop)
   const [containerWidth, setContainerWidth] = useState(0);
   const totalColumns = fretCount + 1; // includes fret 0
   const autoFitZoom = containerWidth > 0 && totalColumns > 0
     ? Math.floor(containerWidth / totalColumns)
     : 30;
   // fretZoom is a percentage: 100 = auto-fit, 110 = 10% larger, etc.
-  const effectiveZoom = fretZoom <= 100
+  const desktopZoom = fretZoom <= 100
     ? autoFitZoom
     : Math.round(autoFitZoom * fretZoom / 100);
+  // On mobile, override zoom so ~7 frets fill the viewport width; desktop zoom unchanged
+  const mobileZoom = Math.floor(viewportWidth / 7);
+  const effectiveZoom = isMobile ? mobileZoom : desktopZoom;
 
   // Drag-to-scroll — deferred pointer capture so taps reach note-bubbles
   const scrollRef = useRef<HTMLDivElement>(null);
