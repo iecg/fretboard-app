@@ -88,7 +88,10 @@ export function Fretboard({
     ? autoFitZoom
     : Math.round(autoFitZoom * fretZoom / 100);
   // On mobile, override zoom so ~7 frets fill the viewport width; desktop zoom unchanged
-  const mobileZoom = Math.floor(viewportWidth / 7);
+  // In landscape, use a larger divisor (10) to fit more frets on screen without horizontal scrolling
+  const isLandscape = window.innerWidth > window.innerHeight;
+  const mobileFretDivisor = isLandscape ? 10 : 7;
+  const mobileZoom = Math.floor(viewportWidth / mobileFretDivisor);
   const effectiveZoom = isMobile ? mobileZoom : desktopZoom;
 
   // Drag-to-scroll — deferred pointer capture so taps reach note-bubbles
