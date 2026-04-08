@@ -26,6 +26,7 @@
   flex: 1 1 0;
   align-self: stretch;
   padding: 1rem;
+  padding-bottom: 2rem;
   max-width: 80rem;
   width: 100%;
   margin: 0 auto;
@@ -1047,7 +1048,7 @@
 }
 
 .app-container[data-layout-mode="tablet-portrait"] .circle-fifths-container {
-  max-height: 280px;
+  max-height: min(420px, 55vh);
 }
 
 /* Landscape mobile: fretboard hero, minimal chrome */
@@ -1077,7 +1078,7 @@
 
 /* Landscape tablet: CoF constrained to not overflow right column */
 .app-container[data-layout-mode="landscape-tablet"] .circle-fifths-container {
-  max-height: 260px;
+  max-height: min(400px, 55vh);
 }
 
 /* ===== Fretboard Outer + Toolbar ===== */
@@ -1346,19 +1347,20 @@
 .version-badge {
   position: fixed;
   bottom: calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
-  right: var(--space-3);
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 0.65rem;
   color: rgba(255, 255, 255, 0.35);
   letter-spacing: 0.04em;
   pointer-events: none;
   user-select: none;
   z-index: 100;
+  white-space: nowrap;
 }
 
 @media (max-width: 767px) {
   .version-badge {
     bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
-    right: var(--space-2);
     font-size: 0.6rem;
     color: rgba(255, 255, 255, 0.5);
   }
