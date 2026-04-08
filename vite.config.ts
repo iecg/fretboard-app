@@ -14,5 +14,26 @@ export default defineConfig({
   },
   test: {
     globals: true,
+    environment: 'jsdom',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html', 'lcov', 'json-summary', 'text-summary'],
+      exclude: [
+        'node_modules/',
+        'src/__tests__/',
+        '**/*.test.*',
+        '**/*.spec.*',
+        '**/dist/**',
+        '**/build/**',
+        'coverage/**',
+      ],
+      include: ['src/**/*.{ts,tsx}'],
+      all: true,
+      lines: 70,
+      functions: 70,
+      branches: 65,
+      statements: 70,
+      skipFull: true,
+    },
   },
 })
