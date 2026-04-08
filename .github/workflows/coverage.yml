@@ -27,9 +27,10 @@ jobs:
       - name: Generate coverage report
         run: npm run test -- --coverage
 
-      - name: Upload to Codecov
-        uses: codecov/codecov-action@v4
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/coverage-final.json
           flags: unittests
           name: codecov
