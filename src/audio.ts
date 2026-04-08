@@ -10,19 +10,19 @@ class GuitarSynth {
       this.masterGain.connect(this.ctx.destination);
       this.masterGain.gain.value = 0.5; // Slightly louder clean signal
     }
-    if (this.ctx.state === 'suspended') {
-      this.ctx.resume();
-    }
   }
 
   setMute(mute: boolean) {
     this.isMuted = mute;
   }
 
-  playNote(frequency: number) {
+  async playNote(frequency: number) {
     if (this.isMuted) return;
     this.init();
     if (!this.ctx || !this.masterGain) return;
+    if (this.ctx.state === 'suspended') {
+      await this.ctx.resume();
+    }
 
     const osc = this.ctx.createOscillator();
     const gainNode = this.ctx.createGain();
