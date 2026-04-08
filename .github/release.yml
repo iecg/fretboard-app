@@ -14,8 +14,10 @@ changelog:
     - title: "Maintenance"
       labels:
         - "chore"
+        - "ci"
         - "docs"
         - "test"
+        - "style"
   exclude:
     labels:
       - "skip-changelog"
