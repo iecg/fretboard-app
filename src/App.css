@@ -313,6 +313,7 @@
   font-weight: 700;
   transition: background-color var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast), transform var(--transition-fast);
   cursor: pointer;
+  touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -1266,4 +1267,26 @@
   width: 0.875rem;
   height: 0.875rem;
   cursor: pointer;
+}
+
+/* ===== Version Badge ===== */
+.version-badge {
+  position: fixed;
+  bottom: calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
+  right: var(--space-3);
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  user-select: none;
+  z-index: 100;
+}
+
+@media (max-width: 767px) {
+  .version-badge {
+    bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+    right: var(--space-2);
+    font-size: 0.6rem;
+    color: rgba(255, 255, 255, 0.5);
+  }
 }
