@@ -123,6 +123,8 @@ describe('Component Snapshots', () => {
             { string: 4, fret: 0 },
             { string: 5, fret: 0 },
           ],
+          shape: 'E' as const,
+          color: '#6366f1',
           truncated: false,
           intendedMin: 0,
           intendedMax: 3,

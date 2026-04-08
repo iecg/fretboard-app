@@ -34201,6 +34201,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with CAGED shapes s
           width="390"
         >
           <polygon
+            fill="#6366f1"
             points="15,0 15,20 105,60 75,100 75,240 15,240 15,140 15,180 15,220 15,0"
             stroke="none"
           />

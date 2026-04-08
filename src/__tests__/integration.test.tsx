@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import App from '../App';
-import { NOTES } from '../theory';
 
 // vi.mock is hoisted to the top of the file, so variables referenced inside its
 // factory must be declared with vi.hoisted() to be available at that point.

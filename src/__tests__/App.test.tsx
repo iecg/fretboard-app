@@ -6,7 +6,7 @@ import { synth } from '../audio';
 
 // Mock child components to isolate App logic
 vi.mock('../Fretboard', () => ({
-  Fretboard: ({ tuning, highlightNotes, rootNote }: any) => (
+  Fretboard: ({ highlightNotes, rootNote }: any) => (
     <div data-testid="fretboard">
       Fretboard: {rootNote} - {highlightNotes.length} notes
     </div>
@@ -309,8 +309,8 @@ describe('App', () => {
       });
 
       render(<App />);
-      const mobileElements = screen.queryAllByTestId(/mobile/i);
       // Mobile elements should be rendered
+      screen.queryAllByTestId(/mobile/i);
     });
 
     it('persists mobile tab selection to localStorage', async () => {

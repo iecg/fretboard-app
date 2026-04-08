@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { Fretboard } from '../Fretboard';
 import { STANDARD_TUNING } from '../guitar';
 
@@ -240,6 +240,8 @@ describe('Fretboard', () => {
             { string: 4, fret: 0 },
             { string: 5, fret: 0 },
           ],
+          shape: 'E' as const,
+          color: '#6366f1',
           truncated: false,
           intendedMin: 0,
           intendedMax: 2,
@@ -270,6 +272,8 @@ describe('Fretboard', () => {
             { string: 4, fret: 0 },
             { string: 5, fret: 0 },
           ],
+          shape: 'E' as const,
+          color: '#6366f1',
           truncated: false,
           intendedMin: 0,
           intendedMax: 2,
@@ -300,6 +304,8 @@ describe('Fretboard', () => {
             { string: 4, fret: 5 },
             { string: 5, fret: 5 },
           ],
+          shape: 'E' as const,
+          color: '#6366f1',
           truncated: false,
           intendedMin: 5,
           intendedMax: 7,
@@ -330,6 +336,8 @@ describe('Fretboard', () => {
             { string: 4, fret: 0 },
             { string: 5, fret: 0 },
           ],
+          shape: 'E' as const,
+          color: '#6366f1',
           truncated: false,
           intendedMin: 0,
           intendedMax: 2,

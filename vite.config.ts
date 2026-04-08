@@ -29,12 +29,12 @@ export default defineConfig({
         'coverage/**',
       ],
       include: ['src/**/*.{ts,tsx}'],
-      all: true,
-      lines: 70,
-      functions: 70,
-      branches: 65,
-      statements: 70,
-      skipFull: true,
+      thresholds: {
+        lines: 70,
+        functions: 70,
+        branches: 65,
+        statements: 70,
+      },
     },
   },
 })

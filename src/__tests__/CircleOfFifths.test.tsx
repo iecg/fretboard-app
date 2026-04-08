@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, fireEvent } from '@testing-library/react';
 import { CircleOfFifths } from '../CircleOfFifths';
 import { CIRCLE_OF_FIFTHS } from '../theory';
 
