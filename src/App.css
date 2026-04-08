@@ -1272,7 +1272,7 @@
 /* ===== Version Badge ===== */
 .version-badge {
   position: fixed;
-  bottom: var(--space-2);
+  bottom: calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
   right: var(--space-3);
   font-size: 0.65rem;
   color: rgba(255, 255, 255, 0.35);
@@ -1284,8 +1284,9 @@
 
 @media (max-width: 767px) {
   .version-badge {
-    bottom: var(--space-1);
+    bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
     right: var(--space-2);
     font-size: 0.6rem;
+    color: rgba(255, 255, 255, 0.5);
   }
 }
