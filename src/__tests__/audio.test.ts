@@ -48,8 +48,11 @@ describe('GuitarSynth', () => {
     vi.clearAllMocks();
 
     // Reset singleton state so each test gets a fresh AudioContext
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (synth as any).ctx = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (synth as any).masterGain = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (synth as any).isMuted = false;
 
     // Setup mock returns
@@ -61,6 +64,7 @@ describe('GuitarSynth', () => {
     // Replace window.AudioContext with our mock — must use a regular function,
     // not an arrow function, so it can be called with `new`.
     (window as unknown as { AudioContext: typeof AudioContext }).AudioContext =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.fn(function() { return mockAudioContext; }) as any;
   });
 
@@ -84,9 +88,9 @@ describe('GuitarSynth', () => {
 
     it('does not create context twice', () => {
       synth.init();
-      const callCount1 = (mockAudioContext.createGain as any).mock.calls.length;
+      const callCount1 = mockAudioContext.createGain.mock.calls.length;
       synth.init();
-      const callCount2 = (mockAudioContext.createGain as any).mock.calls.length;
+      const callCount2 = mockAudioContext.createGain.mock.calls.length;
       expect(callCount2).toBe(callCount1);
     });
   });
@@ -167,8 +171,8 @@ describe('GuitarSynth', () => {
 
     it('stops oscillator after envelope duration', () => {
       synth.playNote(440);
-      const stopCall = (mockOscillator.stop as any).mock.calls[0];
-      const startCall = (mockOscillator.start as any).mock.calls[0];
+      const stopCall = mockOscillator.stop.mock.calls[0];
+      const startCall = mockOscillator.start.mock.calls[0];
       const duration = stopCall[0] - startCall[0];
 
       // Attack(0.01) + Decay(1.0) + Release(1.0) + buffer(0.1) ≈ 2.11
@@ -194,13 +198,13 @@ describe('GuitarSynth', () => {
 
     it('plays different frequencies', () => {
       synth.playNote(262); // C4
-      const call1 = (mockOscillator.frequency.setValueAtTime as any).mock.calls[0];
+      const call1 = mockOscillator.frequency.setValueAtTime.mock.calls[0];
 
       vi.clearAllMocks();
       mockAudioContext.createOscillator.mockReturnValue(mockOscillator as unknown as OscillatorNode);
 
       synth.playNote(440); // A4
-      const call2 = (mockOscillator.frequency.setValueAtTime as any).mock.calls[0];
+      const call2 = mockOscillator.frequency.setValueAtTime.mock.calls[0];
 
       expect(call1[0]).toBe(262);
       expect(call2[0]).toBe(440);

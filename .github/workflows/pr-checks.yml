@@ -44,7 +44,7 @@ jobs:
         run: |
           echo "📝 Commit Message Check"
           echo "========================================"
-          git log --oneline origin/main..${{ github.head_ref }} | head -10
+          git log --oneline origin/main..HEAD | head -10
 
       - name: Verify test coverage for changed files
         run: |

@@ -124,7 +124,7 @@ describe('Integration Tests - User Workflows', () => {
       localStorage.setItem('chordType', 'Major Triad');
       localStorage.setItem('hideNonChordNotes', 'false');
 
-      let { rerender } = render(<App />);
+      const { rerender } = render(<App />);
       expect(localStorage.getItem('hideNonChordNotes')).toBe('false');
 
       // User enables filter
@@ -141,7 +141,7 @@ describe('Integration Tests - User Workflows', () => {
       localStorage.setItem('chordType', 'Minor 7th');
       localStorage.setItem('linkChordRoot', 'true');
 
-      let { rerender } = render(<App />);
+      const { rerender } = render(<App />);
 
       // Change scale root
       localStorage.setItem('rootNote', 'D');
@@ -161,7 +161,7 @@ describe('Integration Tests - User Workflows', () => {
       localStorage.setItem('linkChordRoot', 'false');
       localStorage.setItem('chordRoot', 'G');
 
-      let { rerender } = render(<App />);
+      const { rerender } = render(<App />);
       rerender(<App />);
 
       // Change scale root
@@ -640,7 +640,7 @@ describe('Integration Tests - User Workflows', () => {
 
       // Step 1: Select key
       localStorage.setItem('rootNote', 'A');
-      let { rerender } = render(<App />);
+      const { rerender } = render(<App />);
       rerender(<App />);
       expect(localStorage.getItem('rootNote')).toBe('A');
 

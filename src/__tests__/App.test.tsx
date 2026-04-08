@@ -6,7 +6,7 @@ import { synth } from '../audio';
 
 // Mock child components to isolate App logic
 vi.mock('../Fretboard', () => ({
-  Fretboard: ({ highlightNotes, rootNote }: any) => (
+  Fretboard: ({ highlightNotes, rootNote }: { highlightNotes: string[]; rootNote: string }) => (
     <div data-testid="fretboard">
       Fretboard: {rootNote} - {highlightNotes.length} notes
     </div>
@@ -14,7 +14,7 @@ vi.mock('../Fretboard', () => ({
 }));
 
 vi.mock('../CircleOfFifths', () => ({
-  CircleOfFifths: ({ rootNote, setRootNote }: any) => (
+  CircleOfFifths: ({ rootNote, setRootNote }: { rootNote: string; setRootNote: (note: string) => void }) => (
     <button data-testid="circle-of-fifths" onClick={() => setRootNote('G')}>
       CoF: {rootNote}
     </button>
@@ -22,9 +22,9 @@ vi.mock('../CircleOfFifths', () => ({
 }));
 
 vi.mock('../DrawerSelector', () => ({
-  DrawerSelector: ({ label, value, onSelect, options }: any) => (
+  DrawerSelector: ({ label, value, onSelect, options }: { label: string; value: string; onSelect: (v: string) => void; options: string[] }) => (
     <div data-testid={`drawer-${label.toLowerCase()}`}>
-      <button onClick={() => onSelect(options.find((o: any) => typeof o === 'string') ?? options[0])}>{label}: {value}</button>
+      <button onClick={() => onSelect(options.find((o: string) => typeof o === 'string') ?? options[0])}>{label}: {value}</button>
     </div>
   ),
 }));
