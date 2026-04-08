@@ -121,12 +121,12 @@ jobs:
               repo: context.repo.repo,
               body: `## CI/CD Pipeline Status
 
-| Check | Status |
-|-------|--------|
-| Tests | ${testResult} |
-| Build | ${buildResult} |
+            | Check | Status |
+            |-------|--------|
+            | Tests | ${testResult} |
+            | Build | ${buildResult} |
 
-**Branch**: \`${context.payload.pull_request.head.ref}\`
-**Commit**: ${context.payload.pull_request.head.sha.substring(0, 7)}`
+            **Branch**: \`${context.payload.pull_request.head.ref}\`
+            **Commit**: ${context.payload.pull_request.head.sha.substring(0, 7)}`
             })
 
