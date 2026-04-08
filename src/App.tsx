@@ -171,12 +171,26 @@ function App() {
 
   // Viewport / mobile detection
   const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
+  const [viewportHeight, setViewportHeight] = useState(() => window.innerHeight);
   useEffect(() => {
-    const handler = () => setViewportWidth(window.innerWidth);
+    const handler = () => {
+      setViewportWidth(window.innerWidth);
+      setViewportHeight(window.innerHeight);
+    };
     window.addEventListener('resize', handler);
     return () => window.removeEventListener('resize', handler);
   }, []);
-  const isMobile = viewportWidth < 768;
+  const isLandscapeMobile = viewportWidth < 768 && viewportHeight < viewportWidth;
+  const isMobile = viewportWidth < 768 || isLandscapeMobile;
+  const isTabletPortrait = viewportWidth >= 768 && viewportWidth < 1024 && viewportHeight >= viewportWidth;
+  const isLandscapeTablet = viewportWidth >= 1024 && viewportHeight < viewportWidth;
+  type LayoutMode = 'mobile' | 'landscape-mobile' | 'tablet-portrait' | 'landscape-tablet' | 'desktop';
+  const layoutMode: LayoutMode =
+    isLandscapeMobile ? 'landscape-mobile' :
+    isTabletPortrait  ? 'tablet-portrait' :
+    isLandscapeTablet ? 'landscape-tablet' :
+    isMobile          ? 'mobile' :
+    'desktop';
 
   // Mobile tab state
   const [mobileTab, setMobileTab] = useState<'key' | 'scale' | 'settings'>(() => {
@@ -670,7 +684,7 @@ function App() {
   );
 
   return (
-    <div className="app-container">
+    <div className="app-container" data-layout-mode={layoutMode}>
       {/* Header */}
       <header className="app-header">
         <div className="logo-container">
