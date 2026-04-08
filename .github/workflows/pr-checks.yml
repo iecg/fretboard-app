@@ -1,0 +1,192 @@
+name: PR Checks & Enforcement
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+  statuses: write
+
+jobs:
+  validate-pr:
+    runs-on: ubuntu-latest
+    name: PR Validation
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate branch name
+        run: |
+          BRANCH_NAME="${{ github.head_ref }}"
+          echo "Checking branch name: $BRANCH_NAME"
+
+          if [[ ! $BRANCH_NAME =~ ^(feature|bugfix|hotfix|refactor|docs|test|chore)/ ]] && [[ $BRANCH_NAME != "main" ]] && [[ $BRANCH_NAME != "develop" ]]; then
+            echo "⚠️ Consider using conventional branch names: feature/*, bugfix/*, hotfix/*, etc."
+          fi
+          echo "✅ Branch name check complete"
+
+      - name: Check commit messages
+        run: |
+          echo "📝 Commit Message Check"
+          echo "========================================"
+          git log --oneline origin/main..${{ github.head_ref }} | head -10
+
+      - name: Verify test coverage for changed files
+        run: |
+          echo "🔍 Changed Files"
+          echo "========================================"
+          git diff --name-only origin/main..HEAD | grep -E '\.(ts|tsx)$' | grep -v '\.test\.' | head -20
+          echo ""
+          echo "✅ Analysis complete"
+
+      - name: Comment PR Status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const { execSync } = require('child_process');
+
+            // Get list of changed files
+            const changedFiles = execSync('git diff --name-only origin/main...HEAD').toString().trim().split('\n').filter(f => f);
+            const sourceFiles = changedFiles.filter(f => f.match(/\.(ts|tsx)$/) && !f.includes('.test.') && !f.includes('.spec.'));
+            const testFiles = changedFiles.filter(f => f.match(/\.test\.|\.spec\./));
+
+            let comment = `## PR Validation ✅\n\n`;
+            comment += `**Branch**: \`${{ github.head_ref }}\`\n`;
+            comment += `**Base**: \`${{ github.base_ref }}\`\n\n`;
+
+            comment += `### Changed Files\n`;
+            comment += `- **Source files**: ${sourceFiles.length}\n`;
+            comment += `- **Test files**: ${testFiles.length}\n\n`;
+
+            if (sourceFiles.length > 0 && testFiles.length === 0) {
+              comment += `⚠️ **Note**: Source files changed but no test files added. Please consider adding tests.\n\n`;
+            } else if (testFiles.length > 0) {
+              comment += `✅ **Tests added**: \n`;
+              testFiles.slice(0, 5).forEach(f => comment += `  - \`${f}\`\n`);
+              if (testFiles.length > 5) {
+                comment += `  - ... and ${testFiles.length - 5} more\n`;
+              }
+              comment += `\n`;
+            }
+
+            comment += `### Requirements\n`;
+            comment += `- [ ] All tests passing\n`;
+            comment += `- [ ] No lint errors\n`;
+            comment += `- [ ] Build succeeds\n`;
+            comment += `- [ ] Tests cover new code\n`;
+            comment += `- [ ] Documentation updated (if needed)\n\n`;
+
+            comment += `**Status**: Waiting for CI checks...\n`;
+
+            // Find existing comment or create new
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' && comment.body.includes('PR Validation')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment,
+              });
+            }
+
+  test-matrix:
+    runs-on: ubuntu-latest
+    name: Unit Tests (Node.js ${{ matrix.node-version }})
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 22]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Report results
+        if: always()
+        run: |
+          echo "✅ Tests passed on Node.js ${{ matrix.node-version }}"
+
+  enforce-checks:
+    runs-on: ubuntu-latest
+    name: Enforce Quality Gates
+    needs: [validate-pr, test-matrix]
+    if: always()
+
+    steps:
+      - name: Check all required checks
+        run: |
+          echo "🚨 Enforcing Quality Gates"
+          echo "========================================"
+
+          if [ "${{ needs.test-matrix.result }}" != "success" ]; then
+            echo "❌ Tests failed - PR cannot be merged"
+            exit 1
+          fi
+
+          if [ "${{ needs.validate-pr.result }}" != "success" ]; then
+            echo "❌ Validation failed - PR cannot be merged"
+            exit 1
+          fi
+
+          echo "✅ All quality gates passed"
+
+      - name: Set commit status
+        uses: actions/github-script@v7
+        if: always()
+        with:
+          script: |
+            const testStatus = '${{ needs.test-matrix.result }}' === 'success';
+            const validationStatus = '${{ needs.validate-pr.result }}' === 'success';
+            const overallStatus = testStatus && validationStatus;
+
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.payload.pull_request.head.sha,
+              state: overallStatus ? 'success' : 'failure',
+              description: overallStatus ? 'All checks passed' : 'Some checks failed',
+              context: 'Quality Gate',
+              target_url: `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`
+            });

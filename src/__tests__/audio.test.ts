@@ -47,14 +47,21 @@ describe('GuitarSynth', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
+    // Reset singleton state so each test gets a fresh AudioContext
+    (synth as any).ctx = null;
+    (synth as any).masterGain = null;
+    (synth as any).isMuted = false;
+
     // Setup mock returns
     mockAudioContext.createGain.mockReturnValue(mockGainNode as unknown as GainNode);
     mockAudioContext.createOscillator.mockReturnValue(mockOscillator as unknown as OscillatorNode);
     mockAudioContext.createBiquadFilter.mockReturnValue(mockFilter as unknown as BiquadFilterNode);
+    mockAudioContext.state = 'running';
 
-    // Replace window.AudioContext with our mock
+    // Replace window.AudioContext with our mock — must use a regular function,
+    // not an arrow function, so it can be called with `new`.
     (window as unknown as { AudioContext: typeof AudioContext }).AudioContext =
-      vi.fn(() => mockAudioContext) as any;
+      vi.fn(function() { return mockAudioContext; }) as any;
   });
 
   describe('init', () => {
@@ -69,9 +76,9 @@ describe('GuitarSynth', () => {
       expect(mockGainNode.gain.value).toBe(0.5);
     });
 
-    it('resumes context if suspended', () => {
+    it('resumes context if suspended', async () => {
       mockAudioContext.state = 'suspended';
-      synth.init();
+      await synth.playNote(440);
       expect(mockAudioContext.resume).toHaveBeenCalled();
     });
 

@@ -21,6 +21,29 @@ Always run `npm run lint` and `npm run test` before committing.
 - All work goes on feature branches; open a PR to merge into main
 - CI (`ci.yml`) runs lint + test + build on every push to main and every PR targeting main
 
+## Commit conventions
+
+Use conventional commits — prefix every commit message:
+
+| Prefix | When to use |
+|---|---|
+| `feat:` | new feature or user-visible improvement |
+| `fix:` | bug fix |
+| `chore:` | deps, config, tooling, CI — no production code change |
+| `refactor:` | code change with no behaviour change |
+| `docs:` | documentation only |
+| `test:` | adding or fixing tests |
+
+Examples:
+```
+feat: add transpose shortcut to circle of fifths
+fix: correct enharmonic display for Cb scale
+chore: bump vite to 8.1
+```
+
+Keep the subject line under 72 characters. No period at the end.
+GitHub Release notes are auto-grouped by these prefixes.
+
 ## Releasing — how to bump the version
 
 `package.json` `"version"` is the **single source of truth**. Vite bakes it into the bundle at build time as `__APP_VERSION__`. A semi-transparent version badge is displayed at the bottom-right of the app.
