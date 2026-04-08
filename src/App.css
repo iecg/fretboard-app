@@ -1268,3 +1268,24 @@
   height: 0.875rem;
   cursor: pointer;
 }
+
+/* ===== Version Badge ===== */
+.version-badge {
+  position: fixed;
+  bottom: var(--space-2);
+  right: var(--space-3);
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  user-select: none;
+  z-index: 100;
+}
+
+@media (max-width: 767px) {
+  .version-badge {
+    bottom: var(--space-1);
+    right: var(--space-2);
+    font-size: 0.6rem;
+  }
+}

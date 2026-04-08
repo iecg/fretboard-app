@@ -1012,6 +1012,10 @@ function App() {
         </div>
       </div>
 
+      <div className="version-badge">
+        v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar. All rights reserved.
+      </div>
+
     </div>
   );
 }
