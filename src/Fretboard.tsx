@@ -77,7 +77,7 @@ export function Fretboard({
   }, []);
   const isMobile = viewportWidth < 768;
 
-  // Measure container width to compute auto-fill zoom (desktop)
+  // Measure container width to compute auto-fill zoom (desktop + tablet)
   const [containerWidth, setContainerWidth] = useState(0);
   const totalColumns = fretCount + 1; // includes fret 0
   const autoFitZoom = containerWidth > 0 && totalColumns > 0
@@ -87,8 +87,8 @@ export function Fretboard({
   const desktopZoom = fretZoom <= 100
     ? autoFitZoom
     : Math.round(autoFitZoom * fretZoom / 100);
-  // On mobile, override zoom so ~7 frets fill the viewport width; desktop zoom unchanged
-  // In landscape, use a larger divisor (10) to fit more frets on screen without horizontal scrolling
+  // On mobile phones (<768px), override zoom so ~7 frets fill the viewport width
+  // Tablets (>=768px) use container-aware desktopZoom since they may be in a narrower column
   const isLandscape = window.innerWidth > window.innerHeight;
   const mobileFretDivisor = isLandscape ? 10 : 7;
   const mobileZoom = Math.floor(viewportWidth / mobileFretDivisor);
