@@ -1,15 +1,15 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import App from '../App';
-import { NOTES } from '../theory';
 
-// Mock audio synth to track calls
-const mockSynth = {
+// vi.mock is hoisted to the top of the file, so variables referenced inside its
+// factory must be declared with vi.hoisted() to be available at that point.
+const mockSynth = vi.hoisted(() => ({
   playNote: vi.fn(),
   setMute: vi.fn(),
   init: vi.fn(),
-};
+}));
 
 vi.mock('../audio', () => ({
   synth: mockSynth,
@@ -106,7 +106,8 @@ describe('Integration Tests - User Workflows', () => {
     it('user selects chord type → chord overlay appears', async () => {
       render(<App />);
 
-      expect(localStorage.getItem('chordType')).toBeNull();
+      // App initializes chordType as null but persists it as '' in localStorage
+      expect(localStorage.getItem('chordType')).toBeFalsy();
 
       // User selects chord
       localStorage.setItem('chordType', 'Major Triad');

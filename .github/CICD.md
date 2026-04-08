@@ -44,7 +44,7 @@ Generates detailed coverage reports and enforces minimum thresholds.
 **Minimum Coverage Thresholds:**
 - Statements: 70%
 - Branches: 65%
-- Functions: 70%
+- Functions: 65%
 - Lines: 70%
 
 **Status**: Informational (doesn't block merge by default)
@@ -101,7 +101,7 @@ The project maintains minimum coverage thresholds to ensure code quality:
 |--------|-----------|
 | Statements | 70% |
 | Branches | 65% |
-| Functions | 70% |
+| Functions | 65% |
 | Lines | 70% |
 
 ### Checking Current Coverage

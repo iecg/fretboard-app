@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18, 20]
+        node-version: [20, 22]
 
     steps:
       - uses: actions/checkout@v4
@@ -34,15 +34,15 @@ jobs:
 
       - name: Run linter
         run: npm run lint
-        continue-on-error: true
 
       - name: Run tests with coverage
         run: npm run test -- --coverage
 
-      - name: Upload coverage reports
-        uses: codecov/codecov-action@v3
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
         if: matrix.node-version == '20'
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/coverage-final.json
           flags: unittests
           name: codecov-umbrella
@@ -115,7 +115,7 @@ jobs:
             const testResult = '${{ needs.test.result }}' === 'success' ? '✅ Pass' : '❌ Fail';
             const buildResult = '${{ needs.build.result }}' === 'success' ? '✅ Pass' : '❌ Fail';
 
-            github.rest.issues.createComment({
+            await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -125,7 +125,6 @@ jobs:
 |-------|--------|
 | Tests | ${testResult} |
 | Build | ${buildResult} |
-| Lint | ✅ |
 
 **Branch**: \`${context.payload.pull_request.head.ref}\`
 **Commit**: ${context.payload.pull_request.head.sha.substring(0, 7)}`

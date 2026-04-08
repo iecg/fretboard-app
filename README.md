@@ -3,6 +3,8 @@
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://iecg.github.io/fretboard-app/)
 [![CI](https://github.com/iecg/fretboard-app/actions/workflows/ci.yml/badge.svg)](https://github.com/iecg/fretboard-app/actions/workflows/ci.yml)
 [![Deploy](https://github.com/iecg/fretboard-app/actions/workflows/deploy.yml/badge.svg)](https://github.com/iecg/fretboard-app/actions/workflows/deploy.yml)
+[![Coverage](https://codecov.io/gh/iecg/fretboard-app/branch/main/graph/badge.svg)](https://codecov.io/gh/iecg/fretboard-app)
+[![Node](https://img.shields.io/badge/node-%3E%3D20.12-brightgreen?logo=node.js)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)

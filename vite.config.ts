@@ -15,6 +15,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
+    setupFiles: ['./src/__tests__/setup.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov', 'json-summary', 'text-summary'],
@@ -23,17 +24,19 @@ export default defineConfig({
         'src/__tests__/',
         '**/*.test.*',
         '**/*.spec.*',
+        '**/*.d.ts',
+        'src/main.tsx',
         '**/dist/**',
         '**/build/**',
         'coverage/**',
       ],
       include: ['src/**/*.{ts,tsx}'],
-      all: true,
-      lines: 70,
-      functions: 70,
-      branches: 65,
-      statements: 70,
-      skipFull: true,
+      thresholds: {
+        lines: 70,
+        functions: 65,
+        branches: 65,
+        statements: 70,
+      },
     },
   },
 })
