@@ -1007,6 +1007,79 @@
   }
 }
 
+/* =============================================
+   LAYOUT MODE OVERRIDES (data-layout-mode attribute)
+   Set by App.tsx based on viewport width + height.
+   These rules layer on top of the existing media queries.
+   ============================================= */
+
+/* Tablet portrait: 2-column layout — fretboard left, controls right */
+.app-container[data-layout-mode="tablet-portrait"] {
+  display: grid;
+  grid-template-columns: 55fr 45fr;
+  grid-template-rows: auto 1fr auto;
+  gap: 0.5rem;
+}
+
+.app-container[data-layout-mode="tablet-portrait"] > .app-header {
+  grid-column: 1 / -1;
+  grid-row: 1;
+}
+
+.app-container[data-layout-mode="tablet-portrait"] > main {
+  grid-column: 1;
+  grid-row: 2;
+  min-height: 0;
+}
+
+.app-container[data-layout-mode="tablet-portrait"] .controls-panel {
+  grid-column: 2;
+  grid-row: 2 / 4;
+  display: flex !important;
+  flex-direction: column;
+  overflow-y: auto;
+  gap: 0.5rem;
+}
+
+.app-container[data-layout-mode="tablet-portrait"] .summary-area {
+  grid-column: 1;
+  grid-row: 3;
+}
+
+.app-container[data-layout-mode="tablet-portrait"] .circle-fifths-container {
+  max-height: 280px;
+}
+
+/* Landscape mobile: fretboard hero, minimal chrome */
+.app-container[data-layout-mode="landscape-mobile"] {
+  padding: 0.25rem;
+  gap: 0.25rem;
+  overflow: hidden;
+}
+
+.app-container[data-layout-mode="landscape-mobile"] .mobile-tab-bar,
+.app-container[data-layout-mode="landscape-mobile"] .mobile-tab-content {
+  display: none !important;
+}
+
+.app-container[data-layout-mode="landscape-mobile"] .summary-area {
+  display: none !important;
+}
+
+.app-container[data-layout-mode="landscape-mobile"] > main {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.app-container[data-layout-mode="landscape-mobile"] .circle-fifths-container {
+  max-height: 160px;
+}
+
+/* Landscape tablet: CoF constrained to not overflow right column */
+.app-container[data-layout-mode="landscape-tablet"] .circle-fifths-container {
+  max-height: 260px;
+}
+
 /* ===== Fretboard Outer + Toolbar ===== */
 .fretboard-outer {
   display: flex;
