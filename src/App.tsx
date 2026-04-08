@@ -22,7 +22,8 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { synth } from "./audio";
-import { CircleOfFifths, DEGREE_COLORS, getDegreesForScale } from "./CircleOfFifths";
+import { CircleOfFifths } from "./CircleOfFifths";
+import { DEGREE_COLORS, getDegreesForScale } from "./degrees";
 import {
   CAGED_SHAPES,
   getCagedCoordinates,
