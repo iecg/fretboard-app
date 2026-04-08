@@ -1,0 +1,345 @@
+// @vitest-environment jsdom
+import { describe, it, expect, vi } from 'vitest';
+import { render } from '@testing-library/react';
+import { Fretboard } from '../Fretboard';
+import { CircleOfFifths } from '../CircleOfFifths';
+import App from '../App';
+import { STANDARD_TUNING } from '../guitar';
+
+// Mock components to avoid complex setup
+vi.mock('../audio', () => ({
+  synth: {
+    setMute: vi.fn(),
+    init: vi.fn(),
+    playNote: vi.fn(),
+  },
+}));
+
+describe('Component Snapshots', () => {
+  describe('Fretboard snapshots', () => {
+    it('renders C Major scale snapshot (0-24 frets)', () => {
+      const { container } = render(
+        <Fretboard
+          tuning={STANDARD_TUNING}
+          startFret={0}
+          endFret={24}
+          maxFret={24}
+          highlightNotes={['C', 'D', 'E', 'F', 'G', 'A', 'B']}
+          rootNote="C"
+          displayFormat="notes"
+        />
+      );
+      expect(container).toMatchSnapshot('fretboard-c-major-full');
+    });
+
+    it('renders A Minor Pentatonic snapshot', () => {
+      const { container } = render(
+        <Fretboard
+          tuning={STANDARD_TUNING}
+          startFret={0}
+          endFret={24}
+          maxFret={24}
+          highlightNotes={['A', 'C', 'D', 'E', 'G']}
+          rootNote="A"
+          displayFormat="notes"
+        />
+      );
+      expect(container).toMatchSnapshot('fretboard-a-minor-pentatonic');
+    });
+
+    it('renders with degree display format snapshot', () => {
+      const { container } = render(
+        <Fretboard
+          tuning={STANDARD_TUNING}
+          startFret={0}
+          endFret={12}
+          maxFret={24}
+          highlightNotes={['G', 'A', 'B', 'C', 'D', 'E', 'F#']}
+          rootNote="G"
+          displayFormat="degrees"
+          scaleName="Major"
+        />
+      );
+      expect(container).toMatchSnapshot('fretboard-degree-display');
+    });
+
+    it('renders with no display format snapshot', () => {
+      const { container } = render(
+        <Fretboard
+          tuning={STANDARD_TUNING}
+          startFret={0}
+          endFret={12}
+          maxFret={24}
+          highlightNotes={['E', 'F#', 'G#', 'A', 'B', 'C#', 'D#']}
+          rootNote="E"
+          displayFormat="none"
+        />
+      );
+      expect(container).toMatchSnapshot('fretboard-no-display');
+    });
+
+    it('renders with chord tones highlighted snapshot', () => {
+      const { container } = render(
+        <Fretboard
+          tuning={STANDARD_TUNING}
+          startFret={0}
+          endFret={12}
+          maxFret={24}
+          highlightNotes={['C', 'D', 'E', 'F', 'G', 'A', 'B']}
+          rootNote="C"
+          displayFormat="notes"
+          chordTones={['C', 'E', 'G']}
+          hideNonChordNotes={false}
+        />
+      );
+      expect(container).toMatchSnapshot('fretboard-with-chord-tones');
+    });
+
+    it('renders with chord tones filtered snapshot', () => {
+      const { container } = render(
+        <Fretboard
+          tuning={STANDARD_TUNING}
+          startFret={0}
+          endFret={12}
+          maxFret={24}
+          highlightNotes={['C', 'D', 'E', 'F', 'G', 'A', 'B']}
+          rootNote="C"
+          displayFormat="notes"
+          chordTones={['C', 'E', 'G']}
+          hideNonChordNotes={true}
+        />
+      );
+      expect(container).toMatchSnapshot('fretboard-chord-tones-filtered');
+    });
+
+    it('renders with CAGED shapes snapshot', () => {
+      const shapePolygons = [
+        {
+          vertices: [
+            { string: 0, fret: 0 },
+            { string: 1, fret: 3 },
+            { string: 2, fret: 2 },
+            { string: 3, fret: 0 },
+            { string: 4, fret: 0 },
+            { string: 5, fret: 0 },
+          ],
+          truncated: false,
+          intendedMin: 0,
+          intendedMax: 3,
+          cagedLabel: 'E Shape',
+          modalLabel: 'Ionian',
+        },
+      ];
+
+      const { container } = render(
+        <Fretboard
+          tuning={STANDARD_TUNING}
+          startFret={0}
+          endFret={12}
+          maxFret={24}
+          highlightNotes={['E', 'F#', 'G#', 'A', 'B', 'C#', 'D#']}
+          rootNote="E"
+          displayFormat="notes"
+          shapePolygons={shapePolygons}
+          shapeLabels="caged"
+        />
+      );
+      expect(container).toMatchSnapshot('fretboard-caged-shapes');
+    });
+
+    it('renders high fret range snapshot (12-24)', () => {
+      const { container } = render(
+        <Fretboard
+          tuning={STANDARD_TUNING}
+          startFret={12}
+          endFret={24}
+          maxFret={24}
+          highlightNotes={['D', 'E', 'F#', 'G', 'A', 'B', 'C#']}
+          rootNote="D"
+          displayFormat="notes"
+        />
+      );
+      expect(container).toMatchSnapshot('fretboard-high-frets');
+    });
+
+    it('renders with flats instead of sharps snapshot', () => {
+      const { container } = render(
+        <Fretboard
+          tuning={STANDARD_TUNING}
+          startFret={0}
+          endFret={12}
+          maxFret={24}
+          highlightNotes={['F', 'G', 'A', 'Bb', 'C', 'D', 'E']}
+          rootNote="F"
+          displayFormat="notes"
+          useFlats={true}
+        />
+      );
+      expect(container).toMatchSnapshot('fretboard-flats-display');
+    });
+
+    it('renders Drop D tuning snapshot', () => {
+      const dropDTuning = ['E4', 'A3', 'D3', 'G3', 'B3', 'D3'];
+      const { container } = render(
+        <Fretboard
+          tuning={dropDTuning}
+          startFret={0}
+          endFret={12}
+          maxFret={24}
+          highlightNotes={['D', 'E', 'F#', 'G', 'A', 'B', 'C#']}
+          rootNote="D"
+          displayFormat="notes"
+        />
+      );
+      expect(container).toMatchSnapshot('fretboard-drop-d-tuning');
+    });
+  });
+
+  describe('CircleOfFifths snapshots', () => {
+    it('renders C Major snapshot', () => {
+      const { container } = render(
+        <CircleOfFifths
+          rootNote="C"
+          setRootNote={() => {}}
+          scaleName="Major"
+          useFlats={false}
+        />
+      );
+      expect(container).toMatchSnapshot('circle-c-major');
+    });
+
+    it('renders G Major snapshot', () => {
+      const { container } = render(
+        <CircleOfFifths
+          rootNote="G"
+          setRootNote={() => {}}
+          scaleName="Major"
+          useFlats={false}
+        />
+      );
+      expect(container).toMatchSnapshot('circle-g-major');
+    });
+
+    it('renders A Natural Minor snapshot', () => {
+      const { container } = render(
+        <CircleOfFifths
+          rootNote="A"
+          setRootNote={() => {}}
+          scaleName="Natural Minor"
+          useFlats={false}
+        />
+      );
+      expect(container).toMatchSnapshot('circle-a-natural-minor');
+    });
+
+    it('renders with flats snapshot', () => {
+      const { container } = render(
+        <CircleOfFifths
+          rootNote="F"
+          setRootNote={() => {}}
+          scaleName="Major"
+          useFlats={true}
+        />
+      );
+      expect(container).toMatchSnapshot('circle-flats');
+    });
+
+    it('renders Dorian mode snapshot', () => {
+      const { container } = render(
+        <CircleOfFifths
+          rootNote="D"
+          setRootNote={() => {}}
+          scaleName="Dorian"
+          useFlats={false}
+        />
+      );
+      expect(container).toMatchSnapshot('circle-dorian');
+    });
+
+    it('renders Lydian mode snapshot', () => {
+      const { container } = render(
+        <CircleOfFifths
+          rootNote="F"
+          setRootNote={() => {}}
+          scaleName="Lydian"
+          useFlats={false}
+        />
+      );
+      expect(container).toMatchSnapshot('circle-lydian');
+    });
+
+    it('renders all chromatic notes snapshot (including sharps)', () => {
+      const notes = ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#', 'G#', 'D#', 'A#', 'F'];
+
+      notes.forEach((note) => {
+        const { container } = render(
+          <CircleOfFifths
+            rootNote={note}
+            setRootNote={() => {}}
+            scaleName="Major"
+            useFlats={false}
+          />
+        );
+        expect(container).toMatchSnapshot(`circle-${note}-major`);
+      });
+    });
+  });
+
+  describe('App layout snapshots', () => {
+    it('renders desktop layout snapshot', () => {
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: 1920,
+      });
+
+      localStorage.clear();
+      const { container } = render(<App />);
+      expect(container).toMatchSnapshot('app-desktop-default');
+    });
+
+    it('renders mobile layout snapshot', () => {
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: 600,
+      });
+
+      localStorage.clear();
+      const { container } = render(<App />);
+      expect(container).toMatchSnapshot('app-mobile-default');
+    });
+
+    it('renders with custom configuration snapshot', () => {
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: 1920,
+      });
+
+      localStorage.setItem('rootNote', 'G');
+      localStorage.setItem('scaleName', 'Natural Minor');
+      localStorage.setItem('chordType', 'Minor 7th');
+      localStorage.setItem('displayFormat', 'degrees');
+      localStorage.setItem('useFlats', 'true');
+
+      const { container } = render(<App />);
+      expect(container).toMatchSnapshot('app-custom-config');
+    });
+
+    it('renders with chord overlay snapshot', () => {
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: 1920,
+      });
+
+      localStorage.clear();
+      localStorage.setItem('chordType', 'Major 7th');
+      localStorage.setItem('hideNonChordNotes', 'true');
+
+      const { container } = render(<App />);
+      expect(container).toMatchSnapshot('app-with-chord-overlay');
+    });
+  });
+});
