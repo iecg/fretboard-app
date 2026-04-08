@@ -34,13 +34,12 @@ jobs:
 
       - name: Run linter
         run: npm run lint
-        continue-on-error: true
 
       - name: Run tests with coverage
         run: npm run test -- --coverage
 
       - name: Upload coverage reports
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         if: matrix.node-version == '20'
         with:
           files: ./coverage/coverage-final.json
@@ -115,7 +114,7 @@ jobs:
             const testResult = '${{ needs.test.result }}' === 'success' ? '✅ Pass' : '❌ Fail';
             const buildResult = '${{ needs.build.result }}' === 'success' ? '✅ Pass' : '❌ Fail';
 
-            github.rest.issues.createComment({
+            await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -125,7 +124,6 @@ jobs:
 |-------|--------|
 | Tests | ${testResult} |
 | Build | ${buildResult} |
-| Lint | ✅ |
 
 **Branch**: \`${context.payload.pull_request.head.ref}\`
 **Commit**: ${context.payload.pull_request.head.sha.substring(0, 7)}`

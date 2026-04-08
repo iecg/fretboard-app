@@ -28,7 +28,7 @@ jobs:
         run: npm run test -- --coverage
 
       - name: Upload to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: ./coverage/coverage-final.json
           flags: unittests
@@ -110,7 +110,6 @@ jobs:
 
       - name: Run type checking
         run: npm run build
-        continue-on-error: true
 
       - name: List test files
         run: |
