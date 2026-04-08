@@ -9,7 +9,9 @@ import {
   getChordNotes,
   getIntervalNotes,
   getNoteDisplay,
+  getNoteDisplayInScale,
   getDivergentNotes,
+  formatAccidental,
 } from "./theory";
 import { STANDARD_TUNING, TUNINGS } from "./guitar";
 import {
@@ -21,7 +23,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { synth } from "./audio";
-import { CircleOfFifths } from "./CircleOfFifths";
+import { CircleOfFifths, DEGREE_COLORS, getDegreesForScale } from "./CircleOfFifths";
 import {
   CAGED_SHAPES,
   getCagedCoordinates,
@@ -30,6 +32,7 @@ import {
   type ShapePolygon,
 } from "./shapes";
 import "./App.css";
+
 
 type FingeringPattern = "all" | "caged" | "3nps";
 
@@ -192,6 +195,12 @@ function App() {
   const [fretStart, setFretStart] = useState<number>(0);
   const [fretEnd, setFretEnd] = useState<number>(END_FRET);
 
+  // Accidentals
+  const [useFlats, setUseFlats] = useState<boolean>(() => {
+    const saved = localStorage.getItem('useFlats');
+    return saved !== null ? saved === 'true' : false;
+  });
+
   // Audio
   const [isMuted, setIsMuted] = useState<boolean>(false);
 
@@ -227,6 +236,8 @@ function App() {
     setFretZoom(100);
     setFretStart(0);
     setFretEnd(END_FRET);
+    setUseFlats(false);
+    localStorage.setItem('useFlats', 'false');
   };
 
   // Compute active chord tones (independent of scale)
@@ -332,13 +343,21 @@ function App() {
     [rootNote, scaleName],
   );
 
-  const summaryLabel = (() => {
-    const root = getNoteDisplay(rootNote, rootNote);
-    let label = `${root} ${scaleName}`;
-    if (chordType)
-      label += ` + ${getNoteDisplay(chordRoot, chordRoot)} ${chordType}`;
-    return label;
-  })();
+  const scaleLabel = `${formatAccidental(getNoteDisplayInScale(rootNote, rootNote, SCALES[scaleName] || [], useFlats))} ${scaleName}`;
+
+  const chordLabel = chordType
+    ? `${formatAccidental(getNoteDisplay(chordRoot, chordRoot, useFlats))} ${chordType}`
+    : null;
+
+  const chordSummaryNotes = useMemo(() => {
+    if (!chordType || chordTones.length === 0) return [];
+    const chordRootIdx = NOTES.indexOf(chordRoot);
+    const chordToneSet = new Set(chordTones);
+    return NOTES
+      .slice(chordRootIdx)
+      .concat(NOTES.slice(0, chordRootIdx))
+      .filter(n => chordToneSet.has(n));
+  }, [chordType, chordTones, chordRoot]);
 
   return (
     <div className="app-container">
@@ -424,6 +443,8 @@ function App() {
           onFretEndChange={setFretEnd}
           maxFret={END_FRET}
           wrappedNotes={wrappedNotes}
+          useFlats={useFlats}
+          scaleName={scaleName}
         />
       </main>
 
@@ -554,14 +575,20 @@ function App() {
         </div>
 
         {/* Col 2: Circle of Fifths + Chord Root */}
-        <div className="control-group col-span-2">
-          <div className="group-header">
-            <h2>Key</h2>
-          </div>
+        <div className="control-group col-span-2 key-column">
+          <h2>Key</h2>
+          <button
+            className="accidental-toggle"
+            onClick={() => setUseFlats(prev => { const next = !prev; localStorage.setItem('useFlats', String(next)); return next; })}
+            title={useFlats ? 'Showing flats — click for sharps' : 'Showing sharps — click for flats'}
+          >
+            {useFlats ? '♭' : '♯'}
+          </button>
           <CircleOfFifths
             rootNote={rootNote}
             setRootNote={handleSetRootNote}
             scaleName={scaleName}
+            useFlats={useFlats}
           />
         </div>
 
@@ -611,7 +638,7 @@ function App() {
                           className={`note-btn ${chordRoot === n ? "active" : ""}`}
                           onClick={() => setChordRoot(n)}
                         >
-                          {getNoteDisplay(n, n)}
+                          {formatAccidental(getNoteDisplay(n, n, useFlats))}
                         </button>
                       ))}
                     </div>
@@ -639,29 +666,61 @@ function App() {
         </div>
       </div>
 
-      {/* Ko-fi support button */}
+      {/* Summary bar */}
       <div className="summary-area">
-        <div className="summary-title">{summaryLabel}:</div>
-        <div className="summary-notes">
-          {summaryNotes.map((n, i) => {
-            const rootIdx = NOTES.indexOf(rootNote);
-            const noteIdx = NOTES.indexOf(n);
-            const degree =
-              rootIdx !== -1 && noteIdx !== -1
-                ? INTERVAL_NAMES[(noteIdx - rootIdx + 12) % 12]
-                : null;
-            return (
-              <span key={i} className="summary-note">
-                <span className="summary-note-name">
-                  {getNoteDisplay(n, rootNote)}
+        {/* Row 1: scale notes — always visible */}
+        <div className="summary-row">
+          <div className="summary-row-label">{scaleLabel}</div>
+          <div className="summary-notes">
+            {summaryNotes.map((n, i) => {
+              const rootIdx = NOTES.indexOf(rootNote);
+              const noteIdx = NOTES.indexOf(n);
+              const chromaticInterval = rootIdx !== -1 && noteIdx !== -1 ? (noteIdx - rootIdx + 12) % 12 : -1;
+              const degree = chromaticInterval !== -1 ? INTERVAL_NAMES[chromaticInterval] : null;
+              const degreeMap = getDegreesForScale(scaleName);
+              const romanNumeral = chromaticInterval !== -1 ? degreeMap[chromaticInterval] : undefined;
+              const degreeColor = romanNumeral ? DEGREE_COLORS[romanNumeral] : undefined;
+              return (
+                <span key={i} className="summary-note" style={degreeColor ? { outline: `2px solid ${degreeColor}`, outlineOffset: '-2px' } : undefined}>
+                  <span className="summary-note-name">
+                    {formatAccidental(getNoteDisplayInScale(n, rootNote, SCALES[scaleName] || [], useFlats))}
+                  </span>
+                  {degree && (
+                    <span className="summary-note-degree" style={{ color: degreeColor }}>{degree}</span>
+                  )}
                 </span>
-                {degree && (
-                  <span className="summary-note-degree">{degree}</span>
-                )}
-              </span>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
+
+        {/* Row 2: chord overlay notes — only when chord active */}
+        {chordLabel && (
+          <div className="summary-row summary-row--chord">
+            <div className="summary-row-label">{chordLabel}</div>
+            <div className="summary-notes">
+              {chordSummaryNotes.map((n, i) => {
+                const rootIdx = NOTES.indexOf(chordRoot);
+                const noteIdx = NOTES.indexOf(n);
+                const chromaticInterval = rootIdx !== -1 && noteIdx !== -1 ? (noteIdx - rootIdx + 12) % 12 : -1;
+                const degree = chromaticInterval !== -1 ? INTERVAL_NAMES[chromaticInterval] : null;
+                const degreeMap = getDegreesForScale(scaleName);
+                const romanNumeral = chromaticInterval !== -1 ? degreeMap[chromaticInterval] : undefined;
+                const degreeColor = romanNumeral ? DEGREE_COLORS[romanNumeral] : undefined;
+                return (
+                  <span key={i} className="summary-note summary-note--chord" style={degreeColor ? { outline: `2px solid ${degreeColor}`, outlineOffset: '-2px' } : undefined}>
+                    <span className="summary-note-name">
+                      {formatAccidental(getNoteDisplay(n, chordRoot, useFlats))}
+                    </span>
+                    {degree && (
+                      <span className="summary-note-degree" style={{ color: degreeColor }}>{degree}</span>
+                    )}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

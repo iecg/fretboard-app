@@ -309,13 +309,15 @@
   flex-direction: column;
   gap: 0;
   line-height: 1;
-  font-size: var(--text-xs);
+  font-size: 1rem;
   font-weight: 700;
   transition: background-color var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast), transform var(--transition-fast);
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
+  -webkit-text-stroke: 2px rgba(0, 0, 0, 0.5);
+  paint-order: stroke fill;
 }
 
 .root-active {
@@ -360,7 +362,8 @@
   font-weight: 600;
   opacity: 0.85;
   line-height: 1;
-  text-shadow: 0 0 3px rgba(0, 0, 0, 0.6);
+  -webkit-text-stroke: 2.5px rgba(0, 0, 0, 0.7);
+  paint-order: stroke fill;
   letter-spacing: 0;
   order: -1; /* renders above main label */
 }
@@ -456,7 +459,7 @@
   max-width: 100%;
 }
 
-.control-group h2, .group-header h2 {
+.control-group h2 {
   font-size: var(--text-xs);
   font-weight: 600;
   display: flex;
@@ -557,11 +560,37 @@
 
 /* Fret range controls */
 
-/* Root Note Controls */
-.group-header {
+/* Key column */
+.key-column {
+  position: relative;
+}
+
+.key-column > h2 {
+  display: block;
+  text-align: center;
+}
+
+.accidental-toggle {
+  font-size: 1.4rem;
+  width: 2.5rem;
+  height: 2.5rem;
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--surface-highlight);
+  border-radius: 9999px;
+  color: var(--text-muted);
+  cursor: pointer;
+  position: absolute;
+  top: 0;
+  right: 0;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.accidental-toggle:hover {
+  color: white;
+  border-color: var(--text-muted);
 }
 
 .badge {
@@ -632,32 +661,51 @@
 
 .summary-area {
   display: flex;
+  flex-direction: column;
   flex-shrink: 0;
-  gap: var(--space-4);
-  align-items: center;
+  gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-lg);
   background-color: var(--surface-base);
   border: 1px solid var(--surface-highlight);
 }
 
-.summary-title {
+.summary-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.summary-row-label {
   font-size: var(--text-sm);
   font-weight: 500;
   color: var(--text-muted);
   white-space: nowrap;
+  min-width: 6rem;
+}
+
+.summary-row--chord {
+  border-top: 1px solid var(--surface-highlight);
+  padding-top: var(--space-2);
+}
+
+.summary-note--chord .summary-note-name {
+  color: var(--text-primary);
 }
 
 .summary-notes {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 
 .summary-note {
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-1);
+  width: 2.8rem;
+  height: 2.8rem;
   background-color: var(--surface-raised);
-  border-radius: var(--radius-sm);
+  border-radius: 9999px;
   font-size: var(--text-sm);
   font-weight: 700;
   box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
@@ -665,23 +713,36 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1px;
+  justify-content: center;
+  gap: 2px;
 }
 
 .summary-note-name {
   line-height: 1.2;
+  text-align: center;
+  width: 100%;
+  -webkit-text-stroke: 2px rgba(0, 0, 0, 0.5);
+  paint-order: stroke fill;
 }
 
 .summary-note-degree {
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 500;
-  opacity: 0.65;
+  opacity: 0.8;
   line-height: 1;
+  text-align: center;
+  width: 100%;
+  -webkit-text-stroke: 1.5px rgba(0, 0, 0, 0.4);
+  paint-order: stroke fill;
 }
 
 .summary-note:first-child {
-  background-color: var(--accent-secondary);
-  color: white;
+  background-color: var(--surface-highlight);
+  color: var(--text-main);
+}
+
+.summary-note:first-child .summary-note-degree {
+  opacity: 0.9;
 }
 
 /* Circle of Fifths Slice Hovers */
@@ -696,11 +757,11 @@
 }
 
 .circle-slice.active {
-  fill: var(--accent-secondary);
+  fill: var(--surface-highlight);
 }
 
 .circle-slice.active:hover {
-  fill: var(--accent-secondary);
+  fill: var(--surface-highlight);
 }
 
 .circle-slice:focus-visible {

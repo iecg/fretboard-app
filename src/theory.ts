@@ -45,13 +45,78 @@ export function getNoteIndex(noteName: string): number {
   return NOTES.indexOf(norm);
 }
 
-export function getNoteDisplay(noteName: string, activeRoot: string): string {
+export function getNoteDisplay(noteName: string, activeRoot: string, useFlats?: boolean): string {
   const normNote = ENHARMONICS[noteName] && noteName.includes('b') ? ENHARMONICS[noteName] : noteName;
-  const usesFlats = FLAT_KEYS.includes(activeRoot);
-  
-  if (usesFlats && normNote.includes('#')) return ENHARMONICS[normNote] || normNote;
-  if (!usesFlats && normNote.includes('b')) return ENHARMONICS[normNote] || normNote;
+  const flats = useFlats ?? FLAT_KEYS.includes(activeRoot);
+
+  if (flats && normNote.includes('#')) return ENHARMONICS[normNote] || normNote;
+  if (!flats && normNote.includes('b')) return ENHARMONICS[normNote] || normNote;
   return normNote;
+}
+
+export function formatAccidental(s: string): string {
+  return s.replace(/##/g, '𝄪').replace(/#/g, '♯').replace(/bb/g, '𝄫').replace(/b/g, '♭');
+}
+
+const LETTER_NAMES = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+const LETTER_PITCHES: Record<string, number> = { 'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11 };
+
+export function getNoteDisplayInScale(
+  noteName: string,
+  rootNote: string,
+  scaleIntervals: number[],
+  useFlats?: boolean
+): string {
+  // Only apply scale-aware spelling for 7-note scales
+  if (scaleIntervals.length !== 7) {
+    return getNoteDisplay(noteName, rootNote, useFlats);
+  }
+
+  // Normalize inputs to sharp representation for internal lookup
+  const normNote = noteName.includes('b') && ENHARMONICS[noteName] ? ENHARMONICS[noteName] : noteName;
+  const rootNorm = rootNote.includes('b') && ENHARMONICS[rootNote] ? ENHARMONICS[rootNote] : rootNote;
+
+  const rootIdx = NOTES.indexOf(rootNorm);
+  const noteIdx = NOTES.indexOf(normNote);
+  if (rootIdx === -1 || noteIdx === -1) return getNoteDisplay(noteName, rootNote, useFlats);
+
+  const interval = (noteIdx - rootIdx + 12) % 12;
+
+  // Check if this note is in the scale
+  const degreeIndex = scaleIntervals.indexOf(interval);
+  if (degreeIndex === -1) {
+    // Note is not in the scale — use standard display
+    return getNoteDisplay(noteName, rootNote, useFlats);
+  }
+
+  // Determine the root's letter name
+  const rootDisplay = getNoteDisplay(rootNote, rootNote, useFlats);
+  const rootLetter = rootDisplay.charAt(0);
+  const rootLetterIdx = LETTER_NAMES.indexOf(rootLetter);
+  if (rootLetterIdx === -1) return getNoteDisplay(noteName, rootNote, useFlats);
+
+  // Expected letter for this scale degree
+  const expectedLetter = LETTER_NAMES[(rootLetterIdx + degreeIndex) % 7];
+  const expectedBasePitch = LETTER_PITCHES[expectedLetter];
+  const targetPitch = (rootIdx + interval) % 12;
+
+  // Compute accidental needed
+  const diff = (targetPitch - expectedBasePitch + 12) % 12;
+
+  if (diff === 0) {
+    return expectedLetter; // Natural
+  } else if (diff === 1) {
+    return expectedLetter + '#'; // Sharp
+  } else if (diff === 11) {
+    return expectedLetter + 'b'; // Flat
+  } else if (diff === 2) {
+    return expectedLetter + '##'; // Double sharp (rare)
+  } else if (diff === 10) {
+    return expectedLetter + 'bb'; // Double flat (rare)
+  }
+
+  // Fallback
+  return getNoteDisplay(noteName, rootNote, useFlats);
 }
 
 export function getIntervalNotes(rootNote: string, intervals: number[]): string[] {
@@ -106,10 +171,24 @@ export const KEY_SIGNATURES: Record<string, number> = {
   'C': 0,
   'G': 1, 'D': 2, 'A': 3, 'E': 4, 'B': 5, 'F#': 6,
   'F': -1, 'Bb': -2, 'A#': -2, 'Eb': -3, 'D#': -3,
-  'Ab': -4, 'G#': -4, 'Db': -5, 'C#': -7, 'Gb': -6,
+  'Ab': -4, 'G#': -4, 'Db': -5, 'C#': 7, 'Gb': -6,
 };
 
 export function getKeySignature(rootNote: string): number {
+  return KEY_SIGNATURES[rootNote] ?? 0;
+}
+
+export function getKeySignatureForDisplay(rootNote: string, useFlats: boolean): number {
+  // When useFlats is true and root has an enharmonic flat name, use that for lookup
+  if (useFlats && rootNote.includes('#') && ENHARMONICS[rootNote]) {
+    const flatName = ENHARMONICS[rootNote];
+    if (KEY_SIGNATURES[flatName] !== undefined) return KEY_SIGNATURES[flatName];
+  }
+  // When useFlats is false and root has an enharmonic flat name, resolve to sharp
+  if (!useFlats && rootNote.includes('b') && ENHARMONICS[rootNote]) {
+    const sharpName = ENHARMONICS[rootNote];
+    if (KEY_SIGNATURES[sharpName] !== undefined) return KEY_SIGNATURES[sharpName];
+  }
   return KEY_SIGNATURES[rootNote] ?? 0;
 }
 
