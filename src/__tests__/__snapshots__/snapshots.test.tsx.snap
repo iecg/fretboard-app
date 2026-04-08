@@ -4,6 +4,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop layout sna
 <div>
   <div
     class="app-container"
+    data-layout-mode="landscape-tablet"
   >
     <header
       class="app-header"
@@ -3689,6 +3690,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
 <div>
   <div
     class="app-container"
+    data-layout-mode="mobile"
   >
     <header
       class="app-header"
@@ -7947,6 +7949,7 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
 <div>
   <div
     class="app-container"
+    data-layout-mode="landscape-tablet"
   >
     <header
       class="app-header"
@@ -11770,6 +11773,7 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
 <div>
   <div
     class="app-container"
+    data-layout-mode="landscape-tablet"
   >
     <header
       class="app-header"
