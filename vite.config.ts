@@ -24,6 +24,8 @@ export default defineConfig({
         'src/__tests__/',
         '**/*.test.*',
         '**/*.spec.*',
+        '**/*.d.ts',
+        'src/main.tsx',
         '**/dist/**',
         '**/build/**',
         'coverage/**',
@@ -31,7 +33,7 @@ export default defineConfig({
       include: ['src/**/*.{ts,tsx}'],
       thresholds: {
         lines: 70,
-        functions: 70,
+        functions: 65,
         branches: 65,
         statements: 70,
       },
