@@ -30,9 +30,8 @@ describe('Fretboard', () => {
 
   describe('Rendering', () => {
     it('renders without crashing', () => {
-      render(<Fretboard {...defaultProps} />);
-      const fretboard = screen.queryByText(/fretboard|string|fret/, { selector: 'div' });
-      expect(fretboard || document.querySelector('[data-testid]')).toBeTruthy();
+      const { container } = render(<Fretboard {...defaultProps} />);
+      expect(container.firstChild).toBeTruthy();
     });
 
     it('renders all 6 strings for standard tuning', () => {

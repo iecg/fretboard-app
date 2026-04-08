@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import App from '../App';
+import { synth } from '../audio';
 
 // Mock child components to isolate App logic
 vi.mock('../Fretboard', () => ({
@@ -23,7 +24,7 @@ vi.mock('../CircleOfFifths', () => ({
 vi.mock('../DrawerSelector', () => ({
   DrawerSelector: ({ label, value, onSelect, options }: any) => (
     <div data-testid={`drawer-${label.toLowerCase()}`}>
-      <button onClick={() => onSelect(options[0])}>{label}: {value}</button>
+      <button onClick={() => onSelect(options.find((o: any) => typeof o === 'string') ?? options[0])}>{label}: {value}</button>
     </div>
   ),
 }));
@@ -70,7 +71,6 @@ describe('App', () => {
     });
 
     it('synth is muted based on initial state', () => {
-      const { synth } = require('../audio');
       localStorage.setItem('isMuted', 'true');
       render(<App />);
       // On mount, setMute is called with the persisted state
@@ -162,7 +162,7 @@ describe('App', () => {
       expect(localStorage.getItem('isMuted')).toBe('false');
 
       const muteButtons = screen.getAllByRole('button').filter(
-        (btn) => btn.getAttribute('aria-label')?.includes('mute') || btn.className.includes('mute')
+        (btn) => btn.getAttribute('title')?.toLowerCase().includes('mute')
       );
 
       if (muteButtons.length > 0) {
@@ -174,11 +174,10 @@ describe('App', () => {
     });
 
     it('calls synth.setMute when toggling mute', async () => {
-      const { synth } = require('../audio');
       render(<App />);
 
       const muteButtons = screen.getAllByRole('button').filter(
-        (btn) => btn.getAttribute('aria-label')?.includes('mute') || btn.className.includes('mute')
+        (btn) => btn.getAttribute('title')?.toLowerCase().includes('mute')
       );
 
       if (muteButtons.length > 0) {

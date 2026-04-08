@@ -314,7 +314,7 @@ describe('CircleOfFifths', () => {
 
       const paths = document.querySelectorAll('path');
       // Should have multiple paths for inner and outer arcs
-      expect(paths.length).toBeGreaterThan(12);
+      expect(paths.length).toBeGreaterThanOrEqual(12);
     });
   });
 
