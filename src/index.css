@@ -53,8 +53,9 @@
   --radius-xl: 1rem;
 
   /* Transitions */
-  --transition-fast: 0.15s ease-out;
+  --transition-fast: 0.12s ease-out;
   --transition-base: 0.2s ease;
+  --transition-slow: 0.3s ease;
   /* CAGED shape colors */
   --caged-e: #ef4444;
   --caged-d: #eab308;
@@ -66,6 +67,7 @@
   --caged-c-bg: rgba(34, 197, 94, 0.18);
   --caged-a-bg: rgba(59, 130, 246, 0.18);
   --caged-g-bg: rgba(168, 85, 247, 0.18);
+
 
   background-color: var(--bg-color);
   color: var(--text-main);
@@ -82,11 +84,15 @@ body {
   min-height: 100vh;
 }
 
+/* Removed global wildcard transition — per-element transitions declared in App.css */
+
 #root {
   width: 100%;
   height: 100vh;
   display: flex;
   flex-direction: column;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* Mobile: allow page scroll instead of viewport-fit */

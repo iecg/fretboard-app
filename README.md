@@ -1,73 +1,72 @@
-# React + TypeScript + Vite
+# FretFlow
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**[🎸 Live Demo](https://iecg.github.io/fretboard-app/)**
 
-Currently, two official plugins are available:
+An interactive guitar fretboard learning tool built with React, TypeScript, and Vite.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+![FretFlow screenshot](public/screenshot.png)
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Fretboard Visualization
+- **Scale overlay** — highlight any scale across the full fretboard
+- **Chord overlay** — visualize any chord independently over any scale (useful for soloing)
+- **3-tier note system** — chord tones, scale-only notes, and off-scale chord tones are visually distinct
+- **Arpeggio view** — hide scale notes to focus on chord tones only
+- **Display modes** — toggle between note names and interval degrees
 
-## Expanding the ESLint configuration
+### Fingering Patterns
+- **All notes** — show every scale note on the fretboard
+- **CAGED system** — visualize individual or multiple CAGED shapes with color-coded backgrounds
+  - Click a shape to isolate it; **Shift+click** to multi-select
+  - Shape backgrounds centered on notes with gradient boundaries between adjacent shapes
+- **3NPS (3 Notes Per String)** — view individual or all positions
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Circle of Fifths
+- Interactive annular segments for root note selection
+- Displays key signature, scale degrees, and enharmonic equivalents
+- Flats-only notation (except F#/Gb)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Chord Overlay Controls
+- Independent chord root selector (or link to scale root)
+- Supports all common chord types
+- Non-scale chord tones shown with distinct styling
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Fretboard Controls
+- **Fret range** — narrow the visible fret window (e.g. show only frets 5–12); coexists with zoom
+- **Zoom** — increase fret column width beyond the auto-fit minimum; at minimum zoom the fretboard fills the full container width
+- **Quick-jump** — scroll to Open, Mid (5), or High (12) positions
+- **Drag to scroll** — pan the fretboard horizontally
+- **Audio playback** — tap any note to hear it
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Settings
+- Tuning selector (Standard, Drop D, Open G, and more)
+- Display format (notes / intervals)
+- Reset button to restore all defaults
+- Mute toggle
+
+## Tech Stack
+
+- **React 19** + **TypeScript**
+- **Vite** for bundling
+- **Lucide React** for icons
+- Web Audio API for note synthesis
+
+## Getting Started
+
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Build for production:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run build
 ```
+
+## Support
+
+If you find FretFlow useful, consider supporting its development:
+
+[![ko-fi](https://storage.ko-fi.com/cdn/brandasset/v2/support_me_on_kofi_badge_blue.png)](https://ko-fi.com/E1E01XFJ0G)

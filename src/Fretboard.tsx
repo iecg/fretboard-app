@@ -7,7 +7,7 @@ import {
   STANDARD_FRET_MARKERS,
   parseNote,
 } from "./guitar";
-import { NOTES, ENHARMONICS, getNoteDisplay, INTERVAL_NAMES } from "./theory";
+import { NOTES, ENHARMONICS, getNoteDisplayInScale, INTERVAL_NAMES, formatAccidental, SCALES } from "./theory";
 import { synth } from "./audio";
 import type { ShapePolygon } from "./shapes";
 
@@ -36,6 +36,8 @@ interface FretboardProps {
   onFretStartChange?: (fret: number) => void;
   onFretEndChange?: (fret: number) => void;
   onFretClick?: (stringIndex: number, fretIndex: number, noteName: string) => void;
+  useFlats?: boolean;
+  scaleName?: string;
 }
 
 export function Fretboard({
@@ -60,6 +62,8 @@ export function Fretboard({
   onFretStartChange,
   onFretEndChange,
   onFretClick,
+  useFlats = false,
+  scaleName = "",
 }: FretboardProps) {
   const fretboardLayout = getFretboardNotes(tuning, Math.max(endFret, maxFret));
   const fretCount = endFret - startFret;
@@ -412,7 +416,7 @@ export function Fretboard({
                       noteClass = "note-inactive";
                     }
 
-                    let displayValue = getNoteDisplay(noteName, rootNote);
+                    let displayValue = getNoteDisplayInScale(noteName, rootNote, SCALES[scaleName] || [], useFlats);
                     if (displayFormat === "degrees" && rootNote) {
                       const normRoot = ENHARMONICS[rootNote]?.includes("b") ? ENHARMONICS[rootNote] : rootNote;
                       const rootIdx = NOTES.indexOf(normRoot.includes("#") ? normRoot : rootNote);
@@ -421,7 +425,7 @@ export function Fretboard({
                         displayValue = INTERVAL_NAMES[(noteIdx - rootIdx + 12) % 12];
                       }
                     } else if (fretIndex === 0 && parseNote(openString).noteName === noteName) {
-                      displayValue = getNoteDisplay(noteName, rootNote);
+                      displayValue = getNoteDisplayInScale(noteName, rootNote, SCALES[scaleName] || [], useFlats);
                     }
 
                     const isWrapped = wrappedNotes.has(`${stringIndex}-${fretIndex}`);
@@ -457,7 +461,9 @@ export function Fretboard({
                           )}
                           style={applyDimOpacity ? { opacity: 0.8 } : undefined}
                         >
-                          {displayFormat !== "none" && displayValue}
+                          {displayFormat !== "none" && (
+                            <span className="note-main-label">{formatAccidental(displayValue)}</span>
+                          )}
                         </div>
                       </div>
                     );

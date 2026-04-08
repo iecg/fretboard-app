@@ -1,4 +1,4 @@
-import { CIRCLE_OF_FIFTHS, ENHARMONICS, getNoteDisplay, getKeySignature, SCALES } from "./theory";
+import { CIRCLE_OF_FIFTHS, ENHARMONICS, getNoteDisplayInScale, getKeySignatureForDisplay, formatAccidental, SCALES } from "./theory";
 
 const SIZE = 320;
 const CX = SIZE / 2;
@@ -8,13 +8,18 @@ const INNER_RADIUS = SIZE * 0.26;
 const LABEL_RADIUS = SIZE * 0.39;
 const DEGREE_RADIUS = SIZE * 0.31;
 
-function getCircleNoteLabels(note: string, rootNote: string): { primary: string; enharmonic: string | null } {
-  if (!note.includes('#')) return { primary: note, enharmonic: null };
-  // F# root is enharmonically Gb — use flat-key spelling throughout
-  const effectiveRoot = rootNote === 'F#' ? 'Gb' : rootNote;
-  const primary = getNoteDisplay(note, effectiveRoot);
-  const enharmonic = ENHARMONICS[primary] ?? ENHARMONICS[note] ?? null;
-  return { primary, enharmonic };
+function getCircleNoteLabels(note: string, rootNote: string, useFlats: boolean, scaleIntervals: number[]): { primary: string; enharmonic: string | null } {
+  const display = getNoteDisplayInScale(note, rootNote, scaleIntervals, useFlats);
+  if (display !== note) {
+    // Respelled (sharp→flat, flat→sharp, or natural→accidental like F→E#)
+    return { primary: formatAccidental(display), enharmonic: formatAccidental(note) };
+  }
+  // No change — check if there's a standard enharmonic to show
+  if (note.includes('#')) {
+    const enh = ENHARMONICS[note] ?? null;
+    return { primary: formatAccidental(note), enharmonic: enh ? formatAccidental(enh) : null };
+  }
+  return { primary: note, enharmonic: null };
 }
 
 // Scale degrees keyed by chromatic semitone interval from root
@@ -31,8 +36,33 @@ const MODE_DEGREES: Record<string, Record<number, string>> = {
   'Harmonic Minor':  { 0: "i", 2: "ii°", 3: "III+", 5: "iv", 7: "V", 8: "VI", 11: "vii°" },
 };
 
+export const DEGREE_COLORS: Record<string, string> = {
+  "I": "#f59e0b",   // amber - tonic
+  "i": "#f59e0b",
+  "i°": "#f59e0b",
+  "II": "#3b82f6",  // blue - supertonic
+  "ii": "#3b82f6",
+  "ii°": "#3b82f6",
+  "III": "#10b981",  // emerald - mediant
+  "III+": "#10b981",
+  "iii": "#10b981",
+  "iii°": "#10b981",
+  "IV": "#ef4444",   // red - subdominant
+  "iv": "#ef4444",
+  "iv°": "#ef4444",
+  "V": "#8b5cf6",   // violet - dominant
+  "v": "#8b5cf6",
+  "v°": "#8b5cf6",
+  "VI": "#ec4899",   // pink - submediant
+  "vi": "#ec4899",
+  "vi°": "#ec4899",
+  "VII": "#6366f1",  // indigo - leading tone
+  "vii": "#6366f1",
+  "vii°": "#6366f1",
+};
+
 // Fallback: major-quality scales use Major degrees, minor-quality use Natural Minor
-function getDegreesForScale(scaleName: string): Record<number, string> {
+export function getDegreesForScale(scaleName: string): Record<number, string> {
   if (MODE_DEGREES[scaleName]) return MODE_DEGREES[scaleName];
   const intervals = SCALES[scaleName];
   if (intervals && intervals.includes(4)) return MODE_DEGREES['Major'];
@@ -43,14 +73,16 @@ export function CircleOfFifths({
   rootNote,
   setRootNote,
   scaleName = "Major",
+  useFlats = false,
 }: {
   rootNote: string;
   setRootNote: (n: string) => void;
   scaleName?: string;
+  useFlats?: boolean;
 }) {
   const rootIndex = CIRCLE_OF_FIFTHS.indexOf(rootNote);
 
-  const keySig = getKeySignature(rootNote);
+  const keySig = getKeySignatureForDisplay(rootNote, useFlats);
   const keySigText = keySig === 0 ? '♮' : keySig > 0 ? `${keySig}♯` : `${Math.abs(keySig)}♭`;
 
   return (
@@ -99,9 +131,9 @@ export function CircleOfFifths({
           const degreeMap = getDegreesForScale(scaleName);
           const degreeStr = degreeMap[chromaticInterval] ?? "";
 
-          const { primary, enharmonic } = getCircleNoteLabels(note, rootNote);
+          const { primary, enharmonic } = getCircleNoteLabels(note, rootNote, useFlats, SCALES[scaleName] || []);
           const noteFontSize = isActive ? SIZE * 0.055 : SIZE * 0.048;
-          const degreeFontSize = SIZE * 0.032;
+          const degreeFontSize = SIZE * 0.038;
 
           return (
             <g key={`text-group-${note}`} style={{ pointerEvents: "none" }}>
@@ -113,8 +145,8 @@ export function CircleOfFifths({
                   fontWeight="bold"
                   fill={isActive ? "var(--text-main)" : "var(--text-muted)"}
                 >
-                  <tspan x={lx} dy="-0.3em">{primary}</tspan>
-                  <tspan x={lx} dy="0.9em" fontSize={noteFontSize * 0.55} opacity={0.4} fontWeight="500">{enharmonic}</tspan>
+                  <tspan x={lx} dy="-0.3em" stroke="rgba(0,0,0,0.3)" strokeWidth="2" paintOrder="stroke">{primary}</tspan>
+                  <tspan x={lx} dy="0.9em" fontSize={noteFontSize * 0.55} fontWeight="500" fill="rgba(255,255,255,0.85)" stroke="rgba(0,0,0,0.6)" strokeWidth="2.5" paintOrder="stroke">{enharmonic}</tspan>
                 </text>
               ) : (
                 <text
@@ -124,7 +156,7 @@ export function CircleOfFifths({
                   fontWeight="bold"
                   fill={isActive ? "var(--text-main)" : "var(--text-muted)"}
                 >
-                  {primary}
+                  <tspan stroke="rgba(0,0,0,0.3)" strokeWidth="2" paintOrder="stroke">{primary}</tspan>
                 </text>
               )}
 
@@ -132,10 +164,11 @@ export function CircleOfFifths({
                 <text
                   x={dx} y={dy}
                   dominantBaseline="middle" textAnchor="middle"
-                  fill={isActive ? "var(--text-main)" : "var(--accent-primary)"}
+                  fill={DEGREE_COLORS[degreeStr] ?? "var(--accent-primary)"}
                   fontSize={degreeFontSize}
                   fontWeight="bold"
-                  opacity={isActive ? 0.9 : 0.6}
+                  opacity={isActive ? 1.0 : 0.7}
+                  stroke="rgba(0,0,0,0.3)" strokeWidth="1.5" paintOrder="stroke"
                 >
                   {degreeStr}
                 </text>
@@ -153,14 +186,16 @@ export function CircleOfFifths({
           textAnchor="middle" dominantBaseline="middle"
           fill="var(--text-muted)" fontSize={SIZE * 0.05}
           fontWeight="bold"
+          stroke="rgba(0,0,0,0.3)" strokeWidth="2" paintOrder="stroke"
         >
-          {rootNote}
+          {formatAccidental(getNoteDisplayInScale(rootNote, rootNote, SCALES[scaleName] || [], useFlats))}
         </text>
         <text
           x={CX} y={CY + SIZE * 0.04}
           textAnchor="middle" dominantBaseline="middle"
           fill="var(--accent-primary)" fontSize={SIZE * 0.055}
           fontWeight="bold"
+          stroke="rgba(0,0,0,0.3)" strokeWidth="2" paintOrder="stroke"
         >
           {keySigText}
         </text>
