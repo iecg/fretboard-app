@@ -1031,16 +1031,16 @@
    These rules layer on top of the existing media queries.
    ============================================= */
 
-/* Tablet portrait: 2-column layout — fretboard left, controls right */
+/* Tablet portrait: fretboard top, two-column panel below */
 .app-container[data-layout-mode="tablet-portrait"] {
   display: grid;
-  grid-template-columns: 40fr 60fr;
-  grid-template-rows: auto 1fr auto auto;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto auto auto auto auto;
   gap: 0.5rem;
 }
 
 .app-container[data-layout-mode="tablet-portrait"] > .app-header {
-  grid-column: 1 / -1;
+  grid-column: 1;
   grid-row: 1;
 }
 
@@ -1050,14 +1050,13 @@
   min-height: 0;
 }
 
+/* Hide legacy controls-panel and cof-slot in tablet-portrait */
 .app-container[data-layout-mode="tablet-portrait"] .controls-panel {
-  grid-column: 2;
-  grid-row: 2 / span 3;
-  display: flex !important;
-  flex-direction: column;
-  overflow: visible;
-  gap: 0.5rem;
-  min-width: 260px;
+  display: none !important;
+}
+
+.app-container[data-layout-mode="tablet-portrait"] .tablet-portrait-cof-slot {
+  display: none;
 }
 
 .app-container[data-layout-mode="tablet-portrait"] .summary-area {
@@ -1065,10 +1064,39 @@
   grid-row: 4;
 }
 
-.app-container[data-layout-mode="tablet-portrait"] .circle-fifths-container {
+/* New two-column panel */
+.app-container[data-layout-mode="tablet-portrait"] .tablet-portrait-panel {
   grid-column: 1;
   grid-row: 3;
-  max-height: min(360px, 40vw);
+  display: flex;
+  flex-direction: row;
+  gap: 0.75rem;
+  min-height: 0;
+}
+
+.tablet-portrait-settings-col {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+  overflow-y: auto;
+}
+
+.tablet-portrait-cof-col {
+  flex: 0 0 320px;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.25rem;
+}
+
+.tablet-tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 /* Landscape tablet: two-column controls layout */
@@ -1280,6 +1308,11 @@
   flex-direction: column;
   gap: 2px;
   transition: opacity var(--transition-slow);
+}
+
+.drawer-options--above {
+  top: auto;
+  bottom: calc(100% + 4px);
 }
 
 .drawer-option {

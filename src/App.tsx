@@ -198,6 +198,12 @@ function App() {
     return (saved as 'key' | 'scale' | 'settings') ?? 'key';
   });
 
+  // Tablet-portrait tab state
+  const [tabletTab, setTabletTab] = useState<'settings' | 'scales'>(() => {
+    const saved = localStorage.getItem('tabletTab');
+    return (saved as 'settings' | 'scales') ?? 'settings';
+  });
+
   // Persist all user state to localStorage
   useEffect(() => {
     localStorage.setItem('rootNote', rootNote);
@@ -220,9 +226,10 @@ function App() {
     localStorage.setItem('useFlats', String(useFlats));
     localStorage.setItem('isMuted', String(isMuted));
     localStorage.setItem('mobileTab', mobileTab);
+    localStorage.setItem('tabletTab', tabletTab);
   }, [rootNote, scaleName, chordRoot, chordType, linkChordRoot, hideNonChordNotes,
       chordFretSpread, chordIntervalFilter, fingeringPattern, cagedShapes, npsPosition,
-      displayFormat, shapeLabels, tuningName, fretZoom, fretStart, fretEnd, useFlats, isMuted, mobileTab]);
+      displayFormat, shapeLabels, tuningName, fretZoom, fretStart, fretEnd, useFlats, isMuted, mobileTab, tabletTab]);
 
   // Sync persisted mute state to audio synth on mount
   useEffect(() => {
@@ -772,15 +779,48 @@ function App() {
         />
       </main>
 
-      {/* CoF slot — tablet-portrait only (below fretboard in col-1) */}
+      {/* Tablet-portrait two-column panel: Settings/Scales tabs (left) + CoF (right) */}
       {isTabletPortrait && (
-        <div className="tablet-portrait-cof-slot">
-          <CircleOfFifths
-            rootNote={rootNote}
-            setRootNote={handleSetRootNote}
-            scaleName={scaleName}
-            useFlats={useFlats}
-          />
+        <div className="tablet-portrait-panel">
+          {/* Left column: Settings/Scales tabs */}
+          <div className="tablet-portrait-settings-col">
+            <div className="toggle-group">
+              <button
+                className={`toggle-btn ${tabletTab === 'settings' ? 'active' : ''}`}
+                onClick={() => { setTabletTab('settings'); localStorage.setItem('tabletTab', 'settings'); }}
+              >Settings</button>
+              <button
+                className={`toggle-btn ${tabletTab === 'scales' ? 'active' : ''}`}
+                onClick={() => { setTabletTab('scales'); localStorage.setItem('tabletTab', 'scales'); }}
+              >Scales</button>
+            </div>
+            {tabletTab === 'settings' && (
+              <div className="tablet-tab-content">
+                {settingsTabContent}
+              </div>
+            )}
+            {tabletTab === 'scales' && (
+              <div className="tablet-tab-content">
+                {scaleChordTabContent}
+              </div>
+            )}
+          </div>
+          {/* Right column: CoF fixed-width */}
+          <div className="tablet-portrait-cof-col">
+            <button
+              className="accidental-toggle"
+              onClick={() => setUseFlats(prev => !prev)}
+              title={useFlats ? 'Showing flats — click for sharps' : 'Showing sharps — click for flats'}
+            >
+              {useFlats ? '♭' : '♯'}
+            </button>
+            <CircleOfFifths
+              rootNote={rootNote}
+              setRootNote={handleSetRootNote}
+              scaleName={scaleName}
+              useFlats={useFlats}
+            />
+          </div>
         </div>
       )}
 
