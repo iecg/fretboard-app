@@ -670,23 +670,25 @@ function App() {
         onSelect={(v) => v && setTuningName(v)}
       />
 
-      <div className="control-section">
-        <span className="section-label">Fret Range</span>
-        <div className="fret-range-mobile">
-          <div className="fret-range-group">
-            <span className="fret-range-label">Start</span>
-            <button className="toolbar-btn" onClick={() => setFretStart(s => Math.max(0, s - 1))} disabled={fretStart <= 0}>−</button>
-            <span className="toolbar-range-val">{fretStart}</span>
-            <button className="toolbar-btn" onClick={() => setFretStart(s => Math.min(fretEnd - 1, s + 1))} disabled={fretStart >= fretEnd - 1}>+</button>
-          </div>
-          <div className="fret-range-group">
-            <span className="fret-range-label">End</span>
-            <button className="toolbar-btn" onClick={() => setFretEnd(e => Math.max(fretStart + 1, e - 1))} disabled={fretEnd <= fretStart + 1}>−</button>
-            <span className="toolbar-range-val">{fretEnd}</span>
-            <button className="toolbar-btn" onClick={() => setFretEnd(e => Math.min(END_FRET, e + 1))} disabled={fretEnd >= END_FRET}>+</button>
+      {!isTabletPortrait && (
+        <div className="control-section">
+          <span className="section-label">Fret Range</span>
+          <div className="fret-range-mobile">
+            <div className="fret-range-group">
+              <span className="fret-range-label">Start</span>
+              <button className="toolbar-btn" onClick={() => setFretStart(s => Math.max(0, s - 1))} disabled={fretStart <= 0}>−</button>
+              <span className="toolbar-range-val">{fretStart}</span>
+              <button className="toolbar-btn" onClick={() => setFretStart(s => Math.min(fretEnd - 1, s + 1))} disabled={fretStart >= fretEnd - 1}>+</button>
+            </div>
+            <div className="fret-range-group">
+              <span className="fret-range-label">End</span>
+              <button className="toolbar-btn" onClick={() => setFretEnd(e => Math.max(fretStart + 1, e - 1))} disabled={fretEnd <= fretStart + 1}>−</button>
+              <span className="toolbar-range-val">{fretEnd}</span>
+              <button className="toolbar-btn" onClick={() => setFretEnd(e => Math.min(END_FRET, e + 1))} disabled={fretEnd >= END_FRET}>+</button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 
@@ -807,6 +809,7 @@ function App() {
           </div>
           {/* Right column: CoF fixed-width */}
           <div className="tablet-portrait-cof-col">
+            <h2>Key</h2>
             <button
               className="accidental-toggle"
               onClick={() => setUseFlats(prev => !prev)}
