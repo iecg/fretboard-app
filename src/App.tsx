@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useAtom, useAtomValue, useSetAtom, createStore, Provider } from "jotai";
 import { Fretboard } from "./Fretboard";
 import {
   SCALES,
@@ -28,11 +29,38 @@ import {
   CAGED_SHAPES,
   getCagedCoordinates,
   get3NPSCoordinates,
-  type CagedShape,
   type ShapePolygon,
 } from "./shapes";
 import { DrawerSelector } from "./DrawerSelector";
+import {
+  type FingeringPattern,
+  rootNoteAtom,
+  scaleNameAtom,
+  chordRootAtom,
+  chordTypeAtom,
+  linkChordRootAtom,
+  hideNonChordNotesAtom,
+  chordFretSpreadAtom,
+  chordIntervalFilterAtom,
+  fingeringPatternAtom,
+  cagedShapesAtom,
+  npsPositionAtom,
+  displayFormatAtom,
+  shapeLabelsAtom,
+  tuningNameAtom,
+  fretZoomAtom,
+  fretStartAtom,
+  fretEndAtom,
+  useFlatsAtom,
+  isMutedAtom,
+  mobileTabAtom,
+  tabletTabAtom,
+  setRootNoteAtom,
+  resetAtom,
+} from "./store/atoms";
 import "./App.css";
+
+const END_FRET = 24;
 
 function SummaryNote({
   note,
@@ -65,8 +93,6 @@ function SummaryNote({
     </span>
   );
 }
-
-type FingeringPattern = "all" | "caged" | "3nps";
 
 // Chord interval filter presets — sets of allowed semitone intervals from chord root
 const CHORD_INTERVAL_FILTERS: Record<string, Set<number>> = {
@@ -117,143 +143,76 @@ const CHORD_OPTIONS: (string | { divider: string })[] = [
   "Power Chord (5)",
 ];
 
-function App() {
-  const END_FRET = 24;
-
+function AppContent() {
   // Scale
-  const [rootNote, setRootNote] = useState<string>(() => localStorage.getItem('rootNote') ?? 'C');
-  const [scaleName, setScaleName] = useState<string>(() => localStorage.getItem('scaleName') ?? 'Major');
+  const rootNote = useAtomValue(rootNoteAtom);
+  const [scaleName, setScaleName] = useAtom(scaleNameAtom);
 
-  // Chord overlay — fully independent
-  const [chordRoot, setChordRoot] = useState<string>(() => localStorage.getItem('chordRoot') ?? 'C');
-  const [chordType, setChordType] = useState<string | null>(() => {
-    const saved = localStorage.getItem('chordType');
-    return saved !== null ? (saved === '' ? null : saved) : null;
-  });
-  const [linkChordRoot, setLinkChordRoot] = useState<boolean>(() => {
-    const saved = localStorage.getItem('linkChordRoot');
-    return saved !== null ? saved === 'true' : true;
-  });
-  const [hideNonChordNotes, setHideNonChordNotes] = useState<boolean>(() => {
-    const saved = localStorage.getItem('hideNonChordNotes');
-    return saved !== null ? saved === 'true' : false;
-  });
-  const [chordFretSpread, setChordFretSpread] = useState<number>(() => {
-    const saved = localStorage.getItem('chordFretSpread');
-    return saved !== null ? Number(saved) : 0;
-  });
-  const [chordIntervalFilter, setChordIntervalFilter] = useState<string>(() => localStorage.getItem('chordIntervalFilter') ?? 'All');
+  // Chord overlay
+  const [chordRoot, setChordRoot] = useAtom(chordRootAtom);
+  const [chordType, setChordType] = useAtom(chordTypeAtom);
+  const [linkChordRoot, setLinkChordRoot] = useAtom(linkChordRootAtom);
+  const [hideNonChordNotes, setHideNonChordNotes] = useAtom(hideNonChordNotesAtom);
+  const [chordFretSpread, setChordFretSpread] = useAtom(chordFretSpreadAtom);
+  const [chordIntervalFilter, setChordIntervalFilter] = useAtom(chordIntervalFilterAtom);
 
   // Fingering
-  const [fingeringPattern, setFingeringPattern] = useState<FingeringPattern>(() => {
-    const saved = localStorage.getItem('fingeringPattern');
-    return (saved as FingeringPattern) ?? 'all';
-  });
-  const [cagedShapes, setCagedShapes] = useState<Set<CagedShape>>(() => {
-    const saved = localStorage.getItem('cagedShapes');
-    if (saved !== null) {
-      try {
-        return new Set(JSON.parse(saved) as CagedShape[]);
-      } catch {
-        // fall through to default
-      }
-    }
-    return new Set(CAGED_SHAPES);
-  });
-  const [npsPosition, setNpsPosition] = useState<number>(() => {
-    const saved = localStorage.getItem('npsPosition');
-    return saved !== null ? Number(saved) : 0;
-  });
+  const [fingeringPattern, setFingeringPattern] = useAtom(fingeringPatternAtom);
+  const [cagedShapes, setCagedShapes] = useAtom(cagedShapesAtom);
+  const [npsPosition, setNpsPosition] = useAtom(npsPositionAtom);
 
   // Display
-  const [displayFormat, setDisplayFormat] = useState<"notes" | "degrees" | "none">(() => {
-    const saved = localStorage.getItem('displayFormat');
-    return (saved as "notes" | "degrees" | "none") ?? 'notes';
-  });
-  const [shapeLabels, setShapeLabels] = useState<"modal" | "caged" | "none">(() => {
-    const saved = localStorage.getItem('shapeLabels');
-    return (saved as "modal" | "caged" | "none") ?? 'none';
-  });
-  const [tuningName, setTuningName] = useState<string>(() => localStorage.getItem('tuningName') ?? 'Standard');
-  const [fretZoom, setFretZoom] = useState<number>(() => {
-    const saved = localStorage.getItem('fretZoom');
-    return saved !== null ? Number(saved) : 100;
-  });
-  const [fretStart, setFretStart] = useState<number>(() => {
-    const saved = localStorage.getItem('fretStart');
-    return saved !== null ? Number(saved) : 0;
-  });
-  const [fretEnd, setFretEnd] = useState<number>(() => {
-    const saved = localStorage.getItem('fretEnd');
-    return saved !== null ? Number(saved) : END_FRET;
-  });
+  const [displayFormat, setDisplayFormat] = useAtom(displayFormatAtom);
+  const [shapeLabels, setShapeLabels] = useAtom(shapeLabelsAtom);
+  const [tuningName, setTuningName] = useAtom(tuningNameAtom);
+  const [fretZoom, setFretZoom] = useAtom(fretZoomAtom);
+  const [fretStart, setFretStart] = useAtom(fretStartAtom);
+  const [fretEnd, setFretEnd] = useAtom(fretEndAtom);
 
-  // Accidentals
-  const [useFlats, setUseFlats] = useState<boolean>(() => {
-    const saved = localStorage.getItem('useFlats');
-    return saved !== null ? saved === 'true' : false;
-  });
+  // Accidentals / Audio / Mobile tab
+  const [useFlats, setUseFlats] = useAtom(useFlatsAtom);
+  const [isMuted, setIsMuted] = useAtom(isMutedAtom);
+  const [mobileTab, setMobileTab] = useAtom(mobileTabAtom);
 
-  // Audio
-  const [isMuted, setIsMuted] = useState<boolean>(() => {
-    const saved = localStorage.getItem('isMuted');
-    return saved !== null ? saved === 'true' : false;
-  });
-
-  // Viewport / mobile detection
+  // Viewport / mobile detection (not persisted)
   const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
+  const [viewportHeight, setViewportHeight] = useState(() => window.innerHeight);
   useEffect(() => {
-    const handler = () => setViewportWidth(window.innerWidth);
+    const handler = () => {
+      setViewportWidth(window.innerWidth);
+      setViewportHeight(window.innerHeight);
+    };
     window.addEventListener('resize', handler);
     return () => window.removeEventListener('resize', handler);
   }, []);
-  const isMobile = viewportWidth < 768;
+  const isLandscapeMobile = viewportWidth < 768 && viewportHeight < viewportWidth;
+  const isMobile = viewportWidth < 768 || isLandscapeMobile;
+  const isTabletPortrait = viewportWidth >= 768 && viewportWidth < 1366 && viewportHeight >= viewportWidth;
+  const isLandscapeTablet = viewportWidth >= 1024 && viewportWidth < 1366 && viewportHeight < viewportWidth;
+  type LayoutMode = 'mobile' | 'landscape-mobile' | 'tablet-portrait' | 'landscape-tablet' | 'desktop';
+  const layoutMode: LayoutMode =
+    isLandscapeMobile ? 'landscape-mobile' :
+    isTabletPortrait  ? 'tablet-portrait' :
+    isLandscapeTablet ? 'landscape-tablet' :
+    isMobile          ? 'mobile' :
+    'desktop';
 
-  // Mobile tab state
-  const [mobileTab, setMobileTab] = useState<'key' | 'scale' | 'settings'>(() => {
-    const saved = localStorage.getItem('mobileTab');
-    return (saved as 'key' | 'scale' | 'settings') ?? 'key';
-  });
+  // String row height — reduced on small phones (iPhone SE, 375×667) to fit the fretboard natively
+  // without squishing it horizontally via transform:scale().
+  const stringRowPx = (isMobile && viewportHeight <= 700) ? 32 : 40;
 
-  // Persist all user state to localStorage
-  useEffect(() => {
-    localStorage.setItem('rootNote', rootNote);
-    localStorage.setItem('scaleName', scaleName);
-    localStorage.setItem('chordRoot', chordRoot);
-    localStorage.setItem('chordType', chordType ?? '');
-    localStorage.setItem('linkChordRoot', String(linkChordRoot));
-    localStorage.setItem('hideNonChordNotes', String(hideNonChordNotes));
-    localStorage.setItem('chordFretSpread', String(chordFretSpread));
-    localStorage.setItem('chordIntervalFilter', chordIntervalFilter);
-    localStorage.setItem('fingeringPattern', fingeringPattern);
-    localStorage.setItem('cagedShapes', JSON.stringify(Array.from(cagedShapes)));
-    localStorage.setItem('npsPosition', String(npsPosition));
-    localStorage.setItem('displayFormat', displayFormat);
-    localStorage.setItem('shapeLabels', shapeLabels);
-    localStorage.setItem('tuningName', tuningName);
-    localStorage.setItem('fretZoom', String(fretZoom));
-    localStorage.setItem('fretStart', String(fretStart));
-    localStorage.setItem('fretEnd', String(fretEnd));
-    localStorage.setItem('useFlats', String(useFlats));
-    localStorage.setItem('isMuted', String(isMuted));
-    localStorage.setItem('mobileTab', mobileTab);
-  }, [rootNote, scaleName, chordRoot, chordType, linkChordRoot, hideNonChordNotes,
-      chordFretSpread, chordIntervalFilter, fingeringPattern, cagedShapes, npsPosition,
-      displayFormat, shapeLabels, tuningName, fretZoom, fretStart, fretEnd, useFlats, isMuted, mobileTab]);
+  // Tablet-portrait tab state (Jotai atom with localStorage persistence)
+  const [tabletTab, setTabletTab] = useAtom(tabletTabAtom);
 
-  // Sync persisted mute state to audio synth on mount
+  // Sync mute state to audio synth (runs on mount and whenever isMuted changes)
   useEffect(() => {
     synth.setMute(isMuted);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // intentionally only on mount
+  }, [isMuted]);
 
   const currentTuning = TUNINGS[tuningName] || STANDARD_TUNING;
 
-  // When root note changes, keep chord root linked if toggled
-  const handleSetRootNote = (note: string) => {
-    setRootNote(note);
-    if (linkChordRoot) setChordRoot(note);
-  };
+  // Linked root note setter — syncs chordRoot when linkChordRoot is enabled
+  const handleSetRootNote = useSetAtom(setRootNoteAtom);
 
   const toggleMute = () => {
     const nextMute = !isMuted;
@@ -261,29 +220,10 @@ function App() {
     synth.setMute(nextMute);
   };
 
+  const dispatchReset = useSetAtom(resetAtom);
   const handleReset = () => {
-    localStorage.clear();
-    setRootNote("C");
-    setScaleName("Major");
-    setChordRoot("C");
-    setChordType(null);
-    setLinkChordRoot(true);
-    setHideNonChordNotes(false);
-    setChordFretSpread(0);
-    setChordIntervalFilter("All");
-    setFingeringPattern("all");
-    setCagedShapes(new Set(CAGED_SHAPES));
-    setNpsPosition(0);
-    setDisplayFormat("notes");
-    setShapeLabels("none");
-    setTuningName("Standard");
-    setFretZoom(100);
-    setFretStart(0);
-    setFretEnd(END_FRET);
-    setUseFlats(false);
-    setIsMuted(false);
+    dispatchReset();
     synth.setMute(false);
-    setMobileTab('key');
   };
 
   // Compute active chord tones (independent of scale)
@@ -445,7 +385,9 @@ function App() {
   // Mobile tab content — Key tab (CoF + accidental toggle + summary)
   const keyTabContent = (
     <div className="mobile-tab-panel mobile-key-tab">
-      <div className="cof-container">
+      <div
+        className="cof-container"
+      >
         <CircleOfFifths
           rootNote={rootNote}
           setRootNote={handleSetRootNote}
@@ -654,35 +596,39 @@ function App() {
         </div>
       </div>
 
-      <DrawerSelector
-        label="Tuning"
-        value={tuningName}
-        options={Object.keys(TUNINGS)}
-        onSelect={(v) => v && setTuningName(v)}
-      />
-
       <div className="control-section">
-        <span className="section-label">Fret Range</span>
-        <div className="fret-range-mobile">
-          <div className="fret-range-group">
-            <span className="fret-range-label">Start</span>
-            <button className="toolbar-btn" onClick={() => setFretStart(s => Math.max(0, s - 1))} disabled={fretStart <= 0}>−</button>
-            <span className="toolbar-range-val">{fretStart}</span>
-            <button className="toolbar-btn" onClick={() => setFretStart(s => Math.min(fretEnd - 1, s + 1))} disabled={fretStart >= fretEnd - 1}>+</button>
-          </div>
-          <div className="fret-range-group">
-            <span className="fret-range-label">End</span>
-            <button className="toolbar-btn" onClick={() => setFretEnd(e => Math.max(fretStart + 1, e - 1))} disabled={fretEnd <= fretStart + 1}>−</button>
-            <span className="toolbar-range-val">{fretEnd}</span>
-            <button className="toolbar-btn" onClick={() => setFretEnd(e => Math.min(END_FRET, e + 1))} disabled={fretEnd >= END_FRET}>+</button>
+        <DrawerSelector
+          label="Tuning"
+          value={tuningName}
+          options={Object.keys(TUNINGS)}
+          onSelect={(v) => v && setTuningName(v)}
+        />
+      </div>
+
+      {!isTabletPortrait && (
+        <div className="control-section">
+          <span className="section-label">Fret Range</span>
+          <div className="fret-range-mobile">
+            <div className="fret-range-group">
+              <span className="fret-range-label">Start</span>
+              <button className="toolbar-btn" onClick={() => setFretStart(s => Math.max(0, s - 1))} disabled={fretStart <= 0}>−</button>
+              <span className="toolbar-range-val">{fretStart}</span>
+              <button className="toolbar-btn" onClick={() => setFretStart(s => Math.min(fretEnd - 1, s + 1))} disabled={fretStart >= fretEnd - 1}>+</button>
+            </div>
+            <div className="fret-range-group">
+              <span className="fret-range-label">End</span>
+              <button className="toolbar-btn" onClick={() => setFretEnd(e => Math.max(fretStart + 1, e - 1))} disabled={fretEnd <= fretStart + 1}>−</button>
+              <span className="toolbar-range-val">{fretEnd}</span>
+              <button className="toolbar-btn" onClick={() => setFretEnd(e => Math.min(END_FRET, e + 1))} disabled={fretEnd >= END_FRET}>+</button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 
   return (
-    <div className="app-container">
+    <div className="app-container" data-layout-mode={layoutMode}>
       {/* Header */}
       <header className="app-header">
         <div className="logo-container">
@@ -767,11 +713,58 @@ function App() {
           wrappedNotes={wrappedNotes}
           useFlats={useFlats}
           scaleName={scaleName}
+          stringRowPx={stringRowPx}
         />
       </main>
 
-      {/* Summary bar — desktop only (mobile shows it in Key tab) */}
-      {!isMobile && summaryContent}
+      {/* Tablet-portrait two-column panel: Settings/Scales tabs (left) + CoF (right) */}
+      {isTabletPortrait && (
+        <div className="tablet-portrait-panel">
+          {/* Left column: Settings/Scales tabs */}
+          <div className="tablet-portrait-settings-col">
+            <div className="toggle-group">
+              <button
+                className={`toggle-btn ${tabletTab === 'settings' ? 'active' : ''}`}
+                onClick={() => setTabletTab('settings')}
+              >Settings</button>
+              <button
+                className={`toggle-btn ${tabletTab === 'scales' ? 'active' : ''}`}
+                onClick={() => setTabletTab('scales')}
+              >Scales</button>
+            </div>
+            {tabletTab === 'settings' && (
+              <div className="tablet-tab-content">
+                {settingsTabContent}
+              </div>
+            )}
+            {tabletTab === 'scales' && (
+              <div className="tablet-tab-content">
+                {scaleChordTabContent}
+              </div>
+            )}
+          </div>
+          {/* Right column: CoF fixed-width */}
+          <div className="tablet-portrait-cof-col">
+            <h2>Key</h2>
+            <button
+              className="accidental-toggle"
+              onClick={() => setUseFlats(prev => !prev)}
+              title={useFlats ? 'Showing flats — click for sharps' : 'Showing sharps — click for flats'}
+            >
+              {useFlats ? '♭' : '♯'}
+            </button>
+            <CircleOfFifths
+              rootNote={rootNote}
+              setRootNote={handleSetRootNote}
+              scaleName={scaleName}
+              useFlats={useFlats}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Summary bar — desktop and tablet-portrait (mobile shows it in Key tab) */}
+      {(!isMobile || isTabletPortrait) && summaryContent}
 
       {/* Mobile inline tab bar + content — hidden on desktop */}
       {isMobile && (
@@ -930,25 +923,27 @@ function App() {
           />
         </div>
 
-        {/* Col 2: Circle of Fifths + Chord Root */}
-        <div className="control-group col-span-2 key-column">
-          <h2>Key</h2>
-          {!isMobile && (
-            <button
-              className="accidental-toggle"
-              onClick={() => setUseFlats(prev => !prev)}
-              title={useFlats ? 'Showing flats — click for sharps' : 'Showing sharps — click for flats'}
-            >
-              {useFlats ? '♭' : '♯'}
-            </button>
-          )}
-          <CircleOfFifths
-            rootNote={rootNote}
-            setRootNote={handleSetRootNote}
-            scaleName={scaleName}
-            useFlats={useFlats}
-          />
-        </div>
+        {/* Col 2: Circle of Fifths + Chord Root — hidden in tablet-portrait (rendered below fretboard instead) */}
+        {!isTabletPortrait && (
+          <div className="control-group col-span-2 key-column">
+            <h2>Key</h2>
+            {!isMobile && (
+              <button
+                className="accidental-toggle"
+                onClick={() => setUseFlats(prev => !prev)}
+                title={useFlats ? 'Showing flats — click for sharps' : 'Showing sharps — click for flats'}
+              >
+                {useFlats ? '♭' : '♯'}
+              </button>
+            )}
+            <CircleOfFifths
+              rootNote={rootNote}
+              setRootNote={handleSetRootNote}
+              scaleName={scaleName}
+              useFlats={useFlats}
+            />
+          </div>
+        )}
 
         {/* Col 3: Scale & Chord drawers */}
         <div className="control-group">
@@ -1025,10 +1020,22 @@ function App() {
       </div>
 
       <div className="version-badge">
-        v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar. All rights reserved.
+        v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar. Licensed under <a href="https://www.gnu.org/licenses/agpl-3.0" target="_blank" rel="noopener noreferrer">AGPL v3</a>.
       </div>
 
     </div>
+  );
+}
+
+// Wraps AppContent with a fresh Jotai store per mount.
+// useState lazy initializer ensures one store per component instance:
+// stable across re-renders, isolated between mounts (e.g. in tests).
+function App() {
+  const [store] = useState(() => createStore());
+  return (
+    <Provider store={store}>
+      <AppContent />
+    </Provider>
   );
 }
 

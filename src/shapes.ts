@@ -66,6 +66,33 @@ interface ShapeTemplate {
 }
 
 /**
+ * Template coordinate system
+ * ──────────────────────────
+ * Each template describes a CAGED shape as per-string fret spans relative to
+ * the root note's fret on the anchorString.
+ *
+ *   perString[s] = [leftOffset, rightOffset]
+ *
+ * The polygon for string s covers frets:
+ *   [ rootFret + leftOffset,  rootFret + rightOffset ]
+ *
+ * String indices run s0 (highest-pitch string, e.g. high e on standard tuning)
+ * to s5 (lowest-pitch string, e.g. low E). anchorString is the string whose
+ * root-note fret is used as the origin (rootFret = 0 offset).
+ *
+ * Example — C shape (anchorString = 4, i.e. the A string):
+ *
+ *   String │ leftOffset  rightOffset │ Fret span
+ *   ───────┼────────────────────────┼──────────────────────────────
+ *   s0 (e) │    -2          +1      │ rootFret-2 … rootFret+1
+ *   s1 (B) │    -2          +1      │ rootFret-2 … rootFret+1
+ *   s2 (G) │    -3           0      │ rootFret-3 … rootFret
+ *   s3 (D) │    -3           0      │ rootFret-3 … rootFret
+ *   s4 (A) │    -2           0      │ rootFret-2 … rootFret  ← anchor (root here)
+ *   s5 (E) │    -2          +1      │ rootFret-2 … rootFret+1
+ */
+
+/**
  * Fixed polygon outline templates for 7-note (diatonic minor) CAGED shapes.
  * All offsets verified computationally for all 12 roots in non-truncated positions.
  * B-string (s1) and G-string (s2) shifts are baked into the per-string offsets.
@@ -213,7 +240,14 @@ const SHAPE_CONFIGS: Record<CagedShape, ShapeConfig> = {
   },
 };
 
-// For major-quality scales, shapes must be remapped via relative minor
+/**
+ * Maps each major-shape label to its equivalent minor-shape label.
+ * Major and minor CAGED shapes cover the same fret patterns — only the root
+ * note that anchors them differs. Minor-shape names are traditional, so when
+ * rendering a major-quality scale the major shape label (e.g. "C shape") is
+ * remapped to the equivalent minor label anchored on the relative minor root
+ * (a minor third lower, e.g. "A shape").
+ */
 const MAJOR_TO_MINOR_SHAPE: Record<CagedShape, CagedShape> = {
   C: 'A', A: 'G', G: 'E', E: 'D', D: 'C',
 };
@@ -295,7 +329,14 @@ function deduplicateAdjacentStrings(
   }
 }
 
-/** Maximum overshoot (in frets) that wrapping will attempt to recover. */
+/**
+ * Maximum overshoot (in frets) that wrapping will attempt to recover.
+ * Shapes near the nut (fret 0) or body end (max fret) may have 1–2 notes that
+ * fall just outside the fretboard boundary. Wrapping relocates those notes to
+ * an adjacent string so the shape remains playable at the edge.
+ * Beyond 2 frets of overshoot the relocated notes are too far from their
+ * original position and the result no longer resembles the intended shape.
+ */
 const MAX_WRAP_OVERSHOOT = 2;
 
 /**
@@ -422,6 +463,21 @@ function buildPolygonFromNotes(
   return [...leftEdge, ...rightEdge.reverse()];
 }
 
+/**
+ * Returns true if the fretboard boundary clips more than half the intended fret
+ * span, meaning the shape is too incomplete to be useful at this position.
+ */
+function isShapeTruncated(
+  intendedMin: number,
+  intendedMax: number,
+  shapeMin: number,
+  shapeMax: number,
+): boolean {
+  const intendedSpan = intendedMax - intendedMin;
+  const visibleSpan = shapeMax - shapeMin;
+  return intendedSpan > 0 && visibleSpan <= intendedSpan / 2;
+}
+
 export function getCagedCoordinates(
   rootNote: string,
   shape: CagedShape,
@@ -496,7 +552,9 @@ export function getCagedCoordinates(
     const { wrappedNotes: shapeWrapped } = wrapOvershootNotes(
       perStringNotes, layout, validNotes, intendedMin, intendedMax, shapeMin, shapeMax, frets,
     );
-    // Wrap limit: if more than 2 notes would wrap, the shape is cluttered — revert entirely
+    // If more than 2 notes were relocated by wrapping, the overall shape becomes
+    // unrecognizable — revert to the pre-wrap note set entirely.
+    // (MAX_WRAP_OVERSHOOT caps the fret overshoot per direction; this caps the total note count.)
     if (shapeWrapped.size > 2) {
       for (let s = 0; s < perStringNotes.length; s++) {
         perStringNotes[s] = preWrapNotes[s];
@@ -506,10 +564,7 @@ export function getCagedCoordinates(
       for (const key of shapeWrapped) allWrappedNotes.add(key);
     }
 
-    // Shape is truncated if half or more of the intended fret range is outside the fretboard
-    const intendedSpan = intendedMax - intendedMin;
-    const visibleSpan = shapeMax - shapeMin;
-    const truncated = intendedSpan > 0 && visibleSpan <= intendedSpan / 2;
+    const truncated = isShapeTruncated(intendedMin, intendedMax, shapeMin, shapeMax);
 
     // Deduplicate for 7-note scales
     if (validNotes.length > 5) {

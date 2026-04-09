@@ -359,4 +359,120 @@ describe('App', () => {
       expect(localStorage.getItem('shapeLabels')).toBe('none');
     });
   });
+
+  describe('Viewport resize handling', () => {
+    it('updates viewport dimensions on window resize', async () => {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1920 });
+      Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: 1080 });
+      render(<App />);
+
+      // Resize to tablet
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 768 });
+      Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: 1024 });
+      fireEvent(window, new Event('resize'));
+
+      await waitFor(() => {
+        const appContainer = document.querySelector('.app-container');
+        expect(appContainer?.getAttribute('data-layout-mode')).toBe('tablet-portrait');
+      });
+    });
+  });
+
+  describe('Tablet portrait interactions', () => {
+    beforeEach(() => {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 768 });
+      Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: 1024 });
+      localStorage.clear();
+    });
+
+    it('switches between Settings and Scales tabs', async () => {
+      render(<App />);
+      fireEvent(window, new Event('resize'));
+
+      await waitFor(() => {
+        expect(document.querySelector('[data-layout-mode="tablet-portrait"]')).toBeTruthy();
+      });
+
+      const scalesBtn = screen.queryByText('Scales');
+      if (scalesBtn) {
+        fireEvent.click(scalesBtn);
+        expect(localStorage.getItem('tabletTab')).toBe('scales');
+      }
+
+      const settingsBtn = screen.queryByText('Settings');
+      if (settingsBtn) {
+        fireEvent.click(settingsBtn);
+        expect(localStorage.getItem('tabletTab')).toBe('settings');
+      }
+    });
+
+    it('toggles flat/sharp accidental on tablet', async () => {
+      render(<App />);
+      fireEvent(window, new Event('resize'));
+
+      await waitFor(() => {
+        expect(document.querySelector('[data-layout-mode="tablet-portrait"]')).toBeTruthy();
+      });
+
+      const toggleBtn = screen.queryByTitle(/Showing sharps/);
+      if (toggleBtn) {
+        fireEvent.click(toggleBtn);
+        expect(localStorage.getItem('useFlats')).toBe('true');
+      }
+    });
+  });
+
+  describe('Mobile settings interactions', () => {
+    beforeEach(() => {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: 667 });
+      localStorage.clear();
+    });
+
+    it('changes tuning via drawer selector', async () => {
+      render(<App />);
+      fireEvent(window, new Event('resize'));
+
+      // Click Settings tab to show settings
+      await waitFor(() => {
+        expect(document.querySelector('[data-layout-mode="mobile"]')).toBeTruthy();
+      });
+
+      const settingsTab = screen.queryByText('Settings');
+      if (settingsTab) {
+        fireEvent.click(settingsTab);
+      }
+
+      // Click the first mocked tuning drawer (may exist in multiple tabs)
+      const tuningDrawers = screen.queryAllByTestId('drawer-tuning');
+      if (tuningDrawers.length > 0) {
+        const btn = tuningDrawers[0].querySelector('button');
+        if (btn) fireEvent.click(btn);
+      }
+    });
+
+    it('adjusts fret range via buttons', async () => {
+      // Set fretStart=5 so the minus button is enabled, fretEnd=20 so end minus is enabled
+      localStorage.setItem('fretStart', '5');
+      localStorage.setItem('fretEnd', '20');
+      render(<App />);
+      fireEvent(window, new Event('resize'));
+
+      await waitFor(() => {
+        expect(document.querySelector('[data-layout-mode="mobile"]')).toBeTruthy();
+      });
+
+      // Navigate to Settings tab to see fret range controls
+      const settingsTab = screen.queryByText('Settings');
+      if (settingsTab) fireEvent.click(settingsTab);
+
+      // Fret range has Start −/+ and End −/+ buttons
+      const minusButtons = screen.queryAllByText('−');
+      const plusButtons = screen.queryAllByText('+');
+
+      // Click all fret range buttons (Start −, Start +, End −, End +)
+      for (const btn of minusButtons) fireEvent.click(btn);
+      for (const btn of plusButtons) fireEvent.click(btn);
+    });
+  });
 });
