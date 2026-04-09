@@ -2,8 +2,15 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { readFileSync } from 'node:fs'
+import { execSync } from 'node:child_process'
 
-const { version } = JSON.parse(readFileSync('./package.json', 'utf-8')) as { version: string }
+const version = (() => {
+  try {
+    return execSync('git describe --tags --abbrev=0', { encoding: 'utf-8' }).trim().replace(/^v/, '')
+  } catch {
+    return JSON.parse(readFileSync('./package.json', 'utf-8')).version as string
+  }
+})()
 
 // https://vite.dev/config/
 export default defineConfig({
