@@ -32,8 +32,9 @@ import {
   type ShapePolygon,
 } from "./shapes";
 import { DrawerSelector } from "./DrawerSelector";
+import { FingeringPatternControls } from "./components/FingeringPatternControls";
+import { ScaleChordControls } from "./components/ScaleChordControls";
 import {
-  type FingeringPattern,
   rootNoteAtom,
   scaleNameAtom,
   chordRootAtom,
@@ -409,192 +410,43 @@ function AppContent() {
   // Mobile tab content — Scale & Chord tab
   const scaleChordTabContent = (
     <div className="mobile-tab-panel mobile-scale-chord-tab">
-      <DrawerSelector
-        label="Scale"
-        value={scaleName}
-        options={SCALE_OPTIONS}
-        onSelect={(v) => v && setScaleName(v)}
+      <ScaleChordControls
+        scaleName={scaleName}
+        setScaleName={setScaleName}
+        chordType={chordType}
+        setChordType={setChordType}
+        chordRoot={chordRoot}
+        setChordRoot={setChordRoot}
+        linkChordRoot={linkChordRoot}
+        setLinkChordRoot={setLinkChordRoot}
+        hideNonChordNotes={hideNonChordNotes}
+        setHideNonChordNotes={setHideNonChordNotes}
+        chordIntervalFilter={chordIntervalFilter}
+        setChordIntervalFilter={setChordIntervalFilter}
+        rootNote={rootNote}
+        useFlats={useFlats}
+        scaleOptions={SCALE_OPTIONS}
+        chordOptions={CHORD_OPTIONS}
+        chordFilterOptions={CHORD_FILTER_OPTIONS}
       />
-
-      <DrawerSelector
-        label="Chord Overlay"
-        value={chordType}
-        options={CHORD_OPTIONS}
-        onSelect={(v) => {
-          setChordType(v);
-          if (v && linkChordRoot) setChordRoot(rootNote);
-        }}
-        nullable
-      />
-
-      {chordType && (
-        <>
-          <div className="chord-root-row">
-            <label className="link-toggle">
-              <input
-                type="checkbox"
-                checked={linkChordRoot}
-                onChange={(e) => {
-                  setLinkChordRoot(e.target.checked);
-                  if (e.target.checked) setChordRoot(rootNote);
-                }}
-              />
-              <span>Link chord root to scale</span>
-            </label>
-            {!linkChordRoot && (
-              <>
-                <span className="section-label">Chord Root</span>
-                <div className="note-grid">
-                  {NOTES.map((n) => (
-                    <button
-                      key={n}
-                      className={`note-btn ${chordRoot === n ? "active" : ""}`}
-                      onClick={() => setChordRoot(n)}
-                    >
-                      {formatAccidental(getNoteDisplay(n, n, useFlats))}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-
-          <label className="link-toggle">
-            <input
-              type="checkbox"
-              checked={hideNonChordNotes}
-              onChange={(e) => setHideNonChordNotes(e.target.checked)}
-            />
-            <span>Chord only (hide scale)</span>
-          </label>
-
-          <DrawerSelector
-            label="Interval Filter"
-            value={chordIntervalFilter}
-            options={CHORD_FILTER_OPTIONS}
-            onSelect={(v) => v && setChordIntervalFilter(v)}
-          />
-        </>
-      )}
     </div>
   );
 
   // Mobile tab content — Settings tab
   const settingsTabContent = (
     <div className="mobile-tab-panel mobile-settings-tab">
-      <div className="control-section">
-        <span className="section-label">Fingering Pattern</span>
-        <div className="toggle-group">
-          {(["all", "caged", "3nps"] as FingeringPattern[]).map((fp) => (
-            <button
-              key={fp}
-              className={`toggle-btn ${fingeringPattern === fp ? "active" : ""}`}
-              onClick={() => setFingeringPattern(fp)}
-            >
-              {fp === "all" ? "All" : fp.toUpperCase()}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {fingeringPattern === "caged" && (
-        <>
-          <div className="control-section">
-            <span className="section-label">Shape</span>
-            <div className="toggle-group">
-              <button
-                className={`toggle-btn ${cagedShapes.size === CAGED_SHAPES.length ? "active" : ""}`}
-                onClick={() => setCagedShapes(new Set(CAGED_SHAPES))}
-              >
-                All
-              </button>
-              {CAGED_SHAPES.map((s) => (
-                <button
-                  key={s}
-                  className={`toggle-btn ${cagedShapes.has(s) ? "active" : ""}`}
-                  onClick={(e) => {
-                    if (e.shiftKey) {
-                      setCagedShapes((prev) => {
-                        const next = new Set(prev);
-                        if (next.has(s)) {
-                          if (next.size > 1) next.delete(s);
-                        } else {
-                          next.add(s);
-                        }
-                        return next;
-                      });
-                    } else {
-                      setCagedShapes(new Set([s]));
-                    }
-                  }}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="control-section">
-            <span className="section-label">Shape Labels</span>
-            <div className="toggle-group">
-              {(["none", "caged", "modal"] as const).map((opt) => (
-                <button
-                  key={opt}
-                  className={`toggle-btn ${shapeLabels === opt ? "active" : ""}`}
-                  onClick={() => setShapeLabels(opt)}
-                >
-                  {opt === "none"
-                    ? "None"
-                    : opt === "caged"
-                      ? "CAGED"
-                      : "Modal"}
-                </button>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-
-      {fingeringPattern === "3nps" && (
-        <div className="control-section">
-          <span className="section-label">Position</span>
-          <div className="toggle-group">
-            <button
-              className={`toggle-btn ${npsPosition === 0 ? "active" : ""}`}
-              onClick={() => setNpsPosition(0)}
-            >
-              All
-            </button>
-            {[1, 2, 3, 4, 5, 6, 7].map((p) => (
-              <button
-                key={p}
-                className={`toggle-btn ${npsPosition === p ? "active" : ""}`}
-                onClick={() => setNpsPosition(p)}
-              >
-                {p}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="control-section">
-        <span className="section-label">Note Labels</span>
-        <div className="toggle-group">
-          {(["notes", "degrees", "none"] as const).map((fmt) => (
-            <button
-              key={fmt}
-              className={`toggle-btn ${displayFormat === fmt ? "active" : ""}`}
-              onClick={() => setDisplayFormat(fmt)}
-            >
-              {fmt === "notes"
-                ? "Notes"
-                : fmt === "degrees"
-                  ? "Intervals"
-                  : "None"}
-            </button>
-          ))}
-        </div>
-      </div>
+      <FingeringPatternControls
+        fingeringPattern={fingeringPattern}
+        setFingeringPattern={setFingeringPattern}
+        cagedShapes={cagedShapes}
+        setCagedShapes={setCagedShapes}
+        npsPosition={npsPosition}
+        setNpsPosition={setNpsPosition}
+        shapeLabels={shapeLabels}
+        setShapeLabels={setShapeLabels}
+        displayFormat={displayFormat}
+        setDisplayFormat={setDisplayFormat}
+      />
 
       <div className="control-section">
         <DrawerSelector
@@ -801,119 +653,18 @@ function AppContent() {
       <div className="controls-panel">
         {/* Col 1: Settings */}
         <div className="control-group">
-          <div className="control-section">
-            <span className="section-label">Fingering Pattern</span>
-            <div className="toggle-group">
-              {(["all", "caged", "3nps"] as FingeringPattern[]).map((fp) => (
-                <button
-                  key={fp}
-                  className={`toggle-btn ${fingeringPattern === fp ? "active" : ""}`}
-                  onClick={() => setFingeringPattern(fp)}
-                >
-                  {fp === "all" ? "All" : fp.toUpperCase()}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {fingeringPattern === "caged" && (
-            <>
-              <div className="control-section">
-                <span className="section-label">Shape</span>
-                <div className="toggle-group">
-                  <button
-                    className={`toggle-btn ${cagedShapes.size === CAGED_SHAPES.length ? "active" : ""}`}
-                    onClick={() => setCagedShapes(new Set(CAGED_SHAPES))}
-                  >
-                    All
-                  </button>
-                  {CAGED_SHAPES.map((s) => (
-                    <button
-                      key={s}
-                      className={`toggle-btn ${cagedShapes.has(s) ? "active" : ""}`}
-                      onClick={(e) => {
-                        if (e.shiftKey) {
-                          setCagedShapes((prev) => {
-                            const next = new Set(prev);
-                            if (next.has(s)) {
-                              if (next.size > 1) next.delete(s);
-                            } else {
-                              next.add(s);
-                            }
-                            return next;
-                          });
-                        } else {
-                          setCagedShapes(new Set([s]));
-                        }
-                      }}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="control-section">
-                <span className="section-label">Shape Labels</span>
-                <div className="toggle-group">
-                  {(["none", "caged", "modal"] as const).map((opt) => (
-                    <button
-                      key={opt}
-                      className={`toggle-btn ${shapeLabels === opt ? "active" : ""}`}
-                      onClick={() => setShapeLabels(opt)}
-                    >
-                      {opt === "none"
-                        ? "None"
-                        : opt === "caged"
-                          ? "CAGED"
-                          : "Modal"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-
-          {fingeringPattern === "3nps" && (
-            <div className="control-section">
-              <span className="section-label">Position</span>
-              <div className="toggle-group">
-                <button
-                  className={`toggle-btn ${npsPosition === 0 ? "active" : ""}`}
-                  onClick={() => setNpsPosition(0)}
-                >
-                  All
-                </button>
-                {[1, 2, 3, 4, 5, 6, 7].map((p) => (
-                  <button
-                    key={p}
-                    className={`toggle-btn ${npsPosition === p ? "active" : ""}`}
-                    onClick={() => setNpsPosition(p)}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="control-section">
-            <span className="section-label">Note Labels</span>
-            <div className="toggle-group">
-              {(["notes", "degrees", "none"] as const).map((fmt) => (
-                <button
-                  key={fmt}
-                  className={`toggle-btn ${displayFormat === fmt ? "active" : ""}`}
-                  onClick={() => setDisplayFormat(fmt)}
-                >
-                  {fmt === "notes"
-                    ? "Notes"
-                    : fmt === "degrees"
-                      ? "Intervals"
-                      : "None"}
-                </button>
-              ))}
-            </div>
-          </div>
+          <FingeringPatternControls
+            fingeringPattern={fingeringPattern}
+            setFingeringPattern={setFingeringPattern}
+            cagedShapes={cagedShapes}
+            setCagedShapes={setCagedShapes}
+            npsPosition={npsPosition}
+            setNpsPosition={setNpsPosition}
+            shapeLabels={shapeLabels}
+            setShapeLabels={setShapeLabels}
+            displayFormat={displayFormat}
+            setDisplayFormat={setDisplayFormat}
+          />
 
           <DrawerSelector
             label="Tuning"
@@ -949,73 +700,25 @@ function AppContent() {
         <div className="control-group">
           <h2>Scale & Chord</h2>
 
-          <DrawerSelector
-            label="Scale"
-            value={scaleName}
-            options={SCALE_OPTIONS}
-            onSelect={(v) => v && setScaleName(v)}
+          <ScaleChordControls
+            scaleName={scaleName}
+            setScaleName={setScaleName}
+            chordType={chordType}
+            setChordType={setChordType}
+            chordRoot={chordRoot}
+            setChordRoot={setChordRoot}
+            linkChordRoot={linkChordRoot}
+            setLinkChordRoot={setLinkChordRoot}
+            hideNonChordNotes={hideNonChordNotes}
+            setHideNonChordNotes={setHideNonChordNotes}
+            chordIntervalFilter={chordIntervalFilter}
+            setChordIntervalFilter={setChordIntervalFilter}
+            rootNote={rootNote}
+            useFlats={useFlats}
+            scaleOptions={SCALE_OPTIONS}
+            chordOptions={CHORD_OPTIONS}
+            chordFilterOptions={CHORD_FILTER_OPTIONS}
           />
-
-          <DrawerSelector
-            label="Chord Overlay"
-            value={chordType}
-            options={CHORD_OPTIONS}
-            onSelect={(v) => {
-              setChordType(v);
-              if (v && linkChordRoot) setChordRoot(rootNote);
-            }}
-            nullable
-          />
-
-          {chordType && (
-            <>
-              <div className="chord-root-row">
-                <label className="link-toggle">
-                  <input
-                    type="checkbox"
-                    checked={linkChordRoot}
-                    onChange={(e) => {
-                      setLinkChordRoot(e.target.checked);
-                      if (e.target.checked) setChordRoot(rootNote);
-                    }}
-                  />
-                  <span>Link chord root to scale</span>
-                </label>
-                {!linkChordRoot && (
-                  <>
-                    <span className="section-label">Chord Root</span>
-                    <div className="note-grid">
-                      {NOTES.map((n) => (
-                        <button
-                          key={n}
-                          className={`note-btn ${chordRoot === n ? "active" : ""}`}
-                          onClick={() => setChordRoot(n)}
-                        >
-                          {formatAccidental(getNoteDisplay(n, n, useFlats))}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <label className="link-toggle">
-                <input
-                  type="checkbox"
-                  checked={hideNonChordNotes}
-                  onChange={(e) => setHideNonChordNotes(e.target.checked)}
-                />
-                <span>Chord only (hide scale)</span>
-              </label>
-
-              <DrawerSelector
-                label="Interval Filter"
-                value={chordIntervalFilter}
-                options={CHORD_FILTER_OPTIONS}
-                onSelect={(v) => v && setChordIntervalFilter(v)}
-              />
-            </>
-          )}
         </div>
       </div>
 
