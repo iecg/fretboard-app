@@ -197,6 +197,17 @@ function AppContent() {
     isMobile          ? 'mobile' :
     'desktop';
 
+  // iPhone SE dynamic fretboard scaling
+  // Natural fretboard height: 6 strings × 40px + 8px border + ~30px toolbar ≈ 278px
+  const FRETBOARD_NATURAL_HEIGHT = 278;
+  // Reserved height: header (~56px) + CoF min size (~180px) + mobile tabs (~40px) + gaps (~40px) = ~316px
+  // On iPhone SE (667px tall): available = 667 - 316 = 351px → scale = 1.0 (no scaling needed)
+  // On very short phones (560px tall): available = 560 - 316 = 244px → scale = 244/278 ≈ 0.88
+  const RESERVED_HEIGHT_MOBILE = 316;
+  const fretboardScaleFactor = (isMobile && viewportHeight <= 700)
+    ? Math.min(1, Math.max(0.5, (viewportHeight - RESERVED_HEIGHT_MOBILE) / FRETBOARD_NATURAL_HEIGHT))
+    : 1;
+
   // Tablet-portrait tab state (Jotai atom with localStorage persistence)
   const [tabletTab, setTabletTab] = useAtom(tabletTabAtom);
 
@@ -683,7 +694,14 @@ function AppContent() {
       </header>
 
       {/* Main Fretboard */}
-      <main className="main-fretboard">
+      <main
+        className="main-fretboard"
+        style={fretboardScaleFactor < 1 ? {
+          transform: `scale(${fretboardScaleFactor})`,
+          transformOrigin: 'top center',
+          height: `${FRETBOARD_NATURAL_HEIGHT * fretboardScaleFactor}px`,
+        } : undefined}
+      >
         <Fretboard
           tuning={currentTuning}
           highlightNotes={highlightNotes}
