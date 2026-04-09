@@ -191,7 +191,7 @@ export function Fretboard({
 
   // Scale note bubble size and font proportionally with stringRowPx
   const noteBubblePx = Math.round(stringRowPx * 0.8); // diameter = 2 * radius (0.4 * stringRowPx)
-  const noteFontPx = Math.round(stringRowPx * 0.325);
+  const noteFontPx = Math.round(stringRowPx * 0.4);
 
   // Uniform fret X: every fret (including 0) is the same width
   const fretToX = (fret: number) => (fret - startFret + 0.5) * effectiveZoom;
