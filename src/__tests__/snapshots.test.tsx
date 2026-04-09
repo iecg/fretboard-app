@@ -343,5 +343,73 @@ describe('Component Snapshots', () => {
       const { container } = render(<App />);
       expect(container).toMatchSnapshot('app-with-chord-overlay');
     });
+
+    it('renders iPhone SE portrait layout (375×667)', () => {
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: 375,
+      });
+      Object.defineProperty(window, 'innerHeight', {
+        writable: true,
+        configurable: true,
+        value: 667,
+      });
+
+      localStorage.clear();
+      const { container } = render(<App />);
+      expect(container).toMatchSnapshot('app-iphone-se-portrait');
+    });
+
+    it('renders iPad portrait layout (768×1024)', () => {
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: 768,
+      });
+      Object.defineProperty(window, 'innerHeight', {
+        writable: true,
+        configurable: true,
+        value: 1024,
+      });
+
+      localStorage.clear();
+      const { container } = render(<App />);
+      expect(container).toMatchSnapshot('app-ipad-portrait');
+    });
+
+    it('renders iPad Pro portrait layout (1024×1366)', () => {
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: 1024,
+      });
+      Object.defineProperty(window, 'innerHeight', {
+        writable: true,
+        configurable: true,
+        value: 1366,
+      });
+
+      localStorage.clear();
+      const { container } = render(<App />);
+      expect(container).toMatchSnapshot('app-ipad-pro-portrait');
+    });
+
+    it('renders iPhone 12 Pro portrait layout (390×844)', () => {
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: 390,
+      });
+      Object.defineProperty(window, 'innerHeight', {
+        writable: true,
+        configurable: true,
+        value: 844,
+      });
+
+      localStorage.clear();
+      const { container } = render(<App />);
+      expect(container).toMatchSnapshot('app-iphone-12-pro-portrait');
+    });
   });
 });
