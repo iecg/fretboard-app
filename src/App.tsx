@@ -943,7 +943,7 @@ function AppContent() {
       </div>
 
       <div className="version-badge">
-        v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar&nbsp;·&nbsp;<a href="https://www.gnu.org/licenses/agpl-3.0" target="_blank" rel="noopener noreferrer">AGPL-3.0</a>
+        v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar. Licensed under <a href="https://www.gnu.org/licenses/agpl-3.0" target="_blank" rel="noopener noreferrer">AGPL v3</a>.
       </div>
 
     </div>
