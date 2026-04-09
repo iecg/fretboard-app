@@ -1112,6 +1112,12 @@
   gap: 0.75rem;
 }
 
+.tablet-tab-content .mobile-tab-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
 /* Landscape tablet: two-column controls layout */
 @media (max-width: 1366px) {
   .app-container[data-layout-mode="landscape-tablet"] .controls-panel {
