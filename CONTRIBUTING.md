@@ -29,10 +29,10 @@ npm run dev        # Start dev server at http://localhost:5173
 
 ## Making Changes
 
-1. **Fork the repo** and create a branch from `develop`:
+1. **Fork the repo** and create a branch from `main`:
    ```bash
-   git checkout develop
-   git pull origin develop
+   git checkout main
+   git pull origin main
    git checkout -b your-branch-name
    ```
 
@@ -55,7 +55,7 @@ npm run dev        # Start dev server at http://localhost:5173
    docs(scope): documentation changes
    ```
 
-5. **Open a PR** against `develop` (not `main`).
+5. **Open a PR** against `main`.
 
 ## Architecture Overview
 
