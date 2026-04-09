@@ -15,33 +15,30 @@ npm run preview      # preview production build locally
 
 Always run `npm run lint` and `npm run test` before committing.
 
+**MANDATORY: Run `npm run lint`, `npm run test`, and `npm run build` locally before creating a PR.** All three must pass. Do not rely on CI alone — catch failures before pushing.
+
 ## Branching rules
 
-This repo uses a **main/develop** integration strategy.
+This repo uses **trunk-based development** with `main` as the single integration branch.
 
 | Branch | Role |
 |---|---|
-| `main` | Stable, production-ready code. Deployed via tags only. |
-| `develop` | Integration branch. All feature work lands here first. |
+| `main` | Trunk — all work lands here. Deployed on every push. |
 | `feature/*` | Short-lived branches for individual features or fixes. |
-| `hotfix/*` | Emergency fixes cut from `main`, merged back to `main` then `develop`. |
 
 **Rules:**
-- **Never push directly to `main` or `develop`** — both require a PR
-- Feature branches are cut from `develop` and merged back into `develop` via PR
-- `develop` merges into `main` via PR when ready to release
-- `hotfix/*` branches are cut from `main`, merged to `main` via PR, then back-merged to `develop`
-- Releases are tagged from `main` only (see Releasing section)
-- CI (`ci.yml`) runs lint + test + build on every push to `main` and `develop`, and on every PR targeting either branch
+- **Never push directly to `main`** — requires a PR
+- Feature branches are cut from `main` and merged back into `main` via PR
+- CI runs lint + test + build on every push to `main` and on every PR
+- Auto-release creates a tag after every merge to `main`
 
 **Typical workflow:**
 ```bash
-git switch develop && git pull
+git switch main && git pull
 git switch -c feature/my-thing
 # ... work ...
 git push -u origin feature/my-thing
-# open PR → develop
-# when ready to release, open PR develop → main
+# open PR → main
 ```
 
 ## Commit conventions
@@ -67,20 +64,20 @@ chore: bump vite to 8.1
 Keep the subject line under 72 characters. No period at the end.
 GitHub Release notes are auto-grouped by these prefixes.
 
-## Releasing — fully automated
+## Releasing — manual trigger
 
-Releases are **fully automated**. Every merge to `main` triggers the pipeline below — no manual version bumps or tagging required.
+Releases are triggered manually via GitHub Actions → Auto Release → Run workflow.
 
 ### Pipeline
 
 ```
-PR merges to main
+You click "Run workflow" on GitHub Actions
        │
        ▼
-auto-release.yml  — analyzes commits → computes semver → pushes tag
+auto-release.yml  — analyzes commits → computes semver → pushes annotated tag
        │
-       ├──▶ release.yml  — lint → test → build → GitHub Release + changelog
-       └──▶ deploy.yml   — lint → test → build → GitHub Pages
+       ├──▶ deploy.yml  — triggers on tag push → lint → test → build → GitHub Pages
+       └──▶ creates PR  — bumps package.json version → auto-merge after CI
 ```
 
 ### Semver bump rules (from conventional commits)
@@ -91,25 +88,14 @@ auto-release.yml  — analyzes commits → computes semver → pushes tag
 | `feat:` | minor |
 | `fix:`, `chore:`, `refactor:`, `ci:`, `test:`, `docs:`, `style:` | patch |
 
-### Starting point
-
-`v1.0.0` is already tagged. Every merge to `main` computes the bump from conventional commits since the last tag.
-
 ### Version badge
 
-`vite.config.ts` reads `package.json` for `__APP_VERSION__`. The deploy and release workflows inject the tag version at build time with:
-
-```bash
-npm version <tag-without-v> --no-git-tag-version
-```
-
-This updates `package.json` only in the ephemeral runner — no commit is made. The version badge in the app will always reflect the deployed tag.
+`vite.config.ts` reads `package.json` for `__APP_VERSION__`. The deploy workflow injects the tag version at build time with `git describe --tags`. The auto-release workflow also opens a PR to bump `package.json` so local dev shows the correct version.
 
 ### Rules
 
-- **Never tag manually** — let `auto-release.yml` handle it
-- **Never bump `major` without explicit human approval** — if a breaking change PR is merged, major bump happens automatically; coordinate in advance
-- Tags are only created from `main`; never from `develop` or feature branches
+- **Never tag manually** — use the Auto Release workflow
+- **Never bump `major` without explicit human approval** — coordinate before merging breaking changes
 
 ## Architecture
 
