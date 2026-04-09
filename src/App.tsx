@@ -182,8 +182,8 @@ function App() {
   }, []);
   const isLandscapeMobile = viewportWidth < 768 && viewportHeight < viewportWidth;
   const isMobile = viewportWidth < 768 || isLandscapeMobile;
-  const isTabletPortrait = viewportWidth >= 768 && viewportWidth < 1024 && viewportHeight >= viewportWidth;
-  const isLandscapeTablet = viewportWidth >= 1024 && viewportHeight < viewportWidth;
+  const isTabletPortrait = viewportWidth >= 768 && viewportWidth < 1366 && viewportHeight >= viewportWidth;
+  const isLandscapeTablet = viewportWidth >= 1024 && viewportWidth < 1366 && viewportHeight < viewportWidth;
   type LayoutMode = 'mobile' | 'landscape-mobile' | 'tablet-portrait' | 'landscape-tablet' | 'desktop';
   const layoutMode: LayoutMode =
     isLandscapeMobile ? 'landscape-mobile' :
@@ -772,8 +772,20 @@ function App() {
         />
       </main>
 
-      {/* Summary bar — desktop only (mobile shows it in Key tab) */}
-      {!isMobile && summaryContent}
+      {/* CoF slot — tablet-portrait only (below fretboard in col-1) */}
+      {isTabletPortrait && (
+        <div className="tablet-portrait-cof-slot">
+          <CircleOfFifths
+            rootNote={rootNote}
+            setRootNote={handleSetRootNote}
+            scaleName={scaleName}
+            useFlats={useFlats}
+          />
+        </div>
+      )}
+
+      {/* Summary bar — desktop and tablet-portrait (mobile shows it in Key tab) */}
+      {(!isMobile || isTabletPortrait) && summaryContent}
 
       {/* Mobile inline tab bar + content — hidden on desktop */}
       {isMobile && (
@@ -932,25 +944,27 @@ function App() {
           />
         </div>
 
-        {/* Col 2: Circle of Fifths + Chord Root */}
-        <div className="control-group col-span-2 key-column">
-          <h2>Key</h2>
-          {!isMobile && (
-            <button
-              className="accidental-toggle"
-              onClick={() => setUseFlats(prev => !prev)}
-              title={useFlats ? 'Showing flats — click for sharps' : 'Showing sharps — click for flats'}
-            >
-              {useFlats ? '♭' : '♯'}
-            </button>
-          )}
-          <CircleOfFifths
-            rootNote={rootNote}
-            setRootNote={handleSetRootNote}
-            scaleName={scaleName}
-            useFlats={useFlats}
-          />
-        </div>
+        {/* Col 2: Circle of Fifths + Chord Root — hidden in tablet-portrait (rendered below fretboard instead) */}
+        {!isTabletPortrait && (
+          <div className="control-group col-span-2 key-column">
+            <h2>Key</h2>
+            {!isMobile && (
+              <button
+                className="accidental-toggle"
+                onClick={() => setUseFlats(prev => !prev)}
+                title={useFlats ? 'Showing flats — click for sharps' : 'Showing sharps — click for flats'}
+              >
+                {useFlats ? '♭' : '♯'}
+              </button>
+            )}
+            <CircleOfFifths
+              rootNote={rootNote}
+              setRootNote={handleSetRootNote}
+              scaleName={scaleName}
+              useFlats={useFlats}
+            />
+          </div>
+        )}
 
         {/* Col 3: Scale & Chord drawers */}
         <div className="control-group">
