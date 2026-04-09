@@ -1025,8 +1025,8 @@
     padding-bottom: 0.25rem;
   }
 
-  /* iPhone SE scaling: handled via inline transform:scale() computed in App.tsx
-     based on viewportHeight. See scaleFactor calculation near the layoutMode derivation. */
+  /* iPhone SE: fretboard height is reduced natively via stringRowPx prop (32px per string
+     instead of 40px) when isMobile && viewportHeight <= 700. No transform:scale needed. */
 }
 
 /* =============================================

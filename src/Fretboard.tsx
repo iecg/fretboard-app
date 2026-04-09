@@ -11,7 +11,7 @@ import { NOTES, ENHARMONICS, getNoteDisplayInScale, INTERVAL_NAMES, formatAccide
 import { synth } from "./audio";
 import type { ShapePolygon } from "./shapes";
 
-const STRING_ROW_PX = 40;
+const STRING_ROW_PX_DEFAULT = 40;
 const ZOOM_MAX_PCT = 300;
 
 interface FretboardProps {
@@ -38,6 +38,7 @@ interface FretboardProps {
   onFretClick?: (stringIndex: number, fretIndex: number, noteName: string) => void;
   useFlats?: boolean;
   scaleName?: string;
+  stringRowPx?: number;
 }
 
 export function Fretboard({
@@ -64,6 +65,7 @@ export function Fretboard({
   onFretClick,
   useFlats = false,
   scaleName = "",
+  stringRowPx = STRING_ROW_PX_DEFAULT,
 }: FretboardProps) {
   const fretboardLayout = getFretboardNotes(tuning, Math.max(endFret, maxFret));
   const fretCount = endFret - startFret;
@@ -185,13 +187,13 @@ export function Fretboard({
   const NECK_BORDER = 4; // matches border width in CSS
   const neckWidth = totalColumns * effectiveZoom;
   // Half a row padding above first string and below last string
-  const neckHeight = tuning.length * STRING_ROW_PX;
+  const neckHeight = tuning.length * stringRowPx;
 
   // Uniform fret X: every fret (including 0) is the same width
   const fretToX = (fret: number) => (fret - startFret + 0.5) * effectiveZoom;
 
   // String center Y: centers at 20, 60, 100, 140, 180, 220 for 6 strings
-  const stringCenterY = (s: number) => STRING_ROW_PX / 2 + s * STRING_ROW_PX;
+  const stringCenterY = (s: number) => stringRowPx / 2 + s * stringRowPx;
 
   // Build SVG polygon points from shape vertex data
   const svgPolygons = shapePolygons.map((poly, polyIdx) => {
@@ -390,7 +392,7 @@ export function Fretboard({
           {/* Strings and Notes */}
           <div className="strings-container">
             {tuning.map((openString, stringIndex) => (
-              <div key={`string-${stringIndex}`} className="string-row">
+              <div key={`string-${stringIndex}`} className="string-row" style={stringRowPx !== STRING_ROW_PX_DEFAULT ? { height: `${stringRowPx}px` } : undefined}>
                 <div className="string-line"
                   style={{ height: `${(stringIndex + 1) * 0.4 + 1.5}px` }} />
                 <div className="string-notes">
