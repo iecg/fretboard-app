@@ -54,6 +54,7 @@ import {
   useFlatsAtom,
   isMutedAtom,
   mobileTabAtom,
+  tabletTabAtom,
   setRootNoteAtom,
   resetAtom,
 } from "./store/atoms";
@@ -175,12 +176,33 @@ function AppContent() {
 
   // Viewport / mobile detection (not persisted)
   const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
+  const [viewportHeight, setViewportHeight] = useState(() => window.innerHeight);
   useEffect(() => {
-    const handler = () => setViewportWidth(window.innerWidth);
+    const handler = () => {
+      setViewportWidth(window.innerWidth);
+      setViewportHeight(window.innerHeight);
+    };
     window.addEventListener('resize', handler);
     return () => window.removeEventListener('resize', handler);
   }, []);
-  const isMobile = viewportWidth < 768;
+  const isLandscapeMobile = viewportWidth < 768 && viewportHeight < viewportWidth;
+  const isMobile = viewportWidth < 768 || isLandscapeMobile;
+  const isTabletPortrait = viewportWidth >= 768 && viewportWidth < 1366 && viewportHeight >= viewportWidth;
+  const isLandscapeTablet = viewportWidth >= 1024 && viewportWidth < 1366 && viewportHeight < viewportWidth;
+  type LayoutMode = 'mobile' | 'landscape-mobile' | 'tablet-portrait' | 'landscape-tablet' | 'desktop';
+  const layoutMode: LayoutMode =
+    isLandscapeMobile ? 'landscape-mobile' :
+    isTabletPortrait  ? 'tablet-portrait' :
+    isLandscapeTablet ? 'landscape-tablet' :
+    isMobile          ? 'mobile' :
+    'desktop';
+
+  // String row height — reduced on small phones (iPhone SE, 375×667) to fit the fretboard natively
+  // without squishing it horizontally via transform:scale().
+  const stringRowPx = (isMobile && viewportHeight <= 700) ? 32 : 40;
+
+  // Tablet-portrait tab state (Jotai atom with localStorage persistence)
+  const [tabletTab, setTabletTab] = useAtom(tabletTabAtom);
 
   // Sync mute state to audio synth (runs on mount and whenever isMuted changes)
   useEffect(() => {
@@ -363,7 +385,9 @@ function AppContent() {
   // Mobile tab content — Key tab (CoF + accidental toggle + summary)
   const keyTabContent = (
     <div className="mobile-tab-panel mobile-key-tab">
-      <div className="cof-container">
+      <div
+        className="cof-container"
+      >
         <CircleOfFifths
           rootNote={rootNote}
           setRootNote={handleSetRootNote}
@@ -572,35 +596,39 @@ function AppContent() {
         </div>
       </div>
 
-      <DrawerSelector
-        label="Tuning"
-        value={tuningName}
-        options={Object.keys(TUNINGS)}
-        onSelect={(v) => v && setTuningName(v)}
-      />
-
       <div className="control-section">
-        <span className="section-label">Fret Range</span>
-        <div className="fret-range-mobile">
-          <div className="fret-range-group">
-            <span className="fret-range-label">Start</span>
-            <button className="toolbar-btn" onClick={() => setFretStart(s => Math.max(0, s - 1))} disabled={fretStart <= 0}>−</button>
-            <span className="toolbar-range-val">{fretStart}</span>
-            <button className="toolbar-btn" onClick={() => setFretStart(s => Math.min(fretEnd - 1, s + 1))} disabled={fretStart >= fretEnd - 1}>+</button>
-          </div>
-          <div className="fret-range-group">
-            <span className="fret-range-label">End</span>
-            <button className="toolbar-btn" onClick={() => setFretEnd(e => Math.max(fretStart + 1, e - 1))} disabled={fretEnd <= fretStart + 1}>−</button>
-            <span className="toolbar-range-val">{fretEnd}</span>
-            <button className="toolbar-btn" onClick={() => setFretEnd(e => Math.min(END_FRET, e + 1))} disabled={fretEnd >= END_FRET}>+</button>
+        <DrawerSelector
+          label="Tuning"
+          value={tuningName}
+          options={Object.keys(TUNINGS)}
+          onSelect={(v) => v && setTuningName(v)}
+        />
+      </div>
+
+      {!isTabletPortrait && (
+        <div className="control-section">
+          <span className="section-label">Fret Range</span>
+          <div className="fret-range-mobile">
+            <div className="fret-range-group">
+              <span className="fret-range-label">Start</span>
+              <button className="toolbar-btn" onClick={() => setFretStart(s => Math.max(0, s - 1))} disabled={fretStart <= 0}>−</button>
+              <span className="toolbar-range-val">{fretStart}</span>
+              <button className="toolbar-btn" onClick={() => setFretStart(s => Math.min(fretEnd - 1, s + 1))} disabled={fretStart >= fretEnd - 1}>+</button>
+            </div>
+            <div className="fret-range-group">
+              <span className="fret-range-label">End</span>
+              <button className="toolbar-btn" onClick={() => setFretEnd(e => Math.max(fretStart + 1, e - 1))} disabled={fretEnd <= fretStart + 1}>−</button>
+              <span className="toolbar-range-val">{fretEnd}</span>
+              <button className="toolbar-btn" onClick={() => setFretEnd(e => Math.min(END_FRET, e + 1))} disabled={fretEnd >= END_FRET}>+</button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 
   return (
-    <div className="app-container">
+    <div className="app-container" data-layout-mode={layoutMode}>
       {/* Header */}
       <header className="app-header">
         <div className="logo-container">
@@ -685,11 +713,58 @@ function AppContent() {
           wrappedNotes={wrappedNotes}
           useFlats={useFlats}
           scaleName={scaleName}
+          stringRowPx={stringRowPx}
         />
       </main>
 
-      {/* Summary bar — desktop only (mobile shows it in Key tab) */}
-      {!isMobile && summaryContent}
+      {/* Tablet-portrait two-column panel: Settings/Scales tabs (left) + CoF (right) */}
+      {isTabletPortrait && (
+        <div className="tablet-portrait-panel">
+          {/* Left column: Settings/Scales tabs */}
+          <div className="tablet-portrait-settings-col">
+            <div className="toggle-group">
+              <button
+                className={`toggle-btn ${tabletTab === 'settings' ? 'active' : ''}`}
+                onClick={() => setTabletTab('settings')}
+              >Settings</button>
+              <button
+                className={`toggle-btn ${tabletTab === 'scales' ? 'active' : ''}`}
+                onClick={() => setTabletTab('scales')}
+              >Scales</button>
+            </div>
+            {tabletTab === 'settings' && (
+              <div className="tablet-tab-content">
+                {settingsTabContent}
+              </div>
+            )}
+            {tabletTab === 'scales' && (
+              <div className="tablet-tab-content">
+                {scaleChordTabContent}
+              </div>
+            )}
+          </div>
+          {/* Right column: CoF fixed-width */}
+          <div className="tablet-portrait-cof-col">
+            <h2>Key</h2>
+            <button
+              className="accidental-toggle"
+              onClick={() => setUseFlats(prev => !prev)}
+              title={useFlats ? 'Showing flats — click for sharps' : 'Showing sharps — click for flats'}
+            >
+              {useFlats ? '♭' : '♯'}
+            </button>
+            <CircleOfFifths
+              rootNote={rootNote}
+              setRootNote={handleSetRootNote}
+              scaleName={scaleName}
+              useFlats={useFlats}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Summary bar — desktop and tablet-portrait (mobile shows it in Key tab) */}
+      {(!isMobile || isTabletPortrait) && summaryContent}
 
       {/* Mobile inline tab bar + content — hidden on desktop */}
       {isMobile && (
@@ -848,25 +923,27 @@ function AppContent() {
           />
         </div>
 
-        {/* Col 2: Circle of Fifths + Chord Root */}
-        <div className="control-group col-span-2 key-column">
-          <h2>Key</h2>
-          {!isMobile && (
-            <button
-              className="accidental-toggle"
-              onClick={() => setUseFlats(prev => !prev)}
-              title={useFlats ? 'Showing flats — click for sharps' : 'Showing sharps — click for flats'}
-            >
-              {useFlats ? '♭' : '♯'}
-            </button>
-          )}
-          <CircleOfFifths
-            rootNote={rootNote}
-            setRootNote={handleSetRootNote}
-            scaleName={scaleName}
-            useFlats={useFlats}
-          />
-        </div>
+        {/* Col 2: Circle of Fifths + Chord Root — hidden in tablet-portrait (rendered below fretboard instead) */}
+        {!isTabletPortrait && (
+          <div className="control-group col-span-2 key-column">
+            <h2>Key</h2>
+            {!isMobile && (
+              <button
+                className="accidental-toggle"
+                onClick={() => setUseFlats(prev => !prev)}
+                title={useFlats ? 'Showing flats — click for sharps' : 'Showing sharps — click for flats'}
+              >
+                {useFlats ? '♭' : '♯'}
+              </button>
+            )}
+            <CircleOfFifths
+              rootNote={rootNote}
+              setRootNote={handleSetRootNote}
+              scaleName={scaleName}
+              useFlats={useFlats}
+            />
+          </div>
+        )}
 
         {/* Col 3: Scale & Chord drawers */}
         <div className="control-group">

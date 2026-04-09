@@ -155,6 +155,11 @@ export const mobileTabAtom = atomWithStorage<"key" | "scale" | "settings">(
   "key",
   rawStringStorage<"key" | "scale" | "settings">(),
 );
+export const tabletTabAtom = atomWithStorage<"settings" | "scales">(
+  "tabletTab",
+  "settings",
+  rawStringStorage<"settings" | "scales">(),
+);
 
 // ---------------------------------------------------------------------------
 // Write atoms (actions)
@@ -192,4 +197,5 @@ export const resetAtom = atom(null, (_get, set) => {
   set(useFlatsAtom, RESET);
   set(isMutedAtom, RESET);
   set(mobileTabAtom, RESET);
+  set(tabletTabAtom, RESET);
 });

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from 'vitest';
-import { render } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { render, act } from '@testing-library/react';
 import { Fretboard } from '../Fretboard';
 import { CircleOfFifths } from '../CircleOfFifths';
 import App from '../App';
@@ -195,6 +195,60 @@ describe('Component Snapshots', () => {
       );
       expect(container).toMatchSnapshot('fretboard-drop-d-tuning');
     });
+
+    it('renders with small mobile string spacing (stringRowPx=32)', () => {
+      const { container } = render(
+        <Fretboard
+          tuning={STANDARD_TUNING}
+          startFret={0}
+          endFret={12}
+          maxFret={24}
+          highlightNotes={['C', 'D', 'E', 'F', 'G', 'A', 'B']}
+          rootNote="C"
+          displayFormat="notes"
+          stringRowPx={32}
+        />
+      );
+      expect(container).toMatchSnapshot('fretboard-small-mobile-32px');
+    });
+
+    it('renders with CAGED shapes at small mobile spacing (stringRowPx=32)', () => {
+      const shapePolygons = [
+        {
+          vertices: [
+            { string: 0, fret: 0 },
+            { string: 1, fret: 3 },
+            { string: 2, fret: 2 },
+            { string: 3, fret: 0 },
+            { string: 4, fret: 0 },
+            { string: 5, fret: 0 },
+          ],
+          shape: 'E' as const,
+          color: '#6366f1',
+          truncated: false,
+          intendedMin: 0,
+          intendedMax: 3,
+          cagedLabel: 'E Shape',
+          modalLabel: 'Ionian',
+        },
+      ];
+
+      const { container } = render(
+        <Fretboard
+          tuning={STANDARD_TUNING}
+          startFret={0}
+          endFret={12}
+          maxFret={24}
+          highlightNotes={['E', 'F#', 'G#', 'A', 'B', 'C#', 'D#']}
+          rootNote="E"
+          displayFormat="notes"
+          shapePolygons={shapePolygons}
+          shapeLabels="caged"
+          stringRowPx={32}
+        />
+      );
+      expect(container).toMatchSnapshot('fretboard-caged-small-mobile-32px');
+    });
   });
 
   describe('CircleOfFifths snapshots', () => {
@@ -343,5 +397,117 @@ describe('Component Snapshots', () => {
       const { container } = render(<App />);
       expect(container).toMatchSnapshot('app-with-chord-overlay');
     });
+
+    it('renders iPhone SE portrait layout (375×667)', () => {
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: 375,
+      });
+      Object.defineProperty(window, 'innerHeight', {
+        writable: true,
+        configurable: true,
+        value: 667,
+      });
+
+      localStorage.clear();
+      const { container } = render(<App />);
+      expect(container).toMatchSnapshot('app-iphone-se-portrait');
+    });
+
+    it('renders iPad portrait layout (768×1024)', () => {
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: 768,
+      });
+      Object.defineProperty(window, 'innerHeight', {
+        writable: true,
+        configurable: true,
+        value: 1024,
+      });
+
+      localStorage.clear();
+      const { container } = render(<App />);
+      expect(container).toMatchSnapshot('app-ipad-portrait');
+    });
+
+    it('renders iPad Pro portrait layout (1024×1366)', () => {
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: 1024,
+      });
+      Object.defineProperty(window, 'innerHeight', {
+        writable: true,
+        configurable: true,
+        value: 1366,
+      });
+
+      localStorage.clear();
+      const { container } = render(<App />);
+      expect(container).toMatchSnapshot('app-ipad-pro-portrait');
+    });
+
+    it('renders iPhone 12 Pro portrait layout (390×844)', () => {
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: 390,
+      });
+      Object.defineProperty(window, 'innerHeight', {
+        writable: true,
+        configurable: true,
+        value: 844,
+      });
+
+      localStorage.clear();
+      const { container } = render(<App />);
+      expect(container).toMatchSnapshot('app-iphone-12-pro-portrait');
+    });
+  });
+});
+
+describe('Fretboard with ResizeObserver (auto-fit zoom)', () => {
+  const originalRO = globalThis.ResizeObserver;
+
+  afterEach(() => {
+    globalThis.ResizeObserver = originalRO;
+  });
+
+  it('uses containerWidth/totalColumns when ResizeObserver fires', () => {
+    let roCallback: ResizeObserverCallback | null = null;
+    class MockResizeObserver {
+      constructor(cb: ResizeObserverCallback) { roCallback = cb; }
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    }
+    globalThis.ResizeObserver = MockResizeObserver as unknown as typeof ResizeObserver;
+
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1920 });
+
+    const { container } = render(
+      <Fretboard
+        tuning={STANDARD_TUNING}
+        startFret={0}
+        endFret={24}
+        maxFret={24}
+        highlightNotes={['C', 'D', 'E', 'F', 'G', 'A', 'B']}
+        rootNote="C"
+        displayFormat="notes"
+      />
+    );
+
+    // Simulate ResizeObserver firing with a 1200px container
+    expect(roCallback).not.toBeNull();
+    act(() => {
+      roCallback!(
+        [{ contentRect: { width: 1200, height: 300 } } as unknown as ResizeObserverEntry],
+        {} as ResizeObserver,
+      );
+    });
+
+    expect(container).toMatchSnapshot('fretboard-autofit-zoom-1200px');
   });
 });
