@@ -67,28 +67,49 @@ chore: bump vite to 8.1
 Keep the subject line under 72 characters. No period at the end.
 GitHub Release notes are auto-grouped by these prefixes.
 
-## Releasing — how to bump the version
+## Releasing — fully automated
 
-`package.json` `"version"` is the **single source of truth**. Vite bakes it into the bundle at build time as `__APP_VERSION__`. A semi-transparent version badge is displayed at the bottom-right of the app.
+Releases are **fully automated**. Every merge to `main` triggers the pipeline below — no manual version bumps or tagging required.
 
-**Always use `npm version`, never edit `package.json` by hand:**
+### Pipeline
 
-```bash
-npm version patch   # bug fix:      1.0.0 → 1.0.1
-npm version minor   # new feature:  1.0.0 → 1.1.0
-npm version major   # breaking:     1.0.0 → 2.0.0
-
-git push && git push --tags
+```
+PR merges to main
+       │
+       ▼
+auto-release.yml  — analyzes commits → computes semver → pushes tag
+       │
+       ├──▶ release.yml  — lint → test → build → GitHub Release + changelog
+       └──▶ deploy.yml   — lint → test → build → GitHub Pages
 ```
 
-`npm version` updates `package.json`, creates a commit, and creates a git tag. Pushing the tag triggers:
+### Semver bump rules (from conventional commits)
 
-1. **`deploy.yml`** → builds and deploys to GitHub Pages (**tags only** — main pushes do not deploy)
-2. **`release.yml`** → runs lint + test + build, then creates a GitHub Release with auto-generated notes
+| Commit type | Bump |
+|---|---|
+| `feat!:` / `BREAKING CHANGE:` | major |
+| `feat:` | minor |
+| `fix:`, `chore:`, `refactor:`, `ci:`, `test:`, `docs:`, `style:` | patch |
 
-**Rules:**
-- Never bump `major` without explicit human approval
-- Never tag a release from a feature branch or from `develop` — merge to `main` first, then tag from `main`
+### Starting point
+
+`v1.0.0` is already tagged. Every merge to `main` computes the bump from conventional commits since the last tag.
+
+### Version badge
+
+`vite.config.ts` reads `package.json` for `__APP_VERSION__`. The deploy and release workflows inject the tag version at build time with:
+
+```bash
+npm version <tag-without-v> --no-git-tag-version
+```
+
+This updates `package.json` only in the ephemeral runner — no commit is made. The version badge in the app will always reflect the deployed tag.
+
+### Rules
+
+- **Never tag manually** — let `auto-release.yml` handle it
+- **Never bump `major` without explicit human approval** — if a breaking change PR is merged, major bump happens automatically; coordinate in advance
+- Tags are only created from `main`; never from `develop` or feature branches
 
 ## Architecture
 
