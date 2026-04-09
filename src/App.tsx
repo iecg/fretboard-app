@@ -36,6 +36,7 @@ import { FingeringPatternControls } from "./components/FingeringPatternControls"
 import { ScaleChordControls } from "./components/ScaleChordControls";
 import { TabletPortraitPanel } from "./components/TabletPortraitPanel";
 import { MobileTabPanel } from "./components/MobileTabPanel";
+import { DesktopControlsPanel } from "./components/DesktopControlsPanel";
 import {
   rootNoteAtom,
   scaleNameAtom,
@@ -601,77 +602,7 @@ function AppContent() {
       )}
 
       {/* Controls Panel */}
-      <div className="controls-panel">
-        {/* Col 1: Settings */}
-        <div className="control-group">
-          <FingeringPatternControls
-            fingeringPattern={fingeringPattern}
-            setFingeringPattern={setFingeringPattern}
-            cagedShapes={cagedShapes}
-            setCagedShapes={setCagedShapes}
-            npsPosition={npsPosition}
-            setNpsPosition={setNpsPosition}
-            shapeLabels={shapeLabels}
-            setShapeLabels={setShapeLabels}
-            displayFormat={displayFormat}
-            setDisplayFormat={setDisplayFormat}
-          />
-
-          <DrawerSelector
-            label="Tuning"
-            value={tuningName}
-            options={Object.keys(TUNINGS)}
-            onSelect={(v) => v && setTuningName(v)}
-          />
-        </div>
-
-        {/* Col 2: Circle of Fifths + Chord Root — hidden in tablet-portrait (rendered below fretboard instead) */}
-        {!isTabletPortrait && (
-          <div className="control-group col-span-2 key-column">
-            <h2>Key</h2>
-            {!isMobile && (
-              <button
-                className="accidental-toggle"
-                onClick={() => setUseFlats(prev => !prev)}
-                title={useFlats ? 'Showing flats — click for sharps' : 'Showing sharps — click for flats'}
-              >
-                {useFlats ? '♭' : '♯'}
-              </button>
-            )}
-            <CircleOfFifths
-              rootNote={rootNote}
-              setRootNote={handleSetRootNote}
-              scaleName={scaleName}
-              useFlats={useFlats}
-            />
-          </div>
-        )}
-
-        {/* Col 3: Scale & Chord drawers */}
-        <div className="control-group">
-          <h2>Scale & Chord</h2>
-
-          <ScaleChordControls
-            scaleName={scaleName}
-            setScaleName={setScaleName}
-            chordType={chordType}
-            setChordType={setChordType}
-            chordRoot={chordRoot}
-            setChordRoot={setChordRoot}
-            linkChordRoot={linkChordRoot}
-            setLinkChordRoot={setLinkChordRoot}
-            hideNonChordNotes={hideNonChordNotes}
-            setHideNonChordNotes={setHideNonChordNotes}
-            chordIntervalFilter={chordIntervalFilter}
-            setChordIntervalFilter={setChordIntervalFilter}
-            rootNote={rootNote}
-            useFlats={useFlats}
-            scaleOptions={SCALE_OPTIONS}
-            chordOptions={CHORD_OPTIONS}
-            chordFilterOptions={CHORD_FILTER_OPTIONS}
-          />
-        </div>
-      </div>
+      <DesktopControlsPanel isTabletPortrait={isTabletPortrait} isMobile={isMobile} />
 
       <div className="version-badge">
         v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar. Licensed under <a href="https://www.gnu.org/licenses/agpl-3.0" target="_blank" rel="noopener noreferrer">AGPL v3</a>.
