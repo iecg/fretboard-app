@@ -6814,7 +6814,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
         class="tablet-portrait-settings-col"
       >
         <div
-          class="toggle-group"
+          class="toggle-group toggle-group--default"
         >
           <button
             class="toggle-btn active"
@@ -6822,7 +6822,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
             Settings
           </button>
           <button
-            class="toggle-btn "
+            class="toggle-btn"
           >
             Scales
           </button>
@@ -10783,7 +10783,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
         class="tablet-portrait-settings-col"
       >
         <div
-          class="toggle-group"
+          class="toggle-group toggle-group--default"
         >
           <button
             class="toggle-btn active"
@@ -10791,7 +10791,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
             Settings
           </button>
           <button
-            class="toggle-btn "
+            class="toggle-btn"
           >
             Scales
           </button>
@@ -14746,7 +14746,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
       </div>
     </main>
     <div
-      class="mobile-tab-bar"
+      class="toggle-group mobile-tab-bar"
     >
       <button
         class="mobile-tab active"
@@ -14754,12 +14754,12 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
         Key
       </button>
       <button
-        class="mobile-tab "
+        class="mobile-tab"
       >
         Scale
       </button>
       <button
-        class="mobile-tab "
+        class="mobile-tab"
       >
         Settings
       </button>
@@ -19169,7 +19169,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
       </div>
     </main>
     <div
-      class="mobile-tab-bar"
+      class="toggle-group mobile-tab-bar"
     >
       <button
         class="mobile-tab active"
@@ -19177,12 +19177,12 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
         Key
       </button>
       <button
-        class="mobile-tab "
+        class="mobile-tab"
       >
         Scale
       </button>
       <button
-        class="mobile-tab "
+        class="mobile-tab"
       >
         Settings
       </button>
@@ -23586,7 +23586,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
       </div>
     </main>
     <div
-      class="mobile-tab-bar"
+      class="toggle-group mobile-tab-bar"
     >
       <button
         class="mobile-tab active"
@@ -23594,12 +23594,12 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
         Key
       </button>
       <button
-        class="mobile-tab "
+        class="mobile-tab"
       >
         Scale
       </button>
       <button
-        class="mobile-tab "
+        class="mobile-tab"
       >
         Settings
       </button>
