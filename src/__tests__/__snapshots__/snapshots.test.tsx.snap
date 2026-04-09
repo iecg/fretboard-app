@@ -3107,7 +3107,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop layout sna
             Fingering Pattern
           </span>
           <div
-            class="toggle-group"
+            class="toggle-group toggle-group--default"
           >
             <button
               class="toggle-btn active"
@@ -3115,12 +3115,12 @@ exports[`Component Snapshots > App layout snapshots > renders desktop layout sna
               All
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               CAGED
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               3NPS
             </button>
@@ -3135,7 +3135,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop layout sna
             Note Labels
           </span>
           <div
-            class="toggle-group"
+            class="toggle-group toggle-group--default"
           >
             <button
               class="toggle-btn active"
@@ -3143,12 +3143,12 @@ exports[`Component Snapshots > App layout snapshots > renders desktop layout sna
               Notes
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               Intervals
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               None
             </button>
@@ -6842,7 +6842,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
                 Fingering Pattern
               </span>
               <div
-                class="toggle-group"
+                class="toggle-group toggle-group--default"
               >
                 <button
                   class="toggle-btn active"
@@ -6850,12 +6850,12 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
                   All
                 </button>
                 <button
-                  class="toggle-btn "
+                  class="toggle-btn"
                 >
                   CAGED
                 </button>
                 <button
-                  class="toggle-btn "
+                  class="toggle-btn"
                 >
                   3NPS
                 </button>
@@ -6870,7 +6870,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
                 Note Labels
               </span>
               <div
-                class="toggle-group"
+                class="toggle-group toggle-group--default"
               >
                 <button
                   class="toggle-btn active"
@@ -6878,12 +6878,12 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
                   Notes
                 </button>
                 <button
-                  class="toggle-btn "
+                  class="toggle-btn"
                 >
                   Intervals
                 </button>
                 <button
-                  class="toggle-btn "
+                  class="toggle-btn"
                 >
                   None
                 </button>
@@ -7631,7 +7631,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
             Fingering Pattern
           </span>
           <div
-            class="toggle-group"
+            class="toggle-group toggle-group--default"
           >
             <button
               class="toggle-btn active"
@@ -7639,12 +7639,12 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
               All
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               CAGED
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               3NPS
             </button>
@@ -7659,7 +7659,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
             Note Labels
           </span>
           <div
-            class="toggle-group"
+            class="toggle-group toggle-group--default"
           >
             <button
               class="toggle-btn active"
@@ -7667,12 +7667,12 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
               Notes
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               Intervals
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               None
             </button>
@@ -10811,7 +10811,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
                 Fingering Pattern
               </span>
               <div
-                class="toggle-group"
+                class="toggle-group toggle-group--default"
               >
                 <button
                   class="toggle-btn active"
@@ -10819,12 +10819,12 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
                   All
                 </button>
                 <button
-                  class="toggle-btn "
+                  class="toggle-btn"
                 >
                   CAGED
                 </button>
                 <button
-                  class="toggle-btn "
+                  class="toggle-btn"
                 >
                   3NPS
                 </button>
@@ -10839,7 +10839,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
                 Note Labels
               </span>
               <div
-                class="toggle-group"
+                class="toggle-group toggle-group--default"
               >
                 <button
                   class="toggle-btn active"
@@ -10847,12 +10847,12 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
                   Notes
                 </button>
                 <button
-                  class="toggle-btn "
+                  class="toggle-btn"
                 >
                   Intervals
                 </button>
                 <button
-                  class="toggle-btn "
+                  class="toggle-btn"
                 >
                   None
                 </button>
@@ -11600,7 +11600,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
             Fingering Pattern
           </span>
           <div
-            class="toggle-group"
+            class="toggle-group toggle-group--default"
           >
             <button
               class="toggle-btn active"
@@ -11608,12 +11608,12 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
               All
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               CAGED
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               3NPS
             </button>
@@ -11628,7 +11628,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
             Note Labels
           </span>
           <div
-            class="toggle-group"
+            class="toggle-group toggle-group--default"
           >
             <button
               class="toggle-btn active"
@@ -11636,12 +11636,12 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
               Notes
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               Intervals
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               None
             </button>
@@ -15468,7 +15468,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
             Fingering Pattern
           </span>
           <div
-            class="toggle-group"
+            class="toggle-group toggle-group--default"
           >
             <button
               class="toggle-btn active"
@@ -15476,12 +15476,12 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
               All
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               CAGED
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               3NPS
             </button>
@@ -15496,7 +15496,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
             Note Labels
           </span>
           <div
-            class="toggle-group"
+            class="toggle-group toggle-group--default"
           >
             <button
               class="toggle-btn active"
@@ -15504,12 +15504,12 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
               Notes
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               Intervals
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               None
             </button>
@@ -19891,7 +19891,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
             Fingering Pattern
           </span>
           <div
-            class="toggle-group"
+            class="toggle-group toggle-group--default"
           >
             <button
               class="toggle-btn active"
@@ -19899,12 +19899,12 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
               All
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               CAGED
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               3NPS
             </button>
@@ -19919,7 +19919,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
             Note Labels
           </span>
           <div
-            class="toggle-group"
+            class="toggle-group toggle-group--default"
           >
             <button
               class="toggle-btn active"
@@ -19927,12 +19927,12 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
               Notes
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               Intervals
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               None
             </button>
@@ -24308,7 +24308,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
             Fingering Pattern
           </span>
           <div
-            class="toggle-group"
+            class="toggle-group toggle-group--default"
           >
             <button
               class="toggle-btn active"
@@ -24316,12 +24316,12 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
               All
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               CAGED
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               3NPS
             </button>
@@ -24336,7 +24336,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
             Note Labels
           </span>
           <div
-            class="toggle-group"
+            class="toggle-group toggle-group--default"
           >
             <button
               class="toggle-btn active"
@@ -24344,12 +24344,12 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
               Notes
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               Intervals
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               None
             </button>
@@ -28223,7 +28223,7 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
             Fingering Pattern
           </span>
           <div
-            class="toggle-group"
+            class="toggle-group toggle-group--default"
           >
             <button
               class="toggle-btn active"
@@ -28231,12 +28231,12 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
               All
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               CAGED
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               3NPS
             </button>
@@ -28251,7 +28251,7 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
             Note Labels
           </span>
           <div
-            class="toggle-group"
+            class="toggle-group toggle-group--default"
           >
             <button
               class="toggle-btn active"
@@ -28259,12 +28259,12 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
               Notes
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               Intervals
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               None
             </button>
@@ -32205,7 +32205,7 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
             Fingering Pattern
           </span>
           <div
-            class="toggle-group"
+            class="toggle-group toggle-group--default"
           >
             <button
               class="toggle-btn active"
@@ -32213,12 +32213,12 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
               All
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               CAGED
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               3NPS
             </button>
@@ -32233,10 +32233,10 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
             Note Labels
           </span>
           <div
-            class="toggle-group"
+            class="toggle-group toggle-group--default"
           >
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               Notes
             </button>
@@ -32246,7 +32246,7 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
               Intervals
             </button>
             <button
-              class="toggle-btn "
+              class="toggle-btn"
             >
               None
             </button>

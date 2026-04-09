@@ -1,5 +1,6 @@
 import { CAGED_SHAPES, type CagedShape } from '../shapes';
 import { type FingeringPattern } from '../store/atoms';
+import { ToggleBar } from './ToggleBar';
 import './FingeringPatternControls.css';
 
 interface FingeringPatternControlsProps {
@@ -31,22 +32,22 @@ export function FingeringPatternControls({
     <>
       <div className="control-section">
         <span className="section-label">Fingering Pattern</span>
-        <div className="toggle-group">
-          {(["all", "caged", "3nps"] as FingeringPattern[]).map((fp) => (
-            <button
-              key={fp}
-              className={`toggle-btn ${fingeringPattern === fp ? "active" : ""}`}
-              onClick={() => setFingeringPattern(fp)}
-            >
-              {fp === "all" ? "All" : fp.toUpperCase()}
-            </button>
-          ))}
-        </div>
+        <ToggleBar
+          options={(["all", "caged", "3nps"] as FingeringPattern[]).map((fp) => ({
+            value: fp,
+            label: fp === "all" ? "All" : fp.toUpperCase(),
+          }))}
+          value={fingeringPattern}
+          onChange={(v) => setFingeringPattern(v as FingeringPattern)}
+        />
       </div>
 
       {fingeringPattern === "caged" && (
         <>
           <div className="control-section">
+            {/* TODO: Shape selector is kept inline because it supports Shift+click
+                multi-select, which ToggleBar does not support (single-select only).
+                Refactor once ToggleBar gains a multi-select variant. */}
             <span className="section-label">Shape</span>
             <div className="toggle-group">
               <button
@@ -82,17 +83,14 @@ export function FingeringPatternControls({
           </div>
           <div className="control-section">
             <span className="section-label">Shape Labels</span>
-            <div className="toggle-group">
-              {(["none", "caged", "modal"] as const).map((opt) => (
-                <button
-                  key={opt}
-                  className={`toggle-btn ${shapeLabels === opt ? "active" : ""}`}
-                  onClick={() => setShapeLabels(opt)}
-                >
-                  {opt === "none" ? "None" : opt === "caged" ? "CAGED" : "Modal"}
-                </button>
-              ))}
-            </div>
+            <ToggleBar
+              options={(["none", "caged", "modal"] as const).map((opt) => ({
+                value: opt,
+                label: opt === "none" ? "None" : opt === "caged" ? "CAGED" : "Modal",
+              }))}
+              value={shapeLabels}
+              onChange={(v) => setShapeLabels(v as "none" | "caged" | "modal")}
+            />
           </div>
         </>
       )}
@@ -100,39 +98,27 @@ export function FingeringPatternControls({
       {fingeringPattern === "3nps" && (
         <div className="control-section">
           <span className="section-label">Position</span>
-          <div className="toggle-group">
-            <button
-              className={`toggle-btn ${npsPosition === 0 ? "active" : ""}`}
-              onClick={() => setNpsPosition(0)}
-            >
-              All
-            </button>
-            {[1, 2, 3, 4, 5, 6, 7].map((p) => (
-              <button
-                key={p}
-                className={`toggle-btn ${npsPosition === p ? "active" : ""}`}
-                onClick={() => setNpsPosition(p)}
-              >
-                {p}
-              </button>
-            ))}
-          </div>
+          <ToggleBar
+            options={[
+              { value: 0, label: "All" },
+              ...[1, 2, 3, 4, 5, 6, 7].map((p) => ({ value: p, label: String(p) })),
+            ]}
+            value={npsPosition}
+            onChange={(v) => setNpsPosition(v as number)}
+          />
         </div>
       )}
 
       <div className="control-section">
         <span className="section-label">Note Labels</span>
-        <div className="toggle-group">
-          {(["notes", "degrees", "none"] as const).map((fmt) => (
-            <button
-              key={fmt}
-              className={`toggle-btn ${displayFormat === fmt ? "active" : ""}`}
-              onClick={() => setDisplayFormat(fmt)}
-            >
-              {fmt === "notes" ? "Notes" : fmt === "degrees" ? "Intervals" : "None"}
-            </button>
-          ))}
-        </div>
+        <ToggleBar
+          options={(["notes", "degrees", "none"] as const).map((fmt) => ({
+            value: fmt,
+            label: fmt === "notes" ? "Notes" : fmt === "degrees" ? "Intervals" : "None",
+          }))}
+          value={displayFormat}
+          onChange={(v) => setDisplayFormat(v as "notes" | "degrees" | "none")}
+        />
       </div>
     </>
   );
