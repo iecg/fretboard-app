@@ -310,7 +310,7 @@ function AppContent() {
   const scaleLabel = `${formatAccidental(getNoteDisplayInScale(rootNote, rootNote, SCALES[scaleName] || [], useFlats))} ${scaleName}`;
 
   const chordLabel = chordType
-    ? `${formatAccidental(getNoteDisplay(chordRoot, chordRoot, useFlats))} ${chordType}`
+    ? `${formatAccidental(getNoteDisplay(chordRoot, chordRoot, useFlats))}${chordType.startsWith('Minor') ? 'm' : chordType.startsWith('Diminished') ? '°' : ''}`
     : null;
 
   const chordSummaryNotes = useMemo(() => {
