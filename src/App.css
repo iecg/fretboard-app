@@ -1032,7 +1032,7 @@
      the fretboard becomes scrollable rather than squished — polygons stay aligned. */
   .fretboard-outer {
     max-height: 200px;
-    overflow: hidden;
+    overflow-y: hidden;
   }
 
   /* Push version badge higher so it doesn't overlap the CoF on small screens */
