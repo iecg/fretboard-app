@@ -1024,6 +1024,21 @@
     padding-top: 0.25rem;
     padding-bottom: 0.25rem;
   }
+
+  /* Cap fretboard height so it doesn't consume too much of the small viewport.
+     Note: SVG polygon coordinates are absolute-pixel-positioned inside the SVG
+     viewBox; the SVG element itself is sized by neckHeight in Fretboard.tsx.
+     A max-height here clips the outer container without resizing the SVG, so
+     the fretboard becomes scrollable rather than squished — polygons stay aligned. */
+  .fretboard-outer {
+    max-height: 200px;
+    overflow: hidden;
+  }
+
+  /* Push version badge higher so it doesn't overlap the CoF on small screens */
+  .version-badge {
+    bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 /* =============================================
