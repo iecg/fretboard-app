@@ -1069,6 +1069,11 @@
   grid-row: 4;
 }
 
+.app-container[data-layout-mode="tablet-portrait"] > .version-badge {
+  grid-column: 1;
+  grid-row: 5;
+}
+
 /* New two-column panel */
 .app-container[data-layout-mode="tablet-portrait"] .tablet-portrait-panel {
   grid-column: 1;
@@ -1417,30 +1422,21 @@
 
 /* ===== Version Badge ===== */
 .version-badge {
-  position: fixed;
-  bottom: calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
-  left: 50%;
-  transform: translateX(-50%);
+  display: block;
+  text-align: center;
   font-size: 0.65rem;
   color: rgba(255, 255, 255, 0.35);
   letter-spacing: 0.04em;
   pointer-events: none;
   user-select: none;
-  z-index: 100;
   white-space: nowrap;
+  padding: var(--space-2) 0 calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
+  margin-top: auto;
 }
 
 @media (max-width: 767px) {
   .version-badge {
-    bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
     font-size: 0.6rem;
     color: rgba(255, 255, 255, 0.5);
-  }
-}
-
-/* Small-phone overrides: iPhone SE and similar (≤375px wide, ≤700px tall) */
-@media (max-width: 767px) and (max-height: 700px) {
-  .version-badge {
-    bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
   }
 }
