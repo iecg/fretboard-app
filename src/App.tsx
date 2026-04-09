@@ -34,6 +34,8 @@ import {
 import { DrawerSelector } from "./DrawerSelector";
 import { FingeringPatternControls } from "./components/FingeringPatternControls";
 import { ScaleChordControls } from "./components/ScaleChordControls";
+import { TabletPortraitPanel } from "./components/TabletPortraitPanel";
+import { MobileTabPanel } from "./components/MobileTabPanel";
 import {
   rootNoteAtom,
   scaleNameAtom,
@@ -571,48 +573,17 @@ function AppContent() {
 
       {/* Tablet-portrait two-column panel: Settings/Scales tabs (left) + CoF (right) */}
       {isTabletPortrait && (
-        <div className="tablet-portrait-panel">
-          {/* Left column: Settings/Scales tabs */}
-          <div className="tablet-portrait-settings-col">
-            <div className="toggle-group">
-              <button
-                className={`toggle-btn ${tabletTab === 'settings' ? 'active' : ''}`}
-                onClick={() => setTabletTab('settings')}
-              >Settings</button>
-              <button
-                className={`toggle-btn ${tabletTab === 'scales' ? 'active' : ''}`}
-                onClick={() => setTabletTab('scales')}
-              >Scales</button>
-            </div>
-            {tabletTab === 'settings' && (
-              <div className="tablet-tab-content">
-                {settingsTabContent}
-              </div>
-            )}
-            {tabletTab === 'scales' && (
-              <div className="tablet-tab-content">
-                {scaleChordTabContent}
-              </div>
-            )}
-          </div>
-          {/* Right column: CoF fixed-width */}
-          <div className="tablet-portrait-cof-col">
-            <h2>Key</h2>
-            <button
-              className="accidental-toggle"
-              onClick={() => setUseFlats(prev => !prev)}
-              title={useFlats ? 'Showing flats — click for sharps' : 'Showing sharps — click for flats'}
-            >
-              {useFlats ? '♭' : '♯'}
-            </button>
-            <CircleOfFifths
-              rootNote={rootNote}
-              setRootNote={handleSetRootNote}
-              scaleName={scaleName}
-              useFlats={useFlats}
-            />
-          </div>
-        </div>
+        <TabletPortraitPanel
+          tabletTab={tabletTab}
+          setTabletTab={setTabletTab}
+          settingsTabContent={settingsTabContent}
+          scaleChordTabContent={scaleChordTabContent}
+          rootNote={rootNote}
+          setRootNote={handleSetRootNote}
+          scaleName={scaleName}
+          useFlats={useFlats}
+          setUseFlats={(flats) => setUseFlats(flats)}
+        />
       )}
 
       {/* Summary bar — desktop and tablet-portrait (mobile shows it in Key tab) */}
@@ -620,33 +591,13 @@ function AppContent() {
 
       {/* Mobile inline tab bar + content — hidden on desktop */}
       {isMobile && (
-        <>
-          <div className="mobile-tab-bar">
-            <button
-              className={`mobile-tab ${mobileTab === 'key' ? 'active' : ''}`}
-              onClick={() => setMobileTab('key')}
-            >
-              Key
-            </button>
-            <button
-              className={`mobile-tab ${mobileTab === 'scale' ? 'active' : ''}`}
-              onClick={() => setMobileTab('scale')}
-            >
-              Scale
-            </button>
-            <button
-              className={`mobile-tab ${mobileTab === 'settings' ? 'active' : ''}`}
-              onClick={() => setMobileTab('settings')}
-            >
-              Settings
-            </button>
-          </div>
-          <div className="mobile-tab-content">
-            {mobileTab === 'key' && keyTabContent}
-            {mobileTab === 'scale' && scaleChordTabContent}
-            {mobileTab === 'settings' && settingsTabContent}
-          </div>
-        </>
+        <MobileTabPanel
+          mobileTab={mobileTab}
+          setMobileTab={setMobileTab}
+          keyTabContent={keyTabContent}
+          scaleChordTabContent={scaleChordTabContent}
+          settingsTabContent={settingsTabContent}
+        />
       )}
 
       {/* Controls Panel */}
