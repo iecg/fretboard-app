@@ -1449,3 +1449,10 @@
     color: rgba(255, 255, 255, 0.5);
   }
 }
+
+/* Small-phone overrides: iPhone SE and similar (≤375px wide, ≤700px tall) */
+@media (max-width: 767px) and (max-height: 700px) {
+  .version-badge {
+    bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
+  }
+}
