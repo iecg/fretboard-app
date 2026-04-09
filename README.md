@@ -1,14 +1,16 @@
 # FretFlow
 
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://iecg.github.io/fretboard-app/)
+[![Version](https://img.shields.io/github/v/tag/iecg/fretboard-app?label=version&sort=semver)](https://github.com/iecg/fretboard-app/tags)
 [![CI](https://github.com/iecg/fretboard-app/actions/workflows/ci.yml/badge.svg)](https://github.com/iecg/fretboard-app/actions/workflows/ci.yml)
 [![Deploy](https://github.com/iecg/fretboard-app/actions/workflows/deploy.yml/badge.svg)](https://github.com/iecg/fretboard-app/actions/workflows/deploy.yml)
 [![Coverage](https://codecov.io/gh/iecg/fretboard-app/branch/main/graph/badge.svg)](https://codecov.io/gh/iecg/fretboard-app)
-[![Node](https://img.shields.io/badge/node-%3E%3D20.12-brightgreen?logo=node.js)](https://nodejs.org/)
+[![Node](https://img.shields.io/badge/node-%3E%3D24-brightgreen?logo=node.js)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20FretFlow-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/E1E01XFJ0G)
 
 An interactive guitar fretboard learning tool built with React, TypeScript, and Vite.
 
