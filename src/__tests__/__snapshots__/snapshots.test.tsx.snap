@@ -63748,3 +63748,2800 @@ exports[`Component Snapshots > Fretboard snapshots > renders with small mobile s
   </div>
 </div>
 `;
+
+exports[`Fretboard with ResizeObserver (auto-fit zoom) > uses containerWidth/totalColumns when ResizeObserver fires > fretboard-autofit-zoom-1200px 1`] = `
+<div>
+  <div
+    class="fretboard-outer"
+  >
+    <div
+      class="fretboard-toolbar"
+    >
+      <div
+        class="viewport-jumps"
+      >
+        <span
+          class="section-label"
+        >
+          Go to
+        </span>
+        <button
+          class="toolbar-btn"
+        >
+          Open
+        </button>
+        <button
+          class="toolbar-btn"
+        >
+          Mid
+        </button>
+        <button
+          class="toolbar-btn"
+        >
+          High
+        </button>
+      </div>
+      <div
+        class="fret-range-controls"
+      >
+        <span
+          class="section-label"
+        >
+          Frets
+        </span>
+        <button
+          class="toolbar-btn"
+          disabled=""
+        >
+          ◀
+        </button>
+        <span
+          class="toolbar-range-val"
+        >
+          0
+        </span>
+        <button
+          class="toolbar-btn"
+        >
+          ▶
+        </button>
+        <span
+          class="toolbar-range-sep"
+        >
+          —
+        </span>
+        <button
+          class="toolbar-btn"
+        >
+          ◀
+        </button>
+        <span
+          class="toolbar-range-val"
+        >
+          24
+        </span>
+        <button
+          class="toolbar-btn"
+          disabled=""
+        >
+          ▶
+        </button>
+      </div>
+      <div
+        class="zoom-controls"
+      >
+        <span
+          class="section-label"
+        >
+          Zoom
+        </span>
+        <button
+          class="toolbar-btn"
+          disabled=""
+        >
+          −
+        </button>
+        <span
+          class="toolbar-range-val"
+        >
+          Auto
+        </span>
+        <button
+          class="toolbar-btn"
+        >
+          +
+        </button>
+      </div>
+    </div>
+    <div
+      class="fretboard-wrapper hide-scrollbar"
+      style="cursor: default;"
+    >
+      <div
+        class="fret-numbers-row"
+        style="width: 1233px; padding-left: 4px;"
+      >
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          0
+        </span>
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          1
+        </span>
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          2
+        </span>
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          3
+        </span>
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          4
+        </span>
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          5
+        </span>
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          6
+        </span>
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          7
+        </span>
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          8
+        </span>
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          9
+        </span>
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          10
+        </span>
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          11
+        </span>
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          12
+        </span>
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          13
+        </span>
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          14
+        </span>
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          15
+        </span>
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          16
+        </span>
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          17
+        </span>
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          18
+        </span>
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          19
+        </span>
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          20
+        </span>
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          21
+        </span>
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          22
+        </span>
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          23
+        </span>
+        <span
+          class="fret-number"
+          style="width: 49px;"
+        >
+          24
+        </span>
+      </div>
+      <div
+        class="fretboard-neck"
+        style="height: 248px; width: 1233px;"
+      >
+        <div
+          class="fret-backgrounds"
+        >
+          <div
+            class="fret-column fret-zero"
+            style="width: 49px;"
+          />
+          <div
+            class="fret-column fret-standard"
+            style="width: 49px;"
+          />
+          <div
+            class="fret-column fret-standard"
+            style="width: 49px;"
+          />
+          <div
+            class="fret-column fret-standard"
+            style="width: 49px;"
+          >
+            <div
+              class="fret-marker-container"
+            >
+              <div
+                class="marker-dot"
+              />
+            </div>
+          </div>
+          <div
+            class="fret-column fret-standard"
+            style="width: 49px;"
+          />
+          <div
+            class="fret-column fret-standard"
+            style="width: 49px;"
+          >
+            <div
+              class="fret-marker-container"
+            >
+              <div
+                class="marker-dot"
+              />
+            </div>
+          </div>
+          <div
+            class="fret-column fret-standard"
+            style="width: 49px;"
+          />
+          <div
+            class="fret-column fret-standard"
+            style="width: 49px;"
+          >
+            <div
+              class="fret-marker-container"
+            >
+              <div
+                class="marker-dot"
+              />
+            </div>
+          </div>
+          <div
+            class="fret-column fret-standard"
+            style="width: 49px;"
+          />
+          <div
+            class="fret-column fret-standard"
+            style="width: 49px;"
+          >
+            <div
+              class="fret-marker-container"
+            >
+              <div
+                class="marker-dot"
+              />
+            </div>
+          </div>
+          <div
+            class="fret-column fret-standard"
+            style="width: 49px;"
+          />
+          <div
+            class="fret-column fret-standard"
+            style="width: 49px;"
+          />
+          <div
+            class="fret-column fret-standard"
+            style="width: 49px;"
+          >
+            <div
+              class="fret-marker-container"
+            >
+              <div
+                class="marker-double"
+              >
+                <div
+                  class="marker-dot"
+                />
+                <div
+                  class="marker-dot"
+                />
+              </div>
+            </div>
+          </div>
+          <div
+            class="fret-column fret-standard"
+            style="width: 49px;"
+          />
+          <div
+            class="fret-column fret-standard"
+            style="width: 49px;"
+          />
+          <div
+            class="fret-column fret-standard"
+            style="width: 49px;"
+          >
+            <div
+              class="fret-marker-container"
+            >
+              <div
+                class="marker-dot"
+              />
+            </div>
+          </div>
+          <div
+            class="fret-column fret-standard"
+            style="width: 49px;"
+          />
+          <div
+            class="fret-column fret-standard"
+            style="width: 49px;"
+          >
+            <div
+              class="fret-marker-container"
+            >
+              <div
+                class="marker-dot"
+              />
+            </div>
+          </div>
+          <div
+            class="fret-column fret-standard"
+            style="width: 49px;"
+          />
+          <div
+            class="fret-column fret-standard"
+            style="width: 49px;"
+          >
+            <div
+              class="fret-marker-container"
+            >
+              <div
+                class="marker-dot"
+              />
+            </div>
+          </div>
+          <div
+            class="fret-column fret-standard"
+            style="width: 49px;"
+          />
+          <div
+            class="fret-column fret-standard"
+            style="width: 49px;"
+          >
+            <div
+              class="fret-marker-container"
+            >
+              <div
+                class="marker-dot"
+              />
+            </div>
+          </div>
+          <div
+            class="fret-column fret-standard"
+            style="width: 49px;"
+          />
+          <div
+            class="fret-column fret-standard"
+            style="width: 49px;"
+          />
+          <div
+            class="fret-column fret-standard"
+            style="width: 49px;"
+          >
+            <div
+              class="fret-marker-container"
+            >
+              <div
+                class="marker-double"
+              >
+                <div
+                  class="marker-dot"
+                />
+                <div
+                  class="marker-dot"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="strings-container"
+        >
+          <div
+            class="string-row"
+          >
+            <div
+              class="string-line"
+              style="height: 1.9px;"
+            />
+            <div
+              class="string-notes"
+            >
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    E
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    F
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    F♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    B
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble root-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    C
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    C♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    E
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    F
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    F♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    B
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble root-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    C
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    C♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    E
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="string-row"
+          >
+            <div
+              class="string-line"
+              style="height: 2.3px;"
+            />
+            <div
+              class="string-notes"
+            >
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    B
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble root-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    C
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    C♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    E
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    F
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    F♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    B
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble root-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    C
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    C♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    E
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    F
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    F♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    B
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="string-row"
+          >
+            <div
+              class="string-line"
+              style="height: 2.7px;"
+            />
+            <div
+              class="string-notes"
+            >
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    B
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble root-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    C
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    C♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    E
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    F
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    F♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    B
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble root-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    C
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    C♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    E
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    F
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    F♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="string-row"
+          >
+            <div
+              class="string-line"
+              style="height: 3.1px;"
+            />
+            <div
+              class="string-notes"
+            >
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    E
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    F
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    F♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    B
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble root-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    C
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    C♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    E
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    F
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    F♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    B
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble root-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    C
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    C♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="string-row"
+          >
+            <div
+              class="string-line"
+              style="height: 3.5px;"
+            />
+            <div
+              class="string-notes"
+            >
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    B
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble root-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    C
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    C♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    E
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    F
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    F♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    B
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble root-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    C
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    C♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    E
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    F
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    F♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="string-row"
+          >
+            <div
+              class="string-line"
+              style="height: 3.9000000000000004px;"
+            />
+            <div
+              class="string-notes"
+            >
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    E
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    F
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    F♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    B
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble root-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    C
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    C♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    E
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    F
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    F♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    G♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    A♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    B
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble root-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    C
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    C♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-inactive"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    D♯
+                  </span>
+                </div>
+              </div>
+              <div
+                class="note-cell"
+                style="width: 49px;"
+              >
+                <div
+                  class="note-bubble note-active"
+                  style="width: 32px; height: 32px; font-size: 16px;"
+                >
+                  <span
+                    class="note-main-label"
+                  >
+                    E
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
