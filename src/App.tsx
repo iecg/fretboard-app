@@ -34,6 +34,37 @@ import {
 import { DrawerSelector } from "./DrawerSelector";
 import "./App.css";
 
+function SummaryNote({
+  note,
+  rootNote,
+  scaleName,
+  displayName,
+  isChord,
+}: {
+  note: string;
+  rootNote: string;
+  scaleName: string;
+  displayName: string;
+  isChord?: boolean;
+}) {
+  const rootIdx = NOTES.indexOf(rootNote);
+  const noteIdx = NOTES.indexOf(note);
+  const chromaticInterval = rootIdx !== -1 && noteIdx !== -1 ? (noteIdx - rootIdx + 12) % 12 : -1;
+  const degree = chromaticInterval !== -1 ? INTERVAL_NAMES[chromaticInterval] : null;
+  const romanNumeral = chromaticInterval !== -1 ? getDegreesForScale(scaleName)[chromaticInterval] : undefined;
+  const degreeColor = romanNumeral ? DEGREE_COLORS[romanNumeral] : undefined;
+  return (
+    <span
+      className={`summary-note${isChord ? " summary-note--chord" : ""}`}
+      style={degreeColor ? { outline: `2px solid ${degreeColor}`, outlineOffset: "-2px" } : undefined}
+    >
+      <span className="summary-note-name">{formatAccidental(displayName)}</span>
+      {degree && (
+        <span className="summary-note-degree" style={{ color: degreeColor }}>{formatAccidental(degree)}</span>
+      )}
+    </span>
+  );
+}
 
 type FingeringPattern = "all" | "caged" | "3nps";
 
@@ -380,50 +411,31 @@ function App() {
       <div className="summary-row">
         <div className="summary-row-label">{scaleLabel}</div>
         <div className="summary-notes">
-          {summaryNotes.map((n, i) => {
-            const rootIdx = NOTES.indexOf(rootNote);
-            const noteIdx = NOTES.indexOf(n);
-            const chromaticInterval = rootIdx !== -1 && noteIdx !== -1 ? (noteIdx - rootIdx + 12) % 12 : -1;
-            const degree = chromaticInterval !== -1 ? INTERVAL_NAMES[chromaticInterval] : null;
-            const degreeMap = getDegreesForScale(scaleName);
-            const romanNumeral = chromaticInterval !== -1 ? degreeMap[chromaticInterval] : undefined;
-            const degreeColor = romanNumeral ? DEGREE_COLORS[romanNumeral] : undefined;
-            return (
-              <span key={i} className="summary-note" style={degreeColor ? { outline: `2px solid ${degreeColor}`, outlineOffset: '-2px' } : undefined}>
-                <span className="summary-note-name">
-                  {formatAccidental(getNoteDisplayInScale(n, rootNote, SCALES[scaleName] || [], useFlats))}
-                </span>
-                {degree && (
-                  <span className="summary-note-degree" style={{ color: degreeColor }}>{formatAccidental(degree)}</span>
-                )}
-              </span>
-            );
-          })}
+          {summaryNotes.map((n, i) => (
+            <SummaryNote
+              key={i}
+              note={n}
+              rootNote={rootNote}
+              scaleName={scaleName}
+              displayName={getNoteDisplayInScale(n, rootNote, SCALES[scaleName] || [], useFlats)}
+            />
+          ))}
         </div>
       </div>
       {chordLabel && (
         <div className="summary-row summary-row--chord">
           <div className="summary-row-label">{chordLabel}</div>
           <div className="summary-notes">
-            {chordSummaryNotes.map((n, i) => {
-              const rootIdx = NOTES.indexOf(chordRoot);
-              const noteIdx = NOTES.indexOf(n);
-              const chromaticInterval = rootIdx !== -1 && noteIdx !== -1 ? (noteIdx - rootIdx + 12) % 12 : -1;
-              const degree = chromaticInterval !== -1 ? INTERVAL_NAMES[chromaticInterval] : null;
-              const degreeMap = getDegreesForScale(scaleName);
-              const romanNumeral = chromaticInterval !== -1 ? degreeMap[chromaticInterval] : undefined;
-              const degreeColor = romanNumeral ? DEGREE_COLORS[romanNumeral] : undefined;
-              return (
-                <span key={i} className="summary-note summary-note--chord" style={degreeColor ? { outline: `2px solid ${degreeColor}`, outlineOffset: '-2px' } : undefined}>
-                  <span className="summary-note-name">
-                    {formatAccidental(getNoteDisplay(n, chordRoot, useFlats))}
-                  </span>
-                  {degree && (
-                    <span className="summary-note-degree" style={{ color: degreeColor }}>{formatAccidental(degree)}</span>
-                  )}
-                </span>
-              );
-            })}
+            {chordSummaryNotes.map((n, i) => (
+              <SummaryNote
+                key={i}
+                note={n}
+                rootNote={chordRoot}
+                scaleName={scaleName}
+                displayName={getNoteDisplay(n, chordRoot, useFlats)}
+                isChord
+              />
+            ))}
           </div>
         </div>
       )}
