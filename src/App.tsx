@@ -200,11 +200,12 @@ function AppContent() {
   // iPhone SE dynamic fretboard scaling
   // Natural fretboard height: 6 strings × 40px + 8px border + ~30px toolbar ≈ 278px
   const FRETBOARD_NATURAL_HEIGHT = 278;
-  // Reserved height: header (~56px) + CoF min size (~180px) + mobile tabs (~40px) + gaps (~40px) = ~316px
-  // On iPhone SE (667px tall): available = 667 - 316 = 351px → scale = 1.0 (no scaling needed)
-  // On very short phones (560px tall): available = 560 - 316 = 244px → scale = 244/278 ≈ 0.88
-  const RESERVED_HEIGHT_MOBILE = 316;
-  const fretboardScaleFactor = (isMobile && viewportHeight <= 700)
+  // Reserved height: header (~56px) + mobile tabs (~44px) + CoF container (~260px) + summary bar (~40px) + gaps (~30px) ≈ 430px
+  // On iPhone SE (667px tall): available = 667 - 430 = 237px → scale = 237/278 ≈ 0.85
+  // On very short phones (560px tall): available = 560 - 430 = 130px → scale = 0.5 (clamped)
+  // Threshold raised to 800 so math decides — when viewport is tall the factor will be >= 1 and clamped to 1.0
+  const RESERVED_HEIGHT_MOBILE = 430;
+  const fretboardScaleFactor = (isMobile && viewportHeight <= 800)
     ? Math.min(1, Math.max(0.5, (viewportHeight - RESERVED_HEIGHT_MOBILE) / FRETBOARD_NATURAL_HEIGHT))
     : 1;
 
@@ -392,7 +393,14 @@ function AppContent() {
   // Mobile tab content — Key tab (CoF + accidental toggle + summary)
   const keyTabContent = (
     <div className="mobile-tab-panel mobile-key-tab">
-      <div className="cof-container">
+      <div
+        className="cof-container"
+        style={fretboardScaleFactor < 1 ? {
+          transform: `scale(${fretboardScaleFactor})`,
+          transformOrigin: 'top center',
+          height: `${260 * fretboardScaleFactor}px`,
+        } : undefined}
+      >
         <CircleOfFifths
           rootNote={rootNote}
           setRootNote={handleSetRootNote}
