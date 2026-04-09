@@ -195,6 +195,60 @@ describe('Component Snapshots', () => {
       );
       expect(container).toMatchSnapshot('fretboard-drop-d-tuning');
     });
+
+    it('renders with small mobile string spacing (stringRowPx=32)', () => {
+      const { container } = render(
+        <Fretboard
+          tuning={STANDARD_TUNING}
+          startFret={0}
+          endFret={12}
+          maxFret={24}
+          highlightNotes={['C', 'D', 'E', 'F', 'G', 'A', 'B']}
+          rootNote="C"
+          displayFormat="notes"
+          stringRowPx={32}
+        />
+      );
+      expect(container).toMatchSnapshot('fretboard-small-mobile-32px');
+    });
+
+    it('renders with CAGED shapes at small mobile spacing (stringRowPx=32)', () => {
+      const shapePolygons = [
+        {
+          vertices: [
+            { string: 0, fret: 0 },
+            { string: 1, fret: 3 },
+            { string: 2, fret: 2 },
+            { string: 3, fret: 0 },
+            { string: 4, fret: 0 },
+            { string: 5, fret: 0 },
+          ],
+          shape: 'E' as const,
+          color: '#6366f1',
+          truncated: false,
+          intendedMin: 0,
+          intendedMax: 3,
+          cagedLabel: 'E Shape',
+          modalLabel: 'Ionian',
+        },
+      ];
+
+      const { container } = render(
+        <Fretboard
+          tuning={STANDARD_TUNING}
+          startFret={0}
+          endFret={12}
+          maxFret={24}
+          highlightNotes={['E', 'F#', 'G#', 'A', 'B', 'C#', 'D#']}
+          rootNote="E"
+          displayFormat="notes"
+          shapePolygons={shapePolygons}
+          shapeLabels="caged"
+          stringRowPx={32}
+        />
+      );
+      expect(container).toMatchSnapshot('fretboard-caged-small-mobile-32px');
+    });
   });
 
   describe('CircleOfFifths snapshots', () => {
