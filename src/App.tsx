@@ -590,12 +590,14 @@ function AppContent() {
         </div>
       </div>
 
-      <DrawerSelector
-        label="Tuning"
-        value={tuningName}
-        options={Object.keys(TUNINGS)}
-        onSelect={(v) => v && setTuningName(v)}
-      />
+      <div className="control-section">
+        <DrawerSelector
+          label="Tuning"
+          value={tuningName}
+          options={Object.keys(TUNINGS)}
+          onSelect={(v) => v && setTuningName(v)}
+        />
+      </div>
 
       {!isTabletPortrait && (
         <div className="control-section">
