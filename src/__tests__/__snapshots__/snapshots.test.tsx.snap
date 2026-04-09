@@ -3827,7 +3827,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop layout sna
       class="version-badge"
     >
       v
-      1.0.0
+      0.0.0-test
        · © 
       2026
        Isaac Cocar. Licensed under 
@@ -7796,7 +7796,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
       class="version-badge"
     >
       v
-      1.0.0
+      0.0.0-test
        · © 
       2026
        Isaac Cocar. Licensed under 
@@ -11765,7 +11765,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
       class="version-badge"
     >
       v
-      1.0.0
+      0.0.0-test
        · © 
       2026
        Isaac Cocar. Licensed under 
@@ -16182,7 +16182,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
       class="version-badge"
     >
       v
-      1.0.0
+      0.0.0-test
        · © 
       2026
        Isaac Cocar. Licensed under 
@@ -20605,7 +20605,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
       class="version-badge"
     >
       v
-      1.0.0
+      0.0.0-test
        · © 
       2026
        Isaac Cocar. Licensed under 
@@ -25022,7 +25022,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
       class="version-badge"
     >
       v
-      1.0.0
+      0.0.0-test
        · © 
       2026
        Isaac Cocar. Licensed under 
@@ -29004,7 +29004,7 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
       class="version-badge"
     >
       v
-      1.0.0
+      0.0.0-test
        · © 
       2026
        Isaac Cocar. Licensed under 
@@ -32985,7 +32985,7 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
       class="version-badge"
     >
       v
-      1.0.0
+      0.0.0-test
        · © 
       2026
        Isaac Cocar. Licensed under 
