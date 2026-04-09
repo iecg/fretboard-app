@@ -1107,6 +1107,10 @@
   position: relative;
 }
 
+.tablet-portrait-cof-col > h2 {
+  margin: 0;
+}
+
 .tablet-tab-content {
   display: flex;
   flex-direction: column;
