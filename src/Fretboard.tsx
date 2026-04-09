@@ -189,6 +189,10 @@ export function Fretboard({
   // Half a row padding above first string and below last string
   const neckHeight = tuning.length * stringRowPx;
 
+  // Scale note bubble size and font proportionally with stringRowPx
+  const noteBubblePx = Math.round(stringRowPx * 0.8); // diameter = 2 * radius (0.4 * stringRowPx)
+  const noteFontPx = Math.round(stringRowPx * 0.325);
+
   // Uniform fret X: every fret (including 0) is the same width
   const fretToX = (fret: number) => (fret - startFret + 0.5) * effectiveZoom;
 
@@ -484,7 +488,12 @@ export function Fretboard({
                             noteClass,
                             noteClass === "note-scale-only" && hideNonChordNotes && "hidden"
                           )}
-                          style={applyDimOpacity ? { opacity: 0.8 } : undefined}
+                          style={{
+                            width: `${noteBubblePx}px`,
+                            height: `${noteBubblePx}px`,
+                            fontSize: `${noteFontPx}px`,
+                            ...(applyDimOpacity ? { opacity: 0.8 } : {}),
+                          }}
                         >
                           {displayFormat !== "none" && (
                             <span className="note-main-label">{formatAccidental(displayValue)}</span>

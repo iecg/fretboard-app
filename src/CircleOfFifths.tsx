@@ -87,8 +87,8 @@ export function CircleOfFifths({
           const degreeStr = degreeMap[chromaticInterval] ?? "";
 
           const { primary, enharmonic } = getCircleNoteLabels(note, rootNote, useFlats, SCALES[scaleName] || []);
-          const noteFontSize = Math.max(13, isActive ? SIZE * 0.055 : SIZE * 0.048);
-          const degreeFontSize = Math.max(8, SIZE * 0.038);
+          const noteFontSize = Math.max(15, isActive ? SIZE * 0.055 : SIZE * 0.048);
+          const degreeFontSize = Math.max(10, SIZE * 0.038);
 
           return (
             <g key={`text-group-${note}`} style={{ pointerEvents: "none" }}>
@@ -101,7 +101,7 @@ export function CircleOfFifths({
                   fill={isActive ? "var(--text-main)" : "var(--text-muted)"}
                 >
                   <tspan x={lx} dy="-0.3em" stroke="rgba(0,0,0,0.3)" strokeWidth="2" paintOrder="stroke">{primary}</tspan>
-                  <tspan x={lx} dy="0.9em" fontSize={Math.max(9, noteFontSize * 0.65)} fontWeight="500" fill="rgba(255,255,255,0.85)" stroke="rgba(0,0,0,0.6)" strokeWidth="2.5" paintOrder="stroke">{enharmonic}</tspan>
+                  <tspan x={lx} dy="0.9em" fontSize={Math.max(11, noteFontSize * 0.65)} fontWeight="500" fill="rgba(255,255,255,0.85)" stroke="rgba(0,0,0,0.6)" strokeWidth="2.5" paintOrder="stroke">{enharmonic}</tspan>
                 </text>
               ) : (
                 <text
@@ -139,7 +139,7 @@ export function CircleOfFifths({
         <text
           x={CX} y={CY - SIZE * 0.04}
           textAnchor="middle" dominantBaseline="middle"
-          fill="var(--text-muted)" fontSize={Math.max(13, SIZE * 0.05)}
+          fill="var(--text-muted)" fontSize={Math.max(15, SIZE * 0.05)}
           fontWeight="bold"
           stroke="rgba(0,0,0,0.3)" strokeWidth="2" paintOrder="stroke"
         >
@@ -148,7 +148,7 @@ export function CircleOfFifths({
         <text
           x={CX} y={CY + SIZE * 0.04}
           textAnchor="middle" dominantBaseline="middle"
-          fill="var(--accent-primary)" fontSize={Math.max(14, SIZE * 0.055)}
+          fill="var(--accent-primary)" fontSize={Math.max(15, SIZE * 0.055)}
           fontWeight="bold"
           stroke="rgba(0,0,0,0.3)" strokeWidth="2" paintOrder="stroke"
         >
