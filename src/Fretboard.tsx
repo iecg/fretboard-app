@@ -84,7 +84,7 @@ export function Fretboard({
   // narrower than the full viewport (e.g., iPad with settings column visible).
   // When autoFitZoom falls below MIN_FRET_WIDTH the SVG overflows its container,
   // and .fretboard-wrapper's overflow-x: auto enables horizontal scroll.
-  const MIN_FRET_WIDTH = 40;
+  const MIN_FRET_WIDTH = 49;
   const autoFitZoom = Math.max(
     MIN_FRET_WIDTH,
     containerWidth > 0 && totalColumns > 0
