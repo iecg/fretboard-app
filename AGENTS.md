@@ -91,9 +91,9 @@ auto-release.yml  — analyzes commits → computes semver → pushes tag
 | `feat:` | minor |
 | `fix:`, `chore:`, `refactor:`, `ci:`, `test:`, `docs:`, `style:` | patch |
 
-### First release (bootstrap)
+### Starting point
 
-When no tags exist, `auto-release.yml` tags the current `package.json` version (`v1.0.0`) without bumping. Every subsequent merge computes the bump from commits since the last tag.
+`v1.0.0` is already tagged. Every merge to `main` computes the bump from conventional commits since the last tag.
 
 ### Version badge
 
