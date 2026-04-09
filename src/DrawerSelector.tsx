@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
+import clsx from "clsx";
 
 export function DrawerSelector({
   label,
@@ -15,7 +16,15 @@ export function DrawerSelector({
   nullable?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [dropUp, setDropUp] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    setDropUp(spaceBelow < 260);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -39,7 +48,7 @@ export function DrawerSelector({
         <ChevronDown className={`drawer-chevron ${open ? "open" : ""}`} />
       </button>
       {open && (
-        <div className="drawer-options custom-scrollbar">
+        <div className={clsx("drawer-options", "custom-scrollbar", dropUp && "drawer-options--above")}>
           {nullable && (
             <button
               className={`drawer-option ${value === null ? "active" : ""}`}
