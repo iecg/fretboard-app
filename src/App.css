@@ -969,12 +969,19 @@
 
 
 /* Landscape tablet: two-column controls layout */
-/* No media query needed — data-layout-mode="landscape-tablet" is only set for width 1024–1365px */
+/* data-layout-mode="landscape-tablet" covers width 768–1365px landscape */
 .app-container[data-layout-mode="landscape-tablet"] .controls-panel {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto 1fr;
   gap: 0.5rem;
   align-items: start;
+}
+
+/* CoF (col-span-2) must span full width row in landscape-tablet 2-col grid */
+.app-container[data-layout-mode="landscape-tablet"] .controls-panel .col-span-2 {
+  grid-column: 1 / -1;
+  flex: unset;
 }
 
 .app-container[data-layout-mode="landscape-tablet"] .circle-fifths-container {

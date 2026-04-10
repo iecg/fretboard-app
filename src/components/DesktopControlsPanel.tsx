@@ -115,27 +115,6 @@ export function DesktopControlsPanel({ isTabletPortrait, isMobile }: DesktopCont
         />
       </div>
 
-      {!isTabletPortrait && (
-        <div className="control-group col-span-2 key-column">
-          <h2>Key</h2>
-          {!isMobile && (
-            <button
-              className="accidental-toggle"
-              onClick={() => setUseFlats((prev) => !prev)}
-              title={useFlats ? "Showing flats — click for sharps" : "Showing sharps — click for flats"}
-            >
-              {useFlats ? "♭" : "♯"}
-            </button>
-          )}
-          <CircleOfFifths
-            rootNote={rootNote}
-            setRootNote={handleSetRootNote}
-            scaleName={scaleName}
-            useFlats={useFlats}
-          />
-        </div>
-      )}
-
       <div className="control-group">
         <h2>Scale & Chord</h2>
         <ScaleChordControls
@@ -158,6 +137,27 @@ export function DesktopControlsPanel({ isTabletPortrait, isMobile }: DesktopCont
           chordFilterOptions={CHORD_FILTER_OPTIONS}
         />
       </div>
+
+      {!isTabletPortrait && (
+        <div className="control-group col-span-2 key-column">
+          <h2>Key</h2>
+          {!isMobile && (
+            <button
+              className="accidental-toggle"
+              onClick={() => setUseFlats((prev) => !prev)}
+              title={useFlats ? "Showing flats — click for sharps" : "Showing sharps — click for flats"}
+            >
+              {useFlats ? "♭" : "♯"}
+            </button>
+          )}
+          <CircleOfFifths
+            rootNote={rootNote}
+            setRootNote={handleSetRootNote}
+            scaleName={scaleName}
+            useFlats={useFlats}
+          />
+        </div>
+      )}
     </div>
   );
 }

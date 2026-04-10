@@ -3207,6 +3207,83 @@ exports[`Component Snapshots > App layout snapshots > renders desktop layout sna
         </div>
       </div>
       <div
+        class="control-group"
+      >
+        <h2>
+          Scale & Chord
+        </h2>
+        <div
+          class="drawer-selector"
+        >
+          <button
+            class="drawer-trigger"
+          >
+            <span
+              class="drawer-label"
+            >
+              Scale
+            </span>
+            <span
+              class="drawer-value"
+            >
+              Major
+            </span>
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-chevron-down drawer-chevron"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m6 9 6 6 6-6"
+              />
+            </svg>
+          </button>
+        </div>
+        <div
+          class="drawer-selector"
+        >
+          <button
+            class="drawer-trigger"
+          >
+            <span
+              class="drawer-label"
+            >
+              Chord Overlay
+            </span>
+            <span
+              class="drawer-value"
+            >
+              None
+            </span>
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-chevron-down drawer-chevron"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m6 9 6 6 6-6"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div
         class="control-group col-span-2 key-column"
       >
         <h2>
@@ -3759,83 +3836,6 @@ exports[`Component Snapshots > App layout snapshots > renders desktop layout sna
               ♮
             </text>
           </svg>
-        </div>
-      </div>
-      <div
-        class="control-group"
-      >
-        <h2>
-          Scale & Chord
-        </h2>
-        <div
-          class="drawer-selector"
-        >
-          <button
-            class="drawer-trigger"
-          >
-            <span
-              class="drawer-label"
-            >
-              Scale
-            </span>
-            <span
-              class="drawer-value"
-            >
-              Major
-            </span>
-            <svg
-              aria-hidden="true"
-              class="lucide lucide-chevron-down drawer-chevron"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="m6 9 6 6 6-6"
-              />
-            </svg>
-          </button>
-        </div>
-        <div
-          class="drawer-selector"
-        >
-          <button
-            class="drawer-trigger"
-          >
-            <span
-              class="drawer-label"
-            >
-              Chord Overlay
-            </span>
-            <span
-              class="drawer-value"
-            >
-              None
-            </span>
-            <svg
-              aria-hidden="true"
-              class="lucide lucide-chevron-down drawer-chevron"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="m6 9 6 6 6-6"
-              />
-            </svg>
-          </button>
         </div>
       </div>
     </div>
@@ -11052,6 +11052,83 @@ exports[`Component Snapshots > App layout snapshots > renders iPad landscape lay
         </div>
       </div>
       <div
+        class="control-group"
+      >
+        <h2>
+          Scale & Chord
+        </h2>
+        <div
+          class="drawer-selector"
+        >
+          <button
+            class="drawer-trigger"
+          >
+            <span
+              class="drawer-label"
+            >
+              Scale
+            </span>
+            <span
+              class="drawer-value"
+            >
+              Major
+            </span>
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-chevron-down drawer-chevron"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m6 9 6 6 6-6"
+              />
+            </svg>
+          </button>
+        </div>
+        <div
+          class="drawer-selector"
+        >
+          <button
+            class="drawer-trigger"
+          >
+            <span
+              class="drawer-label"
+            >
+              Chord Overlay
+            </span>
+            <span
+              class="drawer-value"
+            >
+              None
+            </span>
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-chevron-down drawer-chevron"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m6 9 6 6 6-6"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div
         class="control-group col-span-2 key-column"
       >
         <h2>
@@ -11604,83 +11681,6 @@ exports[`Component Snapshots > App layout snapshots > renders iPad landscape lay
               ♮
             </text>
           </svg>
-        </div>
-      </div>
-      <div
-        class="control-group"
-      >
-        <h2>
-          Scale & Chord
-        </h2>
-        <div
-          class="drawer-selector"
-        >
-          <button
-            class="drawer-trigger"
-          >
-            <span
-              class="drawer-label"
-            >
-              Scale
-            </span>
-            <span
-              class="drawer-value"
-            >
-              Major
-            </span>
-            <svg
-              aria-hidden="true"
-              class="lucide lucide-chevron-down drawer-chevron"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="m6 9 6 6 6-6"
-              />
-            </svg>
-          </button>
-        </div>
-        <div
-          class="drawer-selector"
-        >
-          <button
-            class="drawer-trigger"
-          >
-            <span
-              class="drawer-label"
-            >
-              Chord Overlay
-            </span>
-            <span
-              class="drawer-value"
-            >
-              None
-            </span>
-            <svg
-              aria-hidden="true"
-              class="lucide lucide-chevron-down drawer-chevron"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="m6 9 6 6 6-6"
-              />
-            </svg>
-          </button>
         </div>
       </div>
     </div>
@@ -19476,6 +19476,83 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
         </div>
       </div>
       <div
+        class="control-group"
+      >
+        <h2>
+          Scale & Chord
+        </h2>
+        <div
+          class="drawer-selector"
+        >
+          <button
+            class="drawer-trigger"
+          >
+            <span
+              class="drawer-label"
+            >
+              Scale
+            </span>
+            <span
+              class="drawer-value"
+            >
+              Major
+            </span>
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-chevron-down drawer-chevron"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m6 9 6 6 6-6"
+              />
+            </svg>
+          </button>
+        </div>
+        <div
+          class="drawer-selector"
+        >
+          <button
+            class="drawer-trigger"
+          >
+            <span
+              class="drawer-label"
+            >
+              Chord Overlay
+            </span>
+            <span
+              class="drawer-value"
+            >
+              None
+            </span>
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-chevron-down drawer-chevron"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m6 9 6 6 6-6"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div
         class="control-group col-span-2 key-column"
       >
         <h2>
@@ -20022,83 +20099,6 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
               ♮
             </text>
           </svg>
-        </div>
-      </div>
-      <div
-        class="control-group"
-      >
-        <h2>
-          Scale & Chord
-        </h2>
-        <div
-          class="drawer-selector"
-        >
-          <button
-            class="drawer-trigger"
-          >
-            <span
-              class="drawer-label"
-            >
-              Scale
-            </span>
-            <span
-              class="drawer-value"
-            >
-              Major
-            </span>
-            <svg
-              aria-hidden="true"
-              class="lucide lucide-chevron-down drawer-chevron"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="m6 9 6 6 6-6"
-              />
-            </svg>
-          </button>
-        </div>
-        <div
-          class="drawer-selector"
-        >
-          <button
-            class="drawer-trigger"
-          >
-            <span
-              class="drawer-label"
-            >
-              Chord Overlay
-            </span>
-            <span
-              class="drawer-value"
-            >
-              None
-            </span>
-            <svg
-              aria-hidden="true"
-              class="lucide lucide-chevron-down drawer-chevron"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="m6 9 6 6 6-6"
-              />
-            </svg>
-          </button>
         </div>
       </div>
     </div>
@@ -23915,6 +23915,83 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
         </div>
       </div>
       <div
+        class="control-group"
+      >
+        <h2>
+          Scale & Chord
+        </h2>
+        <div
+          class="drawer-selector"
+        >
+          <button
+            class="drawer-trigger"
+          >
+            <span
+              class="drawer-label"
+            >
+              Scale
+            </span>
+            <span
+              class="drawer-value"
+            >
+              Major
+            </span>
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-chevron-down drawer-chevron"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m6 9 6 6 6-6"
+              />
+            </svg>
+          </button>
+        </div>
+        <div
+          class="drawer-selector"
+        >
+          <button
+            class="drawer-trigger"
+          >
+            <span
+              class="drawer-label"
+            >
+              Chord Overlay
+            </span>
+            <span
+              class="drawer-value"
+            >
+              None
+            </span>
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-chevron-down drawer-chevron"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m6 9 6 6 6-6"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div
         class="control-group col-span-2 key-column"
       >
         <h2>
@@ -24461,83 +24538,6 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
               ♮
             </text>
           </svg>
-        </div>
-      </div>
-      <div
-        class="control-group"
-      >
-        <h2>
-          Scale & Chord
-        </h2>
-        <div
-          class="drawer-selector"
-        >
-          <button
-            class="drawer-trigger"
-          >
-            <span
-              class="drawer-label"
-            >
-              Scale
-            </span>
-            <span
-              class="drawer-value"
-            >
-              Major
-            </span>
-            <svg
-              aria-hidden="true"
-              class="lucide lucide-chevron-down drawer-chevron"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="m6 9 6 6 6-6"
-              />
-            </svg>
-          </button>
-        </div>
-        <div
-          class="drawer-selector"
-        >
-          <button
-            class="drawer-trigger"
-          >
-            <span
-              class="drawer-label"
-            >
-              Chord Overlay
-            </span>
-            <span
-              class="drawer-value"
-            >
-              None
-            </span>
-            <svg
-              aria-hidden="true"
-              class="lucide lucide-chevron-down drawer-chevron"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="m6 9 6 6 6-6"
-              />
-            </svg>
-          </button>
         </div>
       </div>
     </div>
@@ -28354,6 +28354,83 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
         </div>
       </div>
       <div
+        class="control-group"
+      >
+        <h2>
+          Scale & Chord
+        </h2>
+        <div
+          class="drawer-selector"
+        >
+          <button
+            class="drawer-trigger"
+          >
+            <span
+              class="drawer-label"
+            >
+              Scale
+            </span>
+            <span
+              class="drawer-value"
+            >
+              Major
+            </span>
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-chevron-down drawer-chevron"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m6 9 6 6 6-6"
+              />
+            </svg>
+          </button>
+        </div>
+        <div
+          class="drawer-selector"
+        >
+          <button
+            class="drawer-trigger"
+          >
+            <span
+              class="drawer-label"
+            >
+              Chord Overlay
+            </span>
+            <span
+              class="drawer-value"
+            >
+              None
+            </span>
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-chevron-down drawer-chevron"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m6 9 6 6 6-6"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div
         class="control-group col-span-2 key-column"
       >
         <h2>
@@ -28900,83 +28977,6 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
               ♮
             </text>
           </svg>
-        </div>
-      </div>
-      <div
-        class="control-group"
-      >
-        <h2>
-          Scale & Chord
-        </h2>
-        <div
-          class="drawer-selector"
-        >
-          <button
-            class="drawer-trigger"
-          >
-            <span
-              class="drawer-label"
-            >
-              Scale
-            </span>
-            <span
-              class="drawer-value"
-            >
-              Major
-            </span>
-            <svg
-              aria-hidden="true"
-              class="lucide lucide-chevron-down drawer-chevron"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="m6 9 6 6 6-6"
-              />
-            </svg>
-          </button>
-        </div>
-        <div
-          class="drawer-selector"
-        >
-          <button
-            class="drawer-trigger"
-          >
-            <span
-              class="drawer-label"
-            >
-              Chord Overlay
-            </span>
-            <span
-              class="drawer-value"
-            >
-              None
-            </span>
-            <svg
-              aria-hidden="true"
-              class="lucide lucide-chevron-down drawer-chevron"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="m6 9 6 6 6-6"
-              />
-            </svg>
-          </button>
         </div>
       </div>
     </div>
@@ -32285,6 +32285,144 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
         </div>
       </div>
       <div
+        class="control-group"
+      >
+        <h2>
+          Scale & Chord
+        </h2>
+        <div
+          class="drawer-selector"
+        >
+          <button
+            class="drawer-trigger"
+          >
+            <span
+              class="drawer-label"
+            >
+              Scale
+            </span>
+            <span
+              class="drawer-value"
+            >
+              Major
+            </span>
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-chevron-down drawer-chevron"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m6 9 6 6 6-6"
+              />
+            </svg>
+          </button>
+        </div>
+        <div
+          class="drawer-selector"
+        >
+          <button
+            class="drawer-trigger"
+          >
+            <span
+              class="drawer-label"
+            >
+              Chord Overlay
+            </span>
+            <span
+              class="drawer-value"
+            >
+              Major 7th
+            </span>
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-chevron-down drawer-chevron"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m6 9 6 6 6-6"
+              />
+            </svg>
+          </button>
+        </div>
+        <div
+          class="chord-root-row"
+        >
+          <label
+            class="link-toggle"
+          >
+            <input
+              checked=""
+              type="checkbox"
+            />
+            <span>
+              Link chord root to scale
+            </span>
+          </label>
+        </div>
+        <label
+          class="link-toggle"
+        >
+          <input
+            checked=""
+            type="checkbox"
+          />
+          <span>
+            Chord only (hide scale)
+          </span>
+        </label>
+        <div
+          class="drawer-selector"
+        >
+          <button
+            class="drawer-trigger"
+          >
+            <span
+              class="drawer-label"
+            >
+              Interval Filter
+            </span>
+            <span
+              class="drawer-value"
+            >
+              All
+            </span>
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-chevron-down drawer-chevron"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m6 9 6 6 6-6"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div
         class="control-group col-span-2 key-column"
       >
         <h2>
@@ -32837,144 +32975,6 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
               ♮
             </text>
           </svg>
-        </div>
-      </div>
-      <div
-        class="control-group"
-      >
-        <h2>
-          Scale & Chord
-        </h2>
-        <div
-          class="drawer-selector"
-        >
-          <button
-            class="drawer-trigger"
-          >
-            <span
-              class="drawer-label"
-            >
-              Scale
-            </span>
-            <span
-              class="drawer-value"
-            >
-              Major
-            </span>
-            <svg
-              aria-hidden="true"
-              class="lucide lucide-chevron-down drawer-chevron"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="m6 9 6 6 6-6"
-              />
-            </svg>
-          </button>
-        </div>
-        <div
-          class="drawer-selector"
-        >
-          <button
-            class="drawer-trigger"
-          >
-            <span
-              class="drawer-label"
-            >
-              Chord Overlay
-            </span>
-            <span
-              class="drawer-value"
-            >
-              Major 7th
-            </span>
-            <svg
-              aria-hidden="true"
-              class="lucide lucide-chevron-down drawer-chevron"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="m6 9 6 6 6-6"
-              />
-            </svg>
-          </button>
-        </div>
-        <div
-          class="chord-root-row"
-        >
-          <label
-            class="link-toggle"
-          >
-            <input
-              checked=""
-              type="checkbox"
-            />
-            <span>
-              Link chord root to scale
-            </span>
-          </label>
-        </div>
-        <label
-          class="link-toggle"
-        >
-          <input
-            checked=""
-            type="checkbox"
-          />
-          <span>
-            Chord only (hide scale)
-          </span>
-        </label>
-        <div
-          class="drawer-selector"
-        >
-          <button
-            class="drawer-trigger"
-          >
-            <span
-              class="drawer-label"
-            >
-              Interval Filter
-            </span>
-            <span
-              class="drawer-value"
-            >
-              All
-            </span>
-            <svg
-              aria-hidden="true"
-              class="lucide lucide-chevron-down drawer-chevron"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="m6 9 6 6 6-6"
-              />
-            </svg>
-          </button>
         </div>
       </div>
     </div>
@@ -36283,6 +36283,143 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
         </div>
       </div>
       <div
+        class="control-group"
+      >
+        <h2>
+          Scale & Chord
+        </h2>
+        <div
+          class="drawer-selector"
+        >
+          <button
+            class="drawer-trigger"
+          >
+            <span
+              class="drawer-label"
+            >
+              Scale
+            </span>
+            <span
+              class="drawer-value"
+            >
+              Natural Minor
+            </span>
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-chevron-down drawer-chevron"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m6 9 6 6 6-6"
+              />
+            </svg>
+          </button>
+        </div>
+        <div
+          class="drawer-selector"
+        >
+          <button
+            class="drawer-trigger"
+          >
+            <span
+              class="drawer-label"
+            >
+              Chord Overlay
+            </span>
+            <span
+              class="drawer-value"
+            >
+              Minor 7th
+            </span>
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-chevron-down drawer-chevron"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m6 9 6 6 6-6"
+              />
+            </svg>
+          </button>
+        </div>
+        <div
+          class="chord-root-row"
+        >
+          <label
+            class="link-toggle"
+          >
+            <input
+              checked=""
+              type="checkbox"
+            />
+            <span>
+              Link chord root to scale
+            </span>
+          </label>
+        </div>
+        <label
+          class="link-toggle"
+        >
+          <input
+            type="checkbox"
+          />
+          <span>
+            Chord only (hide scale)
+          </span>
+        </label>
+        <div
+          class="drawer-selector"
+        >
+          <button
+            class="drawer-trigger"
+          >
+            <span
+              class="drawer-label"
+            >
+              Interval Filter
+            </span>
+            <span
+              class="drawer-value"
+            >
+              All
+            </span>
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-chevron-down drawer-chevron"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m6 9 6 6 6-6"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div
         class="control-group col-span-2 key-column"
       >
         <h2>
@@ -36835,143 +36972,6 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
               1♯
             </text>
           </svg>
-        </div>
-      </div>
-      <div
-        class="control-group"
-      >
-        <h2>
-          Scale & Chord
-        </h2>
-        <div
-          class="drawer-selector"
-        >
-          <button
-            class="drawer-trigger"
-          >
-            <span
-              class="drawer-label"
-            >
-              Scale
-            </span>
-            <span
-              class="drawer-value"
-            >
-              Natural Minor
-            </span>
-            <svg
-              aria-hidden="true"
-              class="lucide lucide-chevron-down drawer-chevron"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="m6 9 6 6 6-6"
-              />
-            </svg>
-          </button>
-        </div>
-        <div
-          class="drawer-selector"
-        >
-          <button
-            class="drawer-trigger"
-          >
-            <span
-              class="drawer-label"
-            >
-              Chord Overlay
-            </span>
-            <span
-              class="drawer-value"
-            >
-              Minor 7th
-            </span>
-            <svg
-              aria-hidden="true"
-              class="lucide lucide-chevron-down drawer-chevron"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="m6 9 6 6 6-6"
-              />
-            </svg>
-          </button>
-        </div>
-        <div
-          class="chord-root-row"
-        >
-          <label
-            class="link-toggle"
-          >
-            <input
-              checked=""
-              type="checkbox"
-            />
-            <span>
-              Link chord root to scale
-            </span>
-          </label>
-        </div>
-        <label
-          class="link-toggle"
-        >
-          <input
-            type="checkbox"
-          />
-          <span>
-            Chord only (hide scale)
-          </span>
-        </label>
-        <div
-          class="drawer-selector"
-        >
-          <button
-            class="drawer-trigger"
-          >
-            <span
-              class="drawer-label"
-            >
-              Interval Filter
-            </span>
-            <span
-              class="drawer-value"
-            >
-              All
-            </span>
-            <svg
-              aria-hidden="true"
-              class="lucide lucide-chevron-down drawer-chevron"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="m6 9 6 6 6-6"
-              />
-            </svg>
-          </button>
         </div>
       </div>
     </div>
