@@ -1,6 +1,8 @@
-# FretFlow — Agent Guide
+# FretFlow — Claude Code Guide
 
 FretFlow is a React 19 + TypeScript interactive guitar fretboard and music theory tool, built with Vite and deployed to GitHub Pages at `https://iecg.github.io/fretboard-app/`.
+
+> This file is the project context for **Claude Code**. Machine-local overrides belong in `CLAUDE.local.md` (git-ignored).
 
 ## Commands
 
@@ -34,12 +36,14 @@ This repo uses **trunk-based development** with `main` as the single integration
 
 **Typical workflow:**
 ```bash
-git switch main && git pull
+git switch main && git pull          # always sync before branching
 git switch -c feature/my-thing
 # ... work ...
 git push -u origin feature/my-thing
 # open PR → main
 ```
+
+> **Always pull the latest `main` before creating a new branch.** There is no automated enforcement — it is your responsibility. Starting from stale `main` causes needless merge conflicts.
 
 ## Commit conventions
 
@@ -53,16 +57,38 @@ Use conventional commits — prefix every commit message:
 | `refactor:` | code change with no behaviour change |
 | `docs:` | documentation only |
 | `test:` | adding or fixing tests |
+| `style:` | formatting, whitespace — no logic change |
+| `perf:` | performance improvement |
+| `ci:` | CI/CD pipeline changes |
+| `build:` | build system or tooling changes |
+| `revert:` | reverts a previous commit |
 
 Examples:
 ```
 feat: add transpose shortcut to circle of fifths
 fix: correct enharmonic display for Cb scale
 chore: bump vite to 8.1
+refactor(theory): simplify interval lookup
 ```
 
-Keep the subject line under 72 characters. No period at the end.
+Rules enforced by the `commit-msg` husky hook:
+- Subject line ≤ 72 characters
+- No period at the end
+- Must match `type(optional-scope): description`
+
 GitHub Release notes are auto-grouped by these prefixes.
+
+## PR title convention
+
+PR titles must also follow Conventional Commits format — GitHub squash-merges use the PR title as the commit message on `main`.
+
+```
+feat: add capo support
+fix(fretboard): off-by-one on fret 0 highlight
+chore: upgrade eslint to v9
+```
+
+The same type prefixes and 72-character limit apply.
 
 ## Releasing — manual trigger
 
