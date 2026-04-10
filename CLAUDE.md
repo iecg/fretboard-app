@@ -1,6 +1,8 @@
-# FretFlow — Agent Guide
+# FretFlow — Claude Code Guide
 
 FretFlow is a React 19 + TypeScript interactive guitar fretboard and music theory tool, built with Vite and deployed to GitHub Pages at `https://iecg.github.io/fretboard-app/`.
+
+> This file is the project context for **Claude Code**. Machine-local overrides belong in `CLAUDE.local.md` (git-ignored).
 
 ## Commands
 
