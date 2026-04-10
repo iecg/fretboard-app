@@ -6960,39 +6960,6 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
                 </button>
               </div>
             </div>
-            <div
-              class="control-section"
-            >
-              <div
-                class="stepper-control mobile"
-              >
-                <span
-                  class="section-label"
-                >
-                  Zoom
-                </span>
-                <div
-                  class="stepper-group"
-                >
-                  <button
-                    class="stepper-btn"
-                    disabled=""
-                  >
-                    −
-                  </button>
-                  <span
-                    class="stepper-value"
-                  >
-                    Auto
-                  </span>
-                  <button
-                    class="stepper-btn"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -10976,39 +10943,6 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
                     />
                   </svg>
                 </button>
-              </div>
-            </div>
-            <div
-              class="control-section"
-            >
-              <div
-                class="stepper-control mobile"
-              >
-                <span
-                  class="section-label"
-                >
-                  Zoom
-                </span>
-                <div
-                  class="stepper-group"
-                >
-                  <button
-                    class="stepper-btn"
-                    disabled=""
-                  >
-                    −
-                  </button>
-                  <span
-                    class="stepper-value"
-                  >
-                    Auto
-                  </span>
-                  <button
-                    class="stepper-btn"
-                  >
-                    +
-                  </button>
-                </div>
               </div>
             </div>
           </div>
@@ -21217,7 +21151,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
           </div>
           <div
             class="fretboard-neck"
-            style="height: 248px; width: 2133px;"
+            style="height: 200px; width: 2133px;"
           >
             <div
               class="fret-backgrounds"
@@ -21422,6 +21356,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
             >
               <div
                 class="string-row"
+                style="height: 32px;"
               >
                 <div
                   class="string-line"
@@ -21436,7 +21371,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21451,7 +21386,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21466,7 +21401,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21481,7 +21416,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21496,7 +21431,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21511,7 +21446,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21526,7 +21461,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21541,7 +21476,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21556,7 +21491,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble root-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21571,7 +21506,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21586,7 +21521,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21601,7 +21536,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21616,7 +21551,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21631,7 +21566,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21646,7 +21581,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21661,7 +21596,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21676,7 +21611,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21691,7 +21626,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21706,7 +21641,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21721,7 +21656,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21736,7 +21671,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble root-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21751,7 +21686,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21766,7 +21701,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21781,7 +21716,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21796,7 +21731,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21809,6 +21744,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
               </div>
               <div
                 class="string-row"
+                style="height: 32px;"
               >
                 <div
                   class="string-line"
@@ -21823,7 +21759,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21838,7 +21774,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble root-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21853,7 +21789,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21868,7 +21804,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21883,7 +21819,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21898,7 +21834,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21913,7 +21849,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21928,7 +21864,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21943,7 +21879,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21958,7 +21894,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21973,7 +21909,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -21988,7 +21924,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22003,7 +21939,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22018,7 +21954,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble root-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22033,7 +21969,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22048,7 +21984,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22063,7 +21999,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22078,7 +22014,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22093,7 +22029,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22108,7 +22044,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22123,7 +22059,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22138,7 +22074,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22153,7 +22089,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22168,7 +22104,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22183,7 +22119,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22196,6 +22132,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
               </div>
               <div
                 class="string-row"
+                style="height: 32px;"
               >
                 <div
                   class="string-line"
@@ -22210,7 +22147,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22225,7 +22162,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22240,7 +22177,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22255,7 +22192,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22270,7 +22207,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22285,7 +22222,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble root-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22300,7 +22237,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22315,7 +22252,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22330,7 +22267,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22345,7 +22282,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22360,7 +22297,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22375,7 +22312,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22390,7 +22327,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22405,7 +22342,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22420,7 +22357,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22435,7 +22372,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22450,7 +22387,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22465,7 +22402,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble root-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22480,7 +22417,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22495,7 +22432,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22510,7 +22447,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22525,7 +22462,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22540,7 +22477,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22555,7 +22492,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22570,7 +22507,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22583,6 +22520,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
               </div>
               <div
                 class="string-row"
+                style="height: 32px;"
               >
                 <div
                   class="string-line"
@@ -22597,7 +22535,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22612,7 +22550,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22627,7 +22565,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22642,7 +22580,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22657,7 +22595,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22672,7 +22610,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22687,7 +22625,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22702,7 +22640,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22717,7 +22655,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22732,7 +22670,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22747,7 +22685,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble root-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22762,7 +22700,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22777,7 +22715,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22792,7 +22730,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22807,7 +22745,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22822,7 +22760,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22837,7 +22775,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22852,7 +22790,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22867,7 +22805,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22882,7 +22820,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22897,7 +22835,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22912,7 +22850,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22927,7 +22865,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble root-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22942,7 +22880,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22957,7 +22895,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22970,6 +22908,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
               </div>
               <div
                 class="string-row"
+                style="height: 32px;"
               >
                 <div
                   class="string-line"
@@ -22984,7 +22923,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -22999,7 +22938,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23014,7 +22953,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23029,7 +22968,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble root-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23044,7 +22983,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23059,7 +22998,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23074,7 +23013,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23089,7 +23028,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23104,7 +23043,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23119,7 +23058,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23134,7 +23073,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23149,7 +23088,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23164,7 +23103,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23179,7 +23118,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23194,7 +23133,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23209,7 +23148,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble root-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23224,7 +23163,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23239,7 +23178,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23254,7 +23193,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23269,7 +23208,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23284,7 +23223,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23299,7 +23238,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23314,7 +23253,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23329,7 +23268,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23344,7 +23283,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23357,6 +23296,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
               </div>
               <div
                 class="string-row"
+                style="height: 32px;"
               >
                 <div
                   class="string-line"
@@ -23371,7 +23311,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23386,7 +23326,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23401,7 +23341,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23416,7 +23356,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23431,7 +23371,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23446,7 +23386,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23461,7 +23401,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23476,7 +23416,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23491,7 +23431,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble root-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23506,7 +23446,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23521,7 +23461,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23536,7 +23476,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23551,7 +23491,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23566,7 +23506,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23581,7 +23521,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23596,7 +23536,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23611,7 +23551,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23626,7 +23566,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23641,7 +23581,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23656,7 +23596,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23671,7 +23611,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble root-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23686,7 +23626,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23701,7 +23641,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23716,7 +23656,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-inactive"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"
@@ -23731,7 +23671,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <div
                       class="note-bubble note-active"
-                      style="width: 32px; height: 32px; font-size: 16px;"
+                      style="width: 26px; height: 26px; font-size: 13px;"
                     >
                       <span
                         class="note-main-label"

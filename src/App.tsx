@@ -476,18 +476,20 @@ function AppContent() {
           />
         </div>
       )}
-      <div className="control-section">
-        <StepperControl
-          label="Zoom"
-          value={fretZoom}
-          onChange={(v) => setFretZoom(v)}
-          min={100}
-          max={300}
-          step={10}
-          formatValue={(z) => z <= 100 ? 'Auto' : `${z}%`}
-          buttonVariant="mobile"
-        />
-      </div>
+      {!isTabletPortrait && (
+        <div className="control-section">
+          <StepperControl
+            label="Zoom"
+            value={fretZoom}
+            onChange={(v) => setFretZoom(v)}
+            min={100}
+            max={300}
+            step={10}
+            formatValue={(z) => z <= 100 ? 'Auto' : `${z}%`}
+            buttonVariant="mobile"
+          />
+        </div>
+      )}
     </div>
   );
 
