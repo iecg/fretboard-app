@@ -37,6 +37,8 @@ import { ScaleChordControls } from "./components/ScaleChordControls";
 import { TabletPortraitPanel } from "./components/TabletPortraitPanel";
 import { MobileTabPanel } from "./components/MobileTabPanel";
 import { DesktopControlsPanel } from "./components/DesktopControlsPanel";
+import { FretRangeControl } from "./components/FretRangeControl";
+import { StepperControl } from "./components/StepperControl";
 import {
   rootNoteAtom,
   scaleNameAtom,
@@ -463,22 +465,28 @@ function AppContent() {
       {!isTabletPortrait && (
         <div className="control-section">
           <span className="section-label">Fret Range</span>
-          <div className="fret-range-mobile">
-            <div className="fret-range-group">
-              <span className="fret-range-label">Start</span>
-              <button className="toolbar-btn" onClick={() => setFretStart(s => Math.max(0, s - 1))} disabled={fretStart <= 0}>−</button>
-              <span className="toolbar-range-val">{fretStart}</span>
-              <button className="toolbar-btn" onClick={() => setFretStart(s => Math.min(fretEnd - 1, s + 1))} disabled={fretStart >= fretEnd - 1}>+</button>
-            </div>
-            <div className="fret-range-group">
-              <span className="fret-range-label">End</span>
-              <button className="toolbar-btn" onClick={() => setFretEnd(e => Math.max(fretStart + 1, e - 1))} disabled={fretEnd <= fretStart + 1}>−</button>
-              <span className="toolbar-range-val">{fretEnd}</span>
-              <button className="toolbar-btn" onClick={() => setFretEnd(e => Math.min(END_FRET, e + 1))} disabled={fretEnd >= END_FRET}>+</button>
-            </div>
-          </div>
+          <FretRangeControl
+            startFret={fretStart}
+            endFret={fretEnd}
+            onStartChange={(v) => setFretStart(v)}
+            onEndChange={(v) => setFretEnd(v)}
+            maxFret={END_FRET}
+            layout="mobile"
+          />
         </div>
       )}
+      <div className="control-section">
+        <StepperControl
+          label="Zoom"
+          value={fretZoom}
+          onChange={(v) => setFretZoom(v)}
+          min={100}
+          max={300}
+          step={10}
+          formatValue={(z) => z <= 100 ? 'Auto' : `${z}%`}
+          buttonVariant="mobile"
+        />
+      </div>
     </div>
   );
 
