@@ -203,9 +203,10 @@ function AppContent() {
     isMobile          ? 'mobile' :
     'desktop';
 
-  // String row height — reduced on small phones (iPhone SE, 375×667) to fit the fretboard natively
-  // without squishing it horizontally via transform:scale().
-  const stringRowPx = (isMobile && viewportHeight <= 700) ? 32 : 40;
+  // String row height — reduced on small phones (≤800px tall, e.g. iPhone SE at 667px) to fit
+  // the fretboard natively without squishing it horizontally via transform:scale().
+  // Threshold matches the CSS small-phone media query (max-height: 800px).
+  const stringRowPx = (isMobile && viewportHeight <= 800) ? 32 : 40;
 
   // Tablet-portrait tab state (Jotai atom with localStorage persistence)
   const [tabletTab, setTabletTab] = useAtom(tabletTabAtom);
