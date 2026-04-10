@@ -421,8 +421,10 @@ function loadState() {
 - Inconsistent mobile detection vs CSS breakpoints
 
 **Solution**:
-- [ ] Unify all breakpoints in CSS variables
-- [ ] Sync JavaScript `isMobile` detection (768px) with CSS
+- [x] Unify all breakpoints — documented in RESPONSIVE LAYOUT comment block in App.css (CSS custom properties can't be used in media queries; comment serves as the single source of truth)
+- [x] Fix 600px Ko-fi outlier → 767px (aligned with mobile threshold)
+- [x] Remove redundant `@media (max-width: 1366px)` wrapper from landscape-tablet rules
+- [x] Sync JavaScript `isMobile` detection (768px) with CSS — CSS max-width: 767px is equivalent to JS `< 768` for integer widths; clarified in comment
 
 ---
 

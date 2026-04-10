@@ -154,7 +154,7 @@
   display: none;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 767px) {
   .kofi-btn-desktop { display: none; }
   .kofi-btn-mobile { display: block; }
 }
@@ -774,12 +774,18 @@
 
 /* =============================================
    RESPONSIVE LAYOUT
-   Desktop ≥1024px : default (3-col flex row, viewport-fit)
-   Tablet 768–1023px: 2×2 CSS Grid, viewport-fit
-   Mobile <768px    : single-col, page scroll
+   Breakpoints (JS-driven via data-layout-mode; CSS media queries match):
+     Mobile         <768px      portrait  → single-col, page scroll
+     Landscape-mob  <768px      landscape → fretboard hero, minimal chrome
+     Tablet-portrait 768–1365px portrait  → stacked grid, tab panel (data-layout-mode)
+     Landscape-tab  1024–1365px landscape → 2-col controls (data-layout-mode)
+     Desktop        ≥1366px               → 3-col flex row, viewport-fit
+
+   CSS max-width: 767px is equivalent to JS viewportWidth < 768 for integer widths.
    ============================================= */
 
-/* Tablet: 2×2 grid layout */
+/* CSS fallback for 768–1023px landscape (falls through to desktop layoutMode in JS,
+   since landscape-tablet requires ≥1024px). Gives controls a 2-column grid. */
 @media (min-width: 768px) and (max-width: 1023px) {
   .controls-panel {
     display: grid;
@@ -1124,17 +1130,16 @@
 }
 
 /* Landscape tablet: two-column controls layout */
-@media (max-width: 1366px) {
-  .app-container[data-layout-mode="landscape-tablet"] .controls-panel {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-    align-items: start;
-  }
+/* No media query needed — data-layout-mode="landscape-tablet" is only set for width 1024–1365px */
+.app-container[data-layout-mode="landscape-tablet"] .controls-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  align-items: start;
+}
 
-  .app-container[data-layout-mode="landscape-tablet"] .circle-fifths-container {
-    max-height: min(45vh, 420px);
-  }
+.app-container[data-layout-mode="landscape-tablet"] .circle-fifths-container {
+  max-height: min(45vh, 420px);
 }
 
 /* Landscape mobile: fretboard hero, minimal chrome */
