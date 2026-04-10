@@ -1049,6 +1049,11 @@
   cursor: pointer;
   transition: color var(--transition-fast), border-color var(--transition-fast);
   line-height: 1.2;
+  min-height: 1.75rem;
+  min-width: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .toolbar-btn:hover:not(:disabled) {
