@@ -103,7 +103,10 @@ export function Fretboard({
   // Tablets (>=768px) use container-aware desktopZoom since they may be in a narrower column
   const isLandscape = window.innerWidth > window.innerHeight;
   const mobileFretDivisor = isLandscape ? 10 : 7;
-  const mobileZoom = Math.floor(viewportWidth / mobileFretDivisor);
+  const baseMobileZoom = Math.floor(viewportWidth / mobileFretDivisor);
+  const mobileZoom = fretZoom <= 100
+    ? baseMobileZoom
+    : Math.round(baseMobileZoom * fretZoom / 100);
   const effectiveZoom = isMobile ? mobileZoom : desktopZoom;
 
   // Drag-to-scroll — deferred pointer capture so taps reach note-bubbles
