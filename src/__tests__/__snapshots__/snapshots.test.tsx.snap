@@ -208,68 +208,84 @@ exports[`Component Snapshots > App layout snapshots > renders desktop layout sna
             >
               Frets
             </span>
-            <button
-              class="toolbar-btn"
-              disabled=""
+            <div
+              class="fret-range-control toolbar"
             >
-              ◀
-            </button>
-            <span
-              class="toolbar-range-val"
-            >
-              0
-            </span>
-            <button
-              class="toolbar-btn"
-            >
-              ▶
-            </button>
-            <span
-              class="toolbar-range-sep"
-            >
-              —
-            </span>
-            <button
-              class="toolbar-btn"
-            >
-              ◀
-            </button>
-            <span
-              class="toolbar-range-val"
-            >
-              24
-            </span>
-            <button
-              class="toolbar-btn"
-              disabled=""
-            >
-              ▶
-            </button>
+              <div
+                class="fret-group fret-start"
+              >
+                <button
+                  class="fret-btn"
+                  disabled=""
+                >
+                  ◀
+                </button>
+                <span
+                  class="fret-value"
+                >
+                  0
+                </span>
+                <button
+                  class="fret-btn"
+                >
+                  ▶
+                </button>
+              </div>
+              <span
+                class="range-separator"
+              >
+                —
+              </span>
+              <div
+                class="fret-group fret-end"
+              >
+                <button
+                  class="fret-btn"
+                >
+                  ◀
+                </button>
+                <span
+                  class="fret-value"
+                >
+                  24
+                </span>
+                <button
+                  class="fret-btn"
+                  disabled=""
+                >
+                  ▶
+                </button>
+              </div>
+            </div>
           </div>
           <div
-            class="zoom-controls"
+            class="stepper-control toolbar"
           >
             <span
               class="section-label"
             >
               Zoom
             </span>
-            <button
-              class="toolbar-btn"
-              disabled=""
+            <div
+              class="stepper-group"
             >
-              −
-            </button>
-            <span
-              class="toolbar-range-val"
-            >
-              Auto
-            </span>
-            <button
-              class="toolbar-btn"
-            >
-              +
-            </button>
+              <button
+                class="stepper-btn"
+                disabled=""
+              >
+                −
+              </button>
+              <span
+                class="stepper-value"
+              >
+                Auto
+              </span>
+              <button
+                class="stepper-btn"
+              >
+                +
+              </button>
+            </div>
           </div>
         </div>
         <div
@@ -4052,68 +4068,84 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
             >
               Frets
             </span>
-            <button
-              class="toolbar-btn"
-              disabled=""
+            <div
+              class="fret-range-control toolbar"
             >
-              ◀
-            </button>
-            <span
-              class="toolbar-range-val"
-            >
-              0
-            </span>
-            <button
-              class="toolbar-btn"
-            >
-              ▶
-            </button>
-            <span
-              class="toolbar-range-sep"
-            >
-              —
-            </span>
-            <button
-              class="toolbar-btn"
-            >
-              ◀
-            </button>
-            <span
-              class="toolbar-range-val"
-            >
-              24
-            </span>
-            <button
-              class="toolbar-btn"
-              disabled=""
-            >
-              ▶
-            </button>
+              <div
+                class="fret-group fret-start"
+              >
+                <button
+                  class="fret-btn"
+                  disabled=""
+                >
+                  ◀
+                </button>
+                <span
+                  class="fret-value"
+                >
+                  0
+                </span>
+                <button
+                  class="fret-btn"
+                >
+                  ▶
+                </button>
+              </div>
+              <span
+                class="range-separator"
+              >
+                —
+              </span>
+              <div
+                class="fret-group fret-end"
+              >
+                <button
+                  class="fret-btn"
+                >
+                  ◀
+                </button>
+                <span
+                  class="fret-value"
+                >
+                  24
+                </span>
+                <button
+                  class="fret-btn"
+                  disabled=""
+                >
+                  ▶
+                </button>
+              </div>
+            </div>
           </div>
           <div
-            class="zoom-controls"
+            class="stepper-control toolbar"
           >
             <span
               class="section-label"
             >
               Zoom
             </span>
-            <button
-              class="toolbar-btn"
-              disabled=""
+            <div
+              class="stepper-group"
             >
-              −
-            </button>
-            <span
-              class="toolbar-range-val"
-            >
-              Auto
-            </span>
-            <button
-              class="toolbar-btn"
-            >
-              +
-            </button>
+              <button
+                class="stepper-btn"
+                disabled=""
+              >
+                −
+              </button>
+              <span
+                class="stepper-value"
+              >
+                Auto
+              </span>
+              <button
+                class="stepper-btn"
+              >
+                +
+              </button>
+            </div>
           </div>
         </div>
         <div
@@ -8021,68 +8053,84 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
             >
               Frets
             </span>
-            <button
-              class="toolbar-btn"
-              disabled=""
+            <div
+              class="fret-range-control toolbar"
             >
-              ◀
-            </button>
-            <span
-              class="toolbar-range-val"
-            >
-              0
-            </span>
-            <button
-              class="toolbar-btn"
-            >
-              ▶
-            </button>
-            <span
-              class="toolbar-range-sep"
-            >
-              —
-            </span>
-            <button
-              class="toolbar-btn"
-            >
-              ◀
-            </button>
-            <span
-              class="toolbar-range-val"
-            >
-              24
-            </span>
-            <button
-              class="toolbar-btn"
-              disabled=""
-            >
-              ▶
-            </button>
+              <div
+                class="fret-group fret-start"
+              >
+                <button
+                  class="fret-btn"
+                  disabled=""
+                >
+                  ◀
+                </button>
+                <span
+                  class="fret-value"
+                >
+                  0
+                </span>
+                <button
+                  class="fret-btn"
+                >
+                  ▶
+                </button>
+              </div>
+              <span
+                class="range-separator"
+              >
+                —
+              </span>
+              <div
+                class="fret-group fret-end"
+              >
+                <button
+                  class="fret-btn"
+                >
+                  ◀
+                </button>
+                <span
+                  class="fret-value"
+                >
+                  24
+                </span>
+                <button
+                  class="fret-btn"
+                  disabled=""
+                >
+                  ▶
+                </button>
+              </div>
+            </div>
           </div>
           <div
-            class="zoom-controls"
+            class="stepper-control toolbar"
           >
             <span
               class="section-label"
             >
               Zoom
             </span>
-            <button
-              class="toolbar-btn"
-              disabled=""
+            <div
+              class="stepper-group"
             >
-              −
-            </button>
-            <span
-              class="toolbar-range-val"
-            >
-              Auto
-            </span>
-            <button
-              class="toolbar-btn"
-            >
-              +
-            </button>
+              <button
+                class="stepper-btn"
+                disabled=""
+              >
+                −
+              </button>
+              <span
+                class="stepper-value"
+              >
+                Auto
+              </span>
+              <button
+                class="stepper-btn"
+              >
+                +
+              </button>
+            </div>
           </div>
         </div>
         <div
@@ -11990,68 +12038,84 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
             >
               Frets
             </span>
-            <button
-              class="toolbar-btn"
-              disabled=""
+            <div
+              class="fret-range-control toolbar"
             >
-              ◀
-            </button>
-            <span
-              class="toolbar-range-val"
-            >
-              0
-            </span>
-            <button
-              class="toolbar-btn"
-            >
-              ▶
-            </button>
-            <span
-              class="toolbar-range-sep"
-            >
-              —
-            </span>
-            <button
-              class="toolbar-btn"
-            >
-              ◀
-            </button>
-            <span
-              class="toolbar-range-val"
-            >
-              24
-            </span>
-            <button
-              class="toolbar-btn"
-              disabled=""
-            >
-              ▶
-            </button>
+              <div
+                class="fret-group fret-start"
+              >
+                <button
+                  class="fret-btn"
+                  disabled=""
+                >
+                  ◀
+                </button>
+                <span
+                  class="fret-value"
+                >
+                  0
+                </span>
+                <button
+                  class="fret-btn"
+                >
+                  ▶
+                </button>
+              </div>
+              <span
+                class="range-separator"
+              >
+                —
+              </span>
+              <div
+                class="fret-group fret-end"
+              >
+                <button
+                  class="fret-btn"
+                >
+                  ◀
+                </button>
+                <span
+                  class="fret-value"
+                >
+                  24
+                </span>
+                <button
+                  class="fret-btn"
+                  disabled=""
+                >
+                  ▶
+                </button>
+              </div>
+            </div>
           </div>
           <div
-            class="zoom-controls"
+            class="stepper-control toolbar"
           >
             <span
               class="section-label"
             >
               Zoom
             </span>
-            <button
-              class="toolbar-btn"
-              disabled=""
+            <div
+              class="stepper-group"
             >
-              −
-            </button>
-            <span
-              class="toolbar-range-val"
-            >
-              Auto
-            </span>
-            <button
-              class="toolbar-btn"
-            >
-              +
-            </button>
+              <button
+                class="stepper-btn"
+                disabled=""
+              >
+                −
+              </button>
+              <span
+                class="stepper-value"
+              >
+                Auto
+              </span>
+              <button
+                class="stepper-btn"
+              >
+                +
+              </button>
+            </div>
           </div>
         </div>
         <div
@@ -16407,68 +16471,84 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
             >
               Frets
             </span>
-            <button
-              class="toolbar-btn"
-              disabled=""
+            <div
+              class="fret-range-control toolbar"
             >
-              ◀
-            </button>
-            <span
-              class="toolbar-range-val"
-            >
-              0
-            </span>
-            <button
-              class="toolbar-btn"
-            >
-              ▶
-            </button>
-            <span
-              class="toolbar-range-sep"
-            >
-              —
-            </span>
-            <button
-              class="toolbar-btn"
-            >
-              ◀
-            </button>
-            <span
-              class="toolbar-range-val"
-            >
-              24
-            </span>
-            <button
-              class="toolbar-btn"
-              disabled=""
-            >
-              ▶
-            </button>
+              <div
+                class="fret-group fret-start"
+              >
+                <button
+                  class="fret-btn"
+                  disabled=""
+                >
+                  ◀
+                </button>
+                <span
+                  class="fret-value"
+                >
+                  0
+                </span>
+                <button
+                  class="fret-btn"
+                >
+                  ▶
+                </button>
+              </div>
+              <span
+                class="range-separator"
+              >
+                —
+              </span>
+              <div
+                class="fret-group fret-end"
+              >
+                <button
+                  class="fret-btn"
+                >
+                  ◀
+                </button>
+                <span
+                  class="fret-value"
+                >
+                  24
+                </span>
+                <button
+                  class="fret-btn"
+                  disabled=""
+                >
+                  ▶
+                </button>
+              </div>
+            </div>
           </div>
           <div
-            class="zoom-controls"
+            class="stepper-control toolbar"
           >
             <span
               class="section-label"
             >
               Zoom
             </span>
-            <button
-              class="toolbar-btn"
-              disabled=""
+            <div
+              class="stepper-group"
             >
-              −
-            </button>
-            <span
-              class="toolbar-range-val"
-            >
-              Auto
-            </span>
-            <button
-              class="toolbar-btn"
-            >
-              +
-            </button>
+              <button
+                class="stepper-btn"
+                disabled=""
+              >
+                −
+              </button>
+              <span
+                class="stepper-value"
+              >
+                Auto
+              </span>
+              <button
+                class="stepper-btn"
+              >
+                +
+              </button>
+            </div>
           </div>
         </div>
         <div
@@ -20830,68 +20910,84 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
             >
               Frets
             </span>
-            <button
-              class="toolbar-btn"
-              disabled=""
+            <div
+              class="fret-range-control toolbar"
             >
-              ◀
-            </button>
-            <span
-              class="toolbar-range-val"
-            >
-              0
-            </span>
-            <button
-              class="toolbar-btn"
-            >
-              ▶
-            </button>
-            <span
-              class="toolbar-range-sep"
-            >
-              —
-            </span>
-            <button
-              class="toolbar-btn"
-            >
-              ◀
-            </button>
-            <span
-              class="toolbar-range-val"
-            >
-              24
-            </span>
-            <button
-              class="toolbar-btn"
-              disabled=""
-            >
-              ▶
-            </button>
+              <div
+                class="fret-group fret-start"
+              >
+                <button
+                  class="fret-btn"
+                  disabled=""
+                >
+                  ◀
+                </button>
+                <span
+                  class="fret-value"
+                >
+                  0
+                </span>
+                <button
+                  class="fret-btn"
+                >
+                  ▶
+                </button>
+              </div>
+              <span
+                class="range-separator"
+              >
+                —
+              </span>
+              <div
+                class="fret-group fret-end"
+              >
+                <button
+                  class="fret-btn"
+                >
+                  ◀
+                </button>
+                <span
+                  class="fret-value"
+                >
+                  24
+                </span>
+                <button
+                  class="fret-btn"
+                  disabled=""
+                >
+                  ▶
+                </button>
+              </div>
+            </div>
           </div>
           <div
-            class="zoom-controls"
+            class="stepper-control toolbar"
           >
             <span
               class="section-label"
             >
               Zoom
             </span>
-            <button
-              class="toolbar-btn"
-              disabled=""
+            <div
+              class="stepper-group"
             >
-              −
-            </button>
-            <span
-              class="toolbar-range-val"
-            >
-              Auto
-            </span>
-            <button
-              class="toolbar-btn"
-            >
-              +
-            </button>
+              <button
+                class="stepper-btn"
+                disabled=""
+              >
+                −
+              </button>
+              <span
+                class="stepper-value"
+              >
+                Auto
+              </span>
+              <button
+                class="stepper-btn"
+              >
+                +
+              </button>
+            </div>
           </div>
         </div>
         <div
@@ -25247,68 +25343,84 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
             >
               Frets
             </span>
-            <button
-              class="toolbar-btn"
-              disabled=""
+            <div
+              class="fret-range-control toolbar"
             >
-              ◀
-            </button>
-            <span
-              class="toolbar-range-val"
-            >
-              0
-            </span>
-            <button
-              class="toolbar-btn"
-            >
-              ▶
-            </button>
-            <span
-              class="toolbar-range-sep"
-            >
-              —
-            </span>
-            <button
-              class="toolbar-btn"
-            >
-              ◀
-            </button>
-            <span
-              class="toolbar-range-val"
-            >
-              24
-            </span>
-            <button
-              class="toolbar-btn"
-              disabled=""
-            >
-              ▶
-            </button>
+              <div
+                class="fret-group fret-start"
+              >
+                <button
+                  class="fret-btn"
+                  disabled=""
+                >
+                  ◀
+                </button>
+                <span
+                  class="fret-value"
+                >
+                  0
+                </span>
+                <button
+                  class="fret-btn"
+                >
+                  ▶
+                </button>
+              </div>
+              <span
+                class="range-separator"
+              >
+                —
+              </span>
+              <div
+                class="fret-group fret-end"
+              >
+                <button
+                  class="fret-btn"
+                >
+                  ◀
+                </button>
+                <span
+                  class="fret-value"
+                >
+                  24
+                </span>
+                <button
+                  class="fret-btn"
+                  disabled=""
+                >
+                  ▶
+                </button>
+              </div>
+            </div>
           </div>
           <div
-            class="zoom-controls"
+            class="stepper-control toolbar"
           >
             <span
               class="section-label"
             >
               Zoom
             </span>
-            <button
-              class="toolbar-btn"
-              disabled=""
+            <div
+              class="stepper-group"
             >
-              −
-            </button>
-            <span
-              class="toolbar-range-val"
-            >
-              Auto
-            </span>
-            <button
-              class="toolbar-btn"
-            >
-              +
-            </button>
+              <button
+                class="stepper-btn"
+                disabled=""
+              >
+                −
+              </button>
+              <span
+                class="stepper-value"
+              >
+                Auto
+              </span>
+              <button
+                class="stepper-btn"
+              >
+                +
+              </button>
+            </div>
           </div>
         </div>
         <div
@@ -29229,68 +29341,84 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
             >
               Frets
             </span>
-            <button
-              class="toolbar-btn"
-              disabled=""
+            <div
+              class="fret-range-control toolbar"
             >
-              ◀
-            </button>
-            <span
-              class="toolbar-range-val"
-            >
-              0
-            </span>
-            <button
-              class="toolbar-btn"
-            >
-              ▶
-            </button>
-            <span
-              class="toolbar-range-sep"
-            >
-              —
-            </span>
-            <button
-              class="toolbar-btn"
-            >
-              ◀
-            </button>
-            <span
-              class="toolbar-range-val"
-            >
-              24
-            </span>
-            <button
-              class="toolbar-btn"
-              disabled=""
-            >
-              ▶
-            </button>
+              <div
+                class="fret-group fret-start"
+              >
+                <button
+                  class="fret-btn"
+                  disabled=""
+                >
+                  ◀
+                </button>
+                <span
+                  class="fret-value"
+                >
+                  0
+                </span>
+                <button
+                  class="fret-btn"
+                >
+                  ▶
+                </button>
+              </div>
+              <span
+                class="range-separator"
+              >
+                —
+              </span>
+              <div
+                class="fret-group fret-end"
+              >
+                <button
+                  class="fret-btn"
+                >
+                  ◀
+                </button>
+                <span
+                  class="fret-value"
+                >
+                  24
+                </span>
+                <button
+                  class="fret-btn"
+                  disabled=""
+                >
+                  ▶
+                </button>
+              </div>
+            </div>
           </div>
           <div
-            class="zoom-controls"
+            class="stepper-control toolbar"
           >
             <span
               class="section-label"
             >
               Zoom
             </span>
-            <button
-              class="toolbar-btn"
-              disabled=""
+            <div
+              class="stepper-group"
             >
-              −
-            </button>
-            <span
-              class="toolbar-range-val"
-            >
-              Auto
-            </span>
-            <button
-              class="toolbar-btn"
-            >
-              +
-            </button>
+              <button
+                class="stepper-btn"
+                disabled=""
+              >
+                −
+              </button>
+              <span
+                class="stepper-value"
+              >
+                Auto
+              </span>
+              <button
+                class="stepper-btn"
+              >
+                +
+              </button>
+            </div>
           </div>
         </div>
         <div
@@ -43098,68 +43226,84 @@ exports[`Component Snapshots > Fretboard snapshots > renders A Minor Pentatonic 
         >
           Frets
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="fret-range-control toolbar"
         >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          0
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ▶
-        </button>
-        <span
-          class="toolbar-range-sep"
-        >
-          —
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          24
-        </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
-        >
-          ▶
-        </button>
+          <div
+            class="fret-group fret-start"
+          >
+            <button
+              class="fret-btn"
+              disabled=""
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              0
+            </span>
+            <button
+              class="fret-btn"
+            >
+              ▶
+            </button>
+          </div>
+          <span
+            class="range-separator"
+          >
+            —
+          </span>
+          <div
+            class="fret-group fret-end"
+          >
+            <button
+              class="fret-btn"
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              24
+            </span>
+            <button
+              class="fret-btn"
+              disabled=""
+            >
+              ▶
+            </button>
+          </div>
+        </div>
       </div>
       <div
-        class="zoom-controls"
+        class="stepper-control toolbar"
       >
         <span
           class="section-label"
         >
           Zoom
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="stepper-group"
         >
-          −
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          Auto
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          +
-        </button>
+          <button
+            class="stepper-btn"
+            disabled=""
+          >
+            −
+          </button>
+          <span
+            class="stepper-value"
+          >
+            Auto
+          </span>
+          <button
+            class="stepper-btn"
+          >
+            +
+          </button>
+        </div>
       </div>
     </div>
     <div
@@ -45895,68 +46039,84 @@ exports[`Component Snapshots > Fretboard snapshots > renders C Major scale snaps
         >
           Frets
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="fret-range-control toolbar"
         >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          0
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ▶
-        </button>
-        <span
-          class="toolbar-range-sep"
-        >
-          —
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          24
-        </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
-        >
-          ▶
-        </button>
+          <div
+            class="fret-group fret-start"
+          >
+            <button
+              class="fret-btn"
+              disabled=""
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              0
+            </span>
+            <button
+              class="fret-btn"
+            >
+              ▶
+            </button>
+          </div>
+          <span
+            class="range-separator"
+          >
+            —
+          </span>
+          <div
+            class="fret-group fret-end"
+          >
+            <button
+              class="fret-btn"
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              24
+            </span>
+            <button
+              class="fret-btn"
+              disabled=""
+            >
+              ▶
+            </button>
+          </div>
+        </div>
       </div>
       <div
-        class="zoom-controls"
+        class="stepper-control toolbar"
       >
         <span
           class="section-label"
         >
           Zoom
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="stepper-group"
         >
-          −
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          Auto
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          +
-        </button>
+          <button
+            class="stepper-btn"
+            disabled=""
+          >
+            −
+          </button>
+          <span
+            class="stepper-value"
+          >
+            Auto
+          </span>
+          <button
+            class="stepper-btn"
+          >
+            +
+          </button>
+        </div>
       </div>
     </div>
     <div
@@ -48692,67 +48852,83 @@ exports[`Component Snapshots > Fretboard snapshots > renders Drop D tuning snaps
         >
           Frets
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="fret-range-control toolbar"
         >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          0
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ▶
-        </button>
-        <span
-          class="toolbar-range-sep"
-        >
-          —
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          12
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ▶
-        </button>
+          <div
+            class="fret-group fret-start"
+          >
+            <button
+              class="fret-btn"
+              disabled=""
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              0
+            </span>
+            <button
+              class="fret-btn"
+            >
+              ▶
+            </button>
+          </div>
+          <span
+            class="range-separator"
+          >
+            —
+          </span>
+          <div
+            class="fret-group fret-end"
+          >
+            <button
+              class="fret-btn"
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              12
+            </span>
+            <button
+              class="fret-btn"
+            >
+              ▶
+            </button>
+          </div>
+        </div>
       </div>
       <div
-        class="zoom-controls"
+        class="stepper-control toolbar"
       >
         <span
           class="section-label"
         >
           Zoom
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="stepper-group"
         >
-          −
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          Auto
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          +
-        </button>
+          <button
+            class="stepper-btn"
+            disabled=""
+          >
+            −
+          </button>
+          <span
+            class="stepper-value"
+          >
+            Auto
+          </span>
+          <button
+            class="stepper-btn"
+          >
+            +
+          </button>
+        </div>
       </div>
     </div>
     <div
@@ -50243,67 +50419,83 @@ exports[`Component Snapshots > Fretboard snapshots > renders high fret range sna
         >
           Frets
         </span>
-        <button
-          class="toolbar-btn"
+        <div
+          class="fret-range-control toolbar"
         >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          12
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ▶
-        </button>
-        <span
-          class="toolbar-range-sep"
-        >
-          —
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          24
-        </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
-        >
-          ▶
-        </button>
+          <div
+            class="fret-group fret-start"
+          >
+            <button
+              class="fret-btn"
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              12
+            </span>
+            <button
+              class="fret-btn"
+            >
+              ▶
+            </button>
+          </div>
+          <span
+            class="range-separator"
+          >
+            —
+          </span>
+          <div
+            class="fret-group fret-end"
+          >
+            <button
+              class="fret-btn"
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              24
+            </span>
+            <button
+              class="fret-btn"
+              disabled=""
+            >
+              ▶
+            </button>
+          </div>
+        </div>
       </div>
       <div
-        class="zoom-controls"
+        class="stepper-control toolbar"
       >
         <span
           class="section-label"
         >
           Zoom
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="stepper-group"
         >
-          −
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          Auto
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          +
-        </button>
+          <button
+            class="stepper-btn"
+            disabled=""
+          >
+            −
+          </button>
+          <span
+            class="stepper-value"
+          >
+            Auto
+          </span>
+          <button
+            class="stepper-btn"
+          >
+            +
+          </button>
+        </div>
       </div>
     </div>
     <div
@@ -51807,67 +51999,83 @@ exports[`Component Snapshots > Fretboard snapshots > renders with CAGED shapes a
         >
           Frets
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="fret-range-control toolbar"
         >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          0
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ▶
-        </button>
-        <span
-          class="toolbar-range-sep"
-        >
-          —
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          12
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ▶
-        </button>
+          <div
+            class="fret-group fret-start"
+          >
+            <button
+              class="fret-btn"
+              disabled=""
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              0
+            </span>
+            <button
+              class="fret-btn"
+            >
+              ▶
+            </button>
+          </div>
+          <span
+            class="range-separator"
+          >
+            —
+          </span>
+          <div
+            class="fret-group fret-end"
+          >
+            <button
+              class="fret-btn"
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              12
+            </span>
+            <button
+              class="fret-btn"
+            >
+              ▶
+            </button>
+          </div>
+        </div>
       </div>
       <div
-        class="zoom-controls"
+        class="stepper-control toolbar"
       >
         <span
           class="section-label"
         >
           Zoom
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="stepper-group"
         >
-          −
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          Auto
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          +
-        </button>
+          <button
+            class="stepper-btn"
+            disabled=""
+          >
+            −
+          </button>
+          <span
+            class="stepper-value"
+          >
+            Auto
+          </span>
+          <button
+            class="stepper-btn"
+          >
+            +
+          </button>
+        </div>
       </div>
     </div>
     <div
@@ -53385,67 +53593,83 @@ exports[`Component Snapshots > Fretboard snapshots > renders with CAGED shapes s
         >
           Frets
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="fret-range-control toolbar"
         >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          0
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ▶
-        </button>
-        <span
-          class="toolbar-range-sep"
-        >
-          —
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          12
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ▶
-        </button>
+          <div
+            class="fret-group fret-start"
+          >
+            <button
+              class="fret-btn"
+              disabled=""
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              0
+            </span>
+            <button
+              class="fret-btn"
+            >
+              ▶
+            </button>
+          </div>
+          <span
+            class="range-separator"
+          >
+            —
+          </span>
+          <div
+            class="fret-group fret-end"
+          >
+            <button
+              class="fret-btn"
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              12
+            </span>
+            <button
+              class="fret-btn"
+            >
+              ▶
+            </button>
+          </div>
+        </div>
       </div>
       <div
-        class="zoom-controls"
+        class="stepper-control toolbar"
       >
         <span
           class="section-label"
         >
           Zoom
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="stepper-group"
         >
-          −
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          Auto
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          +
-        </button>
+          <button
+            class="stepper-btn"
+            disabled=""
+          >
+            −
+          </button>
+          <span
+            class="stepper-value"
+          >
+            Auto
+          </span>
+          <button
+            class="stepper-btn"
+          >
+            +
+          </button>
+        </div>
       </div>
     </div>
     <div
@@ -54957,67 +55181,83 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
         >
           Frets
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="fret-range-control toolbar"
         >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          0
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ▶
-        </button>
-        <span
-          class="toolbar-range-sep"
-        >
-          —
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          12
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ▶
-        </button>
+          <div
+            class="fret-group fret-start"
+          >
+            <button
+              class="fret-btn"
+              disabled=""
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              0
+            </span>
+            <button
+              class="fret-btn"
+            >
+              ▶
+            </button>
+          </div>
+          <span
+            class="range-separator"
+          >
+            —
+          </span>
+          <div
+            class="fret-group fret-end"
+          >
+            <button
+              class="fret-btn"
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              12
+            </span>
+            <button
+              class="fret-btn"
+            >
+              ▶
+            </button>
+          </div>
+        </div>
       </div>
       <div
-        class="zoom-controls"
+        class="stepper-control toolbar"
       >
         <span
           class="section-label"
         >
           Zoom
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="stepper-group"
         >
-          −
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          Auto
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          +
-        </button>
+          <button
+            class="stepper-btn"
+            disabled=""
+          >
+            −
+          </button>
+          <span
+            class="stepper-value"
+          >
+            Auto
+          </span>
+          <button
+            class="stepper-btn"
+          >
+            +
+          </button>
+        </div>
       </div>
     </div>
     <div
@@ -56506,67 +56746,83 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
         >
           Frets
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="fret-range-control toolbar"
         >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          0
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ▶
-        </button>
-        <span
-          class="toolbar-range-sep"
-        >
-          —
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          12
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ▶
-        </button>
+          <div
+            class="fret-group fret-start"
+          >
+            <button
+              class="fret-btn"
+              disabled=""
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              0
+            </span>
+            <button
+              class="fret-btn"
+            >
+              ▶
+            </button>
+          </div>
+          <span
+            class="range-separator"
+          >
+            —
+          </span>
+          <div
+            class="fret-group fret-end"
+          >
+            <button
+              class="fret-btn"
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              12
+            </span>
+            <button
+              class="fret-btn"
+            >
+              ▶
+            </button>
+          </div>
+        </div>
       </div>
       <div
-        class="zoom-controls"
+        class="stepper-control toolbar"
       >
         <span
           class="section-label"
         >
           Zoom
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="stepper-group"
         >
-          −
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          Auto
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          +
-        </button>
+          <button
+            class="stepper-btn"
+            disabled=""
+          >
+            −
+          </button>
+          <span
+            class="stepper-value"
+          >
+            Auto
+          </span>
+          <button
+            class="stepper-btn"
+          >
+            +
+          </button>
+        </div>
       </div>
     </div>
     <div
@@ -58055,67 +58311,83 @@ exports[`Component Snapshots > Fretboard snapshots > renders with degree display
         >
           Frets
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="fret-range-control toolbar"
         >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          0
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ▶
-        </button>
-        <span
-          class="toolbar-range-sep"
-        >
-          —
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          12
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ▶
-        </button>
+          <div
+            class="fret-group fret-start"
+          >
+            <button
+              class="fret-btn"
+              disabled=""
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              0
+            </span>
+            <button
+              class="fret-btn"
+            >
+              ▶
+            </button>
+          </div>
+          <span
+            class="range-separator"
+          >
+            —
+          </span>
+          <div
+            class="fret-group fret-end"
+          >
+            <button
+              class="fret-btn"
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              12
+            </span>
+            <button
+              class="fret-btn"
+            >
+              ▶
+            </button>
+          </div>
+        </div>
       </div>
       <div
-        class="zoom-controls"
+        class="stepper-control toolbar"
       >
         <span
           class="section-label"
         >
           Zoom
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="stepper-group"
         >
-          −
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          Auto
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          +
-        </button>
+          <button
+            class="stepper-btn"
+            disabled=""
+          >
+            −
+          </button>
+          <span
+            class="stepper-value"
+          >
+            Auto
+          </span>
+          <button
+            class="stepper-btn"
+          >
+            +
+          </button>
+        </div>
       </div>
     </div>
     <div
@@ -59604,67 +59876,83 @@ exports[`Component Snapshots > Fretboard snapshots > renders with flats instead 
         >
           Frets
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="fret-range-control toolbar"
         >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          0
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ▶
-        </button>
-        <span
-          class="toolbar-range-sep"
-        >
-          —
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          12
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ▶
-        </button>
+          <div
+            class="fret-group fret-start"
+          >
+            <button
+              class="fret-btn"
+              disabled=""
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              0
+            </span>
+            <button
+              class="fret-btn"
+            >
+              ▶
+            </button>
+          </div>
+          <span
+            class="range-separator"
+          >
+            —
+          </span>
+          <div
+            class="fret-group fret-end"
+          >
+            <button
+              class="fret-btn"
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              12
+            </span>
+            <button
+              class="fret-btn"
+            >
+              ▶
+            </button>
+          </div>
+        </div>
       </div>
       <div
-        class="zoom-controls"
+        class="stepper-control toolbar"
       >
         <span
           class="section-label"
         >
           Zoom
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="stepper-group"
         >
-          −
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          Auto
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          +
-        </button>
+          <button
+            class="stepper-btn"
+            disabled=""
+          >
+            −
+          </button>
+          <span
+            class="stepper-value"
+          >
+            Auto
+          </span>
+          <button
+            class="stepper-btn"
+          >
+            +
+          </button>
+        </div>
       </div>
     </div>
     <div
@@ -61153,67 +61441,83 @@ exports[`Component Snapshots > Fretboard snapshots > renders with no display for
         >
           Frets
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="fret-range-control toolbar"
         >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          0
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ▶
-        </button>
-        <span
-          class="toolbar-range-sep"
-        >
-          —
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          12
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ▶
-        </button>
+          <div
+            class="fret-group fret-start"
+          >
+            <button
+              class="fret-btn"
+              disabled=""
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              0
+            </span>
+            <button
+              class="fret-btn"
+            >
+              ▶
+            </button>
+          </div>
+          <span
+            class="range-separator"
+          >
+            —
+          </span>
+          <div
+            class="fret-group fret-end"
+          >
+            <button
+              class="fret-btn"
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              12
+            </span>
+            <button
+              class="fret-btn"
+            >
+              ▶
+            </button>
+          </div>
+        </div>
       </div>
       <div
-        class="zoom-controls"
+        class="stepper-control toolbar"
       >
         <span
           class="section-label"
         >
           Zoom
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="stepper-group"
         >
-          −
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          Auto
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          +
-        </button>
+          <button
+            class="stepper-btn"
+            disabled=""
+          >
+            −
+          </button>
+          <span
+            class="stepper-value"
+          >
+            Auto
+          </span>
+          <button
+            class="stepper-btn"
+          >
+            +
+          </button>
+        </div>
       </div>
     </div>
     <div
@@ -62234,67 +62538,83 @@ exports[`Component Snapshots > Fretboard snapshots > renders with small mobile s
         >
           Frets
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="fret-range-control toolbar"
         >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          0
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ▶
-        </button>
-        <span
-          class="toolbar-range-sep"
-        >
-          —
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          12
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ▶
-        </button>
+          <div
+            class="fret-group fret-start"
+          >
+            <button
+              class="fret-btn"
+              disabled=""
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              0
+            </span>
+            <button
+              class="fret-btn"
+            >
+              ▶
+            </button>
+          </div>
+          <span
+            class="range-separator"
+          >
+            —
+          </span>
+          <div
+            class="fret-group fret-end"
+          >
+            <button
+              class="fret-btn"
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              12
+            </span>
+            <button
+              class="fret-btn"
+            >
+              ▶
+            </button>
+          </div>
+        </div>
       </div>
       <div
-        class="zoom-controls"
+        class="stepper-control toolbar"
       >
         <span
           class="section-label"
         >
           Zoom
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="stepper-group"
         >
-          −
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          Auto
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          +
-        </button>
+          <button
+            class="stepper-btn"
+            disabled=""
+          >
+            −
+          </button>
+          <span
+            class="stepper-value"
+          >
+            Auto
+          </span>
+          <button
+            class="stepper-btn"
+          >
+            +
+          </button>
+        </div>
       </div>
     </div>
     <div
@@ -63789,68 +64109,84 @@ exports[`Fretboard with ResizeObserver (auto-fit zoom) > uses containerWidth/tot
         >
           Frets
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="fret-range-control toolbar"
         >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          0
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ▶
-        </button>
-        <span
-          class="toolbar-range-sep"
-        >
-          —
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          ◀
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          24
-        </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
-        >
-          ▶
-        </button>
+          <div
+            class="fret-group fret-start"
+          >
+            <button
+              class="fret-btn"
+              disabled=""
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              0
+            </span>
+            <button
+              class="fret-btn"
+            >
+              ▶
+            </button>
+          </div>
+          <span
+            class="range-separator"
+          >
+            —
+          </span>
+          <div
+            class="fret-group fret-end"
+          >
+            <button
+              class="fret-btn"
+            >
+              ◀
+            </button>
+            <span
+              class="fret-value"
+            >
+              24
+            </span>
+            <button
+              class="fret-btn"
+              disabled=""
+            >
+              ▶
+            </button>
+          </div>
+        </div>
       </div>
       <div
-        class="zoom-controls"
+        class="stepper-control toolbar"
       >
         <span
           class="section-label"
         >
           Zoom
         </span>
-        <button
-          class="toolbar-btn"
-          disabled=""
+        <div
+          class="stepper-group"
         >
-          −
-        </button>
-        <span
-          class="toolbar-range-val"
-        >
-          Auto
-        </span>
-        <button
-          class="toolbar-btn"
-        >
-          +
-        </button>
+          <button
+            class="stepper-btn"
+            disabled=""
+          >
+            −
+          </button>
+          <span
+            class="stepper-value"
+          >
+            Auto
+          </span>
+          <button
+            class="stepper-btn"
+          >
+            +
+          </button>
+        </div>
       </div>
     </div>
     <div
