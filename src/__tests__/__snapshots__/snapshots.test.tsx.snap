@@ -6960,6 +6960,39 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
                 </button>
               </div>
             </div>
+            <div
+              class="control-section"
+            >
+              <div
+                class="stepper-control mobile"
+              >
+                <span
+                  class="section-label"
+                >
+                  Zoom
+                </span>
+                <div
+                  class="stepper-group"
+                >
+                  <button
+                    class="stepper-btn"
+                    disabled=""
+                  >
+                    −
+                  </button>
+                  <span
+                    class="stepper-value"
+                  >
+                    Auto
+                  </span>
+                  <button
+                    class="stepper-btn"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -10943,6 +10976,39 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
                     />
                   </svg>
                 </button>
+              </div>
+            </div>
+            <div
+              class="control-section"
+            >
+              <div
+                class="stepper-control mobile"
+              >
+                <span
+                  class="section-label"
+                >
+                  Zoom
+                </span>
+                <div
+                  class="stepper-group"
+                >
+                  <button
+                    class="stepper-btn"
+                    disabled=""
+                  >
+                    −
+                  </button>
+                  <span
+                    class="stepper-value"
+                  >
+                    Auto
+                  </span>
+                  <button
+                    class="stepper-btn"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
             </div>
           </div>
