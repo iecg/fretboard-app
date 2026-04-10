@@ -2,7 +2,7 @@ name: PR Checks & Enforcement
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, edited]
   pull_request_review:
     types: [submitted]
 
