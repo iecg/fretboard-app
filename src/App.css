@@ -907,6 +907,9 @@
 
   .mobile-tab-content {
     padding: 0.25rem;
+  }
+
+  .mobile-tab-panel {
     gap: 0.25rem;
   }
 
