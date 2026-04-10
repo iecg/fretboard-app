@@ -10,6 +10,8 @@ import {
 import { NOTES, ENHARMONICS, getNoteDisplayInScale, INTERVAL_NAMES, formatAccidental, SCALES } from "./theory";
 import { synth } from "./audio";
 import type { ShapePolygon } from "./shapes";
+import { FretRangeControl } from "./components/FretRangeControl";
+import { StepperControl } from "./components/StepperControl";
 
 const STRING_ROW_PX_DEFAULT = 40;
 const ZOOM_MAX_PCT = 300;
@@ -283,43 +285,35 @@ export function Fretboard({
         </div>
         <div className="fret-range-controls">
           <span className="section-label">Frets</span>
-          <button className="toolbar-btn"
-            onClick={() => onFretStartChange?.(Math.max(0, startFret - 1))}
-            disabled={startFret <= 0}>◀</button>
-          <span className="toolbar-range-val">{startFret}</span>
-          <button className="toolbar-btn"
-            onClick={() => onFretStartChange?.(Math.min(endFret - 1, startFret + 1))}
-            disabled={startFret >= endFret - 1}>▶</button>
-          <span className="toolbar-range-sep">—</span>
-          <button className="toolbar-btn"
-            onClick={() => onFretEndChange?.(Math.max(startFret + 1, endFret - 1))}
-            disabled={endFret <= startFret + 1}>◀</button>
-          <span className="toolbar-range-val">{endFret}</span>
-          <button className="toolbar-btn"
-            onClick={() => onFretEndChange?.(Math.min(maxFret, endFret + 1))}
-            disabled={endFret >= maxFret}>▶</button>
+          <FretRangeControl
+            startFret={startFret}
+            endFret={endFret}
+            onStartChange={onFretStartChange ?? (() => {})}
+            onEndChange={onFretEndChange ?? (() => {})}
+            maxFret={maxFret}
+            layout="toolbar"
+          />
         </div>
-        <div className="zoom-controls">
-          <span className="section-label">Zoom</span>
-          <button className="toolbar-btn"
-            onClick={() => onZoomChange?.(Math.max(100, fretZoom - 10))}
-            disabled={fretZoom <= 100}>−</button>
-          <span className="toolbar-range-val">{fretZoom <= 100 ? "Auto" : `${fretZoom}%`}</span>
-          <button className="toolbar-btn"
-            onClick={() => onZoomChange?.(Math.min(ZOOM_MAX_PCT, fretZoom + 10))}
-            disabled={fretZoom >= ZOOM_MAX_PCT}>+</button>
-        </div>
+        <StepperControl
+          label="Zoom"
+          value={fretZoom}
+          onChange={onZoomChange ?? (() => {})}
+          min={100}
+          max={ZOOM_MAX_PCT}
+          step={10}
+          formatValue={(z) => z <= 100 ? 'Auto' : `${z}%`}
+          buttonVariant="toolbar"
+        />
         {hasChordOverlay && shapePolygons.length > 0 && (
-          <div className="fret-range-controls">
-            <span className="section-label">Chord Spread</span>
-            <button className="toolbar-btn"
-              onClick={() => onChordFretSpreadChange?.(Math.max(0, chordFretSpread - 1))}
-              disabled={chordFretSpread <= 0}>−</button>
-            <span className="toolbar-range-val">{chordFretSpread}</span>
-            <button className="toolbar-btn"
-              onClick={() => onChordFretSpreadChange?.(Math.min(4, chordFretSpread + 1))}
-              disabled={chordFretSpread >= 4}>+</button>
-          </div>
+          <StepperControl
+            label="Chord Spread"
+            value={chordFretSpread}
+            onChange={onChordFretSpreadChange ?? (() => {})}
+            min={0}
+            max={4}
+            step={1}
+            buttonVariant="toolbar"
+          />
         )}
       </div>
 
