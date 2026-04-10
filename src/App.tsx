@@ -194,7 +194,7 @@ function AppContent() {
   const isLandscapeMobile = viewportWidth < 768 && viewportHeight < viewportWidth;
   const isMobile = viewportWidth < 768 || isLandscapeMobile;
   const isTabletPortrait = viewportWidth >= 768 && viewportWidth < 1366 && viewportHeight >= viewportWidth;
-  const isLandscapeTablet = viewportWidth >= 1024 && viewportWidth < 1366 && viewportHeight < viewportWidth;
+  const isLandscapeTablet = viewportWidth >= 768 && viewportWidth < 1366 && viewportHeight < viewportWidth;
   type LayoutMode = 'mobile' | 'landscape-mobile' | 'tablet-portrait' | 'landscape-tablet' | 'desktop';
   const layoutMode: LayoutMode =
     isLandscapeMobile ? 'landscape-mobile' :
