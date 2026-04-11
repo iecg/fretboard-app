@@ -412,7 +412,11 @@ describe('App', () => {
         expect(localStorage.getItem('tabletTab')).toBe('scales');
       }
 
-      const settingsBtn = screen.queryByText('Settings');
+      // Scope the "Settings" match to the tablet tab button to avoid
+      // matching the SettingsOverlay drawer title that is always in the DOM.
+      const settingsBtn = Array.from(
+        document.querySelectorAll<HTMLButtonElement>('.toggle-btn'),
+      ).find((b) => b.textContent?.trim() === 'Settings');
       if (settingsBtn) {
         fireEvent.click(settingsBtn);
         expect(localStorage.getItem('tabletTab')).toBe('settings');
