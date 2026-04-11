@@ -41,6 +41,19 @@ describe('App', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
+    // Force desktop-expanded layout so all control groups are in the
+    // DOM without needing to switch tabs. See src/layout/constants.ts
+    // for the fit math — 1920x1200 has enough headroom for Target A.
+    Object.defineProperty(window, 'innerWidth', {
+      writable: true,
+      configurable: true,
+      value: 1920,
+    });
+    Object.defineProperty(window, 'innerHeight', {
+      writable: true,
+      configurable: true,
+      value: 1200,
+    });
   });
 
   afterEach(() => {

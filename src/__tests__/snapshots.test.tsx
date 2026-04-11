@@ -342,16 +342,21 @@ describe('Component Snapshots', () => {
   });
 
   describe('App layout snapshots', () => {
-    it('renders desktop layout snapshot', () => {
+    it('renders desktop-expanded layout snapshot (1920×1200)', () => {
       Object.defineProperty(window, 'innerWidth', {
         writable: true,
         configurable: true,
         value: 1920,
       });
+      Object.defineProperty(window, 'innerHeight', {
+        writable: true,
+        configurable: true,
+        value: 1200,
+      });
 
       localStorage.clear();
       const { container } = render(<App />);
-      expect(container).toMatchSnapshot('app-desktop-default');
+      expect(container).toMatchSnapshot('app-desktop-expanded-default');
     });
 
     it('renders mobile layout snapshot', () => {
@@ -372,6 +377,11 @@ describe('Component Snapshots', () => {
         configurable: true,
         value: 1920,
       });
+      Object.defineProperty(window, 'innerHeight', {
+        writable: true,
+        configurable: true,
+        value: 1200,
+      });
 
       localStorage.setItem('rootNote', 'G');
       localStorage.setItem('scaleName', 'Natural Minor');
@@ -389,6 +399,11 @@ describe('Component Snapshots', () => {
         configurable: true,
         value: 1920,
       });
+      Object.defineProperty(window, 'innerHeight', {
+        writable: true,
+        configurable: true,
+        value: 1200,
+      });
 
       localStorage.clear();
       localStorage.setItem('chordType', 'Major 7th');
@@ -396,6 +411,23 @@ describe('Component Snapshots', () => {
 
       const { container } = render(<App />);
       expect(container).toMatchSnapshot('app-with-chord-overlay');
+    });
+
+    it('falls back to tablet-portrait at short desktop heights (1920×600)', () => {
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: 1920,
+      });
+      Object.defineProperty(window, 'innerHeight', {
+        writable: true,
+        configurable: true,
+        value: 600,
+      });
+
+      localStorage.clear();
+      const { container } = render(<App />);
+      expect(container).toMatchSnapshot('app-wide-short-tablet-portrait-fallback');
     });
 
     it('renders iPhone SE portrait layout (375×667)', () => {
@@ -466,7 +498,10 @@ describe('Component Snapshots', () => {
       expect(container).toMatchSnapshot('app-iphone-12-pro-portrait');
     });
 
-    it('renders iPad landscape layout (1024×768)', () => {
+    it('renders iPad landscape layout (1024×768) as tablet-portrait fallback', () => {
+      // Post-Phase-06: 1024×768 doesn't have enough height for
+      // desktop-expanded (available 288 < required 576), so it falls
+      // back to the tablet-portrait tabbed layout.
       Object.defineProperty(window, 'innerWidth', {
         writable: true,
         configurable: true,
