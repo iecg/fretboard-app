@@ -161,6 +161,10 @@ export const tabletTabAtom = atomWithStorage<"settings" | "scales">(
   rawStringStorage<"settings" | "scales">(),
 );
 
+// Settings overlay — intentionally non-persisted, always starts closed
+// intentionally non-persisted — always starts closed
+export const settingsOverlayOpenAtom = atom<boolean>(false);
+
 // ---------------------------------------------------------------------------
 // Write atoms (actions)
 // ---------------------------------------------------------------------------
