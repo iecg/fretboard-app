@@ -973,12 +973,19 @@
   max-width: 120rem;
 }
 
+/* Controls panel claims all free vertical space between the fretboard
+   and the summary/version. Inside, the 2-col grid stretches; cells
+   stretch both ways (default) so each col is full width, and each
+   col's flex content is vertically centered. Until the taller-
+   fretboard phase ships, this is how we avoid whitespace between
+   the summary and version on tall displays. */
 .app-container[data-layout-mode="desktop-expanded"] .controls-panel {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto;
+  grid-template-rows: 1fr;
   gap: var(--space-4);
-  align-items: start;
+  flex: 1 1 0;
+  min-height: 0;
 }
 
 .app-container[data-layout-mode="desktop-expanded"] .controls-col-left {
@@ -987,6 +994,7 @@
   gap: var(--space-4);
   grid-column: 1;
   min-width: 0;
+  justify-content: center;
 }
 
 .app-container[data-layout-mode="desktop-expanded"] .controls-panel
@@ -994,12 +1002,16 @@
   grid-column: 2;
   grid-row: 1;
   min-width: 0;
-  max-height: 500px;
   flex: unset;
-  align-self: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
 }
 
 .app-container[data-layout-mode="desktop-expanded"] .circle-fifths-container {
+  max-width: 500px;
   max-height: 500px;
   aspect-ratio: 1;
 }
