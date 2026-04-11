@@ -8,13 +8,11 @@
 .mobile-tab-bar.toggle-group {
   display: flex;
   background: var(--surface-raised);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   padding: var(--space-1);
   gap: var(--space-1);
   /* Remove App.css margin (designed for full-width mobile layout) */
   margin: 0;
-  /* Remove border inherited from toggle-group base in shared.css */
-  border: none;
 }
 
 .mobile-tab-bar.toggle-group .mobile-tab {
