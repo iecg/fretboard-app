@@ -1,16 +1,39 @@
-import { useEffect, type ReactNode } from "react";
+import { useEffect } from "react";
 import { useAtom } from "jotai";
 import clsx from "clsx";
 import { X } from "lucide-react";
-import { settingsOverlayOpenAtom } from "../store/atoms";
+import {
+  settingsOverlayOpenAtom,
+  fretZoomAtom,
+  fretStartAtom,
+  fretEndAtom,
+  tuningNameAtom,
+  useFlatsAtom,
+} from "../store/atoms";
+import { TUNINGS } from "../guitar";
+import { StepperControl } from "./StepperControl";
+import { FretRangeControl } from "./FretRangeControl";
+import { DrawerSelector } from "../DrawerSelector";
+import { ToggleBar } from "./ToggleBar";
 import "./SettingsOverlay.css";
 
-interface SettingsOverlayProps {
-  children?: ReactNode;
-}
+const END_FRET = 24;
+const ZOOM_MIN = 100;
+const ZOOM_MAX = 300;
+const ZOOM_STEP = 10;
 
-export default function SettingsOverlay({ children }: SettingsOverlayProps) {
+const ACCIDENTAL_OPTIONS = [
+  { label: "\u266F", value: "sharps" },
+  { label: "\u266D", value: "flats" },
+];
+
+export default function SettingsOverlay() {
   const [isOpen, setIsOpen] = useAtom(settingsOverlayOpenAtom);
+  const [fretZoom, setFretZoom] = useAtom(fretZoomAtom);
+  const [fretStart, setFretStart] = useAtom(fretStartAtom);
+  const [fretEnd, setFretEnd] = useAtom(fretEndAtom);
+  const [tuningName, setTuningName] = useAtom(tuningNameAtom);
+  const [useFlats, setUseFlats] = useAtom(useFlatsAtom);
 
   const close = () => setIsOpen(false);
 
@@ -53,7 +76,50 @@ export default function SettingsOverlay({ children }: SettingsOverlayProps) {
             <X className="icon" />
           </button>
         </div>
-        <div className="settings-overlay-content">{children}</div>
+        <div className="settings-overlay-content">
+          <div className="overlay-control-group">
+            <StepperControl
+              label="Zoom"
+              value={fretZoom}
+              onChange={setFretZoom}
+              min={ZOOM_MIN}
+              max={ZOOM_MAX}
+              step={ZOOM_STEP}
+              formatValue={(z) => (z <= 100 ? "Auto" : `${z}%`)}
+              buttonVariant="mobile"
+            />
+          </div>
+
+          <div className="overlay-control-group">
+            <span className="overlay-control-label">Fret Range</span>
+            <FretRangeControl
+              startFret={fretStart}
+              endFret={fretEnd}
+              onStartChange={setFretStart}
+              onEndChange={setFretEnd}
+              maxFret={END_FRET}
+              layout="mobile"
+            />
+          </div>
+
+          <div className="overlay-control-group">
+            <DrawerSelector
+              label="Tuning"
+              value={tuningName}
+              options={Object.keys(TUNINGS)}
+              onSelect={(v) => v && setTuningName(v)}
+            />
+          </div>
+
+          <div className="overlay-control-group">
+            <span className="overlay-control-label">Accidentals</span>
+            <ToggleBar
+              options={ACCIDENTAL_OPTIONS}
+              value={useFlats ? "flats" : "sharps"}
+              onChange={(v) => setUseFlats(v === "flats")}
+            />
+          </div>
+        </div>
       </div>
     </>
   );
