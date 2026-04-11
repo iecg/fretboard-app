@@ -6789,135 +6789,6 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-expanded l
       </div>
     </main>
     <div
-      class="summary-area"
-    >
-      <div
-        class="summary-row"
-      >
-        <div
-          class="summary-row-label"
-        >
-          C Major
-        </div>
-        <div
-          class="summary-notes"
-        >
-          <span
-            class="summary-note"
-            style="outline: 2px solid #f59e0b; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              C
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(245, 158, 11);"
-            >
-              1
-            </span>
-          </span>
-          <span
-            class="summary-note"
-            style="outline: 2px solid #3b82f6; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              D
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(59, 130, 246);"
-            >
-              2
-            </span>
-          </span>
-          <span
-            class="summary-note"
-            style="outline: 2px solid #10b981; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              E
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(16, 185, 129);"
-            >
-              3
-            </span>
-          </span>
-          <span
-            class="summary-note"
-            style="outline: 2px solid #ef4444; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              F
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(239, 68, 68);"
-            >
-              4
-            </span>
-          </span>
-          <span
-            class="summary-note"
-            style="outline: 2px solid #8b5cf6; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              G
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(139, 92, 246);"
-            >
-              5
-            </span>
-          </span>
-          <span
-            class="summary-note"
-            style="outline: 2px solid #ec4899; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              A
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(236, 72, 153);"
-            >
-              6
-            </span>
-          </span>
-          <span
-            class="summary-note"
-            style="outline: 2px solid #6366f1; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              B
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(99, 102, 241);"
-            >
-              7
-            </span>
-          </span>
-        </div>
-      </div>
-    </div>
-    <div
       class="controls-panel"
     >
       <div
@@ -7649,6 +7520,135 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-expanded l
               ♮
             </text>
           </svg>
+        </div>
+      </div>
+    </div>
+    <div
+      class="summary-area"
+    >
+      <div
+        class="summary-row"
+      >
+        <div
+          class="summary-row-label"
+        >
+          C Major
+        </div>
+        <div
+          class="summary-notes"
+        >
+          <span
+            class="summary-note"
+            style="outline: 2px solid #f59e0b; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              C
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(245, 158, 11);"
+            >
+              1
+            </span>
+          </span>
+          <span
+            class="summary-note"
+            style="outline: 2px solid #3b82f6; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              D
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(59, 130, 246);"
+            >
+              2
+            </span>
+          </span>
+          <span
+            class="summary-note"
+            style="outline: 2px solid #10b981; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              E
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(16, 185, 129);"
+            >
+              3
+            </span>
+          </span>
+          <span
+            class="summary-note"
+            style="outline: 2px solid #ef4444; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              F
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(239, 68, 68);"
+            >
+              4
+            </span>
+          </span>
+          <span
+            class="summary-note"
+            style="outline: 2px solid #8b5cf6; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              G
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(139, 92, 246);"
+            >
+              5
+            </span>
+          </span>
+          <span
+            class="summary-note"
+            style="outline: 2px solid #ec4899; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              A
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(236, 72, 153);"
+            >
+              6
+            </span>
+          </span>
+          <span
+            class="summary-note"
+            style="outline: 2px solid #6366f1; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              B
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(99, 102, 241);"
+            >
+              7
+            </span>
+          </span>
         </div>
       </div>
     </div>
@@ -10653,135 +10653,6 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
       </div>
     </main>
     <div
-      class="summary-area"
-    >
-      <div
-        class="summary-row"
-      >
-        <div
-          class="summary-row-label"
-        >
-          C Major
-        </div>
-        <div
-          class="summary-notes"
-        >
-          <span
-            class="summary-note"
-            style="outline: 2px solid #f59e0b; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              C
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(245, 158, 11);"
-            >
-              1
-            </span>
-          </span>
-          <span
-            class="summary-note"
-            style="outline: 2px solid #3b82f6; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              D
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(59, 130, 246);"
-            >
-              2
-            </span>
-          </span>
-          <span
-            class="summary-note"
-            style="outline: 2px solid #10b981; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              E
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(16, 185, 129);"
-            >
-              3
-            </span>
-          </span>
-          <span
-            class="summary-note"
-            style="outline: 2px solid #ef4444; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              F
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(239, 68, 68);"
-            >
-              4
-            </span>
-          </span>
-          <span
-            class="summary-note"
-            style="outline: 2px solid #8b5cf6; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              G
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(139, 92, 246);"
-            >
-              5
-            </span>
-          </span>
-          <span
-            class="summary-note"
-            style="outline: 2px solid #ec4899; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              A
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(236, 72, 153);"
-            >
-              6
-            </span>
-          </span>
-          <span
-            class="summary-note"
-            style="outline: 2px solid #6366f1; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              B
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(99, 102, 241);"
-            >
-              7
-            </span>
-          </span>
-        </div>
-      </div>
-    </div>
-    <div
       class="controls-panel"
     >
       <div
@@ -11513,6 +11384,135 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
               ♮
             </text>
           </svg>
+        </div>
+      </div>
+    </div>
+    <div
+      class="summary-area"
+    >
+      <div
+        class="summary-row"
+      >
+        <div
+          class="summary-row-label"
+        >
+          C Major
+        </div>
+        <div
+          class="summary-notes"
+        >
+          <span
+            class="summary-note"
+            style="outline: 2px solid #f59e0b; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              C
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(245, 158, 11);"
+            >
+              1
+            </span>
+          </span>
+          <span
+            class="summary-note"
+            style="outline: 2px solid #3b82f6; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              D
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(59, 130, 246);"
+            >
+              2
+            </span>
+          </span>
+          <span
+            class="summary-note"
+            style="outline: 2px solid #10b981; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              E
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(16, 185, 129);"
+            >
+              3
+            </span>
+          </span>
+          <span
+            class="summary-note"
+            style="outline: 2px solid #ef4444; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              F
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(239, 68, 68);"
+            >
+              4
+            </span>
+          </span>
+          <span
+            class="summary-note"
+            style="outline: 2px solid #8b5cf6; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              G
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(139, 92, 246);"
+            >
+              5
+            </span>
+          </span>
+          <span
+            class="summary-note"
+            style="outline: 2px solid #ec4899; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              A
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(236, 72, 153);"
+            >
+              6
+            </span>
+          </span>
+          <span
+            class="summary-note"
+            style="outline: 2px solid #6366f1; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              B
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(99, 102, 241);"
+            >
+              7
+            </span>
+          </span>
         </div>
       </div>
     </div>
@@ -33265,212 +33265,6 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
       </div>
     </main>
     <div
-      class="summary-area"
-    >
-      <div
-        class="summary-row"
-      >
-        <div
-          class="summary-row-label"
-        >
-          C Major
-        </div>
-        <div
-          class="summary-notes"
-        >
-          <span
-            class="summary-note"
-            style="outline: 2px solid #f59e0b; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              C
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(245, 158, 11);"
-            >
-              1
-            </span>
-          </span>
-          <span
-            class="summary-note"
-            style="outline: 2px solid #3b82f6; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              D
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(59, 130, 246);"
-            >
-              2
-            </span>
-          </span>
-          <span
-            class="summary-note"
-            style="outline: 2px solid #10b981; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              E
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(16, 185, 129);"
-            >
-              3
-            </span>
-          </span>
-          <span
-            class="summary-note"
-            style="outline: 2px solid #ef4444; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              F
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(239, 68, 68);"
-            >
-              4
-            </span>
-          </span>
-          <span
-            class="summary-note"
-            style="outline: 2px solid #8b5cf6; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              G
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(139, 92, 246);"
-            >
-              5
-            </span>
-          </span>
-          <span
-            class="summary-note"
-            style="outline: 2px solid #ec4899; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              A
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(236, 72, 153);"
-            >
-              6
-            </span>
-          </span>
-          <span
-            class="summary-note"
-            style="outline: 2px solid #6366f1; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              B
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(99, 102, 241);"
-            >
-              7
-            </span>
-          </span>
-        </div>
-      </div>
-      <div
-        class="summary-row summary-row--chord"
-      >
-        <div
-          class="summary-row-label"
-        >
-          C Major 7th
-        </div>
-        <div
-          class="summary-notes"
-        >
-          <span
-            class="summary-note summary-note--chord"
-            style="outline: 2px solid #f59e0b; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              C
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(245, 158, 11);"
-            >
-              1
-            </span>
-          </span>
-          <span
-            class="summary-note summary-note--chord"
-            style="outline: 2px solid #10b981; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              E
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(16, 185, 129);"
-            >
-              3
-            </span>
-          </span>
-          <span
-            class="summary-note summary-note--chord"
-            style="outline: 2px solid #8b5cf6; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              G
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(139, 92, 246);"
-            >
-              5
-            </span>
-          </span>
-          <span
-            class="summary-note summary-note--chord"
-            style="outline: 2px solid #6366f1; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              B
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(99, 102, 241);"
-            >
-              7
-            </span>
-          </span>
-        </div>
-      </div>
-    </div>
-    <div
       class="controls-panel"
     >
       <div
@@ -34263,6 +34057,212 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
               ♮
             </text>
           </svg>
+        </div>
+      </div>
+    </div>
+    <div
+      class="summary-area"
+    >
+      <div
+        class="summary-row"
+      >
+        <div
+          class="summary-row-label"
+        >
+          C Major
+        </div>
+        <div
+          class="summary-notes"
+        >
+          <span
+            class="summary-note"
+            style="outline: 2px solid #f59e0b; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              C
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(245, 158, 11);"
+            >
+              1
+            </span>
+          </span>
+          <span
+            class="summary-note"
+            style="outline: 2px solid #3b82f6; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              D
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(59, 130, 246);"
+            >
+              2
+            </span>
+          </span>
+          <span
+            class="summary-note"
+            style="outline: 2px solid #10b981; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              E
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(16, 185, 129);"
+            >
+              3
+            </span>
+          </span>
+          <span
+            class="summary-note"
+            style="outline: 2px solid #ef4444; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              F
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(239, 68, 68);"
+            >
+              4
+            </span>
+          </span>
+          <span
+            class="summary-note"
+            style="outline: 2px solid #8b5cf6; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              G
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(139, 92, 246);"
+            >
+              5
+            </span>
+          </span>
+          <span
+            class="summary-note"
+            style="outline: 2px solid #ec4899; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              A
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(236, 72, 153);"
+            >
+              6
+            </span>
+          </span>
+          <span
+            class="summary-note"
+            style="outline: 2px solid #6366f1; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              B
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(99, 102, 241);"
+            >
+              7
+            </span>
+          </span>
+        </div>
+      </div>
+      <div
+        class="summary-row summary-row--chord"
+      >
+        <div
+          class="summary-row-label"
+        >
+          C Major 7th
+        </div>
+        <div
+          class="summary-notes"
+        >
+          <span
+            class="summary-note summary-note--chord"
+            style="outline: 2px solid #f59e0b; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              C
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(245, 158, 11);"
+            >
+              1
+            </span>
+          </span>
+          <span
+            class="summary-note summary-note--chord"
+            style="outline: 2px solid #10b981; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              E
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(16, 185, 129);"
+            >
+              3
+            </span>
+          </span>
+          <span
+            class="summary-note summary-note--chord"
+            style="outline: 2px solid #8b5cf6; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              G
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(139, 92, 246);"
+            >
+              5
+            </span>
+          </span>
+          <span
+            class="summary-note summary-note--chord"
+            style="outline: 2px solid #6366f1; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              B
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(99, 102, 241);"
+            >
+              7
+            </span>
+          </span>
         </div>
       </div>
     </div>
@@ -37267,212 +37267,6 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
       </div>
     </main>
     <div
-      class="summary-area"
-    >
-      <div
-        class="summary-row"
-      >
-        <div
-          class="summary-row-label"
-        >
-          G Natural Minor
-        </div>
-        <div
-          class="summary-notes"
-        >
-          <span
-            class="summary-note"
-            style="outline: 2px solid #f59e0b; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              G
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(245, 158, 11);"
-            >
-              1
-            </span>
-          </span>
-          <span
-            class="summary-note"
-            style="outline: 2px solid #3b82f6; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              A
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(59, 130, 246);"
-            >
-              2
-            </span>
-          </span>
-          <span
-            class="summary-note"
-            style="outline: 2px solid #10b981; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              B♭
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(16, 185, 129);"
-            >
-              ♭3
-            </span>
-          </span>
-          <span
-            class="summary-note"
-            style="outline: 2px solid #ef4444; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              C
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(239, 68, 68);"
-            >
-              4
-            </span>
-          </span>
-          <span
-            class="summary-note"
-            style="outline: 2px solid #8b5cf6; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              D
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(139, 92, 246);"
-            >
-              5
-            </span>
-          </span>
-          <span
-            class="summary-note"
-            style="outline: 2px solid #ec4899; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              E♭
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(236, 72, 153);"
-            >
-              ♭6
-            </span>
-          </span>
-          <span
-            class="summary-note"
-            style="outline: 2px solid #6366f1; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              F
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(99, 102, 241);"
-            >
-              ♭7
-            </span>
-          </span>
-        </div>
-      </div>
-      <div
-        class="summary-row summary-row--chord"
-      >
-        <div
-          class="summary-row-label"
-        >
-          C Minor 7th
-        </div>
-        <div
-          class="summary-notes"
-        >
-          <span
-            class="summary-note summary-note--chord"
-            style="outline: 2px solid #f59e0b; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              C
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(245, 158, 11);"
-            >
-              1
-            </span>
-          </span>
-          <span
-            class="summary-note summary-note--chord"
-            style="outline: 2px solid #10b981; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              E♭
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(16, 185, 129);"
-            >
-              ♭3
-            </span>
-          </span>
-          <span
-            class="summary-note summary-note--chord"
-            style="outline: 2px solid #8b5cf6; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              G
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(139, 92, 246);"
-            >
-              5
-            </span>
-          </span>
-          <span
-            class="summary-note summary-note--chord"
-            style="outline: 2px solid #6366f1; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              B♭
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(99, 102, 241);"
-            >
-              ♭7
-            </span>
-          </span>
-        </div>
-      </div>
-    </div>
-    <div
       class="controls-panel"
     >
       <div
@@ -38264,6 +38058,212 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
               1♯
             </text>
           </svg>
+        </div>
+      </div>
+    </div>
+    <div
+      class="summary-area"
+    >
+      <div
+        class="summary-row"
+      >
+        <div
+          class="summary-row-label"
+        >
+          G Natural Minor
+        </div>
+        <div
+          class="summary-notes"
+        >
+          <span
+            class="summary-note"
+            style="outline: 2px solid #f59e0b; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              G
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(245, 158, 11);"
+            >
+              1
+            </span>
+          </span>
+          <span
+            class="summary-note"
+            style="outline: 2px solid #3b82f6; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              A
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(59, 130, 246);"
+            >
+              2
+            </span>
+          </span>
+          <span
+            class="summary-note"
+            style="outline: 2px solid #10b981; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              B♭
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(16, 185, 129);"
+            >
+              ♭3
+            </span>
+          </span>
+          <span
+            class="summary-note"
+            style="outline: 2px solid #ef4444; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              C
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(239, 68, 68);"
+            >
+              4
+            </span>
+          </span>
+          <span
+            class="summary-note"
+            style="outline: 2px solid #8b5cf6; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              D
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(139, 92, 246);"
+            >
+              5
+            </span>
+          </span>
+          <span
+            class="summary-note"
+            style="outline: 2px solid #ec4899; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              E♭
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(236, 72, 153);"
+            >
+              ♭6
+            </span>
+          </span>
+          <span
+            class="summary-note"
+            style="outline: 2px solid #6366f1; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              F
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(99, 102, 241);"
+            >
+              ♭7
+            </span>
+          </span>
+        </div>
+      </div>
+      <div
+        class="summary-row summary-row--chord"
+      >
+        <div
+          class="summary-row-label"
+        >
+          C Minor 7th
+        </div>
+        <div
+          class="summary-notes"
+        >
+          <span
+            class="summary-note summary-note--chord"
+            style="outline: 2px solid #f59e0b; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              C
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(245, 158, 11);"
+            >
+              1
+            </span>
+          </span>
+          <span
+            class="summary-note summary-note--chord"
+            style="outline: 2px solid #10b981; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              E♭
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(16, 185, 129);"
+            >
+              ♭3
+            </span>
+          </span>
+          <span
+            class="summary-note summary-note--chord"
+            style="outline: 2px solid #8b5cf6; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              G
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(139, 92, 246);"
+            >
+              5
+            </span>
+          </span>
+          <span
+            class="summary-note summary-note--chord"
+            style="outline: 2px solid #6366f1; outline-offset: -2px;"
+          >
+            <span
+              class="summary-note-name"
+            >
+              B♭
+            </span>
+            <span
+              class="summary-note-degree"
+              style="color: rgb(99, 102, 241);"
+            >
+              ♭7
+            </span>
+          </span>
         </div>
       </div>
     </div>

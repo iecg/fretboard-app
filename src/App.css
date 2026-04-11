@@ -596,7 +596,6 @@
   flex-shrink: 0;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
-  order: 10; /* after controls on desktop */
   border-radius: var(--radius-lg);
   background-color: var(--surface-base);
   border: 1px solid var(--surface-highlight);
@@ -916,7 +915,10 @@
 .app-container[data-layout-mode="tablet-portrait"] {
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: auto auto auto auto auto;
+  /* Row 3 (tablet-portrait-panel) absorbs free space so the
+     controls fill the gap between the fretboard and the summary,
+     and the version badge sits at the true document bottom. */
+  grid-template-rows: auto auto 1fr auto auto;
   gap: 0.5rem;
 }
 
@@ -949,6 +951,17 @@
 .app-container[data-layout-mode="tablet-portrait"] > .version-badge {
   grid-column: 1;
   grid-row: 5;
+}
+
+/* In tablet-portrait, the CoF is inside a flex column whose height
+   is driven by the 1fr grid row. Let the CoF size to whichever
+   dimension is smaller (square fitting both width and height). */
+.app-container[data-layout-mode="tablet-portrait"] .tablet-portrait-cof-col .circle-fifths-container {
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  flex: 0 1 auto;
 }
 
 

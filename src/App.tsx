@@ -633,6 +633,9 @@ function AppContent() {
         />
       )}
 
+      {/* Controls Panel — Target A layout when the viewport has room */}
+      {isDesktopExpanded && <ExpandedControlsPanel />}
+
       {/* Summary bar — desktop and tablet-portrait (mobile shows it in Key tab) */}
       {(!isMobile || isTabletPortrait) && summaryContent}
 
@@ -646,9 +649,6 @@ function AppContent() {
           settingsTabContent={settingsTabContent}
         />
       )}
-
-      {/* Controls Panel — Target A layout when the viewport has room */}
-      {isDesktopExpanded && <ExpandedControlsPanel />}
 
       <div className="version-badge">
         v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar. Licensed under <a href="https://www.gnu.org/licenses/agpl-3.0" target="_blank" rel="noopener noreferrer">AGPL v3</a>.
