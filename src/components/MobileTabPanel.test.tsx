@@ -16,7 +16,7 @@ describe('MobileTabPanel', () => {
     render(<MobileTabPanel {...defaultProps} />);
     expect(screen.getByText('Key')).toBeTruthy();
     expect(screen.getByText('Scale')).toBeTruthy();
-    expect(screen.getByText('Settings')).toBeTruthy();
+    expect(screen.getByText('Fretboard')).toBeTruthy();
   });
 
   it('shows keyTabContent when mobileTab is key', () => {
@@ -33,8 +33,8 @@ describe('MobileTabPanel', () => {
     expect(screen.queryByText('Settings Content')).toBeNull();
   });
 
-  it('shows settingsTabContent when mobileTab is settings', () => {
-    render(<MobileTabPanel {...defaultProps} mobileTab="settings" />);
+  it('shows settingsTabContent when mobileTab is fretboard', () => {
+    render(<MobileTabPanel {...defaultProps} mobileTab="fretboard" />);
     expect(screen.getByText('Settings Content')).toBeTruthy();
     expect(screen.queryByText('Key Content')).toBeNull();
     expect(screen.queryByText('Scale Content')).toBeNull();
@@ -50,18 +50,18 @@ describe('MobileTabPanel', () => {
   it('tab switching — clicking key calls setMobileTab with key', () => {
     const setMobileTab = vi.fn();
     render(
-      <MobileTabPanel {...defaultProps} mobileTab="settings" setMobileTab={setMobileTab} />
+      <MobileTabPanel {...defaultProps} mobileTab="fretboard" setMobileTab={setMobileTab} />
     );
     fireEvent.click(screen.getByText('Key'));
     expect(setMobileTab).toHaveBeenCalledWith('key');
   });
 
-  it('tab switching — clicking settings calls setMobileTab with settings', () => {
+  it('tab switching — clicking fretboard calls setMobileTab with fretboard', () => {
     const setMobileTab = vi.fn();
     render(
       <MobileTabPanel {...defaultProps} mobileTab="key" setMobileTab={setMobileTab} />
     );
-    fireEvent.click(screen.getByText('Settings'));
-    expect(setMobileTab).toHaveBeenCalledWith('settings');
+    fireEvent.click(screen.getByText('Fretboard'));
+    expect(setMobileTab).toHaveBeenCalledWith('fretboard');
   });
 });

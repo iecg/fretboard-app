@@ -76,9 +76,8 @@ exports[`Component Snapshots > App layout snapshots > falls back to tablet-portr
           />
         </a>
         <button
+          aria-label="Open settings"
           class="mute-btn"
-          disabled=""
-          style="opacity: 0.4; cursor: default;"
           title="Settings"
         >
           <svg
@@ -3003,7 +3002,7 @@ exports[`Component Snapshots > App layout snapshots > falls back to tablet-portr
           class="tablet-tab-content"
         >
           <div
-            class="mobile-tab-panel mobile-settings-tab"
+            class="mobile-tab-panel mobile-fretboard-tab"
           >
             <div
               class="control-section"
@@ -3804,6 +3803,56 @@ exports[`Component Snapshots > App layout snapshots > falls back to tablet-portr
         AGPL v3
       </a>
       .
+    </div>
+    <div
+      aria-hidden="true"
+      class="settings-overlay-backdrop"
+    />
+    <div
+      aria-hidden="true"
+      aria-label="Settings"
+      aria-modal="true"
+      class="settings-overlay-drawer"
+      role="dialog"
+    >
+      <div
+        class="settings-overlay-header"
+      >
+        <span
+          class="settings-overlay-title"
+        >
+          Settings
+        </span>
+        <button
+          aria-label="Close settings"
+          class="settings-overlay-close"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-x icon"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18 6 6 18"
+            />
+            <path
+              d="m6 6 12 12"
+            />
+          </svg>
+        </button>
+      </div>
+      <div
+        class="settings-overlay-content"
+      />
     </div>
   </div>
 </div>
@@ -3885,9 +3934,8 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-expanded l
           />
         </a>
         <button
+          aria-label="Open settings"
           class="mute-btn"
-          disabled=""
-          style="opacity: 0.4; cursor: default;"
           title="Settings"
         >
           <svg
@@ -7668,6 +7716,56 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-expanded l
         AGPL v3
       </a>
       .
+    </div>
+    <div
+      aria-hidden="true"
+      class="settings-overlay-backdrop"
+    />
+    <div
+      aria-hidden="true"
+      aria-label="Settings"
+      aria-modal="true"
+      class="settings-overlay-drawer"
+      role="dialog"
+    >
+      <div
+        class="settings-overlay-header"
+      >
+        <span
+          class="settings-overlay-title"
+        >
+          Settings
+        </span>
+        <button
+          aria-label="Close settings"
+          class="settings-overlay-close"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-x icon"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18 6 6 18"
+            />
+            <path
+              d="m6 6 12 12"
+            />
+          </svg>
+        </button>
+      </div>
+      <div
+        class="settings-overlay-content"
+      />
     </div>
   </div>
 </div>
@@ -7749,9 +7847,8 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
           />
         </a>
         <button
+          aria-label="Open settings"
           class="mute-btn"
-          disabled=""
-          style="opacity: 0.4; cursor: default;"
           title="Settings"
         >
           <svg
@@ -11533,6 +11630,56 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
       </a>
       .
     </div>
+    <div
+      aria-hidden="true"
+      class="settings-overlay-backdrop"
+    />
+    <div
+      aria-hidden="true"
+      aria-label="Settings"
+      aria-modal="true"
+      class="settings-overlay-drawer"
+      role="dialog"
+    >
+      <div
+        class="settings-overlay-header"
+      >
+        <span
+          class="settings-overlay-title"
+        >
+          Settings
+        </span>
+        <button
+          aria-label="Close settings"
+          class="settings-overlay-close"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-x icon"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18 6 6 18"
+            />
+            <path
+              d="m6 6 12 12"
+            />
+          </svg>
+        </button>
+      </div>
+      <div
+        class="settings-overlay-content"
+      />
+    </div>
   </div>
 </div>
 `;
@@ -11613,9 +11760,8 @@ exports[`Component Snapshots > App layout snapshots > renders iPad landscape lay
           />
         </a>
         <button
+          aria-label="Open settings"
           class="mute-btn"
-          disabled=""
-          style="opacity: 0.4; cursor: default;"
           title="Settings"
         >
           <svg
@@ -14540,7 +14686,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad landscape lay
           class="tablet-tab-content"
         >
           <div
-            class="mobile-tab-panel mobile-settings-tab"
+            class="mobile-tab-panel mobile-fretboard-tab"
           >
             <div
               class="control-section"
@@ -15341,6 +15487,56 @@ exports[`Component Snapshots > App layout snapshots > renders iPad landscape lay
         AGPL v3
       </a>
       .
+    </div>
+    <div
+      aria-hidden="true"
+      class="settings-overlay-backdrop"
+    />
+    <div
+      aria-hidden="true"
+      aria-label="Settings"
+      aria-modal="true"
+      class="settings-overlay-drawer"
+      role="dialog"
+    >
+      <div
+        class="settings-overlay-header"
+      >
+        <span
+          class="settings-overlay-title"
+        >
+          Settings
+        </span>
+        <button
+          aria-label="Close settings"
+          class="settings-overlay-close"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-x icon"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18 6 6 18"
+            />
+            <path
+              d="m6 6 12 12"
+            />
+          </svg>
+        </button>
+      </div>
+      <div
+        class="settings-overlay-content"
+      />
     </div>
   </div>
 </div>
@@ -15422,9 +15618,8 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
           />
         </a>
         <button
+          aria-label="Open settings"
           class="mute-btn"
-          disabled=""
-          style="opacity: 0.4; cursor: default;"
           title="Settings"
         >
           <svg
@@ -18349,7 +18544,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
           class="tablet-tab-content"
         >
           <div
-            class="mobile-tab-panel mobile-settings-tab"
+            class="mobile-tab-panel mobile-fretboard-tab"
           >
             <div
               class="control-section"
@@ -19151,6 +19346,56 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
       </a>
       .
     </div>
+    <div
+      aria-hidden="true"
+      class="settings-overlay-backdrop"
+    />
+    <div
+      aria-hidden="true"
+      aria-label="Settings"
+      aria-modal="true"
+      class="settings-overlay-drawer"
+      role="dialog"
+    >
+      <div
+        class="settings-overlay-header"
+      >
+        <span
+          class="settings-overlay-title"
+        >
+          Settings
+        </span>
+        <button
+          aria-label="Close settings"
+          class="settings-overlay-close"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-x icon"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18 6 6 18"
+            />
+            <path
+              d="m6 6 12 12"
+            />
+          </svg>
+        </button>
+      </div>
+      <div
+        class="settings-overlay-content"
+      />
+    </div>
   </div>
 </div>
 `;
@@ -19231,9 +19476,8 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
           />
         </a>
         <button
+          aria-label="Open settings"
           class="mute-btn"
-          disabled=""
-          style="opacity: 0.4; cursor: default;"
           title="Settings"
         >
           <svg
@@ -22150,7 +22394,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
       <button
         class="mobile-tab"
       >
-        Settings
+        Fretboard
       </button>
     </div>
     <div
@@ -22859,6 +23103,56 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
       </a>
       .
     </div>
+    <div
+      aria-hidden="true"
+      class="settings-overlay-backdrop"
+    />
+    <div
+      aria-hidden="true"
+      aria-label="Settings"
+      aria-modal="true"
+      class="settings-overlay-drawer"
+      role="dialog"
+    >
+      <div
+        class="settings-overlay-header"
+      >
+        <span
+          class="settings-overlay-title"
+        >
+          Settings
+        </span>
+        <button
+          aria-label="Close settings"
+          class="settings-overlay-close"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-x icon"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18 6 6 18"
+            />
+            <path
+              d="m6 6 12 12"
+            />
+          </svg>
+        </button>
+      </div>
+      <div
+        class="settings-overlay-content"
+      />
+    </div>
   </div>
 </div>
 `;
@@ -22939,9 +23233,8 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
           />
         </a>
         <button
+          aria-label="Open settings"
           class="mute-btn"
-          disabled=""
-          style="opacity: 0.4; cursor: default;"
           title="Settings"
         >
           <svg
@@ -25864,7 +26157,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
       <button
         class="mobile-tab"
       >
-        Settings
+        Fretboard
       </button>
     </div>
     <div
@@ -26573,6 +26866,56 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
       </a>
       .
     </div>
+    <div
+      aria-hidden="true"
+      class="settings-overlay-backdrop"
+    />
+    <div
+      aria-hidden="true"
+      aria-label="Settings"
+      aria-modal="true"
+      class="settings-overlay-drawer"
+      role="dialog"
+    >
+      <div
+        class="settings-overlay-header"
+      >
+        <span
+          class="settings-overlay-title"
+        >
+          Settings
+        </span>
+        <button
+          aria-label="Close settings"
+          class="settings-overlay-close"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-x icon"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18 6 6 18"
+            />
+            <path
+              d="m6 6 12 12"
+            />
+          </svg>
+        </button>
+      </div>
+      <div
+        class="settings-overlay-content"
+      />
+    </div>
   </div>
 </div>
 `;
@@ -26653,9 +26996,8 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
           />
         </a>
         <button
+          aria-label="Open settings"
           class="mute-btn"
-          disabled=""
-          style="opacity: 0.4; cursor: default;"
           title="Settings"
         >
           <svg
@@ -29572,7 +29914,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
       <button
         class="mobile-tab"
       >
-        Settings
+        Fretboard
       </button>
     </div>
     <div
@@ -30281,6 +30623,56 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
       </a>
       .
     </div>
+    <div
+      aria-hidden="true"
+      class="settings-overlay-backdrop"
+    />
+    <div
+      aria-hidden="true"
+      aria-label="Settings"
+      aria-modal="true"
+      class="settings-overlay-drawer"
+      role="dialog"
+    >
+      <div
+        class="settings-overlay-header"
+      >
+        <span
+          class="settings-overlay-title"
+        >
+          Settings
+        </span>
+        <button
+          aria-label="Close settings"
+          class="settings-overlay-close"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-x icon"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18 6 6 18"
+            />
+            <path
+              d="m6 6 12 12"
+            />
+          </svg>
+        </button>
+      </div>
+      <div
+        class="settings-overlay-content"
+      />
+    </div>
   </div>
 </div>
 `;
@@ -30361,9 +30753,8 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
           />
         </a>
         <button
+          aria-label="Open settings"
           class="mute-btn"
-          disabled=""
-          style="opacity: 0.4; cursor: default;"
           title="Settings"
         >
           <svg
@@ -34283,6 +34674,56 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
       </a>
       .
     </div>
+    <div
+      aria-hidden="true"
+      class="settings-overlay-backdrop"
+    />
+    <div
+      aria-hidden="true"
+      aria-label="Settings"
+      aria-modal="true"
+      class="settings-overlay-drawer"
+      role="dialog"
+    >
+      <div
+        class="settings-overlay-header"
+      >
+        <span
+          class="settings-overlay-title"
+        >
+          Settings
+        </span>
+        <button
+          aria-label="Close settings"
+          class="settings-overlay-close"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-x icon"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18 6 6 18"
+            />
+            <path
+              d="m6 6 12 12"
+            />
+          </svg>
+        </button>
+      </div>
+      <div
+        class="settings-overlay-content"
+      />
+    </div>
   </div>
 </div>
 `;
@@ -34363,9 +34804,8 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
           />
         </a>
         <button
+          aria-label="Open settings"
           class="mute-btn"
-          disabled=""
-          style="opacity: 0.4; cursor: default;"
           title="Settings"
         >
           <svg
@@ -38283,6 +38723,56 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
         AGPL v3
       </a>
       .
+    </div>
+    <div
+      aria-hidden="true"
+      class="settings-overlay-backdrop"
+    />
+    <div
+      aria-hidden="true"
+      aria-label="Settings"
+      aria-modal="true"
+      class="settings-overlay-drawer"
+      role="dialog"
+    >
+      <div
+        class="settings-overlay-header"
+      >
+        <span
+          class="settings-overlay-title"
+        >
+          Settings
+        </span>
+        <button
+          aria-label="Close settings"
+          class="settings-overlay-close"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-x icon"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18 6 6 18"
+            />
+            <path
+              d="m6 6 12 12"
+            />
+          </svg>
+        </button>
+      </div>
+      <div
+        class="settings-overlay-content"
+      />
     </div>
   </div>
 </div>

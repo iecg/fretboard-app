@@ -369,7 +369,7 @@ describe('Integration Tests - User Workflows', () => {
       });
     });
 
-    it('switching between Key/Scale/Settings tabs', async () => {
+    it('switching between Key/Scale/Fretboard tabs', async () => {
       const { rerender } = render(<App />);
 
       expect(localStorage.getItem('mobileTab')).toBe('key');
@@ -379,10 +379,10 @@ describe('Integration Tests - User Workflows', () => {
       rerender(<App />);
       expect(localStorage.getItem('mobileTab')).toBe('scale');
 
-      // Switch to settings tab
-      localStorage.setItem('mobileTab', 'settings');
+      // Switch to fretboard tab
+      localStorage.setItem('mobileTab', 'fretboard');
       rerender(<App />);
-      expect(localStorage.getItem('mobileTab')).toBe('settings');
+      expect(localStorage.getItem('mobileTab')).toBe('fretboard');
 
       // Back to key
       localStorage.setItem('mobileTab', 'key');

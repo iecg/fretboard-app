@@ -291,7 +291,7 @@ describe('atoms', () => {
       store.set(fretStartAtom, 3);
       store.set(fretEndAtom, 12);
       store.set(useFlatsAtom, true);
-      store.set(mobileTabAtom, 'settings');
+      store.set(mobileTabAtom, 'fretboard');
 
       store.set(resetAtom);
 
