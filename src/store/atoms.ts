@@ -150,10 +150,10 @@ export const fretEndAtom = atomWithStorage("fretEnd", 24, numberStorage);
 // Accidentals / Audio / Mobile tab
 export const useFlatsAtom = atomWithStorage("useFlats", false, booleanStorage);
 export const isMutedAtom = atomWithStorage("isMuted", false, booleanStorage);
-export const mobileTabAtom = atomWithStorage<"key" | "scale" | "settings">(
+export const mobileTabAtom = atomWithStorage<"key" | "scale" | "fretboard">(
   "mobileTab",
   "key",
-  rawStringStorage<"key" | "scale" | "settings">(),
+  rawStringStorage<"key" | "scale" | "fretboard">(),
 );
 export const tabletTabAtom = atomWithStorage<"settings" | "scales">(
   "tabletTab",

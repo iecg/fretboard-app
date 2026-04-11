@@ -63,7 +63,9 @@ import {
   tabletTabAtom,
   setRootNoteAtom,
   resetAtom,
+  settingsOverlayOpenAtom,
 } from "./store/atoms";
+import SettingsOverlay from "./components/SettingsOverlay";
 import {
   CONTROL_HEIGHTS,
   FRETBOARD_MIN_HEIGHT,
@@ -190,6 +192,9 @@ function AppContent() {
   const [useFlats, setUseFlats] = useAtom(useFlatsAtom);
   const [isMuted, setIsMuted] = useAtom(isMutedAtom);
   const [mobileTab, setMobileTab] = useAtom(mobileTabAtom);
+
+  // Settings overlay (non-persisted)
+  const setSettingsOverlayOpen = useSetAtom(settingsOverlayOpenAtom);
 
   // Viewport / mobile detection (not persisted)
   const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
@@ -475,7 +480,7 @@ function AppContent() {
 
   // Mobile tab content — Settings tab
   const settingsTabContent = (
-    <div className="mobile-tab-panel mobile-settings-tab">
+    <div className="mobile-tab-panel mobile-fretboard-tab">
       <FingeringPatternControls
         fingeringPattern={fingeringPattern}
         setFingeringPattern={setFingeringPattern}
@@ -561,10 +566,10 @@ function AppContent() {
             />
           </a>
           <button
+            onClick={() => setSettingsOverlayOpen((v) => !v)}
             className="mute-btn"
             title="Settings"
-            disabled
-            style={{ opacity: 0.4, cursor: "default" }}
+            aria-label="Open settings"
           >
             <Settings2 className="icon" />
           </button>
@@ -654,6 +659,7 @@ function AppContent() {
         v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar. Licensed under <a href="https://www.gnu.org/licenses/agpl-3.0" target="_blank" rel="noopener noreferrer">AGPL v3</a>.
       </div>
 
+      <SettingsOverlay />
     </div>
   );
 }
