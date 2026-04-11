@@ -400,7 +400,12 @@
   animation: note-ping 0.4s ease-out;
 }
 
-/* Controls Panel */
+/* Controls Panel — base rule. Uses flex: 0 0 auto so the panel only
+   claims its natural content height, letting the fretboard (main)
+   absorb any leftover vertical space and the version badge sit at
+   the true document bottom. desktop-expanded overrides display to
+   grid; tablet-portrait hides .controls-panel entirely and uses
+   TabletPortraitPanel instead. */
 .controls-panel {
   display: flex;
   flex-direction: row;
@@ -409,7 +414,7 @@
   padding: var(--space-4);
   border-radius: var(--radius-xl);
   border: 1px solid var(--surface-highlight);
-  flex: 1 1 0;
+  flex: 0 0 auto;
   min-height: 0;
   overflow: visible;
 }
@@ -697,41 +702,20 @@
 
 /* =============================================
    RESPONSIVE LAYOUT
-   Breakpoints (JS-driven via data-layout-mode; CSS media queries match):
-     Mobile         <768px      portrait  → single-col, page scroll
-     Landscape-mob  <768px      landscape → fretboard hero, minimal chrome
-     Tablet-portrait 768–1365px portrait  → stacked grid, tab panel (data-layout-mode)
-     Landscape-tab  1024–1365px landscape → 2-col controls (data-layout-mode)
-     Desktop        ≥1366px               → 3-col flex row, viewport-fit
+   Layout modes (JS-driven via data-layout-mode in App.tsx):
+     mobile           <768px portrait            → single-col, page scroll
+     landscape-mobile <768px landscape           → fretboard hero, minimal chrome
+     tablet-portrait  ≥768px AND expanded        → tab panel (TabletPortraitPanel)
+                      controls don't fit vertically
+     desktop-expanded ≥768px AND expanded        → Target A 2-col grid
+                      controls fit vertically
 
-   CSS max-width: 767px is equivalent to JS viewportWidth < 768 for integer widths.
+   The tablet-portrait vs desktop-expanded decision is a fit check in
+   App.tsx — see src/layout/constants.ts for the constants and
+   .vbw-planning/phases/06-desktop-layout-refactor/06-CONTEXT.md for
+   the algorithm. Landscape-tablet and the old desktop 3-col mode are
+   gone — they collapsed into the adaptive decision.
    ============================================= */
-
-/* CSS fallback for 768–1023px landscape (falls through to desktop layoutMode in JS,
-   since landscape-tablet requires ≥1024px). Gives controls a 2-column grid. */
-@media (min-width: 768px) and (max-width: 1023px) {
-  .controls-panel {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto 1fr;
-    overflow: visible;
-  }
-
-  /* Circle of Fifths spans full bottom row */
-  .col-span-2 {
-    grid-column: 1 / -1;
-    flex: unset;
-    max-height: 320px;
-  }
-
-  .control-group {
-    flex: unset;
-  }
-
-  .title-container h1 {
-    font-size: 1.25rem;
-  }
-}
 
 /* Fret range mobile layout */
 .fret-range-mobile {
@@ -968,24 +952,43 @@
 }
 
 
-/* Landscape tablet: two-column controls layout */
-/* data-layout-mode="landscape-tablet" covers width 768–1365px landscape */
-.app-container[data-layout-mode="landscape-tablet"] .controls-panel {
+/* Desktop-expanded (Target A): 2-col grid with Settings/Scale&Chord
+   stacked on the left and Key/CoF spanning both rows on the right.
+   Activated when viewportHeight has room for the full expanded
+   controls (see src/layout/constants.ts). */
+.app-container[data-layout-mode="desktop-expanded"] {
+  max-width: 120rem;
+}
+
+.app-container[data-layout-mode="desktop-expanded"] .controls-panel {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto 1fr;
-  gap: 0.5rem;
+  grid-template-rows: auto;
+  gap: var(--space-4);
   align-items: start;
 }
 
-/* CoF (col-span-2) must span full width row in landscape-tablet 2-col grid */
-.app-container[data-layout-mode="landscape-tablet"] .controls-panel .col-span-2 {
-  grid-column: 1 / -1;
-  flex: unset;
+.app-container[data-layout-mode="desktop-expanded"] .controls-col-left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  grid-column: 1;
+  min-width: 0;
 }
 
-.app-container[data-layout-mode="landscape-tablet"] .circle-fifths-container {
-  max-height: min(45vh, 420px);
+.app-container[data-layout-mode="desktop-expanded"] .controls-panel
+  .col-span-2 {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  max-height: 500px;
+  flex: unset;
+  align-self: start;
+}
+
+.app-container[data-layout-mode="desktop-expanded"] .circle-fifths-container {
+  max-height: 500px;
+  aspect-ratio: 1;
 }
 
 /* Landscape mobile: fretboard hero, minimal chrome */

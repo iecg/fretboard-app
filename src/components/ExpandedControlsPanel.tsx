@@ -69,12 +69,16 @@ const CHORD_OPTIONS: (string | { divider: string })[] = [
   "Power Chord (5)",
 ];
 
-interface DesktopControlsPanelProps {
-  isTabletPortrait: boolean;
-  isMobile: boolean;
-}
-
-export function DesktopControlsPanel({ isTabletPortrait, isMobile }: DesktopControlsPanelProps) {
+/**
+ * Target A "desktop-expanded" layout: 2-column grid where Settings and
+ * Scale & Chord stack in the left column and Key/CoF spans both rows
+ * on the right. Used when the viewport has enough vertical room to
+ * show every control group fully expanded without tabs.
+ *
+ * The grid layout itself is driven by `.app-container[data-layout-mode=
+ * "desktop-expanded"] .controls-panel` rules in App.css.
+ */
+export function ExpandedControlsPanel() {
   const rootNote = useAtomValue(rootNoteAtom);
   const handleSetRootNote = useSetAtom(setRootNoteAtom);
   const [scaleName, setScaleName] = useAtom(scaleNameAtom);
@@ -93,71 +97,69 @@ export function DesktopControlsPanel({ isTabletPortrait, isMobile }: DesktopCont
 
   return (
     <div className="controls-panel">
-      <div className="control-group">
-        <FingeringPatternControls
-          fingeringPattern={fingeringPattern}
-          setFingeringPattern={setFingeringPattern}
-          cagedShapes={cagedShapes}
-          setCagedShapes={setCagedShapes}
-          npsPosition={npsPosition}
-          setNpsPosition={setNpsPosition}
-          shapeLabels={shapeLabels}
-          setShapeLabels={setShapeLabels}
-          displayFormat={displayFormat}
-          setDisplayFormat={setDisplayFormat}
-        />
+      <div className="controls-col-left">
+        <div className="control-group">
+          <FingeringPatternControls
+            fingeringPattern={fingeringPattern}
+            setFingeringPattern={setFingeringPattern}
+            cagedShapes={cagedShapes}
+            setCagedShapes={setCagedShapes}
+            npsPosition={npsPosition}
+            setNpsPosition={setNpsPosition}
+            shapeLabels={shapeLabels}
+            setShapeLabels={setShapeLabels}
+            displayFormat={displayFormat}
+            setDisplayFormat={setDisplayFormat}
+          />
 
-        <DrawerSelector
-          label="Tuning"
-          value={tuningName}
-          options={Object.keys(TUNINGS)}
-          onSelect={(v) => v && setTuningName(v)}
-        />
-      </div>
-
-      <div className="control-group">
-        <h2>Scale & Chord</h2>
-        <ScaleChordControls
-          scaleName={scaleName}
-          setScaleName={setScaleName}
-          chordType={chordType}
-          setChordType={setChordType}
-          chordRoot={chordRoot}
-          setChordRoot={setChordRoot}
-          linkChordRoot={linkChordRoot}
-          setLinkChordRoot={setLinkChordRoot}
-          hideNonChordNotes={hideNonChordNotes}
-          setHideNonChordNotes={setHideNonChordNotes}
-          chordIntervalFilter={chordIntervalFilter}
-          setChordIntervalFilter={setChordIntervalFilter}
-          rootNote={rootNote}
-          useFlats={useFlats}
-          scaleOptions={SCALE_OPTIONS}
-          chordOptions={CHORD_OPTIONS}
-          chordFilterOptions={CHORD_FILTER_OPTIONS}
-        />
-      </div>
-
-      {!isTabletPortrait && (
-        <div className="control-group col-span-2 key-column">
-          <h2>Key</h2>
-          {!isMobile && (
-            <button
-              className="accidental-toggle"
-              onClick={() => setUseFlats((prev) => !prev)}
-              title={useFlats ? "Showing flats — click for sharps" : "Showing sharps — click for flats"}
-            >
-              {useFlats ? "♭" : "♯"}
-            </button>
-          )}
-          <CircleOfFifths
-            rootNote={rootNote}
-            setRootNote={handleSetRootNote}
-            scaleName={scaleName}
-            useFlats={useFlats}
+          <DrawerSelector
+            label="Tuning"
+            value={tuningName}
+            options={Object.keys(TUNINGS)}
+            onSelect={(v) => v && setTuningName(v)}
           />
         </div>
-      )}
+
+        <div className="control-group">
+          <h2>Scale & Chord</h2>
+          <ScaleChordControls
+            scaleName={scaleName}
+            setScaleName={setScaleName}
+            chordType={chordType}
+            setChordType={setChordType}
+            chordRoot={chordRoot}
+            setChordRoot={setChordRoot}
+            linkChordRoot={linkChordRoot}
+            setLinkChordRoot={setLinkChordRoot}
+            hideNonChordNotes={hideNonChordNotes}
+            setHideNonChordNotes={setHideNonChordNotes}
+            chordIntervalFilter={chordIntervalFilter}
+            setChordIntervalFilter={setChordIntervalFilter}
+            rootNote={rootNote}
+            useFlats={useFlats}
+            scaleOptions={SCALE_OPTIONS}
+            chordOptions={CHORD_OPTIONS}
+            chordFilterOptions={CHORD_FILTER_OPTIONS}
+          />
+        </div>
+      </div>
+
+      <div className="control-group col-span-2 key-column">
+        <h2>Key</h2>
+        <button
+          className="accidental-toggle"
+          onClick={() => setUseFlats((prev) => !prev)}
+          title={useFlats ? "Showing flats — click for sharps" : "Showing sharps — click for flats"}
+        >
+          {useFlats ? "♭" : "♯"}
+        </button>
+        <CircleOfFifths
+          rootNote={rootNote}
+          setRootNote={handleSetRootNote}
+          scaleName={scaleName}
+          useFlats={useFlats}
+        />
+      </div>
     </div>
   );
 }

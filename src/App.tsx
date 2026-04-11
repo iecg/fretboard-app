@@ -36,7 +36,7 @@ import { FingeringPatternControls } from "./components/FingeringPatternControls"
 import { ScaleChordControls } from "./components/ScaleChordControls";
 import { TabletPortraitPanel } from "./components/TabletPortraitPanel";
 import { MobileTabPanel } from "./components/MobileTabPanel";
-import { DesktopControlsPanel } from "./components/DesktopControlsPanel";
+import { ExpandedControlsPanel } from "./components/ExpandedControlsPanel";
 import { FretRangeControl } from "./components/FretRangeControl";
 import { StepperControl } from "./components/StepperControl";
 import {
@@ -64,9 +64,20 @@ import {
   setRootNoteAtom,
   resetAtom,
 } from "./store/atoms";
+import {
+  CONTROL_HEIGHTS,
+  FRETBOARD_MIN_HEIGHT,
+  LAYOUT_CHROME_HEIGHT,
+} from "./layout/constants";
 import "./App.css";
 
 const END_FRET = 24;
+
+type LayoutMode =
+  | "mobile"
+  | "landscape-mobile"
+  | "tablet-portrait"
+  | "desktop-expanded";
 
 function SummaryNote({
   note,
@@ -191,17 +202,41 @@ function AppContent() {
     window.addEventListener('resize', handler);
     return () => window.removeEventListener('resize', handler);
   }, []);
-  const isLandscapeMobile = viewportWidth < 768 && viewportHeight < viewportWidth;
+  const isLandscapeMobile =
+    viewportWidth < 768 && viewportHeight < viewportWidth;
   const isMobile = viewportWidth < 768 || isLandscapeMobile;
-  const isTabletPortrait = viewportWidth >= 768 && viewportWidth < 1366 && viewportHeight >= viewportWidth;
-  const isLandscapeTablet = viewportWidth >= 768 && viewportWidth < 1366 && viewportHeight < viewportWidth;
-  type LayoutMode = 'mobile' | 'landscape-mobile' | 'tablet-portrait' | 'landscape-tablet' | 'desktop';
-  const layoutMode: LayoutMode =
-    isLandscapeMobile ? 'landscape-mobile' :
-    isTabletPortrait  ? 'tablet-portrait' :
-    isLandscapeTablet ? 'landscape-tablet' :
-    isMobile          ? 'mobile' :
-    'desktop';
+
+  // Adaptive fit: pick desktop-expanded (Target A) when the fully-
+  // expanded controls fit vertically; otherwise fall back to the
+  // tablet-portrait tabbed layout. Constants measured against the
+  // live app — see src/layout/constants.ts.
+  const targetAHeight = Math.max(
+    CONTROL_HEIGHTS.settings +
+      CONTROL_HEIGHTS.rowGap +
+      CONTROL_HEIGHTS.scaleChord,
+    CONTROL_HEIGHTS.cofMax,
+  );
+  const chromeHeight =
+    LAYOUT_CHROME_HEIGHT.header +
+    LAYOUT_CHROME_HEIGHT.summary +
+    LAYOUT_CHROME_HEIGHT.version +
+    LAYOUT_CHROME_HEIGHT.outerGap;
+  const availableControlsHeight =
+    viewportHeight - chromeHeight - FRETBOARD_MIN_HEIGHT;
+  const fitsExpanded =
+    viewportWidth >= 768 &&
+    !isLandscapeMobile &&
+    availableControlsHeight >= targetAHeight;
+
+  const layoutMode: LayoutMode = isLandscapeMobile
+    ? "landscape-mobile"
+    : isMobile
+      ? "mobile"
+      : fitsExpanded
+        ? "desktop-expanded"
+        : "tablet-portrait";
+  const isTabletPortrait = layoutMode === "tablet-portrait";
+  const isDesktopExpanded = layoutMode === "desktop-expanded";
 
   // String row height — reduced on small phones (≤800px tall, e.g. iPhone SE at 667px) to fit
   // the fretboard natively without squishing it horizontally via transform:scale().
@@ -612,8 +647,8 @@ function AppContent() {
         />
       )}
 
-      {/* Controls Panel */}
-      <DesktopControlsPanel isTabletPortrait={isTabletPortrait} isMobile={isMobile} />
+      {/* Controls Panel — Target A layout when the viewport has room */}
+      {isDesktopExpanded && <ExpandedControlsPanel />}
 
       <div className="version-badge">
         v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar. Licensed under <a href="https://www.gnu.org/licenses/agpl-3.0" target="_blank" rel="noopener noreferrer">AGPL v3</a>.
