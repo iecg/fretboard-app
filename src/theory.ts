@@ -210,7 +210,14 @@ export function getKeySignatureForDisplay(
       return KEY_SIGNATURES[flatName];
     }
   }
-  return KEY_SIGNATURES[parentSharp] ?? 0;
+  const sig = KEY_SIGNATURES[parentSharp] ?? 0;
+  // When the root is sharp-spelled, a negative signature means the KEY_SIGNATURES
+  // table only stores the flat-equivalent (e.g. G#=-4 same as Ab=-4).
+  // Convert to the enharmonic sharp count: 12 + sig (e.g. -4 → 8 sharps).
+  if (originalIsSharp && sig < 0) {
+    return 12 + sig;
+  }
+  return sig;
 }
 
 export type AccidentalMode = "sharps" | "flats" | "auto";

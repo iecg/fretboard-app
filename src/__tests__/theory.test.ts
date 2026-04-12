@@ -205,14 +205,14 @@ describe('getKeySignatureForDisplay (scale-aware)', () => {
 });
 
 describe('getKeySignatureForDisplay — sharp root preservation', () => {
-  it('G# Major with useFlats=true still returns sharp-side sig', () => {
-    expect(getKeySignatureForDisplay('G#', 'Major', true)).toBe(-4);
+  it('G# Major with useFlats=true returns enharmonic sharp count (8)', () => {
+    expect(getKeySignatureForDisplay('G#', 'Major', true)).toBe(8);
   });
   it('Ab Major with useFlats=true returns flat-side sig', () => {
     expect(getKeySignatureForDisplay('Ab', 'Major', true)).toBe(-4);
   });
-  it('D# Major with useFlats=true returns sharp-side sig', () => {
-    expect(getKeySignatureForDisplay('D#', 'Major', true)).toBe(-3);
+  it('D# Major with useFlats=true returns enharmonic sharp count (9)', () => {
+    expect(getKeySignatureForDisplay('D#', 'Major', true)).toBe(9);
   });
   it('Eb Major with useFlats=true returns flat-side sig', () => {
     expect(getKeySignatureForDisplay('Eb', 'Major', true)).toBe(-3);
@@ -220,13 +220,25 @@ describe('getKeySignatureForDisplay — sharp root preservation', () => {
   it('C# Major with useFlats=false returns sharp sig (7)', () => {
     expect(getKeySignatureForDisplay('C#', 'Major', false)).toBe(7);
   });
+  it('G# Major with useFlats=false returns 8 (8 sharps)', () => {
+    expect(getKeySignatureForDisplay('G#', 'Major', false)).toBe(8);
+  });
+  it('Ab Major with useFlats=false returns -4 (4 flats)', () => {
+    expect(getKeySignatureForDisplay('Ab', 'Major', false)).toBe(-4);
+  });
+  it('A# Major with useFlats=false returns 10 (10 sharps)', () => {
+    expect(getKeySignatureForDisplay('A#', 'Major', false)).toBe(10);
+  });
+  it('Bb Major with useFlats=true returns -2 (2 flats)', () => {
+    expect(getKeySignatureForDisplay('Bb', 'Major', true)).toBe(-2);
+  });
 });
 
 describe('resolver + key signature integration', () => {
-  it('A# Major auto → flats → Bb Major key sig = -2', () => {
+  it('A# Major auto → sharp-spelled root stays sharp → key sig = 10', () => {
     const useFlats = resolveAccidentalMode('A#', 'Major', 'auto');
-    expect(useFlats).toBe(true);
-    expect(getKeySignatureForDisplay('A#', 'Major', useFlats)).toBe(-2);
+    // A# is sharp-spelled so getKeySignatureForDisplay returns enharmonic sharp count
+    expect(getKeySignatureForDisplay('A#', 'Major', useFlats)).toBe(10);
   });
   it('A Natural Minor auto → sharps → key sig = 0', () => {
     const useFlats = resolveAccidentalMode('A', 'Natural Minor', 'auto');
