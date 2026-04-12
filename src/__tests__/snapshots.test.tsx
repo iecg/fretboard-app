@@ -300,6 +300,45 @@ describe('Component Snapshots', () => {
       expect(container).toMatchSnapshot('circle-lydian');
     });
 
+    it('renders C Major in "on" enharmonic display mode', () => {
+      const { container } = render(
+        <CircleOfFifths
+          rootNote="C"
+          setRootNote={() => {}}
+          scaleName="Major"
+          useFlats={false}
+          enharmonicDisplay="on"
+        />
+      );
+      expect(container).toMatchSnapshot('circle-c-major-enharmonic-on');
+    });
+
+    it('renders C Major in "off" enharmonic display mode', () => {
+      const { container } = render(
+        <CircleOfFifths
+          rootNote="C"
+          setRootNote={() => {}}
+          scaleName="Major"
+          useFlats={false}
+          enharmonicDisplay="off"
+        />
+      );
+      expect(container).toMatchSnapshot('circle-c-major-enharmonic-off');
+    });
+
+    it('renders A Natural Minor in "auto" enharmonic display mode', () => {
+      const { container } = render(
+        <CircleOfFifths
+          rootNote="A"
+          setRootNote={() => {}}
+          scaleName="Natural Minor"
+          useFlats={false}
+          enharmonicDisplay="auto"
+        />
+      );
+      expect(container).toMatchSnapshot('circle-a-minor-enharmonic-auto');
+    });
+
     it('renders all chromatic notes snapshot (including sharps)', () => {
       const notes = ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#', 'G#', 'D#', 'A#', 'F'];
 
