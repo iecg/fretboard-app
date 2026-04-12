@@ -197,7 +197,7 @@ export default function SettingsOverlay() {
             </div>
           )}
 
-          <div className="overlay-control-group">
+          <div className="overlay-control-group overlay-control-group--accidentals">
             <span className="overlay-control-label">Accidentals</span>
             <ToggleBar
               options={ACCIDENTAL_OPTIONS}

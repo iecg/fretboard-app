@@ -142,3 +142,8 @@
   color: var(--text-muted, rgba(255, 255, 255, 0.6));
   margin-bottom: 8px;
 }
+
+/* Enlarge ♯/♭ unicode symbols which render small at default text-xs */
+.overlay-control-group--accidentals .toggle-btn {
+  font-size: var(--text-sm, 0.875rem);
+}

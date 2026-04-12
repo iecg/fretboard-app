@@ -15,7 +15,7 @@ interface TabletPortraitPanelProps {
 }
 
 const TABLET_TAB_OPTIONS = [
-  { value: "settings", label: "Settings" },
+  { value: "settings", label: "Controls" },
   { value: "scales", label: "Scales" },
 ];
 

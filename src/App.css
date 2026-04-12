@@ -889,11 +889,11 @@
   }
 
   .mobile-tab-content {
-    padding: 0.25rem;
+    padding: var(--space-1);
   }
 
   .mobile-tab-panel {
-    gap: 0.25rem;
+    gap: var(--space-2);
   }
 
   .app-header {
