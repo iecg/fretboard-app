@@ -93,7 +93,7 @@ export function ExpandedControlsPanel() {
   const [linkChordRoot, setLinkChordRoot] = useAtom(linkChordRootAtom);
   const [hideNonChordNotes, setHideNonChordNotes] = useAtom(hideNonChordNotesAtom);
   const [chordIntervalFilter, setChordIntervalFilter] = useAtom(chordIntervalFilterAtom);
-  const [useFlats, setUseFlats] = useAtom(useFlatsAtom);
+  const useFlats = useAtomValue(useFlatsAtom);
 
   return (
     <div className="controls-panel">
@@ -146,13 +146,6 @@ export function ExpandedControlsPanel() {
 
       <div className="control-group col-span-2 key-column">
         <h2>Key</h2>
-        <button
-          className="accidental-toggle"
-          onClick={() => setUseFlats((prev) => !prev)}
-          title={useFlats ? "Showing flats — click for sharps" : "Showing sharps — click for flats"}
-        >
-          {useFlats ? "♭" : "♯"}
-        </button>
         <CircleOfFifths
           rootNote={rootNote}
           setRootNote={handleSetRootNote}

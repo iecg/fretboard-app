@@ -18,7 +18,6 @@ const defaultProps = {
   setRootNote: vi.fn(),
   scaleName: 'major',
   useFlats: false,
-  setUseFlats: vi.fn(),
 };
 
 describe('TabletPortraitPanel', () => {
@@ -62,20 +61,6 @@ describe('TabletPortraitPanel', () => {
     expect(cof.getAttribute('data-root-note')).toBe('G');
   });
 
-  it('accidental toggle calls setUseFlats with toggled value', () => {
-    const setUseFlats = vi.fn();
-    render(<TabletPortraitPanel {...defaultProps} useFlats={false} setUseFlats={setUseFlats} />);
-    fireEvent.click(screen.getByText('♯'));
-    expect(setUseFlats).toHaveBeenCalledWith(true);
-  });
-
-  it('accidental toggle shows flat symbol when useFlats is true', () => {
-    render(<TabletPortraitPanel {...defaultProps} useFlats={true} />);
-    expect(screen.getByText('♭')).toBeTruthy();
-  });
-
-  it('accidental toggle shows sharp symbol when useFlats is false', () => {
-    render(<TabletPortraitPanel {...defaultProps} useFlats={false} />);
-    expect(screen.getByText('♯')).toBeTruthy();
-  });
+  // Accidental toggle was removed from TabletPortraitPanel in plan 01-03;
+  // the Accidentals control now lives in SettingsOverlay.
 });

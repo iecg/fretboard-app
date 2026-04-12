@@ -11,7 +11,6 @@ interface TabletPortraitPanelProps {
   setRootNote: (note: string) => void;
   scaleName: string;
   useFlats: boolean;
-  setUseFlats: (flats: boolean) => void;
 }
 
 const TABLET_TAB_OPTIONS = [
@@ -28,7 +27,6 @@ export function TabletPortraitPanel({
   setRootNote,
   scaleName,
   useFlats,
-  setUseFlats,
 }: TabletPortraitPanelProps) {
   return (
     <div className="tablet-portrait-panel">
@@ -50,17 +48,6 @@ export function TabletPortraitPanel({
       {/* Right column: CoF fixed-width */}
       <div className="tablet-portrait-cof-col">
         <h2>Key</h2>
-        <button
-          className="accidental-toggle"
-          onClick={() => setUseFlats(!useFlats)}
-          title={
-            useFlats
-              ? "Showing flats — click for sharps"
-              : "Showing sharps — click for flats"
-          }
-        >
-          {useFlats ? "♭" : "♯"}
-        </button>
         <CircleOfFifths
           rootNote={rootNote}
           setRootNote={setRootNote}
