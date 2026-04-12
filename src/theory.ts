@@ -184,18 +184,30 @@ export function getKeySignature(rootNote: string): number {
   return KEY_SIGNATURES[rootNote] ?? 0;
 }
 
-export function getKeySignatureForDisplay(rootNote: string, useFlats: boolean): number {
-  // When useFlats is true and root has an enharmonic flat name, use that for lookup
-  if (useFlats && rootNote.includes('#') && ENHARMONICS[rootNote]) {
-    const flatName = ENHARMONICS[rootNote];
-    if (KEY_SIGNATURES[flatName] !== undefined) return KEY_SIGNATURES[flatName];
+export function getKeySignatureForDisplay(
+  rootNote: string,
+  scaleName: string,
+  useFlats: boolean,
+): number {
+  const offset = SCALE_TO_PARENT_MAJOR_OFFSET[scaleName] ?? 0;
+
+  // Normalize rootNote to sharp index
+  const sharpRoot = rootNote.includes("b") && ENHARMONICS[rootNote]
+    ? ENHARMONICS[rootNote] : rootNote;
+  const rootIdx = NOTES.indexOf(sharpRoot);
+  if (rootIdx === -1) return KEY_SIGNATURES[rootNote] ?? 0;
+
+  const parentIdx = (rootIdx + offset) % 12;
+  const parentSharp = NOTES[parentIdx];
+
+  // Apply useFlats preference for enharmonic parent lookup
+  if (useFlats && ENHARMONICS[parentSharp]) {
+    const flatName = ENHARMONICS[parentSharp];
+    if (KEY_SIGNATURES[flatName] !== undefined) {
+      return KEY_SIGNATURES[flatName];
+    }
   }
-  // When useFlats is false and root has an enharmonic flat name, resolve to sharp
-  if (!useFlats && rootNote.includes('b') && ENHARMONICS[rootNote]) {
-    const sharpName = ENHARMONICS[rootNote];
-    if (KEY_SIGNATURES[sharpName] !== undefined) return KEY_SIGNATURES[sharpName];
-  }
-  return KEY_SIGNATURES[rootNote] ?? 0;
+  return KEY_SIGNATURES[parentSharp] ?? 0;
 }
 
 export type AccidentalMode = "sharps" | "flats" | "auto";
@@ -249,6 +261,23 @@ export function resolveAccidentalMode(
 
   return flatCount < sharpCount; // strict less; tie → sharps (false)
 }
+
+// Semitone offset from a scale's root to its parent major key.
+// Used to derive the correct key signature for modal and minor scales.
+export const SCALE_TO_PARENT_MAJOR_OFFSET: Record<string, number> = {
+  'Major': 0,
+  'Dorian': 10,
+  'Phrygian': 8,
+  'Lydian': 7,
+  'Mixolydian': 5,
+  'Natural Minor': 3,
+  'Locrian': 1,
+  'Harmonic Minor': 3,
+  'Major Pentatonic': 0,
+  'Minor Pentatonic': 3,
+  'Major Blues': 0,
+  'Minor Blues': 3,
+};
 
 // Circle of fifths display labels
 export const CIRCLE_DISPLAY_LABELS: Record<string, string> = {

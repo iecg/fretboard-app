@@ -8,6 +8,7 @@ import {
   getIntervalNotes,
   getDivergentNotes,
   getKeySignature,
+  getKeySignatureForDisplay,
   resolveAccidentalMode,
 } from '../theory';
 
@@ -170,6 +171,36 @@ describe('resolveAccidentalMode', () => {
       // A# Natural Minor vs Bb Natural Minor — Bb should win (fewer accidentals)
       expect(resolveAccidentalMode('A#', 'Natural Minor', 'auto')).toBe(true);
     });
+  });
+});
+
+describe('getKeySignatureForDisplay (scale-aware)', () => {
+  it('A Natural Minor → 0 (parent = C Major)', () => {
+    expect(getKeySignatureForDisplay('A', 'Natural Minor', false)).toBe(0);
+  });
+  it('E Dorian → 2 (parent = D Major)', () => {
+    expect(getKeySignatureForDisplay('E', 'Dorian', false)).toBe(2);
+  });
+  it('D Phrygian → -2 (parent = Bb/A# Major, useFlats=false → A# = -2)', () => {
+    expect(getKeySignatureForDisplay('D', 'Phrygian', false)).toBe(-2);
+  });
+  it('Bb Lydian → -1 (parent = F Major, useFlats=true)', () => {
+    expect(getKeySignatureForDisplay('Bb', 'Lydian', true)).toBe(-1);
+  });
+  it('G Mixolydian → 0 (parent = C Major)', () => {
+    expect(getKeySignatureForDisplay('G', 'Mixolydian', false)).toBe(0);
+  });
+  it('B Locrian → 0 (parent = C Major)', () => {
+    expect(getKeySignatureForDisplay('B', 'Locrian', false)).toBe(0);
+  });
+  it('C Major → 0 (sanity regression)', () => {
+    expect(getKeySignatureForDisplay('C', 'Major', false)).toBe(0);
+  });
+  it('A Minor Pentatonic → 0 (parent = C Major)', () => {
+    expect(getKeySignatureForDisplay('A', 'Minor Pentatonic', false)).toBe(0);
+  });
+  it('A Harmonic Minor → 0 (Natural Minor parent)', () => {
+    expect(getKeySignatureForDisplay('A', 'Harmonic Minor', false)).toBe(0);
   });
 });
 
