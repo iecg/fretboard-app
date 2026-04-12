@@ -15,13 +15,7 @@ import {
   formatAccidental,
 } from "./theory";
 import { STANDARD_TUNING, TUNINGS } from "./guitar";
-import {
-  Music,
-  Settings2,
-  Volume2,
-  VolumeX,
-  RotateCcw,
-} from "lucide-react";
+import { Music, Settings2, Volume2, VolumeX } from "lucide-react";
 import { synth } from "./audio";
 import { CircleOfFifths } from "./CircleOfFifths";
 import { DEGREE_COLORS, getDegreesForScale } from "./degrees";
@@ -56,7 +50,6 @@ import {
   mobileTabAtom,
   tabletTabAtom,
   setRootNoteAtom,
-  resetAtom,
   settingsOverlayOpenAtom,
 } from "./store/atoms";
 import SettingsOverlay from "./components/SettingsOverlay";
@@ -256,12 +249,6 @@ function AppContent() {
     const nextMute = !isMuted;
     setIsMuted(nextMute);
     synth.setMute(nextMute);
-  };
-
-  const dispatchReset = useSetAtom(resetAtom);
-  const handleReset = () => {
-    dispatchReset();
-    synth.setMute(false);
   };
 
   // Compute active chord tones (independent of scale)
@@ -519,13 +506,6 @@ function AppContent() {
             aria-label="Open settings"
           >
             <Settings2 className="icon" />
-          </button>
-          <button
-            onClick={handleReset}
-            className="mute-btn"
-            title="Reset to defaults"
-          >
-            <RotateCcw className="icon" />
           </button>
           <button
             onClick={toggleMute}
