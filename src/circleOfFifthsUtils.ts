@@ -17,10 +17,13 @@ export function getCircleNoteLabels(
 
   if (mode === "on") {
     const primary = formatAccidental(display);
-    // Normalize display back to sharp form for ENHARMONICS lookup
-    const normalized = display.includes('b') && ENHARMONICS[display] ? ENHARMONICS[display] : display;
-    const enh = ENHARMONICS[normalized];
-    return { primary, enharmonic: enh ? formatAccidental(enh) : null };
+    // Look up the opposite spelling directly from ENHARMONICS
+    const enh = ENHARMONICS[display];
+    // Guard: if resolution yields the same as primary, suppress duplicate
+    if (!enh || formatAccidental(enh) === primary) {
+      return { primary, enharmonic: null };
+    }
+    return { primary, enharmonic: formatAccidental(enh) };
   }
 
   // mode === "auto": preserve existing logic exactly

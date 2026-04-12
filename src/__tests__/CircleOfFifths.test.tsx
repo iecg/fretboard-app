@@ -536,6 +536,39 @@ describe('getCircleNoteLabels mode behavior', () => {
     }
   });
 
+  it('on: flat-spelled primary shows sharp enharmonic (no duplicate)', () => {
+    // When useFlats=true, A# displays as Bb. Enharmonic should be A#, not Bb again.
+    const r = getCircleNoteLabels('A#', 'A#', true, SCALES['Major'], 'on');
+    expect(r.primary).toBe('B♭');
+    expect(r.enharmonic).toBe('A♯');
+  });
+
+  it('on: all flat-spelled pairs show distinct enharmonics', () => {
+    const flatPairs: [string, string, string][] = [
+      ['C#', 'D♭', 'C♯'],
+      ['D#', 'E♭', 'D♯'],
+      ['F#', 'G♭', 'F♯'],
+      ['G#', 'A♭', 'G♯'],
+      ['A#', 'B♭', 'A♯'],
+    ];
+    for (const [note, expectedPrimary, expectedEnh] of flatPairs) {
+      const r = getCircleNoteLabels(note, note, true, SCALES['Major'], 'on');
+      expect(r.primary).toBe(expectedPrimary);
+      expect(r.enharmonic).toBe(expectedEnh);
+      expect(r.primary).not.toBe(r.enharmonic);
+    }
+  });
+
+  it('on: no duplicate labels for any of the 12 chromatic notes', () => {
+    const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    for (const note of notes) {
+      const r = getCircleNoteLabels(note, 'C', false, SCALES['Major'], 'on');
+      if (r.enharmonic !== null) {
+        expect(r.primary).not.toBe(r.enharmonic);
+      }
+    }
+  });
+
   // mode = "off"
   it('off: sharp note shows primary only', () => {
     const r = getCircleNoteLabels('A#', 'C', false, SCALES['Major'], 'off');
