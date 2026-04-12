@@ -200,8 +200,11 @@ export function getKeySignatureForDisplay(
   const parentIdx = (rootIdx + offset) % 12;
   const parentSharp = NOTES[parentIdx];
 
-  // Apply useFlats preference for enharmonic parent lookup
-  if (useFlats && ENHARMONICS[parentSharp]) {
+  // When the originally-selected root is sharp-spelled, always return the
+  // sharp-side key signature regardless of the useFlats auto-resolution.
+  // This preserves the user's intended root spelling (e.g., G# Major → sharps).
+  const originalIsSharp = rootNote.includes('#');
+  if (!originalIsSharp && useFlats && ENHARMONICS[parentSharp]) {
     const flatName = ENHARMONICS[parentSharp];
     if (KEY_SIGNATURES[flatName] !== undefined) {
       return KEY_SIGNATURES[flatName];

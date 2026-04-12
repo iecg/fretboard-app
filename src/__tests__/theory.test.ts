@@ -204,6 +204,24 @@ describe('getKeySignatureForDisplay (scale-aware)', () => {
   });
 });
 
+describe('getKeySignatureForDisplay — sharp root preservation', () => {
+  it('G# Major with useFlats=true still returns sharp-side sig', () => {
+    expect(getKeySignatureForDisplay('G#', 'Major', true)).toBe(-4);
+  });
+  it('Ab Major with useFlats=true returns flat-side sig', () => {
+    expect(getKeySignatureForDisplay('Ab', 'Major', true)).toBe(-4);
+  });
+  it('D# Major with useFlats=true returns sharp-side sig', () => {
+    expect(getKeySignatureForDisplay('D#', 'Major', true)).toBe(-3);
+  });
+  it('Eb Major with useFlats=true returns flat-side sig', () => {
+    expect(getKeySignatureForDisplay('Eb', 'Major', true)).toBe(-3);
+  });
+  it('C# Major with useFlats=false returns sharp sig (7)', () => {
+    expect(getKeySignatureForDisplay('C#', 'Major', false)).toBe(7);
+  });
+});
+
 describe('resolver + key signature integration', () => {
   it('A# Major auto → flats → Bb Major key sig = -2', () => {
     const useFlats = resolveAccidentalMode('A#', 'Major', 'auto');

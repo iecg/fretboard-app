@@ -35298,6 +35298,39 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
         <div
           class="overlay-control-group"
         >
+          <div
+            class="stepper-control mobile"
+          >
+            <span
+              class="section-label"
+            >
+              Chord Spread
+            </span>
+            <div
+              class="stepper-group"
+            >
+              <button
+                class="stepper-btn"
+                disabled=""
+              >
+                −
+              </button>
+              <span
+                class="stepper-value"
+              >
+                0
+              </span>
+              <button
+                class="stepper-btn"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+        <div
+          class="overlay-control-group"
+        >
           <span
             class="overlay-control-label"
           >
@@ -39427,6 +39460,39 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
                 />
               </svg>
             </button>
+          </div>
+        </div>
+        <div
+          class="overlay-control-group"
+        >
+          <div
+            class="stepper-control mobile"
+          >
+            <span
+              class="section-label"
+            >
+              Chord Spread
+            </span>
+            <div
+              class="stepper-group"
+            >
+              <button
+                class="stepper-btn"
+                disabled=""
+              >
+                −
+              </button>
+              <span
+                class="stepper-value"
+              >
+                0
+              </span>
+              <button
+                class="stepper-btn"
+              >
+                +
+              </button>
+            </div>
           </div>
         </div>
         <div
