@@ -25,6 +25,7 @@ const ZOOM_MAX = 300;
 const ZOOM_STEP = 10;
 
 const ACCIDENTAL_OPTIONS = [
+  { label: "Auto", value: "auto" },
   { label: "\u266F", value: "sharps" },
   { label: "\u266D", value: "flats" },
 ];
@@ -174,9 +175,9 @@ export default function SettingsOverlay() {
             <span className="overlay-control-label">Accidentals</span>
             <ToggleBar
               options={ACCIDENTAL_OPTIONS}
-              value={accidentalMode === "flats" ? "flats" : "sharps"}
+              value={accidentalMode}
               onChange={(v) =>
-                setAccidentalMode(v === "flats" ? "flats" : "sharps")
+                setAccidentalMode(v as "sharps" | "flats" | "auto")
               }
             />
           </div>
