@@ -31,14 +31,11 @@ import {
   get3NPSCoordinates,
   type ShapePolygon,
 } from "./shapes";
-import { DrawerSelector } from "./DrawerSelector";
 import { FingeringPatternControls } from "./components/FingeringPatternControls";
 import { ScaleChordControls } from "./components/ScaleChordControls";
 import { TabletPortraitPanel } from "./components/TabletPortraitPanel";
 import { MobileTabPanel } from "./components/MobileTabPanel";
 import { ExpandedControlsPanel } from "./components/ExpandedControlsPanel";
-import { FretRangeControl } from "./components/FretRangeControl";
-import { StepperControl } from "./components/StepperControl";
 import {
   rootNoteAtom,
   scaleNameAtom,
@@ -54,9 +51,6 @@ import {
   displayFormatAtom,
   shapeLabelsAtom,
   tuningNameAtom,
-  fretZoomAtom,
-  fretStartAtom,
-  fretEndAtom,
   useFlatsAtom,
   isMutedAtom,
   mobileTabAtom,
@@ -183,13 +177,10 @@ function AppContent() {
   // Display
   const [displayFormat, setDisplayFormat] = useAtom(displayFormatAtom);
   const [shapeLabels, setShapeLabels] = useAtom(shapeLabelsAtom);
-  const [tuningName, setTuningName] = useAtom(tuningNameAtom);
-  const [fretZoom, setFretZoom] = useAtom(fretZoomAtom);
-  const [fretStart, setFretStart] = useAtom(fretStartAtom);
-  const [fretEnd, setFretEnd] = useAtom(fretEndAtom);
+  const tuningName = useAtomValue(tuningNameAtom);
 
   // Accidentals / Audio / Mobile tab
-  const [useFlats, setUseFlats] = useAtom(useFlatsAtom);
+  const useFlats = useAtomValue(useFlatsAtom);
   const [isMuted, setIsMuted] = useAtom(isMutedAtom);
   const [mobileTab, setMobileTab] = useAtom(mobileTabAtom);
 
@@ -441,13 +432,6 @@ function AppContent() {
           scaleName={scaleName}
           useFlats={useFlats}
         />
-        <button
-          className="accidental-toggle cof-toggle"
-          onClick={() => setUseFlats(prev => !prev)}
-          title={useFlats ? 'Showing flats — click for sharps' : 'Showing sharps — click for flats'}
-        >
-          {useFlats ? '♭' : '♯'}
-        </button>
       </div>
       {summaryContent}
     </div>
@@ -493,43 +477,6 @@ function AppContent() {
         displayFormat={displayFormat}
         setDisplayFormat={setDisplayFormat}
       />
-
-      <div className="control-section">
-        <DrawerSelector
-          label="Tuning"
-          value={tuningName}
-          options={Object.keys(TUNINGS)}
-          onSelect={(v) => v && setTuningName(v)}
-        />
-      </div>
-
-      {!isTabletPortrait && (
-        <div className="control-section">
-          <span className="section-label">Fret Range</span>
-          <FretRangeControl
-            startFret={fretStart}
-            endFret={fretEnd}
-            onStartChange={(v) => setFretStart(v)}
-            onEndChange={(v) => setFretEnd(v)}
-            maxFret={END_FRET}
-            layout="mobile"
-          />
-        </div>
-      )}
-      {!isTabletPortrait && (
-        <div className="control-section">
-          <StepperControl
-            label="Zoom"
-            value={fretZoom}
-            onChange={(v) => setFretZoom(v)}
-            min={100}
-            max={300}
-            step={10}
-            formatValue={(z) => z <= 100 ? 'Auto' : `${z}%`}
-            buttonVariant="mobile"
-          />
-        </div>
-      )}
     </div>
   );
 
@@ -600,8 +547,6 @@ function AppContent() {
           tuning={currentTuning}
           highlightNotes={highlightNotes}
           rootNote={rootNote}
-          startFret={fretStart}
-          endFret={fretEnd}
           boxBounds={boxBounds}
           chordTones={filteredChordTones}
           chordFretSpread={chordFretSpread}
@@ -611,10 +556,6 @@ function AppContent() {
           displayFormat={displayFormat}
           shapePolygons={shapePolygons}
           shapeLabels={shapeLabels}
-          fretZoom={fretZoom}
-          onZoomChange={setFretZoom}
-          onFretStartChange={setFretStart}
-          onFretEndChange={setFretEnd}
           maxFret={END_FRET}
           wrappedNotes={wrappedNotes}
           useFlats={useFlats}
@@ -634,7 +575,6 @@ function AppContent() {
           setRootNote={handleSetRootNote}
           scaleName={scaleName}
           useFlats={useFlats}
-          setUseFlats={(flats) => setUseFlats(flats)}
         />
       )}
 
