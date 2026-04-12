@@ -100,7 +100,7 @@ export function CircleOfFifths({
                   fontWeight="bold"
                   fill={isActive ? "var(--text-main)" : "var(--text-muted)"}
                 >
-                  <tspan stroke="rgba(0,0,0,0.3)" strokeWidth="2" paintOrder="stroke">{primary}</tspan>
+                  <tspan x={lx} dy="0" stroke="rgba(0,0,0,0.3)" strokeWidth="2" paintOrder="stroke">{primary}</tspan>
                 </text>
               )}
 

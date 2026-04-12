@@ -2878,7 +2878,7 @@ exports[`Component Snapshots > App layout snapshots > falls back to tablet-portr
           <button
             class="toggle-btn active"
           >
-            Settings
+            Controls
           </button>
           <button
             class="toggle-btn"
@@ -3049,9 +3049,11 @@ exports[`Component Snapshots > App layout snapshots > falls back to tablet-portr
                 y="35.19999999999999"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="160"
                 >
                   C
                 </tspan>
@@ -3085,9 +3087,11 @@ exports[`Component Snapshots > App layout snapshots > falls back to tablet-portr
                 y="51.92002960770205"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="222.40000000000003"
                 >
                   G
                 </tspan>
@@ -3121,9 +3125,11 @@ exports[`Component Snapshots > App layout snapshots > falls back to tablet-portr
                 y="97.6"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="268.079970392298"
                 >
                   D
                 </tspan>
@@ -3157,9 +3163,11 @@ exports[`Component Snapshots > App layout snapshots > falls back to tablet-portr
                 y="160"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="284.8"
                 >
                   A
                 </tspan>
@@ -3193,9 +3201,11 @@ exports[`Component Snapshots > App layout snapshots > falls back to tablet-portr
                 y="222.4"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="268.079970392298"
                 >
                   E
                 </tspan>
@@ -3229,9 +3239,11 @@ exports[`Component Snapshots > App layout snapshots > falls back to tablet-portr
                 y="268.0799703922979"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="222.40000000000003"
                 >
                   B
                 </tspan>
@@ -3440,9 +3452,11 @@ exports[`Component Snapshots > App layout snapshots > falls back to tablet-portr
                 y="51.92002960770206"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="97.59999999999994"
                 >
                   F
                 </tspan>
@@ -3832,7 +3846,7 @@ exports[`Component Snapshots > App layout snapshots > falls back to tablet-portr
           </div>
         </div>
         <div
-          class="overlay-control-group"
+          class="overlay-control-group overlay-control-group--accidentals"
         >
           <span
             class="overlay-control-label"
@@ -7046,9 +7060,11 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-expanded l
                 y="35.19999999999999"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="160"
                 >
                   C
                 </tspan>
@@ -7082,9 +7098,11 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-expanded l
                 y="51.92002960770205"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="222.40000000000003"
                 >
                   G
                 </tspan>
@@ -7118,9 +7136,11 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-expanded l
                 y="97.6"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="268.079970392298"
                 >
                   D
                 </tspan>
@@ -7154,9 +7174,11 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-expanded l
                 y="160"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="284.8"
                 >
                   A
                 </tspan>
@@ -7190,9 +7212,11 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-expanded l
                 y="222.4"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="268.079970392298"
                 >
                   E
                 </tspan>
@@ -7226,9 +7250,11 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-expanded l
                 y="268.0799703922979"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="222.40000000000003"
                 >
                   B
                 </tspan>
@@ -7437,9 +7463,11 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-expanded l
                 y="51.92002960770206"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="97.59999999999994"
                 >
                   F
                 </tspan>
@@ -7829,7 +7857,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-expanded l
           </div>
         </div>
         <div
-          class="overlay-control-group"
+          class="overlay-control-group overlay-control-group--accidentals"
         >
           <span
             class="overlay-control-label"
@@ -11043,9 +11071,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
                 y="35.19999999999999"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="160"
                 >
                   C
                 </tspan>
@@ -11079,9 +11109,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
                 y="51.92002960770205"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="222.40000000000003"
                 >
                   G
                 </tspan>
@@ -11115,9 +11147,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
                 y="97.6"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="268.079970392298"
                 >
                   D
                 </tspan>
@@ -11151,9 +11185,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
                 y="160"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="284.8"
                 >
                   A
                 </tspan>
@@ -11187,9 +11223,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
                 y="222.4"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="268.079970392298"
                 >
                   E
                 </tspan>
@@ -11223,9 +11261,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
                 y="268.0799703922979"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="222.40000000000003"
                 >
                   B
                 </tspan>
@@ -11434,9 +11474,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
                 y="51.92002960770206"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="97.59999999999994"
                 >
                   F
                 </tspan>
@@ -11826,7 +11868,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
           </div>
         </div>
         <div
-          class="overlay-control-group"
+          class="overlay-control-group overlay-control-group--accidentals"
         >
           <span
             class="overlay-control-label"
@@ -14775,7 +14817,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad landscape lay
           <button
             class="toggle-btn active"
           >
-            Settings
+            Controls
           </button>
           <button
             class="toggle-btn"
@@ -14946,9 +14988,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPad landscape lay
                 y="35.19999999999999"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="160"
                 >
                   C
                 </tspan>
@@ -14982,9 +15026,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPad landscape lay
                 y="51.92002960770205"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="222.40000000000003"
                 >
                   G
                 </tspan>
@@ -15018,9 +15064,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPad landscape lay
                 y="97.6"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="268.079970392298"
                 >
                   D
                 </tspan>
@@ -15054,9 +15102,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPad landscape lay
                 y="160"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="284.8"
                 >
                   A
                 </tspan>
@@ -15090,9 +15140,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPad landscape lay
                 y="222.4"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="268.079970392298"
                 >
                   E
                 </tspan>
@@ -15126,9 +15178,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPad landscape lay
                 y="268.0799703922979"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="222.40000000000003"
                 >
                   B
                 </tspan>
@@ -15337,9 +15391,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPad landscape lay
                 y="51.92002960770206"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="97.59999999999994"
                 >
                   F
                 </tspan>
@@ -15729,7 +15785,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad landscape lay
           </div>
         </div>
         <div
-          class="overlay-control-group"
+          class="overlay-control-group overlay-control-group--accidentals"
         >
           <span
             class="overlay-control-label"
@@ -18678,7 +18734,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
           <button
             class="toggle-btn active"
           >
-            Settings
+            Controls
           </button>
           <button
             class="toggle-btn"
@@ -18849,9 +18905,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
                 y="35.19999999999999"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="160"
                 >
                   C
                 </tspan>
@@ -18885,9 +18943,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
                 y="51.92002960770205"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="222.40000000000003"
                 >
                   G
                 </tspan>
@@ -18921,9 +18981,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
                 y="97.6"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="268.079970392298"
                 >
                   D
                 </tspan>
@@ -18957,9 +19019,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
                 y="160"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="284.8"
                 >
                   A
                 </tspan>
@@ -18993,9 +19057,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
                 y="222.4"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="268.079970392298"
                 >
                   E
                 </tspan>
@@ -19029,9 +19095,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
                 y="268.0799703922979"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="222.40000000000003"
                 >
                   B
                 </tspan>
@@ -19240,9 +19308,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
                 y="51.92002960770206"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="97.59999999999994"
                 >
                   F
                 </tspan>
@@ -19632,7 +19702,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
           </div>
         </div>
         <div
-          class="overlay-control-group"
+          class="overlay-control-group overlay-control-group--accidentals"
         >
           <span
             class="overlay-control-label"
@@ -22689,9 +22759,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
                   y="35.19999999999999"
                 >
                   <tspan
+                    dy="0"
                     paint-order="stroke"
                     stroke="rgba(0,0,0,0.3)"
                     stroke-width="2"
+                    x="160"
                   >
                     C
                   </tspan>
@@ -22725,9 +22797,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
                   y="51.92002960770205"
                 >
                   <tspan
+                    dy="0"
                     paint-order="stroke"
                     stroke="rgba(0,0,0,0.3)"
                     stroke-width="2"
+                    x="222.40000000000003"
                   >
                     G
                   </tspan>
@@ -22761,9 +22835,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
                   y="97.6"
                 >
                   <tspan
+                    dy="0"
                     paint-order="stroke"
                     stroke="rgba(0,0,0,0.3)"
                     stroke-width="2"
+                    x="268.079970392298"
                   >
                     D
                   </tspan>
@@ -22797,9 +22873,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
                   y="160"
                 >
                   <tspan
+                    dy="0"
                     paint-order="stroke"
                     stroke="rgba(0,0,0,0.3)"
                     stroke-width="2"
+                    x="284.8"
                   >
                     A
                   </tspan>
@@ -22833,9 +22911,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
                   y="222.4"
                 >
                   <tspan
+                    dy="0"
                     paint-order="stroke"
                     stroke="rgba(0,0,0,0.3)"
                     stroke-width="2"
+                    x="268.079970392298"
                   >
                     E
                   </tspan>
@@ -22869,9 +22949,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
                   y="268.0799703922979"
                 >
                   <tspan
+                    dy="0"
                     paint-order="stroke"
                     stroke="rgba(0,0,0,0.3)"
                     stroke-width="2"
+                    x="222.40000000000003"
                   >
                     B
                   </tspan>
@@ -23080,9 +23162,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
                   y="51.92002960770206"
                 >
                   <tspan
+                    dy="0"
                     paint-order="stroke"
                     stroke="rgba(0,0,0,0.3)"
                     stroke-width="2"
+                    x="97.59999999999994"
                   >
                     F
                   </tspan>
@@ -23473,7 +23557,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
           </div>
         </div>
         <div
-          class="overlay-control-group"
+          class="overlay-control-group overlay-control-group--accidentals"
         >
           <span
             class="overlay-control-label"
@@ -26536,9 +26620,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
                   y="35.19999999999999"
                 >
                   <tspan
+                    dy="0"
                     paint-order="stroke"
                     stroke="rgba(0,0,0,0.3)"
                     stroke-width="2"
+                    x="160"
                   >
                     C
                   </tspan>
@@ -26572,9 +26658,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
                   y="51.92002960770205"
                 >
                   <tspan
+                    dy="0"
                     paint-order="stroke"
                     stroke="rgba(0,0,0,0.3)"
                     stroke-width="2"
+                    x="222.40000000000003"
                   >
                     G
                   </tspan>
@@ -26608,9 +26696,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
                   y="97.6"
                 >
                   <tspan
+                    dy="0"
                     paint-order="stroke"
                     stroke="rgba(0,0,0,0.3)"
                     stroke-width="2"
+                    x="268.079970392298"
                   >
                     D
                   </tspan>
@@ -26644,9 +26734,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
                   y="160"
                 >
                   <tspan
+                    dy="0"
                     paint-order="stroke"
                     stroke="rgba(0,0,0,0.3)"
                     stroke-width="2"
+                    x="284.8"
                   >
                     A
                   </tspan>
@@ -26680,9 +26772,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
                   y="222.4"
                 >
                   <tspan
+                    dy="0"
                     paint-order="stroke"
                     stroke="rgba(0,0,0,0.3)"
                     stroke-width="2"
+                    x="268.079970392298"
                   >
                     E
                   </tspan>
@@ -26716,9 +26810,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
                   y="268.0799703922979"
                 >
                   <tspan
+                    dy="0"
                     paint-order="stroke"
                     stroke="rgba(0,0,0,0.3)"
                     stroke-width="2"
+                    x="222.40000000000003"
                   >
                     B
                   </tspan>
@@ -26927,9 +27023,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
                   y="51.92002960770206"
                 >
                   <tspan
+                    dy="0"
                     paint-order="stroke"
                     stroke="rgba(0,0,0,0.3)"
                     stroke-width="2"
+                    x="97.59999999999994"
                   >
                     F
                   </tspan>
@@ -27320,7 +27418,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
           </div>
         </div>
         <div
-          class="overlay-control-group"
+          class="overlay-control-group overlay-control-group--accidentals"
         >
           <span
             class="overlay-control-label"
@@ -30377,9 +30475,11 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   y="35.19999999999999"
                 >
                   <tspan
+                    dy="0"
                     paint-order="stroke"
                     stroke="rgba(0,0,0,0.3)"
                     stroke-width="2"
+                    x="160"
                   >
                     C
                   </tspan>
@@ -30413,9 +30513,11 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   y="51.92002960770205"
                 >
                   <tspan
+                    dy="0"
                     paint-order="stroke"
                     stroke="rgba(0,0,0,0.3)"
                     stroke-width="2"
+                    x="222.40000000000003"
                   >
                     G
                   </tspan>
@@ -30449,9 +30551,11 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   y="97.6"
                 >
                   <tspan
+                    dy="0"
                     paint-order="stroke"
                     stroke="rgba(0,0,0,0.3)"
                     stroke-width="2"
+                    x="268.079970392298"
                   >
                     D
                   </tspan>
@@ -30485,9 +30589,11 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   y="160"
                 >
                   <tspan
+                    dy="0"
                     paint-order="stroke"
                     stroke="rgba(0,0,0,0.3)"
                     stroke-width="2"
+                    x="284.8"
                   >
                     A
                   </tspan>
@@ -30521,9 +30627,11 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   y="222.4"
                 >
                   <tspan
+                    dy="0"
                     paint-order="stroke"
                     stroke="rgba(0,0,0,0.3)"
                     stroke-width="2"
+                    x="268.079970392298"
                   >
                     E
                   </tspan>
@@ -30557,9 +30665,11 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   y="268.0799703922979"
                 >
                   <tspan
+                    dy="0"
                     paint-order="stroke"
                     stroke="rgba(0,0,0,0.3)"
                     stroke-width="2"
+                    x="222.40000000000003"
                   >
                     B
                   </tspan>
@@ -30768,9 +30878,11 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   y="51.92002960770206"
                 >
                   <tspan
+                    dy="0"
                     paint-order="stroke"
                     stroke="rgba(0,0,0,0.3)"
                     stroke-width="2"
+                    x="97.59999999999994"
                   >
                     F
                   </tspan>
@@ -31161,7 +31273,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
           </div>
         </div>
         <div
-          class="overlay-control-group"
+          class="overlay-control-group overlay-control-group--accidentals"
         >
           <span
             class="overlay-control-label"
@@ -34436,9 +34548,11 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
                 y="35.19999999999999"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="160"
                 >
                   C
                 </tspan>
@@ -34472,9 +34586,11 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
                 y="51.92002960770205"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="222.40000000000003"
                 >
                   G
                 </tspan>
@@ -34508,9 +34624,11 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
                 y="97.6"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="268.079970392298"
                 >
                   D
                 </tspan>
@@ -34544,9 +34662,11 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
                 y="160"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="284.8"
                 >
                   A
                 </tspan>
@@ -34580,9 +34700,11 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
                 y="222.4"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="268.079970392298"
                 >
                   E
                 </tspan>
@@ -34616,9 +34738,11 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
                 y="268.0799703922979"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="222.40000000000003"
                 >
                   B
                 </tspan>
@@ -34827,9 +34951,11 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
                 y="51.92002960770206"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="97.59999999999994"
                 >
                   F
                 </tspan>
@@ -35329,7 +35455,7 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
           </div>
         </div>
         <div
-          class="overlay-control-group"
+          class="overlay-control-group overlay-control-group--accidentals"
         >
           <span
             class="overlay-control-label"
@@ -38603,9 +38729,11 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
                 y="35.19999999999999"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="160"
                 >
                   C
                 </tspan>
@@ -38639,9 +38767,11 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
                 y="51.92002960770205"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="222.40000000000003"
                 >
                   G
                 </tspan>
@@ -38675,9 +38805,11 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
                 y="97.6"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="268.079970392298"
                 >
                   D
                 </tspan>
@@ -38711,9 +38843,11 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
                 y="160"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="284.8"
                 >
                   A
                 </tspan>
@@ -38747,9 +38881,11 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
                 y="222.4"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="268.079970392298"
                 >
                   E
                 </tspan>
@@ -38768,9 +38904,11 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
                 y="268.0799703922979"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="222.40000000000003"
                 >
                   B
                 </tspan>
@@ -38994,9 +39132,11 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
                 y="51.92002960770206"
               >
                 <tspan
+                  dy="0"
                   paint-order="stroke"
                   stroke="rgba(0,0,0,0.3)"
                   stroke-width="2"
+                  x="97.59999999999994"
                 >
                   F
                 </tspan>
@@ -39496,7 +39636,7 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
           </div>
         </div>
         <div
-          class="overlay-control-group"
+          class="overlay-control-group overlay-control-group--accidentals"
         >
           <span
             class="overlay-control-label"
@@ -39661,9 +39801,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
           y="35.19999999999999"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="160"
           >
             C
           </tspan>
@@ -39697,9 +39839,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
           y="51.92002960770205"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             G
           </tspan>
@@ -39733,9 +39877,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
           y="97.6"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             D
           </tspan>
@@ -39769,9 +39915,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
           y="160"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="284.8"
           >
             A
           </tspan>
@@ -39805,9 +39953,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
           y="222.4"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             E
           </tspan>
@@ -39841,9 +39991,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
           y="268.0799703922979"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             B
           </tspan>
@@ -40052,9 +40204,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
           y="51.92002960770206"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="97.59999999999994"
           >
             F
           </tspan>
@@ -40208,9 +40362,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
           y="35.19999999999999"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="160"
           >
             C
           </tspan>
@@ -40244,9 +40400,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
           y="51.92002960770205"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             G
           </tspan>
@@ -40280,9 +40438,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
           y="97.6"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             D
           </tspan>
@@ -40316,9 +40476,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
           y="160"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="284.8"
           >
             A
           </tspan>
@@ -40352,9 +40514,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
           y="222.4"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             E
           </tspan>
@@ -40388,9 +40552,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
           y="268.0799703922979"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             B
           </tspan>
@@ -40599,9 +40765,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
           y="51.92002960770206"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="97.59999999999994"
           >
             F
           </tspan>
@@ -40755,9 +40923,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
           y="35.19999999999999"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="160"
           >
             C
           </tspan>
@@ -40791,9 +40961,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
           y="51.92002960770205"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             G
           </tspan>
@@ -40827,9 +40999,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
           y="97.6"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             D
           </tspan>
@@ -40863,9 +41037,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
           y="160"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="284.8"
           >
             A
           </tspan>
@@ -40899,9 +41075,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
           y="222.4"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             E
           </tspan>
@@ -40935,9 +41113,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
           y="268.0799703922979"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             B
           </tspan>
@@ -40971,9 +41151,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
           y="284.8"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="160"
           >
             F♯
           </tspan>
@@ -40992,9 +41174,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
           y="268.079970392298"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="97.60000000000002"
           >
             C♯
           </tspan>
@@ -41013,9 +41197,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
           y="222.4"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="51.920029607702034"
           >
             G♯
           </tspan>
@@ -41034,9 +41220,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
           y="160.00000000000003"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="35.19999999999999"
           >
             D♯
           </tspan>
@@ -41055,9 +41243,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
           y="97.59999999999998"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="51.92002960770205"
           >
             A♯
           </tspan>
@@ -41076,9 +41266,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
           y="51.92002960770206"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="97.59999999999994"
           >
             F
           </tspan>
@@ -41232,9 +41424,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "on
           y="35.19999999999999"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="160"
           >
             C
           </tspan>
@@ -41268,9 +41462,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "on
           y="51.92002960770205"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             G
           </tspan>
@@ -41304,9 +41500,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "on
           y="97.6"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             D
           </tspan>
@@ -41340,9 +41538,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "on
           y="160"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="284.8"
           >
             A
           </tspan>
@@ -41376,9 +41576,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "on
           y="222.4"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             E
           </tspan>
@@ -41412,9 +41614,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "on
           y="268.0799703922979"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             B
           </tspan>
@@ -41623,9 +41827,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "on
           y="51.92002960770206"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="97.59999999999994"
           >
             F
           </tspan>
@@ -41779,9 +41985,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major snapsh
           y="35.19999999999999"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="160"
           >
             C
           </tspan>
@@ -41815,9 +42023,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major snapsh
           y="51.92002960770205"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             G
           </tspan>
@@ -41851,9 +42061,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major snapsh
           y="97.6"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             D
           </tspan>
@@ -41887,9 +42099,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major snapsh
           y="160"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="284.8"
           >
             A
           </tspan>
@@ -41923,9 +42137,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major snapsh
           y="222.4"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             E
           </tspan>
@@ -41959,9 +42175,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major snapsh
           y="268.0799703922979"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             B
           </tspan>
@@ -42170,9 +42388,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major snapsh
           y="51.92002960770206"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="97.59999999999994"
           >
             F
           </tspan>
@@ -42326,9 +42546,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Dorian mode sn
           y="35.19999999999999"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="160"
           >
             C
           </tspan>
@@ -42362,9 +42584,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Dorian mode sn
           y="51.92002960770205"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             G
           </tspan>
@@ -42398,9 +42622,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Dorian mode sn
           y="97.6"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             D
           </tspan>
@@ -42434,9 +42660,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Dorian mode sn
           y="160"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="284.8"
           >
             A
           </tspan>
@@ -42470,9 +42698,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Dorian mode sn
           y="222.4"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             E
           </tspan>
@@ -42506,9 +42736,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Dorian mode sn
           y="268.0799703922979"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             B
           </tspan>
@@ -42717,9 +42949,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Dorian mode sn
           y="51.92002960770206"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="97.59999999999994"
           >
             F
           </tspan>
@@ -42873,9 +43107,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders G Major snapsh
           y="35.19999999999999"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="160"
           >
             C
           </tspan>
@@ -42909,9 +43145,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders G Major snapsh
           y="51.92002960770205"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             G
           </tspan>
@@ -42945,9 +43183,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders G Major snapsh
           y="97.6"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             D
           </tspan>
@@ -42981,9 +43221,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders G Major snapsh
           y="160"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="284.8"
           >
             A
           </tspan>
@@ -43017,9 +43259,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders G Major snapsh
           y="222.4"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             E
           </tspan>
@@ -43053,9 +43297,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders G Major snapsh
           y="268.0799703922979"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             B
           </tspan>
@@ -43279,9 +43525,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders G Major snapsh
           y="51.92002960770206"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="97.59999999999994"
           >
             F
           </tspan>
@@ -43420,9 +43668,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Lydian mode sn
           y="35.19999999999999"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="160"
           >
             C
           </tspan>
@@ -43456,9 +43706,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Lydian mode sn
           y="51.92002960770205"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             G
           </tspan>
@@ -43492,9 +43744,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Lydian mode sn
           y="97.6"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             D
           </tspan>
@@ -43528,9 +43782,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Lydian mode sn
           y="160"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="284.8"
           >
             A
           </tspan>
@@ -43564,9 +43820,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Lydian mode sn
           y="222.4"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             E
           </tspan>
@@ -43600,9 +43858,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Lydian mode sn
           y="268.0799703922979"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             B
           </tspan>
@@ -43811,9 +44071,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Lydian mode sn
           y="51.92002960770206"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="97.59999999999994"
           >
             F
           </tspan>
@@ -44167,9 +44429,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="222.4"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             E
           </tspan>
@@ -44188,9 +44452,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="268.0799703922979"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             B
           </tspan>
@@ -44584,9 +44850,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="35.19999999999999"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="160"
           >
             C
           </tspan>
@@ -44605,9 +44873,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="51.92002960770205"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             G
           </tspan>
@@ -44626,9 +44896,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="97.6"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             D
           </tspan>
@@ -44662,9 +44934,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="160"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="284.8"
           >
             A
           </tspan>
@@ -44698,9 +44972,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="222.4"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             E
           </tspan>
@@ -44734,9 +45010,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="268.0799703922979"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             B
           </tspan>
@@ -44990,9 +45268,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="51.92002960770206"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="97.59999999999994"
           >
             F
           </tspan>
@@ -45131,9 +45411,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="35.19999999999999"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="160"
           >
             C
           </tspan>
@@ -45152,9 +45434,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="51.92002960770205"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             G
           </tspan>
@@ -45173,9 +45457,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="97.6"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             D
           </tspan>
@@ -45194,9 +45480,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="160"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="284.8"
           >
             A
           </tspan>
@@ -45215,9 +45503,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="222.4"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             E
           </tspan>
@@ -45251,9 +45541,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="268.0799703922979"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             B
           </tspan>
@@ -45537,9 +45829,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="51.92002960770206"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="97.59999999999994"
           >
             F
           </tspan>
@@ -45728,9 +46022,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="51.92002960770205"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             G
           </tspan>
@@ -45749,9 +46045,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="97.6"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             D
           </tspan>
@@ -45770,9 +46068,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="160"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="284.8"
           >
             A
           </tspan>
@@ -45791,9 +46091,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="222.4"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             E
           </tspan>
@@ -45812,9 +46114,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="268.0799703922979"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             B
           </tspan>
@@ -46253,9 +46557,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="35.19999999999999"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="160"
           >
             C
           </tspan>
@@ -46289,9 +46595,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="51.92002960770205"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             G
           </tspan>
@@ -46325,9 +46633,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="97.6"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             D
           </tspan>
@@ -46361,9 +46671,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="160"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="284.8"
           >
             A
           </tspan>
@@ -46397,9 +46709,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="222.4"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             E
           </tspan>
@@ -46433,9 +46747,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="268.0799703922979"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             B
           </tspan>
@@ -46644,9 +46960,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="51.92002960770206"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="97.59999999999994"
           >
             F
           </tspan>
@@ -46950,9 +47268,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="160"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="284.8"
           >
             A
           </tspan>
@@ -46971,9 +47291,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="222.4"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             E
           </tspan>
@@ -46992,9 +47314,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="268.0799703922979"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             B
           </tspan>
@@ -47403,9 +47727,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="35.19999999999999"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="160"
           >
             C
           </tspan>
@@ -47424,9 +47750,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="51.92002960770205"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             G
           </tspan>
@@ -47460,9 +47788,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="97.6"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             D
           </tspan>
@@ -47496,9 +47826,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="160"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="284.8"
           >
             A
           </tspan>
@@ -47532,9 +47864,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="222.4"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             E
           </tspan>
@@ -47568,9 +47902,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="268.0799703922979"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             B
           </tspan>
@@ -47809,9 +48145,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="51.92002960770206"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="97.59999999999994"
           >
             F
           </tspan>
@@ -47950,9 +48288,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="35.19999999999999"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="160"
           >
             C
           </tspan>
@@ -47971,9 +48311,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="51.92002960770205"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             G
           </tspan>
@@ -47992,9 +48334,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="97.6"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             D
           </tspan>
@@ -48013,9 +48357,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="160"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="284.8"
           >
             A
           </tspan>
@@ -48049,9 +48395,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="222.4"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             E
           </tspan>
@@ -48085,9 +48433,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="268.0799703922979"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             B
           </tspan>
@@ -48356,9 +48706,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="51.92002960770206"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="97.59999999999994"
           >
             F
           </tspan>
@@ -48497,9 +48849,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="35.19999999999999"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="160"
           >
             C
           </tspan>
@@ -48518,9 +48872,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="51.92002960770205"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             G
           </tspan>
@@ -48539,9 +48895,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="97.6"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             D
           </tspan>
@@ -48560,9 +48918,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="160"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="284.8"
           >
             A
           </tspan>
@@ -48581,9 +48941,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="222.4"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             E
           </tspan>
@@ -48602,9 +48964,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="268.0799703922979"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             B
           </tspan>
@@ -49058,9 +49422,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="35.19999999999999"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="160"
           >
             C
           </tspan>
@@ -49094,9 +49460,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="51.92002960770205"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             G
           </tspan>
@@ -49130,9 +49498,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="97.6"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             D
           </tspan>
@@ -49166,9 +49536,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="160"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="284.8"
           >
             A
           </tspan>
@@ -49202,9 +49574,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="222.4"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             E
           </tspan>
@@ -49238,9 +49612,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="268.0799703922979"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             B
           </tspan>
@@ -49449,9 +49825,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="51.92002960770206"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="97.59999999999994"
           >
             F
           </tspan>
@@ -49705,9 +50083,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="97.6"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             D
           </tspan>
@@ -49726,9 +50106,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="160"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="284.8"
           >
             A
           </tspan>
@@ -49747,9 +50129,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="222.4"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             E
           </tspan>
@@ -49768,9 +50152,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="268.0799703922979"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             B
           </tspan>
@@ -50194,9 +50580,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="35.19999999999999"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="160"
           >
             C
           </tspan>
@@ -50230,9 +50618,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="51.92002960770205"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             G
           </tspan>
@@ -50266,9 +50656,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="97.6"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             D
           </tspan>
@@ -50302,9 +50694,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="160"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="284.8"
           >
             A
           </tspan>
@@ -50338,9 +50732,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="222.4"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             E
           </tspan>
@@ -50374,9 +50770,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="268.0799703922979"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             B
           </tspan>
@@ -50600,9 +50998,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
           y="51.92002960770206"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="97.59999999999994"
           >
             F
           </tspan>
@@ -50741,9 +51141,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders with flats sna
           y="35.19999999999999"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="160"
           >
             C
           </tspan>
@@ -50777,9 +51179,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders with flats sna
           y="51.92002960770205"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             G
           </tspan>
@@ -50813,9 +51217,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders with flats sna
           y="97.6"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             D
           </tspan>
@@ -50849,9 +51255,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders with flats sna
           y="160"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="284.8"
           >
             A
           </tspan>
@@ -50885,9 +51293,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders with flats sna
           y="222.4"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="268.079970392298"
           >
             E
           </tspan>
@@ -50921,9 +51331,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders with flats sna
           y="268.0799703922979"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="222.40000000000003"
           >
             B
           </tspan>
@@ -51132,9 +51544,11 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders with flats sna
           y="51.92002960770206"
         >
           <tspan
+            dy="0"
             paint-order="stroke"
             stroke="rgba(0,0,0,0.3)"
             stroke-width="2"
+            x="97.59999999999994"
           >
             F
           </tspan>

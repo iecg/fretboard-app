@@ -46,12 +46,12 @@ describe('TabletPortraitPanel', () => {
     expect(setTabletTab).toHaveBeenCalledWith('scales');
   });
 
-  it('tab switching — clicking Settings calls setTabletTab with settings', () => {
+  it('tab switching — clicking Controls calls setTabletTab with settings', () => {
     const setTabletTab = vi.fn();
     render(
       <TabletPortraitPanel {...defaultProps} tabletTab="scales" setTabletTab={setTabletTab} />
     );
-    fireEvent.click(screen.getByText('Settings'));
+    fireEvent.click(screen.getByText('Controls'));
     expect(setTabletTab).toHaveBeenCalledWith('settings');
   });
 
