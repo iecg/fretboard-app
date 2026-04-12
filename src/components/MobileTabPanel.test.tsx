@@ -15,8 +15,8 @@ describe('MobileTabPanel', () => {
   it('renders ToggleBar with 3 tabs', () => {
     render(<MobileTabPanel {...defaultProps} />);
     expect(screen.getByText('Key')).toBeTruthy();
-    expect(screen.getByText('Scale')).toBeTruthy();
-    expect(screen.getByText('Fretboard')).toBeTruthy();
+    expect(screen.getByText('Scales')).toBeTruthy();
+    expect(screen.getByText('Controls')).toBeTruthy();
   });
 
   it('shows keyTabContent when mobileTab is key', () => {
@@ -40,10 +40,10 @@ describe('MobileTabPanel', () => {
     expect(screen.queryByText('Scale Content')).toBeNull();
   });
 
-  it('tab switching — clicking Scale calls setMobileTab with scale', () => {
+  it('tab switching — clicking Scales calls setMobileTab with scale', () => {
     const setMobileTab = vi.fn();
     render(<MobileTabPanel {...defaultProps} setMobileTab={setMobileTab} />);
-    fireEvent.click(screen.getByText('Scale'));
+    fireEvent.click(screen.getByText('Scales'));
     expect(setMobileTab).toHaveBeenCalledWith('scale');
   });
 
@@ -56,12 +56,12 @@ describe('MobileTabPanel', () => {
     expect(setMobileTab).toHaveBeenCalledWith('key');
   });
 
-  it('tab switching — clicking fretboard calls setMobileTab with fretboard', () => {
+  it('tab switching — clicking Controls calls setMobileTab with fretboard', () => {
     const setMobileTab = vi.fn();
     render(
       <MobileTabPanel {...defaultProps} mobileTab="key" setMobileTab={setMobileTab} />
     );
-    fireEvent.click(screen.getByText('Fretboard'));
+    fireEvent.click(screen.getByText('Controls'));
     expect(setMobileTab).toHaveBeenCalledWith('fretboard');
   });
 });

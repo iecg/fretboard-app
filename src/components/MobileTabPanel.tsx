@@ -11,8 +11,8 @@ interface MobileTabPanelProps {
 
 const MOBILE_TAB_OPTIONS = [
   { value: "key", label: "Key" },
-  { value: "scale", label: "Scale" },
-  { value: "fretboard", label: "Fretboard" },
+  { value: "scale", label: "Scales" },
+  { value: "fretboard", label: "Controls" },
 ];
 
 export function MobileTabPanel({

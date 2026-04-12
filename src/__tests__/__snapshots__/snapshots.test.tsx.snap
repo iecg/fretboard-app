@@ -22650,12 +22650,12 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
       <button
         class="mobile-tab"
       >
-        Scale
+        Scales
       </button>
       <button
         class="mobile-tab"
       >
-        Fretboard
+        Controls
       </button>
     </div>
     <div
@@ -26511,12 +26511,12 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
       <button
         class="mobile-tab"
       >
-        Scale
+        Scales
       </button>
       <button
         class="mobile-tab"
       >
-        Fretboard
+        Controls
       </button>
     </div>
     <div
@@ -30366,12 +30366,12 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
       <button
         class="mobile-tab"
       >
-        Scale
+        Scales
       </button>
       <button
         class="mobile-tab"
       >
-        Fretboard
+        Controls
       </button>
     </div>
     <div

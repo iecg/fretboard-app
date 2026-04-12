@@ -26,7 +26,8 @@ export function CircleOfFifths({
 }) {
   const rootIndex = CIRCLE_OF_FIFTHS.indexOf(rootNote);
 
-  const keySig = getKeySignatureForDisplay(rootNote, scaleName, useFlats);
+  const rootDisplayLabel = getNoteDisplayInScale(rootNote, rootNote, SCALES[scaleName] || [], useFlats);
+  const keySig = getKeySignatureForDisplay(rootDisplayLabel, scaleName, useFlats);
   const keySigText = keySig === 0 ? '♮' : keySig > 0 ? `${keySig}♯` : `${Math.abs(keySig)}♭`;
 
   return (
