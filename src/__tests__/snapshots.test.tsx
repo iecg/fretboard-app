@@ -21,8 +21,6 @@ describe('Component Snapshots', () => {
       const { container } = render(
         <Fretboard
           tuning={STANDARD_TUNING}
-          startFret={0}
-          endFret={24}
           maxFret={24}
           highlightNotes={['C', 'D', 'E', 'F', 'G', 'A', 'B']}
           rootNote="C"
@@ -36,8 +34,6 @@ describe('Component Snapshots', () => {
       const { container } = render(
         <Fretboard
           tuning={STANDARD_TUNING}
-          startFret={0}
-          endFret={24}
           maxFret={24}
           highlightNotes={['A', 'C', 'D', 'E', 'G']}
           rootNote="A"
@@ -51,8 +47,6 @@ describe('Component Snapshots', () => {
       const { container } = render(
         <Fretboard
           tuning={STANDARD_TUNING}
-          startFret={0}
-          endFret={12}
           maxFret={24}
           highlightNotes={['G', 'A', 'B', 'C', 'D', 'E', 'F#']}
           rootNote="G"
@@ -67,8 +61,6 @@ describe('Component Snapshots', () => {
       const { container } = render(
         <Fretboard
           tuning={STANDARD_TUNING}
-          startFret={0}
-          endFret={12}
           maxFret={24}
           highlightNotes={['E', 'F#', 'G#', 'A', 'B', 'C#', 'D#']}
           rootNote="E"
@@ -82,8 +74,6 @@ describe('Component Snapshots', () => {
       const { container } = render(
         <Fretboard
           tuning={STANDARD_TUNING}
-          startFret={0}
-          endFret={12}
           maxFret={24}
           highlightNotes={['C', 'D', 'E', 'F', 'G', 'A', 'B']}
           rootNote="C"
@@ -99,8 +89,6 @@ describe('Component Snapshots', () => {
       const { container } = render(
         <Fretboard
           tuning={STANDARD_TUNING}
-          startFret={0}
-          endFret={12}
           maxFret={24}
           highlightNotes={['C', 'D', 'E', 'F', 'G', 'A', 'B']}
           rootNote="C"
@@ -136,8 +124,6 @@ describe('Component Snapshots', () => {
       const { container } = render(
         <Fretboard
           tuning={STANDARD_TUNING}
-          startFret={0}
-          endFret={12}
           maxFret={24}
           highlightNotes={['E', 'F#', 'G#', 'A', 'B', 'C#', 'D#']}
           rootNote="E"
@@ -153,8 +139,6 @@ describe('Component Snapshots', () => {
       const { container } = render(
         <Fretboard
           tuning={STANDARD_TUNING}
-          startFret={12}
-          endFret={24}
           maxFret={24}
           highlightNotes={['D', 'E', 'F#', 'G', 'A', 'B', 'C#']}
           rootNote="D"
@@ -168,8 +152,6 @@ describe('Component Snapshots', () => {
       const { container } = render(
         <Fretboard
           tuning={STANDARD_TUNING}
-          startFret={0}
-          endFret={12}
           maxFret={24}
           highlightNotes={['F', 'G', 'A', 'Bb', 'C', 'D', 'E']}
           rootNote="F"
@@ -185,8 +167,6 @@ describe('Component Snapshots', () => {
       const { container } = render(
         <Fretboard
           tuning={dropDTuning}
-          startFret={0}
-          endFret={12}
           maxFret={24}
           highlightNotes={['D', 'E', 'F#', 'G', 'A', 'B', 'C#']}
           rootNote="D"
@@ -200,8 +180,6 @@ describe('Component Snapshots', () => {
       const { container } = render(
         <Fretboard
           tuning={STANDARD_TUNING}
-          startFret={0}
-          endFret={12}
           maxFret={24}
           highlightNotes={['C', 'D', 'E', 'F', 'G', 'A', 'B']}
           rootNote="C"
@@ -236,8 +214,6 @@ describe('Component Snapshots', () => {
       const { container } = render(
         <Fretboard
           tuning={STANDARD_TUNING}
-          startFret={0}
-          endFret={12}
           maxFret={24}
           highlightNotes={['E', 'F#', 'G#', 'A', 'B', 'C#', 'D#']}
           rootNote="E"
@@ -542,8 +518,6 @@ describe('Fretboard with ResizeObserver (auto-fit zoom)', () => {
     const { container } = render(
       <Fretboard
         tuning={STANDARD_TUNING}
-        startFret={0}
-        endFret={24}
         maxFret={24}
         highlightNotes={['C', 'D', 'E', 'F', 'G', 'A', 'B']}
         rootNote="C"

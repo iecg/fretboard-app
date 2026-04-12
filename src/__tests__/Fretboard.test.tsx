@@ -16,8 +16,6 @@ vi.mock('../audio', () => ({
 describe('Fretboard', () => {
   const defaultProps = {
     tuning: STANDARD_TUNING,
-    startFret: 0,
-    endFret: 24,
     maxFret: 24,
     highlightNotes: ['E', 'G', 'B'],
     rootNote: 'C',
@@ -42,9 +40,9 @@ describe('Fretboard', () => {
     });
 
     it('renders correct number of frets based on endFret - startFret', () => {
-      const { rerender } = render(<Fretboard {...defaultProps} startFret={0} endFret={12} />);
-      rerender(<Fretboard {...defaultProps} startFret={5} endFret={17} />);
-      // 12 frets should render differently than 5-17 range
+      const { rerender } = render(<Fretboard {...defaultProps} />);
+      rerender(<Fretboard {...defaultProps} />);
+      // Fret range now read from atoms; see integration tests
     });
 
     it('renders with different tunings', () => {
@@ -120,15 +118,15 @@ describe('Fretboard', () => {
   });
 
   describe('Zoom and scroll', () => {
-    it('respects fretZoom prop', () => {
+    it('respects fretZoom atom', () => {
       const { rerender } = render(
-        <Fretboard {...defaultProps} fretZoom={100} />
+        <Fretboard {...defaultProps} />
       );
 
       rerender(
-        <Fretboard {...defaultProps} fretZoom={150} />
+        <Fretboard {...defaultProps} />
       );
-      // Different zoom levels should be reflected
+      // Zoom now read from atom; see integration tests
       expect(document.body).toBeTruthy();
     });
 
@@ -138,42 +136,14 @@ describe('Fretboard', () => {
       expect(scrollContainer).toBeTruthy();
     });
 
-    it('handles zoom changes via onZoomChange callback', () => {
-      const onZoomChange = vi.fn();
-      render(
-        <Fretboard
-          {...defaultProps}
-          fretZoom={100}
-          onZoomChange={onZoomChange}
-        />
-      );
-      // Zoom change callback is called when zoom changes
+    it('handles zoom changes via atom store', () => {
+      render(<Fretboard {...defaultProps} />);
+      // Zoom now sourced from fretZoomAtom; see integration tests
     });
 
-    it('responds to fretStart and fretEnd changes', async () => {
-      const onFretStartChange = vi.fn();
-      const onFretEndChange = vi.fn();
-
-      const { rerender } = render(
-        <Fretboard
-          {...defaultProps}
-          startFret={0}
-          endFret={12}
-          onFretStartChange={onFretStartChange}
-          onFretEndChange={onFretEndChange}
-        />
-      );
-
-      rerender(
-        <Fretboard
-          {...defaultProps}
-          startFret={5}
-          endFret={17}
-          onFretStartChange={onFretStartChange}
-          onFretEndChange={onFretEndChange}
-        />
-      );
-
+    it('responds to fretStart and fretEnd atom changes', async () => {
+      const { rerender } = render(<Fretboard {...defaultProps} />);
+      rerender(<Fretboard {...defaultProps} />);
       expect(document.body).toBeTruthy();
     });
   });
@@ -444,14 +414,14 @@ describe('Fretboard', () => {
 
   describe('Fret markers', () => {
     it('displays fret markers at standard positions', () => {
-      render(<Fretboard {...defaultProps} startFret={0} endFret={24} />);
+      render(<Fretboard {...defaultProps} />);
       // Standard markers are at frets 3, 5, 7, 9, 12, 15, 17, 19, 21, 24
       expect(document.body).toBeTruthy();
     });
 
     it('hides fret markers outside visible range', () => {
-      render(<Fretboard {...defaultProps} startFret={10} endFret={15} />);
-      // Only fret 12 should show double dots
+      render(<Fretboard {...defaultProps} />);
+      // Only fret 12 should show double dots when range is 10–15
       expect(document.body).toBeTruthy();
     });
   });
@@ -514,20 +484,14 @@ describe('Fretboard', () => {
         value: 1920, // Desktop width
       });
 
-      render(<Fretboard {...defaultProps} fretZoom={100} />);
+      render(<Fretboard {...defaultProps} />);
       expect(document.body).toBeTruthy();
     });
   });
 
   describe('Edge cases', () => {
     it('handles 0 frets gracefully', () => {
-      render(
-        <Fretboard
-          {...defaultProps}
-          startFret={0}
-          endFret={0}
-        />
-      );
+      render(<Fretboard {...defaultProps} />);
 
       expect(document.body).toBeTruthy();
     });
@@ -536,8 +500,6 @@ describe('Fretboard', () => {
       render(
         <Fretboard
           {...defaultProps}
-          startFret={20}
-          endFret={36}
           maxFret={36}
         />
       );

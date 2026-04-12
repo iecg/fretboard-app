@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { clsx } from "clsx";
+import { useAtomValue } from "jotai";
 import {
   getFretboardNotes,
   getFretNoteWithOctave,
@@ -10,16 +11,13 @@ import {
 import { NOTES, ENHARMONICS, getNoteDisplayInScale, INTERVAL_NAMES, formatAccidental, SCALES } from "./theory";
 import { synth } from "./audio";
 import type { ShapePolygon } from "./shapes";
-import { FretRangeControl } from "./components/FretRangeControl";
 import { StepperControl } from "./components/StepperControl";
+import { fretZoomAtom, fretStartAtom, fretEndAtom } from "./store/atoms";
 
 const STRING_ROW_PX_DEFAULT = 40;
-const ZOOM_MAX_PCT = 300;
 
 interface FretboardProps {
   tuning: string[];
-  startFret?: number;
-  endFret?: number;
   maxFret?: number;
   highlightNotes: string[];
   rootNote: string;
@@ -33,10 +31,6 @@ interface FretboardProps {
   shapePolygons?: ShapePolygon[];
   shapeLabels?: "modal" | "caged" | "none";
   wrappedNotes?: Set<string>;
-  fretZoom?: number;
-  onZoomChange?: (zoom: number) => void;
-  onFretStartChange?: (fret: number) => void;
-  onFretEndChange?: (fret: number) => void;
   onFretClick?: (stringIndex: number, fretIndex: number, noteName: string) => void;
   useFlats?: boolean;
   scaleName?: string;
@@ -45,8 +39,6 @@ interface FretboardProps {
 
 export function Fretboard({
   tuning,
-  startFret = 0,
-  endFret = 24,
   maxFret = 24,
   highlightNotes,
   rootNote,
@@ -60,15 +52,14 @@ export function Fretboard({
   shapePolygons = [],
   shapeLabels = "none",
   wrappedNotes = new Set<string>(),
-  fretZoom = 100,
-  onZoomChange,
-  onFretStartChange,
-  onFretEndChange,
   onFretClick,
   useFlats = false,
   scaleName = "",
   stringRowPx = STRING_ROW_PX_DEFAULT,
 }: FretboardProps) {
+  const fretZoom = useAtomValue(fretZoomAtom);
+  const startFret = useAtomValue(fretStartAtom);
+  const endFret = useAtomValue(fretEndAtom);
   const fretboardLayout = getFretboardNotes(tuning, Math.max(endFret, maxFret));
   const fretCount = endFret - startFret;
 
@@ -286,27 +277,6 @@ export function Fretboard({
             </button>
           ))}
         </div>
-        <div className="fret-range-controls">
-          <span className="section-label">Frets</span>
-          <FretRangeControl
-            startFret={startFret}
-            endFret={endFret}
-            onStartChange={onFretStartChange ?? (() => {})}
-            onEndChange={onFretEndChange ?? (() => {})}
-            maxFret={maxFret}
-            layout="toolbar"
-          />
-        </div>
-        <StepperControl
-          label="Zoom"
-          value={fretZoom}
-          onChange={onZoomChange ?? (() => {})}
-          min={100}
-          max={ZOOM_MAX_PCT}
-          step={10}
-          formatValue={(z) => z <= 100 ? 'Auto' : `${z}%`}
-          buttonVariant="toolbar"
-        />
         {hasChordOverlay && shapePolygons.length > 0 && (
           <StepperControl
             label="Chord Spread"
