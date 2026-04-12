@@ -268,21 +268,12 @@ describe('App', () => {
   });
 
   describe('Accidentals', () => {
-    it('toggles between sharps and flats', async () => {
+    it('does not write a useFlats key to localStorage (non-persisted)', async () => {
       render(<App />);
-      const accidentalToggles = screen.getAllByRole('button').filter(
-        (btn) => btn.textContent?.includes('♯') || btn.textContent?.includes('♭')
-      );
-
-      if (accidentalToggles.length > 0) {
-        expect(localStorage.getItem('useFlats')).toBe('false');
-
-        fireEvent.click(accidentalToggles[0]);
-
-        await waitFor(() => {
-          expect(localStorage.getItem('useFlats')).toBe('true');
-        });
-      }
+      // accidentalModeAtom is intentionally non-persisted; no localStorage key
+      // should ever be written for it.
+      expect(localStorage.getItem('useFlats')).toBeNull();
+      expect(localStorage.getItem('accidentalMode')).toBeNull();
     });
   });
 
@@ -340,7 +331,6 @@ describe('App', () => {
       localStorage.setItem('scaleName', 'Dorian');
       localStorage.setItem('chordRoot', 'A');
       localStorage.setItem('chordType', 'Minor 7th');
-      localStorage.setItem('useFlats', 'true');
       localStorage.setItem('isMuted', 'true');
 
       const { rerender } = render(<App />);
@@ -350,7 +340,6 @@ describe('App', () => {
       expect(localStorage.getItem('scaleName')).toBe('Dorian');
       expect(localStorage.getItem('chordRoot')).toBe('A');
       expect(localStorage.getItem('chordType')).toBe('Minor 7th');
-      expect(localStorage.getItem('useFlats')).toBe('true');
       expect(localStorage.getItem('isMuted')).toBe('true');
     });
   });
@@ -423,7 +412,7 @@ describe('App', () => {
       }
     });
 
-    it('toggles flat/sharp accidental on tablet', async () => {
+    it('accidental mode is session-only on tablet (no useFlats key)', async () => {
       render(<App />);
       fireEvent(window, new Event('resize'));
 
@@ -431,11 +420,9 @@ describe('App', () => {
         expect(document.querySelector('[data-layout-mode="tablet-portrait"]')).toBeTruthy();
       });
 
-      const toggleBtn = screen.queryByTitle(/Showing sharps/);
-      if (toggleBtn) {
-        fireEvent.click(toggleBtn);
-        expect(localStorage.getItem('useFlats')).toBe('true');
-      }
+      // accidentalModeAtom is intentionally non-persisted — flipping the
+      // in-overlay toggle should never write a useFlats key to localStorage.
+      expect(localStorage.getItem('useFlats')).toBeNull();
     });
   });
 

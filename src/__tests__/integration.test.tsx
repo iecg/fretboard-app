@@ -419,7 +419,6 @@ describe('Integration Tests - User Workflows', () => {
       localStorage.setItem('chordRoot', 'D');
       localStorage.setItem('chordType', 'Minor 7th');
       localStorage.setItem('displayFormat', 'degrees');
-      localStorage.setItem('useFlats', 'true');
       localStorage.setItem('isMuted', 'true');
       localStorage.setItem('tuningName', 'Standard');
 
@@ -442,7 +441,6 @@ describe('Integration Tests - User Workflows', () => {
       expect(localStorage.getItem('scaleName')).toBe('Dorian');
       expect(localStorage.getItem('chordType')).toBe('Minor 7th');
       expect(localStorage.getItem('displayFormat')).toBe('degrees');
-      expect(localStorage.getItem('useFlats')).toBe('true');
     });
 
     it('reset clears all localStorage', async () => {
@@ -470,7 +468,6 @@ describe('Integration Tests - User Workflows', () => {
 
       localStorage.setItem('rootNote', 'D');
       localStorage.setItem('scaleName', 'Major');
-      localStorage.setItem('useFlats', 'false');
 
       const { rerender } = render(<App />);
       rerender(<App />);
@@ -481,7 +478,6 @@ describe('Integration Tests - User Workflows', () => {
 
       // Other settings should persist
       expect(localStorage.getItem('scaleName')).toBe('Major');
-      expect(localStorage.getItem('useFlats')).toBe('false');
       expect(localStorage.getItem('rootNote')).toBe('G');
     });
   });
@@ -570,36 +566,19 @@ describe('Integration Tests - User Workflows', () => {
   });
 
   describe('Workflow 11: Accidental Display', () => {
-    it('toggling between sharps and flats', async () => {
+    // Accidental mode is now session-only (non-persisted). The legacy
+    // "useFlats" localStorage key is migrated once at module load and then
+    // cleared; per-test migration cannot be observed because atoms.ts runs
+    // its migration at import time. These tests verify the no-leak guarantee.
+    it('does not write useFlats to localStorage when rendering App', async () => {
       render(<App />);
-
-      expect(localStorage.getItem('useFlats')).toBe('false');
-
-      // User clicks sharp/flat toggle
-      localStorage.setItem('useFlats', 'true');
-      const { rerender } = render(<App />);
-      rerender(<App />);
-
-      expect(localStorage.getItem('useFlats')).toBe('true');
-
-      // Toggle back
-      localStorage.setItem('useFlats', 'false');
-      rerender(<App />);
-
-      expect(localStorage.getItem('useFlats')).toBe('false');
+      expect(localStorage.getItem('useFlats')).toBeNull();
     });
 
-    it('accidental preference applies to all views', async () => {
-      localStorage.setItem('useFlats', 'true');
-      const { rerender } = render(<App />);
-
-      // Change scales/roots with flat preference
-      localStorage.setItem('rootNote', 'F');
-      localStorage.setItem('scaleName', 'Major');
-      rerender(<App />);
-
-      // Flat preference should persist
-      expect(localStorage.getItem('useFlats')).toBe('true');
+    it('does not write accidentalMode to localStorage (non-persisted)', async () => {
+      const { unmount } = render(<App />);
+      unmount();
+      expect(localStorage.getItem('accidentalMode')).toBeNull();
     });
   });
 
@@ -660,17 +639,11 @@ describe('Integration Tests - User Workflows', () => {
       rerender(<App />);
       expect(localStorage.getItem('displayFormat')).toBe('degrees');
 
-      // Step 5: Switch to flats
-      localStorage.setItem('useFlats', 'true');
-      rerender(<App />);
-      expect(localStorage.getItem('useFlats')).toBe('true');
-
-      // All settings should coexist
+      // Step 5: All settings should coexist (accidentalMode is non-persisted)
       expect(localStorage.getItem('rootNote')).toBe('A');
       expect(localStorage.getItem('scaleName')).toBe('Natural Minor');
       expect(localStorage.getItem('chordType')).toBe('Minor 7th');
       expect(localStorage.getItem('displayFormat')).toBe('degrees');
-      expect(localStorage.getItem('useFlats')).toBe('true');
     });
   });
 });

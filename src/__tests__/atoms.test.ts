@@ -17,7 +17,7 @@ import {
   fretEndAtom,
   fretZoomAtom,
   tuningNameAtom,
-  useFlatsAtom,
+  accidentalModeAtom,
   mobileTabAtom,
   npsPositionAtom,
   hideNonChordNotesAtom,
@@ -290,7 +290,7 @@ describe('atoms', () => {
       store.set(tuningNameAtom, 'Drop D');
       store.set(fretStartAtom, 3);
       store.set(fretEndAtom, 12);
-      store.set(useFlatsAtom, true);
+      store.set(accidentalModeAtom, "flats");
       store.set(mobileTabAtom, 'fretboard');
 
       store.set(resetAtom);
@@ -306,7 +306,7 @@ describe('atoms', () => {
       expect(store.get(tuningNameAtom)).toBe('Standard');
       expect(store.get(fretStartAtom)).toBe(0);
       expect(store.get(fretEndAtom)).toBe(24);
-      expect(store.get(useFlatsAtom)).toBe(false);
+      expect(store.get(accidentalModeAtom)).toBe("auto");
       expect(store.get(mobileTabAtom)).toBe('key');
     });
   });

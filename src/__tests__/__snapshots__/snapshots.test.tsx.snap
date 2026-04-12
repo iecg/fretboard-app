@@ -38465,7 +38465,7 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
                   stroke-width="2"
                   x="160"
                 >
-                  G♭
+                  F♯
                 </tspan>
                 <tspan
                   dy="0.9em"
@@ -38477,7 +38477,7 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
                   stroke-width="2.5"
                   x="160"
                 >
-                  F♯
+                  G♭
                 </tspan>
               </text>
             </g>
@@ -38500,7 +38500,7 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
                   stroke-width="2"
                   x="97.60000000000002"
                 >
-                  D♭
+                  C♯
                 </tspan>
                 <tspan
                   dy="0.9em"
@@ -38512,7 +38512,7 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
                   stroke-width="2.5"
                   x="97.60000000000002"
                 >
-                  C♯
+                  D♭
                 </tspan>
               </text>
             </g>
@@ -38535,7 +38535,7 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
                   stroke-width="2"
                   x="51.920029607702034"
                 >
-                  A♭
+                  G♯
                 </tspan>
                 <tspan
                   dy="0.9em"
@@ -38547,7 +38547,7 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
                   stroke-width="2.5"
                   x="51.920029607702034"
                 >
-                  G♯
+                  A♭
                 </tspan>
               </text>
             </g>
@@ -38887,7 +38887,7 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
             <span
               class="summary-note-name"
             >
-              E♭
+              D♯
             </span>
             <span
               class="summary-note-degree"
@@ -38919,7 +38919,7 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
             <span
               class="summary-note-name"
             >
-              B♭
+              A♯
             </span>
             <span
               class="summary-note-degree"
@@ -39144,12 +39144,12 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
             class="toggle-group toggle-group--default"
           >
             <button
-              class="toggle-btn"
+              class="toggle-btn active"
             >
               ♯
             </button>
             <button
-              class="toggle-btn active"
+              class="toggle-btn"
             >
               ♭
             </button>

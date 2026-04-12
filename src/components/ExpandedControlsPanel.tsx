@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useAtomValue, useSetAtom, useAtom } from "jotai";
 import {
   rootNoteAtom,
@@ -14,8 +15,9 @@ import {
   linkChordRootAtom,
   hideNonChordNotesAtom,
   chordIntervalFilterAtom,
-  useFlatsAtom,
+  accidentalModeAtom,
 } from "../store/atoms";
+import { resolveAccidentalMode } from "../theory";
 import { TUNINGS } from "../guitar";
 import { FingeringPatternControls } from "./FingeringPatternControls";
 import { ScaleChordControls } from "./ScaleChordControls";
@@ -93,7 +95,11 @@ export function ExpandedControlsPanel() {
   const [linkChordRoot, setLinkChordRoot] = useAtom(linkChordRootAtom);
   const [hideNonChordNotes, setHideNonChordNotes] = useAtom(hideNonChordNotesAtom);
   const [chordIntervalFilter, setChordIntervalFilter] = useAtom(chordIntervalFilterAtom);
-  const useFlats = useAtomValue(useFlatsAtom);
+  const accidentalMode = useAtomValue(accidentalModeAtom);
+  const useFlats = useMemo(
+    () => resolveAccidentalMode(rootNote, scaleName, accidentalMode),
+    [rootNote, scaleName, accidentalMode],
+  );
 
   return (
     <div className="controls-panel">

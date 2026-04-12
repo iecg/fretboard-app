@@ -198,6 +198,30 @@ export function getKeySignatureForDisplay(rootNote: string, useFlats: boolean): 
   return KEY_SIGNATURES[rootNote] ?? 0;
 }
 
+export type AccidentalMode = "sharps" | "flats" | "auto";
+
+/**
+ * Resolve the user-facing accidental mode into a concrete useFlats boolean for
+ * downstream display code. Natural roots fall back to the historical default
+ * (FLAT_KEYS membership). Enharmonic roots in "auto" mode pick the spelling
+ * with the fewer total accidentals (ties break to sharps). The full auto-mode
+ * algorithm lands in Task 2; Task 1 scaffolds the signature + pass-through.
+ */
+export function resolveAccidentalMode(
+  rootNote: string,
+  scaleName: string,
+  mode: AccidentalMode,
+): boolean {
+  void scaleName;
+  if (mode === "sharps") return false;
+  if (mode === "flats") return true;
+  // auto
+  const isNatural = !rootNote.includes("#") && !rootNote.includes("b");
+  if (isNatural) return FLAT_KEYS.includes(rootNote);
+  // Enharmonic root in "auto" mode — full algorithm fills in Task 2.
+  return FLAT_KEYS.includes(rootNote);
+}
+
 // Circle of fifths display labels
 export const CIRCLE_DISPLAY_LABELS: Record<string, string> = {
   'C': 'C', 'G': 'G', 'D': 'D', 'A': 'A', 'E': 'E', 'B': 'B',

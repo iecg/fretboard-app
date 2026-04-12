@@ -363,7 +363,8 @@ describe('Component Snapshots', () => {
       localStorage.setItem('scaleName', 'Natural Minor');
       localStorage.setItem('chordType', 'Minor 7th');
       localStorage.setItem('displayFormat', 'degrees');
-      localStorage.setItem('useFlats', 'true');
+      // accidentalModeAtom is non-persisted, defaults to "auto"; G Natural
+      // Minor under auto mode resolves to sharps (parent C Major).
 
       const { container } = render(<App />);
       expect(container).toMatchSnapshot('app-custom-config');

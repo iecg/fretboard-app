@@ -8,7 +8,7 @@ import {
   fretStartAtom,
   fretEndAtom,
   tuningNameAtom,
-  useFlatsAtom,
+  accidentalModeAtom,
   resetAtom,
 } from "../store/atoms";
 import { TUNINGS } from "../guitar";
@@ -43,12 +43,15 @@ export default function SettingsOverlay() {
   const [fretStart, setFretStart] = useAtom(fretStartAtom);
   const [fretEnd, setFretEnd] = useAtom(fretEndAtom);
   const [tuningName, setTuningName] = useAtom(tuningNameAtom);
-  const [useFlats, setUseFlats] = useAtom(useFlatsAtom);
+  const [accidentalMode, setAccidentalMode] = useAtom(accidentalModeAtom);
   const dispatchReset = useSetAtom(resetAtom);
   const [resetConfirming, setResetConfirming] = useState(false);
   const openTierRef = useRef<LayoutTier | null>(null);
 
-  const close = () => setIsOpen(false);
+  const close = () => {
+    setIsOpen(false);
+    setResetConfirming(false);
+  };
 
   const handleResetClick = () => {
     if (resetConfirming) {
@@ -67,11 +70,6 @@ export default function SettingsOverlay() {
     const t = setTimeout(() => setResetConfirming(false), 3000);
     return () => clearTimeout(t);
   }, [resetConfirming]);
-
-  // Reset confirmation state when overlay closes
-  useEffect(() => {
-    if (!isOpen) setResetConfirming(false);
-  }, [isOpen]);
 
   // Track layout tier at the moment the overlay opens.
   useEffect(() => {
@@ -176,8 +174,10 @@ export default function SettingsOverlay() {
             <span className="overlay-control-label">Accidentals</span>
             <ToggleBar
               options={ACCIDENTAL_OPTIONS}
-              value={useFlats ? "flats" : "sharps"}
-              onChange={(v) => setUseFlats(v === "flats")}
+              value={accidentalMode === "flats" ? "flats" : "sharps"}
+              onChange={(v) =>
+                setAccidentalMode(v === "flats" ? "flats" : "sharps")
+              }
             />
           </div>
 

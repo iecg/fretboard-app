@@ -148,7 +148,25 @@ export const fretStartAtom = atomWithStorage("fretStart", 0, numberStorage);
 export const fretEndAtom = atomWithStorage("fretEnd", 24, numberStorage);
 
 // Accidentals / Audio / Mobile tab
-export const useFlatsAtom = atomWithStorage("useFlats", false, booleanStorage);
+// accidentalModeAtom is intentionally non-persisted: "auto" is a smart default
+// that picks the best enharmonic spelling per root+scale, so session-only state
+// is sufficient and avoids sticking a stale user choice across sessions.
+// One-time migration: if the legacy "useFlats" key exists in localStorage
+// (from older versions), translate it once and clear the key. Fall-open on
+// error so a broken localStorage never blocks app boot.
+function readLegacyAccidentalMode(): "sharps" | "flats" | "auto" {
+  try {
+    const legacy = localStorage.getItem("useFlats");
+    if (legacy === null) return "auto";
+    localStorage.removeItem("useFlats");
+    return legacy === "true" ? "flats" : "sharps";
+  } catch {
+    return "auto";
+  }
+}
+export const accidentalModeAtom = atom<"sharps" | "flats" | "auto">(
+  readLegacyAccidentalMode(),
+);
 export const isMutedAtom = atomWithStorage("isMuted", false, booleanStorage);
 export const mobileTabAtom = atomWithStorage<"key" | "scale" | "fretboard">(
   "mobileTab",
@@ -198,7 +216,7 @@ export const resetAtom = atom(null, (_get, set) => {
   set(fretZoomAtom, RESET);
   set(fretStartAtom, RESET);
   set(fretEndAtom, RESET);
-  set(useFlatsAtom, RESET);
+  set(accidentalModeAtom, "auto");
   set(isMutedAtom, RESET);
   set(mobileTabAtom, RESET);
   set(tabletTabAtom, RESET);

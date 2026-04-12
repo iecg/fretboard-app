@@ -13,6 +13,7 @@ import {
   getNoteDisplayInScale,
   getDivergentNotes,
   formatAccidental,
+  resolveAccidentalMode,
 } from "./theory";
 import { STANDARD_TUNING, TUNINGS } from "./guitar";
 import { Music, Settings2, Volume2, VolumeX } from "lucide-react";
@@ -45,7 +46,7 @@ import {
   displayFormatAtom,
   shapeLabelsAtom,
   tuningNameAtom,
-  useFlatsAtom,
+  accidentalModeAtom,
   isMutedAtom,
   mobileTabAtom,
   tabletTabAtom,
@@ -173,7 +174,11 @@ function AppContent() {
   const tuningName = useAtomValue(tuningNameAtom);
 
   // Accidentals / Audio / Mobile tab
-  const useFlats = useAtomValue(useFlatsAtom);
+  const accidentalMode = useAtomValue(accidentalModeAtom);
+  const useFlats = useMemo(
+    () => resolveAccidentalMode(rootNote, scaleName, accidentalMode),
+    [rootNote, scaleName, accidentalMode],
+  );
   const [isMuted, setIsMuted] = useAtom(isMutedAtom);
   const [mobileTab, setMobileTab] = useAtom(mobileTabAtom);
 
