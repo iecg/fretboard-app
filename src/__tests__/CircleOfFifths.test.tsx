@@ -2,7 +2,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
 import { CircleOfFifths } from '../CircleOfFifths';
-import { CIRCLE_OF_FIFTHS } from '../theory';
+import { CIRCLE_OF_FIFTHS, SCALES } from '../theory';
+import { getCircleNoteLabels } from '../circleOfFifthsUtils';
 
 describe('CircleOfFifths', () => {
   const mockSetRootNote = vi.fn();
@@ -490,5 +491,67 @@ describe('CircleOfFifths', () => {
       activeCount = document.querySelectorAll('path.active').length;
       expect(activeCount).toBeGreaterThan(0);
     });
+  });
+});
+
+describe('getCircleNoteLabels mode behavior', () => {
+  // mode = "auto"
+  it('auto: sharp note shows flat enharmonic', () => {
+    const r = getCircleNoteLabels('A#', 'C', false, SCALES['Major'], 'auto');
+    expect(r.primary).toBe('A♯');
+    expect(r.enharmonic).toBe('B♭');
+  });
+
+  it('auto: natural note shows no enharmonic', () => {
+    const r = getCircleNoteLabels('C', 'C', false, SCALES['Major'], 'auto');
+    expect(r.primary).toBe('C');
+    expect(r.enharmonic).toBeNull();
+  });
+
+  it('auto: respelled note shows original as enharmonic', () => {
+    // In Bb Major (useFlats=true), A# respells to Bb → primary = Bb, enharmonic = A#
+    const r = getCircleNoteLabels('A#', 'A#', true, SCALES['Major'], 'auto');
+    expect(r.primary).toBe('B♭');
+    expect(r.enharmonic).toBe('A♯');
+  });
+
+  // mode = "on"
+  it('on: sharp note always shows flat enharmonic', () => {
+    const r = getCircleNoteLabels('C#', 'C', false, SCALES['Major'], 'on');
+    expect(r.primary).toBe('C♯');
+    expect(r.enharmonic).toBe('D♭');
+  });
+
+  it('on: natural note with no enharmonic shows primary only', () => {
+    const r = getCircleNoteLabels('C', 'C', false, SCALES['Major'], 'on');
+    expect(r.primary).toBe('C');
+    expect(r.enharmonic).toBeNull();
+  });
+
+  it('on: every enharmonic pair shows both spellings', () => {
+    const pairs: [string, string][] = [['C#', 'D♭'], ['D#', 'E♭'], ['F#', 'G♭'], ['G#', 'A♭'], ['A#', 'B♭']];
+    for (const [note, expectedEnh] of pairs) {
+      const r = getCircleNoteLabels(note, 'C', false, SCALES['Major'], 'on');
+      expect(r.enharmonic).toBe(expectedEnh);
+    }
+  });
+
+  // mode = "off"
+  it('off: sharp note shows primary only', () => {
+    const r = getCircleNoteLabels('A#', 'C', false, SCALES['Major'], 'off');
+    expect(r.primary).toBe('A♯');
+    expect(r.enharmonic).toBeNull();
+  });
+
+  it('off: respelled note shows respelled primary only (no original)', () => {
+    const r = getCircleNoteLabels('A#', 'A#', true, SCALES['Major'], 'off');
+    expect(r.primary).toBe('B♭');
+    expect(r.enharmonic).toBeNull();
+  });
+
+  it('off: natural note shows primary only', () => {
+    const r = getCircleNoteLabels('C', 'C', false, SCALES['Major'], 'off');
+    expect(r.primary).toBe('C');
+    expect(r.enharmonic).toBeNull();
   });
 });
