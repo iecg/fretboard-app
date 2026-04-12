@@ -212,14 +212,42 @@ export function resolveAccidentalMode(
   scaleName: string,
   mode: AccidentalMode,
 ): boolean {
-  void scaleName;
   if (mode === "sharps") return false;
   if (mode === "flats") return true;
   // auto
   const isNatural = !rootNote.includes("#") && !rootNote.includes("b");
   if (isNatural) return FLAT_KEYS.includes(rootNote);
-  // Enharmonic root in "auto" mode — full algorithm fills in Task 2.
-  return FLAT_KEYS.includes(rootNote);
+
+  // Enharmonic root in "auto" mode — pick spelling with fewer accidentals
+  const sharpRoot = rootNote.includes("b") && ENHARMONICS[rootNote]
+    ? ENHARMONICS[rootNote] : rootNote;
+  const flatRoot = rootNote.includes("#") && ENHARMONICS[rootNote]
+    ? ENHARMONICS[rootNote] : rootNote;
+
+  const intervals = SCALES[scaleName];
+  if (!intervals) return FLAT_KEYS.includes(rootNote);
+
+  const countAccidentals = (displays: string[]): number =>
+    displays.reduce((sum, s) => {
+      if (s.includes("##") || s.includes("bb")) return sum + 2;
+      if (s.includes("#") || s.includes("b")) return sum + 1;
+      return sum;
+    }, 0);
+
+  const sharpNotes = getScaleNotes(sharpRoot, scaleName);
+  const flatNotes = getScaleNotes(flatRoot, scaleName);
+
+  const sharpDisplays = sharpNotes.map(n =>
+    getNoteDisplayInScale(n, sharpRoot, intervals, false),
+  );
+  const flatDisplays = flatNotes.map(n =>
+    getNoteDisplayInScale(n, flatRoot, intervals, true),
+  );
+
+  const sharpCount = countAccidentals(sharpDisplays);
+  const flatCount = countAccidentals(flatDisplays);
+
+  return flatCount < sharpCount; // strict less; tie → sharps (false)
 }
 
 // Circle of fifths display labels

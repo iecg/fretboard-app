@@ -8,6 +8,7 @@ import {
   getIntervalNotes,
   getDivergentNotes,
   getKeySignature,
+  resolveAccidentalMode,
 } from '../theory';
 
 describe('getNoteIndex', () => {
@@ -117,6 +118,58 @@ describe('getKeySignature', () => {
   it('returns negative for flat keys', () => {
     expect(getKeySignature('F')).toBe(-1);
     expect(getKeySignature('Bb')).toBe(-2);
+  });
+});
+
+describe('resolveAccidentalMode', () => {
+  describe('explicit mode pass-through', () => {
+    it('sharps → false regardless of root', () => {
+      expect(resolveAccidentalMode('C#', 'Major', 'sharps')).toBe(false);
+      expect(resolveAccidentalMode('Bb', 'Major', 'sharps')).toBe(false);
+    });
+    it('flats → true regardless of root', () => {
+      expect(resolveAccidentalMode('C#', 'Major', 'flats')).toBe(true);
+      expect(resolveAccidentalMode('C', 'Major', 'flats')).toBe(true);
+    });
+  });
+
+  describe('natural root no-op (auto falls back to FLAT_KEYS)', () => {
+    it('C Major → false', () => {
+      expect(resolveAccidentalMode('C', 'Major', 'auto')).toBe(false);
+    });
+    it('F Major → true (F in FLAT_KEYS)', () => {
+      expect(resolveAccidentalMode('F', 'Major', 'auto')).toBe(true);
+    });
+    it('A Natural Minor → false', () => {
+      expect(resolveAccidentalMode('A', 'Natural Minor', 'auto')).toBe(false);
+    });
+  });
+
+  describe('enharmonic roots — auto picks fewer accidentals', () => {
+    it('A#/Bb Major → true (Bb wins)', () => {
+      expect(resolveAccidentalMode('A#', 'Major', 'auto')).toBe(true);
+      expect(resolveAccidentalMode('Bb', 'Major', 'auto')).toBe(true);
+    });
+    it('C#/Db Major → true (Db wins)', () => {
+      expect(resolveAccidentalMode('C#', 'Major', 'auto')).toBe(true);
+      expect(resolveAccidentalMode('Db', 'Major', 'auto')).toBe(true);
+    });
+    it('D#/Eb Major → true (Eb wins)', () => {
+      expect(resolveAccidentalMode('D#', 'Major', 'auto')).toBe(true);
+      expect(resolveAccidentalMode('Eb', 'Major', 'auto')).toBe(true);
+    });
+    it('G#/Ab Major → true (Ab wins)', () => {
+      expect(resolveAccidentalMode('G#', 'Major', 'auto')).toBe(true);
+      expect(resolveAccidentalMode('Ab', 'Major', 'auto')).toBe(true);
+    });
+    it('F#/Gb Major → false (tie breaks to sharps)', () => {
+      expect(resolveAccidentalMode('F#', 'Major', 'auto')).toBe(false);
+      expect(resolveAccidentalMode('Gb', 'Major', 'auto')).toBe(false);
+    });
+    it('A# Natural Minor in auto mode', () => {
+      // A# Natural Minor vs Bb Natural Minor — Bb should win (fewer accidentals)
+      expect(resolveAccidentalMode('A#', 'Natural Minor', 'auto')).toBe(true);
+    });
   });
 });
 
