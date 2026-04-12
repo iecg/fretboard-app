@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import clsx from "clsx";
 import { X } from "lucide-react";
 import {
@@ -10,7 +10,6 @@ import {
   tuningNameAtom,
   accidentalModeAtom,
   enharmonicDisplayAtom,
-  chordTypeAtom,
   chordFretSpreadAtom,
   resetAtom,
 } from "../store/atoms";
@@ -47,6 +46,15 @@ const getLayoutTier = (): LayoutTier => {
   return "desktop";
 };
 
+function getFocusableElements(container: HTMLElement | null): HTMLElement[] {
+  if (!container) return [];
+  return Array.from(
+    container.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ),
+  ).filter((element) => !element.hasAttribute("aria-hidden"));
+}
+
 export default function SettingsOverlay() {
   const [isOpen, setIsOpen] = useAtom(settingsOverlayOpenAtom);
   const [fretZoom, setFretZoom] = useAtom(fretZoomAtom);
@@ -55,11 +63,13 @@ export default function SettingsOverlay() {
   const [tuningName, setTuningName] = useAtom(tuningNameAtom);
   const [accidentalMode, setAccidentalMode] = useAtom(accidentalModeAtom);
   const [enharmonicDisplay, setEnharmonicDisplay] = useAtom(enharmonicDisplayAtom);
-  const chordType = useAtomValue(chordTypeAtom);
   const [chordFretSpread, setChordFretSpread] = useAtom(chordFretSpreadAtom);
   const dispatchReset = useSetAtom(resetAtom);
   const [resetConfirming, setResetConfirming] = useState(false);
   const openTierRef = useRef<LayoutTier | null>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
 
   const close = () => {
     setIsOpen(false);
@@ -109,17 +119,55 @@ export default function SettingsOverlay() {
     return () => window.removeEventListener("resize", onResize);
   }, [isOpen, setIsOpen]);
 
-  // ESC closes the overlay when open.
+  // Trap focus inside the drawer while open and restore focus on close.
   useEffect(() => {
     if (!isOpen) return;
+    triggerRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+    const drawer = drawerRef.current;
+    const focusInitial = window.requestAnimationFrame(() => {
+      const focusables = getFocusableElements(drawer);
+      (closeButtonRef.current ?? focusables[0] ?? drawer)?.focus();
+    });
+
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.stopPropagation();
         setIsOpen(false);
+        return;
+      }
+
+      if (e.key !== "Tab") return;
+
+      const focusables = getFocusableElements(drawer);
+      if (focusables.length === 0) {
+        e.preventDefault();
+        drawer?.focus();
+        return;
+      }
+
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const activeElement = document.activeElement;
+
+      if (e.shiftKey && activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && activeElement === last) {
+        e.preventDefault();
+        first.focus();
       }
     };
+
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+
+    return () => {
+      window.cancelAnimationFrame(focusInitial);
+      window.removeEventListener("keydown", onKeyDown);
+      triggerRef.current?.focus();
+      triggerRef.current = null;
+    };
   }, [isOpen, setIsOpen]);
 
   return (
@@ -131,16 +179,19 @@ export default function SettingsOverlay() {
       />
       <div
         className={clsx("settings-overlay-drawer", { open: isOpen })}
+        ref={drawerRef}
         role="dialog"
         aria-modal="true"
         aria-label="Settings"
         aria-hidden={!isOpen}
+        tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="settings-overlay-header">
           <span className="settings-overlay-title">Settings</span>
           <button
             type="button"
+            ref={closeButtonRef}
             className="settings-overlay-close"
             onClick={close}
             aria-label="Close settings"
@@ -183,19 +234,17 @@ export default function SettingsOverlay() {
             />
           </div>
 
-          {chordType !== null && (
-            <div className="overlay-control-group">
-              <StepperControl
-                label="Chord Spread"
-                value={chordFretSpread}
-                onChange={setChordFretSpread}
-                min={0}
-                max={4}
-                step={1}
-                buttonVariant="mobile"
-              />
-            </div>
-          )}
+          <div className="overlay-control-group">
+            <StepperControl
+              label="Chord Spread"
+              value={chordFretSpread}
+              onChange={setChordFretSpread}
+              min={0}
+              max={4}
+              step={1}
+              buttonVariant="mobile"
+            />
+          </div>
 
           <div className="overlay-control-group overlay-control-group--accidentals">
             <span className="overlay-control-label">Accidentals</span>

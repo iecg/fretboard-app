@@ -2876,12 +2876,16 @@ exports[`Component Snapshots > App layout snapshots > falls back to tablet-portr
           class="toggle-group toggle-group--default"
         >
           <button
+            aria-pressed="true"
             class="toggle-btn active"
+            type="button"
           >
             Controls
           </button>
           <button
+            aria-pressed="false"
             class="toggle-btn"
+            type="button"
           >
             Scales
           </button>
@@ -2904,17 +2908,23 @@ exports[`Component Snapshots > App layout snapshots > falls back to tablet-portr
                 class="toggle-group toggle-group--default"
               >
                 <button
+                  aria-pressed="true"
                   class="toggle-btn active"
+                  type="button"
                 >
                   All
                 </button>
                 <button
+                  aria-pressed="false"
                   class="toggle-btn"
+                  type="button"
                 >
                   CAGED
                 </button>
                 <button
+                  aria-pressed="false"
                   class="toggle-btn"
+                  type="button"
                 >
                   3NPS
                 </button>
@@ -2932,17 +2942,23 @@ exports[`Component Snapshots > App layout snapshots > falls back to tablet-portr
                 class="toggle-group toggle-group--default"
               >
                 <button
+                  aria-pressed="true"
                   class="toggle-btn active"
+                  type="button"
                 >
                   Notes
                 </button>
                 <button
+                  aria-pressed="false"
                   class="toggle-btn"
+                  type="button"
                 >
                   Intervals
                 </button>
                 <button
+                  aria-pressed="false"
                   class="toggle-btn"
+                  type="button"
                 >
                   None
                 </button>
@@ -3671,6 +3687,7 @@ exports[`Component Snapshots > App layout snapshots > falls back to tablet-portr
       aria-modal="true"
       class="settings-overlay-drawer"
       role="dialog"
+      tabindex="-1"
     >
       <div
         class="settings-overlay-header"
@@ -3846,6 +3863,39 @@ exports[`Component Snapshots > App layout snapshots > falls back to tablet-portr
           </div>
         </div>
         <div
+          class="overlay-control-group"
+        >
+          <div
+            class="stepper-control mobile"
+          >
+            <span
+              class="section-label"
+            >
+              Chord Spread
+            </span>
+            <div
+              class="stepper-group"
+            >
+              <button
+                class="stepper-btn"
+                disabled=""
+              >
+                −
+              </button>
+              <span
+                class="stepper-value"
+              >
+                0
+              </span>
+              <button
+                class="stepper-btn"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+        <div
           class="overlay-control-group overlay-control-group--accidentals"
         >
           <span
@@ -3857,17 +3907,23 @@ exports[`Component Snapshots > App layout snapshots > falls back to tablet-portr
             class="toggle-group toggle-group--default"
           >
             <button
+              aria-pressed="true"
               class="toggle-btn active"
+              type="button"
             >
               Auto
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               ♯
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               ♭
             </button>
@@ -3885,17 +3941,23 @@ exports[`Component Snapshots > App layout snapshots > falls back to tablet-portr
             class="toggle-group toggle-group--default"
           >
             <button
+              aria-pressed="true"
               class="toggle-btn active"
+              type="button"
             >
               Auto
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               On
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               Off
             </button>
@@ -6804,17 +6866,23 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-expanded l
               class="toggle-group toggle-group--default"
             >
               <button
+                aria-pressed="true"
                 class="toggle-btn active"
+                type="button"
               >
                 All
               </button>
               <button
+                aria-pressed="false"
                 class="toggle-btn"
+                type="button"
               >
                 CAGED
               </button>
               <button
+                aria-pressed="false"
                 class="toggle-btn"
+                type="button"
               >
                 3NPS
               </button>
@@ -6832,17 +6900,23 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-expanded l
               class="toggle-group toggle-group--default"
             >
               <button
+                aria-pressed="true"
                 class="toggle-btn active"
+                type="button"
               >
                 Notes
               </button>
               <button
+                aria-pressed="false"
                 class="toggle-btn"
+                type="button"
               >
                 Intervals
               </button>
               <button
+                aria-pressed="false"
                 class="toggle-btn"
+                type="button"
               >
                 None
               </button>
@@ -7682,6 +7756,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-expanded l
       aria-modal="true"
       class="settings-overlay-drawer"
       role="dialog"
+      tabindex="-1"
     >
       <div
         class="settings-overlay-header"
@@ -7857,6 +7932,39 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-expanded l
           </div>
         </div>
         <div
+          class="overlay-control-group"
+        >
+          <div
+            class="stepper-control mobile"
+          >
+            <span
+              class="section-label"
+            >
+              Chord Spread
+            </span>
+            <div
+              class="stepper-group"
+            >
+              <button
+                class="stepper-btn"
+                disabled=""
+              >
+                −
+              </button>
+              <span
+                class="stepper-value"
+              >
+                0
+              </span>
+              <button
+                class="stepper-btn"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+        <div
           class="overlay-control-group overlay-control-group--accidentals"
         >
           <span
@@ -7868,17 +7976,23 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-expanded l
             class="toggle-group toggle-group--default"
           >
             <button
+              aria-pressed="true"
               class="toggle-btn active"
+              type="button"
             >
               Auto
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               ♯
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               ♭
             </button>
@@ -7896,17 +8010,23 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-expanded l
             class="toggle-group toggle-group--default"
           >
             <button
+              aria-pressed="true"
               class="toggle-btn active"
+              type="button"
             >
               Auto
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               On
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               Off
             </button>
@@ -10815,17 +10935,23 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
               class="toggle-group toggle-group--default"
             >
               <button
+                aria-pressed="true"
                 class="toggle-btn active"
+                type="button"
               >
                 All
               </button>
               <button
+                aria-pressed="false"
                 class="toggle-btn"
+                type="button"
               >
                 CAGED
               </button>
               <button
+                aria-pressed="false"
                 class="toggle-btn"
+                type="button"
               >
                 3NPS
               </button>
@@ -10843,17 +10969,23 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
               class="toggle-group toggle-group--default"
             >
               <button
+                aria-pressed="true"
                 class="toggle-btn active"
+                type="button"
               >
                 Notes
               </button>
               <button
+                aria-pressed="false"
                 class="toggle-btn"
+                type="button"
               >
                 Intervals
               </button>
               <button
+                aria-pressed="false"
                 class="toggle-btn"
+                type="button"
               >
                 None
               </button>
@@ -11693,6 +11825,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
       aria-modal="true"
       class="settings-overlay-drawer"
       role="dialog"
+      tabindex="-1"
     >
       <div
         class="settings-overlay-header"
@@ -11868,6 +12001,39 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
           </div>
         </div>
         <div
+          class="overlay-control-group"
+        >
+          <div
+            class="stepper-control mobile"
+          >
+            <span
+              class="section-label"
+            >
+              Chord Spread
+            </span>
+            <div
+              class="stepper-group"
+            >
+              <button
+                class="stepper-btn"
+                disabled=""
+              >
+                −
+              </button>
+              <span
+                class="stepper-value"
+              >
+                0
+              </span>
+              <button
+                class="stepper-btn"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+        <div
           class="overlay-control-group overlay-control-group--accidentals"
         >
           <span
@@ -11879,17 +12045,23 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
             class="toggle-group toggle-group--default"
           >
             <button
+              aria-pressed="true"
               class="toggle-btn active"
+              type="button"
             >
               Auto
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               ♯
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               ♭
             </button>
@@ -11907,17 +12079,23 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
             class="toggle-group toggle-group--default"
           >
             <button
+              aria-pressed="true"
               class="toggle-btn active"
+              type="button"
             >
               Auto
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               On
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               Off
             </button>
@@ -14815,12 +14993,16 @@ exports[`Component Snapshots > App layout snapshots > renders iPad landscape lay
           class="toggle-group toggle-group--default"
         >
           <button
+            aria-pressed="true"
             class="toggle-btn active"
+            type="button"
           >
             Controls
           </button>
           <button
+            aria-pressed="false"
             class="toggle-btn"
+            type="button"
           >
             Scales
           </button>
@@ -14843,17 +15025,23 @@ exports[`Component Snapshots > App layout snapshots > renders iPad landscape lay
                 class="toggle-group toggle-group--default"
               >
                 <button
+                  aria-pressed="true"
                   class="toggle-btn active"
+                  type="button"
                 >
                   All
                 </button>
                 <button
+                  aria-pressed="false"
                   class="toggle-btn"
+                  type="button"
                 >
                   CAGED
                 </button>
                 <button
+                  aria-pressed="false"
                   class="toggle-btn"
+                  type="button"
                 >
                   3NPS
                 </button>
@@ -14871,17 +15059,23 @@ exports[`Component Snapshots > App layout snapshots > renders iPad landscape lay
                 class="toggle-group toggle-group--default"
               >
                 <button
+                  aria-pressed="true"
                   class="toggle-btn active"
+                  type="button"
                 >
                   Notes
                 </button>
                 <button
+                  aria-pressed="false"
                   class="toggle-btn"
+                  type="button"
                 >
                   Intervals
                 </button>
                 <button
+                  aria-pressed="false"
                   class="toggle-btn"
+                  type="button"
                 >
                   None
                 </button>
@@ -15610,6 +15804,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad landscape lay
       aria-modal="true"
       class="settings-overlay-drawer"
       role="dialog"
+      tabindex="-1"
     >
       <div
         class="settings-overlay-header"
@@ -15785,6 +15980,39 @@ exports[`Component Snapshots > App layout snapshots > renders iPad landscape lay
           </div>
         </div>
         <div
+          class="overlay-control-group"
+        >
+          <div
+            class="stepper-control mobile"
+          >
+            <span
+              class="section-label"
+            >
+              Chord Spread
+            </span>
+            <div
+              class="stepper-group"
+            >
+              <button
+                class="stepper-btn"
+                disabled=""
+              >
+                −
+              </button>
+              <span
+                class="stepper-value"
+              >
+                0
+              </span>
+              <button
+                class="stepper-btn"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+        <div
           class="overlay-control-group overlay-control-group--accidentals"
         >
           <span
@@ -15796,17 +16024,23 @@ exports[`Component Snapshots > App layout snapshots > renders iPad landscape lay
             class="toggle-group toggle-group--default"
           >
             <button
+              aria-pressed="true"
               class="toggle-btn active"
+              type="button"
             >
               Auto
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               ♯
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               ♭
             </button>
@@ -15824,17 +16058,23 @@ exports[`Component Snapshots > App layout snapshots > renders iPad landscape lay
             class="toggle-group toggle-group--default"
           >
             <button
+              aria-pressed="true"
               class="toggle-btn active"
+              type="button"
             >
               Auto
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               On
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               Off
             </button>
@@ -18732,12 +18972,16 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
           class="toggle-group toggle-group--default"
         >
           <button
+            aria-pressed="true"
             class="toggle-btn active"
+            type="button"
           >
             Controls
           </button>
           <button
+            aria-pressed="false"
             class="toggle-btn"
+            type="button"
           >
             Scales
           </button>
@@ -18760,17 +19004,23 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
                 class="toggle-group toggle-group--default"
               >
                 <button
+                  aria-pressed="true"
                   class="toggle-btn active"
+                  type="button"
                 >
                   All
                 </button>
                 <button
+                  aria-pressed="false"
                   class="toggle-btn"
+                  type="button"
                 >
                   CAGED
                 </button>
                 <button
+                  aria-pressed="false"
                   class="toggle-btn"
+                  type="button"
                 >
                   3NPS
                 </button>
@@ -18788,17 +19038,23 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
                 class="toggle-group toggle-group--default"
               >
                 <button
+                  aria-pressed="true"
                   class="toggle-btn active"
+                  type="button"
                 >
                   Notes
                 </button>
                 <button
+                  aria-pressed="false"
                   class="toggle-btn"
+                  type="button"
                 >
                   Intervals
                 </button>
                 <button
+                  aria-pressed="false"
                   class="toggle-btn"
+                  type="button"
                 >
                   None
                 </button>
@@ -19527,6 +19783,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
       aria-modal="true"
       class="settings-overlay-drawer"
       role="dialog"
+      tabindex="-1"
     >
       <div
         class="settings-overlay-header"
@@ -19702,6 +19959,39 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
           </div>
         </div>
         <div
+          class="overlay-control-group"
+        >
+          <div
+            class="stepper-control mobile"
+          >
+            <span
+              class="section-label"
+            >
+              Chord Spread
+            </span>
+            <div
+              class="stepper-group"
+            >
+              <button
+                class="stepper-btn"
+                disabled=""
+              >
+                −
+              </button>
+              <span
+                class="stepper-value"
+              >
+                0
+              </span>
+              <button
+                class="stepper-btn"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+        <div
           class="overlay-control-group overlay-control-group--accidentals"
         >
           <span
@@ -19713,17 +20003,23 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
             class="toggle-group toggle-group--default"
           >
             <button
+              aria-pressed="true"
               class="toggle-btn active"
+              type="button"
             >
               Auto
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               ♯
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               ♭
             </button>
@@ -19741,17 +20037,23 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
             class="toggle-group toggle-group--default"
           >
             <button
+              aria-pressed="true"
               class="toggle-btn active"
+              type="button"
             >
               Auto
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               On
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               Off
             </button>
@@ -22643,17 +22945,23 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
       class="toggle-group mobile-tab-bar"
     >
       <button
+        aria-pressed="true"
         class="mobile-tab active"
+        type="button"
       >
         Key
       </button>
       <button
+        aria-pressed="false"
         class="mobile-tab"
+        type="button"
       >
         Scales
       </button>
       <button
+        aria-pressed="false"
         class="mobile-tab"
+        type="button"
       >
         Controls
       </button>
@@ -23382,6 +23690,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
       aria-modal="true"
       class="settings-overlay-drawer"
       role="dialog"
+      tabindex="-1"
     >
       <div
         class="settings-overlay-header"
@@ -23557,6 +23866,39 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
           </div>
         </div>
         <div
+          class="overlay-control-group"
+        >
+          <div
+            class="stepper-control mobile"
+          >
+            <span
+              class="section-label"
+            >
+              Chord Spread
+            </span>
+            <div
+              class="stepper-group"
+            >
+              <button
+                class="stepper-btn"
+                disabled=""
+              >
+                −
+              </button>
+              <span
+                class="stepper-value"
+              >
+                0
+              </span>
+              <button
+                class="stepper-btn"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+        <div
           class="overlay-control-group overlay-control-group--accidentals"
         >
           <span
@@ -23568,17 +23910,23 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
             class="toggle-group toggle-group--default"
           >
             <button
+              aria-pressed="true"
               class="toggle-btn active"
+              type="button"
             >
               Auto
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               ♯
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               ♭
             </button>
@@ -23596,17 +23944,23 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
             class="toggle-group toggle-group--default"
           >
             <button
+              aria-pressed="true"
               class="toggle-btn active"
+              type="button"
             >
               Auto
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               On
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               Off
             </button>
@@ -26504,17 +26858,23 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
       class="toggle-group mobile-tab-bar"
     >
       <button
+        aria-pressed="true"
         class="mobile-tab active"
+        type="button"
       >
         Key
       </button>
       <button
+        aria-pressed="false"
         class="mobile-tab"
+        type="button"
       >
         Scales
       </button>
       <button
+        aria-pressed="false"
         class="mobile-tab"
+        type="button"
       >
         Controls
       </button>
@@ -27243,6 +27603,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
       aria-modal="true"
       class="settings-overlay-drawer"
       role="dialog"
+      tabindex="-1"
     >
       <div
         class="settings-overlay-header"
@@ -27418,6 +27779,39 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
           </div>
         </div>
         <div
+          class="overlay-control-group"
+        >
+          <div
+            class="stepper-control mobile"
+          >
+            <span
+              class="section-label"
+            >
+              Chord Spread
+            </span>
+            <div
+              class="stepper-group"
+            >
+              <button
+                class="stepper-btn"
+                disabled=""
+              >
+                −
+              </button>
+              <span
+                class="stepper-value"
+              >
+                0
+              </span>
+              <button
+                class="stepper-btn"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+        <div
           class="overlay-control-group overlay-control-group--accidentals"
         >
           <span
@@ -27429,17 +27823,23 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
             class="toggle-group toggle-group--default"
           >
             <button
+              aria-pressed="true"
               class="toggle-btn active"
+              type="button"
             >
               Auto
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               ♯
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               ♭
             </button>
@@ -27457,17 +27857,23 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
             class="toggle-group toggle-group--default"
           >
             <button
+              aria-pressed="true"
               class="toggle-btn active"
+              type="button"
             >
               Auto
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               On
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               Off
             </button>
@@ -30359,17 +30765,23 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
       class="toggle-group mobile-tab-bar"
     >
       <button
+        aria-pressed="true"
         class="mobile-tab active"
+        type="button"
       >
         Key
       </button>
       <button
+        aria-pressed="false"
         class="mobile-tab"
+        type="button"
       >
         Scales
       </button>
       <button
+        aria-pressed="false"
         class="mobile-tab"
+        type="button"
       >
         Controls
       </button>
@@ -31098,6 +31510,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
       aria-modal="true"
       class="settings-overlay-drawer"
       role="dialog"
+      tabindex="-1"
     >
       <div
         class="settings-overlay-header"
@@ -31273,6 +31686,39 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
           </div>
         </div>
         <div
+          class="overlay-control-group"
+        >
+          <div
+            class="stepper-control mobile"
+          >
+            <span
+              class="section-label"
+            >
+              Chord Spread
+            </span>
+            <div
+              class="stepper-group"
+            >
+              <button
+                class="stepper-btn"
+                disabled=""
+              >
+                −
+              </button>
+              <span
+                class="stepper-value"
+              >
+                0
+              </span>
+              <button
+                class="stepper-btn"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+        <div
           class="overlay-control-group overlay-control-group--accidentals"
         >
           <span
@@ -31284,17 +31730,23 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
             class="toggle-group toggle-group--default"
           >
             <button
+              aria-pressed="true"
               class="toggle-btn active"
+              type="button"
             >
               Auto
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               ♯
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               ♭
             </button>
@@ -31312,17 +31764,23 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
             class="toggle-group toggle-group--default"
           >
             <button
+              aria-pressed="true"
               class="toggle-btn active"
+              type="button"
             >
               Auto
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               On
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               Off
             </button>
@@ -34231,17 +34689,23 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
               class="toggle-group toggle-group--default"
             >
               <button
+                aria-pressed="true"
                 class="toggle-btn active"
+                type="button"
               >
                 All
               </button>
               <button
+                aria-pressed="false"
                 class="toggle-btn"
+                type="button"
               >
                 CAGED
               </button>
               <button
+                aria-pressed="false"
                 class="toggle-btn"
+                type="button"
               >
                 3NPS
               </button>
@@ -34259,17 +34723,23 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
               class="toggle-group toggle-group--default"
             >
               <button
+                aria-pressed="true"
                 class="toggle-btn active"
+                type="button"
               >
                 Notes
               </button>
               <button
+                aria-pressed="false"
                 class="toggle-btn"
+                type="button"
               >
                 Intervals
               </button>
               <button
+                aria-pressed="false"
                 class="toggle-btn"
+                type="button"
               >
                 None
               </button>
@@ -35247,6 +35717,7 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
       aria-modal="true"
       class="settings-overlay-drawer"
       role="dialog"
+      tabindex="-1"
     >
       <div
         class="settings-overlay-header"
@@ -35466,17 +35937,23 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
             class="toggle-group toggle-group--default"
           >
             <button
+              aria-pressed="true"
               class="toggle-btn active"
+              type="button"
             >
               Auto
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               ♯
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               ♭
             </button>
@@ -35494,17 +35971,23 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
             class="toggle-group toggle-group--default"
           >
             <button
+              aria-pressed="true"
               class="toggle-btn active"
+              type="button"
             >
               Auto
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               On
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               Off
             </button>
@@ -38413,17 +38896,23 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
               class="toggle-group toggle-group--default"
             >
               <button
+                aria-pressed="true"
                 class="toggle-btn active"
+                type="button"
               >
                 All
               </button>
               <button
+                aria-pressed="false"
                 class="toggle-btn"
+                type="button"
               >
                 CAGED
               </button>
               <button
+                aria-pressed="false"
                 class="toggle-btn"
+                type="button"
               >
                 3NPS
               </button>
@@ -38441,17 +38930,23 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
               class="toggle-group toggle-group--default"
             >
               <button
+                aria-pressed="false"
                 class="toggle-btn"
+                type="button"
               >
                 Notes
               </button>
               <button
+                aria-pressed="true"
                 class="toggle-btn active"
+                type="button"
               >
                 Intervals
               </button>
               <button
+                aria-pressed="false"
                 class="toggle-btn"
+                type="button"
               >
                 None
               </button>
@@ -39428,6 +39923,7 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
       aria-modal="true"
       class="settings-overlay-drawer"
       role="dialog"
+      tabindex="-1"
     >
       <div
         class="settings-overlay-header"
@@ -39647,17 +40143,23 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
             class="toggle-group toggle-group--default"
           >
             <button
+              aria-pressed="true"
               class="toggle-btn active"
+              type="button"
             >
               Auto
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               ♯
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               ♭
             </button>
@@ -39675,17 +40177,23 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
             class="toggle-group toggle-group--default"
           >
             <button
+              aria-pressed="true"
               class="toggle-btn active"
+              type="button"
             >
               Auto
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               On
             </button>
             <button
+              aria-pressed="false"
               class="toggle-btn"
+              type="button"
             >
               Off
             </button>
