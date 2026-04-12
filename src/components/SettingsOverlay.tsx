@@ -9,6 +9,7 @@ import {
   fretEndAtom,
   tuningNameAtom,
   accidentalModeAtom,
+  enharmonicDisplayAtom,
   resetAtom,
 } from "../store/atoms";
 import { TUNINGS } from "../guitar";
@@ -30,6 +31,12 @@ const ACCIDENTAL_OPTIONS = [
   { label: "\u266D", value: "flats" },
 ];
 
+const ENHARMONIC_DISPLAY_OPTIONS = [
+  { label: "Auto", value: "auto" },
+  { label: "On", value: "on" },
+  { label: "Off", value: "off" },
+];
+
 type LayoutTier = "mobile" | "tablet" | "desktop";
 
 const getLayoutTier = (): LayoutTier => {
@@ -45,6 +52,7 @@ export default function SettingsOverlay() {
   const [fretEnd, setFretEnd] = useAtom(fretEndAtom);
   const [tuningName, setTuningName] = useAtom(tuningNameAtom);
   const [accidentalMode, setAccidentalMode] = useAtom(accidentalModeAtom);
+  const [enharmonicDisplay, setEnharmonicDisplay] = useAtom(enharmonicDisplayAtom);
   const dispatchReset = useSetAtom(resetAtom);
   const [resetConfirming, setResetConfirming] = useState(false);
   const openTierRef = useRef<LayoutTier | null>(null);
@@ -178,6 +186,17 @@ export default function SettingsOverlay() {
               value={accidentalMode}
               onChange={(v) =>
                 setAccidentalMode(v as "sharps" | "flats" | "auto")
+              }
+            />
+          </div>
+
+          <div className="overlay-control-group">
+            <span className="overlay-control-label">Enharmonic Display</span>
+            <ToggleBar
+              options={ENHARMONIC_DISPLAY_OPTIONS}
+              value={enharmonicDisplay}
+              onChange={(v) =>
+                setEnharmonicDisplay(v as "auto" | "on" | "off")
               }
             />
           </div>
