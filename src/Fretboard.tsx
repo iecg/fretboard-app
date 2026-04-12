@@ -11,7 +11,6 @@ import {
 import { NOTES, ENHARMONICS, getNoteDisplayInScale, INTERVAL_NAMES, formatAccidental, SCALES } from "./theory";
 import { synth } from "./audio";
 import type { ShapePolygon } from "./shapes";
-import { StepperControl } from "./components/StepperControl";
 import { fretZoomAtom, fretStartAtom, fretEndAtom } from "./store/atoms";
 
 const STRING_ROW_PX_DEFAULT = 40;
@@ -25,7 +24,6 @@ interface FretboardProps {
   boxBounds?: { minFret: number; maxFret: number }[];
   chordTones?: string[];
   chordFretSpread?: number;
-  onChordFretSpreadChange?: (spread: number) => void;
   hideNonChordNotes?: boolean;
   colorNotes?: string[];
   shapePolygons?: ShapePolygon[];
@@ -46,7 +44,6 @@ export function Fretboard({
   boxBounds = [],
   chordTones = [],
   chordFretSpread = 0,
-  onChordFretSpreadChange,
   hideNonChordNotes = false,
   colorNotes = [],
   shapePolygons = [],
@@ -277,17 +274,6 @@ export function Fretboard({
             </button>
           ))}
         </div>
-        {hasChordOverlay && shapePolygons.length > 0 && (
-          <StepperControl
-            label="Chord Spread"
-            value={chordFretSpread}
-            onChange={onChordFretSpreadChange ?? (() => {})}
-            min={0}
-            max={4}
-            step={1}
-            buttonVariant="toolbar"
-          />
-        )}
       </div>
 
       {/* Scrollable fretboard */}

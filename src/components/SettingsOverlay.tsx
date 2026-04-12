@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useAtom, useSetAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import clsx from "clsx";
 import { X } from "lucide-react";
 import {
@@ -10,6 +10,8 @@ import {
   tuningNameAtom,
   accidentalModeAtom,
   enharmonicDisplayAtom,
+  chordTypeAtom,
+  chordFretSpreadAtom,
   resetAtom,
 } from "../store/atoms";
 import { TUNINGS } from "../guitar";
@@ -53,6 +55,8 @@ export default function SettingsOverlay() {
   const [tuningName, setTuningName] = useAtom(tuningNameAtom);
   const [accidentalMode, setAccidentalMode] = useAtom(accidentalModeAtom);
   const [enharmonicDisplay, setEnharmonicDisplay] = useAtom(enharmonicDisplayAtom);
+  const chordType = useAtomValue(chordTypeAtom);
+  const [chordFretSpread, setChordFretSpread] = useAtom(chordFretSpreadAtom);
   const dispatchReset = useSetAtom(resetAtom);
   const [resetConfirming, setResetConfirming] = useState(false);
   const openTierRef = useRef<LayoutTier | null>(null);
@@ -178,6 +182,20 @@ export default function SettingsOverlay() {
               onSelect={(v) => v && setTuningName(v)}
             />
           </div>
+
+          {chordType !== null && (
+            <div className="overlay-control-group">
+              <StepperControl
+                label="Chord Spread"
+                value={chordFretSpread}
+                onChange={setChordFretSpread}
+                min={0}
+                max={4}
+                step={1}
+                buttonVariant="mobile"
+              />
+            </div>
+          )}
 
           <div className="overlay-control-group">
             <span className="overlay-control-label">Accidentals</span>

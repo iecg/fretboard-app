@@ -161,7 +161,7 @@ function AppContent() {
   const [chordType, setChordType] = useAtom(chordTypeAtom);
   const [linkChordRoot, setLinkChordRoot] = useAtom(linkChordRootAtom);
   const [hideNonChordNotes, setHideNonChordNotes] = useAtom(hideNonChordNotesAtom);
-  const [chordFretSpread, setChordFretSpread] = useAtom(chordFretSpreadAtom);
+  const chordFretSpread = useAtomValue(chordFretSpreadAtom);
   const [chordIntervalFilter, setChordIntervalFilter] = useAtom(chordIntervalFilterAtom);
 
   // Fingering
@@ -538,7 +538,6 @@ function AppContent() {
           boxBounds={boxBounds}
           chordTones={filteredChordTones}
           chordFretSpread={chordFretSpread}
-          onChordFretSpreadChange={setChordFretSpread}
           hideNonChordNotes={hideNonChordNotes}
           colorNotes={colorNotes}
           displayFormat={displayFormat}

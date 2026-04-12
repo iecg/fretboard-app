@@ -183,14 +183,11 @@ describe('Fretboard', () => {
     });
 
     it('handles chord fret spread calculation', () => {
-      const onChordFretSpreadChange = vi.fn();
-
       render(
         <Fretboard
           {...defaultProps}
           chordTones={['C', 'E', 'G']}
           chordFretSpread={0}
-          onChordFretSpreadChange={onChordFretSpreadChange}
         />
       );
 
