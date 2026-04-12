@@ -16,6 +16,7 @@ import {
   hideNonChordNotesAtom,
   chordIntervalFilterAtom,
   accidentalModeAtom,
+  enharmonicDisplayAtom,
 } from "../store/atoms";
 import { resolveAccidentalMode } from "../theory";
 import { TUNINGS } from "../guitar";
@@ -100,6 +101,7 @@ export function ExpandedControlsPanel() {
     () => resolveAccidentalMode(rootNote, scaleName, accidentalMode),
     [rootNote, scaleName, accidentalMode],
   );
+  const enharmonicDisplay = useAtomValue(enharmonicDisplayAtom);
 
   return (
     <div className="controls-panel">
@@ -157,6 +159,7 @@ export function ExpandedControlsPanel() {
           setRootNote={handleSetRootNote}
           scaleName={scaleName}
           useFlats={useFlats}
+          enharmonicDisplay={enharmonicDisplay}
         />
       </div>
     </div>

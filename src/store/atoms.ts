@@ -167,6 +167,9 @@ function readLegacyAccidentalMode(): "sharps" | "flats" | "auto" {
 export const accidentalModeAtom = atom<"sharps" | "flats" | "auto">(
   readLegacyAccidentalMode(),
 );
+// enharmonicDisplayAtom is intentionally non-persisted: "auto" preserves the
+// pre-existing CoF enharmonic-display behavior by default.
+export const enharmonicDisplayAtom = atom<"auto" | "on" | "off">("auto");
 export const isMutedAtom = atomWithStorage("isMuted", false, booleanStorage);
 export const mobileTabAtom = atomWithStorage<"key" | "scale" | "fretboard">(
   "mobileTab",
@@ -217,6 +220,7 @@ export const resetAtom = atom(null, (_get, set) => {
   set(fretStartAtom, RESET);
   set(fretEndAtom, RESET);
   set(accidentalModeAtom, "auto");
+  set(enharmonicDisplayAtom, "auto");
   set(isMutedAtom, RESET);
   set(mobileTabAtom, RESET);
   set(tabletTabAtom, RESET);

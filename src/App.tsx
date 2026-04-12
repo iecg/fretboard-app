@@ -52,6 +52,7 @@ import {
   tabletTabAtom,
   setRootNoteAtom,
   settingsOverlayOpenAtom,
+  enharmonicDisplayAtom,
 } from "./store/atoms";
 import SettingsOverlay from "./components/SettingsOverlay";
 import {
@@ -179,6 +180,7 @@ function AppContent() {
     () => resolveAccidentalMode(rootNote, scaleName, accidentalMode),
     [rootNote, scaleName, accidentalMode],
   );
+  const enharmonicDisplay = useAtomValue(enharmonicDisplayAtom);
   const [isMuted, setIsMuted] = useAtom(isMutedAtom);
   const [mobileTab, setMobileTab] = useAtom(mobileTabAtom);
 
@@ -423,6 +425,7 @@ function AppContent() {
           setRootNote={handleSetRootNote}
           scaleName={scaleName}
           useFlats={useFlats}
+          enharmonicDisplay={enharmonicDisplay}
         />
       </div>
       {summaryContent}
@@ -560,6 +563,7 @@ function AppContent() {
           setRootNote={handleSetRootNote}
           scaleName={scaleName}
           useFlats={useFlats}
+          enharmonicDisplay={enharmonicDisplay}
         />
       )}
 

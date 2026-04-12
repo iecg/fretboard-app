@@ -1,5 +1,6 @@
-import { CIRCLE_OF_FIFTHS, ENHARMONICS, getNoteDisplayInScale, getKeySignatureForDisplay, formatAccidental, SCALES } from "./theory";
+import { CIRCLE_OF_FIFTHS, getNoteDisplayInScale, getKeySignatureForDisplay, formatAccidental, SCALES } from "./theory";
 import { DEGREE_COLORS, getDegreesForScale } from "./degrees";
+import { getCircleNoteLabels } from "./circleOfFifthsUtils";
 
 const SIZE = 320;
 const CX = SIZE / 2;
@@ -9,31 +10,19 @@ const INNER_RADIUS = SIZE * 0.26;
 const LABEL_RADIUS = SIZE * 0.39;
 const DEGREE_RADIUS = SIZE * 0.31;
 
-function getCircleNoteLabels(note: string, rootNote: string, useFlats: boolean, scaleIntervals: number[]): { primary: string; enharmonic: string | null } {
-  const display = getNoteDisplayInScale(note, rootNote, scaleIntervals, useFlats);
-  if (display !== note) {
-    // Respelled (sharp→flat, flat→sharp, or natural→accidental like F→E#)
-    return { primary: formatAccidental(display), enharmonic: formatAccidental(note) };
-  }
-  // No change — check if there's a standard enharmonic to show
-  if (note.includes('#')) {
-    const enh = ENHARMONICS[note] ?? null;
-    return { primary: formatAccidental(note), enharmonic: enh ? formatAccidental(enh) : null };
-  }
-  return { primary: note, enharmonic: null };
-}
-
 
 export function CircleOfFifths({
   rootNote,
   setRootNote,
   scaleName = "Major",
   useFlats = false,
+  enharmonicDisplay = "auto",
 }: {
   rootNote: string;
   setRootNote: (n: string) => void;
   scaleName?: string;
   useFlats?: boolean;
+  enharmonicDisplay?: "auto" | "on" | "off";
 }) {
   const rootIndex = CIRCLE_OF_FIFTHS.indexOf(rootNote);
 
@@ -86,7 +75,7 @@ export function CircleOfFifths({
           const degreeMap = getDegreesForScale(scaleName);
           const degreeStr = degreeMap[chromaticInterval] ?? "";
 
-          const { primary, enharmonic } = getCircleNoteLabels(note, rootNote, useFlats, SCALES[scaleName] || []);
+          const { primary, enharmonic } = getCircleNoteLabels(note, rootNote, useFlats, SCALES[scaleName] || [], enharmonicDisplay);
           const noteFontSize = Math.max(15, isActive ? SIZE * 0.055 : SIZE * 0.048);
           const degreeFontSize = Math.max(10, SIZE * 0.038);
 

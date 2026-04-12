@@ -11,6 +11,7 @@ interface TabletPortraitPanelProps {
   setRootNote: (note: string) => void;
   scaleName: string;
   useFlats: boolean;
+  enharmonicDisplay?: "auto" | "on" | "off";
 }
 
 const TABLET_TAB_OPTIONS = [
@@ -27,6 +28,7 @@ export function TabletPortraitPanel({
   setRootNote,
   scaleName,
   useFlats,
+  enharmonicDisplay = "auto",
 }: TabletPortraitPanelProps) {
   return (
     <div className="tablet-portrait-panel">
@@ -53,6 +55,7 @@ export function TabletPortraitPanel({
           setRootNote={setRootNote}
           scaleName={scaleName}
           useFlats={useFlats}
+          enharmonicDisplay={enharmonicDisplay}
         />
       </div>
     </div>
