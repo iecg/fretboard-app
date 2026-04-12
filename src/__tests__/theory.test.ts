@@ -204,6 +204,24 @@ describe('getKeySignatureForDisplay (scale-aware)', () => {
   });
 });
 
+describe('resolver + key signature integration', () => {
+  it('A# Major auto → flats → Bb Major key sig = -2', () => {
+    const useFlats = resolveAccidentalMode('A#', 'Major', 'auto');
+    expect(useFlats).toBe(true);
+    expect(getKeySignatureForDisplay('A#', 'Major', useFlats)).toBe(-2);
+  });
+  it('A Natural Minor auto → sharps → key sig = 0', () => {
+    const useFlats = resolveAccidentalMode('A', 'Natural Minor', 'auto');
+    expect(useFlats).toBe(false);
+    expect(getKeySignatureForDisplay('A', 'Natural Minor', useFlats)).toBe(0);
+  });
+  it('E Dorian auto → sharps → key sig = 2', () => {
+    const useFlats = resolveAccidentalMode('E', 'Dorian', 'auto');
+    expect(useFlats).toBe(false);
+    expect(getKeySignatureForDisplay('E', 'Dorian', useFlats)).toBe(2);
+  });
+});
+
 describe('SCALES constant', () => {
   it('has expected number of scales', () => {
     expect(Object.keys(SCALES).length).toBeGreaterThanOrEqual(12);

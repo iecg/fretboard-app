@@ -3845,6 +3845,11 @@ exports[`Component Snapshots > App layout snapshots > falls back to tablet-portr
             <button
               class="toggle-btn active"
             >
+              Auto
+            </button>
+            <button
+              class="toggle-btn"
+            >
               ♯
             </button>
             <button
@@ -7808,6 +7813,11 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-expanded l
           >
             <button
               class="toggle-btn active"
+            >
+              Auto
+            </button>
+            <button
+              class="toggle-btn"
             >
               ♯
             </button>
@@ -11773,6 +11783,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
             <button
               class="toggle-btn active"
             >
+              Auto
+            </button>
+            <button
+              class="toggle-btn"
+            >
               ♯
             </button>
             <button
@@ -15642,6 +15657,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPad landscape lay
           >
             <button
               class="toggle-btn active"
+            >
+              Auto
+            </button>
+            <button
+              class="toggle-btn"
             >
               ♯
             </button>
@@ -19513,6 +19533,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
             <button
               class="toggle-btn active"
             >
+              Auto
+            </button>
+            <button
+              class="toggle-btn"
+            >
               ♯
             </button>
             <button
@@ -23320,6 +23345,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
           >
             <button
               class="toggle-btn active"
+            >
+              Auto
+            </button>
+            <button
+              class="toggle-btn"
             >
               ♯
             </button>
@@ -27135,6 +27165,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
             <button
               class="toggle-btn active"
             >
+              Auto
+            </button>
+            <button
+              class="toggle-btn"
+            >
               ♯
             </button>
             <button
@@ -30942,6 +30977,11 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
           >
             <button
               class="toggle-btn active"
+            >
+              Auto
+            </button>
+            <button
+              class="toggle-btn"
             >
               ♯
             </button>
@@ -35045,6 +35085,11 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
             <button
               class="toggle-btn active"
             >
+              Auto
+            </button>
+            <button
+              class="toggle-btn"
+            >
               ♯
             </button>
             <button
@@ -38719,7 +38764,7 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
               x="160"
               y="172.8"
             >
-              1♯
+              2♭
             </text>
           </svg>
         </div>
@@ -39145,6 +39190,11 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
           >
             <button
               class="toggle-btn active"
+            >
+              Auto
+            </button>
+            <button
+              class="toggle-btn"
             >
               ♯
             </button>
@@ -39711,7 +39761,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
         x="160"
         y="172.8"
       >
-        3♯
+        ♮
       </text>
     </svg>
   </div>
@@ -40805,7 +40855,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Dorian mode sn
         x="160"
         y="172.8"
       >
-        2♯
+        ♮
       </text>
     </svg>
   </div>
@@ -41899,7 +41949,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Lydian mode sn
         x="160"
         y="172.8"
       >
-        1♭
+        ♮
       </text>
     </svg>
   </div>
