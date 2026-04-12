@@ -89,9 +89,44 @@
 
 .settings-overlay-content {
   flex: 1;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
   padding: 16px;
   padding-bottom: 32px;
+}
+
+.overlay-reset-section {
+  margin-top: auto;
+  padding-top: 24px;
+  border-top: 1px solid var(--surface-highlight, rgba(255, 255, 255, 0.1));
+}
+
+.overlay-reset-btn {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid var(--error-color, #e05555);
+  color: var(--error-color, #e05555);
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.overlay-reset-btn:hover {
+  background: rgba(224, 85, 85, 0.12);
+}
+
+.overlay-reset-btn.overlay-reset-confirming {
+  background: var(--error-color, #e05555);
+  color: #fff;
+}
+
+.overlay-reset-btn:focus-visible {
+  outline: 2px solid var(--accent-primary, #0a84ff);
+  outline-offset: 2px;
 }
 
 .overlay-control-group {

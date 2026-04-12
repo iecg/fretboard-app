@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { useAtom } from "jotai";
+import { useEffect, useState } from "react";
+import { useAtom, useSetAtom } from "jotai";
 import clsx from "clsx";
 import { X } from "lucide-react";
 import {
@@ -9,8 +9,10 @@ import {
   fretEndAtom,
   tuningNameAtom,
   useFlatsAtom,
+  resetAtom,
 } from "../store/atoms";
 import { TUNINGS } from "../guitar";
+import { synth } from "../audio";
 import { StepperControl } from "./StepperControl";
 import { FretRangeControl } from "./FretRangeControl";
 import { DrawerSelector } from "../DrawerSelector";
@@ -34,8 +36,33 @@ export default function SettingsOverlay() {
   const [fretEnd, setFretEnd] = useAtom(fretEndAtom);
   const [tuningName, setTuningName] = useAtom(tuningNameAtom);
   const [useFlats, setUseFlats] = useAtom(useFlatsAtom);
+  const dispatchReset = useSetAtom(resetAtom);
+  const [resetConfirming, setResetConfirming] = useState(false);
 
   const close = () => setIsOpen(false);
+
+  const handleResetClick = () => {
+    if (resetConfirming) {
+      dispatchReset();
+      synth.setMute(false);
+      setResetConfirming(false);
+      setIsOpen(false);
+    } else {
+      setResetConfirming(true);
+    }
+  };
+
+  // Auto-clear confirming state after 3 seconds
+  useEffect(() => {
+    if (!resetConfirming) return;
+    const t = setTimeout(() => setResetConfirming(false), 3000);
+    return () => clearTimeout(t);
+  }, [resetConfirming]);
+
+  // Reset confirmation state when overlay closes
+  useEffect(() => {
+    if (!isOpen) setResetConfirming(false);
+  }, [isOpen]);
 
   // ESC closes the overlay when open.
   useEffect(() => {
@@ -118,6 +145,18 @@ export default function SettingsOverlay() {
               value={useFlats ? "flats" : "sharps"}
               onChange={(v) => setUseFlats(v === "flats")}
             />
+          </div>
+
+          <div className="overlay-reset-section">
+            <button
+              type="button"
+              className={clsx("overlay-reset-btn", {
+                "overlay-reset-confirming": resetConfirming,
+              })}
+              onClick={handleResetClick}
+            >
+              {resetConfirming ? "Click again to confirm" : "Reset all settings"}
+            </button>
           </div>
         </div>
       </div>
