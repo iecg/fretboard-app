@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAtom, useSetAtom } from "jotai";
 import clsx from "clsx";
 import { X } from "lucide-react";
@@ -29,6 +29,14 @@ const ACCIDENTAL_OPTIONS = [
   { label: "\u266D", value: "flats" },
 ];
 
+type LayoutTier = "mobile" | "tablet" | "desktop";
+
+const getLayoutTier = (): LayoutTier => {
+  if (window.innerWidth < 768) return "mobile";
+  if (window.innerWidth < 1024) return "tablet";
+  return "desktop";
+};
+
 export default function SettingsOverlay() {
   const [isOpen, setIsOpen] = useAtom(settingsOverlayOpenAtom);
   const [fretZoom, setFretZoom] = useAtom(fretZoomAtom);
@@ -38,6 +46,7 @@ export default function SettingsOverlay() {
   const [useFlats, setUseFlats] = useAtom(useFlatsAtom);
   const dispatchReset = useSetAtom(resetAtom);
   const [resetConfirming, setResetConfirming] = useState(false);
+  const openTierRef = useRef<LayoutTier | null>(null);
 
   const close = () => setIsOpen(false);
 
@@ -63,6 +72,31 @@ export default function SettingsOverlay() {
   useEffect(() => {
     if (!isOpen) setResetConfirming(false);
   }, [isOpen]);
+
+  // Track layout tier at the moment the overlay opens.
+  useEffect(() => {
+    if (isOpen) {
+      openTierRef.current = getLayoutTier();
+    } else {
+      openTierRef.current = null;
+    }
+  }, [isOpen]);
+
+  // Auto-close the overlay when the layout tier changes (e.g., rotate,
+  // desktop → mobile resize). Resizes within the same tier do nothing.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onResize = () => {
+      if (
+        openTierRef.current &&
+        getLayoutTier() !== openTierRef.current
+      ) {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [isOpen, setIsOpen]);
 
   // ESC closes the overlay when open.
   useEffect(() => {
