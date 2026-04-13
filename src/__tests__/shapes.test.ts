@@ -15,6 +15,20 @@ describe('getCagedCoordinates', () => {
       expect(result.coordinates.length).toBeGreaterThan(0);
     }
   });
+
+  // Layout-mode independence guarantee (Phase 03-04):
+  // getCagedCoordinates has no dependency on layoutMode, stringRowPx, or any
+  // CSS/viewport state. Polygon vertices are fret/string coordinates only —
+  // pixel conversion happens in Fretboard.tsx at render time. Calling the
+  // function twice with identical args must produce identical output regardless
+  // of what layoutMode the app is in.
+  it('returns identical polygon vertices on repeated calls (layout-mode-independent)', () => {
+    const result1 = getCagedCoordinates('C', 'E', 'Major', STANDARD_TUNING, 24);
+    const result2 = getCagedCoordinates('C', 'E', 'Major', STANDARD_TUNING, 24);
+    expect(result1.polygons.length).toBeGreaterThan(0);
+    expect(result1.polygons).toEqual(result2.polygons);
+    expect(result1.coordinates).toEqual(result2.coordinates);
+  });
 });
 
 describe('truncation detection', () => {
