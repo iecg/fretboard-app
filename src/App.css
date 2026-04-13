@@ -970,7 +970,7 @@
   flex-direction: column;
   gap: var(--space-4);
   grid-column: 1;
-  min-width: 0;
+  min-width: 280px;
   justify-content: center;
 }
 
