@@ -431,7 +431,7 @@ function AppContent() {
 
   // Summary notes content (shared between mobile Key tab and desktop summary area)
   const summaryContent = (
-    <div className="summary-area">
+    <div className="summary-area panel-surface">
       <div className="summary-row">
         <div className="summary-row-label">{scaleLabel}</div>
         <div className="summary-notes">

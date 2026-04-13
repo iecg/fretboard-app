@@ -33,7 +33,7 @@ export function TabletPortraitPanel({
   return (
     <div className="tablet-portrait-panel">
       {/* Left column: Settings/Scales tabs */}
-      <div className="tablet-portrait-settings-col">
+      <div className="tablet-portrait-settings-col panel-surface">
         <ToggleBar
           options={TABLET_TAB_OPTIONS}
           value={tabletTab}
@@ -45,7 +45,7 @@ export function TabletPortraitPanel({
         </div>
       </div>
       {/* Right column: CoF fixed-width */}
-      <div className="tablet-portrait-cof-col">
+      <div className="tablet-portrait-cof-col panel-surface">
         <h2>Key</h2>
         <CircleOfFifths
           rootNote={rootNote}

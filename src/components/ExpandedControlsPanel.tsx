@@ -103,7 +103,7 @@ export function ControlsColumn() {
 
   return (
     <div className="controls-col-left flanking-controls-col">
-      <div className="control-group">
+      <div className="control-group panel-surface">
         <FingeringPatternControls
           fingeringPattern={fingeringPattern}
           setFingeringPattern={setFingeringPattern}
@@ -125,7 +125,7 @@ export function ControlsColumn() {
         />
       </div>
 
-      <div className="control-group">
+      <div className="control-group panel-surface">
         <h2>Scale &amp; Chord</h2>
         <ScaleChordControls
           scaleName={scaleName}
@@ -168,7 +168,7 @@ export function KeyColumn() {
   const enharmonicDisplay = useAtomValue(enharmonicDisplayAtom);
 
   return (
-    <div className="control-group col-span-2 key-column flanking-key-col">
+    <div className="control-group col-span-2 key-column flanking-key-col panel-surface">
       <h2>Key</h2>
       <CircleOfFifths
         rootNote={rootNote}

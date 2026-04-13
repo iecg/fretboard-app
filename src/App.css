@@ -411,10 +411,6 @@
   display: flex;
   flex-direction: row;
   gap: var(--space-4);
-  background-color: var(--surface-base);
-  padding: var(--space-4);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--surface-highlight);
   flex: 0 0 auto;
   min-height: 0;
   overflow: visible;
@@ -592,10 +588,6 @@
   flex-direction: column;
   flex-shrink: 0;
   gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-lg);
-  background-color: var(--surface-base);
-  border: 1px solid var(--surface-highlight);
 }
 
 .summary-row {
@@ -966,7 +958,6 @@
   gap: var(--space-4);
   grid-column: 1;
   min-width: 280px;
-  justify-content: center;
 }
 
 .app-container[data-layout-mode="desktop-expanded"] .controls-panel > .col-span-2 {
@@ -977,7 +968,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: var(--space-2);
 }
 
@@ -1265,3 +1255,6 @@
     color: rgba(255, 255, 255, 0.5);
   }
 }
+
+/* POST-PHASE-05 INVARIANT: no background/border/border-radius outside :root,
+   .panel-surface, and product-specific components (buttons, badges, fretboard). */
