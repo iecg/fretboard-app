@@ -456,6 +456,89 @@ describe("App", () => {
         );
       });
     });
+
+    it("transitions from desktop-expanded to landscape-wide-flanking on height decrease", async () => {
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 1920,
+      });
+      Object.defineProperty(window, "innerHeight", {
+        writable: true,
+        configurable: true,
+        value: 1080,
+      });
+      render(<App />);
+
+      await waitFor(() => {
+        const appContainer = document.querySelector(".app-container");
+        expect(appContainer?.getAttribute("data-layout-mode")).toBe(
+          "desktop-expanded",
+        );
+      });
+
+      // Resize to 1200×700 — height < 1000 and width > 1024 → landscape-wide-flanking
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 1200,
+      });
+      Object.defineProperty(window, "innerHeight", {
+        writable: true,
+        configurable: true,
+        value: 700,
+      });
+      fireEvent(window, new Event("resize"));
+
+      await waitFor(() => {
+        const appContainer = document.querySelector(".app-container");
+        expect(appContainer?.getAttribute("data-layout-mode")).toBe(
+          "landscape-wide-flanking",
+        );
+      });
+    });
+
+    it("transitions from tablet-portrait to landscape-narrow-flanking on width increase", async () => {
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 768,
+      });
+      Object.defineProperty(window, "innerHeight", {
+        writable: true,
+        configurable: true,
+        value: 1024,
+      });
+      render(<App />);
+      fireEvent(window, new Event("resize"));
+
+      await waitFor(() => {
+        const appContainer = document.querySelector(".app-container");
+        expect(appContainer?.getAttribute("data-layout-mode")).toBe(
+          "tablet-portrait",
+        );
+      });
+
+      // Resize to 1024×900 — height < 1000 and width ≤ 1024 → landscape-narrow-flanking
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 1024,
+      });
+      Object.defineProperty(window, "innerHeight", {
+        writable: true,
+        configurable: true,
+        value: 900,
+      });
+      fireEvent(window, new Event("resize"));
+
+      await waitFor(() => {
+        const appContainer = document.querySelector(".app-container");
+        expect(appContainer?.getAttribute("data-layout-mode")).toBe(
+          "landscape-narrow-flanking",
+        );
+      });
+    });
   });
 
   describe("Tablet portrait interactions", () => {
