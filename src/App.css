@@ -581,9 +581,9 @@
 }
 
 .pattern-btn.active {
-  background-color: var(--accent-primary);
-  color: white;
-  border-color: transparent;
+  background-color: var(--selected-bg);
+  color: var(--selected-fg);
+  border-color: var(--selected-border);
 }
 
 .summary-area {
