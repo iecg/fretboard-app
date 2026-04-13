@@ -246,6 +246,14 @@ export const tabletTabAtom = atomWithStorage<"settings" | "scales">(
   rawStringStorage<"settings" | "scales">(),
 );
 
+export type LandscapeNarrowTab = "fretboard" | "scaleChord" | "key";
+
+export const landscapeNarrowTabAtom = atomWithStorage<LandscapeNarrowTab>(
+  "landscapeNarrowTab",
+  "fretboard",
+  rawStringStorage<LandscapeNarrowTab>(),
+);
+
 // settingsOverlayOpenAtom is intentionally non-persisted and always starts closed.
 export const settingsOverlayOpenAtom = atom<boolean>(false);
 
