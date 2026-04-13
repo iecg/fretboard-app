@@ -38,11 +38,6 @@
   --caged-g-bg: rgba(168, 85, 247, 0.18);
   --z-overlay-backdrop: 200;
   --z-overlay-drawer: 201;
-  --settings-overlay-backdrop: color-mix(in srgb, var(--bg-color) 68%, var(--caged-g) 32%);
-  --settings-overlay-drawer-bg: color-mix(in srgb, var(--bg-color) 84%, var(--caged-g-bg) 16%);
-  --settings-overlay-drawer-fg: var(--caged-g-fg);
-  --settings-overlay-divider: color-mix(in srgb, var(--caged-g) 36%, transparent);
-  --settings-overlay-shadow: -8px 0 24px color-mix(in srgb, var(--bg-color) 72%, transparent);
   background-color: var(--bg-color);
   color: var(--text-main);
 }
