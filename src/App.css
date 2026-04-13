@@ -172,7 +172,7 @@
 .fretboard-wrapper {
   position: relative;
   width: 100%;
-  min-width: 0;
+  min-width: 300px;
   overflow-x: auto;
   padding: var(--space-4) var(--space-2) 0;
 }
