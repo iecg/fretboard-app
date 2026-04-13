@@ -575,27 +575,33 @@ function AppContent() {
         </div>
       </header>
 
-      {/* Main Fretboard */}
-      <main className="main-fretboard">
-        <Fretboard
-          tuning={currentTuning}
-          highlightNotes={highlightNotes}
-          rootNote={rootNote}
-          boxBounds={boxBounds}
-          chordTones={filteredChordTones}
-          chordFretSpread={chordFretSpread}
-          hideNonChordNotes={hideNonChordNotes}
-          colorNotes={colorNotes}
-          displayFormat={displayFormat}
-          shapePolygons={shapePolygons}
-          shapeLabels={shapeLabels}
-          maxFret={END_FRET}
-          wrappedNotes={wrappedNotes}
-          useFlats={useFlats}
-          scaleName={scaleName}
-          stringRowPx={stringRowPx}
-        />
-      </main>
+      {/* Main Fretboard — rendered as a standalone grid child for all modes
+          except landscape-narrow-flanking, where it is passed as fretboardNode
+          to FlankingNarrowLayout so it renders inside the .fretboard-wrapper
+          column (CSS display:contents on flanking-row lifts children into the
+          app grid; narrow mode has no explicit main.main-fretboard placement). */}
+      {!isLandscapeNarrowFlanking && (
+        <main className="main-fretboard">
+          <Fretboard
+            tuning={currentTuning}
+            highlightNotes={highlightNotes}
+            rootNote={rootNote}
+            boxBounds={boxBounds}
+            chordTones={filteredChordTones}
+            chordFretSpread={chordFretSpread}
+            hideNonChordNotes={hideNonChordNotes}
+            colorNotes={colorNotes}
+            displayFormat={displayFormat}
+            shapePolygons={shapePolygons}
+            shapeLabels={shapeLabels}
+            maxFret={END_FRET}
+            wrappedNotes={wrappedNotes}
+            useFlats={useFlats}
+            scaleName={scaleName}
+            stringRowPx={stringRowPx}
+          />
+        </main>
+      )}
 
       {/* Tablet-portrait two-column panel: Settings/Scales tabs (left) + CoF (right) */}
       {isTabletPortrait && (
@@ -615,9 +621,36 @@ function AppContent() {
       {/* Controls Panel — Target A layout when the viewport has room */}
       {isDesktopExpanded && <ExpandedControlsPanel />}
 
-      {/* Flanking layouts — landscape short-height variants */}
+      {/* Flanking layouts — landscape short-height variants.
+          Wide: fretboard stays as main.main-fretboard (CSS grid-column: 2
+          explicit placement in App.css handles positioning).
+          Narrow: fretboard passed as fretboardNode into .fretboard-wrapper
+          since no explicit main.main-fretboard CSS placement exists for this mode. */}
       {isLandscapeWideFlanking && <FlankingWideLayout />}
-      {isLandscapeNarrowFlanking && <FlankingNarrowLayout />}
+      {isLandscapeNarrowFlanking && (
+        <FlankingNarrowLayout
+          fretboardNode={
+            <Fretboard
+              tuning={currentTuning}
+              highlightNotes={highlightNotes}
+              rootNote={rootNote}
+              boxBounds={boxBounds}
+              chordTones={filteredChordTones}
+              chordFretSpread={chordFretSpread}
+              hideNonChordNotes={hideNonChordNotes}
+              colorNotes={colorNotes}
+              displayFormat={displayFormat}
+              shapePolygons={shapePolygons}
+              shapeLabels={shapeLabels}
+              maxFret={END_FRET}
+              wrappedNotes={wrappedNotes}
+              useFlats={useFlats}
+              scaleName={scaleName}
+              stringRowPx={stringRowPx}
+            />
+          }
+        />
+      )}
 
       {/* Summary bar — desktop and tablet-portrait (mobile shows it in Key tab) */}
       {(!isMobile || isTabletPortrait) && summaryContent}
