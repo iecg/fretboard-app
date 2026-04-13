@@ -447,7 +447,9 @@ describe("Component Snapshots", () => {
       expect(container).toMatchSnapshot("app-with-chord-overlay");
     });
 
-    it("falls back to tablet-portrait at short desktop heights (1920×600)", () => {
+    it("renders landscape-wide-flanking layout (1920×600)", () => {
+      // Post-Phase-03: 1920×600 routes to landscape-wide-flanking
+      // (non-mobile, height < 1000, width > 1024).
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
@@ -461,8 +463,9 @@ describe("Component Snapshots", () => {
 
       localStorage.clear();
       const { container } = render(<App />);
+      expect(container.querySelector(".app-container")?.getAttribute("data-layout-mode")).toBe("landscape-wide-flanking");
       expect(container).toMatchSnapshot(
-        "app-wide-short-tablet-portrait-fallback",
+        "app-landscape-wide-flanking-1920x600",
       );
     });
 
@@ -534,10 +537,9 @@ describe("Component Snapshots", () => {
       expect(container).toMatchSnapshot("app-iphone-12-pro-portrait");
     });
 
-    it("renders iPad landscape layout (1024×768) as tablet-portrait fallback", () => {
-      // Post-Phase-06: 1024×768 doesn't have enough height for
-      // desktop-expanded (available 288 < required 576), so it falls
-      // back to the tablet-portrait tabbed layout.
+    it("renders iPad landscape layout (1024×768) as landscape-narrow-flanking", () => {
+      // Post-Phase-03: 1024×768 routes to landscape-narrow-flanking
+      // (non-mobile, height < 1000, width ≤ 1024).
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
@@ -551,7 +553,49 @@ describe("Component Snapshots", () => {
 
       localStorage.clear();
       const { container } = render(<App />);
+      expect(container.querySelector(".app-container")?.getAttribute("data-layout-mode")).toBe("landscape-narrow-flanking");
       expect(container).toMatchSnapshot("app-ipad-landscape");
+    });
+
+    it("renders landscape-wide-flanking layout (1200×700)", () => {
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 1200,
+      });
+      Object.defineProperty(window, "innerHeight", {
+        writable: true,
+        configurable: true,
+        value: 700,
+      });
+
+      localStorage.clear();
+      const { container } = render(<App />);
+      expect(container.querySelector(".app-container")?.getAttribute("data-layout-mode")).toBe("landscape-wide-flanking");
+      expect(container.querySelector(".flanking-controls-col")).toBeTruthy();
+      expect(container.querySelector(".flanking-key-col")).toBeTruthy();
+      expect(container).toMatchSnapshot("app-landscape-wide-flanking-1200x700");
+    });
+
+    it("renders landscape-narrow-flanking layout (1024×900)", () => {
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 1024,
+      });
+      Object.defineProperty(window, "innerHeight", {
+        writable: true,
+        configurable: true,
+        value: 900,
+      });
+
+      localStorage.clear();
+      const { container } = render(<App />);
+      expect(container.querySelector(".app-container")?.getAttribute("data-layout-mode")).toBe("landscape-narrow-flanking");
+      expect(container.querySelector(".flanking-side-panel")).toBeTruthy();
+      expect(container.querySelector(".flanking-tab-bar")).toBeTruthy();
+      expect(container.querySelector(".fretboard-wrapper")).toBeTruthy();
+      expect(container).toMatchSnapshot("app-landscape-narrow-flanking-1024x900");
     });
   });
 });
