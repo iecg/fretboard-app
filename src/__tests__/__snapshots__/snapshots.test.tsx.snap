@@ -13448,10 +13448,140 @@ exports[`Component Snapshots > App layout snapshots > renders iPad landscape lay
       >
         <div
           class="flanking-tab-bar"
-        />
+        >
+          <div
+            class="toggle-group mobile-tab-bar"
+          >
+            <button
+              aria-pressed="true"
+              class="mobile-tab active"
+              type="button"
+            >
+              Fretboard
+            </button>
+            <button
+              aria-pressed="false"
+              class="mobile-tab"
+              type="button"
+            >
+              Scale & Chord
+            </button>
+            <button
+              aria-pressed="false"
+              class="mobile-tab"
+              type="button"
+            >
+              Key
+            </button>
+          </div>
+        </div>
         <div
           class="flanking-tab-content"
-        />
+        >
+          <div
+            class="control-section"
+          >
+            <span
+              class="section-label"
+            >
+              Fingering Pattern
+            </span>
+            <div
+              class="toggle-group toggle-group--default"
+            >
+              <button
+                aria-pressed="true"
+                class="toggle-btn active"
+                type="button"
+              >
+                All
+              </button>
+              <button
+                aria-pressed="false"
+                class="toggle-btn"
+                type="button"
+              >
+                CAGED
+              </button>
+              <button
+                aria-pressed="false"
+                class="toggle-btn"
+                type="button"
+              >
+                3NPS
+              </button>
+            </div>
+          </div>
+          <div
+            class="control-section"
+          >
+            <span
+              class="section-label"
+            >
+              Note Labels
+            </span>
+            <div
+              class="toggle-group toggle-group--default"
+            >
+              <button
+                aria-pressed="true"
+                class="toggle-btn active"
+                type="button"
+              >
+                Notes
+              </button>
+              <button
+                aria-pressed="false"
+                class="toggle-btn"
+                type="button"
+              >
+                Intervals
+              </button>
+              <button
+                aria-pressed="false"
+                class="toggle-btn"
+                type="button"
+              >
+                None
+              </button>
+            </div>
+          </div>
+          <div
+            class="drawer-selector"
+          >
+            <button
+              class="drawer-trigger"
+            >
+              <span
+                class="drawer-label"
+              >
+                Tuning
+              </span>
+              <span
+                class="drawer-value"
+              >
+                Standard
+              </span>
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-chevron-down drawer-chevron"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="m6 9 6 6 6-6"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
       </aside>
       <div
         class="fretboard-wrapper"
