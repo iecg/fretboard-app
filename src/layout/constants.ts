@@ -43,3 +43,15 @@ export const SMALL_PHONE_HEIGHT_THRESHOLD = 800;
 // the fretboard has room to breathe on larger displays.
 export const APP_MAX_WIDTH_DESKTOP_REM = 120; // 1920px
 export const APP_MAX_WIDTH_TABLET_REM = 80; // 1280px (unchanged)
+
+// Per-container vertical floors (px) used in the viewport-aware stringRowPx
+// derivation formula in App.tsx and as explicit min-height guards in App.css.
+// Update if control sections gain new rows or the summary row count changes.
+export const CONTROLS_MIN_HEIGHT = 260; // empirical: left col (settings ~140 + scale/chord ~120)
+                                        // and right col (CoF with aspect-ratio:1) both fit at 260px.
+                                        // Matches CONTROL_HEIGHTS.settings + rowGap + scaleChord ≈ 576 →
+                                        // controls-panel is one grid cell wide, 260px is the narrower side.
+export const SUMMARY_MIN_HEIGHT = 72;   // scale notes label + note bubbles row.
+                                        // Matches LAYOUT_CHROME_HEIGHT.summary — extracted here so the
+                                        // derivation formula in App.tsx imports a single named constant
+                                        // instead of reading from LAYOUT_CHROME_HEIGHT.summary.
