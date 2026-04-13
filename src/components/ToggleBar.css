@@ -28,7 +28,7 @@
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
-  transition: background-color var(--transition-fast), color var(--transition-fast);
+  transition: var(--transition-surface);
 }
 
 .mobile-tab-bar.toggle-group .mobile-tab.active {
