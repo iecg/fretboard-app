@@ -481,11 +481,6 @@
   padding: var(--space-1);
 }
 
-.mode-grid .toggle-btn.active {
-  background-color: var(--accent-primary);
-  color: white;
-}
-
 /* Tuning controls */
 .tuning-select-label {
   display: flex;
