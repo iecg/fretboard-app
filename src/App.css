@@ -987,6 +987,7 @@
   gap: var(--space-4);
   flex: 1 1 0;
   min-height: 0;
+  min-width: 620px;
 }
 
 .app-container[data-layout-mode="desktop-expanded"] .controls-col-left {
