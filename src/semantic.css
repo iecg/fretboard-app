@@ -13,7 +13,7 @@
  *
  * RULES:
  *   - Chrome tokens (--chrome-*) NEVER reference --caged-* (purple drawer bug
- *     was caused by --settings-overlay-* deriving from --caged-g).
+ *     was caused by chrome tokens deriving from --caged-g).
  *   - Selected-state tokens (--selected-*) unify ALL .active selectors except
  *     .note-btn.active (chord overlay — uses --selected-chord-*) and
  *     .circle-slice.active (intentional neutral ring — exception preserved).
