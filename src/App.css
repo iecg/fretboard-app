@@ -744,8 +744,6 @@
 /* Mobile inline layout */
 @media (max-width: 767px) {
   .app-container {
-    padding: var(--space-3);
-    gap: var(--space-2);
     overflow: visible;
     flex: unset;
     min-height: 0;
