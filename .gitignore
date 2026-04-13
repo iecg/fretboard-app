@@ -27,4 +27,7 @@ coverage
 .vbw-planning/
 
 .claude/
-CLAUDE.local.md
+
+*.local.md
+
+.remember/
