@@ -2,8 +2,7 @@
 // mode decision. Numbers measured via puppeteer against the live app
 // with the fullest practical control state: CAGED fingering + chord
 // overlay + chord root grid visible (linkChordRoot=false) + interval
-// filter active. See .vbw-planning/phases/06-desktop-layout-refactor/
-// 06-CONTEXT.md for the measurement table and fit algorithm.
+// filter active.
 
 // Maximum intrinsic heights (px) of each control group when all visible
 // sub-sections are rendered. Drawers do NOT affect these — drawer

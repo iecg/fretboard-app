@@ -1,5 +1,5 @@
 /* ============================================================================
- * Phase 04 Design System — Semantic Layer (Layer 2 of 3)
+ * Design System — Semantic Layer (Layer 2 of 3)
  * ============================================================================
  * Layer 1 (PRIMITIVES): src/index.css (color/shadow/z-index) + src/tokens.css
  *   (spacing/radius/type/transition durations). Raw values only.
@@ -22,14 +22,14 @@
  * ============================================================================
  */
 :root {
-  /* SELECTED-STATE TOKENS (consumed by plans 04-02, 04-03 active-state work) */
+  /* SELECTED-STATE TOKENS */
   --selected-bg: var(--caged-a-bg);
   --selected-fg: var(--caged-a-fg);
   --selected-border: var(--caged-a);
   --selected-chord-bg: var(--accent-secondary);
   --selected-chord-fg: #ffffff;
 
-  /* CHROME TOKENS (consumed by plan 04-03 SettingsOverlay retokenize — neutral surface only, NEVER caged) */
+  /* CHROME TOKENS — neutral surface only, NEVER caged */
   --chrome-bg: color-mix(in srgb, var(--bg-color) 84%, var(--surface-raised) 16%);
   --chrome-fg: var(--text-main);
   --chrome-fg-muted: var(--text-muted);
@@ -55,7 +55,7 @@
   --transition-motion: transform var(--transition-fast) ease, opacity var(--transition-base) ease;
 }
 
-/* .panel-surface variant classes — DEFINITIONS ONLY (applied in later phases per 04-CONTEXT.md:108-110) */
+/* .panel-surface variant classes */
 .panel-surface {
   background: var(--panel-surface-bg);
   border: var(--panel-surface-border);

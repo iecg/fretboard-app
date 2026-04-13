@@ -706,9 +706,8 @@
                       controls fit vertically
 
    The tablet-portrait vs desktop-expanded decision is a fit check in
-   App.tsx — see src/layout/constants.ts for the constants and
-   .vbw-planning/phases/06-desktop-layout-refactor/06-CONTEXT.md for
-   the algorithm. Landscape-tablet and the old desktop 3-col mode are
+   App.tsx — see src/layout/constants.ts for the constants and fit
+   algorithm. Landscape-tablet and the old desktop 3-col mode are
    gone — they collapsed into the adaptive decision.
    ============================================= */
 
