@@ -340,8 +340,8 @@
 
 .note-blue {
   color: white;
-  background-color: #9333ea;
-  box-shadow: 0 0 8px rgba(147, 51, 234, 0.5);
+  background-color: var(--note-blue);
+  box-shadow: 0 0 8px var(--note-blue-glow);
 }
 
 .note-dimmed {
