@@ -2873,7 +2873,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-expanded l
         class="controls-col-left flanking-controls-col"
       >
         <div
-          class="control-group"
+          class="control-group panel-surface"
         >
           <div
             class="control-section"
@@ -2980,7 +2980,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-expanded l
           </div>
         </div>
         <div
-          class="control-group"
+          class="control-group panel-surface"
         >
           <h2>
             Scale & Chord
@@ -3058,7 +3058,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-expanded l
         </div>
       </div>
       <div
-        class="control-group col-span-2 key-column flanking-key-col"
+        class="control-group col-span-2 key-column flanking-key-col panel-surface"
       >
         <h2>
           Key
@@ -3622,7 +3622,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-expanded l
       </div>
     </div>
     <div
-      class="summary-area"
+      class="summary-area panel-surface"
     >
       <div
         class="summary-row"
@@ -6645,7 +6645,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
         class="controls-col-left flanking-controls-col"
       >
         <div
-          class="control-group"
+          class="control-group panel-surface"
         >
           <div
             class="control-section"
@@ -6752,7 +6752,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
           </div>
         </div>
         <div
-          class="control-group"
+          class="control-group panel-surface"
         >
           <h2>
             Scale & Chord
@@ -6830,7 +6830,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
         </div>
       </div>
       <div
-        class="control-group col-span-2 key-column flanking-key-col"
+        class="control-group col-span-2 key-column flanking-key-col panel-surface"
       >
         <h2>
           Key
@@ -7394,7 +7394,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
       </div>
     </div>
     <div
-      class="summary-area"
+      class="summary-area panel-surface"
     >
       <div
         class="summary-row"
@@ -10414,7 +10414,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
       class="tablet-portrait-panel"
     >
       <div
-        class="tablet-portrait-settings-col"
+        class="tablet-portrait-settings-col panel-surface"
       >
         <div
           class="toggle-group toggle-group--default"
@@ -10512,7 +10512,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
         </div>
       </div>
       <div
-        class="tablet-portrait-cof-col"
+        class="tablet-portrait-cof-col panel-surface"
       >
         <h2>
           Key
@@ -11076,7 +11076,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
       </div>
     </div>
     <div
-      class="summary-area"
+      class="summary-area panel-surface"
     >
       <div
         class="summary-row"
@@ -14118,7 +14118,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
       </button>
     </div>
     <div
-      class="mobile-tab-content"
+      class="mobile-tab-content panel-surface"
     >
       <div
         class="mobile-tab-panel mobile-key-tab"
@@ -14684,7 +14684,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
           </div>
         </div>
         <div
-          class="summary-area"
+          class="summary-area panel-surface"
         >
           <div
             class="summary-row"
@@ -17734,7 +17734,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
       </button>
     </div>
     <div
-      class="mobile-tab-content"
+      class="mobile-tab-content panel-surface"
     >
       <div
         class="mobile-tab-panel mobile-key-tab"
@@ -18300,7 +18300,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
           </div>
         </div>
         <div
-          class="summary-area"
+          class="summary-area panel-surface"
         >
           <div
             class="summary-row"
@@ -21350,7 +21350,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
       </button>
     </div>
     <div
-      class="mobile-tab-content"
+      class="mobile-tab-content panel-surface"
     >
       <div
         class="mobile-tab-panel mobile-key-tab"
@@ -21916,7 +21916,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
           </div>
         </div>
         <div
-          class="summary-area"
+          class="summary-area panel-surface"
         >
           <div
             class="summary-row"
@@ -24941,7 +24941,7 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
         class="controls-col-left flanking-controls-col"
       >
         <div
-          class="control-group"
+          class="control-group panel-surface"
         >
           <div
             class="control-section"
@@ -25048,7 +25048,7 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
           </div>
         </div>
         <div
-          class="control-group"
+          class="control-group panel-surface"
         >
           <h2>
             Scale & Chord
@@ -25187,7 +25187,7 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
         </div>
       </div>
       <div
-        class="control-group col-span-2 key-column flanking-key-col"
+        class="control-group col-span-2 key-column flanking-key-col panel-surface"
       >
         <h2>
           Key
@@ -25751,7 +25751,7 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
       </div>
     </div>
     <div
-      class="summary-area"
+      class="summary-area panel-surface"
     >
       <div
         class="summary-row"
@@ -28851,7 +28851,7 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
         class="controls-col-left flanking-controls-col"
       >
         <div
-          class="control-group"
+          class="control-group panel-surface"
         >
           <div
             class="control-section"
@@ -28958,7 +28958,7 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
           </div>
         </div>
         <div
-          class="control-group"
+          class="control-group panel-surface"
         >
           <h2>
             Scale & Chord
@@ -29096,7 +29096,7 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
         </div>
       </div>
       <div
-        class="control-group col-span-2 key-column flanking-key-col"
+        class="control-group col-span-2 key-column flanking-key-col panel-surface"
       >
         <h2>
           Key
@@ -29660,7 +29660,7 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
       </div>
     </div>
     <div
-      class="summary-area"
+      class="summary-area panel-surface"
     >
       <div
         class="summary-row"
