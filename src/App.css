@@ -822,7 +822,6 @@
   .fretboard-wrapper {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    padding-top: 0;
   }
 
   .fretboard-toolbar {
