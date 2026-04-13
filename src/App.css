@@ -437,6 +437,7 @@
 }
 
 .circle-fifths-container {
+  container-type: inline-size;
   flex: 1;
   display: flex;
   align-items: center;
