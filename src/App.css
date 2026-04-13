@@ -1292,6 +1292,11 @@
   border-color: var(--accent-primary);
 }
 
+.drawer-trigger:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
 .drawer-label {
   font-size: var(--text-xs);
   color: var(--text-muted);
@@ -1361,6 +1366,11 @@
 .drawer-option:hover {
   background: var(--surface-raised);
   color: white;
+}
+
+.drawer-option:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: -2px;
 }
 
 .drawer-option.active {
