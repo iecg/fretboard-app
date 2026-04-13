@@ -1050,10 +1050,15 @@
   overflow-y: auto;
   align-self: start;
   max-height: calc(100vh - 120px);
+  /* Explicit grid placement: left column */
+  grid-column: 1;
+  grid-row: 2;
 }
 
-.app-container[data-layout-mode="landscape-wide-flanking"] .fretboard-wrapper {
-  flex: 1 1 auto;
+/* Main fretboard element serves as the center column in flanking-wide layout */
+.app-container[data-layout-mode="landscape-wide-flanking"] > main.main-fretboard {
+  grid-column: 2;
+  grid-row: 2;
   min-width: 0;
   overflow-x: auto;
   align-self: start;
@@ -1071,6 +1076,17 @@
   align-items: center;
   justify-content: center;
   align-self: start;
+  /* Explicit grid placement: right column */
+  grid-column: 3;
+  grid-row: 2;
+}
+
+/* CoF aspect-ratio constraint inside flanking-key-col — prevents clipping at low viewport heights */
+.app-container[data-layout-mode="landscape-wide-flanking"] .flanking-key-col .circle-fifths-container {
+  max-width: 320px;
+  max-height: 320px;
+  width: 100%;
+  aspect-ratio: 1;
 }
 
 .app-container[data-layout-mode="landscape-wide-flanking"] .flanking-key-col h2 {
