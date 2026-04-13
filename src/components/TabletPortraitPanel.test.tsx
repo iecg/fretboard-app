@@ -100,6 +100,5 @@ describe("TabletPortraitPanel", () => {
     expect(setRootNote).toHaveBeenCalledWith("G");
   });
 
-  // Accidental toggle was removed from TabletPortraitPanel in plan 01-03;
-  // the Accidentals control now lives in SettingsOverlay.
+  // Accidentals control lives in SettingsOverlay, not this panel.
 });

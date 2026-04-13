@@ -23,11 +23,11 @@
  */
 :root {
   /* SELECTED-STATE TOKENS */
-  --selected-bg: var(--caged-a-bg);
-  --selected-fg: var(--caged-a-fg);
-  --selected-border: var(--caged-a);
-  --selected-chord-bg: var(--accent-secondary);
-  --selected-chord-fg: #ffffff;
+  --selected-bg: var(--selection-accent-bg);
+  --selected-fg: var(--selection-accent-fg);
+  --selected-border: var(--selection-accent);
+  --selected-chord-bg: var(--chord-accent);
+  --selected-chord-fg: var(--chord-accent-fg);
 
   /* CHROME TOKENS — neutral surface only, NEVER caged */
   --chrome-bg: color-mix(in srgb, var(--bg-color) 84%, var(--surface-raised) 16%);

@@ -23,6 +23,11 @@
   --shadow-note-active: 0 0 6px rgba(10, 132, 255, 0.3);
   --shadow-ping-start: rgba(10, 132, 255, 0.5);
   --shadow-ping-end: rgba(10, 132, 255, 0);
+  --selection-accent: #3b82f6;
+  --selection-accent-fg: #eff6ff;
+  --selection-accent-bg: rgba(59, 130, 246, 0.18);
+  --chord-accent: #ff9f0a;
+  --chord-accent-fg: #ffffff;
   --caged-e: #ef4444;
   --caged-e-fg: #fff1f2;
   --caged-d: #eab308;
