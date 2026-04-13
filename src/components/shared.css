@@ -49,8 +49,9 @@
 }
 
 .toggle-btn.active {
-  background-color: var(--caged-a-bg);
-  color: var(--caged-a-fg);
+  background-color: var(--selected-bg);
+  color: var(--selected-fg);
+  border-color: var(--selected-border);
   box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
 }
 
@@ -129,8 +130,8 @@
 }
 
 .note-btn.active {
-  background: var(--accent-secondary);
-  color: white;
+  background: var(--selected-chord-bg);
+  color: var(--selected-chord-fg);
   border-color: transparent;
 }
 
