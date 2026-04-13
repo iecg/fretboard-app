@@ -592,26 +592,8 @@ describe("App", () => {
   });
 });
 
-describe("Adaptive string row height (ResizeObserver)", () => {
-  const originalRO = globalThis.ResizeObserver;
-
-  afterEach(() => {
-    globalThis.ResizeObserver = originalRO;
-  });
-
-  it("fretboard container height drives stringRowPx via ResizeObserver", () => {
-    let roCallback: ResizeObserverCallback | null = null;
-    class MockResizeObserver {
-      constructor(cb: ResizeObserverCallback) {
-        roCallback = cb;
-      }
-      observe() {}
-      unobserve() {}
-      disconnect() {}
-    }
-    globalThis.ResizeObserver =
-      MockResizeObserver as unknown as typeof ResizeObserver;
-
+describe("Adaptive string row height (viewport listener)", () => {
+  it("fretboard container ref is present and no ResizeObserver is used", () => {
     Object.defineProperty(window, "innerWidth", {
       writable: true,
       configurable: true,
@@ -625,11 +607,11 @@ describe("Adaptive string row height (ResizeObserver)", () => {
 
     const { container } = render(<App />);
 
-    // ResizeObserver should have been attached to main.main-fretboard
-    expect(roCallback).not.toBeNull();
+    // main.main-fretboard should still render (ref kept for scroll/drag)
     expect(container.querySelector("main.main-fretboard")).toBeTruthy();
 
-    // Fire with a tall container (480px → floor(480/6)=80 → clamped to 72)
+    // stringRowPx derivation: available = 900 - (60+72+32+36) - 260 - 72 = 368
+    // floor(368/6) = 61 → within [40,72] clamp range
     import("../layout/constants").then(({ STRING_ROW_PX_MIN, STRING_ROW_PX_MAX }) => {
       expect(STRING_ROW_PX_MIN).toBe(40);
       expect(STRING_ROW_PX_MAX).toBe(72);

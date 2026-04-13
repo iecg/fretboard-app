@@ -63,12 +63,14 @@ import {
 import SettingsOverlay from "./components/SettingsOverlay";
 import {
   CONTROL_HEIGHTS,
+  CONTROLS_MIN_HEIGHT,
   FRETBOARD_MIN_HEIGHT,
   LAYOUT_CHROME_HEIGHT,
   SMALL_PHONE_HEIGHT_THRESHOLD,
   STRING_ROW_PX_MIN,
   STRING_ROW_PX_MAX,
   STRING_ROW_PX_SMALL,
+  SUMMARY_MIN_HEIGHT,
 } from "./layout/constants";
 import "./App.css";
 
@@ -212,25 +214,38 @@ function AppContent() {
   // Settings overlay (non-persisted)
   const setSettingsOverlayOpen = useSetAtom(settingsOverlayOpenAtom);
 
-  // Adaptive string row height via ResizeObserver on the fretboard container.
-  // Derives Math.floor(containerHeight / 6) clamped to [STRING_ROW_PX_MIN, STRING_ROW_PX_MAX].
+  // Adaptive string row height via viewport-aware derivation.
+  // Derives stringRowPx from available viewport height (window.innerHeight minus
+  // chrome and minimum control/summary heights) so the fretboard shrinks when the
+  // viewport is too short to show all controls at full size.
+  // Prior approach used a ResizeObserver on the fretboard container, but the
+  // container never shrinks (flex: 1 1 0 absorbs space), so the observer saw an
+  // inflated height and kept stringRowPx high even when controls were off-screen.
   const fretboardContainerRef = useRef<HTMLElement>(null);
   const [adaptiveStringRowPx, setAdaptiveStringRowPx] =
     useState<number>(STRING_ROW_PX_MIN);
   useLayoutEffect(() => {
-    const el = fretboardContainerRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver((entries) => {
-      const h = entries[0]?.contentRect.height ?? 0;
-      if (h > 0) {
-        const derived = Math.floor(h / 6);
-        setAdaptiveStringRowPx(
-          Math.max(STRING_ROW_PX_MIN, Math.min(STRING_ROW_PX_MAX, derived)),
-        );
-      }
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
+    const handleResize = () => {
+      const viewportH = window.innerHeight;
+      const chromeH =
+        LAYOUT_CHROME_HEIGHT.header +
+        LAYOUT_CHROME_HEIGHT.summary +
+        LAYOUT_CHROME_HEIGHT.version +
+        LAYOUT_CHROME_HEIGHT.outerGap;
+      // Available fretboard height = viewport minus chrome minus per-container floors
+      const availableFretboardH = Math.max(
+        0,
+        viewportH - chromeH - CONTROLS_MIN_HEIGHT - SUMMARY_MIN_HEIGHT,
+      );
+      const derived = Math.floor(availableFretboardH / 6);
+      setAdaptiveStringRowPx(
+        Math.max(STRING_ROW_PX_MIN, Math.min(STRING_ROW_PX_MAX, derived)),
+      );
+    };
+
+    handleResize(); // run once on mount
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Viewport / mobile detection (not persisted)
@@ -286,7 +301,7 @@ function AppContent() {
   const isDesktopExpanded = layoutMode === "desktop-expanded";
 
   // String row height — small phones use reduced fixed size; all other viewports
-  // use the ResizeObserver-derived adaptive value clamped to [STRING_ROW_PX_MIN, STRING_ROW_PX_MAX].
+  // use the viewport-derived adaptive value clamped to [STRING_ROW_PX_MIN, STRING_ROW_PX_MAX].
   const stringRowPx =
     isMobile && viewportHeight <= SMALL_PHONE_HEIGHT_THRESHOLD
       ? STRING_ROW_PX_SMALL
