@@ -50,6 +50,7 @@ const ENHARMONIC_DISPLAY_OPTIONS = [
 
 type LayoutTier = "mobile" | "tablet" | "desktop";
 
+// Retained for: auto-close overlay on layout-tier change (resize/rotate detection).
 const getLayoutTier = (): LayoutTier => {
   if (window.innerWidth < 768) return "mobile";
   if (window.innerWidth < 1024) return "tablet";
