@@ -1,3 +1,26 @@
+/* ============================================================================
+ * Phase 04 Design System — Semantic Layer (Layer 2 of 3)
+ * ============================================================================
+ * Layer 1 (PRIMITIVES): src/index.css (color/shadow/z-index) + src/tokens.css
+ *   (spacing/radius/type/transition durations). Raw values only.
+ * Layer 2 (SEMANTIC):   THIS FILE. Purpose-named tokens that reference
+ *   primitives via var(). Component CSS (Layer 3) MUST consume from here,
+ *   never directly from primitives — except for layout-mode-agnostic raw
+ *   values (e.g. fretboard product tokens).
+ * Layer 3 (PRODUCT):    src/App.css + src/components/*.css. Consumes
+ *   semantic tokens. No raw hex. No direct primitive refs for active-state /
+ *   chrome / panel-surface concerns.
+ *
+ * RULES:
+ *   - Chrome tokens (--chrome-*) NEVER reference --caged-* (purple drawer bug
+ *     was caused by --settings-overlay-* deriving from --caged-g).
+ *   - Selected-state tokens (--selected-*) unify ALL .active selectors except
+ *     .note-btn.active (chord overlay — uses --selected-chord-*) and
+ *     .circle-slice.active (intentional neutral ring — exception preserved).
+ *   - Reduced-motion zeros transition tokens but does NOT delete them — keeps
+ *     selectors consistent.
+ * ============================================================================
+ */
 :root {
   /* SELECTED-STATE TOKENS (consumed by plans 04-02, 04-03 active-state work) */
   --selected-bg: var(--caged-a-bg);
