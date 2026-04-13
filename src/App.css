@@ -880,28 +880,6 @@
   }
 }
 
-/* Small-phone: portrait phones with viewport height <= 800px (e.g. iPhone SE at 667px) */
-@media (max-width: 767px) and (max-height: 800px) {
-  .circle-fifths-container {
-    max-height: 260px;
-  }
-
-  .mobile-tab-content {
-    padding: var(--space-1);
-  }
-
-  .mobile-tab-panel {
-    gap: var(--space-2);
-  }
-
-  .app-header {
-    padding-top: 0.25rem;
-    padding-bottom: 0.25rem;
-  }
-
-  /* Fretboard string rows are also reduced to 32px (from 40px) by the stringRowPx prop
-     in App.tsx when isMobile && viewportHeight <= 800. No transform:scale needed. */
-}
 
 /* =============================================
    LAYOUT MODE OVERRIDES (data-layout-mode attribute)
