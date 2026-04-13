@@ -61,6 +61,8 @@ import {
   enharmonicDisplayAtom,
 } from "./store/atoms";
 import SettingsOverlay from "./components/SettingsOverlay";
+import { FlankingWideLayout } from "./components/FlankingWideLayout";
+import { FlankingNarrowLayout } from "./components/FlankingNarrowLayout";
 import {
   CONTROL_HEIGHTS,
   FRETBOARD_MIN_HEIGHT,
@@ -76,6 +78,8 @@ const END_FRET = 24;
 type LayoutMode =
   | "mobile"
   | "landscape-mobile"
+  | "landscape-narrow-flanking"
+  | "landscape-wide-flanking"
   | "tablet-portrait"
   | "desktop-expanded";
 
@@ -250,15 +254,26 @@ function AppContent() {
     !isLandscapeMobile &&
     availableControlsHeight >= targetAHeight;
 
-  const layoutMode: LayoutMode = isLandscapeMobile
-    ? "landscape-mobile"
-    : isMobile
-      ? "mobile"
-      : fitsExpanded
-        ? "desktop-expanded"
-        : "tablet-portrait";
+  let layoutMode: LayoutMode;
+  if (isLandscapeMobile) {
+    layoutMode = "landscape-mobile";
+  } else if (isMobile) {
+    layoutMode = "mobile";
+  } else if (viewportHeight < 1000) {
+    // NEW: landscape short-height flanking (non-mobile, height < 1000)
+    layoutMode =
+      viewportWidth <= 1024
+        ? "landscape-narrow-flanking"
+        : "landscape-wide-flanking";
+  } else if (fitsExpanded) {
+    layoutMode = "desktop-expanded";
+  } else {
+    layoutMode = "tablet-portrait";
+  }
   const isTabletPortrait = layoutMode === "tablet-portrait";
   const isDesktopExpanded = layoutMode === "desktop-expanded";
+  const isLandscapeNarrowFlanking = layoutMode === "landscape-narrow-flanking";
+  const isLandscapeWideFlanking = layoutMode === "landscape-wide-flanking";
 
   // String row height — reduced on small phones (≤800px tall, e.g. iPhone SE at 667px) to fit
   // the fretboard natively without squishing it horizontally via transform:scale().
@@ -599,6 +614,10 @@ function AppContent() {
 
       {/* Controls Panel — Target A layout when the viewport has room */}
       {isDesktopExpanded && <ExpandedControlsPanel />}
+
+      {/* Flanking layouts — landscape short-height variants */}
+      {isLandscapeWideFlanking && <FlankingWideLayout />}
+      {isLandscapeNarrowFlanking && <FlankingNarrowLayout />}
 
       {/* Summary bar — desktop and tablet-portrait (mobile shows it in Key tab) */}
       {(!isMobile || isTabletPortrait) && summaryContent}
