@@ -28,6 +28,11 @@
   cursor: default;
 }
 
+.fret-btn:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
 .fret-value {
   font-size: var(--text-xs);
   font-weight: 700;

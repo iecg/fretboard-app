@@ -32,8 +32,8 @@
 }
 
 .mobile-tab-bar.toggle-group .mobile-tab.active {
-  background: var(--surface-highlight);
-  color: var(--text-on-highlight);
+  background: var(--selected-bg);
+  color: var(--selected-fg);
 }
 
 .mobile-tab-bar.toggle-group .mobile-tab:hover:not(.active) {
