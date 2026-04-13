@@ -33,7 +33,9 @@ export const FRETBOARD_MIN_HEIGHT = 280;
 
 // Fretboard string row heights (px). Small phones use the reduced row size
 // to fit the fretboard vertically without additional scaling.
-export const STRING_ROW_PX = 40;
+export const STRING_ROW_PX_MIN = 40;   // clamp floor — matches legacy default
+export const STRING_ROW_PX_MAX = 72;   // clamp ceiling — comfortable at 1440p
+export const STRING_ROW_PX = STRING_ROW_PX_MIN; // legacy alias — use STRING_ROW_PX_MIN for new code
 export const STRING_ROW_PX_SMALL = 32;
 export const SMALL_PHONE_HEIGHT_THRESHOLD = 800;
 
