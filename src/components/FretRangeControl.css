@@ -1,0 +1,71 @@
+.fret-range-control {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.fret-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.fret-btn {
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  background: var(--surface-raised);
+  border: 1px solid var(--surface-highlight);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+  line-height: 1.2;
+}
+
+.fret-btn:hover:not(:disabled) {
+  color: white;
+  border-color: var(--accent-primary);
+}
+
+.fret-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.fret-value {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--text-main);
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+.range-separator {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  padding: 0 var(--space-1);
+}
+
+.fret-label {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  min-width: 2.5rem;
+}
+
+.fret-range-control.toolbar {
+  flex-direction: row;
+}
+
+.fret-range-control.mobile {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.fret-range-control.mobile .fret-btn {
+  min-height: 36px;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

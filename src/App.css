@@ -1,3 +1,5 @@
+@import './components/shared.css';
+
 /* Custom Scrollbar Styles */
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
@@ -154,7 +156,7 @@
   display: none;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 767px) {
   .kofi-btn-desktop { display: none; }
   .kofi-btn-mobile { display: block; }
 }
@@ -421,21 +423,6 @@
   flex: 1;
 }
 
-/* Labeled sub-sections within a control group */
-.control-section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.section-label {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
 .col-span-2 {
   flex: 2;
   overflow: hidden;
@@ -477,47 +464,6 @@
 .control-group .icon {
   width: 1rem;
   height: 1rem;
-}
-
-.toggle-group {
-  display: flex;
-  background-color: var(--surface-raised);
-  border: 1px solid var(--surface-highlight);
-  border-radius: var(--radius-md);
-  padding: var(--space-1);
-}
-
-.toggle-btn {
-  flex: 1;
-  padding: 0.375rem var(--space-2);
-  font-size: var(--text-xs);
-  font-weight: 500;
-  border-radius: var(--radius-sm);
-  transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
-  text-transform: capitalize;
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-}
-
-.toggle-btn:hover {
-  color: white;
-}
-
-.toggle-btn:active {
-  transform: scale(0.96);
-}
-
-.toggle-btn:focus-visible {
-  outline: 2px solid var(--accent-primary);
-  outline-offset: 2px;
-}
-
-.toggle-btn.active {
-  background-color: var(--surface-highlight);
-  color: white;
-  box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
 }
 
 /* Mode grid */
@@ -571,29 +517,6 @@
 .key-column > h2 {
   display: block;
   text-align: center;
-}
-
-.accidental-toggle {
-  font-size: 1.4rem;
-  width: 2.5rem;
-  height: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: 1px solid var(--surface-highlight);
-  border-radius: 9999px;
-  color: var(--text-muted);
-  cursor: pointer;
-  position: absolute;
-  top: 0;
-  right: 0;
-  transition: color var(--transition-fast), border-color var(--transition-fast);
-}
-
-.accidental-toggle:hover {
-  color: white;
-  border-color: var(--text-muted);
 }
 
 .badge {
@@ -774,12 +697,18 @@
 
 /* =============================================
    RESPONSIVE LAYOUT
-   Desktop ≥1024px : default (3-col flex row, viewport-fit)
-   Tablet 768–1023px: 2×2 CSS Grid, viewport-fit
-   Mobile <768px    : single-col, page scroll
+   Breakpoints (JS-driven via data-layout-mode; CSS media queries match):
+     Mobile         <768px      portrait  → single-col, page scroll
+     Landscape-mob  <768px      landscape → fretboard hero, minimal chrome
+     Tablet-portrait 768–1365px portrait  → stacked grid, tab panel (data-layout-mode)
+     Landscape-tab  1024–1365px landscape → 2-col controls (data-layout-mode)
+     Desktop        ≥1366px               → 3-col flex row, viewport-fit
+
+   CSS max-width: 767px is equivalent to JS viewportWidth < 768 for integer widths.
    ============================================= */
 
-/* Tablet: 2×2 grid layout */
+/* CSS fallback for 768–1023px landscape (falls through to desktop layoutMode in JS,
+   since landscape-tablet requires ≥1024px). Gives controls a 2-column grid. */
 @media (min-width: 768px) and (max-width: 1023px) {
   .controls-panel {
     display: grid;
@@ -920,45 +849,6 @@
 
 
 
-  /* Tab bar visible on mobile */
-  .mobile-tab-bar {
-    display: flex;
-    background: var(--surface-raised);
-    border-radius: var(--radius-sm);
-    margin: 0 var(--space-3);
-    padding: var(--space-1);
-    gap: var(--space-1);
-  }
-
-  .mobile-tab {
-    flex: 1;
-    padding: var(--space-1);
-    min-height: 32px;
-    background: none;
-    border: none;
-    border-radius: var(--radius-sm);
-    color: var(--text-muted);
-    font-size: var(--text-xs);
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    -webkit-tap-highlight-color: transparent;
-    transition: background-color var(--transition-fast), color var(--transition-fast);
-  }
-
-  .mobile-tab.active {
-    background: var(--surface-highlight);
-    color: white;
-  }
-
-  .mobile-tab:hover:not(.active) {
-    color: var(--text-main);
-  }
-
-  .mobile-tab-content {
-    padding: 0 var(--space-3);
-  }
-
   .mobile-tab-panel {
     display: flex;
     flex-direction: column;
@@ -1017,6 +907,9 @@
 
   .mobile-tab-content {
     padding: 0.25rem;
+  }
+
+  .mobile-tab-panel {
     gap: 0.25rem;
   }
 
@@ -1025,8 +918,8 @@
     padding-bottom: 0.25rem;
   }
 
-  /* iPhone SE: fretboard height is reduced natively via stringRowPx prop (32px per string
-     instead of 40px) when isMobile && viewportHeight <= 700. No transform:scale needed. */
+  /* Fretboard string rows are also reduced to 32px (from 40px) by the stringRowPx prop
+     in App.tsx when isMobile && viewportHeight <= 800. No transform:scale needed. */
 }
 
 /* =============================================
@@ -1074,67 +967,25 @@
   grid-row: 5;
 }
 
-/* New two-column panel */
-.app-container[data-layout-mode="tablet-portrait"] .tablet-portrait-panel {
-  grid-column: 1;
-  grid-row: 3;
-  display: flex;
-  flex-direction: row;
-  gap: 0.75rem;
-  min-height: 0;
-  min-width: 0;
-  width: 100%;
-}
-
-.tablet-portrait-settings-col {
-  flex: 1 1 0;
-  min-width: 140px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  overflow-y: auto;
-}
-
-.tablet-portrait-cof-col {
-  flex: 2 1 0;
-  min-width: 0;
-  max-width: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 0.5rem;
-  position: relative;
-}
-
-.tablet-portrait-cof-col > h2 {
-  margin: 0;
-}
-
-.tablet-tab-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.tablet-tab-content .mobile-tab-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
 
 /* Landscape tablet: two-column controls layout */
-@media (max-width: 1366px) {
-  .app-container[data-layout-mode="landscape-tablet"] .controls-panel {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-    align-items: start;
-  }
+/* data-layout-mode="landscape-tablet" covers width 768–1365px landscape */
+.app-container[data-layout-mode="landscape-tablet"] .controls-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto 1fr;
+  gap: 0.5rem;
+  align-items: start;
+}
 
-  .app-container[data-layout-mode="landscape-tablet"] .circle-fifths-container {
-    max-height: min(45vh, 420px);
-  }
+/* CoF (col-span-2) must span full width row in landscape-tablet 2-col grid */
+.app-container[data-layout-mode="landscape-tablet"] .controls-panel .col-span-2 {
+  grid-column: 1 / -1;
+  flex: unset;
+}
+
+.app-container[data-layout-mode="landscape-tablet"] .circle-fifths-container {
+  max-height: min(45vh, 420px);
 }
 
 /* Landscape mobile: fretboard hero, minimal chrome */
@@ -1213,6 +1064,11 @@
   cursor: pointer;
   transition: color var(--transition-fast), border-color var(--transition-fast);
   line-height: 1.2;
+  min-height: 1.75rem;
+  min-width: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .toolbar-btn:hover:not(:disabled) {
@@ -1374,61 +1230,6 @@
   opacity: 0.55;
   pointer-events: none;
   margin-top: var(--space-1);
-}
-
-/* ===== Chord Root Row ===== */
-.chord-root-row {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.note-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 3px;
-}
-
-.note-btn {
-  padding: var(--space-1) 0;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  background: var(--surface-raised);
-  border: 1px solid var(--surface-highlight);
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
-  cursor: pointer;
-  text-align: center;
-  transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
-}
-
-.note-btn:hover {
-  color: white;
-  border-color: var(--accent-secondary);
-}
-
-.note-btn.active {
-  background: var(--accent-secondary);
-  color: white;
-  border-color: transparent;
-}
-
-/* ===== Link Toggle ===== */
-.link-toggle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-  cursor: pointer;
-  user-select: none;
-}
-
-.link-toggle input[type="checkbox"] {
-  accent-color: var(--accent-primary);
-  width: 0.875rem;
-  height: 0.875rem;
-  cursor: pointer;
 }
 
 /* ===== Version Badge ===== */

@@ -1,0 +1,42 @@
+/* ToggleBar — variant overrides for "tabs" variant */
+/* "default" variant reuses .toggle-group and .toggle-btn from shared.css */
+
+/* Ensure toggle-group base always visible (shared.css defines it, no override needed) */
+
+/* "tabs" variant: mobile-tab-bar / mobile-tab styles */
+/* These override the display:none set in App.css for .mobile-tab-bar */
+.mobile-tab-bar.toggle-group {
+  display: flex;
+  background: var(--surface-raised);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1);
+  gap: var(--space-1);
+  /* Remove App.css margin (designed for full-width mobile layout) */
+  margin: 0;
+  /* Remove border inherited from toggle-group base in shared.css */
+  border: none;
+}
+
+.mobile-tab-bar.toggle-group .mobile-tab {
+  flex: 1;
+  padding: var(--space-1);
+  min-height: 2rem;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.mobile-tab-bar.toggle-group .mobile-tab.active {
+  background: var(--surface-highlight);
+  color: white;
+}
+
+.mobile-tab-bar.toggle-group .mobile-tab:hover:not(.active) {
+  color: var(--text-main);
+}

@@ -1,0 +1,49 @@
+.stepper-control {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.stepper-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.stepper-btn {
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  background: var(--surface-raised);
+  border: 1px solid var(--surface-highlight);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+  line-height: 1.2;
+}
+
+.stepper-btn:hover:not(:disabled) {
+  color: white;
+  border-color: var(--accent-primary);
+}
+
+.stepper-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.stepper-value {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--text-main);
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+.stepper-control.mobile .stepper-btn {
+  min-height: 36px;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

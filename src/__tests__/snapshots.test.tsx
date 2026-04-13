@@ -465,6 +465,23 @@ describe('Component Snapshots', () => {
       const { container } = render(<App />);
       expect(container).toMatchSnapshot('app-iphone-12-pro-portrait');
     });
+
+    it('renders iPad landscape layout (1024×768)', () => {
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: 1024,
+      });
+      Object.defineProperty(window, 'innerHeight', {
+        writable: true,
+        configurable: true,
+        value: 768,
+      });
+
+      localStorage.clear();
+      const { container } = render(<App />);
+      expect(container).toMatchSnapshot('app-ipad-landscape');
+    });
   });
 });
 

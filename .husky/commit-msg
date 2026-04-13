@@ -1,0 +1,40 @@
+commit_msg=$(cat "$1")
+
+# Allow merge commits and fixup/squash commits
+if echo "$commit_msg" | grep -qE "^(Merge |Revert |fixup! |squash! )"; then
+  exit 0
+fi
+
+# Conventional commit pattern: type(optional-scope)[optional !]: description
+pattern="^(feat|fix|docs|style|refactor|test|chore|build|ci|perf|revert)(\(.+\))?(!)?: .+"
+
+if ! echo "$commit_msg" | grep -qE "$pattern"; then
+  echo ""
+  echo "Error: commit message does not follow Conventional Commits format."
+  echo ""
+  echo "  Expected:  type(optional-scope): description"
+  echo "  Valid types: feat fix docs style refactor test chore build ci perf revert"
+  echo ""
+  echo "  Examples:"
+  echo "    feat: add transpose shortcut to circle of fifths"
+  echo "    fix(fretboard): correct enharmonic display for Cb scale"
+  echo "    chore: bump vite to 8.1"
+  echo ""
+  exit 1
+fi
+
+subject=$(echo "$commit_msg" | head -1)
+
+if [ "${#subject}" -gt 72 ]; then
+  echo ""
+  echo "Error: commit subject line is ${#subject} characters — maximum is 72."
+  echo ""
+  exit 1
+fi
+
+if echo "$subject" | grep -qE "\.$"; then
+  echo ""
+  echo "Error: commit subject line must not end with a period."
+  echo ""
+  exit 1
+fi

@@ -32,8 +32,14 @@ import {
   type ShapePolygon,
 } from "./shapes";
 import { DrawerSelector } from "./DrawerSelector";
+import { FingeringPatternControls } from "./components/FingeringPatternControls";
+import { ScaleChordControls } from "./components/ScaleChordControls";
+import { TabletPortraitPanel } from "./components/TabletPortraitPanel";
+import { MobileTabPanel } from "./components/MobileTabPanel";
+import { DesktopControlsPanel } from "./components/DesktopControlsPanel";
+import { FretRangeControl } from "./components/FretRangeControl";
+import { StepperControl } from "./components/StepperControl";
 import {
-  type FingeringPattern,
   rootNoteAtom,
   scaleNameAtom,
   chordRootAtom,
@@ -188,7 +194,7 @@ function AppContent() {
   const isLandscapeMobile = viewportWidth < 768 && viewportHeight < viewportWidth;
   const isMobile = viewportWidth < 768 || isLandscapeMobile;
   const isTabletPortrait = viewportWidth >= 768 && viewportWidth < 1366 && viewportHeight >= viewportWidth;
-  const isLandscapeTablet = viewportWidth >= 1024 && viewportWidth < 1366 && viewportHeight < viewportWidth;
+  const isLandscapeTablet = viewportWidth >= 768 && viewportWidth < 1366 && viewportHeight < viewportWidth;
   type LayoutMode = 'mobile' | 'landscape-mobile' | 'tablet-portrait' | 'landscape-tablet' | 'desktop';
   const layoutMode: LayoutMode =
     isLandscapeMobile ? 'landscape-mobile' :
@@ -197,9 +203,10 @@ function AppContent() {
     isMobile          ? 'mobile' :
     'desktop';
 
-  // String row height — reduced on small phones (iPhone SE, 375×667) to fit the fretboard natively
-  // without squishing it horizontally via transform:scale().
-  const stringRowPx = (isMobile && viewportHeight <= 700) ? 32 : 40;
+  // String row height — reduced on small phones (≤800px tall, e.g. iPhone SE at 667px) to fit
+  // the fretboard natively without squishing it horizontally via transform:scale().
+  // Threshold matches the CSS small-phone media query (max-height: 800px).
+  const stringRowPx = (isMobile && viewportHeight <= 800) ? 32 : 40;
 
   // Tablet-portrait tab state (Jotai atom with localStorage persistence)
   const [tabletTab, setTabletTab] = useAtom(tabletTabAtom);
@@ -409,192 +416,43 @@ function AppContent() {
   // Mobile tab content — Scale & Chord tab
   const scaleChordTabContent = (
     <div className="mobile-tab-panel mobile-scale-chord-tab">
-      <DrawerSelector
-        label="Scale"
-        value={scaleName}
-        options={SCALE_OPTIONS}
-        onSelect={(v) => v && setScaleName(v)}
+      <ScaleChordControls
+        scaleName={scaleName}
+        setScaleName={setScaleName}
+        chordType={chordType}
+        setChordType={setChordType}
+        chordRoot={chordRoot}
+        setChordRoot={setChordRoot}
+        linkChordRoot={linkChordRoot}
+        setLinkChordRoot={setLinkChordRoot}
+        hideNonChordNotes={hideNonChordNotes}
+        setHideNonChordNotes={setHideNonChordNotes}
+        chordIntervalFilter={chordIntervalFilter}
+        setChordIntervalFilter={setChordIntervalFilter}
+        rootNote={rootNote}
+        useFlats={useFlats}
+        scaleOptions={SCALE_OPTIONS}
+        chordOptions={CHORD_OPTIONS}
+        chordFilterOptions={CHORD_FILTER_OPTIONS}
       />
-
-      <DrawerSelector
-        label="Chord Overlay"
-        value={chordType}
-        options={CHORD_OPTIONS}
-        onSelect={(v) => {
-          setChordType(v);
-          if (v && linkChordRoot) setChordRoot(rootNote);
-        }}
-        nullable
-      />
-
-      {chordType && (
-        <>
-          <div className="chord-root-row">
-            <label className="link-toggle">
-              <input
-                type="checkbox"
-                checked={linkChordRoot}
-                onChange={(e) => {
-                  setLinkChordRoot(e.target.checked);
-                  if (e.target.checked) setChordRoot(rootNote);
-                }}
-              />
-              <span>Link chord root to scale</span>
-            </label>
-            {!linkChordRoot && (
-              <>
-                <span className="section-label">Chord Root</span>
-                <div className="note-grid">
-                  {NOTES.map((n) => (
-                    <button
-                      key={n}
-                      className={`note-btn ${chordRoot === n ? "active" : ""}`}
-                      onClick={() => setChordRoot(n)}
-                    >
-                      {formatAccidental(getNoteDisplay(n, n, useFlats))}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-
-          <label className="link-toggle">
-            <input
-              type="checkbox"
-              checked={hideNonChordNotes}
-              onChange={(e) => setHideNonChordNotes(e.target.checked)}
-            />
-            <span>Chord only (hide scale)</span>
-          </label>
-
-          <DrawerSelector
-            label="Interval Filter"
-            value={chordIntervalFilter}
-            options={CHORD_FILTER_OPTIONS}
-            onSelect={(v) => v && setChordIntervalFilter(v)}
-          />
-        </>
-      )}
     </div>
   );
 
   // Mobile tab content — Settings tab
   const settingsTabContent = (
     <div className="mobile-tab-panel mobile-settings-tab">
-      <div className="control-section">
-        <span className="section-label">Fingering Pattern</span>
-        <div className="toggle-group">
-          {(["all", "caged", "3nps"] as FingeringPattern[]).map((fp) => (
-            <button
-              key={fp}
-              className={`toggle-btn ${fingeringPattern === fp ? "active" : ""}`}
-              onClick={() => setFingeringPattern(fp)}
-            >
-              {fp === "all" ? "All" : fp.toUpperCase()}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {fingeringPattern === "caged" && (
-        <>
-          <div className="control-section">
-            <span className="section-label">Shape</span>
-            <div className="toggle-group">
-              <button
-                className={`toggle-btn ${cagedShapes.size === CAGED_SHAPES.length ? "active" : ""}`}
-                onClick={() => setCagedShapes(new Set(CAGED_SHAPES))}
-              >
-                All
-              </button>
-              {CAGED_SHAPES.map((s) => (
-                <button
-                  key={s}
-                  className={`toggle-btn ${cagedShapes.has(s) ? "active" : ""}`}
-                  onClick={(e) => {
-                    if (e.shiftKey) {
-                      setCagedShapes((prev) => {
-                        const next = new Set(prev);
-                        if (next.has(s)) {
-                          if (next.size > 1) next.delete(s);
-                        } else {
-                          next.add(s);
-                        }
-                        return next;
-                      });
-                    } else {
-                      setCagedShapes(new Set([s]));
-                    }
-                  }}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="control-section">
-            <span className="section-label">Shape Labels</span>
-            <div className="toggle-group">
-              {(["none", "caged", "modal"] as const).map((opt) => (
-                <button
-                  key={opt}
-                  className={`toggle-btn ${shapeLabels === opt ? "active" : ""}`}
-                  onClick={() => setShapeLabels(opt)}
-                >
-                  {opt === "none"
-                    ? "None"
-                    : opt === "caged"
-                      ? "CAGED"
-                      : "Modal"}
-                </button>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-
-      {fingeringPattern === "3nps" && (
-        <div className="control-section">
-          <span className="section-label">Position</span>
-          <div className="toggle-group">
-            <button
-              className={`toggle-btn ${npsPosition === 0 ? "active" : ""}`}
-              onClick={() => setNpsPosition(0)}
-            >
-              All
-            </button>
-            {[1, 2, 3, 4, 5, 6, 7].map((p) => (
-              <button
-                key={p}
-                className={`toggle-btn ${npsPosition === p ? "active" : ""}`}
-                onClick={() => setNpsPosition(p)}
-              >
-                {p}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="control-section">
-        <span className="section-label">Note Labels</span>
-        <div className="toggle-group">
-          {(["notes", "degrees", "none"] as const).map((fmt) => (
-            <button
-              key={fmt}
-              className={`toggle-btn ${displayFormat === fmt ? "active" : ""}`}
-              onClick={() => setDisplayFormat(fmt)}
-            >
-              {fmt === "notes"
-                ? "Notes"
-                : fmt === "degrees"
-                  ? "Intervals"
-                  : "None"}
-            </button>
-          ))}
-        </div>
-      </div>
+      <FingeringPatternControls
+        fingeringPattern={fingeringPattern}
+        setFingeringPattern={setFingeringPattern}
+        cagedShapes={cagedShapes}
+        setCagedShapes={setCagedShapes}
+        npsPosition={npsPosition}
+        setNpsPosition={setNpsPosition}
+        shapeLabels={shapeLabels}
+        setShapeLabels={setShapeLabels}
+        displayFormat={displayFormat}
+        setDisplayFormat={setDisplayFormat}
+      />
 
       <div className="control-section">
         <DrawerSelector
@@ -608,20 +466,28 @@ function AppContent() {
       {!isTabletPortrait && (
         <div className="control-section">
           <span className="section-label">Fret Range</span>
-          <div className="fret-range-mobile">
-            <div className="fret-range-group">
-              <span className="fret-range-label">Start</span>
-              <button className="toolbar-btn" onClick={() => setFretStart(s => Math.max(0, s - 1))} disabled={fretStart <= 0}>−</button>
-              <span className="toolbar-range-val">{fretStart}</span>
-              <button className="toolbar-btn" onClick={() => setFretStart(s => Math.min(fretEnd - 1, s + 1))} disabled={fretStart >= fretEnd - 1}>+</button>
-            </div>
-            <div className="fret-range-group">
-              <span className="fret-range-label">End</span>
-              <button className="toolbar-btn" onClick={() => setFretEnd(e => Math.max(fretStart + 1, e - 1))} disabled={fretEnd <= fretStart + 1}>−</button>
-              <span className="toolbar-range-val">{fretEnd}</span>
-              <button className="toolbar-btn" onClick={() => setFretEnd(e => Math.min(END_FRET, e + 1))} disabled={fretEnd >= END_FRET}>+</button>
-            </div>
-          </div>
+          <FretRangeControl
+            startFret={fretStart}
+            endFret={fretEnd}
+            onStartChange={(v) => setFretStart(v)}
+            onEndChange={(v) => setFretEnd(v)}
+            maxFret={END_FRET}
+            layout="mobile"
+          />
+        </div>
+      )}
+      {!isTabletPortrait && (
+        <div className="control-section">
+          <StepperControl
+            label="Zoom"
+            value={fretZoom}
+            onChange={(v) => setFretZoom(v)}
+            min={100}
+            max={300}
+            step={10}
+            formatValue={(z) => z <= 100 ? 'Auto' : `${z}%`}
+            buttonVariant="mobile"
+          />
         </div>
       )}
     </div>
@@ -719,48 +585,17 @@ function AppContent() {
 
       {/* Tablet-portrait two-column panel: Settings/Scales tabs (left) + CoF (right) */}
       {isTabletPortrait && (
-        <div className="tablet-portrait-panel">
-          {/* Left column: Settings/Scales tabs */}
-          <div className="tablet-portrait-settings-col">
-            <div className="toggle-group">
-              <button
-                className={`toggle-btn ${tabletTab === 'settings' ? 'active' : ''}`}
-                onClick={() => setTabletTab('settings')}
-              >Settings</button>
-              <button
-                className={`toggle-btn ${tabletTab === 'scales' ? 'active' : ''}`}
-                onClick={() => setTabletTab('scales')}
-              >Scales</button>
-            </div>
-            {tabletTab === 'settings' && (
-              <div className="tablet-tab-content">
-                {settingsTabContent}
-              </div>
-            )}
-            {tabletTab === 'scales' && (
-              <div className="tablet-tab-content">
-                {scaleChordTabContent}
-              </div>
-            )}
-          </div>
-          {/* Right column: CoF fixed-width */}
-          <div className="tablet-portrait-cof-col">
-            <h2>Key</h2>
-            <button
-              className="accidental-toggle"
-              onClick={() => setUseFlats(prev => !prev)}
-              title={useFlats ? 'Showing flats — click for sharps' : 'Showing sharps — click for flats'}
-            >
-              {useFlats ? '♭' : '♯'}
-            </button>
-            <CircleOfFifths
-              rootNote={rootNote}
-              setRootNote={handleSetRootNote}
-              scaleName={scaleName}
-              useFlats={useFlats}
-            />
-          </div>
-        </div>
+        <TabletPortraitPanel
+          tabletTab={tabletTab}
+          setTabletTab={setTabletTab}
+          settingsTabContent={settingsTabContent}
+          scaleChordTabContent={scaleChordTabContent}
+          rootNote={rootNote}
+          setRootNote={handleSetRootNote}
+          scaleName={scaleName}
+          useFlats={useFlats}
+          setUseFlats={(flats) => setUseFlats(flats)}
+        />
       )}
 
       {/* Summary bar — desktop and tablet-portrait (mobile shows it in Key tab) */}
@@ -768,256 +603,17 @@ function AppContent() {
 
       {/* Mobile inline tab bar + content — hidden on desktop */}
       {isMobile && (
-        <>
-          <div className="mobile-tab-bar">
-            <button
-              className={`mobile-tab ${mobileTab === 'key' ? 'active' : ''}`}
-              onClick={() => setMobileTab('key')}
-            >
-              Key
-            </button>
-            <button
-              className={`mobile-tab ${mobileTab === 'scale' ? 'active' : ''}`}
-              onClick={() => setMobileTab('scale')}
-            >
-              Scale
-            </button>
-            <button
-              className={`mobile-tab ${mobileTab === 'settings' ? 'active' : ''}`}
-              onClick={() => setMobileTab('settings')}
-            >
-              Settings
-            </button>
-          </div>
-          <div className="mobile-tab-content">
-            {mobileTab === 'key' && keyTabContent}
-            {mobileTab === 'scale' && scaleChordTabContent}
-            {mobileTab === 'settings' && settingsTabContent}
-          </div>
-        </>
+        <MobileTabPanel
+          mobileTab={mobileTab}
+          setMobileTab={setMobileTab}
+          keyTabContent={keyTabContent}
+          scaleChordTabContent={scaleChordTabContent}
+          settingsTabContent={settingsTabContent}
+        />
       )}
 
       {/* Controls Panel */}
-      <div className="controls-panel">
-        {/* Col 1: Settings */}
-        <div className="control-group">
-          <div className="control-section">
-            <span className="section-label">Fingering Pattern</span>
-            <div className="toggle-group">
-              {(["all", "caged", "3nps"] as FingeringPattern[]).map((fp) => (
-                <button
-                  key={fp}
-                  className={`toggle-btn ${fingeringPattern === fp ? "active" : ""}`}
-                  onClick={() => setFingeringPattern(fp)}
-                >
-                  {fp === "all" ? "All" : fp.toUpperCase()}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {fingeringPattern === "caged" && (
-            <>
-              <div className="control-section">
-                <span className="section-label">Shape</span>
-                <div className="toggle-group">
-                  <button
-                    className={`toggle-btn ${cagedShapes.size === CAGED_SHAPES.length ? "active" : ""}`}
-                    onClick={() => setCagedShapes(new Set(CAGED_SHAPES))}
-                  >
-                    All
-                  </button>
-                  {CAGED_SHAPES.map((s) => (
-                    <button
-                      key={s}
-                      className={`toggle-btn ${cagedShapes.has(s) ? "active" : ""}`}
-                      onClick={(e) => {
-                        if (e.shiftKey) {
-                          setCagedShapes((prev) => {
-                            const next = new Set(prev);
-                            if (next.has(s)) {
-                              if (next.size > 1) next.delete(s);
-                            } else {
-                              next.add(s);
-                            }
-                            return next;
-                          });
-                        } else {
-                          setCagedShapes(new Set([s]));
-                        }
-                      }}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="control-section">
-                <span className="section-label">Shape Labels</span>
-                <div className="toggle-group">
-                  {(["none", "caged", "modal"] as const).map((opt) => (
-                    <button
-                      key={opt}
-                      className={`toggle-btn ${shapeLabels === opt ? "active" : ""}`}
-                      onClick={() => setShapeLabels(opt)}
-                    >
-                      {opt === "none"
-                        ? "None"
-                        : opt === "caged"
-                          ? "CAGED"
-                          : "Modal"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-
-          {fingeringPattern === "3nps" && (
-            <div className="control-section">
-              <span className="section-label">Position</span>
-              <div className="toggle-group">
-                <button
-                  className={`toggle-btn ${npsPosition === 0 ? "active" : ""}`}
-                  onClick={() => setNpsPosition(0)}
-                >
-                  All
-                </button>
-                {[1, 2, 3, 4, 5, 6, 7].map((p) => (
-                  <button
-                    key={p}
-                    className={`toggle-btn ${npsPosition === p ? "active" : ""}`}
-                    onClick={() => setNpsPosition(p)}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="control-section">
-            <span className="section-label">Note Labels</span>
-            <div className="toggle-group">
-              {(["notes", "degrees", "none"] as const).map((fmt) => (
-                <button
-                  key={fmt}
-                  className={`toggle-btn ${displayFormat === fmt ? "active" : ""}`}
-                  onClick={() => setDisplayFormat(fmt)}
-                >
-                  {fmt === "notes"
-                    ? "Notes"
-                    : fmt === "degrees"
-                      ? "Intervals"
-                      : "None"}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <DrawerSelector
-            label="Tuning"
-            value={tuningName}
-            options={Object.keys(TUNINGS)}
-            onSelect={(v) => v && setTuningName(v)}
-          />
-        </div>
-
-        {/* Col 2: Circle of Fifths + Chord Root — hidden in tablet-portrait (rendered below fretboard instead) */}
-        {!isTabletPortrait && (
-          <div className="control-group col-span-2 key-column">
-            <h2>Key</h2>
-            {!isMobile && (
-              <button
-                className="accidental-toggle"
-                onClick={() => setUseFlats(prev => !prev)}
-                title={useFlats ? 'Showing flats — click for sharps' : 'Showing sharps — click for flats'}
-              >
-                {useFlats ? '♭' : '♯'}
-              </button>
-            )}
-            <CircleOfFifths
-              rootNote={rootNote}
-              setRootNote={handleSetRootNote}
-              scaleName={scaleName}
-              useFlats={useFlats}
-            />
-          </div>
-        )}
-
-        {/* Col 3: Scale & Chord drawers */}
-        <div className="control-group">
-          <h2>Scale & Chord</h2>
-
-          <DrawerSelector
-            label="Scale"
-            value={scaleName}
-            options={SCALE_OPTIONS}
-            onSelect={(v) => v && setScaleName(v)}
-          />
-
-          <DrawerSelector
-            label="Chord Overlay"
-            value={chordType}
-            options={CHORD_OPTIONS}
-            onSelect={(v) => {
-              setChordType(v);
-              if (v && linkChordRoot) setChordRoot(rootNote);
-            }}
-            nullable
-          />
-
-          {chordType && (
-            <>
-              <div className="chord-root-row">
-                <label className="link-toggle">
-                  <input
-                    type="checkbox"
-                    checked={linkChordRoot}
-                    onChange={(e) => {
-                      setLinkChordRoot(e.target.checked);
-                      if (e.target.checked) setChordRoot(rootNote);
-                    }}
-                  />
-                  <span>Link chord root to scale</span>
-                </label>
-                {!linkChordRoot && (
-                  <>
-                    <span className="section-label">Chord Root</span>
-                    <div className="note-grid">
-                      {NOTES.map((n) => (
-                        <button
-                          key={n}
-                          className={`note-btn ${chordRoot === n ? "active" : ""}`}
-                          onClick={() => setChordRoot(n)}
-                        >
-                          {formatAccidental(getNoteDisplay(n, n, useFlats))}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <label className="link-toggle">
-                <input
-                  type="checkbox"
-                  checked={hideNonChordNotes}
-                  onChange={(e) => setHideNonChordNotes(e.target.checked)}
-                />
-                <span>Chord only (hide scale)</span>
-              </label>
-
-              <DrawerSelector
-                label="Interval Filter"
-                value={chordIntervalFilter}
-                options={CHORD_FILTER_OPTIONS}
-                onSelect={(v) => v && setChordIntervalFilter(v)}
-              />
-            </>
-          )}
-        </div>
-      </div>
+      <DesktopControlsPanel isTabletPortrait={isTabletPortrait} isMobile={isMobile} />
 
       <div className="version-badge">
         v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar. Licensed under <a href="https://www.gnu.org/licenses/agpl-3.0" target="_blank" rel="noopener noreferrer">AGPL v3</a>.

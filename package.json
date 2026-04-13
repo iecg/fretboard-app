@@ -17,6 +17,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "jotai": "^2.19.1",
     "lucide-react": "^1.7.0",
