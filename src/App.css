@@ -1364,8 +1364,8 @@
 }
 
 .drawer-option.active {
-  background: var(--accent-primary);
-  color: white;
+  background: var(--selected-bg);
+  color: var(--selected-fg);
   font-weight: 500;
 }
 
