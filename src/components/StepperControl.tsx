@@ -1,4 +1,5 @@
-import './StepperControl.css';
+import clsx from "clsx";
+import "./StepperControl.css";
 
 export interface StepperControlProps {
   value: number;
@@ -8,7 +9,7 @@ export interface StepperControlProps {
   step?: number;
   label?: string;
   formatValue?: (val: number) => string;
-  buttonVariant?: 'toolbar' | 'mobile';
+  buttonVariant?: "toolbar" | "mobile";
 }
 
 export function StepperControl({
@@ -19,13 +20,14 @@ export function StepperControl({
   step = 1,
   label,
   formatValue = String,
-  buttonVariant = 'toolbar',
+  buttonVariant = "toolbar",
 }: StepperControlProps) {
   return (
-    <div className={`stepper-control ${buttonVariant}`}>
+    <div className={clsx("stepper-control", buttonVariant)}>
       {label && <span className="section-label">{label}</span>}
       <div className="stepper-group">
         <button
+          type="button"
           className="stepper-btn"
           onClick={() => onChange(Math.max(min, value - step))}
           disabled={value <= min}
@@ -34,6 +36,7 @@ export function StepperControl({
         </button>
         <span className="stepper-value">{formatValue(value)}</span>
         <button
+          type="button"
           className="stepper-btn"
           onClick={() => onChange(Math.min(max, value + step))}
           disabled={value >= max}

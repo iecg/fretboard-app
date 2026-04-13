@@ -1,19 +1,22 @@
+import type React from "react";
 import { ToggleBar } from "./ToggleBar";
 import "./MobileTabPanel.css";
-
-interface MobileTabPanelProps {
-  mobileTab: "key" | "scale" | "fretboard";
-  setMobileTab: (tab: "key" | "scale" | "fretboard") => void;
-  keyTabContent: React.ReactNode;
-  scaleChordTabContent: React.ReactNode;
-  settingsTabContent: React.ReactNode;
-}
 
 const MOBILE_TAB_OPTIONS = [
   { value: "key", label: "Key" },
   { value: "scale", label: "Scales" },
   { value: "fretboard", label: "Controls" },
-];
+] as const;
+
+type MobileTabValue = (typeof MOBILE_TAB_OPTIONS)[number]["value"];
+
+interface MobileTabPanelProps {
+  mobileTab: MobileTabValue;
+  setMobileTab: (tab: MobileTabValue) => void;
+  keyTabContent: React.ReactNode;
+  scaleChordTabContent: React.ReactNode;
+  settingsTabContent: React.ReactNode;
+}
 
 export function MobileTabPanel({
   mobileTab,
@@ -27,7 +30,7 @@ export function MobileTabPanel({
       <ToggleBar
         options={MOBILE_TAB_OPTIONS}
         value={mobileTab}
-        onChange={(v) => setMobileTab(v as "key" | "scale" | "fretboard")}
+        onChange={setMobileTab}
         variant="tabs"
       />
       <div className="mobile-tab-content">

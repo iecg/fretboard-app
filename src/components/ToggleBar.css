@@ -33,9 +33,17 @@
 
 .mobile-tab-bar.toggle-group .mobile-tab.active {
   background: var(--surface-highlight);
-  color: white;
+  color: var(--text-on-highlight);
 }
 
 .mobile-tab-bar.toggle-group .mobile-tab:hover:not(.active) {
   color: var(--text-main);
+}
+
+.mobile-tab-bar.toggle-group .mobile-tab:focus,
+.mobile-tab-bar.toggle-group .mobile-tab:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 24%, transparent);
+  color: var(--text-on-accent);
 }

@@ -32,6 +32,12 @@ export const LAYOUT_CHROME_HEIGHT = {
 // 1080p (24px of slack).
 export const FRETBOARD_MIN_HEIGHT = 280;
 
+// Fretboard string row heights (px). Small phones use the reduced row size
+// to fit the fretboard vertically without additional scaling.
+export const STRING_ROW_PX = 40;
+export const STRING_ROW_PX_SMALL = 32;
+export const SMALL_PHONE_HEIGHT_THRESHOLD = 800;
+
 // Container max-widths (rem). desktop-expanded uses the wider cap so
 // the fretboard has room to breathe on larger displays.
 export const APP_MAX_WIDTH_DESKTOP_REM = 120; // 1920px

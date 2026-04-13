@@ -36,7 +36,7 @@
 }
 
 .toggle-btn:hover {
-  color: white;
+  color: var(--caged-a-fg);
 }
 
 .toggle-btn:active {
@@ -49,8 +49,8 @@
 }
 
 .toggle-btn.active {
-  background-color: var(--surface-highlight);
-  color: white;
+  background-color: var(--caged-a-bg);
+  color: var(--caged-a-fg);
   box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
 }
 
@@ -73,8 +73,16 @@
 }
 
 .accidental-toggle:hover {
-  color: white;
+  color: var(--text-on-accent);
   border-color: var(--text-muted);
+}
+
+.accidental-toggle:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+  color: var(--text-on-accent);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 24%, transparent);
 }
 
 /* ===== Chord Root Row ===== */
@@ -108,6 +116,18 @@
   border-color: var(--accent-secondary);
 }
 
+.note-btn:active {
+  transform: scale(0.96);
+}
+
+.note-btn:focus-visible {
+  outline: 2px solid var(--accent-secondary);
+  outline-offset: 2px;
+  color: white;
+  border-color: var(--accent-secondary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-secondary) 24%, transparent);
+}
+
 .note-btn.active {
   background: var(--accent-secondary);
   color: white;
@@ -130,4 +150,11 @@
   width: 0.875rem;
   height: 0.875rem;
   cursor: pointer;
+}
+
+.link-toggle input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 24%, transparent);
 }

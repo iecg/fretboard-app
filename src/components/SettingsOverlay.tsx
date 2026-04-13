@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAtom, useSetAtom } from "jotai";
 import clsx from "clsx";
+import { AnimatePresence, motion } from "motion/react";
 import { X } from "lucide-react";
 import {
   settingsOverlayOpenAtom,
@@ -26,17 +27,26 @@ const ZOOM_MIN = 100;
 const ZOOM_MAX = 300;
 const ZOOM_STEP = 10;
 
+type AccidentalOptionValue = "auto" | "sharps" | "flats";
+type EnharmonicDisplayValue = "auto" | "on" | "off";
+
 const ACCIDENTAL_OPTIONS = [
   { label: "Auto", value: "auto" },
   { label: "\u266F", value: "sharps" },
   { label: "\u266D", value: "flats" },
-];
+] as const satisfies readonly {
+  label: string;
+  value: AccidentalOptionValue;
+}[];
 
 const ENHARMONIC_DISPLAY_OPTIONS = [
   { label: "Auto", value: "auto" },
   { label: "On", value: "on" },
   { label: "Off", value: "off" },
-];
+] as const satisfies readonly {
+  label: string;
+  value: EnharmonicDisplayValue;
+}[];
 
 type LayoutTier = "mobile" | "tablet" | "desktop";
 
@@ -52,7 +62,7 @@ function getFocusableElements(container: HTMLElement | null): HTMLElement[] {
     container.querySelectorAll<HTMLElement>(
       'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
     ),
-  ).filter((element) => !element.hasAttribute("aria-hidden"));
+  ).filter((element) => element.getAttribute("aria-hidden") !== "true");
 }
 
 export default function SettingsOverlay() {
@@ -62,7 +72,9 @@ export default function SettingsOverlay() {
   const [fretEnd, setFretEnd] = useAtom(fretEndAtom);
   const [tuningName, setTuningName] = useAtom(tuningNameAtom);
   const [accidentalMode, setAccidentalMode] = useAtom(accidentalModeAtom);
-  const [enharmonicDisplay, setEnharmonicDisplay] = useAtom(enharmonicDisplayAtom);
+  const [enharmonicDisplay, setEnharmonicDisplay] = useAtom(
+    enharmonicDisplayAtom,
+  );
   const [chordFretSpread, setChordFretSpread] = useAtom(chordFretSpreadAtom);
   const dispatchReset = useSetAtom(resetAtom);
   const [resetConfirming, setResetConfirming] = useState(false);
@@ -108,10 +120,7 @@ export default function SettingsOverlay() {
   useEffect(() => {
     if (!isOpen) return;
     const onResize = () => {
-      if (
-        openTierRef.current &&
-        getLayoutTier() !== openTierRef.current
-      ) {
+      if (openTierRef.current && getLayoutTier() !== openTierRef.current) {
         setIsOpen(false);
       }
     };
@@ -123,7 +132,9 @@ export default function SettingsOverlay() {
   useEffect(() => {
     if (!isOpen) return;
     triggerRef.current =
-      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
 
     const drawer = drawerRef.current;
     const focusInitial = window.requestAnimationFrame(() => {
@@ -171,116 +182,127 @@ export default function SettingsOverlay() {
   }, [isOpen, setIsOpen]);
 
   return (
-    <>
-      <div
-        className={clsx("settings-overlay-backdrop", { open: isOpen })}
-        onClick={close}
-        aria-hidden="true"
-      />
-      <div
-        className={clsx("settings-overlay-drawer", { open: isOpen })}
-        ref={drawerRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Settings"
-        aria-hidden={!isOpen}
-        tabIndex={-1}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="settings-overlay-header">
-          <span className="settings-overlay-title">Settings</span>
-          <button
-            type="button"
-            ref={closeButtonRef}
-            className="settings-overlay-close"
+    <AnimatePresence>
+      {isOpen ? (
+        <>
+          <motion.div
+            className="settings-overlay-backdrop"
             onClick={close}
-            aria-label="Close settings"
+            aria-hidden="true"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.24, ease: "easeOut" }}
+          />
+          <motion.div
+            className="settings-overlay-drawer"
+            ref={drawerRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Settings"
+            tabIndex={-1}
+            onClick={(e) => e.stopPropagation()}
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ duration: 0.24, ease: "easeOut" }}
           >
-            <X className="icon" />
-          </button>
-        </div>
-        <div className="settings-overlay-content">
-          <div className="overlay-control-group">
-            <StepperControl
-              label="Zoom"
-              value={fretZoom}
-              onChange={setFretZoom}
-              min={ZOOM_MIN}
-              max={ZOOM_MAX}
-              step={ZOOM_STEP}
-              formatValue={(z) => (z <= 100 ? "Auto" : `${z}%`)}
-              buttonVariant="mobile"
-            />
-          </div>
+            <div className="settings-overlay-header">
+              <span className="settings-overlay-title">Settings</span>
+              <button
+                type="button"
+                ref={closeButtonRef}
+                className="settings-overlay-close"
+                onClick={close}
+                aria-label="Close settings"
+              >
+                <X className="icon" />
+              </button>
+            </div>
+            <div className="settings-overlay-content">
+              <div className="overlay-control-group">
+                <StepperControl
+                  label="Zoom"
+                  value={fretZoom}
+                  onChange={setFretZoom}
+                  min={ZOOM_MIN}
+                  max={ZOOM_MAX}
+                  step={ZOOM_STEP}
+                  formatValue={(z) => (z <= 100 ? "Auto" : `${z}%`)}
+                  buttonVariant="mobile"
+                />
+              </div>
 
-          <div className="overlay-control-group">
-            <span className="overlay-control-label">Fret Range</span>
-            <FretRangeControl
-              startFret={fretStart}
-              endFret={fretEnd}
-              onStartChange={setFretStart}
-              onEndChange={setFretEnd}
-              maxFret={END_FRET}
-              layout="mobile"
-            />
-          </div>
+              <div className="overlay-control-group">
+                <span className="overlay-control-label">Fret Range</span>
+                <FretRangeControl
+                  startFret={fretStart}
+                  endFret={fretEnd}
+                  onStartChange={setFretStart}
+                  onEndChange={setFretEnd}
+                  maxFret={END_FRET}
+                  layout="mobile"
+                />
+              </div>
 
-          <div className="overlay-control-group">
-            <DrawerSelector
-              label="Tuning"
-              value={tuningName}
-              options={Object.keys(TUNINGS)}
-              onSelect={(v) => v && setTuningName(v)}
-            />
-          </div>
+              <div className="overlay-control-group">
+                <DrawerSelector
+                  label="Tuning"
+                  value={tuningName}
+                  options={Object.keys(TUNINGS)}
+                  onSelect={setTuningName}
+                />
+              </div>
 
-          <div className="overlay-control-group">
-            <StepperControl
-              label="Chord Spread"
-              value={chordFretSpread}
-              onChange={setChordFretSpread}
-              min={0}
-              max={4}
-              step={1}
-              buttonVariant="mobile"
-            />
-          </div>
+              <div className="overlay-control-group">
+                <StepperControl
+                  label="Chord Spread"
+                  value={chordFretSpread}
+                  onChange={setChordFretSpread}
+                  min={0}
+                  max={4}
+                  step={1}
+                  buttonVariant="mobile"
+                />
+              </div>
 
-          <div className="overlay-control-group overlay-control-group--accidentals">
-            <span className="overlay-control-label">Accidentals</span>
-            <ToggleBar
-              options={ACCIDENTAL_OPTIONS}
-              value={accidentalMode}
-              onChange={(v) =>
-                setAccidentalMode(v as "sharps" | "flats" | "auto")
-              }
-            />
-          </div>
+              <div className="overlay-control-group overlay-control-group--accidentals">
+                <span className="overlay-control-label">Accidentals</span>
+                <ToggleBar
+                  options={ACCIDENTAL_OPTIONS}
+                  value={accidentalMode}
+                  onChange={setAccidentalMode}
+                />
+              </div>
 
-          <div className="overlay-control-group">
-            <span className="overlay-control-label">Enharmonic Display</span>
-            <ToggleBar
-              options={ENHARMONIC_DISPLAY_OPTIONS}
-              value={enharmonicDisplay}
-              onChange={(v) =>
-                setEnharmonicDisplay(v as "auto" | "on" | "off")
-              }
-            />
-          </div>
+              <div className="overlay-control-group">
+                <span className="overlay-control-label">
+                  Enharmonic Display
+                </span>
+                <ToggleBar
+                  options={ENHARMONIC_DISPLAY_OPTIONS}
+                  value={enharmonicDisplay}
+                  onChange={setEnharmonicDisplay}
+                />
+              </div>
 
-          <div className="overlay-reset-section">
-            <button
-              type="button"
-              className={clsx("overlay-reset-btn", {
-                "overlay-reset-confirming": resetConfirming,
-              })}
-              onClick={handleResetClick}
-            >
-              {resetConfirming ? "Click again to confirm" : "Reset all settings"}
-            </button>
-          </div>
-        </div>
-      </div>
-    </>
+              <div className="overlay-reset-section">
+                <button
+                  type="button"
+                  className={clsx("overlay-reset-btn", {
+                    "overlay-reset-confirming": resetConfirming,
+                  })}
+                  onClick={handleResetClick}
+                >
+                  {resetConfirming
+                    ? "Click again to confirm"
+                    : "Reset all settings"}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </>
+      ) : null}
+    </AnimatePresence>
   );
 }

@@ -1,5 +1,11 @@
 import { useState, useMemo, useEffect } from "react";
-import { useAtom, useAtomValue, useSetAtom, createStore, Provider } from "jotai";
+import {
+  useAtom,
+  useAtomValue,
+  useSetAtom,
+  createStore,
+  Provider,
+} from "jotai";
 import { Fretboard } from "./Fretboard";
 import {
   SCALES,
@@ -59,6 +65,9 @@ import {
   CONTROL_HEIGHTS,
   FRETBOARD_MIN_HEIGHT,
   LAYOUT_CHROME_HEIGHT,
+  SMALL_PHONE_HEIGHT_THRESHOLD,
+  STRING_ROW_PX,
+  STRING_ROW_PX_SMALL,
 } from "./layout/constants";
 import "./App.css";
 
@@ -85,18 +94,29 @@ function SummaryNote({
 }) {
   const rootIdx = NOTES.indexOf(rootNote);
   const noteIdx = NOTES.indexOf(note);
-  const chromaticInterval = rootIdx !== -1 && noteIdx !== -1 ? (noteIdx - rootIdx + 12) % 12 : -1;
-  const degree = chromaticInterval !== -1 ? INTERVAL_NAMES[chromaticInterval] : null;
-  const romanNumeral = chromaticInterval !== -1 ? getDegreesForScale(scaleName)[chromaticInterval] : undefined;
+  const chromaticInterval =
+    rootIdx !== -1 && noteIdx !== -1 ? (noteIdx - rootIdx + 12) % 12 : -1;
+  const degree =
+    chromaticInterval !== -1 ? INTERVAL_NAMES[chromaticInterval] : null;
+  const romanNumeral =
+    chromaticInterval !== -1
+      ? getDegreesForScale(scaleName)[chromaticInterval]
+      : undefined;
   const degreeColor = romanNumeral ? DEGREE_COLORS[romanNumeral] : undefined;
   return (
     <span
       className={`summary-note${isChord ? " summary-note--chord" : ""}`}
-      style={degreeColor ? { outline: `2px solid ${degreeColor}`, outlineOffset: "-2px" } : undefined}
+      style={
+        degreeColor
+          ? { outline: `2px solid ${degreeColor}`, outlineOffset: "-2px" }
+          : undefined
+      }
     >
       <span className="summary-note-name">{formatAccidental(displayName)}</span>
       {degree && (
-        <span className="summary-note-degree" style={{ color: degreeColor }}>{formatAccidental(degree)}</span>
+        <span className="summary-note-degree" style={{ color: degreeColor }}>
+          {formatAccidental(degree)}
+        </span>
       )}
     </span>
   );
@@ -160,9 +180,13 @@ function AppContent() {
   const [chordRoot, setChordRoot] = useAtom(chordRootAtom);
   const [chordType, setChordType] = useAtom(chordTypeAtom);
   const [linkChordRoot, setLinkChordRoot] = useAtom(linkChordRootAtom);
-  const [hideNonChordNotes, setHideNonChordNotes] = useAtom(hideNonChordNotesAtom);
+  const [hideNonChordNotes, setHideNonChordNotes] = useAtom(
+    hideNonChordNotesAtom,
+  );
   const chordFretSpread = useAtomValue(chordFretSpreadAtom);
-  const [chordIntervalFilter, setChordIntervalFilter] = useAtom(chordIntervalFilterAtom);
+  const [chordIntervalFilter, setChordIntervalFilter] = useAtom(
+    chordIntervalFilterAtom,
+  );
 
   // Fingering
   const [fingeringPattern, setFingeringPattern] = useAtom(fingeringPatternAtom);
@@ -189,14 +213,16 @@ function AppContent() {
 
   // Viewport / mobile detection (not persisted)
   const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
-  const [viewportHeight, setViewportHeight] = useState(() => window.innerHeight);
+  const [viewportHeight, setViewportHeight] = useState(
+    () => window.innerHeight,
+  );
   useEffect(() => {
     const handler = () => {
       setViewportWidth(window.innerWidth);
       setViewportHeight(window.innerHeight);
     };
-    window.addEventListener('resize', handler);
-    return () => window.removeEventListener('resize', handler);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
   }, []);
   const isLandscapeMobile =
     viewportWidth < 768 && viewportHeight < viewportWidth;
@@ -237,7 +263,10 @@ function AppContent() {
   // String row height — reduced on small phones (≤800px tall, e.g. iPhone SE at 667px) to fit
   // the fretboard natively without squishing it horizontally via transform:scale().
   // Threshold matches the CSS small-phone media query (max-height: 800px).
-  const stringRowPx = (isMobile && viewportHeight <= 800) ? 32 : 40;
+  const stringRowPx =
+    isMobile && viewportHeight <= SMALL_PHONE_HEIGHT_THRESHOLD
+      ? STRING_ROW_PX_SMALL
+      : STRING_ROW_PX;
 
   // Tablet-portrait tab state (Jotai atom with localStorage persistence)
   const [tabletTab, setTabletTab] = useAtom(tabletTabAtom);
@@ -371,10 +400,9 @@ function AppContent() {
     if (!chordType || chordTones.length === 0) return [];
     const chordRootIdx = NOTES.indexOf(chordRoot);
     const chordToneSet = new Set(chordTones);
-    return NOTES
-      .slice(chordRootIdx)
+    return NOTES.slice(chordRootIdx)
       .concat(NOTES.slice(0, chordRootIdx))
-      .filter(n => chordToneSet.has(n));
+      .filter((n) => chordToneSet.has(n));
   }, [chordType, chordTones, chordRoot]);
 
   // Summary notes content (shared between mobile Key tab and desktop summary area)
@@ -389,7 +417,12 @@ function AppContent() {
               note={n}
               rootNote={rootNote}
               scaleName={scaleName}
-              displayName={getNoteDisplayInScale(n, rootNote, SCALES[scaleName] || [], useFlats)}
+              displayName={getNoteDisplayInScale(
+                n,
+                rootNote,
+                SCALES[scaleName] || [],
+                useFlats,
+              )}
             />
           ))}
         </div>
@@ -417,9 +450,7 @@ function AppContent() {
   // Mobile tab content — Key tab (CoF + accidental toggle + summary)
   const keyTabContent = (
     <div className="mobile-tab-panel mobile-key-tab">
-      <div
-        className="cof-container"
-      >
+      <div className="cof-container">
         <CircleOfFifths
           rootNote={rootNote}
           setRootNote={handleSetRootNote}
@@ -509,7 +540,7 @@ function AppContent() {
           </a>
           <button
             onClick={() => setSettingsOverlayOpen((v) => !v)}
-            className="mute-btn"
+            className="header-btn"
             title="Settings"
             aria-label="Open settings"
           >
@@ -517,7 +548,7 @@ function AppContent() {
           </button>
           <button
             onClick={toggleMute}
-            className="mute-btn"
+            className="header-btn"
             title={isMuted ? "Unmute" : "Mute"}
           >
             {isMuted ? (
@@ -584,7 +615,16 @@ function AppContent() {
       )}
 
       <div className="version-badge">
-        v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar. Licensed under <a href="https://www.gnu.org/licenses/agpl-3.0" target="_blank" rel="noopener noreferrer">AGPL v3</a>.
+        v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar.
+        Licensed under{" "}
+        <a
+          href="https://www.gnu.org/licenses/agpl-3.0"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          AGPL v3
+        </a>
+        .
       </div>
 
       <SettingsOverlay />

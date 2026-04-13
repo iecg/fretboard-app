@@ -1,5 +1,6 @@
-import { formatAccidental, getNoteDisplay } from '../theory';
-import './NoteGrid.css';
+import clsx from "clsx";
+import { formatAccidental, getNoteDisplay } from "../theory";
+import "./NoteGrid.css";
 
 interface NoteGridProps {
   notes: string[];
@@ -8,13 +9,20 @@ interface NoteGridProps {
   useFlats: boolean;
 }
 
-export function NoteGrid({ notes, selected, onSelect, useFlats }: NoteGridProps) {
+export function NoteGrid({
+  notes,
+  selected,
+  onSelect,
+  useFlats,
+}: NoteGridProps) {
   return (
     <div className="note-grid">
       {notes.map((n) => (
         <button
           key={n}
-          className={`note-btn${selected === n ? ' active' : ''}`}
+          type="button"
+          className={clsx("note-btn", { active: selected === n })}
+          aria-pressed={selected === n}
           onClick={() => onSelect(n)}
         >
           {formatAccidental(getNoteDisplay(n, n, useFlats))}

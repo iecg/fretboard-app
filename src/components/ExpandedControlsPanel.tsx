@@ -94,8 +94,12 @@ export function ExpandedControlsPanel() {
   const [chordRoot, setChordRoot] = useAtom(chordRootAtom);
   const [chordType, setChordType] = useAtom(chordTypeAtom);
   const [linkChordRoot, setLinkChordRoot] = useAtom(linkChordRootAtom);
-  const [hideNonChordNotes, setHideNonChordNotes] = useAtom(hideNonChordNotesAtom);
-  const [chordIntervalFilter, setChordIntervalFilter] = useAtom(chordIntervalFilterAtom);
+  const [hideNonChordNotes, setHideNonChordNotes] = useAtom(
+    hideNonChordNotesAtom,
+  );
+  const [chordIntervalFilter, setChordIntervalFilter] = useAtom(
+    chordIntervalFilterAtom,
+  );
   const accidentalMode = useAtomValue(accidentalModeAtom);
   const useFlats = useMemo(
     () => resolveAccidentalMode(rootNote, scaleName, accidentalMode),
@@ -124,7 +128,7 @@ export function ExpandedControlsPanel() {
             label="Tuning"
             value={tuningName}
             options={Object.keys(TUNINGS)}
-            onSelect={(v) => v && setTuningName(v)}
+            onSelect={setTuningName}
           />
         </div>
 

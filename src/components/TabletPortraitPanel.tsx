@@ -17,7 +17,7 @@ interface TabletPortraitPanelProps {
 const TABLET_TAB_OPTIONS = [
   { value: "settings", label: "Controls" },
   { value: "scales", label: "Scales" },
-];
+] as const;
 
 export function TabletPortraitPanel({
   tabletTab,
@@ -37,15 +37,12 @@ export function TabletPortraitPanel({
         <ToggleBar
           options={TABLET_TAB_OPTIONS}
           value={tabletTab}
-          onChange={(v) => setTabletTab(v as "settings" | "scales")}
+          onChange={setTabletTab}
           variant="default"
         />
-        {tabletTab === "settings" && (
-          <div className="tablet-tab-content">{settingsTabContent}</div>
-        )}
-        {tabletTab === "scales" && (
-          <div className="tablet-tab-content">{scaleChordTabContent}</div>
-        )}
+        <div className="tablet-tab-content">
+          {tabletTab === "settings" ? settingsTabContent : scaleChordTabContent}
+        </div>
       </div>
       {/* Right column: CoF fixed-width */}
       <div className="tablet-portrait-cof-col">

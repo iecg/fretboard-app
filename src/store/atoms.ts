@@ -62,6 +62,34 @@ const numberStorage = {
   },
 };
 
+const MOBILE_TABS = ["key", "scale", "fretboard"] as const;
+type MobileTab = (typeof MOBILE_TABS)[number];
+
+const mobileTabStorage = {
+  getItem(key: string, initialValue: MobileTab): MobileTab {
+    const stored = localStorage.getItem(key);
+    if (stored === null) {
+      localStorage.setItem(key, initialValue);
+      return initialValue;
+    }
+    if (stored === "settings") {
+      localStorage.setItem(key, "fretboard");
+      return "fretboard";
+    }
+    if ((MOBILE_TABS as readonly string[]).includes(stored)) {
+      return stored as MobileTab;
+    }
+    localStorage.setItem(key, initialValue);
+    return initialValue;
+  },
+  setItem(key: string, value: MobileTab): void {
+    localStorage.setItem(key, value);
+  },
+  removeItem(key: string): void {
+    localStorage.removeItem(key);
+  },
+};
+
 // chordType is stored as '' when null (matching old behavior)
 const chordTypeStorage = {
   getItem(key: string, initialValue: string | null): string | null {
@@ -107,16 +135,48 @@ const cagedShapesStorage = {
 // ---------------------------------------------------------------------------
 
 // Scale
-export const rootNoteAtom = atomWithStorage("rootNote", "C", rawStringStorage());
-export const scaleNameAtom = atomWithStorage("scaleName", "Major", rawStringStorage());
+export const rootNoteAtom = atomWithStorage(
+  "rootNote",
+  "C",
+  rawStringStorage(),
+);
+export const scaleNameAtom = atomWithStorage(
+  "scaleName",
+  "Major",
+  rawStringStorage(),
+);
 
 // Chord overlay
-export const chordRootAtom = atomWithStorage("chordRoot", "C", rawStringStorage());
-export const chordTypeAtom = atomWithStorage<string | null>("chordType", null, chordTypeStorage);
-export const linkChordRootAtom = atomWithStorage("linkChordRoot", true, booleanStorage);
-export const hideNonChordNotesAtom = atomWithStorage("hideNonChordNotes", false, booleanStorage);
-export const chordFretSpreadAtom = atomWithStorage("chordFretSpread", 0, numberStorage);
-export const chordIntervalFilterAtom = atomWithStorage("chordIntervalFilter", "All", rawStringStorage());
+export const chordRootAtom = atomWithStorage(
+  "chordRoot",
+  "C",
+  rawStringStorage(),
+);
+export const chordTypeAtom = atomWithStorage<string | null>(
+  "chordType",
+  null,
+  chordTypeStorage,
+);
+export const linkChordRootAtom = atomWithStorage(
+  "linkChordRoot",
+  true,
+  booleanStorage,
+);
+export const hideNonChordNotesAtom = atomWithStorage(
+  "hideNonChordNotes",
+  false,
+  booleanStorage,
+);
+export const chordFretSpreadAtom = atomWithStorage(
+  "chordFretSpread",
+  0,
+  numberStorage,
+);
+export const chordIntervalFilterAtom = atomWithStorage(
+  "chordIntervalFilter",
+  "All",
+  rawStringStorage(),
+);
 
 // Fingering
 export const fingeringPatternAtom = atomWithStorage<FingeringPattern>(
@@ -142,7 +202,11 @@ export const shapeLabelsAtom = atomWithStorage<"modal" | "caged" | "none">(
   "none",
   rawStringStorage<"modal" | "caged" | "none">(),
 );
-export const tuningNameAtom = atomWithStorage("tuningName", "Standard", rawStringStorage());
+export const tuningNameAtom = atomWithStorage(
+  "tuningName",
+  "Standard",
+  rawStringStorage(),
+);
 export const fretZoomAtom = atomWithStorage("fretZoom", 100, numberStorage);
 export const fretStartAtom = atomWithStorage("fretStart", 0, numberStorage);
 export const fretEndAtom = atomWithStorage("fretEnd", 24, numberStorage);
@@ -174,7 +238,7 @@ export const isMutedAtom = atomWithStorage("isMuted", false, booleanStorage);
 export const mobileTabAtom = atomWithStorage<"key" | "scale" | "fretboard">(
   "mobileTab",
   "key",
-  rawStringStorage<"key" | "scale" | "fretboard">(),
+  mobileTabStorage,
 );
 export const tabletTabAtom = atomWithStorage<"settings" | "scales">(
   "tabletTab",
@@ -182,8 +246,7 @@ export const tabletTabAtom = atomWithStorage<"settings" | "scales">(
   rawStringStorage<"settings" | "scales">(),
 );
 
-// Settings overlay — intentionally non-persisted, always starts closed
-// intentionally non-persisted — always starts closed
+// settingsOverlayOpenAtom is intentionally non-persisted and always starts closed.
 export const settingsOverlayOpenAtom = atom<boolean>(false);
 
 // ---------------------------------------------------------------------------
@@ -191,13 +254,10 @@ export const settingsOverlayOpenAtom = atom<boolean>(false);
 // ---------------------------------------------------------------------------
 
 // Sets rootNote and syncs chordRoot when linkChordRoot is enabled
-export const setRootNoteAtom = atom(
-  null,
-  (get, set, note: string) => {
-    set(rootNoteAtom, note);
-    if (get(linkChordRootAtom)) set(chordRootAtom, note);
-  },
-);
+export const setRootNoteAtom = atom(null, (get, set, note: string) => {
+  set(rootNoteAtom, note);
+  if (get(linkChordRootAtom)) set(chordRootAtom, note);
+});
 
 // Resets all persisted state to defaults and clears localStorage
 export const resetAtom = atom(null, (_get, set) => {

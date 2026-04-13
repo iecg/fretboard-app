@@ -1,9 +1,4 @@
-.stepper-control {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-}
-
+.stepper-control,
 .stepper-group {
   display: flex;
   align-items: center;
@@ -13,18 +8,26 @@
 .stepper-btn {
   padding: var(--space-1) var(--space-2);
   font-size: var(--text-xs);
-  background: var(--surface-raised);
-  border: 1px solid var(--surface-highlight);
+  background: var(--caged-a-bg);
+  border: 1px solid var(--caged-a);
   border-radius: var(--radius-sm);
-  color: var(--text-muted);
+  color: var(--caged-a);
   cursor: pointer;
-  transition: color var(--transition-fast), border-color var(--transition-fast);
+  transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
   line-height: 1.2;
 }
 
 .stepper-btn:hover:not(:disabled) {
-  color: white;
-  border-color: var(--accent-primary);
+  background: var(--caged-a);
+  color: var(--text-on-accent);
+  border-color: var(--caged-a);
+}
+
+.stepper-btn:focus-visible:not(:disabled) {
+  outline: 2px solid var(--caged-a);
+  outline-offset: 2px;
+  color: var(--text-on-accent);
+  border-color: var(--caged-a);
 }
 
 .stepper-btn:disabled {

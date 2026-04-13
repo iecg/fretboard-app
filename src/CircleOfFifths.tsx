@@ -1,4 +1,10 @@
-import { CIRCLE_OF_FIFTHS, getNoteDisplayInScale, getKeySignatureForDisplay, formatAccidental, SCALES } from "./theory";
+import {
+  CIRCLE_OF_FIFTHS,
+  getNoteDisplayInScale,
+  getKeySignatureForDisplay,
+  formatAccidental,
+  SCALES,
+} from "./theory";
 import { DEGREE_COLORS, getDegreesForScale } from "./degrees";
 import { getCircleNoteLabels } from "./circleOfFifthsUtils";
 
@@ -9,7 +15,6 @@ const OUTER_RADIUS = SIZE * 0.48;
 const INNER_RADIUS = SIZE * 0.26;
 const LABEL_RADIUS = SIZE * 0.39;
 const DEGREE_RADIUS = SIZE * 0.31;
-
 
 export function CircleOfFifths({
   rootNote,
@@ -25,10 +30,21 @@ export function CircleOfFifths({
   enharmonicDisplay?: "auto" | "on" | "off";
 }) {
   const rootIndex = CIRCLE_OF_FIFTHS.indexOf(rootNote);
+  const scaleIntervals = SCALES[scaleName] || [];
 
-  const rootDisplayLabel = getNoteDisplayInScale(rootNote, rootNote, SCALES[scaleName] || [], useFlats);
-  const keySig = getKeySignatureForDisplay(rootDisplayLabel, scaleName, useFlats);
-  const keySigText = keySig === 0 ? '♮' : keySig > 0 ? `${keySig}♯` : `${Math.abs(keySig)}♭`;
+  const rootDisplayLabel = getNoteDisplayInScale(
+    rootNote,
+    rootNote,
+    scaleIntervals,
+    useFlats,
+  );
+  const keySig = getKeySignatureForDisplay(
+    rootDisplayLabel,
+    scaleName,
+    useFlats,
+  );
+  const keySigText =
+    keySig === 0 ? "♮" : keySig > 0 ? `${keySig}♯` : `${Math.abs(keySig)}♭`;
 
   return (
     <div className="circle-fifths-container">
@@ -76,44 +92,88 @@ export function CircleOfFifths({
           const degreeMap = getDegreesForScale(scaleName);
           const degreeStr = degreeMap[chromaticInterval] ?? "";
 
-          const { primary, enharmonic } = getCircleNoteLabels(note, rootNote, useFlats, SCALES[scaleName] || [], enharmonicDisplay);
-          const noteFontSize = Math.max(15, isActive ? SIZE * 0.055 : SIZE * 0.048);
+          const { primary, enharmonic } = getCircleNoteLabels(
+            note,
+            rootNote,
+            useFlats,
+            scaleIntervals,
+            enharmonicDisplay,
+          );
+          const noteFontSize = Math.max(
+            15,
+            isActive ? SIZE * 0.055 : SIZE * 0.048,
+          );
           const degreeFontSize = Math.max(10, SIZE * 0.038);
 
           return (
             <g key={`text-group-${note}`} style={{ pointerEvents: "none" }}>
               {enharmonic !== null ? (
                 <text
-                  x={lx} y={ly}
-                  dominantBaseline="middle" textAnchor="middle"
+                  x={lx}
+                  y={ly}
+                  dominantBaseline="middle"
+                  textAnchor="middle"
                   fontSize={noteFontSize}
                   fontWeight="bold"
                   fill={isActive ? "var(--text-main)" : "var(--text-muted)"}
                 >
-                  <tspan x={lx} dy="-0.3em" stroke="rgba(0,0,0,0.3)" strokeWidth="2" paintOrder="stroke">{primary}</tspan>
-                  <tspan x={lx} dy="0.9em" fontSize={Math.max(11, noteFontSize * 0.65)} fontWeight="500" fill="rgba(255,255,255,0.85)" stroke="rgba(0,0,0,0.6)" strokeWidth="2.5" paintOrder="stroke">{enharmonic}</tspan>
+                  <tspan
+                    x={lx}
+                    dy="-0.3em"
+                    stroke="rgba(0,0,0,0.3)"
+                    strokeWidth="2"
+                    paintOrder="stroke"
+                  >
+                    {primary}
+                  </tspan>
+                  <tspan
+                    x={lx}
+                    dy="0.9em"
+                    fontSize={Math.max(11, noteFontSize * 0.65)}
+                    fontWeight="500"
+                    fill="rgba(255,255,255,0.85)"
+                    stroke="rgba(0,0,0,0.6)"
+                    strokeWidth="2.5"
+                    paintOrder="stroke"
+                  >
+                    {enharmonic}
+                  </tspan>
                 </text>
               ) : (
                 <text
-                  x={lx} y={ly}
-                  dominantBaseline="middle" textAnchor="middle"
+                  x={lx}
+                  y={ly}
+                  dominantBaseline="middle"
+                  textAnchor="middle"
                   fontSize={noteFontSize}
                   fontWeight="bold"
                   fill={isActive ? "var(--text-main)" : "var(--text-muted)"}
                 >
-                  <tspan x={lx} dy="0" stroke="rgba(0,0,0,0.3)" strokeWidth="2" paintOrder="stroke">{primary}</tspan>
+                  <tspan
+                    x={lx}
+                    dy="0"
+                    stroke="rgba(0,0,0,0.3)"
+                    strokeWidth="2"
+                    paintOrder="stroke"
+                  >
+                    {primary}
+                  </tspan>
                 </text>
               )}
 
               {degreeStr && (
                 <text
-                  x={dx} y={dy}
-                  dominantBaseline="middle" textAnchor="middle"
+                  x={dx}
+                  y={dy}
+                  dominantBaseline="middle"
+                  textAnchor="middle"
                   fill={DEGREE_COLORS[degreeStr] ?? "var(--accent-primary)"}
                   fontSize={degreeFontSize}
                   fontWeight="bold"
                   opacity={isActive ? 1.0 : 0.7}
-                  stroke="rgba(0,0,0,0.3)" strokeWidth="1.5" paintOrder="stroke"
+                  stroke="rgba(0,0,0,0.3)"
+                  strokeWidth="1.5"
+                  paintOrder="stroke"
                 >
                   {degreeStr}
                 </text>
@@ -127,20 +187,30 @@ export function CircleOfFifths({
 
         {/* Root note and key signature in center */}
         <text
-          x={CX} y={CY - SIZE * 0.04}
-          textAnchor="middle" dominantBaseline="middle"
-          fill="var(--text-muted)" fontSize={Math.max(15, SIZE * 0.05)}
+          x={CX}
+          y={CY - SIZE * 0.04}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fill="var(--text-muted)"
+          fontSize={Math.max(15, SIZE * 0.05)}
           fontWeight="bold"
-          stroke="rgba(0,0,0,0.3)" strokeWidth="2" paintOrder="stroke"
+          stroke="rgba(0,0,0,0.3)"
+          strokeWidth="2"
+          paintOrder="stroke"
         >
-          {formatAccidental(getNoteDisplayInScale(rootNote, rootNote, SCALES[scaleName] || [], useFlats))}
+          {formatAccidental(rootDisplayLabel)}
         </text>
         <text
-          x={CX} y={CY + SIZE * 0.04}
-          textAnchor="middle" dominantBaseline="middle"
-          fill="var(--accent-primary)" fontSize={Math.max(15, SIZE * 0.055)}
+          x={CX}
+          y={CY + SIZE * 0.04}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fill="var(--accent-primary)"
+          fontSize={Math.max(15, SIZE * 0.055)}
           fontWeight="bold"
-          stroke="rgba(0,0,0,0.3)" strokeWidth="2" paintOrder="stroke"
+          stroke="rgba(0,0,0,0.3)"
+          strokeWidth="2"
+          paintOrder="stroke"
         >
           {keySigText}
         </text>

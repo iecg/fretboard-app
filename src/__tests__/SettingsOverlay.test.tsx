@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
 import { Provider, createStore } from "jotai";
 import SettingsOverlay from "../components/SettingsOverlay";
+import { synth } from "../audio";
 import { settingsOverlayOpenAtom, fretZoomAtom } from "../store/atoms";
 
 // Mock the audio synth singleton — we only care that setMute is called on reset.
@@ -40,19 +41,14 @@ describe("SettingsOverlay", () => {
   });
 
   afterEach(() => {
-    localStorage.clear();
     vi.useRealTimers();
   });
 
   it("renders no visible drawer when closed", () => {
     const store = createStore();
-    // atom defaults to false
     renderOverlay(store);
-    // Drawer element exists for animation but should not be in the `open` state.
     const drawer = document.querySelector(".settings-overlay-drawer");
-    expect(drawer).toBeTruthy();
-    expect(drawer?.classList.contains("open")).toBe(false);
-    expect(drawer?.getAttribute("aria-hidden")).toBe("true");
+    expect(drawer).toBeNull();
   });
 
   it("renders drawer with Settings heading when open", () => {
@@ -60,7 +56,7 @@ describe("SettingsOverlay", () => {
     store.set(settingsOverlayOpenAtom, true);
     renderOverlay(store);
     const drawer = document.querySelector(".settings-overlay-drawer");
-    expect(drawer?.classList.contains("open")).toBe(true);
+    expect(drawer).toBeTruthy();
     expect(screen.getByText("Settings")).toBeTruthy();
   });
 
@@ -114,6 +110,7 @@ describe("SettingsOverlay", () => {
     // Zoom back to default (100) and overlay closed.
     expect(store.get(fretZoomAtom)).toBe(100);
     expect(store.get(settingsOverlayOpenAtom)).toBe(false);
+    expect(synth.setMute).toHaveBeenCalledWith(false);
   });
 
   it("reset confirmation auto-cancels after 3 seconds", () => {

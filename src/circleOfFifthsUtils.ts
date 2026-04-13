@@ -34,5 +34,5 @@ export function getCircleNoteLabels(
     const enh = ENHARMONICS[note] ?? null;
     return { primary: formatAccidental(note), enharmonic: enh ? formatAccidental(enh) : null };
   }
-  return { primary: note, enharmonic: null };
+  return { primary: formatAccidental(note), enharmonic: null };
 }
