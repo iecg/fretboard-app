@@ -11,7 +11,7 @@
 
 .tablet-portrait-settings-col {
   flex: 1 1 0;
-  min-width: 140px;
+  min-width: 280px;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
