@@ -587,6 +587,7 @@
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  min-height: 72px; /* UAT-01: matches SUMMARY_MIN_HEIGHT — prevents summary row from collapsing */
   gap: var(--space-2);
 }
 
@@ -820,6 +821,7 @@
   .mobile-tab-panel {
     display: flex;
     flex-direction: column;
+    min-height: 200px; /* UAT-01: mobile already scrolls; floor prevents tab content collapse */
     gap: var(--space-3);
   }
 
@@ -948,7 +950,7 @@
   grid-template-rows: 1fr;
   gap: var(--space-4);
   flex: 1 1 0;
-  min-height: 0;
+  min-height: 260px; /* UAT-01: prevent flex collapse squishing controls off-screen */
   min-width: 620px;
 }
 
@@ -957,6 +959,7 @@
   flex-direction: column;
   gap: var(--space-4);
   grid-column: 1;
+  min-height: 260px; /* UAT-01: prevent flex collapse squishing controls off-screen */
   min-width: 280px;
 }
 
@@ -964,6 +967,7 @@
   grid-column: 2;
   grid-row: 1;
   min-width: 0;
+  min-height: 260px; /* UAT-01: prevent flex collapse squishing key/CoF column off-screen */
   flex: unset;
   display: flex;
   flex-direction: column;
@@ -1258,3 +1262,14 @@
 
 /* POST-PHASE-05 INVARIANT: no background/border/border-radius outside :root,
    .panel-surface, and product-specific components (buttons, badges, fretboard). */
+
+/* ── Per-container vertical floor (UAT-01 fix) ──────────────────────────────
+   These min-heights prevent flex collapse squishing controls off-screen at
+   short viewport heights. Values match CONTROLS_MIN_HEIGHT (260px) and
+   SUMMARY_MIN_HEIGHT (72px) from src/layout/constants.ts.
+   Update both locations if control group heights change significantly.       */
+
+/* Tablet-portrait: controls panel row */
+.app-container[data-layout-mode="tablet-portrait"] .tablet-portrait-panel {
+  min-height: 260px; /* UAT-01: matches CONTROLS_MIN_HEIGHT */
+}
