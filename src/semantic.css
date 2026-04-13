@@ -1,0 +1,66 @@
+:root {
+  /* SELECTED-STATE TOKENS (consumed by plans 04-02, 04-03 active-state work) */
+  --selected-bg: var(--caged-a-bg);
+  --selected-fg: var(--caged-a-fg);
+  --selected-border: var(--caged-a);
+  --selected-chord-bg: var(--accent-secondary);
+  --selected-chord-fg: #ffffff;
+
+  /* CHROME TOKENS (consumed by plan 04-03 SettingsOverlay retokenize — neutral surface only, NEVER caged) */
+  --chrome-bg: color-mix(in srgb, var(--bg-color) 84%, var(--surface-raised) 16%);
+  --chrome-fg: var(--text-main);
+  --chrome-fg-muted: var(--text-muted);
+  --chrome-border: color-mix(in srgb, var(--surface-highlight) 80%, transparent);
+  --chrome-scrim: color-mix(in srgb, var(--bg-color) 68%, rgba(0, 0, 0, 0.32));
+  --chrome-hover-bg: var(--surface-highlight);
+
+  /* PANEL-SURFACE TOKENS */
+  --panel-surface-bg: var(--surface-base);
+  --panel-surface-border: 1px solid var(--surface-highlight);
+  --panel-surface-radius: var(--radius-xl);
+  --panel-surface-radius-compact: var(--radius-lg);
+  --panel-surface-pad: var(--space-4);
+  --panel-surface-pad-compact: var(--space-3) var(--space-4);
+
+  /* FOCUS-RING TOKEN */
+  --focus-ring: 2px solid var(--accent-primary);
+  --focus-ring-offset: 2px;
+
+  /* TRANSITION REGISTRY (per-element semantics referencing existing primitive durations) */
+  --transition-surface: background-color var(--transition-fast) ease, color var(--transition-fast) ease, border-color var(--transition-fast) ease;
+  --transition-accent: box-shadow var(--transition-fast) ease, fill var(--transition-fast) ease;
+  --transition-motion: transform var(--transition-fast) ease, opacity var(--transition-base) ease;
+}
+
+/* .panel-surface variant classes — DEFINITIONS ONLY (applied in later phases per 04-CONTEXT.md:108-110) */
+.panel-surface {
+  background: var(--panel-surface-bg);
+  border: var(--panel-surface-border);
+  border-radius: var(--panel-surface-radius);
+  padding: var(--panel-surface-pad);
+}
+
+.panel-surface--compact {
+  border-radius: var(--panel-surface-radius-compact);
+  padding: var(--panel-surface-pad-compact);
+}
+
+.panel-surface--inset {
+  padding: var(--space-2) var(--space-3);
+}
+
+/* Global reduced-motion guard — zeros transition tokens + kills keyframe animations */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-surface: none;
+    --transition-accent: none;
+    --transition-motion: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
