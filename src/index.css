@@ -51,28 +51,22 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  overflow: hidden;
 }
 
 /* Removed global wildcard transition — per-element transitions declared in App.css */
 
 #root {
   width: 100%;
+  min-width: 320px;
   height: 100vh;
+  min-height: 480px;
   display: flex;
   flex-direction: column;
   user-select: none;
   -webkit-user-select: none;
-}
-
-/* Mobile: allow page scroll instead of viewport-fit */
-@media (max-width: 767px) {
-  body {
-    overflow-y: auto;
-  }
-  #root {
-    height: auto;
-    min-height: 100dvh;
-  }
+  overflow-x: auto;
+  overflow-y: auto;
 }
 
 * {
