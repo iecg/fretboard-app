@@ -23,12 +23,6 @@
   box-shadow: var(--settings-overlay-shadow);
 }
 
-@media (max-width: 600px) {
-  .settings-overlay-drawer {
-    width: calc(100vw - 32px);
-  }
-}
-
 .settings-overlay-header {
   display: flex;
   align-items: center;
