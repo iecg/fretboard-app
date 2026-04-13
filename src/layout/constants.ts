@@ -26,7 +26,7 @@ export const LAYOUT_CHROME_HEIGHT = {
 } as const;
 
 // Minimum rendered fretboard height (px) used as the floor in the fit
-// calculation. Real measured height at STRING_ROW_PX=40 is ~314; 280
+// calculation. Real measured height at STRING_ROW_PX_MIN is ~314; 280
 // gives the fit check enough headroom to activate desktop-expanded at
 // 1080p (24px of slack).
 export const FRETBOARD_MIN_HEIGHT = 280;
