@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useLayoutEffect, useRef } from "react";
 import {
   useAtom,
   useAtomValue,
@@ -66,7 +66,8 @@ import {
   FRETBOARD_MIN_HEIGHT,
   LAYOUT_CHROME_HEIGHT,
   SMALL_PHONE_HEIGHT_THRESHOLD,
-  STRING_ROW_PX,
+  STRING_ROW_PX_MIN,
+  STRING_ROW_PX_MAX,
   STRING_ROW_PX_SMALL,
 } from "./layout/constants";
 import "./App.css";
@@ -211,6 +212,27 @@ function AppContent() {
   // Settings overlay (non-persisted)
   const setSettingsOverlayOpen = useSetAtom(settingsOverlayOpenAtom);
 
+  // Adaptive string row height via ResizeObserver on the fretboard container.
+  // Derives Math.floor(containerHeight / 6) clamped to [STRING_ROW_PX_MIN, STRING_ROW_PX_MAX].
+  const fretboardContainerRef = useRef<HTMLElement>(null);
+  const [adaptiveStringRowPx, setAdaptiveStringRowPx] =
+    useState<number>(STRING_ROW_PX_MIN);
+  useLayoutEffect(() => {
+    const el = fretboardContainerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      const h = entries[0]?.contentRect.height ?? 0;
+      if (h > 0) {
+        const derived = Math.floor(h / 6);
+        setAdaptiveStringRowPx(
+          Math.max(STRING_ROW_PX_MIN, Math.min(STRING_ROW_PX_MAX, derived)),
+        );
+      }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   // Viewport / mobile detection (not persisted)
   const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
   const [viewportHeight, setViewportHeight] = useState(
@@ -263,13 +285,12 @@ function AppContent() {
   const isTabletPortrait = layoutMode === "tablet-portrait";
   const isDesktopExpanded = layoutMode === "desktop-expanded";
 
-  // String row height — reduced on small phones (≤800px tall, e.g. iPhone SE at 667px) to fit
-  // the fretboard natively without squishing it horizontally via transform:scale().
-  // Threshold matches the CSS small-phone media query (max-height: 800px).
+  // String row height — small phones use reduced fixed size; all other viewports
+  // use the ResizeObserver-derived adaptive value clamped to [STRING_ROW_PX_MIN, STRING_ROW_PX_MAX].
   const stringRowPx =
     isMobile && viewportHeight <= SMALL_PHONE_HEIGHT_THRESHOLD
       ? STRING_ROW_PX_SMALL
-      : STRING_ROW_PX;
+      : adaptiveStringRowPx;
 
   // Tablet-portrait tab state (Jotai atom with localStorage persistence)
   const [tabletTab, setTabletTab] = useAtom(tabletTabAtom);
@@ -563,7 +584,7 @@ function AppContent() {
         </div>
       </header>
 
-      <main className="main-fretboard">
+      <main className="main-fretboard" ref={fretboardContainerRef}>
         <Fretboard
           tuning={currentTuning}
           highlightNotes={highlightNotes}
