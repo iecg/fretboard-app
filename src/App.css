@@ -982,9 +982,14 @@
 }
 
 .app-container[data-layout-mode="desktop-expanded"] .circle-fifths-container {
-  max-width: 500px;
-  max-height: 500px;
   aspect-ratio: 1;
+}
+
+@container (min-width: 300px) {
+  .circle-fifths-svg {
+    max-width: 90cqw;
+    max-height: 90cqw;
+  }
 }
 
 /* Landscape mobile: fretboard hero, minimal chrome */
@@ -1009,7 +1014,7 @@
 }
 
 .app-container[data-layout-mode="landscape-mobile"] .circle-fifths-container {
-  max-height: 160px;
+  max-height: 40cqh;
 }
 
 /* ===== Fretboard Outer + Toolbar ===== */
