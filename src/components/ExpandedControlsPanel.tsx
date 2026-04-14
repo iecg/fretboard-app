@@ -145,7 +145,6 @@ export function ScaleChordSection() {
 }
 
 /**
- * Extracted from ExpandedControlsPanel for reuse in flanking layouts (Phase 03).
  * Renders the key column: CircleOfFifths with heading.
  * Reads all required state from Jotai atoms directly.
  */
