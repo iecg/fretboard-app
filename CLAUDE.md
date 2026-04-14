@@ -127,27 +127,38 @@ auto-release.yml  — analyzes commits → computes semver → pushes annotated 
 
 | File | Purpose |
 |---|---|
-| `src/App.tsx` | Main component + state (~686 lines) |
-| `src/Fretboard.tsx` | Fretboard SVG viz |
-| `src/CircleOfFifths.tsx` | Circle of Fifths widget |
+| `src/App.tsx` | Layout orchestration + derived computations (~686 lines); adaptive layout mode, `stringRowPx` via `useLayoutEffect` |
+| `src/App.css` | Layout styles using `[data-layout-mode="..."]` selectors |
+| `src/Fretboard.tsx` | Pure fretboard SVG renderer; drag, zoom, click; dynamic `stringRowPx` prop (~510 lines) |
+| `src/CircleOfFifths.tsx` | Circle of Fifths SVG — root selection, chord degrees, min font sizes |
 | `src/circleOfFifthsUtils.ts` | Circle of Fifths pure helpers |
-| `src/DrawerSelector.tsx` | Reusable dropdown selector |
-| `src/store/atoms.ts` | Jotai atoms with localStorage persistence |
-| `src/layout/constants.ts` | Layout constants (STRING_ROW_PX, breakpoints) |
-| `src/components/SettingsOverlay.tsx` | Settings panel (extracted from App) |
-| `src/components/MobileTabPanel.tsx` | Mobile tab-based panel layout |
-| `src/components/TabletPortraitPanel.tsx` | Tablet portrait panel layout |
-| `src/theory.ts` | Music theory (scales, chords, intervals) |
-| `src/guitar.ts` | Tuning presets |
-| `src/shapes.ts` | CAGED + 3NPS shape data |
-| `src/audio.ts` | Web Audio API synth |
-| `src/degrees.ts` | Scale degree colors |
+| `src/DrawerSelector.tsx` | Reusable dropdown with upward-flip detection via `getBoundingClientRect` |
+| `src/store/atoms.ts` | All persistent state as Jotai `atomWithStorage` atoms + write atoms (~296 lines) |
+| `src/layout/constants.ts` | Playwright-measured layout tunables: `KEY_MIN_HEIGHT`, `CONTROLS_MIN_HEIGHT`, `STRING_ROW_PX_*`, `CONTROL_HEIGHTS`, `LAYOUT_CHROME_HEIGHT`, `FRETBOARD_MIN_HEIGHT`, `SUMMARY_MIN_HEIGHT` |
+| `src/index.css` | CSS entry point — imports `tokens.css` then `semantic.css` |
+| `src/tokens.css` | Design tokens: spacing, colors, CAGED vars, `--string-row-px` |
+| `src/semantic.css` | Semantic CSS utilities and shared surface classes |
+| `src/theory.ts` | Music theory constants (NOTES, SCALES, CHORDS, ENHARMONICS, key sigs) and pure functions |
+| `src/guitar.ts` | Guitar-specific logic — tunings, fretboard layout, note/frequency math |
+| `src/shapes.ts` | Procedural CAGED + 3NPS fingering pattern computation + polygon vertices (~668 lines) |
+| `src/audio.ts` | Web Audio API synth singleton (`GuitarSynth` class) |
+| `src/degrees.ts` | Interval name and degree display helpers |
+| `src/components/SettingsOverlay.tsx` | Full-screen animated settings overlay (`motion/react`); reads atoms directly |
+| `src/components/ExpandedControlsPanel.tsx` | Desktop-expanded two-column controls; exports `ControlsColumn` for reuse |
+| `src/components/TabletPortraitPanel.tsx` | Tablet portrait two-column panel (tabs + CoF); reads atoms directly |
+| `src/components/MobileTabPanel.tsx` | Mobile tab bar + content panels; reads atoms directly |
+| `src/components/FingeringPatternControls.tsx` | CAGED/3NPS/All fingering selector |
+| `src/components/ScaleChordControls.tsx` | Scale + chord overlay controls |
+| `src/components/FretRangeControl.tsx` | Fret start/end range input |
+| `src/components/StepperControl.tsx` | Reusable +/- stepper control |
+| `src/components/NoteGrid.tsx` | Note selector grid |
+| `src/components/ToggleBar.tsx` | Reusable tab/toggle bar (mobile tabs, tablet tabs, settings toggles) |
 
 ### CAGED Shape System
 
 Shape computation → three layers:
 
-1. **`shapes.ts`** — `getCagedCoordinates()` finds note positions per shape via `SHAPE_CONFIGS` (fret ranges), generates polygon vertices via `SHAPE_TEMPLATES_PENT` (fixed per-string left/right offsets from anchor fret). Major-quality scales → shapes remapped via relative minor (`MAJOR_TO_MINOR_SHAPE`) — e.g., C Major Pentatonic "G shape" uses same pattern as A Minor Pentatonic "E shape".
+1. **`shapes.ts`** — `getCagedCoordinates()` finds note positions per shape via `SHAPE_CONFIGS` (fret ranges), generates polygon vertices via `SHAPE_TEMPLATES_PENT` (fixed per-string left/right offsets from anchor fret). Major-quality scales → shapes remapped via relative minor (`MAJOR_TO_MINOR_SHAPE`) — e.g., C Major Pentatonic "G shape" uses same pattern as A Minor Pentatonic "E shape". Pentatonic/blues use fixed templates; 7-note scales build polygons dynamically from actual note boundaries.
 
 2. **`App.tsx`** — Merges adjacent polygon boundaries at midpoints where shapes meet. Adds small overlap buffer (0.3 frets) to kill SVG anti-aliasing gaps.
 
@@ -166,23 +177,24 @@ Scale degrees on circle use chromatic interval conversion: `(circleIntervalIndex
 **Fretboard cell coordinates** use `"stringIndex-fretIndex"` string keys (e.g. `"2-7"`) throughout props + maps.
 
 **Fretboard rendering coordinates:**
-- `STRING_ROW_PX = 40` — height per string row
+- `stringRowPx` — adaptive height per string row, derived in App.tsx `useLayoutEffect`; clamped to `[STRING_ROW_PX_MIN=40, STRING_ROW_PX_MAX=72]`; emitted as `--string-row-px` CSS property; small phones forced to `STRING_ROW_PX_SMALL=32`
 - `fretToX(fret)` — maps fret number → pixel X (uniform width, including fret 0)
-- `stringCenterY(s)` — vertical center of string `s` (`STRING_ROW_PX / 2 + s * STRING_ROW_PX`)
+- `stringCenterY(s)` — vertical center of string `s` (`stringRowPx / 2 + s * stringRowPx`)
 
-**Note classification** in `Fretboard.tsx`:
-- `root-active` — root note highlighted or chord tone
+**Note classification** in `Fretboard.tsx` (priority order):
+- `root-active` — root note highlighted
+- `note-blue` — blue note (blues scale)
 - `chord-tone` — in scale + in chord
 - `note-active` — in scale, no chord overlay
 - `note-scale-only` — in scale, chord overlay active (hideable via `hideNonChordNotes`)
 - `chord-outside` — in chord, not in scale
 - `note-inactive` — neither
 
-**CSS variables** defined in `index.css` under `:root`. CAGED shape colors use `--caged-e/d/c/a/g` + `--caged-*-bg` tokens.
+**CSS variables** defined in `tokens.css` under `:root` (imported via `index.css`). CAGED shape colors use `--caged-e/d/c/a/g` + `--caged-*-bg` tokens. Responsive layout via `[data-layout-mode="..."]` selectors (`mobile`, `landscape-mobile`, `tablet-portrait`, `desktop-expanded`).
 
-**`clsx`** — all conditional class composition.
+**`clsx`** — all conditional class composition. **`cva`** (class-variance-authority) — variant-based component class systems.
 
-**`motion`** (`motion` package, formerly `framer-motion`) — use for any new animations, not CSS transitions alone.
+**`motion`** (`motion` package, formerly `framer-motion`) — use for any new animations, not CSS transitions alone. Import from `motion/react`.
 
 **`DrawerSelector`** = accordion dropdown in `src/DrawerSelector.tsx`. Use for any new selector controls → maintains visual consistency.
 
