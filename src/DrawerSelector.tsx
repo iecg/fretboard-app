@@ -91,11 +91,12 @@ export function DrawerSelector(props: DrawerSelectorProps) {
         className="drawer-trigger"
         onClick={() => setOpen((o) => !o)}
         onKeyDown={(e) => {
-          if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter" || e.key === " ") {
+          if (e.key === "ArrowDown" || e.key === "ArrowUp") {
             if (!open) {
               setOpen(true);
             }
           }
+        }}
         }}
         aria-expanded={open}
         aria-haspopup="listbox"
