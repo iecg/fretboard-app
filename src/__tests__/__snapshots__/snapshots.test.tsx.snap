@@ -8154,7 +8154,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8169,7 +8169,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8199,7 +8199,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8229,7 +8229,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8259,7 +8259,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8304,7 +8304,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8334,7 +8334,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8349,7 +8349,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8379,7 +8379,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8409,7 +8409,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8439,7 +8439,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8484,7 +8484,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8514,7 +8514,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8542,7 +8542,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8587,7 +8587,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8617,7 +8617,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8632,7 +8632,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8662,7 +8662,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8692,7 +8692,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8722,7 +8722,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8767,7 +8767,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8797,7 +8797,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8812,7 +8812,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8842,7 +8842,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8872,7 +8872,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8902,7 +8902,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8930,7 +8930,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8960,7 +8960,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -8990,7 +8990,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9035,7 +9035,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9065,7 +9065,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9080,7 +9080,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9110,7 +9110,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9140,7 +9140,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9170,7 +9170,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9215,7 +9215,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9245,7 +9245,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9260,7 +9260,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9290,7 +9290,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9318,7 +9318,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9348,7 +9348,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9363,7 +9363,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9393,7 +9393,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9423,7 +9423,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9453,7 +9453,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9498,7 +9498,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9528,7 +9528,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9543,7 +9543,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9573,7 +9573,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9603,7 +9603,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9633,7 +9633,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9678,7 +9678,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9706,7 +9706,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9736,7 +9736,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9781,7 +9781,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9811,7 +9811,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9826,7 +9826,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9856,7 +9856,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9886,7 +9886,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9916,7 +9916,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9961,7 +9961,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -9991,7 +9991,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -10006,7 +10006,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -10036,7 +10036,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -10066,7 +10066,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -10094,7 +10094,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -10109,7 +10109,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -10139,7 +10139,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -10169,7 +10169,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -10199,7 +10199,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -10244,7 +10244,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -10274,7 +10274,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -10289,7 +10289,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -10319,7 +10319,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -10349,7 +10349,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -10379,7 +10379,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -10424,7 +10424,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only hidden"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -10454,7 +10454,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
@@ -10602,7 +10602,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
               aria-controls="chord-overlay-listbox"
               aria-expanded="false"
               aria-haspopup="listbox"
-              aria-label="Chord Overlay: Major 7th"
+              aria-label="Chord Overlay: None"
               class="drawer-trigger"
               id="chord-overlay-trigger"
             >
@@ -10614,73 +10614,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
               <span
                 class="drawer-value"
               >
-                Major 7th
-              </span>
-              <svg
-                aria-hidden="true"
-                class="lucide lucide-chevron-down drawer-chevron"
-                fill="none"
-                height="24"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="m6 9 6 6 6-6"
-                />
-              </svg>
-            </button>
-          </div>
-          <div
-            class="chord-root-row"
-          >
-            <label
-              class="link-toggle"
-            >
-              <input
-                checked=""
-                type="checkbox"
-              />
-              <span>
-                Link chord root to scale
-              </span>
-            </label>
-          </div>
-          <label
-            class="link-toggle"
-          >
-            <input
-              checked=""
-              type="checkbox"
-            />
-            <span>
-              Chord only (hide scale)
-            </span>
-          </label>
-          <div
-            class="drawer-selector"
-          >
-            <button
-              aria-controls="interval-filter-listbox"
-              aria-expanded="false"
-              aria-haspopup="listbox"
-              aria-label="Interval Filter: All"
-              class="drawer-trigger"
-              id="interval-filter-trigger"
-            >
-              <span
-                class="drawer-label"
-              >
-                Interval Filter
-              </span>
-              <span
-                class="drawer-value"
-              >
-                All
+                None
               </span>
               <svg
                 aria-hidden="true"
@@ -11395,83 +11329,6 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
           </span>
         </div>
       </div>
-      <div
-        class="summary-row summary-row--chord"
-      >
-        <div
-          class="summary-row-label"
-        >
-          C Major 7th
-        </div>
-        <div
-          class="summary-notes"
-        >
-          <span
-            class="summary-note summary-note--chord"
-            style="outline: 2px solid #f59e0b; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              C
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(245, 158, 11);"
-            >
-              1
-            </span>
-          </span>
-          <span
-            class="summary-note summary-note--chord"
-            style="outline: 2px solid #10b981; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              E
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(16, 185, 129);"
-            >
-              3
-            </span>
-          </span>
-          <span
-            class="summary-note summary-note--chord"
-            style="outline: 2px solid #8b5cf6; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              G
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(139, 92, 246);"
-            >
-              5
-            </span>
-          </span>
-          <span
-            class="summary-note summary-note--chord"
-            style="outline: 2px solid #6366f1; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              B
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(99, 102, 241);"
-            >
-              7
-            </span>
-          </span>
-        </div>
-      </div>
     </div>
     <div
       class="version-badge"
@@ -12081,13 +11938,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-inactive"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        6
+                        E
                       </span>
                     </div>
                   </div>
@@ -12096,13 +11953,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        ♭7
+                        F
                       </span>
                     </div>
                   </div>
@@ -12117,7 +11974,82 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        7
+                        F♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        G
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-inactive"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        G♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        A
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-inactive"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        A♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        B
                       </span>
                     </div>
                   </div>
@@ -12132,7 +12064,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        1
+                        C
                       </span>
                     </div>
                   </div>
@@ -12147,7 +12079,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        ♭2
+                        C♯
                       </span>
                     </div>
                   </div>
@@ -12156,28 +12088,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        2
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭3
+                        D
                       </span>
                     </div>
                   </div>
@@ -12192,7 +12109,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        3
+                        D♯
                       </span>
                     </div>
                   </div>
@@ -12201,13 +12118,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        4
+                        E
                       </span>
                     </div>
                   </div>
@@ -12216,43 +12133,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-inactive"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        ♭5
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-scale-only"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        5
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭6
+                        F
                       </span>
                     </div>
                   </div>
@@ -12267,7 +12154,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        6
+                        F♯
                       </span>
                     </div>
                   </div>
@@ -12276,13 +12163,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        ♭7
+                        G
                       </span>
                     </div>
                   </div>
@@ -12297,7 +12184,52 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        7
+                        G♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        A
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-inactive"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        A♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        B
                       </span>
                     </div>
                   </div>
@@ -12312,7 +12244,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        1
+                        C
                       </span>
                     </div>
                   </div>
@@ -12327,7 +12259,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        ♭2
+                        C♯
                       </span>
                     </div>
                   </div>
@@ -12336,28 +12268,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        2
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭3
+                        D
                       </span>
                     </div>
                   </div>
@@ -12372,7 +12289,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        3
+                        D♯
                       </span>
                     </div>
                   </div>
@@ -12381,73 +12298,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        4
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-inactive"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭5
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-scale-only"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        5
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭6
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-inactive"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        6
+                        E
                       </span>
                     </div>
                   </div>
@@ -12469,118 +12326,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-inactive"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        3
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        4
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-inactive"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭5
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-scale-only"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        5
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭6
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-inactive"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        6
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-scale-only"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭7
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-inactive"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        7
+                        B
                       </span>
                     </div>
                   </div>
@@ -12595,7 +12347,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        1
+                        C
                       </span>
                     </div>
                   </div>
@@ -12610,7 +12362,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        ♭2
+                        C♯
                       </span>
                     </div>
                   </div>
@@ -12619,28 +12371,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        2
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭3
+                        D
                       </span>
                     </div>
                   </div>
@@ -12655,7 +12392,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        3
+                        D♯
                       </span>
                     </div>
                   </div>
@@ -12664,13 +12401,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        4
+                        E
                       </span>
                     </div>
                   </div>
@@ -12679,43 +12416,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-inactive"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        ♭5
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-scale-only"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        5
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭6
+                        F
                       </span>
                     </div>
                   </div>
@@ -12730,7 +12437,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        6
+                        F♯
                       </span>
                     </div>
                   </div>
@@ -12739,13 +12446,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        ♭7
+                        G
                       </span>
                     </div>
                   </div>
@@ -12760,7 +12467,52 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        7
+                        G♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        A
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-inactive"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        A♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        B
                       </span>
                     </div>
                   </div>
@@ -12775,7 +12527,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        1
+                        C
                       </span>
                     </div>
                   </div>
@@ -12790,7 +12542,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        ♭2
+                        C♯
                       </span>
                     </div>
                   </div>
@@ -12799,28 +12551,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        2
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭3
+                        D
                       </span>
                     </div>
                   </div>
@@ -12835,7 +12572,127 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        3
+                        D♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        E
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        F
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-inactive"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        F♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        G
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-inactive"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        G♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        A
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-inactive"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        A♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        B
                       </span>
                     </div>
                   </div>
@@ -12857,13 +12714,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble root-active"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        1
+                        G
                       </span>
                     </div>
                   </div>
@@ -12878,7 +12735,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        ♭2
+                        G♯
                       </span>
                     </div>
                   </div>
@@ -12887,28 +12744,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        2
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭3
+                        A
                       </span>
                     </div>
                   </div>
@@ -12923,7 +12765,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        3
+                        A♯
                       </span>
                     </div>
                   </div>
@@ -12932,103 +12774,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        4
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-inactive"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭5
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-scale-only"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        5
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭6
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-inactive"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        6
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-scale-only"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭7
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-inactive"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        7
+                        B
                       </span>
                     </div>
                   </div>
@@ -13043,7 +12795,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        1
+                        C
                       </span>
                     </div>
                   </div>
@@ -13058,7 +12810,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        ♭2
+                        C♯
                       </span>
                     </div>
                   </div>
@@ -13067,28 +12819,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        2
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭3
+                        D
                       </span>
                     </div>
                   </div>
@@ -13103,7 +12840,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        3
+                        D♯
                       </span>
                     </div>
                   </div>
@@ -13112,13 +12849,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        4
+                        E
                       </span>
                     </div>
                   </div>
@@ -13127,43 +12864,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-inactive"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        ♭5
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-scale-only"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        5
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭6
+                        F
                       </span>
                     </div>
                   </div>
@@ -13178,7 +12885,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        6
+                        F♯
                       </span>
                     </div>
                   </div>
@@ -13187,13 +12894,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        ♭7
+                        G
                       </span>
                     </div>
                   </div>
@@ -13208,7 +12915,52 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        7
+                        G♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        A
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-inactive"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        A♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        B
                       </span>
                     </div>
                   </div>
@@ -13223,7 +12975,112 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        1
+                        C
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-inactive"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        C♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        D
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-inactive"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        D♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        E
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        F
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-inactive"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        F♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        G
                       </span>
                     </div>
                   </div>
@@ -13245,28 +13102,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        5
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭6
+                        D
                       </span>
                     </div>
                   </div>
@@ -13281,7 +13123,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        6
+                        D♯
                       </span>
                     </div>
                   </div>
@@ -13290,13 +13132,28 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        ♭7
+                        E
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        F
                       </span>
                     </div>
                   </div>
@@ -13311,7 +13168,82 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        7
+                        F♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        G
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-inactive"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        G♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        A
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-inactive"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        A♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        B
                       </span>
                     </div>
                   </div>
@@ -13326,7 +13258,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        1
+                        C
                       </span>
                     </div>
                   </div>
@@ -13341,7 +13273,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        ♭2
+                        C♯
                       </span>
                     </div>
                   </div>
@@ -13350,28 +13282,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        2
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭3
+                        D
                       </span>
                     </div>
                   </div>
@@ -13386,7 +13303,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        3
+                        D♯
                       </span>
                     </div>
                   </div>
@@ -13395,13 +13312,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        4
+                        E
                       </span>
                     </div>
                   </div>
@@ -13410,43 +13327,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-inactive"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        ♭5
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-scale-only"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        5
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭6
+                        F
                       </span>
                     </div>
                   </div>
@@ -13461,7 +13348,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        6
+                        F♯
                       </span>
                     </div>
                   </div>
@@ -13470,13 +13357,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        ♭7
+                        G
                       </span>
                     </div>
                   </div>
@@ -13491,7 +13378,52 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        7
+                        G♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        A
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-inactive"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        A♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        B
                       </span>
                     </div>
                   </div>
@@ -13506,7 +13438,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        1
+                        C
                       </span>
                     </div>
                   </div>
@@ -13521,7 +13453,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        ♭2
+                        C♯
                       </span>
                     </div>
                   </div>
@@ -13530,88 +13462,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        2
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭3
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-inactive"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        3
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        4
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-inactive"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭5
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-scale-only"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        5
+                        D
                       </span>
                     </div>
                   </div>
@@ -13633,28 +13490,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        2
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭3
+                        A
                       </span>
                     </div>
                   </div>
@@ -13669,7 +13511,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        3
+                        A♯
                       </span>
                     </div>
                   </div>
@@ -13678,103 +13520,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        4
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-inactive"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭5
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-scale-only"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        5
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭6
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-inactive"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        6
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-scale-only"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭7
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-inactive"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        7
+                        B
                       </span>
                     </div>
                   </div>
@@ -13789,7 +13541,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        1
+                        C
                       </span>
                     </div>
                   </div>
@@ -13804,7 +13556,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        ♭2
+                        C♯
                       </span>
                     </div>
                   </div>
@@ -13813,28 +13565,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        2
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭3
+                        D
                       </span>
                     </div>
                   </div>
@@ -13849,7 +13586,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        3
+                        D♯
                       </span>
                     </div>
                   </div>
@@ -13858,13 +13595,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        4
+                        E
                       </span>
                     </div>
                   </div>
@@ -13873,43 +13610,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-inactive"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        ♭5
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-scale-only"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        5
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭6
+                        F
                       </span>
                     </div>
                   </div>
@@ -13924,7 +13631,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        6
+                        F♯
                       </span>
                     </div>
                   </div>
@@ -13933,13 +13640,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        ♭7
+                        G
                       </span>
                     </div>
                   </div>
@@ -13954,7 +13661,52 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        7
+                        G♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        A
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-inactive"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        A♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        B
                       </span>
                     </div>
                   </div>
@@ -13969,7 +13721,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        1
+                        C
                       </span>
                     </div>
                   </div>
@@ -13984,7 +13736,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        ♭2
+                        C♯
                       </span>
                     </div>
                   </div>
@@ -13993,13 +13745,118 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        2
+                        D
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-inactive"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        D♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        E
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        F
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-inactive"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        F♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        G
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-inactive"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        G♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        A
                       </span>
                     </div>
                   </div>
@@ -14021,13 +13878,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-inactive"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        6
+                        E
                       </span>
                     </div>
                   </div>
@@ -14036,13 +13893,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        ♭7
+                        F
                       </span>
                     </div>
                   </div>
@@ -14057,7 +13914,82 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        7
+                        F♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        G
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-inactive"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        G♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        A
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-inactive"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        A♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        B
                       </span>
                     </div>
                   </div>
@@ -14072,7 +14004,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        1
+                        C
                       </span>
                     </div>
                   </div>
@@ -14087,7 +14019,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        ♭2
+                        C♯
                       </span>
                     </div>
                   </div>
@@ -14096,28 +14028,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        2
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭3
+                        D
                       </span>
                     </div>
                   </div>
@@ -14132,7 +14049,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        3
+                        D♯
                       </span>
                     </div>
                   </div>
@@ -14141,13 +14058,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        4
+                        E
                       </span>
                     </div>
                   </div>
@@ -14156,43 +14073,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-inactive"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        ♭5
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-scale-only"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        5
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭6
+                        F
                       </span>
                     </div>
                   </div>
@@ -14207,7 +14094,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        6
+                        F♯
                       </span>
                     </div>
                   </div>
@@ -14216,13 +14103,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        ♭7
+                        G
                       </span>
                     </div>
                   </div>
@@ -14237,7 +14124,52 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        7
+                        G♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        A
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-inactive"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        A♯
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    class="note-cell"
+                    style="width: 55px;"
+                  >
+                    <div
+                      class="note-bubble note-active"
+                      style="width: 38px; height: 38px; font-size: 19px;"
+                    >
+                      <span
+                        class="note-main-label"
+                      >
+                        B
                       </span>
                     </div>
                   </div>
@@ -14252,7 +14184,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        1
+                        C
                       </span>
                     </div>
                   </div>
@@ -14267,7 +14199,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        ♭2
+                        C♯
                       </span>
                     </div>
                   </div>
@@ -14276,28 +14208,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble note-scale-only"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        2
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭3
+                        D
                       </span>
                     </div>
                   </div>
@@ -14312,7 +14229,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                       <span
                         class="note-main-label"
                       >
-                        3
+                        D♯
                       </span>
                     </div>
                   </div>
@@ -14321,73 +14238,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                     style="width: 55px;"
                   >
                     <div
-                      class="note-bubble chord-tone"
+                      class="note-bubble note-active"
                       style="width: 38px; height: 38px; font-size: 19px;"
                     >
                       <span
                         class="note-main-label"
                       >
-                        4
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-inactive"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭5
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-scale-only"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        5
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble chord-tone"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        ♭6
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="note-cell"
-                    style="width: 55px;"
-                  >
-                    <div
-                      class="note-bubble note-inactive"
-                      style="width: 38px; height: 38px; font-size: 19px;"
-                    >
-                      <span
-                        class="note-main-label"
-                      >
-                        6
+                        E
                       </span>
                     </div>
                   </div>
@@ -14453,15 +14310,15 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
               class="toggle-group toggle-group--default"
             >
               <button
-                aria-pressed="false"
-                class="toggle-btn"
+                aria-pressed="true"
+                class="toggle-btn active"
                 type="button"
               >
                 Notes
               </button>
               <button
-                aria-pressed="true"
-                class="toggle-btn active"
+                aria-pressed="false"
+                class="toggle-btn"
                 type="button"
               >
                 Intervals
@@ -14489,7 +14346,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
               aria-controls="scale-listbox"
               aria-expanded="false"
               aria-haspopup="listbox"
-              aria-label="Scale: Natural Minor"
+              aria-label="Scale: Major"
               class="drawer-trigger"
               id="scale-trigger"
             >
@@ -14501,7 +14358,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
               <span
                 class="drawer-value"
               >
-                Natural Minor
+                Major
               </span>
               <svg
                 aria-hidden="true"
@@ -14529,7 +14386,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
               aria-controls="chord-overlay-listbox"
               aria-expanded="false"
               aria-haspopup="listbox"
-              aria-label="Chord Overlay: Minor 7th"
+              aria-label="Chord Overlay: None"
               class="drawer-trigger"
               id="chord-overlay-trigger"
             >
@@ -14541,72 +14398,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
               <span
                 class="drawer-value"
               >
-                Minor 7th
-              </span>
-              <svg
-                aria-hidden="true"
-                class="lucide lucide-chevron-down drawer-chevron"
-                fill="none"
-                height="24"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="m6 9 6 6 6-6"
-                />
-              </svg>
-            </button>
-          </div>
-          <div
-            class="chord-root-row"
-          >
-            <label
-              class="link-toggle"
-            >
-              <input
-                checked=""
-                type="checkbox"
-              />
-              <span>
-                Link chord root to scale
-              </span>
-            </label>
-          </div>
-          <label
-            class="link-toggle"
-          >
-            <input
-              type="checkbox"
-            />
-            <span>
-              Chord only (hide scale)
-            </span>
-          </label>
-          <div
-            class="drawer-selector"
-          >
-            <button
-              aria-controls="interval-filter-listbox"
-              aria-expanded="false"
-              aria-haspopup="listbox"
-              aria-label="Interval Filter: All"
-              class="drawer-trigger"
-              id="interval-filter-trigger"
-            >
-              <span
-                class="drawer-label"
-              >
-                Interval Filter
-              </span>
-              <span
-                class="drawer-value"
-              >
-                All
+                None
               </span>
               <svg
                 aria-hidden="true"
@@ -14643,13 +14435,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             viewBox="0 0 320 320"
           >
             <path
-              class="circle-slice "
+              class="circle-slice active"
               d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
               stroke="var(--surface-highlight)"
               stroke-width="1"
             />
             <path
-              class="circle-slice active"
+              class="circle-slice "
               d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
               stroke="var(--surface-highlight)"
               stroke-width="1"
@@ -14719,8 +14511,8 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             >
               <text
                 dominant-baseline="middle"
-                fill="var(--text-muted)"
-                font-size="15.36"
+                fill="var(--text-main)"
+                font-size="17.6"
                 font-weight="bold"
                 text-anchor="middle"
                 x="160"
@@ -14738,10 +14530,10 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
               </text>
               <text
                 dominant-baseline="middle"
-                fill="#ef4444"
+                fill="#f59e0b"
                 font-size="12.16"
                 font-weight="bold"
-                opacity="0.7"
+                opacity="1"
                 paint-order="stroke"
                 stroke="rgba(0,0,0,0.3)"
                 stroke-width="1.5"
@@ -14749,7 +14541,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                 x="160"
                 y="60.8"
               >
-                iv
+                I
               </text>
             </g>
             <g
@@ -14757,8 +14549,8 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             >
               <text
                 dominant-baseline="middle"
-                fill="var(--text-main)"
-                font-size="17.6"
+                fill="var(--text-muted)"
+                font-size="15.36"
                 font-weight="bold"
                 text-anchor="middle"
                 x="222.40000000000003"
@@ -14776,10 +14568,10 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
               </text>
               <text
                 dominant-baseline="middle"
-                fill="#f59e0b"
+                fill="#8b5cf6"
                 font-size="12.16"
                 font-weight="bold"
-                opacity="1"
+                opacity="0.7"
                 paint-order="stroke"
                 stroke="rgba(0,0,0,0.3)"
                 stroke-width="1.5"
@@ -14787,7 +14579,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                 x="209.60000000000002"
                 y="74.09027994458368"
               >
-                i
+                V
               </text>
             </g>
             <g
@@ -14814,7 +14606,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
               </text>
               <text
                 dominant-baseline="middle"
-                fill="#8b5cf6"
+                fill="#3b82f6"
                 font-size="12.16"
                 font-weight="bold"
                 opacity="0.7"
@@ -14825,7 +14617,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                 x="245.9097200554163"
                 y="110.4"
               >
-                v
+                ii
               </text>
             </g>
             <g
@@ -14852,7 +14644,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
               </text>
               <text
                 dominant-baseline="middle"
-                fill="#3b82f6"
+                fill="#ec4899"
                 font-size="12.16"
                 font-weight="bold"
                 opacity="0.7"
@@ -14863,7 +14655,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                 x="259.2"
                 y="160"
               >
-                ii°
+                vi
               </text>
             </g>
             <g
@@ -14888,6 +14680,21 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                   E
                 </tspan>
               </text>
+              <text
+                dominant-baseline="middle"
+                fill="#10b981"
+                font-size="12.16"
+                font-weight="bold"
+                opacity="0.7"
+                paint-order="stroke"
+                stroke="rgba(0,0,0,0.3)"
+                stroke-width="1.5"
+                text-anchor="middle"
+                x="245.9097200554163"
+                y="209.6"
+              >
+                iii
+              </text>
             </g>
             <g
               style="pointer-events: none;"
@@ -14910,6 +14717,21 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                 >
                   B
                 </tspan>
+              </text>
+              <text
+                dominant-baseline="middle"
+                fill="#6366f1"
+                font-size="12.16"
+                font-weight="bold"
+                opacity="0.7"
+                paint-order="stroke"
+                stroke="rgba(0,0,0,0.3)"
+                stroke-width="1.5"
+                text-anchor="middle"
+                x="209.60000000000002"
+                y="245.9097200554163"
+              >
+                vii°
               </text>
             </g>
             <g
@@ -15036,7 +14858,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                   stroke-width="2"
                   x="35.19999999999999"
                 >
-                  E♭
+                  D♯
                 </tspan>
                 <tspan
                   dy="0.9em"
@@ -15048,23 +14870,8 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                   stroke-width="2.5"
                   x="35.19999999999999"
                 >
-                  D♯
+                  E♭
                 </tspan>
-              </text>
-              <text
-                dominant-baseline="middle"
-                fill="#ec4899"
-                font-size="12.16"
-                font-weight="bold"
-                opacity="0.7"
-                paint-order="stroke"
-                stroke="rgba(0,0,0,0.3)"
-                stroke-width="1.5"
-                text-anchor="middle"
-                x="60.8"
-                y="160"
-              >
-                VI
               </text>
             </g>
             <g
@@ -15086,7 +14893,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                   stroke-width="2"
                   x="51.92002960770205"
                 >
-                  B♭
+                  A♯
                 </tspan>
                 <tspan
                   dy="0.9em"
@@ -15098,23 +14905,8 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                   stroke-width="2.5"
                   x="51.92002960770205"
                 >
-                  A♯
+                  B♭
                 </tspan>
-              </text>
-              <text
-                dominant-baseline="middle"
-                fill="#10b981"
-                font-size="12.16"
-                font-weight="bold"
-                opacity="0.7"
-                paint-order="stroke"
-                stroke="rgba(0,0,0,0.3)"
-                stroke-width="1.5"
-                text-anchor="middle"
-                x="74.09027994458368"
-                y="110.39999999999998"
-              >
-                III
               </text>
             </g>
             <g
@@ -15141,7 +14933,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
               </text>
               <text
                 dominant-baseline="middle"
-                fill="#6366f1"
+                fill="#ef4444"
                 font-size="12.16"
                 font-weight="bold"
                 opacity="0.7"
@@ -15152,7 +14944,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                 x="110.39999999999995"
                 y="74.0902799445837"
               >
-                VII
+                IV
               </text>
             </g>
             <circle
@@ -15173,7 +14965,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
               x="160"
               y="147.2"
             >
-              G
+              C
             </text>
             <text
               dominant-baseline="middle"
@@ -15187,7 +14979,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
               x="160"
               y="172.8"
             >
-              2♭
+              ♮
             </text>
           </svg>
         </div>
@@ -15202,7 +14994,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
         <div
           class="summary-row-label"
         >
-          G Natural Minor
+          C Major
         </div>
         <div
           class="summary-notes"
@@ -15214,7 +15006,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <span
               class="summary-note-name"
             >
-              G
+              C
             </span>
             <span
               class="summary-note-degree"
@@ -15230,7 +15022,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <span
               class="summary-note-name"
             >
-              A
+              D
             </span>
             <span
               class="summary-note-degree"
@@ -15246,13 +15038,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <span
               class="summary-note-name"
             >
-              B♭
+              E
             </span>
             <span
               class="summary-note-degree"
               style="color: rgb(16, 185, 129);"
             >
-              ♭3
+              3
             </span>
           </span>
           <span
@@ -15262,7 +15054,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <span
               class="summary-note-name"
             >
-              C
+              F
             </span>
             <span
               class="summary-note-degree"
@@ -15278,7 +15070,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <span
               class="summary-note-name"
             >
-              D
+              G
             </span>
             <span
               class="summary-note-degree"
@@ -15294,13 +15086,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <span
               class="summary-note-name"
             >
-              E♭
+              A
             </span>
             <span
               class="summary-note-degree"
               style="color: rgb(236, 72, 153);"
             >
-              ♭6
+              6
             </span>
           </span>
           <span
@@ -15310,90 +15102,13 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <span
               class="summary-note-name"
             >
-              F
+              B
             </span>
             <span
               class="summary-note-degree"
               style="color: rgb(99, 102, 241);"
             >
-              ♭7
-            </span>
-          </span>
-        </div>
-      </div>
-      <div
-        class="summary-row summary-row--chord"
-      >
-        <div
-          class="summary-row-label"
-        >
-          C Minor 7th
-        </div>
-        <div
-          class="summary-notes"
-        >
-          <span
-            class="summary-note summary-note--chord"
-            style="outline: 2px solid #f59e0b; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              C
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(245, 158, 11);"
-            >
-              1
-            </span>
-          </span>
-          <span
-            class="summary-note summary-note--chord"
-            style="outline: 2px solid #10b981; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              D♯
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(16, 185, 129);"
-            >
-              ♭3
-            </span>
-          </span>
-          <span
-            class="summary-note summary-note--chord"
-            style="outline: 2px solid #8b5cf6; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              G
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(139, 92, 246);"
-            >
-              5
-            </span>
-          </span>
-          <span
-            class="summary-note summary-note--chord"
-            style="outline: 2px solid #6366f1; outline-offset: -2px;"
-          >
-            <span
-              class="summary-note-name"
-            >
-              A♯
-            </span>
-            <span
-              class="summary-note-degree"
-              style="color: rgb(99, 102, 241);"
-            >
-              ♭7
+              7
             </span>
           </span>
         </div>

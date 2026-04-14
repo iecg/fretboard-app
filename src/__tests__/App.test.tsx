@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import App from "../App";
 import { synth } from "../audio";
+import { k } from "./utils/storage";
 
 // Mock child components to isolate App logic
 vi.mock("../Fretboard", () => ({
@@ -104,8 +105,8 @@ describe("App", () => {
     });
 
     it("loads persisted state from localStorage", () => {
-      localStorage.setItem("rootNote", "G");
-      localStorage.setItem("scaleName", "Minor");
+      localStorage.setItem(k("rootNote"), "G");
+      localStorage.setItem(k("scaleName"), "Minor");
       render(<App />);
       expect(screen.getByTestId("circle-of-fifths")).toHaveTextContent(
         "CoF: G",
@@ -114,11 +115,11 @@ describe("App", () => {
 
     it("persists isMuted to localStorage on first mount", () => {
       render(<App />);
-      expect(localStorage.getItem("isMuted")).toBe("false");
+      expect(localStorage.getItem(k("isMuted"))).toBe("false");
     });
 
     it("synth is muted based on initial state", () => {
-      localStorage.setItem("isMuted", "true");
+      localStorage.setItem(k("isMuted"), "true");
       render(<App />);
       expect(synth.setMute).toHaveBeenCalledWith(true);
     });
@@ -145,33 +146,33 @@ describe("App", () => {
       fireEvent.click(cofButton);
 
       await waitFor(() => {
-        expect(localStorage.getItem("rootNote")).toBe("G");
+        expect(localStorage.getItem(k("rootNote"))).toBe("G");
       });
     });
 
     it("links chord root to scale root by default", async () => {
-      localStorage.setItem("chordType", "Major Triad");
+      localStorage.setItem(k("chordType"), "Major Triad");
       render(<App />);
 
       const cofButton = screen.getByTestId("circle-of-fifths");
       fireEvent.click(cofButton);
 
       await waitFor(() => {
-        expect(localStorage.getItem("chordRoot")).toBe("G");
+        expect(localStorage.getItem(k("chordRoot"))).toBe("G");
       });
     });
 
     it("does not link chord root when linkChordRoot is false", async () => {
-      localStorage.setItem("chordType", "Major Triad");
-      localStorage.setItem("linkChordRoot", "false");
-      localStorage.setItem("chordRoot", "D");
+      localStorage.setItem(k("chordType"), "Major Triad");
+      localStorage.setItem(k("linkChordRoot"), "false");
+      localStorage.setItem(k("chordRoot"), "D");
       render(<App />);
 
       const cofButton = screen.getByTestId("circle-of-fifths");
       fireEvent.click(cofButton);
 
       await waitFor(() => {
-        expect(localStorage.getItem("chordRoot")).toBe("D");
+        expect(localStorage.getItem(k("chordRoot"))).toBe("D");
       });
     });
   });
@@ -185,7 +186,7 @@ describe("App", () => {
       if (button) {
         fireEvent.click(button);
         await waitFor(() => {
-          expect(localStorage.getItem("scaleName")).toBeDefined();
+          expect(localStorage.getItem(k("scaleName"))).toBeDefined();
         });
       }
     });
@@ -198,7 +199,7 @@ describe("App", () => {
       if (button) {
         fireEvent.click(button);
         await waitFor(() => {
-          const saved = localStorage.getItem("scaleName");
+          const saved = localStorage.getItem(k("scaleName"));
           expect(saved).toBeTruthy();
         });
       }
@@ -208,7 +209,7 @@ describe("App", () => {
   describe("Mute toggle", () => {
     it("toggles mute state", async () => {
       render(<App />);
-      expect(localStorage.getItem("isMuted")).toBe("false");
+      expect(localStorage.getItem(k("isMuted"))).toBe("false");
 
       const muteButtons = screen
         .getAllByRole("button")
@@ -219,7 +220,7 @@ describe("App", () => {
       if (muteButtons.length > 0) {
         fireEvent.click(muteButtons[0]);
         await waitFor(() => {
-          expect(localStorage.getItem("isMuted")).toBe("true");
+          expect(localStorage.getItem(k("isMuted"))).toBe("true");
         });
       }
     });
@@ -244,8 +245,8 @@ describe("App", () => {
 
   describe("Reset functionality", () => {
     it("clears all localStorage on reset", async () => {
-      localStorage.setItem("rootNote", "G");
-      localStorage.setItem("scaleName", "Natural Minor");
+      localStorage.setItem(k("rootNote"), "G");
+      localStorage.setItem(k("scaleName"), "Natural Minor");
       render(<App />);
 
       const resetButtons = screen
@@ -259,13 +260,13 @@ describe("App", () => {
       if (resetButtons.length > 0) {
         fireEvent.click(resetButtons[0]);
         await waitFor(() => {
-          expect(localStorage.getItem("rootNote")).toBeNull();
+          expect(localStorage.getItem(k("rootNote"))).toBeNull();
         });
       }
     });
 
     it("resets state to defaults", async () => {
-      localStorage.setItem("rootNote", "G");
+      localStorage.setItem(k("rootNote"), "G");
       const { rerender } = render(<App />);
 
       const resetButtons = screen
@@ -299,21 +300,21 @@ describe("App", () => {
         if (button) {
           fireEvent.click(button);
           await waitFor(() => {
-            expect(localStorage.getItem("chordType")).toBeTruthy();
+            expect(localStorage.getItem(k("chordType"))).toBeTruthy();
           });
         }
       }
     });
 
     it("persists chord type as empty string when null", async () => {
-      localStorage.setItem("chordType", "Major Triad");
+      localStorage.setItem(k("chordType"), "Major Triad");
       const { rerender } = render(<App />);
 
       // Update to clear chord type
-      localStorage.setItem("chordType", "");
+      localStorage.setItem(k("chordType"), "");
       rerender(<App />);
 
-      expect(localStorage.getItem("chordType")).toBe("");
+      expect(localStorage.getItem(k("chordType"))).toBe("");
     });
   });
 
@@ -341,27 +342,27 @@ describe("App", () => {
   describe("Fretboard zoom and scroll", () => {
     it("initializes with default fret range", () => {
       render(<App />);
-      expect(localStorage.getItem("fretStart")).toBe("0");
-      expect(localStorage.getItem("fretEnd")).toBe("24");
+      expect(localStorage.getItem(k("fretStart"))).toBe("0");
+      expect(localStorage.getItem(k("fretEnd"))).toBe("24");
     });
 
     it("persists fret zoom level", async () => {
-      localStorage.setItem("fretZoom", "150");
+      localStorage.setItem(k("fretZoom"), "150");
       render(<App />);
-      expect(localStorage.getItem("fretZoom")).toBe("150");
+      expect(localStorage.getItem(k("fretZoom"))).toBe("150");
     });
   });
 
   describe("Tuning selection", () => {
     it("uses Standard tuning by default", () => {
       render(<App />);
-      expect(localStorage.getItem("tuningName")).toBe("Standard");
+      expect(localStorage.getItem(k("tuningName"))).toBe("Standard");
     });
 
     it("persists tuning selection", async () => {
-      localStorage.setItem("tuningName", "Drop D");
+      localStorage.setItem(k("tuningName"), "Drop D");
       render(<App />);
-      expect(localStorage.getItem("tuningName")).toBe("Drop D");
+      expect(localStorage.getItem(k("tuningName"))).toBe("Drop D");
     });
   });
 
@@ -380,7 +381,7 @@ describe("App", () => {
 
     it("persists mobile tab selection to localStorage", async () => {
       render(<App />);
-      expect(localStorage.getItem("mobileTab")).toBe("key");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("key");
     });
   });
 
@@ -388,38 +389,38 @@ describe("App", () => {
     it("persists multiple state changes to localStorage", async () => {
       render(<App />);
 
-      localStorage.setItem("rootNote", "D");
-      localStorage.setItem("scaleName", "Dorian");
-      localStorage.setItem("chordRoot", "A");
-      localStorage.setItem("chordType", "Minor 7th");
-      localStorage.setItem("isMuted", "true");
+      localStorage.setItem(k("rootNote"), "D");
+      localStorage.setItem(k("scaleName"), "Dorian");
+      localStorage.setItem(k("chordRoot"), "A");
+      localStorage.setItem(k("chordType"), "Minor 7th");
+      localStorage.setItem(k("isMuted"), "true");
 
       const { rerender } = render(<App />);
       rerender(<App />);
 
-      expect(localStorage.getItem("rootNote")).toBe("D");
-      expect(localStorage.getItem("scaleName")).toBe("Dorian");
-      expect(localStorage.getItem("chordRoot")).toBe("A");
-      expect(localStorage.getItem("chordType")).toBe("Minor 7th");
-      expect(localStorage.getItem("isMuted")).toBe("true");
+      expect(localStorage.getItem(k("rootNote"))).toBe("D");
+      expect(localStorage.getItem(k("scaleName"))).toBe("Dorian");
+      expect(localStorage.getItem(k("chordRoot"))).toBe("A");
+      expect(localStorage.getItem(k("chordType"))).toBe("Minor 7th");
+      expect(localStorage.getItem(k("isMuted"))).toBe("true");
     });
   });
 
   describe("Display modes", () => {
     it("initializes with notes display format", () => {
       render(<App />);
-      expect(localStorage.getItem("displayFormat")).toBe("notes");
+      expect(localStorage.getItem(k("displayFormat"))).toBe("notes");
     });
 
     it("persists display format changes", async () => {
-      localStorage.setItem("displayFormat", "degrees");
+      localStorage.setItem(k("displayFormat"), "degrees");
       render(<App />);
-      expect(localStorage.getItem("displayFormat")).toBe("degrees");
+      expect(localStorage.getItem(k("displayFormat"))).toBe("degrees");
     });
 
     it("initializes with no shape labels", () => {
       render(<App />);
-      expect(localStorage.getItem("shapeLabels")).toBe("none");
+      expect(localStorage.getItem(k("shapeLabels"))).toBe("none");
     });
   });
 
@@ -551,7 +552,7 @@ describe("App", () => {
     });
 
     it("changes tuning via drawer selector", async () => {
-      localStorage.setItem("tuningName", "Drop D");
+      localStorage.setItem(k("tuningName"), "Drop D");
       render(<App />);
       fireEvent(window, new Event("resize"));
 
@@ -575,7 +576,7 @@ describe("App", () => {
           fireEvent.click(btn);
 
           await waitFor(() => {
-            expect(localStorage.getItem("tuningName")).toBe("Standard");
+            expect(localStorage.getItem(k("tuningName"))).toBe("Standard");
             expect(btn).toHaveTextContent("Tuning: Standard");
           });
         }
@@ -584,8 +585,8 @@ describe("App", () => {
 
     it("adjusts fret range via buttons", async () => {
       // Set fretStart=5 so the minus button is enabled, fretEnd=20 so end minus is enabled
-      localStorage.setItem("fretStart", "5");
-      localStorage.setItem("fretEnd", "20");
+      localStorage.setItem(k("fretStart"), "5");
+      localStorage.setItem(k("fretEnd"), "20");
       render(<App />);
       fireEvent(window, new Event("resize"));
 
