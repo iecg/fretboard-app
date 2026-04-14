@@ -162,10 +162,41 @@ jobs:
         run: |
           echo "✅ Tests passed on Node.js ${{ matrix.node-version }}"
 
+  responsive-e2e:
+    runs-on: ubuntu-latest
+    name: Responsive E2E
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Run responsive smoke tests
+        run: npm run test:e2e
+
+      - name: Archive Playwright results
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: playwright-results
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+
   enforce-checks:
     runs-on: ubuntu-latest
     name: Enforce Quality Gates
-    needs: [validate-pr, test-matrix]
+    needs: [validate-pr, test-matrix, responsive-e2e]
     if: always()
 
     steps:
@@ -176,6 +207,11 @@ jobs:
 
           if [ "${{ needs.test-matrix.result }}" != "success" ]; then
             echo "❌ Tests failed - PR cannot be merged"
+            exit 1
+          fi
+
+          if [ "${{ needs.responsive-e2e.result }}" != "success" ]; then
+            echo "❌ Responsive E2E failed - PR cannot be merged"
             exit 1
           fi
 
@@ -192,8 +228,9 @@ jobs:
         with:
           script: |
             const testStatus = '${{ needs.test-matrix.result }}' === 'success';
+            const e2eStatus = '${{ needs.responsive-e2e.result }}' === 'success';
             const validationStatus = '${{ needs.validate-pr.result }}' === 'success';
-            const overallStatus = testStatus && validationStatus;
+            const overallStatus = testStatus && e2eStatus && validationStatus;
 
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
