@@ -130,7 +130,13 @@ auto-release.yml  — analyzes commits → computes semver → pushes annotated 
 | `src/App.tsx` | Main component + state (~686 lines) |
 | `src/Fretboard.tsx` | Fretboard SVG viz |
 | `src/CircleOfFifths.tsx` | Circle of Fifths widget |
+| `src/circleOfFifthsUtils.ts` | Circle of Fifths pure helpers |
 | `src/DrawerSelector.tsx` | Reusable dropdown selector |
+| `src/store/atoms.ts` | Jotai atoms with localStorage persistence |
+| `src/layout/constants.ts` | Layout constants (STRING_ROW_PX, breakpoints) |
+| `src/components/SettingsOverlay.tsx` | Settings panel (extracted from App) |
+| `src/components/MobileTabPanel.tsx` | Mobile tab-based panel layout |
+| `src/components/TabletPortraitPanel.tsx` | Tablet portrait panel layout |
 | `src/theory.ts` | Music theory (scales, chords, intervals) |
 | `src/guitar.ts` | Tuning presets |
 | `src/shapes.ts` | CAGED + 3NPS shape data |
@@ -176,9 +182,9 @@ Scale degrees on circle use chromatic interval conversion: `(circleIntervalIndex
 
 **`clsx`** — all conditional class composition.
 
-**`framer-motion`** — use for any new animations, not CSS transitions alone.
+**`motion`** (`motion` package, formerly `framer-motion`) — use for any new animations, not CSS transitions alone.
 
-**`DrawerSelector`** = inline accordion dropdown defined at top of `App.tsx`. Use for any new selector controls → maintains visual consistency.
+**`DrawerSelector`** = accordion dropdown in `src/DrawerSelector.tsx`. Use for any new selector controls → maintains visual consistency.
 
 ## Copyright
 
