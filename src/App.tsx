@@ -22,7 +22,7 @@ import {
   resolveAccidentalMode,
 } from "./theory";
 import { STANDARD_TUNING, TUNINGS } from "./guitar";
-import { Music, Settings2, Volume2, VolumeX } from "lucide-react";
+import { Music, Settings2, Volume2, VolumeX, HelpCircle } from "lucide-react";
 import { synth } from "./audio";
 import { CircleOfFifths } from "./CircleOfFifths";
 import { DEGREE_COLORS, getDegreesForScale } from "./degrees";
@@ -195,6 +195,9 @@ function AppContent() {
 
   // Settings overlay (non-persisted)
   const setSettingsOverlayOpen = useSetAtom(settingsOverlayOpenAtom);
+
+  // Help modal
+  const [showHelp, setShowHelp] = useState(false);
 
   // Viewport / mobile detection (not persisted)
   const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
@@ -501,9 +504,61 @@ function AppContent() {
               <Volume2 className="icon icon-active" />
             )}
           </button>
+          <button
+            onClick={() => setShowHelp(true)}
+            className="mute-btn"
+            title="Help & Instructions"
+          >
+            <HelpCircle className="icon" />
+          </button>
         </div>
       </header>
 
+      {/* Help Modal */}
+      {showHelp && (
+        <div className="help-modal-overlay" onClick={() => setShowHelp(false)}>
+          <div className="help-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="help-modal-header">
+              <h2>FretFlow Help</h2>
+              <button
+                className="help-modal-close"
+                onClick={() => setShowHelp(false)}
+                title="Close help"
+              >
+                ×
+              </button>
+            </div>
+            <div className="help-modal-content">
+              <h3>Getting Started</h3>
+              <p>FretFlow is an interactive guitar fretboard and music theory tool. Use the controls below to explore scales, chords, and fingering patterns.</p>
+
+              <h3>Basic Usage</h3>
+              <ul>
+                <li><strong>Scale Selection:</strong> Choose a root note and scale type to highlight notes on the fretboard</li>
+                <li><strong>Chord Overlay:</strong> Select a chord to see which scale notes are chord tones</li>
+                <li><strong>Fret Range:</strong> Adjust which frets are visible</li>
+              </ul>
+
+              <h3>Controls</h3>
+              <ul>
+                <li><strong>Reset:</strong> Return all settings to defaults</li>
+                <li><strong>Mute:</strong> Toggle audio feedback when clicking notes</li>
+                <li><strong>Settings:</strong> Coming soon - additional preferences</li>
+              </ul>
+
+              <h3>Tips</h3>
+              <ul>
+                <li>Click on fretboard notes to hear them (when unmuted)</li>
+                <li>Use the Circle of Fifths widget for key relationships</li>
+                <li>Try different fingering patterns to find comfortable positions</li>
+                <li>Chord overlays help identify chord tones within scales</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Fretboard */}
       <main className="main-fretboard">
         <Fretboard
           tuning={currentTuning}

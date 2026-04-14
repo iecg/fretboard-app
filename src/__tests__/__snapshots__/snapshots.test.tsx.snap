@@ -140,6 +140,36 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             />
           </svg>
         </button>
+        <button
+          class="mute-btn"
+          title="Help & Instructions"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-circle-question-mark icon"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
+            />
+            <path
+              d="M12 17h.01"
+            />
+          </svg>
+        </button>
       </div>
     </header>
     <main
@@ -3919,6 +3949,36 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             />
           </svg>
         </button>
+        <button
+          class="mute-btn"
+          title="Help & Instructions"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-circle-question-mark icon"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
+            />
+            <path
+              d="M12 17h.01"
+            />
+          </svg>
+        </button>
       </div>
     </header>
     <main
@@ -7695,6 +7755,36 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             />
             <path
               d="M19.364 18.364a9 9 0 0 0 0-12.728"
+            />
+          </svg>
+        </button>
+        <button
+          class="mute-btn"
+          title="Help & Instructions"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-circle-question-mark icon"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
+            />
+            <path
+              d="M12 17h.01"
             />
           </svg>
         </button>
@@ -11615,6 +11705,36 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             />
           </svg>
         </button>
+        <button
+          class="mute-btn"
+          title="Help & Instructions"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-circle-question-mark icon"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
+            />
+            <path
+              d="M12 17h.01"
+            />
+          </svg>
+        </button>
       </div>
     </header>
     <main
@@ -15531,6 +15651,36 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
             />
           </svg>
         </button>
+        <button
+          class="mute-btn"
+          title="Help & Instructions"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-circle-question-mark icon"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
+            />
+            <path
+              d="M12 17h.01"
+            />
+          </svg>
+        </button>
       </div>
     </header>
     <main
@@ -19306,6 +19456,36 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
             />
           </svg>
         </button>
+        <button
+          class="mute-btn"
+          title="Help & Instructions"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-circle-question-mark icon"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
+            />
+            <path
+              d="M12 17h.01"
+            />
+          </svg>
+        </button>
       </div>
     </header>
     <main
@@ -22920,6 +23100,36 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
             />
             <path
               d="M19.364 18.364a9 9 0 0 0 0-12.728"
+            />
+          </svg>
+        </button>
+        <button
+          class="mute-btn"
+          title="Help & Instructions"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-circle-question-mark icon"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
+            />
+            <path
+              d="M12 17h.01"
             />
           </svg>
         </button>
@@ -26540,6 +26750,36 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
             />
           </svg>
         </button>
+        <button
+          class="mute-btn"
+          title="Help & Instructions"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-circle-question-mark icon"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
+            />
+            <path
+              d="M12 17h.01"
+            />
+          </svg>
+        </button>
       </div>
     </header>
     <main
@@ -30154,6 +30394,36 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
             />
             <path
               d="M19.364 18.364a9 9 0 0 0 0-12.728"
+            />
+          </svg>
+        </button>
+        <button
+          class="mute-btn"
+          title="Help & Instructions"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-circle-question-mark icon"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
+            />
+            <path
+              d="M12 17h.01"
             />
           </svg>
         </button>
