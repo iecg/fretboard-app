@@ -639,4 +639,37 @@ describe("Fretboard", () => {
       expect(document.body).toBeTruthy();
     });
   });
+
+  describe('marker-dot CSS custom property (R02-UAT-03)', () => {
+    it('sets --string-row-px on fretboard-neck container', () => {
+      const { container } = render(
+        <Provider store={createStore()}>
+          <Fretboard {...defaultProps} stringRowPx={48} />
+        </Provider>,
+      );
+      const neck = container.querySelector('.fretboard-neck');
+      expect(neck).not.toBeNull();
+      expect((neck as HTMLElement).style.getPropertyValue('--string-row-px')).toBe('48px');
+    });
+
+    it('sets --string-row-px correctly at minimum stringRowPx=40', () => {
+      const { container } = render(
+        <Provider store={createStore()}>
+          <Fretboard {...defaultProps} stringRowPx={40} />
+        </Provider>,
+      );
+      const neck = container.querySelector('.fretboard-neck');
+      expect((neck as HTMLElement).style.getPropertyValue('--string-row-px')).toBe('40px');
+    });
+
+    it('sets --string-row-px correctly at maximum stringRowPx=72', () => {
+      const { container } = render(
+        <Provider store={createStore()}>
+          <Fretboard {...defaultProps} stringRowPx={72} />
+        </Provider>,
+      );
+      const neck = container.querySelector('.fretboard-neck');
+      expect((neck as HTMLElement).style.getPropertyValue('--string-row-px')).toBe('72px');
+    });
+  });
 });
