@@ -1242,6 +1242,11 @@
   font-weight: 500;
 }
 
+.drawer-option.focused {
+  background: var(--surface-raised);
+  color: white;
+}
+
 .drawer-divider {
   padding: var(--space-1) var(--space-3);
   font-size: 10px;

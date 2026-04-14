@@ -2991,7 +2991,12 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             class="drawer-selector"
           >
             <button
+              aria-controls="scale-listbox"
+              aria-expanded="false"
+              aria-haspopup="listbox"
+              aria-label="Scale: Major"
               class="drawer-trigger"
+              id="scale-trigger"
             >
               <span
                 class="drawer-label"
@@ -3026,7 +3031,12 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             class="drawer-selector"
           >
             <button
+              aria-controls="chord-overlay-listbox"
+              aria-expanded="false"
+              aria-haspopup="listbox"
+              aria-label="Chord Overlay: None"
               class="drawer-trigger"
+              id="chord-overlay-trigger"
             >
               <span
                 class="drawer-label"
@@ -6765,7 +6775,12 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             class="drawer-selector"
           >
             <button
+              aria-controls="scale-listbox"
+              aria-expanded="false"
+              aria-haspopup="listbox"
+              aria-label="Scale: Major"
               class="drawer-trigger"
+              id="scale-trigger"
             >
               <span
                 class="drawer-label"
@@ -6800,7 +6815,12 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             class="drawer-selector"
           >
             <button
+              aria-controls="chord-overlay-listbox"
+              aria-expanded="false"
+              aria-haspopup="listbox"
+              aria-label="Chord Overlay: None"
               class="drawer-trigger"
+              id="chord-overlay-trigger"
             >
               <span
                 class="drawer-label"
@@ -10539,7 +10559,12 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             class="drawer-selector"
           >
             <button
+              aria-controls="scale-listbox"
+              aria-expanded="false"
+              aria-haspopup="listbox"
+              aria-label="Scale: Major"
               class="drawer-trigger"
+              id="scale-trigger"
             >
               <span
                 class="drawer-label"
@@ -10574,7 +10599,12 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             class="drawer-selector"
           >
             <button
+              aria-controls="chord-overlay-listbox"
+              aria-expanded="false"
+              aria-haspopup="listbox"
+              aria-label="Chord Overlay: Major 7th"
               class="drawer-trigger"
+              id="chord-overlay-trigger"
             >
               <span
                 class="drawer-label"
@@ -10635,7 +10665,12 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             class="drawer-selector"
           >
             <button
+              aria-controls="interval-filter-listbox"
+              aria-expanded="false"
+              aria-haspopup="listbox"
+              aria-label="Interval Filter: All"
               class="drawer-trigger"
+              id="interval-filter-trigger"
             >
               <span
                 class="drawer-label"
@@ -14451,7 +14486,12 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             class="drawer-selector"
           >
             <button
+              aria-controls="scale-listbox"
+              aria-expanded="false"
+              aria-haspopup="listbox"
+              aria-label="Scale: Natural Minor"
               class="drawer-trigger"
+              id="scale-trigger"
             >
               <span
                 class="drawer-label"
@@ -14486,7 +14526,12 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             class="drawer-selector"
           >
             <button
+              aria-controls="chord-overlay-listbox"
+              aria-expanded="false"
+              aria-haspopup="listbox"
+              aria-label="Chord Overlay: Minor 7th"
               class="drawer-trigger"
+              id="chord-overlay-trigger"
             >
               <span
                 class="drawer-label"
@@ -14546,7 +14591,12 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             class="drawer-selector"
           >
             <button
+              aria-controls="interval-filter-listbox"
+              aria-expanded="false"
+              aria-haspopup="listbox"
+              aria-label="Interval Filter: All"
               class="drawer-trigger"
+              id="interval-filter-trigger"
             >
               <span
                 class="drawer-label"
@@ -18359,7 +18409,12 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
           class="drawer-selector"
         >
           <button
+            aria-controls="scale-listbox"
+            aria-expanded="false"
+            aria-haspopup="listbox"
+            aria-label="Scale: Major"
             class="drawer-trigger"
+            id="scale-trigger"
           >
             <span
               class="drawer-label"
@@ -18394,7 +18449,12 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
           class="drawer-selector"
         >
           <button
+            aria-controls="chord-overlay-listbox"
+            aria-expanded="false"
+            aria-haspopup="listbox"
+            aria-label="Chord Overlay: None"
             class="drawer-trigger"
+            id="chord-overlay-trigger"
           >
             <span
               class="drawer-label"
@@ -33067,7 +33127,12 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
             class="drawer-selector"
           >
             <button
+              aria-controls="scale-listbox"
+              aria-expanded="false"
+              aria-haspopup="listbox"
+              aria-label="Scale: Major"
               class="drawer-trigger"
+              id="scale-trigger"
             >
               <span
                 class="drawer-label"
@@ -33102,7 +33167,12 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
             class="drawer-selector"
           >
             <button
+              aria-controls="chord-overlay-listbox"
+              aria-expanded="false"
+              aria-haspopup="listbox"
+              aria-label="Chord Overlay: None"
               class="drawer-trigger"
+              id="chord-overlay-trigger"
             >
               <span
                 class="drawer-label"
