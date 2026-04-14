@@ -105,6 +105,28 @@ describe('GuitarSynth', () => {
 
       await expect(synth.playNote(440)).resolves.toBeUndefined();
     });
+
+    it('marks the synth unsupported when AudioContext construction fails', async () => {
+      const throwingCtor = vi.fn(function() {
+        throw new Error('AudioContext blocked');
+      });
+      (window as unknown as { AudioContext: typeof AudioContext }).AudioContext =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        throwingCtor as any;
+
+      await expect(synth.playNote(440)).resolves.toBeUndefined();
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((synth as any).unsupported).toBe(true);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((synth as any).ctx).toBeNull();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((synth as any).masterGain).toBeNull();
+
+      await synth.playNote(440);
+      expect(throwingCtor).toHaveBeenCalledTimes(1);
+      expect(mockAudioContext.createOscillator).not.toHaveBeenCalled();
+    });
   });
 
   describe('setMute', () => {
