@@ -219,7 +219,7 @@ describe("DrawerSelector", () => {
       const listbox = screen.getByRole("listbox");
       fireEvent.keyDown(listbox, { key: "ArrowDown" });
       fireEvent.keyDown(listbox, { key: "ArrowDown" });
-      expect(listbox).toHaveAttribute("aria-activedescendant", "scale-listbox-Pentatonic");
+      expect(listbox).toHaveAttribute("aria-activedescendant", "scale-listbox-pentatonic");
     });
 
     it("navigates options with ArrowUp using aria-activedescendant", () => {
@@ -235,7 +235,7 @@ describe("DrawerSelector", () => {
       const listbox = screen.getByRole("listbox");
       fireEvent.keyDown(listbox, { key: "ArrowDown" });
       fireEvent.keyDown(listbox, { key: "ArrowUp" });
-      expect(listbox).toHaveAttribute("aria-activedescendant", "scale-listbox-Major");
+      expect(listbox).toHaveAttribute("aria-activedescendant", "scale-listbox-major");
     });
 
     it("selects option with Enter key", () => {
@@ -286,7 +286,7 @@ describe("DrawerSelector", () => {
       fireEvent.keyDown(listbox, { key: "ArrowDown" });
       fireEvent.keyDown(listbox, { key: "ArrowDown" });
       fireEvent.keyDown(listbox, { key: "Home" });
-      expect(listbox).toHaveAttribute("aria-activedescendant", "scale-listbox-Major");
+      expect(listbox).toHaveAttribute("aria-activedescendant", "scale-listbox-major");
     });
 
     it("jumps to last option with End key", () => {
@@ -301,7 +301,7 @@ describe("DrawerSelector", () => {
       openDropdown();
       const listbox = screen.getByRole("listbox");
       fireEvent.keyDown(listbox, { key: "End" });
-      expect(listbox).toHaveAttribute("aria-activedescendant", "scale-listbox-Pentatonic");
+      expect(listbox).toHaveAttribute("aria-activedescendant", "scale-listbox-pentatonic");
     });
 
     it("closes dropdown with Tab key", () => {

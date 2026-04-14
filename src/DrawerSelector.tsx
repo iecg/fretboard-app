@@ -80,6 +80,9 @@ export function DrawerSelector(props: DrawerSelectorProps) {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
 
+  const sanitizeId = (s: string) =>
+    s.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
   const listboxId = `${label.toLowerCase().replace(/\s+/g, '-')}-listbox`;
   const triggerId = `${label.toLowerCase().replace(/\s+/g, '-')}-trigger`;
 
@@ -114,7 +117,7 @@ export function DrawerSelector(props: DrawerSelectorProps) {
           aria-label={label}
           tabIndex={0}
           autoFocus
-          aria-activedescendant={flatOptions[activeIndex] === null ? `${listboxId}-none` : `${listboxId}-${flatOptions[activeIndex]}`}
+          aria-activedescendant={flatOptions[activeIndex] === null ? `${listboxId}-none` : `${listboxId}-${sanitizeId(flatOptions[activeIndex] as string)}`}
           className={clsx(
             "drawer-options",
             "custom-scrollbar",
@@ -191,7 +194,7 @@ export function DrawerSelector(props: DrawerSelectorProps) {
                 <button
                   type="button"
                   key={opt}
-                  id={`${listboxId}-${opt}`}
+                  id={`${listboxId}-${sanitizeId(opt)}`}
                   data-index={flatIndex}
                   className={clsx('drawer-option', value === opt && 'active', activeIndex === flatIndex++ && 'focused')}
                   onClick={() => {
