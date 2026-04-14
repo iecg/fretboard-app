@@ -97,7 +97,6 @@ export function DrawerSelector(props: DrawerSelectorProps) {
             }
           }
         }}
-        }}
         aria-expanded={open}
         aria-haspopup="listbox"
         aria-controls={listboxId}
@@ -171,7 +170,7 @@ export function DrawerSelector(props: DrawerSelectorProps) {
               type="button"
               id={`${listboxId}-none`}
               data-index={0}
-              className={`drawer-option ${value === null ? "active" : ""} ${activeIndex === 0 ? "focused" : ""}`}
+              className={clsx('drawer-option', value === null && 'active', activeIndex === 0 && 'focused')}
               onClick={() => {
                 props.onSelect(null);
                 setOpen(false);
@@ -193,7 +192,7 @@ export function DrawerSelector(props: DrawerSelectorProps) {
                   key={opt}
                   id={`${listboxId}-${opt}`}
                   data-index={flatIndex}
-                  className={`drawer-option ${value === opt ? "active" : ""} ${activeIndex === flatIndex++ ? "focused" : ""}`}
+                  className={clsx('drawer-option', value === opt && 'active', activeIndex === flatIndex++ && 'focused')}
                   onClick={() => {
                     props.onSelect(opt);
                     setOpen(false);
