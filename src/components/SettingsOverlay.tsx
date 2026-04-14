@@ -20,7 +20,11 @@ import { StepperControl } from "./StepperControl";
 import { FretRangeControl } from "./FretRangeControl";
 import { DrawerSelector } from "../DrawerSelector";
 import { ToggleBar } from "./ToggleBar";
-import { getResponsiveTier } from "../layout/responsive";
+import {
+  getResponsiveLayout,
+  getResponsiveTier,
+  type ResponsiveTier,
+} from "../layout/responsive";
 import "./SettingsOverlay.css";
 
 const END_FRET = 24;
@@ -49,13 +53,22 @@ const ENHARMONIC_DISPLAY_OPTIONS = [
   value: EnharmonicDisplayValue;
 }[];
 
-type LayoutTier = "mobile" | "tablet" | "desktop";
-
 // Retained for: auto-close overlay on layout-tier change (resize/rotate detection).
-const getLayoutTier = (): LayoutTier => {
+const getLayoutTier = (): ResponsiveTier => {
   if (typeof window === "undefined") return "desktop";
   return getResponsiveTier(window.innerWidth);
 };
+
+function getViewportSnapshot() {
+  if (typeof window === "undefined") {
+    return { width: 1440, height: 900 };
+  }
+
+  return {
+    width: window.innerWidth,
+    height: window.innerHeight,
+  };
+}
 
 function getFocusableElements(container: HTMLElement | null): HTMLElement[] {
   if (!container) return [];
@@ -78,11 +91,13 @@ export default function SettingsOverlay() {
   );
   const [chordFretSpread, setChordFretSpread] = useAtom(chordFretSpreadAtom);
   const dispatchReset = useSetAtom(resetAtom);
+  const [viewport, setViewport] = useState(getViewportSnapshot);
   const [resetConfirming, setResetConfirming] = useState(false);
-  const openTierRef = useRef<LayoutTier | null>(null);
+  const openTierRef = useRef<ResponsiveTier | null>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
+  const layout = getResponsiveLayout(viewport.width, viewport.height);
 
   const close = () => {
     setIsOpen(false);
@@ -109,25 +124,25 @@ export default function SettingsOverlay() {
 
   // Track layout tier at the moment the overlay opens.
   useEffect(() => {
-    if (isOpen) {
-      openTierRef.current = getLayoutTier();
-    } else {
-      openTierRef.current = null;
-    }
+    const onResize = () => setViewport(getViewportSnapshot());
+    window.addEventListener("resize", onResize);
+
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  useEffect(() => {
+    openTierRef.current = isOpen ? getLayoutTier() : null;
   }, [isOpen]);
 
   // Auto-close the overlay when the layout tier changes (e.g., rotate,
-  // desktop → mobile resize). Resizes within the same tier do nothing.
+  // desktop → mobile resize). Resizes within the same tier keep the drawer
+  // open and allow CSS to adapt the surface.
   useEffect(() => {
-    if (!isOpen) return;
-    const onResize = () => {
-      if (openTierRef.current && getLayoutTier() !== openTierRef.current) {
-        setIsOpen(false);
-      }
-    };
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, [isOpen, setIsOpen]);
+    if (!isOpen || !openTierRef.current) return;
+    if (layout.tier !== openTierRef.current) {
+      setIsOpen(false);
+    }
+  }, [isOpen, layout.tier, setIsOpen]);
 
   // Trap focus inside the drawer while open and restore focus on close.
   useEffect(() => {
@@ -201,6 +216,8 @@ export default function SettingsOverlay() {
             role="dialog"
             aria-modal="true"
             aria-label="Settings"
+            data-layout-tier={layout.tier}
+            data-full-width={layout.fullWidthOverlay ? "true" : "false"}
             tabIndex={-1}
             onClick={(e) => e.stopPropagation()}
             initial={{ x: "100%" }}

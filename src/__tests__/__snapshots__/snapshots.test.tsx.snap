@@ -4,6 +4,9 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
 <div>
   <div
     class="app-container"
+    data-full-width-overlay="false"
+    data-header-actions="compact"
+    data-header-subtitle="visible"
     data-layout-tier="desktop"
     data-layout-variant="desktop-split"
   >
@@ -56,6 +59,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
         </div>
       </div>
       <div
+        aria-label="App actions"
         class="header-actions"
       >
         <a
@@ -80,6 +84,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
           aria-label="Open settings"
           class="header-btn"
           title="Settings"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -115,6 +120,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
         <button
           class="header-btn"
           title="Mute"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -141,8 +147,10 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
           </svg>
         </button>
         <button
+          aria-label="Open help"
           class="header-btn"
           title="Help & Instructions"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -3788,6 +3796,9 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
 <div>
   <div
     class="app-container"
+    data-full-width-overlay="false"
+    data-header-actions="default"
+    data-header-subtitle="visible"
     data-layout-tier="desktop"
     data-layout-variant="desktop-split"
   >
@@ -3840,6 +3851,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
         </div>
       </div>
       <div
+        aria-label="App actions"
         class="header-actions"
       >
         <a
@@ -3864,6 +3876,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
           aria-label="Open settings"
           class="header-btn"
           title="Settings"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -3899,6 +3912,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
         <button
           class="header-btn"
           title="Mute"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -3925,8 +3939,10 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
           </svg>
         </button>
         <button
+          aria-label="Open help"
           class="header-btn"
           title="Help & Instructions"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -7572,6 +7588,9 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
 <div>
   <div
     class="app-container"
+    data-full-width-overlay="false"
+    data-header-actions="default"
+    data-header-subtitle="visible"
     data-layout-tier="desktop"
     data-layout-variant="desktop-split"
   >
@@ -7624,6 +7643,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
         </div>
       </div>
       <div
+        aria-label="App actions"
         class="header-actions"
       >
         <a
@@ -7648,6 +7668,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
           aria-label="Open settings"
           class="header-btn"
           title="Settings"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -7683,6 +7704,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
         <button
           class="header-btn"
           title="Mute"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -7709,8 +7731,10 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
           </svg>
         </button>
         <button
+          aria-label="Open help"
           class="header-btn"
           title="Help & Instructions"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -11499,6 +11523,9 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
 <div>
   <div
     class="app-container"
+    data-full-width-overlay="false"
+    data-header-actions="default"
+    data-header-subtitle="visible"
     data-layout-tier="desktop"
     data-layout-variant="desktop-split"
   >
@@ -11551,6 +11578,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
         </div>
       </div>
       <div
+        aria-label="App actions"
         class="header-actions"
       >
         <a
@@ -11575,6 +11603,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
           aria-label="Open settings"
           class="header-btn"
           title="Settings"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -11610,6 +11639,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
         <button
           class="header-btn"
           title="Mute"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -11636,8 +11666,10 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
           </svg>
         </button>
         <button
+          aria-label="Open help"
           class="header-btn"
           title="Help & Instructions"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -15425,6 +15457,9 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
 <div>
   <div
     class="app-container"
+    data-full-width-overlay="false"
+    data-header-actions="default"
+    data-header-subtitle="visible"
     data-layout-tier="desktop"
     data-layout-variant="desktop-stacked"
   >
@@ -15477,6 +15512,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
         </div>
       </div>
       <div
+        aria-label="App actions"
         class="header-actions"
       >
         <a
@@ -15501,6 +15537,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
           aria-label="Open settings"
           class="header-btn"
           title="Settings"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -15536,6 +15573,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
         <button
           class="header-btn"
           title="Mute"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -15562,8 +15600,10 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
           </svg>
         </button>
         <button
+          aria-label="Open help"
           class="header-btn"
           title="Help & Instructions"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -19205,6 +19245,9 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
 <div>
   <div
     class="app-container"
+    data-full-width-overlay="true"
+    data-header-actions="compact"
+    data-header-subtitle="hidden"
     data-layout-tier="mobile"
     data-layout-variant="mobile"
   >
@@ -19257,6 +19300,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
         </div>
       </div>
       <div
+        aria-label="App actions"
         class="header-actions"
       >
         <a
@@ -19281,6 +19325,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
           aria-label="Open settings"
           class="header-btn"
           title="Settings"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -19316,6 +19361,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
         <button
           class="header-btn"
           title="Mute"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -19342,8 +19388,10 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
           </svg>
         </button>
         <button
+          aria-label="Open help"
           class="header-btn"
           title="Help & Instructions"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -22852,6 +22900,9 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
 <div>
   <div
     class="app-container"
+    data-full-width-overlay="true"
+    data-header-actions="compact"
+    data-header-subtitle="hidden"
     data-layout-tier="mobile"
     data-layout-variant="mobile"
   >
@@ -22904,6 +22955,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
         </div>
       </div>
       <div
+        aria-label="App actions"
         class="header-actions"
       >
         <a
@@ -22928,6 +22980,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
           aria-label="Open settings"
           class="header-btn"
           title="Settings"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -22963,6 +23016,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
         <button
           class="header-btn"
           title="Mute"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -22989,8 +23043,10 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
           </svg>
         </button>
         <button
+          aria-label="Open help"
           class="header-btn"
           title="Help & Instructions"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -26499,6 +26555,9 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
 <div>
   <div
     class="app-container"
+    data-full-width-overlay="true"
+    data-header-actions="compact"
+    data-header-subtitle="hidden"
     data-layout-tier="mobile"
     data-layout-variant="mobile"
   >
@@ -26551,6 +26610,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
         </div>
       </div>
       <div
+        aria-label="App actions"
         class="header-actions"
       >
         <a
@@ -26575,6 +26635,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
           aria-label="Open settings"
           class="header-btn"
           title="Settings"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -26610,6 +26671,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
         <button
           class="header-btn"
           title="Mute"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -26636,8 +26698,10 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
           </svg>
         </button>
         <button
+          aria-label="Open help"
           class="header-btn"
           title="Help & Instructions"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -30146,6 +30210,9 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
 <div>
   <div
     class="app-container"
+    data-full-width-overlay="false"
+    data-header-actions="compact"
+    data-header-subtitle="hidden"
     data-layout-tier="tablet"
     data-layout-variant="tablet-split"
   >
@@ -30198,6 +30265,7 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
         </div>
       </div>
       <div
+        aria-label="App actions"
         class="header-actions"
       >
         <a
@@ -30222,6 +30290,7 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
           aria-label="Open settings"
           class="header-btn"
           title="Settings"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -30257,6 +30326,7 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
         <button
           class="header-btn"
           title="Mute"
+          type="button"
         >
           <svg
             aria-hidden="true"
@@ -30283,8 +30353,10 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
           </svg>
         </button>
         <button
+          aria-label="Open help"
           class="header-btn"
           title="Help & Instructions"
+          type="button"
         >
           <svg
             aria-hidden="true"
