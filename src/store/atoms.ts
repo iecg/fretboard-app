@@ -1,8 +1,54 @@
 import { atom } from "jotai";
 import { atomWithStorage, RESET } from "jotai/utils";
 import { CAGED_SHAPES, type CagedShape } from "../shapes";
+import { k, STORAGE_PREFIX } from "../utils/storage";
 
 export type FingeringPattern = "all" | "caged" | "3nps";
+
+const LEGACY_KEYS = [
+  "rootNote",
+  "scaleName",
+  "chordRoot",
+  "chordType",
+  "linkChordRoot",
+  "hideNonChordNotes",
+  "chordFretSpread",
+  "chordIntervalFilter",
+  "fingeringPattern",
+  "cagedShapes",
+  "npsPosition",
+  "displayFormat",
+  "shapeLabels",
+  "tuningName",
+  "fretZoom",
+  "fretStart",
+  "fretEnd",
+  "isMuted",
+  "mobileTab",
+  "tabletTab",
+  "landscapeNarrowTab",
+] as const;
+
+function migrateLegacyKeys() {
+  // Idempotent: only migrates when prefixed key doesn't exist.
+  // Also removes the legacy key after copying to reduce drift.
+  try {
+    for (const legacyKey of LEGACY_KEYS) {
+      const prefixedKey = k(legacyKey);
+      if (localStorage.getItem(prefixedKey) !== null) {
+        localStorage.removeItem(legacyKey);
+        continue;
+      }
+      const legacyValue = localStorage.getItem(legacyKey);
+      if (legacyValue === null) continue;
+      localStorage.setItem(prefixedKey, legacyValue);
+      localStorage.removeItem(legacyKey);
+    }
+  } catch {
+    // If storage is blocked or throws (Safari private mode, etc), ignore.
+  }
+}
+migrateLegacyKeys();
 
 // ---------------------------------------------------------------------------
 // Raw storage helpers — match the old localStorage.setItem(key, String(value))
@@ -12,121 +58,234 @@ export type FingeringPattern = "all" | "caged" | "3nps";
 function rawStringStorage<T extends string>() {
   return {
     getItem(key: string, initialValue: T): T {
-      const stored = localStorage.getItem(key);
-      if (stored === null) {
-        localStorage.setItem(key, initialValue);
+      try {
+        const stored = localStorage.getItem(key);
+        if (stored === null) {
+          localStorage.setItem(key, initialValue);
+          return initialValue;
+        }
+        return stored as T;
+      } catch {
         return initialValue;
       }
-      return stored as T;
     },
     setItem(key: string, value: T): void {
-      localStorage.setItem(key, value);
+      try {
+        localStorage.setItem(key, value);
+      } catch {
+        // Storage blocked or unavailable; ignore.
+      }
     },
     removeItem(key: string): void {
-      localStorage.removeItem(key);
+      try {
+        localStorage.removeItem(key);
+      } catch {
+        // Storage blocked or unavailable; ignore.
+      }
     },
   };
 }
 
 const booleanStorage = {
   getItem(key: string, initialValue: boolean): boolean {
-    const stored = localStorage.getItem(key);
-    if (stored === null) {
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored === null) {
+        localStorage.setItem(key, String(initialValue));
+        return initialValue;
+      }
+      if (stored === "true") return true;
+      if (stored === "false") return false;
       localStorage.setItem(key, String(initialValue));
       return initialValue;
+    } catch {
+      return initialValue;
     }
-    return stored === "true";
   },
   setItem(key: string, value: boolean): void {
-    localStorage.setItem(key, String(value));
+    try {
+      localStorage.setItem(key, String(value));
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
   },
   removeItem(key: string): void {
-    localStorage.removeItem(key);
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
   },
 };
 
-const numberStorage = {
-  getItem(key: string, initialValue: number): number {
-    const stored = localStorage.getItem(key);
-    if (stored === null) {
-      localStorage.setItem(key, String(initialValue));
-      return initialValue;
-    }
-    return Number(stored);
-  },
-  setItem(key: string, value: number): void {
-    localStorage.setItem(key, String(value));
-  },
-  removeItem(key: string): void {
-    localStorage.removeItem(key);
-  },
+type NumberConstraints = {
+  min?: number;
+  max?: number;
+  integer?: boolean;
 };
+
+function constrainedNumberStorage(constraints: NumberConstraints) {
+  return {
+    getItem(key: string, initialValue: number): number {
+      try {
+        const stored = localStorage.getItem(key);
+        if (stored === null) {
+          localStorage.setItem(key, String(initialValue));
+          return initialValue;
+        }
+        if (stored.trim() === "") {
+          localStorage.setItem(key, String(initialValue));
+          return initialValue;
+        }
+        const num = Number(stored);
+        if (!Number.isFinite(num)) {
+          localStorage.setItem(key, String(initialValue));
+          return initialValue;
+        }
+        if (constraints.integer && !Number.isInteger(num)) {
+          localStorage.setItem(key, String(initialValue));
+          return initialValue;
+        }
+        if (constraints.min !== undefined && num < constraints.min) {
+          localStorage.setItem(key, String(initialValue));
+          return initialValue;
+        }
+        if (constraints.max !== undefined && num > constraints.max) {
+          localStorage.setItem(key, String(initialValue));
+          return initialValue;
+        }
+        return num;
+      } catch {
+        return initialValue;
+      }
+    },
+    setItem(key: string, value: number): void {
+      try {
+        localStorage.setItem(key, String(value));
+      } catch {
+        // Storage blocked or unavailable; ignore.
+      }
+    },
+    removeItem(key: string): void {
+      try {
+        localStorage.removeItem(key);
+      } catch {
+        // Storage blocked or unavailable; ignore.
+      }
+    },
+  };
+}
+
+const fretCountStorage = constrainedNumberStorage({ min: 0, max: 24, integer: true });
+const chordFretSpreadStorage = constrainedNumberStorage({
+  min: 0,
+  max: 24,
+  integer: true,
+});
+const npsPositionStorage = constrainedNumberStorage({ min: 0, max: 12, integer: true });
+const fretZoomStorage = constrainedNumberStorage({ min: 50, max: 200, integer: true });
 
 const MOBILE_TABS = ["key", "scale", "fretboard"] as const;
 type MobileTab = (typeof MOBILE_TABS)[number];
 
 const mobileTabStorage = {
   getItem(key: string, initialValue: MobileTab): MobileTab {
-    const stored = localStorage.getItem(key);
-    if (stored === null) {
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored === null) {
+        localStorage.setItem(key, initialValue);
+        return initialValue;
+      }
+      if (stored === "settings") {
+        localStorage.setItem(key, "fretboard");
+        return "fretboard";
+      }
+      if ((MOBILE_TABS as readonly string[]).includes(stored)) {
+        return stored as MobileTab;
+      }
       localStorage.setItem(key, initialValue);
       return initialValue;
+    } catch {
+      return initialValue;
     }
-    if (stored === "settings") {
-      localStorage.setItem(key, "fretboard");
-      return "fretboard";
-    }
-    if ((MOBILE_TABS as readonly string[]).includes(stored)) {
-      return stored as MobileTab;
-    }
-    localStorage.setItem(key, initialValue);
-    return initialValue;
   },
   setItem(key: string, value: MobileTab): void {
-    localStorage.setItem(key, value);
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
   },
   removeItem(key: string): void {
-    localStorage.removeItem(key);
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
   },
 };
 
 // chordType is stored as '' when null (matching old behavior)
 const chordTypeStorage = {
   getItem(key: string, initialValue: string | null): string | null {
-    const stored = localStorage.getItem(key);
-    if (stored === null) {
-      localStorage.setItem(key, "");
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored === null) {
+        localStorage.setItem(key, "");
+        return initialValue;
+      }
+      return stored === "" ? null : stored;
+    } catch {
       return initialValue;
     }
-    return stored === "" ? null : stored;
   },
   setItem(key: string, value: string | null): void {
-    localStorage.setItem(key, value ?? "");
+    try {
+      localStorage.setItem(key, value ?? "");
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
   },
   removeItem(key: string): void {
-    localStorage.removeItem(key);
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
   },
 };
 
 // cagedShapes stored as JSON array
 const cagedShapesStorage = {
   getItem(key: string, initialValue: Set<CagedShape>): Set<CagedShape> {
-    const stored = localStorage.getItem(key);
-    if (stored === null) {
-      localStorage.setItem(key, JSON.stringify(Array.from(initialValue)));
-      return initialValue;
-    }
     try {
-      return new Set(JSON.parse(stored) as CagedShape[]);
+      const stored = localStorage.getItem(key);
+      if (stored === null) {
+        localStorage.setItem(key, JSON.stringify(Array.from(initialValue)));
+        return initialValue;
+      }
+      try {
+        return new Set(JSON.parse(stored) as CagedShape[]);
+      } catch {
+        return initialValue;
+      }
     } catch {
       return initialValue;
     }
   },
   setItem(key: string, value: Set<CagedShape>): void {
-    localStorage.setItem(key, JSON.stringify(Array.from(value)));
+    try {
+      localStorage.setItem(key, JSON.stringify(Array.from(value)));
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
   },
   removeItem(key: string): void {
-    localStorage.removeItem(key);
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
   },
 };
 
@@ -136,80 +295,84 @@ const cagedShapesStorage = {
 
 // Scale
 export const rootNoteAtom = atomWithStorage(
-  "rootNote",
+  k("rootNote"),
   "C",
   rawStringStorage(),
 );
 export const scaleNameAtom = atomWithStorage(
-  "scaleName",
+  k("scaleName"),
   "Major",
   rawStringStorage(),
 );
 
 // Chord overlay
 export const chordRootAtom = atomWithStorage(
-  "chordRoot",
+  k("chordRoot"),
   "C",
   rawStringStorage(),
 );
 export const chordTypeAtom = atomWithStorage<string | null>(
-  "chordType",
+  k("chordType"),
   null,
   chordTypeStorage,
 );
 export const linkChordRootAtom = atomWithStorage(
-  "linkChordRoot",
+  k("linkChordRoot"),
   true,
   booleanStorage,
 );
 export const hideNonChordNotesAtom = atomWithStorage(
-  "hideNonChordNotes",
+  k("hideNonChordNotes"),
   false,
   booleanStorage,
 );
 export const chordFretSpreadAtom = atomWithStorage(
-  "chordFretSpread",
+  k("chordFretSpread"),
   0,
-  numberStorage,
+  chordFretSpreadStorage,
 );
 export const chordIntervalFilterAtom = atomWithStorage(
-  "chordIntervalFilter",
+  k("chordIntervalFilter"),
   "All",
   rawStringStorage(),
 );
 
 // Fingering
 export const fingeringPatternAtom = atomWithStorage<FingeringPattern>(
-  "fingeringPattern",
+  k("fingeringPattern"),
   "all",
   rawStringStorage<FingeringPattern>(),
 );
 export const cagedShapesAtom = atomWithStorage<Set<CagedShape>>(
-  "cagedShapes",
+  k("cagedShapes"),
   new Set(CAGED_SHAPES),
   cagedShapesStorage,
 );
-export const npsPositionAtom = atomWithStorage("npsPosition", 0, numberStorage);
+export const npsPositionAtom = atomWithStorage(
+  k("npsPosition"),
+  0,
+  npsPositionStorage,
+);
 
 // Display
 export const displayFormatAtom = atomWithStorage<"notes" | "degrees" | "none">(
-  "displayFormat",
+  k("displayFormat"),
   "notes",
   rawStringStorage<"notes" | "degrees" | "none">(),
 );
 export const shapeLabelsAtom = atomWithStorage<"modal" | "caged" | "none">(
-  "shapeLabels",
+  k("shapeLabels"),
   "none",
   rawStringStorage<"modal" | "caged" | "none">(),
 );
 export const tuningNameAtom = atomWithStorage(
-  "tuningName",
+  k("tuningName"),
   "Standard",
   rawStringStorage(),
 );
-export const fretZoomAtom = atomWithStorage("fretZoom", 100, numberStorage);
-export const fretStartAtom = atomWithStorage("fretStart", 0, numberStorage);
-export const fretEndAtom = atomWithStorage("fretEnd", 24, numberStorage);
+export const fretZoomAtom = atomWithStorage(k("fretZoom"), 100, fretZoomStorage);
+export const fretStartAtom = atomWithStorage(k("fretStart"), 0, fretCountStorage);
+export const fretEndAtom = atomWithStorage(k("fretEnd"), 24, fretCountStorage);
 
 // Accidentals / Audio / Mobile tab
 // accidentalModeAtom is intentionally non-persisted: "auto" is a smart default
@@ -234,14 +397,14 @@ export const accidentalModeAtom = atom<"sharps" | "flats" | "auto">(
 // enharmonicDisplayAtom is intentionally non-persisted: "auto" preserves the
 // pre-existing CoF enharmonic-display behavior by default.
 export const enharmonicDisplayAtom = atom<"auto" | "on" | "off">("auto");
-export const isMutedAtom = atomWithStorage("isMuted", false, booleanStorage);
+export const isMutedAtom = atomWithStorage(k("isMuted"), false, booleanStorage);
 export const mobileTabAtom = atomWithStorage<"key" | "scale" | "fretboard">(
-  "mobileTab",
+  k("mobileTab"),
   "key",
   mobileTabStorage,
 );
 export const tabletTabAtom = atomWithStorage<"settings" | "scales">(
-  "tabletTab",
+  k("tabletTab"),
   "settings",
   rawStringStorage<"settings" | "scales">(),
 );
@@ -249,7 +412,7 @@ export const tabletTabAtom = atomWithStorage<"settings" | "scales">(
 export type LandscapeNarrowTab = "fretboard" | "scaleChord" | "key";
 
 export const landscapeNarrowTabAtom = atomWithStorage<LandscapeNarrowTab>(
-  "landscapeNarrowTab",
+  k("landscapeNarrowTab"),
   "fretboard",
   rawStringStorage<LandscapeNarrowTab>(),
 );
@@ -269,7 +432,16 @@ export const setRootNoteAtom = atom(null, (get, set, note: string) => {
 
 // Resets all persisted state to defaults and clears localStorage
 export const resetAtom = atom(null, (_get, set) => {
-  localStorage.clear();
+  try {
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(STORAGE_PREFIX)) keysToRemove.push(key);
+    }
+    for (const key of keysToRemove) localStorage.removeItem(key);
+  } catch {
+    // If storage is blocked or throws, still reset atoms in-memory.
+  }
   set(rootNoteAtom, RESET);
   set(scaleNameAtom, RESET);
   set(chordRootAtom, RESET);
@@ -292,4 +464,5 @@ export const resetAtom = atom(null, (_get, set) => {
   set(isMutedAtom, RESET);
   set(mobileTabAtom, RESET);
   set(tabletTabAtom, RESET);
+  set(landscapeNarrowTabAtom, RESET);
 });

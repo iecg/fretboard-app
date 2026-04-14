@@ -129,7 +129,7 @@ describe("SettingsOverlay", () => {
     const store = createStore();
     store.set(settingsOverlayOpenAtom, true);
     // Dirty an atom so we can prove reset restored the default.
-    store.set(fretZoomAtom, 250);
+    store.set(fretZoomAtom, 200);
     renderOverlay(store);
 
     const btn = screen.getByText("Reset all settings");
@@ -139,7 +139,7 @@ describe("SettingsOverlay", () => {
     expect(screen.getByText("Click again to confirm")).toBeTruthy();
     // Overlay is still open, zoom has not been reset yet.
     expect(store.get(settingsOverlayOpenAtom)).toBe(true);
-    expect(store.get(fretZoomAtom)).toBe(250);
+    expect(store.get(fretZoomAtom)).toBe(200);
 
     // Second click executes reset.
     fireEvent.click(screen.getByText("Click again to confirm"));
@@ -154,7 +154,7 @@ describe("SettingsOverlay", () => {
     vi.useFakeTimers();
     const store = createStore();
     store.set(settingsOverlayOpenAtom, true);
-    store.set(fretZoomAtom, 250);
+    store.set(fretZoomAtom, 200);
     renderOverlay(store);
 
     fireEvent.click(screen.getByText("Reset all settings"));
@@ -167,7 +167,7 @@ describe("SettingsOverlay", () => {
 
     // Button text reverts and no reset happened.
     expect(screen.getByText("Reset all settings")).toBeTruthy();
-    expect(store.get(fretZoomAtom)).toBe(250);
+    expect(store.get(fretZoomAtom)).toBe(200);
     expect(store.get(settingsOverlayOpenAtom)).toBe(true);
   });
 
