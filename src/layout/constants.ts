@@ -47,11 +47,16 @@ export const APP_MAX_WIDTH_TABLET_REM = 80; // 1280px (unchanged)
 // Per-container vertical floors (px) used in the viewport-aware stringRowPx
 // derivation formula in App.tsx and as explicit min-height guards in App.css.
 // Update if control sections gain new rows or the summary row count changes.
-export const CONTROLS_MIN_HEIGHT = 260; // empirical: left col (settings ~140 + scale/chord ~120)
-                                        // and right col (CoF with aspect-ratio:1) both fit at 260px.
-                                        // Matches CONTROL_HEIGHTS.settings + rowGap + scaleChord ≈ 576 →
-                                        // controls-panel is one grid cell wide, 260px is the narrower side.
+//
+// R02: values re-derived from live Playwright DOM measurements at 1200×1080
+// (desktop-expanded active). controlsColLeftH=311, keyColumnH=311.
+export const CONTROLS_MIN_HEIGHT = 340; // R02 measured: controlsColLeftH=311 + 20px buffer, ceil→10
+export const KEY_MIN_HEIGHT = 311;      // R02 measured: keyColumnH=311 (CoF legibility floor ≥ 280)
+                                        // Separate constant for Key/CoF column — CoF uses aspect-ratio:1
+                                        // so a narrow column forces a tiny CoF; this floor ensures ≥280px
+                                        // CoF diameter for legible interval labels.
 export const SUMMARY_MIN_HEIGHT = 72;   // scale notes label + note bubbles row.
+                                        // Measured summaryAreaH=79px — within 10px tolerance, unchanged.
                                         // Matches LAYOUT_CHROME_HEIGHT.summary — extracted here so the
                                         // derivation formula in App.tsx imports a single named constant
                                         // instead of reading from LAYOUT_CHROME_HEIGHT.summary.
