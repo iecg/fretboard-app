@@ -506,7 +506,7 @@ function AppContent() {
           </button>
           <button
             onClick={() => setShowHelp(true)}
-            className="mute-btn"
+            className="header-btn"
             title="Help & Instructions"
           >
             <HelpCircle className="icon" />
