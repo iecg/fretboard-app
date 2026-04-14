@@ -2980,41 +2980,6 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
               </button>
             </div>
           </div>
-          <div
-            class="drawer-selector"
-          >
-            <button
-              class="drawer-trigger"
-            >
-              <span
-                class="drawer-label"
-              >
-                Tuning
-              </span>
-              <span
-                class="drawer-value"
-              >
-                Standard
-              </span>
-              <svg
-                aria-hidden="true"
-                class="lucide lucide-chevron-down drawer-chevron"
-                fill="none"
-                height="24"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="m6 9 6 6 6-6"
-                />
-              </svg>
-            </button>
-          </div>
         </div>
         <div
           class="control-group panel-surface controls-card controls-card--scale"
@@ -6789,41 +6754,6 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
               </button>
             </div>
           </div>
-          <div
-            class="drawer-selector"
-          >
-            <button
-              class="drawer-trigger"
-            >
-              <span
-                class="drawer-label"
-              >
-                Tuning
-              </span>
-              <span
-                class="drawer-value"
-              >
-                Standard
-              </span>
-              <svg
-                aria-hidden="true"
-                class="lucide lucide-chevron-down drawer-chevron"
-                fill="none"
-                height="24"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="m6 9 6 6 6-6"
-                />
-              </svg>
-            </button>
-          </div>
         </div>
         <div
           class="control-group panel-surface controls-card controls-card--scale"
@@ -10597,41 +10527,6 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
                 None
               </button>
             </div>
-          </div>
-          <div
-            class="drawer-selector"
-          >
-            <button
-              class="drawer-trigger"
-            >
-              <span
-                class="drawer-label"
-              >
-                Tuning
-              </span>
-              <span
-                class="drawer-value"
-              >
-                Standard
-              </span>
-              <svg
-                aria-hidden="true"
-                class="lucide lucide-chevron-down drawer-chevron"
-                fill="none"
-                height="24"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="m6 9 6 6 6-6"
-                />
-              </svg>
-            </button>
           </div>
         </div>
         <div
@@ -14545,41 +14440,6 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
               </button>
             </div>
           </div>
-          <div
-            class="drawer-selector"
-          >
-            <button
-              class="drawer-trigger"
-            >
-              <span
-                class="drawer-label"
-              >
-                Tuning
-              </span>
-              <span
-                class="drawer-value"
-              >
-                Standard
-              </span>
-              <svg
-                aria-hidden="true"
-                class="lucide lucide-chevron-down drawer-chevron"
-                fill="none"
-                height="24"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="m6 9 6 6 6-6"
-                />
-              </svg>
-            </button>
-          </div>
         </div>
         <div
           class="control-group panel-surface controls-card controls-card--scale"
@@ -18487,41 +18347,6 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
               None
             </button>
           </div>
-        </div>
-        <div
-          class="drawer-selector"
-        >
-          <button
-            class="drawer-trigger"
-          >
-            <span
-              class="drawer-label"
-            >
-              Tuning
-            </span>
-            <span
-              class="drawer-value"
-            >
-              Standard
-            </span>
-            <svg
-              aria-hidden="true"
-              class="lucide lucide-chevron-down drawer-chevron"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="m6 9 6 6 6-6"
-              />
-            </svg>
-          </button>
         </div>
       </div>
       <div
@@ -33230,41 +33055,6 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
                 None
               </button>
             </div>
-          </div>
-          <div
-            class="drawer-selector"
-          >
-            <button
-              class="drawer-trigger"
-            >
-              <span
-                class="drawer-label"
-              >
-                Tuning
-              </span>
-              <span
-                class="drawer-value"
-              >
-                Standard
-              </span>
-              <svg
-                aria-hidden="true"
-                class="lucide lucide-chevron-down drawer-chevron"
-                fill="none"
-                height="24"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="m6 9 6 6 6-6"
-                />
-              </svg>
-            </button>
           </div>
         </div>
         <div

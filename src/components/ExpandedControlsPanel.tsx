@@ -4,7 +4,6 @@ import {
   rootNoteAtom,
   setRootNoteAtom,
   scaleNameAtom,
-  tuningNameAtom,
   fingeringPatternAtom,
   cagedShapesAtom,
   npsPositionAtom,
@@ -19,10 +18,8 @@ import {
   enharmonicDisplayAtom,
 } from "../store/atoms";
 import { resolveAccidentalMode } from "../theory";
-import { TUNINGS } from "../guitar";
 import { FingeringPatternControls } from "./FingeringPatternControls";
 import { ScaleChordControls } from "./ScaleChordControls";
-import { DrawerSelector } from "../DrawerSelector";
 import { CircleOfFifths } from "../CircleOfFifths";
 
 const CHORD_FILTER_OPTIONS = [
@@ -73,10 +70,9 @@ const CHORD_OPTIONS: (string | { divider: string })[] = [
 ];
 
 /**
- * Renders the left-most base controls: FingeringPatternControls + Tuning.
+ * Renders the left-most base controls: FingeringPatternControls.
  */
 export function BaseControlsSection() {
-  const [tuningName, setTuningName] = useAtom(tuningNameAtom);
   const [fingeringPattern, setFingeringPattern] = useAtom(fingeringPatternAtom);
   const [cagedShapes, setCagedShapes] = useAtom(cagedShapesAtom);
   const [npsPosition, setNpsPosition] = useAtom(npsPositionAtom);
@@ -96,13 +92,6 @@ export function BaseControlsSection() {
         setShapeLabels={setShapeLabels}
         displayFormat={displayFormat}
         setDisplayFormat={setDisplayFormat}
-      />
-
-      <DrawerSelector
-        label="Tuning"
-        value={tuningName}
-        options={Object.keys(TUNINGS)}
-        onSelect={setTuningName}
       />
     </div>
   );

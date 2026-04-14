@@ -561,8 +561,12 @@ describe("App", () => {
         ).toBeTruthy();
       });
 
-      const controlsTab = screen.queryByText("Controls");
-      if (controlsTab) fireEvent.click(controlsTab);
+      // Tuning is intentionally only available via the Settings overlay.
+      fireEvent.click(screen.getByLabelText("Open settings"));
+
+      await waitFor(() => {
+        expect(screen.getByText("Settings")).toBeTruthy();
+      });
 
       const tuningDrawers = screen.queryAllByTestId("drawer-tuning");
       if (tuningDrawers.length > 0) {
