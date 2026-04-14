@@ -7,8 +7,5 @@ coverage/
 # VBW archived milestones (read-only historical record, large)
 .vbw-planning/milestones/
 
-# VBW codebase map cache (generated, large)
-.vbw-planning/codebase/
-
 # Tooling caches
 .husky/_/
