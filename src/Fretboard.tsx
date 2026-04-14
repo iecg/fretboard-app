@@ -286,7 +286,8 @@ export function Fretboard({
           style={{
             height: `${neckHeight + NECK_BORDER * 2}px`,
             width: `${neckWidth + NECK_BORDER * 2}px`,
-          }}
+            '--string-row-px': `${stringRowPx}px`,
+          } as React.CSSProperties}
         >
           {/* Fret backgrounds/markers */}
           <div className="fret-backgrounds">

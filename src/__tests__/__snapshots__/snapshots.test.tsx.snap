@@ -336,7 +336,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-expanded l
           </div>
           <div
             class="fretboard-neck"
-            style="height: 440px; width: 1233px;"
+            style="height: 440px; width: 1233px; --string-row-px: 72px;"
           >
             <div
               class="fret-backgrounds"
@@ -4114,7 +4114,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad Pro portrait 
           </div>
           <div
             class="fretboard-neck"
-            style="height: 440px; width: 1233px;"
+            style="height: 440px; width: 1233px; --string-row-px: 72px;"
           >
             <div
               class="fret-backgrounds"
@@ -7892,7 +7892,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPad portrait layo
           </div>
           <div
             class="fretboard-neck"
-            style="height: 416px; width: 1233px;"
+            style="height: 416px; width: 1233px; --string-row-px: 68px;"
           >
             <div
               class="fret-backgrounds"
@@ -11580,7 +11580,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
           </div>
           <div
             class="fretboard-neck"
-            style="height: 248px; width: 1233px;"
+            style="height: 248px; width: 1233px; --string-row-px: 40px;"
           >
             <div
               class="fret-backgrounds"
@@ -15190,7 +15190,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
           </div>
           <div
             class="fretboard-neck"
-            style="height: 200px; width: 1233px;"
+            style="height: 200px; width: 1233px; --string-row-px: 32px;"
           >
             <div
               class="fret-backgrounds"
@@ -18806,7 +18806,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
           </div>
           <div
             class="fretboard-neck"
-            style="height: 200px; width: 1233px;"
+            style="height: 200px; width: 1233px; --string-row-px: 32px;"
           >
             <div
               class="fret-backgrounds"
@@ -22422,7 +22422,7 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
           </div>
           <div
             class="fretboard-neck"
-            style="height: 440px; width: 1233px;"
+            style="height: 440px; width: 1233px; --string-row-px: 72px;"
           >
             <div
               class="fret-backgrounds"
@@ -26338,7 +26338,7 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
           </div>
           <div
             class="fretboard-neck"
-            style="height: 440px; width: 1233px;"
+            style="height: 440px; width: 1233px; --string-row-px: 72px;"
           >
             <div
               class="fret-backgrounds"
@@ -42012,7 +42012,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders A Minor Pentatonic 
       </div>
       <div
         class="fretboard-neck"
-        style="height: 248px; width: 1233px;"
+        style="height: 248px; width: 1233px; --string-row-px: 40px;"
       >
         <div
           class="fret-backgrounds"
@@ -44738,7 +44738,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders C Major scale snaps
       </div>
       <div
         class="fretboard-neck"
-        style="height: 248px; width: 1233px;"
+        style="height: 248px; width: 1233px; --string-row-px: 40px;"
       >
         <div
           class="fret-backgrounds"
@@ -47464,7 +47464,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders Drop D tuning snaps
       </div>
       <div
         class="fretboard-neck"
-        style="height: 248px; width: 1233px;"
+        style="height: 248px; width: 1233px; --string-row-px: 40px;"
       >
         <div
           class="fret-backgrounds"
@@ -50190,7 +50190,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders high fret range sna
       </div>
       <div
         class="fretboard-neck"
-        style="height: 248px; width: 1233px;"
+        style="height: 248px; width: 1233px; --string-row-px: 40px;"
       >
         <div
           class="fret-backgrounds"
@@ -52916,7 +52916,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with CAGED shapes a
       </div>
       <div
         class="fretboard-neck"
-        style="height: 200px; width: 1233px;"
+        style="height: 200px; width: 1233px; --string-row-px: 32px;"
       >
         <div
           class="fret-backgrounds"
@@ -55671,7 +55671,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with CAGED shapes s
       </div>
       <div
         class="fretboard-neck"
-        style="height: 248px; width: 1233px;"
+        style="height: 248px; width: 1233px; --string-row-px: 40px;"
       >
         <div
           class="fret-backgrounds"
@@ -58420,7 +58420,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
       </div>
       <div
         class="fretboard-neck"
-        style="height: 248px; width: 1233px;"
+        style="height: 248px; width: 1233px; --string-row-px: 40px;"
       >
         <div
           class="fret-backgrounds"
@@ -61146,7 +61146,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
       </div>
       <div
         class="fretboard-neck"
-        style="height: 248px; width: 1233px;"
+        style="height: 248px; width: 1233px; --string-row-px: 40px;"
       >
         <div
           class="fret-backgrounds"
@@ -63872,7 +63872,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with degree display
       </div>
       <div
         class="fretboard-neck"
-        style="height: 248px; width: 1233px;"
+        style="height: 248px; width: 1233px; --string-row-px: 40px;"
       >
         <div
           class="fret-backgrounds"
@@ -66598,7 +66598,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with flats instead 
       </div>
       <div
         class="fretboard-neck"
-        style="height: 248px; width: 1233px;"
+        style="height: 248px; width: 1233px; --string-row-px: 40px;"
       >
         <div
           class="fret-backgrounds"
@@ -69324,7 +69324,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with no display for
       </div>
       <div
         class="fretboard-neck"
-        style="height: 248px; width: 1233px;"
+        style="height: 248px; width: 1233px; --string-row-px: 40px;"
       >
         <div
           class="fret-backgrounds"
@@ -71150,7 +71150,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with small mobile s
       </div>
       <div
         class="fretboard-neck"
-        style="height: 200px; width: 1233px;"
+        style="height: 200px; width: 1233px; --string-row-px: 32px;"
       >
         <div
           class="fret-backgrounds"
@@ -73882,7 +73882,7 @@ exports[`Fretboard with ResizeObserver (auto-fit zoom) > uses containerWidth/tot
       </div>
       <div
         class="fretboard-neck"
-        style="height: 248px; width: 1233px;"
+        style="height: 248px; width: 1233px; --string-row-px: 40px;"
       >
         <div
           class="fret-backgrounds"
