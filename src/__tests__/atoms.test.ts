@@ -123,6 +123,17 @@ describe("atoms", () => {
       expect(localStorage.getItem(k("isMuted"))).toBe("false");
       unsub();
     });
+
+    it("returns initialValue when localStorage.getItem throws", () => {
+      const spy = vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+        throw new Error("storage blocked");
+      });
+      const store = makeStore();
+      const unsub = mount(store, isMutedAtom);
+      expect(store.get(isMutedAtom)).toBe(false);
+      spy.mockRestore();
+      unsub();
+    });
   });
 
   describe("numberStorage (via fretZoomAtom)", () => {
@@ -169,6 +180,35 @@ describe("atoms", () => {
       const unsub = mount(store, fretZoomAtom);
       expect(store.get(fretZoomAtom)).toBe(100);
       expect(localStorage.getItem(k("fretZoom"))).toBe("100");
+      unsub();
+    });
+
+    it("self-heals non-integer float values to default", () => {
+      localStorage.setItem(k("fretZoom"), "75.5");
+      const store = makeStore();
+      const unsub = mount(store, fretZoomAtom);
+      expect(store.get(fretZoomAtom)).toBe(100);
+      expect(localStorage.getItem(k("fretZoom"))).toBe("100");
+      unsub();
+    });
+
+    it("self-heals below-min values to default", () => {
+      localStorage.setItem(k("fretZoom"), "10"); // fretZoom min is 50
+      const store = makeStore();
+      const unsub = mount(store, fretZoomAtom);
+      expect(store.get(fretZoomAtom)).toBe(100);
+      expect(localStorage.getItem(k("fretZoom"))).toBe("100");
+      unsub();
+    });
+
+    it("returns initialValue when localStorage.getItem throws", () => {
+      const spy = vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+        throw new Error("storage blocked");
+      });
+      const store = makeStore();
+      const unsub = mount(store, fretZoomAtom);
+      expect(store.get(fretZoomAtom)).toBe(100);
+      spy.mockRestore();
       unsub();
     });
   });
@@ -395,6 +435,18 @@ describe("atoms", () => {
       expect(localStorage.getItem("rootNote")).toBeNull();
       expect(localStorage.getItem(k("rootNote"))).toBe("G");
       unsub();
+    });
+
+    it("removes legacy key without overwriting existing prefixed key", async () => {
+      // When the prefixed key already exists, migration must skip the copy
+      // but still remove the stale legacy key (the continue branch in migrateLegacyKeys).
+      localStorage.setItem(k("rootNote"), "D");
+      localStorage.setItem("rootNote", "G");
+      vi.resetModules();
+      await import("../store/atoms");
+
+      expect(localStorage.getItem(k("rootNote"))).toBe("D");
+      expect(localStorage.getItem("rootNote")).toBeNull();
     });
   });
 });
