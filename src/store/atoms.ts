@@ -1,13 +1,9 @@
 import { atom } from "jotai";
 import { atomWithStorage, RESET } from "jotai/utils";
 import { CAGED_SHAPES, type CagedShape } from "../shapes";
+import { k, STORAGE_PREFIX } from "../utils/storage";
 
 export type FingeringPattern = "all" | "caged" | "3nps";
-
-const STORAGE_PREFIX = "fretflow:";
-function k(key: string): string {
-  return `${STORAGE_PREFIX}${key}`;
-}
 
 const LEGACY_KEYS = [
   "rootNote",
