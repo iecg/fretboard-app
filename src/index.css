@@ -62,7 +62,7 @@ body {
   width: 100%;
   min-width: 320px;
   height: 100vh;
-  min-height: 720px; /* floor: chrome(200) + fretboard-min(240) + controls-min(260) + summary-min(72) = 772; 720 gives partial shrink zone before controls squish */
+  min-height: 880px; /* R02 measured: chrome(200)+fretboard-min(240)+max(CONTROLS=340,KEY=311)+summary(72)+20=872, ceil→880 */
   display: flex;
   flex-direction: column;
   user-select: none;
