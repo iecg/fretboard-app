@@ -640,7 +640,7 @@ describe("Fretboard", () => {
     });
   });
 
-  describe('marker-dot CSS custom property (R02-UAT-03)', () => {
+  describe('marker-dot CSS custom property', () => {
     it('sets --string-row-px on fretboard-neck container', () => {
       const { container } = render(
         <Provider store={createStore()}>
