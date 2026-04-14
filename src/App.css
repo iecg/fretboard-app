@@ -1280,5 +1280,5 @@
   }
 }
 
-/* POST-PHASE-05 INVARIANT: no background/border/border-radius outside :root,
+/* Invariant: no background/border/border-radius outside :root,
    .panel-surface, and product-specific components (buttons, badges, fretboard). */
