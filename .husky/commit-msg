@@ -1,7 +1,14 @@
 commit_msg=$(cat "$1")
+subject=$(echo "$commit_msg" | head -1)
+
+# Let Git-generated and manually written merge commits through without
+# forcing a conventional subject while a merge is in progress.
+if git rev-parse -q --verify MERGE_HEAD >/dev/null 2>&1; then
+  exit 0
+fi
 
 # Allow merge commits and fixup/squash commits
-if echo "$commit_msg" | grep -qE "^(Merge |Revert |fixup! |squash! )"; then
+if echo "$subject" | grep -qE "^(Merge |Revert |fixup! |squash! )"; then
   exit 0
 fi
 
@@ -22,8 +29,6 @@ if ! echo "$commit_msg" | grep -qE "$pattern"; then
   echo ""
   exit 1
 fi
-
-subject=$(echo "$commit_msg" | head -1)
 
 if [ "${#subject}" -gt 72 ]; then
   echo ""
