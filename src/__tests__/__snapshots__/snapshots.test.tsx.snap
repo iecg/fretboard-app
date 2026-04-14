@@ -141,7 +141,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
           </svg>
         </button>
         <button
-          class="mute-btn"
+          class="header-btn"
           title="Help & Instructions"
         >
           <svg
@@ -3915,7 +3915,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
           </svg>
         </button>
         <button
-          class="mute-btn"
+          class="header-btn"
           title="Help & Instructions"
         >
           <svg
@@ -7689,7 +7689,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
           </svg>
         </button>
         <button
-          class="mute-btn"
+          class="header-btn"
           title="Help & Instructions"
         >
           <svg
@@ -11601,7 +11601,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
           </svg>
         </button>
         <button
-          class="mute-btn"
+          class="header-btn"
           title="Help & Instructions"
         >
           <svg
@@ -15512,7 +15512,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
           </svg>
         </button>
         <button
-          class="mute-btn"
+          class="header-btn"
           title="Help & Instructions"
         >
           <svg
@@ -19282,7 +19282,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
           </svg>
         </button>
         <button
-          class="mute-btn"
+          class="header-btn"
           title="Help & Instructions"
         >
           <svg
@@ -22929,7 +22929,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
           </svg>
         </button>
         <button
-          class="mute-btn"
+          class="header-btn"
           title="Help & Instructions"
         >
           <svg
@@ -26576,7 +26576,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
           </svg>
         </button>
         <button
-          class="mute-btn"
+          class="header-btn"
           title="Help & Instructions"
         >
           <svg
@@ -30223,7 +30223,7 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
           </svg>
         </button>
         <button
-          class="mute-btn"
+          class="header-btn"
           title="Help & Instructions"
         >
           <svg
