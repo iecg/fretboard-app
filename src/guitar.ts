@@ -5,12 +5,14 @@ export interface NoteWithOctave {
   octave: number;
 }
 
-export function parseNote(noteString: string): NoteWithOctave {
+export function parseNote(noteString: string): NoteWithOctave | null {
   const match = noteString.match(/^([A-G]#?)(\d)$/);
-  if (match) {
-    return { noteName: match[1], octave: parseInt(match[2], 10) };
-  }
-  return { noteName: noteString, octave: 4 }; // fallback
+  if (!match) return null;
+  const noteName = match[1];
+  const octave = parseInt(match[2], 10);
+  if (!NOTES.includes(noteName)) return null;
+  if (!Number.isFinite(octave)) return null;
+  return { noteName, octave };
 }
 
 // Standard Tuning from highest string (1st, thinnest) to lowest string (6th, thickest)
@@ -24,14 +26,14 @@ export const TUNINGS: Record<string, string[]> = {
 };
 
 export function getFretNote(openStringNote: string, fretNumber: number): string {
-  const parsed = parseNote(openStringNote);
+  const parsed = parseNote(openStringNote) ?? { noteName: "E", octave: 4 };
   const openIndex = NOTES.indexOf(parsed.noteName);
   const noteIndex = (openIndex + fretNumber) % 12;
   return NOTES[noteIndex];
 }
 
 export function getFretNoteWithOctave(openStringNote: string, fretNumber: number): string {
-  const parsed = parseNote(openStringNote);
+  const parsed = parseNote(openStringNote) ?? { noteName: "E", octave: 4 };
   const openIndex = NOTES.indexOf(parsed.noteName);
   const totalSemi = parsed.octave * 12 + openIndex + fretNumber;
   const newOctave = Math.floor(totalSemi / 12);
@@ -40,7 +42,7 @@ export function getFretNoteWithOctave(openStringNote: string, fretNumber: number
 }
 
 export function getNoteFrequency(noteStringWithOctave: string): number {
-  const parsed = parseNote(noteStringWithOctave);
+  const parsed = parseNote(noteStringWithOctave) ?? { noteName: "A", octave: 4 };
   const noteIndex = NOTES.indexOf(parsed.noteName);
   // C0 is 0. C4 is 48. A4 is 57 (since A is index 9).
   const absoluteDistance = (parsed.octave * 12) + noteIndex;
