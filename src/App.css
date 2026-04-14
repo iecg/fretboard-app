@@ -255,12 +255,12 @@
 .marker-double {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--string-row-px) * 0.15); /* proportional: 6px at 40px row, 10.8px at 72px */
+  gap: calc(var(--string-row-px) * 0.6); /* proportional: 24px at 40px row, 43.2px at 72px */
 }
 
 .marker-dot {
-  width: calc(var(--string-row-px) * 0.3);  /* proportional: 12px at 40px, 21.6px at 72px */
-  height: calc(var(--string-row-px) * 0.3);
+  width: calc(var(--string-row-px) * 0.4);  /* proportional: 16px at 40px, 28.8px at 72px */
+  height: calc(var(--string-row-px) * 0.4);
   border-radius: 9999px;
   background-color: var(--fret-marker);
 }
