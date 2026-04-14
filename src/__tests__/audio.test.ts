@@ -54,6 +54,8 @@ describe('GuitarSynth', () => {
     (synth as any).masterGain = null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (synth as any).isMuted = false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (synth as any).unsupported = false;
 
     // Setup mock returns
     mockAudioContext.createGain.mockReturnValue(mockGainNode as unknown as GainNode);
@@ -92,6 +94,16 @@ describe('GuitarSynth', () => {
       synth.init();
       const callCount2 = mockAudioContext.createGain.mock.calls.length;
       expect(callCount2).toBe(callCount1);
+    });
+
+    it('no-ops safely when WebAudio is unsupported', async () => {
+      // Simulate an environment without AudioContext.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (window as any).AudioContext;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (window as any).webkitAudioContext;
+
+      await expect(synth.playNote(440)).resolves.toBeUndefined();
     });
   });
 

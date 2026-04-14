@@ -397,7 +397,10 @@ export function Fretboard({
                       if (rootIdx !== -1 && noteIdx !== -1) {
                         displayValue = INTERVAL_NAMES[(noteIdx - rootIdx + 12) % 12];
                       }
-                    } else if (fretIndex === 0 && parseNote(openString).noteName === noteName) {
+                    } else if (
+                      fretIndex === 0 &&
+                      parseNote(openString)?.noteName === noteName
+                    ) {
                       displayValue = getNoteDisplayInScale(noteName, rootNote, SCALES[scaleName] || [], useFlats);
                     }
 

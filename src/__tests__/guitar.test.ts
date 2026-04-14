@@ -15,8 +15,10 @@ describe('parseNote', () => {
     expect(parseNote('C#3')).toEqual({ noteName: 'C#', octave: 3 });
   });
 
-  it('falls back for non-standard input', () => {
-    expect(parseNote('X')).toEqual({ noteName: 'X', octave: 4 });
+  it('returns null for non-standard input', () => {
+    expect(parseNote('X')).toBeNull();
+    expect(parseNote('E')).toBeNull();
+    expect(parseNote('H4')).toBeNull();
   });
 });
 
