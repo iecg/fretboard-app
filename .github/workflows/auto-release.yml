@@ -28,14 +28,34 @@ jobs:
           node-version: 24
           cache: npm
 
-      - name: Bump version and push tag
+      - name: Calculate next release
         id: tag
         uses: mathieudutour/github-tag-action@v6.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           default_bump: patch
           tag_prefix: v
-          create_annotated_tag: true
+          dry_run: true
+
+      - name: Create and push annotated tag
+        if: steps.tag.outputs.new_tag
+        run: |
+          TAG_NAME="${{ steps.tag.outputs.new_tag }}"
+          CHANGELOG="${{ steps.tag.outputs.changelog }}"
+          TAG_MESSAGE_FILE=$(mktemp)
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          {
+            printf '%s\n' "$TAG_NAME"
+            if [ -n "$CHANGELOG" ]; then
+              printf '\n%s\n' "$CHANGELOG"
+            fi
+          } > "$TAG_MESSAGE_FILE"
+
+          git tag -a "$TAG_NAME" -F "$TAG_MESSAGE_FILE"
+          git push origin "refs/tags/$TAG_NAME"
 
       - name: Trigger deploy workflow
         if: steps.tag.outputs.new_tag
