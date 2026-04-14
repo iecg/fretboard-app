@@ -16,7 +16,7 @@ describe('getCagedCoordinates', () => {
     }
   });
 
-  // Layout-mode independence guarantee (Phase 03-04):
+  // Layout-mode independence guarantee:
   // getCagedCoordinates has no dependency on layoutMode, stringRowPx, or any
   // CSS/viewport state. Polygon vertices are fret/string coordinates only —
   // pixel conversion happens in Fretboard.tsx at render time. Calling the

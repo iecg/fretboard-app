@@ -11,7 +11,7 @@ const VIEWPORTS = [
   { name: '1200×1080', width: 1200, height: 1080 },  // desktop-expanded (controls fit)
   { name: '1200×720',  width: 1200, height: 720  },   // tablet-portrait (controls don't fit at 720)
   { name: '1200×600',  width: 1200, height: 600  },   // tablet-portrait short
-  { name: '375×667',   width: 375,  height: 667  },   // mobile UAT-02 viewport
+  { name: '375×667',   width: 375,  height: 667  },   // mobile portrait
 ];
 
 async function measure(page, vpName) {
