@@ -127,7 +127,7 @@ auto-release.yml  — analyzes commits → computes semver → pushes annotated 
 
 | File | Purpose |
 |---|---|
-| `src/App.tsx` | Main component + state (~1000 lines) |
+| `src/App.tsx` | Main component + state (~686 lines) |
 | `src/Fretboard.tsx` | Fretboard SVG viz |
 | `src/CircleOfFifths.tsx` | Circle of Fifths widget |
 | `src/DrawerSelector.tsx` | Reusable dropdown selector |
