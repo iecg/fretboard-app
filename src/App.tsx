@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import clsx from "clsx";
 import {
   useAtom,
   useAtomValue,
@@ -525,7 +526,9 @@ function AppContent() {
       {showHelp && (
         <div className="help-modal-overlay" onClick={() => setShowHelp(false)}>
           <div
-            className={`help-modal${layout.fullWidthOverlay ? " help-modal--full-width" : ""}`}
+            className={clsx("help-modal", {
+              "help-modal--full-width": layout.fullWidthOverlay,
+            })}
             role="dialog"
             aria-modal="true"
             aria-labelledby="help-modal-title"
