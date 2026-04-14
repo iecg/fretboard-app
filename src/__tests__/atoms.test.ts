@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createStore, type Atom } from "jotai";
 import { RESET } from "jotai/utils";
+import { k } from "./utils/storage";
 import {
   rootNoteAtom,
   scaleNameAtom,
@@ -49,7 +50,7 @@ describe("atoms", () => {
 
   describe("rawStringStorage (via rootNoteAtom)", () => {
     it("reads existing localStorage value on mount", () => {
-      localStorage.setItem("fretflow:rootNote", "G");
+      localStorage.setItem(k("rootNote"), "G");
       const store = makeStore();
       const unsub = mount(store, rootNoteAtom);
       expect(store.get(rootNoteAtom)).toBe("G");
@@ -59,27 +60,27 @@ describe("atoms", () => {
     it("writes default to localStorage when key absent on mount", () => {
       const store = makeStore();
       const unsub = mount(store, rootNoteAtom);
-      expect(localStorage.getItem("fretflow:rootNote")).toBe("C");
+      expect(localStorage.getItem(k("rootNote"))).toBe("C");
       unsub();
     });
 
     it("writes new value via setItem", () => {
       const store = makeStore();
       store.set(rootNoteAtom, "D");
-      expect(localStorage.getItem("fretflow:rootNote")).toBe("D");
+      expect(localStorage.getItem(k("rootNote"))).toBe("D");
     });
 
     it("removes localStorage key on RESET", () => {
-      localStorage.setItem("fretflow:rootNote", "G");
+      localStorage.setItem(k("rootNote"), "G");
       const store = makeStore();
       store.set(rootNoteAtom, RESET);
-      expect(localStorage.getItem("fretflow:rootNote")).toBeNull();
+      expect(localStorage.getItem(k("rootNote"))).toBeNull();
     });
   });
 
   describe("booleanStorage (via isMutedAtom)", () => {
     it('reads "true" as true', () => {
-      localStorage.setItem("fretflow:isMuted", "true");
+      localStorage.setItem(k("isMuted"), "true");
       const store = makeStore();
       const unsub = mount(store, isMutedAtom);
       expect(store.get(isMutedAtom)).toBe(true);
@@ -87,7 +88,7 @@ describe("atoms", () => {
     });
 
     it('reads "false" as false', () => {
-      localStorage.setItem("fretflow:isMuted", "false");
+      localStorage.setItem(k("isMuted"), "false");
       const store = makeStore();
       const unsub = mount(store, isMutedAtom);
       expect(store.get(isMutedAtom)).toBe(false);
@@ -97,36 +98,36 @@ describe("atoms", () => {
     it("writes default false to localStorage when key absent on mount", () => {
       const store = makeStore();
       const unsub = mount(store, isMutedAtom);
-      expect(localStorage.getItem("fretflow:isMuted")).toBe("false");
+      expect(localStorage.getItem(k("isMuted"))).toBe("false");
       unsub();
     });
 
     it("writes boolean as string via setItem", () => {
       const store = makeStore();
       store.set(isMutedAtom, true);
-      expect(localStorage.getItem("fretflow:isMuted")).toBe("true");
+      expect(localStorage.getItem(k("isMuted"))).toBe("true");
     });
 
     it("removes localStorage key on RESET", () => {
-      localStorage.setItem("fretflow:isMuted", "true");
+      localStorage.setItem(k("isMuted"), "true");
       const store = makeStore();
       store.set(isMutedAtom, RESET);
-      expect(localStorage.getItem("fretflow:isMuted")).toBeNull();
+      expect(localStorage.getItem(k("isMuted"))).toBeNull();
     });
 
     it("self-heals invalid stored boolean values", () => {
-      localStorage.setItem("fretflow:isMuted", "not-a-bool");
+      localStorage.setItem(k("isMuted"), "not-a-bool");
       const store = makeStore();
       const unsub = mount(store, isMutedAtom);
       expect(store.get(isMutedAtom)).toBe(false);
-      expect(localStorage.getItem("fretflow:isMuted")).toBe("false");
+      expect(localStorage.getItem(k("isMuted"))).toBe("false");
       unsub();
     });
   });
 
   describe("numberStorage (via fretZoomAtom)", () => {
     it("reads numeric string as number", () => {
-      localStorage.setItem("fretflow:fretZoom", "150");
+      localStorage.setItem(k("fretZoom"), "150");
       const store = makeStore();
       const unsub = mount(store, fretZoomAtom);
       expect(store.get(fretZoomAtom)).toBe(150);
@@ -136,72 +137,72 @@ describe("atoms", () => {
     it("writes default to localStorage when key absent on mount", () => {
       const store = makeStore();
       const unsub = mount(store, fretZoomAtom);
-      expect(localStorage.getItem("fretflow:fretZoom")).toBe("100");
+      expect(localStorage.getItem(k("fretZoom"))).toBe("100");
       unsub();
     });
 
     it("writes number as string via setItem", () => {
       const store = makeStore();
       store.set(fretZoomAtom, 200);
-      expect(localStorage.getItem("fretflow:fretZoom")).toBe("200");
+      expect(localStorage.getItem(k("fretZoom"))).toBe("200");
     });
 
     it("removes localStorage key on RESET", () => {
-      localStorage.setItem("fretflow:fretZoom", "200");
+      localStorage.setItem(k("fretZoom"), "200");
       const store = makeStore();
       store.set(fretZoomAtom, RESET);
-      expect(localStorage.getItem("fretflow:fretZoom")).toBeNull();
+      expect(localStorage.getItem(k("fretZoom"))).toBeNull();
     });
 
     it("self-heals NaN and non-finite values to default", () => {
-      localStorage.setItem("fretflow:fretZoom", "NaN");
+      localStorage.setItem(k("fretZoom"), "NaN");
       const store = makeStore();
       const unsub = mount(store, fretZoomAtom);
       expect(store.get(fretZoomAtom)).toBe(100);
-      expect(localStorage.getItem("fretflow:fretZoom")).toBe("100");
+      expect(localStorage.getItem(k("fretZoom"))).toBe("100");
       unsub();
     });
 
     it("self-heals out-of-range values to default", () => {
-      localStorage.setItem("fretflow:fretZoom", "9999");
+      localStorage.setItem(k("fretZoom"), "9999");
       const store = makeStore();
       const unsub = mount(store, fretZoomAtom);
       expect(store.get(fretZoomAtom)).toBe(100);
-      expect(localStorage.getItem("fretflow:fretZoom")).toBe("100");
+      expect(localStorage.getItem(k("fretZoom"))).toBe("100");
       unsub();
     });
   });
 
   describe("mobileTabStorage", () => {
     it("migrates legacy settings tab values to fretboard", () => {
-      localStorage.setItem("fretflow:mobileTab", "settings");
+      localStorage.setItem(k("mobileTab"), "settings");
       const store = makeStore();
       const unsub = mount(store, mobileTabAtom);
 
       expect(store.get(mobileTabAtom)).toBe("fretboard");
-      expect(localStorage.getItem("fretflow:mobileTab")).toBe("fretboard");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("fretboard");
 
       unsub();
     });
 
     it("keeps valid stored tab values unchanged", () => {
-      localStorage.setItem("fretflow:mobileTab", "fretboard");
+      localStorage.setItem(k("mobileTab"), "fretboard");
       const store = makeStore();
       const unsub = mount(store, mobileTabAtom);
 
       expect(store.get(mobileTabAtom)).toBe("fretboard");
-      expect(localStorage.getItem("fretflow:mobileTab")).toBe("fretboard");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("fretboard");
 
       unsub();
     });
 
     it("falls back to key for invalid stored tab values", () => {
-      localStorage.setItem("fretflow:mobileTab", "invalid-tab");
+      localStorage.setItem(k("mobileTab"), "invalid-tab");
       const store = makeStore();
       const unsub = mount(store, mobileTabAtom);
 
       expect(store.get(mobileTabAtom)).toBe("key");
-      expect(localStorage.getItem("fretflow:mobileTab")).toBe("key");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("key");
 
       unsub();
     });
@@ -209,7 +210,7 @@ describe("atoms", () => {
 
   describe("chordTypeStorage", () => {
     it("reads empty string as null", () => {
-      localStorage.setItem("fretflow:chordType", "");
+      localStorage.setItem(k("chordType"), "");
       const store = makeStore();
       const unsub = mount(store, chordTypeAtom);
       expect(store.get(chordTypeAtom)).toBeNull();
@@ -217,7 +218,7 @@ describe("atoms", () => {
     });
 
     it("reads non-empty string as chord type", () => {
-      localStorage.setItem("fretflow:chordType", "Major Triad");
+      localStorage.setItem(k("chordType"), "Major Triad");
       const store = makeStore();
       const unsub = mount(store, chordTypeAtom);
       expect(store.get(chordTypeAtom)).toBe("Major Triad");
@@ -227,26 +228,26 @@ describe("atoms", () => {
     it("writes default empty string to localStorage when key absent on mount", () => {
       const store = makeStore();
       const unsub = mount(store, chordTypeAtom);
-      expect(localStorage.getItem("fretflow:chordType")).toBe("");
+      expect(localStorage.getItem(k("chordType"))).toBe("");
       unsub();
     });
 
     it("writes null as empty string via setItem", () => {
       const store = makeStore();
       store.set(chordTypeAtom, null);
-      expect(localStorage.getItem("fretflow:chordType")).toBe("");
+      expect(localStorage.getItem(k("chordType"))).toBe("");
     });
 
     it("writes chord type string via setItem", () => {
       const store = makeStore();
       store.set(chordTypeAtom, "Minor 7th");
-      expect(localStorage.getItem("fretflow:chordType")).toBe("Minor 7th");
+      expect(localStorage.getItem(k("chordType"))).toBe("Minor 7th");
     });
   });
 
   describe("cagedShapesStorage", () => {
     it("reads JSON array as Set", () => {
-      localStorage.setItem("fretflow:cagedShapes", JSON.stringify(["C", "A"]));
+      localStorage.setItem(k("cagedShapes"), JSON.stringify(["C", "A"]));
       const store = makeStore();
       const unsub = mount(store, cagedShapesAtom);
       const shapes = store.get(cagedShapesAtom);
@@ -258,7 +259,7 @@ describe("atoms", () => {
     });
 
     it("falls back to default Set on invalid JSON", () => {
-      localStorage.setItem("fretflow:cagedShapes", "not-valid-json{{{");
+      localStorage.setItem(k("cagedShapes"), "not-valid-json{{{");
       const store = makeStore();
       const unsub = mount(store, cagedShapesAtom);
       const shapes = store.get(cagedShapesAtom);
@@ -270,7 +271,7 @@ describe("atoms", () => {
     it("writes default JSON array to localStorage when key absent on mount", () => {
       const store = makeStore();
       const unsub = mount(store, cagedShapesAtom);
-      const stored = localStorage.getItem("fretflow:cagedShapes");
+      const stored = localStorage.getItem(k("cagedShapes"));
       expect(JSON.parse(stored!)).toEqual(CAGED_SHAPES);
       unsub();
     });
@@ -278,15 +279,15 @@ describe("atoms", () => {
     it("writes Set as JSON array via setItem", () => {
       const store = makeStore();
       store.set(cagedShapesAtom, new Set(["C", "G"] as const));
-      const stored = localStorage.getItem("fretflow:cagedShapes");
+      const stored = localStorage.getItem(k("cagedShapes"));
       expect(JSON.parse(stored!)).toEqual(["C", "G"]);
     });
 
     it("removes localStorage key on RESET", () => {
-      localStorage.setItem("fretflow:cagedShapes", JSON.stringify(["C"]));
+      localStorage.setItem(k("cagedShapes"), JSON.stringify(["C"]));
       const store = makeStore();
       store.set(cagedShapesAtom, RESET);
-      expect(localStorage.getItem("fretflow:cagedShapes")).toBeNull();
+      expect(localStorage.getItem(k("cagedShapes"))).toBeNull();
     });
   });
 
@@ -316,13 +317,13 @@ describe("atoms", () => {
 
   describe("resetAtom", () => {
     it("clears only fretflow-prefixed keys from localStorage", () => {
-      localStorage.setItem("fretflow:rootNote", "G");
-      localStorage.setItem("fretflow:scaleName", "Dorian");
+      localStorage.setItem(k("rootNote"), "G");
+      localStorage.setItem(k("scaleName"), "Dorian");
       localStorage.setItem("unrelatedKey", "keep");
       const store = makeStore();
       store.set(resetAtom);
-      expect(localStorage.getItem("fretflow:rootNote")).toBeNull();
-      expect(localStorage.getItem("fretflow:scaleName")).toBeNull();
+      expect(localStorage.getItem(k("rootNote"))).toBeNull();
+      expect(localStorage.getItem(k("scaleName"))).toBeNull();
       expect(localStorage.getItem("unrelatedKey")).toBe("keep");
     });
 
@@ -392,7 +393,7 @@ describe("atoms", () => {
       const unsub = mount(store, atoms.rootNoteAtom);
       expect(store.get(atoms.rootNoteAtom)).toBe("G");
       expect(localStorage.getItem("rootNote")).toBeNull();
-      expect(localStorage.getItem("fretflow:rootNote")).toBe("G");
+      expect(localStorage.getItem(k("rootNote"))).toBe("G");
       unsub();
     });
   });

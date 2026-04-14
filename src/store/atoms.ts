@@ -76,21 +76,33 @@ function rawStringStorage<T extends string>() {
 
 const booleanStorage = {
   getItem(key: string, initialValue: boolean): boolean {
-    const stored = localStorage.getItem(key);
-    if (stored === null) {
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored === null) {
+        localStorage.setItem(key, String(initialValue));
+        return initialValue;
+      }
+      if (stored === "true") return true;
+      if (stored === "false") return false;
       localStorage.setItem(key, String(initialValue));
       return initialValue;
+    } catch {
+      return initialValue;
     }
-    if (stored === "true") return true;
-    if (stored === "false") return false;
-    localStorage.setItem(key, String(initialValue));
-    return initialValue;
   },
   setItem(key: string, value: boolean): void {
-    localStorage.setItem(key, String(value));
+    try {
+      localStorage.setItem(key, String(value));
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
   },
   removeItem(key: string): void {
-    localStorage.removeItem(key);
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
   },
 };
 
@@ -103,35 +115,47 @@ type NumberConstraints = {
 function constrainedNumberStorage(constraints: NumberConstraints) {
   return {
     getItem(key: string, initialValue: number): number {
-      const stored = localStorage.getItem(key);
-      if (stored === null) {
-        localStorage.setItem(key, String(initialValue));
+      try {
+        const stored = localStorage.getItem(key);
+        if (stored === null) {
+          localStorage.setItem(key, String(initialValue));
+          return initialValue;
+        }
+        const num = Number(stored);
+        if (!Number.isFinite(num)) {
+          localStorage.setItem(key, String(initialValue));
+          return initialValue;
+        }
+        if (constraints.integer && !Number.isInteger(num)) {
+          localStorage.setItem(key, String(initialValue));
+          return initialValue;
+        }
+        if (constraints.min !== undefined && num < constraints.min) {
+          localStorage.setItem(key, String(initialValue));
+          return initialValue;
+        }
+        if (constraints.max !== undefined && num > constraints.max) {
+          localStorage.setItem(key, String(initialValue));
+          return initialValue;
+        }
+        return num;
+      } catch {
         return initialValue;
       }
-      const num = Number(stored);
-      if (!Number.isFinite(num)) {
-        localStorage.setItem(key, String(initialValue));
-        return initialValue;
-      }
-      if (constraints.integer && !Number.isInteger(num)) {
-        localStorage.setItem(key, String(initialValue));
-        return initialValue;
-      }
-      if (constraints.min !== undefined && num < constraints.min) {
-        localStorage.setItem(key, String(initialValue));
-        return initialValue;
-      }
-      if (constraints.max !== undefined && num > constraints.max) {
-        localStorage.setItem(key, String(initialValue));
-        return initialValue;
-      }
-      return num;
     },
     setItem(key: string, value: number): void {
-      localStorage.setItem(key, String(value));
+      try {
+        localStorage.setItem(key, String(value));
+      } catch {
+        // Storage blocked or unavailable; ignore.
+      }
     },
     removeItem(key: string): void {
-      localStorage.removeItem(key);
+      try {
+        localStorage.removeItem(key);
+      } catch {
+        // Storage blocked or unavailable; ignore.
+      }
     },
   };
 }
