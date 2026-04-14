@@ -12,17 +12,61 @@ async function getMetrics(page: Page) {
     const badge = document.querySelector(".version-badge");
     const badgeRect = badge?.getBoundingClientRect();
     const toolbar = document.querySelector(".fretboard-toolbar");
+    const title = document.querySelector(".title-container");
+    const actions = document.querySelector(".header-actions");
+    const settingsDrawer = document.querySelector(".settings-overlay-drawer");
+    const helpModal = document.querySelector(".help-modal");
+    const helpContent = document.querySelector(".help-modal-content");
+    const circle = document.querySelector(".key-column .circle-fifths-container");
+    const controlsColumn = document.querySelector(".controls-panel-column");
+    const keyColumn = document.querySelector(".key-column");
+
+    const getRect = (element: Element | null) => {
+      if (!(element instanceof HTMLElement || element instanceof SVGElement)) {
+        return null;
+      }
+
+      const rect = element.getBoundingClientRect();
+      return {
+        top: Math.round(rect.top),
+        right: Math.round(rect.right),
+        bottom: Math.round(rect.bottom),
+        left: Math.round(rect.left),
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+      };
+    };
 
     return {
       tier: app?.getAttribute("data-layout-tier"),
       variant: app?.getAttribute("data-layout-variant"),
+      headerSubtitle: app?.getAttribute("data-header-subtitle"),
+      headerActionsMode: app?.getAttribute("data-header-actions"),
+      fullWidthOverlay: app?.getAttribute("data-full-width-overlay"),
       summaryCount: document.querySelectorAll(".summary-area").length,
       scrollHeight: document.documentElement.scrollHeight,
+      scrollWidth: document.documentElement.scrollWidth,
       innerHeight: window.innerHeight,
+      innerWidth: window.innerWidth,
       scrollY: window.scrollY,
       badgeBottom: badgeRect ? Math.round(badgeRect.bottom) : null,
       badgeTop: badgeRect ? Math.round(badgeRect.top) : null,
       toolbarDisplay: toolbar ? getComputedStyle(toolbar).display : null,
+      titleRect: getRect(title),
+      actionsRect: getRect(actions),
+      settingsDrawerRect: getRect(settingsDrawer),
+      helpModalRect: getRect(helpModal),
+      circleRect: getRect(circle),
+      controlsColumnRect: getRect(controlsColumn),
+      keyColumnRect: getRect(keyColumn),
+      helpContent:
+        helpContent instanceof HTMLElement
+          ? {
+              clientHeight: helpContent.clientHeight,
+              scrollHeight: helpContent.scrollHeight,
+              overflowY: getComputedStyle(helpContent).overflowY,
+            }
+          : null,
     };
   });
 }
@@ -57,7 +101,46 @@ test.describe("responsive layout regressions", () => {
       expect(after.scrollHeight, viewport.name).toBeGreaterThanOrEqual(
         after.innerHeight,
       );
+      expect(after.titleRect).not.toBeNull();
+      expect(after.actionsRect).not.toBeNull();
+      const headerSharesRow =
+        after.titleRect!.bottom > after.actionsRect!.top &&
+        after.actionsRect!.bottom > after.titleRect!.top;
+      expect(headerSharesRow, viewport.name).toBe(true);
     }
+  });
+
+  test("keeps landscape mobile overlays usable without stealing the fretboard", async ({
+    page,
+  }) => {
+    await gotoApp(page, 667, 375);
+
+    const initial = await getMetrics(page);
+    expect(initial.tier).toBe("mobile");
+    expect(initial.variant).toBe("landscape-mobile");
+    expect(initial.summaryCount).toBe(0);
+    await expect(page.locator(".main-fretboard")).toBeVisible();
+    await expect(page.locator(".mobile-tab-content")).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Open help" }).click();
+    const withHelp = await getMetrics(page);
+    expect(withHelp.helpModalRect).not.toBeNull();
+    expect(withHelp.helpModalRect!.left).toBeGreaterThanOrEqual(0);
+    expect(withHelp.helpModalRect!.top).toBeGreaterThanOrEqual(0);
+    expect(withHelp.helpModalRect!.right).toBeLessThanOrEqual(667);
+    expect(withHelp.helpModalRect!.bottom).toBeLessThanOrEqual(375);
+    expect(withHelp.helpContent).not.toBeNull();
+    expect(withHelp.helpContent!.overflowY).toBe("auto");
+    expect(withHelp.helpContent!.scrollHeight).toBeGreaterThan(
+      withHelp.helpContent!.clientHeight,
+    );
+
+    await page.getByRole("button", { name: "Close help" }).click();
+    await page.getByRole("button", { name: "Open settings" }).click();
+    const withSettings = await getMetrics(page);
+    expect(withSettings.settingsDrawerRect).not.toBeNull();
+    expect(withSettings.settingsDrawerRect!.width).toBeGreaterThanOrEqual(665);
+    expect(withSettings.scrollWidth).toBeLessThanOrEqual(withSettings.innerWidth);
   });
 
   test("reflows compact desktop layouts instead of clipping them", async ({ page }) => {
@@ -79,6 +162,33 @@ test.describe("responsive layout regressions", () => {
       expect(after.badgeBottom).not.toBeNull();
       expect(after.badgeBottom!).toBeLessThanOrEqual(viewport.height);
     }
+  });
+
+  test("keeps tablet split layout and settings drawer from crowding the layout", async ({
+    page,
+  }) => {
+    await gotoApp(page, 768, 1024);
+
+    const initial = await getMetrics(page);
+    expect(initial.tier).toBe("tablet");
+    expect(initial.variant).toBe("tablet-split");
+    expect(initial.headerActionsMode).toBe("compact");
+    expect(initial.headerSubtitle).toBe("hidden");
+    expect(initial.controlsColumnRect).not.toBeNull();
+    expect(initial.keyColumnRect).not.toBeNull();
+
+    const panelIsSplit =
+      initial.controlsColumnRect!.right < initial.keyColumnRect!.left &&
+      Math.abs(initial.controlsColumnRect!.top - initial.keyColumnRect!.top) <
+        24;
+    expect(panelIsSplit).toBe(true);
+
+    await page.getByRole("button", { name: "Open settings" }).click();
+    const withSettings = await getMetrics(page);
+    expect(withSettings.settingsDrawerRect).not.toBeNull();
+    expect(withSettings.settingsDrawerRect!.width).toBeGreaterThanOrEqual(320);
+    expect(withSettings.settingsDrawerRect!.width).toBeLessThanOrEqual(420);
+    expect(withSettings.settingsDrawerRect!.bottom).toBeLessThanOrEqual(1024);
   });
 
   test("keeps 1024x1366 in the desktop split layout", async ({ page }) => {
@@ -103,5 +213,35 @@ test.describe("responsive layout regressions", () => {
     expect((await getMetrics(page)).variant).toBe("desktop-stacked");
     await expect(page.locator(".fretboard-toolbar")).toBeVisible();
     await expect(toolbarButton(page, "High")).toBeVisible();
+  });
+
+  test("keeps desktop stacked key content and summary comfortably reachable", async ({
+    page,
+  }) => {
+    await gotoApp(page, 1024, 768);
+
+    const initial = await getMetrics(page);
+    expect(initial.variant).toBe("desktop-stacked");
+    expect(initial.summaryCount).toBe(1);
+
+    await page.locator(".key-column .circle-fifths-container").scrollIntoViewIfNeeded();
+    const after = await getMetrics(page);
+    expect(after.circleRect).not.toBeNull();
+    expect(after.circleRect!.height).toBeGreaterThanOrEqual(220);
+    expect(after.circleRect!.height).toBeLessThanOrEqual(430);
+    expect(after.circleRect!.bottom).toBeLessThanOrEqual(768);
+  });
+
+  test("uses a full-width settings drawer on narrow portrait phones", async ({
+    page,
+  }) => {
+    await gotoApp(page, 390, 844);
+    await page.getByRole("button", { name: "Open settings" }).click();
+
+    const metrics = await getMetrics(page);
+    expect(metrics.fullWidthOverlay).toBe("true");
+    expect(metrics.settingsDrawerRect).not.toBeNull();
+    expect(metrics.settingsDrawerRect!.width).toBeGreaterThanOrEqual(388);
+    expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.innerWidth);
   });
 });

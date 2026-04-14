@@ -73,4 +73,21 @@ describe("responsive layout helper", () => {
     expect(getResponsiveLayout(1024, 768).showSummary).toBe(true);
     expect(getResponsiveLayout(667, 375).showSummary).toBe(false);
   });
+
+  it("exposes header and overlay flags from the shared responsive contract", () => {
+    const mobileLayout = getResponsiveLayout(390, 844);
+    expect(mobileLayout.showHeaderSubtitle).toBe(false);
+    expect(mobileLayout.compactHeaderActions).toBe(true);
+    expect(mobileLayout.fullWidthOverlay).toBe(true);
+
+    const tabletLayout = getResponsiveLayout(768, 1024);
+    expect(tabletLayout.showHeaderSubtitle).toBe(false);
+    expect(tabletLayout.compactHeaderActions).toBe(true);
+    expect(tabletLayout.fullWidthOverlay).toBe(false);
+
+    const desktopLayout = getResponsiveLayout(1200, 900);
+    expect(desktopLayout.showHeaderSubtitle).toBe(true);
+    expect(desktopLayout.compactHeaderActions).toBe(false);
+    expect(desktopLayout.fullWidthOverlay).toBe(false);
+  });
 });

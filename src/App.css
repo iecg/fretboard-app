@@ -42,6 +42,8 @@
   gap: 0.75rem;
   overflow: visible;
   min-height: 100%;
+  container-type: inline-size;
+  container-name: app-layout;
 }
 
 /* Header */
@@ -49,7 +51,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: var(--space-3);
   width: 100%;
+  flex-wrap: nowrap;
 }
 
 .logo-container {
@@ -57,6 +61,7 @@
   align-items: center;
   gap: var(--space-3);
   min-width: 0;
+  flex: 1 1 auto;
 }
 
 .logo-icon {
@@ -81,6 +86,9 @@
   font-weight: 700;
   letter-spacing: -0.025em;
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .title-container p {
@@ -109,6 +117,10 @@
   display: flex;
   gap: var(--space-2);
   align-items: center;
+  justify-content: flex-end;
+  flex: 0 1 auto;
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 
 .header-btn:hover {
@@ -144,6 +156,7 @@
   opacity: 0.85;
   transition: opacity var(--transition-fast), transform var(--transition-fast);
   margin-right: var(--space-2);
+  max-width: 100%;
 }
 
 .kofi-header-btn:hover {
@@ -154,6 +167,7 @@
 .kofi-btn-desktop {
   height: 36px;
   display: block;
+  max-width: clamp(7.75rem, 16vw, 9.5rem);
 }
 
 .kofi-btn-mobile {
@@ -161,7 +175,43 @@
   display: none;
 }
 
+.app-container[data-header-subtitle="hidden"] .title-container p {
+  display: none;
+}
+
+.app-container[data-header-actions="compact"] .header-actions {
+  gap: var(--space-1);
+}
+
+.app-container[data-header-actions="compact"] .header-btn {
+  padding: var(--space-2);
+}
+
+.app-container[data-header-actions="compact"] .kofi-btn-desktop {
+  display: none;
+}
+
+.app-container[data-header-actions="compact"] .kofi-btn-mobile {
+  display: block;
+}
+
 @media (max-width: 767px) {
+  .app-header {
+    gap: var(--space-2);
+  }
+
+  .logo-container {
+    gap: var(--space-2);
+  }
+
+  .header-actions {
+    gap: var(--space-1);
+  }
+
+  .kofi-header-btn {
+    margin-right: var(--space-1);
+  }
+
   .kofi-btn-desktop {
     display: none;
   }
@@ -183,7 +233,7 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: var(--space-4);
+  padding: clamp(0.75rem, 3vw, 1.25rem);
 }
 
 .help-modal {
@@ -191,26 +241,34 @@
   border-radius: var(--radius-lg);
   border: 1px solid var(--surface-highlight);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  max-width: 500px;
-  max-height: 80vh;
-  width: 100%;
-  overflow-y: auto;
+  width: min(42rem, calc(100vw - 2 * clamp(0.75rem, 3vw, 1.25rem)));
+  max-width: 100%;
+  max-height: min(88dvh, 48rem);
+  min-height: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+.help-modal--full-width {
+  width: calc(100vw - 2 * clamp(0.75rem, 3vw, 1.25rem));
 }
 
 .help-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--space-4);
+  gap: var(--space-3);
+  padding: clamp(0.75rem, 2vw, 1rem) clamp(1rem, 3vw, 1.25rem);
   border-bottom: 1px solid var(--surface-highlight);
+  flex-shrink: 0;
 }
 
 .help-modal-header h2 {
   margin: 0;
   font-size: var(--text-lg);
   font-weight: 600;
+  min-width: 0;
 }
 
 .help-modal-close {
@@ -231,9 +289,11 @@
 }
 
 .help-modal-content {
-  padding: var(--space-4);
+  padding: clamp(1rem, 2.5vw, 1.25rem);
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
+  overscroll-behavior: contain;
 }
 
 .help-modal-content h3 {
@@ -270,13 +330,14 @@
 .main-fretboard {
   width: 100%;
   flex: 0 0 auto;
+  min-width: 0;
 }
 
 /* Fretboard Internal Styles */
 .fretboard-wrapper {
   position: relative;
   width: 100%;
-  min-width: 300px;
+  min-width: 0;
   overflow-x: auto;
   padding: 0 var(--space-2);
 }
@@ -304,6 +365,10 @@
   font-weight: 600;
   color: var(--text-muted);
   white-space: nowrap;
+}
+
+.title-container {
+  min-width: 0;
 }
 
 /* Dynamic Box Overlays behind strings */
@@ -514,12 +579,14 @@
   gap: var(--space-4);
   flex: 0 0 auto;
   overflow: visible;
+  min-width: 0;
 }
 
 .controls-panel--split {
   display: grid;
   align-items: start;
   grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
 }
 
 .controls-panel-column {
@@ -555,7 +622,7 @@
   min-height: 0;
   overflow: hidden;
   aspect-ratio: 1;
-  max-height: 100%;
+  max-height: min(36rem, 60vh);
 }
 
 .circle-fifths-svg {
@@ -701,14 +768,13 @@
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  min-height: 72px;
-  /* Keep the summary comfortably legible when notes wrap onto smaller screens. */
+  min-height: 0;
   gap: var(--space-2);
 }
 
 .summary-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-3);
   flex-wrap: wrap;
 }
@@ -717,8 +783,9 @@
   font-size: var(--text-sm);
   font-weight: 500;
   color: var(--text-muted);
-  white-space: nowrap;
-  min-width: 6rem;
+  white-space: normal;
+  min-width: 0;
+  flex: 0 1 10rem;
 }
 
 .summary-row--chord {
@@ -733,7 +800,9 @@
 .summary-notes {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-4);
+  gap: clamp(var(--space-2), 1vw, var(--space-4));
+  flex: 1 1 18rem;
+  min-width: 0;
 }
 
 .summary-note {
@@ -891,11 +960,6 @@
     font-size: var(--text-base);
   }
 
-  /* Hide subtitle on mobile to save space */
-  .title-container p {
-    display: none;
-  }
-
   .main-fretboard {
     width: 100%;
     overflow: hidden;
@@ -962,6 +1026,25 @@
   }
 }
 
+@media (max-height: 520px) {
+  .help-modal-overlay {
+    align-items: flex-start;
+    padding: 0.5rem;
+  }
+
+  .help-modal {
+    max-height: calc(100dvh - 1rem);
+  }
+
+  .help-modal-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .help-modal-content {
+    padding: 0.875rem 1rem 1rem;
+  }
+}
+
 
 /* =============================================
    LAYOUT VARIANTS
@@ -995,9 +1078,10 @@
 
 .app-container[data-layout-variant="tablet-stacked"] .circle-fifths-container,
 .app-container[data-layout-variant="desktop-stacked"] .circle-fifths-container {
-  max-width: min(100%, 30rem);
+  max-width: min(100%, 28rem);
   width: 100%;
   margin: 0 auto;
+  max-height: min(26rem, 52vh);
 }
 
 @container (min-width: 300px) {
@@ -1032,6 +1116,12 @@
   flex-direction: column;
   width: 100%;
   min-width: 0;
+}
+
+@container app-layout (max-width: 44rem) {
+  .summary-row-label {
+    flex-basis: 100%;
+  }
 }
 
 .fretboard-toolbar {

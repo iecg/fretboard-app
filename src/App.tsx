@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import clsx from "clsx";
 import {
   useAtom,
   useAtomValue,
@@ -454,6 +455,9 @@ function AppContent() {
       className="app-container"
       data-layout-tier={layout.tier}
       data-layout-variant={layout.variant}
+      data-header-subtitle={layout.showHeaderSubtitle ? "visible" : "hidden"}
+      data-header-actions={layout.compactHeaderActions ? "compact" : "default"}
+      data-full-width-overlay={layout.fullWidthOverlay ? "true" : "false"}
     >
       {/* Header */}
       <header className="app-header">
@@ -466,7 +470,7 @@ function AppContent() {
             <p>Interactive Fretboard & Music Theory</p>
           </div>
         </div>
-        <div className="header-actions">
+        <div className="header-actions" aria-label="App actions">
           <a
             href="https://ko-fi.com/E1E01XFJ0G"
             target="_blank"
@@ -486,6 +490,7 @@ function AppContent() {
             />
           </a>
           <button
+            type="button"
             onClick={() => setSettingsOverlayOpen((v) => !v)}
             className="header-btn"
             title="Settings"
@@ -494,6 +499,7 @@ function AppContent() {
             <Settings2 className="icon" />
           </button>
           <button
+            type="button"
             onClick={toggleMute}
             className="header-btn"
             title={isMuted ? "Unmute" : "Mute"}
@@ -505,9 +511,11 @@ function AppContent() {
             )}
           </button>
           <button
+            type="button"
             onClick={() => setShowHelp(true)}
             className="header-btn"
             title="Help & Instructions"
+            aria-label="Open help"
           >
             <HelpCircle className="icon" />
           </button>
@@ -517,13 +525,23 @@ function AppContent() {
       {/* Help Modal */}
       {showHelp && (
         <div className="help-modal-overlay" onClick={() => setShowHelp(false)}>
-          <div className="help-modal" onClick={(e) => e.stopPropagation()}>
+          <div
+            className={clsx("help-modal", {
+              "help-modal--full-width": layout.fullWidthOverlay,
+            })}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="help-modal-title"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="help-modal-header">
-              <h2>FretFlow Help</h2>
+              <h2 id="help-modal-title">FretFlow Help</h2>
               <button
+                type="button"
                 className="help-modal-close"
                 onClick={() => setShowHelp(false)}
                 title="Close help"
+                aria-label="Close help"
               >
                 ×
               </button>
