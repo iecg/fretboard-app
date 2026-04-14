@@ -821,7 +821,7 @@
   .mobile-tab-panel {
     display: flex;
     flex-direction: column;
-    min-height: 200px; /* UAT-01: mobile already scrolls; floor prevents tab content collapse */
+    min-height: 150px; /* R02: reduced from 200px — badge visibility at 375×667 (badge was 152px off-screen) */
     gap: var(--space-3);
   }
 
