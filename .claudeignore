@@ -1,0 +1,11 @@
+# Build artifacts
+node_modules/
+dist/
+coverage/
+.vite/
+
+# VBW archived milestones (read-only historical record, large)
+.vbw-planning/milestones/
+
+# Tooling caches
+.husky/_/

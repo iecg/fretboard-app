@@ -1,19 +1,22 @@
-import { CAGED_SHAPES, type CagedShape } from '../shapes';
-import { type FingeringPattern } from '../store/atoms';
-import { ToggleBar } from './ToggleBar';
-import './FingeringPatternControls.css';
+import clsx from "clsx";
+import { CAGED_SHAPES, type CagedShape } from "../shapes";
+import { type FingeringPattern } from "../store/atoms";
+import { ToggleBar } from "./ToggleBar";
+import "./FingeringPatternControls.css";
 
 interface FingeringPatternControlsProps {
   fingeringPattern: FingeringPattern;
   setFingeringPattern: (pattern: FingeringPattern) => void;
   cagedShapes: Set<CagedShape>;
-  setCagedShapes: (shapes: Set<CagedShape> | ((prev: Set<CagedShape>) => Set<CagedShape>)) => void;
+  setCagedShapes: (
+    shapes: Set<CagedShape> | ((prev: Set<CagedShape>) => Set<CagedShape>),
+  ) => void;
   npsPosition: number;
   setNpsPosition: (position: number) => void;
-  shapeLabels: 'none' | 'caged' | 'modal';
-  setShapeLabels: (labels: 'none' | 'caged' | 'modal') => void;
-  displayFormat: 'notes' | 'degrees' | 'none';
-  setDisplayFormat: (format: 'notes' | 'degrees' | 'none') => void;
+  shapeLabels: "none" | "caged" | "modal";
+  setShapeLabels: (labels: "none" | "caged" | "modal") => void;
+  displayFormat: "notes" | "degrees" | "none";
+  setDisplayFormat: (format: "notes" | "degrees" | "none") => void;
 }
 
 export function FingeringPatternControls({
@@ -33,10 +36,12 @@ export function FingeringPatternControls({
       <div className="control-section">
         <span className="section-label">Fingering Pattern</span>
         <ToggleBar
-          options={(["all", "caged", "3nps"] as FingeringPattern[]).map((fp) => ({
-            value: fp,
-            label: fp === "all" ? "All" : fp.toUpperCase(),
-          }))}
+          options={(["all", "caged", "3nps"] as FingeringPattern[]).map(
+            (fp) => ({
+              value: fp,
+              label: fp === "all" ? "All" : fp.toUpperCase(),
+            }),
+          )}
           value={fingeringPattern}
           onChange={(v) => setFingeringPattern(v as FingeringPattern)}
         />
@@ -51,7 +56,10 @@ export function FingeringPatternControls({
             <span className="section-label">Shape</span>
             <div className="toggle-group">
               <button
-                className={`toggle-btn ${cagedShapes.size === CAGED_SHAPES.length ? "active" : ""}`}
+                type="button"
+                className={clsx("toggle-btn", {
+                  active: cagedShapes.size === CAGED_SHAPES.length,
+                })}
                 onClick={() => setCagedShapes(new Set(CAGED_SHAPES))}
               >
                 All
@@ -59,7 +67,9 @@ export function FingeringPatternControls({
               {CAGED_SHAPES.map((s) => (
                 <button
                   key={s}
-                  className={`toggle-btn ${cagedShapes.has(s) ? "active" : ""}`}
+                  type="button"
+                  className={clsx("toggle-btn", { active: cagedShapes.has(s) })}
+                  title="Click to select; Shift+click to toggle multiple"
                   onClick={(e) => {
                     if (e.shiftKey) {
                       setCagedShapes((prev) => {
@@ -86,7 +96,8 @@ export function FingeringPatternControls({
             <ToggleBar
               options={(["none", "caged", "modal"] as const).map((opt) => ({
                 value: opt,
-                label: opt === "none" ? "None" : opt === "caged" ? "CAGED" : "Modal",
+                label:
+                  opt === "none" ? "None" : opt === "caged" ? "CAGED" : "Modal",
               }))}
               value={shapeLabels}
               onChange={(v) => setShapeLabels(v as "none" | "caged" | "modal")}
@@ -101,7 +112,10 @@ export function FingeringPatternControls({
           <ToggleBar
             options={[
               { value: 0, label: "All" },
-              ...[1, 2, 3, 4, 5, 6, 7].map((p) => ({ value: p, label: String(p) })),
+              ...[1, 2, 3, 4, 5, 6, 7].map((p) => ({
+                value: p,
+                label: String(p),
+              })),
             ]}
             value={npsPosition}
             onChange={(v) => setNpsPosition(v as number)}
@@ -114,7 +128,12 @@ export function FingeringPatternControls({
         <ToggleBar
           options={(["notes", "degrees", "none"] as const).map((fmt) => ({
             value: fmt,
-            label: fmt === "notes" ? "Notes" : fmt === "degrees" ? "Intervals" : "None",
+            label:
+              fmt === "notes"
+                ? "Notes"
+                : fmt === "degrees"
+                  ? "Intervals"
+                  : "None",
           }))}
           value={displayFormat}
           onChange={(v) => setDisplayFormat(v as "notes" | "degrees" | "none")}

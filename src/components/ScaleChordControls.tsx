@@ -1,7 +1,7 @@
-import { DrawerSelector } from '../DrawerSelector';
-import { NoteGrid } from './NoteGrid';
-import { NOTES } from '../theory';
-import './ScaleChordControls.css';
+import { DrawerSelector } from "../DrawerSelector";
+import { NoteGrid } from "./NoteGrid";
+import { NOTES } from "../theory";
+import "./ScaleChordControls.css";
 
 interface ScaleChordControlsProps {
   scaleName: string;
@@ -48,14 +48,14 @@ export function ScaleChordControls({
         label="Scale"
         value={scaleName}
         options={scaleOptions}
-        onSelect={(v) => v && setScaleName(v)}
+        onSelect={setScaleName}
       />
 
       <DrawerSelector
         label="Chord Overlay"
         value={chordType}
         options={chordOptions}
-        onSelect={(v) => {
+        onSelect={(v: string | null) => {
           setChordType(v);
           if (v && linkChordRoot) setChordRoot(rootNote);
         }}
@@ -102,7 +102,7 @@ export function ScaleChordControls({
             label="Interval Filter"
             value={chordIntervalFilter}
             options={chordFilterOptions}
-            onSelect={(v) => v && setChordIntervalFilter(v)}
+            onSelect={setChordIntervalFilter}
           />
         </>
       )}

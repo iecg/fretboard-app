@@ -1,5 +1,11 @@
 import { useState, useMemo, useEffect } from "react";
-import { useAtom, useAtomValue, useSetAtom, createStore, Provider } from "jotai";
+import {
+  useAtom,
+  useAtomValue,
+  useSetAtom,
+  createStore,
+  Provider,
+} from "jotai";
 import { Fretboard } from "./Fretboard";
 import {
   SCALES,
@@ -13,16 +19,10 @@ import {
   getNoteDisplayInScale,
   getDivergentNotes,
   formatAccidental,
+  resolveAccidentalMode,
 } from "./theory";
 import { STANDARD_TUNING, TUNINGS } from "./guitar";
-import {
-  Music,
-  Settings2,
-  Volume2,
-  VolumeX,
-  RotateCcw,
-  HelpCircle,
-} from "lucide-react";
+import { Music, Settings2, Volume2, VolumeX, HelpCircle } from "lucide-react";
 import { synth } from "./audio";
 import { CircleOfFifths } from "./CircleOfFifths";
 import { DEGREE_COLORS, getDegreesForScale } from "./degrees";
@@ -32,14 +32,10 @@ import {
   get3NPSCoordinates,
   type ShapePolygon,
 } from "./shapes";
-import { DrawerSelector } from "./DrawerSelector";
 import { FingeringPatternControls } from "./components/FingeringPatternControls";
 import { ScaleChordControls } from "./components/ScaleChordControls";
-import { TabletPortraitPanel } from "./components/TabletPortraitPanel";
 import { MobileTabPanel } from "./components/MobileTabPanel";
-import { DesktopControlsPanel } from "./components/DesktopControlsPanel";
-import { FretRangeControl } from "./components/FretRangeControl";
-import { StepperControl } from "./components/StepperControl";
+import { ExpandedControlsPanel } from "./components/ExpandedControlsPanel";
 import {
   rootNoteAtom,
   scaleNameAtom,
@@ -55,16 +51,15 @@ import {
   displayFormatAtom,
   shapeLabelsAtom,
   tuningNameAtom,
-  fretZoomAtom,
-  fretStartAtom,
-  fretEndAtom,
-  useFlatsAtom,
+  accidentalModeAtom,
   isMutedAtom,
   mobileTabAtom,
-  tabletTabAtom,
   setRootNoteAtom,
-  resetAtom,
+  settingsOverlayOpenAtom,
+  enharmonicDisplayAtom,
 } from "./store/atoms";
+import SettingsOverlay from "./components/SettingsOverlay";
+import { getResponsiveLayout } from "./layout/responsive";
 import "./App.css";
 
 const END_FRET = 24;
@@ -84,18 +79,29 @@ function SummaryNote({
 }) {
   const rootIdx = NOTES.indexOf(rootNote);
   const noteIdx = NOTES.indexOf(note);
-  const chromaticInterval = rootIdx !== -1 && noteIdx !== -1 ? (noteIdx - rootIdx + 12) % 12 : -1;
-  const degree = chromaticInterval !== -1 ? INTERVAL_NAMES[chromaticInterval] : null;
-  const romanNumeral = chromaticInterval !== -1 ? getDegreesForScale(scaleName)[chromaticInterval] : undefined;
+  const chromaticInterval =
+    rootIdx !== -1 && noteIdx !== -1 ? (noteIdx - rootIdx + 12) % 12 : -1;
+  const degree =
+    chromaticInterval !== -1 ? INTERVAL_NAMES[chromaticInterval] : null;
+  const romanNumeral =
+    chromaticInterval !== -1
+      ? getDegreesForScale(scaleName)[chromaticInterval]
+      : undefined;
   const degreeColor = romanNumeral ? DEGREE_COLORS[romanNumeral] : undefined;
   return (
     <span
       className={`summary-note${isChord ? " summary-note--chord" : ""}`}
-      style={degreeColor ? { outline: `2px solid ${degreeColor}`, outlineOffset: "-2px" } : undefined}
+      style={
+        degreeColor
+          ? { outline: `2px solid ${degreeColor}`, outlineOffset: "-2px" }
+          : undefined
+      }
     >
       <span className="summary-note-name">{formatAccidental(displayName)}</span>
       {degree && (
-        <span className="summary-note-degree" style={{ color: degreeColor }}>{formatAccidental(degree)}</span>
+        <span className="summary-note-degree" style={{ color: degreeColor }}>
+          {formatAccidental(degree)}
+        </span>
       )}
     </span>
   );
@@ -159,9 +165,13 @@ function AppContent() {
   const [chordRoot, setChordRoot] = useAtom(chordRootAtom);
   const [chordType, setChordType] = useAtom(chordTypeAtom);
   const [linkChordRoot, setLinkChordRoot] = useAtom(linkChordRootAtom);
-  const [hideNonChordNotes, setHideNonChordNotes] = useAtom(hideNonChordNotesAtom);
-  const [chordFretSpread, setChordFretSpread] = useAtom(chordFretSpreadAtom);
-  const [chordIntervalFilter, setChordIntervalFilter] = useAtom(chordIntervalFilterAtom);
+  const [hideNonChordNotes, setHideNonChordNotes] = useAtom(
+    hideNonChordNotesAtom,
+  );
+  const chordFretSpread = useAtomValue(chordFretSpreadAtom);
+  const [chordIntervalFilter, setChordIntervalFilter] = useAtom(
+    chordIntervalFilterAtom,
+  );
 
   // Fingering
   const [fingeringPattern, setFingeringPattern] = useAtom(fingeringPatternAtom);
@@ -171,49 +181,39 @@ function AppContent() {
   // Display
   const [displayFormat, setDisplayFormat] = useAtom(displayFormatAtom);
   const [shapeLabels, setShapeLabels] = useAtom(shapeLabelsAtom);
-  const [tuningName, setTuningName] = useAtom(tuningNameAtom);
-  const [fretZoom, setFretZoom] = useAtom(fretZoomAtom);
-  const [fretStart, setFretStart] = useAtom(fretStartAtom);
-  const [fretEnd, setFretEnd] = useAtom(fretEndAtom);
+  const tuningName = useAtomValue(tuningNameAtom);
 
   // Accidentals / Audio / Mobile tab
-  const [useFlats, setUseFlats] = useAtom(useFlatsAtom);
+  const accidentalMode = useAtomValue(accidentalModeAtom);
+  const useFlats = useMemo(
+    () => resolveAccidentalMode(rootNote, scaleName, accidentalMode),
+    [rootNote, scaleName, accidentalMode],
+  );
+  const enharmonicDisplay = useAtomValue(enharmonicDisplayAtom);
   const [isMuted, setIsMuted] = useAtom(isMutedAtom);
   const [mobileTab, setMobileTab] = useAtom(mobileTabAtom);
+
+  // Settings overlay (non-persisted)
+  const setSettingsOverlayOpen = useSetAtom(settingsOverlayOpenAtom);
 
   // Help modal
   const [showHelp, setShowHelp] = useState(false);
 
   // Viewport / mobile detection (not persisted)
   const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
-  const [viewportHeight, setViewportHeight] = useState(() => window.innerHeight);
+  const [viewportHeight, setViewportHeight] = useState(
+    () => window.innerHeight,
+  );
   useEffect(() => {
     const handler = () => {
       setViewportWidth(window.innerWidth);
       setViewportHeight(window.innerHeight);
     };
-    window.addEventListener('resize', handler);
-    return () => window.removeEventListener('resize', handler);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
   }, []);
-  const isLandscapeMobile = viewportWidth < 768 && viewportHeight < viewportWidth;
-  const isMobile = viewportWidth < 768 || isLandscapeMobile;
-  const isTabletPortrait = viewportWidth >= 768 && viewportWidth < 1366 && viewportHeight >= viewportWidth;
-  const isLandscapeTablet = viewportWidth >= 768 && viewportWidth < 1366 && viewportHeight < viewportWidth;
-  type LayoutMode = 'mobile' | 'landscape-mobile' | 'tablet-portrait' | 'landscape-tablet' | 'desktop';
-  const layoutMode: LayoutMode =
-    isLandscapeMobile ? 'landscape-mobile' :
-    isTabletPortrait  ? 'tablet-portrait' :
-    isLandscapeTablet ? 'landscape-tablet' :
-    isMobile          ? 'mobile' :
-    'desktop';
-
-  // String row height — reduced on small phones (≤800px tall, e.g. iPhone SE at 667px) to fit
-  // the fretboard natively without squishing it horizontally via transform:scale().
-  // Threshold matches the CSS small-phone media query (max-height: 800px).
-  const stringRowPx = (isMobile && viewportHeight <= 800) ? 32 : 40;
-
-  // Tablet-portrait tab state (Jotai atom with localStorage persistence)
-  const [tabletTab, setTabletTab] = useAtom(tabletTabAtom);
+  const layout = getResponsiveLayout(viewportWidth, viewportHeight);
+  const stringRowPx = layout.stringRowPx;
 
   // Sync mute state to audio synth (runs on mount and whenever isMuted changes)
   useEffect(() => {
@@ -229,12 +229,6 @@ function AppContent() {
     const nextMute = !isMuted;
     setIsMuted(nextMute);
     synth.setMute(nextMute);
-  };
-
-  const dispatchReset = useSetAtom(resetAtom);
-  const handleReset = () => {
-    dispatchReset();
-    synth.setMute(false);
   };
 
   // Compute active chord tones (independent of scale)
@@ -350,15 +344,14 @@ function AppContent() {
     if (!chordType || chordTones.length === 0) return [];
     const chordRootIdx = NOTES.indexOf(chordRoot);
     const chordToneSet = new Set(chordTones);
-    return NOTES
-      .slice(chordRootIdx)
+    return NOTES.slice(chordRootIdx)
       .concat(NOTES.slice(0, chordRootIdx))
-      .filter(n => chordToneSet.has(n));
+      .filter((n) => chordToneSet.has(n));
   }, [chordType, chordTones, chordRoot]);
 
-  // Summary notes content (shared between mobile Key tab and desktop summary area)
+  // Summary notes content shared by every non-landscape layout.
   const summaryContent = (
-    <div className="summary-area">
+    <div className="summary-area panel-surface">
       <div className="summary-row">
         <div className="summary-row-label">{scaleLabel}</div>
         <div className="summary-notes">
@@ -368,7 +361,12 @@ function AppContent() {
               note={n}
               rootNote={rootNote}
               scaleName={scaleName}
-              displayName={getNoteDisplayInScale(n, rootNote, SCALES[scaleName] || [], useFlats)}
+              displayName={getNoteDisplayInScale(
+                n,
+                rootNote,
+                SCALES[scaleName] || [],
+                useFlats,
+              )}
             />
           ))}
         </div>
@@ -393,27 +391,18 @@ function AppContent() {
     </div>
   );
 
-  // Mobile tab content — Key tab (CoF + accidental toggle + summary)
+  // Mobile tab content — Key tab
   const keyTabContent = (
     <div className="mobile-tab-panel mobile-key-tab">
-      <div
-        className="cof-container"
-      >
+      <div className="cof-container">
         <CircleOfFifths
           rootNote={rootNote}
           setRootNote={handleSetRootNote}
           scaleName={scaleName}
           useFlats={useFlats}
+          enharmonicDisplay={enharmonicDisplay}
         />
-        <button
-          className="accidental-toggle cof-toggle"
-          onClick={() => setUseFlats(prev => !prev)}
-          title={useFlats ? 'Showing flats — click for sharps' : 'Showing sharps — click for flats'}
-        >
-          {useFlats ? '♭' : '♯'}
-        </button>
       </div>
-      {summaryContent}
     </div>
   );
 
@@ -444,7 +433,7 @@ function AppContent() {
 
   // Mobile tab content — Settings tab
   const settingsTabContent = (
-    <div className="mobile-tab-panel mobile-settings-tab">
+    <div className="mobile-tab-panel mobile-fretboard-tab">
       <FingeringPatternControls
         fingeringPattern={fingeringPattern}
         setFingeringPattern={setFingeringPattern}
@@ -457,48 +446,15 @@ function AppContent() {
         displayFormat={displayFormat}
         setDisplayFormat={setDisplayFormat}
       />
-
-      <div className="control-section">
-        <DrawerSelector
-          label="Tuning"
-          value={tuningName}
-          options={Object.keys(TUNINGS)}
-          onSelect={(v) => v && setTuningName(v)}
-        />
-      </div>
-
-      {!isTabletPortrait && (
-        <div className="control-section">
-          <span className="section-label">Fret Range</span>
-          <FretRangeControl
-            startFret={fretStart}
-            endFret={fretEnd}
-            onStartChange={(v) => setFretStart(v)}
-            onEndChange={(v) => setFretEnd(v)}
-            maxFret={END_FRET}
-            layout="mobile"
-          />
-        </div>
-      )}
-      {!isTabletPortrait && (
-        <div className="control-section">
-          <StepperControl
-            label="Zoom"
-            value={fretZoom}
-            onChange={(v) => setFretZoom(v)}
-            min={100}
-            max={300}
-            step={10}
-            formatValue={(z) => z <= 100 ? 'Auto' : `${z}%`}
-            buttonVariant="mobile"
-          />
-        </div>
-      )}
     </div>
   );
 
   return (
-    <div className="app-container" data-layout-mode={layoutMode}>
+    <div
+      className="app-container"
+      data-layout-tier={layout.tier}
+      data-layout-variant={layout.variant}
+    >
       {/* Header */}
       <header className="app-header">
         <div className="logo-container">
@@ -530,23 +486,16 @@ function AppContent() {
             />
           </a>
           <button
-            className="mute-btn"
+            onClick={() => setSettingsOverlayOpen((v) => !v)}
+            className="header-btn"
             title="Settings"
-            disabled
-            style={{ opacity: 0.4, cursor: "default" }}
+            aria-label="Open settings"
           >
             <Settings2 className="icon" />
           </button>
           <button
-            onClick={handleReset}
-            className="mute-btn"
-            title="Reset to defaults"
-          >
-            <RotateCcw className="icon" />
-          </button>
-          <button
             onClick={toggleMute}
-            className="mute-btn"
+            className="header-btn"
             title={isMuted ? "Unmute" : "Mute"}
           >
             {isMuted ? (
@@ -557,7 +506,7 @@ function AppContent() {
           </button>
           <button
             onClick={() => setShowHelp(true)}
-            className="mute-btn"
+            className="header-btn"
             title="Help & Instructions"
           >
             <HelpCircle className="icon" />
@@ -615,21 +564,14 @@ function AppContent() {
           tuning={currentTuning}
           highlightNotes={highlightNotes}
           rootNote={rootNote}
-          startFret={fretStart}
-          endFret={fretEnd}
           boxBounds={boxBounds}
           chordTones={filteredChordTones}
           chordFretSpread={chordFretSpread}
-          onChordFretSpreadChange={setChordFretSpread}
           hideNonChordNotes={hideNonChordNotes}
           colorNotes={colorNotes}
           displayFormat={displayFormat}
           shapePolygons={shapePolygons}
           shapeLabels={shapeLabels}
-          fretZoom={fretZoom}
-          onZoomChange={setFretZoom}
-          onFretStartChange={setFretStart}
-          onFretEndChange={setFretEnd}
           maxFret={END_FRET}
           wrappedNotes={wrappedNotes}
           useFlats={useFlats}
@@ -638,26 +580,13 @@ function AppContent() {
         />
       </main>
 
-      {/* Tablet-portrait two-column panel: Settings/Scales tabs (left) + CoF (right) */}
-      {isTabletPortrait && (
-        <TabletPortraitPanel
-          tabletTab={tabletTab}
-          setTabletTab={setTabletTab}
-          settingsTabContent={settingsTabContent}
-          scaleChordTabContent={scaleChordTabContent}
-          rootNote={rootNote}
-          setRootNote={handleSetRootNote}
-          scaleName={scaleName}
-          useFlats={useFlats}
-          setUseFlats={(flats) => setUseFlats(flats)}
-        />
+      {/* Shared tablet/desktop controls panel */}
+      {layout.showControlsPanel && (
+        <ExpandedControlsPanel mode={layout.isSplitPanel ? "split" : "stacked"} />
       )}
 
-      {/* Summary bar — desktop and tablet-portrait (mobile shows it in Key tab) */}
-      {(!isMobile || isTabletPortrait) && summaryContent}
-
       {/* Mobile inline tab bar + content — hidden on desktop */}
-      {isMobile && (
+      {layout.showMobileTabs && (
         <MobileTabPanel
           mobileTab={mobileTab}
           setMobileTab={setMobileTab}
@@ -667,13 +596,22 @@ function AppContent() {
         />
       )}
 
-      {/* Controls Panel */}
-      <DesktopControlsPanel isTabletPortrait={isTabletPortrait} isMobile={isMobile} />
+      {layout.showSummary && summaryContent}
 
       <div className="version-badge">
-        v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar. Licensed under <a href="https://www.gnu.org/licenses/agpl-3.0" target="_blank" rel="noopener noreferrer">AGPL v3</a>.
+        v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar.
+        Licensed under{" "}
+        <a
+          href="https://www.gnu.org/licenses/agpl-3.0"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          AGPL v3
+        </a>
+        .
       </div>
 
+      <SettingsOverlay />
     </div>
   );
 }

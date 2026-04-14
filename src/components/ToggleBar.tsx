@@ -1,5 +1,4 @@
 import { cva, type VariantProps } from "class-variance-authority";
-import clsx from "clsx";
 import "./ToggleBar.css";
 
 const toggleBarVariants = cva("toggle-group", {
@@ -31,19 +30,26 @@ const toggleButtonVariants = cva("", {
   },
 });
 
-interface ToggleBarProps extends VariantProps<typeof toggleBarVariants> {
-  options: { value: string | number; label: string }[];
-  value: string | number;
-  onChange: (value: string | number) => void;
+type ToggleBarOption<Value extends string | number> = {
+  value: Value;
+  label: string;
+};
+
+interface ToggleBarProps<Value extends string | number> extends VariantProps<
+  typeof toggleBarVariants
+> {
+  options: readonly ToggleBarOption<Value>[];
+  value: Value;
+  onChange: (value: Value) => void;
   variant?: "default" | "tabs";
 }
 
-export function ToggleBar({
+export function ToggleBar<Value extends string | number>({
   options,
   value,
   onChange,
   variant = "default",
-}: ToggleBarProps) {
+}: ToggleBarProps<Value>) {
   return (
     <div className={toggleBarVariants({ variant })}>
       {options.map((option) => {
@@ -51,9 +57,9 @@ export function ToggleBar({
         return (
           <button
             key={option.value}
-            className={clsx(
-              toggleButtonVariants({ variant, isActive })
-            )}
+            type="button"
+            aria-pressed={isActive}
+            className={toggleButtonVariants({ variant, isActive })}
             onClick={() => onChange(option.value)}
           >
             {option.label}

@@ -1,0 +1,89 @@
+/* ============================================================================
+ * Design System — Semantic Layer (Layer 2 of 3)
+ * ============================================================================
+ * Layer 1 (PRIMITIVES): src/index.css (color/shadow/z-index) + src/tokens.css
+ *   (spacing/radius/type/transition durations). Raw values only.
+ * Layer 2 (SEMANTIC):   THIS FILE. Purpose-named tokens that reference
+ *   primitives via var(). Component CSS (Layer 3) MUST consume from here,
+ *   never directly from primitives — except for layout-mode-agnostic raw
+ *   values (e.g. fretboard product tokens).
+ * Layer 3 (PRODUCT):    src/App.css + src/components/*.css. Consumes
+ *   semantic tokens. No raw hex. No direct primitive refs for active-state /
+ *   chrome / panel-surface concerns.
+ *
+ * RULES:
+ *   - Chrome tokens (--chrome-*) NEVER reference --caged-* (purple drawer bug
+ *     was caused by chrome tokens deriving from --caged-g).
+ *   - Selected-state tokens (--selected-*) unify ALL .active selectors except
+ *     .note-btn.active (chord overlay — uses --selected-chord-*) and
+ *     .circle-slice.active (intentional neutral ring — exception preserved).
+ *   - Reduced-motion zeros transition tokens but does NOT delete them — keeps
+ *     selectors consistent.
+ * ============================================================================
+ */
+:root {
+  /* SELECTED-STATE TOKENS */
+  --selected-bg: var(--selection-accent-bg);
+  --selected-fg: var(--selection-accent-fg);
+  --selected-border: var(--selection-accent);
+  --selected-chord-bg: var(--chord-accent);
+  --selected-chord-fg: var(--chord-accent-fg);
+
+  /* CHROME TOKENS — neutral surface only, NEVER caged */
+  --chrome-bg: color-mix(in srgb, var(--bg-color) 84%, var(--surface-raised) 16%);
+  --chrome-fg: var(--text-main);
+  --chrome-fg-muted: var(--text-muted);
+  --chrome-border: color-mix(in srgb, var(--surface-highlight) 80%, transparent);
+  --chrome-scrim: color-mix(in srgb, var(--bg-color) 68%, rgba(0, 0, 0, 0.32));
+  --chrome-hover-bg: var(--surface-highlight);
+
+  /* PANEL-SURFACE TOKENS */
+  --panel-surface-bg: var(--surface-base);
+  --panel-surface-border: 1px solid var(--surface-highlight);
+  --panel-surface-radius: var(--radius-xl);
+  --panel-surface-radius-compact: var(--radius-lg);
+  --panel-surface-pad: var(--space-4);
+  --panel-surface-pad-compact: var(--space-3) var(--space-4);
+
+  /* FOCUS-RING TOKEN */
+  --focus-ring: 2px solid var(--accent-primary);
+  --focus-ring-offset: 2px;
+
+  /* TRANSITION REGISTRY (per-element semantics referencing existing primitive durations) */
+  --transition-surface: background-color var(--transition-fast) ease, color var(--transition-fast) ease, border-color var(--transition-fast) ease;
+  --transition-accent: box-shadow var(--transition-fast) ease, fill var(--transition-fast) ease;
+  --transition-motion: transform var(--transition-fast) ease, opacity var(--transition-base) ease;
+}
+
+/* .panel-surface variant classes */
+.panel-surface {
+  background: var(--panel-surface-bg);
+  border: var(--panel-surface-border);
+  border-radius: var(--panel-surface-radius);
+  padding: var(--panel-surface-pad);
+}
+
+.panel-surface--compact {
+  border-radius: var(--panel-surface-radius-compact);
+  padding: var(--panel-surface-pad-compact);
+}
+
+.panel-surface--inset {
+  padding: var(--space-2) var(--space-3);
+}
+
+/* Global reduced-motion guard — zeros transition tokens + kills keyframe animations */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-surface: none;
+    --transition-accent: none;
+    --transition-motion: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

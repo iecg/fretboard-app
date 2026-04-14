@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { NoteGrid } from './NoteGrid';
-import { NOTES } from '../theory';
+import { describe, it, expect, vi } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
+import { NoteGrid } from "./NoteGrid";
+import { NOTES } from "../theory";
 
-describe('NoteGrid', () => {
-  it('renders 12 note buttons', () => {
+describe("NoteGrid", () => {
+  it("renders 12 note buttons", () => {
     render(
       <NoteGrid
         notes={NOTES}
@@ -14,7 +14,7 @@ describe('NoteGrid', () => {
         useFlats={false}
       />,
     );
-    const buttons = screen.getAllByRole('button');
+    const buttons = screen.getAllByRole("button");
     expect(buttons).toHaveLength(12);
   });
 
@@ -27,13 +27,13 @@ describe('NoteGrid', () => {
         useFlats={false}
       />,
     );
-    const activeButton = screen.getByText('C♯');
-    expect(activeButton.className).toContain('active');
-    const cButton = screen.getByText('C');
-    expect(cButton.className).not.toContain('active');
+    const activeButton = screen.getByRole("button", { name: /C♯/ });
+    expect(activeButton).toHaveClass("active");
+    const cButton = screen.getByRole("button", { name: /^C$/ });
+    expect(cButton).not.toHaveClass("active");
   });
 
-  it('calls onSelect with note on button click', () => {
+  it("calls onSelect with note on button click", () => {
     const onSelect = vi.fn();
     render(
       <NoteGrid
@@ -43,11 +43,11 @@ describe('NoteGrid', () => {
         useFlats={false}
       />,
     );
-    fireEvent.click(screen.getByText('D'));
-    expect(onSelect).toHaveBeenCalledWith('D');
+    fireEvent.click(screen.getByText("D"));
+    expect(onSelect).toHaveBeenCalledWith("D");
   });
 
-  it('displays flats when useFlats is true', () => {
+  it("displays flats when useFlats is true", () => {
     render(
       <NoteGrid
         notes={NOTES}
@@ -56,11 +56,11 @@ describe('NoteGrid', () => {
         useFlats={true}
       />,
     );
-    expect(screen.getByText('B♭')).toBeTruthy();
-    expect(screen.queryByText('A♯')).toBeNull();
+    expect(screen.getByText("B♭")).toBeInTheDocument();
+    expect(screen.queryByText("A♯")).not.toBeInTheDocument();
   });
 
-  it('displays sharps when useFlats is false', () => {
+  it("displays sharps when useFlats is false", () => {
     render(
       <NoteGrid
         notes={NOTES}
@@ -69,7 +69,7 @@ describe('NoteGrid', () => {
         useFlats={false}
       />,
     );
-    expect(screen.getByText('A♯')).toBeTruthy();
-    expect(screen.queryByText('B♭')).toBeNull();
+    expect(screen.getByText("A♯")).toBeInTheDocument();
+    expect(screen.queryByText("B♭")).not.toBeInTheDocument();
   });
 });

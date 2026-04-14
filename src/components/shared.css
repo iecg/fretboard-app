@@ -27,7 +27,7 @@
   font-size: var(--text-xs);
   font-weight: 500;
   border-radius: var(--radius-sm);
-  transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+  transition: var(--transition-surface), transform var(--transition-fast) ease;
   text-transform: capitalize;
   background: transparent;
   border: none;
@@ -36,7 +36,7 @@
 }
 
 .toggle-btn:hover {
-  color: white;
+  color: var(--caged-a-fg);
 }
 
 .toggle-btn:active {
@@ -49,8 +49,9 @@
 }
 
 .toggle-btn.active {
-  background-color: var(--surface-highlight);
-  color: white;
+  background-color: var(--selected-bg);
+  color: var(--selected-fg);
+  border-color: var(--selected-border);
   box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
 }
 
@@ -69,12 +70,20 @@
   position: absolute;
   top: 0;
   right: 0;
-  transition: color var(--transition-fast), border-color var(--transition-fast);
+  transition: var(--transition-surface);
 }
 
 .accidental-toggle:hover {
-  color: white;
+  color: var(--text-on-accent);
   border-color: var(--text-muted);
+}
+
+.accidental-toggle:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+  color: var(--text-on-accent);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 24%, transparent);
 }
 
 /* ===== Chord Root Row ===== */
@@ -100,7 +109,7 @@
   color: var(--text-muted);
   cursor: pointer;
   text-align: center;
-  transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+  transition: var(--transition-surface);
 }
 
 .note-btn:hover {
@@ -108,9 +117,21 @@
   border-color: var(--accent-secondary);
 }
 
-.note-btn.active {
-  background: var(--accent-secondary);
+.note-btn:active {
+  transform: scale(0.96);
+}
+
+.note-btn:focus-visible {
+  outline: 2px solid var(--accent-secondary);
+  outline-offset: 2px;
   color: white;
+  border-color: var(--accent-secondary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-secondary) 24%, transparent);
+}
+
+.note-btn.active {
+  background: var(--selected-chord-bg);
+  color: var(--selected-chord-fg);
   border-color: transparent;
 }
 
@@ -130,4 +151,11 @@
   width: 0.875rem;
   height: 0.875rem;
   cursor: pointer;
+}
+
+.link-toggle input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 24%, transparent);
 }

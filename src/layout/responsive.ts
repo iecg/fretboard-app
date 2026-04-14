@@ -1,0 +1,91 @@
+import { BREAKPOINTS } from "./breakpoints";
+
+export type ResponsiveTier = "mobile" | "tablet" | "desktop";
+
+export type ResponsiveVariant =
+  | "mobile"
+  | "landscape-mobile"
+  | "tablet-split"
+  | "tablet-stacked"
+  | "desktop-split"
+  | "desktop-stacked";
+
+export interface ResponsiveLayout {
+  tier: ResponsiveTier;
+  variant: ResponsiveVariant;
+  compactHeight: boolean;
+  stringRowPx: number;
+  showControlsPanel: boolean;
+  showMobileTabs: boolean;
+  showSummary: boolean;
+  isSplitPanel: boolean;
+}
+
+const STRING_ROW_PX_BY_TIER: Record<ResponsiveTier, number> = {
+  mobile: 32,
+  tablet: 40,
+  desktop: 48,
+};
+
+export function getResponsiveTier(viewportWidth: number): ResponsiveTier {
+  if (viewportWidth <= BREAKPOINTS.mobileMax) {
+    return "mobile";
+  }
+
+  if (viewportWidth < BREAKPOINTS.desktopMin) {
+    return "tablet";
+  }
+
+  return "desktop";
+}
+
+export function isCompactHeight(viewportHeight: number): boolean {
+  return viewportHeight <= BREAKPOINTS.compactHeightMax;
+}
+
+export function getResponsiveVariant(
+  viewportWidth: number,
+  viewportHeight: number,
+): ResponsiveVariant {
+  const tier = getResponsiveTier(viewportWidth);
+
+  if (tier === "mobile") {
+    return viewportHeight < viewportWidth ? "landscape-mobile" : "mobile";
+  }
+
+  if (tier === "tablet") {
+    return isCompactHeight(viewportHeight) ? "tablet-stacked" : "tablet-split";
+  }
+
+  return isCompactHeight(viewportHeight)
+    ? "desktop-stacked"
+    : "desktop-split";
+}
+
+export function getStringRowPx(tier: ResponsiveTier): number {
+  return STRING_ROW_PX_BY_TIER[tier];
+}
+
+export function getResponsiveLayout(
+  viewportWidth: number,
+  viewportHeight: number,
+): ResponsiveLayout {
+  const tier = getResponsiveTier(viewportWidth);
+  const variant = getResponsiveVariant(viewportWidth, viewportHeight);
+  const compactHeight = isCompactHeight(viewportHeight);
+  const isSplitPanel =
+    variant === "tablet-split" || variant === "desktop-split";
+  const showMobileTabs =
+    tier === "mobile" && variant !== "landscape-mobile";
+
+  return {
+    tier,
+    variant,
+    compactHeight,
+    stringRowPx: getStringRowPx(tier),
+    showControlsPanel: tier !== "mobile",
+    showMobileTabs,
+    showSummary: variant !== "landscape-mobile",
+    isSplitPanel,
+  };
+}

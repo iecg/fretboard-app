@@ -2,19 +2,38 @@ import { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import clsx from "clsx";
 
-export function DrawerSelector({
-  label,
-  value,
-  options,
-  onSelect,
-  nullable = false,
-}: {
+type DrawerSelectorOption = string | { divider: string };
+
+interface DrawerSelectorBaseProps {
   label: string;
+  options: DrawerSelectorOption[];
+}
+
+interface DrawerSelectorNullableProps extends DrawerSelectorBaseProps {
   value: string | null;
-  options: (string | { divider: string })[];
   onSelect: (opt: string | null) => void;
+  nullable: true;
+}
+
+interface DrawerSelectorNonNullableProps extends DrawerSelectorBaseProps {
+  value: string;
+  onSelect: (opt: string) => void;
   nullable?: boolean;
-}) {
+}
+
+type DrawerSelectorProps =
+  | DrawerSelectorNullableProps
+  | DrawerSelectorNonNullableProps;
+
+function isNullableDrawerSelectorProps(
+  props: DrawerSelectorProps,
+): props is DrawerSelectorNullableProps {
+  return props.nullable === true;
+}
+
+export function DrawerSelector(props: DrawerSelectorProps) {
+  const { label, value, options } = props;
+  const nullable = isNullableDrawerSelectorProps(props);
   const [open, setOpen] = useState(false);
   const [dropUp, setDropUp] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -48,12 +67,19 @@ export function DrawerSelector({
         <ChevronDown className={`drawer-chevron ${open ? "open" : ""}`} />
       </button>
       {open && (
-        <div className={clsx("drawer-options", "custom-scrollbar", dropUp && "drawer-options--above")}>
+        <div
+          className={clsx(
+            "drawer-options",
+            "custom-scrollbar",
+            dropUp && "drawer-options--above",
+          )}
+        >
           {nullable && (
             <button
+              type="button"
               className={`drawer-option ${value === null ? "active" : ""}`}
               onClick={() => {
-                onSelect(null);
+                props.onSelect(null);
                 setOpen(false);
               }}
             >
@@ -63,10 +89,11 @@ export function DrawerSelector({
           {options.map((opt, i) =>
             typeof opt === "string" ? (
               <button
+                type="button"
                 key={opt}
                 className={`drawer-option ${value === opt ? "active" : ""}`}
                 onClick={() => {
-                  onSelect(opt);
+                  props.onSelect(opt);
                   setOpen(false);
                 }}
               >

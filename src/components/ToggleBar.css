@@ -8,13 +8,12 @@
 .mobile-tab-bar.toggle-group {
   display: flex;
   background: var(--surface-raised);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   padding: var(--space-1);
   gap: var(--space-1);
-  /* Remove App.css margin (designed for full-width mobile layout) */
+  /* Match width of inputs/selectors below by filling parent */
+  width: 100%;
   margin: 0;
-  /* Remove border inherited from toggle-group base in shared.css */
-  border: none;
 }
 
 .mobile-tab-bar.toggle-group .mobile-tab {
@@ -29,14 +28,22 @@
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
-  transition: background-color var(--transition-fast), color var(--transition-fast);
+  transition: var(--transition-surface);
 }
 
 .mobile-tab-bar.toggle-group .mobile-tab.active {
-  background: var(--surface-highlight);
-  color: white;
+  background: var(--selected-bg);
+  color: var(--selected-fg);
 }
 
 .mobile-tab-bar.toggle-group .mobile-tab:hover:not(.active) {
   color: var(--text-main);
+}
+
+.mobile-tab-bar.toggle-group .mobile-tab:focus,
+.mobile-tab-bar.toggle-group .mobile-tab:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 24%, transparent);
+  color: var(--text-on-accent);
 }
