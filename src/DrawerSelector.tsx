@@ -156,6 +156,7 @@ export function DrawerSelector(props: DrawerSelectorProps) {
                 }
               case "Escape":
                 e.preventDefault();
+                e.stopPropagation();
                 setOpen(false);
                 triggerRef.current?.focus();
                 break;
