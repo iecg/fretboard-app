@@ -73,17 +73,45 @@ const CHORD_OPTIONS: (string | { divider: string })[] = [
 ];
 
 /**
- * Extracted from ExpandedControlsPanel for reuse in flanking layouts (Phase 03).
- * Renders the left controls column: FingeringPatternControls + Tuning + ScaleChordControls.
- * Reads all required state from Jotai atoms directly.
+ * Renders the left-most base controls: FingeringPatternControls + Tuning.
  */
-export function ControlsColumn() {
+export function BaseControlsSection() {
   const [tuningName, setTuningName] = useAtom(tuningNameAtom);
   const [fingeringPattern, setFingeringPattern] = useAtom(fingeringPatternAtom);
   const [cagedShapes, setCagedShapes] = useAtom(cagedShapesAtom);
   const [npsPosition, setNpsPosition] = useAtom(npsPositionAtom);
   const [shapeLabels, setShapeLabels] = useAtom(shapeLabelsAtom);
   const [displayFormat, setDisplayFormat] = useAtom(displayFormatAtom);
+
+  return (
+    <div className="control-group panel-surface controls-card controls-card--base">
+      <FingeringPatternControls
+        fingeringPattern={fingeringPattern}
+        setFingeringPattern={setFingeringPattern}
+        cagedShapes={cagedShapes}
+        setCagedShapes={setCagedShapes}
+        npsPosition={npsPosition}
+        setNpsPosition={setNpsPosition}
+        shapeLabels={shapeLabels}
+        setShapeLabels={setShapeLabels}
+        displayFormat={displayFormat}
+        setDisplayFormat={setDisplayFormat}
+      />
+
+      <DrawerSelector
+        label="Tuning"
+        value={tuningName}
+        options={Object.keys(TUNINGS)}
+        onSelect={setTuningName}
+      />
+    </div>
+  );
+}
+
+/**
+ * Renders the Scale & Chord column.
+ */
+export function ScaleChordSection() {
   const [scaleName, setScaleName] = useAtom(scaleNameAtom);
   const [chordRoot, setChordRoot] = useAtom(chordRootAtom);
   const [chordType, setChordType] = useAtom(chordTypeAtom);
@@ -102,51 +130,27 @@ export function ControlsColumn() {
   );
 
   return (
-    <div className="controls-col-left flanking-controls-col">
-      <div className="control-group panel-surface">
-        <FingeringPatternControls
-          fingeringPattern={fingeringPattern}
-          setFingeringPattern={setFingeringPattern}
-          cagedShapes={cagedShapes}
-          setCagedShapes={setCagedShapes}
-          npsPosition={npsPosition}
-          setNpsPosition={setNpsPosition}
-          shapeLabels={shapeLabels}
-          setShapeLabels={setShapeLabels}
-          displayFormat={displayFormat}
-          setDisplayFormat={setDisplayFormat}
-        />
-
-        <DrawerSelector
-          label="Tuning"
-          value={tuningName}
-          options={Object.keys(TUNINGS)}
-          onSelect={setTuningName}
-        />
-      </div>
-
-      <div className="control-group panel-surface">
-        <h2>Scale &amp; Chord</h2>
-        <ScaleChordControls
-          scaleName={scaleName}
-          setScaleName={setScaleName}
-          chordType={chordType}
-          setChordType={setChordType}
-          chordRoot={chordRoot}
-          setChordRoot={setChordRoot}
-          linkChordRoot={linkChordRoot}
-          setLinkChordRoot={setLinkChordRoot}
-          hideNonChordNotes={hideNonChordNotes}
-          setHideNonChordNotes={setHideNonChordNotes}
-          chordIntervalFilter={chordIntervalFilter}
-          setChordIntervalFilter={setChordIntervalFilter}
-          rootNote={rootNote}
-          useFlats={useFlats}
-          scaleOptions={SCALE_OPTIONS}
-          chordOptions={CHORD_OPTIONS}
-          chordFilterOptions={CHORD_FILTER_OPTIONS}
-        />
-      </div>
+    <div className="control-group panel-surface controls-card controls-card--scale">
+      <h2>Scale &amp; Chord</h2>
+      <ScaleChordControls
+        scaleName={scaleName}
+        setScaleName={setScaleName}
+        chordType={chordType}
+        setChordType={setChordType}
+        chordRoot={chordRoot}
+        setChordRoot={setChordRoot}
+        linkChordRoot={linkChordRoot}
+        setLinkChordRoot={setLinkChordRoot}
+        hideNonChordNotes={hideNonChordNotes}
+        setHideNonChordNotes={setHideNonChordNotes}
+        chordIntervalFilter={chordIntervalFilter}
+        setChordIntervalFilter={setChordIntervalFilter}
+        rootNote={rootNote}
+        useFlats={useFlats}
+        scaleOptions={SCALE_OPTIONS}
+        chordOptions={CHORD_OPTIONS}
+        chordFilterOptions={CHORD_FILTER_OPTIONS}
+      />
     </div>
   );
 }
@@ -168,7 +172,7 @@ export function KeyColumn() {
   const enharmonicDisplay = useAtomValue(enharmonicDisplayAtom);
 
   return (
-    <div className="control-group col-span-2 key-column flanking-key-col panel-surface">
+    <div className="control-group key-column panel-surface controls-card controls-card--key">
       <h2>Key</h2>
       <CircleOfFifths
         rootNote={rootNote}
@@ -182,18 +186,27 @@ export function KeyColumn() {
 }
 
 /**
- * Target A "desktop-expanded" layout: 2-column grid where Settings and
- * Scale & Chord stack in the left column and Key/CoF spans both rows
- * on the right. Used when the viewport has enough vertical room to
- * show every control group fully expanded without tabs.
- *
- * The grid layout itself is driven by `.app-container[data-layout-mode=
- * "desktop-expanded"] .controls-panel` rules in App.css.
+ * Shared non-mobile controls layout. Split mode stacks Settings + Scale/Chord
+ * on the left with Key on the right. Stacked mode renders all three groups in
+ * a single column for compact-height tablet and desktop viewports.
  */
-export function ExpandedControlsPanel() {
+export function ExpandedControlsPanel({ mode }: { mode: "split" | "stacked" }) {
+  if (mode === "stacked") {
+    return (
+      <div className="controls-panel controls-panel--stacked">
+        <BaseControlsSection />
+        <ScaleChordSection />
+        <KeyColumn />
+      </div>
+    );
+  }
+
   return (
-    <div className="controls-panel">
-      <ControlsColumn />
+    <div className="controls-panel controls-panel--split">
+      <div className="controls-panel-column">
+        <BaseControlsSection />
+        <ScaleChordSection />
+      </div>
       <KeyColumn />
     </div>
   );

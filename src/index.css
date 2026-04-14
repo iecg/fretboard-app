@@ -52,7 +52,7 @@
 body {
   margin: 0;
   min-width: 320px;
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 /* Removed global wildcard transition — per-element transitions declared in App.css */
@@ -60,14 +60,14 @@ body {
 #root {
   width: 100%;
   min-width: 320px;
-  height: 100vh;
-  min-height: 880px; /* R02 measured: chrome(200)+fretboard-min(240)+max(CONTROLS=340,KEY=311)+summary(72)+20=872, ceil→880 */
+  min-height: 100dvh;
+  height: auto;
   display: flex;
   flex-direction: column;
   user-select: none;
   -webkit-user-select: none;
-  overflow-x: auto;
-  overflow-y: auto;
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 
 * {

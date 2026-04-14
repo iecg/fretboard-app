@@ -4,6 +4,7 @@
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -12,20 +13,23 @@
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: var(--surface-highlight);
   border-radius: 4px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--accent-primary);
 }
 
 /* Base App Layout */
 .app-container {
-  flex: 1 1 0;
+  flex: 1 1 auto;
   align-self: stretch;
   padding: 1rem;
   padding-bottom: 2rem;
@@ -36,8 +40,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  overflow: hidden;
-  min-height: 0;
+  overflow: visible;
+  min-height: 100%;
 }
 
 /* Header */
@@ -63,7 +67,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 .logo-icon .icon {
@@ -158,14 +162,19 @@
 }
 
 @media (max-width: 767px) {
-  .kofi-btn-desktop { display: none; }
-  .kofi-btn-mobile { display: block; }
+  .kofi-btn-desktop {
+    display: none;
+  }
+
+  .kofi-btn-mobile {
+    display: block;
+  }
 }
 
 /* Main Fretboard */
 .main-fretboard {
   width: 100%;
-  flex-shrink: 0;
+  flex: 0 0 auto;
 }
 
 /* Fretboard Internal Styles */
@@ -174,7 +183,7 @@
   width: 100%;
   min-width: 300px;
   overflow-x: auto;
-  padding: var(--space-4) var(--space-2) 0;
+  padding: 0 var(--space-2);
 }
 
 .fretboard-neck {
@@ -217,7 +226,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  box-shadow: -2px 0 4px rgba(0,0,0,0.5);
+  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.5);
 }
 
 .fret-zero {
@@ -255,11 +264,13 @@
 .marker-double {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--string-row-px) * 0.6); /* proportional: 24px at 40px row, 43.2px at 72px */
+  gap: calc(var(--string-row-px) * 0.6);
+  /* proportional: 24px at 40px row, 43.2px at 72px */
 }
 
 .marker-dot {
-  width: calc(var(--string-row-px) * 0.4);  /* proportional: 16px at 40px, 28.8px at 72px */
+  width: calc(var(--string-row-px) * 0.4);
+  /* proportional: 16px at 40px, 28.8px at 72px */
   height: calc(var(--string-row-px) * 0.4);
   border-radius: 9999px;
   background-color: var(--fret-marker);
@@ -283,7 +294,7 @@
 .string-line {
   position: absolute;
   width: 100%;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
   pointer-events: none;
   opacity: 0.8;
   background-color: var(--string-color);
@@ -305,8 +316,6 @@
 
 
 .note-bubble {
-  width: 2rem;
-  height: 2rem;
   border-radius: 9999px;
   display: flex;
   align-items: center;
@@ -352,7 +361,7 @@
 }
 
 .note-inactive {
-  background-color: rgba(0,0,0,0.4);
+  background-color: rgba(0, 0, 0, 0.4);
   color: transparent;
   opacity: 0;
 }
@@ -371,7 +380,8 @@
   -webkit-text-stroke: 2.5px rgba(0, 0, 0, 0.7);
   paint-order: stroke fill;
   letter-spacing: 0;
-  order: -1; /* renders above main label */
+  order: -1;
+  /* renders above main label */
 }
 
 .note-main-label {
@@ -392,6 +402,7 @@
   0% {
     box-shadow: 0 0 0 0 var(--shadow-ping-start);
   }
+
   100% {
     box-shadow: 0 0 0 12px var(--shadow-ping-end);
   }
@@ -401,19 +412,26 @@
   animation: note-ping 0.4s ease-out;
 }
 
-/* Controls Panel — base rule. Uses flex: 0 0 auto so the panel only
-   claims its natural content height, letting the fretboard (main)
-   absorb any leftover vertical space and the version badge sit at
-   the true document bottom. desktop-expanded overrides display to
-   grid; tablet-portrait hides .controls-panel entirely and uses
-   TabletPortraitPanel instead. */
+/* Controls panel shared by tablet and desktop layouts. */
 .controls-panel {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: var(--space-4);
   flex: 0 0 auto;
-  min-height: 0;
   overflow: visible;
+}
+
+.controls-panel--split {
+  display: grid;
+  align-items: start;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.controls-panel-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
 }
 
 .control-group {
@@ -434,7 +452,7 @@
 
 .circle-fifths-container {
   container-type: inline-size;
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -510,9 +528,10 @@
 /* Key column */
 .key-column {
   position: relative;
+  align-items: center;
 }
 
-.key-column > h2 {
+.key-column>h2 {
   display: block;
   text-align: center;
 }
@@ -587,7 +606,8 @@
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  min-height: 72px; /* UAT-01: matches SUMMARY_MIN_HEIGHT — prevents summary row from collapsing */
+  min-height: 72px;
+  /* Keep the summary comfortably legible when notes wrap onto smaller screens. */
   gap: var(--space-2);
 }
 
@@ -623,13 +643,13 @@
 
 .summary-note {
   padding: var(--space-1);
-  width: 2.8rem;
-  height: 2.8rem;
+  width: clamp(2.2rem, 4vw + 0.5rem, 2.8rem);
+  height: clamp(2.2rem, 4vw + 0.5rem, 2.8rem);
   background-color: var(--surface-raised);
   border-radius: 9999px;
   font-size: var(--text-sm);
   font-weight: 700;
-  box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   transition: transform var(--transition-fast);
   display: flex;
   flex-direction: column;
@@ -691,18 +711,10 @@
 
 /* =============================================
    RESPONSIVE LAYOUT
-   Layout modes (JS-driven via data-layout-mode in App.tsx):
-     mobile           <768px portrait            → single-col, page scroll
-     landscape-mobile <768px landscape           → fretboard hero, minimal chrome
-     tablet-portrait  ≥768px AND expanded        → tab panel (TabletPortraitPanel)
-                      controls don't fit vertically
-     desktop-expanded ≥768px AND expanded        → Target A 2-col grid
-                      controls fit vertically
-
-   The tablet-portrait vs desktop-expanded decision is a fit check in
-   App.tsx — see src/layout/constants.ts for the constants and fit
-   algorithm. Landscape-tablet and the old desktop 3-col mode are
-   gone — they collapsed into the adaptive decision.
+   data-layout-tier and data-layout-variant are set in App.tsx:
+     mobile / landscape-mobile → mobile chrome and tabs
+     tablet-split / tablet-stacked
+     desktop-split / desktop-stacked
    ============================================= */
 
 /* Fret range mobile layout */
@@ -732,9 +744,8 @@
 /* Mobile inline layout */
 @media (max-width: 767px) {
   .app-container {
-    overflow: visible;
-    flex: unset;
-    min-height: 0;
+    padding: 0.875rem;
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
   }
 
   /* Hide desktop controls panel — all controls live in mobile tabs */
@@ -742,41 +753,29 @@
     display: none !important;
   }
 
-  /* Summary area in Key tab on mobile */
   .summary-area {
-    padding: var(--space-2) 0;
-    order: unset;
-    gap: var(--space-1);
-    border: none;
-    background: none;
+    gap: var(--space-2);
   }
 
   .summary-note {
     width: auto;
     height: auto;
-    flex: 1 1 0;
+    flex: 0 1 auto;
     min-width: 2.5rem;
     min-height: 2.5rem;
-    max-width: 3.5rem;
     font-size: var(--text-sm);
     padding: var(--space-1);
   }
 
   .summary-notes {
     gap: var(--space-2);
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     width: 100%;
-    justify-content: center;
-  }
-
-  .summary-area {
-    padding: var(--space-2);
-    border: none;
-    background: none;
+    justify-content: flex-start;
   }
 
   .summary-row-label {
-    display: none;
+    min-width: auto;
   }
 
   .summary-row {
@@ -821,7 +820,6 @@
   .mobile-tab-panel {
     display: flex;
     flex-direction: column;
-    min-height: 150px; /* R02: reduced from 200px — badge visibility at 375×667 (badge was 152px off-screen) */
     gap: var(--space-3);
   }
 
@@ -871,112 +869,40 @@
 
 
 /* =============================================
-   LAYOUT MODE OVERRIDES (data-layout-mode attribute)
+   LAYOUT VARIANTS
    Set by App.tsx based on viewport width + height.
    These rules layer on top of the existing media queries.
    ============================================= */
 
-/* Tablet portrait: fretboard top, two-column panel below */
-.app-container[data-layout-mode="tablet-portrait"] {
-  display: grid;
-  grid-template-columns: 1fr;
-  /* Row 3 (tablet-portrait-panel) absorbs free space so the
-     controls fill the gap between the fretboard and the summary,
-     and the version badge sits at the true document bottom. */
-  grid-template-rows: auto auto 1fr auto auto;
-  gap: 0.5rem;
-}
-
-.app-container[data-layout-mode="tablet-portrait"] > .app-header {
-  grid-column: 1;
-  grid-row: 1;
-}
-
-.app-container[data-layout-mode="tablet-portrait"] > main {
-  grid-column: 1;
-  grid-row: 2;
-  min-height: 0;
-  min-width: 0;
-}
-
-/* Hide legacy controls-panel and cof-slot in tablet-portrait */
-.app-container[data-layout-mode="tablet-portrait"] .controls-panel {
-  display: none !important;
-}
-
-.app-container[data-layout-mode="tablet-portrait"] .tablet-portrait-cof-slot {
-  display: none;
-}
-
-.app-container[data-layout-mode="tablet-portrait"] .summary-area {
-  grid-column: 1;
-  grid-row: 4;
-}
-
-.app-container[data-layout-mode="tablet-portrait"] > .version-badge {
-  grid-column: 1;
-  grid-row: 5;
-}
-
-/* In tablet-portrait, the CoF is inside a flex column whose height
-   is driven by the 1fr grid row. Let the CoF size to whichever
-   dimension is smaller (square fitting both width and height). */
-.app-container[data-layout-mode="tablet-portrait"] .tablet-portrait-cof-col .circle-fifths-container {
-  width: auto;
-  height: 100%;
-  max-width: 100%;
-  max-height: 100%;
-  flex: 0 1 auto;
-}
-
-
-/* Desktop-expanded (Target A): 2-col grid with Settings/Scale&Chord
-   stacked on the left and Key/CoF spanning both rows on the right.
-   Activated when viewportHeight has room for the full expanded
-   controls (see src/layout/constants.ts). */
-.app-container[data-layout-mode="desktop-expanded"] {
+.app-container[data-layout-tier="desktop"] {
   max-width: 120rem;
 }
 
-/* Controls panel claims all free vertical space between the fretboard
-   and the summary/version. Inside, the 2-col grid stretches; cells
-   stretch both ways (default) so each col is full width, and each
-   col's flex content is vertically centered. Until the taller-
-   fretboard phase ships, this is how we avoid whitespace between
-   the summary and version on tall displays. */
-.app-container[data-layout-mode="desktop-expanded"] .controls-panel {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr;
-  gap: var(--space-4);
-  flex: 1 1 0;
-  min-height: 340px; /* R02 measured: CONTROLS_MIN_HEIGHT=340 (controlsColLeftH=311+buffer) */
-  min-width: 620px;
+.app-container[data-layout-variant="tablet-split"] .controls-panel--split {
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 1fr);
 }
 
-.app-container[data-layout-mode="desktop-expanded"] .controls-col-left {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  grid-column: 1;
-  min-height: 340px; /* R02 measured: CONTROLS_MIN_HEIGHT=340 */
-  min-width: 280px;
+.app-container[data-layout-variant="desktop-split"] .controls-panel--split {
+  grid-template-columns: minmax(0, 1.15fr) minmax(20rem, 1fr);
 }
 
-.app-container[data-layout-mode="desktop-expanded"] .controls-panel > .col-span-2 {
-  grid-column: 2;
-  grid-row: 1;
+.app-container[data-layout-variant="tablet-split"] .key-column,
+.app-container[data-layout-variant="desktop-split"] .key-column {
   min-width: 0;
-  min-height: 311px; /* R02 measured: KEY_MIN_HEIGHT=311 (keyColumnH=311, CoF legibility floor) */
-  flex: unset;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-2);
 }
 
-.app-container[data-layout-mode="desktop-expanded"] .circle-fifths-container {
-  aspect-ratio: 1;
+.app-container[data-layout-variant="tablet-stacked"] .key-column,
+.app-container[data-layout-variant="desktop-stacked"] .key-column {
+  max-width: 32rem;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.app-container[data-layout-variant="tablet-stacked"] .circle-fifths-container,
+.app-container[data-layout-variant="desktop-stacked"] .circle-fifths-container {
+  max-width: min(100%, 30rem);
+  width: 100%;
+  margin: 0 auto;
 }
 
 @container (min-width: 300px) {
@@ -987,28 +913,22 @@
 }
 
 /* Landscape mobile: fretboard hero, minimal chrome */
-.app-container[data-layout-mode="landscape-mobile"] {
-  padding: 0.25rem;
-  gap: 0.25rem;
-  overflow: hidden;
+.app-container[data-layout-variant="landscape-mobile"] {
+  padding: 0.5rem;
+  gap: 0.5rem;
 }
 
-.app-container[data-layout-mode="landscape-mobile"] .mobile-tab-bar,
-.app-container[data-layout-mode="landscape-mobile"] .mobile-tab-content {
+.app-container[data-layout-variant="landscape-mobile"] .mobile-tab-bar,
+.app-container[data-layout-variant="landscape-mobile"] .mobile-tab-content {
   display: none !important;
 }
 
-.app-container[data-layout-mode="landscape-mobile"] .summary-area {
+.app-container[data-layout-variant="landscape-mobile"] .summary-area {
   display: none !important;
 }
 
-.app-container[data-layout-mode="landscape-mobile"] > main {
-  flex: 1 1 0;
-  min-height: 0;
-}
-
-.app-container[data-layout-mode="landscape-mobile"] .circle-fifths-container {
-  max-height: 40cqh;
+.app-container[data-layout-variant="landscape-mobile"] .main-fretboard {
+  margin-bottom: 0;
 }
 
 /* ===== Fretboard Outer + Toolbar ===== */
@@ -1183,7 +1103,7 @@
   background: var(--surface-base);
   border: 1px solid var(--surface-highlight);
   border-radius: var(--radius-md);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.45);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
   max-height: 240px;
   overflow-y: auto;
   padding: var(--space-1);
@@ -1250,7 +1170,7 @@
   user-select: none;
   white-space: nowrap;
   padding: var(--space-2) 0 calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
-  margin-top: auto;
+  margin-top: 0;
 }
 
 @media (max-width: 767px) {
@@ -1262,14 +1182,3 @@
 
 /* POST-PHASE-05 INVARIANT: no background/border/border-radius outside :root,
    .panel-surface, and product-specific components (buttons, badges, fretboard). */
-
-/* ── Per-container vertical floor (UAT-01 fix) ──────────────────────────────
-   These min-heights prevent flex collapse squishing controls off-screen at
-   short viewport heights. Values match CONTROLS_MIN_HEIGHT (340px) and
-   SUMMARY_MIN_HEIGHT (72px) from src/layout/constants.ts.
-   Update both locations if control group heights change significantly.       */
-
-/* Tablet-portrait: controls panel row */
-.app-container[data-layout-mode="tablet-portrait"] .tablet-portrait-panel {
-  min-height: 340px; /* R02 measured: matches CONTROLS_MIN_HEIGHT=340 */
-}

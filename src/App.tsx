@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useLayoutEffect, useRef } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   useAtom,
   useAtomValue,
@@ -34,7 +34,6 @@ import {
 } from "./shapes";
 import { FingeringPatternControls } from "./components/FingeringPatternControls";
 import { ScaleChordControls } from "./components/ScaleChordControls";
-import { TabletPortraitPanel } from "./components/TabletPortraitPanel";
 import { MobileTabPanel } from "./components/MobileTabPanel";
 import { ExpandedControlsPanel } from "./components/ExpandedControlsPanel";
 import {
@@ -55,33 +54,15 @@ import {
   accidentalModeAtom,
   isMutedAtom,
   mobileTabAtom,
-  tabletTabAtom,
   setRootNoteAtom,
   settingsOverlayOpenAtom,
   enharmonicDisplayAtom,
 } from "./store/atoms";
 import SettingsOverlay from "./components/SettingsOverlay";
-import {
-  CONTROL_HEIGHTS,
-  CONTROLS_MIN_HEIGHT,
-  KEY_MIN_HEIGHT,
-  FRETBOARD_MIN_HEIGHT,
-  LAYOUT_CHROME_HEIGHT,
-  SMALL_PHONE_HEIGHT_THRESHOLD,
-  STRING_ROW_PX_MIN,
-  STRING_ROW_PX_MAX,
-  STRING_ROW_PX_SMALL,
-  SUMMARY_MIN_HEIGHT,
-} from "./layout/constants";
+import { getResponsiveLayout } from "./layout/responsive";
 import "./App.css";
 
 const END_FRET = 24;
-
-type LayoutMode =
-  | "mobile"
-  | "landscape-mobile"
-  | "tablet-portrait"
-  | "desktop-expanded";
 
 function SummaryNote({
   note,
@@ -215,40 +196,6 @@ function AppContent() {
   // Settings overlay (non-persisted)
   const setSettingsOverlayOpen = useSetAtom(settingsOverlayOpenAtom);
 
-  // Adaptive string row height via viewport-aware derivation.
-  // Derives stringRowPx from available viewport height (window.innerHeight minus
-  // chrome and minimum control/summary heights) so the fretboard shrinks when the
-  // viewport is too short to show all controls at full size.
-  // Prior approach used a ResizeObserver on the fretboard container, but the
-  // container never shrinks (flex: 1 1 0 absorbs space), so the observer saw an
-  // inflated height and kept stringRowPx high even when controls were off-screen.
-  const fretboardContainerRef = useRef<HTMLElement>(null);
-  const [adaptiveStringRowPx, setAdaptiveStringRowPx] =
-    useState<number>(STRING_ROW_PX_MIN);
-  useLayoutEffect(() => {
-    const handleResize = () => {
-      const viewportH = window.innerHeight;
-      const chromeH =
-        LAYOUT_CHROME_HEIGHT.header +
-        LAYOUT_CHROME_HEIGHT.summary +
-        LAYOUT_CHROME_HEIGHT.version +
-        LAYOUT_CHROME_HEIGHT.outerGap;
-      // Available fretboard height = viewport minus chrome minus per-container floors
-      const availableFretboardH = Math.max(
-        0,
-        viewportH - chromeH - Math.max(CONTROLS_MIN_HEIGHT, KEY_MIN_HEIGHT) - SUMMARY_MIN_HEIGHT,
-      );
-      const derived = Math.floor(availableFretboardH / 6);
-      setAdaptiveStringRowPx(
-        Math.max(STRING_ROW_PX_MIN, Math.min(STRING_ROW_PX_MAX, derived)),
-      );
-    };
-
-    handleResize(); // run once on mount
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   // Viewport / mobile detection (not persisted)
   const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
   const [viewportHeight, setViewportHeight] = useState(
@@ -262,54 +209,8 @@ function AppContent() {
     window.addEventListener("resize", handler);
     return () => window.removeEventListener("resize", handler);
   }, []);
-  const isLandscapeMobile =
-    viewportWidth < 768 && viewportHeight < viewportWidth;
-  const isMobile = viewportWidth < 768 || isLandscapeMobile;
-
-  // Adaptive fit: pick desktop-expanded (Target A) when the fully-
-  // expanded controls fit vertically; otherwise fall back to the
-  // tablet-portrait tabbed layout. Constants measured against the
-  // live app — see src/layout/constants.ts.
-  const targetAHeight = Math.max(
-    CONTROL_HEIGHTS.settings +
-      CONTROL_HEIGHTS.rowGap +
-      CONTROL_HEIGHTS.scaleChord,
-    CONTROL_HEIGHTS.cofMax,
-  );
-  const chromeHeight =
-    LAYOUT_CHROME_HEIGHT.header +
-    LAYOUT_CHROME_HEIGHT.summary +
-    LAYOUT_CHROME_HEIGHT.version +
-    LAYOUT_CHROME_HEIGHT.outerGap;
-  const availableControlsHeight =
-    viewportHeight - chromeHeight - FRETBOARD_MIN_HEIGHT;
-  const fitsExpanded =
-    viewportWidth >= 768 &&
-    !isLandscapeMobile &&
-    availableControlsHeight >= targetAHeight;
-
-  let layoutMode: LayoutMode;
-  if (isLandscapeMobile) {
-    layoutMode = "landscape-mobile";
-  } else if (isMobile) {
-    layoutMode = "mobile";
-  } else if (fitsExpanded) {
-    layoutMode = "desktop-expanded";
-  } else {
-    layoutMode = "tablet-portrait";
-  }
-  const isTabletPortrait = layoutMode === "tablet-portrait";
-  const isDesktopExpanded = layoutMode === "desktop-expanded";
-
-  // String row height — small phones use reduced fixed size; all other viewports
-  // use the viewport-derived adaptive value clamped to [STRING_ROW_PX_MIN, STRING_ROW_PX_MAX].
-  const stringRowPx =
-    isMobile && viewportHeight <= SMALL_PHONE_HEIGHT_THRESHOLD
-      ? STRING_ROW_PX_SMALL
-      : adaptiveStringRowPx;
-
-  // Tablet-portrait tab state (Jotai atom with localStorage persistence)
-  const [tabletTab, setTabletTab] = useAtom(tabletTabAtom);
+  const layout = getResponsiveLayout(viewportWidth, viewportHeight);
+  const stringRowPx = layout.stringRowPx;
 
   // Sync mute state to audio synth (runs on mount and whenever isMuted changes)
   useEffect(() => {
@@ -445,7 +346,7 @@ function AppContent() {
       .filter((n) => chordToneSet.has(n));
   }, [chordType, chordTones, chordRoot]);
 
-  // Summary notes content (shared between mobile Key tab and desktop summary area)
+  // Summary notes content shared by every non-landscape layout.
   const summaryContent = (
     <div className="summary-area panel-surface">
       <div className="summary-row">
@@ -487,7 +388,7 @@ function AppContent() {
     </div>
   );
 
-  // Mobile tab content — Key tab (CoF + accidental toggle + summary)
+  // Mobile tab content — Key tab
   const keyTabContent = (
     <div className="mobile-tab-panel mobile-key-tab">
       <div className="cof-container">
@@ -499,7 +400,6 @@ function AppContent() {
           enharmonicDisplay={enharmonicDisplay}
         />
       </div>
-      {summaryContent}
     </div>
   );
 
@@ -547,7 +447,11 @@ function AppContent() {
   );
 
   return (
-    <div className="app-container" data-layout-mode={layoutMode}>
+    <div
+      className="app-container"
+      data-layout-tier={layout.tier}
+      data-layout-variant={layout.variant}
+    >
       {/* Header */}
       <header className="app-header">
         <div className="logo-container">
@@ -600,7 +504,7 @@ function AppContent() {
         </div>
       </header>
 
-      <main className="main-fretboard" ref={fretboardContainerRef}>
+      <main className="main-fretboard">
         <Fretboard
           tuning={currentTuning}
           highlightNotes={highlightNotes}
@@ -621,29 +525,13 @@ function AppContent() {
         />
       </main>
 
-      {/* Tablet-portrait two-column panel: Settings/Scales tabs (left) + CoF (right) */}
-      {isTabletPortrait && (
-        <TabletPortraitPanel
-          tabletTab={tabletTab}
-          setTabletTab={setTabletTab}
-          settingsTabContent={settingsTabContent}
-          scaleChordTabContent={scaleChordTabContent}
-          rootNote={rootNote}
-          setRootNote={handleSetRootNote}
-          scaleName={scaleName}
-          useFlats={useFlats}
-          enharmonicDisplay={enharmonicDisplay}
-        />
+      {/* Shared tablet/desktop controls panel */}
+      {layout.showControlsPanel && (
+        <ExpandedControlsPanel mode={layout.isSplitPanel ? "split" : "stacked"} />
       )}
 
-      {/* Controls Panel — Target A layout when the viewport has room */}
-      {isDesktopExpanded && <ExpandedControlsPanel />}
-
-      {/* Summary bar — desktop and tablet-portrait (mobile shows it in Key tab) */}
-      {(!isMobile || isTabletPortrait) && summaryContent}
-
       {/* Mobile inline tab bar + content — hidden on desktop */}
-      {isMobile && (
+      {layout.showMobileTabs && (
         <MobileTabPanel
           mobileTab={mobileTab}
           setMobileTab={setMobileTab}
@@ -652,6 +540,8 @@ function AppContent() {
           settingsTabContent={settingsTabContent}
         />
       )}
+
+      {layout.showSummary && summaryContent}
 
       <div className="version-badge">
         v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar.

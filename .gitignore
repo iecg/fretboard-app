@@ -31,3 +31,5 @@ coverage
 *.local.md
 
 .remember/
+
+test-results/

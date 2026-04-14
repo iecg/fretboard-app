@@ -1,55 +1,76 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from "vitest";
+import { BREAKPOINTS } from "../layout/breakpoints";
 import {
-  CONTROLS_MIN_HEIGHT,
-  KEY_MIN_HEIGHT,
-  SUMMARY_MIN_HEIGHT,
-} from '../layout/constants';
+  getResponsiveLayout,
+  getResponsiveTier,
+  getResponsiveVariant,
+  getStringRowPx,
+  isCompactHeight,
+} from "../layout/responsive";
 
-// R02 regression tests — UAT-01-R01-a
-// Badge visibility (UAT-02) cannot be tested in JSDOM (no real viewport rendering).
-// Verified manually via T01 Playwright measurement: reducing .mobile-tab-panel
-// min-height from 200px to 150px puts badge within scroll-reach at 375×667.
-
-describe('R02 layout constants', () => {
-  it('exports KEY_MIN_HEIGHT as a positive integer', () => {
-    expect(typeof KEY_MIN_HEIGHT).toBe('number');
-    expect(KEY_MIN_HEIGHT).toBeGreaterThan(0);
-    expect(Number.isInteger(KEY_MIN_HEIGHT)).toBe(true);
+describe("responsive layout helper", () => {
+  it("exports the shared breakpoint contract", () => {
+    expect(BREAKPOINTS).toEqual({
+      mobileMax: 767,
+      desktopMin: 1024,
+      compactHeightMax: 899,
+    });
   });
 
-  it('CONTROLS_MIN_HEIGHT is greater than round-01 value of 260', () => {
-    // Round-01 used 260px which was too small — R02 measured controlsColLeftH=311
-    // and derived CONTROLS_MIN_HEIGHT=340 (311 + 20px buffer, ceil to 10).
-    expect(CONTROLS_MIN_HEIGHT).toBeGreaterThan(260);
+  it("classifies width tiers from the shared breakpoints", () => {
+    expect(getResponsiveTier(375)).toBe("mobile");
+    expect(getResponsiveTier(768)).toBe("tablet");
+    expect(getResponsiveTier(1023)).toBe("tablet");
+    expect(getResponsiveTier(1024)).toBe("desktop");
   });
 
-  it('KEY_MIN_HEIGHT is at least 280 (CoF legibility floor)', () => {
-    // CoF uses aspect-ratio:1; minimum legible diameter ~200px + padding → 280px floor.
-    expect(KEY_MIN_HEIGHT).toBeGreaterThanOrEqual(280);
+  it("flags compact heights below 900px", () => {
+    expect(isCompactHeight(899)).toBe(true);
+    expect(isCompactHeight(900)).toBe(false);
   });
 
-  it('SUMMARY_MIN_HEIGHT is a positive integer', () => {
-    expect(typeof SUMMARY_MIN_HEIGHT).toBe('number');
-    expect(SUMMARY_MIN_HEIGHT).toBeGreaterThan(0);
-    expect(Number.isInteger(SUMMARY_MIN_HEIGHT)).toBe(true);
+  it.each([
+    [375, 667, "mobile", "mobile", 32],
+    [390, 844, "mobile", "mobile", 32],
+    [667, 375, "mobile", "landscape-mobile", 32],
+    [768, 1024, "tablet", "tablet-split", 40],
+    [1024, 768, "desktop", "desktop-stacked", 48],
+    [1024, 1366, "desktop", "desktop-split", 48],
+    [1200, 720, "desktop", "desktop-stacked", 48],
+  ] as const)(
+    "maps %ix%i to %s / %s",
+    (width, height, tier, variant, stringRowPx) => {
+      const layout = getResponsiveLayout(width, height);
+
+      expect(layout.tier).toBe(tier);
+      expect(layout.variant).toBe(variant);
+      expect(layout.stringRowPx).toBe(stringRowPx);
+      expect(getResponsiveVariant(width, height)).toBe(variant);
+      expect(getStringRowPx(tier)).toBe(stringRowPx);
+    },
+  );
+
+  it("shows mobile tabs only in portrait mobile", () => {
+    expect(getResponsiveLayout(390, 844).showMobileTabs).toBe(true);
+    expect(getResponsiveLayout(667, 375).showMobileTabs).toBe(false);
   });
 
-  it('R02 root min-height formula produces value in 800-900px range', () => {
-    // chrome(200) + fretboard-min(240) + max(CONTROLS, KEY) + SUMMARY + 20, ceil to 10
-    const chromeH = 200;
-    const fretboardMin = 240;
-    const safetyMargin = 20;
-    const derived =
-      Math.ceil(
-        (chromeH +
-          fretboardMin +
-          Math.max(CONTROLS_MIN_HEIGHT, KEY_MIN_HEIGHT) +
-          SUMMARY_MIN_HEIGHT +
-          safetyMargin) /
-          10,
-      ) * 10;
-    expect(derived).toBeGreaterThanOrEqual(800);
-    expect(derived).toBeLessThanOrEqual(900);
+  it("shows the shared controls panel only outside mobile", () => {
+    expect(getResponsiveLayout(390, 844).showControlsPanel).toBe(false);
+    expect(getResponsiveLayout(768, 1024).showControlsPanel).toBe(true);
+    expect(getResponsiveLayout(1024, 768).showControlsPanel).toBe(true);
+  });
+
+  it("uses split panels only for roomy tablet and desktop layouts", () => {
+    expect(getResponsiveLayout(768, 1024).isSplitPanel).toBe(true);
+    expect(getResponsiveLayout(1024, 1366).isSplitPanel).toBe(true);
+    expect(getResponsiveLayout(1024, 768).isSplitPanel).toBe(false);
+  });
+
+  it("hides the summary only in landscape mobile", () => {
+    expect(getResponsiveLayout(390, 844).showSummary).toBe(true);
+    expect(getResponsiveLayout(1024, 768).showSummary).toBe(true);
+    expect(getResponsiveLayout(667, 375).showSummary).toBe(false);
   });
 });

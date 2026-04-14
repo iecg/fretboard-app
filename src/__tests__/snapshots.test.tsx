@@ -370,7 +370,7 @@ describe("Component Snapshots", () => {
   });
 
   describe("App layout snapshots", () => {
-    it("renders desktop-expanded layout snapshot (1920×1200)", () => {
+    it("renders desktop-split layout snapshot (1920×1200)", () => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
@@ -384,7 +384,7 @@ describe("Component Snapshots", () => {
 
       localStorage.clear();
       const { container } = render(<App />);
-      expect(container).toMatchSnapshot("app-desktop-expanded-default");
+      expect(container).toMatchSnapshot("app-desktop-split-default");
     });
 
     it("renders mobile layout snapshot", () => {
@@ -404,7 +404,7 @@ describe("Component Snapshots", () => {
       expect(container).toMatchSnapshot("app-mobile-default");
     });
 
-    it("renders with custom configuration snapshot", () => {
+    it("renders desktop-split with custom configuration snapshot", () => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
@@ -424,10 +424,10 @@ describe("Component Snapshots", () => {
       // Minor under auto mode resolves to sharps (parent C Major).
 
       const { container } = render(<App />);
-      expect(container).toMatchSnapshot("app-custom-config");
+      expect(container).toMatchSnapshot("app-desktop-split-custom-config");
     });
 
-    it("renders with chord overlay snapshot", () => {
+    it("renders desktop-split with chord overlay snapshot", () => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
@@ -444,7 +444,7 @@ describe("Component Snapshots", () => {
       localStorage.setItem("hideNonChordNotes", "true");
 
       const { container } = render(<App />);
-      expect(container).toMatchSnapshot("app-with-chord-overlay");
+      expect(container).toMatchSnapshot("app-desktop-split-with-chord-overlay");
     });
 
     it("renders iPhone SE portrait layout (375×667)", () => {
@@ -464,7 +464,7 @@ describe("Component Snapshots", () => {
       expect(container).toMatchSnapshot("app-iphone-se-portrait");
     });
 
-    it("renders iPad portrait layout (768×1024)", () => {
+    it("renders tablet-split layout (768×1024)", () => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
@@ -478,10 +478,10 @@ describe("Component Snapshots", () => {
 
       localStorage.clear();
       const { container } = render(<App />);
-      expect(container).toMatchSnapshot("app-ipad-portrait");
+      expect(container).toMatchSnapshot("app-tablet-split");
     });
 
-    it("renders iPad Pro portrait layout (1024×1366)", () => {
+    it("renders desktop-split layout at 1024×1366", () => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
@@ -495,7 +495,7 @@ describe("Component Snapshots", () => {
 
       localStorage.clear();
       const { container } = render(<App />);
-      expect(container).toMatchSnapshot("app-ipad-pro-portrait");
+      expect(container).toMatchSnapshot("app-desktop-split-1024x1366");
     });
 
     it("renders iPhone 12 Pro portrait layout (390×844)", () => {
@@ -513,6 +513,23 @@ describe("Component Snapshots", () => {
       localStorage.clear();
       const { container } = render(<App />);
       expect(container).toMatchSnapshot("app-iphone-12-pro-portrait");
+    });
+
+    it("renders desktop-stacked layout (1200×720)", () => {
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 1200,
+      });
+      Object.defineProperty(window, "innerHeight", {
+        writable: true,
+        configurable: true,
+        value: 720,
+      });
+
+      localStorage.clear();
+      const { container } = render(<App />);
+      expect(container).toMatchSnapshot("app-desktop-stacked-1200x720");
     });
 
   });

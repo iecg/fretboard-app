@@ -9,12 +9,14 @@ vi.mock("../Fretboard", () => ({
   Fretboard: ({
     highlightNotes,
     rootNote,
+    stringRowPx,
   }: {
     highlightNotes: string[];
     rootNote: string;
+    stringRowPx?: number;
   }) => (
-    <div data-testid="fretboard">
-      Fretboard: {rootNote} - {highlightNotes.length} notes
+    <div data-testid="fretboard" data-string-row-px={String(stringRowPx ?? "")}>
+      Fretboard: {rootNote} - {highlightNotes.length} notes - row {stringRowPx}
     </div>
   ),
 }));
@@ -72,9 +74,8 @@ describe("App", () => {
   beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
-    // Force desktop-expanded layout so all control groups are in the
-    // DOM without needing to switch tabs. See src/layout/constants.ts
-    // for the fit math — 1920x1200 has enough headroom for Target A.
+    // Use a roomy desktop viewport so the shared split controls panel
+    // is visible without switching tabs.
     Object.defineProperty(window, "innerWidth", {
       writable: true,
       configurable: true,
@@ -451,15 +452,15 @@ describe("App", () => {
 
       await waitFor(() => {
         const appContainer = document.querySelector(".app-container");
-        expect(appContainer?.getAttribute("data-layout-mode")).toBe(
-          "tablet-portrait",
+        expect(appContainer?.getAttribute("data-layout-tier")).toBe("tablet");
+        expect(appContainer?.getAttribute("data-layout-variant")).toBe(
+          "tablet-split",
         );
       });
     });
-
   });
 
-  describe("Tablet portrait interactions", () => {
+  describe("Tablet split layout", () => {
     beforeEach(() => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
@@ -474,46 +475,63 @@ describe("App", () => {
       localStorage.clear();
     });
 
-    it("switches between Settings and Scales tabs", async () => {
+    it("renders the shared controls panel and hides mobile tabs", async () => {
       render(<App />);
       fireEvent(window, new Event("resize"));
 
       await waitFor(() => {
         expect(
-          document.querySelector('[data-layout-mode="tablet-portrait"]'),
+          document.querySelector('[data-layout-variant="tablet-split"]'),
         ).toBeTruthy();
       });
 
-      const scalesBtn = screen.queryByText("Scales");
-      if (scalesBtn) {
-        fireEvent.click(scalesBtn);
-        expect(localStorage.getItem("tabletTab")).toBe("scales");
-      }
-
-      // Scope the "Settings" match to the tablet tab button to avoid
-      // matching the SettingsOverlay drawer title that is always in the DOM.
-      const settingsBtn = Array.from(
-        document.querySelectorAll<HTMLButtonElement>(".toggle-btn"),
-      ).find((b) => b.textContent?.trim() === "Settings");
-      if (settingsBtn) {
-        fireEvent.click(settingsBtn);
-        expect(localStorage.getItem("tabletTab")).toBe("settings");
-      }
+      expect(document.querySelector(".controls-panel")).toBeTruthy();
+      expect(document.querySelector(".mobile-tab-content")).toBeNull();
     });
 
-    it("accidental mode is session-only on tablet (no useFlats key)", async () => {
+    it("keeps accidental mode session-only in tablet split layout", async () => {
       render(<App />);
       fireEvent(window, new Event("resize"));
 
       await waitFor(() => {
         expect(
-          document.querySelector('[data-layout-mode="tablet-portrait"]'),
+          document.querySelector('[data-layout-variant="tablet-split"]'),
         ).toBeTruthy();
       });
 
-      // accidentalModeAtom is intentionally non-persisted — flipping the
-      // in-overlay toggle should never write a useFlats key to localStorage.
       expect(localStorage.getItem("useFlats")).toBeNull();
+    });
+  });
+
+  describe("Desktop stacked layout", () => {
+    beforeEach(() => {
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 1024,
+      });
+      Object.defineProperty(window, "innerHeight", {
+        writable: true,
+        configurable: true,
+        value: 768,
+      });
+      localStorage.clear();
+    });
+
+    it("uses the compact desktop stacked variant", async () => {
+      render(<App />);
+      fireEvent(window, new Event("resize"));
+
+      await waitFor(() => {
+        const appContainer = document.querySelector(".app-container");
+        expect(appContainer?.getAttribute("data-layout-tier")).toBe("desktop");
+        expect(appContainer?.getAttribute("data-layout-variant")).toBe(
+          "desktop-stacked",
+        );
+      });
+
+      expect(document.querySelector(".controls-panel")).toBeTruthy();
+      expect(document.querySelector(".mobile-tab-content")).toBeNull();
     });
   });
 
@@ -537,19 +555,15 @@ describe("App", () => {
       render(<App />);
       fireEvent(window, new Event("resize"));
 
-      // Click Settings tab to show settings
       await waitFor(() => {
         expect(
-          document.querySelector('[data-layout-mode="mobile"]'),
+          document.querySelector('[data-layout-variant="mobile"]'),
         ).toBeTruthy();
       });
 
-      const settingsTab = screen.queryByText("Settings");
-      if (settingsTab) {
-        fireEvent.click(settingsTab);
-      }
+      const controlsTab = screen.queryByText("Controls");
+      if (controlsTab) fireEvent.click(controlsTab);
 
-      // Click the first mocked tuning drawer (may exist in multiple tabs)
       const tuningDrawers = screen.queryAllByTestId("drawer-tuning");
       if (tuningDrawers.length > 0) {
         const btn = tuningDrawers[0].querySelector("button");
@@ -573,13 +587,12 @@ describe("App", () => {
 
       await waitFor(() => {
         expect(
-          document.querySelector('[data-layout-mode="mobile"]'),
+          document.querySelector('[data-layout-variant="mobile"]'),
         ).toBeTruthy();
       });
 
-      // Navigate to Settings tab to see fret range controls
-      const settingsTab = screen.queryByText("Settings");
-      if (settingsTab) fireEvent.click(settingsTab);
+      const controlsTab = screen.queryByText("Controls");
+      if (controlsTab) fireEvent.click(controlsTab);
 
       // Fret range has Start −/+ and End −/+ buttons
       const minusButtons = screen.queryAllByText("−");
@@ -592,8 +605,46 @@ describe("App", () => {
   });
 });
 
-describe("Adaptive string row height (viewport listener)", () => {
-  it("fretboard container ref is present and no ResizeObserver is used", () => {
+describe("Responsive string row sizes", () => {
+  it("uses the mobile string row size", () => {
+    Object.defineProperty(window, "innerWidth", {
+      writable: true,
+      configurable: true,
+      value: 390,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      writable: true,
+      configurable: true,
+      value: 844,
+    });
+
+    render(<App />);
+    expect(screen.getByTestId("fretboard")).toHaveAttribute(
+      "data-string-row-px",
+      "32",
+    );
+  });
+
+  it("uses the tablet string row size", () => {
+    Object.defineProperty(window, "innerWidth", {
+      writable: true,
+      configurable: true,
+      value: 768,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      writable: true,
+      configurable: true,
+      value: 1024,
+    });
+
+    render(<App />);
+    expect(screen.getByTestId("fretboard")).toHaveAttribute(
+      "data-string-row-px",
+      "40",
+    );
+  });
+
+  it("uses the desktop string row size", () => {
     Object.defineProperty(window, "innerWidth", {
       writable: true,
       configurable: true,
@@ -605,16 +656,10 @@ describe("Adaptive string row height (viewport listener)", () => {
       value: 900,
     });
 
-    const { container } = render(<App />);
-
-    // main.main-fretboard should still render (ref kept for scroll/drag)
-    expect(container.querySelector("main.main-fretboard")).toBeTruthy();
-
-    // stringRowPx derivation: available = 900 - (60+72+32+36) - 260 - 72 = 368
-    // floor(368/6) = 61 → within [40,72] clamp range
-    import("../layout/constants").then(({ STRING_ROW_PX_MIN, STRING_ROW_PX_MAX }) => {
-      expect(STRING_ROW_PX_MIN).toBe(40);
-      expect(STRING_ROW_PX_MAX).toBe(72);
-    });
+    render(<App />);
+    expect(screen.getByTestId("fretboard")).toHaveAttribute(
+      "data-string-row-px",
+      "48",
+    );
   });
 });

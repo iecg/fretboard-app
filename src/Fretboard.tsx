@@ -67,7 +67,8 @@ export function Fretboard({
   // narrower than the full viewport (e.g., iPad with settings column visible).
   // When autoFitZoom falls below MIN_FRET_WIDTH the SVG overflows its container,
   // and .fretboard-wrapper's overflow-x: auto enables horizontal scroll.
-  const MIN_FRET_WIDTH = 49;
+  const noteBubblePx = Math.round(stringRowPx * 0.8);
+  const MIN_FRET_WIDTH = Math.max(49, noteBubblePx + 17);
   const autoFitZoom = Math.max(
     MIN_FRET_WIDTH,
     containerWidth > 0 && totalColumns > 0
@@ -77,7 +78,7 @@ export function Fretboard({
   // fretZoom is a percentage: 100 = auto-fit, 110 = 10% larger, etc.
   const desktopZoom = fretZoom <= 100
     ? autoFitZoom
-    : Math.round(autoFitZoom * fretZoom / 100);
+    : Math.round((autoFitZoom * fretZoom) / 100);
   const effectiveZoom = desktopZoom;
 
   // Drag-to-scroll — deferred pointer capture so taps reach note-bubbles
@@ -147,7 +148,10 @@ export function Fretboard({
   const scrollToFret = (fret: number) => {
     if (!scrollRef.current) return;
     const offset = (fret - startFret) * effectiveZoom;
-    scrollRef.current.scrollTo({ left: Math.max(0, offset - 20), behavior: "smooth" });
+    scrollRef.current.scrollTo({
+      left: Math.max(0, offset - 20),
+      behavior: "smooth",
+    });
   };
 
   const handleFretClick = (stringIndex: number, fretIndex: number, noteName: string) => {
@@ -166,7 +170,6 @@ export function Fretboard({
   const neckHeight = tuning.length * stringRowPx;
 
   // Scale note bubble size and font proportionally with stringRowPx
-  const noteBubblePx = Math.round(stringRowPx * 0.8); // diameter = 2 * radius (0.4 * stringRowPx)
   const noteFontPx = Math.round(stringRowPx * 0.4);
 
   // Uniform fret X: every fret (including 0) is the same width
@@ -245,14 +248,18 @@ export function Fretboard({
 
   return (
     <div className="fretboard-outer">
-      {/* Toolbar */}
       <div className="fretboard-toolbar">
         <div className="viewport-jumps">
           <span className="section-label">Go to</span>
-          {[["Open", 0], ["Mid", 5], ["High", 12]] .map(([label, fret]) => (
-            <button key={label as string} className="toolbar-btn"
-              disabled={(fret as number) < startFret || (fret as number) > endFret}
-              onClick={() => scrollToFret(fret as number)}>
+          {[["Open", 0], ["Mid", 5], ["High", 12]].map(([label, fret]) => (
+            <button
+              key={label as string}
+              className="toolbar-btn"
+              disabled={
+                (fret as number) < startFret || (fret as number) > endFret
+              }
+              onClick={() => scrollToFret(fret as number)}
+            >
               {label}
             </button>
           ))}
@@ -467,4 +474,3 @@ export function Fretboard({
     </div>
   );
 }
-

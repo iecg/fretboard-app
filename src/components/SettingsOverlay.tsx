@@ -20,6 +20,7 @@ import { StepperControl } from "./StepperControl";
 import { FretRangeControl } from "./FretRangeControl";
 import { DrawerSelector } from "../DrawerSelector";
 import { ToggleBar } from "./ToggleBar";
+import { getResponsiveTier } from "../layout/responsive";
 import "./SettingsOverlay.css";
 
 const END_FRET = 24;
@@ -52,9 +53,8 @@ type LayoutTier = "mobile" | "tablet" | "desktop";
 
 // Retained for: auto-close overlay on layout-tier change (resize/rotate detection).
 const getLayoutTier = (): LayoutTier => {
-  if (window.innerWidth < 768) return "mobile";
-  if (window.innerWidth < 1024) return "tablet";
-  return "desktop";
+  if (typeof window === "undefined") return "desktop";
+  return getResponsiveTier(window.innerWidth);
 };
 
 function getFocusableElements(container: HTMLElement | null): HTMLElement[] {
@@ -272,7 +272,7 @@ export default function SettingsOverlay() {
                 <ToggleBar
                   options={ACCIDENTAL_OPTIONS}
                   value={accidentalMode}
-                  onChange={setAccidentalMode}
+                  onChange={(v) => setAccidentalMode(v as AccidentalOptionValue)}
                 />
               </div>
 
@@ -283,7 +283,7 @@ export default function SettingsOverlay() {
                 <ToggleBar
                   options={ENHARMONIC_DISPLAY_OPTIONS}
                   value={enharmonicDisplay}
-                  onChange={setEnharmonicDisplay}
+                  onChange={(v) => setEnharmonicDisplay(v as EnharmonicDisplayValue)}
                 />
               </div>
 
