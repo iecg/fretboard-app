@@ -950,7 +950,7 @@
   grid-template-rows: 1fr;
   gap: var(--space-4);
   flex: 1 1 0;
-  min-height: 260px; /* UAT-01: prevent flex collapse squishing controls off-screen */
+  min-height: 340px; /* R02 measured: CONTROLS_MIN_HEIGHT=340 (controlsColLeftH=311+buffer) */
   min-width: 620px;
 }
 
@@ -959,7 +959,7 @@
   flex-direction: column;
   gap: var(--space-4);
   grid-column: 1;
-  min-height: 260px; /* UAT-01: prevent flex collapse squishing controls off-screen */
+  min-height: 340px; /* R02 measured: CONTROLS_MIN_HEIGHT=340 */
   min-width: 280px;
 }
 
@@ -967,7 +967,7 @@
   grid-column: 2;
   grid-row: 1;
   min-width: 0;
-  min-height: 260px; /* UAT-01: prevent flex collapse squishing key/CoF column off-screen */
+  min-height: 311px; /* R02 measured: KEY_MIN_HEIGHT=311 (keyColumnH=311, CoF legibility floor) */
   flex: unset;
   display: flex;
   flex-direction: column;
@@ -1265,11 +1265,11 @@
 
 /* ── Per-container vertical floor (UAT-01 fix) ──────────────────────────────
    These min-heights prevent flex collapse squishing controls off-screen at
-   short viewport heights. Values match CONTROLS_MIN_HEIGHT (260px) and
+   short viewport heights. Values match CONTROLS_MIN_HEIGHT (340px) and
    SUMMARY_MIN_HEIGHT (72px) from src/layout/constants.ts.
    Update both locations if control group heights change significantly.       */
 
 /* Tablet-portrait: controls panel row */
 .app-container[data-layout-mode="tablet-portrait"] .tablet-portrait-panel {
-  min-height: 260px; /* UAT-01: matches CONTROLS_MIN_HEIGHT */
+  min-height: 340px; /* R02 measured: matches CONTROLS_MIN_HEIGHT=340 */
 }

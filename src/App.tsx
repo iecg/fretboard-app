@@ -64,6 +64,7 @@ import SettingsOverlay from "./components/SettingsOverlay";
 import {
   CONTROL_HEIGHTS,
   CONTROLS_MIN_HEIGHT,
+  KEY_MIN_HEIGHT,
   FRETBOARD_MIN_HEIGHT,
   LAYOUT_CHROME_HEIGHT,
   SMALL_PHONE_HEIGHT_THRESHOLD,
@@ -235,7 +236,7 @@ function AppContent() {
       // Available fretboard height = viewport minus chrome minus per-container floors
       const availableFretboardH = Math.max(
         0,
-        viewportH - chromeH - CONTROLS_MIN_HEIGHT - SUMMARY_MIN_HEIGHT,
+        viewportH - chromeH - Math.max(CONTROLS_MIN_HEIGHT, KEY_MIN_HEIGHT) - SUMMARY_MIN_HEIGHT,
       );
       const derived = Math.floor(availableFretboardH / 6);
       setAdaptiveStringRowPx(
