@@ -3,6 +3,9 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import App from "../App";
 import { synth } from "../audio";
+import { get3NPSCoordinates } from "../shapes";
+import { STANDARD_TUNING } from "../guitar";
+import { getScaleNotes } from "../theory";
 
 // Mock child components to isolate App logic
 vi.mock("../Fretboard", () => ({
@@ -10,12 +13,18 @@ vi.mock("../Fretboard", () => ({
     highlightNotes,
     rootNote,
     stringRowPx,
+    colorNotes,
   }: {
     highlightNotes: string[];
     rootNote: string;
     stringRowPx?: number;
+    colorNotes?: string[];
   }) => (
-    <div data-testid="fretboard" data-string-row-px={String(stringRowPx ?? "")}>
+    <div
+      data-testid="fretboard"
+      data-string-row-px={String(stringRowPx ?? "")}
+      data-color-notes={(colorNotes ?? []).join(",")}
+    >
       Fretboard: {rootNote} - {highlightNotes.length} notes - row {stringRowPx}
     </div>
   ),
@@ -91,6 +100,19 @@ describe("App", () => {
   afterEach(() => {
     localStorage.clear();
   });
+
+  const setViewport = (width: number, height: number) => {
+    Object.defineProperty(window, "innerWidth", {
+      writable: true,
+      configurable: true,
+      value: width,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      writable: true,
+      configurable: true,
+      value: height,
+    });
+  };
 
   describe("Initialization", () => {
     it("renders without crashing", () => {
@@ -382,6 +404,67 @@ describe("App", () => {
       render(<App />);
       expect(localStorage.getItem("mobileTab")).toBe("key");
     });
+
+    it("uses compact mobile header attributes and full-width help modal", async () => {
+      setViewport(390, 844);
+      render(<App />);
+
+      const appContainer = document.querySelector(".app-container");
+      expect(appContainer?.getAttribute("data-layout-tier")).toBe("mobile");
+      expect(appContainer?.getAttribute("data-header-subtitle")).toBe("hidden");
+      expect(appContainer?.getAttribute("data-header-actions")).toBe("compact");
+      expect(appContainer?.getAttribute("data-full-width-overlay")).toBe("true");
+
+      fireEvent.click(screen.getByLabelText("Open help"));
+
+      await waitFor(() => {
+        const helpModal = document.querySelector(".help-modal");
+        expect(helpModal).toHaveClass("help-modal--full-width");
+        expect(screen.getByRole("dialog", { name: "FretFlow Help" })).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByLabelText("Close help"));
+
+      await waitFor(() => {
+        expect(
+          screen.queryByRole("dialog", { name: "FretFlow Help" }),
+        ).toBeNull();
+      });
+    });
+
+    it("hides mobile tabs and summary in landscape mobile", async () => {
+      setViewport(667, 375);
+      render(<App />);
+
+      await waitFor(() => {
+        const appContainer = document.querySelector(".app-container");
+        expect(appContainer?.getAttribute("data-layout-variant")).toBe(
+          "landscape-mobile",
+        );
+      });
+
+      expect(document.querySelector(".mobile-tab-content")).toBeNull();
+      expect(document.querySelector(".summary-area")).toBeNull();
+    });
+
+    it("closes the help modal when the backdrop is clicked", async () => {
+      setViewport(390, 844);
+      render(<App />);
+
+      fireEvent.click(screen.getByLabelText("Open help"));
+
+      await waitFor(() => {
+        expect(screen.getByRole("dialog", { name: "FretFlow Help" })).toBeTruthy();
+      });
+
+      fireEvent.click(document.querySelector(".help-modal-overlay")!);
+
+      await waitFor(() => {
+        expect(
+          screen.queryByRole("dialog", { name: "FretFlow Help" }),
+        ).toBeNull();
+      });
+    });
   });
 
   describe("State persistence", () => {
@@ -420,6 +503,64 @@ describe("App", () => {
     it("initializes with no shape labels", () => {
       render(<App />);
       expect(localStorage.getItem("shapeLabels")).toBe("none");
+    });
+
+    it("passes the minor blues blue note to the fretboard", () => {
+      localStorage.setItem("rootNote", "C");
+      localStorage.setItem("scaleName", "Minor Blues");
+
+      render(<App />);
+
+      expect(screen.getByTestId("fretboard")).toHaveAttribute(
+        "data-color-notes",
+        "F#",
+      );
+    });
+
+    it("passes the major blues blue note to the fretboard", () => {
+      localStorage.setItem("rootNote", "C");
+      localStorage.setItem("scaleName", "Major Blues");
+
+      render(<App />);
+
+      expect(screen.getByTestId("fretboard")).toHaveAttribute(
+        "data-color-notes",
+        "D#",
+      );
+    });
+
+    it("uses scale notes directly for 3nps position 0", () => {
+      localStorage.setItem("rootNote", "C");
+      localStorage.setItem("scaleName", "Major");
+      localStorage.setItem("fingeringPattern", "3nps");
+      localStorage.setItem("npsPosition", "0");
+
+      render(<App />);
+
+      expect(screen.getByTestId("fretboard")).toHaveTextContent(
+        `Fretboard: C - ${getScaleNotes("C", "Major").length} notes`,
+      );
+    });
+
+    it("uses 3nps coordinates when a position is selected", () => {
+      localStorage.setItem("rootNote", "C");
+      localStorage.setItem("scaleName", "Major");
+      localStorage.setItem("fingeringPattern", "3nps");
+      localStorage.setItem("npsPosition", "2");
+
+      render(<App />);
+
+      const expectedCount = get3NPSCoordinates(
+        "C",
+        "Major",
+        STANDARD_TUNING,
+        24,
+        2,
+      ).coordinates.length;
+
+      expect(screen.getByTestId("fretboard")).toHaveTextContent(
+        `Fretboard: C - ${expectedCount} notes`,
+      );
     });
   });
 

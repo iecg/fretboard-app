@@ -23,21 +23,25 @@ function renderOverlay(store: ReturnType<typeof createStore>) {
   );
 }
 
+function setViewport(width: number, height: number) {
+  Object.defineProperty(window, "innerWidth", {
+    writable: true,
+    configurable: true,
+    value: width,
+  });
+  Object.defineProperty(window, "innerHeight", {
+    writable: true,
+    configurable: true,
+    value: height,
+  });
+}
+
 describe("SettingsOverlay", () => {
   beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
     // Desktop default viewport — keeps layout tier stable for open/close tests.
-    Object.defineProperty(window, "innerWidth", {
-      writable: true,
-      configurable: true,
-      value: 1440,
-    });
-    Object.defineProperty(window, "innerHeight", {
-      writable: true,
-      configurable: true,
-      value: 900,
-    });
+    setViewport(1440, 900);
   });
 
   afterEach(() => {
@@ -58,6 +62,17 @@ describe("SettingsOverlay", () => {
     const drawer = document.querySelector(".settings-overlay-drawer");
     expect(drawer).toBeTruthy();
     expect(screen.getByText("Settings")).toBeTruthy();
+  });
+
+  it("marks the drawer as full-width on mobile layouts", () => {
+    setViewport(390, 844);
+    const store = createStore();
+    store.set(settingsOverlayOpenAtom, true);
+    renderOverlay(store);
+
+    const drawer = document.querySelector(".settings-overlay-drawer");
+    expect(drawer?.getAttribute("data-layout-tier")).toBe("mobile");
+    expect(drawer?.getAttribute("data-full-width")).toBe("true");
   });
 
   it("closes overlay when ESC is pressed", () => {
@@ -85,6 +100,28 @@ describe("SettingsOverlay", () => {
     renderOverlay(store);
     const closeBtn = screen.getByLabelText("Close settings");
     fireEvent.click(closeBtn);
+    expect(store.get(settingsOverlayOpenAtom)).toBe(false);
+  });
+
+  it("stays open when resized within the same layout tier", () => {
+    const store = createStore();
+    store.set(settingsOverlayOpenAtom, true);
+    renderOverlay(store);
+
+    setViewport(1280, 900);
+    fireEvent(window, new Event("resize"));
+
+    expect(store.get(settingsOverlayOpenAtom)).toBe(true);
+  });
+
+  it("closes when resized across layout tiers", () => {
+    const store = createStore();
+    store.set(settingsOverlayOpenAtom, true);
+    renderOverlay(store);
+
+    setViewport(390, 844);
+    fireEvent(window, new Event("resize"));
+
     expect(store.get(settingsOverlayOpenAtom)).toBe(false);
   });
 
@@ -132,5 +169,60 @@ describe("SettingsOverlay", () => {
     expect(screen.getByText("Reset all settings")).toBeTruthy();
     expect(store.get(fretZoomAtom)).toBe(250);
     expect(store.get(settingsOverlayOpenAtom)).toBe(true);
+  });
+
+  it("traps focus when tabbing forward from the last control", () => {
+    const store = createStore();
+    store.set(settingsOverlayOpenAtom, true);
+    renderOverlay(store);
+
+    const closeButton = screen.getByLabelText("Close settings");
+    const resetButton = screen.getByRole("button", {
+      name: "Reset all settings",
+    });
+
+    resetButton.focus();
+    fireEvent.keyDown(window, { key: "Tab" });
+
+    expect(document.activeElement).toBe(closeButton);
+  });
+
+  it("traps focus when shift-tabbing backward from the first control", () => {
+    const store = createStore();
+    store.set(settingsOverlayOpenAtom, true);
+    renderOverlay(store);
+
+    const closeButton = screen.getByLabelText("Close settings");
+    const resetButton = screen.getByRole("button", {
+      name: "Reset all settings",
+    });
+
+    closeButton.focus();
+    fireEvent.keyDown(window, { key: "Tab", shiftKey: true });
+
+    expect(document.activeElement).toBe(resetButton);
+  });
+
+  it("restores focus to the trigger when the overlay closes", () => {
+    const store = createStore();
+
+    render(
+      <Provider store={store}>
+        <button type="button">Settings trigger</button>
+        <SettingsOverlay />
+      </Provider>,
+    );
+
+    const trigger = screen.getByRole("button", { name: "Settings trigger" });
+    trigger.focus();
+
+    act(() => {
+      store.set(settingsOverlayOpenAtom, true);
+    });
+
+    const closeButton = screen.getByLabelText("Close settings");
+    fireEvent.click(closeButton);
+
+    expect(document.activeElement).toBe(trigger);
   });
 });
