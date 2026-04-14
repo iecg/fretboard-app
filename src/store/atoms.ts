@@ -58,18 +58,30 @@ migrateLegacyKeys();
 function rawStringStorage<T extends string>() {
   return {
     getItem(key: string, initialValue: T): T {
-      const stored = localStorage.getItem(key);
-      if (stored === null) {
-        localStorage.setItem(key, initialValue);
+      try {
+        const stored = localStorage.getItem(key);
+        if (stored === null) {
+          localStorage.setItem(key, initialValue);
+          return initialValue;
+        }
+        return stored as T;
+      } catch {
         return initialValue;
       }
-      return stored as T;
     },
     setItem(key: string, value: T): void {
-      localStorage.setItem(key, value);
+      try {
+        localStorage.setItem(key, value);
+      } catch {
+        // Storage blocked or unavailable; ignore.
+      }
     },
     removeItem(key: string): void {
-      localStorage.removeItem(key);
+      try {
+        localStorage.removeItem(key);
+      } catch {
+        // Storage blocked or unavailable; ignore.
+      }
     },
   };
 }
@@ -118,6 +130,10 @@ function constrainedNumberStorage(constraints: NumberConstraints) {
       try {
         const stored = localStorage.getItem(key);
         if (stored === null) {
+          localStorage.setItem(key, String(initialValue));
+          return initialValue;
+        }
+        if (stored.trim() === "") {
           localStorage.setItem(key, String(initialValue));
           return initialValue;
         }
@@ -174,66 +190,102 @@ type MobileTab = (typeof MOBILE_TABS)[number];
 
 const mobileTabStorage = {
   getItem(key: string, initialValue: MobileTab): MobileTab {
-    const stored = localStorage.getItem(key);
-    if (stored === null) {
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored === null) {
+        localStorage.setItem(key, initialValue);
+        return initialValue;
+      }
+      if (stored === "settings") {
+        localStorage.setItem(key, "fretboard");
+        return "fretboard";
+      }
+      if ((MOBILE_TABS as readonly string[]).includes(stored)) {
+        return stored as MobileTab;
+      }
       localStorage.setItem(key, initialValue);
       return initialValue;
+    } catch {
+      return initialValue;
     }
-    if (stored === "settings") {
-      localStorage.setItem(key, "fretboard");
-      return "fretboard";
-    }
-    if ((MOBILE_TABS as readonly string[]).includes(stored)) {
-      return stored as MobileTab;
-    }
-    localStorage.setItem(key, initialValue);
-    return initialValue;
   },
   setItem(key: string, value: MobileTab): void {
-    localStorage.setItem(key, value);
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
   },
   removeItem(key: string): void {
-    localStorage.removeItem(key);
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
   },
 };
 
 // chordType is stored as '' when null (matching old behavior)
 const chordTypeStorage = {
   getItem(key: string, initialValue: string | null): string | null {
-    const stored = localStorage.getItem(key);
-    if (stored === null) {
-      localStorage.setItem(key, "");
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored === null) {
+        localStorage.setItem(key, "");
+        return initialValue;
+      }
+      return stored === "" ? null : stored;
+    } catch {
       return initialValue;
     }
-    return stored === "" ? null : stored;
   },
   setItem(key: string, value: string | null): void {
-    localStorage.setItem(key, value ?? "");
+    try {
+      localStorage.setItem(key, value ?? "");
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
   },
   removeItem(key: string): void {
-    localStorage.removeItem(key);
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
   },
 };
 
 // cagedShapes stored as JSON array
 const cagedShapesStorage = {
   getItem(key: string, initialValue: Set<CagedShape>): Set<CagedShape> {
-    const stored = localStorage.getItem(key);
-    if (stored === null) {
-      localStorage.setItem(key, JSON.stringify(Array.from(initialValue)));
-      return initialValue;
-    }
     try {
-      return new Set(JSON.parse(stored) as CagedShape[]);
+      const stored = localStorage.getItem(key);
+      if (stored === null) {
+        localStorage.setItem(key, JSON.stringify(Array.from(initialValue)));
+        return initialValue;
+      }
+      try {
+        return new Set(JSON.parse(stored) as CagedShape[]);
+      } catch {
+        return initialValue;
+      }
     } catch {
       return initialValue;
     }
   },
   setItem(key: string, value: Set<CagedShape>): void {
-    localStorage.setItem(key, JSON.stringify(Array.from(value)));
+    try {
+      localStorage.setItem(key, JSON.stringify(Array.from(value)));
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
   },
   removeItem(key: string): void {
-    localStorage.removeItem(key);
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
   },
 };
 
