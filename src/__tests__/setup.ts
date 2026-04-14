@@ -13,3 +13,6 @@ import '@testing-library/jest-dom';
 
 // jsdom does not implement scrollTo on DOM elements
 window.HTMLElement.prototype.scrollTo = () => {};
+
+// jsdom does not implement scrollIntoView on DOM elements
+window.HTMLElement.prototype.scrollIntoView = () => {};
