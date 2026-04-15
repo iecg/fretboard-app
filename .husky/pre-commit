@@ -4,4 +4,16 @@ if [ "$branch" = "main" ]; then
   exit 1
 fi
 
+# Guard against committing VBW planning artifacts. These files are ignored via
+# .gitignore but can slip in via `git add -f`. They should stay local-only.
+vbw_files=$(git diff --cached --name-only | grep "^\.vbw-planning/" || true)
+if [ -n "$vbw_files" ]; then
+  echo "Error: refusing to commit .vbw-planning/ files (local-only by policy)."
+  echo "Staged VBW files:"
+  echo "$vbw_files" | sed 's/^/  - /'
+  echo ""
+  echo "Unstage with: git reset HEAD -- .vbw-planning/"
+  exit 1
+fi
+
 npx lint-staged

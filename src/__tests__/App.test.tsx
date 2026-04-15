@@ -751,6 +751,44 @@ describe("App", () => {
   });
 });
 
+describe("Hook composition smoke test", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    // Default desktop viewport (jsdom default equivalent: 1024x768)
+    Object.defineProperty(window, "innerWidth", {
+      writable: true,
+      configurable: true,
+      value: 1024,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      writable: true,
+      configurable: true,
+      value: 768,
+    });
+  });
+
+  afterEach(() => {
+    localStorage.clear();
+  });
+
+  it("data-layout-tier attribute is present on .app-container", () => {
+    render(<App />);
+    const appContainer = document.querySelector(".app-container");
+    const tier = appContainer?.getAttribute("data-layout-tier");
+    expect(tier).toBe("desktop");
+  });
+
+  it("a known scale-derived value from useDisplayState reaches rendered output", () => {
+    // Default state: root=C, scale=Major — useDisplayState computes scaleLabel
+    render(<App />);
+    // The fretboard mock renders "Fretboard: C - N notes" — rootNote and note
+    // count both come from useDisplayState's highlightNotes derivation.
+    expect(screen.getByTestId("fretboard")).toHaveTextContent("Fretboard: C");
+    expect(screen.getByTestId("fretboard")).toHaveTextContent("notes");
+  });
+});
+
 describe("Responsive string row sizes", () => {
   it("uses the mobile string row size", () => {
     Object.defineProperty(window, "innerWidth", {
