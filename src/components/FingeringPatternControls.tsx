@@ -17,6 +17,8 @@ interface FingeringPatternControlsProps {
   setShapeLabels: (labels: "none" | "caged" | "modal") => void;
   displayFormat: "notes" | "degrees" | "none";
   setDisplayFormat: (format: "notes" | "degrees" | "none") => void;
+  /** Called when a CAGED shape is clicked, even if already selected */
+  onShapeClick?: (shape: CagedShape) => void;
 }
 
 export function FingeringPatternControls({
@@ -30,6 +32,7 @@ export function FingeringPatternControls({
   setShapeLabels,
   displayFormat,
   setDisplayFormat,
+  onShapeClick,
 }: FingeringPatternControlsProps) {
   return (
     <>
@@ -71,6 +74,8 @@ export function FingeringPatternControls({
                   className={clsx("toggle-btn", { active: cagedShapes.has(s) })}
                   title="Click to select; Shift+click to toggle multiple"
                   onClick={(e) => {
+                    // Always notify parent that shape was clicked (for recentering)
+                    onShapeClick?.(s);
                     if (e.shiftKey) {
                       setCagedShapes((prev) => {
                         const next = new Set(prev);
