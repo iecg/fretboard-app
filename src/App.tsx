@@ -519,12 +519,12 @@ function AppContent() {
             title="Support FretFlow on Ko-fi"
           >
             <img
-              src="https://storage.ko-fi.com/cdn/brandasset/v2/support_me_on_kofi_blue.png"
+              src="/fretboard-app/support_me_on_kofi_blue.png"
               alt="Support me on Ko-fi"
               className="kofi-btn-desktop"
             />
             <img
-              src="https://storage.ko-fi.com/cdn/brandasset/v2/kofi_symbol.png"
+              src="/fretboard-app/kofi_symbol.png"
               alt="Ko-fi"
               className="kofi-btn-mobile"
             />
