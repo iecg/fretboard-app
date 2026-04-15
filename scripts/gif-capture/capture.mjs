@@ -14,8 +14,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = path.join(__dirname, "frames");
 
 const BASE_URL = "http://127.0.0.1:4173/fretboard-app/";
-// desktop-split layout requires height > 899; 1080 gives CoF max-height=576px (36rem)
-const VIEWPORT = { width: 1280, height: 1080 };
+// desktop-split layout requires height > 899; 1200 gives enough room for CoF (576px)
+// plus header+fretboard+summary chrome (~480px) + padding (32px) = ~1088px total
+const VIEWPORT = { width: 1280, height: 1200 };
 
 let frameIdx = 0;
 

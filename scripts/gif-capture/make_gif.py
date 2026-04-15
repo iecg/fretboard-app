@@ -32,8 +32,8 @@ DEFAULT_FRAME_DUR = 100    # ms between duplicate frames (effectively 0 for stat
 DEFAULT_HOLD = 700
 
 # Target display size (stays legible at < 1 MB)
-# 960×810 matches capture aspect ratio 1280×1080 at 75% scale
-DISPLAY_W, DISPLAY_H = 960, 810
+# 960×900 matches capture aspect ratio 1280×1200 at 75% scale
+DISPLAY_W, DISPLAY_H = 960, 900
 N_COLORS = 128
 
 
