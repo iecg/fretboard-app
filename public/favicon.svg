@@ -1,12 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <!-- Purple rounded app-icon background -->
   <rect width="32" height="32" rx="7" fill="#863bff"/>
-  <!-- Guitar neck (extends into body for seamless join) -->
-  <rect x="14" y="2" width="4" height="13" rx="2" fill="white"/>
-  <!-- Headstock (slightly wider than neck) -->
-  <rect x="12.5" y="2" width="7" height="3.5" rx="1.5" fill="white"/>
-  <!-- Acoustic guitar body: figure-8 silhouette -->
-  <path fill="white" d="M14 11L18 11C22 11 24 13 24 16C24 18.5 22 20 20 20.5C23 21.5 25 24 25 26.5C25 29.5 21 31 16 31C11 31 7 29.5 7 26.5C7 24 9 21.5 12 20.5C10 20 8 18.5 8 16C8 13 10 11 14 11Z"/>
-  <!-- Sound hole -->
-  <circle cx="16" cy="17" r="2.5" fill="#863bff"/>
+  <!-- Electric guitar: headstock upper-left, Stratocaster-style body lower-right -->
+  <!-- Single closed path: headstock → neck (right edge) → body → neck (left edge) → headstock -->
+  <path fill="white" d="
+    M3 6 L6 3
+    C8 2 10 4 10 7
+    L21 18
+    C23 17 27 19 27 23
+    C27 27 25 30 22 30
+    C19 31 16 30 15 28
+    C14 30 12 31 11 30
+    C10 29 9 27 10 25
+    C9 24 9 21 11 20
+    C10 18 11 16 14 17
+    C16 18 17 20 19 20
+    L8 9
+    C8 7 6 6 5 7
+    Z
+  "/>
 </svg>
