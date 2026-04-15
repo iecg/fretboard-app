@@ -1,6 +1,5 @@
 import type React from "react";
 import { ToggleBar } from "./ToggleBar";
-import "./MobileTabPanel.css";
 
 const MOBILE_TAB_OPTIONS = [
   { value: "key", label: "Key" },
