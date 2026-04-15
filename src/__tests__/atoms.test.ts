@@ -214,35 +214,70 @@ describe("atoms", () => {
   });
 
   describe("mobileTabStorage", () => {
-    it("migrates legacy settings tab values to fretboard", () => {
+    it("migrates legacy key tab values to theory", () => {
+      localStorage.setItem(k("mobileTab"), "key");
+      const store = makeStore();
+      const unsub = mount(store, mobileTabAtom);
+
+      expect(store.get(mobileTabAtom)).toBe("theory");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("theory");
+
+      unsub();
+    });
+
+    it("migrates legacy scale tab values to theory", () => {
+      localStorage.setItem(k("mobileTab"), "scale");
+      const store = makeStore();
+      const unsub = mount(store, mobileTabAtom);
+
+      expect(store.get(mobileTabAtom)).toBe("theory");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("theory");
+
+      unsub();
+    });
+
+    it("migrates legacy settings tab values to view", () => {
       localStorage.setItem(k("mobileTab"), "settings");
       const store = makeStore();
       const unsub = mount(store, mobileTabAtom);
 
-      expect(store.get(mobileTabAtom)).toBe("fretboard");
-      expect(localStorage.getItem(k("mobileTab"))).toBe("fretboard");
+      expect(store.get(mobileTabAtom)).toBe("view");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("view");
 
       unsub();
     });
 
     it("keeps valid stored tab values unchanged", () => {
-      localStorage.setItem(k("mobileTab"), "fretboard");
+      localStorage.setItem(k("mobileTab"), "view");
       const store = makeStore();
       const unsub = mount(store, mobileTabAtom);
 
-      expect(store.get(mobileTabAtom)).toBe("fretboard");
-      expect(localStorage.getItem(k("mobileTab"))).toBe("fretboard");
+      expect(store.get(mobileTabAtom)).toBe("view");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("view");
 
       unsub();
     });
 
-    it("falls back to key for invalid stored tab values", () => {
+    it("falls back to theory for invalid stored tab values", () => {
       localStorage.setItem(k("mobileTab"), "invalid-tab");
       const store = makeStore();
       const unsub = mount(store, mobileTabAtom);
 
-      expect(store.get(mobileTabAtom)).toBe("key");
-      expect(localStorage.getItem(k("mobileTab"))).toBe("key");
+      expect(store.get(mobileTabAtom)).toBe("theory");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("theory");
+
+      unsub();
+    });
+  });
+
+  describe("scaleNameStorage", () => {
+    it("normalizes legacy Minor values to Natural Minor", () => {
+      localStorage.setItem(k("scaleName"), "Minor");
+      const store = makeStore();
+      const unsub = mount(store, scaleNameAtom);
+
+      expect(store.get(scaleNameAtom)).toBe("Natural Minor");
+      expect(localStorage.getItem(k("scaleName"))).toBe("Natural Minor");
 
       unsub();
     });
@@ -400,8 +435,7 @@ describe("atoms", () => {
       store.set(fretStartAtom, 3);
       store.set(fretEndAtom, 12);
       store.set(accidentalModeAtom, "flats");
-      // Controls tab was renamed from legacy "settings" to "fretboard".
-      store.set(mobileTabAtom, "fretboard");
+      store.set(mobileTabAtom, "view");
       store.set(landscapeNarrowTabAtom, "key");
 
       store.set(resetAtom);
@@ -418,7 +452,7 @@ describe("atoms", () => {
       expect(store.get(fretStartAtom)).toBe(0);
       expect(store.get(fretEndAtom)).toBe(24);
       expect(store.get(accidentalModeAtom)).toBe("auto");
-      expect(store.get(mobileTabAtom)).toBe("key");
+      expect(store.get(mobileTabAtom)).toBe("theory");
       expect(store.get(landscapeNarrowTabAtom)).toBe("fretboard");
     });
 

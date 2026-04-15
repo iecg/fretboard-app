@@ -21,7 +21,7 @@ import { synth } from "./audio";
 import { CircleOfFifths } from "./CircleOfFifths";
 import { DEGREE_COLORS, getDegreesForScale } from "./degrees";
 import { FingeringPatternControls } from "./components/FingeringPatternControls";
-import { ScaleChordControls } from "./components/ScaleChordControls";
+import { TheoryControls } from "./components/TheoryControls";
 import { MobileTabPanel } from "./components/MobileTabPanel";
 import { ExpandedControlsPanel } from "./components/ExpandedControlsPanel";
 import {
@@ -31,7 +31,7 @@ import {
 } from "./store/atoms";
 import SettingsOverlay from "./components/SettingsOverlay";
 import useLayoutMode from "./hooks/useLayoutMode";
-import useDisplayState, { CHORD_FILTER_OPTIONS } from "./hooks/useDisplayState";
+import useDisplayState from "./hooks/useDisplayState";
 import "./App.css";
 
 const END_FRET = 24;
@@ -78,39 +78,6 @@ function SummaryNote({
     </span>
   );
 }
-
-const SCALE_OPTIONS: (string | { divider: string })[] = [
-  { divider: "Major Modes" },
-  "Major",
-  "Lydian",
-  "Mixolydian",
-  { divider: "Minor Modes" },
-  "Natural Minor",
-  "Dorian",
-  "Phrygian",
-  "Locrian",
-  { divider: "Harmonic" },
-  "Harmonic Minor",
-  { divider: "Pentatonic" },
-  "Minor Pentatonic",
-  "Major Pentatonic",
-  { divider: "Blues" },
-  "Minor Blues",
-  "Major Blues",
-];
-
-const CHORD_OPTIONS: (string | { divider: string })[] = [
-  { divider: "Triads" },
-  "Major Triad",
-  "Minor Triad",
-  "Diminished Triad",
-  { divider: "Seventh Chords" },
-  "Major 7th",
-  "Minor 7th",
-  "Dominant 7th",
-  { divider: "Other" },
-  "Power Chord (5)",
-];
 
 function AppContent() {
   const {
@@ -259,25 +226,23 @@ function AppContent() {
     </div>
   );
 
-  // Mobile tab content — Key tab
-  const keyTabContent = (
-    <div className="mobile-tab-panel mobile-key-tab">
-      <div className="cof-container">
-        <CircleOfFifths
-          rootNote={rootNote}
-          setRootNote={setRootNote}
-          scaleName={scaleName}
-          useFlats={useFlats}
-          enharmonicDisplay={enharmonicDisplay}
-        />
-      </div>
+  const mobileKeyExplorer = (
+    <div className="cof-container">
+      <CircleOfFifths
+        rootNote={rootNote}
+        setRootNote={setRootNote}
+        scaleName={scaleName}
+        useFlats={useFlats}
+        enharmonicDisplay={enharmonicDisplay}
+      />
     </div>
   );
 
-  // Mobile tab content — Scale & Chord tab
-  const scaleChordTabContent = (
-    <div className="mobile-tab-panel mobile-scale-chord-tab">
-      <ScaleChordControls
+  const theoryTabContent = (
+    <div className="mobile-tab-panel mobile-theory-tab">
+      <TheoryControls
+        rootNote={rootNote}
+        setRootNote={setRootNote}
         scaleName={scaleName}
         setScaleName={setScaleName}
         chordType={chordType}
@@ -290,18 +255,14 @@ function AppContent() {
         setHideNonChordNotes={setHideNonChordNotes}
         chordIntervalFilter={chordIntervalFilter}
         setChordIntervalFilter={setChordIntervalFilter}
-        rootNote={rootNote}
         useFlats={useFlats}
-        scaleOptions={SCALE_OPTIONS}
-        chordOptions={CHORD_OPTIONS}
-        chordFilterOptions={CHORD_FILTER_OPTIONS}
+        keyExplorer={mobileKeyExplorer}
       />
     </div>
   );
 
-  // Mobile tab content — Settings tab
-  const settingsTabContent = (
-    <div className="mobile-tab-panel mobile-fretboard-tab">
+  const viewTabContent = (
+    <div className="mobile-tab-panel mobile-view-tab">
       <FingeringPatternControls
         fingeringPattern={fingeringPattern}
         setFingeringPattern={setFingeringPattern}
@@ -484,9 +445,8 @@ function AppContent() {
         <MobileTabPanel
           mobileTab={mobileTab}
           setMobileTab={setMobileTab}
-          keyTabContent={keyTabContent}
-          scaleChordTabContent={scaleChordTabContent}
-          settingsTabContent={settingsTabContent}
+          theoryTabContent={theoryTabContent}
+          viewTabContent={viewTabContent}
         />
       )}
 

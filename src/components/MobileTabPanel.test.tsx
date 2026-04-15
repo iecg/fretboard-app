@@ -4,72 +4,48 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { MobileTabPanel } from "./MobileTabPanel";
 
 const defaultProps = {
-  mobileTab: "key" as const,
+  mobileTab: "theory" as const,
   setMobileTab: vi.fn(),
-  keyTabContent: <div>Key Content</div>,
-  scaleChordTabContent: <div>Scale Content</div>,
-  settingsTabContent: <div>Settings Content</div>,
+  theoryTabContent: <div>Theory Content</div>,
+  viewTabContent: <div>View Content</div>,
 };
 
 describe("MobileTabPanel", () => {
-  it("renders ToggleBar with 3 tabs", () => {
+  it("renders ToggleBar with 2 tabs", () => {
     render(<MobileTabPanel {...defaultProps} />);
-    expect(screen.getByText("Key")).toBeInTheDocument();
-    expect(screen.getByText("Scales")).toBeInTheDocument();
-    expect(screen.getByText("Controls")).toBeInTheDocument();
+    expect(screen.getByText("Theory")).toBeInTheDocument();
+    expect(screen.getByText("View")).toBeInTheDocument();
   });
 
-  it("shows keyTabContent when mobileTab is key", () => {
-    render(<MobileTabPanel {...defaultProps} mobileTab="key" />);
-    expect(screen.getByText("Key Content")).toBeInTheDocument();
-    expect(screen.queryByText("Scale Content")).not.toBeInTheDocument();
-    expect(screen.queryByText("Settings Content")).not.toBeInTheDocument();
+  it("shows theoryTabContent when mobileTab is theory", () => {
+    render(<MobileTabPanel {...defaultProps} mobileTab="theory" />);
+    expect(screen.getByText("Theory Content")).toBeInTheDocument();
+    expect(screen.queryByText("View Content")).not.toBeInTheDocument();
   });
 
-  it("shows scaleChordTabContent when mobileTab is scale", () => {
-    render(<MobileTabPanel {...defaultProps} mobileTab="scale" />);
-    expect(screen.getByText("Scale Content")).toBeInTheDocument();
-    expect(screen.queryByText("Key Content")).not.toBeInTheDocument();
-    expect(screen.queryByText("Settings Content")).not.toBeInTheDocument();
+  it("shows viewTabContent when mobileTab is view", () => {
+    render(<MobileTabPanel {...defaultProps} mobileTab="view" />);
+    expect(screen.getByText("View Content")).toBeInTheDocument();
+    expect(screen.queryByText("Theory Content")).not.toBeInTheDocument();
   });
 
-  it("shows settingsTabContent when mobileTab is fretboard", () => {
-    render(<MobileTabPanel {...defaultProps} mobileTab="fretboard" />);
-    expect(screen.getByText("Settings Content")).toBeInTheDocument();
-    expect(screen.queryByText("Key Content")).not.toBeInTheDocument();
-    expect(screen.queryByText("Scale Content")).not.toBeInTheDocument();
-  });
-
-  it("tab switching — clicking Scales calls setMobileTab with scale", () => {
+  it("clicking Theory calls setMobileTab with theory", () => {
     const setMobileTab = vi.fn();
     render(<MobileTabPanel {...defaultProps} setMobileTab={setMobileTab} />);
-    fireEvent.click(screen.getByText("Scales"));
-    expect(setMobileTab).toHaveBeenCalledWith("scale");
+    fireEvent.click(screen.getByText("Theory"));
+    expect(setMobileTab).toHaveBeenCalledWith("theory");
   });
 
-  it("tab switching — clicking Key calls setMobileTab with key", () => {
+  it("clicking View calls setMobileTab with view", () => {
     const setMobileTab = vi.fn();
     render(
       <MobileTabPanel
         {...defaultProps}
-        mobileTab="fretboard"
+        mobileTab="theory"
         setMobileTab={setMobileTab}
       />,
     );
-    fireEvent.click(screen.getByText("Key"));
-    expect(setMobileTab).toHaveBeenCalledWith("key");
-  });
-
-  it("tab switching — clicking Controls calls setMobileTab with fretboard", () => {
-    const setMobileTab = vi.fn();
-    render(
-      <MobileTabPanel
-        {...defaultProps}
-        mobileTab="key"
-        setMobileTab={setMobileTab}
-      />,
-    );
-    fireEvent.click(screen.getByText("Controls"));
-    expect(setMobileTab).toHaveBeenCalledWith("fretboard");
+    fireEvent.click(screen.getByText("View"));
+    expect(setMobileTab).toHaveBeenCalledWith("view");
   });
 });

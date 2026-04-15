@@ -39,10 +39,24 @@ export const DEGREE_COLORS: Record<string, string> = {
   "vii°": "#6366f1",
 };
 
+const MAJOR_BASE_DEGREES = ["I", "ii", "iii", "IV", "V", "vi", "vii°"] as const;
+const MINOR_BASE_DEGREES = ["i", "ii°", "III", "iv", "v", "VI", "VII"] as const;
+
 // Fallback: major-quality scales use Major degrees, minor-quality use Natural Minor
 export function getDegreesForScale(scaleName: string): Record<number, string> {
   if (MODE_DEGREES[scaleName]) return MODE_DEGREES[scaleName];
   const intervals = SCALES[scaleName];
-  if (intervals && intervals.includes(4)) return MODE_DEGREES['Major'];
-  return MODE_DEGREES['Natural Minor'];
+  if (!intervals) return MODE_DEGREES["Natural Minor"];
+
+  if (intervals.length === 7) {
+    const baseDegrees = intervals.includes(4)
+      ? MAJOR_BASE_DEGREES
+      : MINOR_BASE_DEGREES;
+    return Object.fromEntries(
+      intervals.map((interval, index) => [interval, baseDegrees[index] ?? ""]),
+    );
+  }
+
+  if (intervals.includes(4)) return MODE_DEGREES["Major"];
+  return MODE_DEGREES["Natural Minor"];
 }

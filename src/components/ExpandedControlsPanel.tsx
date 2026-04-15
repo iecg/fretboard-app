@@ -19,55 +19,8 @@ import {
 } from "../store/atoms";
 import { resolveAccidentalMode } from "../theory";
 import { FingeringPatternControls } from "./FingeringPatternControls";
-import { ScaleChordControls } from "./ScaleChordControls";
+import { TheoryControls } from "./TheoryControls";
 import { CircleOfFifths } from "../CircleOfFifths";
-
-const CHORD_FILTER_OPTIONS = [
-  "All",
-  "Triad",
-  "7th Chord",
-  "Power Chord",
-  "Guide Tones",
-  "Shell Voicing",
-  "Root & 3rd",
-  "Root & 5th",
-  "Root & 7th",
-  "3rd & 5th",
-  "3rd & 7th",
-];
-
-const SCALE_OPTIONS: (string | { divider: string })[] = [
-  { divider: "Major Modes" },
-  "Major",
-  "Lydian",
-  "Mixolydian",
-  { divider: "Minor Modes" },
-  "Natural Minor",
-  "Dorian",
-  "Phrygian",
-  "Locrian",
-  { divider: "Harmonic" },
-  "Harmonic Minor",
-  { divider: "Pentatonic" },
-  "Minor Pentatonic",
-  "Major Pentatonic",
-  { divider: "Blues" },
-  "Minor Blues",
-  "Major Blues",
-];
-
-const CHORD_OPTIONS: (string | { divider: string })[] = [
-  { divider: "Triads" },
-  "Major Triad",
-  "Minor Triad",
-  "Diminished Triad",
-  { divider: "Seventh Chords" },
-  "Major 7th",
-  "Minor 7th",
-  "Dominant 7th",
-  { divider: "Other" },
-  "Power Chord (5)",
-];
 
 /**
  * Renders the left-most base controls: FingeringPatternControls.
@@ -112,6 +65,7 @@ export function ScaleChordSection() {
     chordIntervalFilterAtom,
   );
   const rootNote = useAtomValue(rootNoteAtom);
+  const setRootNote = useSetAtom(setRootNoteAtom);
   const accidentalMode = useAtomValue(accidentalModeAtom);
   const useFlats = useMemo(
     () => resolveAccidentalMode(rootNote, scaleName, accidentalMode),
@@ -120,8 +74,10 @@ export function ScaleChordSection() {
 
   return (
     <div className="control-group panel-surface controls-card controls-card--scale">
-      <h2>Scale &amp; Chord</h2>
-      <ScaleChordControls
+      <h2>Theory</h2>
+      <TheoryControls
+        rootNote={rootNote}
+        setRootNote={setRootNote}
         scaleName={scaleName}
         setScaleName={setScaleName}
         chordType={chordType}
@@ -134,11 +90,7 @@ export function ScaleChordSection() {
         setHideNonChordNotes={setHideNonChordNotes}
         chordIntervalFilter={chordIntervalFilter}
         setChordIntervalFilter={setChordIntervalFilter}
-        rootNote={rootNote}
         useFlats={useFlats}
-        scaleOptions={SCALE_OPTIONS}
-        chordOptions={CHORD_OPTIONS}
-        chordFilterOptions={CHORD_FILTER_OPTIONS}
       />
     </div>
   );
@@ -161,7 +113,7 @@ export function KeyColumn() {
 
   return (
     <div className="control-group key-column panel-surface controls-card controls-card--key">
-      <h2>Key</h2>
+      <h2>Key Explorer</h2>
       <CircleOfFifths
         rootNote={rootNote}
         setRootNote={handleSetRootNote}

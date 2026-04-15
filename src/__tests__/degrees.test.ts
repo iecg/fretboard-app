@@ -73,6 +73,13 @@ describe('getDegreesForScale', () => {
       expect(degrees[7]).toBe('V'); // Major 5th (vs natural minor)
       expect(degrees[11]).toBe('vii°'); // Diminished 7th
     });
+
+    it("covers all seven degrees for Melodic Minor via the generic 7-note fallback", () => {
+      const degrees = getDegreesForScale("Melodic Minor");
+      expect(degrees[0]).toBe("i");
+      expect(degrees[9]).toBe("VI");
+      expect(degrees[11]).toBe("VII");
+    });
   });
 
   describe('Fallback behavior', () => {

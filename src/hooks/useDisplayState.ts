@@ -38,6 +38,7 @@ import {
   formatAccidental,
   resolveAccidentalMode,
 } from "../theory";
+import { getScaleDisplayLabel } from "../theoryCatalog";
 import { STANDARD_TUNING, TUNINGS } from "../guitar";
 import {
   CAGED_SHAPES,
@@ -252,7 +253,7 @@ export default function useDisplayState() {
     [rootNote, scaleName],
   );
 
-  const scaleLabel = `${formatAccidental(getNoteDisplayInScale(rootNote, rootNote, SCALES[scaleName] || [], useFlats))} ${scaleName}`;
+  const scaleLabel = `${formatAccidental(getNoteDisplayInScale(rootNote, rootNote, SCALES[scaleName] || [], useFlats))} ${getScaleDisplayLabel(scaleName)}`;
 
   const chordLabel = chordType
     ? `${formatAccidental(getNoteDisplay(chordRoot, chordRoot, useFlats))} ${chordType}`
