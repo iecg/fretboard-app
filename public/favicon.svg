@@ -1,22 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- Purple rounded app-icon background -->
-  <rect width="32" height="32" rx="7" fill="#863bff"/>
-  <!-- Electric guitar: headstock upper-left, Stratocaster-style body lower-right -->
-  <!-- Single closed path: headstock → neck (right edge) → body → neck (left edge) → headstock -->
-  <path fill="white" d="
-    M3 6 L6 3
-    C8 2 10 4 10 7
-    L21 18
-    C23 17 27 19 27 23
-    C27 27 25 30 22 30
-    C19 31 16 30 15 28
-    C14 30 12 31 11 30
-    C10 29 9 27 10 25
-    C9 24 9 21 11 20
-    C10 18 11 16 14 17
-    C16 18 17 20 19 20
-    L8 9
-    C8 7 6 6 5 7
-    Z
-  "/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#18110d"/>
+  <rect x="13" y="17" width="38" height="30" rx="6" fill="#5b3a29" stroke="#f5e7d0" stroke-width="2"/>
+
+  <g stroke="#f5e7d0" stroke-linecap="round">
+    <line x1="13" y1="24" x2="51" y2="24" stroke-width="2"/>
+    <line x1="13" y1="32" x2="51" y2="32" stroke-width="2"/>
+    <line x1="13" y1="40" x2="51" y2="40" stroke-width="2"/>
+  </g>
+
+  <g stroke="#f5e7d0">
+    <line x1="24" y1="17" x2="24" y2="47" stroke-width="2"/>
+    <line x1="35" y1="17" x2="35" y2="47" stroke-width="2"/>
+    <line x1="46" y1="17" x2="46" y2="47" stroke-width="2"/>
+  </g>
+
+  <circle cx="29.5" cy="32" r="5" fill="#22c55e"/>
+  <circle cx="27.8" cy="30.4" r="1.4" fill="#bbf7d0" opacity="0.9"/>
 </svg>
