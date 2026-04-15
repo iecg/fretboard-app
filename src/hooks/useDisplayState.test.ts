@@ -337,9 +337,11 @@ describe("useDisplayState", () => {
         store.set(npsPositionAtom, 3);
       });
 
-      // Different position → different lowest note
-      expect(result.current.autoCenterTarget).not.toBeUndefined();
-      expect(result.current.autoCenterTarget).not.toBe(targetPos1);
+      // After changing position, compute expected autoCenterTarget from boxBounds
+      const boxBounds = result.current.boxBounds;
+      expect(boxBounds.length).toBeGreaterThan(0);
+      const lowestMinFret = Math.min(...boxBounds.map((b) => b.minFret));
+      expect(result.current.autoCenterTarget).toBe(lowestMinFret);
     });
 
     it("autoCenterTarget is a fret number within the fretboard range", () => {
