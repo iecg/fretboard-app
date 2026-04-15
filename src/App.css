@@ -1298,6 +1298,10 @@
   transition: opacity var(--transition-slow);
 }
 
+.drawer-options:focus-visible {
+  outline: none;
+}
+
 .drawer-options--above {
   top: auto;
   bottom: calc(100% + 4px);
