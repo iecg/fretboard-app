@@ -1,7 +1,9 @@
 /**
  * Captures a social-media screenshot at 1200×628 (Twitter/LinkedIn recommended size).
- * Run after `npm run dev` is up on localhost:5174.
+ * Run after `npm run dev` is up (default port 5173).
  * Usage: node scripts/capture-screenshot.mjs
+ * Env: SCREENSHOT_URL — override base URL (default: http://localhost:5173/fretboard-app/)
+ *      PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH — override Chromium binary path
  */
 import { chromium } from '@playwright/test';
 import { writeFileSync } from 'fs';
@@ -10,7 +12,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_PATH = resolve(__dirname, '../public/screenshot.png');
-const BASE_URL = 'http://localhost:5174/fretboard-app/';
+const BASE_URL = process.env.SCREENSHOT_URL ?? 'http://localhost:5173/fretboard-app/';
 
 // Twitter summary_large_image + LinkedIn recommended: 1200×628 (1.91:1)
 const WIDTH = 1200;
@@ -19,7 +21,9 @@ const HEIGHT = 628;
 async function run() {
   const browser = await chromium.launch({
     headless: true,
-    executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+    ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
+      ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH }
+      : {}),
   });
   const page = await browser.newPage();
 
