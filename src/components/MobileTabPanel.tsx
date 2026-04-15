@@ -33,7 +33,7 @@ export function MobileTabPanel({
         onChange={setMobileTab}
         variant="tabs"
       />
-      <div className="mobile-tab-content panel-surface">
+      <div className="mobile-tab-content">
         {mobileTab === "key" && keyTabContent}
         {mobileTab === "scale" && scaleChordTabContent}
         {mobileTab === "fretboard" && settingsTabContent}
