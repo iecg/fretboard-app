@@ -1,11 +1,12 @@
 /**
  * T01 measurement script — captures DOM heights at critical viewports.
- * Run after `npm run dev` is up on localhost:5174.
+ * Run after `npm run dev` is up (default port 5173).
  * Usage: node scripts/measure-layout.mjs
+ * Env: SCREENSHOT_URL — override base URL (default: http://localhost:5173/fretboard-app/)
  */
 import { chromium } from '@playwright/test';
 
-const BASE_URL = 'http://localhost:5174/fretboard-app/';
+const BASE_URL = process.env.SCREENSHOT_URL ?? 'http://localhost:5173/fretboard-app/';
 
 const VIEWPORTS = [
   { name: '1200×1080', width: 1200, height: 1080 },  // desktop-expanded (controls fit)
