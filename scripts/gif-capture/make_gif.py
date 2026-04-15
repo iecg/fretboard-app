@@ -3,6 +3,8 @@
 Combine captured PNG frames into an animated GIF.
 Usage: python3 scripts/gif-capture/make_gif.py
 """
+import os
+import re
 import sys
 from pathlib import Path
 from PIL import Image
@@ -49,8 +51,13 @@ def make_gif():
     durations = []
 
     # Collect one representative frame per scene (the last in each group)
+    # Expected filename pattern: 4-digit scene prefix followed by optional content
     scene_frames = {}
+    filename_pattern = re.compile(r"^\d{4}")  # Validate 4-digit prefix
     for fp in frame_paths:
+        if not filename_pattern.match(fp.stem):
+            print(f"Warning: Skipping file with unexpected name pattern: {fp.name} (expected 4-digit prefix)")
+            continue
         prefix = fp.stem[:4]
         scene_frames[prefix] = fp  # last wins → last frame of scene
 
@@ -62,6 +69,10 @@ def make_gif():
         images.append(img_p)
         durations.append(dur)
         print(f"  scene {prefix}: {fp.name} → {dur}ms")
+
+    # Ensure output directory exists before saving
+    out_dir = os.path.dirname(OUT)
+    os.makedirs(out_dir, exist_ok=True)
 
     print(f"Saving GIF to {OUT} ...")
     images[0].save(
