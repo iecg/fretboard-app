@@ -10905,7 +10905,7 @@ exports[`Component Snapshots > App layout snapshots > renders with chord overlay
         <div
           class="summary-row-label"
         >
-          C Major 7th
+          C
         </div>
         <div
           class="summary-notes"
@@ -14736,7 +14736,7 @@ exports[`Component Snapshots > App layout snapshots > renders with custom config
         <div
           class="summary-row-label"
         >
-          C Minor 7th
+          Cm
         </div>
         <div
           class="summary-notes"
