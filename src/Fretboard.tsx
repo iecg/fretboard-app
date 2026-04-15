@@ -33,6 +33,10 @@ interface FretboardProps {
   useFlats?: boolean;
   scaleName?: string;
   stringRowPx?: number;
+  /** Target fret to auto-center when the main shape goes out of view */
+  autoCenterTarget?: number;
+  /** Key that changes to force recenter (e.g., on shape click) */
+  recenterKey?: number;
 }
 
 export function Fretboard({
@@ -45,6 +49,8 @@ export function Fretboard({
   chordTones = [],
   chordFretSpread = 0,
   hideNonChordNotes = false,
+  autoCenterTarget,
+  recenterKey,
   colorNotes = [],
   shapePolygons = [],
   shapeLabels = "none",
@@ -109,6 +115,31 @@ export function Fretboard({
     if (!el) return;
     setHasOverflow(el.scrollWidth > el.clientWidth + 1);
   }, [effectiveZoom, fretCount, containerWidth]);
+
+  // Auto-center when main shape target changes or recenterKey changes (shape clicked)
+  // Note: effectiveZoom is read from ref to avoid re-triggering on zoom changes
+  const effectiveZoomRef = useRef(effectiveZoom);
+  useEffect(() => {
+    effectiveZoomRef.current = effectiveZoom;
+  }, [effectiveZoom]);
+
+  useEffect(() => {
+    if (autoCenterTarget === undefined) return;
+    const el = scrollRef.current;
+    if (!el) return;
+
+    // Calculate the pixel position of the target fret
+    const zoom = effectiveZoomRef.current;
+    const targetOffset = (autoCenterTarget - startFret) * zoom;
+    const containerWidth = el.clientWidth;
+
+    // Always center the target fret in the viewport
+    const centerOffset = targetOffset - containerWidth / 2 + zoom / 2;
+    el.scrollTo({
+      left: Math.max(0, centerOffset),
+      behavior: "smooth",
+    });
+  }, [autoCenterTarget, recenterKey, startFret]);
 
   const handlePointerDown = (e: React.PointerEvent) => {
     if (!hasOverflow) return;

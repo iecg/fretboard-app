@@ -31,7 +31,10 @@ import {
   CAGED_SHAPES,
   getCagedCoordinates,
   get3NPSCoordinates,
+  findMainShape,
+  getShapeCenterFret,
   type ShapePolygon,
+  type CagedShape,
 } from "./shapes";
 import { FingeringPatternControls } from "./components/FingeringPatternControls";
 import { ScaleChordControls } from "./components/ScaleChordControls";
@@ -40,6 +43,8 @@ import { ExpandedControlsPanel } from "./components/ExpandedControlsPanel";
 import {
   rootNoteAtom,
   scaleNameAtom,
+  fretStartAtom,
+  fretEndAtom,
   chordRootAtom,
   chordTypeAtom,
   linkChordRootAtom,
@@ -179,6 +184,14 @@ function AppContent() {
   const [cagedShapes, setCagedShapes] = useAtom(cagedShapesAtom);
   const [npsPosition, setNpsPosition] = useAtom(npsPositionAtom);
 
+  // Fret range (for auto-center calculation)
+  const startFret = useAtomValue(fretStartAtom);
+  const endFret = useAtomValue(fretEndAtom);
+
+  // Track clicked shape for recentering
+  const [clickedShape, setClickedShape] = useState<CagedShape | null>(null);
+  const [recenterKey, setRecenterKey] = useState(0);
+
   // Display
   const [displayFormat, setDisplayFormat] = useAtom(displayFormatAtom);
   const [shapeLabels, setShapeLabels] = useAtom(shapeLabelsAtom);
@@ -250,7 +263,7 @@ function AppContent() {
     return getIntervalNotes(chordRoot, filtered);
   }, [chordRoot, chordType, chordIntervalFilter, chordTones]);
 
-  const { highlightNotes, boxBounds, shapePolygons, wrappedNotes } =
+  const { highlightNotes, boxBounds, shapePolygons, wrappedNotes, autoCenterTarget } =
     useMemo(() => {
       let coords: string[] = [];
       let bounds: { minFret: number; maxFret: number }[] = [];
@@ -297,11 +310,31 @@ function AppContent() {
         coords = getScaleNotes(rootNote, scaleName);
       }
 
+      // Compute auto-center target for CAGED mode
+      let autoCenterTarget: number | undefined;
+      if (fingeringPattern === "caged" && polygons.length > 0) {
+        // If a shape was clicked, center that specific shape
+        if (clickedShape) {
+          const clickedPoly = polygons.find((p) => p.shape === clickedShape);
+          if (clickedPoly && !clickedPoly.truncated) {
+            autoCenterTarget = getShapeCenterFret(clickedPoly);
+          }
+        }
+        // Otherwise find the main (lowest complete) shape
+        if (autoCenterTarget === undefined) {
+          const mainShape = findMainShape(polygons, mergedWrappedNotes, startFret, endFret);
+          if (mainShape) {
+            autoCenterTarget = getShapeCenterFret(mainShape);
+          }
+        }
+      }
+
       return {
         highlightNotes: coords,
         boxBounds: bounds,
         shapePolygons: polygons,
         wrappedNotes: mergedWrappedNotes,
+        autoCenterTarget,
       };
     }, [
       rootNote,
@@ -310,6 +343,9 @@ function AppContent() {
       cagedShapes,
       npsPosition,
       currentTuning,
+      startFret,
+      endFret,
+      clickedShape,
     ]);
 
   // Compute color notes: blue notes for blues scales, divergent notes for modal scales
@@ -446,6 +482,10 @@ function AppContent() {
         setShapeLabels={setShapeLabels}
         displayFormat={displayFormat}
         setDisplayFormat={setDisplayFormat}
+        onShapeClick={(shape) => {
+          setClickedShape(shape);
+          setRecenterKey((k) => k + 1);
+        }}
       />
     </div>
   );
@@ -595,6 +635,8 @@ function AppContent() {
           useFlats={useFlats}
           scaleName={scaleName}
           stringRowPx={stringRowPx}
+          autoCenterTarget={autoCenterTarget}
+          recenterKey={recenterKey}
         />
       </main>
 
