@@ -21893,7 +21893,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
       </button>
     </div>
     <div
-      class="mobile-tab-content panel-surface"
+      class="mobile-tab-content"
     >
       <div
         class="mobile-tab-panel mobile-key-tab"
@@ -25548,7 +25548,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
       </button>
     </div>
     <div
-      class="mobile-tab-content panel-surface"
+      class="mobile-tab-content"
     >
       <div
         class="mobile-tab-panel mobile-key-tab"
@@ -29203,7 +29203,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
       </button>
     </div>
     <div
-      class="mobile-tab-content panel-surface"
+      class="mobile-tab-content"
     >
       <div
         class="mobile-tab-panel mobile-key-tab"
