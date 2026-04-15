@@ -2,6 +2,7 @@
  * Capture screenshots of FretFlow for animated GIF.
  * Run: node scripts/gif-capture/capture.mjs
  * (Dev server must be running on port 4173)
+ * Env: PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH — override Chromium binary path
  */
 import { chromium } from "playwright";
 import { mkdir, rm } from "fs/promises";
@@ -71,8 +72,8 @@ async function selectScale(page, scaleName) {
   await page.waitForTimeout(400);
 }
 
-async function clickBtn(page, name) {
-  const btn = page.getByRole("button", { name, exact: true });
+async function clickBtn(page, name, parent = page) {
+  const btn = parent.getByRole("button", { name, exact: true });
   if (await btn.first().isVisible().catch(() => false)) {
     await btn.first().click();
     await page.waitForTimeout(300);
@@ -84,18 +85,17 @@ async function clickBtn(page, name) {
 // Click a CAGED shape button by label (All / C / A / G / E / D)
 // These only appear after clicking the CAGED mode button
 async function clickCagedShape(page, shape) {
-  // The CAGED shape buttons are in .fingering-pattern-controls or the controls panel
-  // They're regular buttons with text "C", "A", "G", "E", "D", or "All"
-  const btns = page.getByRole("button", { name: shape, exact: true });
-  const count = await btns.count();
-  // Pick the one inside the CAGED shape row (there might be "All" in the toolbar too)
-  for (let i = 0; i < count; i++) {
-    const btn = btns.nth(i);
-    if (await btn.isVisible()) {
-      await btn.click();
-      await page.waitForTimeout(350);
-      return;
-    }
+  // Scope to the "Shape" control-section to avoid matching "All" in the
+  // Fingering Pattern row or single letters elsewhere in the UI.
+  const shapeSection = page
+    .locator(".control-section")
+    .filter({ has: page.locator(".section-label", { hasText: /^Shape$/ }) })
+    .first();
+  const btn = shapeSection.getByRole("button", { name: shape, exact: true }).first();
+  if (await btn.isVisible().catch(() => false)) {
+    await btn.click();
+    await page.waitForTimeout(350);
+    return;
   }
   console.warn(`  CAGED shape button "${shape}" not found`);
 }
@@ -104,80 +104,92 @@ async function main() {
   if (existsSync(OUT_DIR)) await rm(OUT_DIR, { recursive: true });
   await mkdir(OUT_DIR, { recursive: true });
 
-  const browser = await chromium.launch({
-    headless: true,
-    executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
-  });
-  const ctx = await browser.newContext({
-    viewport: VIEWPORT,
-    deviceScaleFactor: 1,
-  });
-  const page = await ctx.newPage();
+  let browser;
+  let ctx;
+  try {
+    browser = await chromium.launch({
+      headless: true,
+      ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
+        ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH }
+        : {}),
+    });
+    ctx = await browser.newContext({
+      viewport: VIEWPORT,
+      deviceScaleFactor: 1,
+    });
+    const page = await ctx.newPage();
 
-  await page.goto(BASE_URL, { waitUntil: "networkidle" });
-  await waitReady(page);
+    await page.goto(BASE_URL, { waitUntil: "networkidle" });
+    await waitReady(page);
 
-  console.log("Capturing frames...\n");
+    console.log("Capturing frames...\n");
 
-  // ── Scene 1: Default state (C Major, All notes) ──────────────────
-  // Hold 5 frames so viewers see the starting position
-  await shot(page, "s1_default", 5);
+    // ── Scene 1: Default state (C Major, All notes) ──────────────────
+    // Hold 5 frames so viewers see the starting position
+    await shot(page, "s1_default", 5);
 
-  // ── Scene 2: Switch root to G ────────────────────────────────────
-  await clickNote(page, "G");
-  await shot(page, "s2_root_G", 3);
+    // ── Scene 2: Switch root to G ────────────────────────────────────
+    await clickNote(page, "G");
+    await shot(page, "s2_root_G", 3);
 
-  // ── Scene 3: Switch root to D ───────────────────────────────────
-  await clickNote(page, "D");
-  await shot(page, "s3_root_D", 3);
+    // ── Scene 3: Switch root to D ───────────────────────────────────
+    await clickNote(page, "D");
+    await shot(page, "s3_root_D", 3);
 
-  // ── Scene 4: Switch root to A ────────────────────────────────────
-  await clickNote(page, "A");
-  await shot(page, "s4_root_A", 3);
+    // ── Scene 4: Switch root to A ────────────────────────────────────
+    await clickNote(page, "A");
+    await shot(page, "s4_root_A", 3);
 
-  // ── Scene 5: Switch scale to Minor Pentatonic ─────────────────────
-  await selectScale(page, "Minor Pentatonic");
-  await shot(page, "s5_minor_pent", 4);
+    // ── Scene 5: Switch scale to Minor Pentatonic ─────────────────────
+    await selectScale(page, "Minor Pentatonic");
+    await shot(page, "s5_minor_pent", 4);
 
-  // ── Scene 6: Activate CAGED view, show all shapes ─────────────────
-  await clickBtn(page, "CAGED");
-  await shot(page, "s6_caged_all", 4);
+    // ── Scene 6: Activate CAGED view, show all shapes ─────────────────
+    await clickBtn(page, "CAGED");
+    await shot(page, "s6_caged_all", 4);
 
-  // ── Scene 7: Isolate C shape ──────────────────────────────────────
-  await clickCagedShape(page, "C");
-  await shot(page, "s7_caged_c", 3);
+    // ── Scene 7: Isolate C shape ──────────────────────────────────────
+    await clickCagedShape(page, "C");
+    await shot(page, "s7_caged_c", 3);
 
-  // ── Scene 8: Isolate A shape ──────────────────────────────────────
-  await clickCagedShape(page, "A");
-  await shot(page, "s8_caged_a", 3);
+    // ── Scene 8: Isolate A shape ──────────────────────────────────────
+    await clickCagedShape(page, "A");
+    await shot(page, "s8_caged_a", 3);
 
-  // ── Scene 9: Isolate G shape ──────────────────────────────────────
-  await clickCagedShape(page, "G");
-  await shot(page, "s9_caged_g", 3);
+    // ── Scene 9: Isolate G shape ──────────────────────────────────────
+    await clickCagedShape(page, "G");
+    await shot(page, "s9_caged_g", 3);
 
-  // ── Scene 10: Isolate E shape ─────────────────────────────────────
-  await clickCagedShape(page, "E");
-  await shot(page, "s10_caged_e", 3);
+    // ── Scene 10: Isolate E shape ─────────────────────────────────────
+    await clickCagedShape(page, "E");
+    await shot(page, "s10_caged_e", 3);
 
-  // ── Scene 11: Back to All shapes ──────────────────────────────────
-  await clickCagedShape(page, "All");
-  await shot(page, "s11_caged_all_again", 3);
+    // ── Scene 11: Back to All shapes ──────────────────────────────────
+    await clickCagedShape(page, "All");
+    await shot(page, "s11_caged_all_again", 3);
 
-  // ── Scene 12: Switch to interval mode ─────────────────────────────
-  await clickBtn(page, "Intervals");
-  await shot(page, "s12_intervals", 4);
+    // ── Scene 12: Switch to interval mode ─────────────────────────────
+    await clickBtn(page, "Intervals");
+    await shot(page, "s12_intervals", 4);
 
-  // ── Scene 13: Switch back to notes ───────────────────────────────
-  await clickBtn(page, "Notes");
-  await shot(page, "s13_notes", 3);
+    // ── Scene 13: Switch back to notes ───────────────────────────────
+    await clickBtn(page, "Notes");
+    await shot(page, "s13_notes", 3);
 
-  // ── Scene 14: Switch back to Major, root C ────────────────────────
-  await clickBtn(page, "All");
-  await selectScale(page, "Major");
-  await clickNote(page, "C");
-  await shot(page, "s14_back_to_start", 4);
-
-  await browser.close();
+    // ── Scene 14: Switch back to Major, root C ────────────────────────
+    // Scope "All" to the Fingering Pattern section to avoid the Shape "All" button
+    const fingeringSection = page
+      .locator(".control-section")
+      .filter({ has: page.locator(".section-label", { hasText: /^Fingering Pattern$/ }) })
+      .first();
+    await clickBtn(page, "All", fingeringSection);
+    await selectScale(page, "Major");
+    await clickNote(page, "C");
+    await shot(page, "s14_back_to_start", 4);
+  } finally {
+    await ctx?.close().catch(() => {});
+    await browser?.close().catch(() => {});
+  }
 
   const total = frameIdx;
   console.log(`\nDone. Captured ${total} scenes → ${OUT_DIR}`);
