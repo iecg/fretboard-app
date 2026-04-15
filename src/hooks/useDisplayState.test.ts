@@ -295,4 +295,81 @@ describe("useDisplayState", () => {
       expect(result.current.chordSummaryNotes).toEqual([]);
     });
   });
+
+  describe("3nps autoCenterTarget centering", () => {
+    it("autoCenterTarget is undefined when npsPosition=0 (all positions, no bounds)", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(fingeringPatternAtom, "3nps");
+      store.set(npsPositionAtom, 0);
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      // npsPosition=0 uses getScaleNotes (no bounds), so no centering target
+      expect(result.current.autoCenterTarget).toBeUndefined();
+    });
+
+    it("autoCenterTarget equals the lowest minFret in boxBounds when npsPosition > 0", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "A");
+      store.set(fingeringPatternAtom, "3nps");
+      store.set(npsPositionAtom, 1);
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.boxBounds.length).toBeGreaterThan(0);
+      const lowestMinFret = Math.min(...result.current.boxBounds.map((b) => b.minFret));
+      expect(result.current.autoCenterTarget).toBe(lowestMinFret);
+    });
+
+    it("autoCenterTarget updates when npsPosition changes", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(fingeringPatternAtom, "3nps");
+      store.set(npsPositionAtom, 1);
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      const targetPos1 = result.current.autoCenterTarget;
+      expect(targetPos1).not.toBeUndefined();
+
+      act(() => {
+        store.set(npsPositionAtom, 3);
+      });
+
+      // Different position → different lowest note
+      expect(result.current.autoCenterTarget).not.toBeUndefined();
+      expect(result.current.autoCenterTarget).not.toBe(targetPos1);
+    });
+
+    it("autoCenterTarget is a fret number within the fretboard range", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "E");
+      store.set(fingeringPatternAtom, "3nps");
+      store.set(npsPositionAtom, 2);
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.autoCenterTarget).toBeGreaterThanOrEqual(0);
+      expect(result.current.autoCenterTarget).toBeLessThanOrEqual(24);
+    });
+
+    it("autoCenterTarget is undefined when fingeringPattern switches away from 3nps", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(fingeringPatternAtom, "3nps");
+      store.set(npsPositionAtom, 1);
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.autoCenterTarget).not.toBeUndefined();
+
+      act(() => {
+        store.set(fingeringPatternAtom, "all");
+      });
+
+      // Non-CAGED, non-3NPS mode → no centering target
+      expect(result.current.autoCenterTarget).toBeUndefined();
+    });
+  });
 });
