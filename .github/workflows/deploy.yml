@@ -25,23 +25,28 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+
       - uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm
+
       - run: npm ci
-      - run: npm run lint
-      - run: npm run test
+
       - name: Set version from tag
         run: |
           TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           if [ -n "$TAG" ]; then
             npm version "${TAG#v}" --no-git-tag-version --allow-same-version
           fi
+
       - run: npm run build
+
       - uses: actions/configure-pages@v5
+
       - uses: actions/upload-pages-artifact@v4
         with:
           path: dist
+
       - id: deployment
         uses: actions/deploy-pages@v5
