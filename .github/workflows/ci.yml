@@ -5,7 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-    types: [opened, synchronize, reopened, edited]
+    types: [opened, synchronize, reopened, edited, ready_for_review]
 
 permissions:
   contents: read
@@ -35,6 +35,15 @@ jobs:
             echo "   Examples: feat: add capo support"
             echo "             fix(fretboard): off-by-one on fret 0 highlight"
             echo "   Tip: draft PRs may keep a temporary title until ready for review"
+            exit 1
+          fi
+          description="${TITLE#*: }"
+          if [ ${#description} -gt 72 ]; then
+            echo "❌ PR subject must be ≤ 72 chars (got ${#description})"
+            exit 1
+          fi
+          if [[ "${description: -1}" == "." ]]; then
+            echo "❌ PR subject must not end with a period"
             exit 1
           fi
           echo "✅ PR title OK"
@@ -120,9 +129,12 @@ jobs:
       - name: PR status comment
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
+        env:
+          PR_BRANCH: ${{ github.head_ref }}
         with:
           script: |
             const r = s => s === 'success' ? '✅ Pass' : '❌ Fail';
+            const branch = process.env.PR_BRANCH;
             const body = [
               '## CI Status',
               '',
@@ -132,7 +144,7 @@ jobs:
               `| E2E   | ${r('${{ needs.e2e.result }}')} |`,
               `| Build | ${r('${{ needs.build.result }}')} |`,
               '',
-              `**Branch**: \`${{ github.head_ref }}\`  **Commit**: ${context.payload.pull_request.head.sha.substring(0, 7)}`,
+              `**Branch**: \`${branch}\`  **Commit**: ${context.payload.pull_request.head.sha.substring(0, 7)}`,
             ].join('\n');
 
             const { data: comments } = await github.rest.issues.listComments({
