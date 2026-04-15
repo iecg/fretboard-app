@@ -23,8 +23,8 @@
     "jotai": "^2.19.1",
     "lucide-react": "^1.7.0",
     "motion": "^12.38.0",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
@@ -32,7 +32,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
-    "@types/node": "^24.12.2",
+    "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
@@ -47,8 +47,8 @@
     "playwright": "^1.59.1",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.0",
-    "vite": "^8.0.4",
-    "vitest": "^4.1.3"
+    "vite": "^8.0.8",
+    "vitest": "^4.1.4"
   },
   "lint-staged": {
     "*.{ts,tsx}": "eslint --fix"

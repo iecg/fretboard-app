@@ -204,6 +204,10 @@ export default function useDisplayState() {
             autoCenterTarget = getShapeCenterFret(mainShape);
           }
         }
+      } else if (fingeringPattern === "3nps" && bounds.length > 0) {
+        // Center on the lowest note of the current 3NPS position
+        const lowestBounds = bounds.reduce((a, b) => (a.minFret <= b.minFret ? a : b));
+        autoCenterTarget = lowestBounds.minFret;
       }
 
       return {
