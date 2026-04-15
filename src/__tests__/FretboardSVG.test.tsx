@@ -1,7 +1,8 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render } from "@testing-library/react";
 import { FretboardSVG } from "../FretboardSVG";
 import { getFretboardNotes } from "../guitar";
+import type { CagedShape } from "../shapes";
 
 const STANDARD_TUNING = ["E4", "B3", "G3", "D3", "A2", "E2"];
 
@@ -45,7 +46,7 @@ describe("FretboardSVG", () => {
 
   it("renders SVG polygon with non-empty points attribute when shapePolygons provided", () => {
     const minimalPolygon = {
-      shape: "E",
+      shape: "E" as CagedShape,
       color: "rgba(255,0,0,0.3)",
       cagedLabel: "E",
       modalLabel: "E",
@@ -70,7 +71,7 @@ describe("FretboardSVG", () => {
 
   it("renders shape-labels-row when shapeLabels is caged and polygons exist", () => {
     const minimalPolygon = {
-      shape: "E",
+      shape: "E" as CagedShape,
       color: "rgba(255,0,0,0.3)",
       cagedLabel: "E",
       modalLabel: "E",
