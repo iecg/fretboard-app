@@ -3,51 +3,27 @@ name: CI
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.husky/**'
   pull_request:
     branches: [main]
-    types: [opened, synchronize, reopened, edited, ready_for_review]
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.husky/**'
 
 permissions:
   contents: read
   pull-requests: write
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
 
 jobs:
-  validate-pr:
-    name: PR Title
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    steps:
-      - name: Validate PR title (conventional commit format)
-        env:
-          TITLE: ${{ github.event.pull_request.title }}
-          IS_DRAFT: ${{ github.event.pull_request.draft }}
-        run: |
-          if [[ "$IS_DRAFT" == "true" ]]; then
-            echo "ℹ️ Draft PR — skipping title validation until ready for review"
-            exit 0
-          fi
-          if [[ ! "$TITLE" =~ ^(feat|fix|chore|refactor|docs|test|style|perf|ci|build|revert)(\([^()]+\))?\!?:\ .+ ]]; then
-            echo "❌ PR title must follow conventional commits: type(scope): description"
-            echo "   Examples: feat: add capo support"
-            echo "             fix(fretboard): off-by-one on fret 0 highlight"
-            echo "   Tip: draft PRs may keep a temporary title until ready for review"
-            exit 1
-          fi
-          description="${TITLE#*: }"
-          if [ ${#description} -gt 72 ]; then
-            echo "❌ PR subject must be ≤ 72 chars (got ${#description})"
-            exit 1
-          fi
-          if [[ "${description: -1}" == "." ]]; then
-            echo "❌ PR subject must not end with a period"
-            exit 1
-          fi
-          echo "✅ PR title OK"
-
   test:
     name: Tests
     runs-on: ubuntu-latest
@@ -79,6 +55,12 @@ jobs:
           cache: npm
 
       - run: npm ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
