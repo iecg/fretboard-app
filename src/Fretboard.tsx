@@ -11,7 +11,7 @@ import { NOTES, ENHARMONICS, getNoteDisplayInScale, INTERVAL_NAMES, formatAccide
 import { synth } from "./audio";
 import type { ShapePolygon } from "./shapes";
 
-const STRING_ROW_PX = 40;
+const STRING_ROW_PX_DEFAULT = 40;
 const ZOOM_MAX_PCT = 300;
 
 interface FretboardProps {
@@ -38,6 +38,7 @@ interface FretboardProps {
   onFretClick?: (stringIndex: number, fretIndex: number, noteName: string) => void;
   useFlats?: boolean;
   scaleName?: string;
+  stringRowPx?: number;
 }
 
 export function Fretboard({
@@ -64,6 +65,7 @@ export function Fretboard({
   onFretClick,
   useFlats = false,
   scaleName = "",
+  stringRowPx = STRING_ROW_PX_DEFAULT,
 }: FretboardProps) {
   const fretboardLayout = getFretboardNotes(tuning, Math.max(endFret, maxFret));
   const fretCount = endFret - startFret;
@@ -77,18 +79,29 @@ export function Fretboard({
   }, []);
   const isMobile = viewportWidth < 768;
 
-  // Measure container width to compute auto-fill zoom (desktop)
+  // Measure container width to compute auto-fill zoom (desktop + tablet)
   const [containerWidth, setContainerWidth] = useState(0);
   const totalColumns = fretCount + 1; // includes fret 0
-  const autoFitZoom = containerWidth > 0 && totalColumns > 0
-    ? Math.floor(containerWidth / totalColumns)
-    : 30;
+  // Minimum fret width prevents squished fretboards on tablet when the container is
+  // narrower than the full viewport (e.g., iPad with settings column visible).
+  // When autoFitZoom falls below MIN_FRET_WIDTH the SVG overflows its container,
+  // and .fretboard-wrapper's overflow-x: auto enables horizontal scroll.
+  const MIN_FRET_WIDTH = 49;
+  const autoFitZoom = Math.max(
+    MIN_FRET_WIDTH,
+    containerWidth > 0 && totalColumns > 0
+      ? Math.floor(containerWidth / totalColumns)
+      : 30
+  );
   // fretZoom is a percentage: 100 = auto-fit, 110 = 10% larger, etc.
   const desktopZoom = fretZoom <= 100
     ? autoFitZoom
     : Math.round(autoFitZoom * fretZoom / 100);
-  // On mobile, override zoom so ~7 frets fill the viewport width; desktop zoom unchanged
-  const mobileZoom = Math.floor(viewportWidth / 7);
+  // On mobile phones (<768px), override zoom so ~7 frets fill the viewport width
+  // Tablets (>=768px) use container-aware desktopZoom since they may be in a narrower column
+  const isLandscape = window.innerWidth > window.innerHeight;
+  const mobileFretDivisor = isLandscape ? 10 : 7;
+  const mobileZoom = Math.floor(viewportWidth / mobileFretDivisor);
   const effectiveZoom = isMobile ? mobileZoom : desktopZoom;
 
   // Drag-to-scroll — deferred pointer capture so taps reach note-bubbles
@@ -174,13 +187,17 @@ export function Fretboard({
   const NECK_BORDER = 4; // matches border width in CSS
   const neckWidth = totalColumns * effectiveZoom;
   // Half a row padding above first string and below last string
-  const neckHeight = tuning.length * STRING_ROW_PX;
+  const neckHeight = tuning.length * stringRowPx;
+
+  // Scale note bubble size and font proportionally with stringRowPx
+  const noteBubblePx = Math.round(stringRowPx * 0.8); // diameter = 2 * radius (0.4 * stringRowPx)
+  const noteFontPx = Math.round(stringRowPx * 0.4);
 
   // Uniform fret X: every fret (including 0) is the same width
   const fretToX = (fret: number) => (fret - startFret + 0.5) * effectiveZoom;
 
   // String center Y: centers at 20, 60, 100, 140, 180, 220 for 6 strings
-  const stringCenterY = (s: number) => STRING_ROW_PX / 2 + s * STRING_ROW_PX;
+  const stringCenterY = (s: number) => stringRowPx / 2 + s * stringRowPx;
 
   // Build SVG polygon points from shape vertex data
   const svgPolygons = shapePolygons.map((poly, polyIdx) => {
@@ -379,7 +396,7 @@ export function Fretboard({
           {/* Strings and Notes */}
           <div className="strings-container">
             {tuning.map((openString, stringIndex) => (
-              <div key={`string-${stringIndex}`} className="string-row">
+              <div key={`string-${stringIndex}`} className="string-row" style={stringRowPx !== STRING_ROW_PX_DEFAULT ? { height: `${stringRowPx}px` } : undefined}>
                 <div className="string-line"
                   style={{ height: `${(stringIndex + 1) * 0.4 + 1.5}px` }} />
                 <div className="string-notes">
@@ -471,7 +488,12 @@ export function Fretboard({
                             noteClass,
                             noteClass === "note-scale-only" && hideNonChordNotes && "hidden"
                           )}
-                          style={applyDimOpacity ? { opacity: 0.8 } : undefined}
+                          style={{
+                            width: `${noteBubblePx}px`,
+                            height: `${noteBubblePx}px`,
+                            fontSize: `${noteFontPx}px`,
+                            ...(applyDimOpacity ? { opacity: 0.8 } : {}),
+                          }}
                         >
                           {displayFormat !== "none" && (
                             <span className="note-main-label">{formatAccidental(displayValue)}</span>
