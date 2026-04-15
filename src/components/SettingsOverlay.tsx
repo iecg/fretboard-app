@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode, type Ref } from "react";
-import { useAtom, useSetAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import clsx from "clsx";
 import { AnimatePresence, motion } from "motion/react";
 import { HelpCircle, X } from "lucide-react";
@@ -555,6 +555,13 @@ export default function SettingsOverlay() {
   const [viewport, setViewport] = useState(getViewportSnapshot);
   const openTierRef = useRef<ResponsiveTier | null>(null);
   const layout = getResponsiveLayout(viewport.width, viewport.height);
+
+  // Preserve atomWithStorage initialization behavior even while the drawer is closed.
+  useAtomValue(fretZoomAtom);
+  useAtomValue(fretStartAtom);
+  useAtomValue(fretEndAtom);
+  useAtomValue(tuningNameAtom);
+  useAtomValue(chordFretSpreadAtom);
 
   // Track layout tier at the moment the overlay opens.
   useEffect(() => {
