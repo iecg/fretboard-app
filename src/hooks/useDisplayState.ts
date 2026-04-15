@@ -50,7 +50,7 @@ import {
 } from "../shapes";
 
 // Chord interval filter presets — sets of allowed semitone intervals from chord root
-const CHORD_INTERVAL_FILTERS: Record<string, Set<number>> = {
+export const CHORD_INTERVAL_FILTERS: Record<string, Set<number>> = {
   All: new Set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]),
   Triad: new Set([0, 3, 4, 6, 7, 8]),
   "7th Chord": new Set([0, 3, 4, 6, 7, 8, 10, 11]),
@@ -63,6 +63,8 @@ const CHORD_INTERVAL_FILTERS: Record<string, Set<number>> = {
   "3rd & 5th": new Set([3, 4, 6, 7, 8]),
   "3rd & 7th": new Set([3, 4, 10, 11]),
 };
+
+export const CHORD_FILTER_OPTIONS = Object.keys(CHORD_INTERVAL_FILTERS);
 
 export default function useDisplayState() {
   // Scale
