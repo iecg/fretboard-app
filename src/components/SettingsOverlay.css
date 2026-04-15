@@ -15,7 +15,12 @@
   inline-size: min(100vw, clamp(20rem, 32vw, 24rem));
   max-inline-size: 100vw;
   z-index: var(--z-overlay-drawer);
-  background: var(--chrome-bg);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--chrome-bg) 92%, white 8%) 0%,
+      var(--chrome-bg) 100%
+    );
   color: var(--chrome-fg);
   display: flex;
   flex-direction: column;
@@ -38,6 +43,7 @@
   padding: 12px 16px;
   border-bottom: 1px solid var(--chrome-border);
   flex-shrink: 0;
+  background: color-mix(in srgb, var(--chrome-bg) 92%, white 8%);
 }
 
 .settings-overlay-title {
@@ -78,15 +84,159 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 14px;
   overflow-y: auto;
   padding: 16px 16px max(32px, env(safe-area-inset-bottom, 0px));
   overscroll-behavior: contain;
 }
 
-.overlay-reset-section {
+.overlay-section-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border: 1px solid color-mix(in srgb, var(--surface-highlight) 78%, transparent);
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--chrome-bg) 84%, transparent);
+}
+
+.overlay-section-card--danger {
   margin-top: auto;
-  padding-top: 24px;
-  border-top: 1px solid var(--chrome-border);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-surface-bg) 88%, var(--accent-secondary) 12%) 0%,
+      var(--panel-surface-bg) 100%
+    );
+}
+
+.overlay-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.overlay-section-title {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--chrome-fg-muted);
+}
+
+.overlay-section-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.overlay-field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.overlay-field--divided {
+  padding-bottom: 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--chrome-border) 74%, transparent);
+  margin-bottom: 14px;
+}
+
+.overlay-field-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  position: relative;
+}
+
+.overlay-field-label {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--chrome-fg);
+}
+
+.overlay-field-control {
+  min-width: 0;
+}
+
+.overlay-field-help {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.overlay-help-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--chrome-border) 82%, transparent);
+  background: color-mix(in srgb, var(--surface-raised) 90%, transparent);
+  color: var(--chrome-fg-muted);
+  cursor: pointer;
+  transition: var(--transition-surface);
+}
+
+.overlay-help-trigger:hover,
+.overlay-help-trigger[aria-expanded="true"] {
+  color: var(--chrome-fg);
+  border-color: color-mix(in srgb, var(--accent-primary) 42%, var(--chrome-border));
+  background: color-mix(in srgb, var(--accent-primary) 12%, var(--surface-raised));
+}
+
+.overlay-help-trigger:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.overlay-help-trigger .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.overlay-help-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 1;
+  width: min(17rem, calc(100vw - 64px));
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 22%, var(--chrome-border));
+  background: color-mix(in srgb, var(--surface-base) 94%, white 6%);
+  color: var(--chrome-fg);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  box-shadow: 0 12px 32px color-mix(in srgb, var(--chrome-bg) 82%, transparent);
+}
+
+.overlay-field--selector .drawer-label {
+  display: none;
+}
+
+.overlay-field--selector .drawer-trigger {
+  width: 100%;
+}
+
+.overlay-field--selector .drawer-value {
+  margin-left: 0;
+}
+
+.overlay-field--accidentals .toggle-btn {
+  font-size: var(--text-sm, 0.875rem);
+}
+
+.overlay-reset-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.overlay-reset-copy {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--chrome-fg-muted);
 }
 
 .overlay-reset-btn {
@@ -116,27 +266,17 @@
   outline-offset: var(--focus-ring-offset);
 }
 
-.overlay-control-group {
-  margin-bottom: 20px;
-}
-
-.overlay-control-label {
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--chrome-fg-muted);
-  margin-bottom: 8px;
-}
-
-/* Enlarge ♯/♭ unicode symbols which render small at default text-xs */
-.overlay-control-group--accidentals .toggle-btn {
-  font-size: var(--text-sm, 0.875rem);
+@media (max-width: 480px) {
+  .overlay-help-popover {
+    position: static;
+    width: 100%;
+    margin-top: 10px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .settings-overlay-close,
+  .overlay-help-trigger,
   .overlay-reset-btn {
     transition: none;
     animation: none;
@@ -149,10 +289,15 @@
   }
 
   .settings-overlay-content {
+    gap: 12px;
     padding: 12px 14px max(20px, env(safe-area-inset-bottom, 0px));
   }
 
-  .overlay-control-group {
-    margin-bottom: 16px;
+  .overlay-section-card {
+    gap: 12px;
+  }
+
+  .overlay-field {
+    gap: 8px;
   }
 }

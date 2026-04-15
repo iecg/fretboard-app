@@ -23,6 +23,15 @@ function renderOverlay(store: ReturnType<typeof createStore>) {
   );
 }
 
+function renderOpenOverlay() {
+  const store = createStore();
+  store.set(settingsOverlayOpenAtom, true);
+  return {
+    store,
+    ...renderOverlay(store),
+  };
+}
+
 function setViewport(width: number, height: number) {
   Object.defineProperty(window, "innerWidth", {
     writable: true,
@@ -56,12 +65,120 @@ describe("SettingsOverlay", () => {
   });
 
   it("renders drawer with Settings heading when open", () => {
-    const store = createStore();
-    store.set(settingsOverlayOpenAtom, true);
-    renderOverlay(store);
+    renderOpenOverlay();
     const drawer = document.querySelector(".settings-overlay-drawer");
     expect(drawer).toBeTruthy();
     expect(screen.getByText("Settings")).toBeTruthy();
+  });
+
+  it("renders sections in the expected order", () => {
+    renderOpenOverlay();
+
+    const headings = Array.from(
+      document.querySelectorAll(".overlay-section-title"),
+    ).map((node) => node.textContent?.trim());
+
+    expect(headings).toEqual([
+      "View",
+      "Instrument",
+      "Notation",
+      "Chord Layout",
+      "Reset",
+    ]);
+  });
+
+  it("renders all settings controls in the redesigned drawer", () => {
+    renderOpenOverlay();
+
+    expect(screen.getByText("Zoom")).toBeTruthy();
+    expect(screen.getByText("Fret Range")).toBeTruthy();
+    expect(screen.getAllByText("Tuning")).toHaveLength(2);
+    expect(screen.getByRole("button", { name: "Tuning: Standard" })).toBeTruthy();
+    expect(screen.getByText("Accidentals")).toBeTruthy();
+    expect(screen.getByText("Enharmonic Display")).toBeTruthy();
+    expect(screen.getByText("Chord Spread")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Reset all settings" })).toBeTruthy();
+  });
+
+  it("shows help buttons only for the less-obvious settings", () => {
+    renderOpenOverlay();
+
+    expect(screen.getByLabelText("Show help for Chord Spread")).toBeTruthy();
+    expect(screen.getByLabelText("Show help for Accidentals")).toBeTruthy();
+    expect(screen.getByLabelText("Show help for Enharmonic Display")).toBeTruthy();
+    expect(screen.queryByLabelText("Show help for Zoom")).toBeNull();
+    expect(screen.queryByLabelText("Show help for Fret Range")).toBeNull();
+    expect(screen.queryByLabelText("Show help for Tuning")).toBeNull();
+  });
+
+  it("toggles help popovers on click and keeps only one open at a time", () => {
+    renderOpenOverlay();
+
+    fireEvent.click(screen.getByLabelText("Show help for Chord Spread"));
+    expect(
+      screen.getByText(
+        "Limits how far the visible chord tones can span across frets on the fretboard.",
+      ),
+    ).toBeTruthy();
+
+    fireEvent.click(screen.getByLabelText("Show help for Accidentals"));
+    expect(
+      screen.queryByText(
+        "Limits how far the visible chord tones can span across frets on the fretboard.",
+      ),
+    ).toBeNull();
+    expect(
+      screen.getByText(
+        "Auto chooses sharps or flats based on the current musical context.",
+      ),
+    ).toBeTruthy();
+
+    fireEvent.click(screen.getByLabelText("Hide help for Accidentals"));
+    expect(
+      screen.queryByText(
+        "Auto chooses sharps or flats based on the current musical context.",
+      ),
+    ).toBeNull();
+  });
+
+  it("closes a help popover on escape before closing the drawer", () => {
+    const { store } = renderOpenOverlay();
+
+    fireEvent.click(screen.getByLabelText("Show help for Enharmonic Display"));
+    expect(
+      screen.getByText(
+        "Controls whether equivalent note spellings appear when they clarify the theory view.",
+      ),
+    ).toBeTruthy();
+
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(
+      screen.queryByText(
+        "Controls whether equivalent note spellings appear when they clarify the theory view.",
+      ),
+    ).toBeNull();
+    expect(store.get(settingsOverlayOpenAtom)).toBe(true);
+
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(store.get(settingsOverlayOpenAtom)).toBe(false);
+  });
+
+  it("closes an open help popover when clicking outside it", () => {
+    renderOpenOverlay();
+
+    fireEvent.click(screen.getByLabelText("Show help for Chord Spread"));
+    expect(
+      screen.getByText(
+        "Limits how far the visible chord tones can span across frets on the fretboard.",
+      ),
+    ).toBeTruthy();
+
+    fireEvent.mouseDown(screen.getByText("Notation"));
+    expect(
+      screen.queryByText(
+        "Limits how far the visible chord tones can span across frets on the fretboard.",
+      ),
+    ).toBeNull();
   });
 
   it("marks the drawer as full-width on mobile layouts", () => {
@@ -75,19 +192,15 @@ describe("SettingsOverlay", () => {
     expect(drawer?.getAttribute("data-full-width")).toBe("true");
   });
 
-  it("closes overlay when ESC is pressed", () => {
-    const store = createStore();
-    store.set(settingsOverlayOpenAtom, true);
-    renderOverlay(store);
+  it("closes overlay when ESC is pressed with no help popover open", () => {
+    const { store } = renderOpenOverlay();
     expect(store.get(settingsOverlayOpenAtom)).toBe(true);
     fireEvent.keyDown(window, { key: "Escape" });
     expect(store.get(settingsOverlayOpenAtom)).toBe(false);
   });
 
   it("closes overlay when backdrop is clicked", () => {
-    const store = createStore();
-    store.set(settingsOverlayOpenAtom, true);
-    renderOverlay(store);
+    const { store } = renderOpenOverlay();
     const backdrop = document.querySelector(".settings-overlay-backdrop");
     expect(backdrop).toBeTruthy();
     fireEvent.click(backdrop!);
@@ -95,18 +208,14 @@ describe("SettingsOverlay", () => {
   });
 
   it("closes overlay when X button is clicked", () => {
-    const store = createStore();
-    store.set(settingsOverlayOpenAtom, true);
-    renderOverlay(store);
+    const { store } = renderOpenOverlay();
     const closeBtn = screen.getByLabelText("Close settings");
     fireEvent.click(closeBtn);
     expect(store.get(settingsOverlayOpenAtom)).toBe(false);
   });
 
   it("stays open when resized within the same layout tier", () => {
-    const store = createStore();
-    store.set(settingsOverlayOpenAtom, true);
-    renderOverlay(store);
+    const { store } = renderOpenOverlay();
 
     setViewport(1280, 900);
     fireEvent(window, new Event("resize"));
@@ -115,9 +224,7 @@ describe("SettingsOverlay", () => {
   });
 
   it("closes when resized across layout tiers", () => {
-    const store = createStore();
-    store.set(settingsOverlayOpenAtom, true);
-    renderOverlay(store);
+    const { store } = renderOpenOverlay();
 
     setViewport(390, 844);
     fireEvent(window, new Event("resize"));
@@ -172,9 +279,7 @@ describe("SettingsOverlay", () => {
   });
 
   it("traps focus when tabbing forward from the last control", () => {
-    const store = createStore();
-    store.set(settingsOverlayOpenAtom, true);
-    renderOverlay(store);
+    renderOpenOverlay();
 
     const closeButton = screen.getByLabelText("Close settings");
     const resetButton = screen.getByRole("button", {
@@ -187,10 +292,23 @@ describe("SettingsOverlay", () => {
     expect(document.activeElement).toBe(closeButton);
   });
 
+  it("keeps focus trapping intact when a help popover is open", () => {
+    renderOpenOverlay();
+
+    fireEvent.click(screen.getByLabelText("Show help for Chord Spread"));
+    const closeButton = screen.getByLabelText("Close settings");
+    const resetButton = screen.getByRole("button", {
+      name: "Reset all settings",
+    });
+
+    resetButton.focus();
+    fireEvent.keyDown(window, { key: "Tab" });
+
+    expect(document.activeElement).toBe(closeButton);
+  });
+
   it("traps focus when shift-tabbing backward from the first control", () => {
-    const store = createStore();
-    store.set(settingsOverlayOpenAtom, true);
-    renderOverlay(store);
+    renderOpenOverlay();
 
     const closeButton = screen.getByLabelText("Close settings");
     const resetButton = screen.getByRole("button", {
