@@ -4,7 +4,6 @@
 [![Version](https://img.shields.io/github/v/tag/iecg/fretboard-app?label=version&sort=semver)](https://github.com/iecg/fretboard-app/tags)
 [![CI](https://github.com/iecg/fretboard-app/actions/workflows/ci.yml/badge.svg)](https://github.com/iecg/fretboard-app/actions/workflows/ci.yml)
 [![Deploy](https://github.com/iecg/fretboard-app/actions/workflows/deploy.yml/badge.svg)](https://github.com/iecg/fretboard-app/actions/workflows/deploy.yml)
-[![Coverage](https://codecov.io/gh/iecg/fretboard-app/branch/main/graph/badge.svg)](https://codecov.io/gh/iecg/fretboard-app)
 [![Node](https://img.shields.io/badge/node-%3E%3D24-brightgreen?logo=node.js)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)

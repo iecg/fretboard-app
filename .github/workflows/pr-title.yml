@@ -1,0 +1,46 @@
+name: PR Title
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, edited, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: pr-title-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-pr:
+    name: PR Title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR title (conventional commit format)
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+          IS_DRAFT: ${{ github.event.pull_request.draft }}
+        run: |
+          if [[ "$IS_DRAFT" == "true" ]]; then
+            echo "ℹ️ Draft PR — skipping title validation until ready for review"
+            exit 0
+          fi
+          if [[ ! "$TITLE" =~ ^(feat|fix|chore|refactor|docs|test|style|perf|ci|build|revert)(\([^()]+\))?\!?:\ .+ ]]; then
+            echo "❌ PR title must follow conventional commits: type(scope): description"
+            echo "   Examples: feat: add capo support"
+            echo "             fix(fretboard): off-by-one on fret 0 highlight"
+            echo "   Tip: draft PRs may keep a temporary title until ready for review"
+            exit 1
+          fi
+          description="${TITLE#*: }"
+          if [ ${#description} -gt 72 ]; then
+            echo "❌ PR subject must be ≤ 72 chars (got ${#description})"
+            exit 1
+          fi
+          if [[ "${description: -1}" == "." ]]; then
+            echo "❌ PR subject must not end with a period"
+            exit 1
+          fi
+          echo "✅ PR title OK"
