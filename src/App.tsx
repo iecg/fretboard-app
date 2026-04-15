@@ -65,7 +65,7 @@ import {
   enharmonicDisplayAtom,
 } from "./store/atoms";
 import SettingsOverlay from "./components/SettingsOverlay";
-import { getResponsiveLayout } from "./layout/responsive";
+import useLayoutMode from "./hooks/useLayoutMode";
 import "./App.css";
 
 const END_FRET = 24;
@@ -214,19 +214,7 @@ function AppContent() {
   const [showHelp, setShowHelp] = useState(false);
 
   // Viewport / mobile detection (not persisted)
-  const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
-  const [viewportHeight, setViewportHeight] = useState(
-    () => window.innerHeight,
-  );
-  useEffect(() => {
-    const handler = () => {
-      setViewportWidth(window.innerWidth);
-      setViewportHeight(window.innerHeight);
-    };
-    window.addEventListener("resize", handler);
-    return () => window.removeEventListener("resize", handler);
-  }, []);
-  const layout = getResponsiveLayout(viewportWidth, viewportHeight);
+  const layout = useLayoutMode();
   const stringRowPx = layout.stringRowPx;
 
   // Sync mute state to audio synth (runs on mount and whenever isMuted changes)

@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 
 // Fix __APP_VERSION__ to prevent snapshot breakage on version bumps
 (globalThis as Record<string, unknown>).__APP_VERSION__ = '0.0.0-test';
