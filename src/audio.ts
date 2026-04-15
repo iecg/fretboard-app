@@ -2,13 +2,36 @@ class GuitarSynth {
   private ctx: AudioContext | null = null;
   private isMuted: boolean = false;
   private masterGain: GainNode | null = null;
+  private unsupported: boolean = false;
+
+  private getAudioContextConstructor():
+    | (new () => AudioContext)
+    | undefined {
+    const w = window as Window & {
+      AudioContext?: new () => AudioContext;
+      webkitAudioContext?: new () => AudioContext;
+    };
+    return w.AudioContext ?? w.webkitAudioContext;
+  }
 
   init() {
-    if (!this.ctx) {
-      this.ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+    if (this.unsupported || this.ctx) return;
+
+    const AudioContextCtor = this.getAudioContextConstructor();
+    if (!AudioContextCtor) {
+      this.unsupported = true;
+      return;
+    }
+
+    try {
+      this.ctx = new AudioContextCtor();
       this.masterGain = this.ctx.createGain();
       this.masterGain.connect(this.ctx.destination);
       this.masterGain.gain.value = 0.5; // Slightly louder clean signal
+    } catch {
+      this.unsupported = true;
+      this.ctx = null;
+      this.masterGain = null;
     }
   }
 

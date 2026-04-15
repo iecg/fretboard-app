@@ -54,6 +54,8 @@ describe('GuitarSynth', () => {
     (synth as any).masterGain = null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (synth as any).isMuted = false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (synth as any).unsupported = false;
 
     // Setup mock returns
     mockAudioContext.createGain.mockReturnValue(mockGainNode as unknown as GainNode);
@@ -92,6 +94,38 @@ describe('GuitarSynth', () => {
       synth.init();
       const callCount2 = mockAudioContext.createGain.mock.calls.length;
       expect(callCount2).toBe(callCount1);
+    });
+
+    it('no-ops safely when WebAudio is unsupported', async () => {
+      // Simulate an environment without AudioContext.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (window as any).AudioContext;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (window as any).webkitAudioContext;
+
+      await expect(synth.playNote(440)).resolves.toBeUndefined();
+    });
+
+    it('marks the synth unsupported when AudioContext construction fails', async () => {
+      const throwingCtor = vi.fn(function() {
+        throw new Error('AudioContext blocked');
+      });
+      (window as unknown as { AudioContext: typeof AudioContext }).AudioContext =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        throwingCtor as any;
+
+      await expect(synth.playNote(440)).resolves.toBeUndefined();
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((synth as any).unsupported).toBe(true);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((synth as any).ctx).toBeNull();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((synth as any).masterGain).toBeNull();
+
+      await synth.playNote(440);
+      expect(throwingCtor).toHaveBeenCalledTimes(1);
+      expect(mockAudioContext.createOscillator).not.toHaveBeenCalled();
     });
   });
 
