@@ -33,3 +33,5 @@ coverage
 .remember/
 
 test-results/
+
+scripts/gif-capture/frames/

@@ -14,7 +14,7 @@
 
 An interactive guitar fretboard learning tool built with React, TypeScript, and Vite.
 
-![FretFlow screenshot](public/screenshot.png)
+![FretFlow demo](public/demo.gif)
 
 ## Features
 
