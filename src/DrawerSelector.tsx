@@ -59,6 +59,20 @@ export function DrawerSelector(props: DrawerSelectorProps) {
     }
   }, [open, selectedIndex]);
 
+  // Reliably move focus to the listbox when it opens (autoFocus on div is not reliable)
+  useEffect(() => {
+    if (open && listboxRef.current) {
+      listboxRef.current.focus();
+    }
+  }, [open]);
+
+  // Scroll the focused option into view when activeIndex changes
+  useEffect(() => {
+    if (!open || !listboxRef.current) return;
+    const focused = listboxRef.current.querySelector<HTMLElement>(".drawer-option.focused");
+    focused?.scrollIntoView({ block: "nearest" });
+  }, [activeIndex, open]);
+
   useEffect(() => {
     if (!open || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
@@ -95,6 +109,7 @@ export function DrawerSelector(props: DrawerSelectorProps) {
         onClick={() => setOpen((o) => !o)}
         onKeyDown={(e) => {
           if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+            e.preventDefault();
             if (!open) {
               setOpen(true);
             }
@@ -116,7 +131,6 @@ export function DrawerSelector(props: DrawerSelectorProps) {
           role="listbox"
           aria-label={label}
           tabIndex={0}
-          autoFocus
           aria-activedescendant={flatOptions[activeIndex] === null ? `${listboxId}-none` : `${listboxId}-${sanitizeId(flatOptions[activeIndex] as string)}`}
           className={clsx(
             "drawer-options",
