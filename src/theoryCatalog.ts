@@ -5,6 +5,8 @@ export type ScaleFamilyId =
   | "pentatonic"
   | "blues";
 
+export type ScaleBrowseMode = "parallel" | "relative";
+
 export interface ScaleMember {
   scaleName: string;
   displayLabel: string;
@@ -28,9 +30,49 @@ interface ScaleFamilyDefinition extends Omit<ScaleFamily, "members"> {
   members: readonly ScaleMemberDefinition[];
 }
 
+export interface ScaleBrowseOption {
+  rootNote: string;
+  scaleName: string;
+  label: string;
+  ordinal: number;
+}
+
 const SCALE_NAME_ALIASES: Record<string, string> = {
   Minor: "Natural Minor",
 };
+
+const CHROMATIC_NOTES = [
+  "C",
+  "C#",
+  "D",
+  "D#",
+  "E",
+  "F",
+  "F#",
+  "G",
+  "G#",
+  "A",
+  "A#",
+  "B",
+] as const;
+
+const ENHARMONIC_TO_SHARP: Record<string, string> = {
+  Db: "C#",
+  Eb: "D#",
+  Gb: "F#",
+  Ab: "G#",
+  Bb: "A#",
+};
+
+const SHARP_TO_FLAT: Record<string, string> = Object.fromEntries(
+  Object.entries(ENHARMONIC_TO_SHARP).map(([flat, sharp]) => [sharp, flat]),
+);
+
+const RELATIVE_BROWSE_FAMILIES = new Set<ScaleFamilyId>([
+  "major",
+  "harmonic-minor",
+  "melodic-minor",
+]);
 
 const SCALE_FAMILY_DEFINITIONS = [
   {
@@ -287,6 +329,11 @@ export const SCALE_TO_PARENT_MAJOR_OFFSET: Record<string, number> =
 const scaleEntryByName = new Map<string, ScaleCatalogEntry>();
 const familyById = new Map<ScaleFamilyId, ScaleFamily>();
 const familyBySelectorLabel = new Map<string, ScaleFamily>();
+const familyDefinitionById = new Map<ScaleFamilyId, ScaleFamilyDefinition>();
+
+for (const familyDefinition of SCALE_FAMILY_DEFINITIONS) {
+  familyDefinitionById.set(familyDefinition.id, familyDefinition);
+}
 
 for (const family of SCALE_FAMILIES) {
   familyById.set(family.id, family);
@@ -298,6 +345,44 @@ for (const family of SCALE_FAMILIES) {
 
 function getDefaultScaleEntry(): ScaleCatalogEntry {
   return scaleEntryByName.get("Major")!;
+}
+
+function normalizePitchClass(note: string): string {
+  return ENHARMONIC_TO_SHARP[note] ?? note;
+}
+
+function getPitchClassIndex(note: string): number {
+  return CHROMATIC_NOTES.indexOf(
+    normalizePitchClass(note) as (typeof CHROMATIC_NOTES)[number],
+  );
+}
+
+function transposePitchClass(note: string, semitoneDelta: number): string {
+  const noteIndex = getPitchClassIndex(note);
+  if (noteIndex === -1) return note;
+  const nextIndex =
+    (noteIndex + semitoneDelta + CHROMATIC_NOTES.length) %
+    CHROMATIC_NOTES.length;
+  return CHROMATIC_NOTES[nextIndex];
+}
+
+function formatPitchClass(note: string, useFlats = false): string {
+  const normalized = normalizePitchClass(note);
+  return useFlats ? SHARP_TO_FLAT[normalized] ?? normalized : normalized;
+}
+
+function formatOrdinalMode(ordinal: number): string {
+  const mod10 = ordinal % 10;
+  const mod100 = ordinal % 100;
+  if (mod10 === 1 && mod100 !== 11) return `${ordinal}st Mode`;
+  if (mod10 === 2 && mod100 !== 12) return `${ordinal}nd Mode`;
+  if (mod10 === 3 && mod100 !== 13) return `${ordinal}rd Mode`;
+  return `${ordinal}th Mode`;
+}
+
+function getFamilyDefinition(scaleName: string): ScaleFamilyDefinition {
+  const familyId = resolveScaleCatalogEntry(scaleName).family.id;
+  return familyDefinitionById.get(familyId) ?? SCALE_FAMILY_DEFINITIONS[0];
 }
 
 export function normalizeScaleName(scaleName: string): string {
@@ -336,6 +421,29 @@ export function getScaleFamilyBySelectorLabel(
   selectorLabel: string,
 ): ScaleFamily | null {
   return familyBySelectorLabel.get(selectorLabel) ?? null;
+}
+
+export function supportsRelativeScaleBrowsing(scaleName: string): boolean {
+  return RELATIVE_BROWSE_FAMILIES.has(getScaleFamily(scaleName).id);
+}
+
+export function getEffectiveScaleBrowseMode(
+  scaleName: string,
+  browseMode: ScaleBrowseMode,
+): ScaleBrowseMode {
+  return browseMode === "relative" && !supportsRelativeScaleBrowsing(scaleName)
+    ? "parallel"
+    : browseMode;
+}
+
+export function getScaleBrowseReferenceRoot(
+  rootNote: string,
+  scaleName: string,
+): string {
+  const entry = resolveScaleCatalogEntry(scaleName);
+  const baseIntervals = getFamilyDefinition(scaleName).members[0]?.intervals;
+  const degreeOffset = baseIntervals?.[entry.index] ?? 0;
+  return transposePitchClass(rootNote, -degreeOffset);
 }
 
 export function getScaleMemberTerm(scaleName: string): "Mode" | "Variant" {
@@ -389,4 +497,80 @@ export function getAdjacentScaleName(
     (entry.index + direction + entry.family.members.length) %
     entry.family.members.length;
   return entry.family.members[nextIndex]?.scaleName ?? entry.member.scaleName;
+}
+
+export function getScaleBrowseOptions(
+  rootNote: string,
+  scaleName: string,
+  browseMode: ScaleBrowseMode,
+  useFlats = false,
+): ScaleBrowseOption[] {
+  const entry = resolveScaleCatalogEntry(scaleName);
+  const familyDefinition = getFamilyDefinition(scaleName);
+  const effectiveBrowseMode = getEffectiveScaleBrowseMode(scaleName, browseMode);
+  const referenceRoot =
+    effectiveBrowseMode === "relative"
+      ? getScaleBrowseReferenceRoot(rootNote, scaleName)
+      : rootNote;
+  const baseIntervals = familyDefinition.members[0]?.intervals ?? [];
+
+  return entry.family.members.map((member, index) => {
+    const browseRoot =
+      effectiveBrowseMode === "relative"
+        ? transposePitchClass(referenceRoot, baseIntervals[index] ?? 0)
+        : rootNote;
+    const rootLabel = formatPitchClass(browseRoot, useFlats);
+    const ordinalSuffix =
+      effectiveBrowseMode === "relative"
+        ? ` (${formatOrdinalMode(index + 1)})`
+        : "";
+    return {
+      rootNote: browseRoot,
+      scaleName: member.scaleName,
+      label: `${rootLabel} ${member.displayLabel}${ordinalSuffix}`,
+      ordinal: index + 1,
+    };
+  });
+}
+
+export function getActiveScaleBrowseOption(
+  rootNote: string,
+  scaleName: string,
+  browseMode: ScaleBrowseMode,
+  useFlats = false,
+): ScaleBrowseOption {
+  const options = getScaleBrowseOptions(rootNote, scaleName, browseMode, useFlats);
+  const normalizedRoot = normalizePitchClass(rootNote);
+  const normalizedScaleName = normalizeScaleName(scaleName);
+  return (
+    options.find(
+      (option) =>
+        normalizePitchClass(option.rootNote) === normalizedRoot &&
+        normalizeScaleName(option.scaleName) === normalizedScaleName,
+    ) ?? options[0]
+  );
+}
+
+export function getAdjacentScaleBrowseOption(
+  rootNote: string,
+  scaleName: string,
+  browseMode: ScaleBrowseMode,
+  direction: -1 | 1,
+  useFlats = false,
+): ScaleBrowseOption {
+  const options = getScaleBrowseOptions(rootNote, scaleName, browseMode, useFlats);
+  const activeOption = getActiveScaleBrowseOption(
+    rootNote,
+    scaleName,
+    browseMode,
+    useFlats,
+  );
+  const activeIndex = options.findIndex(
+    (option) =>
+      option.rootNote === activeOption.rootNote &&
+      option.scaleName === activeOption.scaleName,
+  );
+  const nextIndex =
+    (activeIndex + direction + options.length) % options.length;
+  return options[nextIndex] ?? activeOption;
 }

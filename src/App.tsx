@@ -84,6 +84,8 @@ function AppContent() {
     rootNote,
     scaleName,
     setScaleName,
+    scaleBrowseMode,
+    setScaleBrowseMode,
     useFlats,
     currentTuning,
     chordRoot,
@@ -245,6 +247,8 @@ function AppContent() {
         setRootNote={setRootNote}
         scaleName={scaleName}
         setScaleName={setScaleName}
+        scaleBrowseMode={scaleBrowseMode}
+        setScaleBrowseMode={setScaleBrowseMode}
         chordType={chordType}
         setChordType={setChordType}
         chordRoot={chordRoot}
@@ -412,6 +416,8 @@ function AppContent() {
       )}
 
       {/* Main Fretboard */}
+      {layout.showSummary && summaryContent}
+
       <main className="main-fretboard">
         <Fretboard
           tuning={currentTuning}
@@ -449,8 +455,6 @@ function AppContent() {
           viewTabContent={viewTabContent}
         />
       )}
-
-      {layout.showSummary && summaryContent}
 
       <div className="version-badge">
         v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar.

@@ -115,9 +115,14 @@ const SHAPE_TEMPLATES_HARMONIC_MINOR: Record<CagedShape, ShapeTemplate> = {
   D: { anchorString: 3, perString: [[0,3],[2,3],[0,3],[0,3],[0,4],[0,3]] },
 };
 
-/** Select the appropriate fixed template set for a 7-note scale. */
-export function get7NoteTemplate(scaleName: string): Record<CagedShape, ShapeTemplate> {
+/** Select the appropriate fixed template set for supported 7-note scales. */
+export function get7NoteTemplate(
+  scaleName: string,
+): Record<CagedShape, ShapeTemplate> | null {
   switch (scaleName) {
+    case 'Major':
+    case 'Natural Minor':
+      return SHAPE_TEMPLATES_7NOTE;
     case 'Dorian':        return SHAPE_TEMPLATES_DORIAN;
     case 'Phrygian':      return SHAPE_TEMPLATES_PHRYGIAN;
     case 'Locrian':       return SHAPE_TEMPLATES_LOCRIAN;
@@ -125,7 +130,7 @@ export function get7NoteTemplate(scaleName: string): Record<CagedShape, ShapeTem
     // Major-quality scales remapped to their relative minor mode:
     case 'Lydian':        return SHAPE_TEMPLATES_DORIAN;     // Lydian → relative Dorian
     case 'Mixolydian':    return SHAPE_TEMPLATES_PHRYGIAN;   // Mixolydian → relative Phrygian
-    default:              return SHAPE_TEMPLATES_7NOTE; // Natural Minor + Major (→ Aeolian)
+    default:              return null;
   }
 }
 

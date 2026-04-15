@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  getActiveScaleBrowseOption,
   getAdjacentScaleName,
+  getAdjacentScaleBrowseOption,
+  getEffectiveScaleBrowseMode,
+  getScaleBrowseOptions,
   getScaleDisplayLabel,
   getScaleMemberTerm,
   resolveScaleCatalogEntry,
@@ -56,5 +60,76 @@ describe("theory catalog", () => {
     );
     expect(getScaleMemberTerm("Dorian")).toBe("Mode");
     expect(getScaleMemberTerm("Minor Pentatonic")).toBe("Variant");
+  });
+
+  it("builds parallel browse options with a fixed root", () => {
+    expect(
+      getScaleBrowseOptions("C", "Major", "parallel").map(
+        (option) => option.label,
+      ),
+    ).toEqual([
+      "C Major (Ionian)",
+      "C Dorian",
+      "C Phrygian",
+      "C Lydian",
+      "C Mixolydian",
+      "C Natural Minor (Aeolian)",
+      "C Locrian",
+    ]);
+  });
+
+  it("builds relative browse options with ordinal mode labels", () => {
+    expect(
+      getScaleBrowseOptions("C", "Major", "relative").map(
+        (option) => option.label,
+      ),
+    ).toEqual([
+      "C Major (Ionian) (1st Mode)",
+      "D Dorian (2nd Mode)",
+      "E Phrygian (3rd Mode)",
+      "F Lydian (4th Mode)",
+      "G Mixolydian (5th Mode)",
+      "A Natural Minor (Aeolian) (6th Mode)",
+      "B Locrian (7th Mode)",
+    ]);
+  });
+
+  it("infers the family context for non-tonic modal selections", () => {
+    expect(
+      getActiveScaleBrowseOption("D", "Dorian", "relative").label,
+    ).toBe("D Dorian (2nd Mode)");
+    expect(
+      getScaleBrowseOptions("E", "Phrygian Dominant", "relative").map(
+        (option) => option.label,
+      ),
+    ).toEqual([
+      "A Harmonic Minor (1st Mode)",
+      "B Locrian Natural 6 (2nd Mode)",
+      "C Ionian Augmented (3rd Mode)",
+      "D Dorian Sharp 4 (4th Mode)",
+      "E Phrygian Dominant (5th Mode)",
+      "F Lydian Sharp 2 (6th Mode)",
+      "G# Altered Diminished (7th Mode)",
+    ]);
+  });
+
+  it("steps through the computed browse order", () => {
+    expect(
+      getAdjacentScaleBrowseOption("C", "Major", "relative", 1).label,
+    ).toBe("D Dorian (2nd Mode)");
+    expect(
+      getAdjacentScaleBrowseOption("C", "Major", "parallel", 1).label,
+    ).toBe("C Dorian");
+  });
+
+  it("falls back to parallel browsing for pentatonic and blues families", () => {
+    expect(getEffectiveScaleBrowseMode("Minor Pentatonic", "relative")).toBe(
+      "parallel",
+    );
+    expect(
+      getScaleBrowseOptions("C", "Minor Pentatonic", "relative").map(
+        (option) => option.label,
+      ),
+    ).toEqual(["C Minor Pentatonic", "C Major Pentatonic"]);
   });
 });

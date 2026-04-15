@@ -6,6 +6,7 @@ import { k } from "./utils/storage";
 import {
   rootNoteAtom,
   scaleNameAtom,
+  scaleBrowseModeAtom,
   chordRootAtom,
   chordTypeAtom,
   linkChordRootAtom,
@@ -283,6 +284,43 @@ describe("atoms", () => {
     });
   });
 
+  describe("scaleBrowseModeStorage", () => {
+    it("keeps valid stored browse modes unchanged", () => {
+      localStorage.setItem(k("scaleBrowseMode"), "relative");
+      const store = makeStore();
+      const unsub = mount(store, scaleBrowseModeAtom);
+
+      expect(store.get(scaleBrowseModeAtom)).toBe("relative");
+      expect(localStorage.getItem(k("scaleBrowseMode"))).toBe("relative");
+
+      unsub();
+    });
+
+    it("falls back to parallel for invalid browse modes", () => {
+      localStorage.setItem(k("scaleBrowseMode"), "sideways");
+      const store = makeStore();
+      const unsub = mount(store, scaleBrowseModeAtom);
+
+      expect(store.get(scaleBrowseModeAtom)).toBe("parallel");
+      expect(localStorage.getItem(k("scaleBrowseMode"))).toBe("parallel");
+
+      unsub();
+    });
+  });
+
+  describe("shapeLabelsStorage", () => {
+    it("migrates legacy modal labels to caged labels", () => {
+      localStorage.setItem(k("shapeLabels"), "modal");
+      const store = makeStore();
+      const unsub = mount(store, shapeLabelsAtom);
+
+      expect(store.get(shapeLabelsAtom)).toBe("caged");
+      expect(localStorage.getItem(k("shapeLabels"))).toBe("caged");
+
+      unsub();
+    });
+  });
+
   describe("chordTypeStorage", () => {
     it("reads empty string as null", () => {
       localStorage.setItem(k("chordType"), "");
@@ -406,6 +444,7 @@ describe("atoms", () => {
       const store = makeStore();
       store.set(rootNoteAtom, "G");
       store.set(scaleNameAtom, "Dorian");
+      store.set(scaleBrowseModeAtom, "relative");
       store.set(isMutedAtom, true);
       store.set(fretZoomAtom, 200);
       store.set(displayFormatAtom, "degrees");
@@ -415,6 +454,7 @@ describe("atoms", () => {
 
       expect(store.get(rootNoteAtom)).toBe("C");
       expect(store.get(scaleNameAtom)).toBe("Major");
+      expect(store.get(scaleBrowseModeAtom)).toBe("parallel");
       expect(store.get(isMutedAtom)).toBe(false);
       expect(store.get(fretZoomAtom)).toBe(100);
       expect(store.get(displayFormatAtom)).toBe("notes");
@@ -431,6 +471,7 @@ describe("atoms", () => {
       store.set(fingeringPatternAtom, "caged");
       store.set(npsPositionAtom, 3);
       store.set(shapeLabelsAtom, "caged");
+      store.set(scaleBrowseModeAtom, "relative");
       store.set(tuningNameAtom, "Drop D");
       store.set(fretStartAtom, 3);
       store.set(fretEndAtom, 12);
@@ -448,6 +489,7 @@ describe("atoms", () => {
       expect(store.get(fingeringPatternAtom)).toBe("all");
       expect(store.get(npsPositionAtom)).toBe(0);
       expect(store.get(shapeLabelsAtom)).toBe("none");
+      expect(store.get(scaleBrowseModeAtom)).toBe("parallel");
       expect(store.get(tuningNameAtom)).toBe("Standard");
       expect(store.get(fretStartAtom)).toBe(0);
       expect(store.get(fretEndAtom)).toBe(24);

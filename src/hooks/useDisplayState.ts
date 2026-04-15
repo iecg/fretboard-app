@@ -24,6 +24,7 @@ import {
   accidentalModeAtom,
   enharmonicDisplayAtom,
   setRootNoteAtom,
+  scaleBrowseModeAtom,
 } from "../store/atoms";
 import {
   SCALES,
@@ -33,12 +34,11 @@ import {
   getChordNotes,
   getIntervalNotes,
   getNoteDisplay,
-  getNoteDisplayInScale,
   getDivergentNotes,
   formatAccidental,
   resolveAccidentalMode,
 } from "../theory";
-import { getScaleDisplayLabel } from "../theoryCatalog";
+import { getActiveScaleBrowseOption } from "../theoryCatalog";
 import { STANDARD_TUNING, TUNINGS } from "../guitar";
 import {
   CAGED_SHAPES,
@@ -71,6 +71,7 @@ export default function useDisplayState() {
   // Scale
   const rootNote = useAtomValue(rootNoteAtom);
   const [scaleName, setScaleName] = useAtom(scaleNameAtom);
+  const [scaleBrowseMode, setScaleBrowseMode] = useAtom(scaleBrowseModeAtom);
 
   // Chord overlay
   const [chordRoot, setChordRoot] = useAtom(chordRootAtom);
@@ -253,7 +254,17 @@ export default function useDisplayState() {
     [rootNote, scaleName],
   );
 
-  const scaleLabel = `${formatAccidental(getNoteDisplayInScale(rootNote, rootNote, SCALES[scaleName] || [], useFlats))} ${getScaleDisplayLabel(scaleName)}`;
+  const activeBrowseOption = useMemo(
+    () =>
+      getActiveScaleBrowseOption(rootNote, scaleName, scaleBrowseMode, useFlats),
+    [rootNote, scaleName, scaleBrowseMode, useFlats],
+  );
+
+  const scaleMetadata =
+    fingeringPattern === "3nps" && npsPosition > 0
+      ? ` | 3NPS Position ${npsPosition}`
+      : "";
+  const scaleLabel = `${formatAccidental(activeBrowseOption.label)}${scaleMetadata}`;
 
   const chordLabel = chordType
     ? `${formatAccidental(getNoteDisplay(chordRoot, chordRoot, useFlats))} ${chordType}`
@@ -272,6 +283,7 @@ export default function useDisplayState() {
     // Atom values
     rootNote,
     scaleName,
+    scaleBrowseMode,
     chordRoot,
     chordType,
     linkChordRoot,
@@ -290,6 +302,7 @@ export default function useDisplayState() {
     enharmonicDisplay,
     // Setters
     setScaleName,
+    setScaleBrowseMode,
     setChordRoot,
     setChordType,
     setLinkChordRoot,

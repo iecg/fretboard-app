@@ -14,8 +14,8 @@ interface FingeringPatternControlsProps {
   ) => void;
   npsPosition: number;
   setNpsPosition: (position: number) => void;
-  shapeLabels: "none" | "caged" | "modal";
-  setShapeLabels: (labels: "none" | "caged" | "modal") => void;
+  shapeLabels: "none" | "caged";
+  setShapeLabels: (labels: "none" | "caged") => void;
   displayFormat: "notes" | "degrees" | "none";
   setDisplayFormat: (format: "notes" | "degrees" | "none") => void;
   /** Called when a CAGED shape is clicked, even if already selected */
@@ -107,13 +107,12 @@ export function FingeringPatternControls({
           <div className="control-section">
             <span className="section-label">Shape Labels</span>
             <ToggleBar
-              options={(["none", "caged", "modal"] as const).map((opt) => ({
-                value: opt,
-                label:
-                  opt === "none" ? "None" : opt === "caged" ? "CAGED" : "Modal",
-              }))}
+              options={[
+                { value: "none", label: "None" },
+                { value: "caged", label: "Shape" },
+              ]}
               value={shapeLabels}
-              onChange={(v) => setShapeLabels(v as "none" | "caged" | "modal")}
+              onChange={(v) => setShapeLabels(v as "none" | "caged")}
             />
           </div>
         </>

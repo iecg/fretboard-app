@@ -4,6 +4,13 @@
   gap: var(--space-3);
 }
 
+.theory-browse-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
 .theory-stepper {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -45,6 +52,10 @@
   border: 1px solid var(--surface-highlight);
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--surface-raised) 82%, var(--accent-primary) 18%);
+}
+
+.theory-stepper-value--browse {
+  background: var(--surface-raised);
 }
 
 .theory-stepper-term {

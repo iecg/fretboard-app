@@ -4,6 +4,7 @@ import {
   rootNoteAtom,
   setRootNoteAtom,
   scaleNameAtom,
+  scaleBrowseModeAtom,
   fingeringPatternAtom,
   cagedShapesAtom,
   npsPositionAtom,
@@ -55,6 +56,7 @@ export function BaseControlsSection() {
  */
 export function ScaleChordSection() {
   const [scaleName, setScaleName] = useAtom(scaleNameAtom);
+  const [scaleBrowseMode, setScaleBrowseMode] = useAtom(scaleBrowseModeAtom);
   const [chordRoot, setChordRoot] = useAtom(chordRootAtom);
   const [chordType, setChordType] = useAtom(chordTypeAtom);
   const [linkChordRoot, setLinkChordRoot] = useAtom(linkChordRootAtom);
@@ -80,6 +82,8 @@ export function ScaleChordSection() {
         setRootNote={setRootNote}
         scaleName={scaleName}
         setScaleName={setScaleName}
+        scaleBrowseMode={scaleBrowseMode}
+        setScaleBrowseMode={setScaleBrowseMode}
         chordType={chordType}
         setChordType={setChordType}
         chordRoot={chordRoot}

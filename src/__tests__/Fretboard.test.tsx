@@ -365,7 +365,7 @@ describe("Fretboard", () => {
       expect(document.body).toBeTruthy();
     });
 
-    it('displays modal labels when shapeLabels is "modal"', () => {
+    it('falls back to shape labels when the legacy modal label mode is used', () => {
       const shapePolygons = [
         {
           vertices: [

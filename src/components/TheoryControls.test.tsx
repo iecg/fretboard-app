@@ -10,6 +10,8 @@ function makeProps(): ComponentProps<typeof TheoryControls> {
     setRootNote: vi.fn(),
     scaleName: "Major",
     setScaleName: vi.fn(),
+    scaleBrowseMode: "parallel",
+    setScaleBrowseMode: vi.fn(),
     chordType: null,
     setChordType: vi.fn(),
     chordRoot: "C",
@@ -25,15 +27,19 @@ function makeProps(): ComponentProps<typeof TheoryControls> {
 }
 
 describe("TheoryControls", () => {
-  it("renders root, family, and mode selectors with chord overlay collapsed", () => {
+  it("renders root, family, and browse controls with chord overlay collapsed", () => {
     render(<TheoryControls {...makeProps()} />);
 
     expect(screen.getByText("Root")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /Scale Family: Major Modes/i }),
     ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Parallel" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
     expect(
-      screen.getByRole("button", { name: /Mode: Major \(Ionian\)/i }),
+      screen.getByRole("button", { name: /Mode: C Major \(Ionian\)/i }),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Chord Overlay/i })).toBeInTheDocument();
     expect(screen.queryByText("Chord Type")).not.toBeInTheDocument();
@@ -49,14 +55,48 @@ describe("TheoryControls", () => {
     expect(props.setScaleName).toHaveBeenCalledWith("Minor Pentatonic");
   });
 
-  it("switches the active mode using the member drawer", () => {
+  it("switches the active mode using the browse drawer in parallel mode", () => {
     const props = makeProps();
     render(<TheoryControls {...props} />);
 
     fireEvent.click(screen.getByRole("button", { name: /Mode:/i }));
-    fireEvent.click(screen.getByText("Dorian"));
+    fireEvent.click(screen.getByText("C Dorian"));
 
     expect(props.setScaleName).toHaveBeenCalledWith("Dorian");
+    expect(props.setRootNote).toHaveBeenCalledWith("C");
+  });
+
+  it("switches root and mode together when relative browsing is active", () => {
+    const props = makeProps();
+    render(
+      <TheoryControls
+        {...props}
+        rootNote="C"
+        scaleName="Major"
+        scaleBrowseMode="relative"
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Mode:/i }));
+    fireEvent.click(screen.getByText("D Dorian (2nd Mode)"));
+
+    expect(props.setRootNote).toHaveBeenCalledWith("D");
+    expect(props.setScaleName).toHaveBeenCalledWith("Dorian");
+  });
+
+  it("hides the browse-mode toggle for variant families", () => {
+    render(
+      <TheoryControls
+        {...makeProps()}
+        scaleName="Minor Pentatonic"
+        scaleBrowseMode="relative"
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Parallel" })).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Variant: C Minor Pentatonic/i }),
+    ).toBeInTheDocument();
   });
 
   it("expands the chord overlay controls on demand", () => {

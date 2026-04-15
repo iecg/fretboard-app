@@ -93,7 +93,11 @@ export function getCagedCoordinates(
   const scaleIntervals = SCALES[scaleName];
   const isBlues = scaleName.includes('Blues');
   const usePentTemplate = isBlues || (scaleIntervals && scaleIntervals.length <= 5);
-  const use7NoteTemplate = !usePentTemplate && (scaleIntervals?.length === 7);
+  const sevenNoteTemplate =
+    !usePentTemplate && scaleIntervals?.length === 7
+      ? get7NoteTemplate(scaleName)
+      : null;
+  const use7NoteTemplate = sevenNoteTemplate !== null;
 
   const color = CAGED_SHAPE_COLORS[shape].bg;
   const polygons: ShapePolygon[] = [];
@@ -125,6 +129,7 @@ export function getCagedCoordinates(
     const { wrappedNotes: shapeWrapped } = wrapOvershootNotes(
       perStringNotes, layout, validNotes, intendedMin, intendedMax, shapeMin, shapeMax, frets,
     );
+    let polygonWrappedNotes = shapeWrapped;
     // If more than 2 notes were relocated by wrapping, the overall shape becomes
     // unrecognizable — revert to the pre-wrap note set entirely.
     // (MAX_WRAP_OVERSHOOT caps the fret overshoot per direction; this caps the total note count.)
@@ -132,6 +137,7 @@ export function getCagedCoordinates(
       for (let s = 0; s < perStringNotes.length; s++) {
         perStringNotes[s] = preWrapNotes[s];
       }
+      polygonWrappedNotes = new Set();
       // shapeWrapped is discarded — do not add to allWrappedNotes
     } else {
       for (const key of shapeWrapped) allWrappedNotes.add(key);
@@ -186,7 +192,7 @@ export function getCagedCoordinates(
       polygons.push({ vertices: [...leftEdge, ...rightEdge], shape, color, cagedLabel, modalLabel, truncated, intendedMin, intendedMax });
     } else if (use7NoteTemplate) {
       // Use scale-specific fixed 7-note template
-      const template = get7NoteTemplate(scaleName)[effectiveShape];
+      const template = sevenNoteTemplate[effectiveShape];
       const leftEdge: ShapeVertex[] = template.perString.map(([l], s) => ({
         fret: rootFret + l,
         string: s,
@@ -199,7 +205,11 @@ export function getCagedCoordinates(
       polygons.push({ vertices: [...leftEdge, ...rightEdge], shape, color, cagedLabel, modalLabel, truncated, intendedMin, intendedMax });
     } else {
       // Dynamic polygon from actual note positions (modes other than Natural Minor)
-      const vertices = buildPolygonFromNotes(perStringNotes, tuning.length, allWrappedNotes);
+      const vertices = buildPolygonFromNotes(
+        perStringNotes,
+        tuning.length,
+        polygonWrappedNotes,
+      );
       if (vertices.length > 0) {
         polygons.push({ vertices, shape, color, cagedLabel, modalLabel, truncated, intendedMin, intendedMax });
       }

@@ -131,6 +131,18 @@ describe("App", () => {
       expect(screen.getByText("C Major (Ionian)")).toBeInTheDocument();
     });
 
+    it("renders the summary above the fretboard", () => {
+      render(<App />);
+
+      const summary = screen.getByText("C Major (Ionian)");
+      const fretboard = screen.getByTestId("fretboard");
+
+      expect(
+        summary.compareDocumentPosition(fretboard) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    });
+
     it("loads persisted state from localStorage", () => {
       localStorage.setItem(k("rootNote"), "G");
       localStorage.setItem(k("scaleName"), "Minor");
@@ -144,6 +156,14 @@ describe("App", () => {
       localStorage.setItem(k("scaleName"), "Melodic Minor");
       render(<App />);
       expect(screen.getByText("C Melodic Minor (Jazz Minor)")).toBeInTheDocument();
+    });
+
+    it("renders ordinal mode labels in relative browse mode", () => {
+      localStorage.setItem(k("rootNote"), "D");
+      localStorage.setItem(k("scaleName"), "Dorian");
+      localStorage.setItem(k("scaleBrowseMode"), "relative");
+      render(<App />);
+      expect(screen.getByText("D Dorian (2nd Mode)")).toBeInTheDocument();
     });
 
     it("persists isMuted to localStorage on first mount", () => {
@@ -216,8 +236,9 @@ describe("App", () => {
       expect(
         screen.getByRole("button", { name: /Scale Family: Major Modes/i }),
       ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Parallel" })).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: /Mode: Major \(Ionian\)/i }),
+        screen.getByRole("button", { name: /Mode: C Major \(Ionian\)/i }),
       ).toBeInTheDocument();
     });
 

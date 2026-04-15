@@ -4,16 +4,19 @@ import { DrawerSelector } from "../DrawerSelector";
 import { NOTES } from "../theory";
 import { CHORD_FILTER_OPTIONS } from "../hooks/useDisplayState";
 import {
-  getAdjacentScaleName,
+  getActiveScaleBrowseOption,
+  getAdjacentScaleBrowseOption,
+  getEffectiveScaleBrowseMode,
+  getScaleBrowseOptions,
   getScaleFamilyOptions,
-  getScaleMemberOptions,
   getScaleMemberTerm,
   getScaleNameForFamilySelector,
-  getScaleNameForMemberDisplayLabel,
-  getScaleShortLabel,
   resolveScaleCatalogEntry,
+  supportsRelativeScaleBrowsing,
+  type ScaleBrowseMode,
 } from "../theoryCatalog";
 import { NoteGrid } from "./NoteGrid";
+import { ToggleBar } from "./ToggleBar";
 import "./TheoryControls.css";
 
 const CHORD_OPTIONS: (string | { divider: string })[] = [
@@ -34,6 +37,8 @@ interface TheoryControlsProps {
   setRootNote: (note: string) => void;
   scaleName: string;
   setScaleName: (scale: string) => void;
+  scaleBrowseMode: ScaleBrowseMode;
+  setScaleBrowseMode: (mode: ScaleBrowseMode) => void;
   chordType: string | null;
   setChordType: (chord: string | null) => void;
   chordRoot: string;
@@ -53,6 +58,8 @@ export function TheoryControls({
   setRootNote,
   scaleName,
   setScaleName,
+  scaleBrowseMode,
+  setScaleBrowseMode,
   chordType,
   setChordType,
   chordRoot,
@@ -71,11 +78,31 @@ export function TheoryControls({
 
   const scaleEntry = resolveScaleCatalogEntry(scaleName);
   const familyOptions = getScaleFamilyOptions();
-  const memberOptions = getScaleMemberOptions(scaleEntry.member.scaleName);
   const currentFamily = scaleEntry.family;
   const memberTerm = getScaleMemberTerm(scaleEntry.member.scaleName);
-  const activeMemberLabel = scaleEntry.member.displayLabel;
-  const activeShortLabel = getScaleShortLabel(scaleEntry.member.scaleName);
+  const supportsRelativeBrowse = supportsRelativeScaleBrowsing(
+    scaleEntry.member.scaleName,
+  );
+  const effectiveBrowseMode = getEffectiveScaleBrowseMode(
+    scaleEntry.member.scaleName,
+    scaleBrowseMode,
+  );
+  const browseOptions = getScaleBrowseOptions(
+    rootNote,
+    scaleEntry.member.scaleName,
+    effectiveBrowseMode,
+    useFlats,
+  );
+  const activeBrowseOption = getActiveScaleBrowseOption(
+    rootNote,
+    scaleEntry.member.scaleName,
+    effectiveBrowseMode,
+    useFlats,
+  );
+  const browseOptionLabels = browseOptions.map((option) => option.label);
+  const browseLabel = supportsRelativeBrowse
+    ? `${effectiveBrowseMode === "relative" ? "Relative" : "Parallel"} ${memberTerm}s`
+    : `Browse ${memberTerm}s`;
 
   const applyRootNote = (note: string) => {
     startTransition(() => {
@@ -83,26 +110,38 @@ export function TheoryControls({
     });
   };
 
-  const applyScaleName = (nextScaleName: string) => {
+  const applyTheorySelection = (nextRootNote: string, nextScaleName: string) => {
     startTransition(() => {
+      setRootNote(nextRootNote);
       setScaleName(nextScaleName);
     });
   };
 
   const handleFamilySelect = (selectorLabel: string) => {
     if (selectorLabel === currentFamily.selectorLabel) return;
-    applyScaleName(getScaleNameForFamilySelector(selectorLabel));
+    applyTheorySelection(rootNote, getScaleNameForFamilySelector(selectorLabel));
   };
 
-  const handleMemberSelect = (displayLabel: string) => {
-    if (displayLabel === activeMemberLabel) return;
-    applyScaleName(
-      getScaleNameForMemberDisplayLabel(scaleEntry.member.scaleName, displayLabel),
+  const handleBrowseSelect = (selectedLabel: string) => {
+    const selectedOption = browseOptions.find(
+      (option) => option.label === selectedLabel,
     );
+    if (!selectedOption) return;
+    if (selectedOption.label === activeBrowseOption.label) {
+      return;
+    }
+    applyTheorySelection(selectedOption.rootNote, selectedOption.scaleName);
   };
 
-  const handleStepMember = (direction: -1 | 1) => {
-    applyScaleName(getAdjacentScaleName(scaleEntry.member.scaleName, direction));
+  const handleStepBrowse = (direction: -1 | 1) => {
+    const nextOption = getAdjacentScaleBrowseOption(
+      rootNote,
+      scaleEntry.member.scaleName,
+      effectiveBrowseMode,
+      direction,
+      useFlats,
+    );
+    applyTheorySelection(nextOption.rootNote, nextOption.scaleName);
   };
 
   const handleChordTypeChange = (nextChordType: string | null) => {
@@ -140,33 +179,49 @@ export function TheoryControls({
 
       <div className="control-section">
         <span className="section-label">{memberTerm}</span>
-        <div className="theory-stepper" role="group" aria-label={`${memberTerm} stepper`}>
+        <div className="theory-browse-stack">
+          {supportsRelativeBrowse ? (
+            <ToggleBar
+              options={[
+                { value: "parallel", label: "Parallel" },
+                { value: "relative", label: "Relative" },
+              ]}
+              value={effectiveBrowseMode}
+              onChange={(value) => setScaleBrowseMode(value as ScaleBrowseMode)}
+            />
+          ) : null}
+        </div>
+        <div
+          className="theory-stepper"
+          role="group"
+          aria-label={`${memberTerm} navigation`}
+        >
           <button
             type="button"
             className="theory-stepper-btn"
-            onClick={() => handleStepMember(-1)}
-            aria-label={`Previous ${memberTerm}`}
+            onClick={() => handleStepBrowse(-1)}
+            aria-label={`Previous ${browseLabel}`}
           >
             ‹
           </button>
-          <div className="theory-stepper-value">
-            <span className="theory-stepper-term">{memberTerm}</span>
-            <span className="theory-stepper-label">{activeShortLabel}</span>
+          <div className="theory-stepper-value theory-stepper-value--browse">
+            <span className="theory-stepper-term">Browse</span>
+            <span className="theory-stepper-label">{browseLabel}</span>
           </div>
           <button
             type="button"
             className="theory-stepper-btn"
-            onClick={() => handleStepMember(1)}
-            aria-label={`Next ${memberTerm}`}
+            onClick={() => handleStepBrowse(1)}
+            aria-label={`Next ${browseLabel}`}
           >
             ›
           </button>
         </div>
         <DrawerSelector
           label={memberTerm}
-          value={activeMemberLabel}
-          options={memberOptions}
-          onSelect={handleMemberSelect}
+          value={activeBrowseOption.label}
+          options={browseOptionLabels}
+          onSelect={handleBrowseSelect}
         />
       </div>
 

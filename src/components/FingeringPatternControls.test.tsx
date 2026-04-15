@@ -50,13 +50,13 @@ describe("FingeringPatternControls", () => {
         cagedShapes={new Set<CagedShape>(["C"])}
       />,
     );
-    expect(screen.getByText("Shape")).toBeInTheDocument();
+    expect(screen.getAllByText("Shape").length).toBeGreaterThan(0);
     expect(screen.getByText("Shape Labels")).toBeInTheDocument();
 
     rerender(
       <FingeringPatternControls {...defaultProps} fingeringPattern="all" />,
     );
-    expect(screen.queryByText("Shape")).toBeNull();
+    expect(screen.queryAllByText("Shape")).toHaveLength(0);
     expect(screen.queryByText("Shape Labels")).toBeNull();
   });
 
