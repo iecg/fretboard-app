@@ -39,9 +39,10 @@ jobs:
 
       - name: Create and push annotated tag
         if: steps.tag.outputs.new_tag
+        env:
+          TAG_NAME: ${{ steps.tag.outputs.new_tag }}
+          CHANGELOG: ${{ steps.tag.outputs.changelog }}
         run: |
-          TAG_NAME="${{ steps.tag.outputs.new_tag }}"
-          CHANGELOG="${{ steps.tag.outputs.changelog }}"
           TAG_MESSAGE_FILE=$(mktemp)
 
           git config user.name "github-actions[bot]"
