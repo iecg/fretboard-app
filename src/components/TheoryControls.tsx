@@ -1,5 +1,6 @@
 import { startTransition, useState, type ReactNode } from "react";
 import clsx from "clsx";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DrawerSelector } from "../DrawerSelector";
 import { NOTES } from "../theory";
 import { CHORD_FILTER_OPTIONS } from "../hooks/useDisplayState";
@@ -100,10 +101,6 @@ export function TheoryControls({
     useFlats,
   );
   const browseOptionLabels = browseOptions.map((option) => option.label);
-  const browseLabel = supportsRelativeBrowse
-    ? `${effectiveBrowseMode === "relative" ? "Relative" : "Parallel"} ${memberTerm}s`
-    : `Browse ${memberTerm}s`;
-
   const applyRootNote = (note: string) => {
     startTransition(() => {
       setRootNote(note);
@@ -179,50 +176,46 @@ export function TheoryControls({
 
       <div className="control-section">
         <span className="section-label">{memberTerm}</span>
-        <div className="theory-browse-stack">
+        <div className="theory-browser-row">
           {supportsRelativeBrowse ? (
-            <ToggleBar
-              options={[
-                { value: "parallel", label: "Parallel" },
-                { value: "relative", label: "Relative" },
-              ]}
-              value={effectiveBrowseMode}
-              onChange={(value) => setScaleBrowseMode(value as ScaleBrowseMode)}
-            />
+            <div className="theory-browser-toggle">
+              <ToggleBar
+                options={[
+                  { value: "parallel", label: "Parallel" },
+                  { value: "relative", label: "Relative" },
+                ]}
+                value={effectiveBrowseMode}
+                onChange={(value) => setScaleBrowseMode(value as ScaleBrowseMode)}
+              />
+            </div>
           ) : null}
-        </div>
-        <div
-          className="theory-stepper"
-          role="group"
-          aria-label={`${memberTerm} navigation`}
-        >
-          <button
-            type="button"
-            className="theory-stepper-btn"
-            onClick={() => handleStepBrowse(-1)}
-            aria-label={`Previous ${browseLabel}`}
-          >
-            ‹
-          </button>
-          <div className="theory-stepper-value theory-stepper-value--browse">
-            <span className="theory-stepper-term">Browse</span>
-            <span className="theory-stepper-label">{browseLabel}</span>
+          <div className="theory-browser-main">
+            <button
+              type="button"
+              className="theory-nav-btn"
+              onClick={() => handleStepBrowse(-1)}
+              aria-label={`Previous ${memberTerm}`}
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <div className="theory-browser-selector">
+              <DrawerSelector
+                label={memberTerm}
+                value={activeBrowseOption.label}
+                options={browseOptionLabels}
+                onSelect={handleBrowseSelect}
+              />
+            </div>
+            <button
+              type="button"
+              className="theory-nav-btn"
+              onClick={() => handleStepBrowse(1)}
+              aria-label={`Next ${memberTerm}`}
+            >
+              <ChevronRight size={16} />
+            </button>
           </div>
-          <button
-            type="button"
-            className="theory-stepper-btn"
-            onClick={() => handleStepBrowse(1)}
-            aria-label={`Next ${browseLabel}`}
-          >
-            ›
-          </button>
         </div>
-        <DrawerSelector
-          label={memberTerm}
-          value={activeBrowseOption.label}
-          options={browseOptionLabels}
-          onSelect={handleBrowseSelect}
-        />
       </div>
 
       {keyExplorer ? (

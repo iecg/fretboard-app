@@ -131,14 +131,16 @@ describe("App", () => {
       expect(screen.getByText("C Major (Ionian)")).toBeInTheDocument();
     });
 
-    it("renders the summary above the fretboard", () => {
+    it("renders the summary below the fretboard", () => {
       render(<App />);
 
-      const summary = screen.getByText("C Major (Ionian)");
+      const summary = screen.getByRole("button", {
+        name: /toggle scale summary/i,
+      });
       const fretboard = screen.getByTestId("fretboard");
 
       expect(
-        summary.compareDocumentPosition(fretboard) &
+        fretboard.compareDocumentPosition(summary) &
           Node.DOCUMENT_POSITION_FOLLOWING,
       ).toBeTruthy();
     });
@@ -155,7 +157,9 @@ describe("App", () => {
     it("renders melodic minor summary labels with the jazz alias", () => {
       localStorage.setItem(k("scaleName"), "Melodic Minor");
       render(<App />);
-      expect(screen.getByText("C Melodic Minor (Jazz Minor)")).toBeInTheDocument();
+      expect(
+        screen.getByText("C Melodic Minor (Jazz Minor)"),
+      ).toBeInTheDocument();
     });
 
     it("renders ordinal mode labels in relative browse mode", () => {
@@ -164,6 +168,40 @@ describe("App", () => {
       localStorage.setItem(k("scaleBrowseMode"), "relative");
       render(<App />);
       expect(screen.getByText("D Dorian (2nd Mode)")).toBeInTheDocument();
+    });
+
+    it("defaults the summary collapsed on mobile", () => {
+      setViewport(390, 844);
+      render(<App />);
+
+      expect(
+        screen.getByRole("button", { name: /toggle scale summary/i }),
+      ).toHaveAttribute("aria-expanded", "false");
+      expect(screen.queryByLabelText(/C Major \(Ionian\) notes/i)).toBeNull();
+    });
+
+    it("defaults the summary expanded on desktop", () => {
+      render(<App />);
+
+      expect(
+        screen.getByRole("button", { name: /toggle scale summary/i }),
+      ).toHaveAttribute("aria-expanded", "true");
+      expect(
+        screen.getByLabelText(/C Major \(Ionian\) notes/i),
+      ).toBeInTheDocument();
+    });
+
+    it("expands the summary to reveal notes on mobile", () => {
+      setViewport(390, 844);
+      render(<App />);
+
+      fireEvent.click(
+        screen.getByRole("button", { name: /toggle scale summary/i }),
+      );
+
+      expect(
+        screen.getByLabelText(/C Major \(Ionian\) notes/i),
+      ).toBeInTheDocument();
     });
 
     it("persists isMuted to localStorage on first mount", () => {
@@ -237,6 +275,12 @@ describe("App", () => {
         screen.getByRole("button", { name: /Scale Family: Major Modes/i }),
       ).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Parallel" })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /Previous Mode/i }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /Next Mode/i }),
+      ).toBeInTheDocument();
       expect(
         screen.getByRole("button", { name: /Mode: C Major \(Ionian\)/i }),
       ).toBeInTheDocument();

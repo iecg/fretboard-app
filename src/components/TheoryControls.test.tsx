@@ -39,6 +39,12 @@ describe("TheoryControls", () => {
       "true",
     );
     expect(
+      screen.getByRole("button", { name: /Previous Mode/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Next Mode/i }),
+    ).toBeInTheDocument();
+    expect(
       screen.getByRole("button", { name: /Mode: C Major \(Ionian\)/i }),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Chord Overlay/i })).toBeInTheDocument();

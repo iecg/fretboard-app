@@ -1,77 +1,57 @@
 .theory-controls {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-}
-
-.theory-browse-stack {
-  display: flex;
-  flex-direction: column;
   gap: var(--space-2);
-  margin-bottom: var(--space-2);
 }
 
-.theory-stepper {
+.theory-browser-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.theory-browser-toggle {
+  flex: 0 1 12rem;
+  min-width: min(100%, 12rem);
+}
+
+.theory-browser-main {
+  flex: 1 1 14rem;
+  min-width: min(100%, 14rem);
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: stretch;
+  align-items: center;
   gap: var(--space-2);
 }
 
-.theory-stepper-btn {
-  min-width: 2.5rem;
-  min-height: 2.5rem;
+.theory-browser-selector {
+  min-width: 0;
+}
+
+.theory-nav-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--surface-highlight);
   border-radius: var(--radius-md);
   background: var(--surface-raised);
   color: var(--text-main);
-  font-size: 1.35rem;
-  line-height: 1;
   cursor: pointer;
   transition: var(--transition-surface);
 }
 
-.theory-stepper-btn:hover {
+.theory-nav-btn:hover {
   border-color: var(--accent-primary);
   color: white;
 }
 
-.theory-stepper-btn:focus-visible,
+.theory-nav-btn:focus-visible,
 .theory-disclosure-btn:focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
-}
-
-.theory-stepper-value {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 2px;
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--surface-highlight);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--surface-raised) 82%, var(--accent-primary) 18%);
-}
-
-.theory-stepper-value--browse {
-  background: var(--surface-raised);
-}
-
-.theory-stepper-term {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-}
-
-.theory-stepper-label {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: white;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .theory-chord-section,

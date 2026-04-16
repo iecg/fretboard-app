@@ -25,7 +25,9 @@ export function NoteGrid({
           aria-pressed={selected === n}
           onClick={() => onSelect(n)}
         >
-          {formatAccidental(getNoteDisplay(n, n, useFlats))}
+          <span className="note-btn-label">
+            {formatAccidental(getNoteDisplay(n, n, useFlats))}
+          </span>
         </button>
       ))}
     </div>

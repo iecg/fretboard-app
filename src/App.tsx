@@ -15,7 +15,14 @@ import {
   getNoteDisplayInScale,
   formatAccidental,
 } from "./theory";
-import { Music, Settings2, Volume2, VolumeX, HelpCircle } from "lucide-react";
+import {
+  ChevronDown,
+  HelpCircle,
+  Music,
+  Settings2,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import { getFocusableElements } from "./utils/dom";
 import { synth } from "./audio";
 import { CircleOfFifths } from "./CircleOfFifths";
@@ -76,6 +83,93 @@ function SummaryNote({
         </span>
       )}
     </span>
+  );
+}
+
+function ScaleSummaryDisclosure({
+  defaultExpanded,
+  scaleLabel,
+  summaryNotes,
+  rootNote,
+  scaleName,
+  useFlats,
+  chordLabel,
+  chordSummaryNotes,
+  chordRoot,
+}: {
+  defaultExpanded: boolean;
+  scaleLabel: string;
+  summaryNotes: string[];
+  rootNote: string;
+  scaleName: string;
+  useFlats: boolean;
+  chordLabel: string | null;
+  chordSummaryNotes: string[];
+  chordRoot: string;
+}) {
+  const [isExpanded, setExpanded] = useState(defaultExpanded);
+
+  return (
+    <div className="summary-area panel-surface">
+      <button
+        type="button"
+        className={clsx("summary-disclosure-btn", {
+          "summary-disclosure-btn--open": isExpanded,
+        })}
+        aria-expanded={isExpanded}
+        aria-controls="scale-summary-content"
+        aria-label="Toggle scale summary"
+        onClick={() => setExpanded((value) => !value)}
+      >
+        <span className="summary-disclosure-label">{scaleLabel}</span>
+        <ChevronDown className="summary-disclosure-icon" size={18} />
+      </button>
+      {isExpanded ? (
+        <div id="scale-summary-content" className="summary-content">
+          <div
+            className="summary-notes"
+            role="list"
+            aria-label={`${scaleLabel} notes`}
+          >
+            {summaryNotes.map((n, i) => (
+              <SummaryNote
+                key={i}
+                note={n}
+                rootNote={rootNote}
+                scaleName={scaleName}
+                displayName={getNoteDisplayInScale(
+                  n,
+                  rootNote,
+                  SCALES[scaleName] || [],
+                  useFlats,
+                )}
+              />
+            ))}
+          </div>
+          {chordLabel ? (
+            <div className="summary-row summary-row--chord">
+              <div className="summary-row-label">{chordLabel}</div>
+              <div
+                className="summary-notes summary-notes--secondary"
+                role="list"
+                aria-label={`${chordLabel} notes`}
+              >
+                {chordSummaryNotes.map((n, i) => (
+                  <SummaryNote
+                    key={i}
+                    note={n}
+                    rootNote={chordRoot}
+                    scaleName={scaleName}
+                    displayName={getNoteDisplay(n, chordRoot, useFlats)}
+                    isChord
+                  />
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -188,44 +282,18 @@ function AppContent() {
 
   // Summary notes content shared by every non-landscape layout.
   const summaryContent = (
-    <div className="summary-area panel-surface">
-      <div className="summary-row">
-        <div className="summary-row-label">{scaleLabel}</div>
-        <div className="summary-notes">
-          {summaryNotes.map((n, i) => (
-            <SummaryNote
-              key={i}
-              note={n}
-              rootNote={rootNote}
-              scaleName={scaleName}
-              displayName={getNoteDisplayInScale(
-                n,
-                rootNote,
-                SCALES[scaleName] || [],
-                useFlats,
-              )}
-            />
-          ))}
-        </div>
-      </div>
-      {chordLabel && (
-        <div className="summary-row summary-row--chord">
-          <div className="summary-row-label">{chordLabel}</div>
-          <div className="summary-notes">
-            {chordSummaryNotes.map((n, i) => (
-              <SummaryNote
-                key={i}
-                note={n}
-                rootNote={chordRoot}
-                scaleName={scaleName}
-                displayName={getNoteDisplay(n, chordRoot, useFlats)}
-                isChord
-              />
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+    <ScaleSummaryDisclosure
+      key={layout.tier}
+      defaultExpanded={layout.tier !== "mobile"}
+      scaleLabel={scaleLabel}
+      summaryNotes={summaryNotes}
+      rootNote={rootNote}
+      scaleName={scaleName}
+      useFlats={useFlats}
+      chordLabel={chordLabel}
+      chordSummaryNotes={chordSummaryNotes}
+      chordRoot={chordRoot}
+    />
   );
 
   const mobileKeyExplorer = (
@@ -415,9 +483,6 @@ function AppContent() {
         </div>
       )}
 
-      {/* Main Fretboard */}
-      {layout.showSummary && summaryContent}
-
       <main className="main-fretboard">
         <Fretboard
           tuning={currentTuning}
@@ -440,6 +505,9 @@ function AppContent() {
           recenterKey={recenterKey}
         />
       </main>
+
+      {/* Summary readout lives directly beneath the fretboard */}
+      {layout.showSummary && summaryContent}
 
       {/* Shared tablet/desktop controls panel */}
       {layout.showControlsPanel && (
