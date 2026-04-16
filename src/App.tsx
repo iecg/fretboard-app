@@ -434,7 +434,7 @@ function AppContent() {
           className="help-modal-overlay"
           role="button"
           tabIndex={0}
-          aria-label="Close help overlay"
+          aria-label="Dismiss overlay backdrop"
           onClick={(event) => {
             if (event.target === event.currentTarget) {
               setShowHelp(false);
