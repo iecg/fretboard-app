@@ -259,6 +259,12 @@ function SettingsOverlaySurface({
   const [activeHelpField, setActiveHelpField] = useState<HelpFieldId | null>(
     null,
   );
+  const activeHelpFieldRef = useRef<HelpFieldId | null>(null);
+
+  useEffect(() => {
+    activeHelpFieldRef.current = activeHelpField;
+  }, [activeHelpField]);
+
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
@@ -322,7 +328,7 @@ function SettingsOverlaySurface({
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.stopPropagation();
-        if (activeHelpField) {
+        if (activeHelpFieldRef.current) {
           setActiveHelpField(null);
         } else {
           setIsOpen(false);
@@ -360,7 +366,7 @@ function SettingsOverlaySurface({
       triggerRef.current?.focus();
       triggerRef.current = null;
     };
-  }, [activeHelpField, setIsOpen]);
+  }, [setIsOpen]);
 
   const renderField = (fieldKey: SettingFieldKey, index: number, total: number) => {
     const field = SETTING_FIELDS[fieldKey];
