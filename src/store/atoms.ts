@@ -293,16 +293,24 @@ const cagedShapesStorage = {
 // Atoms
 // ---------------------------------------------------------------------------
 
+// All persisted atoms use { getOnInit: true } so Jotai reads from localStorage
+// synchronously during atom initialization rather than defaulting to initialValue
+// first. Without this, atoms start with their hardcoded default on the first
+// render and then update after mount, causing a visible flash on page load.
+const GET_ON_INIT = { getOnInit: true } as const;
+
 // Scale
 export const rootNoteAtom = atomWithStorage(
   k("rootNote"),
   "C",
   rawStringStorage(),
+  GET_ON_INIT,
 );
 export const scaleNameAtom = atomWithStorage(
   k("scaleName"),
   "Major",
   rawStringStorage(),
+  GET_ON_INIT,
 );
 
 // Chord overlay
@@ -310,31 +318,37 @@ export const chordRootAtom = atomWithStorage(
   k("chordRoot"),
   "C",
   rawStringStorage(),
+  GET_ON_INIT,
 );
 export const chordTypeAtom = atomWithStorage<string | null>(
   k("chordType"),
   null,
   chordTypeStorage,
+  GET_ON_INIT,
 );
 export const linkChordRootAtom = atomWithStorage(
   k("linkChordRoot"),
   true,
   booleanStorage,
+  GET_ON_INIT,
 );
 export const hideNonChordNotesAtom = atomWithStorage(
   k("hideNonChordNotes"),
   false,
   booleanStorage,
+  GET_ON_INIT,
 );
 export const chordFretSpreadAtom = atomWithStorage(
   k("chordFretSpread"),
   0,
   chordFretSpreadStorage,
+  GET_ON_INIT,
 );
 export const chordIntervalFilterAtom = atomWithStorage(
   k("chordIntervalFilter"),
   "All",
   rawStringStorage(),
+  GET_ON_INIT,
 );
 
 // Fingering
@@ -342,16 +356,19 @@ export const fingeringPatternAtom = atomWithStorage<FingeringPattern>(
   k("fingeringPattern"),
   "all",
   rawStringStorage<FingeringPattern>(),
+  GET_ON_INIT,
 );
 export const cagedShapesAtom = atomWithStorage<Set<CagedShape>>(
   k("cagedShapes"),
   new Set(CAGED_SHAPES),
   cagedShapesStorage,
+  GET_ON_INIT,
 );
 export const npsPositionAtom = atomWithStorage(
   k("npsPosition"),
   0,
   npsPositionStorage,
+  GET_ON_INIT,
 );
 
 // Display
@@ -359,20 +376,23 @@ export const displayFormatAtom = atomWithStorage<"notes" | "degrees" | "none">(
   k("displayFormat"),
   "notes",
   rawStringStorage<"notes" | "degrees" | "none">(),
+  GET_ON_INIT,
 );
 export const shapeLabelsAtom = atomWithStorage<"modal" | "caged" | "none">(
   k("shapeLabels"),
   "none",
   rawStringStorage<"modal" | "caged" | "none">(),
+  GET_ON_INIT,
 );
 export const tuningNameAtom = atomWithStorage(
   k("tuningName"),
   "Standard",
   rawStringStorage(),
+  GET_ON_INIT,
 );
-export const fretZoomAtom = atomWithStorage(k("fretZoom"), 100, fretZoomStorage);
-export const fretStartAtom = atomWithStorage(k("fretStart"), 0, fretCountStorage);
-export const fretEndAtom = atomWithStorage(k("fretEnd"), 24, fretCountStorage);
+export const fretZoomAtom = atomWithStorage(k("fretZoom"), 100, fretZoomStorage, GET_ON_INIT);
+export const fretStartAtom = atomWithStorage(k("fretStart"), 0, fretCountStorage, GET_ON_INIT);
+export const fretEndAtom = atomWithStorage(k("fretEnd"), 24, fretCountStorage, GET_ON_INIT);
 
 // Accidentals / Audio / Mobile tab
 // accidentalModeAtom is intentionally non-persisted: "auto" is a smart default
@@ -397,16 +417,18 @@ export const accidentalModeAtom = atom<"sharps" | "flats" | "auto">(
 // enharmonicDisplayAtom is intentionally non-persisted: "auto" preserves the
 // pre-existing CoF enharmonic-display behavior by default.
 export const enharmonicDisplayAtom = atom<"auto" | "on" | "off">("auto");
-export const isMutedAtom = atomWithStorage(k("isMuted"), false, booleanStorage);
+export const isMutedAtom = atomWithStorage(k("isMuted"), false, booleanStorage, GET_ON_INIT);
 export const mobileTabAtom = atomWithStorage<"key" | "scale" | "fretboard">(
   k("mobileTab"),
   "key",
   mobileTabStorage,
+  GET_ON_INIT,
 );
 export const tabletTabAtom = atomWithStorage<"settings" | "scales">(
   k("tabletTab"),
   "settings",
   rawStringStorage<"settings" | "scales">(),
+  GET_ON_INIT,
 );
 
 export type LandscapeNarrowTab = "fretboard" | "scaleChord" | "key";
@@ -415,6 +437,7 @@ export const landscapeNarrowTabAtom = atomWithStorage<LandscapeNarrowTab>(
   k("landscapeNarrowTab"),
   "fretboard",
   rawStringStorage<LandscapeNarrowTab>(),
+  GET_ON_INIT,
 );
 
 // settingsOverlayOpenAtom is intentionally non-persisted and always starts closed.
