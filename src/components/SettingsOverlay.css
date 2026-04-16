@@ -210,22 +210,6 @@
   box-shadow: 0 12px 32px color-mix(in srgb, var(--chrome-bg) 82%, transparent);
 }
 
-.overlay-field--selector .drawer-label {
-  display: none;
-}
-
-.overlay-field--selector .drawer-trigger {
-  width: 100%;
-}
-
-.overlay-field--selector .drawer-value {
-  margin-left: 0;
-}
-
-.overlay-field--accidentals .toggle-btn {
-  font-size: var(--text-sm, 0.875rem);
-}
-
 .overlay-reset-section {
   display: flex;
   flex-direction: column;

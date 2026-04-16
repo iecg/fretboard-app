@@ -9,6 +9,7 @@ import {
 } from "./theory";
 import { DEGREE_COLORS, getDegreesForScale } from "./degrees";
 import { getCircleNoteLabels } from "./circleOfFifthsUtils";
+import styles from "./CircleOfFifths.module.css";
 
 const SIZE = 320;
 const CX = SIZE / 2;
@@ -94,10 +95,10 @@ export function CircleOfFifths({
   };
 
   return (
-    <div className="circle-fifths-container">
+    <div className={styles["circle-fifths-container"]}>
       <svg
         viewBox={`0 0 ${SIZE} ${SIZE}`}
-        className="circle-fifths-svg"
+        className={styles["circle-fifths-svg"]}
         role="group"
         aria-label="Circle of Fifths — select a key"
       >
@@ -117,7 +118,7 @@ export function CircleOfFifths({
               key={note}
               ref={(el) => { segmentRefs.current[index] = el; }}
               d={slicePath(index)}
-              className={clsx("circle-slice", { active: isActive })}
+              className={clsx(styles["circle-slice"], isActive && styles.active)}
               stroke="var(--surface-highlight)"
               strokeWidth={1}
               style={{ outline: 'none' }}
@@ -163,7 +164,7 @@ export function CircleOfFifths({
             strokeLinejoin="round"
             pointerEvents="none"
             aria-hidden="true"
-            className="circle-slice-focus-ring"
+            className={styles["circle-slice-focus-ring"]}
           />
         )}
 

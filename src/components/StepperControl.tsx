@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import "./StepperControl.css";
+import shared from "./shared.module.css";
 
 export interface StepperControlProps {
   value: number;
@@ -24,7 +25,7 @@ export function StepperControl({
 }: StepperControlProps) {
   return (
     <div className={clsx("stepper-control", buttonVariant)}>
-      {label && <span className="section-label">{label}</span>}
+      {label && <span className={shared["section-label"]}>{label}</span>}
       <div
         className="stepper-group"
         role="group"

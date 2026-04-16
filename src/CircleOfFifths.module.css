@@ -1,0 +1,65 @@
+.circle-fifths-container {
+  container-type: inline-size;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 0;
+  max-width: 100%;
+  max-height: min(36rem, 60vh);
+}
+
+.active {}
+
+.circle-fifths-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: min(100%, 28rem);
+  max-height: min(100%, 28rem);
+}
+
+.circle-slice {
+  fill: var(--surface-raised);
+  cursor: pointer;
+  transition: fill var(--transition-fast);
+}
+
+.circle-slice:hover {
+  fill: var(--surface-highlight);
+}
+
+.circle-slice.active,
+.circle-slice.active:hover {
+  fill: var(--surface-highlight);
+}
+
+.circle-slice:focus,
+.circle-slice:focus-visible {
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.circle-slice-focus-ring {
+  pointer-events: none;
+}
+
+:global(.app-container[data-layout-variant="tablet-stacked"]) .circle-fifths-container,
+:global(.app-container[data-layout-variant="desktop-stacked"]) .circle-fifths-container {
+  max-width: min(100%, 28rem);
+  width: 100%;
+  margin: 0 auto;
+}
+
+:global(.theory-inline-key) .circle-fifths-container {
+  width: 100%;
+  max-width: min(100%, 20rem);
+}
+
+@container (min-width: 300px) {
+  .circle-fifths-svg {
+    max-width: 90cqw;
+    max-height: 90cqw;
+  }
+}
