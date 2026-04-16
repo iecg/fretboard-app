@@ -17,7 +17,9 @@ async function getMetrics(page: Page) {
     const settingsDrawer = document.querySelector(".settings-overlay-drawer");
     const helpModal = document.querySelector(".help-modal");
     const helpContent = document.querySelector(".help-modal-content");
-    const circle = document.querySelector(".key-column .circle-fifths-container");
+    const circle = document.querySelector(
+      '.key-column [data-testid="circle-of-fifths"]',
+    );
     const controlsColumn = document.querySelector(".controls-panel-column");
     const keyColumn = document.querySelector(".key-column");
 
@@ -224,7 +226,9 @@ test.describe("responsive layout regressions", () => {
     expect(initial.variant).toBe("desktop-stacked");
     expect(initial.summaryCount).toBe(1);
 
-    await page.locator(".key-column .circle-fifths-container").scrollIntoViewIfNeeded();
+    await page
+      .locator('.key-column [data-testid="circle-of-fifths"]')
+      .scrollIntoViewIfNeeded();
     const after = await getMetrics(page);
     expect(after.circleRect).not.toBeNull();
     expect(after.circleRect!.height).toBeGreaterThanOrEqual(220);

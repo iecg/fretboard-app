@@ -5,7 +5,9 @@
   gap: var(--space-1);
 }
 
-.active {}
+.active {
+  /* Intentional marker class for CSS Modules state composition. */
+}
 
 .section-label {
   font-size: var(--text-xs);
@@ -23,7 +25,9 @@
   padding: var(--space-1);
 }
 
-.toggle-group--default {}
+.toggle-group--default {
+  /* Intentional marker class for variant composition. */
+}
 
 .toggle-btn {
   flex: 1;
@@ -188,6 +192,7 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 24%, transparent);
 }
 
+/* stylelint-disable selector-pseudo-class-no-unknown */
 @media (max-width: 767px) {
   :global(.mobile-tab-panel) .toggle-btn,
   :global(.mobile-tab-panel) .note-btn,
@@ -203,3 +208,4 @@
 :global(.overlay-field--accidentals) .toggle-btn {
   font-size: var(--text-sm, 0.875rem);
 }
+/* stylelint-enable selector-pseudo-class-no-unknown */

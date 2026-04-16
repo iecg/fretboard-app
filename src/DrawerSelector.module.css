@@ -2,11 +2,17 @@
   position: relative;
 }
 
-.open {}
+.open {
+  /* Intentional marker class for CSS Modules state composition. */
+}
 
-.active {}
+.active {
+  /* Intentional marker class for CSS Modules state composition. */
+}
 
-.focused {}
+.focused {
+  /* Intentional marker class for CSS Modules state composition. */
+}
 
 .drawer-trigger {
   width: 100%;
@@ -140,6 +146,7 @@
   margin-top: var(--space-1);
 }
 
+/* stylelint-disable selector-pseudo-class-no-unknown */
 @media (max-width: 767px) {
   :global(.mobile-tab-panel) .drawer-trigger {
     min-height: 36px;
@@ -157,3 +164,4 @@
 :global(.overlay-field--selector) .drawer-value {
   margin-left: 0;
 }
+/* stylelint-enable selector-pseudo-class-no-unknown */
