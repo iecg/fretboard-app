@@ -1,38 +1,32 @@
 .degree-chip-strip {
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
-  width: min(100%, 52rem);
+  gap: 0.55rem;
+  width: min(100%, 32rem);
   margin: 0 auto;
-  padding: clamp(0.9rem, 1.8vw, 1.1rem) clamp(1rem, 2vw, 1.4rem) clamp(1rem, 2vw, 1.2rem);
-  border-radius: 1.35rem;
-  background:
-    radial-gradient(circle at 50% 0%, rgb(77 228 255 / 0.13), transparent 56%),
-    linear-gradient(180deg, rgb(35 42 56 / 0.96), rgb(23 28 40 / 0.92));
-  border: 1px solid rgb(255 255 255 / 0.08);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.05),
-    0 18px 42px rgb(0 0 0 / 0.28);
+  padding: 0.7rem 0.9rem 0.8rem;
+  border-radius: 1rem;
+  background: rgb(18 22 32 / 0.82);
+  border: 1px solid rgb(255 255 255 / 0.06);
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.22);
   align-items: center;
   text-align: center;
-  overflow: hidden;
 }
 
 .degree-chip-strip-header {
   font-family: var(--font-display);
-  font-size: clamp(1rem, 1.8vw, 1.35rem);
+  font-size: clamp(0.88rem, 1.4vw, 1.05rem);
   font-weight: var(--font-weight-semibold);
-  color: rgb(245 249 255 / 0.96);
+  color: rgb(245 249 255 / 0.94);
   line-height: 1.2;
   letter-spacing: 0.02em;
-  text-wrap: balance;
 }
 
 .degree-chip-strip-list {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  gap: clamp(0.7rem, 1.3vw, 1rem);
+  gap: clamp(0.4rem, 1vw, 0.7rem);
   list-style: none;
   margin: 0;
   padding: 0;
@@ -45,120 +39,92 @@
   display: none;
 }
 
-.degree-chip-strip-list .degree-chip:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  right: calc(-1 * clamp(0.7rem, 1.3vw, 1rem));
-  top: 50%;
-  transform: translateY(-50%);
-  width: clamp(0.7rem, 1.3vw, 1rem);
-  height: 2px;
-  background: linear-gradient(90deg, rgb(255 255 255 / 0.08), rgb(255 255 255 / 0.24));
-  pointer-events: none;
-}
-
-.degree-chip {
-  position: relative;
+.degree-chip-item {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 0.18rem;
+  flex: 0 0 auto;
+}
+
+.degree-chip-interval {
+  font-size: 0.68rem;
+  font-weight: var(--font-weight-medium);
+  color: rgb(190 201 214 / 0.72);
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.degree-chip-item[data-is-tonic='true'] .degree-chip-interval,
+.degree-chip-item[data-in-chord='true'] .degree-chip-interval {
+  color: rgb(255 188 120 / 0.95);
+}
+
+.degree-chip-item[data-in-scale='true']:not([data-is-tonic='true']):not([data-in-chord='true']) .degree-chip-interval {
+  color: rgb(140 224 246 / 0.9);
+}
+
+.degree-chip {
+  display: flex;
+  align-items: center;
   justify-content: center;
-  min-width: clamp(3rem, 5vw, 3.35rem);
-  min-height: clamp(3rem, 5vw, 3.35rem);
-  padding: 0.45rem 0.72rem 0.5rem;
-  border-radius: var(--radius-pill);
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.02)),
-    var(--chip-surface-inactive);
-  border: 1px solid rgb(255 255 255 / 0.1);
-  opacity: 0.52;
+  width: clamp(1.95rem, 3.2vw, 2.25rem);
+  height: clamp(1.95rem, 3.2vw, 2.25rem);
+  border-radius: 50%;
+  background: rgb(28 34 46 / 1);
+  border: 1.5px solid rgb(255 255 255 / 0.12);
+  opacity: 0.55;
   transition:
     opacity var(--transition-fast),
-    box-shadow var(--transition-fast),
     background var(--transition-fast),
-    border-color var(--transition-fast),
-    transform var(--transition-fast);
+    border-color var(--transition-fast);
 }
 
-.degree-chip[data-in-scale='true'] {
-  background:
-    radial-gradient(circle at 50% 24%, rgb(77 228 255 / 0.18), transparent 62%),
-    linear-gradient(180deg, rgb(77 228 255 / 0.12), rgb(77 228 255 / 0.04));
-  border-color: color-mix(in srgb, var(--chip-border-active) 70%, white 10%);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.12),
-    0 0 0 1px rgb(77 228 255 / 0.16),
-    var(--glow-cyan-sm);
+.degree-chip-item[data-in-scale='true'] .degree-chip {
+  background: rgb(30 40 54 / 1);
+  border-color: rgb(77 228 255 / 0.7);
   opacity: 1;
 }
 
-.degree-chip[data-is-tonic='true'],
-.degree-chip[data-in-chord='true'] {
-  background:
-    radial-gradient(circle at 50% 24%, rgb(255 176 92 / 0.22), transparent 60%),
-    linear-gradient(180deg, rgb(255 154 77 / 0.18), rgb(255 154 77 / 0.06));
-  border-color: color-mix(in srgb, var(--chip-border-tonic) 78%, white 8%);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.12),
-    0 0 0 1px rgb(255 154 77 / 0.18),
-    var(--glow-orange-sm);
+.degree-chip-item[data-is-tonic='true'] .degree-chip,
+.degree-chip-item[data-in-chord='true'] .degree-chip {
+  background: rgb(48 32 22 / 1);
+  border-color: rgb(255 154 77 / 0.9);
   opacity: 1;
 }
 
-.degree-chip[data-is-tonic='true'] {
-  transform: scale(1.03);
+.degree-chip-item[data-is-tonic='true'] .degree-chip {
+  border-width: 2px;
 }
 
 .degree-chip-note {
   font-family: var(--font-display);
   font-weight: var(--font-weight-semibold);
-  font-size: clamp(1rem, 1.9vw, 1.2rem);
-  color: rgb(210 220 232 / 0.7);
-  line-height: var(--leading-tight);
-}
-
-.degree-chip[data-in-scale='true'] .degree-chip-note {
-  color: var(--chip-text-active);
-}
-
-.degree-chip[data-is-tonic='true'] .degree-chip-note,
-.degree-chip[data-in-chord='true'] .degree-chip-note {
-  color: var(--chip-text-tonic);
-}
-
-.degree-chip-interval {
-  font-size: 0.74rem;
-  color: rgb(190 201 214 / 0.62);
-  line-height: var(--leading-tight);
+  font-size: clamp(0.82rem, 1.4vw, 0.95rem);
+  color: rgb(255 255 255 / 0.95);
+  line-height: 1;
   letter-spacing: 0.01em;
-}
-
-.degree-chip[data-in-scale='true'] .degree-chip-interval {
-  color: var(--chip-text-active);
-}
-
-.degree-chip[data-is-tonic='true'] .degree-chip-interval,
-.degree-chip[data-in-chord='true'] .degree-chip-interval {
-  color: var(--chip-text-tonic);
 }
 
 @media (max-width: 767px) {
   .degree-chip-strip {
     width: 100%;
-    border-radius: 1.1rem;
-    padding-inline: 0.8rem;
+    border-radius: 0.85rem;
+    padding: 0.6rem 0.7rem 0.7rem;
+    gap: 0.4rem;
   }
 
   .degree-chip-strip-list {
     justify-content: flex-start;
+    gap: 0.4rem;
   }
 
   .degree-chip {
-    min-width: 2.7rem;
-    min-height: 2.7rem;
+    width: 2rem;
+    height: 2rem;
   }
 
   .degree-chip-strip-header {
-    font-size: 1rem;
+    font-size: 0.88rem;
   }
 }

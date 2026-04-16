@@ -61,8 +61,6 @@ function getNoteVisuals(noteClass: string): {
   textFill: string;
   radiusScale: number;
   strokeWidth: number;
-  coreFill: string;
-  coreOpacity: number;
   textOpacity: number;
 } {
   switch (noteClass) {
@@ -70,24 +68,20 @@ function getNoteVisuals(noteClass: string): {
       return {
         stroke: "var(--note-ring-tonic)",
         filter: "url(#glow-orange)",
-        fill: "rgb(255 154 77 / 0.28)",
-        textFill: "var(--note-text-tonic)",
+        fill: "rgb(48 32 22 / 0.95)",
+        textFill: "#ffffff",
         radiusScale: 1.08,
         strokeWidth: 2.8,
-        coreFill: "rgb(255 176 92 / 0.26)",
-        coreOpacity: 1,
         textOpacity: 1,
       };
     case "chord-tone":
       return {
         stroke: "var(--note-ring-tonic)",
         filter: "url(#glow-orange)",
-        fill: "rgb(255 154 77 / 0.16)",
-        textFill: "var(--note-text-tonic)",
+        fill: "rgb(40 28 20 / 0.92)",
+        textFill: "#ffffff",
         radiusScale: 0.98,
         strokeWidth: 2.4,
-        coreFill: "rgb(255 176 92 / 0.14)",
-        coreOpacity: 1,
         textOpacity: 1,
       };
     case "note-active":
@@ -95,36 +89,30 @@ function getNoteVisuals(noteClass: string): {
       return {
         stroke: "var(--note-ring)",
         filter: "url(#glow-cyan)",
-        fill: "rgb(77 228 255 / 0.06)",
-        textFill: "var(--note-text-in-scale)",
+        fill: "rgb(20 30 40 / 0.92)",
+        textFill: "#ffffff",
         radiusScale: 0.92,
         strokeWidth: 2.1,
-        coreFill: "rgb(77 228 255 / 0.12)",
-        coreOpacity: 1,
         textOpacity: 1,
       };
     case "note-scale-only":
       return {
         stroke: "var(--note-ring-dim)",
         filter: "url(#glow-cyan)",
-        fill: "rgb(77 228 255 / 0.03)",
-        textFill: "var(--note-text-in-scale)",
+        fill: "rgb(18 26 34 / 0.85)",
+        textFill: "#ffffff",
         radiusScale: 0.84,
         strokeWidth: 1.85,
-        coreFill: "rgb(77 228 255 / 0.08)",
-        coreOpacity: 0.55,
         textOpacity: 0.82,
       };
     case "chord-outside":
       return {
         stroke: "var(--note-ring)",
         filter: "url(#glow-cyan)",
-        fill: "rgb(77 228 255 / 0.02)",
-        textFill: "var(--note-text-in-scale)",
+        fill: "rgb(18 26 34 / 0.75)",
+        textFill: "#ffffff",
         radiusScale: 0.76,
         strokeWidth: 1.5,
-        coreFill: "rgb(77 228 255 / 0.06)",
-        coreOpacity: 0.35,
         textOpacity: 0.72,
       };
     default:
@@ -135,8 +123,6 @@ function getNoteVisuals(noteClass: string): {
         textFill: "transparent",
         radiusScale: 0.8,
         strokeWidth: 0,
-        coreFill: "transparent",
-        coreOpacity: 0,
         textOpacity: 0,
       };
   }
@@ -305,11 +291,23 @@ export function FretboardSVG({
               <stop offset="93%" stopColor="rgb(8 6 6 / 0.12)" />
               <stop offset="100%" stopColor="rgb(8 6 6 / 0.45)" />
             </linearGradient>
-            <pattern id="wood-grain" width="160" height="48" patternUnits="userSpaceOnUse">
-              <path d="M-10 12c18-8 34-7 54-2 20 5 40 6 61-2 17-6 34-7 55 0" fill="none" stroke="rgb(255 255 255 / 0.04)" strokeWidth="1.2" />
-              <path d="M-16 26c24-10 43-8 65-3 23 5 42 4 62-4 16-7 33-7 54-1" fill="none" stroke="rgb(0 0 0 / 0.14)" strokeWidth="1.4" />
-              <path d="M-10 40c20-7 38-6 59-1 21 5 40 4 62-4 18-6 33-6 53 1" fill="none" stroke="rgb(255 255 255 / 0.035)" strokeWidth="1" />
-            </pattern>
+            <filter id="wood-grain-filter" x="0%" y="0%" width="100%" height="100%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.018 0.82" numOctaves="3" seed="7" result="noise" />
+              <feColorMatrix in="noise" type="matrix"
+                values="0 0 0 0 0.18
+                        0 0 0 0 0.11
+                        0 0 0 0 0.06
+                        0 0 0 0.55 0" result="tinted" />
+              <feComposite in="tinted" in2="SourceGraphic" operator="in" />
+            </filter>
+            <filter id="wood-highlights-filter" x="0%" y="0%" width="100%" height="100%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.04 0.6" numOctaves="2" seed="13" result="noise2" />
+              <feColorMatrix in="noise2" type="matrix"
+                values="0 0 0 0 1
+                        0 0 0 0 0.92
+                        0 0 0 0 0.78
+                        0 0 0 0.12 0" />
+            </filter>
             <linearGradient id="string-plain" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="rgb(255 255 255 / 0.92)" />
               <stop offset="45%" stopColor="rgb(218 223 230 / 0.9)" />
@@ -330,7 +328,8 @@ export function FretboardSVG({
 
           {/* Wood background */}
           <rect x={0} y={0} width={neckWidthPx} height={neckHeight} fill="url(#fretboard-wood)" />
-          <rect x={0} y={0} width={neckWidthPx} height={neckHeight} fill="url(#wood-grain)" opacity={0.85} />
+          <rect x={0} y={0} width={neckWidthPx} height={neckHeight} fill="#000" filter="url(#wood-grain-filter)" opacity={0.9} />
+          <rect x={0} y={0} width={neckWidthPx} height={neckHeight} fill="#000" filter="url(#wood-highlights-filter)" opacity={0.55} />
           <rect x={0} y={0} width={neckWidthPx} height={neckHeight} fill="url(#fretboard-vignette)" />
 
           {/* Nut */}
@@ -468,8 +467,6 @@ export function FretboardSVG({
               textFill,
               radiusScale,
               strokeWidth,
-              coreFill,
-              coreOpacity,
               textOpacity,
             } = getNoteVisuals(noteClass);
             const r = baseRadius * radiusScale;
@@ -487,14 +484,6 @@ export function FretboardSVG({
                   stroke={stroke}
                   strokeWidth={strokeWidth}
                   filter={filter !== "none" ? filter : undefined}
-                />
-                <circle
-                  cx={cx}
-                  cy={cy}
-                  r={Math.max(0, r * 0.62)}
-                  fill={coreFill}
-                  opacity={coreOpacity}
-                  pointerEvents="none"
                 />
                 {displayFormat !== "none" && (
                   <text
