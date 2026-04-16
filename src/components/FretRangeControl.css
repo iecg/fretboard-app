@@ -1,3 +1,6 @@
+/* Interactive colors use --interactive-primary (semantic alias of --accent-primary).
+   CAGED colors (--caged-c) must not appear in generic controls. See semantic.css. */
+
 .fret-range-control,
 .fret-group {
   display: flex;
@@ -8,19 +11,19 @@
 .fret-btn {
   padding: var(--space-1) var(--space-2);
   font-size: var(--text-xs);
-  background: var(--caged-c-bg);
-  border: 1px solid var(--caged-c);
+  background: color-mix(in srgb, var(--interactive-primary) 15%, transparent);
+  border: 1px solid var(--interactive-primary);
   border-radius: var(--radius-sm);
-  color: var(--caged-c);
+  color: var(--interactive-primary);
   cursor: pointer;
   transition: var(--transition-surface);
   line-height: 1.2;
 }
 
 .fret-btn:hover:not(:disabled) {
-  background: var(--caged-c);
-  color: var(--caged-c-fg);
-  border-color: var(--caged-c);
+  background: var(--interactive-primary);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-primary);
 }
 
 .fret-btn:disabled {

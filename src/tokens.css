@@ -1,5 +1,6 @@
 :root {
-  font-family: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-sans: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   line-height: 1.5;
   font-weight: 400;
 
@@ -9,8 +10,12 @@
   --space-2: 0.5rem;
   --space-3: 0.75rem;
   --space-4: 1rem;
+  --space-5: 1.25rem;
   --space-6: 1.5rem;
   --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
 
   /* Control sizing */
   --size-touch-target: 2.25rem;
@@ -19,13 +24,32 @@
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-base: 1rem;
+  /* NOTE: --text-lg = 1.5rem (historical naming; --text-xl = 1.25rem is the corrected step) */
   --text-lg: 1.5rem;
+  --text-xl: 1.25rem;
+
+  /* Font weight scale */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Line height scale */
+  --leading-tight: 1.2;
+  --leading-snug: 1.4;
+  --leading-normal: 1.5;
+
+  /* Icon sizes */
+  --icon-sm: 1rem;      /* 16px */
+  --icon-md: 1.25rem;   /* 20px */
+  --icon-lg: 1.5rem;    /* 24px */
 
   /* Border radius */
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
+  --radius-full: 9999px;
 
   /* Transitions */
   --transition-fast: 0.12s ease-out;
@@ -36,4 +60,85 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* === Neon palette (Phase 5 visual language — unused in Phase 4) === */
+:root {
+  --neon-cyan: #4DE4FF;            /* primary ring/interval color */
+  --neon-cyan-bright: #8CEEFF;     /* brighter hover/focus variant */
+  --neon-cyan-dim: #2EB5CC;        /* dimmed / disabled variant */
+  --neon-orange: #FF9A4D;          /* tonic / chord-tone emphasis */
+  --neon-orange-bright: #FFB366;   /* brighter hover/focus variant */
+  --neon-orange-dim: #CC7A3D;      /* dimmed variant */
+  --neon-brand-gradient: linear-gradient(90deg, #4DE4FF 0%, #A78BFA 50%, #4DE4FF 100%);
+}
+
+/* === Glow effects (box-shadow / filter) === */
+:root {
+  /* box-shadow glows — used on note circles, cards, brand icon */
+  --glow-cyan-sm: 0 0 6px rgb(77 228 255 / 0.45);
+  --glow-cyan-md: 0 0 12px rgb(77 228 255 / 0.6);
+  --glow-cyan-lg: 0 0 24px rgb(77 228 255 / 0.5);
+  --glow-orange-sm: 0 0 6px rgb(255 154 77 / 0.5);
+  --glow-orange-md: 0 0 12px rgb(255 154 77 / 0.6);
+  --glow-orange-lg: 0 0 24px rgb(255 154 77 / 0.5);
+
+  /* filter drop-shadows for SVG glyphs (brand icon) */
+  --glow-filter-cyan: drop-shadow(0 0 6px rgb(77 228 255 / 0.65));
+  --glow-filter-orange: drop-shadow(0 0 6px rgb(255 154 77 / 0.65));
+}
+
+/* === Display font (Phase 5 brand — alias to current body font in Phase 4) === */
+:root {
+  /* --font-display is aliased to the existing body font stack in Phase 4.
+     Phase 5 will replace with the chosen neon/display face (e.g., Orbitron, Space Grotesk,
+     or a custom face). Consumers should use var(--font-display) from day one. */
+  --font-display: var(--font-sans);  /* TEMP — Phase 5 replaces with display face */
+  --font-brand-weight: 700;
+  --font-brand-tracking: 0.02em;
+}
+
+/* === Card surface geometry === */
+:root {
+  --radius-card: 1rem;        /* 16px */
+  --radius-chip: 0.5rem;      /* 8px */
+  --radius-pill: 9999px;      /* already available as --radius-full; kept as semantic alias */
+  --space-card-x: 1.5rem;
+  --space-card-y: 1.25rem;
+}
+
+/* === Elevation shadows === */
+:root {
+  --elevation-card: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 2px 8px rgb(0 0 0 / 0.25);
+  --elevation-overlay: 0 8px 32px rgb(0 0 0 / 0.55);
+  --elevation-float: 0 4px 16px rgb(0 0 0 / 0.35);
+}
+
+/* === Fretboard visual tokens (Phase 5 — unused in Phase 4) === */
+:root {
+  --fretboard-wood-top: #3a2517;
+  --fretboard-wood-bottom: #2a1810;
+  --fretboard-wood-grain: rgb(255 255 255 / 0.02);
+  --fret-wire-v2: #9aa0a6;          /* Phase 5 fret wire (brighter); --fret-wire in index.css is Phase 4 value */
+  --fret-wire-dark: #4a5058;
+  --fret-wire-highlight: rgb(255 255 255 / 0.25);
+  --string-wire: #c8c8c8;
+  --string-wire-bass: #b0a080;      /* wound strings (lower 3) */
+  --string-taper-1: 1px;             /* high E */
+  --string-taper-2: 1.25px;
+  --string-taper-3: 1.5px;
+  --string-taper-4: 2px;
+  --string-taper-5: 2.5px;
+  --string-taper-6: 3px;             /* low E */
+  --inlay-dot: rgb(210 210 210 / 0.18);
+  --inlay-dot-12: rgb(210 210 210 / 0.28);
+  --nut: #e0d4a8;
+  --fretboard-edge-shadow: 0 0 16px rgb(0 0 0 / 0.45) inset;
+}
+
+/* === App background tokens (Phase 5 — unused in Phase 4) === */
+:root {
+  --bg-app-gradient-start: #0c1822;
+  --bg-app-gradient-end: #0a1420;
+  --bg-app-accent-glow: radial-gradient(ellipse at 50% 0%, rgb(77 228 255 / 0.06), transparent 60%);
 }

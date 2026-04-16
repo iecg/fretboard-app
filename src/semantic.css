@@ -21,6 +21,12 @@
  *     selectors consistent.
  * ============================================================================
  */
+
+/* === Dark-only intentional ===
+   FretFlow is a dark-only app (color-scheme: dark). The @media (prefers-color-scheme: light) block
+   in index.css covers only two text-on-* overrides and is not a full light-mode implementation.
+   Building a light-mode semantic layer is out of scope for Phase 4 and Phase 5.
+*/
 :root {
   /* SELECTED-STATE TOKENS */
   --selected-bg: var(--selection-accent-bg);
@@ -48,6 +54,26 @@
   /* FOCUS-RING TOKEN */
   --focus-ring: 2px solid var(--accent-primary);
   --focus-ring-offset: 2px;
+
+  /* === Z-index scale (register all z-index values here) === */
+  --z-note: 10;           /* note bubble z-ordering in fretboard (App.css line 467) */
+  --z-dropdown: 50;       /* drawer-options dropdown (App.css line 1287) */
+  --z-help-overlay: 1000; /* help modal overlay (App.css line 235) */
+  --z-bottom-nav: 100;    /* mobile bottom tab bar (Phase 5) */
+  --z-header: 80;         /* sticky app header (Phase 5) */
+  /* --z-overlay-backdrop: 200 and --z-overlay-drawer: 201 already in index.css */
+
+  /* === Interactive element tokens === */
+  /* Generic interactive color for controls with no CAGED semantic (StepperControl, FretRangeControl) */
+  --interactive-primary: var(--accent-primary);
+  /* Disabled opacity applied to :disabled interactive elements */
+  --disabled-opacity: 0.3;
+
+  /* === CONTRAST-WARNING ===
+     --text-muted (#a0a0a5) on --surface-raised (#2c2c2e) estimates ~3.8:1 (below WCAG AA 4.5:1 for
+     normal/small text). Intentionally deferred to Phase 5 (visual restyling). Do not change the
+     value in Phase 4 as that would be a visual change out of scope. Track: TODO #4 contrast audit.
+  */
 
   /* TRANSITION REGISTRY (per-element semantics referencing existing primitive durations) */
   --transition-surface: background-color var(--transition-fast) ease, color var(--transition-fast) ease, border-color var(--transition-fast) ease;
@@ -86,4 +112,57 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+/* === Card surface (Phase 5 — defined, unused in Phase 4) === */
+:root {
+  --surface-card: var(--surface-raised);         /* alias of existing raised surface */
+  --surface-card-border: rgb(255 255 255 / 0.06);
+  --surface-card-header-border: rgb(255 255 255 / 0.04);
+}
+
+/* === Note visualization (Phase 5 — defined, unused in Phase 4) === */
+:root {
+  --note-ring: var(--neon-cyan);
+  --note-ring-tonic: var(--neon-orange);
+  --note-ring-dim: var(--neon-cyan-dim);
+  --note-fill: transparent;                      /* hollow ring default */
+  --note-fill-in-chord: var(--neon-orange);
+  --note-text-in-scale: var(--neon-cyan-bright);
+  --note-text-tonic: var(--neon-orange-bright);
+  --note-glow: var(--glow-cyan-sm);
+  --note-glow-tonic: var(--glow-orange-sm);
+}
+
+/* === Brand and display text === */
+:root {
+  --text-brand: var(--neon-cyan-bright);
+  --text-brand-gradient: var(--neon-brand-gradient);
+  --brand-icon-glow: var(--glow-filter-cyan);
+}
+
+/* === Header surface === */
+:root {
+  --header-surface: var(--surface-base);         /* alias of existing surface */
+  --header-border: rgb(255 255 255 / 0.06);
+  --header-padding-y: var(--space-3);
+}
+
+/* === Chip surfaces (degree strip) === */
+:root {
+  --chip-surface-inactive: rgb(255 255 255 / 0.04);
+  --chip-surface-active: rgb(77 228 255 / 0.08);
+  --chip-surface-tonic: rgb(255 154 77 / 0.1);
+  --chip-border-inactive: rgb(255 255 255 / 0.08);
+  --chip-border-active: var(--neon-cyan);
+  --chip-border-tonic: var(--neon-orange);
+  --chip-text-inactive: var(--text-muted);
+  --chip-text-active: var(--neon-cyan-bright);
+  --chip-text-tonic: var(--neon-orange-bright);
+}
+
+/* === Card padding semantics === */
+:root {
+  --card-padding-y: var(--space-card-y);
+  --card-padding-x: var(--space-card-x);
 }
