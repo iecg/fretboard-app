@@ -1,5 +1,6 @@
 import React from "react";
 import clsx from "clsx";
+import "./CircleOfFifths.css";
 import {
   CIRCLE_OF_FIFTHS,
   getNoteDisplayInScale,

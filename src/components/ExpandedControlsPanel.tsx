@@ -134,9 +134,7 @@ export function KeyColumn() {
   const enharmonicDisplay = useAtomValue(enharmonicDisplayAtom);
 
   return (
-    // TODO(05-04): wrap in <Card title="Key Explorer"> and restyle CircleOfFifths with neon tokens
-    <div className="control-group key-column panel-surface controls-card controls-card--key">
-      <h2>Key Explorer</h2>
+    <Card title="Key Explorer" className="key-column">
       <CircleOfFifths
         rootNote={rootNote}
         setRootNote={handleSetRootNote}
@@ -144,7 +142,7 @@ export function KeyColumn() {
         useFlats={useFlats}
         enharmonicDisplay={enharmonicDisplay}
       />
-    </div>
+    </Card>
   );
 }
 

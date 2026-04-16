@@ -1,0 +1,60 @@
+/* Circle of Fifths — Phase 5 neon restyle */
+
+.circle-fifths-container {
+  container-type: inline-size;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 320px;
+  min-height: 0;
+  overflow: hidden;
+  aspect-ratio: 1;
+  max-height: min(320px, 60vh);
+  margin: 0 auto;
+}
+
+.circle-fifths-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+}
+
+/* Segment fills */
+.circle-slice {
+  fill: var(--surface-raised);
+  cursor: pointer;
+  transition: fill var(--transition-fast), filter var(--transition-fast);
+}
+
+.circle-slice:hover {
+  fill: color-mix(in srgb, var(--neon-cyan) 12%, var(--surface-raised));
+  filter: drop-shadow(0 0 4px rgb(77 228 255 / 0.25));
+}
+
+.circle-slice.active {
+  fill: color-mix(in srgb, var(--neon-cyan) 18%, var(--surface-raised));
+  stroke: var(--neon-cyan) !important;
+  stroke-width: 2 !important;
+  filter: var(--glow-filter-cyan);
+}
+
+.circle-slice.active:hover {
+  fill: color-mix(in srgb, var(--neon-cyan) 24%, var(--surface-raised));
+}
+
+/* Suppress browser default focus outline — JS-rendered focus ring handles WCAG 2.4.7 */
+.circle-slice:focus,
+.circle-slice:focus-visible {
+  outline: none;
+  box-shadow: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* JS-rendered keyboard focus ring (see keyboardFocused state in CircleOfFifths.tsx) */
+.circle-slice-focus-ring {
+  stroke: var(--neon-cyan-bright) !important;
+  filter: var(--glow-filter-cyan);
+}
