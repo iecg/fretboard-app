@@ -249,7 +249,7 @@ export function FretboardSVG({
                             : undefined
                         }
                         disabled={!onNoteClick}
-                        aria-label={`${formatAccidental(displayValue)} on string ${tuning.length - stringIndex}, fret ${fretIndex}`}
+                        aria-label={`${formatAccidental(displayValue)} on string ${stringIndex + 1}, fret ${fretIndex}`}
                         className={clsx("note-bubble", noteClass,
                           noteClass === "note-scale-only" && hideNonChordNotes && "hidden")}
                         style={{

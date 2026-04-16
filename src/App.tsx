@@ -69,6 +69,7 @@ function SummaryNote({
   const degreeColor = romanNumeral ? DEGREE_COLORS[romanNumeral] : undefined;
   return (
     <span
+      role="listitem"
       className={`summary-note${isChord ? " summary-note--chord" : ""}`}
       style={
         degreeColor
@@ -432,22 +433,8 @@ function AppContent() {
       {showHelp && (
         <div
           className="help-modal-overlay"
-          role="button"
-          tabIndex={0}
-          aria-label="Dismiss overlay backdrop"
           onClick={(event) => {
             if (event.target === event.currentTarget) {
-              setShowHelp(false);
-            }
-          }}
-          onKeyDown={(event) => {
-            if (event.target !== event.currentTarget) return;
-            if (
-              event.key === "Enter" ||
-              event.key === " " ||
-              event.key === "Escape"
-            ) {
-              event.preventDefault();
               setShowHelp(false);
             }
           }}

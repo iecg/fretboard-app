@@ -426,11 +426,17 @@ export const rootNoteAtom = atomWithStorage(
   rawStringStorage(),
   GET_ON_INIT,
 );
-export const scaleNameAtom = atomWithStorage(
+const baseScaleNameAtom = atomWithStorage(
   k("scaleName"),
   "Major",
   scaleNameStorage,
   GET_ON_INIT,
+);
+export const scaleNameAtom = atom(
+  (get) => get(baseScaleNameAtom),
+  (_get, set, value: string) => {
+    set(baseScaleNameAtom, normalizeScaleName(value));
+  },
 );
 export const scaleBrowseModeAtom = atomWithStorage<ScaleBrowseMode>(
   k("scaleBrowseMode"),
@@ -592,7 +598,7 @@ export const resetAtom = atom(null, (_get, set) => {
     // If storage is blocked or throws, still reset atoms in-memory.
   }
   set(rootNoteAtom, RESET);
-  set(scaleNameAtom, RESET);
+  set(baseScaleNameAtom, RESET);
   set(scaleBrowseModeAtom, RESET);
   set(chordRootAtom, RESET);
   set(chordTypeAtom, RESET);
