@@ -5,5 +5,10 @@ export function getFocusableElements(container: HTMLElement | null): HTMLElement
   if (!container) return [];
   return Array.from(
     container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
-  ).filter((el) => el.getAttribute("aria-hidden") !== "true");
+  ).filter((el) => {
+    // Check if the element itself or any ancestor within the container has aria-hidden or inert
+    const hiddenAncestor = el.closest('[aria-hidden="true"], [inert]');
+    // Exclude if a hidden/inert ancestor exists and is within (or is) the container
+    return !hiddenAncestor || !container.contains(hiddenAncestor);
+  });
 }
