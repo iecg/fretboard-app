@@ -3220,6 +3220,16 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
               stroke-width="1"
               tabindex="-1"
             />
+            <path
+              aria-hidden="true"
+              class="circle-slice-focus-ring"
+              d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+              fill="none"
+              pointer-events="none"
+              stroke="var(--accent-primary)"
+              stroke-linejoin="round"
+              stroke-width="3"
+            />
             <g
               style="pointer-events: none;"
             >
@@ -7069,6 +7079,16 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
               stroke="var(--surface-highlight)"
               stroke-width="1"
               tabindex="-1"
+            />
+            <path
+              aria-hidden="true"
+              class="circle-slice-focus-ring"
+              d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+              fill="none"
+              pointer-events="none"
+              stroke="var(--accent-primary)"
+              stroke-linejoin="round"
+              stroke-width="3"
             />
             <g
               style="pointer-events: none;"
@@ -10920,6 +10940,16 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
               stroke-width="1"
               tabindex="-1"
             />
+            <path
+              aria-hidden="true"
+              class="circle-slice-focus-ring"
+              d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+              fill="none"
+              pointer-events="none"
+              stroke="var(--accent-primary)"
+              stroke-linejoin="round"
+              stroke-width="3"
+            />
             <g
               style="pointer-events: none;"
             >
@@ -14770,6 +14800,16 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
               stroke-width="1"
               tabindex="-1"
             />
+            <path
+              aria-hidden="true"
+              class="circle-slice-focus-ring"
+              d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+              fill="none"
+              pointer-events="none"
+              stroke="var(--accent-primary)"
+              stroke-linejoin="round"
+              stroke-width="3"
+            />
             <g
               style="pointer-events: none;"
             >
@@ -18616,6 +18656,16 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
               stroke-width="1"
               tabindex="-1"
             />
+            <path
+              aria-hidden="true"
+              class="circle-slice-focus-ring"
+              d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+              fill="none"
+              pointer-events="none"
+              stroke="var(--accent-primary)"
+              stroke-linejoin="round"
+              stroke-width="3"
+            />
             <g
               style="pointer-events: none;"
             >
@@ -22329,6 +22379,16 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
                 stroke="var(--surface-highlight)"
                 stroke-width="1"
                 tabindex="-1"
+              />
+              <path
+                aria-hidden="true"
+                class="circle-slice-focus-ring"
+                d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+                fill="none"
+                pointer-events="none"
+                stroke="var(--accent-primary)"
+                stroke-linejoin="round"
+                stroke-width="3"
               />
               <g
                 style="pointer-events: none;"
@@ -26045,6 +26105,16 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
                 stroke-width="1"
                 tabindex="-1"
               />
+              <path
+                aria-hidden="true"
+                class="circle-slice-focus-ring"
+                d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+                fill="none"
+                pointer-events="none"
+                stroke="var(--accent-primary)"
+                stroke-linejoin="round"
+                stroke-width="3"
+              />
               <g
                 style="pointer-events: none;"
               >
@@ -29759,6 +29829,16 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                 stroke="var(--surface-highlight)"
                 stroke-width="1"
                 tabindex="-1"
+              />
+              <path
+                aria-hidden="true"
+                class="circle-slice-focus-ring"
+                d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+                fill="none"
+                pointer-events="none"
+                stroke="var(--accent-primary)"
+                stroke-linejoin="round"
+                stroke-width="3"
               />
               <g
                 style="pointer-events: none;"
@@ -33605,6 +33685,16 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
               stroke-width="1"
               tabindex="-1"
             />
+            <path
+              aria-hidden="true"
+              class="circle-slice-focus-ring"
+              d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+              fill="none"
+              pointer-events="none"
+              stroke="var(--accent-primary)"
+              stroke-linejoin="round"
+              stroke-width="3"
+            />
             <g
               style="pointer-events: none;"
             >
@@ -34366,6 +34456,16 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
         stroke-width="1"
         tabindex="-1"
       />
+      <path
+        aria-hidden="true"
+        class="circle-slice-focus-ring"
+        d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+        fill="none"
+        pointer-events="none"
+        stroke="var(--accent-primary)"
+        stroke-linejoin="round"
+        stroke-width="3"
+      />
       <g
         style="pointer-events: none;"
       >
@@ -34976,6 +35076,16 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
         stroke="var(--surface-highlight)"
         stroke-width="1"
         tabindex="-1"
+      />
+      <path
+        aria-hidden="true"
+        class="circle-slice-focus-ring"
+        d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+        fill="none"
+        pointer-events="none"
+        stroke="var(--accent-primary)"
+        stroke-linejoin="round"
+        stroke-width="3"
       />
       <g
         style="pointer-events: none;"
@@ -35588,6 +35698,16 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
         stroke-width="1"
         tabindex="-1"
       />
+      <path
+        aria-hidden="true"
+        class="circle-slice-focus-ring"
+        d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+        fill="none"
+        pointer-events="none"
+        stroke="var(--accent-primary)"
+        stroke-linejoin="round"
+        stroke-width="3"
+      />
       <g
         style="pointer-events: none;"
       >
@@ -36138,6 +36258,16 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "on
         stroke="var(--surface-highlight)"
         stroke-width="1"
         tabindex="-1"
+      />
+      <path
+        aria-hidden="true"
+        class="circle-slice-focus-ring"
+        d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+        fill="none"
+        pointer-events="none"
+        stroke="var(--accent-primary)"
+        stroke-linejoin="round"
+        stroke-width="3"
       />
       <g
         style="pointer-events: none;"
@@ -37361,6 +37491,16 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Dorian mode sn
         stroke-width="1"
         tabindex="-1"
       />
+      <path
+        aria-hidden="true"
+        class="circle-slice-focus-ring"
+        d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+        fill="none"
+        pointer-events="none"
+        stroke="var(--accent-primary)"
+        stroke-linejoin="round"
+        stroke-width="3"
+      />
       <g
         style="pointer-events: none;"
       >
@@ -37971,6 +38111,16 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders G Major snapsh
         stroke="var(--surface-highlight)"
         stroke-width="1"
         tabindex="-1"
+      />
+      <path
+        aria-hidden="true"
+        class="circle-slice-focus-ring"
+        d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+        fill="none"
+        pointer-events="none"
+        stroke="var(--accent-primary)"
+        stroke-linejoin="round"
+        stroke-width="3"
       />
       <g
         style="pointer-events: none;"
@@ -38583,6 +38733,16 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Lydian mode sn
         stroke-width="1"
         tabindex="-1"
       />
+      <path
+        aria-hidden="true"
+        class="circle-slice-focus-ring"
+        d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+        fill="none"
+        pointer-events="none"
+        stroke="var(--accent-primary)"
+        stroke-linejoin="round"
+        stroke-width="3"
+      />
       <g
         style="pointer-events: none;"
       >
@@ -39193,6 +39353,16 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
         stroke="var(--surface-highlight)"
         stroke-width="1"
         tabindex="-1"
+      />
+      <path
+        aria-hidden="true"
+        class="circle-slice-focus-ring"
+        d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+        fill="none"
+        pointer-events="none"
+        stroke="var(--accent-primary)"
+        stroke-linejoin="round"
+        stroke-width="3"
       />
       <g
         style="pointer-events: none;"
@@ -39865,6 +40035,16 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
         stroke-width="1"
         tabindex="-1"
       />
+      <path
+        aria-hidden="true"
+        class="circle-slice-focus-ring"
+        d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+        fill="none"
+        pointer-events="none"
+        stroke="var(--accent-primary)"
+        stroke-linejoin="round"
+        stroke-width="3"
+      />
       <g
         style="pointer-events: none;"
       >
@@ -40476,6 +40656,16 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
         stroke-width="1"
         tabindex="-1"
       />
+      <path
+        aria-hidden="true"
+        class="circle-slice-focus-ring"
+        d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+        fill="none"
+        pointer-events="none"
+        stroke="var(--accent-primary)"
+        stroke-linejoin="round"
+        stroke-width="3"
+      />
       <g
         style="pointer-events: none;"
       >
@@ -41086,6 +41276,16 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
         stroke="var(--surface-highlight)"
         stroke-width="1"
         tabindex="-1"
+      />
+      <path
+        aria-hidden="true"
+        class="circle-slice-focus-ring"
+        d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+        fill="none"
+        pointer-events="none"
+        stroke="var(--accent-primary)"
+        stroke-linejoin="round"
+        stroke-width="3"
       />
       <g
         style="pointer-events: none;"
@@ -41722,6 +41922,16 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
         stroke-width="1"
         tabindex="-1"
       />
+      <path
+        aria-hidden="true"
+        class="circle-slice-focus-ring"
+        d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+        fill="none"
+        pointer-events="none"
+        stroke="var(--accent-primary)"
+        stroke-linejoin="round"
+        stroke-width="3"
+      />
       <g
         style="pointer-events: none;"
       >
@@ -42332,6 +42542,16 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
         stroke="var(--surface-highlight)"
         stroke-width="1"
         tabindex="-1"
+      />
+      <path
+        aria-hidden="true"
+        class="circle-slice-focus-ring"
+        d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+        fill="none"
+        pointer-events="none"
+        stroke="var(--accent-primary)"
+        stroke-linejoin="round"
+        stroke-width="3"
       />
       <g
         style="pointer-events: none;"
@@ -42992,6 +43212,16 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
         stroke-width="1"
         tabindex="-1"
       />
+      <path
+        aria-hidden="true"
+        class="circle-slice-focus-ring"
+        d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+        fill="none"
+        pointer-events="none"
+        stroke="var(--accent-primary)"
+        stroke-linejoin="round"
+        stroke-width="3"
+      />
       <g
         style="pointer-events: none;"
       >
@@ -43603,6 +43833,16 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
         stroke-width="1"
         tabindex="-1"
       />
+      <path
+        aria-hidden="true"
+        class="circle-slice-focus-ring"
+        d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+        fill="none"
+        pointer-events="none"
+        stroke="var(--accent-primary)"
+        stroke-linejoin="round"
+        stroke-width="3"
+      />
       <g
         style="pointer-events: none;"
       >
@@ -44213,6 +44453,16 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
         stroke="var(--surface-highlight)"
         stroke-width="1"
         tabindex="-1"
+      />
+      <path
+        aria-hidden="true"
+        class="circle-slice-focus-ring"
+        d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+        fill="none"
+        pointer-events="none"
+        stroke="var(--accent-primary)"
+        stroke-linejoin="round"
+        stroke-width="3"
       />
       <g
         style="pointer-events: none;"
@@ -44837,6 +45087,16 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
         stroke-width="1"
         tabindex="-1"
       />
+      <path
+        aria-hidden="true"
+        class="circle-slice-focus-ring"
+        d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+        fill="none"
+        pointer-events="none"
+        stroke="var(--accent-primary)"
+        stroke-linejoin="round"
+        stroke-width="3"
+      />
       <g
         style="pointer-events: none;"
       >
@@ -45447,6 +45707,16 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
         stroke="var(--surface-highlight)"
         stroke-width="1"
         tabindex="-1"
+      />
+      <path
+        aria-hidden="true"
+        class="circle-slice-focus-ring"
+        d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+        fill="none"
+        pointer-events="none"
+        stroke="var(--accent-primary)"
+        stroke-linejoin="round"
+        stroke-width="3"
       />
       <g
         style="pointer-events: none;"
@@ -46095,6 +46365,16 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
         stroke-width="1"
         tabindex="-1"
       />
+      <path
+        aria-hidden="true"
+        class="circle-slice-focus-ring"
+        d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+        fill="none"
+        pointer-events="none"
+        stroke="var(--accent-primary)"
+        stroke-linejoin="round"
+        stroke-width="3"
+      />
       <g
         style="pointer-events: none;"
       >
@@ -46705,6 +46985,16 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders with flats sna
         stroke="var(--surface-highlight)"
         stroke-width="1"
         tabindex="-1"
+      />
+      <path
+        aria-hidden="true"
+        class="circle-slice-focus-ring"
+        d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
+        fill="none"
+        pointer-events="none"
+        stroke="var(--accent-primary)"
+        stroke-linejoin="round"
+        stroke-width="3"
       />
       <g
         style="pointer-events: none;"

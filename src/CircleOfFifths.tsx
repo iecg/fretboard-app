@@ -127,6 +127,17 @@ export function CircleOfFifths({
               onPointerDown={() => {
                 setKeyboardFocused(false);
               }}
+              onFocus={(e) => {
+                try {
+                  if (e.currentTarget.matches(':focus-visible')) {
+                    setKeyboardFocused(true);
+                    setFocusedIndex(index);
+                  }
+                } catch {
+                  setKeyboardFocused(true);
+                  setFocusedIndex(index);
+                }
+              }}
               onBlur={() => {
                 setKeyboardFocused(false);
               }}
