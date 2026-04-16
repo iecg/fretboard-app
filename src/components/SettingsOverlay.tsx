@@ -25,6 +25,7 @@ import {
   getResponsiveTier,
   type ResponsiveTier,
 } from "../layout/responsive";
+import { getFocusableElements } from "../utils/dom";
 import "./SettingsOverlay.css";
 
 const END_FRET = 24;
@@ -167,15 +168,6 @@ function getViewportSnapshot() {
   };
 }
 
-function getFocusableElements(container: HTMLElement | null): HTMLElement[] {
-  if (!container) return [];
-  return Array.from(
-    container.querySelectorAll<HTMLElement>(
-      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-    ),
-  ).filter((element) => element.getAttribute("aria-hidden") !== "true");
-}
-
 function OverlaySection({
   id,
   title,
@@ -267,6 +259,12 @@ function SettingsOverlaySurface({
   const [activeHelpField, setActiveHelpField] = useState<HelpFieldId | null>(
     null,
   );
+  const activeHelpFieldRef = useRef<HelpFieldId | null>(null);
+
+  useEffect(() => {
+    activeHelpFieldRef.current = activeHelpField;
+  }, [activeHelpField]);
+
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
@@ -330,7 +328,7 @@ function SettingsOverlaySurface({
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.stopPropagation();
-        if (activeHelpField) {
+        if (activeHelpFieldRef.current) {
           setActiveHelpField(null);
         } else {
           setIsOpen(false);
@@ -368,7 +366,7 @@ function SettingsOverlaySurface({
       triggerRef.current?.focus();
       triggerRef.current = null;
     };
-  }, [activeHelpField, setIsOpen]);
+  }, [setIsOpen]);
 
   const renderField = (fieldKey: SettingFieldKey, index: number, total: number) => {
     const field = SETTING_FIELDS[fieldKey];

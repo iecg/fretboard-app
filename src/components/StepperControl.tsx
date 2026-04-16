@@ -25,10 +25,15 @@ export function StepperControl({
   return (
     <div className={clsx("stepper-control", buttonVariant)}>
       {label && <span className="section-label">{label}</span>}
-      <div className="stepper-group">
+      <div
+        className="stepper-group"
+        role="group"
+        aria-label={label ?? 'Stepper control'}
+      >
         <button
           type="button"
           className="stepper-btn"
+          aria-label={`Decrease ${label ?? 'value'} (current: ${value})`}
           onClick={() => onChange(Math.max(min, value - step))}
           disabled={value <= min}
         >
@@ -38,6 +43,7 @@ export function StepperControl({
         <button
           type="button"
           className="stepper-btn"
+          aria-label={`Increase ${label ?? 'value'} (current: ${value})`}
           onClick={() => onChange(Math.min(max, value + step))}
           disabled={value >= max}
         >

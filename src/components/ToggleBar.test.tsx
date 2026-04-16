@@ -67,9 +67,9 @@ describe("ToggleBar", () => {
         variant="tabs"
       />,
     );
-    const buttons = screen.getAllByRole("button");
-    buttons.forEach((btn) => {
-      expect(btn).toHaveClass("mobile-tab");
+    const tabs = screen.getAllByRole("tab");
+    tabs.forEach((tab) => {
+      expect(tab).toHaveClass("mobile-tab");
     });
   });
 

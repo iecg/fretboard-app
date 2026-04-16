@@ -232,7 +232,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  /* z-index token — see semantic.css for the full z-index registry */
+  z-index: var(--z-help-overlay);
   padding: clamp(0.75rem, 3vw, 1.25rem);
 }
 
@@ -464,7 +465,8 @@
   position: absolute;
   inset: 0;
   display: flex;
-  z-index: 10;
+  /* z-index token — see semantic.css for the full z-index registry */
+  z-index: var(--z-note);
 }
 
 .note-cell {
@@ -869,8 +871,19 @@
   fill: var(--surface-highlight);
 }
 
+.circle-slice:focus,
 .circle-slice:focus-visible {
+  /* SVG focus ring replaces browser outline — see CircleOfFifths.tsx keyboardFocused state.
+     Both :focus and :focus-visible are suppressed because some browsers render a default
+     rectangular outline on SVG <path> elements even when only :focus-visible is set to none. */
   outline: none;
+  box-shadow: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.circle-slice-focus-ring {
+  /* Rendered via JS when keyboard navigation is active — no additional CSS needed.
+     Stroke color and width are set inline in SVG attributes. */
 }
 
 /* =============================================
@@ -1284,7 +1297,8 @@
   top: calc(100% + 4px);
   left: 0;
   right: 0;
-  z-index: 50;
+  /* z-index token — see semantic.css for the full z-index registry */
+  z-index: var(--z-dropdown);
   background: var(--surface-base);
   border: 1px solid var(--surface-highlight);
   border-radius: var(--radius-md);

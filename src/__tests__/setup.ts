@@ -1,5 +1,18 @@
 import '@testing-library/jest-dom';
-import { vi } from 'vitest';
+import { vi, expect } from 'vitest';
+import { configureAxe } from 'vitest-axe';
+import { toHaveNoViolations } from 'vitest-axe/dist/matchers.js';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+expect.extend({ toHaveNoViolations } as any);
+
+// vitest-axe: registers toHaveNoViolations matcher globally.
+// color-contrast rule disabled — jsdom cannot compute CSS custom property values.
+// Use @axe-core/playwright for contrast checks in a real browser environment.
+configureAxe({
+  rules: {
+    'color-contrast': { enabled: false },
+  },
+});
 
 // Fix __APP_VERSION__ to prevent snapshot breakage on version bumps
 (globalThis as Record<string, unknown>).__APP_VERSION__ = '0.0.0-test';

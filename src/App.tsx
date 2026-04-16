@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import clsx from "clsx";
 import {
   useAtom,
@@ -16,6 +16,7 @@ import {
   formatAccidental,
 } from "./theory";
 import { Music, Settings2, Volume2, VolumeX, HelpCircle } from "lucide-react";
+import { getFocusableElements } from "./utils/dom";
 import { synth } from "./audio";
 import { CircleOfFifths } from "./CircleOfFifths";
 import { DEGREE_COLORS, getDegreesForScale } from "./degrees";
@@ -162,7 +163,48 @@ function AppContent() {
   const setSettingsOverlayOpen = useSetAtom(settingsOverlayOpenAtom);
 
   const [showHelp, setShowHelp] = useState(false);
+  const helpModalRef = useRef<HTMLDivElement>(null);
+  const helpTriggerRef = useRef<HTMLButtonElement>(null);
   const layout = useLayoutMode();
+
+  // Focus trap + focus restoration for help modal
+  useEffect(() => {
+    if (!showHelp) return;
+    const modal = helpModalRef.current;
+    const trigger = helpTriggerRef.current;
+    const focusables = getFocusableElements(modal);
+    focusables[0]?.focus();
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setShowHelp(false);
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const els = getFocusableElements(modal);
+      if (els.length === 0) return;
+      const first = els[0];
+      const last = els[els.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      trigger?.focus();
+    };
+  }, [showHelp]);
 
   // Sync mute state to audio synth (runs on mount and whenever isMuted changes)
   useEffect(() => {
@@ -332,6 +374,7 @@ function AppContent() {
             onClick={toggleMute}
             className="header-btn"
             title={isMuted ? "Unmute" : "Mute"}
+            aria-label={isMuted ? "Unmute audio" : "Mute audio"}
           >
             {isMuted ? (
               <VolumeX className="icon icon-muted" />
@@ -340,6 +383,7 @@ function AppContent() {
             )}
           </button>
           <button
+            ref={helpTriggerRef}
             type="button"
             onClick={() => setShowHelp(true)}
             className="header-btn"
@@ -355,6 +399,7 @@ function AppContent() {
       {showHelp && (
         <div className="help-modal-overlay" onClick={() => setShowHelp(false)}>
           <div
+            ref={helpModalRef}
             className={clsx("help-modal", {
               "help-modal--full-width": layout.fullWidthOverlay,
             })}

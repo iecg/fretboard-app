@@ -21,6 +21,13 @@
  *     selectors consistent.
  * ============================================================================
  */
+
+/* === Dark-only intentional ===
+   FretFlow is a dark-only app (color-scheme: dark). The @media (prefers-color-scheme: light) block
+   in index.css covers only two text-on-* overrides and is not a full light-mode implementation.
+   Building a light-mode semantic layer is out of scope for Phase 4 and Phase 5.
+*/
+
 :root {
   /* SELECTED-STATE TOKENS */
   --selected-bg: var(--selection-accent-bg);
@@ -49,10 +56,69 @@
   --focus-ring: 2px solid var(--accent-primary);
   --focus-ring-offset: 2px;
 
-  /* TRANSITION REGISTRY (per-element semantics referencing existing primitive durations) */
+  /* Z-INDEX SEMANTIC ALIASES (primitives in tokens.css) */
+  --z-note: var(--token-z-note);
+  --z-dropdown: var(--token-z-dropdown);
+  --z-help-overlay: var(--token-z-help-overlay);
+  --z-bottom-nav: var(--token-z-bottom-nav);
+  --z-header: var(--token-z-header);
+  /* --z-overlay-backdrop: 200 and --z-overlay-drawer: 201 already in index.css */
+
+  /* INTERACTIVE ELEMENT TOKENS */
+  --interactive-primary: var(--accent-primary);
+  --disabled-opacity: var(--token-disabled-opacity);
+
+  /* === CONTRAST-WARNING ===
+     --text-muted (#a0a0a5) on --surface-raised (#2c2c2e) estimates ~3.8:1 (below WCAG AA 4.5:1 for
+     normal/small text). Intentionally deferred to Phase 5 (visual restyling). Do not change the
+     value in Phase 4 as that would be a visual change out of scope. Track: TODO #4 contrast audit.
+  */
+
+  /* TRANSITION REGISTRY */
   --transition-surface: background-color var(--transition-fast) ease, color var(--transition-fast) ease, border-color var(--transition-fast) ease;
   --transition-accent: box-shadow var(--transition-fast) ease, fill var(--transition-fast) ease;
   --transition-motion: transform var(--transition-fast) ease, opacity var(--transition-base) ease;
+
+  /* CARD SURFACE (Phase 5 — defined, unused in Phase 4) */
+  --surface-card: var(--surface-raised);
+  --surface-card-border: var(--token-border-subtle);
+  --surface-card-header-border: var(--token-border-subtler);
+
+  /* NOTE VISUALIZATION (Phase 5) */
+  --note-ring: var(--neon-cyan);
+  --note-ring-tonic: var(--neon-orange);
+  --note-ring-dim: var(--neon-cyan-dim);
+  --note-fill: transparent;
+  --note-fill-in-chord: var(--neon-orange);
+  --note-text-in-scale: var(--neon-cyan-bright);
+  --note-text-tonic: var(--neon-orange-bright);
+  --note-glow: var(--glow-cyan-sm);
+  --note-glow-tonic: var(--glow-orange-sm);
+
+  /* BRAND AND DISPLAY TEXT */
+  --text-brand: var(--neon-cyan-bright);
+  --text-brand-gradient: var(--neon-brand-gradient);
+  --brand-icon-glow: var(--glow-filter-cyan);
+
+  /* HEADER SURFACE */
+  --header-surface: var(--surface-base);
+  --header-border: var(--token-border-subtle);
+  --header-padding-y: var(--space-3);
+
+  /* CHIP SURFACES (degree strip) */
+  --chip-surface-inactive: var(--token-surface-dim);
+  --chip-surface-active: var(--token-chip-active-bg);
+  --chip-surface-tonic: var(--token-chip-tonic-bg);
+  --chip-border-inactive: var(--token-border-faint);
+  --chip-border-active: var(--neon-cyan);
+  --chip-border-tonic: var(--neon-orange);
+  --chip-text-inactive: var(--text-muted);
+  --chip-text-active: var(--neon-cyan-bright);
+  --chip-text-tonic: var(--neon-orange-bright);
+
+  /* CARD PADDING SEMANTICS */
+  --card-padding-y: var(--space-card-y);
+  --card-padding-x: var(--space-card-x);
 }
 
 /* .panel-surface variant classes */

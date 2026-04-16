@@ -1,3 +1,5 @@
+import React from "react";
+import clsx from "clsx";
 import {
   CIRCLE_OF_FIFTHS,
   getNoteDisplayInScale,
@@ -15,6 +17,20 @@ const OUTER_RADIUS = SIZE * 0.48;
 const INNER_RADIUS = SIZE * 0.26;
 const LABEL_RADIUS = SIZE * 0.39;
 const DEGREE_RADIUS = SIZE * 0.31;
+
+function slicePath(index: number): string {
+  const startAngle = ((index * 30 - 105) * Math.PI) / 180;
+  const endAngle = (((index + 1) * 30 - 105) * Math.PI) / 180;
+  const ox1 = CX + OUTER_RADIUS * Math.cos(startAngle);
+  const oy1 = CY + OUTER_RADIUS * Math.sin(startAngle);
+  const ox2 = CX + OUTER_RADIUS * Math.cos(endAngle);
+  const oy2 = CY + OUTER_RADIUS * Math.sin(endAngle);
+  const ix1 = CX + INNER_RADIUS * Math.cos(startAngle);
+  const iy1 = CY + INNER_RADIUS * Math.sin(startAngle);
+  const ix2 = CX + INNER_RADIUS * Math.cos(endAngle);
+  const iy2 = CY + INNER_RADIUS * Math.sin(endAngle);
+  return `M ${ix1} ${iy1} L ${ox1} ${oy1} A ${OUTER_RADIUS} ${OUTER_RADIUS} 0 0 1 ${ox2} ${oy2} L ${ix2} ${iy2} A ${INNER_RADIUS} ${INNER_RADIUS} 0 0 0 ${ix1} ${iy1} Z`;
+}
 
 export function CircleOfFifths({
   rootNote,
@@ -46,37 +62,110 @@ export function CircleOfFifths({
   const keySigText =
     keySig === 0 ? "♮" : keySig > 0 ? `${keySig}♯` : `${Math.abs(keySig)}♭`;
 
+  const [focusedIndex, setFocusedIndex] = React.useState<number>(0);
+  const [keyboardFocused, setKeyboardFocused] = React.useState<boolean>(false);
+  const segmentRefs = React.useRef<(SVGPathElement | null)[]>([]);
+
+  React.useEffect(() => {
+    segmentRefs.current[focusedIndex]?.focus();
+  }, [focusedIndex]);
+
+  const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+      e.preventDefault();
+      setKeyboardFocused(true);
+      setFocusedIndex((index + 1) % 12);
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+      e.preventDefault();
+      setKeyboardFocused(true);
+      setFocusedIndex((index + 11) % 12);
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      setKeyboardFocused(true);
+      setFocusedIndex(0);
+    } else if (e.key === "End") {
+      e.preventDefault();
+      setKeyboardFocused(true);
+      setFocusedIndex(11);
+    } else if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setRootNote(CIRCLE_OF_FIFTHS[index]);
+    }
+  };
+
   return (
     <div className="circle-fifths-container">
-      <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="circle-fifths-svg">
+      <svg
+        viewBox={`0 0 ${SIZE} ${SIZE}`}
+        className="circle-fifths-svg"
+        role="group"
+        aria-label="Circle of Fifths — select a key"
+      >
         {CIRCLE_OF_FIFTHS.map((note, index) => {
-          const startAngle = ((index * 30 - 105) * Math.PI) / 180;
-          const endAngle = (((index + 1) * 30 - 105) * Math.PI) / 180;
-
-          const ox1 = CX + OUTER_RADIUS * Math.cos(startAngle);
-          const oy1 = CY + OUTER_RADIUS * Math.sin(startAngle);
-          const ox2 = CX + OUTER_RADIUS * Math.cos(endAngle);
-          const oy2 = CY + OUTER_RADIUS * Math.sin(endAngle);
-
-          const ix1 = CX + INNER_RADIUS * Math.cos(startAngle);
-          const iy1 = CY + INNER_RADIUS * Math.sin(startAngle);
-          const ix2 = CX + INNER_RADIUS * Math.cos(endAngle);
-          const iy2 = CY + INNER_RADIUS * Math.sin(endAngle);
-
-          const path = `M ${ix1} ${iy1} L ${ox1} ${oy1} A ${OUTER_RADIUS} ${OUTER_RADIUS} 0 0 1 ${ox2} ${oy2} L ${ix2} ${iy2} A ${INNER_RADIUS} ${INNER_RADIUS} 0 0 0 ${ix1} ${iy1} Z`;
           const isActive = rootNote === note;
+
+          const { primary } = getCircleNoteLabels(
+            note,
+            rootNote,
+            useFlats,
+            scaleIntervals,
+            enharmonicDisplay,
+          );
 
           return (
             <path
               key={note}
-              d={path}
-              className={`circle-slice ${isActive ? "active" : ""}`}
+              ref={(el) => { segmentRefs.current[index] = el; }}
+              d={slicePath(index)}
+              className={clsx("circle-slice", { active: isActive })}
               stroke="var(--surface-highlight)"
               strokeWidth={1}
-              onClick={() => setRootNote(note)}
+              style={{ outline: 'none' }}
+              onClick={() => {
+                setRootNote(note);
+                setFocusedIndex(index);
+                setKeyboardFocused(false);
+              }}
+              onPointerDown={() => {
+                setKeyboardFocused(false);
+              }}
+              onFocus={(e) => {
+                try {
+                  if (e.currentTarget.matches(':focus-visible')) {
+                    setKeyboardFocused(true);
+                    setFocusedIndex(index);
+                  }
+                } catch {
+                  setKeyboardFocused(true);
+                  setFocusedIndex(index);
+                }
+              }}
+              onBlur={() => {
+                setKeyboardFocused(false);
+              }}
+              role="button"
+              aria-label={`${primary} — ${isActive ? "selected" : "not selected"}`}
+              aria-pressed={isActive}
+              tabIndex={index === focusedIndex ? 0 : -1}
+              onKeyDown={(e) => handleKeyDown(e, index)}
             />
           );
         })}
+
+        {/* Focus ring overlay — keyboard-only, traces pie-slice shape (WCAG 2.4.7) */}
+        {keyboardFocused && focusedIndex >= 0 && focusedIndex < CIRCLE_OF_FIFTHS.length && (
+          <path
+            key={`focus-ring-${CIRCLE_OF_FIFTHS[focusedIndex]}`}
+            d={slicePath(focusedIndex)}
+            fill="none"
+            stroke="var(--accent-primary)"
+            strokeWidth={3}
+            strokeLinejoin="round"
+            pointerEvents="none"
+            aria-hidden="true"
+            className="circle-slice-focus-ring"
+          />
+        )}
 
         {/* Text labels inside segments */}
         {CIRCLE_OF_FIFTHS.map((note, index) => {

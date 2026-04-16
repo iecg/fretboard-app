@@ -16,7 +16,7 @@ export function NoteGrid({
   useFlats,
 }: NoteGridProps) {
   return (
-    <div className="note-grid">
+    <div className="note-grid" role="group" aria-label="Note selector">
       {notes.map((n) => (
         <button
           key={n}

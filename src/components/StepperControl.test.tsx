@@ -102,13 +102,13 @@ describe("StepperControl", () => {
 
   it("decrement button disabled when value equals min", () => {
     render(<StepperControl value={0} onChange={vi.fn()} min={0} max={10} />);
-    const decrementBtn = screen.getByRole("button", { name: /−|-/i });
+    const decrementBtn = screen.getByRole("button", { name: /decrease/i });
     expect(decrementBtn).toBeDisabled();
   });
 
   it("increment button disabled when value equals max", () => {
     render(<StepperControl value={10} onChange={vi.fn()} min={0} max={10} />);
-    const incrementBtn = screen.getByRole("button", { name: /\+|plus/i });
+    const incrementBtn = screen.getByRole("button", { name: /increase/i });
     expect(incrementBtn).toBeDisabled();
   });
 
