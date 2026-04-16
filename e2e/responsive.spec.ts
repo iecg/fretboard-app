@@ -10,7 +10,7 @@ async function gotoApp(page: Page, width: number, height: number) {
 }
 
 async function getMetrics(page: Page) {
-  return page.evaluate(() => {
+  return page.evaluate((circleSelector) => {
     const app = document.querySelector(".app-container");
     const badge = document.querySelector(".version-badge");
     const badgeRect = badge?.getBoundingClientRect();
@@ -20,7 +20,7 @@ async function getMetrics(page: Page) {
     const settingsDrawer = document.querySelector(".settings-overlay-drawer");
     const helpModal = document.querySelector(".help-modal");
     const helpContent = document.querySelector(".help-modal-content");
-    const circle = document.querySelector(CIRCLE_OF_FIFTHS_SELECTOR);
+    const circle = document.querySelector(circleSelector);
     const controlsColumn = document.querySelector(".controls-panel-column");
     const keyColumn = document.querySelector(".key-column");
 
@@ -71,7 +71,7 @@ async function getMetrics(page: Page) {
             }
           : null,
     };
-  });
+  }, CIRCLE_OF_FIFTHS_SELECTOR);
 }
 
 function toolbarButton(page: Page, name: string) {
