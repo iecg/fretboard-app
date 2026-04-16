@@ -871,9 +871,14 @@
   fill: var(--surface-highlight);
 }
 
+.circle-slice:focus,
 .circle-slice:focus-visible {
-  /* SVG focus ring replaces browser outline — see CircleOfFifths.tsx keyboardFocused state */
+  /* SVG focus ring replaces browser outline — see CircleOfFifths.tsx keyboardFocused state.
+     Both :focus and :focus-visible are suppressed because some browsers render a default
+     rectangular outline on SVG <path> elements even when only :focus-visible is set to none. */
   outline: none;
+  box-shadow: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .circle-slice-focus-ring {

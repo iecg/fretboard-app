@@ -119,6 +119,7 @@ export function CircleOfFifths({
               className={`circle-slice ${isActive ? "active" : ""}`}
               stroke="var(--surface-highlight)"
               strokeWidth={1}
+              style={{ outline: 'none' }}
               onClick={() => {
                 setRootNote(note);
                 setFocusedIndex(index);
