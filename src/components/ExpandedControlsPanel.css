@@ -1,9 +1,47 @@
-/* 3-column grid scaffold for desktop expanded layout.
-   Configuration | Music Theory | Key Explorer (pending 05-04 wrap) */
+/* Fidelity dashboard layout */
 
-.expanded-controls-panel-grid {
+.controls-panel.controls-panel--dashboard {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 320px);
-  gap: var(--space-4);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(18rem, 20rem);
+  gap: 1.25rem;
   align-items: start;
+}
+
+.controls-panel--dashboard .dashboard-card {
+  min-width: 0;
+}
+
+.controls-panel--dashboard .dashboard-card .card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+}
+
+.controls-panel--dashboard .key-column .card-body {
+  padding-top: 0.7rem;
+}
+
+@media (max-width: 1239px) {
+  .controls-panel.controls-panel--dashboard,
+  .controls-panel.controls-panel--dashboard[data-mode="stacked"] {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .controls-panel--dashboard .key-column {
+    grid-column: 1 / -1;
+    max-width: 24rem;
+    width: 100%;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 959px) {
+  .controls-panel.controls-panel--dashboard {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .controls-panel--dashboard .key-column {
+    grid-column: auto;
+    max-width: none;
+  }
 }

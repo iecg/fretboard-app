@@ -54,46 +54,91 @@ function classifyNote(
   return "note-inactive";
 }
 
-function getNoteStroke(noteClass: string): { stroke: string; filter: string; fill: string; textFill: string } {
+function getNoteVisuals(noteClass: string): {
+  stroke: string;
+  filter: string;
+  fill: string;
+  textFill: string;
+  radiusScale: number;
+  strokeWidth: number;
+  coreFill: string;
+  coreOpacity: number;
+  textOpacity: number;
+} {
   switch (noteClass) {
     case "root-active":
       return {
         stroke: "var(--note-ring-tonic)",
         filter: "url(#glow-orange)",
-        fill: "var(--note-fill-in-chord)",
+        fill: "rgb(255 154 77 / 0.28)",
         textFill: "var(--note-text-tonic)",
+        radiusScale: 1.08,
+        strokeWidth: 2.8,
+        coreFill: "rgb(255 176 92 / 0.26)",
+        coreOpacity: 1,
+        textOpacity: 1,
       };
     case "chord-tone":
       return {
         stroke: "var(--note-ring-tonic)",
         filter: "url(#glow-orange)",
-        fill: "var(--note-fill-in-chord)",
+        fill: "rgb(255 154 77 / 0.16)",
         textFill: "var(--note-text-tonic)",
+        radiusScale: 0.98,
+        strokeWidth: 2.4,
+        coreFill: "rgb(255 176 92 / 0.14)",
+        coreOpacity: 1,
+        textOpacity: 1,
       };
     case "note-active":
     case "note-blue":
       return {
         stroke: "var(--note-ring)",
         filter: "url(#glow-cyan)",
-        fill: "var(--note-fill)",
+        fill: "rgb(77 228 255 / 0.06)",
         textFill: "var(--note-text-in-scale)",
+        radiusScale: 0.92,
+        strokeWidth: 2.1,
+        coreFill: "rgb(77 228 255 / 0.12)",
+        coreOpacity: 1,
+        textOpacity: 1,
       };
     case "note-scale-only":
       return {
         stroke: "var(--note-ring-dim)",
         filter: "url(#glow-cyan)",
-        fill: "var(--note-fill)",
+        fill: "rgb(77 228 255 / 0.03)",
         textFill: "var(--note-text-in-scale)",
+        radiusScale: 0.84,
+        strokeWidth: 1.85,
+        coreFill: "rgb(77 228 255 / 0.08)",
+        coreOpacity: 0.55,
+        textOpacity: 0.82,
       };
     case "chord-outside":
       return {
         stroke: "var(--note-ring)",
         filter: "url(#glow-cyan)",
-        fill: "var(--note-fill)",
+        fill: "rgb(77 228 255 / 0.02)",
         textFill: "var(--note-text-in-scale)",
+        radiusScale: 0.76,
+        strokeWidth: 1.5,
+        coreFill: "rgb(77 228 255 / 0.06)",
+        coreOpacity: 0.35,
+        textOpacity: 0.72,
       };
     default:
-      return { stroke: "none", filter: "none", fill: "transparent", textFill: "transparent" };
+      return {
+        stroke: "none",
+        filter: "none",
+        fill: "transparent",
+        textFill: "transparent",
+        radiusScale: 0.8,
+        strokeWidth: 0,
+        coreFill: "transparent",
+        coreOpacity: 0,
+        textOpacity: 0,
+      };
   }
 }
 
@@ -253,6 +298,28 @@ export function FretboardSVG({
               <stop offset="0%" stopColor="var(--fretboard-wood-top)" />
               <stop offset="100%" stopColor="var(--fretboard-wood-bottom)" />
             </linearGradient>
+            <linearGradient id="fretboard-vignette" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="rgb(8 6 6 / 0.45)" />
+              <stop offset="7%" stopColor="rgb(8 6 6 / 0.12)" />
+              <stop offset="50%" stopColor="rgb(255 255 255 / 0)" />
+              <stop offset="93%" stopColor="rgb(8 6 6 / 0.12)" />
+              <stop offset="100%" stopColor="rgb(8 6 6 / 0.45)" />
+            </linearGradient>
+            <pattern id="wood-grain" width="160" height="48" patternUnits="userSpaceOnUse">
+              <path d="M-10 12c18-8 34-7 54-2 20 5 40 6 61-2 17-6 34-7 55 0" fill="none" stroke="rgb(255 255 255 / 0.04)" strokeWidth="1.2" />
+              <path d="M-16 26c24-10 43-8 65-3 23 5 42 4 62-4 16-7 33-7 54-1" fill="none" stroke="rgb(0 0 0 / 0.14)" strokeWidth="1.4" />
+              <path d="M-10 40c20-7 38-6 59-1 21 5 40 4 62-4 18-6 33-6 53 1" fill="none" stroke="rgb(255 255 255 / 0.035)" strokeWidth="1" />
+            </pattern>
+            <linearGradient id="string-plain" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="rgb(255 255 255 / 0.92)" />
+              <stop offset="45%" stopColor="rgb(218 223 230 / 0.9)" />
+              <stop offset="100%" stopColor="rgb(120 127 136 / 0.9)" />
+            </linearGradient>
+            <linearGradient id="string-wound" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="rgb(236 222 191 / 0.9)" />
+              <stop offset="45%" stopColor="rgb(182 161 124 / 0.92)" />
+              <stop offset="100%" stopColor="rgb(108 96 74 / 0.92)" />
+            </linearGradient>
             <filter id="glow-cyan" x="-50%" y="-50%" width="200%" height="200%">
               <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#4DE4FF" floodOpacity="0.65" />
             </filter>
@@ -263,17 +330,29 @@ export function FretboardSVG({
 
           {/* Wood background */}
           <rect x={0} y={0} width={neckWidthPx} height={neckHeight} fill="url(#fretboard-wood)" />
+          <rect x={0} y={0} width={neckWidthPx} height={neckHeight} fill="url(#wood-grain)" opacity={0.85} />
+          <rect x={0} y={0} width={neckWidthPx} height={neckHeight} fill="url(#fretboard-vignette)" />
 
           {/* Nut */}
           {startFret === 0 && (
-            <rect
-              x={0}
-              y={0}
-              width={NUT_WIDTH}
-              height={neckHeight}
-              fill="var(--nut)"
-              opacity={0.9}
-            />
+            <g>
+              <rect
+                x={0}
+                y={0}
+                width={NUT_WIDTH}
+                height={neckHeight}
+                fill="var(--nut)"
+                opacity={0.9}
+              />
+              <line
+                x1={NUT_WIDTH - 1}
+                y1={0}
+                x2={NUT_WIDTH - 1}
+                y2={neckHeight}
+                stroke="rgb(255 255 255 / 0.45)"
+                strokeWidth={1}
+              />
+            </g>
           )}
 
           {/* Fret wires */}
@@ -282,15 +361,35 @@ export function FretboardSVG({
             if (fretIndex === 0) return null;
             const x = idx * effectiveZoom;
             return (
-              <line
-                key={`fw-${fretIndex}`}
-                x1={x}
-                y1={0}
-                x2={x}
-                y2={neckHeight}
-                stroke="var(--fret-wire-v2)"
-                strokeWidth={1.5}
-              />
+              <g key={`fw-${fretIndex}`}>
+                <line
+                  x1={x}
+                  y1={0}
+                  x2={x}
+                  y2={neckHeight}
+                  stroke="var(--fret-wire-dark)"
+                  strokeWidth={2.8}
+                  opacity={0.65}
+                />
+                <line
+                  x1={x + 0.4}
+                  y1={0}
+                  x2={x + 0.4}
+                  y2={neckHeight}
+                  stroke="var(--fret-wire-v2)"
+                  strokeWidth={1.25}
+                  opacity={0.98}
+                />
+                <line
+                  x1={x + 0.85}
+                  y1={0}
+                  x2={x + 0.85}
+                  y2={neckHeight}
+                  stroke="rgb(255 255 255 / 0.32)"
+                  strokeWidth={0.55}
+                  opacity={0.8}
+                />
+              </g>
             );
           })}
 
@@ -327,17 +426,27 @@ export function FretboardSVG({
             const y = stringCenterY(stringIndex);
             const isBass = stringIndex >= 3;
             return (
-              <line
-                key={`string-${stringIndex}`}
-                x1={0}
-                y1={y}
-                x2={neckWidthPx}
-                y2={y}
-                stroke={isBass ? "var(--string-wire-bass)" : "var(--string-wire)"}
-                style={{ strokeWidth: `var(--string-taper-${stringIndex + 1})` }}
-                strokeLinecap="round"
-                className={`fretboard-string fretboard-string-${stringIndex + 1}`}
-              />
+              <g key={`string-${stringIndex}`}>
+                <line
+                  x1={0}
+                  y1={y + 0.6}
+                  x2={neckWidthPx}
+                  y2={y + 0.6}
+                  stroke="rgb(0 0 0 / 0.32)"
+                  style={{ strokeWidth: `calc(var(--string-taper-${stringIndex + 1}) + 0.55px)` }}
+                  strokeLinecap="round"
+                />
+                <line
+                  x1={0}
+                  y1={y}
+                  x2={neckWidthPx}
+                  y2={y}
+                  stroke={isBass ? "url(#string-wound)" : "url(#string-plain)"}
+                  style={{ strokeWidth: `var(--string-taper-${stringIndex + 1})` }}
+                  strokeLinecap="round"
+                  className={`fretboard-string fretboard-string-${stringIndex + 1}`}
+                />
+              </g>
             );
           })}
 
@@ -351,8 +460,19 @@ export function FretboardSVG({
             if (noteClass === "note-inactive") return null;
             const cx = fretCenterX(fretIndex);
             const cy = stringCenterY(stringIndex);
-            const r = noteBubblePx / 2;
-            const { stroke, filter, fill, textFill } = getNoteStroke(noteClass);
+            const baseRadius = noteBubblePx / 2;
+            const {
+              stroke,
+              filter,
+              fill,
+              textFill,
+              radiusScale,
+              strokeWidth,
+              coreFill,
+              coreOpacity,
+              textOpacity,
+            } = getNoteVisuals(noteClass);
+            const r = baseRadius * radiusScale;
             return (
               <g
                 key={`note-${stringIndex}-${fretIndex}`}
@@ -365,8 +485,16 @@ export function FretboardSVG({
                   r={r}
                   fill={fill}
                   stroke={stroke}
-                  strokeWidth={2}
+                  strokeWidth={strokeWidth}
                   filter={filter !== "none" ? filter : undefined}
+                />
+                <circle
+                  cx={cx}
+                  cy={cy}
+                  r={Math.max(0, r * 0.62)}
+                  fill={coreFill}
+                  opacity={coreOpacity}
+                  pointerEvents="none"
                 />
                 {displayFormat !== "none" && (
                   <text
@@ -377,7 +505,14 @@ export function FretboardSVG({
                     fontSize={noteFontPx}
                     fontWeight={700}
                     fill={textFill}
-                    style={{ pointerEvents: "none", userSelect: "none" }}
+                    opacity={textOpacity}
+                    style={{
+                      pointerEvents: "none",
+                      userSelect: "none",
+                      paintOrder: "stroke",
+                      stroke: "rgb(0 0 0 / 0.45)",
+                      strokeWidth: noteClass === "root-active" ? 2.3 : 1.8,
+                    }}
                   >
                     {formatAccidental(displayValue)}
                   </text>

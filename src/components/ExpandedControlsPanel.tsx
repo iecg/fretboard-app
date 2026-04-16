@@ -42,7 +42,7 @@ export function BaseControlsSection() {
   const [fretEnd, setFretEnd] = useAtom(fretEndAtom);
 
   return (
-    <Card title="Configuration">
+    <Card title="Configuration" className="dashboard-card dashboard-card--configuration">
       <div className="control-group">
         <FingeringPatternControls
           fingeringPattern={fingeringPattern}
@@ -94,7 +94,7 @@ export function ScaleChordSection() {
   );
 
   return (
-    <Card title="Music Theory">
+    <Card title="Music Theory" className="dashboard-card dashboard-card--theory">
       <TheoryControls
         rootNote={rootNote}
         setRootNote={setRootNote}
@@ -134,7 +134,7 @@ export function KeyColumn() {
   const enharmonicDisplay = useAtomValue(enharmonicDisplayAtom);
 
   return (
-    <Card title="Key Explorer" className="key-column">
+    <Card title="Key Explorer" className="dashboard-card key-column">
       <CircleOfFifths
         rootNote={rootNote}
         setRootNote={handleSetRootNote}
@@ -152,22 +152,10 @@ export function KeyColumn() {
  * a single column for compact-height tablet and desktop viewports.
  */
 export function ExpandedControlsPanel({ mode }: { mode: "split" | "stacked" }) {
-  if (mode === "stacked") {
-    return (
-      <div className="controls-panel controls-panel--stacked">
-        <BaseControlsSection />
-        <ScaleChordSection />
-        <KeyColumn />
-      </div>
-    );
-  }
-
   return (
-    <div className="controls-panel controls-panel--split">
-      <div className="controls-panel-column">
-        <BaseControlsSection />
-        <ScaleChordSection />
-      </div>
+    <div className="controls-panel controls-panel--dashboard" data-mode={mode}>
+      <BaseControlsSection />
+      <ScaleChordSection />
       <KeyColumn />
     </div>
   );

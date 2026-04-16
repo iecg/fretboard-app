@@ -16,7 +16,6 @@ import {
 } from "./theory";
 import {
   HelpCircle,
-  Music,
   Settings2,
   Volume2,
   VolumeX,
@@ -37,6 +36,7 @@ import SettingsOverlay from "./components/SettingsOverlay";
 import useLayoutMode from "./hooks/useLayoutMode";
 import useDisplayState from "./hooks/useDisplayState";
 import { AppHeader } from "./components/AppHeader";
+import { BrandMark } from "./components/BrandMark";
 import { DegreeChipStrip } from "./components/DegreeChipStrip";
 import "./App.css";
 
@@ -130,9 +130,19 @@ function AppContent() {
       }
     }
 
+    function handlePointerDown(e: PointerEvent) {
+      const target = e.target;
+      if (!(target instanceof Node) || !modal) return;
+      if (!modal.contains(target)) {
+        setShowHelp(false);
+      }
+    }
+
     document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("pointerdown", handlePointerDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("pointerdown", handlePointerDown);
       trigger?.focus();
     };
   }, [showHelp]);
@@ -243,11 +253,10 @@ function AppContent() {
       data-header-actions={layout.compactHeaderActions ? "compact" : "default"}
       data-full-width-overlay={layout.fullWidthOverlay ? "true" : "false"}
     >
-      {/* Header */}
       <AppHeader
         brandTitle="FretFlow"
         brandSubtitle="Interactive Fretboard & Music Theory"
-        brandIcon={<Music className="icon" aria-hidden />}
+        brandIcon={<BrandMark className="brand-mark" />}
         actions={
           <>
             <a
@@ -304,16 +313,11 @@ function AppContent() {
         }
       />
 
+      {layout.showSummary && <div className="summary-shell">{summaryContent}</div>}
+
       {/* Help Modal */}
       {showHelp && (
-        <div
-          className="help-modal-overlay"
-          onClick={(event) => {
-            if (event.target === event.currentTarget) {
-              setShowHelp(false);
-            }
-          }}
-        >
+        <div className="help-modal-overlay">
           <div
             ref={helpModalRef}
             className={clsx("help-modal", {
@@ -387,9 +391,6 @@ function AppContent() {
           recenterKey={recenterKey}
         />
       </main>
-
-      {/* Summary readout lives directly beneath the fretboard */}
-      {layout.showSummary && summaryContent}
 
       {/* Shared tablet/desktop controls panel */}
       {layout.showControlsPanel && (

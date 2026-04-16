@@ -1,6 +1,12 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import App from "../App";
 import { synth } from "../audio";
 import { get3NPSCoordinates } from "../shapes";
@@ -128,17 +134,18 @@ describe("App", () => {
 
     it("renders alias-friendly summary labels", () => {
       render(<App />);
-      expect(screen.getByText("C Major (Ionian)")).toBeInTheDocument();
+      const summary = screen.getByRole("group", { name: /scale degrees/i });
+      expect(within(summary).getByText("C Major (Ionian)")).toBeInTheDocument();
     });
 
-    it("renders the summary below the fretboard", () => {
+    it("renders the summary above the fretboard", () => {
       render(<App />);
 
       const summary = screen.getByRole("group", { name: /scale degrees/i });
       const fretboard = screen.getByTestId("fretboard");
 
       expect(
-        fretboard.compareDocumentPosition(summary) &
+        summary.compareDocumentPosition(fretboard) &
           Node.DOCUMENT_POSITION_FOLLOWING,
       ).toBeTruthy();
     });
@@ -155,8 +162,9 @@ describe("App", () => {
     it("renders melodic minor summary labels with the jazz alias", () => {
       localStorage.setItem(k("scaleName"), "Melodic Minor");
       render(<App />);
+      const summary = screen.getByRole("group", { name: /scale degrees/i });
       expect(
-        screen.getByText("C Melodic Minor (Jazz Minor)"),
+        within(summary).getByText("C Melodic Minor (Jazz Minor)"),
       ).toBeInTheDocument();
     });
 
@@ -165,7 +173,8 @@ describe("App", () => {
       localStorage.setItem(k("scaleName"), "Dorian");
       localStorage.setItem(k("scaleBrowseMode"), "relative");
       render(<App />);
-      expect(screen.getByText("D Dorian (2nd Mode)")).toBeInTheDocument();
+      const summary = screen.getByRole("group", { name: /scale degrees/i });
+      expect(within(summary).getByText("D Dorian (2nd Mode)")).toBeInTheDocument();
     });
 
     it("defaults the summary collapsed on mobile", () => {
@@ -263,10 +272,10 @@ describe("App", () => {
   });
 
   describe("Scale selection", () => {
-    it("renders the shared theory drawers", async () => {
+    it("renders the shared theory controls", async () => {
       render(<App />);
       expect(
-        screen.getByRole("button", { name: /Scale Family: Major Modes/i }),
+        screen.getByRole("combobox", { name: "Scale Family" }),
       ).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Parallel" })).toBeInTheDocument();
       expect(
@@ -276,7 +285,7 @@ describe("App", () => {
         screen.getByRole("button", { name: /Next Mode/i }),
       ).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: /Mode: C Major \(Ionian\)/i }),
+        screen.getByRole("combobox", { name: "Mode" }),
       ).toBeInTheDocument();
     });
 
@@ -374,8 +383,9 @@ describe("App", () => {
     it("can set chord type", async () => {
       render(<App />);
       fireEvent.click(screen.getByRole("button", { name: /Chord Overlay/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Chord Type:/i }));
-      fireEvent.click(screen.getByText("Major Triad"));
+      fireEvent.change(screen.getByRole("combobox", { name: "Chord Type" }), {
+        target: { value: "Major Triad" },
+      });
 
       await waitFor(() => {
         expect(localStorage.getItem(k("chordType"))).toBe("Major Triad");
@@ -499,7 +509,9 @@ describe("App", () => {
       });
 
       expect(document.querySelector(".mobile-tab-content")).toBeNull();
-      expect(document.querySelector(".summary-area")).toBeNull();
+      expect(
+        screen.queryByRole("group", { name: /scale degrees/i }),
+      ).toBeNull();
     });
 
     it("closes the help modal when the backdrop is clicked", async () => {
@@ -512,7 +524,7 @@ describe("App", () => {
         expect(screen.getByRole("dialog", { name: "FretFlow Help" })).toBeTruthy();
       });
 
-      fireEvent.click(document.querySelector(".help-modal-overlay")!);
+      fireEvent.pointerDown(document.querySelector(".help-modal-overlay")!);
 
       await waitFor(() => {
         expect(
