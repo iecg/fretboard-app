@@ -1,0 +1,9 @@
+/* 3-column grid scaffold for desktop expanded layout.
+   Configuration | Music Theory | Key Explorer (pending 05-04 wrap) */
+
+.expanded-controls-panel-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 320px);
+  gap: var(--space-4);
+  align-items: start;
+}
