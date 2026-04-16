@@ -18,7 +18,7 @@ async function getMetrics(page: Page) {
     const helpModal = document.querySelector(".help-modal");
     const helpContent = document.querySelector(".help-modal-content");
     const circle = document.querySelector(
-      '.key-column [data-testid="circle-of-fifths"]',
+      '.key-column [role="group"][aria-label="Circle of Fifths — select a key"]',
     );
     const controlsColumn = document.querySelector(".controls-panel-column");
     const keyColumn = document.querySelector(".key-column");
@@ -227,7 +227,9 @@ test.describe("responsive layout regressions", () => {
     expect(initial.summaryCount).toBe(1);
 
     await page
-      .locator('.key-column [data-testid="circle-of-fifths"]')
+      .locator(
+        '.key-column [role="group"][aria-label="Circle of Fifths — select a key"]',
+      )
       .scrollIntoViewIfNeeded();
     const after = await getMetrics(page);
     expect(after.circleRect).not.toBeNull();
