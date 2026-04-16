@@ -289,10 +289,6 @@
   white-space: nowrap;
 }
 
-.title-container {
-  min-width: 0;
-}
-
 /* Dynamic Box Overlays behind strings */
 
 .fret-backgrounds {
@@ -940,20 +936,6 @@
   .summary-notes {
     gap: var(--space-2);
     width: 100%;
-  }
-
-  .logo-icon {
-    width: 2.5rem;
-    height: 2.5rem;
-  }
-
-  .logo-icon .icon {
-    width: 1.25rem;
-    height: 1.25rem;
-  }
-
-  .title-container h1 {
-    font-size: var(--text-base);
   }
 
   .main-fretboard {

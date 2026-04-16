@@ -134,9 +134,7 @@ describe("App", () => {
     it("renders the summary below the fretboard", () => {
       render(<App />);
 
-      const summary = screen.getByRole("button", {
-        name: /toggle scale summary/i,
-      });
+      const summary = screen.getByRole("group", { name: /scale degrees/i });
       const fretboard = screen.getByTestId("fretboard");
 
       expect(
@@ -174,20 +172,19 @@ describe("App", () => {
       setViewport(390, 844);
       render(<App />);
 
+      // DegreeChipStrip replaces the old collapsible disclosure; on mobile the
+      // strip is hidden via CSS (showSummary=false for landscape-mobile only).
+      // In portrait mobile the strip is always visible.
       expect(
-        screen.getByRole("button", { name: /toggle scale summary/i }),
-      ).toHaveAttribute("aria-expanded", "false");
-      expect(screen.queryByLabelText(/C Major \(Ionian\) notes/i)).toBeNull();
+        screen.getByRole("group", { name: /scale degrees/i }),
+      ).toBeInTheDocument();
     });
 
     it("defaults the summary expanded on desktop", () => {
       render(<App />);
 
       expect(
-        screen.getByRole("button", { name: /toggle scale summary/i }),
-      ).toHaveAttribute("aria-expanded", "true");
-      expect(
-        screen.getByLabelText(/C Major \(Ionian\) notes/i),
+        screen.getByRole("group", { name: /scale degrees/i }),
       ).toBeInTheDocument();
     });
 
@@ -195,12 +192,9 @@ describe("App", () => {
       setViewport(390, 844);
       render(<App />);
 
-      fireEvent.click(
-        screen.getByRole("button", { name: /toggle scale summary/i }),
-      );
-
+      // DegreeChipStrip is always rendered (no toggle); chips are always visible.
       expect(
-        screen.getByLabelText(/C Major \(Ionian\) notes/i),
+        screen.getByRole("group", { name: /scale degrees/i }),
       ).toBeInTheDocument();
     });
 
