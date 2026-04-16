@@ -1,0 +1,24 @@
+.fretboard-main-svg {
+  overflow: visible;
+}
+
+.fretboard-string {
+  /* stroke-width set inline via CSS var; this class is for targeting in tests */
+}
+
+.fretboard-note {
+  cursor: pointer;
+}
+
+.fretboard-note.hidden {
+  display: none;
+}
+
+.fretboard-note:focus {
+  outline: none;
+}
+
+.fretboard-note:focus-visible circle {
+  stroke: var(--accent-primary);
+  stroke-width: 3;
+}

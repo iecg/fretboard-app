@@ -1,10 +1,14 @@
 import { clsx } from "clsx";
 import { NOTES, ENHARMONICS, getNoteDisplay, getNoteDisplayInScale, INTERVAL_NAMES, formatAccidental, SCALES } from "./theory";
-import { STANDARD_FRET_MARKERS, parseNote } from "./guitar";
+import { parseNote } from "./guitar";
+import "./FretboardSVG.css";
 import type { ShapePolygon } from "./shapes";
 
 const STRING_ROW_PX_DEFAULT = 40;
 const NECK_BORDER = 4;
+const NUT_WIDTH = 8;
+const INLAY_FRETS = [3, 5, 7, 9, 15, 17, 19, 21];
+const INLAY_DOUBLE_FRETS = [12, 24];
 
 interface FretboardSVGProps {
   effectiveZoom: number;
@@ -50,6 +54,49 @@ function classifyNote(
   return "note-inactive";
 }
 
+function getNoteStroke(noteClass: string): { stroke: string; filter: string; fill: string; textFill: string } {
+  switch (noteClass) {
+    case "root-active":
+      return {
+        stroke: "var(--note-ring-tonic)",
+        filter: "url(#glow-orange)",
+        fill: "var(--note-fill-in-chord)",
+        textFill: "var(--note-text-tonic)",
+      };
+    case "chord-tone":
+      return {
+        stroke: "var(--note-ring-tonic)",
+        filter: "url(#glow-orange)",
+        fill: "var(--note-fill-in-chord)",
+        textFill: "var(--note-text-tonic)",
+      };
+    case "note-active":
+    case "note-blue":
+      return {
+        stroke: "var(--note-ring)",
+        filter: "url(#glow-cyan)",
+        fill: "var(--note-fill)",
+        textFill: "var(--note-text-in-scale)",
+      };
+    case "note-scale-only":
+      return {
+        stroke: "var(--note-ring-dim)",
+        filter: "url(#glow-cyan)",
+        fill: "var(--note-fill)",
+        textFill: "var(--note-text-in-scale)",
+      };
+    case "chord-outside":
+      return {
+        stroke: "var(--note-ring)",
+        filter: "url(#glow-cyan)",
+        fill: "var(--note-fill)",
+        textFill: "var(--note-text-in-scale)",
+      };
+    default:
+      return { stroke: "none", filter: "none", fill: "transparent", textFill: "transparent" };
+  }
+}
+
 export function FretboardSVG({
   effectiveZoom,
   neckWidthPx,
@@ -79,9 +126,12 @@ export function FretboardSVG({
   const neckHeight = tuning.length * stringRowPx;
   const totalColumns = endFret - startFret + 1;
   const hasChordOverlay = chordTones.length > 0;
+  const numStrings = tuning.length;
 
   const fretToX = (fret: number) => (fret - startFret + 0.5) * effectiveZoom;
   const stringCenterY = (s: number) => stringRowPx / 2 + s * stringRowPx;
+
+  const fretCenterX = (fret: number) => fretToX(fret);
 
   const svgPolygons = shapePolygons.map((poly, polyIdx) => {
     if (poly.vertices.length === 0) {
@@ -121,8 +171,257 @@ export function FretboardSVG({
     scaleName ? `${scaleName} scale` : "",
   ].filter(Boolean).join(" ");
 
+  const inlayY = neckHeight / 2;
+  const inlayYTop = numStrings >= 4 ? stringCenterY(1) : neckHeight / 3;
+  const inlayYBottom = numStrings >= 4 ? stringCenterY(numStrings - 2) : (neckHeight * 2) / 3;
+  const inlayR = Math.max(4, stringRowPx * 0.12);
+
+  // Pre-compute note data for both SVG rendering and accessible button layer
+  const noteData = tuning.flatMap((_openString, stringIndex) =>
+    Array.from({ length: totalColumns }, (_, idx) => {
+      const fretIndex = startFret + idx;
+      const noteName = fretboardLayout[stringIndex][fretIndex];
+
+      const isHighlighted = highlightNotes.includes(noteName) ||
+        highlightNotes.includes(`${stringIndex}-${fretIndex}`);
+      const isChordTone = hasChordOverlay && chordTones.includes(noteName);
+      const isRoot = noteName === rootNote ||
+        ENHARMONICS[noteName] === rootNote || ENHARMONICS[rootNote] === noteName;
+      const isColorNote = colorNotes.length > 0 && colorNotes.some(cn =>
+        noteName === cn || ENHARMONICS[noteName] === cn || ENHARMONICS[cn] === noteName
+      );
+      const isChordInRange = !hasChordOverlay || !shapePolygons.length ||
+        boxBounds.some(b =>
+          fretIndex >= b.minFret - chordFretSpread && fretIndex <= b.maxFret + chordFretSpread
+        );
+
+      const noteClass = classifyNote(
+        isRoot, isColorNote, isHighlighted, isChordTone,
+        hasChordOverlay, isChordInRange, shapePolygons, boxBounds, fretIndex
+      );
+
+      let displayValue = getNoteDisplayInScale(noteName, rootNote, SCALES[scaleName] || [], useFlats);
+      if (displayFormat === "degrees" && rootNote) {
+        const normRoot = ENHARMONICS[rootNote]?.includes("b") ? ENHARMONICS[rootNote] : rootNote;
+        const rootIdx = NOTES.indexOf(normRoot.includes("#") ? normRoot : rootNote);
+        const noteIdx = NOTES.indexOf(noteName);
+        if (rootIdx !== -1 && noteIdx !== -1) {
+          displayValue = INTERVAL_NAMES[(noteIdx - rootIdx + 12) % 12];
+        }
+      } else if (fretIndex === 0 && parseNote(_openString)?.noteName === noteName) {
+        displayValue = getNoteDisplayInScale(noteName, rootNote, SCALES[scaleName] || [], useFlats);
+      }
+
+      const isWrapped = wrappedNotes.has(`${stringIndex}-${fretIndex}`);
+      const isInsideAnyPolygon = shapePolygons.some(poly => {
+        const leftFret = poly.vertices[stringIndex]?.fret;
+        const rightFret = poly.vertices[poly.vertices.length - 1 - stringIndex]?.fret;
+        return leftFret !== undefined && rightFret !== undefined &&
+          fretIndex >= leftFret && fretIndex <= rightFret;
+      });
+      const applyDimOpacity = (shapePolygons.length > 0 && !isInsideAnyPolygon &&
+        (noteClass === "note-blue" || noteClass === "chord-outside" ||
+         noteClass === "chord-tone" || noteClass === "root-active")) ||
+        (isWrapped && isHighlighted);
+
+      const isHidden = noteClass === "note-scale-only" && hideNonChordNotes;
+
+      return { stringIndex, fretIndex, noteName, noteClass, displayValue, applyDimOpacity, isHidden };
+    })
+  );
+
   return (
-    <div role="img" aria-label={ariaLabel}>
+    <div role="group" aria-label={ariaLabel} className="fretboard-board">
+      <div
+        className="fretboard-neck"
+        style={{
+          height: `${neckHeight + NECK_BORDER * 2}px`,
+          width: `${neckWidthPx + NECK_BORDER * 2}px`,
+          "--string-row-px": `${stringRowPx}px`,
+        } as React.CSSProperties}
+      >
+        {/* Visual SVG — aria-hidden; accessible buttons rendered separately below */}
+        <svg
+          className="fretboard-main-svg"
+          width={neckWidthPx}
+          height={neckHeight}
+          style={{ display: "block", position: "absolute", top: NECK_BORDER, left: NECK_BORDER }}
+          aria-hidden="true"
+        >
+          <defs>
+            <linearGradient id="fretboard-wood" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--fretboard-wood-top)" />
+              <stop offset="100%" stopColor="var(--fretboard-wood-bottom)" />
+            </linearGradient>
+            <filter id="glow-cyan" x="-50%" y="-50%" width="200%" height="200%">
+              <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#4DE4FF" floodOpacity="0.65" />
+            </filter>
+            <filter id="glow-orange" x="-50%" y="-50%" width="200%" height="200%">
+              <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#FF9A4D" floodOpacity="0.65" />
+            </filter>
+          </defs>
+
+          {/* Wood background */}
+          <rect x={0} y={0} width={neckWidthPx} height={neckHeight} fill="url(#fretboard-wood)" />
+
+          {/* Nut */}
+          {startFret === 0 && (
+            <rect
+              x={0}
+              y={0}
+              width={NUT_WIDTH}
+              height={neckHeight}
+              fill="var(--nut)"
+              opacity={0.9}
+            />
+          )}
+
+          {/* Fret wires */}
+          {Array.from({ length: totalColumns }).map((_, idx) => {
+            const fretIndex = startFret + idx;
+            if (fretIndex === 0) return null;
+            const x = idx * effectiveZoom;
+            return (
+              <line
+                key={`fw-${fretIndex}`}
+                x1={x}
+                y1={0}
+                x2={x}
+                y2={neckHeight}
+                stroke="var(--fret-wire-v2)"
+                strokeWidth={1.5}
+              />
+            );
+          })}
+
+          {/* Inlay dots */}
+          {Array.from({ length: totalColumns }).map((_, idx) => {
+            const fretIndex = startFret + idx;
+            if (INLAY_FRETS.includes(fretIndex)) {
+              const x = fretCenterX(fretIndex);
+              return (
+                <circle
+                  key={`inlay-${fretIndex}`}
+                  data-fret-marker={fretIndex}
+                  cx={x}
+                  cy={inlayY}
+                  r={inlayR}
+                  fill="var(--inlay-dot)"
+                />
+              );
+            }
+            if (INLAY_DOUBLE_FRETS.includes(fretIndex)) {
+              const x = fretCenterX(fretIndex);
+              return (
+                <g key={`inlay-${fretIndex}`} data-fret-marker={fretIndex} data-double-marker="true">
+                  <circle cx={x} cy={inlayYTop} r={inlayR} fill="var(--inlay-dot-12)" />
+                  <circle cx={x} cy={inlayYBottom} r={inlayR} fill="var(--inlay-dot-12)" />
+                </g>
+              );
+            }
+            return null;
+          })}
+
+          {/* Strings — tapered SVG lines */}
+          {tuning.map((_openString, stringIndex) => {
+            const y = stringCenterY(stringIndex);
+            const isBass = stringIndex >= 3;
+            return (
+              <line
+                key={`string-${stringIndex}`}
+                x1={0}
+                y1={y}
+                x2={neckWidthPx}
+                y2={y}
+                stroke={isBass ? "var(--string-wire-bass)" : "var(--string-wire)"}
+                style={{ strokeWidth: `var(--string-taper-${stringIndex + 1})` }}
+                strokeLinecap="round"
+                className={`fretboard-string fretboard-string-${stringIndex + 1}`}
+              />
+            );
+          })}
+
+          {/* Shape polygons overlay */}
+          {svgPolygons.length > 0 && svgPolygons.map(({ points, color, key }) => (
+            <polygon key={key} points={points} fill={color} stroke="none" />
+          ))}
+
+          {/* Note circles (outlined-glow) — visual only, aria-hidden SVG */}
+          {noteData.map(({ stringIndex, fretIndex, noteClass, displayValue, applyDimOpacity, isHidden }) => {
+            if (noteClass === "note-inactive") return null;
+            const cx = fretCenterX(fretIndex);
+            const cy = stringCenterY(stringIndex);
+            const r = noteBubblePx / 2;
+            const { stroke, filter, fill, textFill } = getNoteStroke(noteClass);
+            return (
+              <g
+                key={`note-${stringIndex}-${fretIndex}`}
+                className={clsx("fretboard-note", noteClass, isHidden && "hidden")}
+                style={{ opacity: applyDimOpacity ? 0.8 : 1 }}
+              >
+                <circle
+                  cx={cx}
+                  cy={cy}
+                  r={r}
+                  fill={fill}
+                  stroke={stroke}
+                  strokeWidth={2}
+                  filter={filter !== "none" ? filter : undefined}
+                />
+                {displayFormat !== "none" && (
+                  <text
+                    x={cx}
+                    y={cy}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fontSize={noteFontPx}
+                    fontWeight={700}
+                    fill={textFill}
+                    style={{ pointerEvents: "none", userSelect: "none" }}
+                  >
+                    {formatAccidental(displayValue)}
+                  </text>
+                )}
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* Accessible button layer — transparent, positioned over SVG circles */}
+        <div
+          className="fretboard-a11y-layer"
+          style={{ position: "absolute", top: NECK_BORDER, left: NECK_BORDER, width: neckWidthPx, height: neckHeight }}
+        >
+          {noteData.map(({ stringIndex, fretIndex, noteClass, displayValue, isHidden }) => {
+            if (noteClass === "note-inactive") return null;
+            const cx = fretCenterX(fretIndex);
+            const cy = stringCenterY(stringIndex);
+            const r = noteBubblePx / 2;
+            return (
+              <button
+                key={`btn-${stringIndex}-${fretIndex}`}
+                type="button"
+                onClick={onNoteClick ? () => onNoteClick(stringIndex, fretIndex, fretboardLayout[stringIndex][fretIndex]) : undefined}
+                disabled={!onNoteClick}
+                aria-label={`${formatAccidental(displayValue)} on string ${stringIndex + 1}, fret ${fretIndex}`}
+                className={clsx("note-bubble", noteClass, isHidden && "hidden")}
+                style={{
+                  position: "absolute",
+                  left: cx - r,
+                  top: cy - r,
+                  width: noteBubblePx,
+                  height: noteBubblePx,
+                  fontSize: `${noteFontPx}px`,
+                  opacity: 0,
+                  pointerEvents: onNoteClick ? "auto" : "none",
+                }}
+              />
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Fret numbers row — rendered AFTER the board in DOM order */}
       <div
         className="fret-numbers-row"
         style={{ width: `${neckWidthPx + NECK_BORDER * 2}px`, paddingLeft: `${NECK_BORDER}px` }}
@@ -135,141 +434,6 @@ export function FretboardSVG({
             </span>
           );
         })}
-      </div>
-
-      <div
-        className="fretboard-neck"
-        style={{
-          height: `${neckHeight + NECK_BORDER * 2}px`,
-          width: `${neckWidthPx + NECK_BORDER * 2}px`,
-          "--string-row-px": `${stringRowPx}px`,
-        } as React.CSSProperties}
-      >
-        <div className="fret-backgrounds">
-          {Array.from({ length: totalColumns }).map((_, idx) => {
-            const fretIndex = startFret + idx;
-            return (
-              <div
-                key={`fret-bg-${fretIndex}`}
-                className={clsx("fret-column", fretIndex === 0 ? "fret-zero" : "fret-standard")}
-                style={{ width: `${effectiveZoom}px` }}
-              >
-                {STANDARD_FRET_MARKERS.includes(fretIndex) && (
-                  <div className="fret-marker-container">
-                    {fretIndex === 12 || fretIndex === 24 ? (
-                      <div className="marker-double">
-                        <div className="marker-dot" />
-                        <div className="marker-dot" />
-                      </div>
-                    ) : (
-                      <div className="marker-dot" />
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {svgPolygons.length > 0 && (
-          <svg
-            className="shape-polygons-overlay"
-            width={neckWidthPx}
-            height={neckHeight}
-            style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none", zIndex: 1 }}
-          >
-            {svgPolygons.map(({ points, color, key }) => (
-              <polygon key={key} points={points} fill={color} stroke="none" />
-            ))}
-          </svg>
-        )}
-
-        <div className="strings-container">
-          {tuning.map((openString, stringIndex) => (
-            <div
-              key={`string-${stringIndex}`}
-              className="string-row"
-              style={stringRowPx !== STRING_ROW_PX_DEFAULT ? { height: `${stringRowPx}px` } : undefined}
-            >
-              <div className="string-line" style={{ height: `${(stringIndex + 1) * 0.4 + 1.5}px` }} />
-              <div className="string-notes">
-                {Array.from({ length: totalColumns }).map((_, idx) => {
-                  const fretIndex = startFret + idx;
-                  const noteName = fretboardLayout[stringIndex][fretIndex];
-
-                  const isHighlighted = highlightNotes.includes(noteName) ||
-                    highlightNotes.includes(`${stringIndex}-${fretIndex}`);
-                  const isChordTone = hasChordOverlay && chordTones.includes(noteName);
-                  const isRoot = noteName === rootNote ||
-                    ENHARMONICS[noteName] === rootNote || ENHARMONICS[rootNote] === noteName;
-                  const isColorNote = colorNotes.length > 0 && colorNotes.some(cn =>
-                    noteName === cn || ENHARMONICS[noteName] === cn || ENHARMONICS[cn] === noteName
-                  );
-                  const isChordInRange = !hasChordOverlay || !shapePolygons.length ||
-                    boxBounds.some(b =>
-                      fretIndex >= b.minFret - chordFretSpread && fretIndex <= b.maxFret + chordFretSpread
-                    );
-
-                  const noteClass = classifyNote(
-                    isRoot, isColorNote, isHighlighted, isChordTone,
-                    hasChordOverlay, isChordInRange, shapePolygons, boxBounds, fretIndex
-                  );
-
-                  let displayValue = getNoteDisplayInScale(noteName, rootNote, SCALES[scaleName] || [], useFlats);
-                  if (displayFormat === "degrees" && rootNote) {
-                    const normRoot = ENHARMONICS[rootNote]?.includes("b") ? ENHARMONICS[rootNote] : rootNote;
-                    const rootIdx = NOTES.indexOf(normRoot.includes("#") ? normRoot : rootNote);
-                    const noteIdx = NOTES.indexOf(noteName);
-                    if (rootIdx !== -1 && noteIdx !== -1) {
-                      displayValue = INTERVAL_NAMES[(noteIdx - rootIdx + 12) % 12];
-                    }
-                  } else if (fretIndex === 0 && parseNote(openString)?.noteName === noteName) {
-                    displayValue = getNoteDisplayInScale(noteName, rootNote, SCALES[scaleName] || [], useFlats);
-                  }
-
-                  const isWrapped = wrappedNotes.has(`${stringIndex}-${fretIndex}`);
-                  const isInsideAnyPolygon = shapePolygons.some(poly => {
-                    const leftFret = poly.vertices[stringIndex]?.fret;
-                    const rightFret = poly.vertices[poly.vertices.length - 1 - stringIndex]?.fret;
-                    return leftFret !== undefined && rightFret !== undefined &&
-                      fretIndex >= leftFret && fretIndex <= rightFret;
-                  });
-                  const applyDimOpacity = (shapePolygons.length > 0 && !isInsideAnyPolygon &&
-                    (noteClass === "note-blue" || noteClass === "chord-outside" ||
-                     noteClass === "chord-tone" || noteClass === "root-active")) ||
-                    (isWrapped && isHighlighted);
-
-                  return (
-                    <div key={`note-${stringIndex}-${fretIndex}`} className="note-cell" style={{ width: `${effectiveZoom}px` }}>
-                      <button
-                        type="button"
-                        onClick={
-                          onNoteClick
-                            ? () => onNoteClick(stringIndex, fretIndex, noteName)
-                            : undefined
-                        }
-                        disabled={!onNoteClick}
-                        aria-label={`${formatAccidental(displayValue)} on string ${stringIndex + 1}, fret ${fretIndex}`}
-                        className={clsx("note-bubble", noteClass,
-                          noteClass === "note-scale-only" && hideNonChordNotes && "hidden")}
-                        style={{
-                          width: `${noteBubblePx}px`,
-                          height: `${noteBubblePx}px`,
-                          fontSize: `${noteFontPx}px`,
-                          ...(applyDimOpacity ? { opacity: 0.8 } : {}),
-                        }}
-                      >
-                        {displayFormat !== "none" && (
-                          <span className="note-main-label">{formatAccidental(displayValue)}</span>
-                        )}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
 
       {shapeLabels !== "none" && svgPolygons.length > 0 && (

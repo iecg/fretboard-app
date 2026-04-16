@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render } from "@testing-library/react";
+import { render, fireEvent } from "@testing-library/react";
 import { FretboardSVG } from "../FretboardSVG";
 import { getFretboardNotes } from "../guitar";
 import type { CagedShape } from "../shapes";
@@ -20,7 +20,7 @@ const BASE_PROPS = {
 };
 
 describe("FretboardSVG", () => {
-  it("renders note bubbles when highlightNotes are provided", () => {
+  it("renders note circles when highlightNotes are provided", () => {
     render(<FretboardSVG {...BASE_PROPS} />);
     const activeNotes = document.querySelectorAll(".note-active, .root-active");
     expect(activeNotes.length).toBeGreaterThan(0);
@@ -110,15 +110,15 @@ describe("FretboardSVG", () => {
     expect(fretNumbers[12].textContent).toBe("12");
   });
 
-  it("invokes onNoteClick when a note bubble is clicked", () => {
+  it("invokes onNoteClick when a note button is clicked", () => {
     const onNoteClick = vi.fn();
     render(<FretboardSVG {...BASE_PROPS} onNoteClick={onNoteClick} />);
-    const bubble = document.querySelector(".note-bubble") as HTMLElement;
-    bubble?.click();
+    const noteButton = document.querySelector(".note-bubble") as HTMLButtonElement;
+    fireEvent.click(noteButton);
     expect(onNoteClick).toHaveBeenCalledTimes(1);
   });
 
-  it("hides note-scale-only bubbles when hideNonChordNotes is true", () => {
+  it("hides note-scale-only circles when hideNonChordNotes is true", () => {
     render(
       <FretboardSVG
         {...BASE_PROPS}
@@ -128,8 +128,8 @@ describe("FretboardSVG", () => {
       />
     );
     // scale-only notes should have the 'hidden' class
-    const hiddenBubbles = document.querySelectorAll(".note-scale-only.hidden");
-    expect(hiddenBubbles.length).toBeGreaterThan(0);
+    const hiddenNotes = document.querySelectorAll(".note-scale-only.hidden");
+    expect(hiddenNotes.length).toBeGreaterThan(0);
   });
 
   it("has no a11y violations", async () => {

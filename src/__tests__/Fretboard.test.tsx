@@ -41,21 +41,10 @@ describe("Fretboard", () => {
     );
   }
 
-  function getFretColumn(container: HTMLElement, fret: number) {
-    const fretLabels = Array.from(container.querySelectorAll(".fret-number"));
-    const fretIndex = fretLabels.findIndex(
-      (label) => label.textContent === String(fret),
-    );
-
-    if (fretIndex === -1) return null;
-
-    return container.querySelectorAll(".fret-column")[fretIndex] ?? null;
-  }
-
   function getFretMarker(container: HTMLElement, fret: number) {
+    // SVG-based fretboard uses data-fret-marker on circle/g elements
     return (
-      getFretColumn(container, fret)?.querySelector(".fret-marker-container") ??
-      null
+      container.querySelector(`[data-fret-marker="${fret}"]`) ?? null
     );
   }
 
@@ -153,9 +142,8 @@ describe("Fretboard", () => {
 
       expect(container.querySelectorAll(".root-active")).toHaveLength(0);
       expect(container.querySelectorAll(".note-active")).toHaveLength(0);
-      expect(
-        container.querySelectorAll(".note-inactive").length,
-      ).toBeGreaterThan(0);
+      // SVG renderer skips inactive notes entirely; no active note elements expected
+      expect(container.querySelectorAll(".fretboard-note")).toHaveLength(0);
     });
   });
 
@@ -505,11 +493,11 @@ describe("Fretboard", () => {
       }
 
       expect(
-        getFretMarker(container, 12)?.querySelector(".marker-double"),
-      ).toBeTruthy();
+        getFretMarker(container, 12)?.getAttribute("data-double-marker"),
+      ).toBe("true");
       expect(
-        getFretMarker(container, 24)?.querySelector(".marker-double"),
-      ).toBeTruthy();
+        getFretMarker(container, 24)?.getAttribute("data-double-marker"),
+      ).toBe("true");
     });
 
     it("hides fret markers outside visible range", () => {
@@ -521,11 +509,11 @@ describe("Fretboard", () => {
 
       expect(getFretMarker(container, 12)).toBeTruthy();
       expect(
-        getFretMarker(container, 12)?.querySelector(".marker-double"),
-      ).toBeTruthy();
+        getFretMarker(container, 12)?.getAttribute("data-double-marker"),
+      ).toBe("true");
       expect(getFretMarker(container, 15)).toBeTruthy();
       expect(
-        getFretMarker(container, 15)?.querySelector(".marker-double"),
+        getFretMarker(container, 15)?.getAttribute("data-double-marker"),
       ).toBeNull();
 
       for (const fret of [3, 5, 7, 9, 17, 19, 21, 24]) {
