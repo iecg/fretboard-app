@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import clsx from "clsx";
 import {
   useAtom,
@@ -11,12 +11,10 @@ import {
   SCALES,
   NOTES,
   INTERVAL_NAMES,
-  getNoteDisplay,
   getNoteDisplayInScale,
   formatAccidental,
 } from "./theory";
 import {
-  ChevronDown,
   HelpCircle,
   Music,
   Settings2,
@@ -26,7 +24,6 @@ import {
 import { getFocusableElements } from "./utils/dom";
 import { synth } from "./audio";
 import { CircleOfFifths } from "./CircleOfFifths";
-import { DEGREE_COLORS, getDegreesForScale } from "./degrees";
 import { FingeringPatternControls } from "./components/FingeringPatternControls";
 import { TheoryControls } from "./components/TheoryControls";
 import { MobileTabPanel } from "./components/MobileTabPanel";
@@ -39,141 +36,11 @@ import {
 import SettingsOverlay from "./components/SettingsOverlay";
 import useLayoutMode from "./hooks/useLayoutMode";
 import useDisplayState from "./hooks/useDisplayState";
+import { AppHeader } from "./components/AppHeader";
+import { DegreeChipStrip } from "./components/DegreeChipStrip";
 import "./App.css";
 
 const END_FRET = 24;
-
-function SummaryNote({
-  note,
-  rootNote,
-  scaleName,
-  displayName,
-  isChord,
-}: {
-  note: string;
-  rootNote: string;
-  scaleName: string;
-  displayName: string;
-  isChord?: boolean;
-}) {
-  const rootIdx = NOTES.indexOf(rootNote);
-  const noteIdx = NOTES.indexOf(note);
-  const chromaticInterval =
-    rootIdx !== -1 && noteIdx !== -1 ? (noteIdx - rootIdx + 12) % 12 : -1;
-  const degree =
-    chromaticInterval !== -1 ? INTERVAL_NAMES[chromaticInterval] : null;
-  const romanNumeral =
-    chromaticInterval !== -1
-      ? getDegreesForScale(scaleName)[chromaticInterval]
-      : undefined;
-  const degreeColor = romanNumeral ? DEGREE_COLORS[romanNumeral] : undefined;
-  return (
-    <span
-      role="listitem"
-      className={`summary-note${isChord ? " summary-note--chord" : ""}`}
-      style={
-        degreeColor
-          ? { outline: `2px solid ${degreeColor}`, outlineOffset: "-2px" }
-          : undefined
-      }
-    >
-      <span className="summary-note-name">{formatAccidental(displayName)}</span>
-      {degree && (
-        <span className="summary-note-degree" style={{ color: degreeColor }}>
-          {formatAccidental(degree)}
-        </span>
-      )}
-    </span>
-  );
-}
-
-function ScaleSummaryDisclosure({
-  isExpanded,
-  onToggle,
-  scaleLabel,
-  summaryNotes,
-  rootNote,
-  scaleName,
-  useFlats,
-  chordLabel,
-  chordSummaryNotes,
-  chordRoot,
-}: {
-  isExpanded: boolean;
-  onToggle: () => void;
-  scaleLabel: string;
-  summaryNotes: string[];
-  rootNote: string;
-  scaleName: string;
-  useFlats: boolean;
-  chordLabel: string | null;
-  chordSummaryNotes: string[];
-  chordRoot: string;
-}) {
-
-  return (
-    <div className="summary-area panel-surface">
-      <button
-        type="button"
-        className={clsx("summary-disclosure-btn", {
-          "summary-disclosure-btn--open": isExpanded,
-        })}
-        aria-expanded={isExpanded}
-        aria-controls="scale-summary-content"
-        aria-label="Toggle scale summary"
-        onClick={onToggle}
-      >
-        <span className="summary-disclosure-label">{scaleLabel}</span>
-        <ChevronDown className="summary-disclosure-icon" size={18} />
-      </button>
-      {isExpanded ? (
-        <div id="scale-summary-content" className="summary-content">
-          <div
-            className="summary-notes"
-            role="list"
-            aria-label={`${scaleLabel} notes`}
-          >
-            {summaryNotes.map((n, i) => (
-              <SummaryNote
-                key={i}
-                note={n}
-                rootNote={rootNote}
-                scaleName={scaleName}
-                displayName={getNoteDisplayInScale(
-                  n,
-                  rootNote,
-                  SCALES[scaleName] || [],
-                  useFlats,
-                )}
-              />
-            ))}
-          </div>
-          {chordLabel ? (
-            <div className="summary-row summary-row--chord">
-              <div className="summary-row-label">{chordLabel}</div>
-              <div
-                className="summary-notes summary-notes--secondary"
-                role="list"
-                aria-label={`${chordLabel} notes`}
-              >
-                {chordSummaryNotes.map((n, i) => (
-                  <SummaryNote
-                    key={i}
-                    note={n}
-                    rootNote={chordRoot}
-                    scaleName={scaleName}
-                    displayName={getNoteDisplay(n, chordRoot, useFlats)}
-                    isChord
-                  />
-                ))}
-              </div>
-            </div>
-          ) : null}
-        </div>
-      ) : null}
-    </div>
-  );
-}
 
 function AppContent() {
   const {
@@ -216,7 +83,6 @@ function AppContent() {
     colorNotes,
     summaryNotes,
     scaleLabel,
-    chordLabel,
     chordSummaryNotes,
     recenterKey,
     onShapeClick,
@@ -231,9 +97,6 @@ function AppContent() {
   const helpModalRef = useRef<HTMLDivElement>(null);
   const helpTriggerRef = useRef<HTMLButtonElement>(null);
   const layout = useLayoutMode();
-  const [summaryExpanded, setSummaryExpanded] = useState(
-    () => layout.tier !== "mobile",
-  );
 
   // Focus trap + focus restoration for help modal
   useEffect(() => {
@@ -285,19 +148,31 @@ function AppContent() {
     synth.setMute(nextMute);
   };
 
+  // Build DegreeChip[] from scale/chord atoms for DegreeChipStrip
+  const degreeChips = useMemo(() => {
+    const rootIdx = NOTES.indexOf(rootNote);
+    const chordToneSet = new Set(chordSummaryNotes);
+    return summaryNotes.map((note) => {
+      const noteIdx = NOTES.indexOf(note);
+      const chromaticInterval =
+        rootIdx !== -1 && noteIdx !== -1 ? (noteIdx - rootIdx + 12) % 12 : 0;
+      const interval = INTERVAL_NAMES[chromaticInterval] ?? "1";
+      return {
+        note: formatAccidental(getNoteDisplayInScale(note, rootNote, SCALES[scaleName] || [], useFlats)),
+        interval,
+        inScale: true,
+        isTonic: note === rootNote,
+        inChord: chordToneSet.has(note),
+      };
+    });
+  }, [summaryNotes, rootNote, scaleName, useFlats, chordSummaryNotes]);
+
   // Summary notes content shared by every non-landscape layout.
   const summaryContent = (
-    <ScaleSummaryDisclosure
-      isExpanded={summaryExpanded}
-      onToggle={() => setSummaryExpanded((v) => !v)}
-      scaleLabel={scaleLabel}
-      summaryNotes={summaryNotes}
-      rootNote={rootNote}
-      scaleName={scaleName}
-      useFlats={useFlats}
-      chordLabel={chordLabel}
-      chordSummaryNotes={chordSummaryNotes}
-      chordRoot={chordRoot}
+    <DegreeChipStrip
+      scaleName={scaleLabel}
+      chips={degreeChips}
+      aria-label="Scale degrees"
     />
   );
 
@@ -369,69 +244,65 @@ function AppContent() {
       data-full-width-overlay={layout.fullWidthOverlay ? "true" : "false"}
     >
       {/* Header */}
-      <header className="app-header">
-        <div className="logo-container">
-          <div className="logo-icon">
-            <Music className="icon" />
-          </div>
-          <div className="title-container">
-            <h1>FretFlow</h1>
-            <p>Interactive Fretboard & Music Theory</p>
-          </div>
-        </div>
-        <div className="header-actions" aria-label="App actions">
-          <a
-            href="https://ko-fi.com/E1E01XFJ0G"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="kofi-header-btn"
-            title="Support FretFlow on Ko-fi"
-          >
-            <img
-              src="/fretboard-app/support_me_on_kofi_blue.png"
-              alt="Support me on Ko-fi"
-              className="kofi-btn-desktop"
-            />
-            <img
-              src="/fretboard-app/kofi_symbol.png"
-              alt="Ko-fi"
-              className="kofi-btn-mobile"
-            />
-          </a>
-          <button
-            type="button"
-            onClick={() => setSettingsOverlayOpen((v) => !v)}
-            className="header-btn"
-            title="Settings"
-            aria-label="Open settings"
-          >
-            <Settings2 className="icon" />
-          </button>
-          <button
-            type="button"
-            onClick={toggleMute}
-            className="header-btn"
-            title={isMuted ? "Unmute" : "Mute"}
-            aria-label={isMuted ? "Unmute audio" : "Mute audio"}
-          >
-            {isMuted ? (
-              <VolumeX className="icon icon-muted" />
-            ) : (
-              <Volume2 className="icon icon-active" />
-            )}
-          </button>
-          <button
-            ref={helpTriggerRef}
-            type="button"
-            onClick={() => setShowHelp(true)}
-            className="header-btn"
-            title="Help & Instructions"
-            aria-label="Open help"
-          >
-            <HelpCircle className="icon" />
-          </button>
-        </div>
-      </header>
+      <AppHeader
+        brandTitle="FretFlow"
+        brandSubtitle="Interactive Fretboard & Music Theory"
+        brandIcon={<Music className="icon" aria-hidden />}
+        actions={
+          <>
+            <a
+              href="https://ko-fi.com/E1E01XFJ0G"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="kofi-header-btn"
+              title="Support FretFlow on Ko-fi"
+            >
+              <img
+                src="/fretboard-app/support_me_on_kofi_blue.png"
+                alt="Support me on Ko-fi"
+                className="kofi-btn-desktop"
+              />
+              <img
+                src="/fretboard-app/kofi_symbol.png"
+                alt="Ko-fi"
+                className="kofi-btn-mobile"
+              />
+            </a>
+            <button
+              type="button"
+              onClick={() => setSettingsOverlayOpen((v) => !v)}
+              className="header-btn"
+              title="Settings"
+              aria-label="Open settings"
+            >
+              <Settings2 className="icon" />
+            </button>
+            <button
+              type="button"
+              onClick={toggleMute}
+              className="header-btn"
+              title={isMuted ? "Unmute" : "Mute"}
+              aria-label={isMuted ? "Unmute audio" : "Mute audio"}
+            >
+              {isMuted ? (
+                <VolumeX className="icon icon-muted" />
+              ) : (
+                <Volume2 className="icon icon-active" />
+              )}
+            </button>
+            <button
+              ref={helpTriggerRef}
+              type="button"
+              onClick={() => setShowHelp(true)}
+              className="header-btn"
+              title="Help & Instructions"
+              aria-label="Open help"
+            >
+              <HelpCircle className="icon" />
+            </button>
+          </>
+        }
+      />
 
       {/* Help Modal */}
       {showHelp && (
