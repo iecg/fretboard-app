@@ -383,37 +383,29 @@ describe("Integration Tests - User Workflows", () => {
       });
     });
 
-    it("switching between Key/Scale/Fretboard tabs", async () => {
+    it("switching between Theory and View tabs", async () => {
       const { rerender } = render(<App />);
 
-      expect(localStorage.getItem(k("mobileTab"))).toBe("key");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("theory");
 
-      // Switch to scale tab
-      localStorage.setItem(k("mobileTab"), "scale");
+      localStorage.setItem(k("mobileTab"), "view");
       rerender(<App />);
-      expect(localStorage.getItem(k("mobileTab"))).toBe("scale");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("view");
 
-      // Switch to fretboard tab
-      localStorage.setItem(k("mobileTab"), "fretboard");
+      localStorage.setItem(k("mobileTab"), "theory");
       rerender(<App />);
-      expect(localStorage.getItem(k("mobileTab"))).toBe("fretboard");
-
-      // Back to key
-      localStorage.setItem(k("mobileTab"), "key");
-      rerender(<App />);
-      expect(localStorage.getItem(k("mobileTab"))).toBe("key");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("theory");
     });
 
-    it("key tab shows circle of fifths", async () => {
-      localStorage.setItem(k("mobileTab"), "key");
-      const { container } = render(<App />);
+    it("theory tab exposes the circle of fifths behind a disclosure", async () => {
+      localStorage.setItem(k("mobileTab"), "theory");
+      render(<App />);
 
-      const svg = container.querySelector("svg");
-      expect(svg).toBeTruthy(); // Circle of fifths SVG
+      expect(screen.queryByText("Circle of Fifths")).toBeTruthy();
     });
 
     it("mobile tab preference persists", async () => {
-      localStorage.setItem(k("mobileTab"), "scale");
+      localStorage.setItem(k("mobileTab"), "view");
       const { unmount } = render(<App />);
       unmount();
 
@@ -421,7 +413,7 @@ describe("Integration Tests - User Workflows", () => {
       const { rerender } = render(<App />);
       rerender(<App />);
 
-      expect(localStorage.getItem(k("mobileTab"))).toBe("scale");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("view");
     });
   });
 
@@ -572,7 +564,7 @@ describe("Integration Tests - User Workflows", () => {
     it("shape labels can toggle independently", async () => {
       render(<App />);
 
-      const labels: ("modal" | "caged" | "none")[] = ["modal", "caged", "none"];
+      const labels: ("caged" | "none")[] = ["caged", "none"];
 
       for (const label of labels) {
         localStorage.setItem(k("shapeLabels"), label);
@@ -580,6 +572,11 @@ describe("Integration Tests - User Workflows", () => {
         expect(localStorage.getItem(k("shapeLabels"))).toBe(label);
         rerender(<App />);
       }
+
+      localStorage.setItem(k("shapeLabels"), "modal");
+      const { rerender } = render(<App />);
+      expect(localStorage.getItem(k("shapeLabels"))).toBe("caged");
+      rerender(<App />);
     });
   });
 
@@ -594,7 +591,7 @@ describe("Integration Tests - User Workflows", () => {
 
       render(<App />);
 
-      expect(screen.getByText("B♭ Major")).toBeInTheDocument();
+      expect(screen.getByText("B♭ Major (Ionian)")).toBeInTheDocument();
       expect(localStorage.getItem("useFlats")).toBeNull();
       expect(localStorage.getItem("accidentalMode")).toBeNull();
 
@@ -607,10 +604,10 @@ describe("Integration Tests - User Workflows", () => {
       fireEvent.click(screen.getByRole("button", { name: "♯" }));
 
       await waitFor(() => {
-        expect(screen.getByText("A♯ Major")).toBeInTheDocument();
+        expect(screen.getByText("A♯ Major (Ionian)")).toBeInTheDocument();
       });
 
-      expect(screen.queryByText("B♭ Major")).toBeNull();
+      expect(screen.queryByText("B♭ Major (Ionian)")).toBeNull();
       expect(localStorage.getItem("useFlats")).toBeNull();
       expect(localStorage.getItem("accidentalMode")).toBeNull();
     });

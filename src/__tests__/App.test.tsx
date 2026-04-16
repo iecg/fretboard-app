@@ -126,6 +126,25 @@ describe("App", () => {
       expect(screen.getByTestId("fretboard")).toHaveTextContent("Fretboard: C");
     });
 
+    it("renders alias-friendly summary labels", () => {
+      render(<App />);
+      expect(screen.getByText("C Major (Ionian)")).toBeInTheDocument();
+    });
+
+    it("renders the summary below the fretboard", () => {
+      render(<App />);
+
+      const summary = screen.getByRole("button", {
+        name: /toggle scale summary/i,
+      });
+      const fretboard = screen.getByTestId("fretboard");
+
+      expect(
+        fretboard.compareDocumentPosition(summary) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    });
+
     it("loads persisted state from localStorage", () => {
       localStorage.setItem(k("rootNote"), "G");
       localStorage.setItem(k("scaleName"), "Minor");
@@ -133,6 +152,56 @@ describe("App", () => {
       expect(screen.getByTestId("circle-of-fifths")).toHaveTextContent(
         "CoF: G",
       );
+    });
+
+    it("renders melodic minor summary labels with the jazz alias", () => {
+      localStorage.setItem(k("scaleName"), "Melodic Minor");
+      render(<App />);
+      expect(
+        screen.getByText("C Melodic Minor (Jazz Minor)"),
+      ).toBeInTheDocument();
+    });
+
+    it("renders ordinal mode labels in relative browse mode", () => {
+      localStorage.setItem(k("rootNote"), "D");
+      localStorage.setItem(k("scaleName"), "Dorian");
+      localStorage.setItem(k("scaleBrowseMode"), "relative");
+      render(<App />);
+      expect(screen.getByText("D Dorian (2nd Mode)")).toBeInTheDocument();
+    });
+
+    it("defaults the summary collapsed on mobile", () => {
+      setViewport(390, 844);
+      render(<App />);
+
+      expect(
+        screen.getByRole("button", { name: /toggle scale summary/i }),
+      ).toHaveAttribute("aria-expanded", "false");
+      expect(screen.queryByLabelText(/C Major \(Ionian\) notes/i)).toBeNull();
+    });
+
+    it("defaults the summary expanded on desktop", () => {
+      render(<App />);
+
+      expect(
+        screen.getByRole("button", { name: /toggle scale summary/i }),
+      ).toHaveAttribute("aria-expanded", "true");
+      expect(
+        screen.getByLabelText(/C Major \(Ionian\) notes/i),
+      ).toBeInTheDocument();
+    });
+
+    it("expands the summary to reveal notes on mobile", () => {
+      setViewport(390, 844);
+      render(<App />);
+
+      fireEvent.click(
+        screen.getByRole("button", { name: /toggle scale summary/i }),
+      );
+
+      expect(
+        screen.getByLabelText(/C Major \(Ionian\) notes/i),
+      ).toBeInTheDocument();
     });
 
     it("persists isMuted to localStorage on first mount", () => {
@@ -200,31 +269,26 @@ describe("App", () => {
   });
 
   describe("Scale selection", () => {
-    it("changes scale via drawer selector", async () => {
+    it("renders the shared theory drawers", async () => {
       render(<App />);
-      const drawer = screen.getByTestId("drawer-scale");
-      const button = drawer.querySelector("button");
-
-      if (button) {
-        fireEvent.click(button);
-        await waitFor(() => {
-          expect(localStorage.getItem(k("scaleName"))).toBeDefined();
-        });
-      }
+      expect(
+        screen.getByRole("button", { name: /Scale Family: Major Modes/i }),
+      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Parallel" })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /Previous Mode/i }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /Next Mode/i }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /Mode: C Major \(Ionian\)/i }),
+      ).toBeInTheDocument();
     });
 
     it("persists scale name to localStorage", async () => {
       render(<App />);
-      const drawer = screen.getByTestId("drawer-scale");
-      const button = drawer.querySelector("button");
-
-      if (button) {
-        fireEvent.click(button);
-        await waitFor(() => {
-          const saved = localStorage.getItem(k("scaleName"));
-          expect(saved).toBeTruthy();
-        });
-      }
+      expect(localStorage.getItem(k("scaleName"))).toBe("Major");
     });
   });
 
@@ -315,17 +379,13 @@ describe("App", () => {
   describe("Chord overlay", () => {
     it("can set chord type", async () => {
       render(<App />);
-      const drawer = screen.getByTestId("drawer-chord overlay");
+      fireEvent.click(screen.getByRole("button", { name: /Chord Overlay/i }));
+      fireEvent.click(screen.getByRole("button", { name: /Chord Type:/i }));
+      fireEvent.click(screen.getByText("Major Triad"));
 
-      if (drawer) {
-        const button = drawer.querySelector("button");
-        if (button) {
-          fireEvent.click(button);
-          await waitFor(() => {
-            expect(localStorage.getItem(k("chordType"))).toBeTruthy();
-          });
-        }
-      }
+      await waitFor(() => {
+        expect(localStorage.getItem(k("chordType"))).toBe("Major Triad");
+      });
     });
 
     it("persists chord type as empty string when null", async () => {
@@ -403,7 +463,7 @@ describe("App", () => {
 
     it("persists mobile tab selection to localStorage", async () => {
       render(<App />);
-      expect(localStorage.getItem(k("mobileTab"))).toBe("key");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("theory");
     });
 
     it("uses compact mobile header attributes and full-width help modal", async () => {
@@ -737,8 +797,8 @@ describe("App", () => {
         ).toBeTruthy();
       });
 
-      const controlsTab = screen.queryByText("Controls");
-      if (controlsTab) fireEvent.click(controlsTab);
+      const viewTab = screen.queryByText("View");
+      if (viewTab) fireEvent.click(viewTab);
 
       // Fret range has Start −/+ and End −/+ buttons
       const minusButtons = screen.queryAllByText("−");

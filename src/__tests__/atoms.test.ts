@@ -6,6 +6,7 @@ import { k } from "./utils/storage";
 import {
   rootNoteAtom,
   scaleNameAtom,
+  scaleBrowseModeAtom,
   chordRootAtom,
   chordTypeAtom,
   linkChordRootAtom,
@@ -214,35 +215,107 @@ describe("atoms", () => {
   });
 
   describe("mobileTabStorage", () => {
-    it("migrates legacy settings tab values to fretboard", () => {
+    it("migrates legacy key tab values to theory", () => {
+      localStorage.setItem(k("mobileTab"), "key");
+      const store = makeStore();
+      const unsub = mount(store, mobileTabAtom);
+
+      expect(store.get(mobileTabAtom)).toBe("theory");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("theory");
+
+      unsub();
+    });
+
+    it("migrates legacy scale tab values to theory", () => {
+      localStorage.setItem(k("mobileTab"), "scale");
+      const store = makeStore();
+      const unsub = mount(store, mobileTabAtom);
+
+      expect(store.get(mobileTabAtom)).toBe("theory");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("theory");
+
+      unsub();
+    });
+
+    it("migrates legacy settings tab values to view", () => {
       localStorage.setItem(k("mobileTab"), "settings");
       const store = makeStore();
       const unsub = mount(store, mobileTabAtom);
 
-      expect(store.get(mobileTabAtom)).toBe("fretboard");
-      expect(localStorage.getItem(k("mobileTab"))).toBe("fretboard");
+      expect(store.get(mobileTabAtom)).toBe("view");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("view");
 
       unsub();
     });
 
     it("keeps valid stored tab values unchanged", () => {
-      localStorage.setItem(k("mobileTab"), "fretboard");
+      localStorage.setItem(k("mobileTab"), "view");
       const store = makeStore();
       const unsub = mount(store, mobileTabAtom);
 
-      expect(store.get(mobileTabAtom)).toBe("fretboard");
-      expect(localStorage.getItem(k("mobileTab"))).toBe("fretboard");
+      expect(store.get(mobileTabAtom)).toBe("view");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("view");
 
       unsub();
     });
 
-    it("falls back to key for invalid stored tab values", () => {
+    it("falls back to theory for invalid stored tab values", () => {
       localStorage.setItem(k("mobileTab"), "invalid-tab");
       const store = makeStore();
       const unsub = mount(store, mobileTabAtom);
 
-      expect(store.get(mobileTabAtom)).toBe("key");
-      expect(localStorage.getItem(k("mobileTab"))).toBe("key");
+      expect(store.get(mobileTabAtom)).toBe("theory");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("theory");
+
+      unsub();
+    });
+  });
+
+  describe("scaleNameStorage", () => {
+    it("normalizes legacy Minor values to Natural Minor", () => {
+      localStorage.setItem(k("scaleName"), "Minor");
+      const store = makeStore();
+      const unsub = mount(store, scaleNameAtom);
+
+      expect(store.get(scaleNameAtom)).toBe("Natural Minor");
+      expect(localStorage.getItem(k("scaleName"))).toBe("Natural Minor");
+
+      unsub();
+    });
+  });
+
+  describe("scaleBrowseModeStorage", () => {
+    it("keeps valid stored browse modes unchanged", () => {
+      localStorage.setItem(k("scaleBrowseMode"), "relative");
+      const store = makeStore();
+      const unsub = mount(store, scaleBrowseModeAtom);
+
+      expect(store.get(scaleBrowseModeAtom)).toBe("relative");
+      expect(localStorage.getItem(k("scaleBrowseMode"))).toBe("relative");
+
+      unsub();
+    });
+
+    it("falls back to parallel for invalid browse modes", () => {
+      localStorage.setItem(k("scaleBrowseMode"), "sideways");
+      const store = makeStore();
+      const unsub = mount(store, scaleBrowseModeAtom);
+
+      expect(store.get(scaleBrowseModeAtom)).toBe("parallel");
+      expect(localStorage.getItem(k("scaleBrowseMode"))).toBe("parallel");
+
+      unsub();
+    });
+  });
+
+  describe("shapeLabelsStorage", () => {
+    it("migrates legacy modal labels to caged labels", () => {
+      localStorage.setItem(k("shapeLabels"), "modal");
+      const store = makeStore();
+      const unsub = mount(store, shapeLabelsAtom);
+
+      expect(store.get(shapeLabelsAtom)).toBe("caged");
+      expect(localStorage.getItem(k("shapeLabels"))).toBe("caged");
 
       unsub();
     });
@@ -371,6 +444,7 @@ describe("atoms", () => {
       const store = makeStore();
       store.set(rootNoteAtom, "G");
       store.set(scaleNameAtom, "Dorian");
+      store.set(scaleBrowseModeAtom, "relative");
       store.set(isMutedAtom, true);
       store.set(fretZoomAtom, 200);
       store.set(displayFormatAtom, "degrees");
@@ -380,6 +454,7 @@ describe("atoms", () => {
 
       expect(store.get(rootNoteAtom)).toBe("C");
       expect(store.get(scaleNameAtom)).toBe("Major");
+      expect(store.get(scaleBrowseModeAtom)).toBe("parallel");
       expect(store.get(isMutedAtom)).toBe(false);
       expect(store.get(fretZoomAtom)).toBe(100);
       expect(store.get(displayFormatAtom)).toBe("notes");
@@ -396,12 +471,12 @@ describe("atoms", () => {
       store.set(fingeringPatternAtom, "caged");
       store.set(npsPositionAtom, 3);
       store.set(shapeLabelsAtom, "caged");
+      store.set(scaleBrowseModeAtom, "relative");
       store.set(tuningNameAtom, "Drop D");
       store.set(fretStartAtom, 3);
       store.set(fretEndAtom, 12);
       store.set(accidentalModeAtom, "flats");
-      // Controls tab was renamed from legacy "settings" to "fretboard".
-      store.set(mobileTabAtom, "fretboard");
+      store.set(mobileTabAtom, "view");
       store.set(landscapeNarrowTabAtom, "key");
 
       store.set(resetAtom);
@@ -414,11 +489,12 @@ describe("atoms", () => {
       expect(store.get(fingeringPatternAtom)).toBe("all");
       expect(store.get(npsPositionAtom)).toBe(0);
       expect(store.get(shapeLabelsAtom)).toBe("none");
+      expect(store.get(scaleBrowseModeAtom)).toBe("parallel");
       expect(store.get(tuningNameAtom)).toBe("Standard");
       expect(store.get(fretStartAtom)).toBe(0);
       expect(store.get(fretEndAtom)).toBe(24);
       expect(store.get(accidentalModeAtom)).toBe("auto");
-      expect(store.get(mobileTabAtom)).toBe("key");
+      expect(store.get(mobileTabAtom)).toBe("theory");
       expect(store.get(landscapeNarrowTabAtom)).toBe("fretboard");
     });
 

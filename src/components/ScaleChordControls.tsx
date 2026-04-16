@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { DrawerSelector } from "../DrawerSelector";
 import { NoteGrid } from "./NoteGrid";
 import { NOTES } from "../theory";
@@ -42,6 +43,9 @@ export function ScaleChordControls({
   chordOptions,
   chordFilterOptions,
 }: ScaleChordControlsProps) {
+  const linkChordRootId = useId();
+  const hideNonChordNotesId = useId();
+
   return (
     <>
       <DrawerSelector
@@ -65,8 +69,9 @@ export function ScaleChordControls({
       {chordType && (
         <>
           <div className="chord-root-row">
-            <label className="link-toggle">
+            <label className="link-toggle" htmlFor={linkChordRootId}>
               <input
+                id={linkChordRootId}
                 type="checkbox"
                 checked={linkChordRoot}
                 onChange={(e) => {
@@ -89,8 +94,9 @@ export function ScaleChordControls({
             )}
           </div>
 
-          <label className="link-toggle">
+          <label className="link-toggle" htmlFor={hideNonChordNotesId}>
             <input
+              id={hideNonChordNotesId}
               type="checkbox"
               checked={hideNonChordNotes}
               onChange={(e) => setHideNonChordNotes(e.target.checked)}

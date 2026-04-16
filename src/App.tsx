@@ -15,13 +15,20 @@ import {
   getNoteDisplayInScale,
   formatAccidental,
 } from "./theory";
-import { Music, Settings2, Volume2, VolumeX, HelpCircle } from "lucide-react";
+import {
+  ChevronDown,
+  HelpCircle,
+  Music,
+  Settings2,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import { getFocusableElements } from "./utils/dom";
 import { synth } from "./audio";
 import { CircleOfFifths } from "./CircleOfFifths";
 import { DEGREE_COLORS, getDegreesForScale } from "./degrees";
 import { FingeringPatternControls } from "./components/FingeringPatternControls";
-import { ScaleChordControls } from "./components/ScaleChordControls";
+import { TheoryControls } from "./components/TheoryControls";
 import { MobileTabPanel } from "./components/MobileTabPanel";
 import { ExpandedControlsPanel } from "./components/ExpandedControlsPanel";
 import {
@@ -31,7 +38,7 @@ import {
 } from "./store/atoms";
 import SettingsOverlay from "./components/SettingsOverlay";
 import useLayoutMode from "./hooks/useLayoutMode";
-import useDisplayState, { CHORD_FILTER_OPTIONS } from "./hooks/useDisplayState";
+import useDisplayState from "./hooks/useDisplayState";
 import "./App.css";
 
 const END_FRET = 24;
@@ -62,6 +69,7 @@ function SummaryNote({
   const degreeColor = romanNumeral ? DEGREE_COLORS[romanNumeral] : undefined;
   return (
     <span
+      role="listitem"
       className={`summary-note${isChord ? " summary-note--chord" : ""}`}
       style={
         degreeColor
@@ -79,44 +87,101 @@ function SummaryNote({
   );
 }
 
-const SCALE_OPTIONS: (string | { divider: string })[] = [
-  { divider: "Major Modes" },
-  "Major",
-  "Lydian",
-  "Mixolydian",
-  { divider: "Minor Modes" },
-  "Natural Minor",
-  "Dorian",
-  "Phrygian",
-  "Locrian",
-  { divider: "Harmonic" },
-  "Harmonic Minor",
-  { divider: "Pentatonic" },
-  "Minor Pentatonic",
-  "Major Pentatonic",
-  { divider: "Blues" },
-  "Minor Blues",
-  "Major Blues",
-];
+function ScaleSummaryDisclosure({
+  isExpanded,
+  onToggle,
+  scaleLabel,
+  summaryNotes,
+  rootNote,
+  scaleName,
+  useFlats,
+  chordLabel,
+  chordSummaryNotes,
+  chordRoot,
+}: {
+  isExpanded: boolean;
+  onToggle: () => void;
+  scaleLabel: string;
+  summaryNotes: string[];
+  rootNote: string;
+  scaleName: string;
+  useFlats: boolean;
+  chordLabel: string | null;
+  chordSummaryNotes: string[];
+  chordRoot: string;
+}) {
 
-const CHORD_OPTIONS: (string | { divider: string })[] = [
-  { divider: "Triads" },
-  "Major Triad",
-  "Minor Triad",
-  "Diminished Triad",
-  { divider: "Seventh Chords" },
-  "Major 7th",
-  "Minor 7th",
-  "Dominant 7th",
-  { divider: "Other" },
-  "Power Chord (5)",
-];
+  return (
+    <div className="summary-area panel-surface">
+      <button
+        type="button"
+        className={clsx("summary-disclosure-btn", {
+          "summary-disclosure-btn--open": isExpanded,
+        })}
+        aria-expanded={isExpanded}
+        aria-controls="scale-summary-content"
+        aria-label="Toggle scale summary"
+        onClick={onToggle}
+      >
+        <span className="summary-disclosure-label">{scaleLabel}</span>
+        <ChevronDown className="summary-disclosure-icon" size={18} />
+      </button>
+      {isExpanded ? (
+        <div id="scale-summary-content" className="summary-content">
+          <div
+            className="summary-notes"
+            role="list"
+            aria-label={`${scaleLabel} notes`}
+          >
+            {summaryNotes.map((n, i) => (
+              <SummaryNote
+                key={i}
+                note={n}
+                rootNote={rootNote}
+                scaleName={scaleName}
+                displayName={getNoteDisplayInScale(
+                  n,
+                  rootNote,
+                  SCALES[scaleName] || [],
+                  useFlats,
+                )}
+              />
+            ))}
+          </div>
+          {chordLabel ? (
+            <div className="summary-row summary-row--chord">
+              <div className="summary-row-label">{chordLabel}</div>
+              <div
+                className="summary-notes summary-notes--secondary"
+                role="list"
+                aria-label={`${chordLabel} notes`}
+              >
+                {chordSummaryNotes.map((n, i) => (
+                  <SummaryNote
+                    key={i}
+                    note={n}
+                    rootNote={chordRoot}
+                    scaleName={scaleName}
+                    displayName={getNoteDisplay(n, chordRoot, useFlats)}
+                    isChord
+                  />
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 function AppContent() {
   const {
     rootNote,
     scaleName,
     setScaleName,
+    scaleBrowseMode,
+    setScaleBrowseMode,
     useFlats,
     currentTuning,
     chordRoot,
@@ -166,6 +231,9 @@ function AppContent() {
   const helpModalRef = useRef<HTMLDivElement>(null);
   const helpTriggerRef = useRef<HTMLButtonElement>(null);
   const layout = useLayoutMode();
+  const [summaryExpanded, setSummaryExpanded] = useState(
+    () => layout.tier !== "mobile",
+  );
 
   // Focus trap + focus restoration for help modal
   useEffect(() => {
@@ -219,67 +287,41 @@ function AppContent() {
 
   // Summary notes content shared by every non-landscape layout.
   const summaryContent = (
-    <div className="summary-area panel-surface">
-      <div className="summary-row">
-        <div className="summary-row-label">{scaleLabel}</div>
-        <div className="summary-notes">
-          {summaryNotes.map((n, i) => (
-            <SummaryNote
-              key={i}
-              note={n}
-              rootNote={rootNote}
-              scaleName={scaleName}
-              displayName={getNoteDisplayInScale(
-                n,
-                rootNote,
-                SCALES[scaleName] || [],
-                useFlats,
-              )}
-            />
-          ))}
-        </div>
-      </div>
-      {chordLabel && (
-        <div className="summary-row summary-row--chord">
-          <div className="summary-row-label">{chordLabel}</div>
-          <div className="summary-notes">
-            {chordSummaryNotes.map((n, i) => (
-              <SummaryNote
-                key={i}
-                note={n}
-                rootNote={chordRoot}
-                scaleName={scaleName}
-                displayName={getNoteDisplay(n, chordRoot, useFlats)}
-                isChord
-              />
-            ))}
-          </div>
-        </div>
-      )}
+    <ScaleSummaryDisclosure
+      isExpanded={summaryExpanded}
+      onToggle={() => setSummaryExpanded((v) => !v)}
+      scaleLabel={scaleLabel}
+      summaryNotes={summaryNotes}
+      rootNote={rootNote}
+      scaleName={scaleName}
+      useFlats={useFlats}
+      chordLabel={chordLabel}
+      chordSummaryNotes={chordSummaryNotes}
+      chordRoot={chordRoot}
+    />
+  );
+
+  const mobileKeyExplorer = (
+    <div className="cof-container">
+      <CircleOfFifths
+        rootNote={rootNote}
+        setRootNote={setRootNote}
+        scaleName={scaleName}
+        useFlats={useFlats}
+        enharmonicDisplay={enharmonicDisplay}
+      />
     </div>
   );
 
-  // Mobile tab content — Key tab
-  const keyTabContent = (
-    <div className="mobile-tab-panel mobile-key-tab">
-      <div className="cof-container">
-        <CircleOfFifths
-          rootNote={rootNote}
-          setRootNote={setRootNote}
-          scaleName={scaleName}
-          useFlats={useFlats}
-          enharmonicDisplay={enharmonicDisplay}
-        />
-      </div>
-    </div>
-  );
-
-  // Mobile tab content — Scale & Chord tab
-  const scaleChordTabContent = (
-    <div className="mobile-tab-panel mobile-scale-chord-tab">
-      <ScaleChordControls
+  const theoryTabContent = (
+    <div className="mobile-tab-panel mobile-theory-tab">
+      <TheoryControls
+        rootNote={rootNote}
+        setRootNote={setRootNote}
         scaleName={scaleName}
         setScaleName={setScaleName}
+        scaleBrowseMode={scaleBrowseMode}
+        setScaleBrowseMode={setScaleBrowseMode}
         chordType={chordType}
         setChordType={setChordType}
         chordRoot={chordRoot}
@@ -290,18 +332,14 @@ function AppContent() {
         setHideNonChordNotes={setHideNonChordNotes}
         chordIntervalFilter={chordIntervalFilter}
         setChordIntervalFilter={setChordIntervalFilter}
-        rootNote={rootNote}
         useFlats={useFlats}
-        scaleOptions={SCALE_OPTIONS}
-        chordOptions={CHORD_OPTIONS}
-        chordFilterOptions={CHORD_FILTER_OPTIONS}
+        keyExplorer={mobileKeyExplorer}
       />
     </div>
   );
 
-  // Mobile tab content — Settings tab
-  const settingsTabContent = (
-    <div className="mobile-tab-panel mobile-fretboard-tab">
+  const viewTabContent = (
+    <div className="mobile-tab-panel mobile-view-tab">
       <FingeringPatternControls
         fingeringPattern={fingeringPattern}
         setFingeringPattern={setFingeringPattern}
@@ -397,7 +435,14 @@ function AppContent() {
 
       {/* Help Modal */}
       {showHelp && (
-        <div className="help-modal-overlay" onClick={() => setShowHelp(false)}>
+        <div
+          className="help-modal-overlay"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              setShowHelp(false);
+            }
+          }}
+        >
           <div
             ref={helpModalRef}
             className={clsx("help-modal", {
@@ -406,7 +451,6 @@ function AppContent() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="help-modal-title"
-            onClick={(e) => e.stopPropagation()}
           >
             <div className="help-modal-header">
               <h2 id="help-modal-title">FretFlow Help</h2>
@@ -450,7 +494,6 @@ function AppContent() {
         </div>
       )}
 
-      {/* Main Fretboard */}
       <main className="main-fretboard">
         <Fretboard
           tuning={currentTuning}
@@ -474,6 +517,9 @@ function AppContent() {
         />
       </main>
 
+      {/* Summary readout lives directly beneath the fretboard */}
+      {layout.showSummary && summaryContent}
+
       {/* Shared tablet/desktop controls panel */}
       {layout.showControlsPanel && (
         <ExpandedControlsPanel mode={layout.isSplitPanel ? "split" : "stacked"} />
@@ -484,13 +530,10 @@ function AppContent() {
         <MobileTabPanel
           mobileTab={mobileTab}
           setMobileTab={setMobileTab}
-          keyTabContent={keyTabContent}
-          scaleChordTabContent={scaleChordTabContent}
-          settingsTabContent={settingsTabContent}
+          theoryTabContent={theoryTabContent}
+          viewTabContent={viewTabContent}
         />
       )}
-
-      {layout.showSummary && summaryContent}
 
       <div className="version-badge">
         v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar.

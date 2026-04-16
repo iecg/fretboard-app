@@ -1,3 +1,9 @@
+import {
+  normalizeScaleName,
+  SCALES,
+  SCALE_TO_PARENT_MAJOR_OFFSET,
+} from "./theoryCatalog";
+
 export const NOTES = [
   "C",
   "C#",
@@ -55,20 +61,7 @@ export const FLAT_KEYS = [
   "Gb",
 ];
 
-export const SCALES: Record<string, number[]> = {
-  Major: [0, 2, 4, 5, 7, 9, 11],
-  "Natural Minor": [0, 2, 3, 5, 7, 8, 10],
-  "Minor Pentatonic": [0, 3, 5, 7, 10],
-  "Major Pentatonic": [0, 2, 4, 7, 9],
-  "Minor Blues": [0, 3, 5, 6, 7, 10],
-  "Major Blues": [0, 2, 3, 4, 7, 9],
-  Dorian: [0, 2, 3, 5, 7, 9, 10],
-  Phrygian: [0, 1, 3, 5, 7, 8, 10],
-  Lydian: [0, 2, 4, 6, 7, 9, 11],
-  Mixolydian: [0, 2, 4, 5, 7, 9, 10],
-  Locrian: [0, 1, 3, 5, 6, 8, 10],
-  "Harmonic Minor": [0, 2, 3, 5, 7, 8, 11],
-};
+export { normalizeScaleName, SCALES, SCALE_TO_PARENT_MAJOR_OFFSET };
 
 export const CHORDS: Record<string, number[]> = {
   "Major Triad": [0, 4, 7],
@@ -224,7 +217,7 @@ export function getIntervalNotes(
 }
 
 export function getScaleNotes(rootNote: string, scaleName: string): string[] {
-  const intervals = SCALES[scaleName];
+  const intervals = SCALES[normalizeScaleName(scaleName)];
   if (!intervals) return [];
   return getIntervalNotes(rootNote, intervals);
 }
@@ -244,14 +237,19 @@ export function getDivergentNotes(
   rootNote: string,
   scaleName: string,
 ): string[] {
-  const intervals = SCALES[scaleName];
-  if (!intervals || scaleName.includes("Blues")) return [];
+  const resolvedScaleName = normalizeScaleName(scaleName);
+  const intervals = SCALES[resolvedScaleName];
+  if (!intervals || resolvedScaleName.includes("Blues")) return [];
 
   // Pentatonic scales are subsets, not modes — no divergence to show
-  if (scaleName === "Major Pentatonic" || scaleName === "Minor Pentatonic")
+  if (
+    resolvedScaleName === "Major Pentatonic" ||
+    resolvedScaleName === "Minor Pentatonic"
+  )
     return [];
   // Major and Natural Minor are the references themselves
-  if (scaleName === "Major" || scaleName === "Natural Minor") return [];
+  if (resolvedScaleName === "Major" || resolvedScaleName === "Natural Minor")
+    return [];
 
   const isMajorQuality = intervals.includes(4); // contains major 3rd
   const refIntervals = isMajorQuality
@@ -297,7 +295,7 @@ export function getKeySignatureForDisplay(
   scaleName: string,
   useFlats: boolean,
 ): number {
-  const offset = SCALE_TO_PARENT_MAJOR_OFFSET[scaleName] ?? 0;
+  const offset = SCALE_TO_PARENT_MAJOR_OFFSET[normalizeScaleName(scaleName)] ?? 0;
 
   // Normalize rootNote to sharp index
   const sharpRoot =
@@ -360,7 +358,8 @@ export function resolveAccidentalMode(
       ? ENHARMONICS[rootNote]
       : rootNote;
 
-  const intervals = SCALES[scaleName];
+  const resolvedScaleName = normalizeScaleName(scaleName);
+  const intervals = SCALES[resolvedScaleName];
   if (!intervals) return FLAT_KEYS.includes(rootNote);
 
   const countAccidentals = (displays: string[]): number =>
@@ -370,8 +369,8 @@ export function resolveAccidentalMode(
       return sum;
     }, 0);
 
-  const sharpNotes = getScaleNotes(sharpRoot, scaleName);
-  const flatNotes = getScaleNotes(flatRoot, scaleName);
+  const sharpNotes = getScaleNotes(sharpRoot, resolvedScaleName);
+  const flatNotes = getScaleNotes(flatRoot, resolvedScaleName);
 
   const sharpDisplays = sharpNotes.map((n) =>
     getNoteDisplayInScale(n, sharpRoot, intervals, false),
@@ -385,23 +384,6 @@ export function resolveAccidentalMode(
 
   return flatCount < sharpCount; // strict less; tie → sharps (false)
 }
-
-// Semitone offset from a scale's root to its parent major key.
-// Used to derive the correct key signature for modal and minor scales.
-export const SCALE_TO_PARENT_MAJOR_OFFSET: Record<string, number> = {
-  Major: 0,
-  Dorian: 10,
-  Phrygian: 8,
-  Lydian: 7,
-  Mixolydian: 5,
-  "Natural Minor": 3,
-  Locrian: 1,
-  "Harmonic Minor": 3,
-  "Major Pentatonic": 0,
-  "Minor Pentatonic": 3,
-  "Major Blues": 0,
-  "Minor Blues": 3,
-};
 
 // Circle of fifths display labels
 export const CIRCLE_DISPLAY_LABELS: Record<string, string> = {

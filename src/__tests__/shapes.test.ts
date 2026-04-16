@@ -413,6 +413,40 @@ describe('7-note scale polygon templates', () => {
     }
   });
 
+  it('unsupported harmonic minor modes use generated polygons instead of the default 7-note template', () => {
+    for (const shape of CAGED_SHAPES) {
+      const result = getCagedCoordinates(
+        'E',
+        shape,
+        'Phrygian Dominant',
+        STANDARD_TUNING,
+        24,
+      );
+      const nonTruncated = result.polygons.filter((polygon) => !polygon.truncated);
+      expect(nonTruncated.length).toBeGreaterThan(0);
+      for (const polygon of nonTruncated) {
+        expect(polygon.vertices.length).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('melodic minor families produce generated polygons for every CAGED shape', () => {
+    for (const shape of CAGED_SHAPES) {
+      const result = getCagedCoordinates(
+        'C',
+        shape,
+        'Lydian Dominant',
+        STANDARD_TUNING,
+        24,
+      );
+      const nonTruncated = result.polygons.filter((polygon) => !polygon.truncated);
+      expect(nonTruncated.length).toBeGreaterThan(0);
+      for (const polygon of nonTruncated) {
+        expect(polygon.vertices.length).toBeGreaterThan(0);
+      }
+    }
+  });
+
   it('Locrian: all shapes produce polygons (non-edge shapes)', () => {
     // Locrian was reported broken for non-edge shapes too
     for (const shape of CAGED_SHAPES) {

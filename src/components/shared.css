@@ -100,7 +100,9 @@
 }
 
 .note-btn {
-  padding: var(--space-1) 0;
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0;
   font-size: var(--text-xs);
   font-weight: 600;
   background: var(--surface-raised);
@@ -108,8 +110,20 @@
   border-radius: var(--radius-sm);
   color: var(--text-muted);
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   transition: var(--transition-surface);
+}
+
+.note-btn-label {
+  min-width: 2ch;
+  min-height: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .note-btn:hover {

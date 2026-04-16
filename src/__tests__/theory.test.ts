@@ -73,6 +73,18 @@ describe("getScaleNotes", () => {
   it("returns empty for unknown scale", () => {
     expect(getScaleNotes("C", "NonExistent")).toEqual([]);
   });
+
+  it("returns A Melodic Minor notes", () => {
+    expect(getScaleNotes("A", "Melodic Minor")).toEqual([
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F#",
+      "G#",
+    ]);
+  });
 });
 
 describe("getChordNotes", () => {
@@ -215,6 +227,15 @@ describe("getKeySignatureForDisplay (scale-aware)", () => {
   });
   it("A Harmonic Minor → 0 (Natural Minor parent)", () => {
     expect(getKeySignatureForDisplay("A", "Harmonic Minor", false)).toBe(0);
+  });
+  it("A Melodic Minor → 0 (Natural Minor parent)", () => {
+    expect(getKeySignatureForDisplay("A", "Melodic Minor", false)).toBe(0);
+  });
+  it("E Phrygian Dominant → 0 (parent = C Major)", () => {
+    expect(getKeySignatureForDisplay("E", "Phrygian Dominant", false)).toBe(0);
+  });
+  it("F# Locrian Natural 2 → 0 (parent = C Major)", () => {
+    expect(getKeySignatureForDisplay("F#", "Locrian Natural 2", false)).toBe(0);
   });
 });
 

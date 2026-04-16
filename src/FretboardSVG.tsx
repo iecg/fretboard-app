@@ -24,7 +24,7 @@ interface FretboardSVGProps {
   hideNonChordNotes?: boolean;
   colorNotes?: string[];
   shapePolygons?: ShapePolygon[];
-  shapeLabels?: "modal" | "caged" | "none";
+  shapeLabels?: "caged" | "none";
   wrappedNotes?: Set<string>;
   useFlats?: boolean;
   scaleName?: string;
@@ -241,8 +241,15 @@ export function FretboardSVG({
 
                   return (
                     <div key={`note-${stringIndex}-${fretIndex}`} className="note-cell" style={{ width: `${effectiveZoom}px` }}>
-                      <div
-                        onClick={() => onNoteClick?.(stringIndex, fretIndex, noteName)}
+                      <button
+                        type="button"
+                        onClick={
+                          onNoteClick
+                            ? () => onNoteClick(stringIndex, fretIndex, noteName)
+                            : undefined
+                        }
+                        disabled={!onNoteClick}
+                        aria-label={`${formatAccidental(displayValue)} on string ${stringIndex + 1}, fret ${fretIndex}`}
                         className={clsx("note-bubble", noteClass,
                           noteClass === "note-scale-only" && hideNonChordNotes && "hidden")}
                         style={{
@@ -255,7 +262,7 @@ export function FretboardSVG({
                         {displayFormat !== "none" && (
                           <span className="note-main-label">{formatAccidental(displayValue)}</span>
                         )}
-                      </div>
+                      </button>
                     </div>
                   );
                 })}
@@ -269,10 +276,9 @@ export function FretboardSVG({
         <div className="shape-labels-row" style={{ width: `${neckWidthPx + NECK_BORDER * 2}px` }}>
           {svgPolygons.map(({ key, poly, centerX }) => {
             if (poly.truncated) return null;
-            const text = shapeLabels === "modal" ? (poly.modalLabel ?? poly.cagedLabel) : poly.cagedLabel;
             return (
               <span key={key} className="shape-label" style={{ left: `${centerX + NECK_BORDER}px` }}>
-                {text}
+                {poly.cagedLabel}
               </span>
             );
           })}

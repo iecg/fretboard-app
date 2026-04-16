@@ -1,6 +1,10 @@
 import { atom } from "jotai";
 import { atomWithStorage, RESET } from "jotai/utils";
 import { CAGED_SHAPES, type CagedShape } from "../shapes";
+import {
+  normalizeScaleName,
+  type ScaleBrowseMode,
+} from "../theoryCatalog";
 import { k, STORAGE_PREFIX } from "../utils/storage";
 
 export type FingeringPattern = "all" | "caged" | "3nps";
@@ -118,6 +122,39 @@ const booleanStorage = {
   },
 };
 
+const scaleNameStorage = {
+  getItem(key: string, initialValue: string): string {
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored === null) {
+        localStorage.setItem(key, initialValue);
+        return initialValue;
+      }
+      const normalized = normalizeScaleName(stored);
+      if (normalized !== stored) {
+        localStorage.setItem(key, normalized);
+      }
+      return normalized;
+    } catch {
+      return initialValue;
+    }
+  },
+  setItem(key: string, value: string): void {
+    try {
+      localStorage.setItem(key, normalizeScaleName(value));
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
+  },
+  removeItem(key: string): void {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
+  },
+};
+
 type NumberConstraints = {
   min?: number;
   max?: number;
@@ -185,7 +222,7 @@ const chordFretSpreadStorage = constrainedNumberStorage({
 const npsPositionStorage = constrainedNumberStorage({ min: 0, max: 12, integer: true });
 const fretZoomStorage = constrainedNumberStorage({ min: 50, max: 200, integer: true });
 
-const MOBILE_TABS = ["key", "scale", "fretboard"] as const;
+const MOBILE_TABS = ["theory", "view"] as const;
 type MobileTab = (typeof MOBILE_TABS)[number];
 
 const mobileTabStorage = {
@@ -196,9 +233,17 @@ const mobileTabStorage = {
         localStorage.setItem(key, initialValue);
         return initialValue;
       }
+      if (stored === "key" || stored === "scale") {
+        localStorage.setItem(key, "theory");
+        return "theory";
+      }
       if (stored === "settings") {
-        localStorage.setItem(key, "fretboard");
-        return "fretboard";
+        localStorage.setItem(key, "view");
+        return "view";
+      }
+      if (stored === "fretboard") {
+        localStorage.setItem(key, "view");
+        return "view";
       }
       if ((MOBILE_TABS as readonly string[]).includes(stored)) {
         return stored as MobileTab;
@@ -210,6 +255,81 @@ const mobileTabStorage = {
     }
   },
   setItem(key: string, value: MobileTab): void {
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
+  },
+  removeItem(key: string): void {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
+  },
+};
+
+const SCALE_BROWSE_MODES = ["parallel", "relative"] as const;
+
+const scaleBrowseModeStorage = {
+  getItem(key: string, initialValue: ScaleBrowseMode): ScaleBrowseMode {
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored === null) {
+        localStorage.setItem(key, initialValue);
+        return initialValue;
+      }
+      if ((SCALE_BROWSE_MODES as readonly string[]).includes(stored)) {
+        return stored as ScaleBrowseMode;
+      }
+      localStorage.setItem(key, initialValue);
+      return initialValue;
+    } catch {
+      return initialValue;
+    }
+  },
+  setItem(key: string, value: ScaleBrowseMode): void {
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
+  },
+  removeItem(key: string): void {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
+  },
+};
+
+const SHAPE_LABEL_VALUES = ["none", "caged"] as const;
+type ShapeLabelValue = (typeof SHAPE_LABEL_VALUES)[number];
+
+const shapeLabelsStorage = {
+  getItem(key: string, initialValue: ShapeLabelValue): ShapeLabelValue {
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored === null) {
+        localStorage.setItem(key, initialValue);
+        return initialValue;
+      }
+      if (stored === "modal") {
+        localStorage.setItem(key, "caged");
+        return "caged";
+      }
+      if ((SHAPE_LABEL_VALUES as readonly string[]).includes(stored)) {
+        return stored as ShapeLabelValue;
+      }
+      localStorage.setItem(key, initialValue);
+      return initialValue;
+    } catch {
+      return initialValue;
+    }
+  },
+  setItem(key: string, value: ShapeLabelValue): void {
     try {
       localStorage.setItem(key, value);
     } catch {
@@ -306,10 +426,22 @@ export const rootNoteAtom = atomWithStorage(
   rawStringStorage(),
   GET_ON_INIT,
 );
-export const scaleNameAtom = atomWithStorage(
+const baseScaleNameAtom = atomWithStorage(
   k("scaleName"),
   "Major",
-  rawStringStorage(),
+  scaleNameStorage,
+  GET_ON_INIT,
+);
+export const scaleNameAtom = atom(
+  (get) => get(baseScaleNameAtom),
+  (_get, set, value: string) => {
+    set(baseScaleNameAtom, normalizeScaleName(value));
+  },
+);
+export const scaleBrowseModeAtom = atomWithStorage<ScaleBrowseMode>(
+  k("scaleBrowseMode"),
+  "parallel",
+  scaleBrowseModeStorage,
   GET_ON_INIT,
 );
 
@@ -378,10 +510,10 @@ export const displayFormatAtom = atomWithStorage<"notes" | "degrees" | "none">(
   rawStringStorage<"notes" | "degrees" | "none">(),
   GET_ON_INIT,
 );
-export const shapeLabelsAtom = atomWithStorage<"modal" | "caged" | "none">(
+export const shapeLabelsAtom = atomWithStorage<"caged" | "none">(
   k("shapeLabels"),
   "none",
-  rawStringStorage<"modal" | "caged" | "none">(),
+  shapeLabelsStorage,
   GET_ON_INIT,
 );
 export const tuningNameAtom = atomWithStorage(
@@ -418,9 +550,9 @@ export const accidentalModeAtom = atom<"sharps" | "flats" | "auto">(
 // pre-existing CoF enharmonic-display behavior by default.
 export const enharmonicDisplayAtom = atom<"auto" | "on" | "off">("auto");
 export const isMutedAtom = atomWithStorage(k("isMuted"), false, booleanStorage, GET_ON_INIT);
-export const mobileTabAtom = atomWithStorage<"key" | "scale" | "fretboard">(
+export const mobileTabAtom = atomWithStorage<"theory" | "view">(
   k("mobileTab"),
-  "key",
+  "theory",
   mobileTabStorage,
   GET_ON_INIT,
 );
@@ -466,7 +598,8 @@ export const resetAtom = atom(null, (_get, set) => {
     // If storage is blocked or throws, still reset atoms in-memory.
   }
   set(rootNoteAtom, RESET);
-  set(scaleNameAtom, RESET);
+  set(baseScaleNameAtom, RESET);
+  set(scaleBrowseModeAtom, RESET);
   set(chordRootAtom, RESET);
   set(chordTypeAtom, RESET);
   set(linkChordRootAtom, RESET);

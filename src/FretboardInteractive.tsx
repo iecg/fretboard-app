@@ -21,7 +21,7 @@ interface FretboardInteractiveProps {
   hideNonChordNotes?: boolean;
   colorNotes?: string[];
   shapePolygons?: ShapePolygon[];
-  shapeLabels?: "modal" | "caged" | "none";
+  shapeLabels?: "caged" | "none";
   wrappedNotes?: Set<string>;
   onFretClick?: (stringIndex: number, fretIndex: number, noteName: string) => void;
   useFlats?: boolean;

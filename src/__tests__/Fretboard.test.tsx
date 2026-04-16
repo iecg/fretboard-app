@@ -365,7 +365,7 @@ describe("Fretboard", () => {
       expect(document.body).toBeTruthy();
     });
 
-    it('displays modal labels when shapeLabels is "modal"', () => {
+    it("renders shape labels even when polygons still carry legacy modal labels", () => {
       const shapePolygons = [
         {
           vertices: [
@@ -390,7 +390,7 @@ describe("Fretboard", () => {
         <Fretboard
           {...defaultProps}
           shapePolygons={shapePolygons}
-          shapeLabels="modal"
+          shapeLabels="caged"
         />,
       );
 
