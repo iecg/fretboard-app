@@ -1,0 +1,97 @@
+.degree-chip-strip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.degree-chip-strip-header {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-muted);
+  line-height: var(--leading-normal);
+}
+
+.degree-chip-strip-list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Connector line between chips — ::after on li, not last */
+.degree-chip-strip-list .degree-chip:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: calc(-1 * var(--space-3));
+  top: 50%;
+  transform: translateY(-50%);
+  width: var(--space-3);
+  height: 1px;
+  background: var(--chip-border-inactive);
+  pointer-events: none;
+}
+
+.degree-chip {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--chip-surface-inactive);
+  border: 1px solid var(--chip-border-inactive);
+  opacity: 0.55;
+  transition: opacity var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.degree-chip[data-in-scale='true'] {
+  background: var(--chip-surface-active);
+  border-color: var(--chip-border-active);
+  box-shadow: var(--glow-cyan-sm);
+  opacity: 1;
+}
+
+.degree-chip[data-is-tonic='true'],
+.degree-chip[data-in-chord='true'] {
+  background: var(--chip-surface-tonic);
+  border-color: var(--chip-border-tonic);
+  box-shadow: var(--glow-orange-sm);
+  opacity: 1;
+}
+
+.degree-chip-note {
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-base);
+  color: var(--chip-text-inactive);
+  line-height: var(--leading-tight);
+}
+
+.degree-chip[data-in-scale='true'] .degree-chip-note {
+  color: var(--chip-text-active);
+}
+
+.degree-chip[data-is-tonic='true'] .degree-chip-note,
+.degree-chip[data-in-chord='true'] .degree-chip-note {
+  color: var(--chip-text-tonic);
+}
+
+.degree-chip-interval {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  line-height: var(--leading-tight);
+}
+
+.degree-chip[data-in-scale='true'] .degree-chip-interval {
+  color: var(--chip-text-active);
+}
+
+.degree-chip[data-is-tonic='true'] .degree-chip-interval,
+.degree-chip[data-in-chord='true'] .degree-chip-interval {
+  color: var(--chip-text-tonic);
+}
