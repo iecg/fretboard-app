@@ -32,7 +32,10 @@ export function BottomTabBar({
       .map((item, i) => (item.disabled ? null : i))
       .filter((i): i is number => i !== null);
 
-    const currentEnabledPos = enabledIndexes.indexOf(index);
+    if (enabledIndexes.length === 0) return;
+
+    let currentEnabledPos = enabledIndexes.indexOf(index);
+    if (currentEnabledPos === -1) currentEnabledPos = 0;
 
     let targetIndex: number | null = null;
 
@@ -52,7 +55,7 @@ export function BottomTabBar({
       targetIndex = enabledIndexes[enabledIndexes.length - 1];
     }
 
-    if (targetIndex !== null) {
+    if (targetIndex != null && tabRefs.current[targetIndex]) {
       tabRefs.current[targetIndex]?.focus();
       onSelect(items[targetIndex].id);
     }

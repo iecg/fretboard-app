@@ -1,5 +1,5 @@
 import { clsx } from "clsx";
-import { NOTES, ENHARMONICS, getNoteDisplayInScale, INTERVAL_NAMES, formatAccidental, SCALES } from "./theory";
+import { NOTES, ENHARMONICS, getNoteDisplay, getNoteDisplayInScale, INTERVAL_NAMES, formatAccidental, SCALES } from "./theory";
 import { STANDARD_FRET_MARKERS, parseNote } from "./guitar";
 import type { ShapePolygon } from "./shapes";
 
@@ -114,9 +114,10 @@ export function FretboardSVG({
     return { points, color: poly.color, key: `${poly.shape}-${polyIdx}`, poly, centerX };
   });
 
+  const displayRoot = rootNote ? getNoteDisplay(rootNote, rootNote, useFlats) : "";
   const ariaLabel = [
     "Guitar fretboard",
-    rootNote ? `— ${rootNote}` : "",
+    displayRoot ? `— ${displayRoot}` : "",
     scaleName ? `${scaleName} scale` : "",
   ].filter(Boolean).join(" ");
 

@@ -3114,7 +3114,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             <path
               aria-label="G — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -3125,7 +3125,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             <path
               aria-label="D — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -3136,7 +3136,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             <path
               aria-label="A — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -3147,7 +3147,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             <path
               aria-label="E — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -3158,7 +3158,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             <path
               aria-label="B — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -3169,7 +3169,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             <path
               aria-label="F♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -3180,7 +3180,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             <path
               aria-label="C♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -3191,7 +3191,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             <path
               aria-label="G♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -3202,7 +3202,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             <path
               aria-label="D♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -3213,7 +3213,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             <path
               aria-label="A♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -3224,7 +3224,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             <path
               aria-label="F — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -6986,7 +6986,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             <path
               aria-label="G — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -6997,7 +6997,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             <path
               aria-label="D — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -7008,7 +7008,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             <path
               aria-label="A — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -7019,7 +7019,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             <path
               aria-label="E — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -7030,7 +7030,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             <path
               aria-label="B — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -7041,7 +7041,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             <path
               aria-label="F♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -7052,7 +7052,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             <path
               aria-label="C♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -7063,7 +7063,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             <path
               aria-label="G♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -7074,7 +7074,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             <path
               aria-label="D♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -7085,7 +7085,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             <path
               aria-label="A♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -7096,7 +7096,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
             <path
               aria-label="F — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -10858,7 +10858,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <path
               aria-label="G — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -10869,7 +10869,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <path
               aria-label="D — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -10880,7 +10880,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <path
               aria-label="A — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -10891,7 +10891,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <path
               aria-label="E — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -10902,7 +10902,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <path
               aria-label="B — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -10913,7 +10913,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <path
               aria-label="F♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -10924,7 +10924,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <path
               aria-label="C♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -10935,7 +10935,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <path
               aria-label="G♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -10946,7 +10946,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <path
               aria-label="D♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -10957,7 +10957,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <path
               aria-label="A♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -10968,7 +10968,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <path
               aria-label="F — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -14730,7 +14730,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <path
               aria-label="G — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -14741,7 +14741,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <path
               aria-label="D — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -14752,7 +14752,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <path
               aria-label="A — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -14763,7 +14763,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <path
               aria-label="E — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -14774,7 +14774,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <path
               aria-label="B — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -14785,7 +14785,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <path
               aria-label="F♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -14796,7 +14796,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <path
               aria-label="C♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -14807,7 +14807,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <path
               aria-label="G♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -14818,7 +14818,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <path
               aria-label="D♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -14829,7 +14829,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <path
               aria-label="A♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -14840,7 +14840,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split with
             <path
               aria-label="F — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -18598,7 +18598,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
             <path
               aria-label="G — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -18609,7 +18609,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
             <path
               aria-label="D — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -18620,7 +18620,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
             <path
               aria-label="A — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -18631,7 +18631,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
             <path
               aria-label="E — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -18642,7 +18642,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
             <path
               aria-label="B — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -18653,7 +18653,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
             <path
               aria-label="F♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -18664,7 +18664,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
             <path
               aria-label="C♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -18675,7 +18675,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
             <path
               aria-label="G♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -18686,7 +18686,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
             <path
               aria-label="D♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -18697,7 +18697,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
             <path
               aria-label="A♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -18708,7 +18708,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
             <path
               aria-label="F — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -22334,7 +22334,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
               <path
                 aria-label="G — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -22345,7 +22345,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
               <path
                 aria-label="D — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -22356,7 +22356,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
               <path
                 aria-label="A — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -22367,7 +22367,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
               <path
                 aria-label="E — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -22378,7 +22378,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
               <path
                 aria-label="B — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -22389,7 +22389,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
               <path
                 aria-label="F♯ — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -22400,7 +22400,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
               <path
                 aria-label="C♯ — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -22411,7 +22411,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
               <path
                 aria-label="G♯ — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -22422,7 +22422,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
               <path
                 aria-label="D♯ — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -22433,7 +22433,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
               <path
                 aria-label="A♯ — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -22444,7 +22444,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
               <path
                 aria-label="F — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -26071,7 +26071,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
               <path
                 aria-label="G — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -26082,7 +26082,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
               <path
                 aria-label="D — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -26093,7 +26093,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
               <path
                 aria-label="A — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -26104,7 +26104,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
               <path
                 aria-label="E — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -26115,7 +26115,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
               <path
                 aria-label="B — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -26126,7 +26126,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
               <path
                 aria-label="F♯ — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -26137,7 +26137,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
               <path
                 aria-label="C♯ — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -26148,7 +26148,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
               <path
                 aria-label="G♯ — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -26159,7 +26159,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
               <path
                 aria-label="D♯ — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -26170,7 +26170,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
               <path
                 aria-label="A♯ — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -26181,7 +26181,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
               <path
                 aria-label="F — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -29808,7 +29808,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
               <path
                 aria-label="G — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -29819,7 +29819,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
               <path
                 aria-label="D — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -29830,7 +29830,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
               <path
                 aria-label="A — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -29841,7 +29841,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
               <path
                 aria-label="E — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -29852,7 +29852,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
               <path
                 aria-label="B — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -29863,7 +29863,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
               <path
                 aria-label="F♯ — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -29874,7 +29874,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
               <path
                 aria-label="C♯ — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -29885,7 +29885,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
               <path
                 aria-label="G♯ — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -29896,7 +29896,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
               <path
                 aria-label="D♯ — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -29907,7 +29907,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
               <path
                 aria-label="A♯ — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -29918,7 +29918,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
               <path
                 aria-label="F — not selected"
                 aria-pressed="false"
-                class="circle-slice "
+                class="circle-slice"
                 d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
                 role="button"
                 stroke="var(--surface-highlight)"
@@ -33675,7 +33675,7 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
             <path
               aria-label="G — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -33686,7 +33686,7 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
             <path
               aria-label="D — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -33697,7 +33697,7 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
             <path
               aria-label="A — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -33708,7 +33708,7 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
             <path
               aria-label="E — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -33719,7 +33719,7 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
             <path
               aria-label="B — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -33730,7 +33730,7 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
             <path
               aria-label="F♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -33741,7 +33741,7 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
             <path
               aria-label="C♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -33752,7 +33752,7 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
             <path
               aria-label="G♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -33763,7 +33763,7 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
             <path
               aria-label="D♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -33774,7 +33774,7 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
             <path
               aria-label="A♯ — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -33785,7 +33785,7 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
             <path
               aria-label="F — not selected"
               aria-pressed="false"
-              class="circle-slice "
+              class="circle-slice"
               d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
               role="button"
               stroke="var(--surface-highlight)"
@@ -34447,7 +34447,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
       <path
         aria-label="C — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -34458,7 +34458,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
       <path
         aria-label="G — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -34469,7 +34469,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
       <path
         aria-label="D — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -34491,7 +34491,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
       <path
         aria-label="E — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -34502,7 +34502,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
       <path
         aria-label="B — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -34513,7 +34513,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
       <path
         aria-label="F♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -34524,7 +34524,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
       <path
         aria-label="C♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -34535,7 +34535,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
       <path
         aria-label="G♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -34546,7 +34546,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
       <path
         aria-label="D♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -34557,7 +34557,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
       <path
         aria-label="A♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -34568,7 +34568,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
       <path
         aria-label="F — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -35080,7 +35080,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
       <path
         aria-label="C — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -35091,7 +35091,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
       <path
         aria-label="G — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -35102,7 +35102,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
       <path
         aria-label="D — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -35124,7 +35124,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
       <path
         aria-label="E — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -35135,7 +35135,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
       <path
         aria-label="B — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -35146,7 +35146,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
       <path
         aria-label="F♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -35157,7 +35157,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
       <path
         aria-label="C♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -35168,7 +35168,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
       <path
         aria-label="G♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -35179,7 +35179,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
       <path
         aria-label="D♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -35190,7 +35190,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
       <path
         aria-label="A♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -35201,7 +35201,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
       <path
         aria-label="F — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -35724,7 +35724,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
       <path
         aria-label="G — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -35735,7 +35735,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
       <path
         aria-label="D — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -35746,7 +35746,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
       <path
         aria-label="A — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -35757,7 +35757,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
       <path
         aria-label="E — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -35768,7 +35768,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
       <path
         aria-label="B — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -35779,7 +35779,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
       <path
         aria-label="F♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -35790,7 +35790,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
       <path
         aria-label="C♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -35801,7 +35801,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
       <path
         aria-label="G♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -35812,7 +35812,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
       <path
         aria-label="D♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -35823,7 +35823,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
       <path
         aria-label="A♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -35834,7 +35834,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
       <path
         aria-label="F — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -36297,7 +36297,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "on
       <path
         aria-label="G — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -36308,7 +36308,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "on
       <path
         aria-label="D — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -36319,7 +36319,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "on
       <path
         aria-label="A — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -36330,7 +36330,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "on
       <path
         aria-label="E — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -36341,7 +36341,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "on
       <path
         aria-label="B — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -36352,7 +36352,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "on
       <path
         aria-label="F♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -36363,7 +36363,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "on
       <path
         aria-label="C♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -36374,7 +36374,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "on
       <path
         aria-label="G♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -36385,7 +36385,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "on
       <path
         aria-label="D♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -36396,7 +36396,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "on
       <path
         aria-label="A♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -36407,7 +36407,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "on
       <path
         aria-label="F — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -36930,7 +36930,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major snapsh
       <path
         aria-label="G — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -36941,7 +36941,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major snapsh
       <path
         aria-label="D — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -36952,7 +36952,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major snapsh
       <path
         aria-label="A — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -36963,7 +36963,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major snapsh
       <path
         aria-label="E — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -36974,7 +36974,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major snapsh
       <path
         aria-label="B — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -36985,7 +36985,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major snapsh
       <path
         aria-label="F♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -36996,7 +36996,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major snapsh
       <path
         aria-label="C♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -37007,7 +37007,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major snapsh
       <path
         aria-label="G♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -37018,7 +37018,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major snapsh
       <path
         aria-label="D♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -37029,7 +37029,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major snapsh
       <path
         aria-label="A♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -37040,7 +37040,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major snapsh
       <path
         aria-label="F — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -37542,7 +37542,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Dorian mode sn
       <path
         aria-label="C — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -37553,7 +37553,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Dorian mode sn
       <path
         aria-label="G — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -37575,7 +37575,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Dorian mode sn
       <path
         aria-label="A — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -37586,7 +37586,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Dorian mode sn
       <path
         aria-label="E — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -37597,7 +37597,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Dorian mode sn
       <path
         aria-label="B — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -37608,7 +37608,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Dorian mode sn
       <path
         aria-label="F♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -37619,7 +37619,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Dorian mode sn
       <path
         aria-label="C♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -37630,7 +37630,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Dorian mode sn
       <path
         aria-label="G♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -37641,7 +37641,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Dorian mode sn
       <path
         aria-label="D♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -37652,7 +37652,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Dorian mode sn
       <path
         aria-label="A♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -37663,7 +37663,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Dorian mode sn
       <path
         aria-label="F — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -38175,7 +38175,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders G Major snapsh
       <path
         aria-label="C — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -38197,7 +38197,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders G Major snapsh
       <path
         aria-label="D — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -38208,7 +38208,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders G Major snapsh
       <path
         aria-label="A — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -38219,7 +38219,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders G Major snapsh
       <path
         aria-label="E — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -38230,7 +38230,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders G Major snapsh
       <path
         aria-label="B — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -38241,7 +38241,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders G Major snapsh
       <path
         aria-label="F♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -38252,7 +38252,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders G Major snapsh
       <path
         aria-label="C♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -38263,7 +38263,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders G Major snapsh
       <path
         aria-label="G♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -38274,7 +38274,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders G Major snapsh
       <path
         aria-label="D♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -38285,7 +38285,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders G Major snapsh
       <path
         aria-label="A♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -38296,7 +38296,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders G Major snapsh
       <path
         aria-label="F — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -38808,7 +38808,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Lydian mode sn
       <path
         aria-label="C — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -38819,7 +38819,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Lydian mode sn
       <path
         aria-label="G — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -38830,7 +38830,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Lydian mode sn
       <path
         aria-label="D — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -38841,7 +38841,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Lydian mode sn
       <path
         aria-label="A — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -38852,7 +38852,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Lydian mode sn
       <path
         aria-label="E — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -38863,7 +38863,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Lydian mode sn
       <path
         aria-label="B — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -38874,7 +38874,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Lydian mode sn
       <path
         aria-label="F♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -38885,7 +38885,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Lydian mode sn
       <path
         aria-label="C♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -38896,7 +38896,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Lydian mode sn
       <path
         aria-label="G♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -38907,7 +38907,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Lydian mode sn
       <path
         aria-label="D♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -38918,7 +38918,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Lydian mode sn
       <path
         aria-label="A♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -39441,7 +39441,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="B♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -39452,7 +39452,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="F𝄪 — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -39463,7 +39463,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="C𝄪 — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -39474,7 +39474,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="G𝄪 — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -39485,7 +39485,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="E — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -39496,7 +39496,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="B — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -39507,7 +39507,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="F♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -39518,7 +39518,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="C♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -39529,7 +39529,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="G♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -39540,7 +39540,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="D♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -39562,7 +39562,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="E♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -40134,7 +40134,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="C — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -40145,7 +40145,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="G — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -40156,7 +40156,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="D — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -40178,7 +40178,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="E — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -40189,7 +40189,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="B — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -40200,7 +40200,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="F♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -40211,7 +40211,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="C♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -40222,7 +40222,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="G♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -40233,7 +40233,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="D♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -40244,7 +40244,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="A♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -40255,7 +40255,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="F — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -40767,7 +40767,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="C — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -40778,7 +40778,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="G — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -40789,7 +40789,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="D — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -40800,7 +40800,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="A — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -40811,7 +40811,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="E — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -40833,7 +40833,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="F♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -40844,7 +40844,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="C♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -40855,7 +40855,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="G♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -40866,7 +40866,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="D♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -40877,7 +40877,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="A♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -40888,7 +40888,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="F — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -41400,7 +41400,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="B♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -41411,7 +41411,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="G — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -41422,7 +41422,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="D — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -41433,7 +41433,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="A — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -41444,7 +41444,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="E — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -41455,7 +41455,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="B — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -41466,7 +41466,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="F♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -41488,7 +41488,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="G♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -41499,7 +41499,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="D♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -41510,7 +41510,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="A♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -41521,7 +41521,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="E♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -42068,7 +42068,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="G — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -42079,7 +42079,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="D — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -42090,7 +42090,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="A — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -42101,7 +42101,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="E — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -42112,7 +42112,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="B — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -42123,7 +42123,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="F♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -42134,7 +42134,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="C♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -42145,7 +42145,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="G♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -42156,7 +42156,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="D♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -42167,7 +42167,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="A♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -42178,7 +42178,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="F — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -42690,7 +42690,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="B♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -42701,7 +42701,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="F𝄪 — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -42712,7 +42712,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="C𝄪 — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -42723,7 +42723,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="A — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -42734,7 +42734,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="E — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -42745,7 +42745,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="B — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -42756,7 +42756,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="F♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -42767,7 +42767,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="C♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -42778,7 +42778,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="G♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -42800,7 +42800,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="A♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -42811,7 +42811,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="E♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -43371,7 +43371,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="C — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -43382,7 +43382,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="G — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -43404,7 +43404,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="A — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -43415,7 +43415,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="E — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -43426,7 +43426,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="B — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -43437,7 +43437,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="F♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -43448,7 +43448,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="C♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -43459,7 +43459,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="G♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -43470,7 +43470,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="D♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -43481,7 +43481,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="A♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -43492,7 +43492,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="F — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -44004,7 +44004,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="C — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -44015,7 +44015,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="G — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -44026,7 +44026,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="D — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -44037,7 +44037,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="A — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -44059,7 +44059,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="B — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -44070,7 +44070,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="F♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -44081,7 +44081,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="C♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -44092,7 +44092,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="G♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -44103,7 +44103,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="D♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -44114,7 +44114,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="A♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -44125,7 +44125,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="F — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -44637,7 +44637,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="C — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -44648,7 +44648,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="G — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -44659,7 +44659,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="D — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -44670,7 +44670,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="A — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -44681,7 +44681,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="E — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -44692,7 +44692,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="B — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -44714,7 +44714,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="C♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -44725,7 +44725,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="G♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -44736,7 +44736,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="D♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -44747,7 +44747,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="A♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -44758,7 +44758,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="E♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -45282,7 +45282,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="C — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -45293,7 +45293,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="G — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -45304,7 +45304,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="D — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -45315,7 +45315,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="A — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -45326,7 +45326,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="E — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -45337,7 +45337,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="B — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -45348,7 +45348,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="F♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -45359,7 +45359,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="C♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -45370,7 +45370,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="G♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -45381,7 +45381,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="D♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -45392,7 +45392,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="B♭ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -45915,7 +45915,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="B♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -45926,7 +45926,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="F𝄪 — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -45937,7 +45937,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="D — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -45948,7 +45948,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="A — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -45959,7 +45959,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="E — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -45970,7 +45970,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="B — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -45981,7 +45981,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="F♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -45992,7 +45992,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="C♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -46014,7 +46014,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="D♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -46025,7 +46025,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="A♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -46036,7 +46036,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="E♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -46584,7 +46584,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="C — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -46606,7 +46606,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="D — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -46617,7 +46617,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="A — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -46628,7 +46628,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="E — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -46639,7 +46639,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="B — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -46650,7 +46650,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="F♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -46661,7 +46661,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="C♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -46672,7 +46672,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="G♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -46683,7 +46683,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="D♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -46694,7 +46694,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="A♯ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -46705,7 +46705,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
       <path
         aria-label="F — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527923 101.16871580527925 L 51.38839840974627 51.388398409746316 A 153.6 153.6 0 0 1 120.24539467225284 11.633793081999102 L 138.46625544747027 79.63497125274951 A 83.2 83.2 0 0 0 101.16871580527923 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -47217,7 +47217,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders with flats sna
       <path
         aria-label="C — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 79.63497125274951 L 120.2453946722528 11.633793081999102 A 153.6 153.6 0 0 1 199.75460532774719 11.633793081999102 L 181.53374455252973 79.63497125274951 A 83.2 83.2 0 0 0 138.46625544747027 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -47228,7 +47228,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders with flats sna
       <path
         aria-label="G — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 79.63497125274951 L 199.75460532774719 11.633793081999102 A 153.6 153.6 0 0 1 268.6116015902537 51.388398409746316 L 218.83128419472075 101.16871580527925 A 83.2 83.2 0 0 0 181.53374455252973 79.63497125274951 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -47239,7 +47239,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders with flats sna
       <path
         aria-label="D — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 101.16871580527925 L 268.6116015902537 51.388398409746316 A 153.6 153.6 0 0 1 308.3662069180009 120.24539467225281 L 240.3650287472505 138.46625544747027 A 83.2 83.2 0 0 0 218.83128419472075 101.16871580527925 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -47250,7 +47250,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders with flats sna
       <path
         aria-label="A — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 138.46625544747027 L 308.3662069180009 120.24539467225281 A 153.6 153.6 0 0 1 308.3662069180009 199.75460532774719 L 240.3650287472505 181.53374455252973 A 83.2 83.2 0 0 0 240.3650287472505 138.46625544747027 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -47261,7 +47261,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders with flats sna
       <path
         aria-label="E — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 240.3650287472505 181.53374455252973 L 308.3662069180009 199.75460532774719 A 153.6 153.6 0 0 1 268.6116015902537 268.6116015902537 L 218.83128419472075 218.83128419472075 A 83.2 83.2 0 0 0 240.3650287472505 181.53374455252973 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -47272,7 +47272,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders with flats sna
       <path
         aria-label="B — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 218.83128419472075 218.83128419472075 L 268.6116015902537 268.6116015902537 A 153.6 153.6 0 0 1 199.75460532774719 308.3662069180009 L 181.53374455252973 240.3650287472505 A 83.2 83.2 0 0 0 218.83128419472075 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -47283,7 +47283,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders with flats sna
       <path
         aria-label="G♭ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 181.53374455252973 240.3650287472505 L 199.75460532774719 308.3662069180009 A 153.6 153.6 0 0 1 120.2453946722528 308.3662069180009 L 138.46625544747027 240.3650287472505 A 83.2 83.2 0 0 0 181.53374455252973 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -47294,7 +47294,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders with flats sna
       <path
         aria-label="D♭ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 138.46625544747027 240.3650287472505 L 120.2453946722528 308.3662069180009 A 153.6 153.6 0 0 1 51.388398409746316 268.6116015902537 L 101.16871580527925 218.83128419472075 A 83.2 83.2 0 0 0 138.46625544747027 240.3650287472505 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -47305,7 +47305,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders with flats sna
       <path
         aria-label="A♭ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 101.16871580527925 218.83128419472075 L 51.388398409746316 268.6116015902537 A 153.6 153.6 0 0 1 11.63379308199913 199.75460532774724 L 79.63497125274952 181.53374455252975 A 83.2 83.2 0 0 0 101.16871580527925 218.83128419472075 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -47316,7 +47316,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders with flats sna
       <path
         aria-label="E♭ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274952 181.53374455252975 L 11.63379308199913 199.75460532774724 A 153.6 153.6 0 0 1 11.633793081999102 120.24539467225287 L 79.63497125274951 138.4662554474703 A 83.2 83.2 0 0 0 79.63497125274952 181.53374455252975 Z"
         role="button"
         stroke="var(--surface-highlight)"
@@ -47327,7 +47327,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders with flats sna
       <path
         aria-label="B♭ — not selected"
         aria-pressed="false"
-        class="circle-slice "
+        class="circle-slice"
         d="M 79.63497125274951 138.4662554474703 L 11.633793081999102 120.24539467225287 A 153.6 153.6 0 0 1 51.38839840974627 51.388398409746316 L 101.16871580527923 101.16871580527925 A 83.2 83.2 0 0 0 79.63497125274951 138.4662554474703 Z"
         role="button"
         stroke="var(--surface-highlight)"

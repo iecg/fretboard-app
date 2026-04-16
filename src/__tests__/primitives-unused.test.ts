@@ -7,7 +7,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'fs';
-import { join, resolve } from 'path';
+import { join, resolve, basename } from 'path';
 
 const primitives = ['Card', 'AppHeader', 'DegreeChipStrip', 'BottomTabBar', 'LabeledSelect'];
 const srcDir = resolve(__dirname, '..');
@@ -28,11 +28,12 @@ describe('Phase 4 primitive isolation', () => {
   for (const primitive of primitives) {
     it(`${primitive} is defined but not yet consumed by app code`, () => {
       const importPattern = new RegExp(
-        `(from\\s+['"][^'"]*${primitive}['"]|import\\s+.*${primitive}.*from)`
+        `(from\\s+['"][^'"]*\\b${primitive}['"]|import\\s+.*\\b${primitive}\\b.*from)`
       );
       const consumers = files.filter((f) => {
-        if (f.endsWith(`${primitive}.tsx`)) return false;
-        if (f.endsWith(`${primitive}.test.tsx`)) return false;
+        const name = basename(f);
+        if (name === `${primitive}.tsx` || name === `${primitive}.test.tsx`) return false;
+        if (name === 'index.tsx' && f.includes(`/${primitive}/`)) return false;
         const content = readFileSync(f, 'utf8');
         return importPattern.test(content);
       });

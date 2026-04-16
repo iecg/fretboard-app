@@ -1,8 +1,5 @@
 :root {
   --font-sans: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
-  font-family: var(--font-sans);
-  line-height: 1.5;
-  font-weight: 400;
 
   color-scheme: dark;
   /* Spacing scale */
@@ -55,6 +52,26 @@
   --transition-fast: 0.12s ease-out;
   --transition-base: 0.2s ease;
   --transition-slow: 0.3s ease;
+
+  /* Z-index scale (primitives — semantic aliases in semantic.css) */
+  --token-z-note: 10;
+  --token-z-dropdown: 50;
+  --token-z-header: 80;
+  --token-z-bottom-nav: 100;
+  --token-z-help-overlay: 1000;
+
+  /* Opacity primitives */
+  --token-disabled-opacity: 0.3;
+
+  /* Border/surface color primitives (subtle alpha whites) */
+  --token-border-subtle: rgb(255 255 255 / 0.06);
+  --token-border-subtler: rgb(255 255 255 / 0.04);
+  --token-border-faint: rgb(255 255 255 / 0.08);
+  --token-surface-dim: rgb(255 255 255 / 0.04);
+
+  /* Chip color primitives */
+  --token-chip-active-bg: rgb(77 228 255 / 0.08);
+  --token-chip-tonic-bg: rgb(255 154 77 / 0.1);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;

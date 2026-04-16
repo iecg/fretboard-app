@@ -31,7 +31,10 @@ export default defineConfig([
       // surface without breaking CI. Promote to 'error' in Phase 5 after all
       // primitives are fixed. See: Phase 4 Plan 04-02.
       ...Object.fromEntries(
-        Object.keys(jsxA11y.configs.recommended.rules).map(rule => [rule, 'warn'])
+        Object.entries(jsxA11y.configs.recommended.rules).map(([rule, value]) => [
+          rule,
+          Array.isArray(value) ? ['warn', ...value.slice(1)] : 'warn',
+        ])
       ),
     },
   },

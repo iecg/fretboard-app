@@ -179,6 +179,7 @@ function AppContent() {
   useEffect(() => {
     if (!showHelp) return;
     const modal = helpModalRef.current;
+    const trigger = helpTriggerRef.current;
     const focusables = getFocusableElements(modal);
     focusables[0]?.focus();
 
@@ -204,7 +205,7 @@ function AppContent() {
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      helpTriggerRef.current?.focus();
+      trigger?.focus();
     };
   }, [showHelp]);
 

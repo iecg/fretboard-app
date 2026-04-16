@@ -53,6 +53,9 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100dvh;
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  font-weight: 400;
 }
 
 /* Removed global wildcard transition — per-element transitions declared in App.css */

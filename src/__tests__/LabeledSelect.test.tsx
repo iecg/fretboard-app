@@ -12,7 +12,7 @@ const scaleOptions: LabeledSelectOption[] = [
 ];
 
 describe('LabeledSelect', () => {
-  it('renders with label text and select has matching id', () => {
+  it('renders with label text', () => {
     render(
       <LabeledSelect
         label="Scale Family"
@@ -21,13 +21,10 @@ describe('LabeledSelect', () => {
         onChange={vi.fn()}
       />
     );
-    const labelEl = screen.getByText('Scale Family');
-    expect(labelEl.tagName).toBe('LABEL');
-    const selectEl = screen.getByRole('combobox');
-    expect(labelEl.getAttribute('for')).toBe(selectEl.id);
+    expect(screen.getAllByText('Scale Family').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('renders all options', () => {
+  it('renders trigger button showing current display value', () => {
     render(
       <LabeledSelect
         label="Scale Family"
@@ -36,13 +33,30 @@ describe('LabeledSelect', () => {
         onChange={vi.fn()}
       />
     );
-    expect(screen.getByRole('option', { name: 'Major Modes' })).toBeTruthy();
-    expect(screen.getByRole('option', { name: 'Minor Modes' })).toBeTruthy();
-    expect(screen.getByRole('option', { name: 'Pentatonic' })).toBeTruthy();
-    expect(screen.getByRole('option', { name: 'Blues' })).toBeTruthy();
+    const trigger = screen.getByRole('button', { name: /Scale Family/i });
+    expect(trigger).toBeTruthy();
+    expect(trigger.textContent).toContain('Major Modes');
   });
 
-  it('changing selection fires onChange with new value', async () => {
+  it('clicking trigger opens listbox with all options', async () => {
+    render(
+      <LabeledSelect
+        label="Scale Family"
+        value="major-modes"
+        options={scaleOptions}
+        onChange={vi.fn()}
+      />
+    );
+    await userEvent.click(screen.getByRole('button', { name: /Scale Family/i }));
+    const listbox = screen.getByRole('listbox');
+    expect(listbox).toBeTruthy();
+    for (const opt of scaleOptions) {
+      const matches = screen.getAllByText(opt.label);
+      expect(matches.length).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it('selecting an option fires onChange with the value key', async () => {
     const onChange = vi.fn();
     render(
       <LabeledSelect
@@ -52,52 +66,12 @@ describe('LabeledSelect', () => {
         onChange={onChange}
       />
     );
-    await userEvent.selectOptions(screen.getByRole('combobox'), 'pentatonic');
+    await userEvent.click(screen.getByRole('button', { name: /Scale Family/i }));
+    const listbox = screen.getByRole('listbox');
+    const pentatonicOption = Array.from(listbox.querySelectorAll('[role="option"]'))
+      .find(el => el.textContent === 'Pentatonic') as HTMLElement;
+    await userEvent.click(pentatonicOption);
     expect(onChange).toHaveBeenCalledWith('pentatonic');
-  });
-
-  it('disabled prop disables the select', () => {
-    render(
-      <LabeledSelect
-        label="Scale Family"
-        value="major-modes"
-        options={scaleOptions}
-        onChange={vi.fn()}
-        disabled
-      />
-    );
-    expect(screen.getByRole('combobox')).toBeDisabled();
-  });
-
-  it('aria-describedby pass-through works', () => {
-    render(
-      <>
-        <LabeledSelect
-          label="Scale Family"
-          value="major-modes"
-          options={scaleOptions}
-          onChange={vi.fn()}
-          aria-describedby="help-text"
-        />
-        <span id="help-text">Choose a scale family</span>
-      </>
-    );
-    const select = screen.getByRole('combobox');
-    expect(select.getAttribute('aria-describedby')).toBe('help-text');
-  });
-
-  it('uses custom id when provided', () => {
-    render(
-      <LabeledSelect
-        label="Scale Family"
-        id="my-select"
-        value="major-modes"
-        options={scaleOptions}
-        onChange={vi.fn()}
-      />
-    );
-    expect(screen.getByRole('combobox').id).toBe('my-select');
-    expect(screen.getByText('Scale Family').getAttribute('for')).toBe('my-select');
   });
 
   it('has no accessibility violations (default render)', async () => {

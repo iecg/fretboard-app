@@ -32,13 +32,13 @@
 }
 
 .stepper-btn:disabled {
-  opacity: 0.3;
+  opacity: var(--disabled-opacity);
   cursor: default;
 }
 
 .stepper-value {
   font-size: var(--text-xs);
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   color: var(--text-main);
   min-width: 1.5rem;
   text-align: center;

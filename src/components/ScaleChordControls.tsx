@@ -78,7 +78,7 @@ export function ScaleChordControls({
             </label>
             {!linkChordRoot && (
               <>
-                <p className="section-label">Chord Root</p>
+                <span className="section-label">Chord Root</span>
                 <NoteGrid
                   notes={NOTES}
                   selected={chordRoot}

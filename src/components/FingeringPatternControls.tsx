@@ -56,11 +56,11 @@ export function FingeringPatternControls({
             {/* TODO: Shape selector is kept inline because it supports Shift+click
                 multi-select, which ToggleBar does not support (single-select only).
                 Refactor once ToggleBar gains a multi-select variant. */}
-            <span className="section-label">Shape</span>
+            <span className="section-label" id="fingering-shape-label">Shape</span>
             <span id="fingering-shape-help" className="sr-only">
               Click to select a shape. Shift+click to toggle multiple shapes.
             </span>
-            <div className="toggle-group" aria-describedby="fingering-shape-help">
+            <div className="toggle-group" role="group" aria-labelledby="fingering-shape-label" aria-describedby="fingering-shape-help">
               <button
                 type="button"
                 className={clsx("toggle-btn", {

@@ -1,4 +1,5 @@
 import React from "react";
+import clsx from "clsx";
 import {
   CIRCLE_OF_FIFTHS,
   getNoteDisplayInScale,
@@ -116,7 +117,7 @@ export function CircleOfFifths({
               key={note}
               ref={(el) => { segmentRefs.current[index] = el; }}
               d={slicePath(index)}
-              className={`circle-slice ${isActive ? "active" : ""}`}
+              className={clsx("circle-slice", { active: isActive })}
               stroke="var(--surface-highlight)"
               strokeWidth={1}
               style={{ outline: 'none' }}
@@ -152,23 +153,19 @@ export function CircleOfFifths({
         })}
 
         {/* Focus ring overlay — keyboard-only, traces pie-slice shape (WCAG 2.4.7) */}
-        {keyboardFocused &&
-          CIRCLE_OF_FIFTHS.map((note, index) => {
-            if (index !== focusedIndex) return null;
-            return (
-              <path
-                key={`focus-ring-${note}`}
-                d={slicePath(index)}
-                fill="none"
-                stroke="var(--accent-primary)"
-                strokeWidth={3}
-                strokeLinejoin="round"
-                pointerEvents="none"
-                aria-hidden="true"
-                className="circle-slice-focus-ring"
-              />
-            );
-          })}
+        {keyboardFocused && focusedIndex >= 0 && focusedIndex < CIRCLE_OF_FIFTHS.length && (
+          <path
+            key={`focus-ring-${CIRCLE_OF_FIFTHS[focusedIndex]}`}
+            d={slicePath(focusedIndex)}
+            fill="none"
+            stroke="var(--accent-primary)"
+            strokeWidth={3}
+            strokeLinejoin="round"
+            pointerEvents="none"
+            aria-hidden="true"
+            className="circle-slice-focus-ring"
+          />
+        )}
 
         {/* Text labels inside segments */}
         {CIRCLE_OF_FIFTHS.map((note, index) => {
