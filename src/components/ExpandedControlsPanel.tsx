@@ -17,14 +17,20 @@ import {
   chordIntervalFilterAtom,
   accidentalModeAtom,
   enharmonicDisplayAtom,
+  fretStartAtom,
+  fretEndAtom,
 } from "../store/atoms";
 import { resolveAccidentalMode } from "../theory";
 import { FingeringPatternControls } from "./FingeringPatternControls";
+import { FretRangeControl } from "./FretRangeControl";
 import { TheoryControls } from "./TheoryControls";
 import { CircleOfFifths } from "../CircleOfFifths";
+import { Card } from "./Card";
+
+const END_FRET = 24;
 
 /**
- * Renders the left-most base controls: FingeringPatternControls.
+ * Renders the Configuration card: FingeringPatternControls + fret range.
  */
 export function BaseControlsSection() {
   const [fingeringPattern, setFingeringPattern] = useAtom(fingeringPatternAtom);
@@ -32,27 +38,40 @@ export function BaseControlsSection() {
   const [npsPosition, setNpsPosition] = useAtom(npsPositionAtom);
   const [shapeLabels, setShapeLabels] = useAtom(shapeLabelsAtom);
   const [displayFormat, setDisplayFormat] = useAtom(displayFormatAtom);
+  const [fretStart, setFretStart] = useAtom(fretStartAtom);
+  const [fretEnd, setFretEnd] = useAtom(fretEndAtom);
 
   return (
-    <div className="control-group panel-surface controls-card controls-card--base">
-      <FingeringPatternControls
-        fingeringPattern={fingeringPattern}
-        setFingeringPattern={setFingeringPattern}
-        cagedShapes={cagedShapes}
-        setCagedShapes={setCagedShapes}
-        npsPosition={npsPosition}
-        setNpsPosition={setNpsPosition}
-        shapeLabels={shapeLabels}
-        setShapeLabels={setShapeLabels}
-        displayFormat={displayFormat}
-        setDisplayFormat={setDisplayFormat}
-      />
-    </div>
+    <Card title="Configuration">
+      <div className="control-group">
+        <FingeringPatternControls
+          fingeringPattern={fingeringPattern}
+          setFingeringPattern={setFingeringPattern}
+          cagedShapes={cagedShapes}
+          setCagedShapes={setCagedShapes}
+          npsPosition={npsPosition}
+          setNpsPosition={setNpsPosition}
+          shapeLabels={shapeLabels}
+          setShapeLabels={setShapeLabels}
+          displayFormat={displayFormat}
+          setDisplayFormat={setDisplayFormat}
+        />
+        <FretRangeControl
+          startFret={fretStart}
+          endFret={fretEnd}
+          onStartChange={setFretStart}
+          onEndChange={setFretEnd}
+          maxFret={END_FRET}
+          layout="mobile"
+          showLabels
+        />
+      </div>
+    </Card>
   );
 }
 
 /**
- * Renders the Scale & Chord column.
+ * Renders the Music Theory card.
  */
 export function ScaleChordSection() {
   const [scaleName, setScaleName] = useAtom(scaleNameAtom);
@@ -75,8 +94,7 @@ export function ScaleChordSection() {
   );
 
   return (
-    <div className="control-group panel-surface controls-card controls-card--scale">
-      <h2>Theory</h2>
+    <Card title="Music Theory">
       <TheoryControls
         rootNote={rootNote}
         setRootNote={setRootNote}
@@ -96,7 +114,7 @@ export function ScaleChordSection() {
         setChordIntervalFilter={setChordIntervalFilter}
         useFlats={useFlats}
       />
-    </div>
+    </Card>
   );
 }
 
@@ -116,6 +134,7 @@ export function KeyColumn() {
   const enharmonicDisplay = useAtomValue(enharmonicDisplayAtom);
 
   return (
+    // TODO(05-04): wrap in <Card title="Key Explorer"> and restyle CircleOfFifths with neon tokens
     <div className="control-group key-column panel-surface controls-card controls-card--key">
       <h2>Key Explorer</h2>
       <CircleOfFifths
