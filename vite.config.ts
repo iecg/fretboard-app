@@ -9,6 +9,11 @@ const { version } = JSON.parse(readFileSync('./package.json', 'utf-8')) as { ver
 export default defineConfig({
   base: '/fretboard-app/',
   plugins: [react()],
+  css: {
+    modules: {
+      localsConvention: 'dashes',
+    },
+  },
   define: {
     __APP_VERSION__: JSON.stringify(version),
   },
@@ -16,6 +21,11 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/__tests__/setup.ts'],
+    css: {
+      modules: {
+        classNameStrategy: 'non-scoped',
+      },
+    },
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     exclude: ['e2e/**'],
     coverage: {

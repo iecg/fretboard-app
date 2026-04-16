@@ -1,11 +1,11 @@
 /* ToggleBar — variant overrides for "tabs" variant */
-/* "default" variant reuses .toggle-group and .toggle-btn from shared.css */
+/* "default" variant reuses shared.module.css classes */
 
-/* Ensure toggle-group base always visible (shared.css defines it, no override needed) */
+/* Ensure base container styles remain in shared.module.css */
 
 /* "tabs" variant: mobile-tab-bar / mobile-tab styles */
 /* These override the display:none set in App.css for .mobile-tab-bar */
-.mobile-tab-bar.toggle-group {
+.mobile-tab-bar {
   display: flex;
   background: var(--surface-raised);
   border-radius: var(--radius-md);
@@ -16,7 +16,7 @@
   margin: 0;
 }
 
-.mobile-tab-bar.toggle-group .mobile-tab {
+.mobile-tab-bar .mobile-tab {
   flex: 1;
   padding: var(--space-1);
   min-height: 2rem;
@@ -31,17 +31,17 @@
   transition: var(--transition-surface);
 }
 
-.mobile-tab-bar.toggle-group .mobile-tab.active {
+.mobile-tab-bar .mobile-tab[aria-selected="true"] {
   background: var(--selected-bg);
   color: var(--selected-fg);
 }
 
-.mobile-tab-bar.toggle-group .mobile-tab:hover:not(.active) {
+.mobile-tab-bar .mobile-tab:hover:not([aria-selected="true"]) {
   color: var(--text-main);
 }
 
-.mobile-tab-bar.toggle-group .mobile-tab:focus,
-.mobile-tab-bar.toggle-group .mobile-tab:focus-visible {
+.mobile-tab-bar .mobile-tab:focus,
+.mobile-tab-bar .mobile-tab:focus-visible {
   outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 24%, transparent);

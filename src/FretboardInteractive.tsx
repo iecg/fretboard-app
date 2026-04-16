@@ -6,6 +6,7 @@ import { synth } from "./audio";
 import type { ShapePolygon } from "./shapes";
 import { fretZoomAtom, fretStartAtom, fretEndAtom } from "./store/atoms";
 import { FretboardSVG } from "./FretboardSVG";
+import shared from "./components/shared.module.css";
 
 const STRING_ROW_PX_DEFAULT = 40;
 
@@ -168,7 +169,7 @@ export function FretboardInteractive({
     <div className="fretboard-outer">
       <div className="fretboard-toolbar">
         <div className="viewport-jumps">
-          <span className="section-label">Go to</span>
+          <span className={shared["section-label"]}>Go to</span>
           {([["Open", 0], ["Mid", 5], ["High", 12]] as [string, number][]).map(([label, fret]) => (
             <button
               key={label}

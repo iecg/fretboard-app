@@ -5,6 +5,10 @@
   gap: var(--space-1);
 }
 
+.active {
+  /* Intentional marker class for CSS Modules state composition. */
+}
+
 .section-label {
   font-size: var(--text-xs);
   color: var(--text-muted);
@@ -19,6 +23,10 @@
   border: 1px solid var(--surface-highlight);
   border-radius: var(--radius-md);
   padding: var(--space-1);
+}
+
+.toggle-group--default {
+  /* Intentional marker class for variant composition. */
 }
 
 .toggle-btn {
@@ -86,7 +94,6 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 24%, transparent);
 }
 
-/* ===== Chord Root Row ===== */
 .chord-root-row {
   display: flex;
   flex-direction: column;
@@ -149,7 +156,6 @@
   border-color: transparent;
 }
 
-/* ===== Screen Reader Only ===== */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -162,7 +168,6 @@
   border-width: 0;
 }
 
-/* ===== Link Toggle ===== */
 .link-toggle {
   display: flex;
   align-items: center;
@@ -186,3 +191,21 @@
   border-radius: 2px;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 24%, transparent);
 }
+
+/* stylelint-disable selector-pseudo-class-no-unknown */
+@media (max-width: 767px) {
+  :global(.mobile-tab-panel) .toggle-btn,
+  :global(.mobile-tab-panel) .note-btn,
+  :global(.mobile-tab-panel) .link-toggle {
+    min-height: 36px;
+  }
+
+  :global(.mobile-tab-panel) .control-section {
+    width: 100%;
+  }
+}
+
+:global(.overlay-field--accidentals) .toggle-btn {
+  font-size: var(--text-sm, 0.875rem);
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
