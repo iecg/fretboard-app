@@ -88,7 +88,8 @@ function SummaryNote({
 }
 
 function ScaleSummaryDisclosure({
-  defaultExpanded,
+  isExpanded,
+  onToggle,
   scaleLabel,
   summaryNotes,
   rootNote,
@@ -98,7 +99,8 @@ function ScaleSummaryDisclosure({
   chordSummaryNotes,
   chordRoot,
 }: {
-  defaultExpanded: boolean;
+  isExpanded: boolean;
+  onToggle: () => void;
   scaleLabel: string;
   summaryNotes: string[];
   rootNote: string;
@@ -108,7 +110,6 @@ function ScaleSummaryDisclosure({
   chordSummaryNotes: string[];
   chordRoot: string;
 }) {
-  const [isExpanded, setExpanded] = useState(defaultExpanded);
 
   return (
     <div className="summary-area panel-surface">
@@ -120,7 +121,7 @@ function ScaleSummaryDisclosure({
         aria-expanded={isExpanded}
         aria-controls="scale-summary-content"
         aria-label="Toggle scale summary"
-        onClick={() => setExpanded((value) => !value)}
+        onClick={onToggle}
       >
         <span className="summary-disclosure-label">{scaleLabel}</span>
         <ChevronDown className="summary-disclosure-icon" size={18} />
@@ -230,6 +231,9 @@ function AppContent() {
   const helpModalRef = useRef<HTMLDivElement>(null);
   const helpTriggerRef = useRef<HTMLButtonElement>(null);
   const layout = useLayoutMode();
+  const [summaryExpanded, setSummaryExpanded] = useState(
+    () => layout.tier !== "mobile",
+  );
 
   // Focus trap + focus restoration for help modal
   useEffect(() => {
@@ -284,8 +288,8 @@ function AppContent() {
   // Summary notes content shared by every non-landscape layout.
   const summaryContent = (
     <ScaleSummaryDisclosure
-      key={layout.tier}
-      defaultExpanded={layout.tier !== "mobile"}
+      isExpanded={summaryExpanded}
+      onToggle={() => setSummaryExpanded((v) => !v)}
       scaleLabel={scaleLabel}
       summaryNotes={summaryNotes}
       rootNote={rootNote}
