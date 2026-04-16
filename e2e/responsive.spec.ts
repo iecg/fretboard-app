@@ -1,5 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 
+const CIRCLE_OF_FIFTHS_SELECTOR =
+  '.key-column [role="group"][aria-label="Circle of Fifths — select a key"]';
+
 async function gotoApp(page: Page, width: number, height: number) {
   await page.setViewportSize({ width, height });
   await page.goto("/", { waitUntil: "networkidle" });
@@ -17,9 +20,7 @@ async function getMetrics(page: Page) {
     const settingsDrawer = document.querySelector(".settings-overlay-drawer");
     const helpModal = document.querySelector(".help-modal");
     const helpContent = document.querySelector(".help-modal-content");
-    const circle = document.querySelector(
-      '.key-column [role="group"][aria-label="Circle of Fifths — select a key"]',
-    );
+    const circle = document.querySelector(CIRCLE_OF_FIFTHS_SELECTOR);
     const controlsColumn = document.querySelector(".controls-panel-column");
     const keyColumn = document.querySelector(".key-column");
 
@@ -226,11 +227,7 @@ test.describe("responsive layout regressions", () => {
     expect(initial.variant).toBe("desktop-stacked");
     expect(initial.summaryCount).toBe(1);
 
-    await page
-      .locator(
-        '.key-column [role="group"][aria-label="Circle of Fifths — select a key"]',
-      )
-      .scrollIntoViewIfNeeded();
+    await page.locator(CIRCLE_OF_FIFTHS_SELECTOR).scrollIntoViewIfNeeded();
     const after = await getMetrics(page);
     expect(after.circleRect).not.toBeNull();
     expect(after.circleRect!.height).toBeGreaterThanOrEqual(220);
