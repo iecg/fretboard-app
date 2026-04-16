@@ -203,7 +203,7 @@ Scale degrees on circle use chromatic interval conversion: `(circleIntervalIndex
 When working in a new git worktree that lacks a `.vbw-planning` directory, check the parent repo (`git worktree list` to find the main working tree) for an existing `.vbw-planning`. If found, create a symlink from the worktree to the parent:
 
 ```bash
-MAIN_TREE=$(git worktree list --porcelain | grep -m1 '^worktree ' | cut -d' ' -f2)
+MAIN_TREE=$(git worktree list --porcelain | grep -m1 '^worktree ' | sed 's/^worktree //')
 if [ ! -e .vbw-planning ] && [ -d "$MAIN_TREE/.vbw-planning" ]; then
   ln -s "$MAIN_TREE/.vbw-planning" .vbw-planning
 fi
