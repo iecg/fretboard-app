@@ -430,7 +430,28 @@ function AppContent() {
 
       {/* Help Modal */}
       {showHelp && (
-        <div className="help-modal-overlay" onClick={() => setShowHelp(false)}>
+        <div
+          className="help-modal-overlay"
+          role="button"
+          tabIndex={0}
+          aria-label="Close help overlay"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              setShowHelp(false);
+            }
+          }}
+          onKeyDown={(event) => {
+            if (event.target !== event.currentTarget) return;
+            if (
+              event.key === "Enter" ||
+              event.key === " " ||
+              event.key === "Escape"
+            ) {
+              event.preventDefault();
+              setShowHelp(false);
+            }
+          }}
+        >
           <div
             ref={helpModalRef}
             className={clsx("help-modal", {
@@ -439,7 +460,6 @@ function AppContent() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="help-modal-title"
-            onClick={(e) => e.stopPropagation()}
           >
             <div className="help-modal-header">
               <h2 id="help-modal-title">FretFlow Help</h2>

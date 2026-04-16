@@ -241,8 +241,15 @@ export function FretboardSVG({
 
                   return (
                     <div key={`note-${stringIndex}-${fretIndex}`} className="note-cell" style={{ width: `${effectiveZoom}px` }}>
-                      <div
-                        onClick={() => onNoteClick?.(stringIndex, fretIndex, noteName)}
+                      <button
+                        type="button"
+                        onClick={
+                          onNoteClick
+                            ? () => onNoteClick(stringIndex, fretIndex, noteName)
+                            : undefined
+                        }
+                        disabled={!onNoteClick}
+                        aria-label={`${formatAccidental(displayValue)} on string ${tuning.length - stringIndex}, fret ${fretIndex}`}
                         className={clsx("note-bubble", noteClass,
                           noteClass === "note-scale-only" && hideNonChordNotes && "hidden")}
                         style={{
@@ -255,7 +262,7 @@ export function FretboardSVG({
                         {displayFormat !== "none" && (
                           <span className="note-main-label">{formatAccidental(displayValue)}</span>
                         )}
-                      </div>
+                      </button>
                     </div>
                   );
                 })}

@@ -1,4 +1,4 @@
-import { startTransition, useState, type ReactNode } from "react";
+import { startTransition, useId, useState, type ReactNode } from "react";
 import clsx from "clsx";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DrawerSelector } from "../DrawerSelector";
@@ -76,6 +76,8 @@ export function TheoryControls({
 }: TheoryControlsProps) {
   const [isChordOverlayOpen, setChordOverlayOpen] = useState(Boolean(chordType));
   const [isKeyExplorerOpen, setKeyExplorerOpen] = useState(false);
+  const linkChordRootId = useId();
+  const hideNonChordNotesId = useId();
 
   const scaleEntry = resolveScaleCatalogEntry(scaleName);
   const familyOptions = getScaleFamilyOptions();
@@ -264,8 +266,9 @@ export function TheoryControls({
 
             {chordType ? (
               <>
-                <label className="link-toggle">
+                <label className="link-toggle" htmlFor={linkChordRootId}>
                   <input
+                    id={linkChordRootId}
                     type="checkbox"
                     checked={linkChordRoot}
                     onChange={(event) => {
@@ -293,15 +296,18 @@ export function TheoryControls({
                   </div>
                 ) : null}
 
-                <label className="link-toggle">
+                <label className="link-toggle" htmlFor={hideNonChordNotesId}>
                   <input
+                    id={hideNonChordNotesId}
                     type="checkbox"
                     checked={hideNonChordNotes}
                     onChange={(event) =>
                       setHideNonChordNotes(event.target.checked)
                     }
                   />
-                  <span>Chord only (hide scale)</span>
+                  <span>
+                    Chord only (hide scale)
+                  </span>
                 </label>
 
                 <DrawerSelector

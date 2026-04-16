@@ -478,6 +478,9 @@
 
 
 .note-bubble {
+  border: none;
+  background: transparent;
+  padding: 0;
   border-radius: 9999px;
   display: flex;
   align-items: center;
@@ -495,6 +498,10 @@
   -webkit-tap-highlight-color: transparent;
   -webkit-text-stroke: 2px rgba(0, 0, 0, 0.5);
   paint-order: stroke fill;
+}
+
+.note-bubble:disabled {
+  cursor: default;
 }
 
 .root-active {
