@@ -256,7 +256,7 @@ function AppContent() {
       <AppHeader
         brandTitle="FretFlow"
         brandSubtitle="Interactive Fretboard & Music Theory"
-        brandIcon={<BrandMark className="brand-mark" />}
+        brandIcon={<BrandMark />}
         actions={
           <>
             <a
