@@ -394,7 +394,7 @@ function AppContent() {
 
       {/* Shared tablet/desktop controls panel */}
       {layout.showControlsPanel && (
-        <ExpandedControlsPanel mode={layout.isSplitPanel ? "split" : "stacked"} />
+        <ExpandedControlsPanel mode={layout.panelMode} />
       )}
 
       {/* Mobile inline tab bar + content — hidden on desktop */}

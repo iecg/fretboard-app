@@ -40,10 +40,10 @@ export function DegreeChipStrip({
             data-is-tonic={chip.isTonic ? 'true' : undefined}
             data-in-chord={chip.inChord ? 'true' : undefined}
           >
-            <span className="degree-chip-interval">{chip.interval}</span>
             <span className="degree-chip">
               <span className="degree-chip-note">{chip.note}</span>
             </span>
+            <span className="degree-chip-interval">{chip.interval}</span>
           </li>
         ))}
       </ul>

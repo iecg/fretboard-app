@@ -7,8 +7,9 @@ export type ResponsiveVariant =
   | "landscape-mobile"
   | "tablet-split"
   | "tablet-stacked"
-  | "desktop-split"
-  | "desktop-stacked";
+  | "desktop-3col";
+
+export type DashboardPanelMode = "3col" | "split" | "stacked";
 
 export interface ResponsiveLayout {
   tier: ResponsiveTier;
@@ -19,6 +20,7 @@ export interface ResponsiveLayout {
   showMobileTabs: boolean;
   showSummary: boolean;
   isSplitPanel: boolean;
+  panelMode: DashboardPanelMode;
   showHeaderSubtitle: boolean;
   compactHeaderActions: boolean;
   fullWidthOverlay: boolean;
@@ -63,9 +65,7 @@ export function getResponsiveVariant(
     return isCompactHeight(viewportHeight) ? "tablet-stacked" : "tablet-split";
   }
 
-  return isCompactHeight(viewportHeight)
-    ? "desktop-stacked"
-    : "desktop-split";
+  return "desktop-3col";
 }
 
 export function getStringRowPx(tier: ResponsiveTier): number {
@@ -79,8 +79,13 @@ export function getResponsiveLayout(
   const tier = getResponsiveTier(viewportWidth);
   const variant = getResponsiveVariant(viewportWidth, viewportHeight);
   const compactHeight = isCompactHeight(viewportHeight);
-  const isSplitPanel =
-    variant === "tablet-split" || variant === "desktop-split";
+  const isSplitPanel = variant === "tablet-split";
+  const panelMode: DashboardPanelMode =
+    variant === "desktop-3col"
+      ? "3col"
+      : variant === "tablet-split"
+        ? "split"
+        : "stacked";
   const showMobileTabs =
     tier === "mobile" && variant !== "landscape-mobile";
 
@@ -93,6 +98,7 @@ export function getResponsiveLayout(
     showMobileTabs,
     showSummary: variant !== "landscape-mobile",
     isSplitPanel,
+    panelMode,
     showHeaderSubtitle:
       tier !== "mobile" && viewportWidth >= HEADER_SUBTITLE_MIN_WIDTH,
     compactHeaderActions:

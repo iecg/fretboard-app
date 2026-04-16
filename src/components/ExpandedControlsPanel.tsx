@@ -151,7 +151,11 @@ export function KeyColumn() {
  * on the left with Key on the right. Stacked mode renders all three groups in
  * a single column for compact-height tablet and desktop viewports.
  */
-export function ExpandedControlsPanel({ mode }: { mode: "split" | "stacked" }) {
+export function ExpandedControlsPanel({
+  mode,
+}: {
+  mode: "3col" | "split" | "stacked";
+}) {
   return (
     <div className="controls-panel controls-panel--dashboard" data-mode={mode}>
       <BaseControlsSection />

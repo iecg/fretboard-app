@@ -7,6 +7,9 @@
   --text-muted: #a0a0a5;
   --text-on-highlight: #ffffff;
   --text-on-accent: #ffffff;
+  /* Softer off-white used in preference to pure white for chip labels,
+     degree numbers, glowing note text, and other "bright" foregrounds. */
+  --text-soft-white: #e8eef6;
   --accent-primary: #0a84ff;
   --accent-secondary: #ff9f0a;
   --accent-glow: rgba(10, 132, 255, 0.15);

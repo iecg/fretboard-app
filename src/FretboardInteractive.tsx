@@ -148,12 +148,6 @@ export function FretboardInteractive({
     pendingTarget.current = null;
   };
 
-  const scrollToFret = (fret: number) => {
-    if (!scrollRef.current) return;
-    const offset = (fret - startFret) * effectiveZoom;
-    scrollRef.current.scrollTo({ left: Math.max(0, offset - 20), behavior: "smooth" });
-  };
-
   const handleFretClick = (stringIndex: number, fretIndex: number, noteName: string) => {
     if (dragDistance.current > 5) return;
     const fretNoteWithOctave = getFretNoteWithOctave(tuning[stringIndex], fretIndex);
@@ -166,22 +160,6 @@ export function FretboardInteractive({
 
   return (
     <div className="fretboard-outer">
-      <div className="fretboard-toolbar">
-        <div className="viewport-jumps">
-          <span className="section-label">Go to</span>
-          {([["Open", 0], ["Mid", 5], ["High", 12]] as [string, number][]).map(([label, fret]) => (
-            <button
-              key={label}
-              className="toolbar-btn"
-              disabled={fret < startFret || fret > endFret}
-              onClick={() => scrollToFret(fret)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
-
       <div
         className={clsx("fretboard-wrapper", "hide-scrollbar")}
         ref={scrollRef}

@@ -1,12 +1,8 @@
 .card {
-  background:
-    radial-gradient(circle at top, rgb(77 228 255 / 0.08), transparent 55%),
-    linear-gradient(180deg, rgb(28 33 45 / 0.96), rgb(20 24 34 / 0.98));
+  background: rgb(22 27 38 / 0.96);
   border: 1px solid color-mix(in srgb, var(--surface-card-border) 80%, rgb(255 255 255 / 0.05));
   border-radius: 1.35rem;
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.04),
-    0 22px 42px rgb(0 0 0 / 0.28);
+  box-shadow: 0 22px 42px rgb(0 0 0 / 0.28);
   overflow: hidden;
 }
 

@@ -318,12 +318,15 @@
 
 .fret-numbers-row {
   display: flex;
+  background: rgb(10 14 22 / 0.92);
+  border-top: 1px solid rgb(255 255 255 / 0.05);
+  padding-block: 0.3rem;
 }
 
 .fret-number {
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--text-muted);
+  color: rgb(210 220 232 / 0.78);
   user-select: none;
   -webkit-user-select: none;
   text-align: center;
@@ -506,13 +509,6 @@
   flex: 0 0 auto;
   overflow: visible;
   min-width: 0;
-}
-
-.controls-panel--split {
-  display: grid;
-  align-items: start;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-4);
 }
 
 .controls-panel-column {
@@ -876,7 +872,7 @@
    data-layout-tier and data-layout-variant are set in App.tsx:
      mobile / landscape-mobile → mobile chrome and tabs
      tablet-split / tablet-stacked
-     desktop-split / desktop-stacked
+     desktop-3col
    ============================================= */
 
 /* Fret range mobile layout */
@@ -1032,28 +1028,25 @@
   max-width: 120rem;
 }
 
-.app-container[data-layout-variant="tablet-split"] .controls-panel--split {
-  grid-template-columns: minmax(0, 1fr) minmax(18rem, 1fr);
-}
-
-.app-container[data-layout-variant="desktop-split"] .controls-panel--split {
-  grid-template-columns: minmax(0, 1.15fr) minmax(20rem, 1fr);
-}
-
+/* Tablet split + desktop 3-col keep the key column flush with its grid cell. */
 .app-container[data-layout-variant="tablet-split"] .key-column,
-.app-container[data-layout-variant="desktop-split"] .key-column {
+.app-container[data-layout-variant="desktop-3col"] .key-column {
   min-width: 0;
 }
 
-.app-container[data-layout-variant="tablet-stacked"] .key-column,
-.app-container[data-layout-variant="desktop-stacked"] .key-column {
+/* Desktop 3-col: cap circle height so it fits alongside the other two columns. */
+.app-container[data-layout-variant="desktop-3col"] .circle-fifths-container {
+  max-height: min(22rem, 48vh);
+}
+
+/* Stacked (tablet-stacked): single column, centered key card. */
+.app-container[data-layout-variant="tablet-stacked"] .key-column {
   max-width: 32rem;
   width: 100%;
   margin: 0 auto;
 }
 
-.app-container[data-layout-variant="tablet-stacked"] .circle-fifths-container,
-.app-container[data-layout-variant="desktop-stacked"] .circle-fifths-container {
+.app-container[data-layout-variant="tablet-stacked"] .circle-fifths-container {
   max-width: min(100%, 28rem);
   width: 100%;
   margin: 0 auto;

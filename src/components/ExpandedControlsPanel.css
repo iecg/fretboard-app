@@ -1,10 +1,37 @@
-/* Fidelity dashboard layout */
+/* Dashboard panel layout — driven by data-mode, which App.tsx wires from
+   ResponsiveLayout.panelMode:
+     "3col"    → desktop 3-column (Configuration | Music Theory | Key Explorer)
+     "split"   → tablet 2-column (Base + Theory stacked left, Key on right)
+     "stacked" → compact single column (tablet-stacked / fallbacks) */
 
 .controls-panel.controls-panel--dashboard {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(18rem, 20rem);
   gap: 1.25rem;
   align-items: start;
+}
+
+.controls-panel.controls-panel--dashboard[data-mode="3col"] {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(18rem, 20rem);
+}
+
+.controls-panel.controls-panel--dashboard[data-mode="split"] {
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 1fr);
+}
+
+.controls-panel.controls-panel--dashboard[data-mode="split"]
+  .dashboard-card--configuration,
+.controls-panel.controls-panel--dashboard[data-mode="split"]
+  .dashboard-card--theory {
+  grid-column: 1;
+}
+
+.controls-panel.controls-panel--dashboard[data-mode="split"] .key-column {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.controls-panel.controls-panel--dashboard[data-mode="stacked"] {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .controls-panel--dashboard .dashboard-card {
@@ -19,29 +46,4 @@
 
 .controls-panel--dashboard .key-column .card-body {
   padding-top: 0.7rem;
-}
-
-@media (max-width: 1239px) {
-  .controls-panel.controls-panel--dashboard,
-  .controls-panel.controls-panel--dashboard[data-mode="stacked"] {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  }
-
-  .controls-panel--dashboard .key-column {
-    grid-column: 1 / -1;
-    max-width: 24rem;
-    width: 100%;
-    margin: 0 auto;
-  }
-}
-
-@media (max-width: 959px) {
-  .controls-panel.controls-panel--dashboard {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .controls-panel--dashboard .key-column {
-    grid-column: auto;
-    max-width: none;
-  }
 }

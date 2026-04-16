@@ -1,12 +1,27 @@
+/* Chip sizing tokens — reused by container width, connector line, and chip itself
+   so the horizontal line terminates exactly at the first and last chip centers. */
 .degree-chip-strip {
+  --chip-size: clamp(2.15rem, 3.4vw, 2.5rem);
+  --chip-half: calc(var(--chip-size) / 2);
+  /* Matches the Card primitive fill (see Card.css). Solid RGB is used rather
+     than rgb(22 27 38 / 0.96) because the chip circles reuse this value to
+     mask the connector line — an opaque fill keeps the line from showing
+     under each ring while being visually indistinguishable from 0.96 alpha. */
+  --strip-fill: rgb(22 27 38);
+  /* Matches the SVG fretboard glow filters (see FretboardSVG.tsx
+     #glow-cyan / #glow-orange — feDropShadow stdDeviation=3, opacity=0.65). */
+  --chip-glow-cyan: 0 0 6px rgb(77 228 255 / 0.65);
+  --chip-glow-orange: 0 0 6px rgb(255 154 77 / 0.65);
+  --chip-border-width: 2px;
+
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
-  width: min(100%, 32rem);
+  gap: 0.4rem;
+  width: min(100%, 30rem);
   margin: 0 auto;
-  padding: 0.7rem 0.9rem 0.8rem;
+  padding: 0.5rem 0.9rem 0.55rem;
   border-radius: 1rem;
-  background: rgb(18 22 32 / 0.82);
+  background: var(--strip-fill);
   border: 1px solid rgb(255 255 255 / 0.06);
   box-shadow: 0 6px 18px rgb(0 0 0 / 0.22);
   align-items: center;
@@ -14,117 +29,123 @@
 }
 
 .degree-chip-strip-header {
-  font-family: var(--font-display);
-  font-size: clamp(0.88rem, 1.4vw, 1.05rem);
-  font-weight: var(--font-weight-semibold);
-  color: rgb(245 249 255 / 0.94);
+  font-family: var(--font-sans);
+  font-size: clamp(0.92rem, 1.5vw, 1.05rem);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-soft-white);
   line-height: 1.2;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
 .degree-chip-strip-list {
+  position: relative;
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: clamp(0.4rem, 1vw, 0.7rem);
+  align-items: flex-start;
+  justify-content: space-between;
   list-style: none;
   margin: 0;
   padding: 0;
   width: 100%;
-  overflow-x: auto;
-  scrollbar-width: none;
 }
 
-.degree-chip-strip-list::-webkit-scrollbar {
-  display: none;
+/* Connector line spans exactly from first chip center to last chip center. */
+.degree-chip-strip-list::before {
+  content: "";
+  position: absolute;
+  left: var(--chip-half);
+  right: var(--chip-half);
+  top: calc(var(--chip-half) - 1px);
+  height: 2px;
+  background: rgb(255 255 255 / 0.18);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .degree-chip-item {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.18rem;
+  gap: 0.28rem;
   flex: 0 0 auto;
 }
 
-.degree-chip-interval {
-  font-size: 0.68rem;
-  font-weight: var(--font-weight-medium);
-  color: rgb(190 201 214 / 0.72);
-  line-height: 1;
-  letter-spacing: 0.02em;
-}
-
-.degree-chip-item[data-is-tonic='true'] .degree-chip-interval,
-.degree-chip-item[data-in-chord='true'] .degree-chip-interval {
-  color: rgb(255 188 120 / 0.95);
-}
-
-.degree-chip-item[data-in-scale='true']:not([data-is-tonic='true']):not([data-in-chord='true']) .degree-chip-interval {
-  color: rgb(140 224 246 / 0.9);
-}
-
 .degree-chip {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: clamp(1.95rem, 3.2vw, 2.25rem);
-  height: clamp(1.95rem, 3.2vw, 2.25rem);
+  display: grid;
+  place-items: center;
+  width: var(--chip-size);
+  height: var(--chip-size);
   border-radius: 50%;
-  background: rgb(28 34 46 / 1);
-  border: 1.5px solid rgb(255 255 255 / 0.12);
+  /* Fill matches the strip surface — visually reads as "no fill" because it
+     blends with the container, but it hides the connector line behind the
+     chip so the line stops cleanly at each ring edge. */
+  background: var(--strip-fill);
+  border: var(--chip-border-width) solid rgb(255 255 255 / 0.22);
   opacity: 0.55;
   transition:
     opacity var(--transition-fast),
-    background var(--transition-fast),
-    border-color var(--transition-fast);
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .degree-chip-item[data-in-scale='true'] .degree-chip {
-  background: rgb(30 40 54 / 1);
-  border-color: rgb(77 228 255 / 0.7);
+  border-color: rgb(77 228 255 / 0.75);
+  box-shadow: var(--chip-glow-cyan);
   opacity: 1;
 }
 
 .degree-chip-item[data-is-tonic='true'] .degree-chip,
 .degree-chip-item[data-in-chord='true'] .degree-chip {
-  background: rgb(48 32 22 / 1);
-  border-color: rgb(255 154 77 / 0.9);
+  border-color: rgb(255 154 77 / 0.95);
+  box-shadow: var(--chip-glow-orange);
   opacity: 1;
 }
 
 .degree-chip-item[data-is-tonic='true'] .degree-chip {
-  border-width: 2px;
+  border-width: var(--chip-border-width);
 }
 
 .degree-chip-note {
-  font-family: var(--font-display);
+  /* Match the chip's own height so the line-box centers glyphs vertically
+     regardless of Inter's ascender/descender asymmetry. */
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-sans);
   font-weight: var(--font-weight-semibold);
-  font-size: clamp(0.82rem, 1.4vw, 0.95rem);
-  color: rgb(255 255 255 / 0.95);
-  line-height: 1;
+  font-size: clamp(1.1rem, 1.9vw, 1.28rem);
+  color: var(--text-soft-white);
+  line-height: calc(var(--chip-size) - var(--chip-border-width) * 2);
   letter-spacing: 0.01em;
+}
+
+.degree-chip-interval {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-soft-white);
+  line-height: 1;
+  letter-spacing: 0.02em;
 }
 
 @media (max-width: 767px) {
   .degree-chip-strip {
+    --chip-size: 2.15rem;
     width: 100%;
     border-radius: 0.85rem;
-    padding: 0.6rem 0.7rem 0.7rem;
-    gap: 0.4rem;
-  }
-
-  .degree-chip-strip-list {
-    justify-content: flex-start;
-    gap: 0.4rem;
-  }
-
-  .degree-chip {
-    width: 2rem;
-    height: 2rem;
+    padding: 0.45rem 0.7rem 0.5rem;
+    gap: 0.35rem;
   }
 
   .degree-chip-strip-header {
-    font-size: 0.88rem;
+    font-size: 0.92rem;
+  }
+
+  .degree-chip-note {
+    font-size: 1.1rem;
+  }
+
+  .degree-chip-interval {
+    font-size: 0.82rem;
   }
 }

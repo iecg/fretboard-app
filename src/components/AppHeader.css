@@ -4,6 +4,11 @@
   justify-content: space-between;
   gap: clamp(0.75rem, 2vw, 1.5rem);
   padding: clamp(0.8rem, 1.4vw, 1.1rem) clamp(0.75rem, 2vw, 1.25rem);
+  /* Escape the app-container horizontal + top padding so the header goes
+     edge-to-edge. The negative margins match the container padding rules
+     in App.css (default and mobile breakpoint). */
+  margin-top: calc(-1 * clamp(0.75rem, 1.5vw, 1rem));
+  margin-inline: calc(-1 * clamp(0.75rem, 1.5vw, 1rem));
   background:
     linear-gradient(180deg, rgb(14 22 34 / 0.94), rgb(10 17 28 / 0.88));
   border-bottom: 1px solid color-mix(in srgb, var(--neon-cyan) 16%, rgb(255 255 255 / 0.08));
@@ -85,7 +90,10 @@
 
 @media (max-width: 767px) {
   .app-header {
-    padding-inline: 0.25rem;
+    padding-inline: 0.75rem;
+    /* Mobile app-container uses 0.65rem padding (see App.css @media rules). */
+    margin-top: -0.65rem;
+    margin-inline: -0.65rem;
   }
 
   .app-header-brand-title {
