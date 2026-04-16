@@ -25,6 +25,7 @@ import {
   getResponsiveTier,
   type ResponsiveTier,
 } from "../layout/responsive";
+import { getFocusableElements } from "../utils/dom";
 import "./SettingsOverlay.css";
 
 const END_FRET = 24;
@@ -165,15 +166,6 @@ function getViewportSnapshot() {
     width: window.innerWidth,
     height: window.innerHeight,
   };
-}
-
-function getFocusableElements(container: HTMLElement | null): HTMLElement[] {
-  if (!container) return [];
-  return Array.from(
-    container.querySelectorAll<HTMLElement>(
-      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-    ),
-  ).filter((element) => element.getAttribute("aria-hidden") !== "true");
 }
 
 function OverlaySection({

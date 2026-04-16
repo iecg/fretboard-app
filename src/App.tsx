@@ -16,6 +16,7 @@ import {
   formatAccidental,
 } from "./theory";
 import { Music, Settings2, Volume2, VolumeX, HelpCircle } from "lucide-react";
+import { getFocusableElements } from "./utils/dom";
 import { synth } from "./audio";
 import { CircleOfFifths } from "./CircleOfFifths";
 import { DEGREE_COLORS, getDegreesForScale } from "./degrees";
@@ -165,15 +166,6 @@ function AppContent() {
   const helpModalRef = useRef<HTMLDivElement>(null);
   const helpTriggerRef = useRef<HTMLButtonElement>(null);
   const layout = useLayoutMode();
-
-  function getFocusableElements(container: HTMLElement | null): HTMLElement[] {
-    if (!container) return [];
-    return Array.from(
-      container.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      ),
-    ).filter((el) => el.getAttribute("aria-hidden") !== "true");
-  }
 
   // Focus trap + focus restoration for help modal
   useEffect(() => {
