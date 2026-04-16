@@ -3,6 +3,7 @@ import { render } from "@testing-library/react";
 import { FretboardSVG } from "../FretboardSVG";
 import { getFretboardNotes } from "../guitar";
 import type { CagedShape } from "../shapes";
+import { axe } from "../test-utils/a11y";
 
 const STANDARD_TUNING = ["E4", "B3", "G3", "D3", "A2", "E2"];
 
@@ -129,5 +130,10 @@ describe("FretboardSVG", () => {
     // scale-only notes should have the 'hidden' class
     const hiddenBubbles = document.querySelectorAll(".note-scale-only.hidden");
     expect(hiddenBubbles.length).toBeGreaterThan(0);
+  });
+
+  it("has no a11y violations", async () => {
+    const { container } = render(<FretboardSVG {...BASE_PROPS} />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

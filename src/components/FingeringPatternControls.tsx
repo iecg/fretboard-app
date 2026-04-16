@@ -57,12 +57,16 @@ export function FingeringPatternControls({
                 multi-select, which ToggleBar does not support (single-select only).
                 Refactor once ToggleBar gains a multi-select variant. */}
             <span className="section-label">Shape</span>
-            <div className="toggle-group">
+            <span id="fingering-shape-help" className="sr-only">
+              Click to select a shape. Shift+click to toggle multiple shapes.
+            </span>
+            <div className="toggle-group" aria-describedby="fingering-shape-help">
               <button
                 type="button"
                 className={clsx("toggle-btn", {
                   active: cagedShapes.size === CAGED_SHAPES.length,
                 })}
+                aria-pressed={cagedShapes.size === CAGED_SHAPES.length}
                 onClick={() => setCagedShapes(new Set(CAGED_SHAPES))}
               >
                 All
@@ -72,6 +76,7 @@ export function FingeringPatternControls({
                   key={s}
                   type="button"
                   className={clsx("toggle-btn", { active: cagedShapes.has(s) })}
+                  aria-pressed={cagedShapes.has(s)}
                   title="Click to select; Shift+click to toggle multiple"
                   onClick={(e) => {
                     // Always notify parent that shape was clicked (for recentering)

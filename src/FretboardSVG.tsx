@@ -114,8 +114,14 @@ export function FretboardSVG({
     return { points, color: poly.color, key: `${poly.shape}-${polyIdx}`, poly, centerX };
   });
 
+  const ariaLabel = [
+    "Guitar fretboard",
+    rootNote ? `— ${rootNote}` : "",
+    scaleName ? `${scaleName} scale` : "",
+  ].filter(Boolean).join(" ");
+
   return (
-    <>
+    <div role="img" aria-label={ariaLabel}>
       <div
         className="fret-numbers-row"
         style={{ width: `${neckWidthPx + NECK_BORDER * 2}px`, paddingLeft: `${NECK_BORDER}px` }}
@@ -271,6 +277,6 @@ export function FretboardSVG({
           })}
         </div>
       )}
-    </>
+    </div>
   );
 }

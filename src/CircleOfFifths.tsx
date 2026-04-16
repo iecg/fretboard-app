@@ -1,3 +1,4 @@
+import React from "react";
 import {
   CIRCLE_OF_FIFTHS,
   getNoteDisplayInScale,
@@ -46,9 +47,40 @@ export function CircleOfFifths({
   const keySigText =
     keySig === 0 ? "♮" : keySig > 0 ? `${keySig}♯` : `${Math.abs(keySig)}♭`;
 
+  const [focusedIndex, setFocusedIndex] = React.useState<number>(0);
+  const segmentRefs = React.useRef<(SVGPathElement | null)[]>([]);
+
+  React.useEffect(() => {
+    segmentRefs.current[focusedIndex]?.focus();
+  }, [focusedIndex]);
+
+  const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+      e.preventDefault();
+      setFocusedIndex((index + 1) % 12);
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+      e.preventDefault();
+      setFocusedIndex((index + 11) % 12);
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      setFocusedIndex(0);
+    } else if (e.key === "End") {
+      e.preventDefault();
+      setFocusedIndex(11);
+    } else if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setRootNote(CIRCLE_OF_FIFTHS[index]);
+    }
+  };
+
   return (
     <div className="circle-fifths-container">
-      <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="circle-fifths-svg">
+      <svg
+        viewBox={`0 0 ${SIZE} ${SIZE}`}
+        className="circle-fifths-svg"
+        role="group"
+        aria-label="Circle of Fifths — select a key"
+      >
         {CIRCLE_OF_FIFTHS.map((note, index) => {
           const startAngle = ((index * 30 - 105) * Math.PI) / 180;
           const endAngle = (((index + 1) * 30 - 105) * Math.PI) / 180;
@@ -66,14 +98,31 @@ export function CircleOfFifths({
           const path = `M ${ix1} ${iy1} L ${ox1} ${oy1} A ${OUTER_RADIUS} ${OUTER_RADIUS} 0 0 1 ${ox2} ${oy2} L ${ix2} ${iy2} A ${INNER_RADIUS} ${INNER_RADIUS} 0 0 0 ${ix1} ${iy1} Z`;
           const isActive = rootNote === note;
 
+          const { primary } = getCircleNoteLabels(
+            note,
+            rootNote,
+            useFlats,
+            scaleIntervals,
+            enharmonicDisplay,
+          );
+
           return (
             <path
               key={note}
+              ref={(el) => { segmentRefs.current[index] = el; }}
               d={path}
               className={`circle-slice ${isActive ? "active" : ""}`}
               stroke="var(--surface-highlight)"
               strokeWidth={1}
-              onClick={() => setRootNote(note)}
+              onClick={() => {
+                setRootNote(note);
+                setFocusedIndex(index);
+              }}
+              role="button"
+              aria-label={`${primary} — ${isActive ? "selected" : "not selected"}`}
+              aria-pressed={isActive}
+              tabIndex={index === focusedIndex ? 0 : -1}
+              onKeyDown={(e) => handleKeyDown(e, index)}
             />
           );
         })}

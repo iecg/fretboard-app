@@ -42,6 +42,7 @@ interface ToggleBarProps<Value extends string | number> extends VariantProps<
   value: Value;
   onChange: (value: Value) => void;
   variant?: "default" | "tabs";
+  label?: string;
 }
 
 export function ToggleBar<Value extends string | number>({
@@ -49,16 +50,24 @@ export function ToggleBar<Value extends string | number>({
   value,
   onChange,
   variant = "default",
+  label,
 }: ToggleBarProps<Value>) {
+  const isTabs = variant === "tabs";
   return (
-    <div className={toggleBarVariants({ variant })}>
+    <div
+      className={toggleBarVariants({ variant })}
+      role={isTabs ? "tablist" : "group"}
+      aria-label={label}
+    >
       {options.map((option) => {
         const isActive = value === option.value;
         return (
           <button
             key={option.value}
             type="button"
-            aria-pressed={isActive}
+            {...(isTabs
+              ? { role: "tab", "aria-selected": isActive }
+              : { "aria-pressed": isActive })}
             className={toggleButtonVariants({ variant, isActive })}
             onClick={() => onChange(option.value)}
           >

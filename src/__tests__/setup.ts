@@ -1,7 +1,9 @@
 import '@testing-library/jest-dom';
-import { vi } from 'vitest';
+import { vi, expect } from 'vitest';
 import { configureAxe } from 'vitest-axe';
-import 'vitest-axe/extend-expect';
+import { toHaveNoViolations } from 'vitest-axe/dist/matchers.js';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+expect.extend({ toHaveNoViolations } as any);
 
 // vitest-axe: registers toHaveNoViolations matcher globally.
 // color-contrast rule disabled — jsdom cannot compute CSS custom property values.
