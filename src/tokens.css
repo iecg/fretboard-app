@@ -74,7 +74,7 @@
   --token-chip-tonic-bg: rgb(255 154 77 / 0.1);
 
   font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  text-rendering: optimizelegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
