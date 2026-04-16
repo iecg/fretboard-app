@@ -872,7 +872,13 @@
 }
 
 .circle-slice:focus-visible {
+  /* SVG focus ring replaces browser outline — see CircleOfFifths.tsx keyboardFocused state */
   outline: none;
+}
+
+.circle-slice-focus-ring {
+  /* Rendered via JS when keyboard navigation is active — no additional CSS needed.
+     Stroke color and width are set inline in SVG attributes. */
 }
 
 /* =============================================
