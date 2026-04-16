@@ -1,3 +1,4 @@
+import { useId } from "react";
 import clsx from "clsx";
 import { CAGED_SHAPES, type CagedShape } from "../shapes";
 import { type FingeringPattern } from "../store/atoms";
@@ -34,6 +35,8 @@ export function FingeringPatternControls({
   setDisplayFormat,
   onShapeClick,
 }: FingeringPatternControlsProps) {
+  const shapeLabelId = useId();
+  const shapeHelpId = useId();
   return (
     <>
       <div className="control-section">
@@ -56,11 +59,11 @@ export function FingeringPatternControls({
             {/* TODO: Shape selector is kept inline because it supports Shift+click
                 multi-select, which ToggleBar does not support (single-select only).
                 Refactor once ToggleBar gains a multi-select variant. */}
-            <span className="section-label" id="fingering-shape-label">Shape</span>
-            <span id="fingering-shape-help" className="sr-only">
+            <span className="section-label" id={shapeLabelId}>Shape</span>
+            <span id={shapeHelpId} className="sr-only">
               Click to select a shape. Shift+click to toggle multiple shapes.
             </span>
-            <div className="toggle-group" role="group" aria-labelledby="fingering-shape-label" aria-describedby="fingering-shape-help">
+            <div className="toggle-group" role="group" aria-labelledby={shapeLabelId} aria-describedby={shapeHelpId}>
               <button
                 type="button"
                 className={clsx("toggle-btn", {

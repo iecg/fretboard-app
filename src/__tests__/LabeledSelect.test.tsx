@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { LabeledSelect, type LabeledSelectOption } from '../components/LabeledSelect';
 import { axe } from '../test-utils/a11y';
@@ -51,8 +51,7 @@ describe('LabeledSelect', () => {
     const listbox = screen.getByRole('listbox');
     expect(listbox).toBeTruthy();
     for (const opt of scaleOptions) {
-      const matches = screen.getAllByText(opt.label);
-      expect(matches.length).toBeGreaterThanOrEqual(1);
+      expect(within(listbox).getAllByText(opt.label).length).toBeGreaterThanOrEqual(1);
     }
   });
 
@@ -68,9 +67,7 @@ describe('LabeledSelect', () => {
     );
     await userEvent.click(screen.getByRole('button', { name: /Scale Family/i }));
     const listbox = screen.getByRole('listbox');
-    const pentatonicOption = Array.from(listbox.querySelectorAll('[role="option"]'))
-      .find(el => el.textContent === 'Pentatonic') as HTMLElement;
-    await userEvent.click(pentatonicOption);
+    await userEvent.click(within(listbox).getByRole('option', { name: 'Pentatonic' }));
     expect(onChange).toHaveBeenCalledWith('pentatonic');
   });
 

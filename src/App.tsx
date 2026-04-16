@@ -184,6 +184,11 @@ function AppContent() {
     focusables[0]?.focus();
 
     function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setShowHelp(false);
+        return;
+      }
       if (e.key !== "Tab") return;
       const els = getFocusableElements(modal);
       if (els.length === 0) return;

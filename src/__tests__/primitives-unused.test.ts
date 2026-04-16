@@ -7,7 +7,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'fs';
-import { join, resolve, basename } from 'path';
+import { join, resolve, basename, normalize, sep } from 'path';
 
 const primitives = ['Card', 'AppHeader', 'DegreeChipStrip', 'BottomTabBar', 'LabeledSelect'];
 const srcDir = resolve(__dirname, '..');
@@ -22,6 +22,13 @@ function walk(dir: string): string[] {
   });
 }
 
+function isTestFile(filePath: string): boolean {
+  const name = basename(filePath);
+  if (/\.test\.(tsx?|jsx?)$/.test(name)) return true;
+  const normalized = normalize(filePath);
+  return normalized.includes(`${sep}__tests__${sep}`) || normalized.includes(`${sep}tests${sep}`);
+}
+
 describe('Phase 4 primitive isolation', () => {
   const files = walk(srcDir);
 
@@ -33,7 +40,9 @@ describe('Phase 4 primitive isolation', () => {
       const consumers = files.filter((f) => {
         const name = basename(f);
         if (name === `${primitive}.tsx` || name === `${primitive}.test.tsx`) return false;
-        if (name === 'index.tsx' && f.includes(`/${primitive}/`)) return false;
+        const normalized = normalize(f);
+        if (name === 'index.tsx' && normalized.includes(`${sep}${primitive}${sep}`)) return false;
+        if (isTestFile(f)) return false;
         const content = readFileSync(f, 'utf8');
         return importPattern.test(content);
       });
