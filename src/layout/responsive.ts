@@ -28,10 +28,14 @@ export interface ResponsiveLayout {
   fullWidthOverlay: boolean;
 }
 
+export const STRING_ROW_PX_MOBILE = 32;
+export const STRING_ROW_PX_TABLET = 40;
+export const STRING_ROW_PX_DESKTOP = 48;
+
 const STRING_ROW_PX_BY_TIER: Record<ResponsiveTier, number> = {
-  mobile: 32,
-  tablet: 40,
-  desktop: 48,
+  mobile: STRING_ROW_PX_MOBILE,
+  tablet: STRING_ROW_PX_TABLET,
+  desktop: STRING_ROW_PX_DESKTOP,
 };
 
 const HEADER_SUBTITLE_MIN_WIDTH = 880;

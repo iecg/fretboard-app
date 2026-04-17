@@ -1,3 +1,4 @@
+import { useId, type CSSProperties } from "react";
 import { clsx } from "clsx";
 import {
   NOTES,
@@ -9,10 +10,10 @@ import {
   SCALES,
 } from "./theory";
 import { parseNote } from "./guitar";
+import { STRING_ROW_PX_TABLET } from "./layout/responsive";
 import "./FretboardSVG.css";
 import type { ShapePolygon } from "./shapes";
 
-const STRING_ROW_PX_DEFAULT = 40;
 const NECK_BORDER = 0;
 const NUT_WIDTH = 8;
 const INLAY_FRETS = [3, 5, 7, 9, 15, 17, 19, 21];
@@ -78,7 +79,13 @@ function classifyNote(
   return "note-inactive";
 }
 
-function getNoteVisuals(noteClass: string): {
+function getNoteVisuals(
+  noteClass: string,
+  glowFilterUrls: {
+    cyan: string;
+    orange: string;
+  },
+): {
   stroke: string;
   filter: string;
   fill: string;
@@ -93,7 +100,7 @@ function getNoteVisuals(noteClass: string): {
       // amber ring + orange glow, not by size.
       return {
         stroke: "var(--note-ring-tonic)",
-        filter: "url(#glow-orange)",
+        filter: glowFilterUrls.orange,
         fill: "rgb(48 32 22 / 0.95)",
         textFill: "#ffffff",
         radiusScale: 0.82,
@@ -103,7 +110,7 @@ function getNoteVisuals(noteClass: string): {
     case "chord-tone":
       return {
         stroke: "var(--note-ring-tonic)",
-        filter: "url(#glow-orange)",
+        filter: glowFilterUrls.orange,
         fill: "rgb(40 28 20 / 0.92)",
         textFill: "#ffffff",
         radiusScale: 0.86,
@@ -114,7 +121,7 @@ function getNoteVisuals(noteClass: string): {
     case "note-blue":
       return {
         stroke: "var(--note-ring)",
-        filter: "url(#glow-cyan)",
+        filter: glowFilterUrls.cyan,
         fill: "rgb(20 30 40 / 0.92)",
         textFill: "#ffffff",
         radiusScale: 0.82,
@@ -124,7 +131,7 @@ function getNoteVisuals(noteClass: string): {
     case "note-scale-only":
       return {
         stroke: "var(--note-ring-dim)",
-        filter: "url(#glow-cyan)",
+        filter: glowFilterUrls.cyan,
         fill: "rgb(18 26 34 / 0.85)",
         textFill: "#ffffff",
         radiusScale: 0.78,
@@ -134,7 +141,7 @@ function getNoteVisuals(noteClass: string): {
     case "chord-outside":
       return {
         stroke: "var(--note-ring)",
-        filter: "url(#glow-cyan)",
+        filter: glowFilterUrls.cyan,
         fill: "rgb(18 26 34 / 0.75)",
         textFill: "#ffffff",
         radiusScale: 0.72,
@@ -159,7 +166,7 @@ export function FretboardSVG({
   neckWidthPx,
   startFret,
   endFret,
-  stringRowPx = STRING_ROW_PX_DEFAULT,
+  stringRowPx = STRING_ROW_PX_TABLET,
   fretboardLayout,
   tuning,
   maxFret = 25,
@@ -182,6 +189,13 @@ export function FretboardSVG({
   // around it) but non-uniform spacing inside this component is derived from
   // neckWidthPx + scale math, so the value isn't read here.
   void effectiveZoom;
+  const defsPrefix = `fretboard-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
+  const svgDefId = (id: string) => `${defsPrefix}-${id}`;
+  const svgDefUrl = (id: string) => `url(#${svgDefId(id)})`;
+  const glowFilterUrls = {
+    cyan: svgDefUrl("glow-cyan"),
+    orange: svgDefUrl("glow-orange"),
+  };
   const noteBubblePx = Math.round(stringRowPx * 0.72);
   const noteFontPx = Math.round(stringRowPx * 0.4);
   const neckHeight = tuning.length * stringRowPx;
@@ -491,7 +505,7 @@ export function FretboardSVG({
             height: `${neckHeight + NECK_BORDER * 2}px`,
             width: `${neckWidthPx + NECK_BORDER * 2}px`,
             "--string-row-px": `${stringRowPx}px`,
-          } as React.CSSProperties
+          } as CSSProperties
         }
       >
         {/* Visual SVG — aria-hidden; accessible buttons rendered separately below */}
@@ -508,13 +522,19 @@ export function FretboardSVG({
           aria-hidden="true"
         >
           <defs>
-            <linearGradient id="fretboard-wood" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={svgDefId("fretboard-wood")} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="var(--fretboard-wood-top)" />
               <stop offset="55%" stopColor="#0d0805" />
               <stop offset="100%" stopColor="var(--fretboard-wood-bottom)" />
             </linearGradient>
             {/* Side-to-side vignette — edges slightly darker than centre. */}
-            <linearGradient id="fretboard-vignette" x1="0" y1="0" x2="1" y2="0">
+            <linearGradient
+              id={svgDefId("fretboard-vignette")}
+              x1="0"
+              y1="0"
+              x2="1"
+              y2="0"
+            >
               <stop offset="0%" stopColor="rgb(0 0 0 / 0.55)" />
               <stop offset="8%" stopColor="rgb(0 0 0 / 0.16)" />
               <stop offset="50%" stopColor="rgb(255 255 255 / 0)" />
@@ -523,7 +543,7 @@ export function FretboardSVG({
             </linearGradient>
             {/* Deep ebony grain — long, tight horizontal streaks. */}
             <filter
-              id="wood-grain-filter"
+              id={svgDefId("wood-grain-filter")}
               x="0%"
               y="0%"
               width="100%"
@@ -549,7 +569,7 @@ export function FretboardSVG({
             </filter>
             {/* Warmer mid-tone streaks — rare but visible ribbons of brown. */}
             <filter
-              id="wood-highlights-filter"
+              id={svgDefId("wood-highlights-filter")}
               x="0%"
               y="0%"
               width="100%"
@@ -573,7 +593,7 @@ export function FretboardSVG({
             </filter>
             {/* Fine pore noise — tight speckle to break up solid areas. */}
             <filter
-              id="wood-pores-filter"
+              id={svgDefId("wood-pores-filter")}
               x="0%"
               y="0%"
               width="100%"
@@ -602,7 +622,7 @@ export function FretboardSVG({
                 filterUnits=userSpaceOnUse so the filter region isn't sized to
                 the line's zero-height bbox. */}
             <filter
-              id="string-shadow-blur"
+              id={svgDefId("string-shadow-blur")}
               filterUnits="userSpaceOnUse"
               x={-4}
               y={-4}
@@ -612,7 +632,7 @@ export function FretboardSVG({
               <feGaussianBlur stdDeviation="0.75" />
             </filter>
             {/* Bone nut — near-pure white with a subtle grey shadow for depth. */}
-            <linearGradient id="nut-material" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={svgDefId("nut-material")} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#ffffff" />
               <stop offset="35%" stopColor="#f4f4f1" />
               <stop offset="75%" stopColor="#d8d4cb" />
@@ -620,7 +640,13 @@ export function FretboardSVG({
             </linearGradient>
             {/* Fret wire — horizontal gradient simulates a cylindrical crown
                 with a bright silver highlight down the centre. */}
-            <linearGradient id="fret-wire-cylinder" x1="0" y1="0" x2="1" y2="0">
+            <linearGradient
+              id={svgDefId("fret-wire-cylinder")}
+              x1="0"
+              y1="0"
+              x2="1"
+              y2="0"
+            >
               <stop offset="0%" stopColor="#3e444c" />
               <stop offset="25%" stopColor="#a6afbc" />
               <stop offset="50%" stopColor="#ebeff5" />
@@ -628,7 +654,7 @@ export function FretboardSVG({
               <stop offset="100%" stopColor="#3e444c" />
             </linearGradient>
             {/* Mother-of-pearl inlay — off-centre hot spot for subtle iridescence. */}
-            <radialGradient id="inlay-pearl" cx="35%" cy="32%" r="75%">
+            <radialGradient id={svgDefId("inlay-pearl")} cx="35%" cy="32%" r="75%">
               <stop
                 offset="0%"
                 stopColor="rgb(250 247 232)"
@@ -646,7 +672,7 @@ export function FretboardSVG({
               />
             </radialGradient>
             <filter
-              id="inlay-shadow"
+              id={svgDefId("inlay-shadow")}
               x="-60%"
               y="-60%"
               width="220%"
@@ -660,7 +686,13 @@ export function FretboardSVG({
                 floodOpacity="0.6"
               />
             </filter>
-            <filter id="glow-cyan" x="-50%" y="-50%" width="200%" height="200%">
+            <filter
+              id={svgDefId("glow-cyan")}
+              x="-50%"
+              y="-50%"
+              width="200%"
+              height="200%"
+            >
               <feDropShadow
                 dx="0"
                 dy="0"
@@ -670,7 +702,7 @@ export function FretboardSVG({
               />
             </filter>
             <filter
-              id="glow-orange"
+              id={svgDefId("glow-orange")}
               x="-50%"
               y="-50%"
               width="200%"
@@ -687,12 +719,12 @@ export function FretboardSVG({
             {/* Trapezoidal fretboard silhouette — everything inside the tapered
                 region is clipped. Strings, frets, inlays, polygons, and note
                 circles all live inside this clip. */}
-            <clipPath id="fretboard-taper">
+            <clipPath id={svgDefId("fretboard-taper")}>
               <path d={taperPath} />
             </clipPath>
           </defs>
 
-          <g clipPath="url(#fretboard-taper)">
+          <g clipPath={svgDefUrl("fretboard-taper")}>
             {/* Wood stack — base gradient, deep horizontal grain, warm ribbon
                 highlights, fine pore noise, then the edge vignette. */}
             <rect
@@ -700,7 +732,7 @@ export function FretboardSVG({
               y={0}
               width={neckWidthPx}
               height={neckHeight}
-              fill="url(#fretboard-wood)"
+              fill={svgDefUrl("fretboard-wood")}
             />
             <rect
               x={0}
@@ -708,7 +740,7 @@ export function FretboardSVG({
               width={neckWidthPx}
               height={neckHeight}
               fill="#000"
-              filter="url(#wood-grain-filter)"
+              filter={svgDefUrl("wood-grain-filter")}
               opacity={0.92}
             />
             <rect
@@ -717,7 +749,7 @@ export function FretboardSVG({
               width={neckWidthPx}
               height={neckHeight}
               fill="#000"
-              filter="url(#wood-highlights-filter)"
+              filter={svgDefUrl("wood-highlights-filter")}
               opacity={0.6}
             />
             <rect
@@ -726,7 +758,7 @@ export function FretboardSVG({
               width={neckWidthPx}
               height={neckHeight}
               fill="#000"
-              filter="url(#wood-pores-filter)"
+              filter={svgDefUrl("wood-pores-filter")}
               opacity={0.5}
             />
             <rect
@@ -734,7 +766,7 @@ export function FretboardSVG({
               y={0}
               width={neckWidthPx}
               height={neckHeight}
-              fill="url(#fretboard-vignette)"
+              fill={svgDefUrl("fretboard-vignette")}
             />
 
             {/* Headstock face — the fret 0 area uses a distinct material (a
@@ -766,7 +798,7 @@ export function FretboardSVG({
                       y={0}
                       width={NUT_WIDTH}
                       height={neckHeight}
-                      fill="url(#nut-material)"
+                      fill={svgDefUrl("nut-material")}
                     />
                     <line
                       x1={nutLeftX}
@@ -832,7 +864,7 @@ export function FretboardSVG({
                       y={0}
                       width={wireThickness}
                       height={neckHeight}
-                      fill="url(#fret-wire-cylinder)"
+                      fill={svgDefUrl("fret-wire-cylinder")}
                     />
                   </g>,
                 );
@@ -854,8 +886,8 @@ export function FretboardSVG({
                     cx={x}
                     cy={inlayYAt()}
                     r={inlayR}
-                    fill="url(#inlay-pearl)"
-                    filter="url(#inlay-shadow)"
+                    fill={svgDefUrl("inlay-pearl")}
+                    filter={svgDefUrl("inlay-shadow")}
                   />
                 );
               }
@@ -871,15 +903,15 @@ export function FretboardSVG({
                       cx={x}
                       cy={inlayYTopAt(x)}
                       r={inlayR}
-                      fill="url(#inlay-pearl)"
-                      filter="url(#inlay-shadow)"
+                      fill={svgDefUrl("inlay-pearl")}
+                      filter={svgDefUrl("inlay-shadow")}
                     />
                     <circle
                       cx={x}
                       cy={inlayYBottomAt(x)}
                       r={inlayR}
-                      fill="url(#inlay-pearl)"
-                      filter="url(#inlay-shadow)"
+                      fill={svgDefUrl("inlay-pearl")}
+                      filter={svgDefUrl("inlay-shadow")}
                     />
                   </g>
                 );
@@ -906,7 +938,7 @@ export function FretboardSVG({
                       strokeWidth: `calc(var(--string-taper-${stringIndex + 1}) + 1.4px)`,
                     }}
                     strokeLinecap="round"
-                    filter="url(#string-shadow-blur)"
+                    filter={svgDefUrl("string-shadow-blur")}
                   />
                   <line
                     x1={0}
@@ -966,7 +998,7 @@ export function FretboardSVG({
                   radiusScale,
                   strokeWidth,
                   textOpacity,
-                } = getNoteVisuals(noteClass);
+                } = getNoteVisuals(noteClass, glowFilterUrls);
                 const r = baseRadius * radiusScale;
                 return (
                   <g

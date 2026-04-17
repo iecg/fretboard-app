@@ -132,6 +132,31 @@ describe("FretboardSVG", () => {
     expect(hiddenNotes.length).toBeGreaterThan(0);
   });
 
+  it("prefixes SVG defs ids per instance and keeps url references resolvable", () => {
+    const { container } = render(
+      <>
+        <FretboardSVG {...BASE_PROPS} />
+        <FretboardSVG {...BASE_PROPS} />
+      </>,
+    );
+
+    const defsIds = Array.from(container.querySelectorAll("defs [id]")).map(
+      (node) => node.id,
+    );
+    expect(new Set(defsIds).size).toBe(defsIds.length);
+
+    const urlRefAttributes = ["fill", "filter", "clip-path"] as const;
+    for (const attribute of urlRefAttributes) {
+      const nodes = container.querySelectorAll(`[${attribute}^="url(#"]`);
+      for (const node of nodes) {
+        const value = node.getAttribute(attribute);
+        const refId = value?.match(/^url\(#(.+)\)$/)?.[1];
+        expect(refId).toBeTruthy();
+        expect(defsIds).toContain(refId);
+      }
+    }
+  });
+
   it("has no a11y violations", async () => {
     const { container } = render(<FretboardSVG {...BASE_PROPS} />);
     expect(await axe(container)).toHaveNoViolations();

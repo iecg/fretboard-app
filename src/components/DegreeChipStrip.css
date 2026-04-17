@@ -128,26 +128,24 @@
   letter-spacing: 0.02em;
 }
 
-@media (max-width: 767px) {
-  .degree-chip-strip {
-    --chip-size: 2.15rem;
-    width: 100%;
-    border-radius: 0.85rem;
-    padding: 0.45rem 0.7rem 0.5rem;
-    gap: 0.35rem;
-  }
+.app-container[data-layout-tier="mobile"] .degree-chip-strip {
+  --chip-size: 2.15rem;
+  width: 100%;
+  border-radius: 0.85rem;
+  padding: 0.45rem 0.7rem 0.5rem;
+  gap: 0.35rem;
+}
 
-  .degree-chip-strip-header {
-    font-size: 0.92rem;
-  }
+.app-container[data-layout-tier="mobile"] .degree-chip-strip-header {
+  font-size: 0.92rem;
+}
 
-  .degree-chip-note {
-    font-size: 1.1rem;
-  }
+.app-container[data-layout-tier="mobile"] .degree-chip-note {
+  font-size: 1.1rem;
+}
 
-  .degree-chip-interval {
-    font-size: 0.82rem;
-  }
+.app-container[data-layout-tier="mobile"] .degree-chip-interval {
+  font-size: 0.82rem;
 }
 
 /* Phase 2: Desktop compact chip strip — smaller chips, tighter padding.
