@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import clsx from "clsx";
+import styles from "./DrawerSelector.module.css";
 
 type DrawerSelectorOption = string | { divider: string };
 
@@ -69,7 +70,9 @@ export function DrawerSelector(props: DrawerSelectorProps) {
   // Scroll the focused option into view when activeIndex changes
   useEffect(() => {
     if (!open || !listboxRef.current) return;
-    const focused = listboxRef.current.querySelector<HTMLElement>(".drawer-option.focused");
+    const focused = listboxRef.current.querySelector<HTMLElement>(
+      `.${styles["drawer-option"]}.${styles.focused}`,
+    );
     focused?.scrollIntoView({ block: "nearest" });
   }, [activeIndex, open]);
 
@@ -101,11 +104,11 @@ export function DrawerSelector(props: DrawerSelectorProps) {
   const triggerId = `${label.toLowerCase().replace(/\s+/g, '-')}-trigger`;
 
   return (
-    <div className="drawer-selector" ref={containerRef}>
+    <div className={styles["drawer-selector"]} ref={containerRef}>
       <button
         id={triggerId}
         ref={triggerRef}
-        className="drawer-trigger"
+        className={clsx(styles["drawer-trigger"], open && styles.open)}
         onClick={() => setOpen((o) => !o)}
         onKeyDown={(e) => {
           if (e.key === "ArrowDown" || e.key === "ArrowUp") {
@@ -120,9 +123,11 @@ export function DrawerSelector(props: DrawerSelectorProps) {
         aria-controls={listboxId}
         aria-label={`${label}: ${value ?? "None"}`}
       >
-        <span className="drawer-label">{label}</span>
-        <span className="drawer-value">{value ?? "None"}</span>
-        <ChevronDown className={`drawer-chevron ${open ? "open" : ""}`} />
+        <span className={styles["drawer-label"]}>{label}</span>
+        <span className={styles["drawer-value"]}>{value ?? "None"}</span>
+        <ChevronDown
+          className={clsx(styles["drawer-chevron"], open && styles.open)}
+        />
       </button>
       {open && (
         <div
@@ -133,9 +138,9 @@ export function DrawerSelector(props: DrawerSelectorProps) {
           tabIndex={0}
           aria-activedescendant={flatOptions[activeIndex] === null ? `${listboxId}-none` : `${listboxId}-${sanitizeId(flatOptions[activeIndex] as string)}`}
           className={clsx(
-            "drawer-options",
+            styles["drawer-options"],
             "custom-scrollbar",
-            dropUp && "drawer-options--above",
+            dropUp && styles["drawer-options--above"],
           )}
           onKeyDown={(e) => {
             switch (e.key) {
@@ -188,7 +193,11 @@ export function DrawerSelector(props: DrawerSelectorProps) {
               type="button"
               id={`${listboxId}-none`}
               data-index={0}
-              className={clsx('drawer-option', value === null && 'active', activeIndex === 0 && 'focused')}
+              className={clsx(
+                styles["drawer-option"],
+                value === null && styles.active,
+                activeIndex === 0 && styles.focused,
+              )}
               onClick={() => {
                 props.onSelect(null);
                 setOpen(false);
@@ -210,7 +219,11 @@ export function DrawerSelector(props: DrawerSelectorProps) {
                   key={opt}
                   id={`${listboxId}-${sanitizeId(opt)}`}
                   data-index={flatIndex}
-                  className={clsx('drawer-option', value === opt && 'active', activeIndex === flatIndex++ && 'focused')}
+                  className={clsx(
+                    styles["drawer-option"],
+                    value === opt && styles.active,
+                    activeIndex === flatIndex++ && styles.focused,
+                  )}
                   onClick={() => {
                     props.onSelect(opt);
                     setOpen(false);
@@ -223,7 +236,11 @@ export function DrawerSelector(props: DrawerSelectorProps) {
                   {opt}
                 </button>
               ) : (
-                <div key={`div-${i}`} className="drawer-divider" role="separator">
+                <div
+                  key={`div-${i}`}
+                  className={styles["drawer-divider"]}
+                  role="separator"
+                >
                   {opt.divider}
                 </div>
               ),

@@ -10,6 +10,7 @@ import {
 } from "./theory";
 import { getDegreesForScale } from "./degrees";
 import { getCircleNoteLabels } from "./circleOfFifthsUtils";
+import styles from "./CircleOfFifths.module.css";
 
 const SIZE = 320;
 const CX = SIZE / 2;
@@ -96,10 +97,10 @@ export function CircleOfFifths({
   };
 
   return (
-    <div className="circle-fifths-container">
+    <div className={styles["circle-fifths-container"]}>
       <svg
         viewBox={`0 0 ${SIZE} ${SIZE}`}
-        className="circle-fifths-svg"
+        className={styles["circle-fifths-svg"]}
         role="group"
         aria-label="Circle of Fifths — select a key"
       >

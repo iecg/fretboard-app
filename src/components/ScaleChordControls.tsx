@@ -3,6 +3,7 @@ import { DrawerSelector } from "../DrawerSelector";
 import { NoteGrid } from "./NoteGrid";
 import { NOTES } from "../theory";
 import "./ScaleChordControls.css";
+import shared from "./shared.module.css";
 
 interface ScaleChordControlsProps {
   scaleName: string;
@@ -68,8 +69,8 @@ export function ScaleChordControls({
 
       {chordType && (
         <>
-          <div className="chord-root-row">
-            <label className="link-toggle" htmlFor={linkChordRootId}>
+          <div className={shared["chord-root-row"]}>
+            <label className={shared["link-toggle"]} htmlFor={linkChordRootId}>
               <input
                 id={linkChordRootId}
                 type="checkbox"
@@ -83,7 +84,7 @@ export function ScaleChordControls({
             </label>
             {!linkChordRoot && (
               <>
-                <span className="section-label">Chord Root</span>
+                <span className={shared["section-label"]}>Chord Root</span>
                 <NoteGrid
                   notes={NOTES}
                   selected={chordRoot}
@@ -94,7 +95,7 @@ export function ScaleChordControls({
             )}
           </div>
 
-          <label className="link-toggle" htmlFor={hideNonChordNotesId}>
+          <label className={shared["link-toggle"]} htmlFor={hideNonChordNotesId}>
             <input
               id={hideNonChordNotesId}
               type="checkbox"

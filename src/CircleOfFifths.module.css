@@ -1,0 +1,80 @@
+.circle-fifths-container {
+  container-type: inline-size;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 320px;
+  min-height: 0;
+  overflow: hidden;
+  aspect-ratio: 1;
+  max-height: min(320px, 58vh);
+  margin: 0 auto;
+}
+
+.active {
+  /* Intentional marker class for CSS Modules state composition. */
+}
+
+.circle-fifths-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  overflow: visible;
+}
+
+.circle-slice {
+  fill: var(--surface-raised);
+  cursor: pointer;
+  transition: fill var(--transition-fast);
+}
+
+.circle-slice:hover {
+  fill: var(--surface-highlight);
+}
+
+.circle-slice.active,
+.circle-slice.active:hover {
+  fill: var(--surface-highlight);
+}
+
+.circle-slice:focus,
+.circle-slice:focus-visible {
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.circle-slice-focus-ring {
+  pointer-events: none;
+}
+
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global(.app-container[data-layout-variant="desktop-3col"]) .circle-fifths-container {
+  max-height: min(18rem, 40vh);
+}
+
+:global(.app-container[data-layout-variant="desktop-split"]) .circle-fifths-container {
+  max-height: min(22rem, 46vh);
+}
+
+:global(.app-container[data-layout-variant="tablet-stacked"]) .circle-fifths-container,
+:global(.app-container[data-layout-variant="desktop-stacked"]) .circle-fifths-container {
+  max-width: min(100%, 28rem);
+  width: 100%;
+  margin: 0 auto;
+}
+
+:global(.theory-inline-key) .circle-fifths-container {
+  width: 100%;
+  max-width: min(100%, 20rem);
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
+
+@container (min-width: 300px) {
+  .circle-fifths-svg {
+    max-width: 90cqw;
+    max-height: 90cqw;
+  }
+}

@@ -118,11 +118,6 @@
   justify-content: center;
 }
 
-.theory-inline-key .circle-fifths-container {
-  width: 100%;
-  max-width: min(100%, 20rem);
-}
-
 @media (max-width: 767px) {
   .theory-browser-main {
     gap: 0.5rem;

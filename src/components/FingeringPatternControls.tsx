@@ -4,6 +4,7 @@ import { CAGED_SHAPES, type CagedShape } from "../shapes";
 import { type FingeringPattern } from "../store/atoms";
 import { ToggleBar } from "./ToggleBar";
 import "./FingeringPatternControls.css";
+import shared from "./shared.module.css";
 
 interface FingeringPatternControlsProps {
   fingeringPattern: FingeringPattern;
@@ -39,8 +40,8 @@ export function FingeringPatternControls({
   const shapeHelpId = useId();
   return (
     <>
-      <div className="control-section">
-        <span className="section-label">Fingering Pattern</span>
+      <div className={shared["control-section"]}>
+        <span className={shared["section-label"]}>Fingering Pattern</span>
         <ToggleBar
           options={(["all", "caged", "3nps"] as FingeringPattern[]).map(
             (fp) => ({
@@ -55,20 +56,26 @@ export function FingeringPatternControls({
 
       {fingeringPattern === "caged" && (
         <>
-          <div className="control-section">
+          <div className={shared["control-section"]}>
             {/* TODO: Shape selector is kept inline because it supports Shift+click
                 multi-select, which ToggleBar does not support (single-select only).
                 Refactor once ToggleBar gains a multi-select variant. */}
-            <span className="section-label" id={shapeLabelId}>Shape</span>
-            <span id={shapeHelpId} className="sr-only">
+            <span className={shared["section-label"]} id={shapeLabelId}>Shape</span>
+            <span id={shapeHelpId} className={shared["sr-only"]}>
               Click to select a shape. Shift+click to toggle multiple shapes.
             </span>
-            <div className="toggle-group" role="group" aria-labelledby={shapeLabelId} aria-describedby={shapeHelpId}>
+            <div
+              className={shared["toggle-group"]}
+              role="group"
+              aria-labelledby={shapeLabelId}
+              aria-describedby={shapeHelpId}
+            >
               <button
                 type="button"
-                className={clsx("toggle-btn", {
-                  active: cagedShapes.size === CAGED_SHAPES.length,
-                })}
+                className={clsx(
+                  shared["toggle-btn"],
+                  cagedShapes.size === CAGED_SHAPES.length && shared.active,
+                )}
                 aria-pressed={cagedShapes.size === CAGED_SHAPES.length}
                 onClick={() => setCagedShapes(new Set(CAGED_SHAPES))}
               >
@@ -78,7 +85,10 @@ export function FingeringPatternControls({
                 <button
                   key={s}
                   type="button"
-                  className={clsx("toggle-btn", { active: cagedShapes.has(s) })}
+                  className={clsx(
+                    shared["toggle-btn"],
+                    cagedShapes.has(s) && shared.active,
+                  )}
                   aria-pressed={cagedShapes.has(s)}
                   title="Click to select; Shift+click to toggle multiple"
                   onClick={(e) => {
@@ -104,8 +114,8 @@ export function FingeringPatternControls({
               ))}
             </div>
           </div>
-          <div className="control-section">
-            <span className="section-label">Shape Labels</span>
+          <div className={shared["control-section"]}>
+            <span className={shared["section-label"]}>Shape Labels</span>
             <ToggleBar
               options={[
                 { value: "none", label: "None" },
@@ -119,8 +129,8 @@ export function FingeringPatternControls({
       )}
 
       {fingeringPattern === "3nps" && (
-        <div className="control-section">
-          <span className="section-label">Position</span>
+        <div className={shared["control-section"]}>
+          <span className={shared["section-label"]}>Position</span>
           <ToggleBar
             options={[
               { value: 0, label: "All" },
@@ -135,8 +145,8 @@ export function FingeringPatternControls({
         </div>
       )}
 
-      <div className="control-section">
-        <span className="section-label">Note Labels</span>
+      <div className={shared["control-section"]}>
+        <span className={shared["section-label"]}>Note Labels</span>
         <ToggleBar
           options={(["notes", "degrees", "none"] as const).map((fmt) => ({
             value: fmt,

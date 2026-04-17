@@ -19,6 +19,7 @@ import { LabeledSelect, type LabeledSelectOption } from "./LabeledSelect";
 import { NoteGrid } from "./NoteGrid";
 import { ToggleBar } from "./ToggleBar";
 import "./TheoryControls.css";
+import shared from "./shared.module.css";
 
 const CHORD_OPTIONS: (string | { divider: string })[] = [
   { divider: "Triads" },
@@ -177,8 +178,8 @@ export function TheoryControls({
 
   return (
     <div className="theory-controls">
-      <div className="control-section">
-        <span className="section-label">Root</span>
+      <div className={shared["control-section"]}>
+        <span className={shared["section-label"]}>Root</span>
         <NoteGrid
           notes={NOTES}
           selected={rootNote}
@@ -187,7 +188,7 @@ export function TheoryControls({
         />
       </div>
 
-      <div className="control-section">
+      <div className={shared["control-section"]}>
         <LabeledSelect
           label="Scale Family"
           value={currentFamily.selectorLabel}
@@ -196,8 +197,8 @@ export function TheoryControls({
         />
       </div>
 
-      <div className="control-section">
-        <span className="section-label">{memberTerm}</span>
+      <div className={shared["control-section"]}>
+        <span className={shared["section-label"]}>{memberTerm}</span>
         <div className="theory-browser-row">
           <div className="theory-browser-main">
             <button
@@ -229,9 +230,9 @@ export function TheoryControls({
       </div>
 
       {supportsRelativeBrowse ? (
-        <div className="control-section theory-browse-mode">
+        <div className={clsx(shared["control-section"], "theory-browse-mode")}>
           <div className="theory-inline-label-row">
-            <span className="section-label">Parallel / Relative</span>
+            <span className={shared["section-label"]}>Parallel / Relative</span>
           </div>
           <ToggleBar
             options={[
@@ -293,7 +294,7 @@ export function TheoryControls({
 
             {chordType ? (
               <>
-                <label className="link-toggle" htmlFor={linkChordRootId}>
+                <label className={shared["link-toggle"]} htmlFor={linkChordRootId}>
                   <input
                     id={linkChordRootId}
                     type="checkbox"
@@ -312,8 +313,8 @@ export function TheoryControls({
                 </label>
 
                 {!linkChordRoot ? (
-                  <div className="control-section">
-                    <span className="section-label">Chord Root</span>
+                  <div className={shared["control-section"]}>
+                    <span className={shared["section-label"]}>Chord Root</span>
                     <NoteGrid
                       notes={NOTES}
                       selected={chordRoot}
@@ -323,7 +324,7 @@ export function TheoryControls({
                   </div>
                 ) : null}
 
-                <label className="link-toggle" htmlFor={hideNonChordNotesId}>
+                <label className={shared["link-toggle"]} htmlFor={hideNonChordNotesId}>
                   <input
                     id={hideNonChordNotesId}
                     type="checkbox"
