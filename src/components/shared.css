@@ -48,8 +48,8 @@
 }
 
 .toggle-btn:focus-visible {
-  outline: 2px solid var(--accent-primary);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .toggle-btn.active {
@@ -87,11 +87,11 @@
 }
 
 .accidental-toggle:focus-visible {
-  outline: 2px solid var(--accent-primary);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
   color: var(--text-on-accent);
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 24%, transparent);
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 0 3px rgb(77 228 255 / 0.2);
 }
 
 /* ===== Chord Root Row ===== */
@@ -146,11 +146,11 @@
 }
 
 .note-btn:focus-visible {
-  outline: 2px solid var(--accent-secondary);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
   color: white;
-  border-color: var(--accent-secondary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-secondary) 24%, transparent);
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 0 3px rgb(77 228 255 / 0.2);
 }
 
 .note-btn.active {
@@ -208,8 +208,8 @@
 }
 
 .link-toggle input[type="checkbox"]:focus-visible {
-  outline: 2px solid var(--accent-primary);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
   border-radius: 2px;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 24%, transparent);
+  box-shadow: 0 0 0 3px rgb(77 228 255 / 0.2);
 }

@@ -64,15 +64,11 @@
   --z-header: var(--token-z-header);
   /* --z-overlay-backdrop: 200 and --z-overlay-drawer: 201 already in index.css */
 
-  /* INTERACTIVE ELEMENT TOKENS */
+  /* INTERACTIVE ELEMENT TOKENS
+     --interactive-primary is used for generic interactive controls. StepperControl migrated to
+     the neon visual system in Phase 5 and no longer references this token. */
   --interactive-primary: var(--accent-primary);
   --disabled-opacity: var(--token-disabled-opacity);
-
-  /* === CONTRAST-WARNING ===
-     --text-muted (#a0a0a5) on --surface-raised (#2c2c2e) estimates ~3.8:1 (below WCAG AA 4.5:1 for
-     normal/small text). Intentionally deferred to Phase 5 (visual restyling). Do not change the
-     value in Phase 4 as that would be a visual change out of scope. Track: TODO #4 contrast audit.
-  */
 
   /* TRANSITION REGISTRY */
   --transition-surface: background-color var(--transition-fast) ease, color var(--transition-fast) ease, border-color var(--transition-fast) ease;

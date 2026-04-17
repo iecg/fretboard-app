@@ -74,8 +74,8 @@
 }
 
 .header-btn:focus-visible {
-  outline: 2px solid var(--accent-primary);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .header-btn .icon {
@@ -208,6 +208,11 @@
 .help-modal-close:hover {
   background-color: var(--surface-highlight);
   color: var(--text-primary);
+}
+
+.help-modal-close:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .help-modal-content {
@@ -470,8 +475,8 @@
 }
 
 .note-bubble:focus-visible {
-  outline: 2px solid var(--accent-primary);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
 }
 
 @keyframes note-ping {
@@ -591,7 +596,9 @@
 }
 
 .tuning-select:focus-visible {
-  border-color: var(--accent-primary);
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  border-color: var(--neon-cyan);
 }
 
 /* Fret range controls */
@@ -609,9 +616,9 @@
 
 .badge {
   font-size: var(--text-xs);
-  color: var(--accent-primary);
+  color: var(--neon-cyan-bright);
   text-transform: uppercase;
-  background-color: var(--accent-glow);
+  background-color: var(--token-chip-active-bg);
   padding: 0.125rem var(--space-2);
   border-radius: 9999px;
 }
@@ -700,7 +707,7 @@
 }
 
 .summary-disclosure-btn:hover {
-  border-color: color-mix(in srgb, var(--accent-primary) 40%, var(--surface-highlight));
+  border-color: color-mix(in srgb, var(--neon-cyan) 40%, var(--surface-highlight));
 }
 
 .summary-disclosure-btn:focus-visible {
@@ -709,7 +716,7 @@
 }
 
 .summary-disclosure-btn--open {
-  border-color: color-mix(in srgb, var(--accent-primary) 45%, var(--surface-highlight));
+  border-color: color-mix(in srgb, var(--neon-cyan) 45%, var(--surface-highlight));
 }
 
 .summary-disclosure-label {
@@ -729,7 +736,7 @@
 
 .summary-disclosure-btn--open .summary-disclosure-icon {
   transform: rotate(180deg);
-  color: var(--accent-primary);
+  color: var(--neon-cyan-bright);
 }
 
 .summary-content {
@@ -1131,6 +1138,11 @@
 .toolbar-btn:hover:not(:disabled) {
   color: white;
   border-color: var(--accent-primary);
+}
+
+.toolbar-btn:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .toolbar-btn:disabled {

@@ -804,6 +804,74 @@ describe("App", () => {
       ).toBeTruthy();
       expect(document.querySelector(".mobile-tab-content")).toBeNull();
     });
+
+    // Rendered CSS regression: verifies ExpandedControlsPanel.css is imported and
+    // its grid rules are applied to the DOM. Fails if the CSS import is removed.
+    it("dashboard panel has display:grid and gridTemplateColumns for desktop-3col", async () => {
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 1440,
+      });
+      Object.defineProperty(window, "innerHeight", {
+        writable: true,
+        configurable: true,
+        value: 900,
+      });
+      localStorage.clear();
+
+      render(<App />);
+      fireEvent(window, new Event("resize"));
+
+      await waitFor(() => {
+        expect(
+          document.querySelector('.controls-panel[data-mode="3col"]'),
+        ).toBeTruthy();
+      });
+
+      const panel = document.querySelector(
+        ".controls-panel.controls-panel--dashboard",
+      ) as HTMLElement;
+      expect(panel).toBeTruthy();
+
+      const styles = window.getComputedStyle(panel);
+      expect(styles.display).toBe("grid");
+      expect(styles.gridTemplateColumns).toBeTruthy();
+      expect(styles.gridTemplateColumns).not.toBe("none");
+    });
+
+    it("dashboard panel has display:grid and gridTemplateColumns for desktop-split", async () => {
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 1024,
+      });
+      Object.defineProperty(window, "innerHeight", {
+        writable: true,
+        configurable: true,
+        value: 1366,
+      });
+      localStorage.clear();
+
+      render(<App />);
+      fireEvent(window, new Event("resize"));
+
+      await waitFor(() => {
+        expect(
+          document.querySelector('.controls-panel[data-mode="split"]'),
+        ).toBeTruthy();
+      });
+
+      const panel = document.querySelector(
+        ".controls-panel.controls-panel--dashboard",
+      ) as HTMLElement;
+      expect(panel).toBeTruthy();
+
+      const styles = window.getComputedStyle(panel);
+      expect(styles.display).toBe("grid");
+      expect(styles.gridTemplateColumns).toBeTruthy();
+      expect(styles.gridTemplateColumns).not.toBe("none");
+    });
   });
 
   describe("Mobile settings interactions", () => {
