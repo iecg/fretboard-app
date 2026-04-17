@@ -133,3 +133,19 @@
     height: 2.7rem;
   }
 }
+
+/* Desktop: tighter theory card density — Phase 3. */
+.app-container[data-layout-tier="desktop"] .theory-controls {
+  gap: 0.72rem;
+}
+
+.app-container[data-layout-tier="desktop"] .theory-chord-section,
+.app-container[data-layout-tier="desktop"] .theory-inline-key {
+  padding: 0.6rem 0.85rem;
+  gap: 0.58rem;
+}
+
+.app-container[data-layout-tier="desktop"] .theory-nav-btn {
+  width: 2.6rem;
+  height: 2.6rem;
+}

@@ -931,10 +931,6 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  .fretboard-toolbar {
-    display: none !important;
-  }
-
 
 
   .mobile-tab-panel {
@@ -1038,9 +1034,9 @@
   max-height: min(26rem, 52vh);
 }
 
-/* Stacked variants (tablet-stacked, desktop-stacked): single column, centered key card. */
-.app-container[data-layout-variant="tablet-stacked"] .key-column,
-.app-container[data-layout-variant="desktop-stacked"] .key-column {
+/* tablet-stacked: single column, centered key card. */
+/* desktop-stacked uses 3-col grid (ExpandedControlsPanel.css) — no centering needed. */
+.app-container[data-layout-variant="tablet-stacked"] .key-column {
   max-width: 32rem;
   width: 100%;
   margin: 0 auto;
@@ -1080,7 +1076,7 @@
   margin-bottom: 0;
 }
 
-/* ===== Fretboard Outer + Toolbar ===== */
+/* ===== Fretboard Outer ===== */
 .fretboard-outer {
   display: flex;
   flex-direction: column;
@@ -1088,15 +1084,8 @@
   min-width: 0;
 }
 
-.fretboard-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 var(--space-3);
-  gap: var(--space-4);
-  margin-bottom: var(--space-1);
-  flex-wrap: wrap;
-}
+/* .fretboard-toolbar — removed: no component renders this class.
+   Toolbar controls live in the FretboardSVG fret-numbers-row / viewport-jumps. */
 
 .viewport-jumps,
 .zoom-controls,
@@ -1431,12 +1420,6 @@
   gap: 0.55rem;
 }
 
-.fretboard-toolbar {
-  justify-content: center;
-  padding: 0;
-  margin-bottom: 0;
-}
-
 .viewport-jumps {
   gap: 0.45rem;
   padding: 0.3rem 0.4rem;
@@ -1515,6 +1498,8 @@
 
 .app-container[data-layout-tier="desktop"] {
   max-width: 92rem;
+  /* Phase 2: tightened further — hero band is now compact chrome */
+  gap: 0.5rem;
 }
 
 @media (max-width: 767px) {
@@ -1542,4 +1527,45 @@
   .viewport-jumps {
     padding-inline: 0.3rem;
   }
+}
+
+/* =============================================
+   Phase 1 Layout Architecture
+   Hierarchy: header chrome → summary band → fretboard hero → controls dashboard
+   ============================================= */
+
+/* Phase 2: compact action buttons on desktop tier — 2.65rem vs 2.95rem base. */
+.app-container[data-layout-tier="desktop"] .header-btn {
+  width: 2.65rem;
+  height: 2.65rem;
+}
+
+/* Phase 2: pull summary-shell 0.18rem closer to the header — creates a
+   tighter "top band" zone (header + key summary) vs. the fretboard below.
+   Combined with gap: 0.5rem, the strip sits 0.32rem below the header while
+   the fretboard gets the full 0.5rem gap (unified feel without margins). */
+.app-container[data-layout-tier="desktop"] .summary-shell {
+  margin-top: -0.18rem;
+}
+
+/* Fretboard hero gets an explicit margin-bottom to visually separate it
+   from the controls dashboard below. Combined with the 0.5rem container gap,
+   total fretboard→controls space is ~0.95rem — intentionally wider than the
+   0.32rem between chrome sections above the fretboard. */
+.app-container[data-layout-tier="desktop"] .main-fretboard {
+  margin-bottom: 0.45rem;
+}
+
+/* Desktop 3col: reduce CoF max-height from 22rem so the Key card stays
+   proportionate with the Configuration and Theory cards alongside it.
+   At 900px height 40vh = 360px, min(18rem=288px, 360px) → 288px cap.
+   At 1200px height 40vh = 480px → still capped at 18rem. */
+.app-container[data-layout-variant="desktop-3col"] .circle-fifths-container {
+  max-height: min(18rem, 40vh);
+}
+
+/* Desktop split: tighten slightly — Key spans both rows so a taller CoF
+   is still fine, but pull back from 26rem to keep proportions better. */
+.app-container[data-layout-variant="desktop-split"] .circle-fifths-container {
+  max-height: min(22rem, 46vh);
 }

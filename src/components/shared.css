@@ -165,6 +165,17 @@
     0 0 16px rgb(77 228 255 / 0.18);
 }
 
+/* ===== Desktop: tighter interactive controls ===== */
+.app-container[data-layout-tier="desktop"] .toggle-btn {
+  min-height: 2.2rem;
+  padding: 0.3rem 0.68rem;
+  font-size: 0.85rem;
+}
+
+.app-container[data-layout-tier="desktop"] .note-btn {
+  min-height: 2.55rem;
+}
+
 /* ===== Screen Reader Only ===== */
 .sr-only {
   position: absolute;

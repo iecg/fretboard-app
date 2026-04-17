@@ -1,3 +1,4 @@
+import "./ExpandedControlsPanel.css";
 import { useMemo } from "react";
 import { useAtomValue, useSetAtom, useAtom } from "jotai";
 import {

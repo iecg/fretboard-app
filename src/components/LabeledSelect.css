@@ -71,3 +71,10 @@
   flex-shrink: 0;
   font-size: 0.92rem;
 }
+
+/* Desktop: tighter select height — Phase 3 density pass. */
+.app-container[data-layout-tier="desktop"] .labeled-select-native {
+  min-height: 2.65rem;
+  padding: 0.52rem 2.6rem 0.52rem 0.85rem;
+  font-size: 0.93rem;
+}
