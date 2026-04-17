@@ -1,6 +1,13 @@
 // @vitest-environment jsdom
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { BREAKPOINTS } from "../layout/breakpoints";
+
+const expandedPanelCSS = readFileSync(
+  resolve(__dirname, "../components/ExpandedControlsPanel.css"),
+  "utf-8",
+);
 import {
   getResponsiveLayout,
   getResponsiveTier,
@@ -8,6 +15,29 @@ import {
   getStringRowPx,
   isCompactHeight,
 } from "../layout/responsive";
+
+// Regression guard: if ExpandedControlsPanel.css is unimported or its grid rule
+// is removed, the dashboard silently falls back to flex — this test catches it.
+describe("dashboard panel CSS contract", () => {
+  it("declares display: grid on .controls-panel--dashboard", () => {
+    expect(expandedPanelCSS).toContain(".controls-panel.controls-panel--dashboard");
+    expect(expandedPanelCSS).toContain("display: grid");
+  });
+
+  it("3col mode declares grid-template-columns", () => {
+    expect(expandedPanelCSS).toContain('[data-mode="3col"]');
+    expect(expandedPanelCSS).toContain("grid-template-columns");
+  });
+
+  it("split mode declares grid-template-columns", () => {
+    expect(expandedPanelCSS).toContain('[data-mode="split"]');
+    // Verify split has its own column definition (not just inherited from 3col)
+    const splitBlock = expandedPanelCSS.slice(
+      expandedPanelCSS.indexOf('[data-mode="split"]'),
+    );
+    expect(splitBlock).toContain("grid-template-columns");
+  });
+});
 
 describe("responsive layout helper", () => {
   it("exports the shared breakpoint contract", () => {

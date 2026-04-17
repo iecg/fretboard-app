@@ -60,7 +60,7 @@
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.12),
     0 0 0 1px rgb(77 228 255 / 0.32),
-    0 0 16px rgb(77 228 255 / 0.22);
+    0 0 8px rgb(77 228 255 / 0.16);
 }
 
 .accidental-toggle {
@@ -71,7 +71,7 @@
   align-items: center;
   justify-content: center;
   background: none;
-  border: 1px solid var(--surface-highlight);
+  border: 1px solid rgb(255 255 255 / 0.12);
   border-radius: 9999px;
   color: var(--text-muted);
   cursor: pointer;
@@ -162,7 +162,7 @@
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.14),
     0 0 0 1px rgb(77 228 255 / 0.16),
-    0 0 16px rgb(77 228 255 / 0.18);
+    0 0 8px rgb(77 228 255 / 0.12);
 }
 
 /* ===== Desktop: tighter interactive controls ===== */
