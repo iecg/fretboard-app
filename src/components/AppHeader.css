@@ -153,3 +153,23 @@
     height: clamp(1.1rem, 5.5vw, 1.5rem);
   }
 }
+
+/* Phase 2: Desktop compact header — smaller brand mark, tighter vertical padding.
+   Targets ~78px total header height (down from ~111px).
+   Brand legibility is preserved; action buttons shrink proportionally. */
+.app-container[data-layout-tier="desktop"] .app-header {
+  padding-top: clamp(0.52rem, 0.86vw, 0.7rem);
+  padding-bottom: clamp(0.52rem, 0.86vw, 0.7rem);
+}
+
+.app-container[data-layout-tier="desktop"] .app-header-brand-icon .brand-mark {
+  width: clamp(2.75rem, 4.8vw, 3.65rem);
+}
+
+.app-container[data-layout-tier="desktop"] .app-header-brand-wordmark .fretflow-wordmark {
+  height: clamp(1.22rem, 2.1vw, 1.72rem);
+}
+
+.app-container[data-layout-tier="desktop"] .app-header-brand-subtitle {
+  font-size: clamp(0.6rem, 0.85vw, 0.7rem);
+}

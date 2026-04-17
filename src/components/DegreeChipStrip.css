@@ -149,3 +149,24 @@
     font-size: 0.82rem;
   }
 }
+
+/* Phase 2: Desktop compact chip strip — smaller chips, tighter padding.
+   Targets ~82px strip height (down from ~104px), keeping chip glyph legible. */
+.app-container[data-layout-tier="desktop"] .degree-chip-strip {
+  --chip-size: clamp(1.82rem, 2.45vw, 2.02rem);
+  padding: 0.34rem 0.78rem 0.38rem;
+  gap: 0.24rem;
+  width: min(100%, 32rem);
+}
+
+.app-container[data-layout-tier="desktop"] .degree-chip-strip-header {
+  font-size: clamp(0.84rem, 1.2vw, 0.96rem);
+}
+
+.app-container[data-layout-tier="desktop"] .degree-chip-note {
+  font-size: clamp(1rem, 1.7vw, 1.15rem);
+}
+
+.app-container[data-layout-tier="desktop"] .degree-chip-interval {
+  font-size: 0.78rem;
+}
