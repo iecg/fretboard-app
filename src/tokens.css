@@ -133,8 +133,10 @@
 
 /* === Fretboard visual tokens (Phase 5 — unused in Phase 4) === */
 :root {
-  --fretboard-wood-top: #3a2517;
-  --fretboard-wood-bottom: #2a1810;
+  /* Ebony-style fingerboard: near-black with only a whisper of warmth.
+     The SVG grain + highlight filters in FretboardSVG.tsx layer over this. */
+  --fretboard-wood-top: #160d07;
+  --fretboard-wood-bottom: #080403;
   --fretboard-wood-grain: rgb(255 255 255 / 0.02);
   --fret-wire-v2: #9aa0a6;          /* Phase 5 fret wire (brighter); --fret-wire in index.css is Phase 4 value */
   --fret-wire-dark: #4a5058;

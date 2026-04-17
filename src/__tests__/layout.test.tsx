@@ -35,9 +35,9 @@ describe("responsive layout helper", () => {
     [390, 844, "mobile", "mobile", 32],
     [667, 375, "mobile", "landscape-mobile", 32],
     [768, 1024, "tablet", "tablet-split", 40],
-    [1024, 768, "desktop", "desktop-stacked", 48],
-    [1024, 1366, "desktop", "desktop-split", 48],
-    [1200, 720, "desktop", "desktop-stacked", 48],
+    [1024, 768, "desktop", "desktop-3col", 48],
+    [1024, 1366, "desktop", "desktop-3col", 48],
+    [1200, 720, "desktop", "desktop-3col", 48],
   ] as const)(
     "maps %ix%i to %s / %s",
     (width, height, tier, variant, stringRowPx) => {
@@ -62,10 +62,17 @@ describe("responsive layout helper", () => {
     expect(getResponsiveLayout(1024, 768).showControlsPanel).toBe(true);
   });
 
-  it("uses split panels only for roomy tablet and desktop layouts", () => {
+  it("uses split panel only for roomy tablet layouts", () => {
     expect(getResponsiveLayout(768, 1024).isSplitPanel).toBe(true);
-    expect(getResponsiveLayout(1024, 1366).isSplitPanel).toBe(true);
+    expect(getResponsiveLayout(1024, 1366).isSplitPanel).toBe(false);
     expect(getResponsiveLayout(1024, 768).isSplitPanel).toBe(false);
+  });
+
+  it("routes desktop to the 3-column panel mode", () => {
+    expect(getResponsiveLayout(1024, 768).panelMode).toBe("3col");
+    expect(getResponsiveLayout(1024, 1366).panelMode).toBe("3col");
+    expect(getResponsiveLayout(768, 1024).panelMode).toBe("split");
+    expect(getResponsiveLayout(768, 400).panelMode).toBe("stacked");
   });
 
   it("hides the summary only in landscape mobile", () => {

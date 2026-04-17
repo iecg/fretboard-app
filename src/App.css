@@ -27,7 +27,10 @@
   background: var(--accent-primary);
 }
 
-/* Base App Layout */
+/* Base App Layout. The app gradient is painted on `body` (see index.css)
+   so it fills the entire viewport — the .app-container is a transparent
+   centered layout wrapper (max-width: 80rem) so the header/content don't
+   appear to sit on a boxed-in panel at large viewports. */
 .app-container {
   flex: 1 1 auto;
   align-self: stretch;
@@ -44,10 +47,7 @@
   min-height: 100dvh;
   container-type: inline-size;
   container-name: app-layout;
-  background:
-    var(--bg-app-accent-glow),
-    linear-gradient(180deg, var(--bg-app-gradient-start), var(--bg-app-gradient-end));
-  background-attachment: fixed;
+  background: transparent;
 }
 
 /* Header action buttons (rendered inside AppHeader actions slot) */
@@ -260,17 +260,7 @@
   position: relative;
   width: 100%;
   min-width: 0;
-  overflow-x: auto;
-  padding: 0 var(--space-2);
-}
-
-.fretboard-neck {
-  position: relative;
-  border-radius: var(--radius-sm);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  border: 4px solid var(--fretboard-border);
-  background-color: var(--fretboard-wood);
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 /* Shape labels below fretboard */
@@ -318,9 +308,6 @@
 
 .fret-numbers-row {
   display: flex;
-  background: rgb(10 14 22 / 0.92);
-  border-top: 1px solid rgb(255 255 255 / 0.05);
-  padding-block: 0.3rem;
 }
 
 .fret-number {
@@ -1319,8 +1306,10 @@
 
 /* ===== Version Badge ===== */
 .version-badge {
-  display: block;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
   font-size: 0.65rem;
   color: rgba(255, 255, 255, 0.35);
   letter-spacing: 0.04em;
@@ -1331,10 +1320,33 @@
   margin-top: 0;
 }
 
+.kofi-badge-btn {
+  display: flex;
+  align-items: center;
+  pointer-events: auto;
+  opacity: 0.6;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.kofi-badge-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.kofi-badge-icon {
+  height: 18px;
+  display: block;
+}
+
 @media (max-width: 767px) {
   .version-badge {
     font-size: 0.6rem;
     color: rgba(255, 255, 255, 0.5);
+  }
+
+  .kofi-badge-icon {
+    height: 16px;
   }
 }
 
@@ -1401,10 +1413,6 @@
   height: 34px;
 }
 
-.main-fretboard {
-  margin-top: 0.1rem;
-}
-
 .fretboard-outer {
   gap: 0.55rem;
 }
@@ -1445,15 +1453,6 @@
   padding: 0;
 }
 
-.fretboard-neck {
-  border: 1px solid rgb(255 255 255 / 0.1);
-  border-radius: 1rem;
-  box-shadow:
-    inset 0 0 0 1px rgb(255 255 255 / 0.02),
-    0 28px 54px rgb(0 0 0 / 0.34);
-  background-color: #170f0a;
-}
-
 .fret-number {
   font-size: 0.9rem;
   font-weight: 500;
@@ -1492,11 +1491,12 @@
 
 .version-badge {
   color: rgb(196 209 223 / 0.46);
-  pointer-events: auto;
+  pointer-events: none;
 }
 
 .version-badge a {
   color: rgb(210 225 238 / 0.74);
+  pointer-events: auto;
 }
 
 .app-container[data-layout-tier="desktop"] {

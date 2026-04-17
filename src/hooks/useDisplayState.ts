@@ -1,9 +1,5 @@
 import { useState, useMemo } from "react";
-import {
-  useAtom,
-  useAtomValue,
-  useSetAtom,
-} from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
   rootNoteAtom,
   scaleNameAtom,
@@ -77,9 +73,13 @@ export default function useDisplayState() {
   const [chordRoot, setChordRoot] = useAtom(chordRootAtom);
   const [chordType, setChordType] = useAtom(chordTypeAtom);
   const [linkChordRoot, setLinkChordRoot] = useAtom(linkChordRootAtom);
-  const [hideNonChordNotes, setHideNonChordNotes] = useAtom(hideNonChordNotesAtom);
+  const [hideNonChordNotes, setHideNonChordNotes] = useAtom(
+    hideNonChordNotesAtom,
+  );
   const chordFretSpread = useAtomValue(chordFretSpreadAtom);
-  const [chordIntervalFilter, setChordIntervalFilter] = useAtom(chordIntervalFilterAtom);
+  const [chordIntervalFilter, setChordIntervalFilter] = useAtom(
+    chordIntervalFilterAtom,
+  );
 
   // Fingering
   const [fingeringPattern, setFingeringPattern] = useAtom(fingeringPatternAtom);
@@ -142,94 +142,106 @@ export default function useDisplayState() {
     return getIntervalNotes(chordRoot, filtered);
   }, [chordRoot, chordType, chordIntervalFilter, chordTones]);
 
-  const { highlightNotes, boxBounds, shapePolygons, wrappedNotes, autoCenterTarget } =
-    useMemo(() => {
-      let coords: string[] = [];
-      let bounds: { minFret: number; maxFret: number }[] = [];
-      let polygons: ShapePolygon[] = [];
-      const mergedWrappedNotes = new Set<string>();
+  const {
+    highlightNotes,
+    boxBounds,
+    shapePolygons,
+    wrappedNotes,
+    autoCenterTarget,
+  } = useMemo(() => {
+    let coords: string[] = [];
+    let bounds: { minFret: number; maxFret: number }[] = [];
+    let polygons: ShapePolygon[] = [];
+    const mergedWrappedNotes = new Set<string>();
 
-      if (fingeringPattern === "caged") {
-        const shapesToRender = CAGED_SHAPES.filter((s) => cagedShapes.has(s));
-        const allCoords = new Set<string>();
-        const allBounds: { minFret: number; maxFret: number }[] = [];
-        const allPolygons: ShapePolygon[] = [];
-        for (const shape of shapesToRender) {
-          const res = getCagedCoordinates(
-            rootNote,
-            shape,
-            scaleName,
-            currentTuning,
-            24,
-          );
-          res.coordinates.forEach((c) => allCoords.add(c));
-          allBounds.push(...res.bounds);
-          allPolygons.push(...res.polygons);
-          res.wrappedNotes.forEach((k) => mergedWrappedNotes.add(k));
-        }
+    if (fingeringPattern === "caged") {
+      const shapesToRender = CAGED_SHAPES.filter((s) => cagedShapes.has(s));
+      const allCoords = new Set<string>();
+      const allBounds: { minFret: number; maxFret: number }[] = [];
+      const allPolygons: ShapePolygon[] = [];
+      for (const shape of shapesToRender) {
+        const res = getCagedCoordinates(
+          rootNote,
+          shape,
+          scaleName,
+          currentTuning,
+          24,
+        );
+        res.coordinates.forEach((c) => allCoords.add(c));
+        allBounds.push(...res.bounds);
+        allPolygons.push(...res.polygons);
+        res.wrappedNotes.forEach((k) => mergedWrappedNotes.add(k));
+      }
 
-        coords = Array.from(allCoords);
-        bounds = allBounds;
-        polygons = allPolygons;
-      } else if (fingeringPattern === "3nps") {
-        if (npsPosition === 0) {
-          coords = getScaleNotes(rootNote, scaleName);
-        } else {
-          const res = get3NPSCoordinates(
-            rootNote,
-            scaleName,
-            currentTuning,
-            24,
-            npsPosition,
-          );
-          coords = res.coordinates;
-          bounds = res.bounds;
-        }
-      } else {
+      coords = Array.from(allCoords);
+      bounds = allBounds;
+      polygons = allPolygons;
+    } else if (fingeringPattern === "3nps") {
+      if (npsPosition === 0) {
         coords = getScaleNotes(rootNote, scaleName);
+      } else {
+        const res = get3NPSCoordinates(
+          rootNote,
+          scaleName,
+          currentTuning,
+          24,
+          npsPosition,
+        );
+        coords = res.coordinates;
+        bounds = res.bounds;
       }
+    } else {
+      coords = getScaleNotes(rootNote, scaleName);
+    }
 
-      // Compute auto-center target for CAGED mode
-      let autoCenterTarget: number | undefined;
-      if (fingeringPattern === "caged" && polygons.length > 0) {
-        // If a shape was clicked, center that specific shape
-        if (clickedShape) {
-          const clickedPoly = polygons.find((p) => p.shape === clickedShape);
-          if (clickedPoly && !clickedPoly.truncated) {
-            autoCenterTarget = getShapeCenterFret(clickedPoly);
-          }
+    // Compute auto-center target for CAGED mode
+    let autoCenterTarget: number | undefined;
+    if (fingeringPattern === "caged" && polygons.length > 0) {
+      // If a shape was clicked, center that specific shape
+      if (clickedShape) {
+        const clickedPoly = polygons.find((p) => p.shape === clickedShape);
+        if (clickedPoly && !clickedPoly.truncated) {
+          autoCenterTarget = getShapeCenterFret(clickedPoly);
         }
-        // Otherwise find the main (lowest complete) shape
-        if (autoCenterTarget === undefined) {
-          const mainShape = findMainShape(polygons, mergedWrappedNotes, startFret, endFret);
-          if (mainShape) {
-            autoCenterTarget = getShapeCenterFret(mainShape);
-          }
-        }
-      } else if (fingeringPattern === "3nps" && bounds.length > 0) {
-        // Center on the lowest note of the current 3NPS position
-        const lowestBounds = bounds.reduce((a, b) => (a.minFret <= b.minFret ? a : b));
-        autoCenterTarget = lowestBounds.minFret;
       }
+      // Otherwise find the main (lowest complete) shape
+      if (autoCenterTarget === undefined) {
+        const mainShape = findMainShape(
+          polygons,
+          mergedWrappedNotes,
+          startFret,
+          endFret,
+        );
+        if (mainShape) {
+          autoCenterTarget = getShapeCenterFret(mainShape);
+        }
+      }
+    } else if (fingeringPattern === "3nps" && bounds.length > 0) {
+      // Center on the lowest note of the current 3NPS position
+      const lowestBounds = bounds.reduce((a, b) =>
+        a.minFret <= b.minFret ? a : b,
+      );
+      autoCenterTarget = lowestBounds.minFret;
+    }
 
-      return {
-        highlightNotes: coords,
-        boxBounds: bounds,
-        shapePolygons: polygons,
-        wrappedNotes: mergedWrappedNotes,
-        autoCenterTarget,
-      };
-    }, [
-      rootNote,
-      scaleName,
-      fingeringPattern,
-      cagedShapes,
-      npsPosition,
-      currentTuning,
-      startFret,
-      endFret,
-      clickedShape,
-    ]);
+    return {
+      highlightNotes: coords,
+      boxBounds: bounds,
+      shapePolygons: polygons,
+      wrappedNotes: mergedWrappedNotes,
+      autoCenterTarget,
+    };
+  }, [
+    rootNote,
+    scaleName,
+    fingeringPattern,
+    cagedShapes,
+    npsPosition,
+    currentTuning,
+    startFret,
+    endFret,
+    clickedShape,
+  ]);
 
   // Compute color notes: blue notes for blues scales, divergent notes for modal scales
   const colorNotes = useMemo(() => {
@@ -256,15 +268,16 @@ export default function useDisplayState() {
 
   const activeBrowseOption = useMemo(
     () =>
-      getActiveScaleBrowseOption(rootNote, scaleName, scaleBrowseMode, useFlats),
+      getActiveScaleBrowseOption(
+        rootNote,
+        scaleName,
+        scaleBrowseMode,
+        useFlats,
+      ),
     [rootNote, scaleName, scaleBrowseMode, useFlats],
   );
 
-  const scaleMetadata =
-    fingeringPattern === "3nps" && npsPosition > 0
-      ? ` | 3NPS Position ${npsPosition}`
-      : "";
-  const scaleLabel = `${formatAccidental(activeBrowseOption.label)}${scaleMetadata}`;
+  const scaleLabel = `${formatAccidental(activeBrowseOption.label)}`;
 
   const chordLabel = chordType
     ? `${formatAccidental(getNoteDisplay(chordRoot, chordRoot, useFlats))} ${chordType}`

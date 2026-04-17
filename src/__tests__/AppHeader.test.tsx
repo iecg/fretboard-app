@@ -5,10 +5,13 @@ import { axe } from '../test-utils/a11y';
 
 describe('AppHeader', () => {
   it('renders with brandTitle — header with role=banner exists', () => {
-    render(<AppHeader brandTitle="FretFlow" />);
+    const { container } = render(<AppHeader brandTitle="FretFlow" />);
     const header = screen.getByRole('banner');
     expect(header).toBeTruthy();
-    expect(screen.getByText('FretFlow')).toBeTruthy();
+    // Title renders split across two spans ("Fret" cyan + "Flow" orange),
+    // so we check the combined textContent of the wrapper element.
+    const title = container.querySelector('.app-header-brand-title');
+    expect(title?.textContent).toBe('FretFlow');
   });
 
   it('renders brandSubtitle when provided', () => {

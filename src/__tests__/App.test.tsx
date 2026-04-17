@@ -711,7 +711,7 @@ describe("App", () => {
     });
   });
 
-  describe("Desktop stacked layout", () => {
+  describe("Desktop 3-column layout", () => {
     beforeEach(() => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
@@ -726,7 +726,7 @@ describe("App", () => {
       localStorage.clear();
     });
 
-    it("uses the compact desktop stacked variant", async () => {
+    it("uses the desktop 3-column variant regardless of height", async () => {
       render(<App />);
       fireEvent(window, new Event("resize"));
 
@@ -734,11 +734,14 @@ describe("App", () => {
         const appContainer = document.querySelector(".app-container");
         expect(appContainer?.getAttribute("data-layout-tier")).toBe("desktop");
         expect(appContainer?.getAttribute("data-layout-variant")).toBe(
-          "desktop-stacked",
+          "desktop-3col",
         );
       });
 
       expect(document.querySelector(".controls-panel")).toBeTruthy();
+      expect(
+        document.querySelector('.controls-panel[data-mode="3col"]'),
+      ).toBeTruthy();
       expect(document.querySelector(".mobile-tab-content")).toBeNull();
     });
   });

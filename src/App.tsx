@@ -1,11 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import clsx from "clsx";
-import {
-  useAtom,
-  useSetAtom,
-  createStore,
-  Provider,
-} from "jotai";
+import { useAtom, useSetAtom, createStore, Provider } from "jotai";
 import { Fretboard } from "./Fretboard";
 import {
   SCALES,
@@ -14,12 +9,7 @@ import {
   getNoteDisplayInScale,
   formatAccidental,
 } from "./theory";
-import {
-  HelpCircle,
-  Settings2,
-  Volume2,
-  VolumeX,
-} from "lucide-react";
+import { HelpCircle, Settings2, Volume2, VolumeX } from "lucide-react";
 import { getFocusableElements } from "./utils/dom";
 import { synth } from "./audio";
 import { CircleOfFifths } from "./CircleOfFifths";
@@ -37,10 +27,11 @@ import useLayoutMode from "./hooks/useLayoutMode";
 import useDisplayState from "./hooks/useDisplayState";
 import { AppHeader } from "./components/AppHeader";
 import { BrandMark } from "./components/BrandMark";
+import { FretFlowWordmark } from "./components/FretFlowWordmark";
 import { DegreeChipStrip } from "./components/DegreeChipStrip";
 import "./App.css";
 
-const END_FRET = 24;
+const END_FRET = 25;
 
 function AppContent() {
   const {
@@ -168,7 +159,14 @@ function AppContent() {
         rootIdx !== -1 && noteIdx !== -1 ? (noteIdx - rootIdx + 12) % 12 : 0;
       const interval = INTERVAL_NAMES[chromaticInterval] ?? "1";
       return {
-        note: formatAccidental(getNoteDisplayInScale(note, rootNote, SCALES[scaleName] || [], useFlats)),
+        note: formatAccidental(
+          getNoteDisplayInScale(
+            note,
+            rootNote,
+            SCALES[scaleName] || [],
+            useFlats,
+          ),
+        ),
         interval,
         inScale: true,
         isTonic: note === rootNote,
@@ -256,27 +254,10 @@ function AppContent() {
       <AppHeader
         brandTitle="FretFlow"
         brandSubtitle="Interactive Fretboard & Music Theory"
+        brandWordmark={<FretFlowWordmark />}
         brandIcon={<BrandMark />}
         actions={
           <>
-            <a
-              href="https://ko-fi.com/E1E01XFJ0G"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="kofi-header-btn"
-              title="Support FretFlow on Ko-fi"
-            >
-              <img
-                src="/fretboard-app/support_me_on_kofi_blue.png"
-                alt="Support me on Ko-fi"
-                className="kofi-btn-desktop"
-              />
-              <img
-                src="/fretboard-app/kofi_symbol.png"
-                alt="Ko-fi"
-                className="kofi-btn-mobile"
-              />
-            </a>
             <button
               type="button"
               onClick={() => setSettingsOverlayOpen((v) => !v)}
@@ -313,7 +294,9 @@ function AppContent() {
         }
       />
 
-      {layout.showSummary && <div className="summary-shell">{summaryContent}</div>}
+      {layout.showSummary && (
+        <div className="summary-shell">{summaryContent}</div>
+      )}
 
       {/* Help Modal */}
       {showHelp && (
@@ -341,27 +324,49 @@ function AppContent() {
             </div>
             <div className="help-modal-content">
               <h3>Getting Started</h3>
-              <p>FretFlow is an interactive guitar fretboard and music theory tool. Use the controls below to explore scales, chords, and fingering patterns.</p>
+              <p>
+                FretFlow is an interactive guitar fretboard and music theory
+                tool. Use the controls below to explore scales, chords, and
+                fingering patterns.
+              </p>
 
               <h3>Basic Usage</h3>
               <ul>
-                <li><strong>Scale Selection:</strong> Choose a root note and scale type to highlight notes on the fretboard</li>
-                <li><strong>Chord Overlay:</strong> Select a chord to see which scale notes are chord tones</li>
-                <li><strong>Fret Range:</strong> Adjust which frets are visible</li>
+                <li>
+                  <strong>Scale Selection:</strong> Choose a root note and scale
+                  type to highlight notes on the fretboard
+                </li>
+                <li>
+                  <strong>Chord Overlay:</strong> Select a chord to see which
+                  scale notes are chord tones
+                </li>
+                <li>
+                  <strong>Fret Range:</strong> Adjust which frets are visible
+                </li>
               </ul>
 
               <h3>Controls</h3>
               <ul>
-                <li><strong>Reset:</strong> Return all settings to defaults</li>
-                <li><strong>Mute:</strong> Toggle audio feedback when clicking notes</li>
-                <li><strong>Settings:</strong> Coming soon - additional preferences</li>
+                <li>
+                  <strong>Reset:</strong> Return all settings to defaults
+                </li>
+                <li>
+                  <strong>Mute:</strong> Toggle audio feedback when clicking
+                  notes
+                </li>
+                <li>
+                  <strong>Settings:</strong> Coming soon - additional
+                  preferences
+                </li>
               </ul>
 
               <h3>Tips</h3>
               <ul>
                 <li>Click on fretboard notes to hear them (when unmuted)</li>
                 <li>Use the Circle of Fifths widget for key relationships</li>
-                <li>Try different fingering patterns to find comfortable positions</li>
+                <li>
+                  Try different fingering patterns to find comfortable positions
+                </li>
                 <li>Chord overlays help identify chord tones within scales</li>
               </ul>
             </div>
@@ -408,16 +413,31 @@ function AppContent() {
       )}
 
       <div className="version-badge">
-        v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar.
-        Licensed under{" "}
+        <span className="version-text">
+          v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar.
+          Licensed under{" "}
+          <a
+            href="https://www.gnu.org/licenses/agpl-3.0"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            AGPL v3
+          </a>
+          .
+        </span>
         <a
-          href="https://www.gnu.org/licenses/agpl-3.0"
+          href="https://ko-fi.com/E1E01XFJ0G"
           target="_blank"
           rel="noopener noreferrer"
+          className="kofi-badge-btn"
+          title="Support FretFlow on Ko-fi"
         >
-          AGPL v3
+          <img
+            src="/fretboard-app/kofi_symbol.png"
+            alt="Ko-fi"
+            className="kofi-badge-icon"
+          />
         </a>
-        .
       </div>
 
       <SettingsOverlay />

@@ -59,6 +59,14 @@ body {
   font-family: var(--font-sans);
   line-height: 1.5;
   font-weight: 400;
+  /* App gradient painted on body so it fills the full viewport — the
+     .app-container (max-width: 80rem) stays transparent so nothing reads
+     as a boxed-in centered panel at desktop sizes. */
+  background:
+    var(--bg-app-accent-glow),
+    linear-gradient(180deg, var(--bg-app-gradient-start), var(--bg-app-gradient-end));
+  background-attachment: fixed;
+  background-color: var(--bg-color);
 }
 
 /* Removed global wildcard transition — per-element transitions declared in App.css */

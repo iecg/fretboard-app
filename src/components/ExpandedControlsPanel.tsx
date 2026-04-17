@@ -27,7 +27,7 @@ import { TheoryControls } from "./TheoryControls";
 import { CircleOfFifths } from "../CircleOfFifths";
 import { Card } from "./Card";
 
-const END_FRET = 24;
+const END_FRET = 25;
 
 /**
  * Renders the Configuration card: FingeringPatternControls + fret range.
@@ -42,7 +42,10 @@ export function BaseControlsSection() {
   const [fretEnd, setFretEnd] = useAtom(fretEndAtom);
 
   return (
-    <Card title="Configuration" className="dashboard-card dashboard-card--configuration">
+    <Card
+      title="Configuration"
+      className="dashboard-card dashboard-card--configuration"
+    >
       <div className="control-group">
         <FingeringPatternControls
           fingeringPattern={fingeringPattern}
@@ -94,7 +97,10 @@ export function ScaleChordSection() {
   );
 
   return (
-    <Card title="Music Theory" className="dashboard-card dashboard-card--theory">
+    <Card
+      title="Music Theory"
+      className="dashboard-card dashboard-card--theory"
+    >
       <TheoryControls
         rootNote={rootNote}
         setRootNote={setRootNote}
