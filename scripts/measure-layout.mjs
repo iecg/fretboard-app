@@ -26,12 +26,13 @@ async function measure(page, vpName) {
       return el ? Math.round(el.getBoundingClientRect().bottom) : 'N/A';
     }
     return {
-      layoutMode: document.querySelector('.app-container')?.getAttribute('data-layout-mode') ?? 'N/A',
+      layoutTier: document.querySelector('.app-container')?.getAttribute('data-layout-tier') ?? 'N/A',
+      layoutVariant: document.querySelector('.app-container')?.getAttribute('data-layout-variant') ?? 'N/A',
       rootH: h('#root'),
       fretboardNeckH: h('.fretboard-neck'),
       summaryAreaH: h('.summary-area'),
-      controlsColLeftH: h('[data-layout-mode="desktop-expanded"] .controls-col-left'),
-      keyColumnH: h('[data-layout-mode="desktop-expanded"] .controls-panel > .col-span-2'),
+      controlsColLeftH: h('[data-layout-tier="desktop"] .controls-col-left'),
+      keyColumnH: h('[data-layout-tier="desktop"] .controls-panel > .col-span-2'),
       mobileTabPanelH: h('.mobile-tab-panel'),
       versionBadgeH: h('.version-badge'),
       versionBadgeBottom: bottom('.version-badge'),
@@ -62,8 +63,8 @@ async function run() {
   // Print summary for derivation
   console.log('\n\n=== DERIVATION SUMMARY ===');
 
-  // Use desktop-expanded measurement from 1200×1080 for constant derivation
-  const desktopExpanded = results.find(r => r.layoutMode === 'desktop-expanded');
+  // Use desktop measurement from 1200×1080 for constant derivation
+  const desktopExpanded = results.find(r => r.layoutTier === 'desktop');
   const mobile667 = results.find(r => r.viewport === '375×667');
 
   if (desktopExpanded) {

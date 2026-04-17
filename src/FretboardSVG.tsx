@@ -391,8 +391,10 @@ export function FretboardSVG({
 
   // Pre-compute note data for both SVG rendering and accessible button layer
   const noteData = tuning.flatMap((_openString, stringIndex) =>
-    Array.from({ length: totalColumns }, (_, idx) => {
+    Array.from({ length: totalColumns + 1 }, (_, idx) => idx).flatMap((idx) => {
       const fretIndex = startFret + idx;
+      if (fretIndex >= maxFret) return [];
+
       const noteName = fretboardLayout[stringIndex][fretIndex];
 
       const isHighlighted =
@@ -484,15 +486,17 @@ export function FretboardSVG({
 
       const isHidden = noteClass === "note-scale-only" && hideNonChordNotes;
 
-      return {
-        stringIndex,
-        fretIndex,
-        noteName,
-        noteClass,
-        displayValue,
-        applyDimOpacity,
-        isHidden,
-      };
+      return [
+        {
+          stringIndex,
+          fretIndex,
+          noteName,
+          noteClass,
+          displayValue,
+          applyDimOpacity,
+          isHidden,
+        },
+      ];
     }),
   );
 
@@ -1086,7 +1090,7 @@ export function FretboardSVG({
                   key={`btn-${stringIndex}-${fretIndex}`}
                   type="button"
                   onClick={
-                    onNoteClick
+                    onNoteClick && !isHidden
                       ? () =>
                           onNoteClick(
                             stringIndex,
@@ -1095,7 +1099,9 @@ export function FretboardSVG({
                           )
                       : undefined
                   }
-                  disabled={!onNoteClick}
+                  disabled={!onNoteClick || isHidden}
+                  aria-hidden={isHidden || undefined}
+                  tabIndex={isHidden ? -1 : undefined}
                   aria-label={`${formatAccidental(displayValue)} on string ${stringIndex + 1}, fret ${fretIndex}`}
                   className={clsx(
                     "note-bubble",
@@ -1110,7 +1116,8 @@ export function FretboardSVG({
                     height: noteBubblePx,
                     fontSize: `${noteFontPx}px`,
                     opacity: 0,
-                    pointerEvents: onNoteClick ? "auto" : "none",
+                    pointerEvents:
+                      onNoteClick && !isHidden ? "auto" : "none",
                   }}
                 />
               );

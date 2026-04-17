@@ -110,6 +110,22 @@ describe("FretboardSVG", () => {
     expect(fretNumbers[12].textContent).toBe("12");
   });
 
+  it("does not render note buttons on fret 25", () => {
+    render(
+      <FretboardSVG
+        {...BASE_PROPS}
+        fretboardLayout={getFretboardNotes(STANDARD_TUNING, 25)}
+        highlightNotes={["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]}
+        startFret={24}
+        endFret={25}
+        maxFret={25}
+      />,
+    );
+
+    expect(document.querySelector('[aria-label*=", fret 24"]')).toBeTruthy();
+    expect(document.querySelector('[aria-label*=", fret 25"]')).toBeNull();
+  });
+
   it("invokes onNoteClick when a note button is clicked", () => {
     const onNoteClick = vi.fn();
     render(<FretboardSVG {...BASE_PROPS} onNoteClick={onNoteClick} />);

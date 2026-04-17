@@ -97,17 +97,29 @@ Single-page React app. All UI state lives in Jotai atoms (`src/store/atoms.ts`).
 
 ## Responsive Layout
 
-The app uses `layoutMode` derived from viewport dimensions:
+The app sets two data attributes on `.app-container` to drive layout:
 
-| Mode | Width | Orientation |
-|------|-------|-------------|
-| `mobile` | < 768px | portrait |
-| `landscape-mobile` | < 768px | landscape |
-| `tablet-portrait` | 768–1365px | portrait |
-| `landscape-tablet` | 1024–1365px | landscape |
-| `desktop` | >= 1366px | any |
+**`data-layout-tier`** — coarse breakpoint bucket:
 
-CSS overrides use `[data-layout-mode="..."]` selectors in `App.css`.
+| Tier | Width |
+|------|-------|
+| `mobile` | ≤ 767px |
+| `tablet` | 768–1365px |
+| `desktop` | ≥ 1366px |
+
+**`data-layout-variant`** — concrete layout variant (finer-grained):
+
+| Variant | Tier | Condition |
+|---------|------|-----------|
+| `mobile` | mobile | portrait |
+| `landscape-mobile` | mobile | landscape |
+| `tablet-split` | tablet | normal height |
+| `tablet-stacked` | tablet | compact height |
+| `desktop-split` | desktop | compact height or narrow |
+| `desktop-stacked` | desktop | compact height |
+| `desktop-3col` | desktop | full height + wide |
+
+CSS overrides use `[data-layout-tier="..."]` and `[data-layout-variant="..."]` selectors in `App.css` and component CSS files.
 
 ## Tests
 

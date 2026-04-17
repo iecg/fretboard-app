@@ -128,7 +128,7 @@ auto-release.yml  — analyzes commits → computes semver → pushes annotated 
 | File | Purpose |
 |---|---|
 | `src/App.tsx` | Layout orchestration + derived computations (~686 lines); adaptive layout mode, `stringRowPx` via `useLayoutEffect` |
-| `src/App.css` | Layout styles using `[data-layout-mode="..."]` selectors |
+| `src/App.css` | Layout styles using `[data-layout-tier="..."]` and `[data-layout-variant="..."]` selectors |
 | `src/Fretboard.tsx` | Pure fretboard SVG renderer; drag, zoom, click; dynamic `stringRowPx` prop (~510 lines) |
 | `src/CircleOfFifths.tsx` | Circle of Fifths SVG — root selection, chord degrees, min font sizes |
 | `src/circleOfFifthsUtils.ts` | Circle of Fifths pure helpers |
@@ -190,7 +190,7 @@ Scale degrees on circle use chromatic interval conversion: `(circleIntervalIndex
 - `chord-outside` — in chord, not in scale
 - `note-inactive` — neither
 
-**CSS variables** defined in `tokens.css` under `:root` (imported via `index.css`). CAGED shape colors use `--caged-e/d/c/a/g` + `--caged-*-bg` tokens. Responsive layout via `[data-layout-mode="..."]` selectors (`mobile`, `landscape-mobile`, `tablet-portrait`, `desktop-expanded`).
+**CSS variables** defined in `tokens.css` under `:root` (imported via `index.css`). CAGED shape colors use `--caged-e/d/c/a/g` + `--caged-*-bg` tokens. Responsive layout via `[data-layout-tier="..."]` (coarse: `mobile` | `tablet` | `desktop`) and `[data-layout-variant="..."]` (fine: `mobile` | `landscape-mobile` | `tablet-split` | `tablet-stacked` | `desktop-split` | `desktop-stacked` | `desktop-3col`) selectors.
 
 **`clsx`** — all conditional class composition. **`cva`** (class-variance-authority) — variant-based component class systems.
 
