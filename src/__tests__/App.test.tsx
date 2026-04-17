@@ -429,7 +429,7 @@ describe("App", () => {
     it("initializes with default fret range", () => {
       render(<App />);
       expect(localStorage.getItem(k("fretStart"))).toBe("0");
-      expect(localStorage.getItem(k("fretEnd"))).toBe("24");
+      expect(localStorage.getItem(k("fretEnd"))).toBe("25");
     });
 
     it("persists fret zoom level", async () => {

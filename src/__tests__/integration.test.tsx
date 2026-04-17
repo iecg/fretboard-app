@@ -641,7 +641,7 @@ describe("Integration Tests - User Workflows", () => {
       render(<App />);
 
       expect(localStorage.getItem(k("fretStart"))).toBe("0");
-      expect(localStorage.getItem(k("fretEnd"))).toBe("24");
+      expect(localStorage.getItem(k("fretEnd"))).toBe("25");
 
       // Scroll to show frets 5-17
       localStorage.setItem(k("fretStart"), "5");

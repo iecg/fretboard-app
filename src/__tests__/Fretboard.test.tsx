@@ -186,7 +186,9 @@ describe("Fretboard", () => {
       const firstFret = container.querySelector(".fret-number");
 
       expect(firstFret).toBeTruthy();
-      expect(firstFret).toHaveStyle("width: 98px");
+      // Fret 0 (open-string column) has a fixed width determined by noteBubblePx,
+      // independent of zoom. Non-zero frets scale with zoom via guitar scale math.
+      expect(firstFret).toHaveStyle("width: 41px");
     });
 
     it("has scroll container that is draggable", () => {
@@ -200,16 +202,18 @@ describe("Fretboard", () => {
       const store = createStore();
       const { container } = renderFretboard(store);
 
+      // Fret 0 open-string column has fixed width (noteBubblePx-derived, zoom-independent)
       expect(container.querySelector(".fret-number")).toHaveStyle(
-        "width: 49px",
+        "width: 41px",
       );
 
       act(() => {
         store.set(fretZoomAtom, 150);
       });
 
+      // Fret 0 column stays fixed; non-zero frets scale via guitar scale math
       expect(container.querySelector(".fret-number")).toHaveStyle(
-        "width: 74px",
+        "width: 41px",
       );
     });
 
@@ -218,7 +222,7 @@ describe("Fretboard", () => {
       const { container } = renderFretboard(store);
 
       expect(getVisibleFretLabels(container).slice(0, 5)).toEqual([
-        "0",
+        "", // fret 0 (open string) label intentionally suppressed
         "1",
         "2",
         "3",
@@ -573,8 +577,9 @@ describe("Fretboard", () => {
 
       const { container } = render(<Fretboard {...defaultProps} />);
 
+      // Fret 0 open-string column has fixed width (zoom-independent)
       expect(container.querySelector(".fret-number")).toHaveStyle(
-        "width: 49px",
+        "width: 41px",
       );
     });
   });
@@ -588,7 +593,7 @@ describe("Fretboard", () => {
       const { container } = renderFretboard(store);
 
       expect(container.querySelectorAll(".fret-number")).toHaveLength(1);
-      expect(getVisibleFretLabels(container)).toEqual(["0"]);
+      expect(getVisibleFretLabels(container)).toEqual([""]); // fret 0 label suppressed
     });
 
     it("handles very high fret numbers", () => {

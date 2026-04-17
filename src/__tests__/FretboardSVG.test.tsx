@@ -106,7 +106,7 @@ describe("FretboardSVG", () => {
     const fretNumbers = document.querySelectorAll(".fret-number");
     // 13 columns: frets 0-12
     expect(fretNumbers.length).toBe(13);
-    expect(fretNumbers[0].textContent).toBe("0");
+    expect(fretNumbers[0].textContent).toBe(""); // fret 0 (open string) label intentionally suppressed
     expect(fretNumbers[12].textContent).toBe("12");
   });
 
