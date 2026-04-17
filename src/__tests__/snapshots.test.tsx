@@ -481,7 +481,7 @@ describe("Component Snapshots", () => {
       expect(container).toMatchSnapshot("app-tablet-split");
     });
 
-    it("renders desktop-3col layout at 1024×1366", () => {
+    it("renders desktop-split layout (1024×1366)", () => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
@@ -495,7 +495,7 @@ describe("Component Snapshots", () => {
 
       localStorage.clear();
       const { container } = render(<App />);
-      expect(container).toMatchSnapshot("app-desktop-3col-1024x1366");
+      expect(container).toMatchSnapshot("app-desktop-split-1024x1366");
     });
 
     it("renders iPhone 12 Pro portrait layout (390×844)", () => {
@@ -515,7 +515,7 @@ describe("Component Snapshots", () => {
       expect(container).toMatchSnapshot("app-iphone-12-pro-portrait");
     });
 
-    it("renders desktop-3col layout at compact height (1200×720)", () => {
+    it("renders desktop-stacked layout (1200×720)", () => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
@@ -529,7 +529,7 @@ describe("Component Snapshots", () => {
 
       localStorage.clear();
       const { container } = render(<App />);
-      expect(container).toMatchSnapshot("app-desktop-3col-1200x720");
+      expect(container).toMatchSnapshot("app-desktop-stacked-1200x720");
     });
 
   });

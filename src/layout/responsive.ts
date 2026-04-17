@@ -7,6 +7,8 @@ export type ResponsiveVariant =
   | "landscape-mobile"
   | "tablet-split"
   | "tablet-stacked"
+  | "desktop-split"
+  | "desktop-stacked"
   | "desktop-3col";
 
 export type DashboardPanelMode = "3col" | "split" | "stacked";
@@ -65,6 +67,13 @@ export function getResponsiveVariant(
     return isCompactHeight(viewportHeight) ? "tablet-stacked" : "tablet-split";
   }
 
+  // Desktop tier: height takes priority, then width determines split vs 3col.
+  if (isCompactHeight(viewportHeight)) {
+    return "desktop-stacked";
+  }
+  if (viewportWidth < BREAKPOINTS.desktop3colMin) {
+    return "desktop-split";
+  }
   return "desktop-3col";
 }
 
@@ -79,11 +88,12 @@ export function getResponsiveLayout(
   const tier = getResponsiveTier(viewportWidth);
   const variant = getResponsiveVariant(viewportWidth, viewportHeight);
   const compactHeight = isCompactHeight(viewportHeight);
-  const isSplitPanel = variant === "tablet-split";
+  const isSplitPanel =
+    variant === "tablet-split" || variant === "desktop-split";
   const panelMode: DashboardPanelMode =
     variant === "desktop-3col"
       ? "3col"
-      : variant === "tablet-split"
+      : isSplitPanel
         ? "split"
         : "stacked";
   const showMobileTabs =

@@ -1007,16 +1007,23 @@
 
 /* =============================================
    LAYOUT VARIANTS
-   Set by App.tsx based on viewport width + height.
-   These rules layer on top of the existing media queries.
+   Set by App.tsx via data-layout-tier + data-layout-variant.
+   Variants:
+     mobile / landscape-mobile  — phone chrome and tabs
+     tablet-split               — side-by-side panels (tall tablet)
+     tablet-stacked             — single column (compact-height tablet)
+     desktop-split              — 2-column, narrow desktop / iPad Pro portrait
+     desktop-stacked            — single column, compact-height desktop
+     desktop-3col               — 3-column, full desktop (≥1280px wide, >899px tall)
    ============================================= */
 
 .app-container[data-layout-tier="desktop"] {
   max-width: 120rem;
 }
 
-/* Tablet split + desktop 3-col keep the key column flush with its grid cell. */
+/* Split variants (tablet-split, desktop-split): key column flush with grid cell. */
 .app-container[data-layout-variant="tablet-split"] .key-column,
+.app-container[data-layout-variant="desktop-split"] .key-column,
 .app-container[data-layout-variant="desktop-3col"] .key-column {
   min-width: 0;
 }
@@ -1026,14 +1033,21 @@
   max-height: min(22rem, 48vh);
 }
 
-/* Stacked (tablet-stacked): single column, centered key card. */
-.app-container[data-layout-variant="tablet-stacked"] .key-column {
+/* Desktop split: cap circle height for the 2-column layout. */
+.app-container[data-layout-variant="desktop-split"] .circle-fifths-container {
+  max-height: min(26rem, 52vh);
+}
+
+/* Stacked variants (tablet-stacked, desktop-stacked): single column, centered key card. */
+.app-container[data-layout-variant="tablet-stacked"] .key-column,
+.app-container[data-layout-variant="desktop-stacked"] .key-column {
   max-width: 32rem;
   width: 100%;
   margin: 0 auto;
 }
 
-.app-container[data-layout-variant="tablet-stacked"] .circle-fifths-container {
+.app-container[data-layout-variant="tablet-stacked"] .circle-fifths-container,
+.app-container[data-layout-variant="desktop-stacked"] .circle-fifths-container {
   max-width: min(100%, 28rem);
   width: 100%;
   margin: 0 auto;

@@ -711,22 +711,20 @@ describe("App", () => {
     });
   });
 
-  describe("Desktop 3-column layout", () => {
-    beforeEach(() => {
+  describe("Desktop layout variants", () => {
+    it("uses desktop-3col at 1440x900 (MacBook Pro canonical)", async () => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
-        value: 1024,
+        value: 1440,
       });
       Object.defineProperty(window, "innerHeight", {
         writable: true,
         configurable: true,
-        value: 768,
+        value: 900,
       });
       localStorage.clear();
-    });
 
-    it("uses the desktop 3-column variant regardless of height", async () => {
       render(<App />);
       fireEvent(window, new Event("resize"));
 
@@ -741,6 +739,68 @@ describe("App", () => {
       expect(document.querySelector(".controls-panel")).toBeTruthy();
       expect(
         document.querySelector('.controls-panel[data-mode="3col"]'),
+      ).toBeTruthy();
+      expect(document.querySelector(".mobile-tab-content")).toBeNull();
+    });
+
+    it("uses desktop-stacked at 1024x768 (compact height)", async () => {
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 1024,
+      });
+      Object.defineProperty(window, "innerHeight", {
+        writable: true,
+        configurable: true,
+        value: 768,
+      });
+      localStorage.clear();
+
+      render(<App />);
+      fireEvent(window, new Event("resize"));
+
+      await waitFor(() => {
+        const appContainer = document.querySelector(".app-container");
+        expect(appContainer?.getAttribute("data-layout-tier")).toBe("desktop");
+        expect(appContainer?.getAttribute("data-layout-variant")).toBe(
+          "desktop-stacked",
+        );
+      });
+
+      expect(document.querySelector(".controls-panel")).toBeTruthy();
+      expect(
+        document.querySelector('.controls-panel[data-mode="stacked"]'),
+      ).toBeTruthy();
+      expect(document.querySelector(".mobile-tab-content")).toBeNull();
+    });
+
+    it("uses desktop-split at 1024x1366 (iPad Pro portrait)", async () => {
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 1024,
+      });
+      Object.defineProperty(window, "innerHeight", {
+        writable: true,
+        configurable: true,
+        value: 1366,
+      });
+      localStorage.clear();
+
+      render(<App />);
+      fireEvent(window, new Event("resize"));
+
+      await waitFor(() => {
+        const appContainer = document.querySelector(".app-container");
+        expect(appContainer?.getAttribute("data-layout-tier")).toBe("desktop");
+        expect(appContainer?.getAttribute("data-layout-variant")).toBe(
+          "desktop-split",
+        );
+      });
+
+      expect(document.querySelector(".controls-panel")).toBeTruthy();
+      expect(
+        document.querySelector('.controls-panel[data-mode="split"]'),
       ).toBeTruthy();
       expect(document.querySelector(".mobile-tab-content")).toBeNull();
     });
