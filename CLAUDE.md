@@ -65,16 +65,16 @@ Conventional commits. Prefix every message:
 
 Examples:
 ```
-feat: add transpose shortcut to circle of fifths
-fix: correct enharmonic display for Cb scale
-chore: bump vite to 8.1
+feat(theory): add transpose shortcut to circle of fifths
+fix(fretboard): correct enharmonic display for Cb scale
+chore(deps): bump vite to 8.1
 refactor(theory): simplify interval lookup
 ```
 
 Enforced by `commit-msg` husky hook:
 - Subject ≤ 72 chars
 - No trailing period
-- Match `type(optional-scope): description`
+- Match `type(scope): description` — **scope is expected** (hook allows omission but workflow convention requires it)
 
 GitHub Release notes auto-grouped by prefix.
 
@@ -83,12 +83,12 @@ GitHub Release notes auto-grouped by prefix.
 PR titles follow Conventional Commits — GitHub squash-merge uses PR title as commit message on `main`.
 
 ```
-feat: add capo support
+feat(fretboard): add capo support
 fix(fretboard): off-by-one on fret 0 highlight
-chore: upgrade eslint to v9
+chore(deps): upgrade eslint to v9
 ```
 
-Same type prefixes + 72-char limit apply.
+Same type prefixes + 72-char limit apply. Scope expected.
 
 ## Releasing — manual trigger
 
