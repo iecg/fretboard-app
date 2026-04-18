@@ -196,7 +196,7 @@ export function FretboardSVG({
     cyan: svgDefUrl("glow-cyan"),
     orange: svgDefUrl("glow-orange"),
   };
-  const noteBubblePx = Math.round(stringRowPx * 0.62);
+  const noteBubblePx = Math.round(stringRowPx * 0.72);
   const noteFontPx = Math.round(stringRowPx * 0.4);
   const neckHeight = tuning.length * stringRowPx;
   const totalColumns = endFret - startFret;
