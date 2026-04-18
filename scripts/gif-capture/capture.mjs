@@ -51,7 +51,7 @@ async function clickNote(page, noteName) {
     await slice.click();
     await page.waitForTimeout(350);
   } else {
-    console.warn(`  Note ${noteName} not found on circle`);
+    throw new Error(`Note "${noteName}" not found on Circle of Fifths`);
   }
 }
 
@@ -168,9 +168,14 @@ async function main() {
     await shot(page, "s13_notes", 3);
 
     // ── Scene 14: Switch back to Major Modes, root C ──────────────────
-    // Click Fingering "All" first — it's the first "All" button in the DOM,
-    // before the Shape group's "All", so .first() targets it correctly.
-    await clickBtn(page, "All");
+    // Scope to the fingering toggle row (contains CAGED + 3NPS) to avoid
+    // accidentally hitting the Shape group's "All" button.
+    const fingeringBar = page
+      .locator("div")
+      .filter({ has: page.getByRole("button", { name: "CAGED", exact: true }) })
+      .filter({ has: page.getByRole("button", { name: "3NPS", exact: true }) })
+      .first();
+    await clickBtn(page, "All", fingeringBar);
     await selectFamily(page, "Major Modes");
     await clickNote(page, "C");
     await shot(page, "s14_back_to_start", 4);
