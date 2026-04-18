@@ -13,7 +13,6 @@ import {
   cagedShapesAtom,
   fingeringPatternAtom,
   displayFormatAtom,
-  shapeLabelsAtom,
   isMutedAtom,
   fretStartAtom,
   fretEndAtom,
@@ -310,19 +309,6 @@ describe("atoms", () => {
     });
   });
 
-  describe("shapeLabelsStorage", () => {
-    it("migrates legacy modal labels to caged labels", () => {
-      localStorage.setItem(k("shapeLabels"), "modal");
-      const store = makeStore();
-      const unsub = mount(store, shapeLabelsAtom);
-
-      expect(store.get(shapeLabelsAtom)).toBe("caged");
-      expect(localStorage.getItem(k("shapeLabels"))).toBe("caged");
-
-      unsub();
-    });
-  });
-
   describe("chordTypeStorage", () => {
     it("reads empty string as null", () => {
       localStorage.setItem(k("chordType"), "");
@@ -474,7 +460,6 @@ describe("atoms", () => {
       store.set(customMembersAtom, ["root", "3"]);
       store.set(fingeringPatternAtom, "caged");
       store.set(npsPositionAtom, 3);
-      store.set(shapeLabelsAtom, "caged");
       store.set(scaleBrowseModeAtom, "relative");
       store.set(tuningNameAtom, "Drop D");
       store.set(fretStartAtom, 3);
@@ -494,7 +479,6 @@ describe("atoms", () => {
       expect(store.get(customMembersAtom)).toEqual([]);
       expect(store.get(fingeringPatternAtom)).toBe("all");
       expect(store.get(npsPositionAtom)).toBe(1);
-      expect(store.get(shapeLabelsAtom)).toBe("none");
       expect(store.get(scaleBrowseModeAtom)).toBe("parallel");
       expect(store.get(tuningNameAtom)).toBe("Standard");
       expect(store.get(fretStartAtom)).toBe(0);

@@ -16,7 +16,6 @@ import {
   fretStartAtom,
   fretEndAtom,
   displayFormatAtom,
-  shapeLabelsAtom,
   tuningNameAtom,
   accidentalModeAtom,
   enharmonicDisplayAtom,
@@ -91,7 +90,6 @@ export default function useDisplayState() {
 
   // Display
   const [displayFormat, setDisplayFormat] = useAtom(displayFormatAtom);
-  const [shapeLabels, setShapeLabels] = useAtom(shapeLabelsAtom);
   const tuningName = useAtomValue(tuningNameAtom);
 
   // Accidentals
@@ -487,7 +485,6 @@ export default function useDisplayState() {
     startFret,
     endFret,
     displayFormat,
-    shapeLabels,
     tuningName,
     accidentalMode,
     enharmonicDisplay,
@@ -504,7 +501,6 @@ export default function useDisplayState() {
     setCagedShapes,
     setNpsPosition,
     setDisplayFormat,
-    setShapeLabels,
     setRootNote,
     // Derived values
     useFlats,

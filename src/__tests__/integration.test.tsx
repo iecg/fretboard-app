@@ -561,23 +561,6 @@ describe("Integration Tests - User Workflows", () => {
       }
     });
 
-    it("shape labels can toggle independently", async () => {
-      render(<App />);
-
-      const labels: ("caged" | "none")[] = ["caged", "none"];
-
-      for (const label of labels) {
-        localStorage.setItem(k("shapeLabels"), label);
-        const { rerender } = render(<App />);
-        expect(localStorage.getItem(k("shapeLabels"))).toBe(label);
-        rerender(<App />);
-      }
-
-      localStorage.setItem(k("shapeLabels"), "modal");
-      const { rerender } = render(<App />);
-      expect(localStorage.getItem(k("shapeLabels"))).toBe("caged");
-      rerender(<App />);
-    });
   });
 
   describe("Workflow 11: Accidental Display", () => {
