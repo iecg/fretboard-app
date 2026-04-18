@@ -132,13 +132,10 @@ export function FingeringPatternControls({
         <div className={shared["control-section"]}>
           <span className={shared["section-label"]}>Position</span>
           <ToggleBar
-            options={[
-              { value: 0, label: "All" },
-              ...[1, 2, 3, 4, 5, 6, 7].map((p) => ({
-                value: p,
-                label: String(p),
-              })),
-            ]}
+            options={[1, 2, 3, 4, 5, 6, 7].map((p) => ({
+              value: p,
+              label: String(p),
+            }))}
             value={npsPosition}
             onChange={(v) => setNpsPosition(v as number)}
           />

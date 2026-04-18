@@ -14,7 +14,7 @@ describe("FingeringPatternControls", () => {
       setFingeringPattern: vi.fn(),
       cagedShapes: new Set<CagedShape>(["C", "A", "G", "E", "D"]),
       setCagedShapes: vi.fn(),
-      npsPosition: 0,
+      npsPosition: 1,
       setNpsPosition: vi.fn(),
       shapeLabels: "none",
       setShapeLabels: vi.fn(),

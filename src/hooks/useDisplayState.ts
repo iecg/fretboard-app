@@ -187,19 +187,15 @@ export default function useDisplayState() {
       bounds = allBounds;
       polygons = allPolygons;
     } else if (fingeringPattern === "3nps") {
-      if (npsPosition === 0) {
-        coords = getScaleNotes(rootNote, scaleName);
-      } else {
-        const res = get3NPSCoordinates(
-          rootNote,
-          scaleName,
-          currentTuning,
-          24,
-          npsPosition,
-        );
-        coords = res.coordinates;
-        bounds = res.bounds;
-      }
+      const res = get3NPSCoordinates(
+        rootNote,
+        scaleName,
+        currentTuning,
+        24,
+        npsPosition,
+      );
+      coords = res.coordinates;
+      bounds = res.bounds;
     } else {
       coords = getScaleNotes(rootNote, scaleName);
     }
