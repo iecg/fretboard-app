@@ -30,6 +30,7 @@ import { AppHeader } from "./components/AppHeader";
 import { BrandMark } from "./components/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark";
 import { DegreeChipStrip } from "./components/DegreeChipStrip";
+import { ChordRowStrip } from "./components/ChordRowStrip";
 import "./App.css";
 
 const END_FRET = 25;
@@ -81,7 +82,10 @@ function AppContent() {
     colorNotes,
     summaryNotes,
     scaleLabel,
+    chordLabel,
     chordSummaryNotes,
+    summaryChordRow,
+    summaryLegendItems,
     recenterKey,
     onShapeClick,
     onRecenter,
@@ -217,13 +221,22 @@ function AppContent() {
 
   // Summary notes content shared by every non-landscape layout.
   const summaryContent = (
-    <DegreeChipStrip
-      scaleName={scaleLabel}
-      chips={degreeChips}
-      hiddenNotes={hiddenNotes}
-      onChipToggle={toggleHiddenNote}
-      aria-label="Scale degrees"
-    />
+    <div className="summary-overlay-stack">
+      <DegreeChipStrip
+        scaleName={scaleLabel}
+        chips={degreeChips}
+        hiddenNotes={hiddenNotes}
+        onChipToggle={toggleHiddenNote}
+        aria-label="Scale degrees"
+      />
+      {chordType && chordLabel && (
+        <ChordRowStrip
+          chordLabel={chordLabel}
+          chordRow={summaryChordRow}
+          legendItems={summaryLegendItems}
+        />
+      )}
+    </div>
   );
 
   const mobileKeyExplorer = (
@@ -531,8 +544,10 @@ function AppContent() {
           rootNote={rootNote}
           boxBounds={boxBounds}
           chordTones={activeChordTones}
+          chordRoot={chordRoot}
           chordFretSpread={chordFretSpread}
           hideNonChordNotes={hideNonChordNotes}
+          viewMode={viewMode}
           colorNotes={colorNotes}
           displayFormat={displayFormat}
           shapePolygons={shapePolygons}

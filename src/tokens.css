@@ -158,3 +158,12 @@
   --bg-app-gradient-end: #0a1420;
   --bg-app-accent-glow: radial-gradient(ellipse at 50% 0%, rgb(77 228 255 / 0.06), transparent 60%);
 }
+
+/* === Chord row strip tokens === */
+:root {
+  --chord-chip-size: clamp(2.15rem, 3.4vw, 2.5rem);
+  --chord-strip-fill: rgb(22 27 38);
+  --chord-chip-glow-orange: 0 0 6px rgb(255 154 77 / 0.65);
+  --chord-chip-glow-cyan: 0 0 6px rgb(77 228 255 / 0.65);
+  --chord-chip-border-width: 2px;
+}

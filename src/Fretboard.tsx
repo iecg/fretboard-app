@@ -10,6 +10,7 @@ import { synth } from "./audio";
 import type { ShapePolygon } from "./shapes";
 import { fretZoomAtom, fretStartAtom, fretEndAtom } from "./store/atoms";
 import { FretboardSVG } from "./FretboardSVG";
+import type { ViewMode } from "./theory";
 
 const STRING_ROW_PX_DEFAULT = 36;
 
@@ -21,8 +22,10 @@ interface FretboardProps {
   displayFormat?: "notes" | "degrees" | "none";
   boxBounds?: { minFret: number; maxFret: number }[];
   chordTones?: string[];
+  chordRoot?: string;
   chordFretSpread?: number;
   hideNonChordNotes?: boolean;
+  viewMode?: ViewMode;
   colorNotes?: string[];
   shapePolygons?: ShapePolygon[];
   shapeLabels?: "caged" | "none";
@@ -48,8 +51,10 @@ export function Fretboard({
   displayFormat = "notes",
   boxBounds = [],
   chordTones = [],
+  chordRoot,
   chordFretSpread = 0,
   hideNonChordNotes = false,
+  viewMode = "compare",
   autoCenterTarget,
   recenterKey,
   colorNotes = [],
@@ -198,8 +203,10 @@ export function Fretboard({
           displayFormat={displayFormat}
           boxBounds={boxBounds}
           chordTones={chordTones}
+          chordRoot={chordRoot}
           chordFretSpread={chordFretSpread}
           hideNonChordNotes={hideNonChordNotes}
+          viewMode={viewMode}
           colorNotes={colorNotes}
           shapePolygons={shapePolygons}
           shapeLabels={shapeLabels}

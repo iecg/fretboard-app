@@ -106,7 +106,8 @@ describe("Fretboard", () => {
       const { container } = render(
         <Fretboard {...defaultProps} highlightNotes={["E", "G", "B", "C"]} />,
       );
-      expect(container.querySelectorAll(".root-active").length).toBeGreaterThan(
+      // Scale root (C) → key-tonic; other scale notes → note-active
+      expect(container.querySelectorAll(".key-tonic").length).toBeGreaterThan(
         0,
       );
       expect(container.querySelectorAll(".note-active").length).toBeGreaterThan(
@@ -119,7 +120,7 @@ describe("Fretboard", () => {
         <Fretboard {...defaultProps} highlightNotes={["C", "E", "G"]} />,
       );
 
-      expect(container.querySelectorAll(".root-active").length).toBeGreaterThan(
+      expect(container.querySelectorAll(".key-tonic").length).toBeGreaterThan(
         0,
       );
       expect(container.querySelectorAll(".note-active").length).toBeGreaterThan(
@@ -130,7 +131,8 @@ describe("Fretboard", () => {
         <Fretboard {...defaultProps} highlightNotes={["D", "F#", "A"]} />,
       );
 
-      expect(container.querySelectorAll(".root-active")).toHaveLength(0);
+      // C is rootNote but not in highlight list — no key-tonic
+      expect(container.querySelectorAll(".key-tonic")).toHaveLength(0);
       expect(container.querySelectorAll(".note-active").length).toBeGreaterThan(
         0,
       );
@@ -141,7 +143,7 @@ describe("Fretboard", () => {
         <Fretboard {...defaultProps} highlightNotes={[]} />,
       );
 
-      expect(container.querySelectorAll(".root-active")).toHaveLength(0);
+      expect(container.querySelectorAll(".key-tonic")).toHaveLength(0);
       expect(container.querySelectorAll(".note-active")).toHaveLength(0);
       // SVG renderer skips inactive notes entirely; no active note elements expected
       expect(container.querySelectorAll(".fretboard-note")).toHaveLength(0);
