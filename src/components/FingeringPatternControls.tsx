@@ -15,8 +15,6 @@ interface FingeringPatternControlsProps {
   ) => void;
   npsPosition: number;
   setNpsPosition: (position: number) => void;
-  shapeLabels: "none" | "caged";
-  setShapeLabels: (labels: "none" | "caged") => void;
   displayFormat: "notes" | "degrees" | "none";
   setDisplayFormat: (format: "notes" | "degrees" | "none") => void;
   /** Called when a CAGED shape is clicked, even if already selected */
@@ -48,8 +46,6 @@ export function FingeringPatternControls({
   setCagedShapes,
   npsPosition,
   setNpsPosition,
-  shapeLabels,
-  setShapeLabels,
   displayFormat,
   setDisplayFormat,
   onShapeClick,
@@ -182,17 +178,6 @@ export function FingeringPatternControls({
             <p className={shared["shape-hint"]}>
               {isTouchPrimary ? "Long press to add shapes" : "Shift+click to add shapes"}
             </p>
-          </div>
-          <div className={shared["control-section"]}>
-            <span className={shared["section-label"]}>Shape Labels</span>
-            <ToggleBar
-              options={[
-                { value: "none", label: "None" },
-                { value: "caged", label: "Shape" },
-              ]}
-              value={shapeLabels}
-              onChange={(v) => setShapeLabels(v as "none" | "caged")}
-            />
           </div>
         </>
       )}

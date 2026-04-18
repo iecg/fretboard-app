@@ -129,7 +129,6 @@ describe("Component Snapshots", () => {
           rootNote="E"
           displayFormat="notes"
           shapePolygons={shapePolygons}
-          shapeLabels="caged"
         />,
       );
       expect(container).toMatchSnapshot("fretboard-caged-shapes");
@@ -219,7 +218,6 @@ describe("Component Snapshots", () => {
           rootNote="E"
           displayFormat="notes"
           shapePolygons={shapePolygons}
-          shapeLabels="caged"
           stringRowPx={32}
         />,
       );

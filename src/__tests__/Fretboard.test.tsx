@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { Provider, createStore } from "jotai";
 import { Fretboard } from "../Fretboard";
 import { STANDARD_TUNING } from "../guitar";
@@ -320,103 +321,6 @@ describe("Fretboard", () => {
         <Fretboard
           {...defaultProps}
           shapePolygons={shapePolygons}
-          shapeLabels="caged"
-        />,
-      );
-
-      expect(document.body).toBeTruthy();
-    });
-
-    it('displays CAGED labels when shapeLabels is "caged"', () => {
-      const shapePolygons = [
-        {
-          vertices: [
-            { string: 0, fret: 0 },
-            { string: 1, fret: 2 },
-            { string: 2, fret: 2 },
-            { string: 3, fret: 2 },
-            { string: 4, fret: 0 },
-            { string: 5, fret: 0 },
-          ],
-          shape: "E" as const,
-          color: "#6366f1",
-          truncated: false,
-          intendedMin: 0,
-          intendedMax: 2,
-          cagedLabel: "E Shape",
-          modalLabel: null,
-        },
-      ];
-
-      render(
-        <Fretboard
-          {...defaultProps}
-          shapePolygons={shapePolygons}
-          shapeLabels="caged"
-        />,
-      );
-
-      expect(document.body).toBeTruthy();
-    });
-
-    it("renders shape labels even when polygons still carry legacy modal labels", () => {
-      const shapePolygons = [
-        {
-          vertices: [
-            { string: 0, fret: 5 },
-            { string: 1, fret: 7 },
-            { string: 2, fret: 7 },
-            { string: 3, fret: 7 },
-            { string: 4, fret: 5 },
-            { string: 5, fret: 5 },
-          ],
-          shape: "E" as const,
-          color: "#6366f1",
-          truncated: false,
-          intendedMin: 5,
-          intendedMax: 7,
-          cagedLabel: "E Shape",
-          modalLabel: "Dorian",
-        },
-      ];
-
-      render(
-        <Fretboard
-          {...defaultProps}
-          shapePolygons={shapePolygons}
-          shapeLabels="caged"
-        />,
-      );
-
-      expect(document.body).toBeTruthy();
-    });
-
-    it('hides labels when shapeLabels is "none"', () => {
-      const shapePolygons = [
-        {
-          vertices: [
-            { string: 0, fret: 0 },
-            { string: 1, fret: 2 },
-            { string: 2, fret: 2 },
-            { string: 3, fret: 2 },
-            { string: 4, fret: 0 },
-            { string: 5, fret: 0 },
-          ],
-          shape: "E" as const,
-          color: "#6366f1",
-          truncated: false,
-          intendedMin: 0,
-          intendedMax: 2,
-          cagedLabel: "E Shape",
-          modalLabel: "Ionian",
-        },
-      ];
-
-      render(
-        <Fretboard
-          {...defaultProps}
-          shapePolygons={shapePolygons}
-          shapeLabels="none"
         />,
       );
 
@@ -665,6 +569,137 @@ describe("Fretboard", () => {
       );
       const neck = container.querySelector('.fretboard-neck');
       expect((neck as HTMLElement).style.getPropertyValue('--string-row-px')).toBe('72px');
+    });
+  });
+
+  describe("Interaction — click, drag, and zoom", () => {
+    const interactionProps = {
+      tuning: ["E4", "B3", "G3", "D3", "A2", "E2"],
+      highlightNotes: ["C", "E", "G"],
+      rootNote: "C",
+      stringRowPx: 40,
+    };
+
+    function renderInteractive(
+      store = createStore(),
+      overrides: Record<string, unknown> = {},
+    ) {
+      return render(
+        <Provider store={store}>
+          <Fretboard {...interactionProps} {...overrides} />
+        </Provider>,
+      );
+    }
+
+    function renderWithOverflow(
+      store = createStore(),
+      overrides: Record<string, unknown> = {},
+    ) {
+      const result = renderInteractive(store, overrides);
+      const wrapper = result.container.querySelector(
+        ".fretboard-wrapper",
+      ) as HTMLElement;
+
+      Object.defineProperty(wrapper, "scrollWidth", {
+        configurable: true,
+        get: () => 2000,
+      });
+      Object.defineProperty(wrapper, "clientWidth", {
+        configurable: true,
+        get: () => 400,
+      });
+      (
+        wrapper as HTMLElement & { setPointerCapture: (id: number) => void }
+      ).setPointerCapture = vi.fn();
+
+      act(() => {
+        store.set(fretZoomAtom, 200);
+      });
+      act(() => {
+        store.set(fretZoomAtom, 100);
+      });
+
+      return { ...result, wrapper };
+    }
+
+    it("fires onFretClick when a note is clicked without drag", async () => {
+      const onFretClick = vi.fn();
+      renderInteractive(createStore(), { onFretClick });
+      const user = userEvent.setup();
+      const activeNote = document.querySelector(
+        ".note-bubble.root-active, .note-bubble.note-active, .note-bubble.chord-tone",
+      ) as HTMLElement;
+      expect(activeNote).toBeTruthy();
+      await user.click(activeNote);
+      expect(onFretClick).toHaveBeenCalledTimes(1);
+    });
+
+    it("suppresses click after a drag of > 5px", () => {
+      const onFretClick = vi.fn();
+      const { wrapper } = renderWithOverflow(createStore(), { onFretClick });
+
+      fireEvent.pointerDown(wrapper, { pointerId: 1, pageX: 100, buttons: 1 });
+      fireEvent.pointerMove(wrapper, {
+        pointerId: 1,
+        pageX: 90,
+        movementX: -10,
+        buttons: 1,
+      });
+      fireEvent.pointerMove(wrapper, {
+        pointerId: 1,
+        pageX: 80,
+        movementX: -10,
+        buttons: 1,
+      });
+      fireEvent.pointerUp(wrapper, { pointerId: 1 });
+
+      const noteButton = wrapper.querySelector(".note-bubble") as HTMLElement;
+      expect(noteButton).toBeTruthy();
+      fireEvent.click(noteButton);
+      expect(onFretClick).not.toHaveBeenCalled();
+    });
+
+    it("re-renders with wider neck when fretZoomAtom increases", () => {
+      let roCallback: ResizeObserverCallback | null = null;
+      const OriginalRO = globalThis.ResizeObserver;
+      class MockResizeObserver {
+        constructor(cb: ResizeObserverCallback) {
+          roCallback = cb;
+        }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      }
+      globalThis.ResizeObserver =
+        MockResizeObserver as unknown as typeof ResizeObserver;
+
+      const store = createStore();
+      renderInteractive(store);
+
+      act(() => {
+        roCallback?.(
+          [
+            {
+              contentRect: { width: 800 },
+            } as unknown as ResizeObserverEntry,
+          ],
+          {} as ResizeObserver,
+        );
+      });
+
+      const neck = document.querySelector(".fretboard-neck") as HTMLElement;
+      expect(neck).toBeTruthy();
+
+      const initialWidth = parseInt(neck.style.width, 10);
+
+      act(() => {
+        store.set(fretZoomAtom, 150);
+      });
+
+      const newWidth = parseInt(neck.style.width, 10);
+      expect(newWidth).toBeGreaterThan(initialWidth);
+
+      globalThis.ResizeObserver = OriginalRO;
     });
   });
 });

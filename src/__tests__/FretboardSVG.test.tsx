@@ -99,37 +99,6 @@ describe("FretboardSVG", () => {
     expect(polygon?.getAttribute("points")?.length).toBeGreaterThan(0);
   });
 
-  it("renders shape-labels-row when shapeLabels is caged and polygons exist", () => {
-    const minimalPolygon = {
-      shape: "E" as CagedShape,
-      color: "rgba(255,0,0,0.3)",
-      cagedLabel: "E",
-      modalLabel: "E",
-      truncated: false,
-      intendedMin: 0,
-      intendedMax: 4,
-      vertices: [
-        { fret: 0, string: 0 },
-        { fret: 0, string: 1 },
-        { fret: 0, string: 2 },
-        { fret: 4, string: 2 },
-        { fret: 4, string: 1 },
-        { fret: 4, string: 0 },
-      ],
-    };
-    render(
-      <FretboardSVG {...BASE_PROPS} shapeLabels="caged" shapePolygons={[minimalPolygon]} />
-    );
-    const labelsRow = document.querySelector(".shape-labels-row");
-    expect(labelsRow).toBeTruthy();
-  });
-
-  it("does not render shape-labels-row when shapeLabels is none", () => {
-    render(<FretboardSVG {...BASE_PROPS} shapeLabels="none" />);
-    const labelsRow = document.querySelector(".shape-labels-row");
-    expect(labelsRow).toBeNull();
-  });
-
   it("renders fret number labels for all columns", () => {
     render(<FretboardSVG {...BASE_PROPS} startFret={0} endFret={12} />);
     const fretNumbers = document.querySelectorAll(".fret-number");

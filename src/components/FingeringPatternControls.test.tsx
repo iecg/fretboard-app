@@ -16,8 +16,6 @@ describe("FingeringPatternControls", () => {
       setCagedShapes: vi.fn(),
       npsPosition: 1,
       setNpsPosition: vi.fn(),
-      shapeLabels: "none",
-      setShapeLabels: vi.fn(),
       displayFormat: "notes",
       setDisplayFormat: vi.fn(),
     };
@@ -42,7 +40,7 @@ describe("FingeringPatternControls", () => {
     expect(setFingeringPattern).toHaveBeenCalledWith("caged");
   });
 
-  it('shows Shape and Shape Labels sections only when fingeringPattern === "caged"', () => {
+  it('shows Shape section only when fingeringPattern === "caged"', () => {
     const { rerender } = render(
       <FingeringPatternControls
         {...defaultProps}
@@ -51,13 +49,11 @@ describe("FingeringPatternControls", () => {
       />,
     );
     expect(screen.getAllByText("Shape").length).toBeGreaterThan(0);
-    expect(screen.getByText("Shape Labels")).toBeInTheDocument();
 
     rerender(
       <FingeringPatternControls {...defaultProps} fingeringPattern="all" />,
     );
     expect(screen.queryAllByText("Shape")).toHaveLength(0);
-    expect(screen.queryByText("Shape Labels")).toBeNull();
   });
 
   it('shows Position section only when fingeringPattern === "3nps"', () => {
