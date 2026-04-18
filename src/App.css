@@ -282,15 +282,26 @@
   overflow-x: hidden;
 }
 
-/* Shape labels above fretboard */
-.shape-labels-row {
+/* Shape labels overlaid at the top of the fretboard neck.
+   Positioned absolutely within .fretboard-board so they don't push the
+   neck down — the fretboard vertical position stays stable whether labels
+   are visible or not. */
+.fretboard-board {
   position: relative;
-  min-height: 1.5rem;
-  margin-bottom: var(--space-1);
+}
+
+.shape-labels-row {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 1.5rem;
+  pointer-events: none;
+  z-index: 2;
 }
 
 .shape-label {
   position: absolute;
+  top: 0;
   transform: translateX(-50%);
   font-size: var(--text-xs);
   font-weight: 600;
