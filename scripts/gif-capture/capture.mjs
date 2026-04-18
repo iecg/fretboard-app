@@ -1,7 +1,7 @@
 /**
  * Capture screenshots of FretFlow for animated GIF.
  * Run: node scripts/gif-capture/capture.mjs
- * (Dev server must be running on port 4173)
+ * (Preview server must be running on port 4173)
  * Env: PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH — override Chromium binary path
  */
 import { chromium } from "playwright";
@@ -35,41 +35,32 @@ async function waitReady(page) {
   await page.waitForTimeout(400);
 }
 
+/**
+ * Click a note on the Circle of Fifths by its note name.
+ * The CoF SVG has role="group" aria-label="Circle of Fifths — select a key".
+ * Each slice is a <path role="button" aria-label="G — not selected">.
+ */
 async function clickNote(page, noteName) {
-  // Click a note on the circle of fifths by its text label position
-  const pos = await page.evaluate((note) => {
-    const svg = document.querySelector(".circle-fifths-svg");
-    if (!svg) return null;
-    const texts = [...svg.querySelectorAll("text")];
-    for (const t of texts) {
-      if (t.textContent.trim() === note) {
-        const tr = t.getBoundingClientRect();
-        return { x: Math.round(tr.left + tr.width / 2), y: Math.round(tr.top + tr.height / 2) };
-      }
-    }
-    return null;
-  }, noteName);
-
-  if (!pos) {
-    console.warn(`  Note ${noteName} not found on circle`);
-    return;
+  const cof = page.getByRole("group", {
+    name: /Circle of Fifths — select a key/i,
+  });
+  const slice = cof
+    .getByRole("button", { name: new RegExp(`^${noteName}`) })
+    .first();
+  if (await slice.isVisible().catch(() => false)) {
+    await slice.click();
+    await page.waitForTimeout(350);
+  } else {
+    throw new Error(`Note "${noteName}" not found on Circle of Fifths`);
   }
-  // Click slightly inward to hit the slice path, not the text
-  await page.mouse.click(pos.x, pos.y);
-  await page.waitForTimeout(350);
 }
 
-async function selectScale(page, scaleName) {
-  const drawer = page.locator(".drawer-selector").filter({ hasText: /Scale/ }).first();
-  await drawer.click();
-  await page.waitForTimeout(250);
-  const opt = page.locator(".drawer-option").filter({ hasText: new RegExp(`^${scaleName}$`, "i") }).first();
-  if (await opt.isVisible().catch(() => false)) {
-    await opt.click();
-  } else {
-    await page.keyboard.press("Escape");
-    console.warn(`  Scale "${scaleName}" not found`);
-  }
+/**
+ * Select a scale family via the "Scale Family" labeled <select>.
+ * Family labels: "Major Modes", "Harmonic Minor", "Melodic Minor", "Pentatonic", "Blues"
+ */
+async function selectFamily(page, familyLabel) {
+  await page.getByLabel("Scale Family").selectOption(familyLabel);
   await page.waitForTimeout(400);
 }
 
@@ -83,16 +74,15 @@ async function clickBtn(page, name, parent = page) {
   }
 }
 
-// Click a CAGED shape button by label (All / C / A / G / E / D)
-// These only appear after clicking the CAGED mode button
+/**
+ * Click a CAGED shape button by label (All / C / A / G / E / D).
+ * The shape buttons live in a role="group" aria-labelledby pointing to "Shape".
+ */
 async function clickCagedShape(page, shape) {
-  // Scope to the "Shape" control-section to avoid matching "All" in the
-  // Fingering Pattern row or single letters elsewhere in the UI.
-  const shapeSection = page
-    .locator(".control-section")
-    .filter({ has: page.locator(".section-label", { hasText: /^Shape$/ }) })
+  const shapeGroup = page.getByRole("group", { name: /^Shape$/i });
+  const btn = shapeGroup
+    .getByRole("button", { name: shape, exact: true })
     .first();
-  const btn = shapeSection.getByRole("button", { name: shape, exact: true }).first();
   if (await btn.isVisible().catch(() => false)) {
     await btn.click();
     await page.waitForTimeout(350);
@@ -141,8 +131,8 @@ async function main() {
     await clickNote(page, "A");
     await shot(page, "s4_root_A", 3);
 
-    // ── Scene 5: Switch scale to Minor Pentatonic ─────────────────────
-    await selectScale(page, "Minor Pentatonic");
+    // ── Scene 5: Switch family to Pentatonic (A Minor Pentatonic) ────
+    await selectFamily(page, "Pentatonic");
     await shot(page, "s5_minor_pent", 4);
 
     // ── Scene 6: Activate CAGED view, show all shapes ─────────────────
@@ -177,14 +167,16 @@ async function main() {
     await clickBtn(page, "Notes");
     await shot(page, "s13_notes", 3);
 
-    // ── Scene 14: Switch back to Major, root C ────────────────────────
-    // Scope "All" to the Fingering Pattern section to avoid the Shape "All" button
-    const fingeringSection = page
-      .locator(".control-section")
-      .filter({ has: page.locator(".section-label", { hasText: /^Fingering Pattern$/ }) })
+    // ── Scene 14: Switch back to Major Modes, root C ──────────────────
+    // Scope to the fingering toggle row (contains CAGED + 3NPS) to avoid
+    // accidentally hitting the Shape group's "All" button.
+    const fingeringBar = page
+      .locator("div")
+      .filter({ has: page.getByRole("button", { name: "CAGED", exact: true }) })
+      .filter({ has: page.getByRole("button", { name: "3NPS", exact: true }) })
       .first();
-    await clickBtn(page, "All", fingeringSection);
-    await selectScale(page, "Major");
+    await clickBtn(page, "All", fingeringBar);
+    await selectFamily(page, "Major Modes");
     await clickNote(page, "C");
     await shot(page, "s14_back_to_start", 4);
   } finally {
