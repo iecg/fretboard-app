@@ -545,4 +545,207 @@ describe("useDisplayState", () => {
       expect(result.current.activeChordTones).toHaveLength(3);
     });
   });
+
+  describe("noteRoleMap", () => {
+    it("is empty when no chord type is set", () => {
+      const store = createStore();
+      store.set(chordTypeAtom, null);
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.noteRoleMap.size).toBe(0);
+    });
+
+    it("assigns chord-root to the chord root note", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad");
+      store.set(focusPresetAtom, "all");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.noteRoleMap.get("C")).toBe("chord-root");
+    });
+
+    it("assigns chord-tone-in-scale to in-scale non-root chord members", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad"); // C E G — E and G in C Major
+      store.set(focusPresetAtom, "all");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.noteRoleMap.get("E")).toBe("chord-tone-in-scale");
+      expect(result.current.noteRoleMap.get("G")).toBe("chord-tone-in-scale");
+    });
+
+    it("assigns chord-tone-outside-scale to chord members outside scale", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C"); // C Major: C D E F G A B
+      store.set(chordRootAtom, "D");
+      store.set(chordTypeAtom, "Dominant 7th"); // D F# A C — F# outside C Major
+      store.set(focusPresetAtom, "all");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.noteRoleMap.get("F#")).toBe("chord-tone-outside-scale");
+    });
+
+    it("assigns chord-root correctly even when chordRoot equals rootNote", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "A");
+      store.set(chordRootAtom, "A");
+      store.set(chordTypeAtom, "Minor Triad");
+      store.set(focusPresetAtom, "all");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      // A is both scale root and chord root → should be chord-root, not scale-only
+      expect(result.current.noteRoleMap.get("A")).toBe("chord-root");
+    });
+
+    it("assigns chord-root even when chord root is outside scale", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C"); // C Major
+      store.set(chordRootAtom, "F#");
+      store.set(chordTypeAtom, "Major Triad"); // F# A# C# — F# outside C Major
+      store.set(focusPresetAtom, "all");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.noteRoleMap.get("F#")).toBe("chord-root");
+    });
+  });
+
+  describe("summaryChordRow", () => {
+    it("is empty when no chord type is set", () => {
+      const store = createStore();
+      store.set(chordTypeAtom, null);
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.summaryChordRow).toEqual([]);
+    });
+
+    it("contains one entry per active chord member with correct roles", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad");
+      store.set(focusPresetAtom, "all");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      const row = result.current.summaryChordRow;
+      expect(row).toHaveLength(3);
+      const rootEntry = row.find((e) => e.internalNote === "C");
+      expect(rootEntry?.role).toBe("chord-root");
+      expect(rootEntry?.memberName).toBe("1");
+      const thirdEntry = row.find((e) => e.internalNote === "E");
+      expect(thirdEntry?.role).toBe("chord-tone-in-scale");
+    });
+
+    it("marks outside-scale members with chord-tone-outside-scale role", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C"); // C Major
+      store.set(chordRootAtom, "D");
+      store.set(chordTypeAtom, "Dominant 7th"); // D F# A C
+      store.set(focusPresetAtom, "all");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      const row = result.current.summaryChordRow;
+      const fSharpEntry = row.find((e) => e.internalNote === "F#");
+      expect(fSharpEntry?.role).toBe("chord-tone-outside-scale");
+      expect(fSharpEntry?.inScale).toBe(false);
+    });
+
+    it("filters to only outside members in outside viewMode", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C"); // C Major
+      store.set(chordRootAtom, "D");
+      store.set(chordTypeAtom, "Dominant 7th"); // D F# A C — D and F# outside
+      store.set(focusPresetAtom, "all");
+      store.set(viewModeAtom, "outside");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      const row = result.current.summaryChordRow;
+      // Only D (chord-root outside scale) and F# (outside chord tone) should appear
+      expect(row.every((e) => !e.inScale || e.role === "chord-root")).toBe(true);
+      expect(row.some((e) => e.internalNote === "F#")).toBe(true);
+    });
+
+    it("excludes in-scale chord root from outside view", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C"); // C Major: C D E F G A B
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Dominant 7th"); // C E G A# — A# outside
+      store.set(focusPresetAtom, "all");
+      store.set(viewModeAtom, "outside");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      const row = result.current.summaryChordRow;
+      // C (chord root) is in C Major scale → excluded from outside view
+      expect(row.find((e) => e.internalNote === "C")).toBeUndefined();
+      // A# is outside → included
+      expect(row.find((e) => e.internalNote === "A#")).toBeDefined();
+    });
+  });
+
+  describe("summaryLegendItems", () => {
+    it("is empty when no chord type is set", () => {
+      const store = createStore();
+      store.set(chordTypeAtom, null);
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.summaryLegendItems).toEqual([]);
+    });
+
+    it("includes chord-root legend item when chord is active in compare mode", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad");
+      store.set(focusPresetAtom, "all");
+      store.set(viewModeAtom, "compare");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      const items = result.current.summaryLegendItems;
+      expect(items.some((i) => i.role === "chord-root")).toBe(true);
+    });
+
+    it("includes chord-tone-outside-scale legend item when outside tones present", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(chordRootAtom, "D");
+      store.set(chordTypeAtom, "Dominant 7th"); // F# outside C Major
+      store.set(focusPresetAtom, "all");
+      store.set(viewModeAtom, "compare");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      const items = result.current.summaryLegendItems;
+      expect(items.some((i) => i.role === "chord-tone-outside-scale")).toBe(true);
+    });
+
+    it("omits chord-tone-outside-scale legend item when all chord members are in scale", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad"); // C E G — all in C Major
+      store.set(focusPresetAtom, "all");
+      store.set(viewModeAtom, "compare");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      const items = result.current.summaryLegendItems;
+      expect(items.some((i) => i.role === "chord-tone-outside-scale")).toBe(false);
+    });
+  });
 });

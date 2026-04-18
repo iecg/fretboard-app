@@ -89,6 +89,29 @@ export interface ResolvedChordMember extends ChordMember {
   note: string;
 }
 
+// Shared note-role model — consumed by both fretboard rendering and summary strip.
+export type NoteRole =
+  | "key-tonic"
+  | "chord-root"
+  | "chord-tone-in-scale"
+  | "chord-tone-outside-scale"
+  | "scale-only"
+  | "note-active"
+  | "note-blue";
+
+export interface ChordRowEntry {
+  internalNote: string;
+  displayNote: string;
+  memberName: string;
+  role: "chord-root" | "chord-tone-in-scale" | "chord-tone-outside-scale";
+  inScale: boolean;
+}
+
+export interface LegendItem {
+  role: NoteRole;
+  label: string;
+}
+
 export const CHORD_DEFINITIONS: Record<string, ChordDefinition> = {
   "Major Triad": {
     quality: "triad",

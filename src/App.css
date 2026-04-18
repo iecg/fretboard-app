@@ -1187,6 +1187,15 @@
   justify-content: center;
 }
 
+/* Stack scale strip + chord row strip vertically when chord overlay is active. */
+.summary-overlay-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+  align-items: center;
+}
+
 .header-btn {
   width: 2.95rem;
   height: 2.95rem;

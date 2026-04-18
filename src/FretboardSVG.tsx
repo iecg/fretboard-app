@@ -8,6 +8,7 @@ import {
   INTERVAL_NAMES,
   formatAccidental,
   SCALES,
+  type ViewMode,
 } from "./theory";
 import { parseNote } from "./guitar";
 import { STRING_ROW_PX_TABLET } from "./layout/responsive";
@@ -33,8 +34,10 @@ interface FretboardSVGProps {
   displayFormat?: "notes" | "degrees" | "none";
   boxBounds?: { minFret: number; maxFret: number }[];
   chordTones?: string[];
+  chordRoot?: string;
   chordFretSpread?: number;
   hideNonChordNotes?: boolean;
+  viewMode?: ViewMode;
   colorNotes?: string[];
   shapePolygons?: ShapePolygon[];
   shapeLabels?: "caged" | "none";
@@ -51,8 +54,11 @@ interface FretboardSVGProps {
 
 type BoxBound = { minFret: number; maxFret: number };
 
+// Roles: key-tonic, chord-root, chord-tone-in-scale, chord-tone-outside-scale,
+//        scale-only, note-active, note-blue, note-inactive
 function classifyNote(
-  isRoot: boolean,
+  isScaleRoot: boolean,
+  isChordRootNote: boolean,
   isColorNote: boolean,
   isHighlighted: boolean,
   isChordTone: boolean,
@@ -62,31 +68,30 @@ function classifyNote(
   boxBounds: BoxBound[],
   fretIndex: number,
 ): string {
-  if (isRoot && (isHighlighted || (isChordTone && isChordInRange)))
-    return "root-active";
-  if (isColorNote && isHighlighted) return "note-blue";
-  if (isHighlighted && isChordTone) return "chord-tone";
-  if (isHighlighted && !hasChordOverlay) return "note-active";
-  if (isHighlighted && hasChordOverlay) return "note-scale-only";
-  if (!isHighlighted && isChordTone && isChordInRange) return "chord-outside";
-  if (
-    isColorNote &&
-    shapePolygons.length > 0 &&
-    boxBounds.some(
-      (b) => fretIndex >= b.minFret - 1 && fretIndex <= b.maxFret + 1,
+  if (!hasChordOverlay) {
+    if (isColorNote && isHighlighted) return "note-blue";
+    if (isScaleRoot && isHighlighted) return "key-tonic";
+    if (isHighlighted) return "note-active";
+    if (
+      isColorNote &&
+      shapePolygons.length > 0 &&
+      boxBounds.some(
+        (b) => fretIndex >= b.minFret - 1 && fretIndex <= b.maxFret + 1,
+      )
     )
-  )
-    return "note-blue";
+      return "note-blue";
+    return "note-inactive";
+  }
+  // Chord overlay active: chord-root takes priority (even if outside scale).
+  if (isChordRootNote && isChordTone && isChordInRange) return "chord-root";
+  if (isHighlighted && isChordTone) return "chord-tone-in-scale";
+  if (isHighlighted) return "scale-only";
+  if (!isHighlighted && isChordTone && isChordInRange)
+    return "chord-tone-outside-scale";
   return "note-inactive";
 }
 
-function getNoteVisuals(
-  noteClass: string,
-  glowFilterUrls: {
-    cyan: string;
-    orange: string;
-  },
-): {
+type NoteVisuals = {
   stroke: string;
   filter: string;
   fill: string;
@@ -94,11 +99,15 @@ function getNoteVisuals(
   radiusScale: number;
   strokeWidth: number;
   textOpacity: number;
-} {
+  strokeDasharray?: string;
+};
+
+function getNoteVisuals(
+  noteClass: string,
+  glowFilterUrls: { cyan: string; orange: string },
+): NoteVisuals {
   switch (noteClass) {
-    case "root-active":
-      // Matches the scale/chord radius — root is differentiated by its
-      // amber ring + orange glow, not by size.
+    case "key-tonic":
       return {
         stroke: "var(--note-ring-tonic)",
         filter: glowFilterUrls.orange,
@@ -108,13 +117,25 @@ function getNoteVisuals(
         strokeWidth: 2.3,
         textOpacity: 1,
       };
-    case "chord-tone":
+    case "chord-root":
+      // Amber ring, larger radius — visually dominant among chord tones.
       return {
         stroke: "var(--note-ring-tonic)",
         filter: glowFilterUrls.orange,
-        fill: "rgb(40 28 20 / 0.92)",
+        fill: "rgb(55 35 18 / 0.97)",
         textFill: "#ffffff",
         radiusScale: 0.86,
+        strokeWidth: 2.5,
+        textOpacity: 1,
+      };
+    case "chord-tone-in-scale":
+      // Cyan ring — chord member, in scale, clearly distinct from root.
+      return {
+        stroke: "var(--note-ring)",
+        filter: glowFilterUrls.cyan,
+        fill: "rgb(14 30 44 / 0.95)",
+        textFill: "#ffffff",
+        radiusScale: 0.82,
         strokeWidth: 2.1,
         textOpacity: 1,
       };
@@ -129,7 +150,7 @@ function getNoteVisuals(
         strokeWidth: 1.9,
         textOpacity: 1,
       };
-    case "note-scale-only":
+    case "scale-only":
       return {
         stroke: "var(--note-ring-dim)",
         filter: glowFilterUrls.cyan,
@@ -139,15 +160,17 @@ function getNoteVisuals(
         strokeWidth: 1.7,
         textOpacity: 0.82,
       };
-    case "chord-outside":
+    case "chord-tone-outside-scale":
+      // Dashed amber-dim border — chord-relevant but outside the current scale.
       return {
-        stroke: "var(--note-ring)",
-        filter: glowFilterUrls.cyan,
-        fill: "rgb(18 26 34 / 0.75)",
+        stroke: "var(--neon-orange-dim)",
+        filter: glowFilterUrls.orange,
+        fill: "rgb(40 22 10 / 0.72)",
         textFill: "#ffffff",
-        radiusScale: 0.72,
-        strokeWidth: 1.5,
-        textOpacity: 0.72,
+        radiusScale: 0.82,
+        strokeWidth: 2.0,
+        textOpacity: 0.9,
+        strokeDasharray: "5 3",
       };
     default:
       return {
@@ -176,8 +199,10 @@ export function FretboardSVG({
   displayFormat = "notes",
   boxBounds = [],
   chordTones = [],
+  chordRoot,
   chordFretSpread = 0,
   hideNonChordNotes = false,
+  viewMode = "compare",
   colorNotes = [],
   shapePolygons = [],
   shapeLabels = "none",
@@ -406,11 +431,17 @@ export function FretboardSVG({
           highlightNotes.includes(`${stringIndex}-${fretIndex}`));
       const isChordTone =
         !isNoteHidden && hasChordOverlay && chordTones.includes(noteName);
-      const isRoot =
+      const isScaleRoot =
         !isNoteHidden &&
         (noteName === rootNote ||
           ENHARMONICS[noteName] === rootNote ||
           ENHARMONICS[rootNote] === noteName);
+      const isChordRootNote =
+        !isNoteHidden &&
+        !!chordRoot &&
+        (noteName === chordRoot ||
+          ENHARMONICS[noteName] === chordRoot ||
+          ENHARMONICS[chordRoot] === noteName);
       const isColorNote =
         !isNoteHidden &&
         colorNotes.length > 0 &&
@@ -432,7 +463,8 @@ export function FretboardSVG({
       const noteClass = isNoteHidden
         ? "note-inactive"
         : classifyNote(
-            isRoot,
+            isScaleRoot,
+            isChordRootNote,
             isColorNote,
             isHighlighted,
             isChordTone,
@@ -488,12 +520,23 @@ export function FretboardSVG({
         (shapePolygons.length > 0 &&
           !isInsideAnyPolygon &&
           (noteClass === "note-blue" ||
-            noteClass === "chord-outside" ||
-            noteClass === "chord-tone" ||
-            noteClass === "root-active")) ||
+            noteClass === "chord-tone-outside-scale" ||
+            noteClass === "chord-tone-in-scale" ||
+            noteClass === "chord-root" ||
+            noteClass === "key-tonic")) ||
         (isWrapped && isHighlighted);
 
-      const isHidden = noteClass === "note-scale-only" && hideNonChordNotes;
+      const isHidden = (() => {
+        // chord mode: hide all scale-only notes.
+        if (noteClass === "scale-only" && hideNonChordNotes) return true;
+        // outside mode: only outside chord tones (and outside chord root) visible.
+        if (viewMode === "outside" && hasChordOverlay) {
+          if (noteClass === "chord-tone-outside-scale") return false;
+          if (noteClass === "chord-root" && !isHighlighted) return false;
+          return true;
+        }
+        return false;
+      })();
 
       return [
         {
@@ -1011,6 +1054,7 @@ export function FretboardSVG({
                   radiusScale,
                   strokeWidth,
                   textOpacity,
+                  strokeDasharray,
                 } = getNoteVisuals(noteClass, glowFilterUrls);
                 const r = baseRadius * radiusScale;
                 return (
@@ -1021,6 +1065,7 @@ export function FretboardSVG({
                       noteClass,
                       isHidden && "hidden",
                     )}
+                    data-note-role={noteClass !== "note-inactive" ? noteClass : undefined}
                     style={{ opacity: applyDimOpacity ? 0.8 : 1 }}
                   >
                     <circle
@@ -1030,6 +1075,7 @@ export function FretboardSVG({
                       fill={fill}
                       stroke={stroke}
                       strokeWidth={strokeWidth}
+                      strokeDasharray={strokeDasharray}
                       filter={filter !== "none" ? filter : undefined}
                     />
                     {displayFormat !== "none" && (
@@ -1047,7 +1093,7 @@ export function FretboardSVG({
                           userSelect: "none",
                           paintOrder: "stroke",
                           stroke: "rgb(0 0 0 / 0.45)",
-                          strokeWidth: noteClass === "root-active" ? 2.3 : 1.8,
+                          strokeWidth: noteClass === "chord-root" || noteClass === "key-tonic" ? 2.3 : 1.8,
                         }}
                       >
                         {formatAccidental(displayValue)}
@@ -1112,6 +1158,7 @@ export function FretboardSVG({
                   aria-hidden={isHidden || undefined}
                   tabIndex={isHidden ? -1 : undefined}
                   aria-label={`${formatAccidental(displayValue)} on string ${stringIndex + 1}, fret ${fretIndex}`}
+                  data-note-role={noteClass !== "note-inactive" ? noteClass : undefined}
                   className={clsx(
                     "note-bubble",
                     noteClass,

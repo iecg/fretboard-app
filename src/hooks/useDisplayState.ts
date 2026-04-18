@@ -39,6 +39,9 @@ import {
   type FocusPreset,
   type ChordMemberName,
   type ResolvedChordMember,
+  type NoteRole,
+  type ChordRowEntry,
+  type LegendItem,
 } from "../theory";
 import { getActiveScaleBrowseOption } from "../theoryCatalog";
 import { STANDARD_TUNING, TUNINGS } from "../guitar";
@@ -52,7 +55,15 @@ import {
   type CagedShape,
 } from "../shapes";
 
-export type { ViewMode, FocusPreset, ChordMemberName, ResolvedChordMember };
+export type {
+  ViewMode,
+  FocusPreset,
+  ChordMemberName,
+  ResolvedChordMember,
+  NoteRole,
+  ChordRowEntry,
+  LegendItem,
+};
 
 export default function useDisplayState() {
   // Scale
@@ -176,6 +187,90 @@ export default function useDisplayState() {
     const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
     return chordTones.some((note) => !scaleNoteSet.has(note));
   }, [chordType, chordTones, rootNote, scaleName]);
+
+  // Shared note-role map: every chromatic note → its overlay role when chord active.
+  // Consumed by both the fretboard and the summary strip for consistent semantics.
+  const noteRoleMap = useMemo((): Map<string, NoteRole> => {
+    if (!chordType) return new Map();
+    const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
+    const activeChordToneSet = new Set(activeChordTones);
+    const map = new Map<string, NoteRole>();
+    for (const note of NOTES) {
+      const isInScale = scaleNoteSet.has(note);
+      const isActiveChordTone = activeChordToneSet.has(note);
+      const isChordRootNote = note === chordRoot;
+      if (isChordRootNote && isActiveChordTone) {
+        map.set(note, "chord-root");
+      } else if (isActiveChordTone && isInScale) {
+        map.set(note, "chord-tone-in-scale");
+      } else if (isActiveChordTone && !isInScale) {
+        map.set(note, "chord-tone-outside-scale");
+      } else if (isInScale) {
+        map.set(note, "scale-only");
+      }
+    }
+    return map;
+  }, [chordType, rootNote, scaleName, chordRoot, activeChordTones]);
+
+  // Chord row entries for the summary strip, filtered by viewMode.
+  const summaryChordRow = useMemo((): ChordRowEntry[] => {
+    if (!chordType) return [];
+    const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
+    const entries = activeChordMembers.map((m): ChordRowEntry => {
+      const inScale = scaleNoteSet.has(m.note);
+      const isRoot = m.name === "root";
+      let role: ChordRowEntry["role"];
+      if (isRoot) {
+        role = "chord-root";
+      } else if (inScale) {
+        role = "chord-tone-in-scale";
+      } else {
+        role = "chord-tone-outside-scale";
+      }
+      return {
+        internalNote: m.note,
+        displayNote: formatAccidental(getNoteDisplay(m.note, chordRoot, useFlats)),
+        memberName: m.name === "root" ? "1" : formatAccidental(m.name),
+        role,
+        inScale,
+      };
+    });
+    // In outside view: keep only outside-scale entries (plus outside chord root).
+    if (viewMode === "outside") {
+      return entries.filter(
+        (e) =>
+          e.role === "chord-tone-outside-scale" ||
+          (e.role === "chord-root" && !e.inScale),
+      );
+    }
+    return entries;
+  }, [
+    chordType,
+    activeChordMembers,
+    rootNote,
+    scaleName,
+    chordRoot,
+    useFlats,
+    viewMode,
+  ]);
+
+  // Legend items: only roles actually present in the current chord row.
+  const summaryLegendItems = useMemo((): LegendItem[] => {
+    if (!chordType) return [];
+    const rolesPresent = new Set(summaryChordRow.map((e) => e.role));
+    const items: LegendItem[] = [];
+    if (rolesPresent.has("chord-root"))
+      items.push({ role: "chord-root", label: "Chord root" });
+    if (rolesPresent.has("chord-tone-in-scale"))
+      items.push({ role: "chord-tone-in-scale", label: "Chord tone" });
+    if (rolesPresent.has("chord-tone-outside-scale"))
+      items.push({ role: "chord-tone-outside-scale", label: "Outside scale" });
+    // In compare mode, mention scale-only if there are scale notes that aren't chord tones.
+    if (viewMode === "compare" && activeChordTones.length > 0) {
+      items.push({ role: "scale-only", label: "Scale only" });
+    }
+    return items;
+  }, [chordType, summaryChordRow, viewMode, activeChordTones]);
 
   // hideNonChordNotes derived from viewMode for Fretboard rendering path
   const hideNonChordNotes = viewMode === "chord";
@@ -373,6 +468,9 @@ export default function useDisplayState() {
     activeChordMembers,
     activeChordTones,
     hasOutsideChordMembers,
+    noteRoleMap,
+    summaryChordRow,
+    summaryLegendItems,
     highlightNotes,
     boxBounds,
     shapePolygons,
