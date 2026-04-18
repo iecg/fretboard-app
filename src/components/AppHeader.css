@@ -64,7 +64,7 @@
   align-items: baseline;
   font-family: var(--font-display);
   /* Bold glyph weight + thin text-stroke + only soft/wide glow. */
-  font-weight: 750;
+  font-weight: var(--font-brand-weight);
   font-size: clamp(2rem, 4vw, 3.15rem);
   letter-spacing: 0.035em;
   line-height: 0.92;
