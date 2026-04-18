@@ -24,7 +24,9 @@ import {
   npsPositionAtom,
   hideNonChordNotesAtom,
   chordFretSpreadAtom,
-  chordIntervalFilterAtom,
+  viewModeAtom,
+  focusPresetAtom,
+  customMembersAtom,
   setRootNoteAtom,
   resetAtom,
   landscapeNarrowTabAtom,
@@ -467,7 +469,9 @@ describe("atoms", () => {
       store.set(linkChordRootAtom, false);
       store.set(hideNonChordNotesAtom, true);
       store.set(chordFretSpreadAtom, 5);
-      store.set(chordIntervalFilterAtom, "Triad");
+      store.set(viewModeAtom, "chord");
+      store.set(focusPresetAtom, "triad");
+      store.set(customMembersAtom, ["root", "3"]);
       store.set(fingeringPatternAtom, "caged");
       store.set(npsPositionAtom, 3);
       store.set(shapeLabelsAtom, "caged");
@@ -485,7 +489,9 @@ describe("atoms", () => {
       expect(store.get(linkChordRootAtom)).toBe(true);
       expect(store.get(hideNonChordNotesAtom)).toBe(false);
       expect(store.get(chordFretSpreadAtom)).toBe(0);
-      expect(store.get(chordIntervalFilterAtom)).toBe("All");
+      expect(store.get(viewModeAtom)).toBe("compare");
+      expect(store.get(focusPresetAtom)).toBe("all");
+      expect(store.get(customMembersAtom)).toEqual([]);
       expect(store.get(fingeringPatternAtom)).toBe("all");
       expect(store.get(npsPositionAtom)).toBe(1);
       expect(store.get(shapeLabelsAtom)).toBe("none");

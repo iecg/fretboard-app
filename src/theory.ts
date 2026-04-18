@@ -63,15 +63,152 @@ export const FLAT_KEYS = [
 
 export { normalizeScaleName, SCALES, SCALE_TO_PARENT_MAJOR_OFFSET };
 
-export const CHORDS: Record<string, number[]> = {
-  "Major Triad": [0, 4, 7],
-  "Minor Triad": [0, 3, 7],
-  "Diminished Triad": [0, 3, 6],
-  "Major 7th": [0, 4, 7, 11],
-  "Minor 7th": [0, 3, 7, 10],
-  "Dominant 7th": [0, 4, 7, 10],
-  "Power Chord (5)": [0, 7],
+// Chord overlay types
+export type ChordMemberName = "root" | "b3" | "3" | "b5" | "5" | "b7" | "7";
+export type ChordQuality = "triad" | "seventh" | "power";
+export type ViewMode = "compare" | "chord" | "outside";
+export type FocusPreset =
+  | "all"
+  | "triad"
+  | "shell"
+  | "guide-tones"
+  | "rootless"
+  | "custom";
+
+export interface ChordMember {
+  name: ChordMemberName;
+  semitone: number;
+}
+
+export interface ChordDefinition {
+  quality: ChordQuality;
+  members: ChordMember[];
+}
+
+export interface ResolvedChordMember extends ChordMember {
+  note: string;
+}
+
+export const CHORD_DEFINITIONS: Record<string, ChordDefinition> = {
+  "Major Triad": {
+    quality: "triad",
+    members: [
+      { name: "root", semitone: 0 },
+      { name: "3", semitone: 4 },
+      { name: "5", semitone: 7 },
+    ],
+  },
+  "Minor Triad": {
+    quality: "triad",
+    members: [
+      { name: "root", semitone: 0 },
+      { name: "b3", semitone: 3 },
+      { name: "5", semitone: 7 },
+    ],
+  },
+  "Diminished Triad": {
+    quality: "triad",
+    members: [
+      { name: "root", semitone: 0 },
+      { name: "b3", semitone: 3 },
+      { name: "b5", semitone: 6 },
+    ],
+  },
+  "Major 7th": {
+    quality: "seventh",
+    members: [
+      { name: "root", semitone: 0 },
+      { name: "3", semitone: 4 },
+      { name: "5", semitone: 7 },
+      { name: "7", semitone: 11 },
+    ],
+  },
+  "Minor 7th": {
+    quality: "seventh",
+    members: [
+      { name: "root", semitone: 0 },
+      { name: "b3", semitone: 3 },
+      { name: "5", semitone: 7 },
+      { name: "b7", semitone: 10 },
+    ],
+  },
+  "Dominant 7th": {
+    quality: "seventh",
+    members: [
+      { name: "root", semitone: 0 },
+      { name: "3", semitone: 4 },
+      { name: "5", semitone: 7 },
+      { name: "b7", semitone: 10 },
+    ],
+  },
+  "Power Chord (5)": {
+    quality: "power",
+    members: [
+      { name: "root", semitone: 0 },
+      { name: "5", semitone: 7 },
+    ],
+  },
 };
+
+// Derived from CHORD_DEFINITIONS for backward compatibility
+export const CHORDS: Record<string, number[]> = Object.fromEntries(
+  Object.entries(CHORD_DEFINITIONS).map(([name, def]) => [
+    name,
+    def.members.map((m) => m.semitone),
+  ]),
+);
+
+const FOCUS_PRESETS_BY_QUALITY: Record<ChordQuality, FocusPreset[]> = {
+  triad: ["all", "rootless", "custom"],
+  seventh: ["all", "triad", "shell", "guide-tones", "rootless", "custom"],
+  power: ["all", "custom"],
+};
+
+export function getAvailableFocusPresets(chordName: string): FocusPreset[] {
+  const def = CHORD_DEFINITIONS[chordName];
+  if (!def) return ["all", "custom"];
+  return FOCUS_PRESETS_BY_QUALITY[def.quality];
+}
+
+const TRIAD_MEMBER_NAMES = new Set<ChordMemberName>([
+  "root",
+  "b3",
+  "3",
+  "b5",
+  "5",
+]);
+const SHELL_MEMBER_NAMES = new Set<ChordMemberName>([
+  "root",
+  "b3",
+  "3",
+  "b7",
+  "7",
+]);
+const GUIDE_TONE_NAMES = new Set<ChordMemberName>(["b3", "3", "b7", "7"]);
+
+export function applyFocusPreset(
+  def: ChordDefinition,
+  preset: FocusPreset,
+  customMembers: ChordMemberName[],
+): ChordMember[] {
+  switch (preset) {
+    case "all":
+      return def.members;
+    case "triad":
+      return def.members.filter((m) => TRIAD_MEMBER_NAMES.has(m.name));
+    case "shell":
+      return def.members.filter((m) => SHELL_MEMBER_NAMES.has(m.name));
+    case "guide-tones":
+      return def.members.filter((m) => GUIDE_TONE_NAMES.has(m.name));
+    case "rootless":
+      return def.members.filter((m) => m.name !== "root");
+    case "custom":
+      if (customMembers.length === 0) return def.members;
+      return def.members.filter((m) => customMembers.includes(m.name));
+    default:
+      return def.members;
+  }
+}
 
 // Circle of fifths order anchored in root notes (sharps default)
 export const CIRCLE_OF_FIFTHS = [

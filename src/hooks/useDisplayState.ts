@@ -6,9 +6,10 @@ import {
   chordRootAtom,
   chordTypeAtom,
   linkChordRootAtom,
-  hideNonChordNotesAtom,
   chordFretSpreadAtom,
-  chordIntervalFilterAtom,
+  viewModeAtom,
+  focusPresetAtom,
+  customMembersAtom,
   fingeringPatternAtom,
   cagedShapesAtom,
   npsPositionAtom,
@@ -25,14 +26,19 @@ import {
 import {
   SCALES,
   NOTES,
-  CHORDS,
+  CHORD_DEFINITIONS,
   getScaleNotes,
   getChordNotes,
-  getIntervalNotes,
   getNoteDisplay,
   getDivergentNotes,
   formatAccidental,
   resolveAccidentalMode,
+  getAvailableFocusPresets,
+  applyFocusPreset,
+  type ViewMode,
+  type FocusPreset,
+  type ChordMemberName,
+  type ResolvedChordMember,
 } from "../theory";
 import { getActiveScaleBrowseOption } from "../theoryCatalog";
 import { STANDARD_TUNING, TUNINGS } from "../guitar";
@@ -46,22 +52,7 @@ import {
   type CagedShape,
 } from "../shapes";
 
-// Chord interval filter presets — sets of allowed semitone intervals from chord root
-export const CHORD_INTERVAL_FILTERS: Record<string, Set<number>> = {
-  All: new Set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]),
-  Triad: new Set([0, 3, 4, 6, 7, 8]),
-  "7th Chord": new Set([0, 3, 4, 6, 7, 8, 10, 11]),
-  "Power Chord": new Set([0, 7]),
-  "Guide Tones": new Set([3, 4, 10, 11]),
-  "Shell Voicing": new Set([0, 3, 4, 10, 11]),
-  "Root & 3rd": new Set([0, 3, 4]),
-  "Root & 5th": new Set([0, 6, 7, 8]),
-  "Root & 7th": new Set([0, 10, 11]),
-  "3rd & 5th": new Set([3, 4, 6, 7, 8]),
-  "3rd & 7th": new Set([3, 4, 10, 11]),
-};
-
-export const CHORD_FILTER_OPTIONS = Object.keys(CHORD_INTERVAL_FILTERS);
+export type { ViewMode, FocusPreset, ChordMemberName, ResolvedChordMember };
 
 export default function useDisplayState() {
   // Scale
@@ -73,13 +64,10 @@ export default function useDisplayState() {
   const [chordRoot, setChordRoot] = useAtom(chordRootAtom);
   const [chordType, setChordType] = useAtom(chordTypeAtom);
   const [linkChordRoot, setLinkChordRoot] = useAtom(linkChordRootAtom);
-  const [hideNonChordNotes, setHideNonChordNotes] = useAtom(
-    hideNonChordNotesAtom,
-  );
   const chordFretSpread = useAtomValue(chordFretSpreadAtom);
-  const [chordIntervalFilter, setChordIntervalFilter] = useAtom(
-    chordIntervalFilterAtom,
-  );
+  const [viewMode, setViewMode] = useAtom(viewModeAtom);
+  const [focusPreset, setFocusPreset] = useAtom(focusPresetAtom);
+  const [customMembers, setCustomMembers] = useAtom(customMembersAtom);
 
   // Fingering
   const [fingeringPattern, setFingeringPattern] = useAtom(fingeringPatternAtom);
@@ -134,23 +122,63 @@ export default function useDisplayState() {
 
   const currentTuning = TUNINGS[tuningName] || STANDARD_TUNING;
 
-  // Compute active chord tones (independent of scale)
+  // All chord tones for the selected chord (unfiltered; used for degree strip)
   const chordTones = useMemo(() => {
     if (!chordType) return [];
     return getChordNotes(chordRoot, chordType);
   }, [chordRoot, chordType]);
 
-  // Apply interval filter to chord tones (always preserve root)
-  const filteredChordTones = useMemo(() => {
-    if (!chordType || chordIntervalFilter === "All") return chordTones;
-    const allowed = CHORD_INTERVAL_FILTERS[chordIntervalFilter];
-    const intervals = CHORDS[chordType];
-    if (!intervals || !allowed) return chordTones;
-    const filtered = intervals.filter((i) => allowed.has(i));
-    // Always include root (interval 0) so root-active classification stays anchored
-    if (!filtered.includes(0)) filtered.unshift(0);
-    return getIntervalNotes(chordRoot, filtered);
-  }, [chordRoot, chordType, chordIntervalFilter, chordTones]);
+  // Available focus presets for the current chord quality
+  const availableFocusPresets = useMemo((): FocusPreset[] => {
+    if (!chordType) return ["all", "custom"];
+    return getAvailableFocusPresets(chordType);
+  }, [chordType]);
+
+  // Resolved chord members with note names attached
+  const chordMembers = useMemo((): ResolvedChordMember[] => {
+    if (!chordType) return [];
+    const def = CHORD_DEFINITIONS[chordType];
+    if (!def) return [];
+    const rootIndex = NOTES.indexOf(chordRoot);
+    if (rootIndex === -1) return [];
+    return def.members.map((m) => ({
+      ...m,
+      note: NOTES[(rootIndex + m.semitone) % 12],
+    }));
+  }, [chordRoot, chordType]);
+
+  // Active chord members after applying focus preset (with graceful fallback)
+  const activeChordMembers = useMemo((): ResolvedChordMember[] => {
+    if (!chordType) return [];
+    const def = CHORD_DEFINITIONS[chordType];
+    if (!def) return [];
+    const rootIndex = NOTES.indexOf(chordRoot);
+    if (rootIndex === -1) return [];
+    const effectivePreset = availableFocusPresets.includes(focusPreset)
+      ? focusPreset
+      : "all";
+    const members = applyFocusPreset(def, effectivePreset, customMembers);
+    return members.map((m) => ({
+      ...m,
+      note: NOTES[(rootIndex + m.semitone) % 12],
+    }));
+  }, [chordRoot, chordType, focusPreset, customMembers, availableFocusPresets]);
+
+  // Note names from active chord members — passed to Fretboard as chordTones
+  const activeChordTones = useMemo(
+    () => activeChordMembers.map((m) => m.note),
+    [activeChordMembers],
+  );
+
+  // Whether any chord member falls outside the current scale
+  const hasOutsideChordMembers = useMemo(() => {
+    if (!chordType || chordTones.length === 0) return false;
+    const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
+    return chordTones.some((note) => !scaleNoteSet.has(note));
+  }, [chordType, chordTones, rootNote, scaleName]);
+
+  // hideNonChordNotes derived from viewMode for Fretboard rendering path
+  const hideNonChordNotes = viewMode === "chord";
 
   const {
     highlightNotes,
@@ -308,7 +336,9 @@ export default function useDisplayState() {
     linkChordRoot,
     hideNonChordNotes,
     chordFretSpread,
-    chordIntervalFilter,
+    viewMode,
+    focusPreset,
+    customMembers,
     fingeringPattern,
     cagedShapes,
     npsPosition,
@@ -325,8 +355,9 @@ export default function useDisplayState() {
     setChordRoot,
     setChordType,
     setLinkChordRoot,
-    setHideNonChordNotes,
-    setChordIntervalFilter,
+    setViewMode,
+    setFocusPreset,
+    setCustomMembers,
     setFingeringPattern,
     setCagedShapes,
     setNpsPosition,
@@ -337,7 +368,11 @@ export default function useDisplayState() {
     useFlats,
     currentTuning,
     chordTones,
-    filteredChordTones,
+    chordMembers,
+    availableFocusPresets,
+    activeChordMembers,
+    activeChordTones,
+    hasOutsideChordMembers,
     highlightNotes,
     boxBounds,
     shapePolygons,

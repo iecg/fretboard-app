@@ -1,8 +1,13 @@
 import { startTransition, useId, useState, type ReactNode } from "react";
 import clsx from "clsx";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { NOTES } from "../theory";
-import { CHORD_FILTER_OPTIONS } from "../hooks/useDisplayState";
+import {
+  NOTES,
+  type ViewMode,
+  type FocusPreset,
+  type ChordMemberName,
+  type ResolvedChordMember,
+} from "../theory";
 import {
   getActiveScaleBrowseOption,
   getAdjacentScaleBrowseOption,
@@ -36,6 +41,26 @@ const CHORD_OPTIONS: (string | { divider: string })[] = [
 
 const CHORD_NONE_VALUE = "__none__";
 
+const VIEW_MODE_OPTIONS: { value: ViewMode; label: string }[] = [
+  { value: "compare", label: "Scale + Chord" },
+  { value: "chord", label: "Chord Only" },
+  { value: "outside", label: "Outside" },
+];
+
+const FOCUS_PRESET_LABELS: Record<FocusPreset, string> = {
+  all: "All",
+  triad: "Triad",
+  shell: "Shell",
+  "guide-tones": "Guide Tones",
+  rootless: "Rootless",
+  custom: "Custom",
+};
+
+function formatMemberName(name: ChordMemberName): string {
+  if (name === "root") return "Root";
+  return name.replace("b", "♭");
+}
+
 interface TheoryControlsProps {
   rootNote: string;
   setRootNote: (note: string) => void;
@@ -49,10 +74,15 @@ interface TheoryControlsProps {
   setChordRoot: (note: string) => void;
   linkChordRoot: boolean;
   setLinkChordRoot: (linked: boolean) => void;
-  hideNonChordNotes: boolean;
-  setHideNonChordNotes: (hide: boolean) => void;
-  chordIntervalFilter: string;
-  setChordIntervalFilter: (filter: string) => void;
+  viewMode: ViewMode;
+  setViewMode: (mode: ViewMode) => void;
+  focusPreset: FocusPreset;
+  setFocusPreset: (preset: FocusPreset) => void;
+  customMembers: ChordMemberName[];
+  setCustomMembers: (members: ChordMemberName[]) => void;
+  availableFocusPresets: FocusPreset[];
+  chordMembers: ResolvedChordMember[];
+  hasOutsideChordMembers: boolean;
   useFlats: boolean;
   keyExplorer?: ReactNode;
 }
@@ -70,17 +100,21 @@ export function TheoryControls({
   setChordRoot,
   linkChordRoot,
   setLinkChordRoot,
-  hideNonChordNotes,
-  setHideNonChordNotes,
-  chordIntervalFilter,
-  setChordIntervalFilter,
+  viewMode,
+  setViewMode,
+  focusPreset,
+  setFocusPreset,
+  customMembers,
+  setCustomMembers,
+  availableFocusPresets,
+  chordMembers,
+  hasOutsideChordMembers,
   useFlats,
   keyExplorer,
 }: TheoryControlsProps) {
   const [isChordOverlayOpen, setChordOverlayOpen] = useState(Boolean(chordType));
   const [isKeyExplorerOpen, setKeyExplorerOpen] = useState(false);
   const linkChordRootId = useId();
-  const hideNonChordNotesId = useId();
 
   const scaleEntry = resolveScaleCatalogEntry(scaleName);
   const familyOptions = getScaleFamilyOptions();
@@ -120,10 +154,20 @@ export function TheoryControls({
       label: option,
     })),
   ];
-  const chordFilterOptions: LabeledSelectOption[] = CHORD_FILTER_OPTIONS.map((option) => ({
-    value: option,
-    label: option,
+
+  const viewModeOptions = VIEW_MODE_OPTIONS.map((opt) => ({
+    ...opt,
+    disabled: opt.value === "outside" && !hasOutsideChordMembers,
   }));
+
+  const focusPresetOptions = availableFocusPresets.map((preset) => ({
+    value: preset,
+    label: FOCUS_PRESET_LABELS[preset],
+  }));
+
+  const effectiveFocusPreset = availableFocusPresets.includes(focusPreset)
+    ? focusPreset
+    : "all";
   const applyRootNote = (note: string) => {
     startTransition(() => {
       setRootNote(note);
@@ -323,26 +367,60 @@ export function TheoryControls({
                   </div>
                 ) : null}
 
-                <label className={shared["link-toggle"]} htmlFor={hideNonChordNotesId}>
-                  <input
-                    id={hideNonChordNotesId}
-                    type="checkbox"
-                    checked={hideNonChordNotes}
-                    onChange={(event) =>
-                      setHideNonChordNotes(event.target.checked)
-                    }
+                <div className={shared["control-section"]}>
+                  <span className={shared["section-label"]}>View</span>
+                  <ToggleBar
+                    options={viewModeOptions}
+                    value={viewMode}
+                    onChange={setViewMode}
+                    label="View mode"
                   />
-                  <span>
-                    Chord only (hide scale)
-                  </span>
-                </label>
+                </div>
 
-                <LabeledSelect
-                  label="Interval Filter"
-                  value={chordIntervalFilter}
-                  options={chordFilterOptions}
-                  onChange={setChordIntervalFilter}
-                />
+                <div className={shared["control-section"]}>
+                  <span className={shared["section-label"]}>Focus</span>
+                  <ToggleBar
+                    options={focusPresetOptions}
+                    value={effectiveFocusPreset}
+                    onChange={setFocusPreset}
+                    label="Focus preset"
+                  />
+                </div>
+
+                {effectiveFocusPreset === "custom" ? (
+                  <div className={shared["control-section"]}>
+                    <span className={shared["section-label"]}>Members</span>
+                    <div
+                      className={clsx(shared["toggle-group"], shared["toggle-group--default"])}
+                      role="group"
+                      aria-label="Custom chord members"
+                    >
+                      {chordMembers.map((m) => {
+                        const isActive = customMembers.includes(m.name);
+                        return (
+                          <button
+                            key={m.name}
+                            type="button"
+                            aria-pressed={isActive}
+                            className={clsx(
+                              shared["toggle-btn"],
+                              isActive && shared.active,
+                            )}
+                            onClick={() =>
+                              setCustomMembers(
+                                isActive
+                                  ? customMembers.filter((n) => n !== m.name)
+                                  : [...customMembers, m.name],
+                              )
+                            }
+                          >
+                            {formatMemberName(m.name)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
               </>
             ) : null}
           </div>
