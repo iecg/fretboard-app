@@ -93,7 +93,7 @@ describe("SettingsOverlay", () => {
     expect(screen.getByText("Zoom")).toBeTruthy();
     expect(screen.getByText("Fret Range")).toBeTruthy();
     expect(screen.getAllByText("Tuning")).toHaveLength(2);
-    expect(screen.getByRole("button", { name: "Tuning: Standard" })).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: "Tuning" })).toBeTruthy();
     expect(screen.getByText("Accidentals")).toBeTruthy();
     expect(screen.getByText("Enharmonic Display")).toBeTruthy();
     expect(screen.getByText("Chord Spread")).toBeTruthy();
