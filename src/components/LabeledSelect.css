@@ -72,6 +72,23 @@
   font-size: 0.92rem;
 }
 
+/* Visually-hidden label: accessible to screen readers via <label htmlFor>, invisible visually. */
+.labeled-select--hide-label .labeled-select-label {
+  gap: 0;
+}
+
+.labeled-select--hide-label .labeled-select-label-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* Desktop: tighter select height — Phase 3 density pass. */
 .app-container[data-layout-tier="desktop"] .labeled-select-native {
   min-height: 2.65rem;

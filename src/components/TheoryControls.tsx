@@ -212,6 +212,7 @@ export function TheoryControls({
             <div className="theory-browser-selector">
               <LabeledSelect
                 label={memberTerm}
+                hideLabel
                 value={activeBrowseOption.label}
                 options={browseSelectOptions}
                 onChange={handleBrowseSelect}
