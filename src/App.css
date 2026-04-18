@@ -834,10 +834,9 @@
 }
 
 
-/* Mobile tab bar — hidden on desktop */
-.mobile-tab-bar {
-  display: none;
-}
+/* Mobile tab bar — display controlled by ToggleBar.css; component is only
+   mounted when showMobileTabs=true (mobile portrait), so no CSS guard needed.
+   Landscape suppression: [data-layout-variant="landscape-mobile"] rule below. */
 
 /* Mobile inline layout */
 @media (max-width: 767px) {
