@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render } from "@testing-library/react";
+import { render, fireEvent } from "@testing-library/react";
 import { FretboardSVG } from "../FretboardSVG";
 import { getFretboardNotes } from "../guitar";
 import type { CagedShape } from "../shapes";
@@ -20,7 +20,7 @@ const BASE_PROPS = {
 };
 
 describe("FretboardSVG", () => {
-  it("renders note bubbles when highlightNotes are provided", () => {
+  it("renders note circles when highlightNotes are provided", () => {
     render(<FretboardSVG {...BASE_PROPS} />);
     const activeNotes = document.querySelectorAll(".note-active, .root-active");
     expect(activeNotes.length).toBeGreaterThan(0);
@@ -106,19 +106,35 @@ describe("FretboardSVG", () => {
     const fretNumbers = document.querySelectorAll(".fret-number");
     // 13 columns: frets 0-12
     expect(fretNumbers.length).toBe(13);
-    expect(fretNumbers[0].textContent).toBe("0");
+    expect(fretNumbers[0].textContent).toBe(""); // fret 0 (open string) label intentionally suppressed
     expect(fretNumbers[12].textContent).toBe("12");
   });
 
-  it("invokes onNoteClick when a note bubble is clicked", () => {
+  it("does not render note buttons on fret 25", () => {
+    render(
+      <FretboardSVG
+        {...BASE_PROPS}
+        fretboardLayout={getFretboardNotes(STANDARD_TUNING, 25)}
+        highlightNotes={["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]}
+        startFret={24}
+        endFret={25}
+        maxFret={25}
+      />,
+    );
+
+    expect(document.querySelector('[aria-label*=", fret 24"]')).toBeTruthy();
+    expect(document.querySelector('[aria-label*=", fret 25"]')).toBeNull();
+  });
+
+  it("invokes onNoteClick when a note button is clicked", () => {
     const onNoteClick = vi.fn();
     render(<FretboardSVG {...BASE_PROPS} onNoteClick={onNoteClick} />);
-    const bubble = document.querySelector(".note-bubble") as HTMLElement;
-    bubble?.click();
+    const noteButton = document.querySelector(".note-bubble") as HTMLButtonElement;
+    fireEvent.click(noteButton);
     expect(onNoteClick).toHaveBeenCalledTimes(1);
   });
 
-  it("hides note-scale-only bubbles when hideNonChordNotes is true", () => {
+  it("hides note-scale-only circles when hideNonChordNotes is true", () => {
     render(
       <FretboardSVG
         {...BASE_PROPS}
@@ -128,8 +144,33 @@ describe("FretboardSVG", () => {
       />
     );
     // scale-only notes should have the 'hidden' class
-    const hiddenBubbles = document.querySelectorAll(".note-scale-only.hidden");
-    expect(hiddenBubbles.length).toBeGreaterThan(0);
+    const hiddenNotes = document.querySelectorAll(".note-scale-only.hidden");
+    expect(hiddenNotes.length).toBeGreaterThan(0);
+  });
+
+  it("prefixes SVG defs ids per instance and keeps url references resolvable", () => {
+    const { container } = render(
+      <>
+        <FretboardSVG {...BASE_PROPS} />
+        <FretboardSVG {...BASE_PROPS} />
+      </>,
+    );
+
+    const defsIds = Array.from(container.querySelectorAll("defs [id]")).map(
+      (node) => node.id,
+    );
+    expect(new Set(defsIds).size).toBe(defsIds.length);
+
+    const urlRefAttributes = ["fill", "filter", "clip-path"] as const;
+    for (const attribute of urlRefAttributes) {
+      const nodes = container.querySelectorAll(`[${attribute}^="url(#"]`);
+      for (const node of nodes) {
+        const value = node.getAttribute(attribute);
+        const refId = value?.match(/^url\(#(.+)\)$/)?.[1];
+        expect(refId).toBeTruthy();
+        expect(defsIds).toContain(refId);
+      }
+    }
   });
 
   it("has no a11y violations", async () => {

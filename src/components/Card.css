@@ -1,8 +1,9 @@
 .card {
-  background: var(--surface-card);
-  border: 1px solid var(--surface-card-border);
+  background: rgb(22 27 38 / 0.96);
+  border: 1px solid rgb(255 255 255 / 0.1);
   border-radius: var(--radius-card);
-  box-shadow: var(--elevation-card);
+  /* Inset top-edge gleam + moderate drop shadow — recedes behind the fretboard hero */
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.05) inset, 0 6px 20px rgb(0 0 0 / 0.28);
   overflow: hidden;
 }
 
@@ -10,9 +11,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--card-padding-y) var(--card-padding-x);
-  border-bottom: 1px solid var(--surface-card-header-border);
+  gap: 0.8rem;
+  padding: 1.15rem 1.3rem 0.9rem;
+  border-bottom: 1px solid rgb(255 255 255 / 0.08);
 }
 
 .card-header-title-row {
@@ -32,12 +33,13 @@
 
 .card-header-title {
   margin: 0;
-  font-size: var(--text-lg);
+  font-size: clamp(1.2rem, 1.7vw, 1.55rem);
   font-weight: var(--font-weight-semibold);
   line-height: var(--leading-tight);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: rgb(248 250 255 / 0.96);
 }
 
 .card-header-action {
@@ -47,5 +49,19 @@
 }
 
 .card-body {
-  padding: var(--card-padding-y) var(--card-padding-x);
+  padding: 0.95rem 1.3rem 1.25rem;
+}
+
+/* Desktop: tighter card chrome — Phase 3 density pass.
+   ~35% reduction in vertical padding; title steps down from clamp(1.2–1.55rem) to flat 1.05rem. */
+.app-container[data-layout-tier="desktop"] .card-header {
+  padding: 0.62rem 1rem 0.5rem;
+}
+
+.app-container[data-layout-tier="desktop"] .card-body {
+  padding: 0.6rem 1rem 0.75rem;
+}
+
+.app-container[data-layout-tier="desktop"] .card-header-title {
+  font-size: 1.05rem;
 }

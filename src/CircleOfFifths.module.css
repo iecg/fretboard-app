@@ -5,9 +5,12 @@
   align-items: center;
   justify-content: center;
   width: 100%;
+  max-width: 320px;
   min-height: 0;
-  max-width: 100%;
-  max-height: min(36rem, 60vh);
+  overflow: hidden;
+  aspect-ratio: 1;
+  max-height: min(320px, 58vh);
+  margin: 0 auto;
 }
 
 .active {
@@ -18,8 +21,8 @@
   display: block;
   width: 100%;
   height: 100%;
-  max-width: min(100%, 28rem);
-  max-height: min(100%, 28rem);
+  max-width: 100%;
+  overflow: visible;
 }
 
 .circle-slice {
@@ -48,6 +51,14 @@
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
+:global(.app-container[data-layout-variant="desktop-3col"]) .circle-fifths-container {
+  max-height: min(18rem, 40vh);
+}
+
+:global(.app-container[data-layout-variant="desktop-split"]) .circle-fifths-container {
+  max-height: min(22rem, 46vh);
+}
+
 :global(.app-container[data-layout-variant="tablet-stacked"]) .circle-fifths-container,
 :global(.app-container[data-layout-variant="desktop-stacked"]) .circle-fifths-container {
   max-width: min(100%, 28rem);

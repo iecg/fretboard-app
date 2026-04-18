@@ -1,12 +1,15 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { clsx } from "clsx";
 import { useAtomValue } from "jotai";
-import { getFretboardNotes, getFretNoteWithOctave, getNoteFrequency } from "./guitar";
+import {
+  getFretboardNotes,
+  getFretNoteWithOctave,
+  getNoteFrequency,
+} from "./guitar";
 import { synth } from "./audio";
 import type { ShapePolygon } from "./shapes";
 import { fretZoomAtom, fretStartAtom, fretEndAtom } from "./store/atoms";
 import { FretboardSVG } from "./FretboardSVG";
-import shared from "./components/shared.module.css";
 
 const STRING_ROW_PX_DEFAULT = 40;
 
@@ -24,7 +27,11 @@ interface FretboardInteractiveProps {
   shapePolygons?: ShapePolygon[];
   shapeLabels?: "caged" | "none";
   wrappedNotes?: Set<string>;
-  onFretClick?: (stringIndex: number, fretIndex: number, noteName: string) => void;
+  onFretClick?: (
+    stringIndex: number,
+    fretIndex: number,
+    noteName: string,
+  ) => void;
   useFlats?: boolean;
   scaleName?: string;
   stringRowPx?: number;
@@ -34,7 +41,7 @@ interface FretboardInteractiveProps {
 
 export function FretboardInteractive({
   tuning,
-  maxFret = 24,
+  maxFret = 25,
   highlightNotes,
   rootNote,
   displayFormat = "notes",
@@ -57,21 +64,17 @@ export function FretboardInteractive({
   const startFret = useAtomValue(fretStartAtom);
   const endFret = useAtomValue(fretEndAtom);
   const fretboardLayout = getFretboardNotes(tuning, Math.max(endFret, maxFret));
-  const fretCount = endFret - startFret;
 
   const [containerWidth, setContainerWidth] = useState(0);
-  const totalColumns = fretCount + 1;
+  const totalColumns = endFret - startFret;
   const noteBubblePx = Math.round(stringRowPx * 0.8);
   const MIN_FRET_WIDTH = Math.max(49, noteBubblePx + 17);
   const autoFitZoom = Math.max(
     MIN_FRET_WIDTH,
-    containerWidth > 0 && totalColumns > 0
-      ? Math.floor(containerWidth / totalColumns)
-      : 30
+    containerWidth > 0 && totalColumns > 0 ? containerWidth / totalColumns : 30,
   );
-  const desktopZoom = fretZoom <= 100
-    ? autoFitZoom
-    : Math.round((autoFitZoom * fretZoom) / 100);
+  const desktopZoom =
+    fretZoom <= 100 ? autoFitZoom : (autoFitZoom * fretZoom) / 100;
   const effectiveZoom = desktopZoom;
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -97,7 +100,7 @@ export function FretboardInteractive({
     const el = scrollRef.current;
     if (!el) return;
     setHasOverflow(el.scrollWidth > el.clientWidth + 1);
-  }, [effectiveZoom, fretCount, containerWidth]);
+  }, [effectiveZoom, totalColumns, containerWidth]);
 
   const effectiveZoomRef = useRef(effectiveZoom);
   useEffect(() => {
@@ -149,15 +152,16 @@ export function FretboardInteractive({
     pendingTarget.current = null;
   };
 
-  const scrollToFret = (fret: number) => {
-    if (!scrollRef.current) return;
-    const offset = (fret - startFret) * effectiveZoom;
-    scrollRef.current.scrollTo({ left: Math.max(0, offset - 20), behavior: "smooth" });
-  };
-
-  const handleFretClick = (stringIndex: number, fretIndex: number, noteName: string) => {
+  const handleFretClick = (
+    stringIndex: number,
+    fretIndex: number,
+    noteName: string,
+  ) => {
     if (dragDistance.current > 5) return;
-    const fretNoteWithOctave = getFretNoteWithOctave(tuning[stringIndex], fretIndex);
+    const fretNoteWithOctave = getFretNoteWithOctave(
+      tuning[stringIndex],
+      fretIndex,
+    );
     const frequency = getNoteFrequency(fretNoteWithOctave);
     synth.playNote(frequency);
     if (onFretClick) onFretClick(stringIndex, fretIndex, noteName);
@@ -167,22 +171,6 @@ export function FretboardInteractive({
 
   return (
     <div className="fretboard-outer">
-      <div className="fretboard-toolbar">
-        <div className="viewport-jumps">
-          <span className={shared["section-label"]}>Go to</span>
-          {([["Open", 0], ["Mid", 5], ["High", 12]] as [string, number][]).map(([label, fret]) => (
-            <button
-              key={label}
-              className="toolbar-btn"
-              disabled={fret < startFret || fret > endFret}
-              onClick={() => scrollToFret(fret)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
-
       <div
         className={clsx("fretboard-wrapper", "hide-scrollbar")}
         ref={scrollRef}
@@ -190,7 +178,9 @@ export function FretboardInteractive({
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
-        style={{ cursor: hasOverflow ? (isDragging ? "grabbing" : "grab") : "default" }}
+        style={{
+          cursor: hasOverflow ? (isDragging ? "grabbing" : "grab") : "default",
+        }}
       >
         <FretboardSVG
           effectiveZoom={effectiveZoom}

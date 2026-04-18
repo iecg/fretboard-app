@@ -8,7 +8,10 @@ export type ResponsiveVariant =
   | "tablet-split"
   | "tablet-stacked"
   | "desktop-split"
-  | "desktop-stacked";
+  | "desktop-stacked"
+  | "desktop-3col";
+
+export type DashboardPanelMode = "3col" | "split" | "stacked";
 
 export interface ResponsiveLayout {
   tier: ResponsiveTier;
@@ -19,15 +22,20 @@ export interface ResponsiveLayout {
   showMobileTabs: boolean;
   showSummary: boolean;
   isSplitPanel: boolean;
+  panelMode: DashboardPanelMode;
   showHeaderSubtitle: boolean;
   compactHeaderActions: boolean;
   fullWidthOverlay: boolean;
 }
 
+export const STRING_ROW_PX_MOBILE = 32;
+export const STRING_ROW_PX_TABLET = 40;
+export const STRING_ROW_PX_DESKTOP = 48;
+
 const STRING_ROW_PX_BY_TIER: Record<ResponsiveTier, number> = {
-  mobile: 32,
-  tablet: 40,
-  desktop: 48,
+  mobile: STRING_ROW_PX_MOBILE,
+  tablet: STRING_ROW_PX_TABLET,
+  desktop: STRING_ROW_PX_DESKTOP,
 };
 
 const HEADER_SUBTITLE_MIN_WIDTH = 880;
@@ -63,9 +71,14 @@ export function getResponsiveVariant(
     return isCompactHeight(viewportHeight) ? "tablet-stacked" : "tablet-split";
   }
 
-  return isCompactHeight(viewportHeight)
-    ? "desktop-stacked"
-    : "desktop-split";
+  // Desktop tier: height takes priority, then width determines split vs 3col.
+  if (isCompactHeight(viewportHeight)) {
+    return "desktop-stacked";
+  }
+  if (viewportWidth < BREAKPOINTS.desktop3colMin) {
+    return "desktop-split";
+  }
+  return "desktop-3col";
 }
 
 export function getStringRowPx(tier: ResponsiveTier): number {
@@ -81,6 +94,12 @@ export function getResponsiveLayout(
   const compactHeight = isCompactHeight(viewportHeight);
   const isSplitPanel =
     variant === "tablet-split" || variant === "desktop-split";
+  const panelMode: DashboardPanelMode =
+    variant === "desktop-3col"
+      ? "3col"
+      : isSplitPanel
+        ? "split"
+        : "stacked";
   const showMobileTabs =
     tier === "mobile" && variant !== "landscape-mobile";
 
@@ -93,6 +112,7 @@ export function getResponsiveLayout(
     showMobileTabs,
     showSummary: variant !== "landscape-mobile",
     isSplitPanel,
+    panelMode,
     showHeaderSubtitle:
       tier !== "mobile" && viewportWidth >= HEADER_SUBTITLE_MIN_WIDTH,
     compactHeaderActions:

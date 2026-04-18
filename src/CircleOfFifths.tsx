@@ -1,5 +1,6 @@
 import React from "react";
 import clsx from "clsx";
+import "./CircleOfFifths.css";
 import {
   CIRCLE_OF_FIFTHS,
   getNoteDisplayInScale,
@@ -7,7 +8,7 @@ import {
   formatAccidental,
   SCALES,
 } from "./theory";
-import { DEGREE_COLORS, getDegreesForScale } from "./degrees";
+import { getDegreesForScale } from "./degrees";
 import { getCircleNoteLabels } from "./circleOfFifthsUtils";
 import styles from "./CircleOfFifths.module.css";
 
@@ -62,6 +63,7 @@ export function CircleOfFifths({
   );
   const keySigText =
     keySig === 0 ? "♮" : keySig > 0 ? `${keySig}♯` : `${Math.abs(keySig)}♭`;
+  const degreeMap = getDegreesForScale(scaleName);
 
   const [focusedIndex, setFocusedIndex] = React.useState<number>(0);
   const [keyboardFocused, setKeyboardFocused] = React.useState<boolean>(false);
@@ -102,8 +104,17 @@ export function CircleOfFifths({
         role="group"
         aria-label="Circle of Fifths — select a key"
       >
+        <defs>
+          <radialGradient id="circle-center-fill" cx="50%" cy="38%" r="74%">
+            <stop offset="0%" stopColor="rgb(34 40 54 / 0.98)" />
+            <stop offset="100%" stopColor="rgb(16 20 29 / 1)" />
+          </radialGradient>
+        </defs>
         {CIRCLE_OF_FIFTHS.map((note, index) => {
           const isActive = rootNote === note;
+          const intervalIndex = (index - rootIndex + 12) % 12;
+          const chromaticInterval = (intervalIndex * 7) % 12;
+          const degreeStr = degreeMap[chromaticInterval] ?? "";
 
           const { primary } = getCircleNoteLabels(
             note,
@@ -118,7 +129,11 @@ export function CircleOfFifths({
               key={note}
               ref={(el) => { segmentRefs.current[index] = el; }}
               d={slicePath(index)}
-              className={clsx(styles["circle-slice"], isActive && styles.active)}
+              className={clsx("circle-slice", {
+                active: isActive,
+                "circle-slice--scale": !isActive && degreeStr,
+                "circle-slice--muted": !isActive && !degreeStr,
+              })}
               stroke="var(--surface-highlight)"
               strokeWidth={1}
               style={{ outline: 'none' }}
@@ -164,7 +179,7 @@ export function CircleOfFifths({
             strokeLinejoin="round"
             pointerEvents="none"
             aria-hidden="true"
-            className={styles["circle-slice-focus-ring"]}
+            className="circle-slice-focus-ring"
           />
         )}
 
@@ -179,8 +194,22 @@ export function CircleOfFifths({
 
           const intervalIndex = (index - rootIndex + 12) % 12;
           const chromaticInterval = (intervalIndex * 7) % 12;
-          const degreeMap = getDegreesForScale(scaleName);
           const degreeStr = degreeMap[chromaticInterval] ?? "";
+          const noteTone = isActive
+            ? "var(--neon-orange-bright)"
+            : degreeStr
+              ? "var(--neon-cyan-bright)"
+              : "rgb(184 197 212 / 0.74)";
+          const enharmonicTone = isActive
+            ? "rgb(255 214 177 / 0.96)"
+            : degreeStr
+              ? "rgb(192 242 255 / 0.82)"
+              : "rgb(171 183 197 / 0.74)";
+          const degreeTone = isActive
+            ? "var(--neon-orange)"
+            : degreeStr
+              ? "var(--neon-cyan)"
+              : "rgb(165 176 188 / 0.56)";
 
           const { primary, enharmonic } = getCircleNoteLabels(
             note,
@@ -205,7 +234,8 @@ export function CircleOfFifths({
                   textAnchor="middle"
                   fontSize={noteFontSize}
                   fontWeight="bold"
-                  fill={isActive ? "var(--text-main)" : "var(--text-muted)"}
+                  fill={noteTone}
+                  className="circle-note-label"
                 >
                   <tspan
                     x={lx}
@@ -221,7 +251,7 @@ export function CircleOfFifths({
                     dy="0.9em"
                     fontSize={Math.max(11, noteFontSize * 0.65)}
                     fontWeight="500"
-                    fill="rgba(255,255,255,0.85)"
+                    fill={enharmonicTone}
                     stroke="rgba(0,0,0,0.6)"
                     strokeWidth="2.5"
                     paintOrder="stroke"
@@ -237,7 +267,8 @@ export function CircleOfFifths({
                   textAnchor="middle"
                   fontSize={noteFontSize}
                   fontWeight="bold"
-                  fill={isActive ? "var(--text-main)" : "var(--text-muted)"}
+                  fill={noteTone}
+                  className="circle-note-label"
                 >
                   <tspan
                     x={lx}
@@ -257,13 +288,14 @@ export function CircleOfFifths({
                   y={dy}
                   dominantBaseline="middle"
                   textAnchor="middle"
-                  fill={DEGREE_COLORS[degreeStr] ?? "var(--accent-primary)"}
+                  fill={degreeTone}
                   fontSize={degreeFontSize}
                   fontWeight="bold"
-                  opacity={isActive ? 1.0 : 0.7}
+                  opacity={isActive ? 1 : degreeStr ? 0.92 : 0.62}
                   stroke="rgba(0,0,0,0.3)"
                   strokeWidth="1.5"
                   paintOrder="stroke"
+                  className="circle-degree-label"
                 >
                   {degreeStr}
                 </text>
@@ -273,7 +305,14 @@ export function CircleOfFifths({
         })}
 
         {/* Inner donut hole */}
-        <circle cx={CX} cy={CY} r={INNER_RADIUS} fill="var(--surface-base)" />
+        <circle
+          cx={CX}
+          cy={CY}
+          r={INNER_RADIUS}
+          fill="url(#circle-center-fill)"
+          stroke="rgb(255 255 255 / 0.08)"
+          strokeWidth={1.4}
+        />
 
         {/* Root note and key signature in center */}
         <text
@@ -281,12 +320,14 @@ export function CircleOfFifths({
           y={CY - SIZE * 0.04}
           textAnchor="middle"
           dominantBaseline="middle"
-          fill="var(--text-muted)"
+          fill="var(--neon-orange-bright)"
           fontSize={Math.max(15, SIZE * 0.05)}
           fontWeight="bold"
+          fontFamily="var(--font-display)"
           stroke="rgba(0,0,0,0.3)"
           strokeWidth="2"
           paintOrder="stroke"
+          className="circle-center-note"
         >
           {formatAccidental(rootDisplayLabel)}
         </text>
@@ -295,12 +336,14 @@ export function CircleOfFifths({
           y={CY + SIZE * 0.04}
           textAnchor="middle"
           dominantBaseline="middle"
-          fill="var(--accent-primary)"
+          fill="var(--neon-cyan-bright)"
           fontSize={Math.max(15, SIZE * 0.055)}
           fontWeight="bold"
+          fontFamily="var(--font-display)"
           stroke="rgba(0,0,0,0.3)"
           strokeWidth="2"
           paintOrder="stroke"
+          className="circle-center-signature"
         >
           {keySigText}
         </text>

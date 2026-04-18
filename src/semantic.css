@@ -52,8 +52,8 @@
   --panel-surface-pad: var(--space-4);
   --panel-surface-pad-compact: var(--space-3) var(--space-4);
 
-  /* FOCUS-RING TOKEN */
-  --focus-ring: 2px solid var(--accent-primary);
+  /* FOCUS-RING TOKEN — neon-cyan matches all active-state indicators in the UI */
+  --focus-ring: 2px solid var(--neon-cyan);
   --focus-ring-offset: 2px;
 
   /* Z-INDEX SEMANTIC ALIASES (primitives in tokens.css) */
@@ -64,24 +64,20 @@
   --z-header: var(--token-z-header);
   /* --z-overlay-backdrop: 200 and --z-overlay-drawer: 201 already in index.css */
 
-  /* INTERACTIVE ELEMENT TOKENS */
+  /* INTERACTIVE ELEMENT TOKENS
+     --interactive-primary is used for generic interactive controls. StepperControl migrated to
+     the neon visual system in Phase 5 and no longer references this token. */
   --interactive-primary: var(--accent-primary);
   --disabled-opacity: var(--token-disabled-opacity);
-
-  /* === CONTRAST-WARNING ===
-     --text-muted (#a0a0a5) on --surface-raised (#2c2c2e) estimates ~3.8:1 (below WCAG AA 4.5:1 for
-     normal/small text). Intentionally deferred to Phase 5 (visual restyling). Do not change the
-     value in Phase 4 as that would be a visual change out of scope. Track: TODO #4 contrast audit.
-  */
 
   /* TRANSITION REGISTRY */
   --transition-surface: background-color var(--transition-fast) ease, color var(--transition-fast) ease, border-color var(--transition-fast) ease;
   --transition-accent: box-shadow var(--transition-fast) ease, fill var(--transition-fast) ease;
   --transition-motion: transform var(--transition-fast) ease, opacity var(--transition-base) ease;
 
-  /* CARD SURFACE (Phase 5 — defined, unused in Phase 4) */
+  /* CARD SURFACE */
   --surface-card: var(--surface-raised);
-  --surface-card-border: var(--token-border-subtle);
+  --surface-card-border: rgb(255 255 255 / 0.1);
   --surface-card-header-border: var(--token-border-subtler);
 
   /* NOTE VISUALIZATION (Phase 5) */

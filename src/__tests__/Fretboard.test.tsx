@@ -41,21 +41,10 @@ describe("Fretboard", () => {
     );
   }
 
-  function getFretColumn(container: HTMLElement, fret: number) {
-    const fretLabels = Array.from(container.querySelectorAll(".fret-number"));
-    const fretIndex = fretLabels.findIndex(
-      (label) => label.textContent === String(fret),
-    );
-
-    if (fretIndex === -1) return null;
-
-    return container.querySelectorAll(".fret-column")[fretIndex] ?? null;
-  }
-
   function getFretMarker(container: HTMLElement, fret: number) {
+    // SVG-based fretboard uses data-fret-marker on circle/g elements
     return (
-      getFretColumn(container, fret)?.querySelector(".fret-marker-container") ??
-      null
+      container.querySelector(`[data-fret-marker="${fret}"]`) ?? null
     );
   }
 
@@ -153,9 +142,8 @@ describe("Fretboard", () => {
 
       expect(container.querySelectorAll(".root-active")).toHaveLength(0);
       expect(container.querySelectorAll(".note-active")).toHaveLength(0);
-      expect(
-        container.querySelectorAll(".note-inactive").length,
-      ).toBeGreaterThan(0);
+      // SVG renderer skips inactive notes entirely; no active note elements expected
+      expect(container.querySelectorAll(".fretboard-note")).toHaveLength(0);
     });
   });
 
@@ -198,7 +186,9 @@ describe("Fretboard", () => {
       const firstFret = container.querySelector(".fret-number");
 
       expect(firstFret).toBeTruthy();
-      expect(firstFret).toHaveStyle("width: 98px");
+      // Fret 0 (open-string column) has a fixed width determined by noteBubblePx,
+      // independent of zoom. Non-zero frets scale with zoom via guitar scale math.
+      expect(firstFret).toHaveStyle("width: 41px");
     });
 
     it("has scroll container that is draggable", () => {
@@ -212,16 +202,18 @@ describe("Fretboard", () => {
       const store = createStore();
       const { container } = renderFretboard(store);
 
+      // Fret 0 open-string column has fixed width (noteBubblePx-derived, zoom-independent)
       expect(container.querySelector(".fret-number")).toHaveStyle(
-        "width: 49px",
+        "width: 41px",
       );
 
       act(() => {
         store.set(fretZoomAtom, 150);
       });
 
+      // Fret 0 column stays fixed; non-zero frets scale via guitar scale math
       expect(container.querySelector(".fret-number")).toHaveStyle(
-        "width: 74px",
+        "width: 41px",
       );
     });
 
@@ -230,7 +222,7 @@ describe("Fretboard", () => {
       const { container } = renderFretboard(store);
 
       expect(getVisibleFretLabels(container).slice(0, 5)).toEqual([
-        "0",
+        "", // fret 0 (open string) label intentionally suppressed
         "1",
         "2",
         "3",
@@ -505,11 +497,11 @@ describe("Fretboard", () => {
       }
 
       expect(
-        getFretMarker(container, 12)?.querySelector(".marker-double"),
-      ).toBeTruthy();
+        getFretMarker(container, 12)?.getAttribute("data-double-marker"),
+      ).toBe("true");
       expect(
-        getFretMarker(container, 24)?.querySelector(".marker-double"),
-      ).toBeTruthy();
+        getFretMarker(container, 24)?.getAttribute("data-double-marker"),
+      ).toBe("true");
     });
 
     it("hides fret markers outside visible range", () => {
@@ -521,11 +513,11 @@ describe("Fretboard", () => {
 
       expect(getFretMarker(container, 12)).toBeTruthy();
       expect(
-        getFretMarker(container, 12)?.querySelector(".marker-double"),
-      ).toBeTruthy();
+        getFretMarker(container, 12)?.getAttribute("data-double-marker"),
+      ).toBe("true");
       expect(getFretMarker(container, 15)).toBeTruthy();
       expect(
-        getFretMarker(container, 15)?.querySelector(".marker-double"),
+        getFretMarker(container, 15)?.getAttribute("data-double-marker"),
       ).toBeNull();
 
       for (const fret of [3, 5, 7, 9, 17, 19, 21, 24]) {
@@ -585,8 +577,9 @@ describe("Fretboard", () => {
 
       const { container } = render(<Fretboard {...defaultProps} />);
 
+      // Fret 0 open-string column has fixed width (zoom-independent)
       expect(container.querySelector(".fret-number")).toHaveStyle(
-        "width: 49px",
+        "width: 41px",
       );
     });
   });
@@ -600,7 +593,7 @@ describe("Fretboard", () => {
       const { container } = renderFretboard(store);
 
       expect(container.querySelectorAll(".fret-number")).toHaveLength(1);
-      expect(getVisibleFretLabels(container)).toEqual(["0"]);
+      expect(getVisibleFretLabels(container)).toEqual([""]); // fret 0 label suppressed
     });
 
     it("handles very high fret numbers", () => {

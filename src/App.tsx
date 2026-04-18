@@ -1,32 +1,18 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import clsx from "clsx";
-import {
-  useAtom,
-  useSetAtom,
-  createStore,
-  Provider,
-} from "jotai";
+import { useAtom, useSetAtom, createStore, Provider } from "jotai";
 import { Fretboard } from "./Fretboard";
 import {
   SCALES,
   NOTES,
   INTERVAL_NAMES,
-  getNoteDisplay,
   getNoteDisplayInScale,
   formatAccidental,
 } from "./theory";
-import {
-  ChevronDown,
-  HelpCircle,
-  Music,
-  Settings2,
-  Volume2,
-  VolumeX,
-} from "lucide-react";
+import { HelpCircle, Settings2, Volume2, VolumeX } from "lucide-react";
 import { getFocusableElements } from "./utils/dom";
 import { synth } from "./audio";
 import { CircleOfFifths } from "./CircleOfFifths";
-import { DEGREE_COLORS, getDegreesForScale } from "./degrees";
 import { FingeringPatternControls } from "./components/FingeringPatternControls";
 import { TheoryControls } from "./components/TheoryControls";
 import { MobileTabPanel } from "./components/MobileTabPanel";
@@ -39,141 +25,13 @@ import {
 import SettingsOverlay from "./components/SettingsOverlay";
 import useLayoutMode from "./hooks/useLayoutMode";
 import useDisplayState from "./hooks/useDisplayState";
+import { AppHeader } from "./components/AppHeader";
+import { BrandMark } from "./components/BrandMark";
+import { FretFlowWordmark } from "./components/FretFlowWordmark";
+import { DegreeChipStrip } from "./components/DegreeChipStrip";
 import "./App.css";
 
-const END_FRET = 24;
-
-function SummaryNote({
-  note,
-  rootNote,
-  scaleName,
-  displayName,
-  isChord,
-}: {
-  note: string;
-  rootNote: string;
-  scaleName: string;
-  displayName: string;
-  isChord?: boolean;
-}) {
-  const rootIdx = NOTES.indexOf(rootNote);
-  const noteIdx = NOTES.indexOf(note);
-  const chromaticInterval =
-    rootIdx !== -1 && noteIdx !== -1 ? (noteIdx - rootIdx + 12) % 12 : -1;
-  const degree =
-    chromaticInterval !== -1 ? INTERVAL_NAMES[chromaticInterval] : null;
-  const romanNumeral =
-    chromaticInterval !== -1
-      ? getDegreesForScale(scaleName)[chromaticInterval]
-      : undefined;
-  const degreeColor = romanNumeral ? DEGREE_COLORS[romanNumeral] : undefined;
-  return (
-    <span
-      role="listitem"
-      className={`summary-note${isChord ? " summary-note--chord" : ""}`}
-      style={
-        degreeColor
-          ? { outline: `2px solid ${degreeColor}`, outlineOffset: "-2px" }
-          : undefined
-      }
-    >
-      <span className="summary-note-name">{formatAccidental(displayName)}</span>
-      {degree && (
-        <span className="summary-note-degree" style={{ color: degreeColor }}>
-          {formatAccidental(degree)}
-        </span>
-      )}
-    </span>
-  );
-}
-
-function ScaleSummaryDisclosure({
-  isExpanded,
-  onToggle,
-  scaleLabel,
-  summaryNotes,
-  rootNote,
-  scaleName,
-  useFlats,
-  chordLabel,
-  chordSummaryNotes,
-  chordRoot,
-}: {
-  isExpanded: boolean;
-  onToggle: () => void;
-  scaleLabel: string;
-  summaryNotes: string[];
-  rootNote: string;
-  scaleName: string;
-  useFlats: boolean;
-  chordLabel: string | null;
-  chordSummaryNotes: string[];
-  chordRoot: string;
-}) {
-
-  return (
-    <div className="summary-area panel-surface">
-      <button
-        type="button"
-        className={clsx("summary-disclosure-btn", {
-          "summary-disclosure-btn--open": isExpanded,
-        })}
-        aria-expanded={isExpanded}
-        aria-controls="scale-summary-content"
-        aria-label="Toggle scale summary"
-        onClick={onToggle}
-      >
-        <span className="summary-disclosure-label">{scaleLabel}</span>
-        <ChevronDown className="summary-disclosure-icon" size={18} />
-      </button>
-      {isExpanded ? (
-        <div id="scale-summary-content" className="summary-content">
-          <div
-            className="summary-notes"
-            role="list"
-            aria-label={`${scaleLabel} notes`}
-          >
-            {summaryNotes.map((n, i) => (
-              <SummaryNote
-                key={i}
-                note={n}
-                rootNote={rootNote}
-                scaleName={scaleName}
-                displayName={getNoteDisplayInScale(
-                  n,
-                  rootNote,
-                  SCALES[scaleName] || [],
-                  useFlats,
-                )}
-              />
-            ))}
-          </div>
-          {chordLabel ? (
-            <div className="summary-row summary-row--chord">
-              <div className="summary-row-label">{chordLabel}</div>
-              <div
-                className="summary-notes summary-notes--secondary"
-                role="list"
-                aria-label={`${chordLabel} notes`}
-              >
-                {chordSummaryNotes.map((n, i) => (
-                  <SummaryNote
-                    key={i}
-                    note={n}
-                    rootNote={chordRoot}
-                    scaleName={scaleName}
-                    displayName={getNoteDisplay(n, chordRoot, useFlats)}
-                    isChord
-                  />
-                ))}
-              </div>
-            </div>
-          ) : null}
-        </div>
-      ) : null}
-    </div>
-  );
-}
+const END_FRET = 25;
 
 function AppContent() {
   const {
@@ -216,7 +74,6 @@ function AppContent() {
     colorNotes,
     summaryNotes,
     scaleLabel,
-    chordLabel,
     chordSummaryNotes,
     recenterKey,
     onShapeClick,
@@ -231,9 +88,6 @@ function AppContent() {
   const helpModalRef = useRef<HTMLDivElement>(null);
   const helpTriggerRef = useRef<HTMLButtonElement>(null);
   const layout = useLayoutMode();
-  const [summaryExpanded, setSummaryExpanded] = useState(
-    () => layout.tier !== "mobile",
-  );
 
   // Focus trap + focus restoration for help modal
   useEffect(() => {
@@ -267,9 +121,19 @@ function AppContent() {
       }
     }
 
+    function handlePointerDown(e: PointerEvent) {
+      const target = e.target;
+      if (!(target instanceof Node) || !modal) return;
+      if (!modal.contains(target)) {
+        setShowHelp(false);
+      }
+    }
+
     document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("pointerdown", handlePointerDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("pointerdown", handlePointerDown);
       trigger?.focus();
     };
   }, [showHelp]);
@@ -285,19 +149,38 @@ function AppContent() {
     synth.setMute(nextMute);
   };
 
+  // Build DegreeChip[] from scale/chord atoms for DegreeChipStrip
+  const degreeChips = useMemo(() => {
+    const rootIdx = NOTES.indexOf(rootNote);
+    const chordToneSet = new Set(chordSummaryNotes);
+    return summaryNotes.map((note) => {
+      const noteIdx = NOTES.indexOf(note);
+      const chromaticInterval =
+        rootIdx !== -1 && noteIdx !== -1 ? (noteIdx - rootIdx + 12) % 12 : 0;
+      const interval = INTERVAL_NAMES[chromaticInterval] ?? "1";
+      return {
+        note: formatAccidental(
+          getNoteDisplayInScale(
+            note,
+            rootNote,
+            SCALES[scaleName] || [],
+            useFlats,
+          ),
+        ),
+        interval,
+        inScale: true,
+        isTonic: note === rootNote,
+        inChord: chordToneSet.has(note),
+      };
+    });
+  }, [summaryNotes, rootNote, scaleName, useFlats, chordSummaryNotes]);
+
   // Summary notes content shared by every non-landscape layout.
   const summaryContent = (
-    <ScaleSummaryDisclosure
-      isExpanded={summaryExpanded}
-      onToggle={() => setSummaryExpanded((v) => !v)}
-      scaleLabel={scaleLabel}
-      summaryNotes={summaryNotes}
-      rootNote={rootNote}
-      scaleName={scaleName}
-      useFlats={useFlats}
-      chordLabel={chordLabel}
-      chordSummaryNotes={chordSummaryNotes}
-      chordRoot={chordRoot}
+    <DegreeChipStrip
+      scaleName={scaleLabel}
+      chips={degreeChips}
+      aria-label="Scale degrees"
     />
   );
 
@@ -368,81 +251,56 @@ function AppContent() {
       data-header-actions={layout.compactHeaderActions ? "compact" : "default"}
       data-full-width-overlay={layout.fullWidthOverlay ? "true" : "false"}
     >
-      {/* Header */}
-      <header className="app-header">
-        <div className="logo-container">
-          <div className="logo-icon">
-            <Music className="icon" />
-          </div>
-          <div className="title-container">
-            <h1>FretFlow</h1>
-            <p>Interactive Fretboard & Music Theory</p>
-          </div>
-        </div>
-        <div className="header-actions" aria-label="App actions">
-          <a
-            href="https://ko-fi.com/E1E01XFJ0G"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="kofi-header-btn"
-            title="Support FretFlow on Ko-fi"
-          >
-            <img
-              src="/fretboard-app/support_me_on_kofi_blue.png"
-              alt="Support me on Ko-fi"
-              className="kofi-btn-desktop"
-            />
-            <img
-              src="/fretboard-app/kofi_symbol.png"
-              alt="Ko-fi"
-              className="kofi-btn-mobile"
-            />
-          </a>
-          <button
-            type="button"
-            onClick={() => setSettingsOverlayOpen((v) => !v)}
-            className="header-btn"
-            title="Settings"
-            aria-label="Open settings"
-          >
-            <Settings2 className="icon" />
-          </button>
-          <button
-            type="button"
-            onClick={toggleMute}
-            className="header-btn"
-            title={isMuted ? "Unmute" : "Mute"}
-            aria-label={isMuted ? "Unmute audio" : "Mute audio"}
-          >
-            {isMuted ? (
-              <VolumeX className="icon icon-muted" />
-            ) : (
-              <Volume2 className="icon icon-active" />
-            )}
-          </button>
-          <button
-            ref={helpTriggerRef}
-            type="button"
-            onClick={() => setShowHelp(true)}
-            className="header-btn"
-            title="Help & Instructions"
-            aria-label="Open help"
-          >
-            <HelpCircle className="icon" />
-          </button>
-        </div>
-      </header>
+      <AppHeader
+        brandTitle="FretFlow"
+        brandSubtitle="Interactive Fretboard & Music Theory"
+        brandWordmark={<FretFlowWordmark />}
+        brandIcon={<BrandMark />}
+        actions={
+          <>
+            <button
+              type="button"
+              onClick={() => setSettingsOverlayOpen((v) => !v)}
+              className="header-btn"
+              title="Settings"
+              aria-label="Open settings"
+            >
+              <Settings2 className="icon" />
+            </button>
+            <button
+              type="button"
+              onClick={toggleMute}
+              className="header-btn"
+              title={isMuted ? "Unmute" : "Mute"}
+              aria-label={isMuted ? "Unmute audio" : "Mute audio"}
+            >
+              {isMuted ? (
+                <VolumeX className="icon icon-muted" />
+              ) : (
+                <Volume2 className="icon icon-active" />
+              )}
+            </button>
+            <button
+              ref={helpTriggerRef}
+              type="button"
+              onClick={() => setShowHelp(true)}
+              className="header-btn"
+              title="Help & Instructions"
+              aria-label="Open help"
+            >
+              <HelpCircle className="icon" />
+            </button>
+          </>
+        }
+      />
+
+      {layout.showSummary && (
+        <div className="summary-shell">{summaryContent}</div>
+      )}
 
       {/* Help Modal */}
       {showHelp && (
-        <div
-          className="help-modal-overlay"
-          onClick={(event) => {
-            if (event.target === event.currentTarget) {
-              setShowHelp(false);
-            }
-          }}
-        >
+        <div className="help-modal-overlay">
           <div
             ref={helpModalRef}
             className={clsx("help-modal", {
@@ -466,27 +324,49 @@ function AppContent() {
             </div>
             <div className="help-modal-content">
               <h3>Getting Started</h3>
-              <p>FretFlow is an interactive guitar fretboard and music theory tool. Use the controls below to explore scales, chords, and fingering patterns.</p>
+              <p>
+                FretFlow is an interactive guitar fretboard and music theory
+                tool. Use the controls below to explore scales, chords, and
+                fingering patterns.
+              </p>
 
               <h3>Basic Usage</h3>
               <ul>
-                <li><strong>Scale Selection:</strong> Choose a root note and scale type to highlight notes on the fretboard</li>
-                <li><strong>Chord Overlay:</strong> Select a chord to see which scale notes are chord tones</li>
-                <li><strong>Fret Range:</strong> Adjust which frets are visible</li>
+                <li>
+                  <strong>Scale Selection:</strong> Choose a root note and scale
+                  type to highlight notes on the fretboard
+                </li>
+                <li>
+                  <strong>Chord Overlay:</strong> Select a chord to see which
+                  scale notes are chord tones
+                </li>
+                <li>
+                  <strong>Fret Range:</strong> Adjust which frets are visible
+                </li>
               </ul>
 
               <h3>Controls</h3>
               <ul>
-                <li><strong>Reset:</strong> Return all settings to defaults</li>
-                <li><strong>Mute:</strong> Toggle audio feedback when clicking notes</li>
-                <li><strong>Settings:</strong> Coming soon - additional preferences</li>
+                <li>
+                  <strong>Reset:</strong> Return all settings to defaults
+                </li>
+                <li>
+                  <strong>Mute:</strong> Toggle audio feedback when clicking
+                  notes
+                </li>
+                <li>
+                  <strong>Settings:</strong> Coming soon - additional
+                  preferences
+                </li>
               </ul>
 
               <h3>Tips</h3>
               <ul>
                 <li>Click on fretboard notes to hear them (when unmuted)</li>
                 <li>Use the Circle of Fifths widget for key relationships</li>
-                <li>Try different fingering patterns to find comfortable positions</li>
+                <li>
+                  Try different fingering patterns to find comfortable positions
+                </li>
                 <li>Chord overlays help identify chord tones within scales</li>
               </ul>
             </div>
@@ -517,12 +397,9 @@ function AppContent() {
         />
       </main>
 
-      {/* Summary readout lives directly beneath the fretboard */}
-      {layout.showSummary && summaryContent}
-
       {/* Shared tablet/desktop controls panel */}
       {layout.showControlsPanel && (
-        <ExpandedControlsPanel mode={layout.isSplitPanel ? "split" : "stacked"} />
+        <ExpandedControlsPanel mode={layout.panelMode} />
       )}
 
       {/* Mobile inline tab bar + content — hidden on desktop */}
@@ -536,16 +413,31 @@ function AppContent() {
       )}
 
       <div className="version-badge">
-        v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar.
-        Licensed under{" "}
+        <span className="version-text">
+          v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar.
+          Licensed under{" "}
+          <a
+            href="https://www.gnu.org/licenses/agpl-3.0"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            AGPL v3
+          </a>
+          .
+        </span>
         <a
-          href="https://www.gnu.org/licenses/agpl-3.0"
+          href="https://ko-fi.com/E1E01XFJ0G"
           target="_blank"
           rel="noopener noreferrer"
+          className="kofi-badge-btn"
+          title="Support FretFlow on Ko-fi"
         >
-          AGPL v3
+          <img
+            src="/fretboard-app/kofi_symbol.png"
+            alt="Ko-fi"
+            className="kofi-badge-icon"
+          />
         </a>
-        .
       </div>
 
       <SettingsOverlay />

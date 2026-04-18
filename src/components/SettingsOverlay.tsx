@@ -28,7 +28,7 @@ import {
 import { getFocusableElements } from "../utils/dom";
 import "./SettingsOverlay.css";
 
-const END_FRET = 24;
+const END_FRET = 25;
 const ZOOM_MIN = 100;
 const ZOOM_MAX = 300;
 const ZOOM_STEP = 10;
@@ -101,7 +101,8 @@ const SETTING_FIELDS: Record<SettingFieldKey, SettingFieldConfig> = {
     className: "overlay-field--accidentals",
     help: {
       id: "accidentals",
-      content: "Auto chooses sharps or flats based on the current musical context.",
+      content:
+        "Auto chooses sharps or flats based on the current musical context.",
     },
   },
   enharmonicDisplay: {
@@ -109,7 +110,8 @@ const SETTING_FIELDS: Record<SettingFieldKey, SettingFieldConfig> = {
     label: "Enharmonic Display",
     help: {
       id: "enharmonicDisplay",
-      content: "Controls whether equivalent note spellings appear when they clarify the theory view.",
+      content:
+        "Controls whether equivalent note spellings appear when they clarify the theory view.",
     },
   },
   chordSpread: {
@@ -117,7 +119,8 @@ const SETTING_FIELDS: Record<SettingFieldKey, SettingFieldConfig> = {
     label: "Chord Spread",
     help: {
       id: "chordSpread",
-      content: "Limits how far the visible chord tones can span across frets on the fretboard.",
+      content:
+        "Limits how far the visible chord tones can span across frets on the fretboard.",
     },
   },
 };
@@ -220,7 +223,9 @@ function OverlayFieldHeader({
           <button
             type="button"
             className="overlay-help-trigger"
-            aria-label={isHelpOpen ? `Hide help for ${label}` : `Show help for ${label}`}
+            aria-label={
+              isHelpOpen ? `Hide help for ${label}` : `Show help for ${label}`
+            }
             aria-expanded={isHelpOpen}
             aria-controls={`settings-help-${help.id}`}
             onClick={onToggleHelp}
@@ -228,7 +233,10 @@ function OverlayFieldHeader({
             <HelpCircle className="icon" />
           </button>
           {isHelpOpen ? (
-            <div id={`settings-help-${help.id}`} className="overlay-help-popover">
+            <div
+              id={`settings-help-${help.id}`}
+              className="overlay-help-popover"
+            >
               {help.content}
             </div>
           ) : null}
@@ -368,7 +376,11 @@ function SettingsOverlaySurface({
     };
   }, [setIsOpen]);
 
-  const renderField = (fieldKey: SettingFieldKey, index: number, total: number) => {
+  const renderField = (
+    fieldKey: SettingFieldKey,
+    index: number,
+    total: number,
+  ) => {
     const field = SETTING_FIELDS[fieldKey];
     const isHelpOpen = field.help?.id === activeHelpField;
     const helpId = field.help?.id;
@@ -421,7 +433,9 @@ function SettingsOverlaySurface({
           <ToggleBar
             options={ACCIDENTAL_OPTIONS}
             value={accidentalMode}
-            onChange={(value) => setAccidentalMode(value as AccidentalOptionValue)}
+            onChange={(value) =>
+              setAccidentalMode(value as AccidentalOptionValue)
+            }
           />
         );
         break;

@@ -1,10 +1,7 @@
 import { atom } from "jotai";
 import { atomWithStorage, RESET } from "jotai/utils";
 import { CAGED_SHAPES, type CagedShape } from "../shapes";
-import {
-  normalizeScaleName,
-  type ScaleBrowseMode,
-} from "../theoryCatalog";
+import { normalizeScaleName, type ScaleBrowseMode } from "../theoryCatalog";
 import { k, STORAGE_PREFIX } from "../utils/storage";
 
 export type FingeringPattern = "all" | "caged" | "3nps";
@@ -213,14 +210,26 @@ function constrainedNumberStorage(constraints: NumberConstraints) {
   };
 }
 
-const fretCountStorage = constrainedNumberStorage({ min: 0, max: 24, integer: true });
-const chordFretSpreadStorage = constrainedNumberStorage({
+const fretCountStorage = constrainedNumberStorage({
   min: 0,
-  max: 24,
+  max: 25,
   integer: true,
 });
-const npsPositionStorage = constrainedNumberStorage({ min: 0, max: 12, integer: true });
-const fretZoomStorage = constrainedNumberStorage({ min: 50, max: 200, integer: true });
+const chordFretSpreadStorage = constrainedNumberStorage({
+  min: 0,
+  max: 4,
+  integer: true,
+});
+const npsPositionStorage = constrainedNumberStorage({
+  min: 0,
+  max: 12,
+  integer: true,
+});
+const fretZoomStorage = constrainedNumberStorage({
+  min: 50,
+  max: 200,
+  integer: true,
+});
 
 const MOBILE_TABS = ["theory", "view"] as const;
 type MobileTab = (typeof MOBILE_TABS)[number];
@@ -522,9 +531,24 @@ export const tuningNameAtom = atomWithStorage(
   rawStringStorage(),
   GET_ON_INIT,
 );
-export const fretZoomAtom = atomWithStorage(k("fretZoom"), 100, fretZoomStorage, GET_ON_INIT);
-export const fretStartAtom = atomWithStorage(k("fretStart"), 0, fretCountStorage, GET_ON_INIT);
-export const fretEndAtom = atomWithStorage(k("fretEnd"), 24, fretCountStorage, GET_ON_INIT);
+export const fretZoomAtom = atomWithStorage(
+  k("fretZoom"),
+  100,
+  fretZoomStorage,
+  GET_ON_INIT,
+);
+export const fretStartAtom = atomWithStorage(
+  k("fretStart"),
+  0,
+  fretCountStorage,
+  GET_ON_INIT,
+);
+export const fretEndAtom = atomWithStorage(
+  k("fretEnd"),
+  25,
+  fretCountStorage,
+  GET_ON_INIT,
+);
 
 // Accidentals / Audio / Mobile tab
 // accidentalModeAtom is intentionally non-persisted: "auto" is a smart default
@@ -549,7 +573,12 @@ export const accidentalModeAtom = atom<"sharps" | "flats" | "auto">(
 // enharmonicDisplayAtom is intentionally non-persisted: "auto" preserves the
 // pre-existing CoF enharmonic-display behavior by default.
 export const enharmonicDisplayAtom = atom<"auto" | "on" | "off">("auto");
-export const isMutedAtom = atomWithStorage(k("isMuted"), false, booleanStorage, GET_ON_INIT);
+export const isMutedAtom = atomWithStorage(
+  k("isMuted"),
+  false,
+  booleanStorage,
+  GET_ON_INIT,
+);
 export const mobileTabAtom = atomWithStorage<"theory" | "view">(
   k("mobileTab"),
   "theory",

@@ -32,7 +32,7 @@ describe("TheoryControls", () => {
 
     expect(screen.getByText("Root")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Scale Family: Major Modes/i }),
+      screen.getByRole("combobox", { name: "Scale Family" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Parallel" })).toHaveAttribute(
       "aria-pressed",
@@ -45,28 +45,30 @@ describe("TheoryControls", () => {
       screen.getByRole("button", { name: /Next Mode/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Mode: C Major \(Ionian\)/i }),
+      screen.getByRole("combobox", { name: "Mode" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Chord Overlay/i })).toBeInTheDocument();
     expect(screen.queryByText("Chord Type")).not.toBeInTheDocument();
   });
 
-  it("switches families using the scale family drawer", () => {
+  it("switches families using the scale family select", () => {
     const props = makeProps();
     render(<TheoryControls {...props} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Scale Family:/i }));
-    fireEvent.click(screen.getByText("Pentatonic"));
+    fireEvent.change(screen.getByRole("combobox", { name: "Scale Family" }), {
+      target: { value: "Pentatonic" },
+    });
 
     expect(props.setScaleName).toHaveBeenCalledWith("Minor Pentatonic");
   });
 
-  it("switches the active mode using the browse drawer in parallel mode", () => {
+  it("switches the active mode using the browse select in parallel mode", () => {
     const props = makeProps();
     render(<TheoryControls {...props} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Mode:/i }));
-    fireEvent.click(screen.getByText("C Dorian"));
+    fireEvent.change(screen.getByRole("combobox", { name: "Mode" }), {
+      target: { value: "C Dorian" },
+    });
 
     expect(props.setScaleName).toHaveBeenCalledWith("Dorian");
     expect(props.setRootNote).toHaveBeenCalledWith("C");
@@ -83,8 +85,9 @@ describe("TheoryControls", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /Mode:/i }));
-    fireEvent.click(screen.getByText("D Dorian (2nd Mode)"));
+    fireEvent.change(screen.getByRole("combobox", { name: "Mode" }), {
+      target: { value: "D Dorian (2nd Mode)" },
+    });
 
     expect(props.setRootNote).toHaveBeenCalledWith("D");
     expect(props.setScaleName).toHaveBeenCalledWith("Dorian");
@@ -101,7 +104,7 @@ describe("TheoryControls", () => {
 
     expect(screen.queryByRole("button", { name: "Parallel" })).not.toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Variant: C Minor Pentatonic/i }),
+      screen.getByRole("combobox", { name: "Variant" }),
     ).toBeInTheDocument();
   });
 

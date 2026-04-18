@@ -1,6 +1,5 @@
 import { useId } from 'react';
 import clsx from 'clsx';
-import { DrawerSelector } from '../DrawerSelector';
 import './LabeledSelect.css';
 
 export interface LabeledSelectOption {
@@ -25,31 +24,42 @@ export function LabeledSelect({
   value,
   options,
   onChange,
+  id,
   className,
+  'aria-describedby': ariaDescribedBy,
   disabled,
 }: LabeledSelectProps) {
-  const labelId = useId();
-  const displayValue = options.find(o => o.value === value)?.label ?? value;
-  const drawerOptions = options.filter(o => !o.disabled).map(o => o.label);
-
-  function handleSelect(selected: string) {
-    const match = options.find(o => o.label === selected);
-    if (match) onChange(match.value);
-  }
+  const generatedId = useId();
+  const selectId = id ?? generatedId;
 
   return (
     <div className={clsx('labeled-select', { 'labeled-select--disabled': disabled }, className)}>
-      <span className="labeled-select-label" id={labelId}>
-        {label}
-      </span>
-      <div className="labeled-select-field" aria-labelledby={labelId}>
-        <DrawerSelector
-          label={label}
-          value={displayValue}
-          options={drawerOptions}
-          onSelect={handleSelect}
-        />
-      </div>
+      <label className="labeled-select-label" htmlFor={selectId}>
+        <span className="labeled-select-label-text">{label}</span>
+        <div className="labeled-select-field">
+          <select
+            id={selectId}
+            className="labeled-select-native"
+            value={value}
+            onChange={(event) => onChange(event.target.value)}
+            aria-describedby={ariaDescribedBy}
+            disabled={disabled}
+          >
+            {options.map((option) => (
+              <option
+                key={option.value}
+                value={option.value}
+                disabled={option.disabled}
+              >
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <span className="labeled-select-chevron" aria-hidden="true">
+            ▾
+          </span>
+        </div>
+      </label>
     </div>
   );
 }

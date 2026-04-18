@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { LabeledSelect, type LabeledSelectOption } from '../components/LabeledSelect';
 import { axe } from '../test-utils/a11y';
@@ -24,7 +24,7 @@ describe('LabeledSelect', () => {
     expect(screen.getAllByText('Scale Family').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('renders trigger button showing current display value', () => {
+  it('renders a native combobox showing the current display value', () => {
     render(
       <LabeledSelect
         label="Scale Family"
@@ -33,12 +33,13 @@ describe('LabeledSelect', () => {
         onChange={vi.fn()}
       />
     );
-    const trigger = screen.getByRole('button', { name: /Scale Family/i });
-    expect(trigger).toBeTruthy();
-    expect(trigger.textContent).toContain('Major Modes');
+    const select = screen.getByRole('combobox', { name: /Scale Family/i }) as HTMLSelectElement;
+    expect(select).toBeTruthy();
+    expect(select.value).toBe('major-modes');
+    expect(select.selectedOptions[0]?.textContent).toBe('Major Modes');
   });
 
-  it('clicking trigger opens listbox with all options', async () => {
+  it('renders all options in the native select', () => {
     render(
       <LabeledSelect
         label="Scale Family"
@@ -47,11 +48,10 @@ describe('LabeledSelect', () => {
         onChange={vi.fn()}
       />
     );
-    await userEvent.click(screen.getByRole('button', { name: /Scale Family/i }));
-    const listbox = screen.getByRole('listbox');
-    expect(listbox).toBeTruthy();
+    const select = screen.getByRole('combobox', { name: /Scale Family/i }) as HTMLSelectElement;
+    const optionLabels = Array.from(select.options).map((option) => option.textContent);
     for (const opt of scaleOptions) {
-      expect(within(listbox).getAllByText(opt.label).length).toBeGreaterThanOrEqual(1);
+      expect(optionLabels).toContain(opt.label);
     }
   });
 
@@ -65,9 +65,8 @@ describe('LabeledSelect', () => {
         onChange={onChange}
       />
     );
-    await userEvent.click(screen.getByRole('button', { name: /Scale Family/i }));
-    const listbox = screen.getByRole('listbox');
-    await userEvent.click(within(listbox).getByRole('option', { name: 'Pentatonic' }));
+    const select = screen.getByRole('combobox', { name: /Scale Family/i });
+    await userEvent.selectOptions(select, 'pentatonic');
     expect(onChange).toHaveBeenCalledWith('pentatonic');
   });
 

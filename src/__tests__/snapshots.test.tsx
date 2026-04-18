@@ -370,7 +370,7 @@ describe("Component Snapshots", () => {
   });
 
   describe("App layout snapshots", () => {
-    it("renders desktop-split layout snapshot (1920×1200)", () => {
+    it("renders desktop-3col layout snapshot (1920×1200)", () => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
@@ -384,7 +384,7 @@ describe("Component Snapshots", () => {
 
       localStorage.clear();
       const { container } = render(<App />);
-      expect(container).toMatchSnapshot("app-desktop-split-default");
+      expect(container).toMatchSnapshot("app-desktop-3col-default");
     });
 
     it("renders mobile layout snapshot", () => {
@@ -404,7 +404,7 @@ describe("Component Snapshots", () => {
       expect(container).toMatchSnapshot("app-mobile-default");
     });
 
-    it("renders desktop-split with custom configuration snapshot", () => {
+    it("renders desktop-3col with custom configuration snapshot", () => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
@@ -424,10 +424,10 @@ describe("Component Snapshots", () => {
       // Minor under auto mode resolves to sharps (parent C Major).
 
       const { container } = render(<App />);
-      expect(container).toMatchSnapshot("app-desktop-split-custom-config");
+      expect(container).toMatchSnapshot("app-desktop-3col-custom-config");
     });
 
-    it("renders desktop-split with chord overlay snapshot", () => {
+    it("renders desktop-3col with chord overlay snapshot", () => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
@@ -444,7 +444,7 @@ describe("Component Snapshots", () => {
       localStorage.setItem("hideNonChordNotes", "true");
 
       const { container } = render(<App />);
-      expect(container).toMatchSnapshot("app-desktop-split-with-chord-overlay");
+      expect(container).toMatchSnapshot("app-desktop-3col-with-chord-overlay");
     });
 
     it("renders iPhone SE portrait layout (375×667)", () => {
@@ -481,7 +481,7 @@ describe("Component Snapshots", () => {
       expect(container).toMatchSnapshot("app-tablet-split");
     });
 
-    it("renders desktop-split layout at 1024×1366", () => {
+    it("renders desktop-split layout (1024×1366)", () => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,

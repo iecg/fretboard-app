@@ -2,7 +2,7 @@
 .control-section {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: 0.45rem;
 }
 
 .active {
@@ -10,19 +10,22 @@
 }
 
 .section-label {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
+  font-size: 0.72rem;
+  color: rgb(188 200 214 / 0.8);
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.12em;
 }
 
 .toggle-group {
   display: flex;
-  background-color: var(--surface-raised);
-  border: 1px solid var(--surface-highlight);
-  border-radius: var(--radius-md);
-  padding: var(--space-1);
+  gap: 0.22rem;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.03), rgb(255 255 255 / 0.01)),
+    rgb(12 17 25 / 0.88);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 1rem;
+  padding: 0.25rem;
 }
 
 .toggle-group--default {
@@ -31,20 +34,21 @@
 
 .toggle-btn {
   flex: 1;
-  padding: 0.375rem var(--space-2);
-  font-size: var(--text-xs);
+  min-height: 2.65rem;
+  padding: 0.5rem 0.78rem;
+  font-size: 0.9rem;
   font-weight: 500;
-  border-radius: var(--radius-sm);
+  border-radius: 0.78rem;
   transition: var(--transition-surface), transform var(--transition-fast) ease;
-  text-transform: capitalize;
+  text-transform: none;
   background: transparent;
   border: none;
-  color: var(--text-muted);
+  color: rgb(196 207 219 / 0.74);
   cursor: pointer;
 }
 
 .toggle-btn:hover {
-  color: var(--caged-a-fg);
+  color: white;
 }
 
 .toggle-btn:active {
@@ -52,15 +56,19 @@
 }
 
 .toggle-btn:focus-visible {
-  outline: 2px solid var(--accent-primary);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .toggle-btn.active {
-  background-color: var(--selected-bg);
-  color: var(--selected-fg);
-  border-color: var(--selected-border);
-  box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+  background:
+    linear-gradient(180deg, rgb(77 228 255 / 0.22), rgb(77 228 255 / 0.08)),
+    rgb(18 31 43 / 0.95);
+  color: rgb(226 249 255 / 0.98);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    0 0 0 1px rgb(77 228 255 / 0.32),
+    0 0 8px rgb(77 228 255 / 0.16);
 }
 
 .accidental-toggle {
@@ -71,7 +79,7 @@
   align-items: center;
   justify-content: center;
   background: none;
-  border: 1px solid var(--surface-highlight);
+  border: 1px solid rgb(255 255 255 / 0.12);
   border-radius: 9999px;
   color: var(--text-muted);
   cursor: pointer;
@@ -87,11 +95,11 @@
 }
 
 .accidental-toggle:focus-visible {
-  outline: 2px solid var(--accent-primary);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
   color: var(--text-on-accent);
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 24%, transparent);
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 0 3px rgb(77 228 255 / 0.2);
 }
 
 .chord-root-row {
@@ -103,19 +111,21 @@
 .note-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 3px;
+  gap: 0.42rem;
 }
 
 .note-btn {
   width: 100%;
-  min-height: 2.5rem;
+  min-height: 3.05rem;
   padding: 0;
-  font-size: var(--text-xs);
+  font-size: 0.96rem;
   font-weight: 600;
-  background: var(--surface-raised);
-  border: 1px solid var(--surface-highlight);
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.02)),
+    rgb(12 17 25 / 0.88);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 0.95rem;
+  color: rgb(223 232 242 / 0.84);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -135,7 +145,7 @@
 
 .note-btn:hover {
   color: white;
-  border-color: var(--accent-secondary);
+  border-color: rgb(77 228 255 / 0.38);
 }
 
 .note-btn:active {
@@ -143,17 +153,34 @@
 }
 
 .note-btn:focus-visible {
-  outline: 2px solid var(--accent-secondary);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
   color: white;
-  border-color: var(--accent-secondary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-secondary) 24%, transparent);
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 0 3px rgb(77 228 255 / 0.2);
 }
 
 .note-btn.active {
-  background: var(--selected-chord-bg);
-  color: var(--selected-chord-fg);
-  border-color: transparent;
+  background:
+    radial-gradient(circle at 50% 20%, rgb(77 228 255 / 0.24), transparent 65%),
+    linear-gradient(180deg, rgb(77 228 255 / 0.18), rgb(77 228 255 / 0.08));
+  color: rgb(243 251 255 / 0.98);
+  border-color: rgb(77 228 255 / 0.45);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.14),
+    0 0 0 1px rgb(77 228 255 / 0.16),
+    0 0 8px rgb(77 228 255 / 0.12);
+}
+
+/* ===== Desktop: tighter interactive controls ===== */
+.app-container[data-layout-tier="desktop"] .toggle-btn {
+  min-height: 2.2rem;
+  padding: 0.3rem 0.68rem;
+  font-size: 0.85rem;
+}
+
+.app-container[data-layout-tier="desktop"] .note-btn {
+  min-height: 2.55rem;
 }
 
 .sr-only {
@@ -172,8 +199,8 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: var(--text-xs);
-  color: var(--text-muted);
+  font-size: 0.86rem;
+  color: rgb(204 214 225 / 0.82);
   cursor: pointer;
   user-select: none;
 }
@@ -186,10 +213,10 @@
 }
 
 .link-toggle input[type="checkbox"]:focus-visible {
-  outline: 2px solid var(--accent-primary);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
   border-radius: 2px;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 24%, transparent);
+  box-shadow: 0 0 0 3px rgb(77 228 255 / 0.2);
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */

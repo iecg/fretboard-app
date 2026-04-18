@@ -1,3 +1,4 @@
+import "./ExpandedControlsPanel.css";
 import { useMemo } from "react";
 import { useAtomValue, useSetAtom, useAtom } from "jotai";
 import {
@@ -17,14 +18,20 @@ import {
   chordIntervalFilterAtom,
   accidentalModeAtom,
   enharmonicDisplayAtom,
+  fretStartAtom,
+  fretEndAtom,
 } from "../store/atoms";
 import { resolveAccidentalMode } from "../theory";
 import { FingeringPatternControls } from "./FingeringPatternControls";
+import { FretRangeControl } from "./FretRangeControl";
 import { TheoryControls } from "./TheoryControls";
 import { CircleOfFifths } from "../CircleOfFifths";
+import { Card } from "./Card";
+
+const END_FRET = 25;
 
 /**
- * Renders the left-most base controls: FingeringPatternControls.
+ * Renders the Configuration card: FingeringPatternControls + fret range.
  */
 export function BaseControlsSection() {
   const [fingeringPattern, setFingeringPattern] = useAtom(fingeringPatternAtom);
@@ -32,27 +39,43 @@ export function BaseControlsSection() {
   const [npsPosition, setNpsPosition] = useAtom(npsPositionAtom);
   const [shapeLabels, setShapeLabels] = useAtom(shapeLabelsAtom);
   const [displayFormat, setDisplayFormat] = useAtom(displayFormatAtom);
+  const [fretStart, setFretStart] = useAtom(fretStartAtom);
+  const [fretEnd, setFretEnd] = useAtom(fretEndAtom);
 
   return (
-    <div className="control-group panel-surface controls-card controls-card--base">
-      <FingeringPatternControls
-        fingeringPattern={fingeringPattern}
-        setFingeringPattern={setFingeringPattern}
-        cagedShapes={cagedShapes}
-        setCagedShapes={setCagedShapes}
-        npsPosition={npsPosition}
-        setNpsPosition={setNpsPosition}
-        shapeLabels={shapeLabels}
-        setShapeLabels={setShapeLabels}
-        displayFormat={displayFormat}
-        setDisplayFormat={setDisplayFormat}
-      />
-    </div>
+    <Card
+      title="Configuration"
+      className="dashboard-card dashboard-card--configuration"
+    >
+      <div className="control-group">
+        <FingeringPatternControls
+          fingeringPattern={fingeringPattern}
+          setFingeringPattern={setFingeringPattern}
+          cagedShapes={cagedShapes}
+          setCagedShapes={setCagedShapes}
+          npsPosition={npsPosition}
+          setNpsPosition={setNpsPosition}
+          shapeLabels={shapeLabels}
+          setShapeLabels={setShapeLabels}
+          displayFormat={displayFormat}
+          setDisplayFormat={setDisplayFormat}
+        />
+        <FretRangeControl
+          startFret={fretStart}
+          endFret={fretEnd}
+          onStartChange={setFretStart}
+          onEndChange={setFretEnd}
+          maxFret={END_FRET}
+          layout="mobile"
+          showLabels
+        />
+      </div>
+    </Card>
   );
 }
 
 /**
- * Renders the Scale & Chord column.
+ * Renders the Music Theory card.
  */
 export function ScaleChordSection() {
   const [scaleName, setScaleName] = useAtom(scaleNameAtom);
@@ -75,8 +98,10 @@ export function ScaleChordSection() {
   );
 
   return (
-    <div className="control-group panel-surface controls-card controls-card--scale">
-      <h2>Theory</h2>
+    <Card
+      title="Music Theory"
+      className="dashboard-card dashboard-card--theory"
+    >
       <TheoryControls
         rootNote={rootNote}
         setRootNote={setRootNote}
@@ -96,7 +121,7 @@ export function ScaleChordSection() {
         setChordIntervalFilter={setChordIntervalFilter}
         useFlats={useFlats}
       />
-    </div>
+    </Card>
   );
 }
 
@@ -116,8 +141,7 @@ export function KeyColumn() {
   const enharmonicDisplay = useAtomValue(enharmonicDisplayAtom);
 
   return (
-    <div className="control-group key-column panel-surface controls-card controls-card--key">
-      <h2>Key Explorer</h2>
+    <Card title="Key Explorer" className="dashboard-card key-column">
       <CircleOfFifths
         rootNote={rootNote}
         setRootNote={handleSetRootNote}
@@ -125,7 +149,7 @@ export function KeyColumn() {
         useFlats={useFlats}
         enharmonicDisplay={enharmonicDisplay}
       />
-    </div>
+    </Card>
   );
 }
 
@@ -134,23 +158,15 @@ export function KeyColumn() {
  * on the left with Key on the right. Stacked mode renders all three groups in
  * a single column for compact-height tablet and desktop viewports.
  */
-export function ExpandedControlsPanel({ mode }: { mode: "split" | "stacked" }) {
-  if (mode === "stacked") {
-    return (
-      <div className="controls-panel controls-panel--stacked">
-        <BaseControlsSection />
-        <ScaleChordSection />
-        <KeyColumn />
-      </div>
-    );
-  }
-
+export function ExpandedControlsPanel({
+  mode,
+}: {
+  mode: "3col" | "split" | "stacked";
+}) {
   return (
-    <div className="controls-panel controls-panel--split">
-      <div className="controls-panel-column">
-        <BaseControlsSection />
-        <ScaleChordSection />
-      </div>
+    <div className="controls-panel controls-panel--dashboard" data-mode={mode}>
+      <BaseControlsSection />
+      <ScaleChordSection />
       <KeyColumn />
     </div>
   );

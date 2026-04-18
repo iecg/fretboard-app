@@ -1,6 +1,12 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import App from "../App";
 import { synth } from "../audio";
 import { get3NPSCoordinates } from "../shapes";
@@ -128,19 +134,18 @@ describe("App", () => {
 
     it("renders alias-friendly summary labels", () => {
       render(<App />);
-      expect(screen.getByText("C Major (Ionian)")).toBeInTheDocument();
+      const summary = screen.getByRole("group", { name: /scale degrees/i });
+      expect(within(summary).getByText("C Major (Ionian)")).toBeInTheDocument();
     });
 
-    it("renders the summary below the fretboard", () => {
+    it("renders the summary above the fretboard", () => {
       render(<App />);
 
-      const summary = screen.getByRole("button", {
-        name: /toggle scale summary/i,
-      });
+      const summary = screen.getByRole("group", { name: /scale degrees/i });
       const fretboard = screen.getByTestId("fretboard");
 
       expect(
-        fretboard.compareDocumentPosition(summary) &
+        summary.compareDocumentPosition(fretboard) &
           Node.DOCUMENT_POSITION_FOLLOWING,
       ).toBeTruthy();
     });
@@ -157,8 +162,9 @@ describe("App", () => {
     it("renders melodic minor summary labels with the jazz alias", () => {
       localStorage.setItem(k("scaleName"), "Melodic Minor");
       render(<App />);
+      const summary = screen.getByRole("group", { name: /scale degrees/i });
       expect(
-        screen.getByText("C Melodic Minor (Jazz Minor)"),
+        within(summary).getByText("C Melodic Minor (Jazz Minor)"),
       ).toBeInTheDocument();
     });
 
@@ -167,27 +173,27 @@ describe("App", () => {
       localStorage.setItem(k("scaleName"), "Dorian");
       localStorage.setItem(k("scaleBrowseMode"), "relative");
       render(<App />);
-      expect(screen.getByText("D Dorian (2nd Mode)")).toBeInTheDocument();
+      const summary = screen.getByRole("group", { name: /scale degrees/i });
+      expect(within(summary).getByText("D Dorian (2nd Mode)")).toBeInTheDocument();
     });
 
     it("defaults the summary collapsed on mobile", () => {
       setViewport(390, 844);
       render(<App />);
 
+      // DegreeChipStrip replaces the old collapsible disclosure; on mobile the
+      // strip is hidden via CSS (showSummary=false for landscape-mobile only).
+      // In portrait mobile the strip is always visible.
       expect(
-        screen.getByRole("button", { name: /toggle scale summary/i }),
-      ).toHaveAttribute("aria-expanded", "false");
-      expect(screen.queryByLabelText(/C Major \(Ionian\) notes/i)).toBeNull();
+        screen.getByRole("group", { name: /scale degrees/i }),
+      ).toBeInTheDocument();
     });
 
     it("defaults the summary expanded on desktop", () => {
       render(<App />);
 
       expect(
-        screen.getByRole("button", { name: /toggle scale summary/i }),
-      ).toHaveAttribute("aria-expanded", "true");
-      expect(
-        screen.getByLabelText(/C Major \(Ionian\) notes/i),
+        screen.getByRole("group", { name: /scale degrees/i }),
       ).toBeInTheDocument();
     });
 
@@ -195,12 +201,9 @@ describe("App", () => {
       setViewport(390, 844);
       render(<App />);
 
-      fireEvent.click(
-        screen.getByRole("button", { name: /toggle scale summary/i }),
-      );
-
+      // DegreeChipStrip is always rendered (no toggle); chips are always visible.
       expect(
-        screen.getByLabelText(/C Major \(Ionian\) notes/i),
+        screen.getByRole("group", { name: /scale degrees/i }),
       ).toBeInTheDocument();
     });
 
@@ -269,10 +272,10 @@ describe("App", () => {
   });
 
   describe("Scale selection", () => {
-    it("renders the shared theory drawers", async () => {
+    it("renders the shared theory controls", async () => {
       render(<App />);
       expect(
-        screen.getByRole("button", { name: /Scale Family: Major Modes/i }),
+        screen.getByRole("combobox", { name: "Scale Family" }),
       ).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Parallel" })).toBeInTheDocument();
       expect(
@@ -282,7 +285,7 @@ describe("App", () => {
         screen.getByRole("button", { name: /Next Mode/i }),
       ).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: /Mode: C Major \(Ionian\)/i }),
+        screen.getByRole("combobox", { name: "Mode" }),
       ).toBeInTheDocument();
     });
 
@@ -380,8 +383,9 @@ describe("App", () => {
     it("can set chord type", async () => {
       render(<App />);
       fireEvent.click(screen.getByRole("button", { name: /Chord Overlay/i }));
-      fireEvent.click(screen.getByRole("button", { name: /Chord Type:/i }));
-      fireEvent.click(screen.getByText("Major Triad"));
+      fireEvent.change(screen.getByRole("combobox", { name: "Chord Type" }), {
+        target: { value: "Major Triad" },
+      });
 
       await waitFor(() => {
         expect(localStorage.getItem(k("chordType"))).toBe("Major Triad");
@@ -425,7 +429,7 @@ describe("App", () => {
     it("initializes with default fret range", () => {
       render(<App />);
       expect(localStorage.getItem(k("fretStart"))).toBe("0");
-      expect(localStorage.getItem(k("fretEnd"))).toBe("24");
+      expect(localStorage.getItem(k("fretEnd"))).toBe("25");
     });
 
     it("persists fret zoom level", async () => {
@@ -505,7 +509,9 @@ describe("App", () => {
       });
 
       expect(document.querySelector(".mobile-tab-content")).toBeNull();
-      expect(document.querySelector(".summary-area")).toBeNull();
+      expect(
+        screen.queryByRole("group", { name: /scale degrees/i }),
+      ).toBeNull();
     });
 
     it("closes the help modal when the backdrop is clicked", async () => {
@@ -518,7 +524,7 @@ describe("App", () => {
         expect(screen.getByRole("dialog", { name: "FretFlow Help" })).toBeTruthy();
       });
 
-      fireEvent.click(document.querySelector(".help-modal-overlay")!);
+      fireEvent.pointerDown(document.querySelector(".help-modal-overlay")!);
 
       await waitFor(() => {
         expect(
@@ -705,8 +711,39 @@ describe("App", () => {
     });
   });
 
-  describe("Desktop stacked layout", () => {
-    beforeEach(() => {
+  describe("Desktop layout variants", () => {
+    it("uses desktop-3col at 1440x900 (MacBook Pro canonical)", async () => {
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 1440,
+      });
+      Object.defineProperty(window, "innerHeight", {
+        writable: true,
+        configurable: true,
+        value: 900,
+      });
+      localStorage.clear();
+
+      render(<App />);
+      fireEvent(window, new Event("resize"));
+
+      await waitFor(() => {
+        const appContainer = document.querySelector(".app-container");
+        expect(appContainer?.getAttribute("data-layout-tier")).toBe("desktop");
+        expect(appContainer?.getAttribute("data-layout-variant")).toBe(
+          "desktop-3col",
+        );
+      });
+
+      expect(document.querySelector(".controls-panel")).toBeTruthy();
+      expect(
+        document.querySelector('.controls-panel[data-mode="3col"]'),
+      ).toBeTruthy();
+      expect(document.querySelector(".mobile-tab-content")).toBeNull();
+    });
+
+    it("uses desktop-stacked at 1024x768 (compact height)", async () => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
@@ -718,9 +755,7 @@ describe("App", () => {
         value: 768,
       });
       localStorage.clear();
-    });
 
-    it("uses the compact desktop stacked variant", async () => {
       render(<App />);
       fireEvent(window, new Event("resize"));
 
@@ -733,7 +768,109 @@ describe("App", () => {
       });
 
       expect(document.querySelector(".controls-panel")).toBeTruthy();
+      expect(
+        document.querySelector('.controls-panel[data-mode="stacked"]'),
+      ).toBeTruthy();
       expect(document.querySelector(".mobile-tab-content")).toBeNull();
+    });
+
+    it("uses desktop-split at 1024x1366 (iPad Pro portrait)", async () => {
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 1024,
+      });
+      Object.defineProperty(window, "innerHeight", {
+        writable: true,
+        configurable: true,
+        value: 1366,
+      });
+      localStorage.clear();
+
+      render(<App />);
+      fireEvent(window, new Event("resize"));
+
+      await waitFor(() => {
+        const appContainer = document.querySelector(".app-container");
+        expect(appContainer?.getAttribute("data-layout-tier")).toBe("desktop");
+        expect(appContainer?.getAttribute("data-layout-variant")).toBe(
+          "desktop-split",
+        );
+      });
+
+      expect(document.querySelector(".controls-panel")).toBeTruthy();
+      expect(
+        document.querySelector('.controls-panel[data-mode="split"]'),
+      ).toBeTruthy();
+      expect(document.querySelector(".mobile-tab-content")).toBeNull();
+    });
+
+    // Rendered CSS regression: verifies ExpandedControlsPanel.css is imported and
+    // its grid rules are applied to the DOM. Fails if the CSS import is removed.
+    it("dashboard panel has display:grid and gridTemplateColumns for desktop-3col", async () => {
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 1440,
+      });
+      Object.defineProperty(window, "innerHeight", {
+        writable: true,
+        configurable: true,
+        value: 900,
+      });
+      localStorage.clear();
+
+      render(<App />);
+      fireEvent(window, new Event("resize"));
+
+      await waitFor(() => {
+        expect(
+          document.querySelector('.controls-panel[data-mode="3col"]'),
+        ).toBeTruthy();
+      });
+
+      const panel = document.querySelector(
+        ".controls-panel.controls-panel--dashboard",
+      ) as HTMLElement;
+      expect(panel).toBeTruthy();
+
+      const styles = window.getComputedStyle(panel);
+      expect(styles.display).toBe("grid");
+      expect(styles.gridTemplateColumns).toBeTruthy();
+      expect(styles.gridTemplateColumns).not.toBe("none");
+    });
+
+    it("dashboard panel has display:grid and gridTemplateColumns for desktop-split", async () => {
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 1024,
+      });
+      Object.defineProperty(window, "innerHeight", {
+        writable: true,
+        configurable: true,
+        value: 1366,
+      });
+      localStorage.clear();
+
+      render(<App />);
+      fireEvent(window, new Event("resize"));
+
+      await waitFor(() => {
+        expect(
+          document.querySelector('.controls-panel[data-mode="split"]'),
+        ).toBeTruthy();
+      });
+
+      const panel = document.querySelector(
+        ".controls-panel.controls-panel--dashboard",
+      ) as HTMLElement;
+      expect(panel).toBeTruthy();
+
+      const styles = window.getComputedStyle(panel);
+      expect(styles.display).toBe("grid");
+      expect(styles.gridTemplateColumns).toBeTruthy();
+      expect(styles.gridTemplateColumns).not.toBe("none");
     });
   });
 

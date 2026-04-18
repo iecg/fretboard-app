@@ -1,7 +1,6 @@
 import { startTransition, useId, useState, type ReactNode } from "react";
 import clsx from "clsx";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DrawerSelector } from "../DrawerSelector";
 import { NOTES } from "../theory";
 import { CHORD_FILTER_OPTIONS } from "../hooks/useDisplayState";
 import {
@@ -16,6 +15,7 @@ import {
   supportsRelativeScaleBrowsing,
   type ScaleBrowseMode,
 } from "../theoryCatalog";
+import { LabeledSelect, type LabeledSelectOption } from "./LabeledSelect";
 import { NoteGrid } from "./NoteGrid";
 import { ToggleBar } from "./ToggleBar";
 import "./TheoryControls.css";
@@ -33,6 +33,8 @@ const CHORD_OPTIONS: (string | { divider: string })[] = [
   { divider: "Other" },
   "Power Chord (5)",
 ];
+
+const CHORD_NONE_VALUE = "__none__";
 
 interface TheoryControlsProps {
   rootNote: string;
@@ -103,7 +105,25 @@ export function TheoryControls({
     effectiveBrowseMode,
     useFlats,
   );
-  const browseOptionLabels = browseOptions.map((option) => option.label);
+  const familySelectOptions: LabeledSelectOption[] = familyOptions.map((option) => ({
+    value: option,
+    label: option,
+  }));
+  const browseSelectOptions: LabeledSelectOption[] = browseOptions.map((option) => ({
+    value: option.label,
+    label: option.label,
+  }));
+  const chordSelectOptions: LabeledSelectOption[] = [
+    { value: CHORD_NONE_VALUE, label: "Off" },
+    ...CHORD_OPTIONS.filter((option): option is string => typeof option === "string").map((option) => ({
+      value: option,
+      label: option,
+    })),
+  ];
+  const chordFilterOptions: LabeledSelectOption[] = CHORD_FILTER_OPTIONS.map((option) => ({
+    value: option,
+    label: option,
+  }));
   const applyRootNote = (note: string) => {
     startTransition(() => {
       setRootNote(note);
@@ -169,29 +189,17 @@ export function TheoryControls({
       </div>
 
       <div className={shared["control-section"]}>
-        <DrawerSelector
+        <LabeledSelect
           label="Scale Family"
           value={currentFamily.selectorLabel}
-          options={familyOptions}
-          onSelect={handleFamilySelect}
+          options={familySelectOptions}
+          onChange={handleFamilySelect}
         />
       </div>
 
       <div className={shared["control-section"]}>
         <span className={shared["section-label"]}>{memberTerm}</span>
         <div className="theory-browser-row">
-          {supportsRelativeBrowse ? (
-            <div className="theory-browser-toggle">
-              <ToggleBar
-                options={[
-                  { value: "parallel", label: "Parallel" },
-                  { value: "relative", label: "Relative" },
-                ]}
-                value={effectiveBrowseMode}
-                onChange={(value) => setScaleBrowseMode(value as ScaleBrowseMode)}
-              />
-            </div>
-          ) : null}
           <div className="theory-browser-main">
             <button
               type="button"
@@ -202,11 +210,11 @@ export function TheoryControls({
               <ChevronLeft size={16} />
             </button>
             <div className="theory-browser-selector">
-              <DrawerSelector
+              <LabeledSelect
                 label={memberTerm}
                 value={activeBrowseOption.label}
-                options={browseOptionLabels}
-                onSelect={handleBrowseSelect}
+                options={browseSelectOptions}
+                onChange={handleBrowseSelect}
               />
             </div>
             <button
@@ -220,6 +228,22 @@ export function TheoryControls({
           </div>
         </div>
       </div>
+
+      {supportsRelativeBrowse ? (
+        <div className={clsx(shared["control-section"], "theory-browse-mode")}>
+          <div className="theory-inline-label-row">
+            <span className={shared["section-label"]}>Parallel / Relative</span>
+          </div>
+          <ToggleBar
+            options={[
+              { value: "parallel", label: "Parallel" },
+              { value: "relative", label: "Relative" },
+            ]}
+            value={effectiveBrowseMode}
+            onChange={(value) => setScaleBrowseMode(value as ScaleBrowseMode)}
+          />
+        </div>
+      ) : null}
 
       {keyExplorer ? (
         <div className="theory-inline-key panel-surface panel-surface--compact">
@@ -257,12 +281,15 @@ export function TheoryControls({
 
         {chordOverlayOpen ? (
           <div className="theory-chord-content">
-            <DrawerSelector
+            <LabeledSelect
               label="Chord Type"
-              value={chordType}
-              options={CHORD_OPTIONS}
-              onSelect={handleChordTypeChange}
-              nullable
+              value={chordType ?? CHORD_NONE_VALUE}
+              options={chordSelectOptions}
+              onChange={(value) =>
+                handleChordTypeChange(
+                  value === CHORD_NONE_VALUE ? null : value,
+                )
+              }
             />
 
             {chordType ? (
@@ -311,11 +338,11 @@ export function TheoryControls({
                   </span>
                 </label>
 
-                <DrawerSelector
+                <LabeledSelect
                   label="Interval Filter"
                   value={chordIntervalFilter}
-                  options={CHORD_FILTER_OPTIONS}
-                  onSelect={setChordIntervalFilter}
+                  options={chordFilterOptions}
+                  onChange={setChordIntervalFilter}
                 />
               </>
             ) : null}

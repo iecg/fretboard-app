@@ -1,15 +1,20 @@
 .labeled-select {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  display: block;
 }
 
 .labeled-select-label {
-  font-size: var(--text-xs);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.labeled-select-label-text {
+  font-size: 0.72rem;
   font-weight: var(--font-weight-medium);
-  color: var(--text-muted);
+  color: rgb(188 200 214 / 0.8);
   line-height: var(--leading-normal);
-  cursor: default;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .labeled-select-field {
@@ -21,27 +26,33 @@
 .labeled-select-native {
   appearance: none;
   width: 100%;
-  padding: var(--space-2) var(--space-3);
-  padding-right: calc(var(--space-3) + var(--space-4));
-  background: var(--surface-card);
-  border: 1px solid var(--surface-card-border);
-  border-radius: var(--radius-md);
+  min-height: 3rem;
+  padding: 0.72rem 2.8rem 0.72rem 0.95rem;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.03), rgb(255 255 255 / 0.01)),
+    rgb(11 15 23 / 0.9);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 0.95rem;
   font-family: var(--font-sans);
-  font-size: var(--text-sm);
+  font-size: 0.98rem;
   font-weight: var(--font-weight-medium);
-  color: var(--text-main);
+  color: rgb(244 247 251 / 0.96);
   line-height: var(--leading-normal);
   cursor: pointer;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background-color var(--transition-fast);
 }
 
 .labeled-select-native:focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
+  box-shadow: 0 0 0 4px rgb(77 228 255 / 0.12);
 }
 
 .labeled-select-native:hover:not(:disabled) {
-  border-color: var(--accent-primary);
+  border-color: rgb(77 228 255 / 0.48);
 }
 
 .labeled-select-native:disabled {
@@ -54,8 +65,16 @@
 
 .labeled-select-chevron {
   position: absolute;
-  right: var(--space-3);
-  color: var(--text-muted);
+  right: 0.95rem;
+  color: rgb(194 206 220 / 0.65);
   pointer-events: none;
   flex-shrink: 0;
+  font-size: 0.92rem;
+}
+
+/* Desktop: tighter select height — Phase 3 density pass. */
+.app-container[data-layout-tier="desktop"] .labeled-select-native {
+  min-height: 2.65rem;
+  padding: 0.52rem 2.6rem 0.52rem 0.85rem;
+  font-size: 0.93rem;
 }
