@@ -168,7 +168,7 @@ function AppContent() {
             useFlats,
           ),
         ),
-        interval,
+        interval: formatAccidental(interval),
         inScale: true,
         isTonic: note === rootNote,
         inChord: chordToneSet.has(note),

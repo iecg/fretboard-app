@@ -177,6 +177,16 @@ describe("App", () => {
       expect(within(summary).getByText("D Dorian (2nd Mode)")).toBeInTheDocument();
     });
 
+    it("renders Unicode flat intervals in the degree chip strip for Natural Minor", () => {
+      localStorage.setItem(k("rootNote"), "A");
+      localStorage.setItem(k("scaleName"), "Natural Minor");
+      render(<App />);
+      const summary = screen.getByRole("group", { name: /scale degrees/i });
+      expect(within(summary).getByText("♭3")).toBeInTheDocument();
+      expect(within(summary).getByText("♭6")).toBeInTheDocument();
+      expect(within(summary).getByText("♭7")).toBeInTheDocument();
+    });
+
     it("defaults the summary collapsed on mobile", () => {
       setViewport(390, 844);
       render(<App />);
