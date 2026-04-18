@@ -173,26 +173,28 @@
 }
 
 /* ===== Desktop: tighter interactive controls ===== */
-.app-container[data-layout-tier="desktop"] .toggle-btn {
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global(.app-container[data-layout-tier="desktop"]) .toggle-btn {
   min-height: 2.2rem;
   padding: 0.3rem 0.68rem;
   font-size: 0.85rem;
 }
 
-.app-container[data-layout-tier="desktop"] .note-btn {
+:global(.app-container[data-layout-tier="desktop"]) .note-btn {
   min-height: 2.55rem;
 }
 
 /* Tablet tier: slightly tighter interactive controls — still touch-safe (≥44px). */
-.app-container[data-layout-tier="tablet"] .toggle-btn {
+:global(.app-container[data-layout-tier="tablet"]) .toggle-btn {
   min-height: 2.75rem;
   padding: 0.38rem 0.72rem;
   font-size: 0.88rem;
 }
 
-.app-container[data-layout-tier="tablet"] .note-btn {
+:global(.app-container[data-layout-tier="tablet"]) .note-btn {
   min-height: 2.82rem;
 }
+/* stylelint-enable selector-pseudo-class-no-unknown */
 
 .sr-only {
   position: absolute;
