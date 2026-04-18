@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
   rootNoteAtom,
@@ -105,6 +105,16 @@ export default function useDisplayState() {
   // Internalized local state
   const [clickedShape, setClickedShape] = useState<CagedShape | null>(null);
   const [recenterKey, setRecenterKey] = useState(0);
+
+  // When in CAGED mode, reset to E shape whenever the scale changes
+  const prevScaleNameRef = useRef<string | null>(null);
+  useEffect(() => {
+    const prev = prevScaleNameRef.current;
+    prevScaleNameRef.current = scaleName;
+    if (prev === null || prev === scaleName) return;
+    if (fingeringPattern !== "caged") return;
+    setCagedShapes(new Set<CagedShape>(["E"]));
+  }, [scaleName, fingeringPattern, setCagedShapes]);
 
   // Callbacks
   const onShapeClick = (shape: CagedShape | null) => {
