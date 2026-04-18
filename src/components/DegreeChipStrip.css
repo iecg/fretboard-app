@@ -155,7 +155,6 @@
   --chip-size: clamp(1.82rem, 2.45vw, 2.02rem);
   padding: 0.34rem 0.78rem 0.38rem;
   gap: 0.24rem;
-
   width: min(100%, 32rem);
 }
 
