@@ -1,5 +1,6 @@
 import "./ExpandedControlsPanel.css";
 import { useMemo } from "react";
+import shared from "./shared.module.css";
 import { useAtomValue, useSetAtom, useAtom } from "jotai";
 import {
   rootNoteAtom,
@@ -60,14 +61,17 @@ export function BaseControlsSection() {
           displayFormat={displayFormat}
           setDisplayFormat={setDisplayFormat}
         />
-        <FretRangeControl
-          startFret={fretStart}
-          endFret={fretEnd}
-          onStartChange={setFretStart}
-          onEndChange={setFretEnd}
-          maxFret={END_FRET}
-          layout="dashboard"
-        />
+        <div className={shared["control-section"]}>
+          <span className={shared["section-label"]}>Fret Range</span>
+          <FretRangeControl
+            startFret={fretStart}
+            endFret={fretEnd}
+            onStartChange={setFretStart}
+            onEndChange={setFretEnd}
+            maxFret={END_FRET}
+            layout="dashboard"
+          />
+        </div>
       </div>
     </Card>
   );
