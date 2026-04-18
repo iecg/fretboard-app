@@ -171,6 +171,27 @@ describe("FretRangeControl", () => {
     });
   });
 
+  describe("Dashboard layout", () => {
+    it("renders with Start/End labels", () => {
+      render(<FretRangeControl {...defaultProps} layout="dashboard" />);
+      expect(screen.getByText("Start")).toBeTruthy();
+      expect(screen.getByText("End")).toBeTruthy();
+    });
+
+    it('shows "—" separator', () => {
+      render(<FretRangeControl {...defaultProps} layout="dashboard" />);
+      expect(screen.getByText("—")).toBeTruthy();
+    });
+
+    it("uses −/+ symbols by default", () => {
+      render(<FretRangeControl {...defaultProps} layout="dashboard" />);
+      const buttons = screen.getAllByRole("button");
+      const symbols = buttons.map((b) => b.textContent);
+      expect(symbols.filter((s) => s === "−").length).toBe(2);
+      expect(symbols.filter((s) => s === "+").length).toBe(2);
+    });
+  });
+
   describe("Custom symbols", () => {
     it("overrides decrement and increment symbols via props", () => {
       render(

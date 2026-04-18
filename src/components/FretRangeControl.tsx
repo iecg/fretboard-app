@@ -7,7 +7,7 @@ export interface FretRangeControlProps {
   onStartChange: (fret: number) => void;
   onEndChange: (fret: number) => void;
   maxFret: number;
-  layout?: "toolbar" | "mobile";
+  layout?: "toolbar" | "mobile" | "dashboard";
   showSeparator?: boolean;
   showLabels?: boolean;
   decrementSymbol?: string;
@@ -26,8 +26,9 @@ export function FretRangeControl({
   decrementSymbol,
   incrementSymbol,
 }: FretRangeControlProps) {
-  const isToolbar = (layout ?? "toolbar") === "toolbar";
-  const sep = showSeparator ?? isToolbar;
+  const isToolbar = layout === "toolbar" || layout === undefined;
+  const isMobile = layout === "mobile";
+  const sep = showSeparator ?? !isMobile;
   const labels = showLabels ?? !isToolbar;
   const dec = decrementSymbol ?? (isToolbar ? "◀" : "−");
   const inc = incrementSymbol ?? (isToolbar ? "▶" : "+");

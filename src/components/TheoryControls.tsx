@@ -198,9 +198,13 @@ export function TheoryControls({
       </div>
 
       <div className={shared["control-section"]}>
-        <span className={shared["section-label"]}>{memberTerm}</span>
-        <div className="theory-browser-row">
-          <div className="theory-browser-main">
+        <div className="theory-mode-browser panel-surface panel-surface--compact">
+          <span className={shared["section-label"]}>{memberTerm}</span>
+          <div
+            className="theory-browser-main"
+            role="group"
+            aria-label={`Browse ${memberTerm}`}
+          >
             <button
               type="button"
               className="theory-nav-btn"
@@ -227,24 +231,18 @@ export function TheoryControls({
               <ChevronRight size={16} />
             </button>
           </div>
+          {supportsRelativeBrowse ? (
+            <ToggleBar
+              options={[
+                { value: "parallel", label: "Parallel" },
+                { value: "relative", label: "Relative" },
+              ]}
+              value={effectiveBrowseMode}
+              onChange={(value) => setScaleBrowseMode(value as ScaleBrowseMode)}
+            />
+          ) : null}
         </div>
       </div>
-
-      {supportsRelativeBrowse ? (
-        <div className={clsx(shared["control-section"], "theory-browse-mode")}>
-          <div className="theory-inline-label-row">
-            <span className={shared["section-label"]}>Parallel / Relative</span>
-          </div>
-          <ToggleBar
-            options={[
-              { value: "parallel", label: "Parallel" },
-              { value: "relative", label: "Relative" },
-            ]}
-            value={effectiveBrowseMode}
-            onChange={(value) => setScaleBrowseMode(value as ScaleBrowseMode)}
-          />
-        </div>
-      ) : null}
 
       {keyExplorer ? (
         <div className="theory-inline-key panel-surface panel-surface--compact">
