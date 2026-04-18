@@ -219,10 +219,10 @@ export function CircleOfFifths({
             enharmonicDisplay,
           );
           const noteFontSize = Math.max(
-            15,
-            isActive ? SIZE * 0.055 : SIZE * 0.048,
+            16,
+            isActive ? SIZE * 0.062 : SIZE * 0.054,
           );
-          const degreeFontSize = Math.max(10, SIZE * 0.038);
+          const degreeFontSize = Math.max(11, SIZE * 0.043);
 
           return (
             <g key={`text-group-${note}`} style={{ pointerEvents: "none" }}>
@@ -321,7 +321,7 @@ export function CircleOfFifths({
           textAnchor="middle"
           dominantBaseline="middle"
           fill="var(--neon-orange-bright)"
-          fontSize={Math.max(15, SIZE * 0.05)}
+          fontSize={Math.max(16, SIZE * 0.058)}
           fontWeight="bold"
           fontFamily="var(--font-display)"
           stroke="rgba(0,0,0,0.3)"
@@ -337,7 +337,7 @@ export function CircleOfFifths({
           textAnchor="middle"
           dominantBaseline="middle"
           fill="var(--neon-cyan-bright)"
-          fontSize={Math.max(15, SIZE * 0.055)}
+          fontSize={Math.max(16, SIZE * 0.064)}
           fontWeight="bold"
           fontFamily="var(--font-display)"
           stroke="rgba(0,0,0,0.3)"

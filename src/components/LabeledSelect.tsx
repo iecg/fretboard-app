@@ -17,6 +17,7 @@ export interface LabeledSelectProps {
   className?: string;
   'aria-describedby'?: string;
   disabled?: boolean;
+  hideLabel?: boolean;
 }
 
 export function LabeledSelect({
@@ -28,12 +29,13 @@ export function LabeledSelect({
   className,
   'aria-describedby': ariaDescribedBy,
   disabled,
+  hideLabel,
 }: LabeledSelectProps) {
   const generatedId = useId();
   const selectId = id ?? generatedId;
 
   return (
-    <div className={clsx('labeled-select', { 'labeled-select--disabled': disabled }, className)}>
+    <div className={clsx('labeled-select', { 'labeled-select--disabled': disabled, 'labeled-select--hide-label': hideLabel }, className)}>
       <label className="labeled-select-label" htmlFor={selectId}>
         <span className="labeled-select-label-text">{label}</span>
         <div className="labeled-select-field">
