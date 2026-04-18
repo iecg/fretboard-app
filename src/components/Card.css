@@ -65,3 +65,16 @@
 .app-container[data-layout-tier="desktop"] .card-header-title {
   font-size: 1.05rem;
 }
+
+/* Tablet tier: tighter card chrome — between base and desktop density. */
+.app-container[data-layout-tier="tablet"] .card-header {
+  padding: 0.78rem 1.15rem 0.62rem;
+}
+
+.app-container[data-layout-tier="tablet"] .card-body {
+  padding: 0.72rem 1.15rem 0.85rem;
+}
+
+.app-container[data-layout-tier="tablet"] .card-header-title {
+  font-size: 1.18rem;
+}
