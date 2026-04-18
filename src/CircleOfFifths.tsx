@@ -291,7 +291,7 @@ export function CircleOfFifths({
                   fill={degreeTone}
                   fontSize={degreeFontSize}
                   fontWeight="bold"
-                  opacity={isActive ? 1 : degreeStr ? 0.92 : 0.62}
+                  opacity={isActive ? 1 : 0.92}
                   stroke="rgba(0,0,0,0.3)"
                   strokeWidth="1.5"
                   paintOrder="stroke"
