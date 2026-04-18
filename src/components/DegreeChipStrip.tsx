@@ -8,6 +8,7 @@ export interface DegreeChip {
   inScale: boolean;
   isTonic?: boolean;
   inChord?: boolean;
+  isChordRoot?: boolean;
 }
 
 export interface DegreeChipStripProps {
@@ -17,6 +18,8 @@ export interface DegreeChipStripProps {
   onChipToggle?: (internalNote: string) => void;
   className?: string;
   'aria-label'?: string;
+  hideHeader?: boolean;
+  chordActive?: boolean;
 }
 
 export function DegreeChipStrip({
@@ -26,6 +29,8 @@ export function DegreeChipStrip({
   onChipToggle,
   className,
   'aria-label': ariaLabel,
+  hideHeader,
+  chordActive,
 }: DegreeChipStripProps) {
   const label = ariaLabel ?? `Scale degrees for ${scaleName}`;
 
@@ -34,8 +39,11 @@ export function DegreeChipStrip({
       role="group"
       aria-label={label}
       className={clsx('degree-chip-strip', className)}
+      data-chord-active={chordActive ? 'true' : undefined}
     >
-      <header className="degree-chip-strip-header">{scaleName}</header>
+      {!hideHeader && (
+        <header className="degree-chip-strip-header">{scaleName}</header>
+      )}
       <ul className="degree-chip-strip-list">
         {chips.map((chip, i) => {
           const isHidden = hiddenNotes?.has(chip.internalNote) ?? false;
@@ -46,6 +54,7 @@ export function DegreeChipStrip({
               data-in-scale={chip.inScale ? 'true' : undefined}
               data-is-tonic={chip.isTonic ? 'true' : undefined}
               data-in-chord={chip.inChord ? 'true' : undefined}
+              data-is-chord-root={chip.isChordRoot ? 'true' : undefined}
               data-hidden={isHidden ? 'true' : undefined}
             >
               <button

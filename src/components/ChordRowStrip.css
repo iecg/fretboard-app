@@ -63,20 +63,23 @@
 
 /* Role-based chip styling */
 .chord-row-item[data-role="chord-root"] .chord-row-chip {
-  border-color: rgb(255 154 77 / 0.95);
-  box-shadow: var(--chord-chip-glow-orange);
-  border-width: calc(var(--chord-chip-border-width) + 0.5px);
+  background: rgb(255 154 77 / 0.22);
+  border-color: rgb(255 154 77);
+  border-width: calc(var(--chord-chip-border-width) + 1px);
+  box-shadow: var(--chord-chip-glow-orange), 0 0 0 3px rgb(255 154 77 / 0.14);
   opacity: 1;
 }
 
 .chord-row-item[data-role="chord-tone-in-scale"] .chord-row-chip {
-  border-color: rgb(77 228 255 / 0.75);
-  box-shadow: var(--chord-chip-glow-cyan);
+  background: rgb(255 154 77 / 0.1);
+  border-color: rgb(255 154 77 / 0.85);
+  box-shadow: var(--chord-chip-glow-orange);
   opacity: 1;
 }
 
 .chord-row-item[data-role="chord-tone-outside-scale"] .chord-row-chip {
-  border-color: rgb(204 122 61 / 0.8);
+  background: rgb(120 50 20 / 0.3);
+  border-color: rgb(204 122 61 / 0.85);
   box-shadow: var(--chord-chip-glow-orange);
   border-style: dashed;
   opacity: 1;
@@ -160,6 +163,19 @@
   opacity: 0.65;
   letter-spacing: 0.02em;
   white-space: nowrap;
+}
+
+/* Compact secondary rail — notably smaller than the primary scale strip */
+.chord-row-strip--compact {
+  --chord-chip-size: clamp(1.6rem, 2.2vw, 1.82rem);
+}
+
+.chord-row-strip--compact .chord-row-note {
+  font-size: clamp(0.88rem, 1.5vw, 1.02rem);
+}
+
+.chord-row-strip--compact .chord-row-interval {
+  font-size: 0.7rem;
 }
 
 /* Responsive tweaks */

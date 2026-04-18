@@ -420,6 +420,52 @@ export default function useDisplayState() {
       .filter((n) => chordToneSet.has(n));
   }, [chordType, chordTones, chordRoot]);
 
+  // Chord member interval labels for header display (e.g. "1 3 5")
+  const chordMemberLabels = useMemo(
+    () =>
+      activeChordMembers
+        .map((m) => (m.name === "root" ? "1" : formatAccidental(m.name)))
+        .join(" "),
+    [activeChordMembers],
+  );
+
+  // Unified ribbon header — left side text
+  const summaryHeaderLeft = useMemo(() => {
+    if (!chordType) return scaleLabel;
+    if (viewMode === "chord") return chordLabel ?? "";
+    if (viewMode === "outside") return "Outside tones";
+    return scaleLabel; // compare
+  }, [chordType, viewMode, scaleLabel, chordLabel]);
+
+  // Unified ribbon header — right side text (null when no chord)
+  const summaryHeaderRight = useMemo((): string | null => {
+    if (!chordType || !chordLabel) return null;
+    if (viewMode === "chord") return "Chord only";
+    if (viewMode === "outside") return `against ${scaleLabel}`;
+    // compare: chord label + member intervals
+    return chordMemberLabels
+      ? `${chordLabel} \u2022 ${chordMemberLabels}`
+      : chordLabel;
+  }, [chordType, viewMode, scaleLabel, chordLabel, chordMemberLabels]);
+
+  // Primary strip mode: "scale" for compare or no chord, "chord"/"outside" for those viewModes
+  const summaryPrimaryMode = useMemo((): "scale" | "chord" | "outside" => {
+    if (!chordType || viewMode === "compare") return "scale";
+    if (viewMode === "chord") return "chord";
+    return "outside";
+  }, [chordType, viewMode]);
+
+  // Whether the secondary compact chord rail should appear (compare mode only, when it adds info)
+  const showSecondaryChordRail = useMemo(
+    () =>
+      !!(
+        chordType &&
+        viewMode === "compare" &&
+        (chordRoot !== rootNote || focusPreset !== "all" || hasOutsideChordMembers)
+      ),
+    [chordType, viewMode, chordRoot, rootNote, focusPreset, hasOutsideChordMembers],
+  );
+
   return {
     // Atom values
     rootNote,
@@ -468,6 +514,11 @@ export default function useDisplayState() {
     noteRoleMap,
     summaryChordRow,
     summaryLegendItems,
+    chordMemberLabels,
+    summaryHeaderLeft,
+    summaryHeaderRight,
+    summaryPrimaryMode,
+    showSecondaryChordRail,
     highlightNotes,
     boxBounds,
     shapePolygons,

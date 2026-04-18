@@ -388,6 +388,114 @@ describe("App", () => {
     });
   });
 
+  describe("Summary ribbon", () => {
+    it("renders standalone DegreeChipStrip when no chord is active", () => {
+      render(<App />);
+      expect(document.querySelector(".summary-ribbon")).toBeNull();
+      expect(document.querySelector(".degree-chip-strip")).toBeTruthy();
+    });
+
+    it("renders summary-ribbon when chord is active", async () => {
+      localStorage.setItem(k("chordType"), "Major Triad");
+      render(<App />);
+      await waitFor(() => {
+        expect(document.querySelector(".summary-ribbon")).toBeTruthy();
+      });
+    });
+
+    it("compare mode: renders primary scale strip inside ribbon", async () => {
+      localStorage.setItem(k("chordType"), "Major Triad");
+      localStorage.setItem(k("viewMode"), "compare");
+      render(<App />);
+      await waitFor(() => {
+        expect(document.querySelector(".summary-ribbon .degree-chip-strip")).toBeTruthy();
+      });
+    });
+
+    it("compare mode: no secondary chord rail when same root, all preset, all in scale", async () => {
+      localStorage.setItem(k("rootNote"), "C");
+      localStorage.setItem(k("chordRoot"), "C");
+      localStorage.setItem(k("chordType"), "Major Triad");
+      localStorage.setItem(k("focusPreset"), "all");
+      localStorage.setItem(k("viewMode"), "compare");
+      render(<App />);
+      await waitFor(() => {
+        expect(document.querySelector(".summary-ribbon")).toBeTruthy();
+      });
+      expect(document.querySelector(".chord-row-strip--compact")).toBeNull();
+    });
+
+    it("compare mode: shows secondary compact rail when chordRoot differs from scale root", async () => {
+      localStorage.setItem(k("rootNote"), "C");
+      localStorage.setItem(k("chordRoot"), "G");
+      localStorage.setItem(k("chordType"), "Major Triad");
+      localStorage.setItem(k("focusPreset"), "all");
+      localStorage.setItem(k("viewMode"), "compare");
+      render(<App />);
+      await waitFor(() => {
+        expect(document.querySelector(".chord-row-strip--compact")).toBeTruthy();
+      });
+    });
+
+    it("chord mode: renders chord rail as primary, no degree-chip-strip inside ribbon", async () => {
+      localStorage.setItem(k("chordType"), "Major Triad");
+      localStorage.setItem(k("viewMode"), "chord");
+      render(<App />);
+      await waitFor(() => {
+        expect(document.querySelector(".summary-ribbon .chord-row-strip")).toBeTruthy();
+        expect(document.querySelector(".summary-ribbon .degree-chip-strip")).toBeNull();
+      });
+    });
+
+    it("outside mode: renders outside rail as primary, no degree-chip-strip inside ribbon", async () => {
+      localStorage.setItem(k("rootNote"), "C");
+      localStorage.setItem(k("chordRoot"), "D");
+      localStorage.setItem(k("chordType"), "Dominant 7th");
+      localStorage.setItem(k("viewMode"), "outside");
+      render(<App />);
+      await waitFor(() => {
+        expect(document.querySelector(".summary-ribbon .chord-row-strip")).toBeTruthy();
+        expect(document.querySelector(".summary-ribbon .degree-chip-strip")).toBeNull();
+      });
+    });
+
+    it("no legend row is rendered in compare mode", async () => {
+      localStorage.setItem(k("chordType"), "Dominant 7th");
+      localStorage.setItem(k("viewMode"), "compare");
+      render(<App />);
+      await waitFor(() => {
+        expect(document.querySelector(".summary-ribbon")).toBeTruthy();
+      });
+      expect(document.querySelector(".chord-row-legend")).toBeNull();
+    });
+
+    it("no legend row is rendered in chord mode", async () => {
+      localStorage.setItem(k("chordType"), "Major Triad");
+      localStorage.setItem(k("viewMode"), "chord");
+      render(<App />);
+      await waitFor(() => {
+        expect(document.querySelector(".summary-ribbon")).toBeTruthy();
+      });
+      expect(document.querySelector(".chord-row-legend")).toBeNull();
+    });
+
+    it("ribbon header shows scale label on left and chord info on right in compare mode", async () => {
+      localStorage.setItem(k("rootNote"), "C");
+      localStorage.setItem(k("chordRoot"), "C");
+      localStorage.setItem(k("chordType"), "Major Triad");
+      localStorage.setItem(k("viewMode"), "compare");
+      render(<App />);
+      await waitFor(() => {
+        expect(document.querySelector(".summary-ribbon-header-left")).toBeTruthy();
+        expect(document.querySelector(".summary-ribbon-header-right")).toBeTruthy();
+      });
+      const left = document.querySelector(".summary-ribbon-header-left")!;
+      const right = document.querySelector(".summary-ribbon-header-right")!;
+      expect(left.textContent).toContain("C Major");
+      expect(right.textContent).toContain("C Major Triad");
+    });
+  });
+
   describe("Chord overlay", () => {
     it("can set chord type", async () => {
       render(<App />);
