@@ -1,3 +1,10 @@
 /* FingeringPatternControls component styles */
 /* Layout styles (.control-section, .toggle-group, .toggle-btn) are in shared.module.css */
-/* Add component-specific overrides here if needed */
+
+/* Visual "charging" feedback while a long press is building up */
+[data-pressing] {
+  box-shadow:
+    0 0 0 2px rgb(77 228 255 / 0.55),
+    0 0 10px rgb(77 228 255 / 0.22) !important;
+  transition: box-shadow 0.45s ease !important;
+}
