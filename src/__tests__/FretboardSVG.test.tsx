@@ -22,27 +22,56 @@ const BASE_PROPS = {
 describe("FretboardSVG", () => {
   it("renders note circles when highlightNotes are provided", () => {
     render(<FretboardSVG {...BASE_PROPS} />);
-    const activeNotes = document.querySelectorAll(".note-active, .root-active");
+    const activeNotes = document.querySelectorAll(".note-active, .key-tonic");
     expect(activeNotes.length).toBeGreaterThan(0);
   });
 
-  it("classifies root note with root-active class", () => {
+  it("classifies scale root with key-tonic class when no chord overlay", () => {
     render(<FretboardSVG {...BASE_PROPS} />);
-    const rootNotes = document.querySelectorAll(".root-active");
+    const rootNotes = document.querySelectorAll(".key-tonic");
     expect(rootNotes.length).toBeGreaterThan(0);
   });
 
-  it("classifies chord tones with chord-tone class when chordTones are passed", () => {
+  it("classifies chord root with chord-root class when chordRoot is passed", () => {
     render(
       <FretboardSVG
         {...BASE_PROPS}
-        chordTones={["E", "G"]}
+        chordTones={["C", "E", "G"]}
+        chordRoot="C"
         rootNote="C"
         highlightNotes={["C", "E", "G"]}
       />
     );
-    const chordToneNotes = document.querySelectorAll(".chord-tone");
+    const chordRootNotes = document.querySelectorAll(".chord-root");
+    expect(chordRootNotes.length).toBeGreaterThan(0);
+  });
+
+  it("classifies chord tones with chord-tone-in-scale class when chordTones are passed", () => {
+    render(
+      <FretboardSVG
+        {...BASE_PROPS}
+        chordTones={["C", "E", "G"]}
+        chordRoot="C"
+        rootNote="C"
+        highlightNotes={["C", "E", "G"]}
+      />
+    );
+    const chordToneNotes = document.querySelectorAll(".chord-tone-in-scale");
     expect(chordToneNotes.length).toBeGreaterThan(0);
+  });
+
+  it("chord root (chord-root) is distinct from non-root chord tones (chord-tone-in-scale)", () => {
+    const { container } = render(
+      <FretboardSVG
+        {...BASE_PROPS}
+        chordTones={["C", "E", "G"]}
+        chordRoot="C"
+        rootNote="C"
+        highlightNotes={["C", "E", "G"]}
+      />
+    );
+    expect(container.querySelectorAll(".chord-root").length).toBeGreaterThan(0);
+    expect(container.querySelectorAll(".chord-tone-in-scale").length).toBeGreaterThan(0);
   });
 
   it("renders SVG polygon with non-empty points attribute when shapePolygons provided", () => {
@@ -134,18 +163,71 @@ describe("FretboardSVG", () => {
     expect(onNoteClick).toHaveBeenCalledTimes(1);
   });
 
-  it("hides note-scale-only circles when hideNonChordNotes is true", () => {
+  it("hides scale-only circles when hideNonChordNotes is true", () => {
     render(
       <FretboardSVG
         {...BASE_PROPS}
         chordTones={["C"]}
+        chordRoot="C"
         highlightNotes={["C", "E", "G"]}
         hideNonChordNotes={true}
       />
     );
     // scale-only notes should have the 'hidden' class
-    const hiddenNotes = document.querySelectorAll(".note-scale-only.hidden");
+    const hiddenNotes = document.querySelectorAll(".scale-only.hidden");
     expect(hiddenNotes.length).toBeGreaterThan(0);
+  });
+
+  it("classifies outside-scale chord tones with chord-tone-outside-scale class", () => {
+    // E is not in scale (scale=C,E,G highlight) when highlighted=[] for that note
+    const { container } = render(
+      <FretboardSVG
+        {...BASE_PROPS}
+        chordTones={["C", "E", "G", "A#"]}
+        chordRoot="C"
+        rootNote="C"
+        highlightNotes={["C", "E", "G"]}
+      />
+    );
+    // A# is a chord tone but not in highlightNotes (scale), so it should be chord-tone-outside-scale
+    const outsideTones = container.querySelectorAll(".chord-tone-outside-scale");
+    expect(outsideTones.length).toBeGreaterThan(0);
+  });
+
+  it("outside view hides in-scale notes and only shows outside chord tones", () => {
+    const { container } = render(
+      <FretboardSVG
+        {...BASE_PROPS}
+        chordTones={["C", "A#"]}
+        chordRoot="C"
+        rootNote="C"
+        highlightNotes={["C", "E", "G"]}
+        viewMode="outside"
+      />
+    );
+    // C (chord root) is in scale → hidden in outside mode
+    const hiddenChordRoot = container.querySelectorAll(".chord-root.hidden");
+    expect(hiddenChordRoot.length).toBeGreaterThan(0);
+    // A# (outside-scale chord tone) → NOT hidden
+    const visibleOutside = container.querySelectorAll(".chord-tone-outside-scale:not(.hidden)");
+    expect(visibleOutside.length).toBeGreaterThan(0);
+  });
+
+  it("outside view shows outside chord root when it is outside scale", () => {
+    // chordRoot=D is not in highlightNotes (C,E,G) → outside scale → visible in outside mode
+    const { container } = render(
+      <FretboardSVG
+        {...BASE_PROPS}
+        chordTones={["D", "F#", "A"]}
+        chordRoot="D"
+        rootNote="C"
+        highlightNotes={["C", "E", "G"]}
+        viewMode="outside"
+      />
+    );
+    // D (chord root) is outside scale → should appear as chord-root and NOT be hidden
+    const visibleChordRoot = container.querySelectorAll(".chord-root:not(.hidden)");
+    expect(visibleChordRoot.length).toBeGreaterThan(0);
   });
 
   it("prefixes SVG defs ids per instance and keeps url references resolvable", () => {
