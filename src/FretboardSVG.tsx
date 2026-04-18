@@ -39,6 +39,7 @@ interface FretboardSVGProps {
   shapePolygons?: ShapePolygon[];
   shapeLabels?: "caged" | "none";
   wrappedNotes?: Set<string>;
+  hiddenNotes?: Set<string>;
   useFlats?: boolean;
   scaleName?: string;
   onNoteClick?: (
@@ -181,6 +182,7 @@ export function FretboardSVG({
   shapePolygons = [],
   shapeLabels = "none",
   wrappedNotes = new Set<string>(),
+  hiddenNotes,
   useFlats = false,
   scaleName = "",
   onNoteClick,
@@ -397,15 +399,25 @@ export function FretboardSVG({
 
       const noteName = fretboardLayout[stringIndex][fretIndex];
 
+      const isNoteHidden =
+        hiddenNotes != null &&
+        hiddenNotes.size > 0 &&
+        (hiddenNotes.has(noteName) ||
+          !!(ENHARMONICS[noteName] && hiddenNotes.has(ENHARMONICS[noteName])));
+
       const isHighlighted =
-        highlightNotes.includes(noteName) ||
-        highlightNotes.includes(`${stringIndex}-${fretIndex}`);
-      const isChordTone = hasChordOverlay && chordTones.includes(noteName);
+        !isNoteHidden &&
+        (highlightNotes.includes(noteName) ||
+          highlightNotes.includes(`${stringIndex}-${fretIndex}`));
+      const isChordTone =
+        !isNoteHidden && hasChordOverlay && chordTones.includes(noteName);
       const isRoot =
-        noteName === rootNote ||
-        ENHARMONICS[noteName] === rootNote ||
-        ENHARMONICS[rootNote] === noteName;
+        !isNoteHidden &&
+        (noteName === rootNote ||
+          ENHARMONICS[noteName] === rootNote ||
+          ENHARMONICS[rootNote] === noteName);
       const isColorNote =
+        !isNoteHidden &&
         colorNotes.length > 0 &&
         colorNotes.some(
           (cn) =>
@@ -422,17 +434,19 @@ export function FretboardSVG({
             fretIndex <= b.maxFret + chordFretSpread,
         );
 
-      const noteClass = classifyNote(
-        isRoot,
-        isColorNote,
-        isHighlighted,
-        isChordTone,
-        hasChordOverlay,
-        isChordInRange,
-        shapePolygons,
-        boxBounds,
-        fretIndex,
-      );
+      const noteClass = isNoteHidden
+        ? "note-inactive"
+        : classifyNote(
+            isRoot,
+            isColorNote,
+            isHighlighted,
+            isChordTone,
+            hasChordOverlay,
+            isChordInRange,
+            shapePolygons,
+            boxBounds,
+            fretIndex,
+          );
 
       let displayValue = getNoteDisplayInScale(
         noteName,

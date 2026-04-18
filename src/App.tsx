@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import clsx from "clsx";
 import { useAtom, useSetAtom, createStore, Provider } from "jotai";
 import { Fretboard } from "./Fretboard";
@@ -150,6 +150,38 @@ function AppContent() {
     synth.setMute(nextMute);
   };
 
+  // Note visibility toggling via the degree chip strip.
+  // State is keyed to rootNote+scaleName so changing scale auto-resets.
+  const [hiddenNotesState, setHiddenNotesState] = useState<{
+    root: string;
+    scale: string;
+    notes: Set<string>;
+  }>({ root: rootNote, scale: scaleName, notes: new Set() });
+
+  const hiddenNotes = useMemo(
+    () =>
+      hiddenNotesState.root === rootNote && hiddenNotesState.scale === scaleName
+        ? hiddenNotesState.notes
+        : new Set<string>(),
+    [hiddenNotesState, rootNote, scaleName],
+  );
+
+  const toggleHiddenNote = useCallback(
+    (note: string) => {
+      setHiddenNotesState((prev) => {
+        const prevNotes =
+          prev.root === rootNote && prev.scale === scaleName
+            ? prev.notes
+            : new Set<string>();
+        const next = new Set(prevNotes);
+        if (next.has(note)) next.delete(note);
+        else next.add(note);
+        return { root: rootNote, scale: scaleName, notes: next };
+      });
+    },
+    [rootNote, scaleName],
+  );
+
   // Build DegreeChip[] from scale/chord atoms for DegreeChipStrip
   const degreeChips = useMemo(() => {
     const rootIdx = NOTES.indexOf(rootNote);
@@ -160,6 +192,7 @@ function AppContent() {
         rootIdx !== -1 && noteIdx !== -1 ? (noteIdx - rootIdx + 12) % 12 : 0;
       const interval = INTERVAL_NAMES[chromaticInterval] ?? "1";
       return {
+        internalNote: note,
         note: formatAccidental(
           getNoteDisplayInScale(
             note,
@@ -181,6 +214,8 @@ function AppContent() {
     <DegreeChipStrip
       scaleName={scaleLabel}
       chips={degreeChips}
+      hiddenNotes={hiddenNotes}
+      onChipToggle={toggleHiddenNote}
       aria-label="Scale degrees"
     />
   );
@@ -421,6 +456,7 @@ function AppContent() {
           shapeLabels={shapeLabels}
           maxFret={END_FRET}
           wrappedNotes={wrappedNotes}
+          hiddenNotes={hiddenNotes}
           useFlats={useFlats}
           scaleName={scaleName}
           stringRowPx={layout.stringRowPx}
