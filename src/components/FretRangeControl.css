@@ -76,3 +76,29 @@
   align-items: center;
   justify-content: center;
 }
+
+/* Dashboard: compact, no wrap, labels visible — fits card context on tablet/desktop */
+.fret-range-control.dashboard {
+  flex-wrap: nowrap;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.fret-range-control.dashboard .fret-group {
+  gap: 0.3rem;
+}
+
+.fret-range-control.dashboard .fret-btn {
+  min-width: 2.15rem;
+  min-height: 2.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem 0.45rem;
+  font-size: 0.84rem;
+}
+
+.fret-range-control.dashboard .fret-label {
+  min-width: auto;
+  font-size: 0.7rem;
+}

@@ -66,8 +66,7 @@ export function BaseControlsSection() {
           onStartChange={setFretStart}
           onEndChange={setFretEnd}
           maxFret={END_FRET}
-          layout="mobile"
-          showLabels
+          layout="dashboard"
         />
       </div>
     </Card>
