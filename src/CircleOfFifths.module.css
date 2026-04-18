@@ -59,6 +59,11 @@
   max-height: min(22rem, 46vh);
 }
 
+:global(.app-container[data-layout-variant="tablet-split"]) .circle-fifths-container {
+  max-width: min(100%, 24rem);
+  max-height: min(24rem, 52vh);
+}
+
 :global(.app-container[data-layout-variant="tablet-stacked"]) .circle-fifths-container,
 :global(.app-container[data-layout-variant="desktop-stacked"]) .circle-fifths-container {
   max-width: min(100%, 28rem);

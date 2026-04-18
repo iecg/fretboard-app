@@ -80,3 +80,9 @@
   grid-column: 3;
   grid-row: 1;
 }
+
+/* tablet-split (768x1024 iPad portrait): give the Key Explorer column extra
+   horizontal weight so the circle fills its card without the 320px default cap. */
+.app-container[data-layout-variant="tablet-split"] .controls-panel--dashboard {
+  grid-template-columns: minmax(0, 1fr) minmax(20rem, 1.2fr);
+}
