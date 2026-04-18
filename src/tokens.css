@@ -107,10 +107,7 @@
 
 /* === Display font (Phase 5 brand — alias to current body font in Phase 4) === */
 :root {
-  /* --font-display is aliased to the existing body font stack in Phase 4.
-     Phase 5 will replace with the chosen neon/display face (e.g., Orbitron, Space Grotesk,
-     or a custom face). Consumers should use var(--font-display) from day one. */
-  --font-display: 'Orbitron', var(--font-sans);
+  --font-display: 'Space Grotesk', var(--font-sans);
   --font-brand-weight: 700;
   --font-brand-tracking: 0.02em;
 }

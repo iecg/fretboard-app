@@ -5,7 +5,7 @@ export interface FretFlowWordmarkProps {
 }
 
 /**
- * FretFlow SVG wordmark — Orbitron 900-weight paths exported from Inkscape.
+ * FretFlow SVG wordmark — paths exported from Inkscape.
  * "Fret" (text1) renders in cyan and "Flow" (path16) renders in orange,
  * matching the two-tone palette of the BrandMark guitar silhouette.
  * Each segment carries its own per-path neon glow via feDropShadow filters.

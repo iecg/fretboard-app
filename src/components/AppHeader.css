@@ -63,10 +63,7 @@
   display: inline-flex;
   align-items: baseline;
   font-family: var(--font-display);
-  /* Bold glyph weight + thin text-stroke + only soft/wide glow — the
-     thick 750-weight Orbitron stems stay hollow inside because the
-     1.2px stroke sits just on the glyph boundary and the glow has no
-     tight blur to saturate the interior channel. */
+  /* Bold glyph weight + thin text-stroke + only soft/wide glow. */
   font-weight: 750;
   font-size: clamp(2rem, 4vw, 3.15rem);
   letter-spacing: 0.035em;
