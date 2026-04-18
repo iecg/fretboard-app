@@ -576,11 +576,6 @@ describe("App", () => {
       expect(localStorage.getItem(k("displayFormat"))).toBe("degrees");
     });
 
-    it("initializes with no shape labels", () => {
-      render(<App />);
-      expect(localStorage.getItem(k("shapeLabels"))).toBe("none");
-    });
-
     it("passes the minor blues blue note to the fretboard", () => {
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("scaleName"), "Minor Blues");

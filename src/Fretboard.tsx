@@ -28,7 +28,6 @@ interface FretboardProps {
   viewMode?: ViewMode;
   colorNotes?: string[];
   shapePolygons?: ShapePolygon[];
-  shapeLabels?: "caged" | "none";
   wrappedNotes?: Set<string>;
   hiddenNotes?: Set<string>;
   onFretClick?: (
@@ -59,7 +58,6 @@ export function Fretboard({
   recenterKey,
   colorNotes = [],
   shapePolygons = [],
-  shapeLabels = "none",
   wrappedNotes = new Set<string>(),
   hiddenNotes,
   onFretClick,
@@ -209,7 +207,6 @@ export function Fretboard({
           viewMode={viewMode}
           colorNotes={colorNotes}
           shapePolygons={shapePolygons}
-          shapeLabels={shapeLabels}
           wrappedNotes={wrappedNotes}
           hiddenNotes={hiddenNotes}
           useFlats={useFlats}

@@ -282,33 +282,6 @@
   overflow-x: hidden;
 }
 
-/* Shape labels overlaid at the top of the fretboard neck.
-   Positioned absolutely within .fretboard-board so they don't push the
-   neck down — the fretboard vertical position stays stable whether labels
-   are visible or not. */
-.fretboard-board {
-  position: relative;
-}
-
-.shape-labels-row {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 1.5rem;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.shape-label {
-  position: absolute;
-  top: 0;
-  transform: translateX(-50%);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-
 /* Dynamic Box Overlays behind strings */
 
 .fret-backgrounds {
@@ -1284,10 +1257,6 @@
   font-size: 0.9rem;
   font-weight: 500;
   color: rgb(191 204 216 / 0.72);
-}
-
-.shape-label {
-  color: rgb(193 206 220 / 0.72);
 }
 
 .mobile-tab-content {

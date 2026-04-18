@@ -24,7 +24,6 @@ const LEGACY_KEYS = [
   "cagedShapes",
   "npsPosition",
   "displayFormat",
-  "shapeLabels",
   "tuningName",
   "fretZoom",
   "fretStart",
@@ -304,46 +303,6 @@ const scaleBrowseModeStorage = {
     }
   },
   setItem(key: string, value: ScaleBrowseMode): void {
-    try {
-      localStorage.setItem(key, value);
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
-  },
-  removeItem(key: string): void {
-    try {
-      localStorage.removeItem(key);
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
-  },
-};
-
-const SHAPE_LABEL_VALUES = ["none", "caged"] as const;
-type ShapeLabelValue = (typeof SHAPE_LABEL_VALUES)[number];
-
-const shapeLabelsStorage = {
-  getItem(key: string, initialValue: ShapeLabelValue): ShapeLabelValue {
-    try {
-      const stored = localStorage.getItem(key);
-      if (stored === null) {
-        localStorage.setItem(key, initialValue);
-        return initialValue;
-      }
-      if (stored === "modal") {
-        localStorage.setItem(key, "caged");
-        return "caged";
-      }
-      if ((SHAPE_LABEL_VALUES as readonly string[]).includes(stored)) {
-        return stored as ShapeLabelValue;
-      }
-      localStorage.setItem(key, initialValue);
-      return initialValue;
-    } catch {
-      return initialValue;
-    }
-  },
-  setItem(key: string, value: ShapeLabelValue): void {
     try {
       localStorage.setItem(key, value);
     } catch {
@@ -647,12 +606,6 @@ export const displayFormatAtom = atomWithStorage<"notes" | "degrees" | "none">(
   rawStringStorage<"notes" | "degrees" | "none">(),
   GET_ON_INIT,
 );
-export const shapeLabelsAtom = atomWithStorage<"caged" | "none">(
-  k("shapeLabels"),
-  "none",
-  shapeLabelsStorage,
-  GET_ON_INIT,
-);
 export const tuningNameAtom = atomWithStorage(
   k("tuningName"),
   "Standard",
@@ -769,7 +722,6 @@ export const resetAtom = atom(null, (_get, set) => {
   set(cagedShapesAtom, RESET);
   set(npsPositionAtom, RESET);
   set(displayFormatAtom, RESET);
-  set(shapeLabelsAtom, RESET);
   set(tuningNameAtom, RESET);
   set(fretZoomAtom, RESET);
   set(fretStartAtom, RESET);

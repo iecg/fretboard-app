@@ -10,7 +10,6 @@ import {
   fingeringPatternAtom,
   cagedShapesAtom,
   npsPositionAtom,
-  shapeLabelsAtom,
   displayFormatAtom,
   chordRootAtom,
   chordTypeAtom,
@@ -49,7 +48,6 @@ export function BaseControlsSection() {
   const [fingeringPattern, setFingeringPattern] = useAtom(fingeringPatternAtom);
   const [cagedShapes, setCagedShapes] = useAtom(cagedShapesAtom);
   const [npsPosition, setNpsPosition] = useAtom(npsPositionAtom);
-  const [shapeLabels, setShapeLabels] = useAtom(shapeLabelsAtom);
   const [displayFormat, setDisplayFormat] = useAtom(displayFormatAtom);
   const [fretStart, setFretStart] = useAtom(fretStartAtom);
   const [fretEnd, setFretEnd] = useAtom(fretEndAtom);
@@ -67,8 +65,6 @@ export function BaseControlsSection() {
           setCagedShapes={setCagedShapes}
           npsPosition={npsPosition}
           setNpsPosition={setNpsPosition}
-          shapeLabels={shapeLabels}
-          setShapeLabels={setShapeLabels}
           displayFormat={displayFormat}
           setDisplayFormat={setDisplayFormat}
         />

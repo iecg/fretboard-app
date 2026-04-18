@@ -69,8 +69,6 @@ function AppContent() {
     setNpsPosition,
     displayFormat,
     setDisplayFormat,
-    shapeLabels,
-    setShapeLabels,
     enharmonicDisplay,
     setRootNote,
     activeChordTones,
@@ -290,8 +288,6 @@ function AppContent() {
         setCagedShapes={setCagedShapes}
         npsPosition={npsPosition}
         setNpsPosition={setNpsPosition}
-        shapeLabels={shapeLabels}
-        setShapeLabels={setShapeLabels}
         displayFormat={displayFormat}
         setDisplayFormat={setDisplayFormat}
         onShapeClick={(shape) => {
@@ -551,7 +547,6 @@ function AppContent() {
           colorNotes={colorNotes}
           displayFormat={displayFormat}
           shapePolygons={shapePolygons}
-          shapeLabels={shapeLabels}
           maxFret={END_FRET}
           wrappedNotes={wrappedNotes}
           hiddenNotes={hiddenNotes}
