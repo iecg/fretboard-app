@@ -39,6 +39,7 @@ interface FretboardSVGProps {
   shapePolygons?: ShapePolygon[];
   shapeLabels?: "caged" | "none";
   wrappedNotes?: Set<string>;
+  hiddenNotes?: Set<string>;
   useFlats?: boolean;
   scaleName?: string;
   onNoteClick?: (
@@ -181,6 +182,7 @@ export function FretboardSVG({
   shapePolygons = [],
   shapeLabels = "none",
   wrappedNotes = new Set<string>(),
+  hiddenNotes,
   useFlats = false,
   scaleName = "",
   onNoteClick,
@@ -253,19 +255,13 @@ export function FretboardSVG({
     return rightWire - leftWire;
   };
 
-  /* Neck taper — the wood silhouette narrows toward the nut following the
-     linear formula:
-         width(fret_dist) = w_nut + (w_bridge - w_nut) * fret_dist / scale_length
-     For a typical steel-string, w_bridge ≈ 1.22 × w_nut (neck widens ~22%
-     from nut to bridge). We compute the width ratio at the visible left and
-     right edges based on how far each edge sits along the full scale, then
-     normalise so the widest visible edge fills neckHeight. This yields a
-     stronger, more realistic taper when fret 0 is visible, and a milder
-     taper when the view is scrolled up the neck. */
-  /* Neck taper — subtle linear widening from nut to bridge. Real steel-string
-     necks widen ~22% over the full scale, but at fretboard-diagram zoom that
-     reads too exaggerated; 8% feels right visually. */
-  const NECK_TAPER_SCALE = 0.08;
+  /* Neck taper — linear widening from nut to bridge following:
+       width(p) = 1 + NECK_TAPER_SCALE * p   where p ∈ [0,1] along scale length
+     Real electric guitars (Fender Strat: nut 41.9 mm → heel ~57 mm) widen
+     ~36 % total; the fingerboard surface alone tapers ~22 %. We use 0.20,
+     which produces a clearly visible, realistic taper at the default fret range
+     without reading as distorted. */
+  const NECK_TAPER_SCALE = 0.20;
   const fretDistRatio = (wireIdx: number) => 1 - Math.pow(2, -wireIdx / 12);
   const pLeft = startFret === 0 ? 0 : fretDistRatio(startFret - 1);
   const pRight = fretDistRatio(endFret);
@@ -285,12 +281,13 @@ export function FretboardSVG({
     `Q ${neckWidthPx} ${neckHeight} ${neckWidthPx - cornerR} ${neckHeight} ` +
     `L 0 ${neckHeight - taperYLeft} Z`;
 
-  /* Strings are nearly parallel — a tiny 4% spread increase nut → bridge
-     keeps them visually parallel while still reading as having been physically
-     strung on a tapered neck. Decoupled from NECK_TAPER_SCALE so each can be
-     tuned independently. */
+  /* String spread — strings converge toward the nut, mirroring real guitar
+     geometry. On a Fender Strat, E-to-E at nut (35.7 mm) vs bridge (53.3 mm)
+     gives a nut/bridge ratio of ~0.67. We use 0.76 — slightly more spread than
+     real for readability — giving a visible fan without crowding note circles.
+     Decoupled from NECK_TAPER_SCALE so each can be tuned independently. */
   const STRING_OCCUPY_FRAC = 0.86;
-  const STRING_SPREAD_LEFT_FRAC = 0.96;
+  const STRING_SPREAD_LEFT_FRAC = 0.76;
   const stringSpreadAt = (x: number) => {
     const xFrac =
       neckWidthPx > 0 ? Math.max(0, Math.min(1, x / neckWidthPx)) : 0;
@@ -397,15 +394,25 @@ export function FretboardSVG({
 
       const noteName = fretboardLayout[stringIndex][fretIndex];
 
+      const isNoteHidden =
+        hiddenNotes != null &&
+        hiddenNotes.size > 0 &&
+        (hiddenNotes.has(noteName) ||
+          !!(ENHARMONICS[noteName] && hiddenNotes.has(ENHARMONICS[noteName])));
+
       const isHighlighted =
-        highlightNotes.includes(noteName) ||
-        highlightNotes.includes(`${stringIndex}-${fretIndex}`);
-      const isChordTone = hasChordOverlay && chordTones.includes(noteName);
+        !isNoteHidden &&
+        (highlightNotes.includes(noteName) ||
+          highlightNotes.includes(`${stringIndex}-${fretIndex}`));
+      const isChordTone =
+        !isNoteHidden && hasChordOverlay && chordTones.includes(noteName);
       const isRoot =
-        noteName === rootNote ||
-        ENHARMONICS[noteName] === rootNote ||
-        ENHARMONICS[rootNote] === noteName;
+        !isNoteHidden &&
+        (noteName === rootNote ||
+          ENHARMONICS[noteName] === rootNote ||
+          ENHARMONICS[rootNote] === noteName);
       const isColorNote =
+        !isNoteHidden &&
         colorNotes.length > 0 &&
         colorNotes.some(
           (cn) =>
@@ -422,17 +429,19 @@ export function FretboardSVG({
             fretIndex <= b.maxFret + chordFretSpread,
         );
 
-      const noteClass = classifyNote(
-        isRoot,
-        isColorNote,
-        isHighlighted,
-        isChordTone,
-        hasChordOverlay,
-        isChordInRange,
-        shapePolygons,
-        boxBounds,
-        fretIndex,
-      );
+      const noteClass = isNoteHidden
+        ? "note-inactive"
+        : classifyNote(
+            isRoot,
+            isColorNote,
+            isHighlighted,
+            isChordTone,
+            hasChordOverlay,
+            isChordInRange,
+            shapePolygons,
+            boxBounds,
+            fretIndex,
+          );
 
       let displayValue = getNoteDisplayInScale(
         noteName,

@@ -11,7 +11,7 @@ import type { ShapePolygon } from "./shapes";
 import { fretZoomAtom, fretStartAtom, fretEndAtom } from "./store/atoms";
 import { FretboardSVG } from "./FretboardSVG";
 
-const STRING_ROW_PX_DEFAULT = 40;
+const STRING_ROW_PX_DEFAULT = 36;
 
 interface FretboardInteractiveProps {
   tuning: string[];
@@ -27,6 +27,7 @@ interface FretboardInteractiveProps {
   shapePolygons?: ShapePolygon[];
   shapeLabels?: "caged" | "none";
   wrappedNotes?: Set<string>;
+  hiddenNotes?: Set<string>;
   onFretClick?: (
     stringIndex: number,
     fretIndex: number,
@@ -55,6 +56,7 @@ export function FretboardInteractive({
   shapePolygons = [],
   shapeLabels = "none",
   wrappedNotes = new Set<string>(),
+  hiddenNotes,
   onFretClick,
   useFlats = false,
   scaleName = "",
@@ -202,6 +204,7 @@ export function FretboardInteractive({
           shapePolygons={shapePolygons}
           shapeLabels={shapeLabels}
           wrappedNotes={wrappedNotes}
+          hiddenNotes={hiddenNotes}
           useFlats={useFlats}
           scaleName={scaleName}
           onNoteClick={handleFretClick}
