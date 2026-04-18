@@ -1002,7 +1002,7 @@ describe("Responsive string row sizes", () => {
     render(<App />);
     expect(screen.getByTestId("fretboard")).toHaveAttribute(
       "data-string-row-px",
-      "32",
+      "28",
     );
   });
 
@@ -1021,7 +1021,7 @@ describe("Responsive string row sizes", () => {
     render(<App />);
     expect(screen.getByTestId("fretboard")).toHaveAttribute(
       "data-string-row-px",
-      "40",
+      "36",
     );
   });
 
@@ -1040,7 +1040,7 @@ describe("Responsive string row sizes", () => {
     render(<App />);
     expect(screen.getByTestId("fretboard")).toHaveAttribute(
       "data-string-row-px",
-      "48",
+      "42",
     );
   });
 });

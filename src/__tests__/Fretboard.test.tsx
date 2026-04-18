@@ -188,7 +188,7 @@ describe("Fretboard", () => {
       expect(firstFret).toBeTruthy();
       // Fret 0 (open-string column) has a fixed width determined by noteBubblePx,
       // independent of zoom. Non-zero frets scale with zoom via guitar scale math.
-      expect(firstFret).toHaveStyle("width: 41px");
+      expect(firstFret).toHaveStyle("width: 34px");
     });
 
     it("has scroll container that is draggable", () => {
@@ -204,7 +204,7 @@ describe("Fretboard", () => {
 
       // Fret 0 open-string column has fixed width (noteBubblePx-derived, zoom-independent)
       expect(container.querySelector(".fret-number")).toHaveStyle(
-        "width: 41px",
+        "width: 34px",
       );
 
       act(() => {
@@ -213,7 +213,7 @@ describe("Fretboard", () => {
 
       // Fret 0 column stays fixed; non-zero frets scale via guitar scale math
       expect(container.querySelector(".fret-number")).toHaveStyle(
-        "width: 41px",
+        "width: 34px",
       );
     });
 
@@ -579,7 +579,7 @@ describe("Fretboard", () => {
 
       // Fret 0 open-string column has fixed width (zoom-independent)
       expect(container.querySelector(".fret-number")).toHaveStyle(
-        "width: 41px",
+        "width: 34px",
       );
     });
   });

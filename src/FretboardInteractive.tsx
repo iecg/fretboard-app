@@ -11,7 +11,7 @@ import type { ShapePolygon } from "./shapes";
 import { fretZoomAtom, fretStartAtom, fretEndAtom } from "./store/atoms";
 import { FretboardSVG } from "./FretboardSVG";
 
-const STRING_ROW_PX_DEFAULT = 40;
+const STRING_ROW_PX_DEFAULT = 36;
 
 interface FretboardInteractiveProps {
   tuning: string[];
