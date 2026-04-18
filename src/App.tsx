@@ -9,7 +9,8 @@ import {
   getNoteDisplayInScale,
   formatAccidental,
 } from "./theory";
-import { HelpCircle, Settings2, Volume2, VolumeX } from "lucide-react";
+import { HelpCircle, Settings2, Volume2, VolumeX, X } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { getFocusableElements } from "./utils/dom";
 import { synth } from "./audio";
 import { CircleOfFifths } from "./CircleOfFifths";
@@ -299,80 +300,111 @@ function AppContent() {
       )}
 
       {/* Help Modal */}
-      {showHelp && (
-        <div className="help-modal-overlay">
-          <div
-            ref={helpModalRef}
-            className={clsx("help-modal", {
-              "help-modal--full-width": layout.fullWidthOverlay,
-            })}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="help-modal-title"
+      <AnimatePresence>
+        {showHelp ? (
+          <motion.div
+            className="help-modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
           >
-            <div className="help-modal-header">
-              <h2 id="help-modal-title">FretFlow Help</h2>
-              <button
-                type="button"
-                className="help-modal-close"
-                onClick={() => setShowHelp(false)}
-                title="Close help"
-                aria-label="Close help"
-              >
-                ×
-              </button>
-            </div>
-            <div className="help-modal-content">
-              <h3>Getting Started</h3>
-              <p>
-                FretFlow is an interactive guitar fretboard and music theory
-                tool. Use the controls below to explore scales, chords, and
-                fingering patterns.
-              </p>
+            <motion.div
+              ref={helpModalRef}
+              className={clsx("help-modal", {
+                "help-modal--full-width": layout.fullWidthOverlay,
+              })}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="help-modal-title"
+              tabIndex={-1}
+              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
+              <div className="help-modal-header">
+                <h2 id="help-modal-title">FretFlow Help</h2>
+                <button
+                  type="button"
+                  className="help-modal-close"
+                  onClick={() => setShowHelp(false)}
+                  aria-label="Close help"
+                >
+                  <X className="icon" />
+                </button>
+              </div>
+              <div className="help-modal-content">
+                <h3>Getting Started</h3>
+                <p>
+                  FretFlow is an interactive guitar fretboard and music theory
+                  tool. Choose a root note, scale type, and optional chord to
+                  explore how notes and intervals map across a 6-string guitar
+                  neck.
+                </p>
 
-              <h3>Basic Usage</h3>
-              <ul>
-                <li>
-                  <strong>Scale Selection:</strong> Choose a root note and scale
-                  type to highlight notes on the fretboard
-                </li>
-                <li>
-                  <strong>Chord Overlay:</strong> Select a chord to see which
-                  scale notes are chord tones
-                </li>
-                <li>
-                  <strong>Fret Range:</strong> Adjust which frets are visible
-                </li>
-              </ul>
+                <h3>Basic Usage</h3>
+                <ul>
+                  <li>
+                    <strong>Scale Selection:</strong> Pick a root note and scale
+                    type to highlight the matching notes on the fretboard.
+                  </li>
+                  <li>
+                    <strong>Chord Overlay:</strong> Select a chord to
+                    distinguish chord tones from other scale notes. Use the
+                    interval filter to narrow which chord tones appear.
+                  </li>
+                  <li>
+                    <strong>Fingering Patterns:</strong> Enable CAGED shapes or
+                    3NPS positions to see positional overlays across the neck.
+                  </li>
+                  <li>
+                    <strong>Circle of Fifths:</strong> Tap a key segment to
+                    change the root note. Degree markers show the current
+                    scale's intervals relative to each key.
+                  </li>
+                </ul>
 
-              <h3>Controls</h3>
-              <ul>
-                <li>
-                  <strong>Reset:</strong> Return all settings to defaults
-                </li>
-                <li>
-                  <strong>Mute:</strong> Toggle audio feedback when clicking
-                  notes
-                </li>
-                <li>
-                  <strong>Settings:</strong> Coming soon - additional
-                  preferences
-                </li>
-              </ul>
+                <h3>Controls</h3>
+                <ul>
+                  <li>
+                    <strong>Mute:</strong> Toggle audio feedback on note taps
+                    using the speaker icon in the header.
+                  </li>
+                  <li>
+                    <strong>Settings (gear icon):</strong> Adjust tuning, zoom,
+                    fret range, accidentals, enharmonic display, and chord
+                    spread. Reset all settings to defaults from Settings →
+                    Reset.
+                  </li>
+                </ul>
 
-              <h3>Tips</h3>
-              <ul>
-                <li>Click on fretboard notes to hear them (when unmuted)</li>
-                <li>Use the Circle of Fifths widget for key relationships</li>
-                <li>
-                  Try different fingering patterns to find comfortable positions
-                </li>
-                <li>Chord overlays help identify chord tones within scales</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      )}
+                <h3>Tips</h3>
+                <ul>
+                  <li>Tap any fretboard note to hear it play (when unmuted).</li>
+                  <li>
+                    The fret range control lets you focus on any section of the
+                    neck — useful for position-specific practice.
+                  </li>
+                  <li>
+                    CAGED shapes and 3NPS positions show how the same scale maps
+                    across different hand positions on the neck.
+                  </li>
+                  <li>
+                    The degree strip below the fretboard shows the interval
+                    structure of the selected scale.
+                  </li>
+                  <li>
+                    Enable "Hide non-chord notes" in the chord overlay to focus
+                    on playable chord voicings within the scale.
+                  </li>
+                </ul>
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       <main className="main-fretboard">
         <Fretboard

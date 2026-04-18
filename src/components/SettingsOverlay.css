@@ -26,7 +26,7 @@
   flex-direction: column;
   overflow: hidden;
   will-change: transform;
-  box-shadow: 0 4px 24px color-mix(in srgb, var(--bg-color) 72%, transparent);
+  box-shadow: var(--elevation-overlay);
   border-left: 1px solid var(--chrome-border);
 }
 
@@ -94,8 +94,7 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  border: 1px solid color-mix(in srgb, var(--surface-highlight) 78%, transparent);
-  box-shadow: 0 12px 24px color-mix(in srgb, var(--chrome-bg) 84%, transparent);
+  box-shadow: var(--elevation-card);
 }
 
 .overlay-section-card--danger {
