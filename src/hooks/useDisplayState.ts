@@ -265,12 +265,13 @@ export default function useDisplayState() {
       items.push({ role: "chord-tone-in-scale", label: "Chord tone" });
     if (rolesPresent.has("chord-tone-outside-scale"))
       items.push({ role: "chord-tone-outside-scale", label: "Outside scale" });
-    // In compare mode, mention scale-only if there are scale notes that aren't chord tones.
-    if (viewMode === "compare" && activeChordTones.length > 0) {
+    // In compare mode, mention scale-only only when that role is actually present on the board.
+    const hasScaleOnly = Array.from(noteRoleMap.values()).includes("scale-only");
+    if (viewMode === "compare" && hasScaleOnly) {
       items.push({ role: "scale-only", label: "Scale only" });
     }
     return items;
-  }, [chordType, summaryChordRow, viewMode, activeChordTones]);
+  }, [chordType, summaryChordRow, viewMode, noteRoleMap]);
 
   // hideNonChordNotes derived from viewMode for Fretboard rendering path
   const hideNonChordNotes = viewMode === "chord";

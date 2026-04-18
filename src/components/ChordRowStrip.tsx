@@ -44,12 +44,16 @@ export function ChordRowStrip({
 
       {legendItems.length > 0 && (
         <ul className="chord-row-legend" aria-label="Legend">
-          {legendItems.map((item) => (
-            <li key={item.role} className="chord-row-legend-item" data-role={item.role}>
-              <span className="chord-row-legend-swatch" aria-hidden="true" />
-              <span className="chord-row-legend-label">{item.label}</span>
-            </li>
-          ))}
+          {legendItems.map((item) => {
+            // key-tonic shares amber/orange visual treatment with chord-root in this strip context.
+            const role = item.role === "key-tonic" ? "chord-root" : item.role;
+            return (
+              <li key={item.role} className="chord-row-legend-item" data-role={role}>
+                <span className="chord-row-legend-swatch" aria-hidden="true" />
+                <span className="chord-row-legend-label">{item.label}</span>
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>
