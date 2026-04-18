@@ -1,6 +1,6 @@
 // From templates
 export type { CagedShape } from "./templates";
-export { CAGED_SHAPES, CAGED_SHAPE_COLORS } from "./templates";
+export { CAGED_SHAPES, CAGED_SHAPE_COLORS, isMajorScale } from "./templates";
 
 // From polygons
 export type { ShapeVertex, ShapePolygon, ShapeResult } from "./polygons";

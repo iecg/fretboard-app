@@ -198,8 +198,8 @@ export function FretboardSVG({
     cyan: svgDefUrl("glow-cyan"),
     orange: svgDefUrl("glow-orange"),
   };
-  const noteBubblePx = Math.round(stringRowPx * 0.72);
-  const noteFontPx = Math.round(stringRowPx * 0.4);
+  const noteBubblePx = Math.round(stringRowPx * 0.78);
+  const noteFontPx = Math.round(stringRowPx * 0.44);
   const neckHeight = tuning.length * stringRowPx;
   const totalColumns = endFret - startFret;
   const hasChordOverlay = chordTones.length > 0;
