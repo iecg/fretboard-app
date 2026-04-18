@@ -14,14 +14,14 @@ async function getMetrics(page: Page) {
     const app = document.querySelector(".app-container");
     const badge = document.querySelector(".version-badge");
     const badgeRect = badge?.getBoundingClientRect();
-    const toolbar = document.querySelector(".fretboard-toolbar");
-    const title = document.querySelector(".title-container");
-    const actions = document.querySelector(".header-actions");
+    const toolbar = document.querySelector(".fretboard-outer");
+    const title = document.querySelector(".app-header-brand");
+    const actions = document.querySelector(".app-header-actions");
     const settingsDrawer = document.querySelector(".settings-overlay-drawer");
     const helpModal = document.querySelector(".help-modal");
     const helpContent = document.querySelector(".help-modal-content");
     const circle = document.querySelector(circleSelector);
-    const controlsColumn = document.querySelector(".controls-panel-column");
+    const controlsColumn = document.querySelector(".dashboard-card--configuration");
     const keyColumn = document.querySelector(".key-column");
 
     const getRect = (element: Element | null) => {
@@ -46,7 +46,7 @@ async function getMetrics(page: Page) {
       headerSubtitle: app?.getAttribute("data-header-subtitle"),
       headerActionsMode: app?.getAttribute("data-header-actions"),
       fullWidthOverlay: app?.getAttribute("data-full-width-overlay"),
-      summaryCount: document.querySelectorAll(".summary-area").length,
+      summaryCount: document.querySelectorAll(".summary-shell").length,
       scrollHeight: document.documentElement.scrollHeight,
       scrollWidth: document.documentElement.scrollWidth,
       innerHeight: window.innerHeight,
@@ -74,12 +74,6 @@ async function getMetrics(page: Page) {
   }, CIRCLE_OF_FIFTHS_SELECTOR);
 }
 
-function toolbarButton(page: Page, name: string) {
-  return page.locator(".fretboard-toolbar").getByRole("button", {
-    name,
-    exact: true,
-  });
-}
 
 test.describe("responsive layout regressions", () => {
   test("keeps the footer reachable on small portrait phones", async ({ page }) => {
@@ -201,21 +195,17 @@ test.describe("responsive layout regressions", () => {
     expect(metrics.tier).toBe("desktop");
     expect(metrics.variant).toBe("desktop-split");
     expect(metrics.summaryCount).toBe(1);
-    await expect(toolbarButton(page, "Open")).toBeVisible();
-    await expect(toolbarButton(page, "Mid")).toBeVisible();
-    await expect(toolbarButton(page, "High")).toBeVisible();
+    await expect(page.locator(".fretboard-outer")).toBeVisible();
   });
 
-  test("keeps the quick-jump toolbar on tablet and desktop layouts", async ({ page }) => {
+  test("keeps the fretboard visible on tablet and desktop layouts", async ({ page }) => {
     await gotoApp(page, 768, 1024);
     expect((await getMetrics(page)).variant).toBe("tablet-split");
-    await expect(page.locator(".fretboard-toolbar")).toBeVisible();
-    await expect(toolbarButton(page, "Open")).toBeVisible();
+    await expect(page.locator(".fretboard-outer")).toBeVisible();
 
     await gotoApp(page, 1024, 768);
     expect((await getMetrics(page)).variant).toBe("desktop-stacked");
-    await expect(page.locator(".fretboard-toolbar")).toBeVisible();
-    await expect(toolbarButton(page, "High")).toBeVisible();
+    await expect(page.locator(".fretboard-outer")).toBeVisible();
   });
 
   test("keeps desktop stacked key content and summary comfortably reachable", async ({
