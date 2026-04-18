@@ -28,9 +28,9 @@ export interface ResponsiveLayout {
   fullWidthOverlay: boolean;
 }
 
-export const STRING_ROW_PX_MOBILE = 32;
-export const STRING_ROW_PX_TABLET = 40;
-export const STRING_ROW_PX_DESKTOP = 48;
+export const STRING_ROW_PX_MOBILE = 28;
+export const STRING_ROW_PX_TABLET = 36;
+export const STRING_ROW_PX_DESKTOP = 42;
 
 const STRING_ROW_PX_BY_TIER: Record<ResponsiveTier, number> = {
   mobile: STRING_ROW_PX_MOBILE,

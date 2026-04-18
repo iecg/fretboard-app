@@ -77,24 +77,24 @@ describe("responsive layout helper", () => {
   // Canonical viewport matrix — one row per target device / variant.
   it.each([
     // phones (portrait)
-    [375, 667, "mobile", "mobile", 32],
-    [390, 844, "mobile", "mobile", 32],
+    [375, 667, "mobile", "mobile", 28],
+    [390, 844, "mobile", "mobile", 28],
     // phone landscape
-    [667, 375, "mobile", "landscape-mobile", 32],
+    [667, 375, "mobile", "landscape-mobile", 28],
     // tablet portrait
-    [768, 1024, "tablet", "tablet-split", 40],
+    [768, 1024, "tablet", "tablet-split", 36],
     // compact tablet (short height)
-    [768, 400, "tablet", "tablet-stacked", 40],
+    [768, 400, "tablet", "tablet-stacked", 36],
     // desktop — compact height → stacked
-    [1024, 768, "desktop", "desktop-stacked", 48],
-    [1200, 720, "desktop", "desktop-stacked", 48],
+    [1024, 768, "desktop", "desktop-stacked", 42],
+    [1200, 720, "desktop", "desktop-stacked", 42],
     // desktop — narrow but tall → split
-    [1024, 1366, "desktop", "desktop-split", 48],
+    [1024, 1366, "desktop", "desktop-split", 42],
     // desktop — wide and tall → 3col
-    [1280, 900, "desktop", "desktop-3col", 48],
-    [1440, 900, "desktop", "desktop-3col", 48],
-    [1920, 1080, "desktop", "desktop-3col", 48],
-    [2560, 1440, "desktop", "desktop-3col", 48],
+    [1280, 900, "desktop", "desktop-3col", 42],
+    [1440, 900, "desktop", "desktop-3col", 42],
+    [1920, 1080, "desktop", "desktop-3col", 42],
+    [2560, 1440, "desktop", "desktop-3col", 42],
   ] as const)(
     "maps %ix%i to %s / %s",
     (width, height, tier, variant, stringRowPx) => {
