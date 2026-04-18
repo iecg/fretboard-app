@@ -1363,3 +1363,17 @@
 .app-container[data-layout-tier="desktop"] .main-fretboard {
   margin-bottom: 0.45rem;
 }
+
+/* Tablet tier: tighter chrome — reduce container gap and pull summary closer to header.
+   Mirrors the desktop intent at a touch-appropriate scale. */
+.app-container[data-layout-tier="tablet"] {
+  gap: 0.72rem;
+}
+
+.app-container[data-layout-tier="tablet"] .summary-shell {
+  margin-top: -0.1rem;
+}
+
+.app-container[data-layout-tier="tablet"] .main-fretboard {
+  margin-bottom: 0.3rem;
+}
