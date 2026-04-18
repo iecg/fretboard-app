@@ -99,6 +99,11 @@
   justify-content: center;
 }
 
+/* Tablet: hide Start/End labels in dashboard to prevent overflow in narrow left column. */
+.app-container[data-layout-tier="tablet"] .fret-range-control.dashboard .fret-label {
+  display: none;
+}
+
 /* Dashboard: compact, no wrap, labels visible — fits card context on tablet/desktop */
 .fret-range-control.dashboard {
   flex-wrap: nowrap;
