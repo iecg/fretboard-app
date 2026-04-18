@@ -83,10 +83,17 @@
   background: var(--strip-fill);
   border: var(--chip-border-width) solid rgb(255 255 255 / 0.22);
   opacity: 0.55;
+  cursor: pointer;
+  padding: 0;
   transition:
     opacity var(--transition-fast),
     border-color var(--transition-fast),
     box-shadow var(--transition-fast);
+}
+
+.degree-chip:focus-visible {
+  outline: 2px solid rgb(77 228 255 / 0.7);
+  outline-offset: 2px;
 }
 
 .degree-chip-item[data-in-scale='true'] .degree-chip {
@@ -104,6 +111,13 @@
 
 .degree-chip-item[data-is-tonic='true'] .degree-chip {
   border-width: var(--chip-border-width);
+}
+
+/* Hidden state overrides all active states — connector line grey glow. */
+.degree-chip-item[data-hidden='true'] .degree-chip {
+  border-color: rgb(255 255 255 / 0.22);
+  box-shadow: 0 0 6px rgb(255 255 255 / 0.18);
+  opacity: 0.38;
 }
 
 .degree-chip-note {

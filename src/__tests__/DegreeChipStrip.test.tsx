@@ -4,13 +4,13 @@ import { DegreeChipStrip, type DegreeChip } from '../components/DegreeChipStrip'
 import { axe } from '../test-utils/a11y';
 
 const aMinorChips: DegreeChip[] = [
-  { note: 'A', interval: '1', inScale: true, isTonic: true },
-  { note: 'B', interval: '2', inScale: true },
-  { note: 'C', interval: 'b3', inScale: true },
-  { note: 'D', interval: '4', inScale: true },
-  { note: 'E', interval: '5', inScale: true },
-  { note: 'F', interval: 'b6', inScale: true },
-  { note: 'G', interval: 'b7', inScale: true },
+  { note: 'A', internalNote: 'A', interval: '1', inScale: true, isTonic: true },
+  { note: 'B', internalNote: 'B', interval: '2', inScale: true },
+  { note: 'C', internalNote: 'C', interval: 'b3', inScale: true },
+  { note: 'D', internalNote: 'D', interval: '4', inScale: true },
+  { note: 'E', internalNote: 'E', interval: '5', inScale: true },
+  { note: 'F', internalNote: 'F', interval: 'b6', inScale: true },
+  { note: 'G', internalNote: 'G', interval: 'b7', inScale: true },
 ];
 
 describe('DegreeChipStrip', () => {
@@ -61,9 +61,9 @@ describe('DegreeChipStrip', () => {
 
   it('out-of-scale chips do not have data-in-scale attribute', () => {
     const mixedChips: DegreeChip[] = [
-      { note: 'C', interval: '1', inScale: true, isTonic: true },
-      { note: 'D', interval: '2', inScale: false },
-      { note: 'E', interval: '3', inScale: true },
+      { note: 'C', internalNote: 'C', interval: '1', inScale: true, isTonic: true },
+      { note: 'D', internalNote: 'D', interval: '2', inScale: false },
+      { note: 'E', internalNote: 'E', interval: '3', inScale: true },
     ];
     const { container } = render(
       <DegreeChipStrip scaleName="C Major" chips={mixedChips} />
@@ -76,9 +76,9 @@ describe('DegreeChipStrip', () => {
 
   it('in-chord chips have data-in-chord attribute', () => {
     const chipsWithChord: DegreeChip[] = [
-      { note: 'A', interval: '1', inScale: true, isTonic: true, inChord: true },
-      { note: 'C', interval: 'b3', inScale: true, inChord: true },
-      { note: 'E', interval: '5', inScale: true, inChord: true },
+      { note: 'A', internalNote: 'A', interval: '1', inScale: true, isTonic: true, inChord: true },
+      { note: 'C', internalNote: 'C', interval: 'b3', inScale: true, inChord: true },
+      { note: 'E', internalNote: 'E', interval: '5', inScale: true, inChord: true },
     ];
     const { container } = render(
       <DegreeChipStrip scaleName="Am chord" chips={chipsWithChord} />
@@ -110,9 +110,9 @@ describe('DegreeChipStrip', () => {
 
   it('has no accessibility violations with mixed chip states', async () => {
     const mixedChips: DegreeChip[] = [
-      { note: 'A', interval: '1', inScale: true, isTonic: true, inChord: true },
-      { note: 'B', interval: '2', inScale: true },
-      { note: 'C', interval: 'b3', inScale: false },
+      { note: 'A', internalNote: 'A', interval: '1', inScale: true, isTonic: true, inChord: true },
+      { note: 'B', internalNote: 'B', interval: '2', inScale: true },
+      { note: 'C', internalNote: 'C', interval: 'b3', inScale: false },
     ];
     const { container } = render(
       <DegreeChipStrip scaleName="Mixed Scale" chips={mixedChips} />
