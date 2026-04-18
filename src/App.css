@@ -979,6 +979,12 @@
   margin: 0 auto;
 }
 
+/* Tablet: enable native touch scroll on the fretboard (same as mobile). */
+.app-container[data-layout-tier="tablet"] .fretboard-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Landscape mobile: fretboard hero, minimal chrome */
 .app-container[data-layout-variant="landscape-mobile"] {
   padding: 0.5rem;
