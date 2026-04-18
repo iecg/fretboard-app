@@ -511,6 +511,25 @@ export function FretboardSVG({
 
   return (
     <div role="group" aria-label={ariaLabel} className="fretboard-board">
+      {shapeLabels !== "none" && svgPolygons.length > 0 && (
+        <div
+          className="shape-labels-row"
+          style={{ width: `${neckWidthPx + NECK_BORDER * 2}px` }}
+        >
+          {svgPolygons.map(({ key, poly, centerX }) => {
+            if (poly.truncated) return null;
+            return (
+              <span
+                key={key}
+                className="shape-label"
+                style={{ left: `${centerX + NECK_BORDER}px` }}
+              >
+                {poly.cagedLabel}
+              </span>
+            );
+          })}
+        </div>
+      )}
       <div
         className="fretboard-neck"
         style={
@@ -1159,25 +1178,6 @@ export function FretboardSVG({
         })}
       </div>
 
-      {shapeLabels !== "none" && svgPolygons.length > 0 && (
-        <div
-          className="shape-labels-row"
-          style={{ width: `${neckWidthPx + NECK_BORDER * 2}px` }}
-        >
-          {svgPolygons.map(({ key, poly, centerX }) => {
-            if (poly.truncated) return null;
-            return (
-              <span
-                key={key}
-                className="shape-label"
-                style={{ left: `${centerX + NECK_BORDER}px` }}
-              >
-                {poly.cagedLabel}
-              </span>
-            );
-          })}
-        </div>
-      )}
     </div>
   );
 }

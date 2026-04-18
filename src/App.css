@@ -282,11 +282,11 @@
   overflow-x: hidden;
 }
 
-/* Shape labels below fretboard */
+/* Shape labels above fretboard */
 .shape-labels-row {
   position: relative;
   min-height: 1.5rem;
-  margin-top: var(--space-1);
+  margin-bottom: var(--space-1);
 }
 
 .shape-label {
