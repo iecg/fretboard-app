@@ -7,6 +7,7 @@ interface ChordRowStripProps {
   chordRow: ChordRowEntry[];
   legendItems: LegendItem[];
   className?: string;
+  compact?: boolean;
 }
 
 export function ChordRowStrip({
@@ -14,6 +15,7 @@ export function ChordRowStrip({
   chordRow,
   legendItems,
   className,
+  compact,
 }: ChordRowStripProps) {
   if (chordRow.length === 0 && legendItems.length === 0) return null;
 
@@ -21,7 +23,7 @@ export function ChordRowStrip({
     <section
       role="group"
       aria-label={`Chord overlay: ${chordLabel}`}
-      className={clsx("chord-row-strip", className)}
+      className={clsx("chord-row-strip", compact && "chord-row-strip--compact", className)}
     >
       <header className="chord-row-strip-header">{chordLabel}</header>
 
@@ -42,7 +44,7 @@ export function ChordRowStrip({
         </ul>
       )}
 
-      {legendItems.length > 0 && (
+      {!compact && legendItems.length > 0 && (
         <ul className="chord-row-legend" aria-label="Legend">
           {legendItems.map((item) => {
             // key-tonic shares amber/orange visual treatment with chord-root in this strip context.

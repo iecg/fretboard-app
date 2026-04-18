@@ -188,4 +188,66 @@ describe("ChordRowStrip", () => {
     );
     expect(await axe(container)).toHaveNoViolations();
   });
+
+  describe("compact mode", () => {
+    it("adds chord-row-strip--compact class when compact is true", () => {
+      const { container } = render(
+        <ChordRowStrip
+          chordLabel="C Major Triad"
+          chordRow={cMajorRow}
+          legendItems={basicLegend}
+          compact
+        />
+      );
+      expect(container.querySelector('.chord-row-strip--compact')).toBeTruthy();
+    });
+
+    it("does not add chord-row-strip--compact class without compact prop", () => {
+      const { container } = render(
+        <ChordRowStrip
+          chordLabel="C Major Triad"
+          chordRow={cMajorRow}
+          legendItems={basicLegend}
+        />
+      );
+      expect(container.querySelector('.chord-row-strip--compact')).toBeNull();
+    });
+
+    it("suppresses legend in compact mode even when legendItems are provided", () => {
+      const { container } = render(
+        <ChordRowStrip
+          chordLabel="C Major Triad"
+          chordRow={cMajorRow}
+          legendItems={basicLegend}
+          compact
+        />
+      );
+      expect(container.querySelector('.chord-row-legend')).toBeNull();
+    });
+
+    it("renders chips in compact mode", () => {
+      const { container } = render(
+        <ChordRowStrip
+          chordLabel="C Major Triad"
+          chordRow={cMajorRow}
+          legendItems={[]}
+          compact
+        />
+      );
+      const chips = container.querySelectorAll('.chord-row-item');
+      expect(chips).toHaveLength(3);
+    });
+
+    it("has no accessibility violations in compact mode", async () => {
+      const { container } = render(
+        <ChordRowStrip
+          chordLabel="C Major Triad"
+          chordRow={cMajorRow}
+          legendItems={basicLegend}
+          compact
+        />
+      );
+      expect(await axe(container)).toHaveNoViolations();
+    });
+  });
 });

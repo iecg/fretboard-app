@@ -119,4 +119,63 @@ describe('DegreeChipStrip', () => {
     );
     expect(await axe(container)).toHaveNoViolations();
   });
+
+  it('hideHeader suppresses the header element', () => {
+    const { container } = render(
+      <DegreeChipStrip
+        scaleName="A Natural Minor"
+        chips={aMinorChips}
+        hideHeader
+      />
+    );
+    expect(container.querySelector('.degree-chip-strip-header')).toBeNull();
+  });
+
+  it('without hideHeader the header element renders', () => {
+    const { container } = render(
+      <DegreeChipStrip
+        scaleName="A Natural Minor"
+        chips={aMinorChips}
+      />
+    );
+    expect(container.querySelector('.degree-chip-strip-header')).toBeTruthy();
+  });
+
+  it('chordActive adds data-chord-active attribute to the section', () => {
+    const { container } = render(
+      <DegreeChipStrip
+        scaleName="A Natural Minor"
+        chips={aMinorChips}
+        chordActive
+      />
+    );
+    const section = container.querySelector('.degree-chip-strip');
+    expect(section?.getAttribute('data-chord-active')).toBe('true');
+  });
+
+  it('without chordActive data-chord-active is absent', () => {
+    const { container } = render(
+      <DegreeChipStrip
+        scaleName="A Natural Minor"
+        chips={aMinorChips}
+      />
+    );
+    const section = container.querySelector('.degree-chip-strip');
+    expect(section?.getAttribute('data-chord-active')).toBeNull();
+  });
+
+  it('isChordRoot chip has data-is-chord-root attribute', () => {
+    const chipsWithRoot: DegreeChip[] = [
+      { note: 'A', internalNote: 'A', interval: '1', inScale: true, isTonic: true, inChord: true, isChordRoot: true },
+      { note: 'C', internalNote: 'C', interval: 'b3', inScale: true, inChord: true },
+      { note: 'E', internalNote: 'E', interval: '5', inScale: true, inChord: true },
+    ];
+    const { container } = render(
+      <DegreeChipStrip scaleName="Am" chips={chipsWithRoot} chordActive />
+    );
+    const rootChip = container.querySelector('[data-is-chord-root="true"]');
+    expect(rootChip).toBeTruthy();
+    const nonRootChips = container.querySelectorAll('[data-in-chord="true"]:not([data-is-chord-root="true"])');
+    expect(nonRootChips).toHaveLength(2);
+  });
 });
