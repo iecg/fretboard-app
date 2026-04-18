@@ -198,7 +198,9 @@
   border: none;
   color: var(--chrome-fg-muted);
   cursor: pointer;
-  padding: 6px;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0;
   border-radius: var(--radius-sm);
   transition: var(--transition-surface);
   flex-shrink: 0;
@@ -1362,4 +1364,18 @@
    0.32rem between chrome sections above the fretboard. */
 .app-container[data-layout-tier="desktop"] .main-fretboard {
   margin-bottom: 0.45rem;
+}
+
+/* Tablet tier: tighter chrome — reduce container gap and pull summary closer to header.
+   Mirrors the desktop intent at a touch-appropriate scale. */
+.app-container[data-layout-tier="tablet"] {
+  gap: 0.72rem;
+}
+
+.app-container[data-layout-tier="tablet"] .summary-shell {
+  margin-top: -0.1rem;
+}
+
+.app-container[data-layout-tier="tablet"] .main-fretboard {
+  margin-bottom: 0.3rem;
 }

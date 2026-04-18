@@ -173,3 +173,17 @@
 .app-container[data-layout-tier="desktop"] .app-header-brand-subtitle {
   font-size: clamp(0.6rem, 0.85vw, 0.7rem);
 }
+
+/* Tablet tier: compact header — tighter padding and slightly smaller brand mark. */
+.app-container[data-layout-tier="tablet"] .app-header {
+  padding-top: clamp(0.62rem, 1vw, 0.8rem);
+  padding-bottom: clamp(0.62rem, 1vw, 0.8rem);
+}
+
+.app-container[data-layout-tier="tablet"] .app-header-brand-icon .brand-mark {
+  width: clamp(3.15rem, 5.8vw, 4.1rem);
+}
+
+.app-container[data-layout-tier="tablet"] .app-header-brand-wordmark .fretflow-wordmark {
+  height: clamp(1.35rem, 2.65vw, 2.05rem);
+}

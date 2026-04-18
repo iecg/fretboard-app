@@ -22,29 +22,29 @@ function setViewport(width: number, height: number) {
 
 describe("useLayoutMode", () => {
   describe("returns mobile tier layout for narrow viewport", () => {
-    it("tier is mobile and stringRowPx is 32 at 375x667", () => {
+    it("tier is mobile and stringRowPx is 28 at 375x667", () => {
       setViewport(375, 667);
       const { result } = renderHook(() => useLayoutMode(), { wrapper });
       expect(result.current.tier).toBe("mobile");
-      expect(result.current.stringRowPx).toBe(32);
+      expect(result.current.stringRowPx).toBe(28);
     });
   });
 
   describe("returns tablet tier layout for tablet viewport", () => {
-    it("tier is tablet and stringRowPx is 40 at 768x1024", () => {
+    it("tier is tablet and stringRowPx is 36 at 768x1024", () => {
       setViewport(768, 1024);
       const { result } = renderHook(() => useLayoutMode(), { wrapper });
       expect(result.current.tier).toBe("tablet");
-      expect(result.current.stringRowPx).toBe(40);
+      expect(result.current.stringRowPx).toBe(36);
     });
   });
 
   describe("returns desktop tier layout for wide viewport", () => {
-    it("tier is desktop and stringRowPx is 48 at 1280x900", () => {
+    it("tier is desktop and stringRowPx is 42 at 1280x900", () => {
       setViewport(1280, 900);
       const { result } = renderHook(() => useLayoutMode(), { wrapper });
       expect(result.current.tier).toBe("desktop");
-      expect(result.current.stringRowPx).toBe(48);
+      expect(result.current.stringRowPx).toBe(42);
     });
   });
 
