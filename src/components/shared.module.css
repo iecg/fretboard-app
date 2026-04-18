@@ -185,7 +185,7 @@
 
 /* Tablet tier: slightly tighter interactive controls — still touch-safe (≥44px). */
 .app-container[data-layout-tier="tablet"] .toggle-btn {
-  min-height: 2.4rem;
+  min-height: 2.75rem;
   padding: 0.38rem 0.72rem;
   font-size: 0.88rem;
 }

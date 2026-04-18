@@ -198,7 +198,9 @@
   border: none;
   color: var(--chrome-fg-muted);
   cursor: pointer;
-  padding: 6px;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0;
   border-radius: var(--radius-sm);
   transition: var(--transition-surface);
   flex-shrink: 0;
