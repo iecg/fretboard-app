@@ -18,7 +18,7 @@ import { TUNINGS } from "../guitar";
 import { synth } from "../audio";
 import { StepperControl } from "./StepperControl";
 import { FretRangeControl } from "./FretRangeControl";
-import { DrawerSelector } from "../DrawerSelector";
+import { LabeledSelect } from "./LabeledSelect";
 import { ToggleBar } from "./ToggleBar";
 import {
   getResponsiveLayout,
@@ -93,7 +93,6 @@ const SETTING_FIELDS: Record<SettingFieldKey, SettingFieldConfig> = {
   tuning: {
     key: "tuning",
     label: "Tuning",
-    className: "overlay-field--selector",
   },
   accidentals: {
     key: "accidentals",
@@ -420,11 +419,12 @@ function SettingsOverlaySurface({
         break;
       case "tuning":
         control = (
-          <DrawerSelector
+          <LabeledSelect
             label={field.label}
             value={tuningName}
-            options={Object.keys(TUNINGS)}
-            onSelect={setTuningName}
+            options={Object.keys(TUNINGS).map((name) => ({ value: name, label: name }))}
+            onChange={setTuningName}
+            hideLabel
           />
         );
         break;

@@ -32,6 +32,11 @@ function isNullableDrawerSelectorProps(
   return props.nullable === true;
 }
 
+/**
+ * @deprecated Use `LabeledSelect` for new selectors. `DrawerSelector` remains
+ * only for existing usages in `ScaleChordControls` that require nullable /
+ * divider support not yet available in `LabeledSelect`.
+ */
 export function DrawerSelector(props: DrawerSelectorProps) {
   const { label, value, options } = props;
   const nullable = isNullableDrawerSelectorProps(props);
