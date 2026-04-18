@@ -15,14 +15,25 @@ import {
   chordRootAtom,
   chordTypeAtom,
   linkChordRootAtom,
-  hideNonChordNotesAtom,
-  chordIntervalFilterAtom,
+  viewModeAtom,
+  focusPresetAtom,
+  customMembersAtom,
   accidentalModeAtom,
   enharmonicDisplayAtom,
   fretStartAtom,
   fretEndAtom,
 } from "../store/atoms";
-import { resolveAccidentalMode } from "../theory";
+import {
+  NOTES,
+  CHORD_DEFINITIONS,
+  resolveAccidentalMode,
+  getScaleNotes,
+  getChordNotes,
+  getAvailableFocusPresets,
+  type ViewMode,
+  type FocusPreset,
+  type ResolvedChordMember,
+} from "../theory";
 import { FingeringPatternControls } from "./FingeringPatternControls";
 import { FretRangeControl } from "./FretRangeControl";
 import { TheoryControls } from "./TheoryControls";
@@ -86,12 +97,9 @@ export function ScaleChordSection() {
   const [chordRoot, setChordRoot] = useAtom(chordRootAtom);
   const [chordType, setChordType] = useAtom(chordTypeAtom);
   const [linkChordRoot, setLinkChordRoot] = useAtom(linkChordRootAtom);
-  const [hideNonChordNotes, setHideNonChordNotes] = useAtom(
-    hideNonChordNotesAtom,
-  );
-  const [chordIntervalFilter, setChordIntervalFilter] = useAtom(
-    chordIntervalFilterAtom,
-  );
+  const [viewMode, setViewMode] = useAtom(viewModeAtom);
+  const [focusPreset, setFocusPreset] = useAtom(focusPresetAtom);
+  const [customMembers, setCustomMembers] = useAtom(customMembersAtom);
   const rootNote = useAtomValue(rootNoteAtom);
   const setRootNote = useSetAtom(setRootNoteAtom);
   const accidentalMode = useAtomValue(accidentalModeAtom);
@@ -99,6 +107,31 @@ export function ScaleChordSection() {
     () => resolveAccidentalMode(rootNote, scaleName, accidentalMode),
     [rootNote, scaleName, accidentalMode],
   );
+
+  const availableFocusPresets = useMemo((): FocusPreset[] => {
+    if (!chordType) return ["all", "custom"];
+    return getAvailableFocusPresets(chordType);
+  }, [chordType]);
+
+  const chordMembers = useMemo((): ResolvedChordMember[] => {
+    if (!chordType) return [];
+    const def = CHORD_DEFINITIONS[chordType];
+    if (!def) return [];
+    const rootIndex = NOTES.indexOf(chordRoot);
+    if (rootIndex === -1) return [];
+    return def.members.map((m) => ({
+      ...m,
+      note: NOTES[(rootIndex + m.semitone) % 12],
+    }));
+  }, [chordRoot, chordType]);
+
+  const hasOutsideChordMembers = useMemo(() => {
+    if (!chordType) return false;
+    const chordTones = getChordNotes(chordRoot, chordType);
+    if (chordTones.length === 0) return false;
+    const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
+    return chordTones.some((note) => !scaleNoteSet.has(note));
+  }, [chordType, chordRoot, rootNote, scaleName]);
 
   return (
     <Card
@@ -118,10 +151,15 @@ export function ScaleChordSection() {
         setChordRoot={setChordRoot}
         linkChordRoot={linkChordRoot}
         setLinkChordRoot={setLinkChordRoot}
-        hideNonChordNotes={hideNonChordNotes}
-        setHideNonChordNotes={setHideNonChordNotes}
-        chordIntervalFilter={chordIntervalFilter}
-        setChordIntervalFilter={setChordIntervalFilter}
+        viewMode={viewMode as ViewMode}
+        setViewMode={setViewMode}
+        focusPreset={focusPreset as FocusPreset}
+        setFocusPreset={setFocusPreset}
+        customMembers={customMembers}
+        setCustomMembers={setCustomMembers}
+        availableFocusPresets={availableFocusPresets}
+        chordMembers={chordMembers}
+        hasOutsideChordMembers={hasOutsideChordMembers}
         useFlats={useFlats}
       />
     </Card>

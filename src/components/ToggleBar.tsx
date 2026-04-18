@@ -34,6 +34,7 @@ const toggleButtonVariants = cva("", {
 type ToggleBarOption<Value extends string | number> = {
   value: Value;
   label: string;
+  disabled?: boolean;
 };
 
 interface ToggleBarProps<Value extends string | number> extends VariantProps<
@@ -71,6 +72,7 @@ export function ToggleBar<Value extends string | number>({
               : { "aria-pressed": isActive })}
             className={toggleButtonVariants({ variant, isActive })}
             onClick={() => onChange(option.value)}
+            disabled={option.disabled}
           >
             {option.label}
           </button>

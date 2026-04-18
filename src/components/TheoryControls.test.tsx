@@ -18,10 +18,15 @@ function makeProps(): ComponentProps<typeof TheoryControls> {
     setChordRoot: vi.fn(),
     linkChordRoot: true,
     setLinkChordRoot: vi.fn(),
-    hideNonChordNotes: false,
-    setHideNonChordNotes: vi.fn(),
-    chordIntervalFilter: "All",
-    setChordIntervalFilter: vi.fn(),
+    viewMode: "compare",
+    setViewMode: vi.fn(),
+    focusPreset: "all",
+    setFocusPreset: vi.fn(),
+    customMembers: [],
+    setCustomMembers: vi.fn(),
+    availableFocusPresets: ["all", "rootless", "custom"],
+    chordMembers: [],
+    hasOutsideChordMembers: false,
     useFlats: false,
   };
 }
@@ -124,5 +129,109 @@ describe("TheoryControls", () => {
     expect(screen.queryByText("Key Wheel")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /Circle of Fifths/i }));
     expect(screen.getByText("Key Wheel")).toBeInTheDocument();
+  });
+
+  it("shows View and Focus controls when a chord type is selected", () => {
+    const props = makeProps();
+    render(
+      <TheoryControls
+        {...props}
+        chordType="Major Triad"
+        availableFocusPresets={["all", "rootless", "custom"]}
+        chordMembers={[
+          { name: "root", semitone: 0, note: "C" },
+          { name: "3", semitone: 4, note: "E" },
+          { name: "5", semitone: 7, note: "G" },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText("View")).toBeInTheDocument();
+    expect(screen.getByText("Focus")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Scale + Chord" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Chord Only" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "All" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Rootless" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Custom" })).toBeInTheDocument();
+  });
+
+  it("calls setViewMode when a view option is clicked", () => {
+    const props = makeProps();
+    render(
+      <TheoryControls
+        {...props}
+        chordType="Major Triad"
+        availableFocusPresets={["all", "rootless", "custom"]}
+        chordMembers={[]}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Chord Only" }));
+    expect(props.setViewMode).toHaveBeenCalledWith("chord");
+  });
+
+  it("calls setFocusPreset when a focus option is clicked", () => {
+    const props = makeProps();
+    render(
+      <TheoryControls
+        {...props}
+        chordType="Major Triad"
+        availableFocusPresets={["all", "rootless", "custom"]}
+        chordMembers={[]}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Rootless" }));
+    expect(props.setFocusPreset).toHaveBeenCalledWith("rootless");
+  });
+
+  it("shows custom member toggles when focusPreset is custom", () => {
+    const props = makeProps();
+    render(
+      <TheoryControls
+        {...props}
+        chordType="Major Triad"
+        focusPreset="custom"
+        availableFocusPresets={["all", "rootless", "custom"]}
+        chordMembers={[
+          { name: "root", semitone: 0, note: "C" },
+          { name: "3", semitone: 4, note: "E" },
+          { name: "5", semitone: 7, note: "G" },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText("Members")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Root" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "3" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "5" })).toBeInTheDocument();
+  });
+
+  it("Outside view option is disabled when hasOutsideChordMembers is false", () => {
+    render(
+      <TheoryControls
+        {...makeProps()}
+        chordType="Major Triad"
+        availableFocusPresets={["all", "rootless", "custom"]}
+        chordMembers={[]}
+        hasOutsideChordMembers={false}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "Outside" })).toBeDisabled();
+  });
+
+  it("Outside view option is enabled when hasOutsideChordMembers is true", () => {
+    render(
+      <TheoryControls
+        {...makeProps()}
+        chordType="Major Triad"
+        availableFocusPresets={["all", "rootless", "custom"]}
+        chordMembers={[]}
+        hasOutsideChordMembers={true}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "Outside" })).not.toBeDisabled();
   });
 });

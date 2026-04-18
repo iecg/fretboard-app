@@ -50,10 +50,16 @@ function AppContent() {
     linkChordRoot,
     setLinkChordRoot,
     hideNonChordNotes,
-    setHideNonChordNotes,
     chordFretSpread,
-    chordIntervalFilter,
-    setChordIntervalFilter,
+    viewMode,
+    setViewMode,
+    focusPreset,
+    setFocusPreset,
+    customMembers,
+    setCustomMembers,
+    availableFocusPresets,
+    chordMembers,
+    hasOutsideChordMembers,
     fingeringPattern,
     setFingeringPattern,
     cagedShapes,
@@ -66,7 +72,7 @@ function AppContent() {
     setShapeLabels,
     enharmonicDisplay,
     setRootNote,
-    filteredChordTones,
+    activeChordTones,
     highlightNotes,
     boxBounds,
     shapePolygons,
@@ -247,10 +253,15 @@ function AppContent() {
         setChordRoot={setChordRoot}
         linkChordRoot={linkChordRoot}
         setLinkChordRoot={setLinkChordRoot}
-        hideNonChordNotes={hideNonChordNotes}
-        setHideNonChordNotes={setHideNonChordNotes}
-        chordIntervalFilter={chordIntervalFilter}
-        setChordIntervalFilter={setChordIntervalFilter}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        focusPreset={focusPreset}
+        setFocusPreset={setFocusPreset}
+        customMembers={customMembers}
+        setCustomMembers={setCustomMembers}
+        availableFocusPresets={availableFocusPresets}
+        chordMembers={chordMembers}
+        hasOutsideChordMembers={hasOutsideChordMembers}
         useFlats={useFlats}
         keyExplorer={mobileKeyExplorer}
       />
@@ -519,7 +530,7 @@ function AppContent() {
           highlightNotes={highlightNotes}
           rootNote={rootNote}
           boxBounds={boxBounds}
-          chordTones={filteredChordTones}
+          chordTones={activeChordTones}
           chordFretSpread={chordFretSpread}
           hideNonChordNotes={hideNonChordNotes}
           colorNotes={colorNotes}

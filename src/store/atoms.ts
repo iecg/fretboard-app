@@ -3,6 +3,11 @@ import { atomWithStorage, RESET } from "jotai/utils";
 import { CAGED_SHAPES, type CagedShape } from "../shapes";
 import { normalizeScaleName, type ScaleBrowseMode } from "../theoryCatalog";
 import { k, STORAGE_PREFIX } from "../utils/storage";
+import type {
+  ViewMode,
+  FocusPreset,
+  ChordMemberName,
+} from "../theory";
 
 export type FingeringPattern = "all" | "caged" | "3nps";
 
@@ -485,10 +490,133 @@ export const chordFretSpreadAtom = atomWithStorage(
   chordFretSpreadStorage,
   GET_ON_INIT,
 );
-export const chordIntervalFilterAtom = atomWithStorage(
-  k("chordIntervalFilter"),
-  "All",
-  rawStringStorage(),
+
+const VIEW_MODE_VALUES: ViewMode[] = ["compare", "chord", "outside"];
+
+const viewModeStorage = {
+  getItem(key: string, initialValue: ViewMode): ViewMode {
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored === null) {
+        localStorage.setItem(key, initialValue);
+        return initialValue;
+      }
+      if ((VIEW_MODE_VALUES as string[]).includes(stored))
+        return stored as ViewMode;
+      localStorage.setItem(key, initialValue);
+      return initialValue;
+    } catch {
+      return initialValue;
+    }
+  },
+  setItem(key: string, value: ViewMode): void {
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
+  },
+  removeItem(key: string): void {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
+  },
+};
+
+const FOCUS_PRESET_VALUES: FocusPreset[] = [
+  "all",
+  "triad",
+  "shell",
+  "guide-tones",
+  "rootless",
+  "custom",
+];
+
+const focusPresetStorage = {
+  getItem(key: string, initialValue: FocusPreset): FocusPreset {
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored === null) {
+        localStorage.setItem(key, initialValue);
+        return initialValue;
+      }
+      if ((FOCUS_PRESET_VALUES as string[]).includes(stored))
+        return stored as FocusPreset;
+      localStorage.setItem(key, initialValue);
+      return initialValue;
+    } catch {
+      return initialValue;
+    }
+  },
+  setItem(key: string, value: FocusPreset): void {
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
+  },
+  removeItem(key: string): void {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
+  },
+};
+
+const customMembersStorage = {
+  getItem(key: string, initialValue: ChordMemberName[]): ChordMemberName[] {
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored === null) {
+        localStorage.setItem(key, JSON.stringify(initialValue));
+        return initialValue;
+      }
+      try {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) return parsed as ChordMemberName[];
+        return initialValue;
+      } catch {
+        return initialValue;
+      }
+    } catch {
+      return initialValue;
+    }
+  },
+  setItem(key: string, value: ChordMemberName[]): void {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
+  },
+  removeItem(key: string): void {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
+  },
+};
+
+export const viewModeAtom = atomWithStorage<ViewMode>(
+  k("viewMode"),
+  "compare",
+  viewModeStorage,
+  GET_ON_INIT,
+);
+export const focusPresetAtom = atomWithStorage<FocusPreset>(
+  k("focusPreset"),
+  "all",
+  focusPresetStorage,
+  GET_ON_INIT,
+);
+export const customMembersAtom = atomWithStorage<ChordMemberName[]>(
+  k("customMembers"),
+  [],
+  customMembersStorage,
   GET_ON_INIT,
 );
 
@@ -634,7 +762,9 @@ export const resetAtom = atom(null, (_get, set) => {
   set(linkChordRootAtom, RESET);
   set(hideNonChordNotesAtom, RESET);
   set(chordFretSpreadAtom, RESET);
-  set(chordIntervalFilterAtom, RESET);
+  set(viewModeAtom, RESET);
+  set(focusPresetAtom, RESET);
+  set(customMembersAtom, RESET);
   set(fingeringPatternAtom, RESET);
   set(cagedShapesAtom, RESET);
   set(npsPositionAtom, RESET);
