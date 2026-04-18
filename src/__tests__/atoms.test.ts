@@ -487,7 +487,7 @@ describe("atoms", () => {
       expect(store.get(chordFretSpreadAtom)).toBe(0);
       expect(store.get(chordIntervalFilterAtom)).toBe("All");
       expect(store.get(fingeringPatternAtom)).toBe("all");
-      expect(store.get(npsPositionAtom)).toBe(0);
+      expect(store.get(npsPositionAtom)).toBe(1);
       expect(store.get(shapeLabelsAtom)).toBe("none");
       expect(store.get(scaleBrowseModeAtom)).toBe("parallel");
       expect(store.get(tuningNameAtom)).toBe("Standard");

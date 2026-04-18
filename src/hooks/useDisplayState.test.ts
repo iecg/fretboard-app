@@ -223,21 +223,8 @@ describe("useDisplayState", () => {
     });
   });
 
-  describe("fingering pattern 3nps with npsPosition=0", () => {
-    it("highlightNotes is non-empty when npsPosition is 0 (all positions)", () => {
-      const store = createStore();
-      store.set(rootNoteAtom, "C");
-      store.set(fingeringPatternAtom, "3nps");
-      store.set(npsPositionAtom, 0);
-      const { result } = renderHook(() => useDisplayState(), {
-        wrapper: makeWrapper(store),
-      });
-      expect(result.current.highlightNotes.length).toBeGreaterThan(0);
-    });
-  });
-
-  describe("fingering pattern 3nps with npsPosition > 0", () => {
-    it("highlightNotes is non-empty when npsPosition is 1 (specific position)", () => {
+  describe("fingering pattern 3nps", () => {
+    it("highlightNotes is non-empty when npsPosition is 1", () => {
       const store = createStore();
       store.set(rootNoteAtom, "C");
       store.set(fingeringPatternAtom, "3nps");
@@ -297,19 +284,7 @@ describe("useDisplayState", () => {
   });
 
   describe("3nps autoCenterTarget centering", () => {
-    it("autoCenterTarget is undefined when npsPosition=0 (all positions, no bounds)", () => {
-      const store = createStore();
-      store.set(rootNoteAtom, "C");
-      store.set(fingeringPatternAtom, "3nps");
-      store.set(npsPositionAtom, 0);
-      const { result } = renderHook(() => useDisplayState(), {
-        wrapper: makeWrapper(store),
-      });
-      // npsPosition=0 uses getScaleNotes (no bounds), so no centering target
-      expect(result.current.autoCenterTarget).toBeUndefined();
-    });
-
-    it("autoCenterTarget equals the lowest minFret in boxBounds when npsPosition > 0", () => {
+    it("autoCenterTarget equals the lowest minFret in boxBounds", () => {
       const store = createStore();
       store.set(rootNoteAtom, "A");
       store.set(fingeringPatternAtom, "3nps");

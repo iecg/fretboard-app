@@ -11,7 +11,6 @@ import App from "../App";
 import { synth } from "../audio";
 import { get3NPSCoordinates } from "../shapes";
 import { STANDARD_TUNING } from "../guitar";
-import { getScaleNotes } from "../theory";
 import { k } from "./utils/storage";
 
 // Mock child components to isolate App logic
@@ -603,19 +602,6 @@ describe("App", () => {
       expect(screen.getByTestId("fretboard")).toHaveAttribute(
         "data-color-notes",
         "D#",
-      );
-    });
-
-    it("uses scale notes directly for 3nps position 0", () => {
-      localStorage.setItem(k("rootNote"), "C");
-      localStorage.setItem(k("scaleName"), "Major");
-      localStorage.setItem(k("fingeringPattern"), "3nps");
-      localStorage.setItem(k("npsPosition"), "0");
-
-      render(<App />);
-
-      expect(screen.getByTestId("fretboard")).toHaveTextContent(
-        `Fretboard: C - ${getScaleNotes("C", "Major").length} notes`,
       );
     });
 

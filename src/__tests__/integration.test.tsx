@@ -533,7 +533,7 @@ describe("Integration Tests - User Workflows", () => {
       localStorage.setItem(k("fingeringPattern"), "3nps");
 
       // Different NPS positions
-      for (let pos = 0; pos <= 3; pos++) {
+      for (let pos = 1; pos <= 3; pos++) {
         localStorage.setItem(k("npsPosition"), String(pos));
 
         const { rerender } = render(<App />);

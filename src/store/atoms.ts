@@ -221,7 +221,7 @@ const chordFretSpreadStorage = constrainedNumberStorage({
   integer: true,
 });
 const npsPositionStorage = constrainedNumberStorage({
-  min: 0,
+  min: 1,
   max: 12,
   integer: true,
 });
@@ -507,7 +507,7 @@ export const cagedShapesAtom = atomWithStorage<Set<CagedShape>>(
 );
 export const npsPositionAtom = atomWithStorage(
   k("npsPosition"),
-  0,
+  1,
   npsPositionStorage,
   GET_ON_INIT,
 );
