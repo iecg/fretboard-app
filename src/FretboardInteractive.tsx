@@ -27,6 +27,7 @@ interface FretboardInteractiveProps {
   shapePolygons?: ShapePolygon[];
   shapeLabels?: "caged" | "none";
   wrappedNotes?: Set<string>;
+  hiddenNotes?: Set<string>;
   onFretClick?: (
     stringIndex: number,
     fretIndex: number,
@@ -55,6 +56,7 @@ export function FretboardInteractive({
   shapePolygons = [],
   shapeLabels = "none",
   wrappedNotes = new Set<string>(),
+  hiddenNotes,
   onFretClick,
   useFlats = false,
   scaleName = "",
@@ -202,6 +204,7 @@ export function FretboardInteractive({
           shapePolygons={shapePolygons}
           shapeLabels={shapeLabels}
           wrappedNotes={wrappedNotes}
+          hiddenNotes={hiddenNotes}
           useFlats={useFlats}
           scaleName={scaleName}
           onNoteClick={handleFretClick}
