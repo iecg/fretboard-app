@@ -84,8 +84,8 @@ function AppContent() {
     practiceBarTitle,
     practiceBarBadge,
     practiceBarTargetMembers,
-    practiceBarSharedMembers,
     practiceBarOutsideMembers,
+    practiceBarColorNotes,
     recenterKey,
     onShapeClick,
     onRecenter,
@@ -233,8 +233,8 @@ function AppContent() {
           badge={practiceBarBadge}
           viewMode={viewMode}
           targetMembers={practiceBarTargetMembers}
-          sharedMembers={practiceBarSharedMembers}
           outsideMembers={practiceBarOutsideMembers}
+          colorNoteEntries={practiceBarColorNotes}
         />
       )}
     </div>

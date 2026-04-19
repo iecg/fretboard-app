@@ -95,9 +95,17 @@ export type NoteRole =
   | "chord-root"
   | "chord-tone-in-scale"
   | "chord-tone-outside-scale"
+  | "color-tone"
   | "scale-only"
   | "note-active"
   | "note-blue";
+
+// Color/characteristic note entry for the practice bar Color group
+export interface PracticeBarColorNote {
+  internalNote: string;
+  displayNote: string;
+  intervalName: string;
+}
 
 export interface ChordRowEntry {
   internalNote: string;

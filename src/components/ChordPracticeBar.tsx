@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import type { ChordRowEntry, ViewMode } from "../theory";
+import type { ChordRowEntry, PracticeBarColorNote, ViewMode } from "../theory";
 import "./ChordPracticeBar.css";
 
 interface PillGroupProps {
@@ -30,13 +30,41 @@ function PillGroup({ label, members, ariaLabel }: PillGroupProps) {
   );
 }
 
+interface ColorPillGroupProps {
+  label: string;
+  entries: PracticeBarColorNote[];
+  ariaLabel: string;
+}
+
+function ColorPillGroup({ label, entries, ariaLabel }: ColorPillGroupProps) {
+  if (entries.length === 0) return null;
+  return (
+    <div className="practice-bar-group">
+      <span className="practice-bar-group-label">{label}</span>
+      <ul className="practice-bar-pill-list" aria-label={ariaLabel}>
+        {entries.map((entry, i) => (
+          <li
+            key={`${entry.internalNote}-${i}`}
+            className="practice-bar-pill"
+            data-role="color-tone"
+            aria-label={`${entry.displayNote}, ${entry.intervalName}`}
+          >
+            <span className="practice-bar-pill-note">{entry.displayNote}</span>
+            <span className="practice-bar-pill-interval">{entry.intervalName}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export interface ChordPracticeBarProps {
   title: string;
   badge: string | null;
   viewMode: ViewMode;
   targetMembers: ChordRowEntry[];
-  sharedMembers: ChordRowEntry[];
   outsideMembers: ChordRowEntry[];
+  colorNoteEntries?: PracticeBarColorNote[];
   className?: string;
 }
 
@@ -45,20 +73,19 @@ export function ChordPracticeBar({
   badge,
   viewMode,
   targetMembers,
-  sharedMembers,
   outsideMembers,
+  colorNoteEntries = [],
   className,
 }: ChordPracticeBarProps) {
-  if (
-    targetMembers.length === 0 &&
-    sharedMembers.length === 0 &&
-    outsideMembers.length === 0
-  )
-    return null;
+  const hasTargets = targetMembers.length > 0;
+  const hasOutside = outsideMembers.length > 0;
+  const hasColor = colorNoteEntries.length > 0;
 
-  const showTargets = viewMode === "compare" || viewMode === "chord";
-  const showShared = viewMode === "compare";
-  const showOutside = viewMode === "compare" || viewMode === "outside";
+  if (!hasTargets && !hasOutside && !hasColor) return null;
+
+  const showTargets = (viewMode === "compare" || viewMode === "chord") && hasTargets;
+  const showOutside = (viewMode === "compare" || viewMode === "outside") && hasOutside;
+  const showColor = viewMode === "compare" && hasColor;
 
   return (
     <section
@@ -80,18 +107,18 @@ export function ChordPracticeBar({
             ariaLabel="Target chord members"
           />
         )}
-        {showShared && (
-          <PillGroup
-            label="Shared"
-            members={sharedMembers}
-            ariaLabel="Shared with scale"
-          />
-        )}
         {showOutside && (
           <PillGroup
             label="Outside"
             members={outsideMembers}
             ariaLabel="Outside scale"
+          />
+        )}
+        {showColor && (
+          <ColorPillGroup
+            label="Color"
+            entries={colorNoteEntries}
+            ariaLabel="Characteristic color tones"
           />
         )}
       </div>

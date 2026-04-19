@@ -25,6 +25,7 @@ import {
 import {
   SCALES,
   NOTES,
+  INTERVAL_NAMES,
   CHORD_DEFINITIONS,
   getScaleNotes,
   getChordNotes,
@@ -41,7 +42,9 @@ import {
   type NoteRole,
   type ChordRowEntry,
   type LegendItem,
+  type PracticeBarColorNote,
 } from "../theory";
+import { getFretNote } from "../guitar";
 import { getActiveScaleBrowseOption } from "../theoryCatalog";
 import { STANDARD_TUNING, TUNINGS } from "../guitar";
 import {
@@ -62,6 +65,7 @@ export type {
   NoteRole,
   ChordRowEntry,
   LegendItem,
+  PracticeBarColorNote,
 };
 
 export default function useDisplayState() {
@@ -479,8 +483,41 @@ export default function useDisplayState() {
 
   // ── ChordPracticeBar derived values ─────────────────────────────────────────
 
-  // Whether the practice bar should render (chord is active)
-  const showChordPracticeBar = !!chordType;
+  // Color/characteristic tone entries with display names and interval labels
+  const practiceBarColorNotes = useMemo((): PracticeBarColorNote[] => {
+    if (colorNotes.length === 0) return [];
+    const rootIdx = NOTES.indexOf(rootNote);
+    if (rootIdx === -1) return [];
+    return colorNotes.map((note) => {
+      const noteIdx = NOTES.indexOf(note);
+      const interval = (noteIdx - rootIdx + 12) % 12;
+      const intervalName = INTERVAL_NAMES[interval] ?? "";
+      return {
+        internalNote: note,
+        displayNote: formatAccidental(getNoteDisplay(note, rootNote, useFlats)),
+        intervalName: formatAccidental(intervalName),
+      };
+    });
+  }, [colorNotes, rootNote, useFlats]);
+
+  // Simple diatonic compare case: tonic chord, all in scale, no focus filter,
+  // no color tones that would add information. Hide the practice bar here.
+  // Non-tonic chords (chordRoot ≠ rootNote) still benefit from showing targets.
+  const isDiatonicSimpleCase = useMemo(() => {
+    if (!chordType) return false;
+    if (viewMode !== "compare") return false;
+    if (focusPreset !== "all") return false;
+    if (hasOutsideChordMembers) return false;
+    if (colorNotes.length > 0) return false;
+    if (chordRoot !== rootNote) return false;
+    return true;
+  }, [chordType, viewMode, focusPreset, hasOutsideChordMembers, colorNotes, chordRoot, rootNote]);
+
+  // Whether the practice bar should render
+  const showChordPracticeBar = useMemo(
+    () => !!chordType && !isDiatonicSimpleCase,
+    [chordType, isDiatonicSimpleCase],
+  );
 
   // Practice bar title — varies by viewMode
   const practiceBarTitle = useMemo((): string => {
@@ -500,7 +537,7 @@ export default function useDisplayState() {
   // All active chord members for the "Targets" group
   const practiceBarTargetMembers = allChordMembers;
 
-  // Active chord members that are also in the scale, for the "Shared" group
+  // Active chord members that are also in the scale (kept for backward compat)
   const practiceBarSharedMembers = useMemo(
     () => allChordMembers.filter((e) => e.inScale),
     [allChordMembers],
@@ -511,6 +548,38 @@ export default function useDisplayState() {
     () => allChordMembers.filter((e) => !e.inScale),
     [allChordMembers],
   );
+
+  // Shape-local note set: notes that appear within the current highlighted pattern.
+  // Only meaningful in CAGED/3NPS modes where highlightNotes are coord pairs.
+  const shapeHighlightedNoteSet = useMemo((): Set<string> | null => {
+    if (fingeringPattern === "all") return null;
+    const noteSet = new Set<string>();
+    for (const coord of highlightNotes) {
+      const dashIdx = coord.indexOf("-");
+      if (dashIdx === -1) continue; // note name, not a coord
+      const stringIdx = parseInt(coord.slice(0, dashIdx), 10);
+      const fretIdx = parseInt(coord.slice(dashIdx + 1), 10);
+      const openNote = currentTuning[stringIdx];
+      if (openNote) noteSet.add(getFretNote(openNote, fretIdx));
+    }
+    return noteSet;
+  }, [fingeringPattern, highlightNotes, currentTuning]);
+
+  // Which target chord members appear in the current shape's highlighted notes
+  const shapeLocalTargetMembers = useMemo((): ChordRowEntry[] => {
+    if (!shapeHighlightedNoteSet || !chordType) return [];
+    return practiceBarTargetMembers.filter((m) =>
+      shapeHighlightedNoteSet.has(m.internalNote),
+    );
+  }, [shapeHighlightedNoteSet, chordType, practiceBarTargetMembers]);
+
+  // Which color tones appear in the current shape's highlighted notes
+  const shapeLocalColorNotes = useMemo((): PracticeBarColorNote[] => {
+    if (!shapeHighlightedNoteSet) return [];
+    return practiceBarColorNotes.filter((n) =>
+      shapeHighlightedNoteSet.has(n.internalNote),
+    );
+  }, [shapeHighlightedNoteSet, practiceBarColorNotes]);
 
   return {
     // Atom values
@@ -586,6 +655,9 @@ export default function useDisplayState() {
     practiceBarTargetMembers,
     practiceBarSharedMembers,
     practiceBarOutsideMembers,
+    practiceBarColorNotes,
+    shapeLocalTargetMembers,
+    shapeLocalColorNotes,
     // Internal state + callbacks
     clickedShape,
     recenterKey,
