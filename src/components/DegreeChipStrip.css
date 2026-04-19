@@ -102,47 +102,11 @@
   opacity: 1;
 }
 
-.degree-chip-item[data-is-tonic='true'] .degree-chip,
-.degree-chip-item[data-in-chord='true'] .degree-chip {
+.degree-chip-item[data-is-tonic='true'] .degree-chip {
   border-color: rgb(255 154 77 / 0.95);
   box-shadow: var(--chip-glow-orange);
   opacity: 1;
-}
-
-.degree-chip-item[data-is-tonic='true'] .degree-chip {
   border-width: var(--chip-border-width);
-}
-
-/* Chord overlay active: strengthen role hierarchy across scale strip.
-   Specificity (.degree-chip-strip[…] .degree-chip-item[…] .degree-chip) beats
-   the base per-role rules above, so these always win when chord is active. */
-
-/* scale-only: very subdued — clearly background to chord tones */
-.degree-chip-strip[data-chord-active='true'] .degree-chip-item[data-in-scale='true']:not([data-in-chord='true']) .degree-chip {
-  border-color: rgb(77 228 255 / 0.18);
-  box-shadow: none;
-  opacity: 0.28;
-}
-
-.degree-chip-strip[data-chord-active='true'] .degree-chip-item[data-in-scale='true']:not([data-in-chord='true']) .degree-chip-interval {
-  opacity: 0.3;
-}
-
-/* chord-tone: solid warm fill, brighter — clearly stronger than scale-only */
-.degree-chip-strip[data-chord-active='true'] .degree-chip-item[data-in-chord='true']:not([data-is-chord-root='true']) .degree-chip {
-  background: rgb(255 154 77 / 0.12);
-  border-color: rgb(255 154 77 / 0.88);
-  box-shadow: var(--chip-glow-orange);
-  opacity: 1;
-}
-
-/* chord-root: strongest — solid fill + halo ring */
-.degree-chip-strip[data-chord-active='true'] .degree-chip-item[data-is-chord-root='true'] .degree-chip {
-  background: rgb(255 154 77 / 0.22);
-  border-color: rgb(255 154 77);
-  border-width: calc(var(--chip-border-width) + 1px);
-  box-shadow: var(--chip-glow-orange), 0 0 0 3px rgb(255 154 77 / 0.14);
-  opacity: 1;
 }
 
 /* Hidden state overrides all active states — connector line grey glow. */

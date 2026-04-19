@@ -90,6 +90,8 @@ function classifyNote(
   return "note-inactive";
 }
 
+type NoteShape = "circle" | "squircle" | "diamond";
+
 type NoteVisuals = {
   stroke: string;
   filter: string;
@@ -99,6 +101,7 @@ type NoteVisuals = {
   strokeWidth: number;
   textOpacity: number;
   strokeDasharray?: string;
+  noteShape: NoteShape;
 };
 
 function getNoteVisuals(
@@ -115,9 +118,10 @@ function getNoteVisuals(
         radiusScale: 0.82,
         strokeWidth: 2.3,
         textOpacity: 1,
+        noteShape: "circle",
       };
     case "chord-root":
-      // Amber ring, larger radius — visually dominant among chord tones.
+      // Squircle with amber ring — dominant shape among chord tones.
       return {
         stroke: "var(--note-ring-tonic)",
         filter: glowFilterUrls.orange,
@@ -126,17 +130,19 @@ function getNoteVisuals(
         radiusScale: 0.86,
         strokeWidth: 2.5,
         textOpacity: 1,
+        noteShape: "squircle",
       };
     case "chord-tone-in-scale":
-      // Cyan ring — chord member, in scale, clearly distinct from root.
+      // Squircle with amber ring — chord member in scale.
       return {
-        stroke: "var(--note-ring)",
-        filter: glowFilterUrls.cyan,
-        fill: "rgb(14 30 44 / 0.95)",
+        stroke: "var(--note-ring-tonic)",
+        filter: glowFilterUrls.orange,
+        fill: "rgb(40 22 10 / 0.88)",
         textFill: "#ffffff",
         radiusScale: 0.82,
-        strokeWidth: 2.1,
+        strokeWidth: 2.0,
         textOpacity: 1,
+        noteShape: "squircle",
       };
     case "note-active":
     case "note-blue":
@@ -148,19 +154,22 @@ function getNoteVisuals(
         radiusScale: 0.82,
         strokeWidth: 1.9,
         textOpacity: 1,
+        noteShape: "circle",
       };
     case "scale-only":
+      // Hollow circle — scale note, no chord role.
       return {
         stroke: "var(--note-ring-dim)",
         filter: glowFilterUrls.cyan,
-        fill: "rgb(18 26 34 / 0.85)",
-        textFill: "#ffffff",
+        fill: "transparent",
+        textFill: "rgb(255 255 255 / 0.75)",
         radiusScale: 0.78,
         strokeWidth: 1.7,
         textOpacity: 0.82,
+        noteShape: "circle",
       };
     case "chord-tone-outside-scale":
-      // Dashed amber-dim border — chord-relevant but outside the current scale.
+      // Diamond with dashed amber-dim border — outside the scale.
       return {
         stroke: "var(--neon-orange-dim)",
         filter: glowFilterUrls.orange,
@@ -170,6 +179,7 @@ function getNoteVisuals(
         strokeWidth: 2.0,
         textOpacity: 0.9,
         strokeDasharray: "5 3",
+        noteShape: "diamond",
       };
     default:
       return {
@@ -180,6 +190,7 @@ function getNoteVisuals(
         radiusScale: 0.8,
         strokeWidth: 0,
         textOpacity: 0,
+        noteShape: "circle",
       };
   }
 }
@@ -1053,8 +1064,50 @@ export function FretboardSVG({
                   strokeWidth,
                   textOpacity,
                   strokeDasharray,
+                  noteShape,
                 } = getNoteVisuals(noteClass, glowFilterUrls);
                 const r = baseRadius * radiusScale;
+                const commonShapeProps = {
+                  fill,
+                  stroke,
+                  strokeWidth,
+                  strokeDasharray,
+                  filter: filter !== "none" ? filter : undefined,
+                };
+                const shapeEl =
+                  noteShape === "squircle" ? (
+                    <>
+                      {noteClass === "chord-root" && (
+                        <rect
+                          x={cx - r - 3.5}
+                          y={cy - r - 3.5}
+                          width={(r + 3.5) * 2}
+                          height={(r + 3.5) * 2}
+                          rx={(r + 3.5) * 0.38}
+                          ry={(r + 3.5) * 0.38}
+                          fill="none"
+                          stroke="rgb(255 154 77 / 0.22)"
+                          strokeWidth={1.5}
+                        />
+                      )}
+                      <rect
+                        x={cx - r}
+                        y={cy - r}
+                        width={r * 2}
+                        height={r * 2}
+                        rx={r * 0.38}
+                        ry={r * 0.38}
+                        {...commonShapeProps}
+                      />
+                    </>
+                  ) : noteShape === "diamond" ? (
+                    <polygon
+                      points={`${cx},${cy - r} ${cx + r},${cy} ${cx},${cy + r} ${cx - r},${cy}`}
+                      {...commonShapeProps}
+                    />
+                  ) : (
+                    <circle cx={cx} cy={cy} r={r} {...commonShapeProps} />
+                  );
                 return (
                   <g
                     key={`note-${stringIndex}-${fretIndex}`}
@@ -1064,18 +1117,10 @@ export function FretboardSVG({
                       isHidden && "hidden",
                     )}
                     data-note-role={noteClass !== "note-inactive" ? noteClass : undefined}
+                    data-note-shape={noteShape}
                     style={{ opacity: applyDimOpacity ? 0.8 : 1 }}
                   >
-                    <circle
-                      cx={cx}
-                      cy={cy}
-                      r={r}
-                      fill={fill}
-                      stroke={stroke}
-                      strokeWidth={strokeWidth}
-                      strokeDasharray={strokeDasharray}
-                      filter={filter !== "none" ? filter : undefined}
-                    />
+                    {shapeEl}
                     {displayFormat !== "none" && (
                       <text
                         x={cx}

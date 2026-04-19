@@ -412,7 +412,7 @@ describe("App", () => {
       });
     });
 
-    it("compare mode: no relationship row in simple diatonic case (same root, all preset, all in scale)", async () => {
+    it("compare mode: chord practice bar shown even in simple diatonic case (same root, all preset, all in scale)", async () => {
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("chordRoot"), "C");
       localStorage.setItem(k("chordType"), "Major Triad");
@@ -422,10 +422,11 @@ describe("App", () => {
       await waitFor(() => {
         expect(document.querySelector(".summary-ribbon")).toBeTruthy();
       });
+      expect(document.querySelector(".chord-practice-bar")).toBeTruthy();
       expect(document.querySelector(".relationship-row")).toBeNull();
     });
 
-    it("compare mode: shows relationship row when chordRoot differs from scale root", async () => {
+    it("compare mode: shows chord practice bar when chordRoot differs from scale root", async () => {
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("chordRoot"), "G");
       localStorage.setItem(k("chordType"), "Major Triad");
@@ -433,29 +434,29 @@ describe("App", () => {
       localStorage.setItem(k("viewMode"), "compare");
       render(<App />);
       await waitFor(() => {
-        expect(document.querySelector(".relationship-row")).toBeTruthy();
+        expect(document.querySelector(".chord-practice-bar")).toBeTruthy();
       });
     });
 
-    it("chord mode: renders chord rail as primary, no degree-chip-strip inside ribbon", async () => {
+    it("chord mode: renders chord practice bar and keeps degree-chip-strip inside ribbon", async () => {
       localStorage.setItem(k("chordType"), "Major Triad");
       localStorage.setItem(k("viewMode"), "chord");
       render(<App />);
       await waitFor(() => {
-        expect(document.querySelector(".summary-ribbon .chord-row-strip")).toBeTruthy();
-        expect(document.querySelector(".summary-ribbon .degree-chip-strip")).toBeNull();
+        expect(document.querySelector(".summary-ribbon .chord-practice-bar")).toBeTruthy();
+        expect(document.querySelector(".summary-ribbon .degree-chip-strip")).toBeTruthy();
       });
     });
 
-    it("outside mode: renders outside rail as primary, no degree-chip-strip inside ribbon", async () => {
+    it("outside mode: renders chord practice bar and keeps degree-chip-strip inside ribbon", async () => {
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("chordRoot"), "D");
       localStorage.setItem(k("chordType"), "Dominant 7th");
       localStorage.setItem(k("viewMode"), "outside");
       render(<App />);
       await waitFor(() => {
-        expect(document.querySelector(".summary-ribbon .chord-row-strip")).toBeTruthy();
-        expect(document.querySelector(".summary-ribbon .degree-chip-strip")).toBeNull();
+        expect(document.querySelector(".summary-ribbon .chord-practice-bar")).toBeTruthy();
+        expect(document.querySelector(".summary-ribbon .degree-chip-strip")).toBeTruthy();
       });
     });
 
@@ -479,20 +480,20 @@ describe("App", () => {
       expect(document.querySelector(".chord-row-legend")).toBeNull();
     });
 
-    it("ribbon header shows scale label on left and chord info on right in compare mode", async () => {
+    it("practice bar shows chord label as title and Compare badge in compare mode", async () => {
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("chordRoot"), "C");
       localStorage.setItem(k("chordType"), "Major Triad");
       localStorage.setItem(k("viewMode"), "compare");
       render(<App />);
       await waitFor(() => {
-        expect(document.querySelector(".summary-ribbon-header-left")).toBeTruthy();
-        expect(document.querySelector(".summary-ribbon-header-right")).toBeTruthy();
+        expect(document.querySelector(".chord-practice-bar")).toBeTruthy();
       });
-      const left = document.querySelector(".summary-ribbon-header-left")!;
-      const right = document.querySelector(".summary-ribbon-header-right")!;
-      expect(left.textContent).toContain("C Major");
-      expect(right.textContent).toContain("C Major Triad");
+      const title = document.querySelector(".chord-practice-bar-title")!;
+      const badge = document.querySelector(".chord-practice-bar-badge")!;
+      expect(title.textContent).toContain("C");
+      expect(title.textContent).toContain("Major Triad");
+      expect(badge.textContent).toBe("Compare");
     });
   });
 

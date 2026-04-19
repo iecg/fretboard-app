@@ -1,0 +1,168 @@
+/* Chord practice bar — compact analysis cue strip shown below the scale strip
+   when a chord overlay is active. Uses pills/capsules instead of circular chips
+   to read as "analysis" rather than "another note strip". */
+
+.chord-practice-bar {
+  --pill-h: 1.55rem;
+  --pill-font: 0.82rem;
+  --pill-px: 0.55rem;
+  --pill-gap: 0.3rem;
+  --bar-fill: rgb(18 23 34);
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.38rem;
+  width: min(100%, 30rem);
+  margin: 0 auto;
+  padding: 0.42rem 0.85rem 0.48rem;
+  border-radius: 0.85rem;
+  background: var(--bar-fill);
+  border: 1px solid rgb(255 255 255 / 0.07);
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.2);
+}
+
+/* Header row: title + optional badge */
+.chord-practice-bar-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.chord-practice-bar-title {
+  font-family: var(--font-sans);
+  font-size: clamp(0.82rem, 1.3vw, 0.94rem);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-soft-white);
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+.chord-practice-bar-badge {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: var(--font-weight-medium);
+  color: rgb(255 255 255 / 0.45);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: rgb(255 255 255 / 0.07);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 0.3rem;
+  padding: 0.15rem 0.35rem;
+  white-space: nowrap;
+}
+
+/* Groups row: lays out Targets / Shared / Outside horizontally */
+.chord-practice-bar-groups {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+/* Individual group: label + pill row */
+.practice-bar-group {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.practice-bar-group-label {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: var(--font-weight-medium);
+  color: rgb(255 255 255 / 0.38);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Pill list */
+.practice-bar-pill-list {
+  display: flex;
+  align-items: center;
+  gap: var(--pill-gap);
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Base pill — capsule shape */
+.practice-bar-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22rem;
+  height: var(--pill-h);
+  padding: 0 var(--pill-px);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.05);
+  border: 1.5px solid rgb(255 255 255 / 0.18);
+  cursor: default;
+}
+
+/* Role-based pill variants */
+.practice-bar-pill[data-role="chord-root"] {
+  background: rgb(255 154 77 / 0.18);
+  border-color: rgb(255 154 77 / 0.85);
+  box-shadow: 0 0 6px rgb(255 154 77 / 0.4);
+}
+
+.practice-bar-pill[data-role="chord-tone-in-scale"] {
+  background: rgb(255 154 77 / 0.08);
+  border-color: rgb(255 154 77 / 0.55);
+}
+
+.practice-bar-pill[data-role="chord-tone-outside-scale"] {
+  background: rgb(120 50 20 / 0.22);
+  border-color: rgb(204 122 61 / 0.7);
+  border-style: dashed;
+}
+
+.practice-bar-pill-note {
+  font-family: var(--font-sans);
+  font-size: var(--pill-font);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-soft-white);
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+.practice-bar-pill-interval {
+  font-family: var(--font-sans);
+  font-size: calc(var(--pill-font) - 0.06rem);
+  font-weight: var(--font-weight-medium);
+  color: rgb(255 255 255 / 0.48);
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+/* Responsive — mobile */
+.app-container[data-layout-tier="mobile"] .chord-practice-bar {
+  width: 100%;
+  border-radius: 0.7rem;
+  padding: 0.38rem 0.7rem 0.42rem;
+  gap: 0.32rem;
+}
+
+.app-container[data-layout-tier="mobile"] .chord-practice-bar-title {
+  font-size: 0.82rem;
+}
+
+.app-container[data-layout-tier="mobile"] .practice-bar-group-label {
+  font-size: 0.64rem;
+}
+
+/* Responsive — desktop */
+.app-container[data-layout-tier="desktop"] .chord-practice-bar {
+  width: min(100%, 32rem);
+  padding: 0.3rem 0.78rem 0.34rem;
+  gap: 0.28rem;
+}
+
+.app-container[data-layout-tier="desktop"] .chord-practice-bar-title {
+  font-size: clamp(0.76rem, 1.1vw, 0.88rem);
+}

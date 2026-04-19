@@ -74,17 +74,27 @@ describe('DegreeChipStrip', () => {
     expect(allChips.length).toBe(3);
   });
 
-  it('in-chord chips have data-in-chord attribute', () => {
-    const chipsWithChord: DegreeChip[] = [
-      { note: 'A', internalNote: 'A', interval: '1', inScale: true, isTonic: true, inChord: true },
-      { note: 'C', internalNote: 'C', interval: 'b3', inScale: true, inChord: true },
-      { note: 'E', internalNote: 'E', interval: '5', inScale: true, inChord: true },
-    ];
+  it('scale strip does not render data-in-chord or data-is-chord-root attributes', () => {
     const { container } = render(
-      <DegreeChipStrip scaleName="Am chord" chips={chipsWithChord} />
+      <DegreeChipStrip
+        scaleName="A Natural Minor"
+        chips={aMinorChips}
+      />
     );
-    const chordChips = container.querySelectorAll('[data-in-chord="true"]');
-    expect(chordChips.length).toBe(3);
+    expect(container.querySelector('[data-in-chord]')).toBeNull();
+    expect(container.querySelector('[data-is-chord-root]')).toBeNull();
+  });
+
+  it('scale strip does not render data-chord-active attribute even when chord is active externally', () => {
+    // DegreeChipStrip no longer accepts a chordActive prop — the section never has this attribute
+    const { container } = render(
+      <DegreeChipStrip
+        scaleName="A Natural Minor"
+        chips={aMinorChips}
+      />
+    );
+    const section = container.querySelector('.degree-chip-strip');
+    expect(section?.getAttribute('data-chord-active')).toBeNull();
   });
 
   it('uses custom aria-label when provided', () => {
@@ -110,7 +120,7 @@ describe('DegreeChipStrip', () => {
 
   it('has no accessibility violations with mixed chip states', async () => {
     const mixedChips: DegreeChip[] = [
-      { note: 'A', internalNote: 'A', interval: '1', inScale: true, isTonic: true, inChord: true },
+      { note: 'A', internalNote: 'A', interval: '1', inScale: true, isTonic: true },
       { note: 'B', internalNote: 'B', interval: '2', inScale: true },
       { note: 'C', internalNote: 'C', interval: 'b3', inScale: false },
     ];
@@ -139,43 +149,5 @@ describe('DegreeChipStrip', () => {
       />
     );
     expect(container.querySelector('.degree-chip-strip-header')).toBeTruthy();
-  });
-
-  it('chordActive adds data-chord-active attribute to the section', () => {
-    const { container } = render(
-      <DegreeChipStrip
-        scaleName="A Natural Minor"
-        chips={aMinorChips}
-        chordActive
-      />
-    );
-    const section = container.querySelector('.degree-chip-strip');
-    expect(section?.getAttribute('data-chord-active')).toBe('true');
-  });
-
-  it('without chordActive data-chord-active is absent', () => {
-    const { container } = render(
-      <DegreeChipStrip
-        scaleName="A Natural Minor"
-        chips={aMinorChips}
-      />
-    );
-    const section = container.querySelector('.degree-chip-strip');
-    expect(section?.getAttribute('data-chord-active')).toBeNull();
-  });
-
-  it('isChordRoot chip has data-is-chord-root attribute', () => {
-    const chipsWithRoot: DegreeChip[] = [
-      { note: 'A', internalNote: 'A', interval: '1', inScale: true, isTonic: true, inChord: true, isChordRoot: true },
-      { note: 'C', internalNote: 'C', interval: 'b3', inScale: true, inChord: true },
-      { note: 'E', internalNote: 'E', interval: '5', inScale: true, inChord: true },
-    ];
-    const { container } = render(
-      <DegreeChipStrip scaleName="Am" chips={chipsWithRoot} chordActive />
-    );
-    const rootChip = container.querySelector('[data-is-chord-root="true"]');
-    expect(rootChip).toBeTruthy();
-    const nonRootChips = container.querySelectorAll('[data-in-chord="true"]:not([data-is-chord-root="true"])');
-    expect(nonRootChips).toHaveLength(2);
   });
 });
