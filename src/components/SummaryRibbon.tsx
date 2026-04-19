@@ -1,11 +1,3 @@
-import { useMemo, useCallback } from "react";
-import {
-  NOTES,
-  SCALES,
-  INTERVAL_NAMES,
-  getNoteDisplayInScale,
-  formatAccidental,
-} from "../theory";
 import { useScaleState } from "../hooks/useScaleState";
 import { useChordState } from "../hooks/useChordState";
 import { usePracticeBarState } from "../hooks/usePracticeBarState";
@@ -14,13 +6,10 @@ import { ChordPracticeBar } from "./ChordPracticeBar";
 
 export function SummaryRibbon() {
   const {
-    rootNote,
-    scaleName,
-    useFlats,
     scaleLabel,
-    scaleNotes,
     hiddenNotes,
-    setHiddenNotes,
+    toggleHiddenNote,
+    degreeChips,
   } = useScaleState();
 
   const { chordType, viewMode } = useChordState();
@@ -36,48 +25,8 @@ export function SummaryRibbon() {
     shapeLocalOutsideMembers,
     shapeLocalColorNotesFiltered,
     allChordMembers,
+    practiceBarOutsideMembers,
   } = usePracticeBarState();
-
-  const practiceBarOutsideMembers = useMemo(
-    () => allChordMembers.filter((e) => !e.inScale),
-    [allChordMembers],
-  );
-
-  const toggleHiddenNote = useCallback(
-    (note: string) => {
-      setHiddenNotes((prev) => {
-        const next = new Set(prev);
-        if (next.has(note)) next.delete(note);
-        else next.add(note);
-        return next;
-      });
-    },
-    [setHiddenNotes],
-  );
-
-  const degreeChips = useMemo(() => {
-    const rootIdx = NOTES.indexOf(rootNote);
-    return scaleNotes.map((note) => {
-      const noteIdx = NOTES.indexOf(note);
-      const chromaticInterval =
-        rootIdx !== -1 && noteIdx !== -1 ? (noteIdx - rootIdx + 12) % 12 : 0;
-      const interval = INTERVAL_NAMES[chromaticInterval] ?? "1";
-      return {
-        internalNote: note,
-        note: formatAccidental(
-          getNoteDisplayInScale(
-            note,
-            rootNote,
-            SCALES[scaleName] || [],
-            useFlats,
-          ),
-        ),
-        interval: formatAccidental(interval),
-        inScale: true,
-        isTonic: note === rootNote,
-      };
-    });
-  }, [scaleNotes, rootNote, scaleName, useFlats]);
 
   const scaleStrip = (
     <DegreeChipStrip
