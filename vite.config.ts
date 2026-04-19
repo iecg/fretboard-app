@@ -29,13 +29,12 @@ export default defineConfig({
     },
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     exclude: ['e2e/**'],
-    // vitest 4.x defaults to updateSnapshot="none" in CI (when CI=true).
-    // Override to "new" so missing snapshots are created rather than failing.
+    // vitest 4.x defaults to updateSnapshot="none" when CI=true, causing tests
+    // to fail when no snapshot file is present. "new" restores the expected
+    // behavior: missing snapshots are written on first run rather than failing.
     // Snapshots are gitignored because Node 22 (local) and Node 24 (CI) produce
     // slightly different floating-point SVG coordinates.
-    snapshotOptions: {
-      update: 'new',
-    },
+    update: 'new',
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov', 'json-summary', 'text-summary'],
