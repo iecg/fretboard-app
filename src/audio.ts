@@ -47,7 +47,7 @@ class GuitarSynth {
 
       // Create a custom periodic wave that mimics a plucked string
       // Fundamental + overtones with decreasing amplitude
-      const real = new Float32Array([0, 1, 0.6, 0.4, 0.3, 0.2, 0.1, 0.05]);
+      const real = new Float32Array([0, 1, 0.6, 0.4, 0.3, 0.2, 0.1, 0.06]);
       const imag = new Float32Array(real.length).fill(0);
       this.guitarWave = this.ctx.createPeriodicWave(real, imag);
 

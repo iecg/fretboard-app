@@ -3,6 +3,10 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import App from "../App";
 import { k } from "./utils/storage";
+// Pre-import lazy-loaded components so React.lazy() resolves from the module
+// cache synchronously, allowing Suspense to mount them without async delay.
+import "../components/MobileTabPanel";
+import "../components/TheoryControls";
 
 // vi.mock is hoisted to the top of the file, so variables referenced inside its
 // factory must be declared with vi.hoisted() to be available at that point.
@@ -379,7 +383,12 @@ describe("Integration Tests - User Workflows", () => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
-        value: 600, // Mobile
+        value: 390, // Mobile portrait width
+      });
+      Object.defineProperty(window, "innerHeight", {
+        writable: true,
+        configurable: true,
+        value: 844, // Mobile portrait height (taller than width → portrait)
       });
     });
 
@@ -399,9 +408,17 @@ describe("Integration Tests - User Workflows", () => {
 
     it("theory tab exposes the circle of fifths behind a disclosure", async () => {
       localStorage.setItem(k("mobileTab"), "theory");
+
+      // Mobile viewport is set by beforeEach (390×844 portrait).
       render(<App />);
 
-      expect(await screen.findByText("Circle of Fifths")).toBeTruthy();
+      // Wait for the lazy-loaded MobileTabPanel + TheoryControls Suspense
+      // boundaries to resolve before querying. Lazy imports resolve
+      // asynchronously via polling rather than a single act flush.
+      await waitFor(
+        () => expect(screen.getByRole("button", { name: /Circle of Fifths/i })).toBeInTheDocument(),
+        { timeout: 3000 },
+      );
     });
 
     it("mobile tab preference persists", async () => {
