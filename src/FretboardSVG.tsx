@@ -118,15 +118,7 @@ function classifyNote(
   return "note-inactive";
 }
 
-/**
- * Semantic-model classification: uses NoteSemantics (composable boolean flags)
- * instead of the legacy positional boolean list. Falls back to classifyNote when
- * semantics are unavailable (no chord overlay context).
- *
- * Key advantage: isChordRoot + isTension can coexist — the chord root that sits
- * outside the scale is still classified as "chord-root" (preserving squircle
- * shape / root identity) while isTension drives the supplementary data attribute.
- */
+// Chord-root + isTension can coexist: outside-scale root stays "chord-root" (squircle/identity).
 function classifyNoteFromSemantics(
   sem: NoteSemantics,
   isChordInRange: boolean,
@@ -136,18 +128,11 @@ function classifyNoteFromSemantics(
   fretIndex: number,
 ): string {
   if (!hasChordOverlay) {
-    if (sem.isColorTone && sem.isInScale) return "note-blue";
-    if (sem.isScaleRoot && sem.isInScale) return "key-tonic";
-    if (sem.isInScale) return "note-active";
-    if (
-      sem.isColorTone &&
-      shapePolygons.length > 0 &&
-      boxBounds.some(
-        (b) => fretIndex >= b.minFret - 1 && fretIndex <= b.maxFret + 1,
-      )
-    )
-      return "note-blue";
-    return "note-inactive";
+    // Delegate to classifyNote to avoid duplicating the no-overlay logic.
+    return classifyNote(
+      sem.isScaleRoot, sem.isChordRoot, sem.isColorTone, sem.isInScale,
+      sem.isChordTone, hasChordOverlay, isChordInRange, shapePolygons, boxBounds, fretIndex,
+    );
   }
   // Chord overlay active: chord-root takes absolute priority, even if outside scale.
   if (sem.isChordRoot && sem.isChordTone && isChordInRange) return "chord-root";
@@ -720,13 +705,9 @@ export const FretboardSVG = memo(function FretboardSVG({
               fretIndex <= b.maxFret + chordFretSpread,
           );
 
-        // Use the composable semantic model when available (chord overlay context).
-        // Falls back to the legacy boolean path for scale-only views.
-        const semantics =
-          noteSemantics?.get(noteName) ??
-          (ENHARMONICS[noteName]
-            ? noteSemantics?.get(ENHARMONICS[noteName]!)
-            : undefined);
+        // Use the composable semantic model when available; fall back to booleans.
+        // Keys are sharp-normalized (per project convention) so no enharmonic lookup needed.
+        const semantics = noteSemantics?.get(noteName);
 
         const noteClass = isNoteHidden
           ? "note-inactive"
