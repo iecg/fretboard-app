@@ -14,7 +14,6 @@ import useDisplayState from "./hooks/useDisplayState";
 import { AppHeader } from "./components/AppHeader";
 import { BrandMark } from "./components/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark";
-import { MAX_FRET } from "./constants";
 import { SummaryRibbon } from "./components/SummaryRibbon";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper";
 import "./App.css";
@@ -53,24 +52,11 @@ function AppContent() {
     rootNote,
     scaleName,
     useFlats,
-    currentTuning,
-    chordRoot,
     chordType,
-    hideNonChordNotes,
-    chordFretSpread,
-    viewMode,
     enharmonicDisplay,
     setRootNote,
-    activeChordTones,
     highlightNotes,
-    boxBounds,
-    shapePolygons,
-    wrappedNotes,
-    autoCenterTarget,
     colorNotes,
-    displayFormat,
-    recenterKey,
-    hiddenNotes,
   } = useDisplayState();
 
   const isMuted = useAtomValue(isMutedAtom);
@@ -229,26 +215,10 @@ function AppContent() {
       }
     >
       <Fretboard
-        tuning={currentTuning}
-        highlightNotes={highlightNotes}
         rootNote={rootNote}
-        boxBounds={boxBounds}
-        chordTones={activeChordTones}
-        chordRoot={chordRoot}
-        chordFretSpread={chordFretSpread}
-        hideNonChordNotes={hideNonChordNotes}
-        viewMode={viewMode}
+        highlightNotes={highlightNotes}
         colorNotes={colorNotes}
-        displayFormat={displayFormat}
-        shapePolygons={shapePolygons}
-        maxFret={MAX_FRET}
-        wrappedNotes={wrappedNotes}
-        hiddenNotes={hiddenNotes}
-        useFlats={useFlats}
-        scaleName={scaleName}
         stringRowPx={layout.stringRowPx}
-        autoCenterTarget={autoCenterTarget}
-        recenterKey={recenterKey}
       />
     </MainLayoutWrapper>
   );
