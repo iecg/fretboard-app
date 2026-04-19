@@ -100,8 +100,8 @@ export function Fretboard(props: FretboardProps) {
   const isDraggingRef = useRef(false);
   const pendingPointerId = useRef<number | null>(null);
   const pendingTarget = useRef<Element | null>(null);
-  const [startX, setStartX] = useState(0);
-  const [scrollLeft, setScrollLeft] = useState(0);
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
   const dragDistance = useRef(0);
   const [hasOverflow, setHasOverflow] = useState(false);
 
@@ -158,8 +158,8 @@ export function Fretboard(props: FretboardProps) {
     isDraggingRef.current = false;
     pendingPointerId.current = e.pointerId;
     pendingTarget.current = e.currentTarget;
-    setStartX(e.pageX - scrollRef.current.offsetLeft);
-    setScrollLeft(scrollRef.current.scrollLeft);
+    startX.current = e.pageX - scrollRef.current.offsetLeft;
+    scrollLeft.current = scrollRef.current.scrollLeft;
     dragDistance.current = 0;
   }, [hasOverflow]);
 
@@ -174,9 +174,9 @@ export function Fretboard(props: FretboardProps) {
     if (!isDraggingRef.current) return;
     e.preventDefault();
     const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = (x - startX) * 1.5;
-    scrollRef.current.scrollLeft = scrollLeft - walk;
-  }, [updateCursor, startX, scrollLeft]);
+    const walk = (x - startX.current) * 1.5;
+    scrollRef.current.scrollLeft = scrollLeft.current - walk;
+  }, [updateCursor]);
 
   const handlePointerUp = useCallback(() => {
     if (isDraggingRef.current) {
