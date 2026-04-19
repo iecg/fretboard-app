@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useSetAtom, useAtomValue, createStore, Provider } from "jotai";
 import { Fretboard } from "./Fretboard";
 import { HelpCircle, Settings2, Volume2, VolumeX } from "lucide-react";
@@ -45,6 +45,7 @@ function AppContent() {
   const toggleMute = useSetAtom(toggleMuteAtom);
 
   const [showHelp, setShowHelp] = useState(false);
+  const helpTriggerRef = useRef<HTMLButtonElement>(null);
   const layout = useLayoutMode();
 
   // Sync mute state to audio synth (runs on mount and whenever isMuted changes)
@@ -93,6 +94,7 @@ function AppContent() {
                 )}
               </button>
               <button
+                ref={helpTriggerRef}
                 type="button"
                 onClick={() => setShowHelp(true)}
                 className="header-btn"
@@ -111,6 +113,7 @@ function AppContent() {
           <HelpModal
             isOpen={showHelp}
             onClose={() => setShowHelp(false)}
+            triggerRef={helpTriggerRef}
           />
         </Suspense>
       }

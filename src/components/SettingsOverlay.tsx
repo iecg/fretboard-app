@@ -25,8 +25,8 @@ import {
   getResponsiveTier,
   type ResponsiveTier,
 } from "../layout/responsive";
-import { getFocusableElements } from "../utils/dom";
-import { 
+import { useFocusTrap } from "../hooks/useFocusTrap";
+import {
   MAX_FRET, 
   FRET_ZOOM_MIN, 
   FRET_ZOOM_MAX 
@@ -321,61 +321,27 @@ function SettingsOverlaySurface({
     return () => document.removeEventListener("mousedown", handlePointerDown);
   }, [activeHelpField]);
 
-  // Trap focus inside the drawer while open and restore focus on close.
+  // Capture trigger element at open time so useFocusTrap can restore focus on close.
   useEffect(() => {
     triggerRef.current =
       document.activeElement instanceof HTMLElement
         ? document.activeElement
         : null;
+  }, []);
 
-    const drawer = drawerRef.current;
-    const focusInitial = window.requestAnimationFrame(() => {
-      const focusables = getFocusableElements(drawer);
-      (closeButtonRef.current ?? focusables[0] ?? drawer)?.focus();
-    });
-
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.stopPropagation();
-        if (activeHelpFieldRef.current) {
-          setActiveHelpField(null);
-        } else {
-          setIsOpen(false);
-        }
-        return;
+  // Trap focus inside the drawer while open and restore focus on close.
+  useFocusTrap({
+    containerRef: drawerRef,
+    active: true,
+    onEscape: () => {
+      if (activeHelpFieldRef.current) {
+        setActiveHelpField(null);
+      } else {
+        setIsOpen(false);
       }
-
-      if (e.key !== "Tab") return;
-
-      const focusables = getFocusableElements(drawer);
-      if (focusables.length === 0) {
-        e.preventDefault();
-        drawer?.focus();
-        return;
-      }
-
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
-      const activeElement = document.activeElement;
-
-      if (e.shiftKey && activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-
-    return () => {
-      window.cancelAnimationFrame(focusInitial);
-      window.removeEventListener("keydown", onKeyDown);
-      triggerRef.current?.focus();
-      triggerRef.current = null;
-    };
-  }, [setIsOpen]);
+    },
+    restoreFocusRef: triggerRef,
+  });
 
   const renderField = (
     fieldKey: SettingFieldKey,
