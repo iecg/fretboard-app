@@ -56,6 +56,7 @@
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
   border-radius: var(--radius-sm);
+  box-shadow: var(--focus-ring-glow);
 }
 
 .bottom-tab-bar-btn:disabled {
