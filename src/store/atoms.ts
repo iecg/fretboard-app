@@ -638,6 +638,32 @@ export const npsPositionAtom = atomWithStorage(
 );
 
 // UI/Transient state
+const internalHiddenNotesAtom = atom<{
+  root: string;
+  scale: string;
+  notes: Set<string>;
+} | null>(null);
+
+export const hiddenNotesAtom = atom(
+  (get) => {
+    const state = get(internalHiddenNotesAtom);
+    const root = get(rootNoteAtom);
+    const scale = get(scaleNameAtom);
+    if (state && state.root === root && state.scale === scale) {
+      return state.notes;
+    }
+    return new Set<string>();
+  },
+  (get, set, update: Set<string> | ((prev: Set<string>) => Set<string>)) => {
+    const root = get(rootNoteAtom);
+    const scale = get(scaleNameAtom);
+    const currentNotes = get(hiddenNotesAtom);
+    const nextNotes =
+      typeof update === "function" ? update(currentNotes) : update;
+    set(internalHiddenNotesAtom, { root, scale, notes: nextNotes });
+  },
+);
+
 export const clickedShapeAtom = atom<CagedShape | null>(null);
 export const recenterKeyAtom = atom<number>(0);
 
