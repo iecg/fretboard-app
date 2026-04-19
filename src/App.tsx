@@ -31,9 +31,8 @@ import { BrandMark } from "./components/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark";
 import { DegreeChipStrip } from "./components/DegreeChipStrip";
 import { ChordPracticeBar } from "./components/ChordPracticeBar";
+import { MAX_FRET } from "./constants";
 import "./App.css";
-
-const END_FRET = 25;
 
 function AppContent() {
   const {
@@ -568,7 +567,7 @@ function AppContent() {
           colorNotes={colorNotes}
           displayFormat={displayFormat}
           shapePolygons={shapePolygons}
-          maxFret={END_FRET}
+          maxFret={MAX_FRET}
           wrappedNotes={wrappedNotes}
           hiddenNotes={hiddenNotes}
           useFlats={useFlats}

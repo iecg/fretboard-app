@@ -11,8 +11,13 @@ import type { ShapePolygon } from "./shapes";
 import { fretZoomAtom, fretStartAtom, fretEndAtom } from "./store/atoms";
 import { FretboardSVG } from "./FretboardSVG";
 import type { ViewMode } from "./theory";
-
-const STRING_ROW_PX_DEFAULT = 36;
+import { 
+  STRING_ROW_PX_DEFAULT, 
+  MAX_FRET, 
+  NOTE_BUBBLE_RATIO, 
+  MIN_FRET_WIDTH_BASE, 
+  MIN_FRET_WIDTH_OVERFLOW_BUFFER 
+} from "./constants";
 
 interface FretboardProps {
   tuning: string[];
@@ -44,7 +49,7 @@ interface FretboardProps {
 
 export function Fretboard({
   tuning,
-  maxFret = 25,
+  maxFret = MAX_FRET,
   highlightNotes,
   rootNote,
   displayFormat = "notes",
@@ -72,8 +77,8 @@ export function Fretboard({
 
   const [containerWidth, setContainerWidth] = useState(0);
   const totalColumns = endFret - startFret;
-  const noteBubblePx = Math.round(stringRowPx * 0.8);
-  const MIN_FRET_WIDTH = Math.max(49, noteBubblePx + 17);
+  const noteBubblePx = Math.round(stringRowPx * NOTE_BUBBLE_RATIO);
+  const MIN_FRET_WIDTH = Math.max(MIN_FRET_WIDTH_BASE, noteBubblePx + MIN_FRET_WIDTH_OVERFLOW_BUFFER);
   const autoFitZoom = Math.max(
     MIN_FRET_WIDTH,
     containerWidth > 0 && totalColumns > 0 ? containerWidth / totalColumns : 30,

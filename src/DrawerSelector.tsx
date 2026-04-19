@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import clsx from "clsx";
 import styles from "./DrawerSelector.module.css";
+import { DRAWER_DROPUP_THRESHOLD } from "./constants";
 
 type DrawerSelectorOption = string | { divider: string };
 
@@ -80,7 +81,7 @@ export function DrawerSelector(props: DrawerSelectorProps) {
     if (!open || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const spaceBelow = window.innerHeight - rect.bottom;
-    setDropUp(spaceBelow < 260);
+    setDropUp(spaceBelow < DRAWER_DROPUP_THRESHOLD);
   }, [open]);
 
   useEffect(() => {

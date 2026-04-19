@@ -26,11 +26,13 @@ import {
   type ResponsiveTier,
 } from "../layout/responsive";
 import { getFocusableElements } from "../utils/dom";
+import { 
+  MAX_FRET, 
+  FRET_ZOOM_MIN, 
+  FRET_ZOOM_MAX 
+} from "../constants";
 import "./SettingsOverlay.css";
 
-const END_FRET = 25;
-const ZOOM_MIN = 100;
-const ZOOM_MAX = 300;
 const ZOOM_STEP = 10;
 
 type AccidentalOptionValue = "auto" | "sharps" | "flats";
@@ -397,8 +399,9 @@ function SettingsOverlaySurface({
           <StepperControl
             value={fretZoom}
             onChange={setFretZoom}
-            min={ZOOM_MIN}
-            max={ZOOM_MAX}
+            min={FRET_ZOOM_MIN}
+            max={FRET_ZOOM_MAX}
+
             step={ZOOM_STEP}
             formatValue={(zoom) => (zoom <= 100 ? "Auto" : `${zoom}%`)}
             buttonVariant="mobile"
@@ -412,7 +415,7 @@ function SettingsOverlaySurface({
             endFret={fretEnd}
             onStartChange={setFretStart}
             onEndChange={setFretEnd}
-            maxFret={END_FRET}
+            maxFret={MAX_FRET}
             layout="mobile"
           />
         );

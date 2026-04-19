@@ -10,6 +10,12 @@ import type {
   ChordMemberName,
 } from "../theory";
 import { TUNINGS, STANDARD_TUNING } from "../guitar";
+import { 
+  MAX_FRET, 
+  FRET_ZOOM_MIN, 
+  FRET_ZOOM_MAX, 
+  FRET_ZOOM_DEFAULT 
+} from "../constants";
 
 export type FingeringPattern = "all" | "caged" | "3nps";
 
@@ -218,7 +224,7 @@ function constrainedNumberStorage(constraints: NumberConstraints) {
 
 const fretCountStorage = constrainedNumberStorage({
   min: 0,
-  max: 25,
+  max: MAX_FRET,
   integer: true,
 });
 const chordFretSpreadStorage = constrainedNumberStorage({
@@ -232,8 +238,8 @@ const npsPositionStorage = constrainedNumberStorage({
   integer: true,
 });
 const fretZoomStorage = constrainedNumberStorage({
-  min: 50,
-  max: 200,
+  min: FRET_ZOOM_MIN,
+  max: FRET_ZOOM_MAX,
   integer: true,
 });
 
@@ -616,7 +622,7 @@ export const tuningNameAtom = atomWithStorage(
 );
 export const fretZoomAtom = atomWithStorage(
   k("fretZoom"),
-  100,
+  FRET_ZOOM_DEFAULT,
   fretZoomStorage,
   GET_ON_INIT,
 );
@@ -628,7 +634,7 @@ export const fretStartAtom = atomWithStorage(
 );
 export const fretEndAtom = atomWithStorage(
   k("fretEnd"),
-  25,
+  MAX_FRET,
   fretCountStorage,
   GET_ON_INIT,
 );

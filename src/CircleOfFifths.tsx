@@ -102,8 +102,11 @@ export function CircleOfFifths({
         viewBox={`0 0 ${SIZE} ${SIZE}`}
         className={styles["circle-fifths-svg"]}
         role="group"
-        aria-label="Circle of Fifths — select a key"
+        aria-labelledby="cof-title"
+        aria-describedby="cof-desc"
       >
+        <title id="cof-title">Circle of Fifths</title>
+        <desc id="cof-desc">Interactive diagram to select the root note of the scale. Each segment represents a key, arranged in intervals of perfect fifths.</desc>
         <defs>
           <radialGradient id="circle-center-fill" cx="50%" cy="38%" r="74%">
             <stop offset="0%" stopColor="rgb(34 40 54 / 0.98)" />
