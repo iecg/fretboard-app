@@ -1,61 +1,34 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 import { X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { getFocusableElements } from "../utils/dom";
+import { useFocusTrap } from "../hooks/useFocusTrap";
 
 interface HelpModalProps {
   isOpen: boolean;
   onClose: () => void;
+  triggerRef?: RefObject<HTMLButtonElement | null>;
 }
 
-export function HelpModal({ isOpen, onClose }: HelpModalProps) {
+export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
   const helpModalRef = useRef<HTMLDivElement>(null);
 
-  // Focus trap + focus restoration for help modal
+  useFocusTrap({
+    containerRef: helpModalRef,
+    active: isOpen,
+    onEscape: onClose,
+    restoreFocusRef: triggerRef,
+  });
+
+  // Outside-click handler — close when clicking outside the modal container
   useEffect(() => {
     if (!isOpen) return;
-    const modal = helpModalRef.current;
-    const focusables = getFocusableElements(modal);
-    focusables[0]?.focus();
-
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        onClose();
-        return;
-      }
-      if (e.key !== "Tab") return;
-      const els = getFocusableElements(modal);
-      if (els.length === 0) return;
-      const first = els[0];
-      const last = els[els.length - 1];
-      if (e.shiftKey) {
-        if (document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        }
-      } else {
-        if (document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    }
-
-    function handlePointerDown(e: PointerEvent) {
-      const target = e.target;
-      if (!(target instanceof Node) || !modal) return;
-      if (!modal.contains(target)) {
+    const handlePointerDown = (e: PointerEvent) => {
+      if (helpModalRef.current && !helpModalRef.current.contains(e.target as Node)) {
         onClose();
       }
-    }
-
-    document.addEventListener("keydown", handleKeyDown);
-    document.addEventListener("pointerdown", handlePointerDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("pointerdown", handlePointerDown);
     };
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, [isOpen, onClose]);
 
   return (
