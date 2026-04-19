@@ -218,15 +218,20 @@ function AppContent() {
   }, [summaryNotes, rootNote, scaleName, useFlats]);
 
   // Summary content: scale strip is always shown. ChordPracticeBar appears below when chord is active.
-  const summaryContent = (
-    <div className={chordType ? "summary-ribbon" : undefined}>
-      <DegreeChipStrip
-        scaleName={scaleLabel}
-        chips={degreeChips}
-        hiddenNotes={hiddenNotes}
-        onChipToggle={toggleHiddenNote}
-        aria-label="Scale degrees"
-      />
+  // When no chord: strip is a direct child of summary-shell so width: 100% resolves correctly
+  // and chips have room to space out, keeping the connector line visible.
+  const scaleStrip = (
+    <DegreeChipStrip
+      scaleName={scaleLabel}
+      chips={degreeChips}
+      hiddenNotes={hiddenNotes}
+      onChipToggle={toggleHiddenNote}
+      aria-label="Scale degrees"
+    />
+  );
+  const summaryContent = chordType ? (
+    <div className="summary-ribbon">
+      {scaleStrip}
       {showChordPracticeBar && (
         <ChordPracticeBar
           title={practiceBarTitle}
@@ -238,6 +243,8 @@ function AppContent() {
         />
       )}
     </div>
+  ) : (
+    scaleStrip
   );
 
   const mobileKeyExplorer = (
