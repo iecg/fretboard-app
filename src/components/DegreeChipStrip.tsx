@@ -21,7 +21,7 @@ export interface DegreeChipStripProps {
   hideHeader?: boolean;
   /** Controls chip interactivity and list visibility. */
   mode?: ScaleVisibilityMode;
-  /** Rendered inside the header row, to the right of the scale name. */
+  /** Rendered inside the header landmark, to the right of the scale name. */
   headerAction?: ReactNode;
 }
 
@@ -47,14 +47,13 @@ export function DegreeChipStrip({
       data-visibility-mode={mode}
     >
       {(!hideHeader || headerAction) && (
-        <div className="degree-chip-strip-header-row">
-          {!hideHeader && (
-            <span className="degree-chip-strip-header">{scaleName}</span>
-          )}
-          {headerAction && (
-            <div className="degree-chip-strip-header-action">{headerAction}</div>
-          )}
-        </div>
+        <header
+          className="degree-chip-strip-header"
+          data-has-action={headerAction ? 'true' : undefined}
+        >
+          {!hideHeader && scaleName}
+          {headerAction}
+        </header>
       )}
       {showChips && (
         <ul className="degree-chip-strip-list">
