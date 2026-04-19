@@ -33,6 +33,7 @@ export {
   recenterKeyAtom,
 } from "./fingeringAtoms";
 
+export type { ScaleVisibilityMode } from "./scaleAtoms";
 export {
   rootNoteAtom,
   baseScaleNameAtom,
@@ -47,6 +48,7 @@ export {
   degreeChipsAtom,
   hiddenNotesAtom,
   toggleHiddenNoteAtom,
+  scaleVisibilityModeAtom,
 } from "./scaleAtoms";
 
 export {
@@ -126,6 +128,9 @@ import {
   scaleLabelAtom,
   baseScaleNameAtom,
   scaleBrowseModeAtom,
+  hiddenNotesAtom,
+  colorNotesAtom,
+  scaleVisibilityModeAtom,
 } from "./scaleAtoms";
 import {
   chordRootAtom,
@@ -226,6 +231,30 @@ export const shapeDataAtom = atom((get) => {
     shapePolygons: polygons,
     wrappedNotes: mergedWrappedNotes,
   };
+});
+
+// Effective shape data: 'off' mode returns empty highlightNotes so the fretboard
+// renders no scale notes, while chord overlay continues to work via chordTones.
+export const effectiveShapeDataAtom = atom((get) => {
+  const mode = get(scaleVisibilityModeAtom);
+  const data = get(shapeDataAtom);
+  if (mode === "off") return { ...data, highlightNotes: [] as string[] };
+  return data;
+});
+
+// Effective hidden notes: only non-empty in 'custom' mode.
+export const effectiveHiddenNotesAtom = atom((get) => {
+  const mode = get(scaleVisibilityModeAtom);
+  if (mode !== "custom") return new Set<string>();
+  return get(hiddenNotesAtom);
+});
+
+// Effective color notes: cleared in 'off' mode since color notes are part of
+// the scale (blue notes, modal characteristic tones).
+export const effectiveColorNotesAtom = atom((get) => {
+  const mode = get(scaleVisibilityModeAtom);
+  if (mode === "off") return [] as string[];
+  return get(colorNotesAtom);
 });
 
 export const autoCenterTargetAtom = atom((get) => {
@@ -514,6 +543,7 @@ export const resetAtom = atom(null, (_get, set) => {
   set(rootNoteAtom, RESET);
   set(baseScaleNameAtom, RESET);
   set(scaleBrowseModeAtom, RESET);
+  set(scaleVisibilityModeAtom, RESET);
   set(chordRootAtom, RESET);
   set(chordTypeAtom, RESET);
   set(linkChordRootAtom, RESET);
