@@ -122,13 +122,35 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
                   in sync with the scale root automatically.
                 </li>
                 <li>
-                  <strong>Chord only (hide scale)</strong> dims non-chord notes
-                  so you can focus on playable voicings.
+                  <strong>Lens</strong> controls which notes are emphasized:
+                  <ul>
+                    <li>
+                      <strong>Targets + Color</strong> — chord tones plus
+                      characteristic scale color notes (default).
+                    </li>
+                    <li>
+                      <strong>Targets</strong> — chord tones only; hides all
+                      other scale notes so you can focus on playable voicings.
+                    </li>
+                    <li>
+                      <strong>Guide Tones</strong> — 3rd and 7th only; the
+                      tones that most strongly define chord quality.
+                    </li>
+                    <li>
+                      <strong>Color</strong> — characteristic modal or blue
+                      notes that give the scale its flavor.
+                    </li>
+                    <li>
+                      <strong>Tension</strong> — chord tones that fall outside
+                      the scale and need resolution. Only available when the
+                      chord contains notes outside the scale.
+                    </li>
+                  </ul>
                 </li>
                 <li>
-                  <strong>Interval Filter</strong> narrows which chord tones
-                  appear — useful for isolating roots, fifths, or specific
-                  intervals.
+                  <strong>Focus</strong> narrows which chord tones appear —
+                  useful for isolating roots, fifths, guide tones, or specific
+                  voicings (Triad, Shell, Rootless, Custom).
                 </li>
               </ul>
 

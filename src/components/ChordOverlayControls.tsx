@@ -1,4 +1,5 @@
 import { startTransition, useEffect, useId, useState } from "react";
+import { useAtomValue } from "jotai";
 import clsx from "clsx";
 import {
   NOTES,
@@ -6,6 +7,7 @@ import {
   type FocusPreset,
   type ChordMemberName,
 } from "../theory";
+import { lensAvailabilityAtom } from "../store/atoms";
 import { LabeledSelect, type LabeledSelectOption } from "./LabeledSelect";
 import { NoteGrid } from "./NoteGrid";
 import { ToggleBar } from "./ToggleBar";
@@ -28,12 +30,21 @@ const CHORD_OPTIONS: (string | { divider: string })[] = [
 
 const CHORD_NONE_VALUE = "__none__";
 
-const PRACTICE_LENS_OPTIONS: { value: PracticeLens; label: string }[] = [
-  { value: "targets-color", label: "Targets + Color" },
-  { value: "targets", label: "Targets" },
-  { value: "guide-tones", label: "Guide Tones" },
-  { value: "color", label: "Color" },
-  { value: "tension", label: "Tension" },
+const LENS_LABELS: Record<PracticeLens, string> = {
+  "targets-color": "Targets + Color",
+  targets: "Targets",
+  "guide-tones": "Guide Tones",
+  color: "Color",
+  tension: "Tension",
+};
+
+// Display order for the lens ToggleBar (targets-color is the default and shown first).
+const LENS_UI_ORDER: readonly PracticeLens[] = [
+  "targets-color",
+  "targets",
+  "guide-tones",
+  "color",
+  "tension",
 ];
 
 const FOCUS_PRESET_LABELS: Record<FocusPreset, string> = {
@@ -67,10 +78,10 @@ export function ChordOverlayControls() {
     setCustomMembers,
     availableFocusPresets,
     chordMembers,
-    hasOutsideChordMembers,
   } = useChordState();
 
   const { useFlats } = useScaleState();
+  const lensAvailability = useAtomValue(lensAvailabilityAtom);
 
   const [isChordOverlayOpen, setChordOverlayOpen] = useState(Boolean(chordType));
   const linkChordRootId = useId();
@@ -85,18 +96,48 @@ export function ChordOverlayControls() {
     })),
   ];
 
-  // Tension lens requires outside chord members to be meaningful.
-  const lensOptions = PRACTICE_LENS_OPTIONS.map((opt) => ({
-    ...opt,
-    disabled: opt.value === "tension" && !hasOutsideChordMembers,
-  }));
+  // lensAvailabilityAtom emits one entry per LENS_REGISTRY member (same 5 ids as
+  // LENS_UI_ORDER), so find() will always succeed. Defensive fallback avoids the
+  // non-null assertion and makes the assumption explicit.
+  // The active lens is never rendered disabled — it must remain focusable and visually
+  // active even when the registry marks it unavailable (e.g. targets-color with no color
+  // notes degrades gracefully and is exempt from auto-exit).
+  const lensOptions = LENS_UI_ORDER.map((id) => {
+    const entry = lensAvailability.find((l) => l.id === id);
+    const isActive = id === practiceLens;
+    const unavailable = entry ? !entry.available : true;
+    const reason = entry?.reason ?? undefined;
+    return {
+      value: id,
+      label: LENS_LABELS[id],
+      disabled: !isActive && unavailable,
+      title: !isActive && reason ? reason : undefined,
+      description: !isActive && reason ? reason : undefined,
+    };
+  });
 
-  // Auto-exit tension lens when chord becomes fully diatonic.
+  const currentLensEntry = lensAvailability.find((l) => l.id === practiceLens);
+
+  // Auto-exit unavailable lenses. targets-color is exempt — it degrades gracefully
+  // (shows chord tones, omits color highlights) when no color notes are present, so
+  // it is never auto-exited and serves as the primary fallback.
+  // Fallback chain: targets-color → targets (targets requires only an active chord
+  // overlay and is always available when another lens becomes unavailable mid-session).
+  // When no lens is available (chord overlay removed), preserve the stored value.
   useEffect(() => {
-    if (practiceLens === "tension" && !hasOutsideChordMembers) {
-      setPracticeLens("targets-color");
+    if (
+      currentLensEntry &&
+      !currentLensEntry.available &&
+      currentLensEntry.id !== "targets-color"
+    ) {
+      const tcAvailable = lensAvailability.find((l) => l.id === "targets-color")?.available;
+      const tAvailable = lensAvailability.find((l) => l.id === "targets")?.available;
+      const fallback = tcAvailable ? "targets-color" : tAvailable ? "targets" : null;
+      if (fallback) {
+        setPracticeLens(fallback);
+      }
     }
-  }, [practiceLens, hasOutsideChordMembers, setPracticeLens]);
+  }, [currentLensEntry, lensAvailability, setPracticeLens]);
 
   const focusPresetOptions = availableFocusPresets.map((preset) => ({
     value: preset,
@@ -184,6 +225,9 @@ export function ChordOverlayControls() {
                   onChange={setPracticeLens}
                   label="Practice lens"
                 />
+                {currentLensEntry?.description ? (
+                  <p className={shared["lens-hint"]}>{currentLensEntry.description}</p>
+                ) : null}
               </div>
 
               <div className={shared["control-section"]}>

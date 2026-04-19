@@ -205,6 +205,13 @@
   user-select: none;
 }
 
+.lens-hint {
+  font-size: 0.75rem;
+  color: rgb(188 200 214 / 0.72);
+  line-height: 1.4;
+  margin: 0;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
