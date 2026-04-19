@@ -938,7 +938,7 @@ export const FretboardSVG = memo(function FretboardSVG({
             {/* Shape polygons overlay */}
             {svgPolygons.length > 0 &&
               svgPolygons.map(({ points, color, key }) => (
-                <polygon key={key} points={points} fill={color} stroke="none" />
+                <polygon key={key} points={points} fill={color} stroke="none" style={{ pointerEvents: "none" }} />
               ))}
 
             {/* Note circles (outlined-glow) — visual only, aria-hidden SVG */}

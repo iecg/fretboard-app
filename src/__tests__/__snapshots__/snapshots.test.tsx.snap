@@ -73576,6 +73576,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with CAGED shapes a
                 fill="#6366f1"
                 points="19,0 19,32.9470746122449 246.34167781928656,55.961891000335115 166.34839432689864,82.91274226537945 166.34839432689864,192 19,192 19,108.61058507755101 19,133.83175523265308 19,159.0529253877551 19,0"
                 stroke="none"
+                style="pointer-events: none;"
               />
               <g
                 class="fretboard-note key-tonic"
@@ -76936,6 +76937,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with CAGED shapes s
                 fill="#6366f1"
                 points="20.5,0 20.5,37.038163591836735 248.81511924013083,62.930121998691135 169.02400916853242,93.26709747050162 169.02400916853242,216 20.5,216 20.5,122.19236728163266 20.5,150.57710184489798 20.5,178.96183640816326 20.5,0"
                 stroke="none"
+                style="pointer-events: none;"
               />
               <g
                 class="fretboard-note key-tonic"
