@@ -339,12 +339,19 @@ export function FretboardSVG({
     const halfVerts = verts.length / 2;
     const clampedMin = Math.max(0, poly.intendedMin);
     const clampedMax = Math.min(maxFret, poly.intendedMax);
+    // Only bleed past the edge when at least one vertex is already naturally
+    // outside the boundary (template offsets produce negative / over-max fret
+    // values). Without this guard, shapes whose template left offset is 0 at
+    // rootFret=0 (e.g. A-shape at open position) would be incorrectly pushed
+    // to intendedMin (<0), flooding the open-string column.
+    const minLeftFret = Math.min(...verts.slice(0, halfVerts).map(v => v.fret));
+    const maxRightFret = Math.max(...verts.slice(halfVerts).map(v => v.fret));
     const resolveLeftFret = (fret: number) =>
-      fret === clampedMin && poly.intendedMin < clampedMin
+      minLeftFret < 0 && fret === clampedMin && poly.intendedMin < clampedMin
         ? poly.intendedMin
         : fret;
     const resolveRightFret = (fret: number) =>
-      fret === clampedMax && poly.intendedMax > clampedMax
+      maxRightFret > maxFret && fret === clampedMax && poly.intendedMax > clampedMax
         ? poly.intendedMax
         : fret;
 
