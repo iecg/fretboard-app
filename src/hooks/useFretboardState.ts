@@ -8,7 +8,7 @@ import {
   displayFormatAtom,
   useFlatsAtom,
   noteSemanticMapAtom,
-  shapeDataAtom,
+  effectiveShapeDataAtom,
   autoCenterTargetAtom,
   recenterKeyAtom,
   activeChordTonesAtom,
@@ -17,8 +17,8 @@ import {
   hideNonChordNotesAtom,
   viewModeAtom,
   practiceLensAtom,
-  colorNotesAtom,
-  hiddenNotesAtom,
+  effectiveColorNotesAtom,
+  effectiveHiddenNotesAtom,
 } from "../store/atoms";
 
 export function useFretboardState() {
@@ -31,18 +31,18 @@ export function useFretboardState() {
   const useFlats = useAtomValue(useFlatsAtom);
   const noteSemanticMap = useAtomValue(noteSemanticMapAtom);
   const { highlightNotes, boxBounds, shapePolygons, wrappedNotes } =
-    useAtomValue(shapeDataAtom);
+    useAtomValue(effectiveShapeDataAtom);
   const autoCenterTarget = useAtomValue(autoCenterTargetAtom);
   const recenterKey = useAtomValue(recenterKeyAtom);
-  
+
   const chordTones = useAtomValue(activeChordTonesAtom);
   const chordRoot = useAtomValue(chordRootAtom);
   const chordFretSpread = useAtomValue(chordFretSpreadAtom);
   const hideNonChordNotes = useAtomValue(hideNonChordNotesAtom);
   const viewMode = useAtomValue(viewModeAtom);
   const practiceLens = useAtomValue(practiceLensAtom);
-  const colorNotes = useAtomValue(colorNotesAtom);
-  const hiddenNotes = useAtomValue(hiddenNotesAtom);
+  const colorNotes = useAtomValue(effectiveColorNotesAtom);
+  const hiddenNotes = useAtomValue(effectiveHiddenNotesAtom);
 
   return {
     currentTuning,

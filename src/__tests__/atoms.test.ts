@@ -35,6 +35,11 @@ import {
   chordTonesAtom,
   colorNotesAtom,
   clickedShapeAtom,
+  scaleVisibilityModeAtom,
+  effectiveHiddenNotesAtom,
+  effectiveColorNotesAtom,
+  hiddenNotesAtom,
+  toggleHiddenNoteAtom,
 } from "../store/atoms";
 import { STANDARD_TUNING, TUNINGS } from "../guitar";
 import { CAGED_SHAPES } from "../shapes";
@@ -638,6 +643,117 @@ describe("atoms", () => {
       expect(store.get(clickedShapeAtom)).toBe("E");
       store.set(clickedShapeAtom, null);
       expect(store.get(clickedShapeAtom)).toBeNull();
+    });
+  });
+
+  describe("scaleVisibilityModeAtom", () => {
+    it("defaults to 'all'", () => {
+      const store = makeStore();
+      const unsub = mount(store, scaleVisibilityModeAtom);
+      expect(store.get(scaleVisibilityModeAtom)).toBe("all");
+      unsub();
+    });
+
+    it("reads valid stored value from localStorage", () => {
+      localStorage.setItem(k("scaleVisibilityMode"), "custom");
+      const store = makeStore();
+      const unsub = mount(store, scaleVisibilityModeAtom);
+      expect(store.get(scaleVisibilityModeAtom)).toBe("custom");
+      unsub();
+    });
+
+    it("falls back to 'all' for invalid stored value", () => {
+      localStorage.setItem(k("scaleVisibilityMode"), "invalid");
+      const store = makeStore();
+      const unsub = mount(store, scaleVisibilityModeAtom);
+      expect(store.get(scaleVisibilityModeAtom)).toBe("all");
+      unsub();
+    });
+
+    it("persists written value to localStorage", () => {
+      const store = makeStore();
+      store.set(scaleVisibilityModeAtom, "off");
+      expect(localStorage.getItem(k("scaleVisibilityMode"))).toBe("off");
+    });
+
+    it("resetAtom resets scaleVisibilityModeAtom to 'all'", () => {
+      const store = makeStore();
+      store.set(scaleVisibilityModeAtom, "off");
+      store.set(resetAtom);
+      expect(store.get(scaleVisibilityModeAtom)).toBe("all");
+    });
+  });
+
+  describe("effectiveHiddenNotesAtom", () => {
+    it("returns empty set in 'all' mode regardless of hidden notes", () => {
+      const store = makeStore();
+      store.set(scaleVisibilityModeAtom, "all");
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      store.set(toggleHiddenNoteAtom, "E");
+      expect(store.get(effectiveHiddenNotesAtom).size).toBe(0);
+    });
+
+    it("returns empty set in 'off' mode", () => {
+      const store = makeStore();
+      store.set(scaleVisibilityModeAtom, "off");
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      store.set(toggleHiddenNoteAtom, "E");
+      expect(store.get(effectiveHiddenNotesAtom).size).toBe(0);
+    });
+
+    it("returns hiddenNotesAtom value in 'custom' mode", () => {
+      const store = makeStore();
+      store.set(scaleVisibilityModeAtom, "custom");
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      store.set(toggleHiddenNoteAtom, "E");
+      const effective = store.get(effectiveHiddenNotesAtom);
+      expect(effective.has("E")).toBe(true);
+      expect(effective.size).toBe(1);
+    });
+
+    it("hidden notes persist through mode switches back to custom", () => {
+      const store = makeStore();
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      store.set(scaleVisibilityModeAtom, "custom");
+      store.set(toggleHiddenNoteAtom, "G");
+
+      store.set(scaleVisibilityModeAtom, "all");
+      expect(store.get(effectiveHiddenNotesAtom).size).toBe(0);
+
+      store.set(scaleVisibilityModeAtom, "custom");
+      // Hidden notes preserved in underlying hiddenNotesAtom
+      expect(store.get(hiddenNotesAtom).has("G")).toBe(true);
+      expect(store.get(effectiveHiddenNotesAtom).has("G")).toBe(true);
+    });
+  });
+
+  describe("effectiveColorNotesAtom", () => {
+    it("returns color notes normally in 'all' mode", () => {
+      const store = makeStore();
+      store.set(scaleVisibilityModeAtom, "all");
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Minor Blues");
+      expect(store.get(effectiveColorNotesAtom)).toEqual(["F#"]);
+    });
+
+    it("returns empty array in 'off' mode", () => {
+      const store = makeStore();
+      store.set(scaleVisibilityModeAtom, "off");
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Minor Blues");
+      expect(store.get(effectiveColorNotesAtom)).toEqual([]);
+    });
+
+    it("returns color notes in 'custom' mode", () => {
+      const store = makeStore();
+      store.set(scaleVisibilityModeAtom, "custom");
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Minor Blues");
+      expect(store.get(effectiveColorNotesAtom)).toEqual(["F#"]);
     });
   });
 });
