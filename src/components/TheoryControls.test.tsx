@@ -8,7 +8,7 @@ import {
   scaleNameAtom,
   scaleBrowseModeAtom,
   chordTypeAtom,
-  viewModeAtom,
+  practiceLensAtom,
   focusPresetAtom,
 } from "../store/atoms";
 
@@ -116,33 +116,33 @@ describe("TheoryControls", () => {
     expect(screen.getByText("Key Wheel")).toBeInTheDocument();
   });
 
-  it("shows View and Focus controls when a chord type is selected", () => {
+  it("shows Lens and Focus controls when a chord type is selected", () => {
     const store = createStore();
     store.set(chordTypeAtom, "Major Triad");
 
     renderWithStore(<TheoryControls />, store);
 
-    expect(screen.getByText("View")).toBeInTheDocument();
+    expect(screen.getByText("Lens")).toBeInTheDocument();
     expect(screen.getByText("Focus")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Scale + Chord" }),
+      screen.getByRole("button", { name: "Targets + Color" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Chord Only" }),
+      screen.getByRole("button", { name: "Targets" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "All" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Rootless" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Custom" })).toBeInTheDocument();
   });
 
-  it("calls setViewMode when a view option is clicked", () => {
+  it("calls setPracticeLens when a lens option is clicked", () => {
     const store = createStore();
     store.set(chordTypeAtom, "Major Triad");
 
     renderWithStore(<TheoryControls />, store);
 
-    fireEvent.click(screen.getByRole("button", { name: "Chord Only" }));
-    expect(store.get(viewModeAtom)).toBe("chord");
+    fireEvent.click(screen.getByRole("button", { name: "Targets" }));
+    expect(store.get(practiceLensAtom)).toBe("targets");
   });
 
   it("calls setFocusPreset when a focus option is clicked", () => {
@@ -168,7 +168,7 @@ describe("TheoryControls", () => {
     expect(screen.getByRole("button", { name: "5" })).toBeInTheDocument();
   });
 
-  it("Outside view option is disabled when hasOutsideChordMembers is false", () => {
+  it("Tension lens option is disabled when hasOutsideChordMembers is false", () => {
     const store = createStore();
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Major");
@@ -176,22 +176,17 @@ describe("TheoryControls", () => {
 
     renderWithStore(<TheoryControls />, store);
 
-    expect(screen.getByRole("button", { name: "Outside" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Tension" })).toBeDisabled();
   });
 
-  it("Outside view option is enabled when hasOutsideChordMembers is true", () => {
+  it("Tension lens option is enabled when hasOutsideChordMembers is true", () => {
     const store = createStore();
     store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordTypeAtom, "Major 7th"); // This will have outside members if scale is major pentatonic? 
-    // No, Major 7th (C E G B) is in C Major (C D E F G A B).
-    // Let's use a chord that is definitely outside.
-    // Major 7th against Minor Pentatonic.
     store.set(scaleNameAtom, "Minor Pentatonic"); // C Eb F G Bb
     store.set(chordTypeAtom, "Major Triad"); // C E G -> E is outside.
 
     renderWithStore(<TheoryControls />, store);
 
-    expect(screen.getByRole("button", { name: "Outside" })).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: "Tension" })).not.toBeDisabled();
   });
 });

@@ -2,7 +2,7 @@ import { startTransition, useId, useState } from "react";
 import clsx from "clsx";
 import {
   NOTES,
-  type ViewMode,
+  type PracticeLens,
   type FocusPreset,
   type ChordMemberName,
 } from "../theory";
@@ -28,10 +28,12 @@ const CHORD_OPTIONS: (string | { divider: string })[] = [
 
 const CHORD_NONE_VALUE = "__none__";
 
-const VIEW_MODE_OPTIONS: { value: ViewMode; label: string }[] = [
-  { value: "compare", label: "Scale + Chord" },
-  { value: "chord", label: "Chord Only" },
-  { value: "outside", label: "Outside" },
+const PRACTICE_LENS_OPTIONS: { value: PracticeLens; label: string }[] = [
+  { value: "targets-color", label: "Targets + Color" },
+  { value: "targets", label: "Targets" },
+  { value: "guide-tones", label: "Guide Tones" },
+  { value: "color", label: "Color" },
+  { value: "tension", label: "Tension" },
 ];
 
 const FOCUS_PRESET_LABELS: Record<FocusPreset, string> = {
@@ -57,8 +59,8 @@ export function ChordOverlayControls() {
     setChordType,
     linkChordRoot,
     setLinkChordRoot,
-    viewMode,
-    setViewMode,
+    practiceLens,
+    setPracticeLens,
     focusPreset,
     setFocusPreset,
     customMembers,
@@ -83,9 +85,10 @@ export function ChordOverlayControls() {
     })),
   ];
 
-  const viewModeOptions = VIEW_MODE_OPTIONS.map((opt) => ({
+  // Tension lens requires outside chord members to be meaningful.
+  const lensOptions = PRACTICE_LENS_OPTIONS.map((opt) => ({
     ...opt,
-    disabled: opt.value === "outside" && !hasOutsideChordMembers,
+    disabled: opt.value === "tension" && !hasOutsideChordMembers,
   }));
 
   const focusPresetOptions = availableFocusPresets.map((preset) => ({
@@ -167,12 +170,12 @@ export function ChordOverlayControls() {
               ) : null}
 
               <div className={shared["control-section"]}>
-                <span className={shared["section-label"]}>View</span>
+                <span className={shared["section-label"]}>Lens</span>
                 <ToggleBar
-                  options={viewModeOptions}
-                  value={viewMode}
-                  onChange={setViewMode}
-                  label="View mode"
+                  options={lensOptions}
+                  value={practiceLens}
+                  onChange={setPracticeLens}
+                  label="Practice lens"
                 />
               </div>
 

@@ -63,7 +63,33 @@
   line-height: 1;
 }
 
-/* Groups row: lays out Targets / Shared / Outside horizontally */
+/* Coaching cues — stacked rows, one cue per line */
+.chord-practice-bar-cues {
+  display: flex;
+  flex-direction: column;
+  gap: 0.32rem;
+}
+
+/* Individual cue row: label + pill list side by side */
+.practice-bar-cue {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.practice-bar-cue-label {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: var(--font-weight-medium);
+  color: rgb(255 255 255 / 0.38);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Legacy group layout kept for backward compat with any external CSS */
 .chord-practice-bar-groups {
   display: flex;
   align-items: flex-start;
@@ -71,7 +97,6 @@
   flex-wrap: wrap;
 }
 
-/* Individual group: label + pill row */
 .practice-bar-group {
   display: flex;
   align-items: center;
@@ -138,6 +163,12 @@
   box-shadow: 0 0 5px rgb(167 139 250 / 0.3);
 }
 
+.practice-bar-pill[data-role="guide-tone"] {
+  background: rgb(30 60 120 / 0.22);
+  border-color: rgb(96 165 250 / 0.7);
+  box-shadow: 0 0 5px rgb(96 165 250 / 0.25);
+}
+
 .practice-bar-pill-note {
   font-family: var(--font-sans);
   font-size: var(--pill-font);
@@ -154,6 +185,16 @@
   color: rgb(255 255 255 / 0.48);
   line-height: 1;
   letter-spacing: 0.02em;
+}
+
+/* Resolution arrow shown after tension notes: "→D" */
+.practice-bar-pill-resolve {
+  font-family: var(--font-sans);
+  font-size: calc(var(--pill-font) - 0.06rem);
+  font-weight: var(--font-weight-medium);
+  color: rgb(167 139 250 / 0.8);
+  line-height: 1;
+  letter-spacing: 0.01em;
 }
 
 /* Responsive — mobile */

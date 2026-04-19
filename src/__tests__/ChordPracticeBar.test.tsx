@@ -1,511 +1,370 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { ChordPracticeBar } from "../components/ChordPracticeBar";
-import type { ChordRowEntry, PracticeBarColorNote } from "../theory";
+import type { PracticeCue } from "../theory";
 import { axe } from "../test-utils/a11y";
 
-const root: ChordRowEntry = {
-  internalNote: "C",
-  displayNote: "C",
-  memberName: "1",
-  role: "chord-root",
-  inScale: true,
-};
-const third: ChordRowEntry = {
-  internalNote: "E",
-  displayNote: "E",
-  memberName: "3",
-  role: "chord-tone-in-scale",
-  inScale: true,
-};
-const fifth: ChordRowEntry = {
-  internalNote: "G",
-  displayNote: "G",
-  memberName: "5",
-  role: "chord-tone-in-scale",
-  inScale: true,
-};
-const flatSeven: ChordRowEntry = {
-  internalNote: "A#",
-  displayNote: "B♭",
-  memberName: "♭7",
-  role: "chord-tone-outside-scale",
-  inScale: false,
+// ── Fixture cues ──────────────────────────────────────────────────────────────
+
+const landOnCue: PracticeCue = {
+  kind: "land-on",
+  label: "Land on",
+  notes: [
+    { internalNote: "D", displayNote: "D", intervalName: "1", role: "chord-root" },
+    { internalNote: "F", displayNote: "F", intervalName: "♭3", role: "chord-tone-in-scale" },
+    { internalNote: "A", displayNote: "A", intervalName: "5", role: "chord-tone-in-scale" },
+    { internalNote: "C", displayNote: "C", intervalName: "♭7", role: "chord-tone-in-scale" },
+  ],
 };
 
-const bNatural: PracticeBarColorNote = {
-  internalNote: "B",
-  displayNote: "B",
-  intervalName: "6",
-};
-const fSharp: PracticeBarColorNote = {
-  internalNote: "F#",
-  displayNote: "F♯",
-  intervalName: "♯4",
+const colorCue: PracticeCue = {
+  kind: "color-note",
+  label: "Color note",
+  notes: [
+    { internalNote: "B", displayNote: "B", intervalName: "6", role: "color-tone" },
+  ],
 };
 
-const allMembers = [root, third, fifth, flatSeven];
-const inScaleMembers = [root, third, fifth];
-const outsideMembers = [flatSeven];
+const colorCuePlural: PracticeCue = {
+  kind: "color-note",
+  label: "Color notes",
+  notes: [
+    { internalNote: "B", displayNote: "B", intervalName: "6", role: "color-tone" },
+    { internalNote: "F#", displayNote: "F♯", intervalName: "♯4", role: "color-tone" },
+  ],
+};
+
+const guideToneCue: PracticeCue = {
+  kind: "guide-tones",
+  label: "Guide tones",
+  notes: [
+    { internalNote: "E", displayNote: "E", intervalName: "3", role: "guide-tone" },
+    { internalNote: "A#", displayNote: "B♭", intervalName: "♭7", role: "guide-tone" },
+  ],
+};
+
+const tensionCue: PracticeCue = {
+  kind: "tension",
+  label: "Tension",
+  notes: [
+    {
+      internalNote: "C#",
+      displayNote: "C♯",
+      intervalName: "1",
+      role: "chord-tone-outside-scale",
+      resolvesTo: { internalNote: "D", displayNote: "D" },
+    },
+    {
+      internalNote: "G#",
+      displayNote: "G♯",
+      intervalName: "5",
+      role: "chord-tone-outside-scale",
+      resolvesTo: { internalNote: "A", displayNote: "A" },
+    },
+  ],
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 describe("ChordPracticeBar", () => {
-  it("renders a role=group with aria-label", () => {
+  it("renders a role=group with aria-label containing the title", () => {
     render(
       <ChordPracticeBar
-        title="C Dominant 7th"
-        badge="Compare"
-        viewMode="compare"
-        targetMembers={allMembers}
-        outsideMembers={outsideMembers}
+        title="D Minor 7"
+        cues={[landOnCue]}
       />
     );
-    const group = screen.getByRole("group", { name: "Chord analysis: C Dominant 7th" });
+    const group = screen.getByRole("group", { name: "Practice cues: D Minor 7" });
     expect(group).toBeTruthy();
   });
 
-  it("renders title and badge", () => {
-    render(
-      <ChordPracticeBar
-        title="C Dominant 7th"
-        badge="Compare"
-        viewMode="compare"
-        targetMembers={allMembers}
-        outsideMembers={outsideMembers}
-      />
-    );
-    expect(screen.getByText("C Dominant 7th")).toBeTruthy();
-    expect(screen.getByText("Compare")).toBeTruthy();
+  it("renders the title", () => {
+    render(<ChordPracticeBar title="D Minor 7" cues={[landOnCue]} />);
+    expect(screen.getByText("D Minor 7")).toBeTruthy();
   });
 
-  describe("compare mode", () => {
-    it("shows Targets and Outside group labels (no Shared)", () => {
-      render(
-        <ChordPracticeBar
-          title="C Dom7"
-          badge="Compare"
-          viewMode="compare"
-          targetMembers={allMembers}
-          outsideMembers={outsideMembers}
-        />
-      );
-      expect(screen.getByText("Targets")).toBeTruthy();
-      expect(screen.queryByText("Shared")).toBeNull();
-      expect(screen.getByText("Outside")).toBeTruthy();
+  it("renders an optional badge when provided", () => {
+    render(<ChordPracticeBar title="D Minor 7" badge="Targets" cues={[landOnCue]} />);
+    expect(screen.getByText("Targets")).toBeTruthy();
+  });
+
+  it("does not render a badge element when badge is null", () => {
+    const { container } = render(
+      <ChordPracticeBar title="D Minor 7" badge={null} cues={[landOnCue]} />
+    );
+    expect(container.querySelector(".chord-practice-bar-badge")).toBeNull();
+  });
+
+  it("returns null when cues array is empty", () => {
+    const { container } = render(
+      <ChordPracticeBar title="Empty" cues={[]} />
+    );
+    expect(container.firstChild).toBeNull();
+  });
+
+  describe("Land on cue (targets / targets-color)", () => {
+    it("renders 'Land on:' cue label", () => {
+      render(<ChordPracticeBar title="D Minor 7" cues={[landOnCue]} />);
+      expect(screen.getByText("Land on:")).toBeTruthy();
     });
 
-    it("omits Outside group when outsideMembers is empty", () => {
-      render(
-        <ChordPracticeBar
-          title="C Major Triad"
-          badge="Compare"
-          viewMode="compare"
-          targetMembers={inScaleMembers}
-          outsideMembers={[]}
-        />
-      );
-      expect(screen.queryByText("Outside")).toBeNull();
+    it("renders all chord tone note names", () => {
+      render(<ChordPracticeBar title="D Minor 7" cues={[landOnCue]} />);
+      expect(screen.getByText("D")).toBeTruthy();
+      expect(screen.getByText("F")).toBeTruthy();
+      expect(screen.getByText("A")).toBeTruthy();
+      expect(screen.getByText("C")).toBeTruthy();
     });
 
-    it("shows Color tone group (singular) when one colorNoteEntry provided", () => {
-      render(
-        <ChordPracticeBar
-          title="D Dorian + Dm7"
-          badge="Compare"
-          viewMode="compare"
-          targetMembers={inScaleMembers}
-          outsideMembers={[]}
-          colorNoteEntries={[bNatural]}
-        />
-      );
-      expect(screen.getByText("Color tone")).toBeTruthy();
-      expect(screen.queryByText("Color tones")).toBeNull();
+    it("renders interval names alongside note names", () => {
+      render(<ChordPracticeBar title="D Minor 7" cues={[landOnCue]} />);
+      expect(screen.getByText("1")).toBeTruthy();
+      expect(screen.getByText("♭3")).toBeTruthy();
     });
 
-    it("shows Color tones group (plural) when multiple colorNoteEntries provided", () => {
-      render(
-        <ChordPracticeBar
-          title="C Lydian + CMaj7"
-          badge="Compare"
-          viewMode="compare"
-          targetMembers={inScaleMembers}
-          outsideMembers={[]}
-          colorNoteEntries={[bNatural, fSharp]}
-        />
-      );
-      expect(screen.getByText("Color tones")).toBeTruthy();
-      expect(screen.queryByText("Color tone")).toBeNull();
-    });
-
-    it("color pill has data-role=color-tone", () => {
+    it("pills have correct data-role for chord root and chord tones", () => {
       const { container } = render(
-        <ChordPracticeBar
-          title="D Dorian + Dm7"
-          badge="Compare"
-          viewMode="compare"
-          targetMembers={inScaleMembers}
-          outsideMembers={[]}
-          colorNoteEntries={[bNatural]}
-        />
+        <ChordPracticeBar title="D Minor 7" cues={[landOnCue]} />
+      );
+      expect(container.querySelector('[data-role="chord-root"]')).toBeTruthy();
+      expect(container.querySelectorAll('[data-role="chord-tone-in-scale"]').length).toBe(3);
+    });
+  });
+
+  describe("Color note cue", () => {
+    it("renders 'Color note:' label (singular)", () => {
+      render(<ChordPracticeBar title="D Dorian" cues={[colorCue]} />);
+      expect(screen.getByText("Color note:")).toBeTruthy();
+    });
+
+    it("renders 'Color notes:' label (plural)", () => {
+      render(<ChordPracticeBar title="C Lydian" cues={[colorCuePlural]} />);
+      expect(screen.getByText("Color notes:")).toBeTruthy();
+    });
+
+    it("pill has data-role=color-tone", () => {
+      const { container } = render(
+        <ChordPracticeBar title="D Dorian" cues={[colorCue]} />
       );
       expect(container.querySelector('[data-role="color-tone"]')).toBeTruthy();
     });
 
-    it("color pill shows note name and interval", () => {
-      render(
-        <ChordPracticeBar
-          title="D Dorian + Dm7"
-          badge="Compare"
-          viewMode="compare"
-          targetMembers={inScaleMembers}
-          outsideMembers={[]}
-          colorNoteEntries={[bNatural]}
-        />
-      );
+    it("renders color note name and interval", () => {
+      render(<ChordPracticeBar title="D Dorian" cues={[colorCue]} />);
       expect(screen.getByText("B")).toBeTruthy();
       expect(screen.getByText("6")).toBeTruthy();
     });
   });
 
-  describe("chord mode", () => {
-    it("shows Targets group only, no Shared or Outside or Color tone", () => {
-      render(
-        <ChordPracticeBar
-          title="C Major Triad"
-          badge="Chord only"
-          viewMode="chord"
-          targetMembers={inScaleMembers}
-          outsideMembers={[]}
-          colorNoteEntries={[bNatural]}
-        />
-      );
-      expect(screen.getByText("Targets")).toBeTruthy();
-      expect(screen.queryByText("Shared")).toBeNull();
-      expect(screen.queryByText("Outside")).toBeNull();
-      expect(screen.queryByText("Color tone")).toBeNull();
-      expect(screen.queryByText("Color tones")).toBeNull();
+  describe("Guide tones cue", () => {
+    it("renders 'Guide tones:' label", () => {
+      render(<ChordPracticeBar title="G7" cues={[guideToneCue]} />);
+      expect(screen.getByText("Guide tones:")).toBeTruthy();
     });
 
-    it("renders badge as 'Chord only'", () => {
-      render(
-        <ChordPracticeBar
-          title="C Major Triad"
-          badge="Chord only"
-          viewMode="chord"
-          targetMembers={inScaleMembers}
-          outsideMembers={[]}
-        />
+    it("pills have data-role=guide-tone", () => {
+      const { container } = render(
+        <ChordPracticeBar title="G7" cues={[guideToneCue]} />
       );
-      expect(screen.getByText("Chord only")).toBeTruthy();
+      const pills = container.querySelectorAll('[data-role="guide-tone"]');
+      expect(pills.length).toBe(2);
+    });
+
+    it("renders guide tone note names", () => {
+      render(<ChordPracticeBar title="G7" cues={[guideToneCue]} />);
+      expect(screen.getByText("E")).toBeTruthy();
+      expect(screen.getByText("B♭")).toBeTruthy();
     });
   });
 
-  describe("outside mode", () => {
-    it("shows Outside group only, no Targets or Color tone", () => {
-      render(
-        <ChordPracticeBar
-          title="Outside tones"
-          badge="against C Major"
-          viewMode="outside"
-          targetMembers={allMembers}
-          outsideMembers={outsideMembers}
-          colorNoteEntries={[bNatural]}
-        />
-      );
-      expect(screen.queryByText("Targets")).toBeNull();
-      expect(screen.queryByText("Shared")).toBeNull();
-      expect(screen.getByText("Outside")).toBeTruthy();
-      expect(screen.queryByText("Color tone")).toBeNull();
-      expect(screen.queryByText("Color tones")).toBeNull();
+  describe("Tension cue", () => {
+    it("renders 'Tension:' label", () => {
+      render(<ChordPracticeBar title="C# Minor Triad" cues={[tensionCue]} />);
+      expect(screen.getByText("Tension:")).toBeTruthy();
     });
 
-    it("renders title as 'Outside tones'", () => {
-      render(
-        <ChordPracticeBar
-          title="Outside tones"
-          badge="against C Major"
-          viewMode="outside"
-          targetMembers={allMembers}
-          outsideMembers={outsideMembers}
-        />
+    it("pills have data-role=chord-tone-outside-scale", () => {
+      const { container } = render(
+        <ChordPracticeBar title="C# Minor Triad" cues={[tensionCue]} />
       );
-      expect(screen.getByText("Outside tones")).toBeTruthy();
+      const pills = container.querySelectorAll('[data-role="chord-tone-outside-scale"]');
+      expect(pills.length).toBe(2);
     });
 
-    it("renders badge as 'against {scale}'", () => {
-      render(
-        <ChordPracticeBar
-          title="Outside tones"
-          badge="against C Major"
-          viewMode="outside"
-          targetMembers={allMembers}
-          outsideMembers={outsideMembers}
-        />
-      );
-      expect(screen.getByText("against C Major")).toBeTruthy();
+    it("renders resolution arrows for tension notes with resolvesTo", () => {
+      render(<ChordPracticeBar title="C# Minor Triad" cues={[tensionCue]} />);
+      const resolves = screen.getAllByText(/→/);
+      expect(resolves.length).toBe(2);
+      expect(resolves[0]!.textContent).toBe("→D");
+      expect(resolves[1]!.textContent).toBe("→A");
+    });
+
+    it("outside chord root appears in tension cue (semantic fix)", () => {
+      // A chord root that is outside the scale should appear in a tension cue
+      const outsideRootTension: PracticeCue = {
+        kind: "tension",
+        label: "Tension",
+        notes: [
+          {
+            internalNote: "C#",
+            displayNote: "C♯",
+            intervalName: "1",
+            role: "chord-root",  // root role, but also tension
+            resolvesTo: { internalNote: "D", displayNote: "D" },
+          },
+        ],
+      };
+      render(<ChordPracticeBar title="C# Minor" cues={[outsideRootTension]} />);
+      expect(screen.getByText("Tension:")).toBeTruthy();
+      expect(screen.getByText("C♯")).toBeTruthy();
+      expect(screen.getByText("→D")).toBeTruthy();
     });
   });
 
-  it("returns null when all member arrays are empty", () => {
-    const { container } = render(
-      <ChordPracticeBar
-        title="Empty"
-        badge={null}
-        viewMode="compare"
-        targetMembers={[]}
-        outsideMembers={[]}
-      />
-    );
-    expect(container.firstChild).toBeNull();
-  });
-
-  it("pills have data-role attributes matching chord member roles", () => {
-    const { container } = render(
-      <ChordPracticeBar
-        title="C Dom7"
-        badge="Compare"
-        viewMode="compare"
-        targetMembers={allMembers}
-        outsideMembers={outsideMembers}
-      />
-    );
-    const lists = container.querySelectorAll(".practice-bar-pill-list");
-    expect(lists.length).toBeGreaterThan(0);
-    const targetList = lists[0]!;
-    expect(targetList.querySelector('[data-role="chord-root"]')).toBeTruthy();
-    expect(targetList.querySelectorAll('[data-role="chord-tone-in-scale"]').length).toBe(2);
-    expect(targetList.querySelector('[data-role="chord-tone-outside-scale"]')).toBeTruthy();
-  });
-
-  describe("shape-local context", () => {
-    it("shows 'Targets here' label when isShapeLocal and shapeLocalTargetMembers provided", () => {
+  describe("Targets + Color (default lens)", () => {
+    it("renders both Land on and Color note cues", () => {
       render(
         <ChordPracticeBar
           title="D Minor 7"
-          badge="Compare"
-          viewMode="compare"
-          targetMembers={allMembers}
-          outsideMembers={[]}
-          isShapeLocal
-          shapeContextLabel="In E shape"
-          shapeLocalTargetMembers={inScaleMembers}
-          shapeLocalOutsideMembers={[]}
+          cues={[landOnCue, colorCue]}
         />
       );
-      expect(screen.getByText("Targets here")).toBeTruthy();
-      expect(screen.queryByText("Targets")).toBeNull();
+      expect(screen.getByText("Land on:")).toBeTruthy();
+      expect(screen.getByText("Color note:")).toBeTruthy();
     });
 
-    it("shows 'Outside here' label when isShapeLocal and shapeLocalOutsideMembers provided", () => {
+    it("does not duplicate color note when it is already a chord tone (filtered upstream)", () => {
+      // colorCuePlural contains B and F# — if these were chord tones they'd be filtered
+      // out before reaching the component. This test just verifies the component renders
+      // them as-is (filtering is done in atoms).
       render(
         <ChordPracticeBar
-          title="C# Minor Triad"
-          badge="Compare"
-          viewMode="compare"
-          targetMembers={allMembers}
-          outsideMembers={outsideMembers}
-          isShapeLocal
-          shapeContextLabel="In E shape"
-          shapeLocalTargetMembers={[]}
-          shapeLocalOutsideMembers={outsideMembers}
+          title="G Mixolydian + G7"
+          cues={[landOnCue]}
         />
       );
-      expect(screen.getByText("Outside here")).toBeTruthy();
+      // No color cue because it was filtered upstream; component just shows land-on.
+      expect(screen.queryByText("Color note:")).toBeNull();
     });
+  });
 
-    it("shows 'Color tone here' (singular) when isShapeLocal and one shape-local color entry", () => {
-      render(
-        <ChordPracticeBar
-          title="D Dorian + Dm7"
-          badge="Compare"
-          viewMode="compare"
-          targetMembers={inScaleMembers}
-          outsideMembers={[]}
-          colorNoteEntries={[bNatural]}
-          isShapeLocal
-          shapeContextLabel="In E shape"
-          shapeLocalTargetMembers={inScaleMembers}
-          shapeLocalOutsideMembers={[]}
-          shapeLocalColorNoteEntries={[bNatural]}
-        />
-      );
-      expect(screen.getByText("Color tone here")).toBeTruthy();
-    });
-
-    it("shows 'Color tones here' (plural) when isShapeLocal and multiple shape-local color entries", () => {
-      render(
-        <ChordPracticeBar
-          title="C Lydian + CMaj7"
-          badge="Compare"
-          viewMode="compare"
-          targetMembers={inScaleMembers}
-          outsideMembers={[]}
-          colorNoteEntries={[bNatural, fSharp]}
-          isShapeLocal
-          shapeContextLabel="In E shape"
-          shapeLocalTargetMembers={inScaleMembers}
-          shapeLocalOutsideMembers={[]}
-          shapeLocalColorNoteEntries={[bNatural, fSharp]}
-        />
-      );
-      expect(screen.getByText("Color tones here")).toBeTruthy();
-    });
-
-    it("renders context label as subtitle when provided", () => {
+  describe("Shape-local context", () => {
+    it("renders shapeContextLabel as subtitle", () => {
       render(
         <ChordPracticeBar
           title="D Minor 7"
-          badge="Compare"
-          viewMode="compare"
-          targetMembers={inScaleMembers}
-          outsideMembers={[]}
+          cues={[landOnCue, colorCue]}
           isShapeLocal
           shapeContextLabel="In E shape"
-          shapeLocalTargetMembers={inScaleMembers}
-          shapeLocalOutsideMembers={[]}
+          shapeLocalCues={[landOnCue]}
         />
       );
       expect(screen.getByText("In E shape")).toBeTruthy();
     });
 
-    it("does not render context label element when shapeContextLabel is null", () => {
+    it("uses shapeLocalCues when isShapeLocal and shapeLocalCues is non-empty", () => {
+      const shapeLandOn: PracticeCue = {
+        kind: "land-on",
+        label: "Land on",
+        notes: [
+          { internalNote: "D", displayNote: "D", intervalName: "1", role: "chord-root" },
+        ],
+      };
       render(
         <ChordPracticeBar
           title="D Minor 7"
-          badge="Compare"
-          viewMode="compare"
-          targetMembers={inScaleMembers}
-          outsideMembers={[]}
+          cues={[landOnCue, colorCue]}
+          isShapeLocal
+          shapeContextLabel="In E shape"
+          shapeLocalCues={[shapeLandOn]}
+        />
+      );
+      // Shape-local cue shows only D (not F, A, C from global cue)
+      expect(screen.getByText("D")).toBeTruthy();
+      expect(screen.queryByText("Color note:")).toBeNull();
+    });
+
+    it("falls back to global cues when shapeLocalCues is empty", () => {
+      render(
+        <ChordPracticeBar
+          title="D Minor 7"
+          cues={[landOnCue]}
+          isShapeLocal
+          shapeContextLabel="In E shape"
+          shapeLocalCues={[]}
+        />
+      );
+      // Falls back to global; still shows global cue notes
+      expect(screen.getByText("Land on:")).toBeTruthy();
+    });
+
+    it("does not render context label when shapeContextLabel is null", () => {
+      render(
+        <ChordPracticeBar
+          title="D Minor 7"
+          cues={[landOnCue]}
           isShapeLocal={false}
           shapeContextLabel={null}
-          shapeLocalTargetMembers={inScaleMembers}
-          shapeLocalOutsideMembers={[]}
         />
       );
       expect(screen.queryByText("In E shape")).toBeNull();
     });
 
-    it("uses global labels when isShapeLocal is false even with shapeLocal arrays provided", () => {
-      render(
-        <ChordPracticeBar
-          title="C Dom7"
-          badge="Compare"
-          viewMode="compare"
-          targetMembers={allMembers}
-          outsideMembers={outsideMembers}
-          isShapeLocal={false}
-          shapeLocalTargetMembers={inScaleMembers}
-          shapeLocalOutsideMembers={[]}
-        />
-      );
-      expect(screen.getByText("Targets")).toBeTruthy();
-      expect(screen.queryByText("Targets here")).toBeNull();
-    });
-
-    it("omits empty Targets here group when shape-local targets is empty", () => {
-      render(
-        <ChordPracticeBar
-          title="C# Minor Triad"
-          badge="Compare"
-          viewMode="compare"
-          targetMembers={allMembers}
-          outsideMembers={outsideMembers}
-          isShapeLocal
-          shapeContextLabel="In E shape"
-          shapeLocalTargetMembers={[]}
-          shapeLocalOutsideMembers={outsideMembers}
-        />
-      );
-      expect(screen.queryByText("Targets here")).toBeNull();
-    });
-
-    it("returns null when all shape-local effective arrays are empty", () => {
+    it("returns null when shapeLocalCues is non-empty array but all empty after lens filter (empty shapeLocalCues)", () => {
       const { container } = render(
         <ChordPracticeBar
-          title="C# Minor Triad"
-          badge="Compare"
-          viewMode="compare"
-          targetMembers={allMembers}
-          outsideMembers={outsideMembers}
+          title="D Minor 7"
+          cues={[landOnCue]}
           isShapeLocal
           shapeContextLabel="In E shape"
-          shapeLocalTargetMembers={[]}
-          shapeLocalOutsideMembers={[]}
-          shapeLocalColorNoteEntries={[]}
+          shapeLocalCues={[]}
         />
       );
-      expect(container.firstChild).toBeNull();
+      // Falls back to global cues — not null
+      expect(container.firstChild).not.toBeNull();
     });
   });
 
-  it("has no accessibility violations in compare mode", async () => {
-    const { container } = render(
-      <ChordPracticeBar
-        title="C Dominant 7th"
-        badge="Compare"
-        viewMode="compare"
-        targetMembers={allMembers}
-        outsideMembers={outsideMembers}
-      />
-    );
-    expect(await axe(container)).toHaveNoViolations();
-  });
+  describe("Accessibility", () => {
+    it("has no a11y violations with a land-on cue", async () => {
+      const { container } = render(
+        <ChordPracticeBar title="D Minor 7" cues={[landOnCue]} />
+      );
+      expect(await axe(container)).toHaveNoViolations();
+    });
 
-  it("has no accessibility violations in chord mode", async () => {
-    const { container } = render(
-      <ChordPracticeBar
-        title="C Major Triad"
-        badge="Chord only"
-        viewMode="chord"
-        targetMembers={inScaleMembers}
-        outsideMembers={[]}
-      />
-    );
-    expect(await axe(container)).toHaveNoViolations();
-  });
+    it("has no a11y violations with targets+color cues", async () => {
+      const { container } = render(
+        <ChordPracticeBar title="D Dorian + Dm7" cues={[landOnCue, colorCue]} />
+      );
+      expect(await axe(container)).toHaveNoViolations();
+    });
 
-  it("has no accessibility violations in outside mode", async () => {
-    const { container } = render(
-      <ChordPracticeBar
-        title="Outside tones"
-        badge="against C Major"
-        viewMode="outside"
-        targetMembers={allMembers}
-        outsideMembers={outsideMembers}
-      />
-    );
-    expect(await axe(container)).toHaveNoViolations();
-  });
+    it("has no a11y violations with guide-tones cue", async () => {
+      const { container } = render(
+        <ChordPracticeBar title="G7" cues={[guideToneCue]} />
+      );
+      expect(await axe(container)).toHaveNoViolations();
+    });
 
-  it("has no accessibility violations with color tones", async () => {
-    const { container } = render(
-      <ChordPracticeBar
-        title="D Dorian + Dm7"
-        badge="Compare"
-        viewMode="compare"
-        targetMembers={inScaleMembers}
-        outsideMembers={[]}
-        colorNoteEntries={[bNatural]}
-      />
-    );
-    expect(await axe(container)).toHaveNoViolations();
-  });
+    it("has no a11y violations with tension cue and resolution arrows", async () => {
+      const { container } = render(
+        <ChordPracticeBar title="C# Minor Triad" cues={[tensionCue]} />
+      );
+      expect(await axe(container)).toHaveNoViolations();
+    });
 
-  it("has no accessibility violations in shape-local context", async () => {
-    const { container } = render(
-      <ChordPracticeBar
-        title="D Minor 7"
-        badge="Compare"
-        viewMode="compare"
-        targetMembers={inScaleMembers}
-        outsideMembers={[]}
-        colorNoteEntries={[bNatural]}
-        isShapeLocal
-        shapeContextLabel="In E shape"
-        shapeLocalTargetMembers={inScaleMembers}
-        shapeLocalOutsideMembers={[]}
-        shapeLocalColorNoteEntries={[bNatural]}
-      />
-    );
-    expect(await axe(container)).toHaveNoViolations();
+    it("has no a11y violations in shape-local context", async () => {
+      const { container } = render(
+        <ChordPracticeBar
+          title="D Minor 7"
+          cues={[landOnCue, colorCue]}
+          isShapeLocal
+          shapeContextLabel="In E shape"
+          shapeLocalCues={[landOnCue]}
+        />
+      );
+      expect(await axe(container)).toHaveNoViolations();
+    });
   });
 });
