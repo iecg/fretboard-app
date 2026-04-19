@@ -37,8 +37,7 @@ import { FretRangeControl } from "./FretRangeControl";
 import { TheoryControls } from "./TheoryControls";
 import { CircleOfFifths } from "../CircleOfFifths";
 import { Card } from "./Card";
-
-const END_FRET = 25;
+import { MAX_FRET } from "../constants";
 
 /**
  * Renders the Configuration card: FingeringPatternControls + fret range.
@@ -74,7 +73,7 @@ export function BaseControlsSection() {
             endFret={fretEnd}
             onStartChange={setFretStart}
             onEndChange={setFretEnd}
-            maxFret={END_FRET}
+            maxFret={MAX_FRET}
             layout="dashboard"
           />
         </div>

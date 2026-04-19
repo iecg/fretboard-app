@@ -1,11 +1,17 @@
 import { NOTES } from './theory';
+import { DEFAULT_OCTAVE, A4_FREQUENCY, A4_ABS_DISTANCE, STANDARD_FRET_MARKERS } from './constants';
 
 export interface NoteWithOctave {
   noteName: string;
   octave: number;
 }
 
+/**
+ * Parses a note string like "E4" or "A#3".
+ * Returns a NoteWithOctave object or null if the string is invalid.
+ */
 export function parseNote(noteString: string): NoteWithOctave | null {
+  if (!noteString) return null;
   const match = noteString.match(/^([A-G]#?)(\d)$/);
   if (!match) return null;
   const noteName = match[1];
@@ -25,15 +31,25 @@ export const TUNINGS: Record<string, string[]> = {
   'Bass Standard (4 String)': ['G2', 'D2', 'A1', 'E1']
 };
 
+/**
+ * Returns the note name for a given fret on a string.
+ */
 export function getFretNote(openStringNote: string, fretNumber: number): string {
-  const parsed = parseNote(openStringNote) ?? { noteName: "E", octave: 4 };
-  const openIndex = NOTES.indexOf(parsed.noteName);
+  const parsed = parseNote(openStringNote);
+  if (!parsed) {
+    console.warn(`Invalid open string note: "${openStringNote}", falling back to E4`);
+  }
+  const noteName = parsed?.noteName ?? "E";
+  const openIndex = NOTES.indexOf(noteName);
   const noteIndex = (openIndex + fretNumber) % 12;
   return NOTES[noteIndex];
 }
 
+/**
+ * Returns the note name with octave for a given fret on a string.
+ */
 export function getFretNoteWithOctave(openStringNote: string, fretNumber: number): string {
-  const parsed = parseNote(openStringNote) ?? { noteName: "E", octave: 4 };
+  const parsed = parseNote(openStringNote) ?? { noteName: "E", octave: DEFAULT_OCTAVE };
   const openIndex = NOTES.indexOf(parsed.noteName);
   const totalSemi = parsed.octave * 12 + openIndex + fretNumber;
   const newOctave = Math.floor(totalSemi / 12);
@@ -41,14 +57,16 @@ export function getFretNoteWithOctave(openStringNote: string, fretNumber: number
   return `${NOTES[newNoteIndex]}${newOctave}`;
 }
 
+/**
+ * Returns the frequency in Hz for a given note string (e.g. "A4").
+ */
 export function getNoteFrequency(noteStringWithOctave: string): number {
-  const parsed = parseNote(noteStringWithOctave) ?? { noteName: "A", octave: 4 };
+  const parsed = parseNote(noteStringWithOctave) ?? { noteName: "A", octave: DEFAULT_OCTAVE };
   const noteIndex = NOTES.indexOf(parsed.noteName);
-  // C0 is 0. C4 is 48. A4 is 57 (since A is index 9).
+  // C0 is 0. A4 is 57 (since A is index 9).
   const absoluteDistance = (parsed.octave * 12) + noteIndex;
-  const a4Distance = 57;
-  const halfStepsFromA4 = absoluteDistance - a4Distance;
-  return 440 * Math.pow(2, halfStepsFromA4 / 12);
+  const halfStepsFromA4 = absoluteDistance - A4_ABS_DISTANCE;
+  return A4_FREQUENCY * Math.pow(2, halfStepsFromA4 / 12);
 }
 
 /**
@@ -66,4 +84,4 @@ export function getFretboardNotes(tuning: string[], frets: number = 24): string[
 }
 
 // Common fret marker positions for rendering dots
-export const STANDARD_FRET_MARKERS = [3, 5, 7, 9, 12, 15, 17, 19, 21, 24];
+export { STANDARD_FRET_MARKERS };

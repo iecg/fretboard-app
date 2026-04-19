@@ -14,11 +14,14 @@ import { parseNote } from "./guitar";
 import { STRING_ROW_PX_TABLET } from "./layout/responsive";
 import "./FretboardSVG.css";
 import type { ShapePolygon } from "./shapes";
-
-const NECK_BORDER = 0;
-const NUT_WIDTH = 8;
-const INLAY_FRETS = [3, 5, 7, 9, 15, 17, 19, 21];
-const INLAY_DOUBLE_FRETS = [12, 24];
+import { 
+  NECK_BORDER, 
+  NUT_WIDTH, 
+  INLAY_FRETS, 
+  INLAY_DOUBLE_FRETS, 
+  MAX_FRET, 
+  NOTE_BUBBLE_RATIO 
+} from "./constants";
 
 interface FretboardSVGProps {
   effectiveZoom: number;
@@ -218,7 +221,7 @@ export function FretboardSVG({
   stringRowPx = STRING_ROW_PX_TABLET,
   fretboardLayout,
   tuning,
-  maxFret = 25,
+  maxFret = MAX_FRET,
   highlightNotes,
   rootNote,
   displayFormat = "notes",
@@ -248,7 +251,7 @@ export function FretboardSVG({
     orange: svgDefUrl("glow-orange"),
     violet: svgDefUrl("glow-violet"),
   };
-  const noteBubblePx = Math.round(stringRowPx * 0.78);
+  const noteBubblePx = Math.round(stringRowPx * NOTE_BUBBLE_RATIO);
   const noteFontPx = Math.round(stringRowPx * 0.44);
   const neckHeight = tuning.length * stringRowPx;
   const totalColumns = endFret - startFret;
@@ -1276,6 +1279,7 @@ export function FretboardSVG({
           centred beneath each box (columns are non-uniform). */}
       <div
         className="fret-numbers-row"
+        aria-hidden="true"
         style={{
           width: `${neckWidthPx + NECK_BORDER * 2}px`,
           paddingLeft: `${NECK_BORDER}px`,
