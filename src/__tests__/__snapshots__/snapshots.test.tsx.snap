@@ -4,9 +4,6 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col layou
 <div>
   <div
     class="app-container"
-    data-full-width-overlay="false"
-    data-header-actions="default"
-    data-header-subtitle="visible"
     data-layout-tier="desktop"
     data-layout-variant="desktop-3col"
   >
@@ -459,10 +456,11 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col layou
       <div
         class="fretboard-outer"
         data-testid="fretboard-main"
+        style="min-height: 276px;"
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
-          style="cursor: default;"
+          style="cursor: default; visibility: visible;"
         >
           <div
             aria-label="Guitar fretboard — C Major scale"
@@ -5301,9 +5299,6 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col with 
 <div>
   <div
     class="app-container"
-    data-full-width-overlay="false"
-    data-header-actions="default"
-    data-header-subtitle="visible"
     data-layout-tier="desktop"
     data-layout-variant="desktop-3col"
   >
@@ -5756,10 +5751,11 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col with 
       <div
         class="fretboard-outer"
         data-testid="fretboard-main"
+        style="min-height: 276px;"
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
-          style="cursor: default;"
+          style="cursor: default; visibility: visible;"
         >
           <div
             aria-label="Guitar fretboard — C Major scale"
@@ -10598,9 +10594,6 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col with 
 <div>
   <div
     class="app-container"
-    data-full-width-overlay="false"
-    data-header-actions="default"
-    data-header-subtitle="visible"
     data-layout-tier="desktop"
     data-layout-variant="desktop-3col"
   >
@@ -11053,10 +11046,11 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col with 
       <div
         class="fretboard-outer"
         data-testid="fretboard-main"
+        style="min-height: 276px;"
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
-          style="cursor: default;"
+          style="cursor: default; visibility: visible;"
         >
           <div
             aria-label="Guitar fretboard — C Major scale"
@@ -15895,9 +15889,6 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
 <div>
   <div
     class="app-container"
-    data-full-width-overlay="false"
-    data-header-actions="compact"
-    data-header-subtitle="visible"
     data-layout-tier="desktop"
     data-layout-variant="desktop-split"
   >
@@ -16350,10 +16341,11 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
       <div
         class="fretboard-outer"
         data-testid="fretboard-main"
+        style="min-height: 276px;"
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
-          style="cursor: default;"
+          style="cursor: default; visibility: visible;"
         >
           <div
             aria-label="Guitar fretboard — C Major scale"
@@ -21192,9 +21184,6 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
 <div>
   <div
     class="app-container"
-    data-full-width-overlay="false"
-    data-header-actions="default"
-    data-header-subtitle="visible"
     data-layout-tier="desktop"
     data-layout-variant="desktop-stacked"
   >
@@ -21647,10 +21636,11 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
       <div
         class="fretboard-outer"
         data-testid="fretboard-main"
+        style="min-height: 276px;"
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
-          style="cursor: default;"
+          style="cursor: default; visibility: visible;"
         >
           <div
             aria-label="Guitar fretboard — C Major scale"
@@ -26489,9 +26479,6 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
 <div>
   <div
     class="app-container"
-    data-full-width-overlay="true"
-    data-header-actions="compact"
-    data-header-subtitle="hidden"
     data-layout-tier="mobile"
     data-layout-variant="mobile"
   >
@@ -26944,10 +26931,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
       <div
         class="fretboard-outer"
         data-testid="fretboard-main"
+        style="min-height: 192px;"
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
-          style="cursor: default;"
+          style="cursor: default; visibility: visible;"
         >
           <div
             aria-label="Guitar fretboard — C Major scale"
@@ -30929,9 +30917,6 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
 <div>
   <div
     class="app-container"
-    data-full-width-overlay="true"
-    data-header-actions="compact"
-    data-header-subtitle="hidden"
     data-layout-tier="mobile"
     data-layout-variant="mobile"
   >
@@ -31384,10 +31369,11 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
       <div
         class="fretboard-outer"
         data-testid="fretboard-main"
+        style="min-height: 192px;"
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
-          style="cursor: default;"
+          style="cursor: default; visibility: visible;"
         >
           <div
             aria-label="Guitar fretboard — C Major scale"
@@ -35369,9 +35355,6 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
 <div>
   <div
     class="app-container"
-    data-full-width-overlay="true"
-    data-header-actions="compact"
-    data-header-subtitle="hidden"
     data-layout-tier="mobile"
     data-layout-variant="mobile"
   >
@@ -35824,10 +35807,11 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
       <div
         class="fretboard-outer"
         data-testid="fretboard-main"
+        style="min-height: 192px;"
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
-          style="cursor: default;"
+          style="cursor: default; visibility: visible;"
         >
           <div
             aria-label="Guitar fretboard — C Major scale"
@@ -39809,9 +39793,6 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
 <div>
   <div
     class="app-container"
-    data-full-width-overlay="false"
-    data-header-actions="compact"
-    data-header-subtitle="hidden"
     data-layout-tier="tablet"
     data-layout-variant="tablet-split"
   >
@@ -40264,10 +40245,11 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
       <div
         class="fretboard-outer"
         data-testid="fretboard-main"
+        style="min-height: 240px;"
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
-          style="cursor: default;"
+          style="cursor: default; visibility: visible;"
         >
           <div
             aria-label="Guitar fretboard — C Major scale"
@@ -59654,10 +59636,11 @@ exports[`Component Snapshots > Fretboard snapshots > renders A Minor Pentatonic 
   <div
     class="fretboard-outer"
     data-testid="fretboard-main"
+    style="min-height: 240px;"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default;"
+      style="cursor: default; visibility: visible;"
     >
       <div
         aria-label="Guitar fretboard — A"
@@ -62404,10 +62387,11 @@ exports[`Component Snapshots > Fretboard snapshots > renders C Major scale snaps
   <div
     class="fretboard-outer"
     data-testid="fretboard-main"
+    style="min-height: 240px;"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default;"
+      style="cursor: default; visibility: visible;"
     >
       <div
         aria-label="Guitar fretboard — C"
@@ -65754,10 +65738,11 @@ exports[`Component Snapshots > Fretboard snapshots > renders Drop D tuning snaps
   <div
     class="fretboard-outer"
     data-testid="fretboard-main"
+    style="min-height: 240px;"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default;"
+      style="cursor: default; visibility: visible;"
     >
       <div
         aria-label="Guitar fretboard — D"
@@ -69104,10 +69089,11 @@ exports[`Component Snapshots > Fretboard snapshots > renders high fret range sna
   <div
     class="fretboard-outer"
     data-testid="fretboard-main"
+    style="min-height: 240px;"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default;"
+      style="cursor: default; visibility: visible;"
     >
       <div
         aria-label="Guitar fretboard — D"
@@ -72454,10 +72440,11 @@ exports[`Component Snapshots > Fretboard snapshots > renders with CAGED shapes a
   <div
     class="fretboard-outer"
     data-testid="fretboard-main"
+    style="min-height: 216px;"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default;"
+      style="cursor: default; visibility: visible;"
     >
       <div
         aria-label="Guitar fretboard — E"
@@ -75809,10 +75796,11 @@ exports[`Component Snapshots > Fretboard snapshots > renders with CAGED shapes s
   <div
     class="fretboard-outer"
     data-testid="fretboard-main"
+    style="min-height: 240px;"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default;"
+      style="cursor: default; visibility: visible;"
     >
       <div
         aria-label="Guitar fretboard — E"
@@ -79164,10 +79152,11 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
   <div
     class="fretboard-outer"
     data-testid="fretboard-main"
+    style="min-height: 240px;"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default;"
+      style="cursor: default; visibility: visible;"
     >
       <div
         aria-label="Guitar fretboard — C"
@@ -82766,10 +82755,11 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
   <div
     class="fretboard-outer"
     data-testid="fretboard-main"
+    style="min-height: 240px;"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default;"
+      style="cursor: default; visibility: visible;"
     >
       <div
         aria-label="Guitar fretboard — C"
@@ -86224,10 +86214,11 @@ exports[`Component Snapshots > Fretboard snapshots > renders with degree display
   <div
     class="fretboard-outer"
     data-testid="fretboard-main"
+    style="min-height: 240px;"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default;"
+      style="cursor: default; visibility: visible;"
     >
       <div
         aria-label="Guitar fretboard — G Major scale"
@@ -89574,10 +89565,11 @@ exports[`Component Snapshots > Fretboard snapshots > renders with flats instead 
   <div
     class="fretboard-outer"
     data-testid="fretboard-main"
+    style="min-height: 240px;"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default;"
+      style="cursor: default; visibility: visible;"
     >
       <div
         aria-label="Guitar fretboard — F"
@@ -92624,10 +92616,11 @@ exports[`Component Snapshots > Fretboard snapshots > renders with no display for
   <div
     class="fretboard-outer"
     data-testid="fretboard-main"
+    style="min-height: 240px;"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default;"
+      style="cursor: default; visibility: visible;"
     >
       <div
         aria-label="Guitar fretboard — E"
@@ -95470,10 +95463,11 @@ exports[`Component Snapshots > Fretboard snapshots > renders with small mobile s
   <div
     class="fretboard-outer"
     data-testid="fretboard-main"
+    style="min-height: 216px;"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default;"
+      style="cursor: default; visibility: visible;"
     >
       <div
         aria-label="Guitar fretboard — C"
@@ -98820,10 +98814,11 @@ exports[`Fretboard with ResizeObserver (auto-fit zoom) > uses containerWidth/tot
   <div
     class="fretboard-outer"
     data-testid="fretboard-main"
+    style="min-height: 240px;"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default;"
+      style="cursor: default; visibility: visible;"
     >
       <div
         aria-label="Guitar fretboard — C"

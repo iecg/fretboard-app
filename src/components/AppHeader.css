@@ -123,6 +123,12 @@
   text-overflow: ellipsis;
 }
 
+@media (max-width: 879px) {
+  .app-header-brand-subtitle {
+    display: none;
+  }
+}
+
 .app-header-actions {
   display: flex;
   align-items: center;
@@ -140,10 +146,6 @@
 
   .app-header-brand-title {
     font-size: clamp(1.72rem, 9vw, 2.3rem);
-  }
-
-  .app-header-brand-subtitle {
-    display: none;
   }
 
   .app-header-brand-wordmark .fretflow-wordmark {

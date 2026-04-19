@@ -181,7 +181,7 @@ describe("SettingsOverlay", () => {
     ).toBeNull();
   });
 
-  it("marks the drawer as full-width on mobile layouts", () => {
+  it("marks the drawer with the correct layout-tier on mobile", () => {
     setViewport(390, 844);
     const store = createStore();
     store.set(settingsOverlayOpenAtom, true);
@@ -189,7 +189,6 @@ describe("SettingsOverlay", () => {
 
     const drawer = document.querySelector(".settings-overlay-drawer");
     expect(drawer?.getAttribute("data-layout-tier")).toBe("mobile");
-    expect(drawer?.getAttribute("data-full-width")).toBe("true");
   });
 
   it("closes overlay when ESC is pressed with no help popover open", () => {

@@ -24,6 +24,9 @@ async function getMetrics(page: Page) {
     const controlsColumn = document.querySelector(".dashboard-card--configuration");
     const keyColumn = document.querySelector(".key-column");
 
+    const subtitle = document.querySelector(".app-header-brand-subtitle");
+    const kofiDesktop = document.querySelector(".kofi-btn-desktop");
+
     const getRect = (element: Element | null) => {
       if (!(element instanceof HTMLElement || element instanceof SVGElement)) {
         return null;
@@ -40,12 +43,14 @@ async function getMetrics(page: Page) {
       };
     };
 
+    const settingsRect = getRect(settingsDrawer);
+
     return {
       tier: app?.getAttribute("data-layout-tier"),
       variant: app?.getAttribute("data-layout-variant"),
-      headerSubtitle: app?.getAttribute("data-header-subtitle"),
-      headerActionsMode: app?.getAttribute("data-header-actions"),
-      fullWidthOverlay: app?.getAttribute("data-full-width-overlay"),
+      headerSubtitle: subtitle ? getComputedStyle(subtitle).display === "none" ? "hidden" : "visible" : "hidden",
+      headerActionsMode: kofiDesktop ? getComputedStyle(kofiDesktop).display === "none" ? "compact" : "default" : "compact",
+      isFullWidthSettings: settingsRect ? Math.abs(settingsRect.width - window.innerWidth) < 5 : false,
       summaryCount: document.querySelectorAll(".summary-shell").length,
       scrollHeight: document.documentElement.scrollHeight,
       scrollWidth: document.documentElement.scrollWidth,
@@ -232,7 +237,7 @@ test.describe("responsive layout regressions", () => {
     await page.getByRole("button", { name: "Open settings" }).click();
 
     const metrics = await getMetrics(page);
-    expect(metrics.fullWidthOverlay).toBe("true");
+    expect(metrics.isFullWidthSettings).toBe(true);
     expect(metrics.settingsDrawerRect).not.toBeNull();
     expect(metrics.settingsDrawerRect!.width).toBeGreaterThanOrEqual(388);
     expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.innerWidth);
