@@ -29,6 +29,11 @@ export const A4_ABS_DISTANCE = 57; // C0 is 0, A4 is 57
 // Components
 export const DRAWER_DROPUP_THRESHOLD = 260;
 
+// Animation transitions (motion/react)
+export const ANIMATION_DURATION_FAST = 0.2;
+export const ANIMATION_DURATION_STANDARD = 0.24;
+export const ANIMATION_EASE = "easeOut";
+
 // Settings / Atoms
 export const FRET_ZOOM_MIN = 50;
 export const FRET_ZOOM_MAX = 200;

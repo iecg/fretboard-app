@@ -2,6 +2,10 @@ import { useEffect, useRef, type RefObject } from "react";
 import { X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useFocusTrap } from "../hooks/useFocusTrap";
+import {
+  ANIMATION_DURATION_FAST,
+  ANIMATION_EASE,
+} from "../constants";
 
 interface HelpModalProps {
   isOpen: boolean;
@@ -39,7 +43,7 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
+          transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
         >
           <motion.div
             ref={helpModalRef}
@@ -52,7 +56,7 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.96 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
+            transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
           >
             <div className="help-modal-header">
               <h2 id="help-modal-title">FretFlow Help</h2>
