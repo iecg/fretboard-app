@@ -76,6 +76,8 @@ export function Fretboard(props: FretboardProps) {
   const startFret = state.startFret;
   const endFret = state.endFret;
   const stringRowPx = props.stringRowPx ?? STRING_ROW_PX_DEFAULT;
+  const onFretClickProp = props.onFretClick;
+  const id = props.id;
 
   const fretboardLayout = getFretboardNotes(tuning, Math.max(endFret, maxFret));
 
@@ -150,7 +152,7 @@ export function Fretboard(props: FretboardProps) {
     updateCursor(false);
   }, [updateCursor]);
 
-  const handlePointerDown = (e: React.PointerEvent) => {
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (!hasOverflow) return;
     if (!scrollRef.current) return;
     isDraggingRef.current = false;
@@ -159,9 +161,9 @@ export function Fretboard(props: FretboardProps) {
     setStartX(e.pageX - scrollRef.current.offsetLeft);
     setScrollLeft(scrollRef.current.scrollLeft);
     dragDistance.current = 0;
-  };
+  }, [hasOverflow]);
 
-  const handlePointerMove = (e: React.PointerEvent) => {
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (pendingPointerId.current === null || !scrollRef.current) return;
     dragDistance.current += Math.abs(e.movementX);
     if (!isDraggingRef.current && dragDistance.current > 3) {
@@ -174,18 +176,18 @@ export function Fretboard(props: FretboardProps) {
     const x = e.pageX - scrollRef.current.offsetLeft;
     const walk = (x - startX) * 1.5;
     scrollRef.current.scrollLeft = scrollLeft - walk;
-  };
+  }, [updateCursor, startX, scrollLeft]);
 
-  const handlePointerUp = () => {
+  const handlePointerUp = useCallback(() => {
     if (isDraggingRef.current) {
       updateCursor(false);
     }
     isDraggingRef.current = false;
     pendingPointerId.current = null;
     pendingTarget.current = null;
-  };
+  }, [updateCursor]);
 
-  const handleFretClick = (
+  const handleFretClick = useCallback((
     stringIndex: number,
     fretIndex: number,
     noteName: string,
@@ -197,8 +199,8 @@ export function Fretboard(props: FretboardProps) {
     );
     const frequency = getNoteFrequency(fretNoteWithOctave);
     synth.playNote(frequency);
-    if (props.onFretClick) props.onFretClick(stringIndex, fretIndex, noteName);
-  };
+    if (onFretClickProp) onFretClickProp(stringIndex, fretIndex, noteName);
+  }, [tuning, onFretClickProp]);
 
   const neckWidth = totalColumns * effectiveZoom;
 
@@ -245,7 +247,7 @@ export function Fretboard(props: FretboardProps) {
           hiddenNotes={hiddenNotes}
           useFlats={useFlats}
           scaleName={scaleName}
-          id={props.id}
+          id={id}
           onNoteClick={handleFretClick}
         />
       </div>
