@@ -34,5 +34,8 @@ coverage
 
 test-results/
 
+# Vitest snapshots are Node-version-sensitive; regenerated per environment
+src/__tests__/__snapshots__/
+
 scripts/gif-capture/frames/
 .gemini

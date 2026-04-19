@@ -734,7 +734,7 @@ export const FretboardSVG = memo(function FretboardSVG({
               <feTurbulence
                 type="fractalNoise"
                 baseFrequency="0.012 0.95"
-                numOctaves="2"
+                numOctaves="4"
                 seed="3"
                 result="grain"
               />
@@ -744,7 +744,7 @@ export const FretboardSVG = memo(function FretboardSVG({
                 values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0 0.72 0"
+                        0 0 0 0.72 0"
                 result="grainTinted"
               />
               <feComposite in="grainTinted" in2="SourceGraphic" operator="in" />
@@ -760,7 +760,7 @@ export const FretboardSVG = memo(function FretboardSVG({
               <feTurbulence
                 type="fractalNoise"
                 baseFrequency="0.022 0.55"
-                numOctaves="1"
+                numOctaves="2"
                 seed="11"
                 result="hl"
               />
