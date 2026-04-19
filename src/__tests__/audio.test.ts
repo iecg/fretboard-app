@@ -25,6 +25,7 @@ const createMockOscillator = () => ({
   start: vi.fn(),
   stop: vi.fn(),
   onended: null as null | (() => void),
+  setPeriodicWave: vi.fn(),
 });
 
 const createMockFilter = () => ({
@@ -42,6 +43,7 @@ const mockAudioContext = {
   createGain: vi.fn(),
   createOscillator: vi.fn(),
   createBiquadFilter: vi.fn(),
+  createPeriodicWave: vi.fn().mockReturnValue({} as PeriodicWave),
   resume: vi.fn(),
   currentTime: 0,
   state: 'running',
@@ -65,6 +67,8 @@ describe('GuitarSynth', () => {
     (synth as any).unsupported = false;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (synth as any).voicePool = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (synth as any).guitarWave = null;
 
     masterGain = createMockGainNode();
     
@@ -91,6 +95,11 @@ describe('GuitarSynth', () => {
     it('sets master gain to 0.5', () => {
       synth.init();
       expect(masterGain.gain.value).toBe(0.5);
+    });
+
+    it('creates a custom guitar waveform', () => {
+      synth.init();
+      expect(mockAudioContext.createPeriodicWave).toHaveBeenCalled();
     });
 
     it('pre-allocates a voice pool', () => {
@@ -165,12 +174,11 @@ describe('GuitarSynth', () => {
       expect(mockAudioContext.createGain).not.toHaveBeenCalled();
     });
 
-    it('sets oscillator type to triangle', async () => {
+    it('applies the custom guitar waveform', async () => {
       await synth.playNote(440);
-      // Get the last oscillator created (after warmup)
       const oscillators = mockAudioContext.createOscillator.mock.results;
       const osc = oscillators[oscillators.length - 1].value;
-      expect(osc.type).toBe('triangle');
+      expect(osc.setPeriodicWave).toHaveBeenCalled();
     });
 
     it('stops oscillator after envelope duration', async () => {

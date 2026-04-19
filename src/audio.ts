@@ -14,6 +14,7 @@ class GuitarSynth {
   private isMuted: boolean = false;
   private masterGain: GainNode | null = null;
   private unsupported: boolean = false;
+  private guitarWave: PeriodicWave | null = null;
 
   // Voice pool to reduce node creation overhead
   private voicePool: Voice[] = [];
@@ -43,6 +44,12 @@ class GuitarSynth {
       this.masterGain = this.ctx.createGain();
       this.masterGain.connect(this.ctx.destination);
       this.masterGain.gain.value = 0.5;
+
+      // Create a custom periodic wave that mimics a plucked string
+      // Fundamental + overtones with decreasing amplitude
+      const real = new Float32Array([0, 1, 0.6, 0.4, 0.3, 0.2, 0.1, 0.05]);
+      const imag = new Float32Array(real.length).fill(0);
+      this.guitarWave = this.ctx.createPeriodicWave(real, imag);
 
       // Pre-allocate voice pool
       for (let i = 0; i < this.POOL_SIZE; i++) {
@@ -107,7 +114,7 @@ class GuitarSynth {
   async playNote(frequency: number) {
     if (this.isMuted) return;
     this.init();
-    if (!this.ctx || !this.masterGain) return;
+    if (!this.ctx || !this.masterGain || !this.guitarWave) return;
 
     // Ensure context is running (required for many browsers after a period of inactivity)
     if (this.ctx.state === 'suspended') {
@@ -126,8 +133,8 @@ class GuitarSynth {
     voice.active = true;
     const osc = this.ctx.createOscillator();
     
-    // Use a clean sine/triangle hybrid approach. Triangle provides warm harmonics.
-    osc.type = 'triangle';
+    // Use the custom guitar waveform
+    osc.setPeriodicWave(this.guitarWave);
     osc.frequency.setValueAtTime(frequency, this.ctx.currentTime);
 
     const now = this.ctx.currentTime;
@@ -141,10 +148,12 @@ class GuitarSynth {
     voice.gain.gain.linearRampToValueAtTime(1, now + attackTime);
     voice.gain.gain.exponentialRampToValueAtTime(0.001, now + attackTime + decayTime + releaseTime);
 
-    // Warm dampening filter
+    // Dynamic Filter (the "pluck" effect)
+    // Initially open wide to let harmonics through, then close quickly to simulate damping.
     voice.filter.type = 'lowpass';
     voice.filter.Q.value = 1;
-    voice.filter.frequency.setValueAtTime(frequency * 3, now);
+    voice.filter.frequency.setValueAtTime(frequency * 6, now);
+    voice.filter.frequency.exponentialRampToValueAtTime(frequency * 1.5, now + attackTime + 0.15); // Fast initial damping
     voice.filter.frequency.exponentialRampToValueAtTime(frequency, now + attackTime + decayTime);
 
     osc.connect(voice.filter);
