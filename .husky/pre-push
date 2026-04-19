@@ -1,9 +1,14 @@
 # Skip tests/build only if all pushed refs are deletions
+# Detect if we are pushing to main in the same loop
 any_non_delete=false
+is_pushing_to_main=false
 while read local_ref local_sha remote_ref remote_sha
 do
     if [ "$local_ref" != "(delete)" ] && [ "$local_sha" != "0000000000000000000000000000000000000000" ]; then
         any_non_delete=true
+    fi
+    if [ "$remote_ref" = "refs/heads/main" ]; then
+        is_pushing_to_main=true
     fi
 done
 
@@ -11,5 +16,24 @@ if [ "$any_non_delete" = false ]; then
     exit 0
 fi
 
-npm run test
-npm run build
+echo "Running pre-push checks..."
+
+if [ "$is_pushing_to_main" = true ]; then
+    echo "Pushing to main: Running full build and tests in parallel..."
+    npm run test &
+    test_pid=$!
+    npm run build &
+    build_pid=$!
+else
+    echo "Pushing to feature branch: Running type-check and tests in parallel..."
+    npm run test &
+    test_pid=$!
+    npm run build:types &
+    build_pid=$!
+fi
+
+# Wait for both background processes to finish
+wait $test_pid || exit 1
+wait $build_pid || exit 1
+
+echo "Pre-push checks passed."
