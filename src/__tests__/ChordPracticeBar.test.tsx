@@ -38,6 +38,11 @@ const bNatural: PracticeBarColorNote = {
   displayNote: "B",
   intervalName: "6",
 };
+const fSharp: PracticeBarColorNote = {
+  internalNote: "F#",
+  displayNote: "F♯",
+  intervalName: "♯4",
+};
 
 const allMembers = [root, third, fifth, flatSeven];
 const inScaleMembers = [root, third, fifth];
@@ -101,7 +106,7 @@ describe("ChordPracticeBar", () => {
       expect(screen.queryByText("Outside")).toBeNull();
     });
 
-    it("shows Color group when colorNoteEntries provided", () => {
+    it("shows Color tone group (singular) when one colorNoteEntry provided", () => {
       render(
         <ChordPracticeBar
           title="D Dorian + Dm7"
@@ -112,7 +117,23 @@ describe("ChordPracticeBar", () => {
           colorNoteEntries={[bNatural]}
         />
       );
-      expect(screen.getByText("Color")).toBeTruthy();
+      expect(screen.getByText("Color tone")).toBeTruthy();
+      expect(screen.queryByText("Color tones")).toBeNull();
+    });
+
+    it("shows Color tones group (plural) when multiple colorNoteEntries provided", () => {
+      render(
+        <ChordPracticeBar
+          title="C Lydian + CMaj7"
+          badge="Compare"
+          viewMode="compare"
+          targetMembers={inScaleMembers}
+          outsideMembers={[]}
+          colorNoteEntries={[bNatural, fSharp]}
+        />
+      );
+      expect(screen.getByText("Color tones")).toBeTruthy();
+      expect(screen.queryByText("Color tone")).toBeNull();
     });
 
     it("color pill has data-role=color-tone", () => {
@@ -146,7 +167,7 @@ describe("ChordPracticeBar", () => {
   });
 
   describe("chord mode", () => {
-    it("shows Targets group only, no Shared or Outside or Color", () => {
+    it("shows Targets group only, no Shared or Outside or Color tone", () => {
       render(
         <ChordPracticeBar
           title="C Major Triad"
@@ -160,7 +181,8 @@ describe("ChordPracticeBar", () => {
       expect(screen.getByText("Targets")).toBeTruthy();
       expect(screen.queryByText("Shared")).toBeNull();
       expect(screen.queryByText("Outside")).toBeNull();
-      expect(screen.queryByText("Color")).toBeNull();
+      expect(screen.queryByText("Color tone")).toBeNull();
+      expect(screen.queryByText("Color tones")).toBeNull();
     });
 
     it("renders badge as 'Chord only'", () => {
@@ -178,7 +200,7 @@ describe("ChordPracticeBar", () => {
   });
 
   describe("outside mode", () => {
-    it("shows Outside group only, no Targets or Color", () => {
+    it("shows Outside group only, no Targets or Color tone", () => {
       render(
         <ChordPracticeBar
           title="Outside tones"
@@ -192,7 +214,8 @@ describe("ChordPracticeBar", () => {
       expect(screen.queryByText("Targets")).toBeNull();
       expect(screen.queryByText("Shared")).toBeNull();
       expect(screen.getByText("Outside")).toBeTruthy();
-      expect(screen.queryByText("Color")).toBeNull();
+      expect(screen.queryByText("Color tone")).toBeNull();
+      expect(screen.queryByText("Color tones")).toBeNull();
     });
 
     it("renders title as 'Outside tones'", () => {
@@ -253,6 +276,167 @@ describe("ChordPracticeBar", () => {
     expect(targetList.querySelector('[data-role="chord-tone-outside-scale"]')).toBeTruthy();
   });
 
+  describe("shape-local context", () => {
+    it("shows 'Targets here' label when isShapeLocal and shapeLocalTargetMembers provided", () => {
+      render(
+        <ChordPracticeBar
+          title="D Minor 7"
+          badge="Compare"
+          viewMode="compare"
+          targetMembers={allMembers}
+          outsideMembers={[]}
+          isShapeLocal
+          shapeContextLabel="In E shape"
+          shapeLocalTargetMembers={inScaleMembers}
+          shapeLocalOutsideMembers={[]}
+        />
+      );
+      expect(screen.getByText("Targets here")).toBeTruthy();
+      expect(screen.queryByText("Targets")).toBeNull();
+    });
+
+    it("shows 'Outside here' label when isShapeLocal and shapeLocalOutsideMembers provided", () => {
+      render(
+        <ChordPracticeBar
+          title="C# Minor Triad"
+          badge="Compare"
+          viewMode="compare"
+          targetMembers={allMembers}
+          outsideMembers={outsideMembers}
+          isShapeLocal
+          shapeContextLabel="In E shape"
+          shapeLocalTargetMembers={[]}
+          shapeLocalOutsideMembers={outsideMembers}
+        />
+      );
+      expect(screen.getByText("Outside here")).toBeTruthy();
+    });
+
+    it("shows 'Color tone here' (singular) when isShapeLocal and one shape-local color entry", () => {
+      render(
+        <ChordPracticeBar
+          title="D Dorian + Dm7"
+          badge="Compare"
+          viewMode="compare"
+          targetMembers={inScaleMembers}
+          outsideMembers={[]}
+          colorNoteEntries={[bNatural]}
+          isShapeLocal
+          shapeContextLabel="In E shape"
+          shapeLocalTargetMembers={inScaleMembers}
+          shapeLocalOutsideMembers={[]}
+          shapeLocalColorNoteEntries={[bNatural]}
+        />
+      );
+      expect(screen.getByText("Color tone here")).toBeTruthy();
+    });
+
+    it("shows 'Color tones here' (plural) when isShapeLocal and multiple shape-local color entries", () => {
+      render(
+        <ChordPracticeBar
+          title="C Lydian + CMaj7"
+          badge="Compare"
+          viewMode="compare"
+          targetMembers={inScaleMembers}
+          outsideMembers={[]}
+          colorNoteEntries={[bNatural, fSharp]}
+          isShapeLocal
+          shapeContextLabel="In E shape"
+          shapeLocalTargetMembers={inScaleMembers}
+          shapeLocalOutsideMembers={[]}
+          shapeLocalColorNoteEntries={[bNatural, fSharp]}
+        />
+      );
+      expect(screen.getByText("Color tones here")).toBeTruthy();
+    });
+
+    it("renders context label as subtitle when provided", () => {
+      render(
+        <ChordPracticeBar
+          title="D Minor 7"
+          badge="Compare"
+          viewMode="compare"
+          targetMembers={inScaleMembers}
+          outsideMembers={[]}
+          isShapeLocal
+          shapeContextLabel="In E shape"
+          shapeLocalTargetMembers={inScaleMembers}
+          shapeLocalOutsideMembers={[]}
+        />
+      );
+      expect(screen.getByText("In E shape")).toBeTruthy();
+    });
+
+    it("does not render context label element when shapeContextLabel is null", () => {
+      render(
+        <ChordPracticeBar
+          title="D Minor 7"
+          badge="Compare"
+          viewMode="compare"
+          targetMembers={inScaleMembers}
+          outsideMembers={[]}
+          isShapeLocal={false}
+          shapeContextLabel={null}
+          shapeLocalTargetMembers={inScaleMembers}
+          shapeLocalOutsideMembers={[]}
+        />
+      );
+      expect(screen.queryByText("In E shape")).toBeNull();
+    });
+
+    it("uses global labels when isShapeLocal is false even with shapeLocal arrays provided", () => {
+      render(
+        <ChordPracticeBar
+          title="C Dom7"
+          badge="Compare"
+          viewMode="compare"
+          targetMembers={allMembers}
+          outsideMembers={outsideMembers}
+          isShapeLocal={false}
+          shapeLocalTargetMembers={inScaleMembers}
+          shapeLocalOutsideMembers={[]}
+        />
+      );
+      expect(screen.getByText("Targets")).toBeTruthy();
+      expect(screen.queryByText("Targets here")).toBeNull();
+    });
+
+    it("omits empty Targets here group when shape-local targets is empty", () => {
+      render(
+        <ChordPracticeBar
+          title="C# Minor Triad"
+          badge="Compare"
+          viewMode="compare"
+          targetMembers={allMembers}
+          outsideMembers={outsideMembers}
+          isShapeLocal
+          shapeContextLabel="In E shape"
+          shapeLocalTargetMembers={[]}
+          shapeLocalOutsideMembers={outsideMembers}
+        />
+      );
+      expect(screen.queryByText("Targets here")).toBeNull();
+    });
+
+    it("returns null when all shape-local effective arrays are empty", () => {
+      const { container } = render(
+        <ChordPracticeBar
+          title="C# Minor Triad"
+          badge="Compare"
+          viewMode="compare"
+          targetMembers={allMembers}
+          outsideMembers={outsideMembers}
+          isShapeLocal
+          shapeContextLabel="In E shape"
+          shapeLocalTargetMembers={[]}
+          shapeLocalOutsideMembers={[]}
+          shapeLocalColorNoteEntries={[]}
+        />
+      );
+      expect(container.firstChild).toBeNull();
+    });
+  });
+
   it("has no accessibility violations in compare mode", async () => {
     const { container } = render(
       <ChordPracticeBar
@@ -301,6 +485,25 @@ describe("ChordPracticeBar", () => {
         targetMembers={inScaleMembers}
         outsideMembers={[]}
         colorNoteEntries={[bNatural]}
+      />
+    );
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("has no accessibility violations in shape-local context", async () => {
+    const { container } = render(
+      <ChordPracticeBar
+        title="D Minor 7"
+        badge="Compare"
+        viewMode="compare"
+        targetMembers={inScaleMembers}
+        outsideMembers={[]}
+        colorNoteEntries={[bNatural]}
+        isShapeLocal
+        shapeContextLabel="In E shape"
+        shapeLocalTargetMembers={inScaleMembers}
+        shapeLocalOutsideMembers={[]}
+        shapeLocalColorNoteEntries={[bNatural]}
       />
     );
     expect(await axe(container)).toHaveNoViolations();

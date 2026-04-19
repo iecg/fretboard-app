@@ -578,6 +578,44 @@ export default function useDisplayState() {
     );
   }, [shapeHighlightedNoteSet, practiceBarColorNotes]);
 
+  // Whether the active view is a single local shape context (CAGED 1-shape or 3NPS)
+  const isShapeLocalContext = useMemo((): boolean => {
+    if (fingeringPattern === "3nps") return true;
+    if (fingeringPattern === "caged" && cagedShapes.size === 1) return true;
+    return false;
+  }, [fingeringPattern, cagedShapes]);
+
+  // User-facing label describing the active shape context
+  const shapeContextLabel = useMemo((): string | null => {
+    if (!isShapeLocalContext) return null;
+    if (fingeringPattern === "3nps") return `In 3NPS position ${npsPosition}`;
+    if (fingeringPattern === "caged") {
+      const shape = Array.from(cagedShapes)[0];
+      return shape ? `In ${shape} shape` : null;
+    }
+    return null;
+  }, [isShapeLocalContext, fingeringPattern, npsPosition, cagedShapes]);
+
+  // Outside chord members that appear within the current shape's highlighted notes
+  const shapeLocalOutsideMembers = useMemo((): ChordRowEntry[] => {
+    if (!shapeHighlightedNoteSet || !chordType) return [];
+    return practiceBarOutsideMembers.filter((m) =>
+      shapeHighlightedNoteSet.has(m.internalNote),
+    );
+  }, [shapeHighlightedNoteSet, chordType, practiceBarOutsideMembers]);
+
+  // Global color notes minus notes already covered by active chord targets
+  const practiceBarColorNotesFiltered = useMemo((): PracticeBarColorNote[] => {
+    const chordToneSet = new Set(activeChordTones);
+    return practiceBarColorNotes.filter((n) => !chordToneSet.has(n.internalNote));
+  }, [practiceBarColorNotes, activeChordTones]);
+
+  // Shape-local color notes minus notes already covered by active chord targets
+  const shapeLocalColorNotesFiltered = useMemo((): PracticeBarColorNote[] => {
+    const chordToneSet = new Set(activeChordTones);
+    return shapeLocalColorNotes.filter((n) => !chordToneSet.has(n.internalNote));
+  }, [shapeLocalColorNotes, activeChordTones]);
+
   return {
     // Atom values
     rootNote,
@@ -655,6 +693,11 @@ export default function useDisplayState() {
     practiceBarColorNotes,
     shapeLocalTargetMembers,
     shapeLocalColorNotes,
+    isShapeLocalContext,
+    shapeContextLabel,
+    shapeLocalOutsideMembers,
+    practiceBarColorNotesFiltered,
+    shapeLocalColorNotesFiltered,
     // Internal state + callbacks
     clickedShape,
     recenterKey,
