@@ -1,11 +1,4 @@
 // @vitest-environment jsdom
-/**
- * Tests for the chord-overlay domain split:
- * 1. chordMemberFactsAtom — chord facts independent of scale
- * 2. lensAvailabilityAtom / lensAvailabilityContextAtom — registry-backed availability
- * 3. Renderer composability — noteSemantics data attributes on FretboardSVG
- *    (renderer tests live in FretboardSVG.test.tsx; atom tests here)
- */
 import { describe, it, expect, beforeEach } from "vitest";
 import { createStore } from "jotai";
 import {
@@ -450,5 +443,29 @@ describe("lensAvailabilityAtom", () => {
     const targetsEntry = entries.find((e) => e.id === "targets");
     expect(targetsEntry!.available).toBe(true);
     expect(targetsEntry!.reason).toBeNull();
+  });
+
+  it("targets-color lens unavailable for C Major (no color notes)", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    store.set(chordRootAtom, "C");
+    store.set(chordTypeAtom, "Major Triad");
+    const entries = store.get(lensAvailabilityAtom);
+    const tcEntry = entries.find((e) => e.id === "targets-color");
+    expect(tcEntry!.available).toBe(false);
+    expect(tcEntry!.reason).toMatch(/color notes/i);
+  });
+
+  it("targets-color lens available for D Dorian (has color notes)", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "D");
+    store.set(scaleNameAtom, "Dorian");
+    store.set(chordRootAtom, "D");
+    store.set(chordTypeAtom, "Minor 7th");
+    const entries = store.get(lensAvailabilityAtom);
+    const tcEntry = entries.find((e) => e.id === "targets-color");
+    expect(tcEntry!.available).toBe(true);
+    expect(tcEntry!.reason).toBeNull();
   });
 });

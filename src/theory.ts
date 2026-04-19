@@ -214,9 +214,12 @@ export const LENS_REGISTRY: readonly LensRegistryEntry[] = [
     id: "targets-color",
     label: "Targets + color",
     description: "Combines chord tones with characteristic scale color notes — best for general-purpose soloing",
-    isAvailable: (ctx) => ctx.hasChordOverlay,
-    unavailableReason: (ctx) =>
-      ctx.hasChordOverlay ? null : "Requires an active chord overlay",
+    isAvailable: (ctx) => ctx.hasChordOverlay && ctx.hasColorNotes,
+    unavailableReason: (ctx) => {
+      if (!ctx.hasChordOverlay) return "Requires an active chord overlay";
+      if (!ctx.hasColorNotes) return "Scale has no characteristic color notes";
+      return null;
+    },
   },
   {
     id: "tension",
