@@ -84,6 +84,57 @@ body {
   overflow-y: visible;
 }
 
+.error-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: var(--space-4);
+  background: var(--bg-color);
+}
+
+.error-fallback__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-8);
+  border-radius: var(--radius-xl);
+  background: var(--surface-raised);
+  border: 1px solid var(--surface-highlight);
+  text-align: center;
+  max-width: 320px;
+}
+
+.error-fallback__title {
+  margin: 0;
+  font-size: var(--text-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-main);
+}
+
+.error-fallback__message {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.error-fallback__button {
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-on-accent);
+  background: var(--accent-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast) ease;
+}
+
+.error-fallback__button:hover {
+  background: color-mix(in srgb, var(--accent-primary) 85%, white);
+}
+
 * {
   box-sizing: border-box;
 }
