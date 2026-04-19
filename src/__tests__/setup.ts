@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom';
 import { vi, expect } from 'vitest';
+import { configure } from '@testing-library/react';
 import { configureAxe } from 'vitest-axe';
 import { toHaveNoViolations } from 'vitest-axe/dist/matchers.js';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -13,6 +14,10 @@ configureAxe({
     'color-contrast': { enabled: false },
   },
 });
+
+// Nested lazy-loaded components (Suspense fallback={null}) can take >1 s to
+// settle in jsdom. Raise the RTL async timeout to prevent spurious failures.
+configure({ asyncUtilTimeout: 5000 });
 
 // Fix __APP_VERSION__ to prevent snapshot breakage on version bumps
 (globalThis as Record<string, unknown>).__APP_VERSION__ = '0.0.0-test';
