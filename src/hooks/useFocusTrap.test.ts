@@ -139,6 +139,7 @@ describe("useFocusTrap", () => {
     await user.keyboard("{Escape}");
 
     expect(onEscape).toHaveBeenCalledTimes(1);
+    expect(preventDefaultSpy).toHaveBeenCalledTimes(1);
   });
 
   it("restores focus to restoreFocusRef.current when active flips to false", async () => {
