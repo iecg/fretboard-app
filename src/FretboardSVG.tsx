@@ -118,6 +118,50 @@ function classifyNote(
   return "note-inactive";
 }
 
+/**
+ * Semantic-model classification: uses NoteSemantics (composable boolean flags)
+ * instead of the legacy positional boolean list. Falls back to classifyNote when
+ * semantics are unavailable (no chord overlay context).
+ *
+ * Key advantage: isChordRoot + isTension can coexist — the chord root that sits
+ * outside the scale is still classified as "chord-root" (preserving squircle
+ * shape / root identity) while isTension drives the supplementary data attribute.
+ */
+function classifyNoteFromSemantics(
+  sem: NoteSemantics,
+  isChordInRange: boolean,
+  hasChordOverlay: boolean,
+  shapePolygons: ShapePolygon[],
+  boxBounds: BoxBound[],
+  fretIndex: number,
+): string {
+  if (!hasChordOverlay) {
+    if (sem.isColorTone && sem.isInScale) return "note-blue";
+    if (sem.isScaleRoot && sem.isInScale) return "key-tonic";
+    if (sem.isInScale) return "note-active";
+    if (
+      sem.isColorTone &&
+      shapePolygons.length > 0 &&
+      boxBounds.some(
+        (b) => fretIndex >= b.minFret - 1 && fretIndex <= b.maxFret + 1,
+      )
+    )
+      return "note-blue";
+    return "note-inactive";
+  }
+  // Chord overlay active: chord-root takes absolute priority, even if outside scale.
+  if (sem.isChordRoot && sem.isChordTone && isChordInRange) return "chord-root";
+  // In-scale chord tones.
+  if (sem.isInScale && sem.isChordTone) return "chord-tone-in-scale";
+  // Color/characteristic tone: scale note not covered by a chord role.
+  if (sem.isInScale && sem.isColorTone) return "color-tone";
+  // Other in-scale notes.
+  if (sem.isInScale) return "scale-only";
+  // Out-of-scale chord tones (tension, non-root).
+  if (sem.isChordTone && isChordInRange) return "chord-tone-outside-scale";
+  return "note-inactive";
+}
+
 type NoteShape = "circle" | "squircle" | "diamond" | "hexagon";
 
 type NoteVisuals = {
@@ -676,20 +720,37 @@ export const FretboardSVG = memo(function FretboardSVG({
               fretIndex <= b.maxFret + chordFretSpread,
           );
 
+        // Use the composable semantic model when available (chord overlay context).
+        // Falls back to the legacy boolean path for scale-only views.
+        const semantics =
+          noteSemantics?.get(noteName) ??
+          (ENHARMONICS[noteName]
+            ? noteSemantics?.get(ENHARMONICS[noteName]!)
+            : undefined);
+
         const noteClass = isNoteHidden
           ? "note-inactive"
-          : classifyNote(
-              isScaleRoot,
-              isChordRootNote,
-              isColorNote,
-              isHighlighted,
-              isChordTone,
-              hasChordOverlay,
-              isChordInRange,
-              shapePolygons,
-              boxBounds,
-              fretIndex,
-            );
+          : semantics
+            ? classifyNoteFromSemantics(
+                semantics,
+                isChordInRange,
+                hasChordOverlay,
+                shapePolygons,
+                boxBounds,
+                fretIndex,
+              )
+            : classifyNote(
+                isScaleRoot,
+                isChordRootNote,
+                isColorNote,
+                isHighlighted,
+                isChordTone,
+                hasChordOverlay,
+                isChordInRange,
+                shapePolygons,
+                boxBounds,
+                fretIndex,
+              );
 
         if (noteClass === "note-inactive") continue;
 
@@ -745,7 +806,6 @@ export const FretboardSVG = memo(function FretboardSVG({
           return false;
         })();
 
-        const semantics = noteSemantics?.get(noteName);
         notes.push({
           stringIndex,
           fretIndex,
@@ -1051,6 +1111,9 @@ export const FretboardSVG = memo(function FretboardSVG({
                   noteShape === "squircle" ? (
                     <>
                       {noteClass === "chord-root" && (
+                        /* Outer halo: inline style prevents CSS class rules from overriding
+                           fill/stroke so the halo remains a transparent ring (not a filled rect).
+                           When isTension, the halo echoes the dashed tension signal. */
                         <rect
                           x={cx - r - 3.5}
                           y={cy - r - 3.5}
@@ -1058,9 +1121,15 @@ export const FretboardSVG = memo(function FretboardSVG({
                           height={(r + 3.5) * 2}
                           rx={(r + 3.5) * 0.38}
                           ry={(r + 3.5) * 0.38}
-                          fill="none"
-                          stroke="rgb(255 154 77 / 0.22)"
-                          strokeWidth={1.5}
+                          style={{
+                            fill: "none",
+                            stroke: isTension
+                              ? "rgb(255 154 77 / 0.45)"
+                              : "rgb(255 154 77 / 0.22)",
+                            strokeWidth: isTension ? 1.8 : 1.5,
+                            strokeDasharray: isTension ? "6 3" : undefined,
+                            paintOrder: "stroke",
+                          }}
                         />
                       )}
                       <rect
