@@ -3,7 +3,7 @@ import {
   chordRootAtom,
   chordTypeAtom,
   linkChordRootAtom,
-  viewModeAtom,
+  practiceLensAtom,
   focusPresetAtom,
   customMembersAtom,
   chordTonesAtom,
@@ -21,7 +21,7 @@ export function useChordState() {
   const [chordRoot, setChordRoot] = useAtom(chordRootAtom);
   const [chordType, setChordType] = useAtom(chordTypeAtom);
   const [linkChordRoot, setLinkChordRoot] = useAtom(linkChordRootAtom);
-  const [viewMode, setViewMode] = useAtom(viewModeAtom);
+  const [practiceLens, setPracticeLens] = useAtom(practiceLensAtom);
   const [focusPreset, setFocusPreset] = useAtom(focusPresetAtom);
   const [customMembers, setCustomMembers] = useAtom(customMembersAtom);
   const chordFretSpread = useAtomValue(chordFretSpreadAtom);
@@ -42,8 +42,8 @@ export function useChordState() {
     setChordType,
     linkChordRoot,
     setLinkChordRoot,
-    viewMode,
-    setViewMode,
+    practiceLens,
+    setPracticeLens,
     focusPreset,
     setFocusPreset,
     customMembers,

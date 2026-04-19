@@ -9,6 +9,7 @@ import {
   formatAccidental,
   SCALES,
   type ViewMode,
+  type PracticeLens,
 } from "./theory";
 import { parseNote } from "./guitar";
 import { STRING_ROW_PX_TABLET } from "./layout/responsive";
@@ -41,6 +42,7 @@ interface FretboardSVGProps {
   chordFretSpread?: number;
   hideNonChordNotes?: boolean;
   viewMode?: ViewMode;
+  practiceLens?: PracticeLens;
   colorNotes?: string[];
   shapePolygons?: ShapePolygon[];
   wrappedNotes?: Set<string>;
@@ -353,6 +355,7 @@ export const FretboardSVG = memo(function FretboardSVG({
   chordFretSpread = 0,
   hideNonChordNotes = false,
   viewMode = "compare",
+  practiceLens,
   colorNotes = [],
   shapePolygons = [],
   wrappedNotes = new Set<string>(),
@@ -366,6 +369,8 @@ export const FretboardSVG = memo(function FretboardSVG({
   // around it) but non-uniform spacing inside this component is derived from
   // neckWidthPx + scale math, so the value isn't read here.
   void effectiveZoom;
+  // `viewMode` is kept in props for backward compat; emphasis is now via lens.
+  void viewMode;
   const internalId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const defsPrefix = `fretboard-${id ?? internalId}`;
   const svgDefId = useCallback((id: string) => `${defsPrefix}-${id}`, [defsPrefix]);
@@ -583,6 +588,10 @@ export const FretboardSVG = memo(function FretboardSVG({
   }, [totalColumns, startFret, stringRowPx, svgDefUrl, fretCenterX, inlayYAt, inlayYBottomAt, inlayYTopAt]);
 
   const noteData = useMemo(() => {
+    // practiceLens is the source of truth when provided; hideNonChordNotes is the
+    // legacy fallback for callers that haven't migrated yet.
+    const effectiveHideNonChordNotes =
+      practiceLens !== undefined ? practiceLens === "targets" : hideNonChordNotes;
     const notes = [];
     const scale = SCALES[scaleName] || [];
     const normRoot = rootNote && (ENHARMONICS[rootNote]?.includes("b") ? ENHARMONICS[rootNote] : rootNote);
@@ -718,14 +727,9 @@ export const FretboardSVG = memo(function FretboardSVG({
           (isWrapped && isHighlighted);
 
         const isHidden = (() => {
-          // chord mode: hide all scale-only notes.
-          if (noteClass === "scale-only" && hideNonChordNotes) return true;
-          // outside mode: only outside chord tones (and outside chord root) visible.
-          if (viewMode === "outside" && hasChordOverlay) {
-            if (noteClass === "chord-tone-outside-scale") return false;
-            if (noteClass === "chord-root" && !isHighlighted) return false;
-            return true;
-          }
+          // Targets lens: hide all non-chord scale notes, including color tones.
+          if (effectiveHideNonChordNotes && (noteClass === "scale-only" || noteClass === "color-tone")) return true;
+          // All other lenses show all notes; tension lens emphasizes through the practice bar.
           return false;
         })();
 
@@ -741,7 +745,7 @@ export const FretboardSVG = memo(function FretboardSVG({
       }
     }
     return notes;
-  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, wrappedNotes, hideNonChordNotes, viewMode, tuning]);
+  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, wrappedNotes, hideNonChordNotes, practiceLens, tuning]);
 
   return (
     <div role="group" aria-label={ariaLabel} className="fretboard-board">

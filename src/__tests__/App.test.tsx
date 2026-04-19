@@ -404,22 +404,22 @@ describe("App", () => {
       });
     });
 
-    it("compare mode: renders primary scale strip inside ribbon", async () => {
+    it("targets-color lens: renders primary scale strip inside ribbon", async () => {
       localStorage.setItem(k("chordType"), "Major Triad");
-      localStorage.setItem(k("viewMode"), "compare");
+      localStorage.setItem(k("practiceLens"), "targets-color");
       render(<App />);
       await waitFor(() => {
         expect(document.querySelector(".summary-ribbon .degree-chip-strip")).toBeTruthy();
       });
     });
 
-    it("compare mode: chord practice bar hidden in simple diatonic case (same root, all preset, all in scale, C Major)", async () => {
+    it("targets-color lens: chord practice bar hidden in simple diatonic case (same root, all preset, all in scale, C Major)", async () => {
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("scaleName"), "Major");
       localStorage.setItem(k("chordRoot"), "C");
       localStorage.setItem(k("chordType"), "Major Triad");
       localStorage.setItem(k("focusPreset"), "all");
-      localStorage.setItem(k("viewMode"), "compare");
+      localStorage.setItem(k("practiceLens"), "targets-color");
       render(<App />);
       await waitFor(() => {
         expect(document.querySelector(".summary-ribbon")).toBeTruthy();
@@ -429,21 +429,21 @@ describe("App", () => {
       expect(document.querySelector(".relationship-row")).toBeNull();
     });
 
-    it("compare mode: shows chord practice bar when chordRoot differs from scale root", async () => {
+    it("targets-color lens: shows chord practice bar when chordRoot differs from scale root", async () => {
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("chordRoot"), "G");
       localStorage.setItem(k("chordType"), "Major Triad");
       localStorage.setItem(k("focusPreset"), "all");
-      localStorage.setItem(k("viewMode"), "compare");
+      localStorage.setItem(k("practiceLens"), "targets-color");
       render(<App />);
       await waitFor(() => {
         expect(document.querySelector(".chord-practice-bar")).toBeTruthy();
       });
     });
 
-    it("chord mode: renders chord practice bar and keeps degree-chip-strip inside ribbon", async () => {
+    it("targets lens: renders chord practice bar and keeps degree-chip-strip inside ribbon", async () => {
       localStorage.setItem(k("chordType"), "Major Triad");
-      localStorage.setItem(k("viewMode"), "chord");
+      localStorage.setItem(k("practiceLens"), "targets");
       render(<App />);
       await waitFor(() => {
         expect(document.querySelector(".summary-ribbon .chord-practice-bar")).toBeTruthy();
@@ -451,11 +451,11 @@ describe("App", () => {
       });
     });
 
-    it("outside mode: renders chord practice bar and keeps degree-chip-strip inside ribbon", async () => {
+    it("tension lens: renders chord practice bar and keeps degree-chip-strip inside ribbon", async () => {
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("chordRoot"), "D");
       localStorage.setItem(k("chordType"), "Dominant 7th");
-      localStorage.setItem(k("viewMode"), "outside");
+      localStorage.setItem(k("practiceLens"), "tension");
       render(<App />);
       await waitFor(() => {
         expect(document.querySelector(".summary-ribbon .chord-practice-bar")).toBeTruthy();
@@ -463,9 +463,9 @@ describe("App", () => {
       });
     });
 
-    it("no legend row is rendered in compare mode", async () => {
+    it("no legend row is rendered in targets-color lens", async () => {
       localStorage.setItem(k("chordType"), "Dominant 7th");
-      localStorage.setItem(k("viewMode"), "compare");
+      localStorage.setItem(k("practiceLens"), "targets-color");
       render(<App />);
       await waitFor(() => {
         expect(document.querySelector(".summary-ribbon")).toBeTruthy();
@@ -473,9 +473,9 @@ describe("App", () => {
       expect(document.querySelector(".chord-row-legend")).toBeNull();
     });
 
-    it("no legend row is rendered in chord mode", async () => {
+    it("no legend row is rendered in targets lens", async () => {
       localStorage.setItem(k("chordType"), "Major Triad");
-      localStorage.setItem(k("viewMode"), "chord");
+      localStorage.setItem(k("practiceLens"), "targets");
       render(<App />);
       await waitFor(() => {
         expect(document.querySelector(".summary-ribbon")).toBeTruthy();
@@ -483,22 +483,20 @@ describe("App", () => {
       expect(document.querySelector(".chord-row-legend")).toBeNull();
     });
 
-    it("practice bar shows chord label as title and Compare badge in compare mode", async () => {
+    it("practice bar shows chord label as title", async () => {
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("scaleName"), "Major");
       localStorage.setItem(k("chordRoot"), "C");
       // Dominant 7th has Bb which is outside C Major → bar is non-trivial and shown
       localStorage.setItem(k("chordType"), "Dominant 7th");
-      localStorage.setItem(k("viewMode"), "compare");
+      localStorage.setItem(k("practiceLens"), "targets-color");
       render(<App />);
       await waitFor(() => {
         expect(document.querySelector(".chord-practice-bar")).toBeTruthy();
       });
       const title = document.querySelector(".chord-practice-bar-title")!;
-      const badge = document.querySelector(".chord-practice-bar-badge")!;
       expect(title.textContent).toContain("C");
       expect(title.textContent).toContain("Dominant 7th");
-      expect(badge.textContent).toBe("Compare");
     });
   });
 

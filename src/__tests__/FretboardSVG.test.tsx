@@ -132,19 +132,23 @@ describe("FretboardSVG", () => {
     expect(onNoteClick).toHaveBeenCalledTimes(1);
   });
 
-  it("hides scale-only circles when hideNonChordNotes is true", () => {
+  it("hides scale-only and color-tone circles when hideNonChordNotes is true", () => {
     render(
       <FretboardSVG
         {...BASE_PROPS}
         chordTones={["C"]}
         chordRoot="C"
         highlightNotes={["C", "E", "G"]}
+        colorNotes={["E"]}
         hideNonChordNotes={true}
       />
     );
-    // scale-only notes should have the 'hidden' class
-    const hiddenNotes = document.querySelectorAll(".scale-only.hidden");
-    expect(hiddenNotes.length).toBeGreaterThan(0);
+    // scale-only notes should be hidden
+    const hiddenScaleOnly = document.querySelectorAll(".scale-only.hidden");
+    expect(hiddenScaleOnly.length).toBeGreaterThan(0);
+    // color-tone notes (E is colorNote but not a chord tone) should also be hidden
+    const hiddenColorTone = document.querySelectorAll(".color-tone.hidden");
+    expect(hiddenColorTone.length).toBeGreaterThan(0);
   });
 
   it("classifies outside-scale chord tones with chord-tone-outside-scale class", () => {
@@ -163,7 +167,9 @@ describe("FretboardSVG", () => {
     expect(outsideTones.length).toBeGreaterThan(0);
   });
 
-  it("outside view hides in-scale notes and only shows outside chord tones", () => {
+  it("tension lens (old outside mode) shows all notes — in-scale chord root is not hidden", () => {
+    // The old viewMode="outside" used to hide in-scale notes. The new tension lens
+    // shows all notes and uses the practice bar to coach about outside tones instead.
     const { container } = render(
       <FretboardSVG
         {...BASE_PROPS}
@@ -171,19 +177,20 @@ describe("FretboardSVG", () => {
         chordRoot="C"
         rootNote="C"
         highlightNotes={["C", "E", "G"]}
-        viewMode="outside"
+        practiceLens="tension"
       />
     );
-    // C (chord root) is in scale → hidden in outside mode
+    // C (chord root, in scale) must NOT be hidden in tension lens
     const hiddenChordRoot = container.querySelectorAll(".chord-root.hidden");
-    expect(hiddenChordRoot.length).toBeGreaterThan(0);
-    // A# (outside-scale chord tone) → NOT hidden
+    expect(hiddenChordRoot.length).toBe(0);
+    // A# (outside-scale chord tone) is still visible
     const visibleOutside = container.querySelectorAll(".chord-tone-outside-scale:not(.hidden)");
     expect(visibleOutside.length).toBeGreaterThan(0);
   });
 
-  it("outside view shows outside chord root when it is outside scale", () => {
-    // chordRoot=D is not in highlightNotes (C,E,G) → outside scale → visible in outside mode
+  it("outside chord root is visible and not hidden in tension lens", () => {
+    // D (chord root) is outside the scale notes (C,E,G) → classified as chord-root
+    // and must not be hidden under the tension lens
     const { container } = render(
       <FretboardSVG
         {...BASE_PROPS}
@@ -191,10 +198,9 @@ describe("FretboardSVG", () => {
         chordRoot="D"
         rootNote="C"
         highlightNotes={["C", "E", "G"]}
-        viewMode="outside"
+        practiceLens="tension"
       />
     );
-    // D (chord root) is outside scale → should appear as chord-root and NOT be hidden
     const visibleChordRoot = container.querySelectorAll(".chord-root:not(.hidden)");
     expect(visibleChordRoot.length).toBeGreaterThan(0);
   });

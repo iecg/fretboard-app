@@ -16,6 +16,7 @@ import {
   chordFretSpreadAtom,
   hideNonChordNotesAtom,
   viewModeAtom,
+  practiceLensAtom,
   colorNotesAtom,
   hiddenNotesAtom,
 } from "../store/atoms";
@@ -39,6 +40,7 @@ export function useFretboardState() {
   const chordFretSpread = useAtomValue(chordFretSpreadAtom);
   const hideNonChordNotes = useAtomValue(hideNonChordNotesAtom);
   const viewMode = useAtomValue(viewModeAtom);
+  const practiceLens = useAtomValue(practiceLensAtom);
   const colorNotes = useAtomValue(colorNotesAtom);
   const hiddenNotes = useAtomValue(hiddenNotesAtom);
 
@@ -62,6 +64,7 @@ export function useFretboardState() {
     chordFretSpread,
     hideNonChordNotes,
     viewMode,
+    practiceLens,
     colorNotes,
     hiddenNotes,
   };

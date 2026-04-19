@@ -24,6 +24,7 @@ import {
   hideNonChordNotesAtom,
   chordFretSpreadAtom,
   viewModeAtom,
+  practiceLensAtom,
   focusPresetAtom,
   customMembersAtom,
   setRootNoteAtom,
@@ -459,7 +460,7 @@ describe("atoms", () => {
       const store = makeStore();
       store.set(chordRootAtom, "G");
       store.set(linkChordRootAtom, false);
-      store.set(viewModeAtom, "chord"); // sets hideNonChordNotesAtom to true
+      store.set(practiceLensAtom, "targets"); // targets lens → hideNonChordNotesAtom = true
       store.set(chordFretSpreadAtom, 5);
       store.set(focusPresetAtom, "triad");
       store.set(customMembersAtom, ["root", "3"]);
@@ -479,7 +480,7 @@ describe("atoms", () => {
 
       expect(store.get(chordRootAtom)).toBe("C");
       expect(store.get(linkChordRootAtom)).toBe(true);
-      expect(store.get(hideNonChordNotesAtom)).toBe(false); // compare mode -> false
+      expect(store.get(hideNonChordNotesAtom)).toBe(false); // targets-color lens → false
       expect(store.get(chordFretSpreadAtom)).toBe(0);
       expect(store.get(viewModeAtom)).toBe("compare");
       expect(store.get(focusPresetAtom)).toBe("all");

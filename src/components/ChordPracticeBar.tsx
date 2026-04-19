@@ -1,56 +1,41 @@
 import clsx from "clsx";
-import type { ChordRowEntry, PracticeBarColorNote, ViewMode } from "../theory";
+import type { PracticeCue } from "../theory";
 import "./ChordPracticeBar.css";
 
-interface PillGroupProps {
-  label: string;
-  members: ChordRowEntry[];
-  ariaLabel: string;
+function cueKindDefaultRole(kind: PracticeCue["kind"]): string {
+  switch (kind) {
+    case "guide-tones": return "guide-tone";
+    case "color-note": return "color-tone";
+    case "tension": return "chord-tone-outside-scale";
+    default: return "chord-tone-in-scale";
+  }
 }
 
-function PillGroup({ label, members, ariaLabel }: PillGroupProps) {
-  if (members.length === 0) return null;
+interface CueLineProps {
+  cue: PracticeCue;
+}
+
+function CueLine({ cue }: CueLineProps) {
   return (
-    <div className="practice-bar-group">
-      <span className="practice-bar-group-label">{label}</span>
-      <ul className="practice-bar-pill-list" aria-label={ariaLabel}>
-        {members.map((entry, i) => (
+    <div className="practice-bar-cue">
+      <span className="practice-bar-cue-label">{cue.label}:</span>
+      <ul className="practice-bar-pill-list" aria-label={cue.label}>
+        {cue.notes.map((note, i) => (
           <li
-            key={`${entry.internalNote}-${i}`}
+            key={`${note.internalNote}-${i}`}
             className="practice-bar-pill"
-            data-role={entry.role}
-            aria-label={`${entry.displayNote}, ${entry.memberName}`}
+            data-role={note.role ?? cueKindDefaultRole(cue.kind)}
+            aria-label={[note.displayNote, note.intervalName].filter(Boolean).join(", ")}
           >
-            <span className="practice-bar-pill-note">{entry.displayNote}</span>
-            <span className="practice-bar-pill-interval">{entry.memberName}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-interface ColorPillGroupProps {
-  label: string;
-  entries: PracticeBarColorNote[];
-  ariaLabel: string;
-}
-
-function ColorPillGroup({ label, entries, ariaLabel }: ColorPillGroupProps) {
-  if (entries.length === 0) return null;
-  return (
-    <div className="practice-bar-group">
-      <span className="practice-bar-group-label">{label}</span>
-      <ul className="practice-bar-pill-list" aria-label={ariaLabel}>
-        {entries.map((entry, i) => (
-          <li
-            key={`${entry.internalNote}-${i}`}
-            className="practice-bar-pill"
-            data-role="color-tone"
-            aria-label={`${entry.displayNote}, ${entry.intervalName}`}
-          >
-            <span className="practice-bar-pill-note">{entry.displayNote}</span>
-            <span className="practice-bar-pill-interval">{entry.intervalName}</span>
+            <span className="practice-bar-pill-note">{note.displayNote}</span>
+            {note.intervalName && (
+              <span className="practice-bar-pill-interval">{note.intervalName}</span>
+            )}
+            {note.resolvesTo && (
+              <span className="practice-bar-pill-resolve" aria-label={`resolves to ${note.resolvesTo.displayNote}`}>
+                →{note.resolvesTo.displayNote}
+              </span>
+            )}
           </li>
         ))}
       </ul>
@@ -60,71 +45,35 @@ function ColorPillGroup({ label, entries, ariaLabel }: ColorPillGroupProps) {
 
 export interface ChordPracticeBarProps {
   title: string;
-  badge: string | null;
-  viewMode: ViewMode;
-  targetMembers: ChordRowEntry[];
-  outsideMembers: ChordRowEntry[];
-  colorNoteEntries?: PracticeBarColorNote[];
-  // Shape-local context
+  badge?: string | null;
+  cues: PracticeCue[];
   isShapeLocal?: boolean;
   shapeContextLabel?: string | null;
-  shapeLocalTargetMembers?: ChordRowEntry[];
-  shapeLocalOutsideMembers?: ChordRowEntry[];
-  shapeLocalColorNoteEntries?: PracticeBarColorNote[];
+  /** Shape-filtered cues — shown instead of global cues when in single-shape context */
+  shapeLocalCues?: PracticeCue[];
   className?: string;
 }
 
 export function ChordPracticeBar({
   title,
   badge,
-  viewMode,
-  targetMembers,
-  outsideMembers,
-  colorNoteEntries = [],
+  cues,
   isShapeLocal = false,
   shapeContextLabel = null,
-  shapeLocalTargetMembers,
-  shapeLocalOutsideMembers,
-  shapeLocalColorNoteEntries,
+  shapeLocalCues,
   className,
 }: ChordPracticeBarProps) {
-  // In single-shape context, prefer shape-local arrays over global ones
-  const effectiveTargets =
-    isShapeLocal && shapeLocalTargetMembers !== undefined
-      ? shapeLocalTargetMembers
-      : targetMembers;
-  const effectiveOutside =
-    isShapeLocal && shapeLocalOutsideMembers !== undefined
-      ? shapeLocalOutsideMembers
-      : outsideMembers;
-  const effectiveColor =
-    isShapeLocal && shapeLocalColorNoteEntries !== undefined
-      ? shapeLocalColorNoteEntries
-      : colorNoteEntries;
+  const effectiveCues =
+    isShapeLocal && shapeLocalCues && shapeLocalCues.length > 0
+      ? shapeLocalCues
+      : cues;
 
-  const hasTargets = effectiveTargets.length > 0;
-  const hasOutside = effectiveOutside.length > 0;
-  const hasColor = effectiveColor.length > 0;
-
-  if (!hasTargets && !hasOutside && !hasColor) return null;
-
-  // Label suffix and color label (singular when exactly one tone)
-  const suffix = isShapeLocal ? " here" : "";
-  const colorLabel =
-    effectiveColor.length === 1
-      ? `Color tone${suffix}`
-      : `Color tones${suffix}`;
-
-  const showTargets =
-    (viewMode === "compare" || viewMode === "chord") && hasTargets;
-  const showOutside =
-    (viewMode === "compare" || viewMode === "outside") && hasOutside;
-  const showColor = viewMode === "compare" && hasColor;
+  if (effectiveCues.length === 0) return null;
 
   return (
     <section
       role="group"
-      aria-label={`Chord analysis: ${title}`}
+      aria-label={`Practice cues: ${title}`}
       className={clsx("chord-practice-bar", className)}
     >
       <div className="chord-practice-bar-header">
@@ -134,38 +83,10 @@ export function ChordPracticeBar({
       {shapeContextLabel && (
         <div className="chord-practice-bar-context">{shapeContextLabel}</div>
       )}
-      <div className="chord-practice-bar-groups">
-        {showTargets && (
-          <PillGroup
-            label={`Targets${suffix}`}
-            members={effectiveTargets}
-            ariaLabel={
-              isShapeLocal
-                ? "Target chord members in shape"
-                : "Target chord members"
-            }
-          />
-        )}
-        {showOutside && (
-          <PillGroup
-            label={`Outside${suffix}`}
-            members={effectiveOutside}
-            ariaLabel={
-              isShapeLocal ? "Outside scale in shape" : "Outside scale"
-            }
-          />
-        )}
-        {showColor && (
-          <ColorPillGroup
-            label={colorLabel}
-            entries={effectiveColor}
-            ariaLabel={
-              isShapeLocal
-                ? "Characteristic color tones in shape"
-                : "Characteristic color tones"
-            }
-          />
-        )}
+      <div className="chord-practice-bar-cues">
+        {effectiveCues.map((cue, i) => (
+          <CueLine key={`${cue.kind}-${i}`} cue={cue} />
+        ))}
       </div>
     </section>
   );
