@@ -19,6 +19,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@testing-library/dom": "^10.4.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "jotai": "^2.19.1",
