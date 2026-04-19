@@ -132,19 +132,23 @@ describe("FretboardSVG", () => {
     expect(onNoteClick).toHaveBeenCalledTimes(1);
   });
 
-  it("hides scale-only circles when hideNonChordNotes is true", () => {
+  it("hides scale-only and color-tone circles when hideNonChordNotes is true", () => {
     render(
       <FretboardSVG
         {...BASE_PROPS}
         chordTones={["C"]}
         chordRoot="C"
         highlightNotes={["C", "E", "G"]}
+        colorNotes={["E"]}
         hideNonChordNotes={true}
       />
     );
-    // scale-only notes should have the 'hidden' class
-    const hiddenNotes = document.querySelectorAll(".scale-only.hidden");
-    expect(hiddenNotes.length).toBeGreaterThan(0);
+    // scale-only notes should be hidden
+    const hiddenScaleOnly = document.querySelectorAll(".scale-only.hidden");
+    expect(hiddenScaleOnly.length).toBeGreaterThan(0);
+    // color-tone notes (E is colorNote but not a chord tone) should also be hidden
+    const hiddenColorTone = document.querySelectorAll(".color-tone.hidden");
+    expect(hiddenColorTone.length).toBeGreaterThan(0);
   });
 
   it("classifies outside-scale chord tones with chord-tone-outside-scale class", () => {

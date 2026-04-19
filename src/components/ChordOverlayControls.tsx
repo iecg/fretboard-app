@@ -1,4 +1,4 @@
-import { startTransition, useId, useState } from "react";
+import { startTransition, useEffect, useId, useState } from "react";
 import clsx from "clsx";
 import {
   NOTES,
@@ -90,6 +90,13 @@ export function ChordOverlayControls() {
     ...opt,
     disabled: opt.value === "tension" && !hasOutsideChordMembers,
   }));
+
+  // Auto-exit tension lens when chord becomes fully diatonic.
+  useEffect(() => {
+    if (practiceLens === "tension" && !hasOutsideChordMembers) {
+      setPracticeLens("targets-color");
+    }
+  }, [practiceLens, hasOutsideChordMembers, setPracticeLens]);
 
   const focusPresetOptions = availableFocusPresets.map((preset) => ({
     value: preset,

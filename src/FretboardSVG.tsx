@@ -655,8 +655,8 @@ export const FretboardSVG = memo(function FretboardSVG({
           (isWrapped && isHighlighted);
 
         const isHidden = (() => {
-          // Targets lens (hideNonChordNotes): hide scale-only notes so only chord tones show.
-          if (noteClass === "scale-only" && hideNonChordNotes) return true;
+          // Targets lens: hide all non-chord scale notes, including color tones.
+          if (hideNonChordNotes && (noteClass === "scale-only" || noteClass === "color-tone")) return true;
           // All other lenses show all notes; tension lens emphasizes through the practice bar.
           return false;
         })();
