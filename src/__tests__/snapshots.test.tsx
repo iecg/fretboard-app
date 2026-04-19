@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, act } from "@testing-library/react";
+import { render, act, screen } from "@testing-library/react";
 import { Fretboard } from "../Fretboard";
 import { CircleOfFifths } from "../CircleOfFifths";
 import App from "../App";
@@ -368,7 +368,7 @@ describe("Component Snapshots", () => {
   });
 
   describe("App layout snapshots", () => {
-    it("renders desktop-3col layout snapshot (1920×1200)", () => {
+    it("renders desktop-3col layout snapshot (1920×1200)", async () => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
@@ -382,10 +382,12 @@ describe("Component Snapshots", () => {
 
       localStorage.clear();
       const { container } = render(<App />);
+      await screen.findByTestId("circle-of-fifths", {}, { timeout: 5000 });
+      await screen.findByTestId("theory-controls", {}, { timeout: 5000 });
       expect(container).toMatchSnapshot("app-desktop-3col-default");
     });
 
-    it("renders mobile layout snapshot", () => {
+    it("renders mobile layout snapshot", async () => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
@@ -399,10 +401,12 @@ describe("Component Snapshots", () => {
 
       localStorage.clear();
       const { container } = render(<App />);
+      await screen.findByTestId("fretboard-main", {}, { timeout: 5000 });
+      await screen.findByTestId("theory-controls", {}, { timeout: 5000 });
       expect(container).toMatchSnapshot("app-mobile-default");
     });
 
-    it("renders desktop-3col with custom configuration snapshot", () => {
+    it("renders desktop-3col with custom configuration snapshot", async () => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
@@ -418,14 +422,14 @@ describe("Component Snapshots", () => {
       localStorage.setItem("scaleName", "Natural Minor");
       localStorage.setItem("chordType", "Minor 7th");
       localStorage.setItem("displayFormat", "degrees");
-      // accidentalModeAtom is non-persisted, defaults to "auto"; G Natural
-      // Minor under auto mode resolves to sharps (parent C Major).
 
       const { container } = render(<App />);
+      await screen.findByTestId("circle-of-fifths", {}, { timeout: 5000 });
+      await screen.findByTestId("theory-controls", {}, { timeout: 5000 });
       expect(container).toMatchSnapshot("app-desktop-3col-custom-config");
     });
 
-    it("renders desktop-3col with chord overlay snapshot", () => {
+    it("renders desktop-3col with chord overlay snapshot", async () => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
@@ -442,10 +446,12 @@ describe("Component Snapshots", () => {
       localStorage.setItem("hideNonChordNotes", "true");
 
       const { container } = render(<App />);
+      await screen.findByTestId("circle-of-fifths", {}, { timeout: 5000 });
+      await screen.findByTestId("theory-controls", {}, { timeout: 5000 });
       expect(container).toMatchSnapshot("app-desktop-3col-with-chord-overlay");
     });
 
-    it("renders iPhone SE portrait layout (375×667)", () => {
+    it("renders iPhone SE portrait layout (375×667)", async () => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
@@ -459,10 +465,12 @@ describe("Component Snapshots", () => {
 
       localStorage.clear();
       const { container } = render(<App />);
+      await screen.findByTestId("fretboard-main", {}, { timeout: 5000 });
+      await screen.findByTestId("theory-controls", {}, { timeout: 5000 });
       expect(container).toMatchSnapshot("app-iphone-se-portrait");
     });
 
-    it("renders tablet-split layout (768×1024)", () => {
+    it("renders tablet-split layout (768×1024)", async () => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
@@ -476,10 +484,12 @@ describe("Component Snapshots", () => {
 
       localStorage.clear();
       const { container } = render(<App />);
+      await screen.findByTestId("circle-of-fifths", {}, { timeout: 5000 });
+      await screen.findByTestId("theory-controls", {}, { timeout: 5000 });
       expect(container).toMatchSnapshot("app-tablet-split");
     });
 
-    it("renders desktop-split layout (1024×1366)", () => {
+    it("renders desktop-split layout (1024×1366)", async () => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
@@ -493,10 +503,12 @@ describe("Component Snapshots", () => {
 
       localStorage.clear();
       const { container } = render(<App />);
+      await screen.findByTestId("circle-of-fifths", {}, { timeout: 5000 });
+      await screen.findByTestId("theory-controls", {}, { timeout: 5000 });
       expect(container).toMatchSnapshot("app-desktop-split-1024x1366");
     });
 
-    it("renders iPhone 12 Pro portrait layout (390×844)", () => {
+    it("renders iPhone 12 Pro portrait layout (390×844)", async () => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
@@ -510,10 +522,12 @@ describe("Component Snapshots", () => {
 
       localStorage.clear();
       const { container } = render(<App />);
+      await screen.findByTestId("fretboard-main", {}, { timeout: 5000 });
+      await screen.findByTestId("theory-controls", {}, { timeout: 5000 });
       expect(container).toMatchSnapshot("app-iphone-12-pro-portrait");
     });
 
-    it("renders desktop-stacked layout (1200×720)", () => {
+    it("renders desktop-stacked layout (1200×720)", async () => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
@@ -527,6 +541,8 @@ describe("Component Snapshots", () => {
 
       localStorage.clear();
       const { container } = render(<App />);
+      await screen.findByTestId("circle-of-fifths", {}, { timeout: 5000 });
+      await screen.findByTestId("theory-controls", {}, { timeout: 5000 });
       expect(container).toMatchSnapshot("app-desktop-stacked-1200x720");
     });
 

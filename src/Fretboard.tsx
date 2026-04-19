@@ -180,7 +180,7 @@ export function Fretboard({
   const neckWidth = totalColumns * effectiveZoom;
 
   return (
-    <div className="fretboard-outer">
+    <div className="fretboard-outer" data-testid="fretboard-main">
       <div
         className={clsx("fretboard-wrapper", "hide-scrollbar")}
         ref={scrollRef}

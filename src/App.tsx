@@ -1,30 +1,52 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useAtom, useSetAtom, useAtomValue, createStore, Provider } from "jotai";
 import { Fretboard } from "./Fretboard";
 import { HelpCircle, Settings2, Volume2, VolumeX } from "lucide-react";
 import { synth } from "./audio";
-import { CircleOfFifths } from "./CircleOfFifths";
-import { FingeringPatternControls } from "./components/FingeringPatternControls";
-import { TheoryControls } from "./components/TheoryControls";
-import { MobileTabPanel } from "./components/MobileTabPanel";
-import { ExpandedControlsPanel } from "./components/ExpandedControlsPanel";
 import {
   isMutedAtom,
   mobileTabAtom,
   settingsOverlayOpenAtom,
   toggleMuteAtom,
 } from "./store/atoms";
-import SettingsOverlay from "./components/SettingsOverlay";
 import useLayoutMode from "./hooks/useLayoutMode";
 import useDisplayState from "./hooks/useDisplayState";
 import { AppHeader } from "./components/AppHeader";
 import { BrandMark } from "./components/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark";
 import { MAX_FRET } from "./constants";
-import { HelpModal } from "./components/HelpModal";
 import { SummaryRibbon } from "./components/SummaryRibbon";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper";
 import "./App.css";
+
+// Lazy-loaded components
+const CircleOfFifths = lazy(() =>
+  import("./CircleOfFifths").then((m) => ({ default: m.CircleOfFifths }))
+);
+const FingeringPatternControls = lazy(() =>
+  import("./components/FingeringPatternControls").then((m) => ({
+    default: m.FingeringPatternControls,
+  }))
+);
+const ExpandedControlsPanel = lazy(() =>
+  import("./components/ExpandedControlsPanel").then((m) => ({
+    default: m.ExpandedControlsPanel,
+  }))
+);
+const SettingsOverlay = lazy(() => import("./components/SettingsOverlay"));
+const HelpModal = lazy(() =>
+  import("./components/HelpModal").then((m) => ({ default: m.HelpModal }))
+);
+const TheoryControls = lazy(() =>
+  import("./components/TheoryControls").then((m) => ({
+    default: m.TheoryControls,
+  }))
+);
+const MobileTabPanel = lazy(() =>
+  import("./components/MobileTabPanel").then((m) => ({
+    default: m.MobileTabPanel,
+  }))
+);
 
 function AppContent() {
   const {
@@ -66,25 +88,31 @@ function AppContent() {
 
   const mobileKeyExplorer = (
     <div className="cof-container">
-      <CircleOfFifths
-        rootNote={rootNote}
-        setRootNote={setRootNote}
-        scaleName={scaleName}
-        useFlats={useFlats}
-        enharmonicDisplay={enharmonicDisplay}
-      />
+      <Suspense fallback={null}>
+        <CircleOfFifths
+          rootNote={rootNote}
+          setRootNote={setRootNote}
+          scaleName={scaleName}
+          useFlats={useFlats}
+          enharmonicDisplay={enharmonicDisplay}
+        />
+      </Suspense>
     </div>
   );
 
   const theoryTabContent = (
     <div className="mobile-tab-panel mobile-theory-tab">
-      <TheoryControls keyExplorer={mobileKeyExplorer} />
+      <Suspense fallback={null}>
+        <TheoryControls keyExplorer={mobileKeyExplorer} />
+      </Suspense>
     </div>
   );
 
   const viewTabContent = (
     <div className="mobile-tab-panel mobile-view-tab">
-      <FingeringPatternControls />
+      <Suspense fallback={null}>
+        <FingeringPatternControls />
+      </Suspense>
     </div>
   );
 
@@ -174,23 +202,35 @@ function AppContent() {
       }
       summary={<SummaryRibbon />}
       helpModal={
-        <HelpModal
-          isOpen={showHelp}
-          onClose={() => setShowHelp(false)}
-          fullWidth={layout.fullWidthOverlay}
-        />
+        <Suspense fallback={null}>
+          <HelpModal
+            isOpen={showHelp}
+            onClose={() => setShowHelp(false)}
+            fullWidth={layout.fullWidthOverlay}
+          />
+        </Suspense>
       }
-      controlsPanel={<ExpandedControlsPanel mode={layout.panelMode} />}
+      controlsPanel={
+        <Suspense fallback={null}>
+          <ExpandedControlsPanel mode={layout.panelMode} />
+        </Suspense>
+      }
       mobileTabs={
-        <MobileTabPanel
-          mobileTab={mobileTab}
-          setMobileTab={setMobileTab}
-          theoryTabContent={theoryTabContent}
-          viewTabContent={viewTabContent}
-        />
+        <Suspense fallback={null}>
+          <MobileTabPanel
+            mobileTab={mobileTab}
+            setMobileTab={setMobileTab}
+            theoryTabContent={theoryTabContent}
+            viewTabContent={viewTabContent}
+          />
+        </Suspense>
       }
       versionBadge={versionBadge}
-      settingsOverlay={<SettingsOverlay />}
+      settingsOverlay={
+        <Suspense fallback={null}>
+          <SettingsOverlay />
+        </Suspense>
+      }
     >
       <Fretboard
         tuning={currentTuning}

@@ -458,6 +458,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col layou
     >
       <div
         class="fretboard-outer"
+        data-testid="fretboard-main"
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
@@ -4169,6 +4170,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col layou
         >
           <div
             class="theory-controls"
+            data-testid="theory-controls"
           >
             <div
               class="control-section"
@@ -4573,6 +4575,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col layou
         >
           <div
             class="circle-fifths-container"
+            data-testid="circle-of-fifths"
           >
             <svg
               aria-describedby="cof-desc"
@@ -5752,6 +5755,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col with 
     >
       <div
         class="fretboard-outer"
+        data-testid="fretboard-main"
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
@@ -9463,6 +9467,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col with 
         >
           <div
             class="theory-controls"
+            data-testid="theory-controls"
           >
             <div
               class="control-section"
@@ -9867,6 +9872,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col with 
         >
           <div
             class="circle-fifths-container"
+            data-testid="circle-of-fifths"
           >
             <svg
               aria-describedby="cof-desc"
@@ -11046,6 +11052,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col with 
     >
       <div
         class="fretboard-outer"
+        data-testid="fretboard-main"
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
@@ -14757,6 +14764,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col with 
         >
           <div
             class="theory-controls"
+            data-testid="theory-controls"
           >
             <div
               class="control-section"
@@ -15161,6 +15169,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col with 
         >
           <div
             class="circle-fifths-container"
+            data-testid="circle-of-fifths"
           >
             <svg
               aria-describedby="cof-desc"
@@ -16340,6 +16349,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
     >
       <div
         class="fretboard-outer"
+        data-testid="fretboard-main"
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
@@ -20051,6 +20061,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
         >
           <div
             class="theory-controls"
+            data-testid="theory-controls"
           >
             <div
               class="control-section"
@@ -20455,6 +20466,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
         >
           <div
             class="circle-fifths-container"
+            data-testid="circle-of-fifths"
           >
             <svg
               aria-describedby="cof-desc"
@@ -21634,6 +21646,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
     >
       <div
         class="fretboard-outer"
+        data-testid="fretboard-main"
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
@@ -25345,6 +25358,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
         >
           <div
             class="theory-controls"
+            data-testid="theory-controls"
           >
             <div
               class="control-section"
@@ -25749,6 +25763,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
         >
           <div
             class="circle-fifths-container"
+            data-testid="circle-of-fifths"
           >
             <svg
               aria-describedby="cof-desc"
@@ -26928,6 +26943,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
     >
       <div
         class="fretboard-outer"
+        data-testid="fretboard-main"
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
@@ -30468,6 +30484,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
       >
         <div
           class="theory-controls"
+          data-testid="theory-controls"
         >
           <div
             class="control-section"
@@ -31366,6 +31383,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
     >
       <div
         class="fretboard-outer"
+        data-testid="fretboard-main"
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
@@ -34906,6 +34924,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
       >
         <div
           class="theory-controls"
+          data-testid="theory-controls"
         >
           <div
             class="control-section"
@@ -35804,6 +35823,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
     >
       <div
         class="fretboard-outer"
+        data-testid="fretboard-main"
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
@@ -39344,6 +39364,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
       >
         <div
           class="theory-controls"
+          data-testid="theory-controls"
         >
           <div
             class="control-section"
@@ -40242,6 +40263,7 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
     >
       <div
         class="fretboard-outer"
+        data-testid="fretboard-main"
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
@@ -43953,6 +43975,7 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
         >
           <div
             class="theory-controls"
+            data-testid="theory-controls"
           >
             <div
               class="control-section"
@@ -44357,6 +44380,7 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
         >
           <div
             class="circle-fifths-container"
+            data-testid="circle-of-fifths"
           >
             <svg
               aria-describedby="cof-desc"
@@ -45082,6 +45106,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
 <div>
   <div
     class="circle-fifths-container"
+    data-testid="circle-of-fifths"
   >
     <svg
       aria-describedby="cof-desc"
@@ -45768,6 +45793,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders A Natural Mino
 <div>
   <div
     class="circle-fifths-container"
+    data-testid="circle-of-fifths"
   >
     <svg
       aria-describedby="cof-desc"
@@ -46454,6 +46480,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "of
 <div>
   <div
     class="circle-fifths-container"
+    data-testid="circle-of-fifths"
   >
     <svg
       aria-describedby="cof-desc"
@@ -47080,6 +47107,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major in "on
 <div>
   <div
     class="circle-fifths-container"
+    data-testid="circle-of-fifths"
   >
     <svg
       aria-describedby="cof-desc"
@@ -47766,6 +47794,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders C Major snapsh
 <div>
   <div
     class="circle-fifths-container"
+    data-testid="circle-of-fifths"
   >
     <svg
       aria-describedby="cof-desc"
@@ -48452,6 +48481,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Dorian mode sn
 <div>
   <div
     class="circle-fifths-container"
+    data-testid="circle-of-fifths"
   >
     <svg
       aria-describedby="cof-desc"
@@ -49138,6 +49168,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders G Major snapsh
 <div>
   <div
     class="circle-fifths-container"
+    data-testid="circle-of-fifths"
   >
     <svg
       aria-describedby="cof-desc"
@@ -49824,6 +49855,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders Lydian mode sn
 <div>
   <div
     class="circle-fifths-container"
+    data-testid="circle-of-fifths"
   >
     <svg
       aria-describedby="cof-desc"
@@ -50510,6 +50542,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
 <div>
   <div
     class="circle-fifths-container"
+    data-testid="circle-of-fifths"
   >
     <svg
       aria-describedby="cof-desc"
@@ -51256,6 +51289,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
 <div>
   <div
     class="circle-fifths-container"
+    data-testid="circle-of-fifths"
   >
     <svg
       aria-describedby="cof-desc"
@@ -51942,6 +51976,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
 <div>
   <div
     class="circle-fifths-container"
+    data-testid="circle-of-fifths"
   >
     <svg
       aria-describedby="cof-desc"
@@ -52628,6 +52663,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
 <div>
   <div
     class="circle-fifths-container"
+    data-testid="circle-of-fifths"
   >
     <svg
       aria-describedby="cof-desc"
@@ -53338,6 +53374,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
 <div>
   <div
     class="circle-fifths-container"
+    data-testid="circle-of-fifths"
   >
     <svg
       aria-describedby="cof-desc"
@@ -54024,6 +54061,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
 <div>
   <div
     class="circle-fifths-container"
+    data-testid="circle-of-fifths"
   >
     <svg
       aria-describedby="cof-desc"
@@ -54758,6 +54796,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
 <div>
   <div
     class="circle-fifths-container"
+    data-testid="circle-of-fifths"
   >
     <svg
       aria-describedby="cof-desc"
@@ -55444,6 +55483,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
 <div>
   <div
     class="circle-fifths-container"
+    data-testid="circle-of-fifths"
   >
     <svg
       aria-describedby="cof-desc"
@@ -56130,6 +56170,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
 <div>
   <div
     class="circle-fifths-container"
+    data-testid="circle-of-fifths"
   >
     <svg
       aria-describedby="cof-desc"
@@ -56828,6 +56869,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
 <div>
   <div
     class="circle-fifths-container"
+    data-testid="circle-of-fifths"
   >
     <svg
       aria-describedby="cof-desc"
@@ -57514,6 +57556,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
 <div>
   <div
     class="circle-fifths-container"
+    data-testid="circle-of-fifths"
   >
     <svg
       aria-describedby="cof-desc"
@@ -58236,6 +58279,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders all chromatic 
 <div>
   <div
     class="circle-fifths-container"
+    data-testid="circle-of-fifths"
   >
     <svg
       aria-describedby="cof-desc"
@@ -58922,6 +58966,7 @@ exports[`Component Snapshots > CircleOfFifths snapshots > renders with flats sna
 <div>
   <div
     class="circle-fifths-container"
+    data-testid="circle-of-fifths"
   >
     <svg
       aria-describedby="cof-desc"
@@ -59608,6 +59653,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders A Minor Pentatonic 
 <div>
   <div
     class="fretboard-outer"
+    data-testid="fretboard-main"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
@@ -62357,6 +62403,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders C Major scale snaps
 <div>
   <div
     class="fretboard-outer"
+    data-testid="fretboard-main"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
@@ -65706,6 +65753,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders Drop D tuning snaps
 <div>
   <div
     class="fretboard-outer"
+    data-testid="fretboard-main"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
@@ -69055,6 +69103,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders high fret range sna
 <div>
   <div
     class="fretboard-outer"
+    data-testid="fretboard-main"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
@@ -72404,6 +72453,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with CAGED shapes a
 <div>
   <div
     class="fretboard-outer"
+    data-testid="fretboard-main"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
@@ -75758,6 +75808,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with CAGED shapes s
 <div>
   <div
     class="fretboard-outer"
+    data-testid="fretboard-main"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
@@ -79112,6 +79163,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
 <div>
   <div
     class="fretboard-outer"
+    data-testid="fretboard-main"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
@@ -82713,6 +82765,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
 <div>
   <div
     class="fretboard-outer"
+    data-testid="fretboard-main"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
@@ -86170,6 +86223,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with degree display
 <div>
   <div
     class="fretboard-outer"
+    data-testid="fretboard-main"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
@@ -89519,6 +89573,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with flats instead 
 <div>
   <div
     class="fretboard-outer"
+    data-testid="fretboard-main"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
@@ -92568,6 +92623,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with no display for
 <div>
   <div
     class="fretboard-outer"
+    data-testid="fretboard-main"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
@@ -95413,6 +95469,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with small mobile s
 <div>
   <div
     class="fretboard-outer"
+    data-testid="fretboard-main"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
@@ -98762,6 +98819,7 @@ exports[`Fretboard with ResizeObserver (auto-fit zoom) > uses containerWidth/tot
 <div>
   <div
     class="fretboard-outer"
+    data-testid="fretboard-main"
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
