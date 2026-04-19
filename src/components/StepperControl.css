@@ -33,6 +33,7 @@
 .stepper-btn:focus-visible:not(:disabled) {
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
+  box-shadow: var(--focus-ring-glow);
 }
 
 .stepper-btn:disabled {
