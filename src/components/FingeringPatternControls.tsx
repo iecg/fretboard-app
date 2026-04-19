@@ -1,6 +1,7 @@
 import { useCallback, useId, useRef, useState } from "react";
 import { useAtom } from "jotai";
 import clsx from "clsx";
+import { useAtom } from "jotai";
 import { CAGED_SHAPES, type CagedShape } from "../shapes";
 import { useShapeState } from "../hooks/useShapeState";
 import { displayFormatAtom } from "../store/atoms";

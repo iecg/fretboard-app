@@ -9,6 +9,16 @@ import {
   displayFormatAtom 
 } from "../store/atoms";
 import { type CagedShape } from "../shapes";
+import {
+  fingeringPatternAtom,
+  cagedShapesAtom,
+  displayFormatAtom,
+} from "../store/atoms";
+import {
+  renderWithAtoms,
+  makeAtomStore,
+  renderWithStore,
+} from "../__tests__/utils/renderWithAtoms";
 
 describe("FingeringPatternControls", () => {
   it("renders all fingering pattern options", () => {
@@ -122,5 +132,19 @@ describe("FingeringPatternControls", () => {
     );
     fireEvent.click(screen.getByText("Intervals"));
     expect(store.get(displayFormatAtom)).toBe("degrees");
+  });
+
+  it("calls onShapeClick when a CAGED shape is clicked", () => {
+    const onShapeClick = vi.fn();
+    renderWithAtoms(
+      <FingeringPatternControls onShapeClick={onShapeClick} />,
+      [
+        [fingeringPatternAtom, "caged"],
+        [cagedShapesAtom, new Set<CagedShape>(["C"])],
+      ],
+    );
+    const eButton = screen.getByText("E");
+    fireEvent.click(eButton);
+    expect(onShapeClick).toHaveBeenCalledWith("E");
   });
 });
