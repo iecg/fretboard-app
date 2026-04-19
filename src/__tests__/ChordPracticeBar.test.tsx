@@ -218,8 +218,9 @@ describe("ChordPracticeBar", () => {
       />
     );
     const lists = container.querySelectorAll(".practice-bar-pill-list");
+    expect(lists.length).toBeGreaterThan(0);
     // Targets list (first) should have chord-root, chord-tone-in-scale, chord-tone-outside-scale
-    const targetList = lists[0];
+    const targetList = lists[0]!;
     expect(targetList.querySelector('[data-role="chord-root"]')).toBeTruthy();
     expect(targetList.querySelectorAll('[data-role="chord-tone-in-scale"]').length).toBe(2);
     expect(targetList.querySelector('[data-role="chord-tone-outside-scale"]')).toBeTruthy();
