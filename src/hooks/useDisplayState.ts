@@ -1,9 +1,10 @@
-import { useAtomValue } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import {
   accidentalModeAtom,
   enharmonicDisplayAtom,
   chordFretSpreadAtom,
   hideNonChordNotesAtom,
+  displayFormatAtom,
   noteRoleMapAtom,
   summaryChordRowAtom,
   summaryLegendItemsAtom,
@@ -55,6 +56,7 @@ export default function useDisplayState() {
   // Atom values not covered by domain hooks yet
   const accidentalMode = useAtomValue(accidentalModeAtom);
   const enharmonicDisplay = useAtomValue(enharmonicDisplayAtom);
+  const [displayFormat, setDisplayFormat] = useAtom(displayFormatAtom);
   const chordFretSpread = useAtomValue(chordFretSpreadAtom);
   const hideNonChordNotes = useAtomValue(hideNonChordNotesAtom);
 
@@ -92,6 +94,8 @@ export default function useDisplayState() {
     // Overrides/Additional values
     accidentalMode,
     enharmonicDisplay,
+    displayFormat,
+    setDisplayFormat,
     chordFretSpread,
     hideNonChordNotes,
     noteRoleMap,
