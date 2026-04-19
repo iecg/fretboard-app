@@ -46,6 +46,7 @@ interface FretboardProps {
   stringRowPx?: number;
   autoCenterTarget?: number;
   recenterKey?: number;
+  id?: string;
 }
 
 export function Fretboard(props: FretboardProps) {
@@ -244,6 +245,7 @@ export function Fretboard(props: FretboardProps) {
           hiddenNotes={hiddenNotes}
           useFlats={useFlats}
           scaleName={scaleName}
+          id={props.id}
           onNoteClick={handleFretClick}
         />
       </div>

@@ -19,7 +19,7 @@ describe("Component Snapshots", () => {
   describe("Fretboard snapshots", () => {
     it("renders C Major scale snapshot (0-24 frets)", () => {
       const { container } = render(
-        <Fretboard
+        <Fretboard id="test-id"
           tuning={STANDARD_TUNING}
           maxFret={24}
           highlightNotes={["C", "D", "E", "F", "G", "A", "B"]}
@@ -32,7 +32,7 @@ describe("Component Snapshots", () => {
 
     it("renders A Minor Pentatonic snapshot", () => {
       const { container } = render(
-        <Fretboard
+        <Fretboard id="test-id"
           tuning={STANDARD_TUNING}
           maxFret={24}
           highlightNotes={["A", "C", "D", "E", "G"]}
@@ -45,7 +45,7 @@ describe("Component Snapshots", () => {
 
     it("renders with degree display format snapshot", () => {
       const { container } = render(
-        <Fretboard
+        <Fretboard id="test-id"
           tuning={STANDARD_TUNING}
           maxFret={24}
           highlightNotes={["G", "A", "B", "C", "D", "E", "F#"]}
@@ -59,7 +59,7 @@ describe("Component Snapshots", () => {
 
     it("renders with no display format snapshot", () => {
       const { container } = render(
-        <Fretboard
+        <Fretboard id="test-id"
           tuning={STANDARD_TUNING}
           maxFret={24}
           highlightNotes={["E", "F#", "G#", "A", "B", "C#", "D#"]}
@@ -72,7 +72,7 @@ describe("Component Snapshots", () => {
 
     it("renders with chord tones highlighted snapshot", () => {
       const { container } = render(
-        <Fretboard
+        <Fretboard id="test-id"
           tuning={STANDARD_TUNING}
           maxFret={24}
           highlightNotes={["C", "D", "E", "F", "G", "A", "B"]}
@@ -87,7 +87,7 @@ describe("Component Snapshots", () => {
 
     it("renders with chord tones filtered snapshot", () => {
       const { container } = render(
-        <Fretboard
+        <Fretboard id="test-id"
           tuning={STANDARD_TUNING}
           maxFret={24}
           highlightNotes={["C", "D", "E", "F", "G", "A", "B"]}
@@ -122,7 +122,7 @@ describe("Component Snapshots", () => {
       ];
 
       const { container } = render(
-        <Fretboard
+        <Fretboard id="test-id"
           tuning={STANDARD_TUNING}
           maxFret={24}
           highlightNotes={["E", "F#", "G#", "A", "B", "C#", "D#"]}
@@ -136,7 +136,7 @@ describe("Component Snapshots", () => {
 
     it("renders high fret range snapshot (12-24)", () => {
       const { container } = render(
-        <Fretboard
+        <Fretboard id="test-id"
           tuning={STANDARD_TUNING}
           maxFret={24}
           highlightNotes={["D", "E", "F#", "G", "A", "B", "C#"]}
@@ -149,7 +149,7 @@ describe("Component Snapshots", () => {
 
     it("renders with flats instead of sharps snapshot", () => {
       const { container } = render(
-        <Fretboard
+        <Fretboard id="test-id"
           tuning={STANDARD_TUNING}
           maxFret={24}
           highlightNotes={["F", "G", "A", "Bb", "C", "D", "E"]}
@@ -164,7 +164,7 @@ describe("Component Snapshots", () => {
     it("renders Drop D tuning snapshot", () => {
       const dropDTuning = ["E4", "B3", "G3", "D3", "A2", "D2"];
       const { container } = render(
-        <Fretboard
+        <Fretboard id="test-id"
           tuning={dropDTuning}
           maxFret={24}
           highlightNotes={["D", "E", "F#", "G", "A", "B", "C#"]}
@@ -177,7 +177,7 @@ describe("Component Snapshots", () => {
 
     it("renders with small mobile string spacing (stringRowPx=32)", () => {
       const { container } = render(
-        <Fretboard
+        <Fretboard id="test-id"
           tuning={STANDARD_TUNING}
           maxFret={24}
           highlightNotes={["C", "D", "E", "F", "G", "A", "B"]}
@@ -211,7 +211,7 @@ describe("Component Snapshots", () => {
       ];
 
       const { container } = render(
-        <Fretboard
+        <Fretboard id="test-id"
           tuning={STANDARD_TUNING}
           maxFret={24}
           highlightNotes={["E", "F#", "G#", "A", "B", "C#", "D#"]}
@@ -576,7 +576,7 @@ describe("Fretboard with ResizeObserver (auto-fit zoom)", () => {
     });
 
     const { container } = render(
-      <Fretboard
+      <Fretboard id="test-id"
         tuning={STANDARD_TUNING}
         maxFret={24}
         highlightNotes={["C", "D", "E", "F", "G", "A", "B"]}

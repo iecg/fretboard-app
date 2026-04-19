@@ -47,6 +47,7 @@ interface FretboardSVGProps {
   hiddenNotes?: Set<string>;
   useFlats?: boolean;
   scaleName?: string;
+  id?: string;
   onNoteClick?: (
     stringIndex: number,
     fretIndex: number,
@@ -290,13 +291,15 @@ export const FretboardSVG = memo(function FretboardSVG({
   hiddenNotes,
   useFlats = false,
   scaleName = "",
+  id,
   onNoteClick,
 }: FretboardSVGProps) {
   // `effectiveZoom` stays on the prop surface (callers size the scroll area
   // around it) but non-uniform spacing inside this component is derived from
   // neckWidthPx + scale math, so the value isn't read here.
   void effectiveZoom;
-  const defsPrefix = `fretboard-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
+  const internalId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
+  const defsPrefix = `fretboard-${id ?? internalId}`;
   const svgDefId = useCallback((id: string) => `${defsPrefix}-${id}`, [defsPrefix]);
   const svgDefUrl = useCallback((id: string) => `url(#${svgDefId(id)})`, [svgDefId]);
   const glowFilterUrls = useMemo(() => ({
