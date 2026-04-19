@@ -112,7 +112,7 @@ export function ChordOverlayControls() {
       label: LENS_LABELS[id],
       disabled: !isActive && unavailable,
       title: !isActive && reason ? reason : undefined,
-      ariaLabel: !isActive && reason ? `${LENS_LABELS[id]}: ${reason}` : undefined,
+      description: !isActive && reason ? reason : undefined,
     };
   });
 

@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import "./ToggleBar.css";
 import shared from "./shared.module.css";
@@ -36,7 +37,8 @@ type ToggleBarOption<Value extends string | number> = {
   label: string;
   disabled?: boolean;
   title?: string;
-  ariaLabel?: string;
+  /** Accessible description announced after the button name by screen readers. */
+  description?: string;
 };
 
 interface ToggleBarProps<Value extends string | number> extends VariantProps<
@@ -57,6 +59,7 @@ export function ToggleBar<Value extends string | number>({
   label,
 }: ToggleBarProps<Value>) {
   const isTabs = variant === "tabs";
+  const descPrefix = useId();
   return (
     <div
       className={toggleBarVariants({ variant })}
@@ -65,6 +68,7 @@ export function ToggleBar<Value extends string | number>({
     >
       {options.map((option) => {
         const isActive = value === option.value;
+        const descId = option.description ? `${descPrefix}-${option.value}` : undefined;
         return (
           <button
             key={option.value}
@@ -76,12 +80,23 @@ export function ToggleBar<Value extends string | number>({
             onClick={() => onChange(option.value)}
             disabled={option.disabled}
             title={option.title}
-            aria-label={option.ariaLabel}
+            aria-describedby={descId}
           >
             {option.label}
           </button>
         );
       })}
+      {options.map((option) =>
+        option.description ? (
+          <span
+            key={`desc-${option.value}`}
+            id={`${descPrefix}-${option.value}`}
+            className={shared["sr-only"]}
+          >
+            {option.description}
+          </span>
+        ) : null,
+      )}
     </div>
   );
 }
