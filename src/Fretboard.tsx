@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect, useCallback } from "react";
 import { clsx } from "clsx";
 import { useAtomValue } from "jotai";
 import {
@@ -7,10 +7,9 @@ import {
   getNoteFrequency,
 } from "./guitar";
 import { synth } from "./audio";
-import type { ShapePolygon } from "./shapes";
-import { fretZoomAtom, fretStartAtom, fretEndAtom } from "./store/atoms";
+import { fretZoomAtom } from "./store/atoms";
 import { FretboardSVG } from "./FretboardSVG";
-import type { ViewMode } from "./theory";
+import { useFretboardState } from "./hooks/useFretboardState";
 import { 
   STRING_ROW_PX_DEFAULT, 
   MAX_FRET, 
@@ -18,12 +17,14 @@ import {
   MIN_FRET_WIDTH_BASE, 
   MIN_FRET_WIDTH_OVERFLOW_BUFFER 
 } from "./constants";
+import type { ViewMode } from "./theory";
+import type { ShapePolygon } from "./shapes";
 
 interface FretboardProps {
-  tuning: string[];
+  tuning?: string[];
   maxFret?: number;
-  highlightNotes: string[];
-  rootNote: string;
+  highlightNotes?: string[];
+  rootNote?: string;
   displayFormat?: "notes" | "degrees" | "none";
   boxBounds?: { minFret: number; maxFret: number }[];
   chordTones?: string[];
@@ -47,32 +48,34 @@ interface FretboardProps {
   recenterKey?: number;
 }
 
-export function Fretboard({
-  tuning,
-  maxFret = MAX_FRET,
-  highlightNotes,
-  rootNote,
-  displayFormat = "notes",
-  boxBounds = [],
-  chordTones = [],
-  chordRoot,
-  chordFretSpread = 0,
-  hideNonChordNotes = false,
-  viewMode = "compare",
-  autoCenterTarget,
-  recenterKey,
-  colorNotes = [],
-  shapePolygons = [],
-  wrappedNotes = new Set<string>(),
-  hiddenNotes,
-  onFretClick,
-  useFlats = false,
-  scaleName = "",
-  stringRowPx = STRING_ROW_PX_DEFAULT,
-}: FretboardProps) {
+export function Fretboard(props: FretboardProps) {
+  const state = useFretboardState();
   const fretZoom = useAtomValue(fretZoomAtom);
-  const startFret = useAtomValue(fretStartAtom);
-  const endFret = useAtomValue(fretEndAtom);
+
+  // Fallback to props for testability, otherwise use atom-driven state
+  const tuning = props.tuning ?? state.currentTuning;
+  const maxFret = props.maxFret ?? MAX_FRET;
+  const highlightNotes = props.highlightNotes ?? state.highlightNotes;
+  const rootNote = props.rootNote ?? state.rootNote;
+  const displayFormat = props.displayFormat ?? state.displayFormat;
+  const boxBounds = props.boxBounds ?? state.boxBounds;
+  const chordTones = props.chordTones ?? state.chordTones;
+  const chordRoot = props.chordRoot ?? state.chordRoot;
+  const chordFretSpread = props.chordFretSpread ?? state.chordFretSpread;
+  const hideNonChordNotes = props.hideNonChordNotes ?? state.hideNonChordNotes;
+  const viewMode = props.viewMode ?? state.viewMode;
+  const autoCenterTarget = props.autoCenterTarget ?? state.autoCenterTarget;
+  const recenterKey = props.recenterKey ?? state.recenterKey;
+  const colorNotes = props.colorNotes ?? state.colorNotes;
+  const shapePolygons = props.shapePolygons ?? state.shapePolygons;
+  const wrappedNotes = props.wrappedNotes ?? state.wrappedNotes;
+  const hiddenNotes = props.hiddenNotes ?? state.hiddenNotes;
+  const useFlats = props.useFlats ?? state.useFlats;
+  const scaleName = props.scaleName ?? state.scaleName;
+  const startFret = state.startFret;
+  const endFret = state.endFret;
+  const stringRowPx = props.stringRowPx ?? STRING_ROW_PX_DEFAULT;
+
   const fretboardLayout = getFretboardNotes(tuning, Math.max(endFret, maxFret));
 
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
@@ -80,7 +83,6 @@ export function Fretboard({
   const noteBubblePx = Math.round(stringRowPx * NOTE_BUBBLE_RATIO);
   const MIN_FRET_WIDTH = Math.max(MIN_FRET_WIDTH_BASE, noteBubblePx + MIN_FRET_WIDTH_OVERFLOW_BUFFER);
   
-  // Use a sensible default zoom (40) if width is not yet measured to prevent massive jumps
   const autoFitZoom = Math.max(
     MIN_FRET_WIDTH,
     containerWidth !== null && containerWidth > 0 && totalColumns > 0 
@@ -93,7 +95,6 @@ export function Fretboard({
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
-  const [isDragging, setIsDragging] = useState(false);
   const pendingPointerId = useRef<number | null>(null);
   const pendingTarget = useRef<Element | null>(null);
   const [startX, setStartX] = useState(0);
@@ -104,18 +105,11 @@ export function Fretboard({
   useLayoutEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-
-    // Synchronous initial measurement
     setContainerWidth(el.clientWidth);
-
     const ro = new ResizeObserver((entries) => {
       const entry = entries[0];
-      if (entry) {
-        // Use contentRect for more accurate width without padding/borders
-        setContainerWidth(entry.contentRect.width);
-      }
+      if (entry) setContainerWidth(entry.contentRect.width);
     });
-
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
@@ -142,11 +136,23 @@ export function Fretboard({
     el.scrollTo({ left: Math.max(0, centerOffset), behavior: "smooth" });
   }, [autoCenterTarget, recenterKey, startFret]);
 
+  const updateCursor = useCallback((dragging: boolean) => {
+    if (!scrollRef.current) return;
+    if (!hasOverflow) {
+      scrollRef.current.style.cursor = "default";
+      return;
+    }
+    scrollRef.current.style.cursor = dragging ? "grabbing" : "grab";
+  }, [hasOverflow]);
+
+  useEffect(() => {
+    updateCursor(false);
+  }, [updateCursor]);
+
   const handlePointerDown = (e: React.PointerEvent) => {
     if (!hasOverflow) return;
     if (!scrollRef.current) return;
     isDraggingRef.current = false;
-    setIsDragging(false);
     pendingPointerId.current = e.pointerId;
     pendingTarget.current = e.currentTarget;
     setStartX(e.pageX - scrollRef.current.offsetLeft);
@@ -159,7 +165,7 @@ export function Fretboard({
     dragDistance.current += Math.abs(e.movementX);
     if (!isDraggingRef.current && dragDistance.current > 3) {
       isDraggingRef.current = true;
-      setIsDragging(true);
+      updateCursor(true);
       pendingTarget.current?.setPointerCapture(pendingPointerId.current);
     }
     if (!isDraggingRef.current) return;
@@ -170,8 +176,10 @@ export function Fretboard({
   };
 
   const handlePointerUp = () => {
+    if (isDraggingRef.current) {
+      updateCursor(false);
+    }
     isDraggingRef.current = false;
-    setIsDragging(false);
     pendingPointerId.current = null;
     pendingTarget.current = null;
   };
@@ -188,7 +196,7 @@ export function Fretboard({
     );
     const frequency = getNoteFrequency(fretNoteWithOctave);
     synth.playNote(frequency);
-    if (onFretClick) onFretClick(stringIndex, fretIndex, noteName);
+    if (props.onFretClick) props.onFretClick(stringIndex, fretIndex, noteName);
   };
 
   const neckWidth = totalColumns * effectiveZoom;
@@ -198,7 +206,6 @@ export function Fretboard({
       className="fretboard-outer" 
       data-testid="fretboard-main"
       style={{
-        // Reserve vertical space: tuning rows + approx 24px for fret numbers
         minHeight: `${tuning.length * stringRowPx + 24}px`
       }}
     >
@@ -210,8 +217,6 @@ export function Fretboard({
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
         style={{
-          cursor: hasOverflow ? (isDragging ? "grabbing" : "grab") : "default",
-          // Hide until measured to prevent the initial "jump" from being painted
           visibility: containerWidth === null ? "hidden" : "visible",
         }}
       >

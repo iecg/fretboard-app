@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import clsx from "clsx";
 import "./CircleOfFifths.css";
 import {
@@ -34,7 +34,7 @@ function slicePath(index: number): string {
   return `M ${ix1} ${iy1} L ${ox1} ${oy1} A ${OUTER_RADIUS} ${OUTER_RADIUS} 0 0 1 ${ox2} ${oy2} L ${ix2} ${iy2} A ${INNER_RADIUS} ${INNER_RADIUS} 0 0 0 ${ix1} ${iy1} Z`;
 }
 
-export function CircleOfFifths({
+export const CircleOfFifths = memo(function CircleOfFifths({
   rootNote,
   setRootNote,
   scaleName = "Major",
@@ -353,4 +353,4 @@ export function CircleOfFifths({
       </svg>
     </div>
   );
-}
+});

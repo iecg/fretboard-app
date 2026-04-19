@@ -1,4 +1,4 @@
-import { useId, useMemo, useCallback, type CSSProperties } from "react";
+import { useId, useMemo, useCallback, memo, type CSSProperties, type ReactNode } from "react";
 import { clsx } from "clsx";
 import {
   NOTES,
@@ -156,7 +156,117 @@ function getNoteVisuals(
   }
 }
 
-export function FretboardSVG({
+const FretboardBackground = memo(({ 
+  neckWidthPx, 
+  neckHeight, 
+  startFret, 
+  maxFret, 
+  tuning, 
+  stringYAt, 
+  wireXRel, 
+  svgDefUrl, 
+  taperYLeft,
+  inlays
+}: {
+  neckWidthPx: number;
+  neckHeight: number;
+  startFret: number;
+  maxFret: number;
+  tuning: string[];
+  stringYAt: (s: number, x: number) => number;
+  wireXRel: (wireIndex: number) => number;
+  svgDefUrl: (id: string) => string;
+  taperYLeft: number;
+  inlays: ReactNode[];
+}) => {
+  const woodStack = (
+    <>
+      <rect x={0} y={0} width={neckWidthPx} height={neckHeight} fill={svgDefUrl("fretboard-wood")} />
+      <rect x={0} y={0} width={neckWidthPx} height={neckHeight} fill="#000" filter={svgDefUrl("wood-grain-filter")} opacity={0.92} />
+      <rect x={0} y={0} width={neckWidthPx} height={neckHeight} fill="#000" filter={svgDefUrl("wood-highlights-filter")} opacity={0.6} />
+      <rect x={0} y={0} width={neckWidthPx} height={neckHeight} fill="#000" filter={svgDefUrl("wood-pores-filter")} opacity={0.5} />
+      <rect x={0} y={0} width={neckWidthPx} height={neckHeight} fill={svgDefUrl("fretboard-vignette")} />
+    </>
+  );
+
+  const fretWires = [];
+  const wireThickness = 4;
+  const wireStart = startFret === 0 ? 1 : startFret - 1;
+  for (let wireIdx = wireStart; wireIdx < maxFret; wireIdx++) {
+    const x = wireXRel(wireIdx);
+    fretWires.push(
+      <g key={`fw-${wireIdx}`}>
+        <rect x={x + 0.6} y={0} width={wireThickness} height={neckHeight} fill="rgb(0 0 0 / 0.45)" />
+        <rect x={x - wireThickness / 2} y={0} width={wireThickness} height={neckHeight} fill={svgDefUrl("fret-wire-cylinder")} />
+      </g>,
+    );
+  }
+
+  const strings = tuning.map((_openString, stringIndex) => {
+    const yLeft = stringYAt(stringIndex, 0);
+    const yRight = stringYAt(stringIndex, neckWidthPx);
+    const isBass = stringIndex >= 3;
+    return (
+      <g key={`string-${stringIndex}`}>
+        <line
+          x1={0} y1={yLeft + 1.8} x2={neckWidthPx} y2={yRight + 1.8}
+          stroke="rgb(0 0 0 / 0.7)"
+          style={{ strokeWidth: `calc(var(--string-taper-${stringIndex + 1}) + 1.4px)` }}
+          strokeLinecap="round"
+          filter={svgDefUrl("string-shadow-blur")}
+        />
+        <line
+          x1={0} y1={yLeft} x2={neckWidthPx} y2={yRight}
+          stroke={isBass ? "#c6ccd2" : "#e4e8ee"}
+          style={{ strokeWidth: `var(--string-taper-${stringIndex + 1})` }}
+          strokeLinecap="round"
+          className={`fretboard-string fretboard-string-${stringIndex + 1}`}
+        />
+        {isBass && (
+          <line
+            x1={0} y1={yLeft} x2={neckWidthPx} y2={yRight}
+            stroke="rgb(60 65 72 / 0.55)"
+            style={{ strokeWidth: `var(--string-taper-${stringIndex + 1})` }}
+            strokeLinecap="butt"
+            strokeDasharray="0.6 1.4"
+          />
+        )}
+      </g>
+    );
+  });
+
+  const nutRightX = startFret === 0 ? wireXRel(0) : 0;
+  const nutLeftX = nutRightX - NUT_WIDTH;
+
+  return (
+    <>
+      <g clipPath={svgDefUrl("fretboard-taper")}>
+        {woodStack}
+        {startFret === 0 && (
+          <rect x={0} y={0} width={Math.max(0, nutRightX - NUT_WIDTH)} height={neckHeight} fill="#07050a" />
+        )}
+        {startFret === 0 && (
+          <g>
+            <rect x={nutLeftX} y={0} width={NUT_WIDTH} height={neckHeight} fill={svgDefUrl("nut-material")} />
+            <line x1={nutLeftX} y1={0.5} x2={nutRightX} y2={0.5} stroke="rgb(255 252 240 / 0.85)" strokeWidth={1} />
+            <line x1={nutLeftX} y1={neckHeight - 0.5} x2={nutRightX} y2={neckHeight - 0.5} stroke="rgb(0 0 0 / 0.5)" strokeWidth={1} />
+            <line x1={nutRightX - 0.5} y1={0} x2={nutRightX - 0.5} y2={neckHeight} stroke="rgb(0 0 0 / 0.55)" strokeWidth={0.6} />
+            {tuning.map((_, i) => (
+              <rect key={`nut-slot-${i}`} x={nutRightX - 2} y={stringYAt(i, nutRightX) - 0.9} width={2.4} height={1.8} rx={0.9} fill="rgb(12 8 4 / 0.55)" />
+            ))}
+          </g>
+        )}
+        {fretWires}
+        {inlays}
+        {strings}
+      </g>
+      <path d={`M 0 ${taperYLeft} L ${neckWidthPx} 0`} stroke="rgb(218 182 138 / 0.22)" strokeWidth={0.9} fill="none" />
+      <path d={`M 0 ${neckHeight - taperYLeft} L ${neckWidthPx} ${neckHeight}`} stroke="rgb(0 0 0 / 0.75)" strokeWidth={1} fill="none" />
+    </>
+  );
+});
+
+export const FretboardSVG = memo(function FretboardSVG({
   effectiveZoom,
   neckWidthPx,
   startFret,
@@ -353,33 +463,6 @@ export function FretboardSVG({
       ? (stringYAt(numStrings - 3, x) + stringYAt(numStrings - 2, x)) / 2
       : stringYAt(0, x) +
         ((stringYAt(numStrings - 1, x) - stringYAt(0, x)) * 2) / 3, [numStrings, stringYAt]);
-  const fretWires = useMemo(() => {
-    const wireStart = startFret === 0 ? 1 : startFret - 1;
-    const wires = [];
-    const wireThickness = 4;
-    for (let wireIdx = wireStart; wireIdx < maxFret; wireIdx++) {
-      const x = wireXRel(wireIdx);
-      wires.push(
-        <g key={`fw-${wireIdx}`}>
-          <rect
-            x={x + 0.6}
-            y={0}
-            width={wireThickness}
-            height={neckHeight}
-            fill="rgb(0 0 0 / 0.45)"
-          />
-          <rect
-            x={x - wireThickness / 2}
-            y={0}
-            width={wireThickness}
-            height={neckHeight}
-            fill={svgDefUrl("fret-wire-cylinder")}
-          />
-        </g>,
-      );
-    }
-    return wires;
-  }, [startFret, maxFret, neckHeight, svgDefUrl, wireXRel]);
 
   const inlays = useMemo(() => {
     const inlayR = Math.max(5, stringRowPx * 0.15);
@@ -428,144 +511,70 @@ export function FretboardSVG({
     });
   }, [totalColumns, startFret, stringRowPx, svgDefUrl, fretCenterX, inlayYAt, inlayYBottomAt, inlayYTopAt]);
 
-  const strings = useMemo(() => {
-    return tuning.map((_openString, stringIndex) => {
-      const yLeft = stringYAt(stringIndex, 0);
-      const yRight = stringYAt(stringIndex, neckWidthPx);
-      const isBass = stringIndex >= 3;
-      return (
-        <g key={`string-${stringIndex}`}>
-          <line
-            x1={0}
-            y1={yLeft + 1.8}
-            x2={neckWidthPx}
-            y2={yRight + 1.8}
-            stroke="rgb(0 0 0 / 0.7)"
-            style={{
-              strokeWidth: `calc(var(--string-taper-${stringIndex + 1}) + 1.4px)`,
-            }}
-            strokeLinecap="round"
-            filter={svgDefUrl("string-shadow-blur")}
-          />
-          <line
-            x1={0}
-            y1={yLeft}
-            x2={neckWidthPx}
-            y2={yRight}
-            stroke={isBass ? "#c6ccd2" : "#e4e8ee"}
-            style={{
-              strokeWidth: `var(--string-taper-${stringIndex + 1})`,
-            }}
-            strokeLinecap="round"
-            className={`fretboard-string fretboard-string-${stringIndex + 1}`}
-          />
-          {isBass && (
-            <line
-              x1={0}
-              y1={yLeft}
-              x2={neckWidthPx}
-              y2={yRight}
-              stroke="rgb(60 65 72 / 0.55)"
-              style={{
-                strokeWidth: `var(--string-taper-${stringIndex + 1})`,
-              }}
-              strokeLinecap="butt"
-              strokeDasharray="0.6 1.4"
-            />
-          )}
-        </g>
-      );
-    });
-  }, [tuning, neckWidthPx, svgDefUrl, stringYAt]);
-
-  const woodStack = useMemo(() => {
-    return (
-      <>
-        <rect
-          x={0}
-          y={0}
-          width={neckWidthPx}
-          height={neckHeight}
-          fill={svgDefUrl("fretboard-wood")}
-        />
-        <rect
-          x={0}
-          y={0}
-          width={neckWidthPx}
-          height={neckHeight}
-          fill="#000"
-          filter={svgDefUrl("wood-grain-filter")}
-          opacity={0.92}
-        />
-        <rect
-          x={0}
-          y={0}
-          width={neckWidthPx}
-          height={neckHeight}
-          fill="#000"
-          filter={svgDefUrl("wood-highlights-filter")}
-          opacity={0.6}
-        />
-        <rect
-          x={0}
-          y={0}
-          width={neckWidthPx}
-          height={neckHeight}
-          fill="#000"
-          filter={svgDefUrl("wood-pores-filter")}
-          opacity={0.5}
-        />
-        <rect
-          x={0}
-          y={0}
-          width={neckWidthPx}
-          height={neckHeight}
-          fill={svgDefUrl("fretboard-vignette")}
-        />
-      </>
-    );
-  }, [neckWidthPx, neckHeight, svgDefUrl]);
-
   const noteData = useMemo(() => {
-    return tuning.flatMap((_openString, stringIndex) =>
-      Array.from({ length: totalColumns + 1 }, (_, idx) => idx).flatMap((idx) => {
+    const notes = [];
+    const scale = SCALES[scaleName] || [];
+    const normRoot = rootNote && (ENHARMONICS[rootNote]?.includes("b") ? ENHARMONICS[rootNote] : rootNote);
+    const rootIdx = rootNote ? NOTES.indexOf(normRoot.includes("#") ? normRoot : rootNote) : -1;
+
+    // Pre-calculate normalized hidden notes for faster lookup
+    const normalizedHidden = new Set<string>();
+    if (hiddenNotes && hiddenNotes.size > 0) {
+      hiddenNotes.forEach(n => {
+        normalizedHidden.add(n);
+        // Also hide enharmonic equivalents if it's a note name
+        const enh = ENHARMONICS[n];
+        if (enh) normalizedHidden.add(enh);
+      });
+    }
+
+    // Pre-calculate highlighted notes set for faster lookup
+    const highlightSet = new Set(highlightNotes);
+
+    // Pre-calculate chord tones set
+    const chordToneSet = new Set(chordTones);
+
+    // Pre-calculate color notes set
+    const colorNoteSet = new Set(colorNotes);
+
+    for (let stringIndex = 0; stringIndex < numStrings; stringIndex++) {
+      const layoutRow = fretboardLayout[stringIndex];
+      const openNoteName = parseNote(tuning[stringIndex])?.noteName;
+
+      for (let idx = 0; idx <= totalColumns; idx++) {
         const fretIndex = startFret + idx;
-        if (fretIndex >= maxFret) return [];
+        if (fretIndex >= maxFret) continue;
 
-        const noteName = fretboardLayout[stringIndex][fretIndex];
+        const noteName = layoutRow[fretIndex];
 
-        const isNoteHidden =
-          hiddenNotes != null &&
-          hiddenNotes.size > 0 &&
-          (hiddenNotes.has(noteName) ||
-            !!(ENHARMONICS[noteName] && hiddenNotes.has(ENHARMONICS[noteName])));
+        const isNoteHidden = normalizedHidden.has(noteName) || normalizedHidden.has(`${stringIndex}-${fretIndex}`);
 
         const isHighlighted =
           !isNoteHidden &&
-          (highlightNotes.includes(noteName) ||
-            highlightNotes.includes(`${stringIndex}-${fretIndex}`));
+          (highlightSet.has(noteName) ||
+            highlightSet.has(`${stringIndex}-${fretIndex}`));
+        
         const isChordTone =
-          !isNoteHidden && hasChordOverlay && chordTones.includes(noteName);
+          !isNoteHidden && hasChordOverlay && chordToneSet.has(noteName);
+        
         const isScaleRoot =
           !isNoteHidden &&
           (noteName === rootNote ||
             ENHARMONICS[noteName] === rootNote ||
             ENHARMONICS[rootNote] === noteName);
+        
         const isChordRootNote =
           !isNoteHidden &&
           !!chordRoot &&
           (noteName === chordRoot ||
             ENHARMONICS[noteName] === chordRoot ||
             ENHARMONICS[chordRoot] === noteName);
-        const isColorNote =
-          !isNoteHidden &&
-          colorNotes.length > 0 &&
-          colorNotes.some(
-            (cn) =>
-              noteName === cn ||
-              ENHARMONICS[noteName] === cn ||
-              ENHARMONICS[cn] === noteName,
-          );
+        
+        const isColorNote = !!(!isNoteHidden && colorNoteSet.size > 0 && (
+          colorNoteSet.has(noteName) || 
+          (ENHARMONICS[noteName] && colorNoteSet.has(ENHARMONICS[noteName]!))
+        ));
+
         const isChordInRange =
           !hasChordOverlay ||
           !shapePolygons.length ||
@@ -590,31 +599,27 @@ export function FretboardSVG({
               fretIndex,
             );
 
+        if (noteClass === "note-inactive") continue;
+
         let displayValue = getNoteDisplayInScale(
           noteName,
           rootNote,
-          SCALES[scaleName] || [],
+          scale,
           useFlats,
         );
         if (displayFormat === "degrees" && rootNote) {
-          const normRoot = ENHARMONICS[rootNote]?.includes("b")
-            ? ENHARMONICS[rootNote]
-            : rootNote;
-          const rootIdx = NOTES.indexOf(
-            normRoot.includes("#") ? normRoot : rootNote,
-          );
           const noteIdx = NOTES.indexOf(noteName);
           if (rootIdx !== -1 && noteIdx !== -1) {
             displayValue = INTERVAL_NAMES[(noteIdx - rootIdx + 12) % 12];
           }
         } else if (
           fretIndex === 0 &&
-          parseNote(_openString)?.noteName === noteName
+          openNoteName === noteName
         ) {
           displayValue = getNoteDisplayInScale(
             noteName,
             rootNote,
-            SCALES[scaleName] || [],
+            scale,
             useFlats,
           );
         }
@@ -653,20 +658,19 @@ export function FretboardSVG({
           return false;
         })();
 
-        return [
-          {
-            stringIndex,
-            fretIndex,
-            noteName,
-            noteClass,
-            displayValue,
-            applyDimOpacity,
-            isHidden,
-          },
-        ];
-      }),
-    );
-  }, [tuning, totalColumns, startFret, maxFret, fretboardLayout, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, wrappedNotes, hideNonChordNotes, viewMode]);
+        notes.push({
+          stringIndex,
+          fretIndex,
+          noteName,
+          noteClass,
+          displayValue,
+          applyDimOpacity,
+          isHidden,
+        });
+      }
+    }
+    return notes;
+  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, wrappedNotes, hideNonChordNotes, viewMode, tuning]);
 
   return (
     <div role="group" aria-label={ariaLabel} className="fretboard-board">
@@ -727,7 +731,7 @@ export function FretboardSVG({
               <feTurbulence
                 type="fractalNoise"
                 baseFrequency="0.012 0.95"
-                numOctaves="4"
+                numOctaves="2"
                 seed="3"
                 result="grain"
               />
@@ -737,7 +741,7 @@ export function FretboardSVG({
                 values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0.72 0"
+                        0 0 0 0 0.72 0"
                 result="grainTinted"
               />
               <feComposite in="grainTinted" in2="SourceGraphic" operator="in" />
@@ -753,7 +757,7 @@ export function FretboardSVG({
               <feTurbulence
                 type="fractalNoise"
                 baseFrequency="0.022 0.55"
-                numOctaves="2"
+                numOctaves="1"
                 seed="11"
                 result="hl"
               />
@@ -914,85 +918,20 @@ export function FretboardSVG({
             </clipPath>
           </defs>
 
+          <FretboardBackground
+            neckWidthPx={neckWidthPx}
+            neckHeight={neckHeight}
+            startFret={startFret}
+            maxFret={maxFret}
+            tuning={tuning}
+            stringYAt={stringYAt}
+            wireXRel={wireXRel}
+            svgDefUrl={svgDefUrl}
+            taperYLeft={taperYLeft}
+            inlays={inlays}
+          />
+
           <g clipPath={svgDefUrl("fretboard-taper")}>
-            {woodStack}
-
-            {/* Headstock face — the fret 0 area uses a distinct material (a
-                near-black lacquered finish) so it reads as the headstock
-                rather than continuing the ebony fretboard grain. Painted
-                after the wood stack but before the nut graphic. */}
-            {startFret === 0 && (
-              <rect
-                x={0}
-                y={0}
-                width={Math.max(0, wireXRel(0) - NUT_WIDTH)}
-                height={neckHeight}
-                fill="#07050a"
-              />
-            )}
-
-            {/* Bone nut — sits at wireXRel(0), with the open-string column to
-                its LEFT and fret 1 to its RIGHT. Gradient body, bright top
-                highlight, dark under-shadow, and per-string slot notches on
-                the fret-side face. */}
-            {startFret === 0 &&
-              (() => {
-                const nutRightX = wireXRel(0);
-                const nutLeftX = nutRightX - NUT_WIDTH;
-                return (
-                  <g>
-                    <rect
-                      x={nutLeftX}
-                      y={0}
-                      width={NUT_WIDTH}
-                      height={neckHeight}
-                      fill={svgDefUrl("nut-material")}
-                    />
-                    <line
-                      x1={nutLeftX}
-                      y1={0.5}
-                      x2={nutRightX}
-                      y2={0.5}
-                      stroke="rgb(255 252 240 / 0.85)"
-                      strokeWidth={1}
-                    />
-                    <line
-                      x1={nutLeftX}
-                      y1={neckHeight - 0.5}
-                      x2={nutRightX}
-                      y2={neckHeight - 0.5}
-                      stroke="rgb(0 0 0 / 0.5)"
-                      strokeWidth={1}
-                    />
-                    <line
-                      x1={nutRightX - 0.5}
-                      y1={0}
-                      x2={nutRightX - 0.5}
-                      y2={neckHeight}
-                      stroke="rgb(0 0 0 / 0.55)"
-                      strokeWidth={0.6}
-                    />
-                    {tuning.map((_, i) => (
-                      <rect
-                        key={`nut-slot-${i}`}
-                        x={nutRightX - 2}
-                        y={stringYAt(i, nutRightX) - 0.9}
-                        width={2.4}
-                        height={1.8}
-                        rx={0.9}
-                        fill="rgb(12 8 4 / 0.55)"
-                      />
-                    ))}
-                  </g>
-                );
-              })()}
-
-            {fretWires}
-
-            {inlays}
-
-            {strings}
-
             {/* Shape polygons overlay */}
             {svgPolygons.length > 0 &&
               svgPolygons.map(({ points, color, key }) => (
@@ -1009,7 +948,6 @@ export function FretboardSVG({
                 applyDimOpacity,
                 isHidden,
               }) => {
-                if (noteClass === "note-inactive") return null;
                 const cx = fretCenterX(fretIndex);
                 const cy = stringYAt(stringIndex, cx);
                 const baseRadius = noteBubblePx / 2;
@@ -1078,23 +1016,6 @@ export function FretboardSVG({
               },
             )}
           </g>
-
-          {/* Beveled binding strokes — trace the tapered top/bottom edges.
-              A faint warm highlight on top and a dark shadow on the bottom
-              give the fretboard an extruded, 3D edge. Rendered OUTSIDE the
-              clip so they sit crisply on the silhouette. */}
-          <path
-            d={`M 0 ${taperYLeft} L ${neckWidthPx} 0`}
-            stroke="rgb(218 182 138 / 0.22)"
-            strokeWidth={0.9}
-            fill="none"
-          />
-          <path
-            d={`M 0 ${neckHeight - taperYLeft} L ${neckWidthPx} ${neckHeight}`}
-            stroke="rgb(0 0 0 / 0.75)"
-            strokeWidth={1}
-            fill="none"
-          />
         </svg>
 
         {/* Accessible button layer — transparent, positioned over SVG circles */}
@@ -1109,8 +1030,7 @@ export function FretboardSVG({
           }}
         >
           {noteData.map(
-            ({ stringIndex, fretIndex, noteClass, displayValue, isHidden }) => {
-              if (noteClass === "note-inactive") return null;
+            ({ stringIndex, fretIndex, noteClass, displayValue, isHidden, noteName }) => {
               const cx = fretCenterX(fretIndex);
               const cy = stringYAt(stringIndex, cx);
               const r = noteBubblePx / 2;
@@ -1120,12 +1040,7 @@ export function FretboardSVG({
                   type="button"
                   onClick={
                     onNoteClick && !isHidden
-                      ? () =>
-                          onNoteClick(
-                            stringIndex,
-                            fretIndex,
-                            fretboardLayout[stringIndex][fretIndex],
-                          )
+                      ? () => onNoteClick(stringIndex, fretIndex, noteName)
                       : undefined
                   }
                   disabled={!onNoteClick || isHidden}
@@ -1183,4 +1098,4 @@ export function FretboardSVG({
 
     </div>
   );
-}
+});

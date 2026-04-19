@@ -460,7 +460,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col layou
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
-          style="cursor: default; visibility: visible;"
+          style="visibility: visible; cursor: default;"
         >
           <div
             aria-label="Guitar fretboard — C Major scale"
@@ -536,7 +536,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col layou
                   >
                     <feturbulence
                       baseFrequency="0.012 0.95"
-                      numOctaves="4"
+                      numOctaves="2"
                       result="grain"
                       seed="3"
                       type="fractalNoise"
@@ -548,7 +548,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col layou
                       values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0.72 0"
+                        0 0 0 0 0.72 0"
                     />
                     <fecomposite
                       in="grainTinted"
@@ -565,7 +565,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col layou
                   >
                     <feturbulence
                       baseFrequency="0.022 0.55"
-                      numOctaves="2"
+                      numOctaves="1"
                       result="hl"
                       seed="11"
                       type="fractalNoise"
@@ -1536,6 +1536,22 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col layou
                       y2="234.36"
                     />
                   </g>
+                </g>
+                <path
+                  d="M 0 17 L 1275 0"
+                  fill="none"
+                  stroke="rgb(218 182 138 / 0.22)"
+                  stroke-width="0.9"
+                />
+                <path
+                  d="M 0 235 L 1275 252"
+                  fill="none"
+                  stroke="rgb(0 0 0 / 0.75)"
+                  stroke-width="1"
+                />
+                <g
+                  clip-path="url(#fretboard-_r_c_-fretboard-taper)"
+                >
                   <g
                     class="fretboard-note note-active"
                     data-note-role="note-active"
@@ -3157,18 +3173,6 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col layou
                     </text>
                   </g>
                 </g>
-                <path
-                  d="M 0 17 L 1275 0"
-                  fill="none"
-                  stroke="rgb(218 182 138 / 0.22)"
-                  stroke-width="0.9"
-                />
-                <path
-                  d="M 0 235 L 1275 252"
-                  fill="none"
-                  stroke="rgb(0 0 0 / 0.75)"
-                  stroke-width="1"
-                />
               </svg>
               <div
                 class="fretboard-a11y-layer"
@@ -5755,7 +5759,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col with 
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
-          style="cursor: default; visibility: visible;"
+          style="visibility: visible; cursor: default;"
         >
           <div
             aria-label="Guitar fretboard — C Major scale"
@@ -5831,7 +5835,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col with 
                   >
                     <feturbulence
                       baseFrequency="0.012 0.95"
-                      numOctaves="4"
+                      numOctaves="2"
                       result="grain"
                       seed="3"
                       type="fractalNoise"
@@ -5843,7 +5847,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col with 
                       values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0.72 0"
+                        0 0 0 0 0.72 0"
                     />
                     <fecomposite
                       in="grainTinted"
@@ -5860,7 +5864,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col with 
                   >
                     <feturbulence
                       baseFrequency="0.022 0.55"
-                      numOctaves="2"
+                      numOctaves="1"
                       result="hl"
                       seed="11"
                       type="fractalNoise"
@@ -6831,6 +6835,22 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col with 
                       y2="234.36"
                     />
                   </g>
+                </g>
+                <path
+                  d="M 0 17 L 1275 0"
+                  fill="none"
+                  stroke="rgb(218 182 138 / 0.22)"
+                  stroke-width="0.9"
+                />
+                <path
+                  d="M 0 235 L 1275 252"
+                  fill="none"
+                  stroke="rgb(0 0 0 / 0.75)"
+                  stroke-width="1"
+                />
+                <g
+                  clip-path="url(#fretboard-_r_12_-fretboard-taper)"
+                >
                   <g
                     class="fretboard-note note-active"
                     data-note-role="note-active"
@@ -8452,18 +8472,6 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col with 
                     </text>
                   </g>
                 </g>
-                <path
-                  d="M 0 17 L 1275 0"
-                  fill="none"
-                  stroke="rgb(218 182 138 / 0.22)"
-                  stroke-width="0.9"
-                />
-                <path
-                  d="M 0 235 L 1275 252"
-                  fill="none"
-                  stroke="rgb(0 0 0 / 0.75)"
-                  stroke-width="1"
-                />
               </svg>
               <div
                 class="fretboard-a11y-layer"
@@ -11050,7 +11058,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col with 
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
-          style="cursor: default; visibility: visible;"
+          style="visibility: visible; cursor: default;"
         >
           <div
             aria-label="Guitar fretboard — C Major scale"
@@ -11126,7 +11134,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col with 
                   >
                     <feturbulence
                       baseFrequency="0.012 0.95"
-                      numOctaves="4"
+                      numOctaves="2"
                       result="grain"
                       seed="3"
                       type="fractalNoise"
@@ -11138,7 +11146,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col with 
                       values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0.72 0"
+                        0 0 0 0 0.72 0"
                     />
                     <fecomposite
                       in="grainTinted"
@@ -11155,7 +11163,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col with 
                   >
                     <feturbulence
                       baseFrequency="0.022 0.55"
-                      numOctaves="2"
+                      numOctaves="1"
                       result="hl"
                       seed="11"
                       type="fractalNoise"
@@ -12126,6 +12134,22 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col with 
                       y2="234.36"
                     />
                   </g>
+                </g>
+                <path
+                  d="M 0 17 L 1275 0"
+                  fill="none"
+                  stroke="rgb(218 182 138 / 0.22)"
+                  stroke-width="0.9"
+                />
+                <path
+                  d="M 0 235 L 1275 252"
+                  fill="none"
+                  stroke="rgb(0 0 0 / 0.75)"
+                  stroke-width="1"
+                />
+                <g
+                  clip-path="url(#fretboard-_r_p_-fretboard-taper)"
+                >
                   <g
                     class="fretboard-note note-active"
                     data-note-role="note-active"
@@ -13747,18 +13771,6 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-3col with 
                     </text>
                   </g>
                 </g>
-                <path
-                  d="M 0 17 L 1275 0"
-                  fill="none"
-                  stroke="rgb(218 182 138 / 0.22)"
-                  stroke-width="0.9"
-                />
-                <path
-                  d="M 0 235 L 1275 252"
-                  fill="none"
-                  stroke="rgb(0 0 0 / 0.75)"
-                  stroke-width="1"
-                />
               </svg>
               <div
                 class="fretboard-a11y-layer"
@@ -16345,7 +16357,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
-          style="cursor: default; visibility: visible;"
+          style="visibility: visible; cursor: default;"
         >
           <div
             aria-label="Guitar fretboard — C Major scale"
@@ -16421,7 +16433,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
                   >
                     <feturbulence
                       baseFrequency="0.012 0.95"
-                      numOctaves="4"
+                      numOctaves="2"
                       result="grain"
                       seed="3"
                       type="fractalNoise"
@@ -16433,7 +16445,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
                       values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0.72 0"
+                        0 0 0 0 0.72 0"
                     />
                     <fecomposite
                       in="grainTinted"
@@ -16450,7 +16462,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
                   >
                     <feturbulence
                       baseFrequency="0.022 0.55"
-                      numOctaves="2"
+                      numOctaves="1"
                       result="hl"
                       seed="11"
                       type="fractalNoise"
@@ -17421,6 +17433,22 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
                       y2="234.36"
                     />
                   </g>
+                </g>
+                <path
+                  d="M 0 17 L 1275 0"
+                  fill="none"
+                  stroke="rgb(218 182 138 / 0.22)"
+                  stroke-width="0.9"
+                />
+                <path
+                  d="M 0 235 L 1275 252"
+                  fill="none"
+                  stroke="rgb(0 0 0 / 0.75)"
+                  stroke-width="1"
+                />
+                <g
+                  clip-path="url(#fretboard-_r_1o_-fretboard-taper)"
+                >
                   <g
                     class="fretboard-note note-active"
                     data-note-role="note-active"
@@ -19042,18 +19070,6 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-split layo
                     </text>
                   </g>
                 </g>
-                <path
-                  d="M 0 17 L 1275 0"
-                  fill="none"
-                  stroke="rgb(218 182 138 / 0.22)"
-                  stroke-width="0.9"
-                />
-                <path
-                  d="M 0 235 L 1275 252"
-                  fill="none"
-                  stroke="rgb(0 0 0 / 0.75)"
-                  stroke-width="1"
-                />
               </svg>
               <div
                 class="fretboard-a11y-layer"
@@ -21640,7 +21656,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
-          style="cursor: default; visibility: visible;"
+          style="visibility: visible; cursor: default;"
         >
           <div
             aria-label="Guitar fretboard — C Major scale"
@@ -21716,7 +21732,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
                   >
                     <feturbulence
                       baseFrequency="0.012 0.95"
-                      numOctaves="4"
+                      numOctaves="2"
                       result="grain"
                       seed="3"
                       type="fractalNoise"
@@ -21728,7 +21744,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
                       values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0.72 0"
+                        0 0 0 0 0.72 0"
                     />
                     <fecomposite
                       in="grainTinted"
@@ -21745,7 +21761,7 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
                   >
                     <feturbulence
                       baseFrequency="0.022 0.55"
-                      numOctaves="2"
+                      numOctaves="1"
                       result="hl"
                       seed="11"
                       type="fractalNoise"
@@ -22716,6 +22732,22 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
                       y2="234.36"
                     />
                   </g>
+                </g>
+                <path
+                  d="M 0 17 L 1275 0"
+                  fill="none"
+                  stroke="rgb(218 182 138 / 0.22)"
+                  stroke-width="0.9"
+                />
+                <path
+                  d="M 0 235 L 1275 252"
+                  fill="none"
+                  stroke="rgb(0 0 0 / 0.75)"
+                  stroke-width="1"
+                />
+                <g
+                  clip-path="url(#fretboard-_r_25_-fretboard-taper)"
+                >
                   <g
                     class="fretboard-note note-active"
                     data-note-role="note-active"
@@ -24337,18 +24369,6 @@ exports[`Component Snapshots > App layout snapshots > renders desktop-stacked la
                     </text>
                   </g>
                 </g>
-                <path
-                  d="M 0 17 L 1275 0"
-                  fill="none"
-                  stroke="rgb(218 182 138 / 0.22)"
-                  stroke-width="0.9"
-                />
-                <path
-                  d="M 0 235 L 1275 252"
-                  fill="none"
-                  stroke="rgb(0 0 0 / 0.75)"
-                  stroke-width="1"
-                />
               </svg>
               <div
                 class="fretboard-a11y-layer"
@@ -26935,7 +26955,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
-          style="cursor: default; visibility: visible;"
+          style="visibility: visible; cursor: default;"
         >
           <div
             aria-label="Guitar fretboard — C Major scale"
@@ -27011,7 +27031,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
                   >
                     <feturbulence
                       baseFrequency="0.012 0.95"
-                      numOctaves="4"
+                      numOctaves="2"
                       result="grain"
                       seed="3"
                       type="fractalNoise"
@@ -27023,7 +27043,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
                       values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0.72 0"
+                        0 0 0 0 0.72 0"
                     />
                     <fecomposite
                       in="grainTinted"
@@ -27040,7 +27060,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
                   >
                     <feturbulence
                       baseFrequency="0.022 0.55"
-                      numOctaves="2"
+                      numOctaves="1"
                       result="hl"
                       seed="11"
                       type="fractalNoise"
@@ -28011,6 +28031,22 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
                       y2="156.24"
                     />
                   </g>
+                </g>
+                <path
+                  d="M 0 11 L 1225 0"
+                  fill="none"
+                  stroke="rgb(218 182 138 / 0.22)"
+                  stroke-width="0.9"
+                />
+                <path
+                  d="M 0 157 L 1225 168"
+                  fill="none"
+                  stroke="rgb(0 0 0 / 0.75)"
+                  stroke-width="1"
+                />
+                <g
+                  clip-path="url(#fretboard-_r_21_-fretboard-taper)"
+                >
                   <g
                     class="fretboard-note note-active"
                     data-note-role="note-active"
@@ -29632,18 +29668,6 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone 12 Pro port
                     </text>
                   </g>
                 </g>
-                <path
-                  d="M 0 11 L 1225 0"
-                  fill="none"
-                  stroke="rgb(218 182 138 / 0.22)"
-                  stroke-width="0.9"
-                />
-                <path
-                  d="M 0 157 L 1225 168"
-                  fill="none"
-                  stroke="rgb(0 0 0 / 0.75)"
-                  stroke-width="1"
-                />
               </svg>
               <div
                 class="fretboard-a11y-layer"
@@ -31373,7 +31397,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
-          style="cursor: default; visibility: visible;"
+          style="visibility: visible; cursor: default;"
         >
           <div
             aria-label="Guitar fretboard — C Major scale"
@@ -31449,7 +31473,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
                   >
                     <feturbulence
                       baseFrequency="0.012 0.95"
-                      numOctaves="4"
+                      numOctaves="2"
                       result="grain"
                       seed="3"
                       type="fractalNoise"
@@ -31461,7 +31485,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
                       values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0.72 0"
+                        0 0 0 0 0.72 0"
                     />
                     <fecomposite
                       in="grainTinted"
@@ -31478,7 +31502,7 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
                   >
                     <feturbulence
                       baseFrequency="0.022 0.55"
-                      numOctaves="2"
+                      numOctaves="1"
                       result="hl"
                       seed="11"
                       type="fractalNoise"
@@ -32449,6 +32473,22 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
                       y2="156.24"
                     />
                   </g>
+                </g>
+                <path
+                  d="M 0 11 L 1225 0"
+                  fill="none"
+                  stroke="rgb(218 182 138 / 0.22)"
+                  stroke-width="0.9"
+                />
+                <path
+                  d="M 0 157 L 1225 168"
+                  fill="none"
+                  stroke="rgb(0 0 0 / 0.75)"
+                  stroke-width="1"
+                />
+                <g
+                  clip-path="url(#fretboard-_r_1b_-fretboard-taper)"
+                >
                   <g
                     class="fretboard-note note-active"
                     data-note-role="note-active"
@@ -34070,18 +34110,6 @@ exports[`Component Snapshots > App layout snapshots > renders iPhone SE portrait
                     </text>
                   </g>
                 </g>
-                <path
-                  d="M 0 11 L 1225 0"
-                  fill="none"
-                  stroke="rgb(218 182 138 / 0.22)"
-                  stroke-width="0.9"
-                />
-                <path
-                  d="M 0 157 L 1225 168"
-                  fill="none"
-                  stroke="rgb(0 0 0 / 0.75)"
-                  stroke-width="1"
-                />
               </svg>
               <div
                 class="fretboard-a11y-layer"
@@ -35811,7 +35839,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
-          style="cursor: default; visibility: visible;"
+          style="visibility: visible; cursor: default;"
         >
           <div
             aria-label="Guitar fretboard — C Major scale"
@@ -35887,7 +35915,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <feturbulence
                       baseFrequency="0.012 0.95"
-                      numOctaves="4"
+                      numOctaves="2"
                       result="grain"
                       seed="3"
                       type="fractalNoise"
@@ -35899,7 +35927,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                       values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0.72 0"
+                        0 0 0 0 0.72 0"
                     />
                     <fecomposite
                       in="grainTinted"
@@ -35916,7 +35944,7 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                   >
                     <feturbulence
                       baseFrequency="0.022 0.55"
-                      numOctaves="2"
+                      numOctaves="1"
                       result="hl"
                       seed="11"
                       type="fractalNoise"
@@ -36887,6 +36915,22 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                       y2="156.24"
                     />
                   </g>
+                </g>
+                <path
+                  d="M 0 11 L 1225 0"
+                  fill="none"
+                  stroke="rgb(218 182 138 / 0.22)"
+                  stroke-width="0.9"
+                />
+                <path
+                  d="M 0 157 L 1225 168"
+                  fill="none"
+                  stroke="rgb(0 0 0 / 0.75)"
+                  stroke-width="1"
+                />
+                <g
+                  clip-path="url(#fretboard-_r_l_-fretboard-taper)"
+                >
                   <g
                     class="fretboard-note note-active"
                     data-note-role="note-active"
@@ -38508,18 +38552,6 @@ exports[`Component Snapshots > App layout snapshots > renders mobile layout snap
                     </text>
                   </g>
                 </g>
-                <path
-                  d="M 0 11 L 1225 0"
-                  fill="none"
-                  stroke="rgb(218 182 138 / 0.22)"
-                  stroke-width="0.9"
-                />
-                <path
-                  d="M 0 157 L 1225 168"
-                  fill="none"
-                  stroke="rgb(0 0 0 / 0.75)"
-                  stroke-width="1"
-                />
               </svg>
               <div
                 class="fretboard-a11y-layer"
@@ -40249,7 +40281,7 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
       >
         <div
           class="fretboard-wrapper hide-scrollbar"
-          style="cursor: default; visibility: visible;"
+          style="visibility: visible; cursor: default;"
         >
           <div
             aria-label="Guitar fretboard — C Major scale"
@@ -40325,7 +40357,7 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
                   >
                     <feturbulence
                       baseFrequency="0.012 0.95"
-                      numOctaves="4"
+                      numOctaves="2"
                       result="grain"
                       seed="3"
                       type="fractalNoise"
@@ -40337,7 +40369,7 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
                       values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0.72 0"
+                        0 0 0 0 0.72 0"
                     />
                     <fecomposite
                       in="grainTinted"
@@ -40354,7 +40386,7 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
                   >
                     <feturbulence
                       baseFrequency="0.022 0.55"
-                      numOctaves="2"
+                      numOctaves="1"
                       result="hl"
                       seed="11"
                       type="fractalNoise"
@@ -41325,6 +41357,22 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
                       y2="200.88"
                     />
                   </g>
+                </g>
+                <path
+                  d="M 0 14 L 1225 0"
+                  fill="none"
+                  stroke="rgb(218 182 138 / 0.22)"
+                  stroke-width="0.9"
+                />
+                <path
+                  d="M 0 202 L 1225 216"
+                  fill="none"
+                  stroke="rgb(0 0 0 / 0.75)"
+                  stroke-width="1"
+                />
+                <g
+                  clip-path="url(#fretboard-_r_1f_-fretboard-taper)"
+                >
                   <g
                     class="fretboard-note note-active"
                     data-note-role="note-active"
@@ -42946,18 +42994,6 @@ exports[`Component Snapshots > App layout snapshots > renders tablet-split layou
                     </text>
                   </g>
                 </g>
-                <path
-                  d="M 0 14 L 1225 0"
-                  fill="none"
-                  stroke="rgb(218 182 138 / 0.22)"
-                  stroke-width="0.9"
-                />
-                <path
-                  d="M 0 202 L 1225 216"
-                  fill="none"
-                  stroke="rgb(0 0 0 / 0.75)"
-                  stroke-width="1"
-                />
               </svg>
               <div
                 class="fretboard-a11y-layer"
@@ -59640,10 +59676,10 @@ exports[`Component Snapshots > Fretboard snapshots > renders A Minor Pentatonic 
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default; visibility: visible;"
+      style="visibility: visible; cursor: default;"
     >
       <div
-        aria-label="Guitar fretboard — A"
+        aria-label="Guitar fretboard — A Major scale"
         class="fretboard-board"
         role="group"
       >
@@ -59716,7 +59752,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders A Minor Pentatonic 
               >
                 <feturbulence
                   baseFrequency="0.012 0.95"
-                  numOctaves="4"
+                  numOctaves="2"
                   result="grain"
                   seed="3"
                   type="fractalNoise"
@@ -59728,7 +59764,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders A Minor Pentatonic 
                   values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0.72 0"
+                        0 0 0 0 0.72 0"
                 />
                 <fecomposite
                   in="grainTinted"
@@ -59745,7 +59781,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders A Minor Pentatonic 
               >
                 <feturbulence
                   baseFrequency="0.022 0.55"
-                  numOctaves="2"
+                  numOctaves="1"
                   result="hl"
                   seed="11"
                   type="fractalNoise"
@@ -60700,6 +60736,22 @@ exports[`Component Snapshots > Fretboard snapshots > renders A Minor Pentatonic 
                   y2="200.88"
                 />
               </g>
+            </g>
+            <path
+              d="M 0 14 L 1225 0"
+              fill="none"
+              stroke="rgb(218 182 138 / 0.22)"
+              stroke-width="0.9"
+            />
+            <path
+              d="M 0 202 L 1225 216"
+              fill="none"
+              stroke="rgb(0 0 0 / 0.75)"
+              stroke-width="1"
+            />
+            <g
+              clip-path="url(#fretboard-_r_1_-fretboard-taper)"
+            >
               <g
                 class="fretboard-note note-active"
                 data-note-role="note-active"
@@ -61781,18 +61833,6 @@ exports[`Component Snapshots > Fretboard snapshots > renders A Minor Pentatonic 
                 </text>
               </g>
             </g>
-            <path
-              d="M 0 14 L 1225 0"
-              fill="none"
-              stroke="rgb(218 182 138 / 0.22)"
-              stroke-width="0.9"
-            />
-            <path
-              d="M 0 202 L 1225 216"
-              fill="none"
-              stroke="rgb(0 0 0 / 0.75)"
-              stroke-width="1"
-            />
           </svg>
           <div
             class="fretboard-a11y-layer"
@@ -62391,10 +62431,10 @@ exports[`Component Snapshots > Fretboard snapshots > renders C Major scale snaps
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default; visibility: visible;"
+      style="visibility: visible; cursor: default;"
     >
       <div
-        aria-label="Guitar fretboard — C"
+        aria-label="Guitar fretboard — C Major scale"
         class="fretboard-board"
         role="group"
       >
@@ -62467,7 +62507,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders C Major scale snaps
               >
                 <feturbulence
                   baseFrequency="0.012 0.95"
-                  numOctaves="4"
+                  numOctaves="2"
                   result="grain"
                   seed="3"
                   type="fractalNoise"
@@ -62479,7 +62519,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders C Major scale snaps
                   values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0.72 0"
+                        0 0 0 0 0.72 0"
                 />
                 <fecomposite
                   in="grainTinted"
@@ -62496,7 +62536,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders C Major scale snaps
               >
                 <feturbulence
                   baseFrequency="0.022 0.55"
-                  numOctaves="2"
+                  numOctaves="1"
                   result="hl"
                   seed="11"
                   type="fractalNoise"
@@ -63451,6 +63491,22 @@ exports[`Component Snapshots > Fretboard snapshots > renders C Major scale snaps
                   y2="200.88"
                 />
               </g>
+            </g>
+            <path
+              d="M 0 14 L 1225 0"
+              fill="none"
+              stroke="rgb(218 182 138 / 0.22)"
+              stroke-width="0.9"
+            />
+            <path
+              d="M 0 202 L 1225 216"
+              fill="none"
+              stroke="rgb(0 0 0 / 0.75)"
+              stroke-width="1"
+            />
+            <g
+              clip-path="url(#fretboard-_r_0_-fretboard-taper)"
+            >
               <g
                 class="fretboard-note note-active"
                 data-note-role="note-active"
@@ -64964,18 +65020,6 @@ exports[`Component Snapshots > Fretboard snapshots > renders C Major scale snaps
                 </text>
               </g>
             </g>
-            <path
-              d="M 0 14 L 1225 0"
-              fill="none"
-              stroke="rgb(218 182 138 / 0.22)"
-              stroke-width="0.9"
-            />
-            <path
-              d="M 0 202 L 1225 216"
-              fill="none"
-              stroke="rgb(0 0 0 / 0.75)"
-              stroke-width="1"
-            />
           </svg>
           <div
             class="fretboard-a11y-layer"
@@ -65742,10 +65786,10 @@ exports[`Component Snapshots > Fretboard snapshots > renders Drop D tuning snaps
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default; visibility: visible;"
+      style="visibility: visible; cursor: default;"
     >
       <div
-        aria-label="Guitar fretboard — D"
+        aria-label="Guitar fretboard — D Major scale"
         class="fretboard-board"
         role="group"
       >
@@ -65818,7 +65862,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders Drop D tuning snaps
               >
                 <feturbulence
                   baseFrequency="0.012 0.95"
-                  numOctaves="4"
+                  numOctaves="2"
                   result="grain"
                   seed="3"
                   type="fractalNoise"
@@ -65830,7 +65874,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders Drop D tuning snaps
                   values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0.72 0"
+                        0 0 0 0 0.72 0"
                 />
                 <fecomposite
                   in="grainTinted"
@@ -65847,7 +65891,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders Drop D tuning snaps
               >
                 <feturbulence
                   baseFrequency="0.022 0.55"
-                  numOctaves="2"
+                  numOctaves="1"
                   result="hl"
                   seed="11"
                   type="fractalNoise"
@@ -66802,6 +66846,22 @@ exports[`Component Snapshots > Fretboard snapshots > renders Drop D tuning snaps
                   y2="200.88"
                 />
               </g>
+            </g>
+            <path
+              d="M 0 14 L 1225 0"
+              fill="none"
+              stroke="rgb(218 182 138 / 0.22)"
+              stroke-width="0.9"
+            />
+            <path
+              d="M 0 202 L 1225 216"
+              fill="none"
+              stroke="rgb(0 0 0 / 0.75)"
+              stroke-width="1"
+            />
+            <g
+              clip-path="url(#fretboard-_r_9_-fretboard-taper)"
+            >
               <g
                 class="fretboard-note note-active"
                 data-note-role="note-active"
@@ -68315,18 +68375,6 @@ exports[`Component Snapshots > Fretboard snapshots > renders Drop D tuning snaps
                 </text>
               </g>
             </g>
-            <path
-              d="M 0 14 L 1225 0"
-              fill="none"
-              stroke="rgb(218 182 138 / 0.22)"
-              stroke-width="0.9"
-            />
-            <path
-              d="M 0 202 L 1225 216"
-              fill="none"
-              stroke="rgb(0 0 0 / 0.75)"
-              stroke-width="1"
-            />
           </svg>
           <div
             class="fretboard-a11y-layer"
@@ -69093,10 +69141,10 @@ exports[`Component Snapshots > Fretboard snapshots > renders high fret range sna
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default; visibility: visible;"
+      style="visibility: visible; cursor: default;"
     >
       <div
-        aria-label="Guitar fretboard — D"
+        aria-label="Guitar fretboard — D Major scale"
         class="fretboard-board"
         role="group"
       >
@@ -69169,7 +69217,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders high fret range sna
               >
                 <feturbulence
                   baseFrequency="0.012 0.95"
-                  numOctaves="4"
+                  numOctaves="2"
                   result="grain"
                   seed="3"
                   type="fractalNoise"
@@ -69181,7 +69229,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders high fret range sna
                   values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0.72 0"
+                        0 0 0 0 0.72 0"
                 />
                 <fecomposite
                   in="grainTinted"
@@ -69198,7 +69246,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders high fret range sna
               >
                 <feturbulence
                   baseFrequency="0.022 0.55"
-                  numOctaves="2"
+                  numOctaves="1"
                   result="hl"
                   seed="11"
                   type="fractalNoise"
@@ -70153,6 +70201,22 @@ exports[`Component Snapshots > Fretboard snapshots > renders high fret range sna
                   y2="200.88"
                 />
               </g>
+            </g>
+            <path
+              d="M 0 14 L 1225 0"
+              fill="none"
+              stroke="rgb(218 182 138 / 0.22)"
+              stroke-width="0.9"
+            />
+            <path
+              d="M 0 202 L 1225 216"
+              fill="none"
+              stroke="rgb(0 0 0 / 0.75)"
+              stroke-width="1"
+            />
+            <g
+              clip-path="url(#fretboard-_r_7_-fretboard-taper)"
+            >
               <g
                 class="fretboard-note note-active"
                 data-note-role="note-active"
@@ -71666,18 +71730,6 @@ exports[`Component Snapshots > Fretboard snapshots > renders high fret range sna
                 </text>
               </g>
             </g>
-            <path
-              d="M 0 14 L 1225 0"
-              fill="none"
-              stroke="rgb(218 182 138 / 0.22)"
-              stroke-width="0.9"
-            />
-            <path
-              d="M 0 202 L 1225 216"
-              fill="none"
-              stroke="rgb(0 0 0 / 0.75)"
-              stroke-width="1"
-            />
           </svg>
           <div
             class="fretboard-a11y-layer"
@@ -72444,10 +72496,10 @@ exports[`Component Snapshots > Fretboard snapshots > renders with CAGED shapes a
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default; visibility: visible;"
+      style="visibility: visible; cursor: default;"
     >
       <div
-        aria-label="Guitar fretboard — E"
+        aria-label="Guitar fretboard — E Major scale"
         class="fretboard-board"
         role="group"
       >
@@ -72520,7 +72572,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with CAGED shapes a
               >
                 <feturbulence
                   baseFrequency="0.012 0.95"
-                  numOctaves="4"
+                  numOctaves="2"
                   result="grain"
                   seed="3"
                   type="fractalNoise"
@@ -72532,7 +72584,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with CAGED shapes a
                   values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0.72 0"
+                        0 0 0 0 0.72 0"
                 />
                 <fecomposite
                   in="grainTinted"
@@ -72549,7 +72601,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with CAGED shapes a
               >
                 <feturbulence
                   baseFrequency="0.022 0.55"
-                  numOctaves="2"
+                  numOctaves="1"
                   result="hl"
                   seed="11"
                   type="fractalNoise"
@@ -73504,6 +73556,22 @@ exports[`Component Snapshots > Fretboard snapshots > renders with CAGED shapes a
                   y2="178.56"
                 />
               </g>
+            </g>
+            <path
+              d="M 0 13 L 1225 0"
+              fill="none"
+              stroke="rgb(218 182 138 / 0.22)"
+              stroke-width="0.9"
+            />
+            <path
+              d="M 0 179 L 1225 192"
+              fill="none"
+              stroke="rgb(0 0 0 / 0.75)"
+              stroke-width="1"
+            />
+            <g
+              clip-path="url(#fretboard-_r_b_-fretboard-taper)"
+            >
               <polygon
                 fill="#6366f1"
                 points="19,0 19,32.9470746122449 246.34167781928656,55.961891000335115 166.34839432689864,82.91274226537945 166.34839432689864,192 19,192 19,108.61058507755101 19,133.83175523265308 19,159.0529253877551 19,0"
@@ -75022,18 +75090,6 @@ exports[`Component Snapshots > Fretboard snapshots > renders with CAGED shapes a
                 </text>
               </g>
             </g>
-            <path
-              d="M 0 13 L 1225 0"
-              fill="none"
-              stroke="rgb(218 182 138 / 0.22)"
-              stroke-width="0.9"
-            />
-            <path
-              d="M 0 179 L 1225 192"
-              fill="none"
-              stroke="rgb(0 0 0 / 0.75)"
-              stroke-width="1"
-            />
           </svg>
           <div
             class="fretboard-a11y-layer"
@@ -75800,10 +75856,10 @@ exports[`Component Snapshots > Fretboard snapshots > renders with CAGED shapes s
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default; visibility: visible;"
+      style="visibility: visible; cursor: default;"
     >
       <div
-        aria-label="Guitar fretboard — E"
+        aria-label="Guitar fretboard — E Major scale"
         class="fretboard-board"
         role="group"
       >
@@ -75876,7 +75932,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with CAGED shapes s
               >
                 <feturbulence
                   baseFrequency="0.012 0.95"
-                  numOctaves="4"
+                  numOctaves="2"
                   result="grain"
                   seed="3"
                   type="fractalNoise"
@@ -75888,7 +75944,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with CAGED shapes s
                   values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0.72 0"
+                        0 0 0 0 0.72 0"
                 />
                 <fecomposite
                   in="grainTinted"
@@ -75905,7 +75961,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with CAGED shapes s
               >
                 <feturbulence
                   baseFrequency="0.022 0.55"
-                  numOctaves="2"
+                  numOctaves="1"
                   result="hl"
                   seed="11"
                   type="fractalNoise"
@@ -76860,6 +76916,22 @@ exports[`Component Snapshots > Fretboard snapshots > renders with CAGED shapes s
                   y2="200.88"
                 />
               </g>
+            </g>
+            <path
+              d="M 0 14 L 1225 0"
+              fill="none"
+              stroke="rgb(218 182 138 / 0.22)"
+              stroke-width="0.9"
+            />
+            <path
+              d="M 0 202 L 1225 216"
+              fill="none"
+              stroke="rgb(0 0 0 / 0.75)"
+              stroke-width="1"
+            />
+            <g
+              clip-path="url(#fretboard-_r_6_-fretboard-taper)"
+            >
               <polygon
                 fill="#6366f1"
                 points="20.5,0 20.5,37.038163591836735 248.81511924013083,62.930121998691135 169.02400916853242,93.26709747050162 169.02400916853242,216 20.5,216 20.5,122.19236728163266 20.5,150.57710184489798 20.5,178.96183640816326 20.5,0"
@@ -78378,18 +78450,6 @@ exports[`Component Snapshots > Fretboard snapshots > renders with CAGED shapes s
                 </text>
               </g>
             </g>
-            <path
-              d="M 0 14 L 1225 0"
-              fill="none"
-              stroke="rgb(218 182 138 / 0.22)"
-              stroke-width="0.9"
-            />
-            <path
-              d="M 0 202 L 1225 216"
-              fill="none"
-              stroke="rgb(0 0 0 / 0.75)"
-              stroke-width="1"
-            />
           </svg>
           <div
             class="fretboard-a11y-layer"
@@ -79156,10 +79216,10 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default; visibility: visible;"
+      style="visibility: visible; cursor: default;"
     >
       <div
-        aria-label="Guitar fretboard — C"
+        aria-label="Guitar fretboard — C Major scale"
         class="fretboard-board"
         role="group"
       >
@@ -79232,7 +79292,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
               >
                 <feturbulence
                   baseFrequency="0.012 0.95"
-                  numOctaves="4"
+                  numOctaves="2"
                   result="grain"
                   seed="3"
                   type="fractalNoise"
@@ -79244,7 +79304,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
                   values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0.72 0"
+                        0 0 0 0 0.72 0"
                 />
                 <fecomposite
                   in="grainTinted"
@@ -79261,7 +79321,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
               >
                 <feturbulence
                   baseFrequency="0.022 0.55"
-                  numOctaves="2"
+                  numOctaves="1"
                   result="hl"
                   seed="11"
                   type="fractalNoise"
@@ -80216,6 +80276,22 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
                   y2="200.88"
                 />
               </g>
+            </g>
+            <path
+              d="M 0 14 L 1225 0"
+              fill="none"
+              stroke="rgb(218 182 138 / 0.22)"
+              stroke-width="0.9"
+            />
+            <path
+              d="M 0 202 L 1225 216"
+              fill="none"
+              stroke="rgb(0 0 0 / 0.75)"
+              stroke-width="1"
+            />
+            <g
+              clip-path="url(#fretboard-_r_5_-fretboard-taper)"
+            >
               <g
                 class="fretboard-note chord-tone-in-scale"
                 data-note-role="chord-tone-in-scale"
@@ -80313,18 +80389,29 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
                 </text>
               </g>
               <g
-                class="fretboard-note chord-tone-in-scale"
-                data-note-role="chord-tone-in-scale"
+                class="fretboard-note chord-root"
+                data-note-role="chord-root"
                 data-note-shape="squircle"
                 style="opacity: 1;"
               >
                 <rect
-                  height="23.779999999999998"
-                  rx="4.518199999999999"
-                  ry="4.518199999999999"
-                  width="23.779999999999998"
-                  x="573.5257930059171"
-                  y="14.868448550976739"
+                  fill="none"
+                  height="31.94"
+                  rx="6.0686"
+                  ry="6.0686"
+                  stroke="rgb(255 154 77 / 0.22)"
+                  stroke-width="1.5"
+                  width="31.94"
+                  x="569.445793005917"
+                  y="10.788448550976737"
+                />
+                <rect
+                  height="24.94"
+                  rx="4.7386"
+                  ry="4.7386"
+                  width="24.94"
+                  x="572.945793005917"
+                  y="14.288448550976737"
                 />
                 <text
                   x="585.4157930059171"
@@ -80448,18 +80535,29 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
                 </text>
               </g>
               <g
-                class="fretboard-note chord-tone-in-scale"
-                data-note-role="chord-tone-in-scale"
+                class="fretboard-note chord-root"
+                data-note-role="chord-root"
                 data-note-shape="squircle"
                 style="opacity: 1;"
               >
                 <rect
-                  height="23.779999999999998"
-                  rx="4.518199999999999"
-                  ry="4.518199999999999"
-                  width="23.779999999999998"
-                  x="1076.1551389063873"
-                  y="5.72215363233464"
+                  fill="none"
+                  height="31.94"
+                  rx="6.0686"
+                  ry="6.0686"
+                  stroke="rgb(255 154 77 / 0.22)"
+                  stroke-width="1.5"
+                  width="31.94"
+                  x="1072.0751389063873"
+                  y="1.6421536323346384"
+                />
+                <rect
+                  height="24.94"
+                  rx="4.7386"
+                  ry="4.7386"
+                  width="24.94"
+                  x="1075.5751389063873"
+                  y="5.142153632334638"
                 />
                 <text
                   x="1088.0451389063874"
@@ -80505,18 +80603,29 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
                 </text>
               </g>
               <g
-                class="fretboard-note chord-tone-in-scale"
-                data-note-role="chord-tone-in-scale"
+                class="fretboard-note chord-root"
+                data-note-role="chord-root"
                 data-note-shape="squircle"
                 style="opacity: 1;"
               >
                 <rect
-                  height="23.779999999999998"
-                  rx="4.518199999999999"
-                  ry="4.518199999999999"
-                  width="23.779999999999998"
-                  x="72.59827278971368"
-                  y="52.834265312778754"
+                  fill="none"
+                  height="31.94"
+                  rx="6.0686"
+                  ry="6.0686"
+                  stroke="rgb(255 154 77 / 0.22)"
+                  stroke-width="1.5"
+                  width="31.94"
+                  x="68.51827278971368"
+                  y="48.754265312778756"
+                />
+                <rect
+                  height="24.94"
+                  rx="4.7386"
+                  ry="4.7386"
+                  width="24.94"
+                  x="72.01827278971368"
+                  y="52.254265312778756"
                 />
                 <text
                   x="84.48827278971368"
@@ -80640,18 +80749,29 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
                 </text>
               </g>
               <g
-                class="fretboard-note chord-tone-in-scale"
-                data-note-role="chord-tone-in-scale"
+                class="fretboard-note chord-root"
+                data-note-role="chord-root"
                 data-note-shape="squircle"
                 style="opacity: 1;"
               >
                 <rect
-                  height="23.779999999999998"
-                  rx="4.518199999999999"
-                  ry="4.518199999999999"
-                  width="23.779999999999998"
-                  x="825.6913787982857"
-                  y="44.611890270497135"
+                  fill="none"
+                  height="31.94"
+                  rx="6.0686"
+                  ry="6.0686"
+                  stroke="rgb(255 154 77 / 0.22)"
+                  stroke-width="1.5"
+                  width="31.94"
+                  x="821.6113787982856"
+                  y="40.531890270497136"
+                />
+                <rect
+                  height="24.94"
+                  rx="4.7386"
+                  ry="4.7386"
+                  width="24.94"
+                  x="825.1113787982856"
+                  y="44.031890270497136"
                 />
                 <text
                   x="837.5813787982856"
@@ -80814,18 +80934,29 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
                 </text>
               </g>
               <g
-                class="fretboard-note chord-tone-in-scale"
-                data-note-role="chord-tone-in-scale"
+                class="fretboard-note chord-root"
+                data-note-role="chord-root"
                 data-note-shape="squircle"
                 style="opacity: 1;"
               >
                 <rect
-                  height="23.779999999999998"
-                  rx="4.518199999999999"
-                  ry="4.518199999999999"
-                  width="23.779999999999998"
-                  x="383.32369609885166"
-                  y="80.55390734000348"
+                  fill="none"
+                  height="31.94"
+                  rx="6.0686"
+                  ry="6.0686"
+                  stroke="rgb(255 154 77 / 0.22)"
+                  stroke-width="1.5"
+                  width="31.94"
+                  x="379.2436960988516"
+                  y="76.47390734000348"
+                />
+                <rect
+                  height="24.94"
+                  rx="4.7386"
+                  ry="4.7386"
+                  width="24.94"
+                  x="382.7436960988516"
+                  y="79.97390734000348"
                 />
                 <text
                   x="395.21369609885164"
@@ -80949,18 +81080,29 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
                 </text>
               </g>
               <g
-                class="fretboard-note chord-tone-in-scale"
-                data-note-role="chord-tone-in-scale"
+                class="fretboard-note chord-root"
+                data-note-role="chord-root"
                 data-note-shape="squircle"
                 style="opacity: 1;"
               >
                 <rect
-                  height="23.779999999999998"
-                  rx="4.518199999999999"
-                  ry="4.518199999999999"
-                  width="23.779999999999998"
-                  x="981.0540904528547"
-                  y="78.378539541371"
+                  fill="none"
+                  height="31.94"
+                  rx="6.0686"
+                  ry="6.0686"
+                  stroke="rgb(255 154 77 / 0.22)"
+                  stroke-width="1.5"
+                  width="31.94"
+                  x="976.9740904528546"
+                  y="74.298539541371"
+                />
+                <rect
+                  height="24.94"
+                  rx="4.7386"
+                  ry="4.7386"
+                  width="24.94"
+                  x="980.4740904528546"
+                  y="77.798539541371"
                 />
                 <text
                   x="992.9440904528547"
@@ -81141,18 +81283,29 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
                 </text>
               </g>
               <g
-                class="fretboard-note chord-tone-in-scale"
-                data-note-role="chord-tone-in-scale"
+                class="fretboard-note chord-root"
+                data-note-role="chord-root"
                 data-note-shape="squircle"
                 style="opacity: 1;"
               >
                 <rect
-                  height="23.779999999999998"
-                  rx="4.518199999999999"
-                  ry="4.518199999999999"
-                  width="23.779999999999998"
-                  x="683.2008048819654"
-                  y="112.75745928976079"
+                  fill="none"
+                  height="31.94"
+                  rx="6.0686"
+                  ry="6.0686"
+                  stroke="rgb(255 154 77 / 0.22)"
+                  stroke-width="1.5"
+                  width="31.94"
+                  x="679.1208048819653"
+                  y="108.67745928976079"
+                />
+                <rect
+                  height="24.94"
+                  rx="4.7386"
+                  ry="4.7386"
+                  width="24.94"
+                  x="682.6208048819653"
+                  y="112.17745928976079"
                 />
                 <text
                   x="695.0908048819654"
@@ -81276,18 +81429,29 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
                 </text>
               </g>
               <g
-                class="fretboard-note chord-tone-in-scale"
-                data-note-role="chord-tone-in-scale"
+                class="fretboard-note chord-root"
+                data-note-role="chord-root"
                 data-note-shape="squircle"
                 style="opacity: 1;"
               >
                 <rect
-                  height="23.779999999999998"
-                  rx="4.518199999999999"
-                  ry="4.518199999999999"
-                  width="23.779999999999998"
-                  x="1130.9926448444114"
-                  y="114.38714377351114"
+                  fill="none"
+                  height="31.94"
+                  rx="6.0686"
+                  ry="6.0686"
+                  stroke="rgb(255 154 77 / 0.22)"
+                  stroke-width="1.5"
+                  width="31.94"
+                  x="1126.9126448444115"
+                  y="110.30714377351114"
+                />
+                <rect
+                  height="24.94"
+                  rx="4.7386"
+                  ry="4.7386"
+                  width="24.94"
+                  x="1130.4126448444115"
+                  y="113.80714377351114"
                 />
                 <text
                   x="1142.8826448444115"
@@ -81333,18 +81497,29 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
                 </text>
               </g>
               <g
-                class="fretboard-note chord-tone-in-scale"
-                data-note-role="chord-tone-in-scale"
+                class="fretboard-note chord-root"
+                data-note-role="chord-root"
                 data-note-shape="squircle"
                 style="opacity: 1;"
               >
                 <rect
-                  height="23.779999999999998"
-                  rx="4.518199999999999"
-                  ry="4.518199999999999"
-                  width="23.779999999999998"
-                  x="236.92511924013084"
-                  y="141.1798780013089"
+                  fill="none"
+                  height="31.94"
+                  rx="6.0686"
+                  ry="6.0686"
+                  stroke="rgb(255 154 77 / 0.22)"
+                  stroke-width="1.5"
+                  width="31.94"
+                  x="232.84511924013083"
+                  y="137.0998780013089"
+                />
+                <rect
+                  height="24.94"
+                  rx="4.7386"
+                  ry="4.7386"
+                  width="24.94"
+                  x="236.34511924013083"
+                  y="140.5998780013089"
                 />
                 <text
                   x="248.81511924013083"
@@ -81468,18 +81643,29 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
                 </text>
               </g>
               <g
-                class="fretboard-note chord-tone-in-scale"
-                data-note-role="chord-tone-in-scale"
+                class="fretboard-note chord-root"
+                data-note-role="chord-root"
                 data-note-shape="squircle"
                 style="opacity: 1;"
               >
                 <rect
-                  height="23.779999999999998"
-                  rx="4.518199999999999"
-                  ry="4.518199999999999"
-                  width="23.779999999999998"
-                  x="907.8548020234942"
-                  y="148.50518138654667"
+                  fill="none"
+                  height="31.94"
+                  rx="6.0686"
+                  ry="6.0686"
+                  stroke="rgb(255 154 77 / 0.22)"
+                  stroke-width="1.5"
+                  width="31.94"
+                  x="903.7748020234942"
+                  y="144.42518138654665"
+                />
+                <rect
+                  height="24.94"
+                  rx="4.7386"
+                  ry="4.7386"
+                  width="24.94"
+                  x="907.2748020234942"
+                  y="147.92518138654665"
                 />
                 <text
                   x="919.7448020234942"
@@ -81663,18 +81849,29 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
                 </text>
               </g>
               <g
-                class="fretboard-note chord-tone-in-scale"
-                data-note-role="chord-tone-in-scale"
+                class="fretboard-note chord-root"
+                data-note-role="chord-root"
                 data-note-shape="squircle"
                 style="opacity: 1;"
               >
                 <rect
-                  height="23.779999999999998"
-                  rx="4.518199999999999"
-                  ry="4.518199999999999"
-                  width="23.779999999999998"
-                  x="573.5257930059171"
-                  y="177.35155144902328"
+                  fill="none"
+                  height="31.94"
+                  rx="6.0686"
+                  ry="6.0686"
+                  stroke="rgb(255 154 77 / 0.22)"
+                  stroke-width="1.5"
+                  width="31.94"
+                  x="569.445793005917"
+                  y="173.27155144902326"
+                />
+                <rect
+                  height="24.94"
+                  rx="4.7386"
+                  ry="4.7386"
+                  width="24.94"
+                  x="572.945793005917"
+                  y="176.77155144902326"
                 />
                 <text
                   x="585.4157930059171"
@@ -81798,18 +81995,29 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
                 </text>
               </g>
               <g
-                class="fretboard-note chord-tone-in-scale"
-                data-note-role="chord-tone-in-scale"
+                class="fretboard-note chord-root"
+                data-note-role="chord-root"
                 data-note-shape="squircle"
                 style="opacity: 1;"
               >
                 <rect
-                  height="23.779999999999998"
-                  rx="4.518199999999999"
-                  ry="4.518199999999999"
-                  width="23.779999999999998"
-                  x="1076.1551389063873"
-                  y="186.49784636766537"
+                  fill="none"
+                  height="31.94"
+                  rx="6.0686"
+                  ry="6.0686"
+                  stroke="rgb(255 154 77 / 0.22)"
+                  stroke-width="1.5"
+                  width="31.94"
+                  x="1072.0751389063873"
+                  y="182.41784636766536"
+                />
+                <rect
+                  height="24.94"
+                  rx="4.7386"
+                  ry="4.7386"
+                  width="24.94"
+                  x="1075.5751389063873"
+                  y="185.91784636766536"
                 />
                 <text
                   x="1088.0451389063874"
@@ -81837,18 +82045,6 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
                 </text>
               </g>
             </g>
-            <path
-              d="M 0 14 L 1225 0"
-              fill="none"
-              stroke="rgb(218 182 138 / 0.22)"
-              stroke-width="0.9"
-            />
-            <path
-              d="M 0 202 L 1225 216"
-              fill="none"
-              stroke="rgb(0 0 0 / 0.75)"
-              stroke-width="1"
-            />
           </svg>
           <div
             class="fretboard-a11y-layer"
@@ -81900,8 +82096,8 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
             />
             <button
               aria-label="C on string 1, fret 8"
-              class="note-bubble chord-tone-in-scale"
-              data-note-role="chord-tone-in-scale"
+              class="note-bubble chord-root"
+              data-note-role="chord-root"
               style="position: absolute; left: 570.9157930059171px; top: 12.258448550976738px; width: 29px; height: 29px; font-size: 16px; opacity: 0; pointer-events: auto;"
               type="button"
             />
@@ -81961,8 +82157,8 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
             />
             <button
               aria-label="C on string 1, fret 20"
-              class="note-bubble chord-tone-in-scale"
-              data-note-role="chord-tone-in-scale"
+              class="note-bubble chord-root"
+              data-note-role="chord-root"
               style="position: absolute; left: 1073.5451389063874px; top: 3.112153632334639px; width: 29px; height: 29px; font-size: 16px; opacity: 0; pointer-events: auto;"
               type="button"
             />
@@ -81988,8 +82184,8 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
             />
             <button
               aria-label="C on string 2, fret 1"
-              class="note-bubble chord-tone-in-scale"
-              data-note-role="chord-tone-in-scale"
+              class="note-bubble chord-root"
+              data-note-role="chord-root"
               style="position: absolute; left: 69.98827278971368px; top: 50.224265312778755px; width: 29px; height: 29px; font-size: 16px; opacity: 0; pointer-events: auto;"
               type="button"
             />
@@ -82049,8 +82245,8 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
             />
             <button
               aria-label="C on string 2, fret 13"
-              class="note-bubble chord-tone-in-scale"
-              data-note-role="chord-tone-in-scale"
+              class="note-bubble chord-root"
+              data-note-role="chord-root"
               style="position: absolute; left: 823.0813787982856px; top: 42.001890270497135px; width: 29px; height: 29px; font-size: 16px; opacity: 0; pointer-events: auto;"
               type="button"
             />
@@ -82127,8 +82323,8 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
             />
             <button
               aria-label="C on string 3, fret 5"
-              class="note-bubble chord-tone-in-scale"
-              data-note-role="chord-tone-in-scale"
+              class="note-bubble chord-root"
+              data-note-role="chord-root"
               style="position: absolute; left: 380.71369609885164px; top: 77.94390734000348px; width: 29px; height: 29px; font-size: 16px; opacity: 0; pointer-events: auto;"
               type="button"
             />
@@ -82188,8 +82384,8 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
             />
             <button
               aria-label="C on string 3, fret 17"
-              class="note-bubble chord-tone-in-scale"
-              data-note-role="chord-tone-in-scale"
+              class="note-bubble chord-root"
+              data-note-role="chord-root"
               style="position: absolute; left: 978.4440904528547px; top: 75.768539541371px; width: 29px; height: 29px; font-size: 16px; opacity: 0; pointer-events: auto;"
               type="button"
             />
@@ -82276,8 +82472,8 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
             />
             <button
               aria-label="C on string 4, fret 10"
-              class="note-bubble chord-tone-in-scale"
-              data-note-role="chord-tone-in-scale"
+              class="note-bubble chord-root"
+              data-note-role="chord-root"
               style="position: absolute; left: 680.5908048819654px; top: 110.14745928976079px; width: 29px; height: 29px; font-size: 16px; opacity: 0; pointer-events: auto;"
               type="button"
             />
@@ -82337,8 +82533,8 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
             />
             <button
               aria-label="C on string 4, fret 22"
-              class="note-bubble chord-tone-in-scale"
-              data-note-role="chord-tone-in-scale"
+              class="note-bubble chord-root"
+              data-note-role="chord-root"
               style="position: absolute; left: 1128.3826448444115px; top: 111.77714377351114px; width: 29px; height: 29px; font-size: 16px; opacity: 0; pointer-events: auto;"
               type="button"
             />
@@ -82364,8 +82560,8 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
             />
             <button
               aria-label="C on string 5, fret 3"
-              class="note-bubble chord-tone-in-scale"
-              data-note-role="chord-tone-in-scale"
+              class="note-bubble chord-root"
+              data-note-role="chord-root"
               style="position: absolute; left: 234.31511924013083px; top: 138.5698780013089px; width: 29px; height: 29px; font-size: 16px; opacity: 0; pointer-events: auto;"
               type="button"
             />
@@ -82425,8 +82621,8 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
             />
             <button
               aria-label="C on string 5, fret 15"
-              class="note-bubble chord-tone-in-scale"
-              data-note-role="chord-tone-in-scale"
+              class="note-bubble chord-root"
+              data-note-role="chord-root"
               style="position: absolute; left: 905.2448020234942px; top: 145.89518138654665px; width: 29px; height: 29px; font-size: 16px; opacity: 0; pointer-events: auto;"
               type="button"
             />
@@ -82510,8 +82706,8 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
             />
             <button
               aria-label="C on string 6, fret 8"
-              class="note-bubble chord-tone-in-scale"
-              data-note-role="chord-tone-in-scale"
+              class="note-bubble chord-root"
+              data-note-role="chord-root"
               style="position: absolute; left: 570.9157930059171px; top: 174.74155144902326px; width: 29px; height: 29px; font-size: 16px; opacity: 0; pointer-events: auto;"
               type="button"
             />
@@ -82571,8 +82767,8 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones fi
             />
             <button
               aria-label="C on string 6, fret 20"
-              class="note-bubble chord-tone-in-scale"
-              data-note-role="chord-tone-in-scale"
+              class="note-bubble chord-root"
+              data-note-role="chord-root"
               style="position: absolute; left: 1073.5451389063874px; top: 183.88784636766536px; width: 29px; height: 29px; font-size: 16px; opacity: 0; pointer-events: auto;"
               type="button"
             />
@@ -82759,10 +82955,10 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default; visibility: visible;"
+      style="visibility: visible; cursor: default;"
     >
       <div
-        aria-label="Guitar fretboard — C"
+        aria-label="Guitar fretboard — C Major scale"
         class="fretboard-board"
         role="group"
       >
@@ -82835,7 +83031,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
               >
                 <feturbulence
                   baseFrequency="0.012 0.95"
-                  numOctaves="4"
+                  numOctaves="2"
                   result="grain"
                   seed="3"
                   type="fractalNoise"
@@ -82847,7 +83043,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
                   values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0.72 0"
+                        0 0 0 0 0.72 0"
                 />
                 <fecomposite
                   in="grainTinted"
@@ -82864,7 +83060,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
               >
                 <feturbulence
                   baseFrequency="0.022 0.55"
-                  numOctaves="2"
+                  numOctaves="1"
                   result="hl"
                   seed="11"
                   type="fractalNoise"
@@ -83819,6 +84015,22 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
                   y2="200.88"
                 />
               </g>
+            </g>
+            <path
+              d="M 0 14 L 1225 0"
+              fill="none"
+              stroke="rgb(218 182 138 / 0.22)"
+              stroke-width="0.9"
+            />
+            <path
+              d="M 0 202 L 1225 216"
+              fill="none"
+              stroke="rgb(0 0 0 / 0.75)"
+              stroke-width="1"
+            />
+            <g
+              clip-path="url(#fretboard-_r_4_-fretboard-taper)"
+            >
               <g
                 class="fretboard-note chord-tone-in-scale"
                 data-note-role="chord-tone-in-scale"
@@ -83916,18 +84128,29 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
                 </text>
               </g>
               <g
-                class="fretboard-note chord-tone-in-scale"
-                data-note-role="chord-tone-in-scale"
+                class="fretboard-note chord-root"
+                data-note-role="chord-root"
                 data-note-shape="squircle"
                 style="opacity: 1;"
               >
                 <rect
-                  height="23.779999999999998"
-                  rx="4.518199999999999"
-                  ry="4.518199999999999"
-                  width="23.779999999999998"
-                  x="573.5257930059171"
-                  y="14.868448550976739"
+                  fill="none"
+                  height="31.94"
+                  rx="6.0686"
+                  ry="6.0686"
+                  stroke="rgb(255 154 77 / 0.22)"
+                  stroke-width="1.5"
+                  width="31.94"
+                  x="569.445793005917"
+                  y="10.788448550976737"
+                />
+                <rect
+                  height="24.94"
+                  rx="4.7386"
+                  ry="4.7386"
+                  width="24.94"
+                  x="572.945793005917"
+                  y="14.288448550976737"
                 />
                 <text
                   x="585.4157930059171"
@@ -84051,18 +84274,29 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
                 </text>
               </g>
               <g
-                class="fretboard-note chord-tone-in-scale"
-                data-note-role="chord-tone-in-scale"
+                class="fretboard-note chord-root"
+                data-note-role="chord-root"
                 data-note-shape="squircle"
                 style="opacity: 1;"
               >
                 <rect
-                  height="23.779999999999998"
-                  rx="4.518199999999999"
-                  ry="4.518199999999999"
-                  width="23.779999999999998"
-                  x="1076.1551389063873"
-                  y="5.72215363233464"
+                  fill="none"
+                  height="31.94"
+                  rx="6.0686"
+                  ry="6.0686"
+                  stroke="rgb(255 154 77 / 0.22)"
+                  stroke-width="1.5"
+                  width="31.94"
+                  x="1072.0751389063873"
+                  y="1.6421536323346384"
+                />
+                <rect
+                  height="24.94"
+                  rx="4.7386"
+                  ry="4.7386"
+                  width="24.94"
+                  x="1075.5751389063873"
+                  y="5.142153632334638"
                 />
                 <text
                   x="1088.0451389063874"
@@ -84108,18 +84342,29 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
                 </text>
               </g>
               <g
-                class="fretboard-note chord-tone-in-scale"
-                data-note-role="chord-tone-in-scale"
+                class="fretboard-note chord-root"
+                data-note-role="chord-root"
                 data-note-shape="squircle"
                 style="opacity: 1;"
               >
                 <rect
-                  height="23.779999999999998"
-                  rx="4.518199999999999"
-                  ry="4.518199999999999"
-                  width="23.779999999999998"
-                  x="72.59827278971368"
-                  y="52.834265312778754"
+                  fill="none"
+                  height="31.94"
+                  rx="6.0686"
+                  ry="6.0686"
+                  stroke="rgb(255 154 77 / 0.22)"
+                  stroke-width="1.5"
+                  width="31.94"
+                  x="68.51827278971368"
+                  y="48.754265312778756"
+                />
+                <rect
+                  height="24.94"
+                  rx="4.7386"
+                  ry="4.7386"
+                  width="24.94"
+                  x="72.01827278971368"
+                  y="52.254265312778756"
                 />
                 <text
                   x="84.48827278971368"
@@ -84243,18 +84488,29 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
                 </text>
               </g>
               <g
-                class="fretboard-note chord-tone-in-scale"
-                data-note-role="chord-tone-in-scale"
+                class="fretboard-note chord-root"
+                data-note-role="chord-root"
                 data-note-shape="squircle"
                 style="opacity: 1;"
               >
                 <rect
-                  height="23.779999999999998"
-                  rx="4.518199999999999"
-                  ry="4.518199999999999"
-                  width="23.779999999999998"
-                  x="825.6913787982857"
-                  y="44.611890270497135"
+                  fill="none"
+                  height="31.94"
+                  rx="6.0686"
+                  ry="6.0686"
+                  stroke="rgb(255 154 77 / 0.22)"
+                  stroke-width="1.5"
+                  width="31.94"
+                  x="821.6113787982856"
+                  y="40.531890270497136"
+                />
+                <rect
+                  height="24.94"
+                  rx="4.7386"
+                  ry="4.7386"
+                  width="24.94"
+                  x="825.1113787982856"
+                  y="44.031890270497136"
                 />
                 <text
                   x="837.5813787982856"
@@ -84417,18 +84673,29 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
                 </text>
               </g>
               <g
-                class="fretboard-note chord-tone-in-scale"
-                data-note-role="chord-tone-in-scale"
+                class="fretboard-note chord-root"
+                data-note-role="chord-root"
                 data-note-shape="squircle"
                 style="opacity: 1;"
               >
                 <rect
-                  height="23.779999999999998"
-                  rx="4.518199999999999"
-                  ry="4.518199999999999"
-                  width="23.779999999999998"
-                  x="383.32369609885166"
-                  y="80.55390734000348"
+                  fill="none"
+                  height="31.94"
+                  rx="6.0686"
+                  ry="6.0686"
+                  stroke="rgb(255 154 77 / 0.22)"
+                  stroke-width="1.5"
+                  width="31.94"
+                  x="379.2436960988516"
+                  y="76.47390734000348"
+                />
+                <rect
+                  height="24.94"
+                  rx="4.7386"
+                  ry="4.7386"
+                  width="24.94"
+                  x="382.7436960988516"
+                  y="79.97390734000348"
                 />
                 <text
                   x="395.21369609885164"
@@ -84552,18 +84819,29 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
                 </text>
               </g>
               <g
-                class="fretboard-note chord-tone-in-scale"
-                data-note-role="chord-tone-in-scale"
+                class="fretboard-note chord-root"
+                data-note-role="chord-root"
                 data-note-shape="squircle"
                 style="opacity: 1;"
               >
                 <rect
-                  height="23.779999999999998"
-                  rx="4.518199999999999"
-                  ry="4.518199999999999"
-                  width="23.779999999999998"
-                  x="981.0540904528547"
-                  y="78.378539541371"
+                  fill="none"
+                  height="31.94"
+                  rx="6.0686"
+                  ry="6.0686"
+                  stroke="rgb(255 154 77 / 0.22)"
+                  stroke-width="1.5"
+                  width="31.94"
+                  x="976.9740904528546"
+                  y="74.298539541371"
+                />
+                <rect
+                  height="24.94"
+                  rx="4.7386"
+                  ry="4.7386"
+                  width="24.94"
+                  x="980.4740904528546"
+                  y="77.798539541371"
                 />
                 <text
                   x="992.9440904528547"
@@ -84744,18 +85022,29 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
                 </text>
               </g>
               <g
-                class="fretboard-note chord-tone-in-scale"
-                data-note-role="chord-tone-in-scale"
+                class="fretboard-note chord-root"
+                data-note-role="chord-root"
                 data-note-shape="squircle"
                 style="opacity: 1;"
               >
                 <rect
-                  height="23.779999999999998"
-                  rx="4.518199999999999"
-                  ry="4.518199999999999"
-                  width="23.779999999999998"
-                  x="683.2008048819654"
-                  y="112.75745928976079"
+                  fill="none"
+                  height="31.94"
+                  rx="6.0686"
+                  ry="6.0686"
+                  stroke="rgb(255 154 77 / 0.22)"
+                  stroke-width="1.5"
+                  width="31.94"
+                  x="679.1208048819653"
+                  y="108.67745928976079"
+                />
+                <rect
+                  height="24.94"
+                  rx="4.7386"
+                  ry="4.7386"
+                  width="24.94"
+                  x="682.6208048819653"
+                  y="112.17745928976079"
                 />
                 <text
                   x="695.0908048819654"
@@ -84879,18 +85168,29 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
                 </text>
               </g>
               <g
-                class="fretboard-note chord-tone-in-scale"
-                data-note-role="chord-tone-in-scale"
+                class="fretboard-note chord-root"
+                data-note-role="chord-root"
                 data-note-shape="squircle"
                 style="opacity: 1;"
               >
                 <rect
-                  height="23.779999999999998"
-                  rx="4.518199999999999"
-                  ry="4.518199999999999"
-                  width="23.779999999999998"
-                  x="1130.9926448444114"
-                  y="114.38714377351114"
+                  fill="none"
+                  height="31.94"
+                  rx="6.0686"
+                  ry="6.0686"
+                  stroke="rgb(255 154 77 / 0.22)"
+                  stroke-width="1.5"
+                  width="31.94"
+                  x="1126.9126448444115"
+                  y="110.30714377351114"
+                />
+                <rect
+                  height="24.94"
+                  rx="4.7386"
+                  ry="4.7386"
+                  width="24.94"
+                  x="1130.4126448444115"
+                  y="113.80714377351114"
                 />
                 <text
                   x="1142.8826448444115"
@@ -84936,18 +85236,29 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
                 </text>
               </g>
               <g
-                class="fretboard-note chord-tone-in-scale"
-                data-note-role="chord-tone-in-scale"
+                class="fretboard-note chord-root"
+                data-note-role="chord-root"
                 data-note-shape="squircle"
                 style="opacity: 1;"
               >
                 <rect
-                  height="23.779999999999998"
-                  rx="4.518199999999999"
-                  ry="4.518199999999999"
-                  width="23.779999999999998"
-                  x="236.92511924013084"
-                  y="141.1798780013089"
+                  fill="none"
+                  height="31.94"
+                  rx="6.0686"
+                  ry="6.0686"
+                  stroke="rgb(255 154 77 / 0.22)"
+                  stroke-width="1.5"
+                  width="31.94"
+                  x="232.84511924013083"
+                  y="137.0998780013089"
+                />
+                <rect
+                  height="24.94"
+                  rx="4.7386"
+                  ry="4.7386"
+                  width="24.94"
+                  x="236.34511924013083"
+                  y="140.5998780013089"
                 />
                 <text
                   x="248.81511924013083"
@@ -85071,18 +85382,29 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
                 </text>
               </g>
               <g
-                class="fretboard-note chord-tone-in-scale"
-                data-note-role="chord-tone-in-scale"
+                class="fretboard-note chord-root"
+                data-note-role="chord-root"
                 data-note-shape="squircle"
                 style="opacity: 1;"
               >
                 <rect
-                  height="23.779999999999998"
-                  rx="4.518199999999999"
-                  ry="4.518199999999999"
-                  width="23.779999999999998"
-                  x="907.8548020234942"
-                  y="148.50518138654667"
+                  fill="none"
+                  height="31.94"
+                  rx="6.0686"
+                  ry="6.0686"
+                  stroke="rgb(255 154 77 / 0.22)"
+                  stroke-width="1.5"
+                  width="31.94"
+                  x="903.7748020234942"
+                  y="144.42518138654665"
+                />
+                <rect
+                  height="24.94"
+                  rx="4.7386"
+                  ry="4.7386"
+                  width="24.94"
+                  x="907.2748020234942"
+                  y="147.92518138654665"
                 />
                 <text
                   x="919.7448020234942"
@@ -85266,18 +85588,29 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
                 </text>
               </g>
               <g
-                class="fretboard-note chord-tone-in-scale"
-                data-note-role="chord-tone-in-scale"
+                class="fretboard-note chord-root"
+                data-note-role="chord-root"
                 data-note-shape="squircle"
                 style="opacity: 1;"
               >
                 <rect
-                  height="23.779999999999998"
-                  rx="4.518199999999999"
-                  ry="4.518199999999999"
-                  width="23.779999999999998"
-                  x="573.5257930059171"
-                  y="177.35155144902328"
+                  fill="none"
+                  height="31.94"
+                  rx="6.0686"
+                  ry="6.0686"
+                  stroke="rgb(255 154 77 / 0.22)"
+                  stroke-width="1.5"
+                  width="31.94"
+                  x="569.445793005917"
+                  y="173.27155144902326"
+                />
+                <rect
+                  height="24.94"
+                  rx="4.7386"
+                  ry="4.7386"
+                  width="24.94"
+                  x="572.945793005917"
+                  y="176.77155144902326"
                 />
                 <text
                   x="585.4157930059171"
@@ -85401,18 +85734,29 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
                 </text>
               </g>
               <g
-                class="fretboard-note chord-tone-in-scale"
-                data-note-role="chord-tone-in-scale"
+                class="fretboard-note chord-root"
+                data-note-role="chord-root"
                 data-note-shape="squircle"
                 style="opacity: 1;"
               >
                 <rect
-                  height="23.779999999999998"
-                  rx="4.518199999999999"
-                  ry="4.518199999999999"
-                  width="23.779999999999998"
-                  x="1076.1551389063873"
-                  y="186.49784636766537"
+                  fill="none"
+                  height="31.94"
+                  rx="6.0686"
+                  ry="6.0686"
+                  stroke="rgb(255 154 77 / 0.22)"
+                  stroke-width="1.5"
+                  width="31.94"
+                  x="1072.0751389063873"
+                  y="182.41784636766536"
+                />
+                <rect
+                  height="24.94"
+                  rx="4.7386"
+                  ry="4.7386"
+                  width="24.94"
+                  x="1075.5751389063873"
+                  y="185.91784636766536"
                 />
                 <text
                   x="1088.0451389063874"
@@ -85440,18 +85784,6 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
                 </text>
               </g>
             </g>
-            <path
-              d="M 0 14 L 1225 0"
-              fill="none"
-              stroke="rgb(218 182 138 / 0.22)"
-              stroke-width="0.9"
-            />
-            <path
-              d="M 0 202 L 1225 216"
-              fill="none"
-              stroke="rgb(0 0 0 / 0.75)"
-              stroke-width="1"
-            />
           </svg>
           <div
             class="fretboard-a11y-layer"
@@ -85494,8 +85826,8 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
             />
             <button
               aria-label="C on string 1, fret 8"
-              class="note-bubble chord-tone-in-scale"
-              data-note-role="chord-tone-in-scale"
+              class="note-bubble chord-root"
+              data-note-role="chord-root"
               style="position: absolute; left: 570.9157930059171px; top: 12.258448550976738px; width: 29px; height: 29px; font-size: 16px; opacity: 0; pointer-events: auto;"
               type="button"
             />
@@ -85543,8 +85875,8 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
             />
             <button
               aria-label="C on string 1, fret 20"
-              class="note-bubble chord-tone-in-scale"
-              data-note-role="chord-tone-in-scale"
+              class="note-bubble chord-root"
+              data-note-role="chord-root"
               style="position: absolute; left: 1073.5451389063874px; top: 3.112153632334639px; width: 29px; height: 29px; font-size: 16px; opacity: 0; pointer-events: auto;"
               type="button"
             />
@@ -85564,8 +85896,8 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
             />
             <button
               aria-label="C on string 2, fret 1"
-              class="note-bubble chord-tone-in-scale"
-              data-note-role="chord-tone-in-scale"
+              class="note-bubble chord-root"
+              data-note-role="chord-root"
               style="position: absolute; left: 69.98827278971368px; top: 50.224265312778755px; width: 29px; height: 29px; font-size: 16px; opacity: 0; pointer-events: auto;"
               type="button"
             />
@@ -85613,8 +85945,8 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
             />
             <button
               aria-label="C on string 2, fret 13"
-              class="note-bubble chord-tone-in-scale"
-              data-note-role="chord-tone-in-scale"
+              class="note-bubble chord-root"
+              data-note-role="chord-root"
               style="position: absolute; left: 823.0813787982856px; top: 42.001890270497135px; width: 29px; height: 29px; font-size: 16px; opacity: 0; pointer-events: auto;"
               type="button"
             />
@@ -85676,8 +86008,8 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
             />
             <button
               aria-label="C on string 3, fret 5"
-              class="note-bubble chord-tone-in-scale"
-              data-note-role="chord-tone-in-scale"
+              class="note-bubble chord-root"
+              data-note-role="chord-root"
               style="position: absolute; left: 380.71369609885164px; top: 77.94390734000348px; width: 29px; height: 29px; font-size: 16px; opacity: 0; pointer-events: auto;"
               type="button"
             />
@@ -85725,8 +86057,8 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
             />
             <button
               aria-label="C on string 3, fret 17"
-              class="note-bubble chord-tone-in-scale"
-              data-note-role="chord-tone-in-scale"
+              class="note-bubble chord-root"
+              data-note-role="chord-root"
               style="position: absolute; left: 978.4440904528547px; top: 75.768539541371px; width: 29px; height: 29px; font-size: 16px; opacity: 0; pointer-events: auto;"
               type="button"
             />
@@ -85795,8 +86127,8 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
             />
             <button
               aria-label="C on string 4, fret 10"
-              class="note-bubble chord-tone-in-scale"
-              data-note-role="chord-tone-in-scale"
+              class="note-bubble chord-root"
+              data-note-role="chord-root"
               style="position: absolute; left: 680.5908048819654px; top: 110.14745928976079px; width: 29px; height: 29px; font-size: 16px; opacity: 0; pointer-events: auto;"
               type="button"
             />
@@ -85844,8 +86176,8 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
             />
             <button
               aria-label="C on string 4, fret 22"
-              class="note-bubble chord-tone-in-scale"
-              data-note-role="chord-tone-in-scale"
+              class="note-bubble chord-root"
+              data-note-role="chord-root"
               style="position: absolute; left: 1128.3826448444115px; top: 111.77714377351114px; width: 29px; height: 29px; font-size: 16px; opacity: 0; pointer-events: auto;"
               type="button"
             />
@@ -85865,8 +86197,8 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
             />
             <button
               aria-label="C on string 5, fret 3"
-              class="note-bubble chord-tone-in-scale"
-              data-note-role="chord-tone-in-scale"
+              class="note-bubble chord-root"
+              data-note-role="chord-root"
               style="position: absolute; left: 234.31511924013083px; top: 138.5698780013089px; width: 29px; height: 29px; font-size: 16px; opacity: 0; pointer-events: auto;"
               type="button"
             />
@@ -85914,8 +86246,8 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
             />
             <button
               aria-label="C on string 5, fret 15"
-              class="note-bubble chord-tone-in-scale"
-              data-note-role="chord-tone-in-scale"
+              class="note-bubble chord-root"
+              data-note-role="chord-root"
               style="position: absolute; left: 905.2448020234942px; top: 145.89518138654665px; width: 29px; height: 29px; font-size: 16px; opacity: 0; pointer-events: auto;"
               type="button"
             />
@@ -85984,8 +86316,8 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
             />
             <button
               aria-label="C on string 6, fret 8"
-              class="note-bubble chord-tone-in-scale"
-              data-note-role="chord-tone-in-scale"
+              class="note-bubble chord-root"
+              data-note-role="chord-root"
               style="position: absolute; left: 570.9157930059171px; top: 174.74155144902326px; width: 29px; height: 29px; font-size: 16px; opacity: 0; pointer-events: auto;"
               type="button"
             />
@@ -86033,8 +86365,8 @@ exports[`Component Snapshots > Fretboard snapshots > renders with chord tones hi
             />
             <button
               aria-label="C on string 6, fret 20"
-              class="note-bubble chord-tone-in-scale"
-              data-note-role="chord-tone-in-scale"
+              class="note-bubble chord-root"
+              data-note-role="chord-root"
               style="position: absolute; left: 1073.5451389063874px; top: 183.88784636766536px; width: 29px; height: 29px; font-size: 16px; opacity: 0; pointer-events: auto;"
               type="button"
             />
@@ -86218,7 +86550,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with degree display
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default; visibility: visible;"
+      style="visibility: visible; cursor: default;"
     >
       <div
         aria-label="Guitar fretboard — G Major scale"
@@ -86294,7 +86626,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with degree display
               >
                 <feturbulence
                   baseFrequency="0.012 0.95"
-                  numOctaves="4"
+                  numOctaves="2"
                   result="grain"
                   seed="3"
                   type="fractalNoise"
@@ -86306,7 +86638,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with degree display
                   values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0.72 0"
+                        0 0 0 0 0.72 0"
                 />
                 <fecomposite
                   in="grainTinted"
@@ -86323,7 +86655,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with degree display
               >
                 <feturbulence
                   baseFrequency="0.022 0.55"
-                  numOctaves="2"
+                  numOctaves="1"
                   result="hl"
                   seed="11"
                   type="fractalNoise"
@@ -87278,6 +87610,22 @@ exports[`Component Snapshots > Fretboard snapshots > renders with degree display
                   y2="200.88"
                 />
               </g>
+            </g>
+            <path
+              d="M 0 14 L 1225 0"
+              fill="none"
+              stroke="rgb(218 182 138 / 0.22)"
+              stroke-width="0.9"
+            />
+            <path
+              d="M 0 202 L 1225 216"
+              fill="none"
+              stroke="rgb(0 0 0 / 0.75)"
+              stroke-width="1"
+            />
+            <g
+              clip-path="url(#fretboard-_r_2_-fretboard-taper)"
+            >
               <g
                 class="fretboard-note note-active"
                 data-note-role="note-active"
@@ -88791,18 +89139,6 @@ exports[`Component Snapshots > Fretboard snapshots > renders with degree display
                 </text>
               </g>
             </g>
-            <path
-              d="M 0 14 L 1225 0"
-              fill="none"
-              stroke="rgb(218 182 138 / 0.22)"
-              stroke-width="0.9"
-            />
-            <path
-              d="M 0 202 L 1225 216"
-              fill="none"
-              stroke="rgb(0 0 0 / 0.75)"
-              stroke-width="1"
-            />
           </svg>
           <div
             class="fretboard-a11y-layer"
@@ -89569,10 +89905,10 @@ exports[`Component Snapshots > Fretboard snapshots > renders with flats instead 
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default; visibility: visible;"
+      style="visibility: visible; cursor: default;"
     >
       <div
-        aria-label="Guitar fretboard — F"
+        aria-label="Guitar fretboard — F Major scale"
         class="fretboard-board"
         role="group"
       >
@@ -89645,7 +89981,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with flats instead 
               >
                 <feturbulence
                   baseFrequency="0.012 0.95"
-                  numOctaves="4"
+                  numOctaves="2"
                   result="grain"
                   seed="3"
                   type="fractalNoise"
@@ -89657,7 +89993,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with flats instead 
                   values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0.72 0"
+                        0 0 0 0 0.72 0"
                 />
                 <fecomposite
                   in="grainTinted"
@@ -89674,7 +90010,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with flats instead 
               >
                 <feturbulence
                   baseFrequency="0.022 0.55"
-                  numOctaves="2"
+                  numOctaves="1"
                   result="hl"
                   seed="11"
                   type="fractalNoise"
@@ -90629,6 +90965,22 @@ exports[`Component Snapshots > Fretboard snapshots > renders with flats instead 
                   y2="200.88"
                 />
               </g>
+            </g>
+            <path
+              d="M 0 14 L 1225 0"
+              fill="none"
+              stroke="rgb(218 182 138 / 0.22)"
+              stroke-width="0.9"
+            />
+            <path
+              d="M 0 202 L 1225 216"
+              fill="none"
+              stroke="rgb(0 0 0 / 0.75)"
+              stroke-width="1"
+            />
+            <g
+              clip-path="url(#fretboard-_r_8_-fretboard-taper)"
+            >
               <g
                 class="fretboard-note note-active"
                 data-note-role="note-active"
@@ -91926,18 +92278,6 @@ exports[`Component Snapshots > Fretboard snapshots > renders with flats instead 
                 </text>
               </g>
             </g>
-            <path
-              d="M 0 14 L 1225 0"
-              fill="none"
-              stroke="rgb(218 182 138 / 0.22)"
-              stroke-width="0.9"
-            />
-            <path
-              d="M 0 202 L 1225 216"
-              fill="none"
-              stroke="rgb(0 0 0 / 0.75)"
-              stroke-width="1"
-            />
           </svg>
           <div
             class="fretboard-a11y-layer"
@@ -92620,10 +92960,10 @@ exports[`Component Snapshots > Fretboard snapshots > renders with no display for
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default; visibility: visible;"
+      style="visibility: visible; cursor: default;"
     >
       <div
-        aria-label="Guitar fretboard — E"
+        aria-label="Guitar fretboard — E Major scale"
         class="fretboard-board"
         role="group"
       >
@@ -92696,7 +93036,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with no display for
               >
                 <feturbulence
                   baseFrequency="0.012 0.95"
-                  numOctaves="4"
+                  numOctaves="2"
                   result="grain"
                   seed="3"
                   type="fractalNoise"
@@ -92708,7 +93048,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with no display for
                   values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0.72 0"
+                        0 0 0 0 0.72 0"
                 />
                 <fecomposite
                   in="grainTinted"
@@ -92725,7 +93065,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with no display for
               >
                 <feturbulence
                   baseFrequency="0.022 0.55"
-                  numOctaves="2"
+                  numOctaves="1"
                   result="hl"
                   seed="11"
                   type="fractalNoise"
@@ -93680,6 +94020,22 @@ exports[`Component Snapshots > Fretboard snapshots > renders with no display for
                   y2="200.88"
                 />
               </g>
+            </g>
+            <path
+              d="M 0 14 L 1225 0"
+              fill="none"
+              stroke="rgb(218 182 138 / 0.22)"
+              stroke-width="0.9"
+            />
+            <path
+              d="M 0 202 L 1225 216"
+              fill="none"
+              stroke="rgb(0 0 0 / 0.75)"
+              stroke-width="1"
+            />
+            <g
+              clip-path="url(#fretboard-_r_3_-fretboard-taper)"
+            >
               <g
                 class="fretboard-note key-tonic"
                 data-note-role="key-tonic"
@@ -94689,18 +95045,6 @@ exports[`Component Snapshots > Fretboard snapshots > renders with no display for
                 />
               </g>
             </g>
-            <path
-              d="M 0 14 L 1225 0"
-              fill="none"
-              stroke="rgb(218 182 138 / 0.22)"
-              stroke-width="0.9"
-            />
-            <path
-              d="M 0 202 L 1225 216"
-              fill="none"
-              stroke="rgb(0 0 0 / 0.75)"
-              stroke-width="1"
-            />
           </svg>
           <div
             class="fretboard-a11y-layer"
@@ -95467,10 +95811,10 @@ exports[`Component Snapshots > Fretboard snapshots > renders with small mobile s
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default; visibility: visible;"
+      style="visibility: visible; cursor: default;"
     >
       <div
-        aria-label="Guitar fretboard — C"
+        aria-label="Guitar fretboard — C Major scale"
         class="fretboard-board"
         role="group"
       >
@@ -95543,7 +95887,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with small mobile s
               >
                 <feturbulence
                   baseFrequency="0.012 0.95"
-                  numOctaves="4"
+                  numOctaves="2"
                   result="grain"
                   seed="3"
                   type="fractalNoise"
@@ -95555,7 +95899,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with small mobile s
                   values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0.72 0"
+                        0 0 0 0 0.72 0"
                 />
                 <fecomposite
                   in="grainTinted"
@@ -95572,7 +95916,7 @@ exports[`Component Snapshots > Fretboard snapshots > renders with small mobile s
               >
                 <feturbulence
                   baseFrequency="0.022 0.55"
-                  numOctaves="2"
+                  numOctaves="1"
                   result="hl"
                   seed="11"
                   type="fractalNoise"
@@ -96527,6 +96871,22 @@ exports[`Component Snapshots > Fretboard snapshots > renders with small mobile s
                   y2="178.56"
                 />
               </g>
+            </g>
+            <path
+              d="M 0 13 L 1225 0"
+              fill="none"
+              stroke="rgb(218 182 138 / 0.22)"
+              stroke-width="0.9"
+            />
+            <path
+              d="M 0 179 L 1225 192"
+              fill="none"
+              stroke="rgb(0 0 0 / 0.75)"
+              stroke-width="1"
+            />
+            <g
+              clip-path="url(#fretboard-_r_a_-fretboard-taper)"
+            >
               <g
                 class="fretboard-note note-active"
                 data-note-role="note-active"
@@ -98040,18 +98400,6 @@ exports[`Component Snapshots > Fretboard snapshots > renders with small mobile s
                 </text>
               </g>
             </g>
-            <path
-              d="M 0 13 L 1225 0"
-              fill="none"
-              stroke="rgb(218 182 138 / 0.22)"
-              stroke-width="0.9"
-            />
-            <path
-              d="M 0 179 L 1225 192"
-              fill="none"
-              stroke="rgb(0 0 0 / 0.75)"
-              stroke-width="1"
-            />
           </svg>
           <div
             class="fretboard-a11y-layer"
@@ -98818,10 +99166,10 @@ exports[`Fretboard with ResizeObserver (auto-fit zoom) > uses containerWidth/tot
   >
     <div
       class="fretboard-wrapper hide-scrollbar"
-      style="cursor: default; visibility: visible;"
+      style="visibility: visible; cursor: default;"
     >
       <div
-        aria-label="Guitar fretboard — C"
+        aria-label="Guitar fretboard — C Major scale"
         class="fretboard-board"
         role="group"
       >
@@ -98894,7 +99242,7 @@ exports[`Fretboard with ResizeObserver (auto-fit zoom) > uses containerWidth/tot
               >
                 <feturbulence
                   baseFrequency="0.012 0.95"
-                  numOctaves="4"
+                  numOctaves="2"
                   result="grain"
                   seed="3"
                   type="fractalNoise"
@@ -98906,7 +99254,7 @@ exports[`Fretboard with ResizeObserver (auto-fit zoom) > uses containerWidth/tot
                   values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0.72 0"
+                        0 0 0 0 0.72 0"
                 />
                 <fecomposite
                   in="grainTinted"
@@ -98923,7 +99271,7 @@ exports[`Fretboard with ResizeObserver (auto-fit zoom) > uses containerWidth/tot
               >
                 <feturbulence
                   baseFrequency="0.022 0.55"
-                  numOctaves="2"
+                  numOctaves="1"
                   result="hl"
                   seed="11"
                   type="fractalNoise"
@@ -99878,6 +100226,22 @@ exports[`Fretboard with ResizeObserver (auto-fit zoom) > uses containerWidth/tot
                   y2="200.88"
                 />
               </g>
+            </g>
+            <path
+              d="M 0 14 L 1225 0"
+              fill="none"
+              stroke="rgb(218 182 138 / 0.22)"
+              stroke-width="0.9"
+            />
+            <path
+              d="M 0 202 L 1225 216"
+              fill="none"
+              stroke="rgb(0 0 0 / 0.75)"
+              stroke-width="1"
+            />
+            <g
+              clip-path="url(#fretboard-_r_2e_-fretboard-taper)"
+            >
               <g
                 class="fretboard-note note-active"
                 data-note-role="note-active"
@@ -101391,18 +101755,6 @@ exports[`Fretboard with ResizeObserver (auto-fit zoom) > uses containerWidth/tot
                 </text>
               </g>
             </g>
-            <path
-              d="M 0 14 L 1225 0"
-              fill="none"
-              stroke="rgb(218 182 138 / 0.22)"
-              stroke-width="0.9"
-            />
-            <path
-              d="M 0 202 L 1225 216"
-              fill="none"
-              stroke="rgb(0 0 0 / 0.75)"
-              stroke-width="1"
-            />
           </svg>
           <div
             class="fretboard-a11y-layer"
