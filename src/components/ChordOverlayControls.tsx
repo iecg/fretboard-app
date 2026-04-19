@@ -1,4 +1,5 @@
 import { startTransition, useEffect, useId, useState } from "react";
+import { useAtomValue } from "jotai";
 import clsx from "clsx";
 import {
   NOTES,
@@ -6,6 +7,7 @@ import {
   type FocusPreset,
   type ChordMemberName,
 } from "../theory";
+import { lensAvailabilityAtom } from "../store/atoms";
 import { LabeledSelect, type LabeledSelectOption } from "./LabeledSelect";
 import { NoteGrid } from "./NoteGrid";
 import { ToggleBar } from "./ToggleBar";
@@ -28,13 +30,13 @@ const CHORD_OPTIONS: (string | { divider: string })[] = [
 
 const CHORD_NONE_VALUE = "__none__";
 
-const PRACTICE_LENS_OPTIONS: { value: PracticeLens; label: string }[] = [
-  { value: "targets-color", label: "Targets + Color" },
-  { value: "targets", label: "Targets" },
-  { value: "guide-tones", label: "Guide Tones" },
-  { value: "color", label: "Color" },
-  { value: "tension", label: "Tension" },
-];
+const LENS_LABELS: Record<PracticeLens, string> = {
+  "targets-color": "Targets + Color",
+  targets: "Targets",
+  "guide-tones": "Guide Tones",
+  color: "Color",
+  tension: "Tension",
+};
 
 const FOCUS_PRESET_LABELS: Record<FocusPreset, string> = {
   all: "All",
@@ -67,10 +69,10 @@ export function ChordOverlayControls() {
     setCustomMembers,
     availableFocusPresets,
     chordMembers,
-    hasOutsideChordMembers,
   } = useChordState();
 
   const { useFlats } = useScaleState();
+  const lensAvailability = useAtomValue(lensAvailabilityAtom);
 
   const [isChordOverlayOpen, setChordOverlayOpen] = useState(Boolean(chordType));
   const linkChordRootId = useId();
@@ -85,18 +87,21 @@ export function ChordOverlayControls() {
     })),
   ];
 
-  // Tension lens requires outside chord members to be meaningful.
-  const lensOptions = PRACTICE_LENS_OPTIONS.map((opt) => ({
-    ...opt,
-    disabled: opt.value === "tension" && !hasOutsideChordMembers,
+  const lensOptions = lensAvailability.map((entry) => ({
+    value: entry.id,
+    label: LENS_LABELS[entry.id],
+    disabled: !entry.available,
+    title: entry.reason ?? undefined,
   }));
 
-  // Auto-exit tension lens when chord becomes fully diatonic.
+  const currentLensEntry = lensAvailability.find((l) => l.id === practiceLens);
+
+  // Auto-exit any lens that becomes unavailable (e.g. chord removed, scale changed).
   useEffect(() => {
-    if (practiceLens === "tension" && !hasOutsideChordMembers) {
+    if (currentLensEntry && !currentLensEntry.available) {
       setPracticeLens("targets-color");
     }
-  }, [practiceLens, hasOutsideChordMembers, setPracticeLens]);
+  }, [currentLensEntry, setPracticeLens]);
 
   const focusPresetOptions = availableFocusPresets.map((preset) => ({
     value: preset,
@@ -184,6 +189,9 @@ export function ChordOverlayControls() {
                   onChange={setPracticeLens}
                   label="Practice lens"
                 />
+                {currentLensEntry?.description ? (
+                  <p className={shared["lens-hint"]}>{currentLensEntry.description}</p>
+                ) : null}
               </div>
 
               <div className={shared["control-section"]}>
