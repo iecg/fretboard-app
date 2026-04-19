@@ -149,7 +149,7 @@
    signals the root falls outside the active scale (tension note). Both roles
    coexist — something the old single-role enum couldn't represent.
    ========================================================================== */
-.fretboard-note.chord-root[data-note-tension] rect {
+.fretboard-note.chord-root[data-note-tension] rect:last-of-type {
   stroke-dasharray: 6 3;
   fill: rgb(80 28 0 / 0.95);
 }
@@ -170,7 +170,8 @@
   fill: rgb(85 46 6 / 0.97);
 }
 
-/* Non-guide chord tones recede: thin stroke, dim fill, glow removed. */
+/* Non-guide chord tones (including root) recede: thin stroke, dim fill, glow removed. */
+[data-practice-lens="guide-tones"] .fretboard-note.chord-root:not([data-note-guide-tone]) rect:last-of-type,
 [data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]) circle,
 [data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]) rect,
 [data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]) polygon {
@@ -178,6 +179,7 @@
   fill: rgb(40 22 10 / 0.38);
   stroke: rgb(200 110 40 / 0.50);
 }
+[data-practice-lens="guide-tones"] .fretboard-note.chord-root:not([data-note-guide-tone]),
 [data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]) {
   filter: none;
 }
@@ -272,7 +274,7 @@
 }
 
 /* Tension chord root: squircle (root) + dashed vivid stroke (tension). */
-[data-practice-lens="tension"] .fretboard-note.chord-root[data-note-tension] rect {
+[data-practice-lens="tension"] .fretboard-note.chord-root[data-note-tension] rect:last-of-type {
   stroke: var(--neon-orange);
   fill: rgb(95 22 0 / 0.97);
   stroke-dasharray: 6 3;
