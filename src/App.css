@@ -299,6 +299,7 @@
   width: 100%;
   min-width: 0;
   overflow-x: hidden;
+  contain: layout paint;
 }
 
 /* Dynamic Box Overlays behind strings */
@@ -316,7 +317,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.5);
+  border-left: 1px solid rgba(0, 0, 0, 0.4);
 }
 
 .fret-zero {

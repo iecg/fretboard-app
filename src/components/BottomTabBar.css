@@ -4,9 +4,8 @@
   left: 0;
   right: 0;
   z-index: var(--z-bottom-nav);
-  background: var(--header-surface);
+  background: color-mix(in srgb, var(--header-surface) 95%, transparent);
   border-top: 1px solid var(--header-border);
-  backdrop-filter: blur(8px);
   padding-bottom: env(safe-area-inset-bottom);
 }
 
