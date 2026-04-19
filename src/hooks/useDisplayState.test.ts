@@ -1272,4 +1272,191 @@ describe("useDisplayState", () => {
         .toEqual(r2.current.practiceBarTargetMembers.map(m => m.internalNote));
     });
   });
+
+  describe("showChordPracticeBar smart hiding", () => {
+    it("hides practice bar for simple diatonic case: same root, all preset, all in scale, no color tones", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad"); // C E G — all in C Major
+      store.set(focusPresetAtom, "all");
+      store.set(viewModeAtom, "compare");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      // Set scale to Major explicitly (localStorage may carry other values in test env)
+      act(() => { result.current.setScaleName("Major"); });
+      // C Major has no divergent notes, C Major Triad fully diatonic → hide bar
+      expect(result.current.showChordPracticeBar).toBe(false);
+    });
+
+    it("shows practice bar when chord has outside-scale members", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(chordRootAtom, "D");
+      store.set(chordTypeAtom, "Dominant 7th"); // F# outside C Major
+      store.set(focusPresetAtom, "all");
+      store.set(viewModeAtom, "compare");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.showChordPracticeBar).toBe(true);
+    });
+
+    it("shows practice bar in chord mode even for simple diatonic case", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad");
+      store.set(focusPresetAtom, "all");
+      store.set(viewModeAtom, "chord");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      act(() => { result.current.setScaleName("Major"); });
+      expect(result.current.showChordPracticeBar).toBe(true);
+    });
+
+    it("shows practice bar when modal scale has color tones even with diatonic chord", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "D");
+      store.set(chordRootAtom, "D");
+      store.set(chordTypeAtom, "Minor Triad"); // D F A — all in D Dorian
+      store.set(focusPresetAtom, "all");
+      store.set(viewModeAtom, "compare");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      act(() => {
+        result.current.setScaleName("Dorian");
+      });
+      // D Dorian has B as color tone → bar should show
+      expect(result.current.showChordPracticeBar).toBe(true);
+    });
+
+    it("shows practice bar in outside mode regardless of diatonic simplicity", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad");
+      store.set(focusPresetAtom, "all");
+      store.set(viewModeAtom, "outside");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.showChordPracticeBar).toBe(true);
+    });
+  });
+
+  describe("practiceBarColorNotes", () => {
+    it("is empty when scale has no divergent notes (C Major)", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      act(() => { result.current.setScaleName("Major"); });
+      expect(result.current.practiceBarColorNotes).toEqual([]);
+    });
+
+    it("contains B as color tone for D Dorian with correct interval name", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "D");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      act(() => {
+        result.current.setScaleName("Dorian");
+      });
+      const colorNotes = result.current.practiceBarColorNotes;
+      expect(colorNotes.length).toBeGreaterThan(0);
+      const bNote = colorNotes.find(n => n.internalNote === "B");
+      expect(bNote).toBeDefined();
+      expect(bNote?.intervalName).toBe("6");
+    });
+
+    it("contains F# as color tone for C Lydian with #4 interval", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      act(() => {
+        result.current.setScaleName("Lydian");
+      });
+      const colorNotes = result.current.practiceBarColorNotes;
+      const fSharp = colorNotes.find(n => n.internalNote === "F#");
+      expect(fSharp).toBeDefined();
+    });
+
+    it("contains F as color tone for G Mixolydian with b7 interval", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "G");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      act(() => {
+        result.current.setScaleName("Mixolydian");
+      });
+      const colorNotes = result.current.practiceBarColorNotes;
+      const fNote = colorNotes.find(n => n.internalNote === "F");
+      expect(fNote).toBeDefined();
+      expect(fNote?.intervalName).toBe("♭7");
+    });
+
+    it("each entry has internalNote, displayNote, and intervalName fields", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "D");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      act(() => {
+        result.current.setScaleName("Dorian");
+      });
+      for (const entry of result.current.practiceBarColorNotes) {
+        expect(typeof entry.internalNote).toBe("string");
+        expect(typeof entry.displayNote).toBe("string");
+        expect(typeof entry.intervalName).toBe("string");
+      }
+    });
+  });
+
+  describe("shapeLocalTargetMembers and shapeLocalColorNotes", () => {
+    it("shapeLocalTargetMembers is empty when chordType is null", () => {
+      const store = createStore();
+      store.set(chordTypeAtom, null);
+      store.set(fingeringPatternAtom, "caged");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.shapeLocalTargetMembers).toEqual([]);
+    });
+
+    it("shapeLocalColorNotes is empty when fingeringPattern is all", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "D");
+      store.set(fingeringPatternAtom, "all");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      act(() => {
+        result.current.setScaleName("Dorian");
+      });
+      expect(result.current.shapeLocalColorNotes).toEqual([]);
+    });
+
+    it("shapeLocalTargetMembers is non-empty for caged mode with chord active", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad");
+      store.set(fingeringPatternAtom, "caged");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      // C Major Triad (C E G) — in CAGED mode, at least some chord tones should
+      // appear in the highlighted shape positions
+      expect(result.current.shapeLocalTargetMembers.length).toBeGreaterThan(0);
+    });
+  });
 });

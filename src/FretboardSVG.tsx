@@ -54,7 +54,7 @@ interface FretboardSVGProps {
 type BoxBound = { minFret: number; maxFret: number };
 
 // Roles: key-tonic, chord-root, chord-tone-in-scale, chord-tone-outside-scale,
-//        scale-only, note-active, note-blue, note-inactive
+//        color-tone, scale-only, note-active, note-blue, note-inactive
 function classifyNote(
   isScaleRoot: boolean,
   isChordRootNote: boolean,
@@ -84,13 +84,15 @@ function classifyNote(
   // Chord overlay active: chord-root takes priority (even if outside scale).
   if (isChordRootNote && isChordTone && isChordInRange) return "chord-root";
   if (isHighlighted && isChordTone) return "chord-tone-in-scale";
+  // Color/characteristic tone: scale note not covered by chord role → hexagon.
+  if (isHighlighted && isColorNote) return "color-tone";
   if (isHighlighted) return "scale-only";
   if (!isHighlighted && isChordTone && isChordInRange)
     return "chord-tone-outside-scale";
   return "note-inactive";
 }
 
-type NoteShape = "circle" | "squircle" | "diamond";
+type NoteShape = "circle" | "squircle" | "diamond" | "hexagon";
 
 type NoteVisuals = {
   stroke: string;
@@ -106,7 +108,7 @@ type NoteVisuals = {
 
 function getNoteVisuals(
   noteClass: string,
-  glowFilterUrls: { cyan: string; orange: string },
+  glowFilterUrls: { cyan: string; orange: string; violet: string },
 ): NoteVisuals {
   switch (noteClass) {
     case "key-tonic":
@@ -157,16 +159,29 @@ function getNoteVisuals(
         noteShape: "circle",
       };
     case "scale-only":
-      // Hollow circle — scale note, no chord role.
+      // Hollow circle — scale note, not a chord tone. Full brightness so the
+      // scale map stays readable even when chord overlay is active.
       return {
-        stroke: "var(--note-ring-dim)",
+        stroke: "var(--note-ring)",
         filter: glowFilterUrls.cyan,
         fill: "transparent",
-        textFill: "rgb(255 255 255 / 0.75)",
-        radiusScale: 0.78,
-        strokeWidth: 1.7,
-        textOpacity: 0.82,
+        textFill: "#ffffff",
+        radiusScale: 0.82,
+        strokeWidth: 1.9,
+        textOpacity: 1,
         noteShape: "circle",
+      };
+    case "color-tone":
+      // Hexagon — characteristic/divergent tone for the current mode/scale.
+      return {
+        stroke: "var(--note-ring-color-tone)",
+        filter: glowFilterUrls.violet,
+        fill: "rgb(30 18 55 / 0.82)",
+        textFill: "#e8d8ff",
+        radiusScale: 0.80,
+        strokeWidth: 1.8,
+        textOpacity: 1,
+        noteShape: "hexagon",
       };
     case "chord-tone-outside-scale":
       // Diamond with dashed amber-dim border — outside the scale.
@@ -231,6 +246,7 @@ export function FretboardSVG({
   const glowFilterUrls = {
     cyan: svgDefUrl("glow-cyan"),
     orange: svgDefUrl("glow-orange"),
+    violet: svgDefUrl("glow-violet"),
   };
   const noteBubblePx = Math.round(stringRowPx * 0.78);
   const noteFontPx = Math.round(stringRowPx * 0.44);
@@ -788,6 +804,21 @@ export function FretboardSVG({
                 floodOpacity="0.65"
               />
             </filter>
+            <filter
+              id={svgDefId("glow-violet")}
+              x="-50%"
+              y="-50%"
+              width="200%"
+              height="200%"
+            >
+              <feDropShadow
+                dx="0"
+                dy="0"
+                stdDeviation="3"
+                floodColor="#A78BFA"
+                floodOpacity="0.65"
+              />
+            </filter>
             {/* Trapezoidal fretboard silhouette — everything inside the tapered
                 region is clipped. Strings, frets, inlays, polygons, and note
                 circles all live inside this clip. */}
@@ -1110,6 +1141,14 @@ export function FretboardSVG({
                   ) : noteShape === "diamond" ? (
                     <polygon
                       points={`${cx},${cy - r} ${cx + r},${cy} ${cx},${cy + r} ${cx - r},${cy}`}
+                      {...commonShapeProps}
+                    />
+                  ) : noteShape === "hexagon" ? (
+                    <polygon
+                      points={Array.from({ length: 6 }, (_, i) => {
+                        const a = (Math.PI / 3) * i - Math.PI / 6;
+                        return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`;
+                      }).join(" ")}
                       {...commonShapeProps}
                     />
                   ) : (

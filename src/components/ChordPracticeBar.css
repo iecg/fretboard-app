@@ -122,6 +122,12 @@
   border-style: dashed;
 }
 
+.practice-bar-pill[data-role="color-tone"] {
+  background: rgb(50 30 90 / 0.22);
+  border-color: rgb(167 139 250 / 0.75);
+  box-shadow: 0 0 5px rgb(167 139 250 / 0.3);
+}
+
 .practice-bar-pill-note {
   font-family: var(--font-sans);
   font-size: var(--pill-font);

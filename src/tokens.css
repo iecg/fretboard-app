@@ -87,6 +87,8 @@
   --neon-orange: #FF9A4D;          /* tonic / chord-tone emphasis */
   --neon-orange-bright: #FFB366;   /* brighter hover/focus variant */
   --neon-orange-dim: #CC7A3D;      /* dimmed variant */
+  --neon-violet: #A78BFA;          /* color/characteristic tone accent */
+  --neon-violet-dim: #7C5FD4;      /* dimmed violet variant */
   --neon-brand-gradient: linear-gradient(90deg, #4DE4FF 0%, #A78BFA 50%, #4DE4FF 100%);
 }
 

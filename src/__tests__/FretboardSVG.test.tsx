@@ -297,5 +297,62 @@ describe("FretboardSVG", () => {
       const activeNotes = container.querySelectorAll('.note-active[data-note-shape="circle"]');
       expect(activeNotes.length).toBeGreaterThan(0);
     });
+
+    it("color-tone notes have data-note-shape=hexagon when chord overlay active", () => {
+      // D Dorian scale: D E F G A B C. colorNote=B. chordTones=D F A (Dm triad).
+      // B is in scale, is a color note, NOT a chord tone → should be color-tone (hexagon)
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          rootNote="D"
+          highlightNotes={["D", "E", "F", "G", "A", "B", "C"]}
+          colorNotes={["B"]}
+          chordTones={["D", "F", "A"]}
+          chordRoot="D"
+        />
+      );
+      const colorToneHexagons = container.querySelectorAll('.color-tone[data-note-shape="hexagon"]');
+      expect(colorToneHexagons.length).toBeGreaterThan(0);
+    });
+
+    it("chord role wins over color-tone when a note is both", () => {
+      // If B is both a color note AND a chord tone, it should be chord-tone-in-scale, not color-tone
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          rootNote="D"
+          highlightNotes={["D", "E", "F", "G", "A", "B", "C"]}
+          colorNotes={["B"]}
+          chordTones={["D", "F", "A", "B"]}
+          chordRoot="D"
+        />
+      );
+      // B should not be color-tone since it's in the chord
+      const colorToneNotes = container.querySelectorAll(".color-tone");
+      // All color-tone notes should not include B (B is now chord-tone-in-scale)
+      expect(
+        Array.from(colorToneNotes).some((el) =>
+          el.getAttribute("aria-label")?.includes("B")
+        )
+      ).toBe(false);
+      // B should be chord-tone-in-scale instead
+      const chordInScale = container.querySelectorAll(".chord-tone-in-scale");
+      expect(chordInScale.length).toBeGreaterThan(0);
+    });
+
+    it("scale-only notes without chord overlay show as note-active (not color-tone)", () => {
+      // No chord overlay: color notes show as note-blue, others as note-active
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          rootNote="D"
+          highlightNotes={["D", "E", "F", "G", "A", "B", "C"]}
+          colorNotes={["B"]}
+        />
+      );
+      // Without chord overlay, color notes are note-blue, not color-tone
+      expect(container.querySelectorAll(".note-blue").length).toBeGreaterThan(0);
+      expect(container.querySelectorAll(".color-tone").length).toBe(0);
+    });
   });
 });

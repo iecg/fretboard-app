@@ -84,6 +84,7 @@
   --note-ring: var(--neon-cyan);
   --note-ring-tonic: var(--neon-orange);
   --note-ring-dim: var(--neon-cyan-dim);
+  --note-ring-color-tone: var(--neon-violet);
   --note-fill: transparent;
   --note-fill-in-chord: var(--neon-orange);
   --note-text-in-scale: var(--neon-cyan-bright);

@@ -412,8 +412,9 @@ describe("App", () => {
       });
     });
 
-    it("compare mode: chord practice bar shown even in simple diatonic case (same root, all preset, all in scale)", async () => {
+    it("compare mode: chord practice bar hidden in simple diatonic case (same root, all preset, all in scale, C Major)", async () => {
       localStorage.setItem(k("rootNote"), "C");
+      localStorage.setItem(k("scaleName"), "Major");
       localStorage.setItem(k("chordRoot"), "C");
       localStorage.setItem(k("chordType"), "Major Triad");
       localStorage.setItem(k("focusPreset"), "all");
@@ -422,7 +423,8 @@ describe("App", () => {
       await waitFor(() => {
         expect(document.querySelector(".summary-ribbon")).toBeTruthy();
       });
-      expect(document.querySelector(".chord-practice-bar")).toBeTruthy();
+      // Bar is intentionally hidden: C Major Triad over C Major is fully diatonic, no new information.
+      expect(document.querySelector(".chord-practice-bar")).toBeNull();
       expect(document.querySelector(".relationship-row")).toBeNull();
     });
 
@@ -482,8 +484,10 @@ describe("App", () => {
 
     it("practice bar shows chord label as title and Compare badge in compare mode", async () => {
       localStorage.setItem(k("rootNote"), "C");
+      localStorage.setItem(k("scaleName"), "Major");
       localStorage.setItem(k("chordRoot"), "C");
-      localStorage.setItem(k("chordType"), "Major Triad");
+      // Dominant 7th has Bb which is outside C Major → bar is non-trivial and shown
+      localStorage.setItem(k("chordType"), "Dominant 7th");
       localStorage.setItem(k("viewMode"), "compare");
       render(<App />);
       await waitFor(() => {
@@ -492,7 +496,7 @@ describe("App", () => {
       const title = document.querySelector(".chord-practice-bar-title")!;
       const badge = document.querySelector(".chord-practice-bar-badge")!;
       expect(title.textContent).toContain("C");
-      expect(title.textContent).toContain("Major Triad");
+      expect(title.textContent).toContain("Dominant 7th");
       expect(badge.textContent).toBe("Compare");
     });
   });
