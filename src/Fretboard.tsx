@@ -206,6 +206,7 @@ export function Fretboard(props: FretboardProps) {
     <div 
       className="fretboard-outer" 
       data-testid="fretboard-main"
+      aria-label="Interactive guitar fretboard"
       style={{
         minHeight: `${tuning.length * stringRowPx + 24}px`
       }}
