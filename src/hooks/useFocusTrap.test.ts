@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { useRef } from "react";
 import { useFocusTrap } from "./useFocusTrap";
 
 describe("useFocusTrap", () => {
@@ -150,7 +149,6 @@ describe("useFocusTrap", () => {
     const restoreFocusRef = { current: restoreTarget };
     const onEscape = vi.fn();
 
-    let active = true;
     const { rerender } = renderHook(
       ({ active: a }: { active: boolean }) =>
         useFocusTrap({ containerRef, active: a, onEscape, restoreFocusRef }),
@@ -166,7 +164,6 @@ describe("useFocusTrap", () => {
     expect(document.activeElement).toBe(restoreTarget);
 
     document.body.removeChild(restoreTarget);
-    void active;
   });
 
   it("removes event listener on unmount and does not call onEscape after unmount", async () => {

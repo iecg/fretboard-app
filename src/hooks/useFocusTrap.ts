@@ -56,12 +56,15 @@ export function useFocusTrap({
 
     window.addEventListener("keydown", onKeyDown);
 
+    // Capture at setup time to satisfy react-hooks/exhaustive-deps for cleanup
+    const restoreTarget = restoreFocusRef?.current ?? null;
+
     return () => {
       if (rafId !== undefined) {
         cancelAnimationFrame(rafId);
       }
       window.removeEventListener("keydown", onKeyDown);
-      restoreFocusRef?.current?.focus();
+      restoreTarget?.focus();
     };
   }, [active, onEscape, containerRef, restoreFocusRef]);
 }
