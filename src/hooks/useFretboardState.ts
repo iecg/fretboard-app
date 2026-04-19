@@ -7,7 +7,6 @@ import {
   fretEndAtom,
   displayFormatAtom,
   useFlatsAtom,
-  noteRoleMapAtom,
   noteSemanticMapAtom,
   shapeDataAtom,
   autoCenterTargetAtom,
@@ -30,7 +29,6 @@ export function useFretboardState() {
   const endFret = useAtomValue(fretEndAtom);
   const displayFormat = useAtomValue(displayFormatAtom);
   const useFlats = useAtomValue(useFlatsAtom);
-  const noteRoleMap = useAtomValue(noteRoleMapAtom);
   const noteSemanticMap = useAtomValue(noteSemanticMapAtom);
   const { highlightNotes, boxBounds, shapePolygons, wrappedNotes } =
     useAtomValue(shapeDataAtom);
@@ -54,7 +52,6 @@ export function useFretboardState() {
     endFret,
     displayFormat,
     useFlats,
-    noteRoleMap,
     noteSemanticMap,
     highlightNotes,
     boxBounds,
