@@ -1,79 +1,24 @@
-import { useAtom } from "jotai";
-import { useScaleState } from "../hooks/useScaleState";
-import { useChordState } from "../hooks/useChordState";
-import { usePracticeBarState } from "../hooks/usePracticeBarState";
-import { DegreeChipStrip } from "./DegreeChipStrip";
-import { ChordPracticeBar } from "./ChordPracticeBar";
-import { ToggleBar } from "./ToggleBar";
-import { scaleVisibilityModeAtom, type ScaleVisibilityMode } from "../store/atoms";
+import { useAtomValue } from "jotai";
+import { chordTypeAtom } from "../store/atoms";
+import { ScaleStripPanel } from "./ScaleStripPanel";
+import { ChordOverlayDock } from "./ChordOverlayDock";
 
-const VISIBILITY_OPTIONS: readonly { value: ScaleVisibilityMode; label: string }[] =
-  [
-    { value: "all", label: "All" },
-    { value: "custom", label: "Custom" },
-    { value: "off", label: "Off" },
-  ] as const;
-
+/**
+ * Orchestrates the top summary area.
+ * No chord → bare ScaleStripPanel.
+ * Chord active → .summary-ribbon shell with ScaleStripPanel + ChordOverlayDock as siblings.
+ */
 export function SummaryRibbon() {
-  const {
-    scaleLabel,
-    hiddenNotes,
-    toggleHiddenNote,
-    degreeChips,
-  } = useScaleState();
-
-  const [scaleVisibilityMode, setScaleVisibilityMode] = useAtom(scaleVisibilityModeAtom);
-
-  const { chordType } = useChordState();
-
-  const {
-    showChordPracticeBar,
-    practiceBarTitle,
-    practiceBarBadge,
-    isShapeLocalContext,
-    shapeContextLabel,
-    practiceCues,
-    shapeLocalPracticeCues,
-  } = usePracticeBarState();
-
-  const visibilityControl = (
-    <ToggleBar
-      options={VISIBILITY_OPTIONS}
-      value={scaleVisibilityMode}
-      onChange={setScaleVisibilityMode}
-      label="Scale visibility"
-    />
-  );
-
-  const scaleStrip = (
-    <DegreeChipStrip
-      scaleName={scaleLabel}
-      chips={degreeChips}
-      hiddenNotes={scaleVisibilityMode === "custom" ? hiddenNotes : undefined}
-      onChipToggle={scaleVisibilityMode === "custom" ? toggleHiddenNote : undefined}
-      aria-label="Scale degrees"
-      mode={scaleVisibilityMode}
-      headerAction={visibilityControl}
-    />
-  );
+  const chordType = useAtomValue(chordTypeAtom);
 
   if (!chordType) {
-    return scaleStrip;
+    return <ScaleStripPanel />;
   }
 
   return (
     <div className="summary-ribbon">
-      {scaleStrip}
-      {showChordPracticeBar && (
-        <ChordPracticeBar
-          title={practiceBarTitle}
-          badge={practiceBarBadge}
-          cues={practiceCues}
-          isShapeLocal={isShapeLocalContext}
-          shapeContextLabel={shapeContextLabel}
-          shapeLocalCues={shapeLocalPracticeCues}
-        />
-      )}
+      <ScaleStripPanel />
+      <ChordOverlayDock />
     </div>
   );
 }
