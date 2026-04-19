@@ -27,9 +27,11 @@ import {
 } from "../layout/responsive";
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import {
-  MAX_FRET, 
-  FRET_ZOOM_MIN, 
-  FRET_ZOOM_MAX 
+  MAX_FRET,
+  FRET_ZOOM_MIN,
+  FRET_ZOOM_MAX,
+  ANIMATION_DURATION_STANDARD,
+  ANIMATION_EASE,
 } from "../constants";
 import "./SettingsOverlay.css";
 
@@ -464,7 +466,7 @@ function SettingsOverlaySurface({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.24, ease: "easeOut" }}
+        transition={{ duration: ANIMATION_DURATION_STANDARD, ease: ANIMATION_EASE }}
       />
       <motion.div
         className="settings-overlay-drawer"
@@ -478,7 +480,7 @@ function SettingsOverlaySurface({
         initial={{ x: "100%" }}
         animate={{ x: 0 }}
         exit={{ x: "100%" }}
-        transition={{ duration: 0.24, ease: "easeOut" }}
+        transition={{ duration: ANIMATION_DURATION_STANDARD, ease: ANIMATION_EASE }}
       >
         <div className="settings-overlay-header">
           <span className="settings-overlay-title">Settings</span>
