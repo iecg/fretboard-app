@@ -1,7 +1,9 @@
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
   fingeringPatternAtom,
   cagedShapesAtom,
+  toggleCagedShapeAtom,
+  selectSingleCagedShapeAtom,
   npsPositionAtom,
   clickedShapeAtom,
   recenterKeyAtom,
@@ -15,6 +17,8 @@ import { type CagedShape } from "../shapes";
 export function useShapeState() {
   const [fingeringPattern, setFingeringPattern] = useAtom(fingeringPatternAtom);
   const [cagedShapes, setCagedShapes] = useAtom(cagedShapesAtom);
+  const toggleCagedShape = useSetAtom(toggleCagedShapeAtom);
+  const selectSingleCagedShape = useSetAtom(selectSingleCagedShapeAtom);
   const [npsPosition, setNpsPosition] = useAtom(npsPositionAtom);
   const [clickedShape, setClickedShape] = useAtom(clickedShapeAtom);
   const [recenterKey, setRecenterKey] = useAtom(recenterKeyAtom);
@@ -38,6 +42,8 @@ export function useShapeState() {
     setFingeringPattern,
     cagedShapes,
     setCagedShapes,
+    toggleCagedShape,
+    selectSingleCagedShape,
     npsPosition,
     setNpsPosition,
     clickedShape,

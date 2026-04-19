@@ -5,10 +5,6 @@ import {
   rootNoteAtom,
   setRootNoteAtom,
   scaleNameAtom,
-  fingeringPatternAtom,
-  cagedShapesAtom,
-  npsPositionAtom,
-  displayFormatAtom,
   enharmonicDisplayAtom,
   fretStartAtom,
   fretEndAtom,
@@ -27,10 +23,6 @@ import { MAX_FRET } from "../constants";
  * Renders the Configuration card: FingeringPatternControls + fret range.
  */
 export function BaseControlsSection() {
-  const [fingeringPattern, setFingeringPattern] = useAtom(fingeringPatternAtom);
-  const [cagedShapes, setCagedShapes] = useAtom(cagedShapesAtom);
-  const [npsPosition, setNpsPosition] = useAtom(npsPositionAtom);
-  const [displayFormat, setDisplayFormat] = useAtom(displayFormatAtom);
   const [fretStart, setFretStart] = useAtom(fretStartAtom);
   const [fretEnd, setFretEnd] = useAtom(fretEndAtom);
 
@@ -40,16 +32,7 @@ export function BaseControlsSection() {
       className="dashboard-card dashboard-card--configuration"
     >
       <div className="control-group">
-        <FingeringPatternControls
-          fingeringPattern={fingeringPattern}
-          setFingeringPattern={setFingeringPattern}
-          cagedShapes={cagedShapes}
-          setCagedShapes={setCagedShapes}
-          npsPosition={npsPosition}
-          setNpsPosition={setNpsPosition}
-          displayFormat={displayFormat}
-          setDisplayFormat={setDisplayFormat}
-        />
+        <FingeringPatternControls />
         <div className={shared["control-section"]}>
           <span className={shared["section-label"]}>Fret Range</span>
           <FretRangeControl

@@ -10,6 +10,8 @@ import {
   setRootNoteAtom,
   useFlatsAtom,
   hiddenNotesAtom,
+  toggleHiddenNoteAtom,
+  degreeChipsAtom,
 } from "../store/atoms";
 
 export function useScaleState() {
@@ -24,6 +26,8 @@ export function useScaleState() {
   const scaleLabel = useAtomValue(scaleLabelAtom);
   const useFlats = useAtomValue(useFlatsAtom);
   const [hiddenNotes, setHiddenNotes] = useAtom(hiddenNotesAtom);
+  const toggleHiddenNote = useSetAtom(toggleHiddenNoteAtom);
+  const degreeChips = useAtomValue(degreeChipsAtom);
 
   return {
     rootNote,
@@ -39,5 +43,7 @@ export function useScaleState() {
     useFlats,
     hiddenNotes,
     setHiddenNotes,
+    toggleHiddenNote,
+    degreeChips,
   };
 }

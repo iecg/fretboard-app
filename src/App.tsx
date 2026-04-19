@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAtom, useSetAtom, createStore, Provider } from "jotai";
+import { useAtom, useSetAtom, useAtomValue, createStore, Provider } from "jotai";
 import { Fretboard } from "./Fretboard";
 import { HelpCircle, Settings2, Volume2, VolumeX } from "lucide-react";
 import { synth } from "./audio";
@@ -12,6 +12,7 @@ import {
   isMutedAtom,
   mobileTabAtom,
   settingsOverlayOpenAtom,
+  toggleMuteAtom,
 } from "./store/atoms";
 import SettingsOverlay from "./components/SettingsOverlay";
 import useLayoutMode from "./hooks/useLayoutMode";
@@ -45,23 +46,15 @@ function AppContent() {
     wrappedNotes,
     autoCenterTarget,
     colorNotes,
-    fingeringPattern,
-    setFingeringPattern,
-    cagedShapes,
-    setCagedShapes,
-    npsPosition,
-    setNpsPosition,
     displayFormat,
-    setDisplayFormat,
     recenterKey,
     hiddenNotes,
-    onShapeClick,
-    onRecenter,
   } = useDisplayState();
 
-  const [isMuted, setIsMuted] = useAtom(isMutedAtom);
+  const isMuted = useAtomValue(isMutedAtom);
   const [mobileTab, setMobileTab] = useAtom(mobileTabAtom);
   const setSettingsOverlayOpen = useSetAtom(settingsOverlayOpenAtom);
+  const toggleMute = useSetAtom(toggleMuteAtom);
 
   const [showHelp, setShowHelp] = useState(false);
   const layout = useLayoutMode();
@@ -70,12 +63,6 @@ function AppContent() {
   useEffect(() => {
     synth.setMute(isMuted);
   }, [isMuted]);
-
-  const toggleMute = () => {
-    const nextMute = !isMuted;
-    setIsMuted(nextMute);
-    synth.setMute(nextMute);
-  };
 
   const mobileKeyExplorer = (
     <div className="cof-container">
@@ -97,20 +84,7 @@ function AppContent() {
 
   const viewTabContent = (
     <div className="mobile-tab-panel mobile-view-tab">
-      <FingeringPatternControls
-        fingeringPattern={fingeringPattern}
-        setFingeringPattern={setFingeringPattern}
-        cagedShapes={cagedShapes}
-        setCagedShapes={setCagedShapes}
-        npsPosition={npsPosition}
-        setNpsPosition={setNpsPosition}
-        displayFormat={displayFormat}
-        setDisplayFormat={setDisplayFormat}
-        onShapeClick={(shape) => {
-          onShapeClick(shape);
-          onRecenter();
-        }}
-      />
+      <FingeringPatternControls />
     </div>
   );
 

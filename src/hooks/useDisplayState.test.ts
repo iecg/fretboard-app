@@ -740,14 +740,14 @@ describe("useDisplayState", () => {
     });
   });
 
-  describe("showSecondaryChordRail", () => {
+  describe("showRelationshipRow", () => {
     it("is false when no chord type is set", () => {
       const store = createStore();
       store.set(chordTypeAtom, null);
       const { result } = renderHook(() => useDisplayState(), {
         wrapper: makeWrapper(store),
       });
-      expect(result.current.showSecondaryChordRail).toBe(false);
+      expect(result.current.showRelationshipRow).toBe(false);
     });
 
     it("is false in simple compare case: same root, all preset, all in scale", () => {
@@ -760,7 +760,7 @@ describe("useDisplayState", () => {
       const { result } = renderHook(() => useDisplayState(), {
         wrapper: makeWrapper(store),
       });
-      expect(result.current.showSecondaryChordRail).toBe(false);
+      expect(result.current.showRelationshipRow).toBe(false);
     });
 
     it("is true when chordRoot differs from rootNote", () => {
@@ -773,7 +773,7 @@ describe("useDisplayState", () => {
       const { result } = renderHook(() => useDisplayState(), {
         wrapper: makeWrapper(store),
       });
-      expect(result.current.showSecondaryChordRail).toBe(true);
+      expect(result.current.showRelationshipRow).toBe(true);
     });
 
     it("is true when focusPreset is not 'all'", () => {
@@ -786,7 +786,7 @@ describe("useDisplayState", () => {
       const { result } = renderHook(() => useDisplayState(), {
         wrapper: makeWrapper(store),
       });
-      expect(result.current.showSecondaryChordRail).toBe(true);
+      expect(result.current.showRelationshipRow).toBe(true);
     });
 
     it("is true when chord has outside-scale members", () => {
@@ -799,7 +799,7 @@ describe("useDisplayState", () => {
       const { result } = renderHook(() => useDisplayState(), {
         wrapper: makeWrapper(store),
       });
-      expect(result.current.showSecondaryChordRail).toBe(true);
+      expect(result.current.showRelationshipRow).toBe(true);
     });
 
     it("is false when viewMode is not compare", () => {
@@ -810,7 +810,7 @@ describe("useDisplayState", () => {
       const { result } = renderHook(() => useDisplayState(), {
         wrapper: makeWrapper(store),
       });
-      expect(result.current.showSecondaryChordRail).toBe(false);
+      expect(result.current.showRelationshipRow).toBe(false);
     });
   });
 
@@ -1054,7 +1054,7 @@ describe("useDisplayState", () => {
       expect(result.current.showRelationshipRow).toBe(false);
     });
 
-    it("matches showSecondaryChordRail value exactly", () => {
+    it("matches showRelationshipRow value exactly", () => {
       const store = createStore();
       store.set(rootNoteAtom, "C");
       store.set(chordRootAtom, "D");
@@ -1064,7 +1064,7 @@ describe("useDisplayState", () => {
       const { result } = renderHook(() => useDisplayState(), {
         wrapper: makeWrapper(store),
       });
-      expect(result.current.showRelationshipRow).toBe(result.current.showSecondaryChordRail);
+      expect(result.current.showRelationshipRow).toBe(result.current.showRelationshipRow);
     });
   });
 
@@ -1211,7 +1211,7 @@ describe("useDisplayState", () => {
       expect(result.current.practiceBarBadge).toMatch(/^against /);
     });
 
-    it("practiceBarTargetMembers contains all active chord tones", () => {
+    it("allChordMembers contains all active chord tones", () => {
       const store = createStore();
       store.set(rootNoteAtom, "C");
       store.set(chordRootAtom, "C");
@@ -1220,10 +1220,10 @@ describe("useDisplayState", () => {
       const { result } = renderHook(() => useDisplayState(), {
         wrapper: makeWrapper(store),
       });
-      expect(result.current.practiceBarTargetMembers).toHaveLength(3);
-      expect(result.current.practiceBarTargetMembers.some(m => m.internalNote === "C")).toBe(true);
-      expect(result.current.practiceBarTargetMembers.some(m => m.internalNote === "E")).toBe(true);
-      expect(result.current.practiceBarTargetMembers.some(m => m.internalNote === "G")).toBe(true);
+      expect(result.current.allChordMembers).toHaveLength(3);
+      expect(result.current.allChordMembers.some(m => m.internalNote === "C")).toBe(true);
+      expect(result.current.allChordMembers.some(m => m.internalNote === "E")).toBe(true);
+      expect(result.current.allChordMembers.some(m => m.internalNote === "G")).toBe(true);
     });
 
     it("practiceBarSharedMembers contains only in-scale chord tones", () => {
@@ -1254,7 +1254,7 @@ describe("useDisplayState", () => {
       expect(outside.some(m => m.internalNote === "F#")).toBe(true);
     });
 
-    it("practiceBarTargetMembers is viewMode-independent (same in compare and outside)", () => {
+    it("allChordMembers is viewMode-independent (same in compare and outside)", () => {
       const makeStore = (viewMode: "compare" | "outside") => {
         const store = createStore();
         store.set(rootNoteAtom, "C");
@@ -1269,8 +1269,8 @@ describe("useDisplayState", () => {
       const { result: r2 } = renderHook(() => useDisplayState(), {
         wrapper: makeWrapper(makeStore("outside")),
       });
-      expect(r1.current.practiceBarTargetMembers.map(m => m.internalNote))
-        .toEqual(r2.current.practiceBarTargetMembers.map(m => m.internalNote));
+      expect(r1.current.allChordMembers.map(m => m.internalNote))
+        .toEqual(r2.current.allChordMembers.map(m => m.internalNote));
     });
   });
 

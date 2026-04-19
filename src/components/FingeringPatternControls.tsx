@@ -1,25 +1,11 @@
 import { useCallback, useId, useRef, useState } from "react";
 import clsx from "clsx";
 import { CAGED_SHAPES, type CagedShape } from "../shapes";
-import { type FingeringPattern } from "../store/atoms";
+import { useShapeState } from "../hooks/useShapeState";
+import useDisplayState from "../hooks/useDisplayState";
 import { ToggleBar } from "./ToggleBar";
 import "./FingeringPatternControls.css";
 import shared from "./shared.module.css";
-
-interface FingeringPatternControlsProps {
-  fingeringPattern: FingeringPattern;
-  setFingeringPattern: (pattern: FingeringPattern) => void;
-  cagedShapes: Set<CagedShape>;
-  setCagedShapes: (
-    shapes: Set<CagedShape> | ((prev: Set<CagedShape>) => Set<CagedShape>),
-  ) => void;
-  npsPosition: number;
-  setNpsPosition: (position: number) => void;
-  displayFormat: "notes" | "degrees" | "none";
-  setDisplayFormat: (format: "notes" | "degrees" | "none") => void;
-  /** Called when a CAGED shape is clicked, even if already selected */
-  onShapeClick?: (shape: CagedShape) => void;
-}
 
 const LONG_PRESS_MS = 500;
 const MOVE_CANCEL_PX = 8;
@@ -29,27 +15,22 @@ const isTouchPrimary =
   typeof window !== "undefined" &&
   window.matchMedia("(pointer: coarse)").matches;
 
-function toggleShape(prev: Set<CagedShape>, shape: CagedShape): Set<CagedShape> {
-  const next = new Set(prev);
-  if (next.has(shape)) {
-    if (next.size > 1) next.delete(shape);
-  } else {
-    next.add(shape);
-  }
-  return next;
-}
+export function FingeringPatternControls() {
+  const {
+    fingeringPattern,
+    setFingeringPattern,
+    cagedShapes,
+    setCagedShapes,
+    toggleCagedShape,
+    selectSingleCagedShape,
+    npsPosition,
+    setNpsPosition,
+    onShapeClick,
+    onRecenter,
+  } = useShapeState();
 
-export function FingeringPatternControls({
-  fingeringPattern,
-  setFingeringPattern,
-  cagedShapes,
-  setCagedShapes,
-  npsPosition,
-  setNpsPosition,
-  displayFormat,
-  setDisplayFormat,
-  onShapeClick,
-}: FingeringPatternControlsProps) {
+  const { displayFormat, setDisplayFormat } = useDisplayState();
+
   const shapeLabelId = useId();
   const shapeHelpId = useId();
 
@@ -73,23 +54,19 @@ export function FingeringPatternControls({
       <div className={shared["control-section"]}>
         <span className={shared["section-label"]}>Fingering Pattern</span>
         <ToggleBar
-          options={(["all", "caged", "3nps"] as FingeringPattern[]).map(
-            (fp) => ({
-              value: fp,
-              label: fp === "all" ? "All" : fp.toUpperCase(),
-            }),
-          )}
+          options={[
+            { value: "all", label: "All" },
+            { value: "caged", label: "CAGED" },
+            { value: "3nps", label: "3NPS" },
+          ]}
           value={fingeringPattern}
-          onChange={(v) => setFingeringPattern(v as FingeringPattern)}
+          onChange={(v) => setFingeringPattern(v as "all" | "caged" | "3nps")}
         />
       </div>
 
       {fingeringPattern === "caged" && (
         <>
           <div className={shared["control-section"]}>
-            {/* TODO: Shape selector is kept inline because it supports Shift+click / long-press
-                multi-select, which ToggleBar does not support (single-select only).
-                Refactor once ToggleBar gains a multi-select variant. */}
             <span className={shared["section-label"]} id={shapeLabelId}>Shape</span>
             <span id={shapeHelpId} className={shared["sr-only"]}>
               {isTouchPrimary
@@ -140,7 +117,7 @@ export function FingeringPatternControls({
                       pressTimerRef.current = null;
                       pressStartRef.current = null;
                       setPressingShape(null);
-                      setCagedShapes((prev) => toggleShape(prev, s));
+                      toggleCagedShape(s);
                       navigator.vibrate?.(30);
                     }, LONG_PRESS_MS);
                   }}
@@ -164,10 +141,11 @@ export function FingeringPatternControls({
                       return;
                     }
                     onShapeClick?.(s);
+                    onRecenter?.();
                     if (e.shiftKey) {
-                      setCagedShapes((prev) => toggleShape(prev, s));
+                      toggleCagedShape(s);
                     } else {
-                      setCagedShapes(new Set([s]));
+                      selectSingleCagedShape(s);
                     }
                   }}
                 >

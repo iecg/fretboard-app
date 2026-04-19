@@ -20,6 +20,7 @@ import {
   getScaleNotes,
   getChordNotes,
   getNoteDisplay,
+  getNoteDisplayInScale,
   getDivergentNotes,
   formatAccidental,
   getAvailableFocusPresets,
@@ -630,6 +631,25 @@ export const cagedShapesAtom = atomWithStorage<Set<CagedShape>>(
   cagedShapesStorage,
   GET_ON_INIT,
 );
+
+export const toggleCagedShapeAtom = atom(null, (get, set, shape: CagedShape) => {
+  const prev = get(cagedShapesAtom);
+  const next = new Set(prev);
+  if (next.has(shape)) {
+    if (next.size > 1) next.delete(shape);
+  } else {
+    next.add(shape);
+  }
+  set(cagedShapesAtom, next);
+});
+
+export const selectSingleCagedShapeAtom = atom(
+  null,
+  (_get, set, shape: CagedShape) => {
+    set(cagedShapesAtom, new Set([shape]));
+  },
+);
+
 export const npsPositionAtom = atomWithStorage(
   k("npsPosition"),
   1,
@@ -663,6 +683,15 @@ export const hiddenNotesAtom = atom(
     set(internalHiddenNotesAtom, { root, scale, notes: nextNotes });
   },
 );
+
+export const toggleHiddenNoteAtom = atom(null, (_get, set, note: string) => {
+  set(hiddenNotesAtom, (prev) => {
+    const next = new Set(prev);
+    if (next.has(note)) next.delete(note);
+    else next.add(note);
+    return next;
+  });
+});
 
 export const clickedShapeAtom = atom<CagedShape | null>(null);
 export const recenterKeyAtom = atom<number>(0);
@@ -728,6 +757,10 @@ export const isMutedAtom = atomWithStorage(
   booleanStorage,
   GET_ON_INIT,
 );
+
+export const toggleMuteAtom = atom(null, (get, set) => {
+  set(isMutedAtom, !get(isMutedAtom));
+});
 export const mobileTabAtom = atomWithStorage<"theory" | "view">(
   k("mobileTab"),
   "theory",
@@ -803,6 +836,31 @@ export const activeBrowseOptionAtom = atom((get) =>
 export const scaleLabelAtom = atom(
   (get) => `${formatAccidental(get(activeBrowseOptionAtom).label)}`,
 );
+
+export const degreeChipsAtom = atom((get) => {
+  const rootNote = get(rootNoteAtom);
+  const scaleName = get(scaleNameAtom);
+  const scaleNotes = get(scaleNotesAtom);
+  const useFlats = get(useFlatsAtom);
+  const intervals = SCALES[scaleName] || [];
+
+  const rootIdx = NOTES.indexOf(rootNote);
+  return scaleNotes.map((note) => {
+    const noteIdx = NOTES.indexOf(note);
+    const chromaticInterval =
+      rootIdx !== -1 && noteIdx !== -1 ? (noteIdx - rootIdx + 12) % 12 : 0;
+    const interval = INTERVAL_NAMES[chromaticInterval] ?? "1";
+    return {
+      internalNote: note,
+      note: formatAccidental(
+        getNoteDisplayInScale(note, rootNote, intervals, useFlats),
+      ),
+      interval: formatAccidental(interval),
+      inScale: true,
+      isTonic: note === rootNote,
+    };
+  });
+});
 
 // --- Chord Derived Atoms ---
 
@@ -1054,6 +1112,14 @@ export const outsideChordMembersAtom = atom((get) =>
   get(summaryChordRowAtom).filter((e) => !e.inScale),
 );
 
+export const practiceBarSharedMembersAtom = atom((get) =>
+  get(allChordMembersAtom).filter((e) => e.inScale),
+);
+
+export const practiceBarOutsideMembersAtom = atom((get) =>
+  get(allChordMembersAtom).filter((e) => !e.inScale),
+);
+
 // --- Shape Derived Atoms ---
 
 export const shapeDataAtom = atom((get) => {
@@ -1294,6 +1360,15 @@ export const shapeLocalColorNotesFilteredAtom = atom((get) => {
     (n) =>
       shapeHighlightedNoteSet.has(n.internalNote) &&
       !chordToneSet.has(n.internalNote),
+  );
+});
+
+export const shapeLocalColorNotesAtom = atom((get) => {
+  const shapeHighlightedNoteSet = get(shapeHighlightedNoteSetAtom);
+  const practiceBarColorNotes = get(practiceBarColorNotesAtom);
+  if (!shapeHighlightedNoteSet) return [] as PracticeBarColorNote[];
+  return practiceBarColorNotes.filter((n) =>
+    shapeHighlightedNoteSet.has(n.internalNote),
   );
 });
 

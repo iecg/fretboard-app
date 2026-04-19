@@ -75,16 +75,6 @@ export default function useDisplayState() {
   const chordLabel = useAtomValue(chordLabelAtom);
   const chordSummaryNotes = useAtomValue(chordSummaryNotesAtom);
 
-  // Compatibility aliases
-  const showSecondaryChordRail = showRelationshipRow;
-  const practiceBarSharedMembers = practiceBarState.allChordMembers.filter(
-    (e) => e.inScale,
-  );
-  const practiceBarOutsideMembers = practiceBarState.allChordMembers.filter(
-    (e) => !e.inScale,
-  );
-  const practiceBarTargetMembers = practiceBarState.allChordMembers;
-
   return {
     ...scaleState,
     ...chordState,
@@ -106,14 +96,10 @@ export default function useDisplayState() {
     summaryHeaderRight,
     summaryPrimaryMode,
     showRelationshipRow,
-    showSecondaryChordRail,
     sharedChordMembers,
     outsideChordMembers,
     summaryNotes,
     chordLabel,
     chordSummaryNotes,
-    practiceBarSharedMembers,
-    practiceBarOutsideMembers,
-    practiceBarTargetMembers,
   };
 }

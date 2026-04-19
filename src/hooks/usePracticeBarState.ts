@@ -11,8 +11,10 @@ import {
   shapeLocalTargetMembersAtom,
   shapeLocalOutsideMembersAtom,
   shapeLocalColorNotesFilteredAtom,
-  shapeHighlightedNoteSetAtom,
+  shapeLocalColorNotesAtom,
   viewModeAtom,
+  practiceBarSharedMembersAtom,
+  practiceBarOutsideMembersAtom,
 } from "../store/atoms";
 
 export function usePracticeBarState() {
@@ -31,12 +33,10 @@ export function usePracticeBarState() {
   const shapeLocalColorNotesFiltered = useAtomValue(
     shapeLocalColorNotesFilteredAtom,
   );
-  const shapeHighlightedNoteSet = useAtomValue(shapeHighlightedNoteSetAtom);
+  const shapeLocalColorNotes = useAtomValue(shapeLocalColorNotesAtom);
   const viewMode = useAtomValue(viewModeAtom);
-
-  const shapeLocalColorNotes = practiceBarColorNotes.filter(
-    (n) => shapeHighlightedNoteSet?.has(n.internalNote),
-  );
+  const practiceBarSharedMembers = useAtomValue(practiceBarSharedMembersAtom);
+  const practiceBarOutsideMembers = useAtomValue(practiceBarOutsideMembersAtom);
 
   return {
     showChordPracticeBar,
@@ -52,5 +52,7 @@ export function usePracticeBarState() {
     shapeLocalColorNotesFiltered,
     shapeLocalColorNotes,
     viewMode,
+    practiceBarSharedMembers,
+    practiceBarOutsideMembers,
   };
 }
