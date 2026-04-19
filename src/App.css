@@ -74,6 +74,7 @@
 .header-btn:focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
+  box-shadow: var(--focus-ring-glow);
 }
 
 .header-btn .icon {
@@ -233,6 +234,7 @@
 .help-modal-close:focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
+  box-shadow: var(--focus-ring-glow);
 }
 
 .help-modal-close .icon {
@@ -495,6 +497,7 @@
 .note-bubble:focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
+  box-shadow: var(--focus-ring-glow);
 }
 
 @keyframes note-ping {
