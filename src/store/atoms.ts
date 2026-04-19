@@ -3,11 +3,13 @@ import { atomWithStorage, RESET } from "jotai/utils";
 import { CAGED_SHAPES, type CagedShape } from "../shapes";
 import { normalizeScaleName, type ScaleBrowseMode } from "../theoryCatalog";
 import { k, STORAGE_PREFIX } from "../utils/storage";
+import { resolveAccidentalMode } from "../theory";
 import type {
   ViewMode,
   FocusPreset,
   ChordMemberName,
 } from "../theory";
+import { TUNINGS, STANDARD_TUNING } from "../guitar";
 
 export type FingeringPattern = "all" | "caged" | "3nps";
 
@@ -684,6 +686,19 @@ export const landscapeNarrowTabAtom = atomWithStorage<LandscapeNarrowTab>(
 
 // settingsOverlayOpenAtom is intentionally non-persisted and always starts closed.
 export const settingsOverlayOpenAtom = atom<boolean>(false);
+
+// Derived read atoms
+export const useFlatsAtom = atom((get) =>
+  resolveAccidentalMode(
+    get(rootNoteAtom),
+    get(scaleNameAtom),
+    get(accidentalModeAtom),
+  ),
+);
+
+export const currentTuningAtom = atom(
+  (get) => TUNINGS[get(tuningNameAtom)] || STANDARD_TUNING,
+);
 
 // ---------------------------------------------------------------------------
 // Write atoms (actions)
