@@ -29,7 +29,10 @@ import {
   setRootNoteAtom,
   resetAtom,
   landscapeNarrowTabAtom,
+  useFlatsAtom,
+  currentTuningAtom,
 } from "../store/atoms";
+import { STANDARD_TUNING, TUNINGS } from "../guitar";
 import { CAGED_SHAPES } from "../shapes";
 
 function makeStore() {
@@ -513,6 +516,60 @@ describe("atoms", () => {
 
       expect(localStorage.getItem(k("rootNote"))).toBe("D");
       expect(localStorage.getItem("rootNote")).toBeNull();
+    });
+  });
+
+  describe("useFlatsAtom", () => {
+    it("returns false for G Major (sharps key, auto mode)", () => {
+      const store = makeStore();
+      store.set(rootNoteAtom, "G");
+      store.set(scaleNameAtom, "Major");
+      store.set(accidentalModeAtom, "auto");
+      expect(store.get(useFlatsAtom)).toBe(false);
+    });
+
+    it("returns true for F Major (flats key, auto mode)", () => {
+      const store = makeStore();
+      store.set(rootNoteAtom, "F");
+      store.set(scaleNameAtom, "Major");
+      store.set(accidentalModeAtom, "auto");
+      expect(store.get(useFlatsAtom)).toBe(true);
+    });
+
+    it("returns false when accidentalMode is forced to sharps", () => {
+      const store = makeStore();
+      store.set(rootNoteAtom, "F");
+      store.set(scaleNameAtom, "Major");
+      store.set(accidentalModeAtom, "sharps");
+      expect(store.get(useFlatsAtom)).toBe(false);
+    });
+
+    it("returns true when accidentalMode is forced to flats", () => {
+      const store = makeStore();
+      store.set(rootNoteAtom, "G");
+      store.set(scaleNameAtom, "Major");
+      store.set(accidentalModeAtom, "flats");
+      expect(store.get(useFlatsAtom)).toBe(true);
+    });
+  });
+
+  describe("currentTuningAtom", () => {
+    it("returns Standard tuning for standard tuning name", () => {
+      const store = makeStore();
+      store.set(tuningNameAtom, "Standard");
+      expect(store.get(currentTuningAtom)).toEqual(TUNINGS["Standard"]);
+    });
+
+    it("returns Drop D tuning for Drop D tuning name", () => {
+      const store = makeStore();
+      store.set(tuningNameAtom, "Drop D");
+      expect(store.get(currentTuningAtom)).toEqual(TUNINGS["Drop D"]);
+    });
+
+    it("falls back to STANDARD_TUNING for unknown tuning name", () => {
+      const store = makeStore();
+      store.set(tuningNameAtom, "Unknown Tuning That Does Not Exist");
+      expect(store.get(currentTuningAtom)).toEqual(STANDARD_TUNING);
     });
   });
 });
