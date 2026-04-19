@@ -2,6 +2,22 @@
 
 changed_files="$(git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD)"
 if echo "$changed_files" | grep --quiet "package-lock.json"; then
-  echo "package-lock.json changed, running npm install..."
-  npm install
+  echo ""
+  echo "⚠️  package-lock.json has changed!"
+  echo ""
+  echo "Review the dependency changes before installing:"
+  echo "  git diff ORIG_HEAD HEAD -- package-lock.json"
+  echo ""
+  printf "Install dependencies now? (y/N): "
+  read -r response
+  case "$response" in
+    [yY][eE][sS]|[yY])
+      echo "Installing dependencies with lifecycle scripts disabled for security..."
+      npm ci --ignore-scripts
+      echo "✓ Dependencies installed. Run 'npm rebuild' if you need to execute lifecycle scripts."
+      ;;
+    *)
+      echo "Skipped npm install. Run 'npm ci' manually when ready."
+      ;;
+  esac
 fi

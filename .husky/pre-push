@@ -1,26 +1,20 @@
 # Skip tests/build only if all pushed refs are deletions
+# Detect if we are pushing to main in the same loop
 any_non_delete=false
+is_pushing_to_main=false
 while read local_ref local_sha remote_ref remote_sha
 do
     if [ "$local_ref" != "(delete)" ] && [ "$local_sha" != "0000000000000000000000000000000000000000" ]; then
         any_non_delete=true
+    fi
+    if [ "$remote_ref" = "refs/heads/main" ]; then
+        is_pushing_to_main=true
     fi
 done
 
 if [ "$any_non_delete" = false ]; then
     exit 0
 fi
-
-# Detect if we are pushing to main
-# Git sends the remote ref in the format refs/heads/main
-is_pushing_to_main=false
-while read local_ref local_sha remote_ref remote_sha
-do
-    if [ "$remote_ref" = "refs/heads/main" ]; then
-        is_pushing_to_main=true
-        break
-    fi
-done
 
 echo "Running pre-push checks..."
 
