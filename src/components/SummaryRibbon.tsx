@@ -12,20 +12,16 @@ export function SummaryRibbon() {
     degreeChips,
   } = useScaleState();
 
-  const { chordType, viewMode } = useChordState();
+  const { chordType } = useChordState();
 
   const {
     showChordPracticeBar,
     practiceBarTitle,
     practiceBarBadge,
-    practiceBarColorNotesFiltered,
     isShapeLocalContext,
     shapeContextLabel,
-    shapeLocalTargetMembers,
-    shapeLocalOutsideMembers,
-    shapeLocalColorNotesFiltered,
-    allChordMembers,
-    practiceBarOutsideMembers,
+    practiceCues,
+    shapeLocalPracticeCues,
   } = usePracticeBarState();
 
   const scaleStrip = (
@@ -49,15 +45,10 @@ export function SummaryRibbon() {
         <ChordPracticeBar
           title={practiceBarTitle}
           badge={practiceBarBadge}
-          viewMode={viewMode}
-          targetMembers={allChordMembers}
-          outsideMembers={practiceBarOutsideMembers}
-          colorNoteEntries={practiceBarColorNotesFiltered}
+          cues={practiceCues}
           isShapeLocal={isShapeLocalContext}
           shapeContextLabel={shapeContextLabel}
-          shapeLocalTargetMembers={shapeLocalTargetMembers}
-          shapeLocalOutsideMembers={shapeLocalOutsideMembers}
-          shapeLocalColorNoteEntries={shapeLocalColorNotesFiltered}
+          shapeLocalCues={shapeLocalPracticeCues}
         />
       )}
     </div>

@@ -11,10 +11,11 @@ import {
 } from "../shapes";
 import { normalizeScaleName, type ScaleBrowseMode, getActiveScaleBrowseOption } from "../theoryCatalog";
 import { k, STORAGE_PREFIX } from "../utils/storage";
-import { 
+import {
   resolveAccidentalMode,
   SCALES,
   NOTES,
+  ENHARMONICS,
   INTERVAL_NAMES,
   CHORD_DEFINITIONS,
   getScaleNotes,
@@ -32,6 +33,10 @@ import type {
   ChordMemberName,
   ResolvedChordMember,
   NoteRole,
+  NoteSemantics,
+  PracticeLens,
+  PracticeCue,
+  PracticeCueNote,
   ChordRowEntry,
   LegendItem,
   PracticeBarColorNote,
@@ -487,7 +492,8 @@ export const chordFretSpreadAtom = atomWithStorage(
   GET_ON_INIT,
 );
 
-export const hideNonChordNotesAtom = atom((get) => get(viewModeAtom) === "chord");
+// Targets lens hides scale-only notes so only chord tones are shown.
+export const hideNonChordNotesAtom = atom((get) => get(practiceLensAtom) === "targets");
 
 const VIEW_MODE_VALUES: ViewMode[] = ["compare", "chord", "outside"];
 
@@ -508,6 +514,65 @@ const viewModeStorage = {
     }
   },
   setItem(key: string, value: ViewMode): void {
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
+  },
+  removeItem(key: string): void {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Practice lens storage — with one-time migration from old viewMode key
+// ---------------------------------------------------------------------------
+
+const PRACTICE_LENS_VALUES: PracticeLens[] = [
+  "targets",
+  "guide-tones",
+  "color",
+  "targets-color",
+  "tension",
+];
+
+function migrateViewModeToLens(viewMode: string): PracticeLens {
+  switch (viewMode) {
+    case "chord": return "targets";
+    case "outside": return "tension";
+    default: return "targets-color";
+  }
+}
+
+const practiceLensStorage = {
+  getItem(key: string, initialValue: PracticeLens): PracticeLens {
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored !== null) {
+        if ((PRACTICE_LENS_VALUES as string[]).includes(stored))
+          return stored as PracticeLens;
+        localStorage.setItem(key, initialValue);
+        return initialValue;
+      }
+      // One-time migration: map old viewMode to a lens on first access
+      const oldViewMode = localStorage.getItem(k("viewMode"));
+      if (oldViewMode) {
+        const migrated = migrateViewModeToLens(oldViewMode);
+        localStorage.setItem(key, migrated);
+        return migrated;
+      }
+      localStorage.setItem(key, initialValue);
+      return initialValue;
+    } catch {
+      return initialValue;
+    }
+  },
+  setItem(key: string, value: PracticeLens): void {
     try {
       localStorage.setItem(key, value);
     } catch {
@@ -603,6 +668,14 @@ export const viewModeAtom = atomWithStorage<ViewMode>(
   k("viewMode"),
   "compare",
   viewModeStorage,
+  GET_ON_INIT,
+);
+// Primary user-facing practice state — replaces viewMode as the UI concept.
+// Stored separately; migrates from old viewMode on first access.
+export const practiceLensAtom = atomWithStorage<PracticeLens>(
+  k("practiceLens"),
+  "targets-color",
+  practiceLensStorage,
   GET_ON_INIT,
 );
 export const focusPresetAtom = atomWithStorage<FocusPreset>(
@@ -1008,29 +1081,15 @@ export const allChordMembersAtom = atom((get) => {
   });
 });
 
-export const summaryChordRowAtom = atom((get) => {
-  const chordType = get(chordTypeAtom);
-  const allChordMembers = get(allChordMembersAtom);
-  const viewMode = get(viewModeAtom);
-
-  if (!chordType) return allChordMembers;
-  // In outside view: keep only outside-scale entries (plus outside chord root).
-  if (viewMode === "outside") {
-    return allChordMembers.filter(
-      (e) =>
-        e.role === "chord-tone-outside-scale" ||
-        (e.role === "chord-root" && !e.inScale),
-    );
-  }
-  return allChordMembers;
-});
+// All chord members — tension lens shows all notes (not just outside ones).
+export const summaryChordRowAtom = atom((get) => get(allChordMembersAtom));
 
 export const summaryLegendItemsAtom = atom((get) => {
   const chordType = get(chordTypeAtom);
   if (!chordType) return [] as LegendItem[];
 
   const summaryChordRow = get(summaryChordRowAtom);
-  const viewMode = get(viewModeAtom);
+  const practiceLens = get(practiceLensAtom);
   const noteRoleMap = get(noteRoleMapAtom);
 
   const rolesPresent = new Set(summaryChordRow.map((e) => e.role));
@@ -1041,9 +1100,9 @@ export const summaryLegendItemsAtom = atom((get) => {
     items.push({ role: "chord-tone-in-scale", label: "Chord tone" });
   if (rolesPresent.has("chord-tone-outside-scale"))
     items.push({ role: "chord-tone-outside-scale", label: "Outside scale" });
-  // In compare mode, mention scale-only only when that role is actually present on the board.
+  // Show scale-only legend entry when the lens is not targets (which hides them).
   const hasScaleOnly = Array.from(noteRoleMap.values()).includes("scale-only");
-  if (viewMode === "compare" && hasScaleOnly) {
+  if (practiceLens !== "targets" && hasScaleOnly) {
     items.push({ role: "scale-only", label: "Scale only" });
   }
   return items;
@@ -1051,7 +1110,7 @@ export const summaryLegendItemsAtom = atom((get) => {
 
 export const showRelationshipRowAtom = atom((get) => {
   const chordType = get(chordTypeAtom);
-  const viewMode = get(viewModeAtom);
+  const practiceLens = get(practiceLensAtom);
   const chordRoot = get(chordRootAtom);
   const rootNote = get(rootNoteAtom);
   const focusPreset = get(focusPresetAtom);
@@ -1059,7 +1118,7 @@ export const showRelationshipRowAtom = atom((get) => {
 
   return !!(
     chordType &&
-    viewMode === "compare" &&
+    practiceLens !== "targets" &&
     (chordRoot !== rootNote || focusPreset !== "all" || hasOutsideChordMembers)
   );
 });
@@ -1074,34 +1133,33 @@ export const chordMemberLabelsAtom = atom((get) =>
 
 export const summaryHeaderLeftAtom = atom((get) => {
   const chordType = get(chordTypeAtom);
-  const viewMode = get(viewModeAtom);
+  const practiceLens = get(practiceLensAtom);
   const scaleLabel = get(scaleLabelAtom);
   const chordLabel = get(chordLabelAtom);
 
   if (!chordType) return scaleLabel;
-  if (viewMode === "chord") return chordLabel ?? "";
-  if (viewMode === "outside") return "Outside tones";
-  return scaleLabel; // compare
+  // Targets lens is chord-focused: show the chord name as the primary header.
+  if (practiceLens === "targets") return chordLabel ?? scaleLabel;
+  return scaleLabel;
 });
 
 export const summaryHeaderRightAtom = atom((get) => {
   const chordType = get(chordTypeAtom);
   const chordLabel = get(chordLabelAtom);
-  const scaleLabel = get(scaleLabelAtom);
-  const viewMode = get(viewModeAtom);
+  const practiceLens = get(practiceLensAtom);
 
   if (!chordType || !chordLabel) return null;
-  if (viewMode === "chord") return "Chord only";
-  if (viewMode === "outside") return `against ${scaleLabel}`;
+  // Targets lens already shows the chord in the left header.
+  if (practiceLens === "targets") return null;
   return chordLabel;
 });
 
 export const summaryPrimaryModeAtom = atom((get) => {
   const chordType = get(chordTypeAtom);
-  const viewMode = get(viewModeAtom);
-  if (!chordType || viewMode === "compare") return "scale";
-  if (viewMode === "chord") return "chord";
-  return "outside";
+  const practiceLens = get(practiceLensAtom);
+  if (!chordType) return "scale";
+  if (practiceLens === "targets") return "chord";
+  return "scale";
 });
 
 export const sharedChordMembersAtom = atom((get) =>
@@ -1263,45 +1321,40 @@ export const practiceBarColorNotesAtom = atom((get) => {
 
 export const showChordPracticeBarAtom = atom((get) => {
   const chordType = get(chordTypeAtom);
-  const viewMode = get(viewModeAtom);
+  if (!chordType) return false;
+
+  const practiceLens = get(practiceLensAtom);
+
+  // Non-default lenses always show — user explicitly chose a practice focus.
+  if (practiceLens !== "targets-color") return true;
+
+  // For targets-color (default): suppress the bar for the diatonic simple case
+  // where the chord is fully in-scale, root is linked, and no color tones exist
+  // (nothing interesting to coach about).
   const focusPreset = get(focusPresetAtom);
   const hasOutsideChordMembers = get(hasOutsideChordMembersAtom);
   const colorNotes = get(colorNotesAtom);
   const chordRoot = get(chordRootAtom);
   const rootNote = get(rootNoteAtom);
 
-  if (!chordType) return false;
-  
-  // Diatonic simple case check
-  const isDiatonicSimpleCase = (
-    viewMode === "compare" &&
+  const isDiatonicSimpleCase =
     focusPreset === "all" &&
     !hasOutsideChordMembers &&
     colorNotes.length === 0 &&
-    chordRoot === rootNote
-  );
+    chordRoot === rootNote;
 
   return !isDiatonicSimpleCase;
 });
 
 export const practiceBarTitleAtom = atom((get) => {
   const chordType = get(chordTypeAtom);
-  const viewMode = get(viewModeAtom);
   const chordLabel = get(chordLabelAtom);
   if (!chordType) return "";
-  if (viewMode === "outside") return "Outside tones";
   return chordLabel ?? "";
 });
 
-export const practiceBarBadgeAtom = atom((get) => {
-  const chordType = get(chordTypeAtom);
-  const viewMode = get(viewModeAtom);
-  const scaleLabel = get(scaleLabelAtom);
-  if (!chordType) return null;
-  if (viewMode === "chord") return "Chord only";
-  if (viewMode === "outside") return `against ${scaleLabel}`;
-  return "Compare";
-});
+// Badge is now minimal — always null (lens context shown via title + shape subtitle).
+export const practiceBarBadgeAtom = atom(() => null as string | null);
 
 export const shapeHighlightedNoteSetAtom = atom((get) => {
   const fingeringPattern = get(fingeringPatternAtom);
@@ -1372,6 +1425,240 @@ export const shapeLocalColorNotesAtom = atom((get) => {
   );
 });
 
+// ---------------------------------------------------------------------------
+// Note Semantic Map — composable properties per note (multiple can coexist)
+// ---------------------------------------------------------------------------
+
+// Guide tone member names: 3rd and 7th (before formatAccidental)
+const GUIDE_TONE_RAW = new Set(["b3", "3", "b7", "7"]);
+// After formatAccidental: "b3"→"♭3", "b7"→"♭7"
+const GUIDE_TONE_FORMATTED = new Set(["♭3", "3", "♭7", "7"]);
+
+/**
+ * Returns a map of note → NoteSemantics where multiple boolean properties can
+ * coexist on one note. Crucially, a chord root that is outside the scale will
+ * have both isChordRoot=true and isTension=true — something the old single-role
+ * enum (NoteRole) could not represent.
+ */
+export const noteSemanticMapAtom = atom((get) => {
+  const chordType = get(chordTypeAtom);
+  if (!chordType) return new Map<string, NoteSemantics>();
+
+  const rootNote = get(rootNoteAtom);
+  const scaleName = get(scaleNameAtom);
+  const chordRoot = get(chordRootAtom);
+  const activeChordMembers = get(activeChordMembersAtom);
+  const colorNotes = get(colorNotesAtom);
+
+  const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
+  const colorNoteSet = new Set(colorNotes);
+
+  const memberByNote = new Map<string, ResolvedChordMember>();
+  for (const m of activeChordMembers) memberByNote.set(m.note, m);
+  const activeChordToneSet = new Set(activeChordMembers.map((m) => m.note));
+
+  const map = new Map<string, NoteSemantics>();
+  for (const note of NOTES) {
+    const isInScale = scaleNoteSet.has(note);
+    const isChordRoot = note === chordRoot;
+    const isChordTone = activeChordToneSet.has(note);
+    const enh = ENHARMONICS[note];
+    const isColorTone = colorNoteSet.has(note) || (!!enh && colorNoteSet.has(enh));
+    const member = memberByNote.get(note);
+    const isGuideTone = !!(member && GUIDE_TONE_RAW.has(member.name));
+    const isTension = isChordTone && !isInScale;
+    const isScaleRoot =
+      note === rootNote ||
+      ENHARMONICS[note] === rootNote ||
+      ENHARMONICS[rootNote] === note;
+
+    if (isInScale || isChordTone || isColorTone) {
+      map.set(note, {
+        isScaleRoot: !!isScaleRoot,
+        isChordRoot,
+        isChordTone,
+        isInScale,
+        isColorTone,
+        isGuideTone,
+        isTension,
+        memberName: member?.name as ChordMemberName | undefined,
+      });
+    }
+  }
+  return map;
+});
+
+// ---------------------------------------------------------------------------
+// Practice Cues — coaching lines derived from the active practice lens
+// ---------------------------------------------------------------------------
+
+/**
+ * Derives ordered coaching cues for the practice bar based on the active lens.
+ * Each cue has a label ("Land on", "Guide tones", "Color note", "Tension") and
+ * a list of notes with styling hints and optional resolution targets.
+ */
+export const practiceCuesAtom = atom((get) => {
+  const chordType = get(chordTypeAtom);
+  if (!chordType) return [] as PracticeCue[];
+
+  const practiceLens = get(practiceLensAtom);
+  const chordRoot = get(chordRootAtom);
+  const useFlats = get(useFlatsAtom);
+  const allChordMembers = get(allChordMembersAtom);
+  const colorNotesFiltered = get(practiceBarColorNotesFilteredAtom);
+  const scaleNotes = get(scaleNotesAtom);
+
+  const displayNote = (note: string) =>
+    formatAccidental(getNoteDisplay(note, chordRoot, useFlats));
+
+  const toCueNote = (e: ChordRowEntry): PracticeCueNote => ({
+    internalNote: e.internalNote,
+    displayNote: e.displayNote,
+    intervalName: e.memberName,
+    role: e.role,
+  });
+
+  // Find the nearest in-scale note (half-step up or down) as a resolution target.
+  const findResolution = (
+    note: string,
+  ): { internalNote: string; displayNote: string } | undefined => {
+    const noteIdx = NOTES.indexOf(note);
+    if (noteIdx === -1) return undefined;
+    const scaleNoteSet = new Set(scaleNotes);
+    const up = NOTES[(noteIdx + 1) % 12];
+    const down = NOTES[(noteIdx + 11) % 12];
+    const resolved = scaleNoteSet.has(up)
+      ? up
+      : scaleNoteSet.has(down)
+        ? down
+        : undefined;
+    if (!resolved) return undefined;
+    return { internalNote: resolved, displayNote: displayNote(resolved) };
+  };
+
+  const cues: PracticeCue[] = [];
+
+  switch (practiceLens) {
+    case "targets": {
+      if (allChordMembers.length > 0) {
+        cues.push({
+          kind: "land-on",
+          label: "Land on",
+          notes: allChordMembers.map(toCueNote),
+        });
+      }
+      break;
+    }
+
+    case "guide-tones": {
+      const guideNotes = allChordMembers.filter((e) =>
+        GUIDE_TONE_FORMATTED.has(e.memberName),
+      );
+      if (guideNotes.length > 0) {
+        cues.push({
+          kind: "guide-tones",
+          label: "Guide tones",
+          notes: guideNotes.map((e) => ({
+            ...toCueNote(e),
+            role: "guide-tone" as const,
+          })),
+        });
+      } else {
+        // Fallback for power chords (no 3rd/7th): show all chord tones.
+        cues.push({
+          kind: "land-on",
+          label: "Land on",
+          notes: allChordMembers.map(toCueNote),
+        });
+      }
+      break;
+    }
+
+    case "color": {
+      if (colorNotesFiltered.length > 0) {
+        cues.push({
+          kind: "color-note",
+          label: colorNotesFiltered.length === 1 ? "Color note" : "Color notes",
+          notes: colorNotesFiltered.map((n) => ({
+            internalNote: n.internalNote,
+            displayNote: n.displayNote,
+            intervalName: n.intervalName,
+            role: "color-tone" as const,
+          })),
+        });
+      }
+      break;
+    }
+
+    case "targets-color": {
+      if (allChordMembers.length > 0) {
+        cues.push({
+          kind: "land-on",
+          label: "Land on",
+          notes: allChordMembers.map(toCueNote),
+        });
+      }
+      if (colorNotesFiltered.length > 0) {
+        cues.push({
+          kind: "color-note",
+          label: colorNotesFiltered.length === 1 ? "Color note" : "Color notes",
+          notes: colorNotesFiltered.map((n) => ({
+            internalNote: n.internalNote,
+            displayNote: n.displayNote,
+            intervalName: n.intervalName,
+            role: "color-tone" as const,
+          })),
+        });
+      }
+      break;
+    }
+
+    case "tension": {
+      if (allChordMembers.length > 0) {
+        cues.push({
+          kind: "land-on",
+          label: "Land on",
+          notes: allChordMembers.map(toCueNote),
+        });
+      }
+      const tensionMembers = allChordMembers.filter((e) => !e.inScale);
+      if (tensionMembers.length > 0) {
+        cues.push({
+          kind: "tension",
+          label: "Tension",
+          notes: tensionMembers.map((e) => ({
+            ...toCueNote(e),
+            role: "chord-tone-outside-scale" as const,
+            resolvesTo: findResolution(e.internalNote),
+          })),
+        });
+      }
+      break;
+    }
+  }
+
+  return cues;
+});
+
+/**
+ * Shape-local variant: filters each cue's notes to those present in the
+ * currently-highlighted shape positions. Falls back to empty when there's no
+ * shape context (fingeringPattern === "all").
+ */
+export const shapeLocalPracticeCuesAtom = atom((get) => {
+  const shapeHighlightedNoteSet = get(shapeHighlightedNoteSetAtom);
+  const cues = get(practiceCuesAtom);
+  if (!shapeHighlightedNoteSet) return [] as PracticeCue[];
+  return cues
+    .map((cue) => ({
+      ...cue,
+      notes: cue.notes.filter((n) =>
+        shapeHighlightedNoteSet.has(n.internalNote),
+      ),
+    }))
+    .filter((cue) => cue.notes.length > 0);
+});
+
 // --- Actions ---
 
 // Sets rootNote and syncs chordRoot when linkChordRoot is enabled
@@ -1400,6 +1687,7 @@ export const resetAtom = atom(null, (_get, set) => {
   set(linkChordRootAtom, RESET);
   set(chordFretSpreadAtom, RESET);
   set(viewModeAtom, RESET);
+  set(practiceLensAtom, RESET);
   set(focusPresetAtom, RESET);
   set(customMembersAtom, RESET);
   set(fingeringPatternAtom, RESET);

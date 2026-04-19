@@ -120,6 +120,51 @@ export interface LegendItem {
   label: string;
 }
 
+// ---------------------------------------------------------------------------
+// Practice lenses — user-facing practice model replacing raw viewMode
+// ---------------------------------------------------------------------------
+
+export type PracticeLens =
+  | "targets"       // chord root + active chord tones — for landing and outlining harmony
+  | "guide-tones"   // 3rd/7th — for voice-leading and strong chord definition
+  | "color"         // characteristic modal/blue notes — for hearing why the scale sounds like itself
+  | "targets-color" // targets + color (best general-purpose soloing practice view)
+  | "tension";      // outside/altered tones — secondary/advanced lens
+
+// Composable note semantics — multiple properties can coexist on one note.
+// A note can be simultaneously a chord root and outside the scale (isTension),
+// which the old single-role enum could not represent correctly.
+export interface NoteSemantics {
+  isScaleRoot: boolean;
+  isChordRoot: boolean;
+  isChordTone: boolean;
+  isInScale: boolean;
+  isColorTone: boolean;
+  isGuideTone: boolean; // 3rd or 7th of the chord
+  isTension: boolean;   // chord tone that is outside the scale
+  memberName?: ChordMemberName;
+}
+
+// Practice bar coaching cue types
+export type PracticeCueKind = "land-on" | "guide-tones" | "color-note" | "tension";
+
+export interface PracticeCueNote {
+  internalNote: string;
+  displayNote: string;
+  intervalName?: string;
+  /** Visual role for pill styling — mirrors ChordRowEntry roles plus guide/color variants */
+  role?: "chord-root" | "chord-tone-in-scale" | "chord-tone-outside-scale" | "color-tone" | "guide-tone";
+  /** Nearest in-scale resolution target for tension/outside notes */
+  resolvesTo?: { internalNote: string; displayNote: string };
+}
+
+export interface PracticeCue {
+  kind: PracticeCueKind;
+  /** Coaching label shown to the player: "Land on", "Guide tones", "Color note", "Tension" */
+  label: string;
+  notes: PracticeCueNote[];
+}
+
 export const CHORD_DEFINITIONS: Record<string, ChordDefinition> = {
   "Major Triad": {
     quality: "triad",
