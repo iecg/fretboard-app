@@ -109,7 +109,7 @@ function AppContent() {
       }
       summary={<SummaryRibbon />}
       helpModal={
-        <Suspense fallback={null}>
+        <Suspense fallback={<div className="loading-spinner" />}>
           <HelpModal
             isOpen={showHelp}
             onClose={() => setShowHelp(false)}
@@ -118,18 +118,18 @@ function AppContent() {
         </Suspense>
       }
       controlsPanel={
-        <Suspense fallback={null}>
+        <Suspense fallback={<div className="loading-spinner" />}>
           <ExpandedControlsPanel mode={layout.panelMode} />
         </Suspense>
       }
       mobileTabs={
-        <Suspense fallback={null}>
+        <Suspense fallback={<div className="loading-spinner" />}>
           <MobileTabPanel />
         </Suspense>
       }
       versionBadge={versionBadge}
       settingsOverlay={
-        <Suspense fallback={null}>
+        <Suspense fallback={<div className="loading-spinner" />}>
           <SettingsOverlay />
         </Suspense>
       }
