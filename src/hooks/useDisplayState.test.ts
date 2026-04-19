@@ -1119,4 +1119,157 @@ describe("useDisplayState", () => {
       expect(items.some((i) => i.role === "chord-tone-outside-scale")).toBe(false);
     });
   });
+
+  describe("ChordPracticeBar derived values", () => {
+    it("showChordPracticeBar is false when no chord type", () => {
+      const store = createStore();
+      store.set(chordTypeAtom, null);
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.showChordPracticeBar).toBe(false);
+    });
+
+    it("showChordPracticeBar is true when chord type is set", () => {
+      const store = createStore();
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.showChordPracticeBar).toBe(true);
+    });
+
+    it("practiceBarTitle is chord label in compare mode", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad");
+      store.set(viewModeAtom, "compare");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.practiceBarTitle).toContain("C");
+      expect(result.current.practiceBarTitle).toContain("Major Triad");
+    });
+
+    it("practiceBarTitle is chord label in chord mode", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad");
+      store.set(viewModeAtom, "chord");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.practiceBarTitle).toContain("C");
+      expect(result.current.practiceBarTitle).toContain("Major Triad");
+    });
+
+    it("practiceBarTitle is 'Outside tones' in outside mode", () => {
+      const store = createStore();
+      store.set(chordRootAtom, "D");
+      store.set(chordTypeAtom, "Dominant 7th");
+      store.set(viewModeAtom, "outside");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.practiceBarTitle).toBe("Outside tones");
+    });
+
+    it("practiceBarBadge is 'Compare' in compare mode", () => {
+      const store = createStore();
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad");
+      store.set(viewModeAtom, "compare");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.practiceBarBadge).toBe("Compare");
+    });
+
+    it("practiceBarBadge is 'Chord only' in chord mode", () => {
+      const store = createStore();
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad");
+      store.set(viewModeAtom, "chord");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.practiceBarBadge).toBe("Chord only");
+    });
+
+    it("practiceBarBadge starts with 'against' in outside mode", () => {
+      const store = createStore();
+      store.set(chordRootAtom, "D");
+      store.set(chordTypeAtom, "Dominant 7th");
+      store.set(viewModeAtom, "outside");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.practiceBarBadge).toMatch(/^against /);
+    });
+
+    it("practiceBarTargetMembers contains all active chord tones", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad");
+      store.set(viewModeAtom, "compare");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.practiceBarTargetMembers).toHaveLength(3);
+      expect(result.current.practiceBarTargetMembers.some(m => m.internalNote === "C")).toBe(true);
+      expect(result.current.practiceBarTargetMembers.some(m => m.internalNote === "E")).toBe(true);
+      expect(result.current.practiceBarTargetMembers.some(m => m.internalNote === "G")).toBe(true);
+    });
+
+    it("practiceBarSharedMembers contains only in-scale chord tones", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C"); // C Major
+      store.set(chordRootAtom, "D");
+      store.set(chordTypeAtom, "Dominant 7th"); // D F# A C — F# outside C Major
+      store.set(viewModeAtom, "compare");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      const shared = result.current.practiceBarSharedMembers;
+      expect(shared.every(m => m.inScale)).toBe(true);
+      expect(shared.some(m => m.internalNote === "F#")).toBe(false);
+    });
+
+    it("practiceBarOutsideMembers contains only outside-scale chord tones", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C"); // C Major
+      store.set(chordRootAtom, "D");
+      store.set(chordTypeAtom, "Dominant 7th"); // D F# A C — F# outside C Major
+      store.set(viewModeAtom, "compare");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      const outside = result.current.practiceBarOutsideMembers;
+      expect(outside.every(m => !m.inScale)).toBe(true);
+      expect(outside.some(m => m.internalNote === "F#")).toBe(true);
+    });
+
+    it("practiceBarTargetMembers is viewMode-independent (same in compare and outside)", () => {
+      const makeStore = (viewMode: "compare" | "outside") => {
+        const store = createStore();
+        store.set(rootNoteAtom, "C");
+        store.set(chordRootAtom, "D");
+        store.set(chordTypeAtom, "Dominant 7th");
+        store.set(viewModeAtom, viewMode);
+        return store;
+      };
+      const { result: r1 } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(makeStore("compare")),
+      });
+      const { result: r2 } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(makeStore("outside")),
+      });
+      expect(r1.current.practiceBarTargetMembers.map(m => m.internalNote))
+        .toEqual(r2.current.practiceBarTargetMembers.map(m => m.internalNote));
+    });
+  });
 });

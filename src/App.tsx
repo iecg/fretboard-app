@@ -30,8 +30,7 @@ import { AppHeader } from "./components/AppHeader";
 import { BrandMark } from "./components/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark";
 import { DegreeChipStrip } from "./components/DegreeChipStrip";
-import { ChordRowStrip } from "./components/ChordRowStrip";
-import { RelationshipRow } from "./components/RelationshipRow";
+import { ChordPracticeBar } from "./components/ChordPracticeBar";
 import "./App.css";
 
 const END_FRET = 25;
@@ -81,15 +80,12 @@ function AppContent() {
     colorNotes,
     summaryNotes,
     scaleLabel,
-    chordLabel,
-    chordSummaryNotes,
-    summaryChordRow,
-    summaryHeaderLeft,
-    summaryHeaderRight,
-    summaryPrimaryMode,
-    showRelationshipRow,
-    sharedChordMembers,
-    outsideChordMembers,
+    showChordPracticeBar,
+    practiceBarTitle,
+    practiceBarBadge,
+    practiceBarTargetMembers,
+    practiceBarSharedMembers,
+    practiceBarOutsideMembers,
     recenterKey,
     onShapeClick,
     onRecenter,
@@ -196,16 +192,14 @@ function AppContent() {
     [rootNote, scaleName],
   );
 
-  // Build DegreeChip[] from scale/chord atoms for DegreeChipStrip
+  // Build DegreeChip[] from scale atoms for DegreeChipStrip — scale-only, no chord semantics.
   const degreeChips = useMemo(() => {
     const rootIdx = NOTES.indexOf(rootNote);
-    const chordToneSet = new Set(chordSummaryNotes);
     return summaryNotes.map((note) => {
       const noteIdx = NOTES.indexOf(note);
       const chromaticInterval =
         rootIdx !== -1 && noteIdx !== -1 ? (noteIdx - rootIdx + 12) % 12 : 0;
       const interval = INTERVAL_NAMES[chromaticInterval] ?? "1";
-      const inChord = chordToneSet.has(note);
       return {
         internalNote: note,
         note: formatAccidental(
@@ -219,52 +213,28 @@ function AppContent() {
         interval: formatAccidental(interval),
         inScale: true,
         isTonic: note === rootNote,
-        inChord,
-        isChordRoot: inChord && note === chordRoot,
       };
     });
-  }, [summaryNotes, rootNote, scaleName, useFlats, chordSummaryNotes, chordRoot]);
+  }, [summaryNotes, rootNote, scaleName, useFlats]);
 
-  // Summary notes content shared by every non-landscape layout.
-  // When no chord: standalone scale strip. When chord active: single adaptive ribbon.
-  const summaryContent = !chordType ? (
-    <DegreeChipStrip
-      scaleName={scaleLabel}
-      chips={degreeChips}
-      hiddenNotes={hiddenNotes}
-      onChipToggle={toggleHiddenNote}
-      aria-label="Scale degrees"
-    />
-  ) : (
-    <div className="summary-ribbon">
-      <div className="summary-ribbon-header">
-        <span className="summary-ribbon-header-left">{summaryHeaderLeft}</span>
-        {summaryHeaderRight && (
-          <span className="summary-ribbon-header-right">{summaryHeaderRight}</span>
-        )}
-      </div>
-      {summaryPrimaryMode === "scale" && (
-        <DegreeChipStrip
-          scaleName={scaleLabel}
-          chips={degreeChips}
-          hiddenNotes={hiddenNotes}
-          onChipToggle={toggleHiddenNote}
-          aria-label="Scale degrees"
-          hideHeader
-          chordActive
-        />
-      )}
-      {summaryPrimaryMode !== "scale" && (
-        <ChordRowStrip
-          chordLabel={chordLabel ?? ""}
-          chordRow={summaryChordRow}
-          legendItems={[]}
-        />
-      )}
-      {showRelationshipRow && (
-        <RelationshipRow
-          sharedMembers={sharedChordMembers}
-          outsideMembers={outsideChordMembers}
+  // Summary content: scale strip is always shown. ChordPracticeBar appears below when chord is active.
+  const summaryContent = (
+    <div className={chordType ? "summary-ribbon" : undefined}>
+      <DegreeChipStrip
+        scaleName={scaleLabel}
+        chips={degreeChips}
+        hiddenNotes={hiddenNotes}
+        onChipToggle={toggleHiddenNote}
+        aria-label="Scale degrees"
+      />
+      {showChordPracticeBar && (
+        <ChordPracticeBar
+          title={practiceBarTitle}
+          badge={practiceBarBadge}
+          viewMode={viewMode}
+          targetMembers={practiceBarTargetMembers}
+          sharedMembers={practiceBarSharedMembers}
+          outsideMembers={practiceBarOutsideMembers}
         />
       )}
     </div>

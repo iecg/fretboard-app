@@ -228,4 +228,74 @@ describe("FretboardSVG", () => {
     const { container } = render(<FretboardSVG {...BASE_PROPS} />);
     expect(await axe(container)).toHaveNoViolations();
   });
+
+  describe("role-based shapes", () => {
+    it("chord-root notes have data-note-shape=squircle", () => {
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          chordTones={["C", "E", "G"]}
+          chordRoot="C"
+          rootNote="C"
+          highlightNotes={["C", "E", "G"]}
+        />
+      );
+      const chordRootNotes = container.querySelectorAll('.chord-root[data-note-shape="squircle"]');
+      expect(chordRootNotes.length).toBeGreaterThan(0);
+    });
+
+    it("chord-tone-in-scale notes have data-note-shape=squircle", () => {
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          chordTones={["C", "E", "G"]}
+          chordRoot="C"
+          rootNote="C"
+          highlightNotes={["C", "E", "G"]}
+        />
+      );
+      const inScaleTones = container.querySelectorAll('.chord-tone-in-scale[data-note-shape="squircle"]');
+      expect(inScaleTones.length).toBeGreaterThan(0);
+    });
+
+    it("chord-tone-outside-scale notes have data-note-shape=diamond", () => {
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          chordTones={["C", "E", "G", "A#"]}
+          chordRoot="C"
+          rootNote="C"
+          highlightNotes={["C", "E", "G"]}
+        />
+      );
+      const outsideTones = container.querySelectorAll('.chord-tone-outside-scale[data-note-shape="diamond"]');
+      expect(outsideTones.length).toBeGreaterThan(0);
+    });
+
+    it("scale-only notes have data-note-shape=circle", () => {
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          chordTones={["C"]}
+          chordRoot="C"
+          rootNote="C"
+          highlightNotes={["C", "E", "G"]}
+        />
+      );
+      const scaleOnly = container.querySelectorAll('.scale-only[data-note-shape="circle"]');
+      expect(scaleOnly.length).toBeGreaterThan(0);
+    });
+
+    it("note-active notes (no chord overlay) have data-note-shape=circle", () => {
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          rootNote="C"
+          highlightNotes={["C", "E", "G"]}
+        />
+      );
+      const activeNotes = container.querySelectorAll('.note-active[data-note-shape="circle"]');
+      expect(activeNotes.length).toBeGreaterThan(0);
+    });
+  });
 });

@@ -210,11 +210,12 @@ export default function useDisplayState() {
     return map;
   }, [chordType, rootNote, scaleName, chordRoot, activeChordTones]);
 
-  // Chord row entries for the summary strip, filtered by viewMode.
-  const summaryChordRow = useMemo((): ChordRowEntry[] => {
+  // All active chord members as ChordRowEntry[], viewMode-independent.
+  // Consumed by ChordPracticeBar and as the base for summaryChordRow.
+  const allChordMembers = useMemo((): ChordRowEntry[] => {
     if (!chordType) return [];
     const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
-    const entries = activeChordMembers.map((m): ChordRowEntry => {
+    return activeChordMembers.map((m): ChordRowEntry => {
       const inScale = scaleNoteSet.has(m.note);
       const isRoot = m.name === "root";
       let role: ChordRowEntry["role"];
@@ -233,24 +234,21 @@ export default function useDisplayState() {
         inScale,
       };
     });
+  }, [chordType, activeChordMembers, rootNote, scaleName, chordRoot, useFlats]);
+
+  // Chord row entries for the summary strip, filtered by viewMode.
+  const summaryChordRow = useMemo((): ChordRowEntry[] => {
+    if (!chordType) return allChordMembers;
     // In outside view: keep only outside-scale entries (plus outside chord root).
     if (viewMode === "outside") {
-      return entries.filter(
+      return allChordMembers.filter(
         (e) =>
           e.role === "chord-tone-outside-scale" ||
           (e.role === "chord-root" && !e.inScale),
       );
     }
-    return entries;
-  }, [
-    chordType,
-    activeChordMembers,
-    rootNote,
-    scaleName,
-    chordRoot,
-    useFlats,
-    viewMode,
-  ]);
+    return allChordMembers;
+  }, [chordType, allChordMembers, viewMode]);
 
   // Legend items: only roles actually present in the current chord row.
   const summaryLegendItems = useMemo((): LegendItem[] => {
@@ -479,6 +477,41 @@ export default function useDisplayState() {
     [summaryChordRow],
   );
 
+  // ── ChordPracticeBar derived values ─────────────────────────────────────────
+
+  // Whether the practice bar should render (chord is active)
+  const showChordPracticeBar = !!chordType;
+
+  // Practice bar title — varies by viewMode
+  const practiceBarTitle = useMemo((): string => {
+    if (!chordType) return "";
+    if (viewMode === "outside") return "Outside tones";
+    return chordLabel ?? "";
+  }, [chordType, viewMode, chordLabel]);
+
+  // Practice bar badge — contextual label beside the title
+  const practiceBarBadge = useMemo((): string | null => {
+    if (!chordType) return null;
+    if (viewMode === "chord") return "Chord only";
+    if (viewMode === "outside") return `against ${scaleLabel}`;
+    return "Compare";
+  }, [chordType, viewMode, scaleLabel]);
+
+  // All active chord members for the "Targets" group
+  const practiceBarTargetMembers = allChordMembers;
+
+  // Active chord members that are also in the scale, for the "Shared" group
+  const practiceBarSharedMembers = useMemo(
+    () => allChordMembers.filter((e) => e.inScale),
+    [allChordMembers],
+  );
+
+  // Active chord members outside the scale, for the "Outside" group
+  const practiceBarOutsideMembers = useMemo(
+    () => allChordMembers.filter((e) => !e.inScale),
+    [allChordMembers],
+  );
+
   return {
     // Atom values
     rootNote,
@@ -545,6 +578,14 @@ export default function useDisplayState() {
     scaleLabel,
     chordLabel,
     chordSummaryNotes,
+    allChordMembers,
+    // ChordPracticeBar
+    showChordPracticeBar,
+    practiceBarTitle,
+    practiceBarBadge,
+    practiceBarTargetMembers,
+    practiceBarSharedMembers,
+    practiceBarOutsideMembers,
     // Internal state + callbacks
     clickedShape,
     recenterKey,
