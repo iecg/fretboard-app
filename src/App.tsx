@@ -1,37 +1,25 @@
 import { useState, useEffect, lazy, Suspense } from "react";
-import { useAtom, useSetAtom, useAtomValue, createStore, Provider } from "jotai";
+import { useSetAtom, useAtomValue, createStore, Provider } from "jotai";
 import { Fretboard } from "./Fretboard";
 import { HelpCircle, Settings2, Volume2, VolumeX } from "lucide-react";
 import { synth } from "./audio";
 import {
   isMutedAtom,
-  mobileTabAtom,
   settingsOverlayOpenAtom,
   toggleMuteAtom,
   chordTypeAtom,
-  rootNoteAtom,
-  setRootNoteAtom,
-  scaleNameAtom,
-  useFlatsAtom,
-  enharmonicDisplayAtom,
+  mobileTabAtom,
 } from "./store/atoms";
 import useLayoutMode from "./hooks/useLayoutMode";
 import { AppHeader } from "./components/AppHeader";
 import { BrandMark } from "./components/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark";
 import { SummaryRibbon } from "./components/SummaryRibbon";
+import { VersionBadge } from "./components/VersionBadge";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper";
 import "./App.css";
 
 // Lazy-loaded components
-const CircleOfFifths = lazy(() =>
-  import("./CircleOfFifths").then((m) => ({ default: m.CircleOfFifths }))
-);
-const FingeringPatternControls = lazy(() =>
-  import("./components/FingeringPatternControls").then((m) => ({
-    default: m.FingeringPatternControls,
-  }))
-);
 const ExpandedControlsPanel = lazy(() =>
   import("./components/ExpandedControlsPanel").then((m) => ({
     default: m.ExpandedControlsPanel,
@@ -41,11 +29,6 @@ const SettingsOverlay = lazy(() => import("./components/SettingsOverlay"));
 const HelpModal = lazy(() =>
   import("./components/HelpModal").then((m) => ({ default: m.HelpModal }))
 );
-const TheoryControls = lazy(() =>
-  import("./components/TheoryControls").then((m) => ({
-    default: m.TheoryControls,
-  }))
-);
 const MobileTabPanel = lazy(() =>
   import("./components/MobileTabPanel").then((m) => ({
     default: m.MobileTabPanel,
@@ -53,15 +36,11 @@ const MobileTabPanel = lazy(() =>
 );
 
 function AppContent() {
-  const rootNote = useAtomValue(rootNoteAtom);
-  const scaleName = useAtomValue(scaleNameAtom);
-  const useFlats = useAtomValue(useFlatsAtom);
   const chordType = useAtomValue(chordTypeAtom);
-  const enharmonicDisplay = useAtomValue(enharmonicDisplayAtom);
-  const setRootNote = useSetAtom(setRootNoteAtom);
-
   const isMuted = useAtomValue(isMutedAtom);
-  const [mobileTab, setMobileTab] = useAtom(mobileTabAtom);
+  // Mount mobileTabAtom so atomWithStorage writes its default to localStorage
+  // on first render — required for correct initial tab state across layout modes.
+  useAtomValue(mobileTabAtom);
   const setSettingsOverlayOpen = useSetAtom(settingsOverlayOpenAtom);
   const toggleMute = useSetAtom(toggleMuteAtom);
 
@@ -73,65 +52,7 @@ function AppContent() {
     synth.setMute(isMuted);
   }, [isMuted]);
 
-  const mobileKeyExplorer = (
-    <div className="cof-container">
-      <Suspense fallback={null}>
-        <CircleOfFifths
-          rootNote={rootNote}
-          setRootNote={setRootNote}
-          scaleName={scaleName}
-          useFlats={useFlats}
-          enharmonicDisplay={enharmonicDisplay}
-        />
-      </Suspense>
-    </div>
-  );
-
-  const theoryTabContent = (
-    <div className="mobile-tab-panel mobile-theory-tab">
-      <Suspense fallback={null}>
-        <TheoryControls keyExplorer={mobileKeyExplorer} />
-      </Suspense>
-    </div>
-  );
-
-  const viewTabContent = (
-    <div className="mobile-tab-panel mobile-view-tab">
-      <Suspense fallback={null}>
-        <FingeringPatternControls />
-      </Suspense>
-    </div>
-  );
-
-  const versionBadge = (
-    <div className="version-badge">
-      <span className="version-text">
-        v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar.
-        Licensed under{" "}
-        <a
-          href="https://www.gnu.org/licenses/agpl-3.0"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          AGPL v3
-        </a>
-        .
-      </span>
-      <a
-        href="https://ko-fi.com/E1E01XFJ0G"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="kofi-badge-btn"
-        title="Support FretFlow on Ko-fi"
-      >
-        <img
-          src="/fretboard-app/kofi_symbol.png"
-          alt="Ko-fi"
-          className="kofi-badge-icon"
-        />
-      </a>
-    </div>
-  );
+  const versionBadge = <VersionBadge />;
 
   return (
     <MainLayoutWrapper
@@ -200,12 +121,7 @@ function AppContent() {
       }
       mobileTabs={
         <Suspense fallback={null}>
-          <MobileTabPanel
-            mobileTab={mobileTab}
-            setMobileTab={setMobileTab}
-            theoryTabContent={theoryTabContent}
-            viewTabContent={viewTabContent}
-          />
+          <MobileTabPanel />
         </Suspense>
       }
       versionBadge={versionBadge}

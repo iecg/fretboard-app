@@ -32,6 +32,9 @@ import {
   landscapeNarrowTabAtom,
   useFlatsAtom,
   currentTuningAtom,
+  chordTonesAtom,
+  colorNotesAtom,
+  clickedShapeAtom,
 } from "../store/atoms";
 import { STANDARD_TUNING, TUNINGS } from "../guitar";
 import { CAGED_SHAPES } from "../shapes";
@@ -572,6 +575,69 @@ describe("atoms", () => {
       const store = makeStore();
       store.set(tuningNameAtom, "Unknown Tuning That Does Not Exist");
       expect(store.get(currentTuningAtom)).toEqual(STANDARD_TUNING);
+    });
+  });
+
+  describe("chordTonesAtom", () => {
+    it("returns [] when chordTypeAtom is null", () => {
+      const store = makeStore();
+      store.set(chordTypeAtom, null);
+      expect(store.get(chordTonesAtom)).toEqual([]);
+    });
+
+    it("returns C, E, G for chordRoot=C and chordType=Major Triad", () => {
+      const store = makeStore();
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad");
+      expect(store.get(chordTonesAtom)).toEqual(["C", "E", "G"]);
+    });
+
+    it("re-derives when chordRootAtom changes", () => {
+      const store = makeStore();
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad");
+      expect(store.get(chordTonesAtom)).toEqual(["C", "E", "G"]);
+      store.set(chordRootAtom, "G");
+      expect(store.get(chordTonesAtom)).toEqual(["G", "B", "D"]);
+    });
+  });
+
+  describe("colorNotesAtom", () => {
+    it("returns [] for C Major (no divergent notes from reference scale)", () => {
+      const store = makeStore();
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      expect(store.get(colorNotesAtom)).toEqual([]);
+    });
+
+    it("returns the b5 blue note for C Minor Blues", () => {
+      const store = makeStore();
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Minor Blues");
+      // b5 of C is F# (semitone 6)
+      expect(store.get(colorNotesAtom)).toEqual(["F#"]);
+    });
+
+    it("returns [] for A Natural Minor (reference minor scale, no divergence)", () => {
+      const store = makeStore();
+      store.set(rootNoteAtom, "A");
+      store.set(scaleNameAtom, "Natural Minor");
+      expect(store.get(colorNotesAtom)).toEqual([]);
+    });
+  });
+
+  describe("clickedShapeAtom", () => {
+    it("defaults to null", () => {
+      const store = makeStore();
+      expect(store.get(clickedShapeAtom)).toBeNull();
+    });
+
+    it("round-trips set and reset via store.set", () => {
+      const store = makeStore();
+      store.set(clickedShapeAtom, "E");
+      expect(store.get(clickedShapeAtom)).toBe("E");
+      store.set(clickedShapeAtom, null);
+      expect(store.get(clickedShapeAtom)).toBeNull();
     });
   });
 });

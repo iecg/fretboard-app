@@ -1,51 +1,75 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect } from "vitest";
+import { screen, fireEvent } from "@testing-library/react";
 import { MobileTabPanel } from "./MobileTabPanel";
+import {
+  mobileTabAtom,
+  rootNoteAtom,
+  scaleNameAtom,
+  chordTypeAtom,
+  chordRootAtom,
+} from "../store/atoms";
+import {
+  renderWithAtoms,
+  makeAtomStore,
+  renderWithStore,
+} from "../__tests__/utils/renderWithAtoms";
 
-const defaultProps = {
-  mobileTab: "theory" as const,
-  setMobileTab: vi.fn(),
-  theoryTabContent: <div>Theory Content</div>,
-  viewTabContent: <div>View Content</div>,
-};
+/** Minimal valid seeds to prevent rendering errors in inlined child components. */
+const BASE_SEEDS = [
+  [rootNoteAtom, "C"],
+  [scaleNameAtom, "Major"],
+  [chordTypeAtom, null],
+  [chordRootAtom, "C"],
+] as const;
 
 describe("MobileTabPanel", () => {
   it("renders ToggleBar with 2 tabs", () => {
-    render(<MobileTabPanel {...defaultProps} />);
+    renderWithAtoms(<MobileTabPanel />, [...BASE_SEEDS]);
     expect(screen.getByText("Theory")).toBeInTheDocument();
     expect(screen.getByText("View")).toBeInTheDocument();
   });
 
-  it("shows theoryTabContent when mobileTab is theory", () => {
-    render(<MobileTabPanel {...defaultProps} mobileTab="theory" />);
-    expect(screen.getByText("Theory Content")).toBeInTheDocument();
-    expect(screen.queryByText("View Content")).not.toBeInTheDocument();
+  it("shows theory tab content when mobileTab atom is 'theory'", () => {
+    renderWithAtoms(<MobileTabPanel />, [
+      ...BASE_SEEDS,
+      [mobileTabAtom, "theory"],
+    ]);
+    // TheoryControls renders a Root note grid and Scale Family selector
+    expect(screen.getByText("Root")).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Scale Family" })).toBeInTheDocument();
   });
 
-  it("shows viewTabContent when mobileTab is view", () => {
-    render(<MobileTabPanel {...defaultProps} mobileTab="view" />);
-    expect(screen.getByText("View Content")).toBeInTheDocument();
-    expect(screen.queryByText("Theory Content")).not.toBeInTheDocument();
+  it("shows view tab content when mobileTab atom is 'view'", () => {
+    renderWithAtoms(<MobileTabPanel />, [
+      ...BASE_SEEDS,
+      [mobileTabAtom, "view"],
+    ]);
+    // FingeringPatternControls renders a Fingering Pattern section
+    expect(screen.getByText("Fingering Pattern")).toBeInTheDocument();
+    expect(screen.queryByText("Root")).not.toBeInTheDocument();
   });
 
-  it("clicking Theory calls setMobileTab with theory", () => {
-    const setMobileTab = vi.fn();
-    render(<MobileTabPanel {...defaultProps} setMobileTab={setMobileTab} />);
-    fireEvent.click(screen.getByText("Theory"));
-    expect(setMobileTab).toHaveBeenCalledWith("theory");
+  it("does not show theory content when on view tab", () => {
+    renderWithAtoms(<MobileTabPanel />, [
+      ...BASE_SEEDS,
+      [mobileTabAtom, "view"],
+    ]);
+    expect(screen.queryByRole("combobox", { name: "Scale Family" })).not.toBeInTheDocument();
   });
 
-  it("clicking View calls setMobileTab with view", () => {
-    const setMobileTab = vi.fn();
-    render(
-      <MobileTabPanel
-        {...defaultProps}
-        mobileTab="theory"
-        setMobileTab={setMobileTab}
-      />,
-    );
+  it("switching to View tab updates mobileTabAtom", () => {
+    const store = makeAtomStore([...BASE_SEEDS, [mobileTabAtom, "theory"]]);
+    renderWithStore(<MobileTabPanel />, store);
     fireEvent.click(screen.getByText("View"));
-    expect(setMobileTab).toHaveBeenCalledWith("view");
+    expect(store.get(mobileTabAtom)).toBe("view");
   });
+
+  it("switching to Theory tab updates mobileTabAtom", () => {
+    const store = makeAtomStore([...BASE_SEEDS, [mobileTabAtom, "view"]]);
+    renderWithStore(<MobileTabPanel />, store);
+    fireEvent.click(screen.getByText("Theory"));
+    expect(store.get(mobileTabAtom)).toBe("theory");
+  });
+
 });
