@@ -31,6 +31,7 @@ import { BrandMark } from "./components/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark";
 import { DegreeChipStrip } from "./components/DegreeChipStrip";
 import { ChordRowStrip } from "./components/ChordRowStrip";
+import { RelationshipRow } from "./components/RelationshipRow";
 import "./App.css";
 
 const END_FRET = 25;
@@ -86,7 +87,9 @@ function AppContent() {
     summaryHeaderLeft,
     summaryHeaderRight,
     summaryPrimaryMode,
-    showSecondaryChordRail,
+    showRelationshipRow,
+    sharedChordMembers,
+    outsideChordMembers,
     recenterKey,
     onShapeClick,
     onRecenter,
@@ -258,12 +261,10 @@ function AppContent() {
           legendItems={[]}
         />
       )}
-      {showSecondaryChordRail && (
-        <ChordRowStrip
-          chordLabel={chordLabel ?? ""}
-          chordRow={summaryChordRow}
-          legendItems={[]}
-          compact
+      {showRelationshipRow && (
+        <RelationshipRow
+          sharedMembers={sharedChordMembers}
+          outsideMembers={outsideChordMembers}
         />
       )}
     </div>
@@ -335,6 +336,7 @@ function AppContent() {
       className="app-container"
       data-layout-tier={layout.tier}
       data-layout-variant={layout.variant}
+      data-chord-active={chordType ? "true" : undefined}
       data-header-subtitle={layout.showHeaderSubtitle ? "visible" : "hidden"}
       data-header-actions={layout.compactHeaderActions ? "compact" : "default"}
       data-full-width-overlay={layout.fullWidthOverlay ? "true" : "false"}

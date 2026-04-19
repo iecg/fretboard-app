@@ -442,11 +442,9 @@ export default function useDisplayState() {
     if (!chordType || !chordLabel) return null;
     if (viewMode === "chord") return "Chord only";
     if (viewMode === "outside") return `against ${scaleLabel}`;
-    // compare: chord label + member intervals
-    return chordMemberLabels
-      ? `${chordLabel} \u2022 ${chordMemberLabels}`
-      : chordLabel;
-  }, [chordType, viewMode, scaleLabel, chordLabel, chordMemberLabels]);
+    // compare: chord label only — member intervals moved to relationship row
+    return chordLabel;
+  }, [chordType, viewMode, scaleLabel, chordLabel]);
 
   // Primary strip mode: "scale" for compare or no chord, "chord"/"outside" for those viewModes
   const summaryPrimaryMode = useMemo((): "scale" | "chord" | "outside" => {
@@ -464,6 +462,21 @@ export default function useDisplayState() {
         (chordRoot !== rootNote || focusPreset !== "all" || hasOutsideChordMembers)
       ),
     [chordType, viewMode, chordRoot, rootNote, focusPreset, hasOutsideChordMembers],
+  );
+
+  // Alias used by the RelationshipRow rendering path (same logic as showSecondaryChordRail)
+  const showRelationshipRow = showSecondaryChordRail;
+
+  // Chord members shared with the scale (in-scale), for the relationship row
+  const sharedChordMembers = useMemo(
+    () => summaryChordRow.filter((e) => e.inScale),
+    [summaryChordRow],
+  );
+
+  // Chord members outside the scale, for the relationship row
+  const outsideChordMembers = useMemo(
+    () => summaryChordRow.filter((e) => !e.inScale),
+    [summaryChordRow],
   );
 
   return {
@@ -519,6 +532,9 @@ export default function useDisplayState() {
     summaryHeaderRight,
     summaryPrimaryMode,
     showSecondaryChordRail,
+    showRelationshipRow,
+    sharedChordMembers,
+    outsideChordMembers,
     highlightNotes,
     boxBounds,
     shapePolygons,

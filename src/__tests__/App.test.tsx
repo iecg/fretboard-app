@@ -412,7 +412,7 @@ describe("App", () => {
       });
     });
 
-    it("compare mode: no secondary chord rail when same root, all preset, all in scale", async () => {
+    it("compare mode: no relationship row in simple diatonic case (same root, all preset, all in scale)", async () => {
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("chordRoot"), "C");
       localStorage.setItem(k("chordType"), "Major Triad");
@@ -422,10 +422,10 @@ describe("App", () => {
       await waitFor(() => {
         expect(document.querySelector(".summary-ribbon")).toBeTruthy();
       });
-      expect(document.querySelector(".chord-row-strip--compact")).toBeNull();
+      expect(document.querySelector(".relationship-row")).toBeNull();
     });
 
-    it("compare mode: shows secondary compact rail when chordRoot differs from scale root", async () => {
+    it("compare mode: shows relationship row when chordRoot differs from scale root", async () => {
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("chordRoot"), "G");
       localStorage.setItem(k("chordType"), "Major Triad");
@@ -433,7 +433,7 @@ describe("App", () => {
       localStorage.setItem(k("viewMode"), "compare");
       render(<App />);
       await waitFor(() => {
-        expect(document.querySelector(".chord-row-strip--compact")).toBeTruthy();
+        expect(document.querySelector(".relationship-row")).toBeTruthy();
       });
     });
 

@@ -844,7 +844,7 @@ describe("useDisplayState", () => {
       expect(result.current.summaryHeaderLeft).toBe(result.current.scaleLabel);
     });
 
-    it("headerRight in compare mode contains chordLabel and member labels", () => {
+    it("headerRight in compare mode is chordLabel only (member intervals moved to relationship row)", () => {
       const store = createStore();
       store.set(rootNoteAtom, "C");
       store.set(chordRootAtom, "C");
@@ -854,8 +854,9 @@ describe("useDisplayState", () => {
         wrapper: makeWrapper(store),
       });
       const right = result.current.summaryHeaderRight;
-      expect(right).toContain("C Major Triad");
-      expect(right).toContain("1");
+      expect(right).toBe("C Major Triad");
+      // Member interval labels (e.g. "1 3 5") are no longer in the header
+      expect(right).not.toContain(" \u2022 ");
     });
 
     it("headerLeft is chordLabel in chord viewMode", () => {
@@ -900,6 +901,169 @@ describe("useDisplayState", () => {
       });
       expect(result.current.summaryHeaderRight).toMatch(/^against /);
       expect(result.current.summaryHeaderRight).toContain(result.current.scaleLabel);
+    });
+  });
+
+  describe("sharedChordMembers and outsideChordMembers", () => {
+    it("sharedChordMembers contains only in-scale chord members", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C"); // C Major: C D E F G A B
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Dominant 7th"); // C E G A# — A# outside
+      store.set(focusPresetAtom, "all");
+      store.set(viewModeAtom, "compare");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      const shared = result.current.sharedChordMembers;
+      expect(shared.every((e) => e.inScale)).toBe(true);
+      expect(shared.some((e) => e.internalNote === "A#")).toBe(false);
+    });
+
+    it("outsideChordMembers contains only out-of-scale chord members", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C"); // C Major
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Dominant 7th"); // C E G A# — A# outside
+      store.set(focusPresetAtom, "all");
+      store.set(viewModeAtom, "compare");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      const outside = result.current.outsideChordMembers;
+      expect(outside.every((e) => !e.inScale)).toBe(true);
+      expect(outside.some((e) => e.internalNote === "A#")).toBe(true);
+    });
+
+    it("shared + outside together equal all active chord members", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(chordRootAtom, "D");
+      store.set(chordTypeAtom, "Dominant 7th"); // D F# A C — F# outside
+      store.set(focusPresetAtom, "all");
+      store.set(viewModeAtom, "compare");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      const total =
+        result.current.sharedChordMembers.length +
+        result.current.outsideChordMembers.length;
+      expect(total).toBe(result.current.summaryChordRow.length);
+    });
+
+    it("no note appears in both shared and outside groups", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(chordRootAtom, "D");
+      store.set(chordTypeAtom, "Dominant 7th");
+      store.set(focusPresetAtom, "all");
+      store.set(viewModeAtom, "compare");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      const sharedNotes = new Set(result.current.sharedChordMembers.map((e) => e.internalNote));
+      const outsideNotes = result.current.outsideChordMembers.map((e) => e.internalNote);
+      expect(outsideNotes.some((n) => sharedNotes.has(n))).toBe(false);
+    });
+
+    it("sharedChordMembers is empty when chord root is outside scale and it's the only tone", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C"); // C Major
+      store.set(chordRootAtom, "F#");
+      store.set(chordTypeAtom, "Power Chord (5)"); // F# C# — both outside C Major
+      store.set(focusPresetAtom, "all");
+      store.set(viewModeAtom, "compare");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      // F# and C# are both outside C Major
+      expect(result.current.sharedChordMembers).toHaveLength(0);
+      expect(result.current.outsideChordMembers.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("showRelationshipRow", () => {
+    it("is false when no chord type is set", () => {
+      const store = createStore();
+      store.set(chordTypeAtom, null);
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.showRelationshipRow).toBe(false);
+    });
+
+    it("is false in simple diatonic compare case: same root, all preset, all in scale", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad"); // C E G — all in C Major
+      store.set(focusPresetAtom, "all");
+      store.set(viewModeAtom, "compare");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.showRelationshipRow).toBe(false);
+    });
+
+    it("is true when chordRoot differs from rootNote", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(chordRootAtom, "E");
+      store.set(chordTypeAtom, "Major Triad");
+      store.set(focusPresetAtom, "all");
+      store.set(viewModeAtom, "compare");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.showRelationshipRow).toBe(true);
+    });
+
+    it("is true when chord has outside-scale members", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(chordRootAtom, "D");
+      store.set(chordTypeAtom, "Dominant 7th"); // F# outside C Major
+      store.set(focusPresetAtom, "all");
+      store.set(viewModeAtom, "compare");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.showRelationshipRow).toBe(true);
+    });
+
+    it("is false when viewMode is chord", () => {
+      const store = createStore();
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad");
+      store.set(viewModeAtom, "chord");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.showRelationshipRow).toBe(false);
+    });
+
+    it("is false when viewMode is outside", () => {
+      const store = createStore();
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad");
+      store.set(viewModeAtom, "outside");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.showRelationshipRow).toBe(false);
+    });
+
+    it("matches showSecondaryChordRail value exactly", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(chordRootAtom, "D");
+      store.set(chordTypeAtom, "Dominant 7th");
+      store.set(focusPresetAtom, "all");
+      store.set(viewModeAtom, "compare");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.showRelationshipRow).toBe(result.current.showSecondaryChordRail);
     });
   });
 

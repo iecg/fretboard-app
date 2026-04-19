@@ -1256,6 +1256,17 @@
   padding-top: 0.18rem;
 }
 
+/* Relationship row sits flush inside the ribbon — no extra card chrome */
+.app-container .summary-ribbon .relationship-row {
+  width: 100%;
+  margin: 0;
+}
+
+/* Chord overlay active: scale-only fretboard notes dim further so chord tones lead */
+.app-container[data-chord-active="true"] .note-scale-only {
+  opacity: 0.45;
+}
+
 /* Mobile ribbon */
 .app-container[data-layout-tier="mobile"] .summary-ribbon {
   width: 100%;
