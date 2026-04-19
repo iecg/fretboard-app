@@ -14,6 +14,7 @@ import type {
   ViewMode,
   FocusPreset,
   ChordMemberName,
+  ChordMemberFact,
   ResolvedChordMember,
   PracticeLens,
   ChordRowEntry,
@@ -405,6 +406,36 @@ export const chordSummaryNotesAtom = atom((get) => {
 // allChordMembersAtom — ChordRowEntry list with scale-membership and roles
 // Used by practiceLensAtoms and atoms.ts summary atoms.
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// chordMemberFactsAtom — pure chord facts, no scale context
+//
+// Reads only chordRootAtom and chordTypeAtom. Does NOT read scaleNotesAtom,
+// rootNoteAtom, or scaleNameAtom. This is the scale-independent layer from
+// which scale-aware atoms (allChordMembersAtom) are built.
+// ---------------------------------------------------------------------------
+
+export const chordMemberFactsAtom = atom((get): ChordMemberFact[] => {
+  const chordRoot = get(chordRootAtom);
+  const chordType = get(chordTypeAtom);
+  if (!chordType) return [];
+  const def = CHORD_DEFINITIONS[chordType];
+  if (!def) return [];
+  const rootIndex = NOTES.indexOf(chordRoot);
+  if (rootIndex === -1) return [];
+  // displayNote uses chord-root-relative accidentals (FLAT_KEYS membership of
+  // chordRoot), NOT the scale-derived useFlats — keeping this atom scale-free.
+  return def.members.map((m): ChordMemberFact => {
+    const note = NOTES[(rootIndex + m.semitone) % 12];
+    return {
+      internalNote: note,
+      displayNote: formatAccidental(getNoteDisplay(note, chordRoot)),
+      memberName: m.name === "root" ? "1" : formatAccidental(m.name),
+      semitone: m.semitone,
+      isChordRoot: m.name === "root",
+    };
+  });
+});
 
 export const allChordMembersAtom = atom((get) => {
   const chordType = get(chordTypeAtom);

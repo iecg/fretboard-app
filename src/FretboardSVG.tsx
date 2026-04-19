@@ -10,6 +10,7 @@ import {
   SCALES,
   type ViewMode,
   type PracticeLens,
+  type NoteSemantics,
 } from "./theory";
 import { parseNote } from "./guitar";
 import { STRING_ROW_PX_TABLET } from "./layout/responsive";
@@ -61,6 +62,13 @@ interface FretboardSVGProps {
   hiddenNotes?: Set<string>;
   useFlats?: boolean;
   scaleName?: string;
+  /**
+   * Composable per-note semantics from noteSemanticMapAtom. When provided,
+   * each rendered note element gains supplementary data attributes
+   * (data-note-tension, data-note-guide-tone) so a note can carry multiple
+   * semantic roles simultaneously — e.g. chord root AND tension note.
+   */
+  noteSemantics?: Map<string, NoteSemantics>;
   id?: string;
   onNoteClick?: (
     stringIndex: number,
@@ -368,6 +376,7 @@ export const FretboardSVG = memo(function FretboardSVG({
   hiddenNotes,
   useFlats = false,
   scaleName = "",
+  noteSemantics,
   id,
   onNoteClick,
 }: FretboardSVGProps) {
@@ -736,6 +745,7 @@ export const FretboardSVG = memo(function FretboardSVG({
           return false;
         })();
 
+        const semantics = noteSemantics?.get(noteName);
         notes.push({
           stringIndex,
           fretIndex,
@@ -744,11 +754,13 @@ export const FretboardSVG = memo(function FretboardSVG({
           displayValue,
           applyDimOpacity,
           isHidden,
+          isTension: semantics?.isTension ?? false,
+          isGuideTone: semantics?.isGuideTone ?? false,
         });
       }
     }
     return notes;
-  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, wrappedNotes, hideNonChordNotes, practiceLens, tuning]);
+  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, wrappedNotes, hideNonChordNotes, practiceLens, tuning, noteSemantics]);
 
   return (
     <div role="group" aria-label={ariaLabel} className="fretboard-board">
@@ -1026,6 +1038,8 @@ export const FretboardSVG = memo(function FretboardSVG({
                 displayValue,
                 applyDimOpacity,
                 isHidden,
+                isTension,
+                isGuideTone,
               }) => {
                 const cx = fretCenterX(fretIndex);
                 const cy = stringYAt(stringIndex, cx);
@@ -1082,6 +1096,8 @@ export const FretboardSVG = memo(function FretboardSVG({
                     )}
                     data-note-role={noteClass !== "note-inactive" ? noteClass : undefined}
                     data-note-shape={noteShape}
+                    data-note-tension={isTension || undefined}
+                    data-note-guide-tone={isGuideTone || undefined}
                     style={{ opacity: applyDimOpacity ? 0.8 : 1 }}
                   >
                     {shapeEl}
@@ -1109,7 +1125,7 @@ export const FretboardSVG = memo(function FretboardSVG({
           }}
         >
           {noteData.map(
-            ({ stringIndex, fretIndex, noteClass, displayValue, isHidden, noteName }) => {
+            ({ stringIndex, fretIndex, noteClass, displayValue, isHidden, noteName, isTension, isGuideTone }) => {
               const cx = fretCenterX(fretIndex);
               const cy = stringYAt(stringIndex, cx);
               const r = noteBubblePx / 2;
@@ -1127,6 +1143,8 @@ export const FretboardSVG = memo(function FretboardSVG({
                   tabIndex={isHidden ? -1 : undefined}
                   aria-label={`${formatAccidental(displayValue)} on string ${stringIndex + 1}, fret ${fretIndex}`}
                   data-note-role={noteClass !== "note-inactive" ? noteClass : undefined}
+                  data-note-tension={isTension || undefined}
+                  data-note-guide-tone={isGuideTone || undefined}
                   className={clsx(
                     "note-bubble",
                     noteClass,

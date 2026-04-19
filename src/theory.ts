@@ -145,6 +145,93 @@ export interface NoteSemantics {
   memberName?: ChordMemberName;
 }
 
+// Pure chord member fact — no scale context.
+// Separates what the chord defines (notes, intervals, root) from what the scale
+// adds (in-scale membership, tension roles).
+export interface ChordMemberFact {
+  internalNote: string;
+  /** Formatted using chord-root-relative accidentals — scale-independent. */
+  displayNote: string;
+  /** "1", "♭3", "3", "♭5", "5", "♭7", "7" */
+  memberName: string;
+  semitone: number;
+  isChordRoot: boolean;
+}
+
+// Context supplied to lens availability predicates.
+export interface LensAvailabilityContext {
+  hasChordOverlay: boolean;
+  /** Chord definition includes a 3rd or 7th member. */
+  hasGuideTones: boolean;
+  /** Scale has characteristic/divergent color notes. */
+  hasColorNotes: boolean;
+  /** At least one active chord tone falls outside the scale. */
+  hasOutsideTones: boolean;
+}
+
+// Registry entry for a practice lens: description + availability contract.
+export interface LensRegistryEntry {
+  id: PracticeLens;
+  label: string;
+  description: string;
+  isAvailable: (ctx: LensAvailabilityContext) => boolean;
+  /** Returns a human-readable reason when the lens is unavailable, or null. */
+  unavailableReason: (ctx: LensAvailabilityContext) => string | null;
+}
+
+export const LENS_REGISTRY: readonly LensRegistryEntry[] = [
+  {
+    id: "targets",
+    label: "Chord tones",
+    description: "Shows only chord root and active chord tones — for landing and outlining harmony",
+    isAvailable: (ctx) => ctx.hasChordOverlay,
+    unavailableReason: (ctx) =>
+      ctx.hasChordOverlay ? null : "Requires an active chord overlay",
+  },
+  {
+    id: "guide-tones",
+    label: "Guide tones",
+    description: "Highlights 3rd and 7th — the voice-leading tones that define chord quality",
+    isAvailable: (ctx) => ctx.hasChordOverlay && ctx.hasGuideTones,
+    unavailableReason: (ctx) => {
+      if (!ctx.hasChordOverlay) return "Requires an active chord overlay";
+      if (!ctx.hasGuideTones) return "Chord has no guide tones (3rd or 7th)";
+      return null;
+    },
+  },
+  {
+    id: "color",
+    label: "Color notes",
+    description: "Shows characteristic modal or blue notes that give the scale its flavor",
+    isAvailable: (ctx) => ctx.hasChordOverlay && ctx.hasColorNotes,
+    unavailableReason: (ctx) => {
+      if (!ctx.hasChordOverlay) return "Requires an active chord overlay";
+      if (!ctx.hasColorNotes) return "Scale has no characteristic color notes";
+      return null;
+    },
+  },
+  {
+    id: "targets-color",
+    label: "Targets + color",
+    description: "Combines chord tones with characteristic scale color notes — best for general-purpose soloing",
+    isAvailable: (ctx) => ctx.hasChordOverlay,
+    unavailableReason: (ctx) =>
+      ctx.hasChordOverlay ? null : "Requires an active chord overlay",
+  },
+  {
+    id: "tension",
+    label: "Tension notes",
+    description: "Highlights chord tones outside the scale — tones that create tension and need resolution",
+    isAvailable: (ctx) => ctx.hasChordOverlay && ctx.hasOutsideTones,
+    unavailableReason: (ctx) => {
+      if (!ctx.hasChordOverlay) return "Requires an active chord overlay";
+      if (!ctx.hasOutsideTones)
+        return "Chord is fully within the scale — no outside tones";
+      return null;
+    },
+  },
+];
+
 // Practice bar coaching cue types
 export type PracticeCueKind = "land-on" | "guide-tones" | "color-note" | "tension";
 
