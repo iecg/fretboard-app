@@ -593,8 +593,11 @@ describe("App", () => {
     });
 
     it("persists mobile tab selection to localStorage", async () => {
-      // MobileTabPanel only renders on mobile viewports, so mobileTabAtom
-      // is only accessed (and thus persisted) when viewport is mobile-sized.
+      // mobileTabAtom is mounted on every App render (AppContent calls
+      // useAtom(mobileTabAtom) unconditionally), so the default value is
+      // written to localStorage regardless of viewport. setViewport(390, 844)
+      // is kept so MobileTabPanel mounts alongside for parity with sibling
+      // mobile-layout tests.
       setViewport(390, 844);
       render(<App />);
       expect(localStorage.getItem(k("mobileTab"))).toBe("theory");

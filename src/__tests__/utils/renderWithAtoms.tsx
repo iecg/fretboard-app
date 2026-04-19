@@ -2,6 +2,15 @@ import { type ReactElement } from "react";
 import { render, type RenderOptions } from "@testing-library/react";
 import { createStore, Provider, type Atom } from "jotai";
 
+type AtomSeeds = ReadonlyArray<readonly [Atom<unknown>, unknown]>;
+type JotaiStore = ReturnType<typeof createStore>;
+
+function seedAtoms(store: JotaiStore, seeds: AtomSeeds): void {
+  for (const [atom, value] of seeds) {
+    store.set(atom as Parameters<typeof store.set>[0], value);
+  }
+}
+
 /**
  * Renders a React element inside a Jotai Provider backed by a fresh isolated store.
  * Pass seed pairs to pre-populate atom values before render.
@@ -13,13 +22,11 @@ import { createStore, Provider, type Atom } from "jotai";
  */
 export function renderWithAtoms(
   ui: ReactElement,
-  seeds: ReadonlyArray<readonly [Atom<unknown>, unknown]> = [],
+  seeds: AtomSeeds = [],
   options?: Omit<RenderOptions, "wrapper">,
 ) {
   const store = createStore();
-  for (const [atom, value] of seeds) {
-    store.set(atom as Parameters<typeof store.set>[0], value);
-  }
+  seedAtoms(store, seeds);
   return render(ui, {
     ...options,
     wrapper: ({ children }) => (
@@ -36,13 +43,9 @@ export function renderWithAtoms(
  *   const store = makeAtomStore([[myAtom, "initial"]]);
  *   renderWithStore(<MyComponent />, store);
  */
-export function makeAtomStore(
-  seeds: ReadonlyArray<readonly [Atom<unknown>, unknown]> = [],
-) {
+export function makeAtomStore(seeds: AtomSeeds = []) {
   const store = createStore();
-  for (const [atom, value] of seeds) {
-    store.set(atom as Parameters<typeof store.set>[0], value);
-  }
+  seedAtoms(store, seeds);
   return store;
 }
 
