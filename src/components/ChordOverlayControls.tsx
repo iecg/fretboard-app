@@ -108,14 +108,19 @@ export function ChordOverlayControls() {
 
   const currentLensEntry = lensAvailability.find((l) => l.id === practiceLens);
 
-  // Switch away from unavailable lenses when state changes (e.g. chord becomes diatonic,
-  // scale changes). Only switch if at least one lens is available — when chord overlay is
-  // removed, no lens is available and we preserve the stored value for when it returns.
+  // Auto-exit unavailable lenses back to targets-color (the permanent fallback).
+  // Exemptions: (a) targets-color itself — it degrades gracefully when color notes are
+  // absent, so it is never auto-exited; (b) when chord overlay is inactive, all lenses
+  // are unavailable and we preserve the stored value for when the overlay returns.
   useEffect(() => {
-    if (currentLensEntry && !currentLensEntry.available) {
-      const fallback = lensAvailability.find((l) => l.available);
-      if (fallback) {
-        setPracticeLens(fallback.id);
+    if (
+      currentLensEntry &&
+      !currentLensEntry.available &&
+      currentLensEntry.id !== "targets-color"
+    ) {
+      const targetsColor = lensAvailability.find((l) => l.id === "targets-color");
+      if (targetsColor?.available) {
+        setPracticeLens("targets-color");
       }
     }
   }, [currentLensEntry, lensAvailability, setPracticeLens]);
