@@ -206,8 +206,8 @@
 }
 
 .lens-hint {
-  font-size: 0.72rem;
-  color: rgb(188 200 214 / 0.55);
+  font-size: 0.75rem;
+  color: rgb(188 200 214 / 0.72);
   line-height: 1.4;
   margin: 0;
   user-select: none;

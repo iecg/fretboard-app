@@ -96,31 +96,38 @@ export function ChordOverlayControls() {
     })),
   ];
 
+  // lensAvailabilityAtom emits one entry per LENS_REGISTRY member (same 5 ids as
+  // LENS_UI_ORDER), so find() will always succeed. Defensive fallback avoids the
+  // non-null assertion and makes the assumption explicit.
   const lensOptions = LENS_UI_ORDER.map((id) => {
-    const entry = lensAvailability.find((l) => l.id === id)!;
+    const entry = lensAvailability.find((l) => l.id === id);
     return {
-      value: entry.id,
-      label: LENS_LABELS[entry.id],
-      disabled: !entry.available,
-      title: entry.reason ?? undefined,
+      value: id,
+      label: LENS_LABELS[id],
+      disabled: entry ? !entry.available : true,
+      title: entry?.reason ?? undefined,
     };
   });
 
   const currentLensEntry = lensAvailability.find((l) => l.id === practiceLens);
 
-  // Auto-exit unavailable lenses back to targets-color (the permanent fallback).
-  // Exemptions: (a) targets-color itself — it degrades gracefully when color notes are
-  // absent, so it is never auto-exited; (b) when chord overlay is inactive, all lenses
-  // are unavailable and we preserve the stored value for when the overlay returns.
+  // Auto-exit unavailable lenses. targets-color is exempt — it degrades gracefully
+  // (shows chord tones, omits color highlights) when no color notes are present, so
+  // it is never auto-exited and serves as the primary fallback.
+  // Fallback chain: targets-color → targets (targets requires only an active chord
+  // overlay and is always available when another lens becomes unavailable mid-session).
+  // When no lens is available (chord overlay removed), preserve the stored value.
   useEffect(() => {
     if (
       currentLensEntry &&
       !currentLensEntry.available &&
       currentLensEntry.id !== "targets-color"
     ) {
-      const targetsColor = lensAvailability.find((l) => l.id === "targets-color");
-      if (targetsColor?.available) {
-        setPracticeLens("targets-color");
+      const tcAvailable = lensAvailability.find((l) => l.id === "targets-color")?.available;
+      const tAvailable = lensAvailability.find((l) => l.id === "targets")?.available;
+      const fallback = tcAvailable ? "targets-color" : tAvailable ? "targets" : null;
+      if (fallback) {
+        setPracticeLens(fallback);
       }
     }
   }, [currentLensEntry, lensAvailability, setPracticeLens]);
