@@ -38,6 +38,15 @@ const LENS_LABELS: Record<PracticeLens, string> = {
   tension: "Tension",
 };
 
+// Display order for the lens ToggleBar (targets-color is the default and shown first).
+const LENS_UI_ORDER: readonly PracticeLens[] = [
+  "targets-color",
+  "targets",
+  "guide-tones",
+  "color",
+  "tension",
+];
+
 const FOCUS_PRESET_LABELS: Record<FocusPreset, string> = {
   all: "All",
   triad: "Triad",
@@ -87,21 +96,29 @@ export function ChordOverlayControls() {
     })),
   ];
 
-  const lensOptions = lensAvailability.map((entry) => ({
-    value: entry.id,
-    label: LENS_LABELS[entry.id],
-    disabled: !entry.available,
-    title: entry.reason ?? undefined,
-  }));
+  const lensOptions = LENS_UI_ORDER.map((id) => {
+    const entry = lensAvailability.find((l) => l.id === id)!;
+    return {
+      value: entry.id,
+      label: LENS_LABELS[entry.id],
+      disabled: !entry.available,
+      title: entry.reason ?? undefined,
+    };
+  });
 
   const currentLensEntry = lensAvailability.find((l) => l.id === practiceLens);
 
-  // Auto-exit any lens that becomes unavailable (e.g. chord removed, scale changed).
+  // Switch away from unavailable lenses when state changes (e.g. chord becomes diatonic,
+  // scale changes). Only switch if at least one lens is available — when chord overlay is
+  // removed, no lens is available and we preserve the stored value for when it returns.
   useEffect(() => {
     if (currentLensEntry && !currentLensEntry.available) {
-      setPracticeLens("targets-color");
+      const fallback = lensAvailability.find((l) => l.available);
+      if (fallback) {
+        setPracticeLens(fallback.id);
+      }
     }
-  }, [currentLensEntry, setPracticeLens]);
+  }, [currentLensEntry, lensAvailability, setPracticeLens]);
 
   const focusPresetOptions = availableFocusPresets.map((preset) => ({
     value: preset,
