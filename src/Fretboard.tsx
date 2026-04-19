@@ -9,12 +9,14 @@ import {
 import { synth } from "./audio";
 import { fretZoomAtom } from "./store/atoms";
 import { FretboardSVG } from "./FretboardSVG";
-import { 
-  STRING_ROW_PX_DEFAULT, 
-  MAX_FRET, 
-  NOTE_BUBBLE_RATIO, 
-  MIN_FRET_WIDTH_BASE, 
-  MIN_FRET_WIDTH_OVERFLOW_BUFFER 
+import type { ViewMode } from "./theory";
+import type { ShapePolygon } from "./shapes";
+import {
+  STRING_ROW_PX_DEFAULT,
+  MAX_FRET,
+  NOTE_BUBBLE_RATIO,
+  MIN_FRET_WIDTH_BASE,
+  MIN_FRET_WIDTH_OVERFLOW_BUFFER
 } from "./constants";
 import {
   currentTuningAtom,
@@ -49,13 +51,16 @@ interface FretboardProps {
   chordRoot?: string;
   chordFretSpread?: number;
   hideNonChordNotes?: boolean;
+  viewMode?: ViewMode;
   colorNotes?: string[];
-  shapePolygons?: import("./shapes").ShapePolygon[];
+  shapePolygons?: ShapePolygon[];
   wrappedNotes?: Set<string>;
   hiddenNotes?: Set<string>;
   useFlats?: boolean;
   scaleName?: string;
   stringRowPx?: number;
+  autoCenterTarget?: number;
+  recenterKey?: number;
   onFretClick?: (
     stringIndex: number,
     fretIndex: number,
@@ -80,14 +85,14 @@ export function Fretboard(props: FretboardProps) {
   const atomBoxBounds = shapeData.boxBounds;
   const atomShapePolygons = shapeData.shapePolygons;
   const atomWrappedNotes = shapeData.wrappedNotes;
-  const autoCenterTarget = useAtomValue(autoCenterTargetAtom);
-  const recenterKey = useAtomValue(recenterKeyAtom);
-  
+  const atomAutoCenterTarget = useAtomValue(autoCenterTargetAtom);
+  const atomRecenterKey = useAtomValue(recenterKeyAtom);
+
   const atomChordTones = useAtomValue(activeChordTonesAtom);
   const atomChordRoot = useAtomValue(chordRootAtom);
   const atomChordFretSpread = useAtomValue(chordFretSpreadAtom);
   const atomHideNonChordNotes = useAtomValue(hideNonChordNotesAtom);
-  const viewMode = useAtomValue(viewModeAtom);
+  const atomViewMode = useAtomValue(viewModeAtom);
   const practiceLens = useAtomValue(practiceLensAtom);
   const atomColorNotes = useAtomValue(colorNotesAtom);
   const atomHiddenNotes = useAtomValue(hiddenNotesAtom);
@@ -105,6 +110,9 @@ export function Fretboard(props: FretboardProps) {
   const chordRoot = props.chordRoot ?? atomChordRoot;
   const chordFretSpread = props.chordFretSpread ?? atomChordFretSpread;
   const hideNonChordNotes = props.hideNonChordNotes ?? atomHideNonChordNotes;
+  const viewMode = props.viewMode ?? atomViewMode;
+  const autoCenterTarget = props.autoCenterTarget ?? atomAutoCenterTarget;
+  const recenterKey = props.recenterKey ?? atomRecenterKey;
   const colorNotes = props.colorNotes ?? atomColorNotes;
   const shapePolygons = props.shapePolygons ?? atomShapePolygons;
   const wrappedNotes = props.wrappedNotes ?? atomWrappedNotes;
