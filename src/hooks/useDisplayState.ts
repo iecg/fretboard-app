@@ -21,6 +21,8 @@ import {
   enharmonicDisplayAtom,
   setRootNoteAtom,
   scaleBrowseModeAtom,
+  useFlatsAtom,
+  currentTuningAtom,
 } from "../store/atoms";
 import {
   SCALES,
@@ -31,7 +33,6 @@ import {
   getNoteDisplay,
   getDivergentNotes,
   formatAccidental,
-  resolveAccidentalMode,
   getAvailableFocusPresets,
   applyFocusPreset,
   type ViewMode,
@@ -43,7 +44,6 @@ import {
   type LegendItem,
 } from "../theory";
 import { getActiveScaleBrowseOption } from "../theoryCatalog";
-import { STANDARD_TUNING, TUNINGS } from "../guitar";
 import {
   CAGED_SHAPES,
   getCagedCoordinates,
@@ -124,12 +124,9 @@ export default function useDisplayState() {
 
   // useMemo derivations (copied verbatim from App.tsx)
 
-  const useFlats = useMemo(
-    () => resolveAccidentalMode(rootNote, scaleName, accidentalMode),
-    [rootNote, scaleName, accidentalMode],
-  );
+  const useFlats = useAtomValue(useFlatsAtom);
 
-  const currentTuning = TUNINGS[tuningName] || STANDARD_TUNING;
+  const currentTuning = useAtomValue(currentTuningAtom);
 
   // All chord tones for the selected chord (unfiltered; used for degree strip)
   const chordTones = useMemo(() => {
