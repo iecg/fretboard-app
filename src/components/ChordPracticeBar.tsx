@@ -65,6 +65,12 @@ export interface ChordPracticeBarProps {
   targetMembers: ChordRowEntry[];
   outsideMembers: ChordRowEntry[];
   colorNoteEntries?: PracticeBarColorNote[];
+  // Shape-local context
+  isShapeLocal?: boolean;
+  shapeContextLabel?: string | null;
+  shapeLocalTargetMembers?: ChordRowEntry[];
+  shapeLocalOutsideMembers?: ChordRowEntry[];
+  shapeLocalColorNoteEntries?: PracticeBarColorNote[];
   className?: string;
 }
 
@@ -75,16 +81,44 @@ export function ChordPracticeBar({
   targetMembers,
   outsideMembers,
   colorNoteEntries = [],
+  isShapeLocal = false,
+  shapeContextLabel = null,
+  shapeLocalTargetMembers,
+  shapeLocalOutsideMembers,
+  shapeLocalColorNoteEntries,
   className,
 }: ChordPracticeBarProps) {
-  const hasTargets = targetMembers.length > 0;
-  const hasOutside = outsideMembers.length > 0;
-  const hasColor = colorNoteEntries.length > 0;
+  // In single-shape context, prefer shape-local arrays over global ones
+  const effectiveTargets =
+    isShapeLocal && shapeLocalTargetMembers !== undefined
+      ? shapeLocalTargetMembers
+      : targetMembers;
+  const effectiveOutside =
+    isShapeLocal && shapeLocalOutsideMembers !== undefined
+      ? shapeLocalOutsideMembers
+      : outsideMembers;
+  const effectiveColor =
+    isShapeLocal && shapeLocalColorNoteEntries !== undefined
+      ? shapeLocalColorNoteEntries
+      : colorNoteEntries;
+
+  const hasTargets = effectiveTargets.length > 0;
+  const hasOutside = effectiveOutside.length > 0;
+  const hasColor = effectiveColor.length > 0;
 
   if (!hasTargets && !hasOutside && !hasColor) return null;
 
-  const showTargets = (viewMode === "compare" || viewMode === "chord") && hasTargets;
-  const showOutside = (viewMode === "compare" || viewMode === "outside") && hasOutside;
+  // Label suffix and color label (singular when exactly one tone)
+  const suffix = isShapeLocal ? " here" : "";
+  const colorLabel =
+    effectiveColor.length === 1
+      ? `Color tone${suffix}`
+      : `Color tones${suffix}`;
+
+  const showTargets =
+    (viewMode === "compare" || viewMode === "chord") && hasTargets;
+  const showOutside =
+    (viewMode === "compare" || viewMode === "outside") && hasOutside;
   const showColor = viewMode === "compare" && hasColor;
 
   return (
@@ -95,30 +129,41 @@ export function ChordPracticeBar({
     >
       <div className="chord-practice-bar-header">
         <span className="chord-practice-bar-title">{title}</span>
-        {badge && (
-          <span className="chord-practice-bar-badge">{badge}</span>
-        )}
+        {badge && <span className="chord-practice-bar-badge">{badge}</span>}
       </div>
+      {shapeContextLabel && (
+        <div className="chord-practice-bar-context">{shapeContextLabel}</div>
+      )}
       <div className="chord-practice-bar-groups">
         {showTargets && (
           <PillGroup
-            label="Targets"
-            members={targetMembers}
-            ariaLabel="Target chord members"
+            label={`Targets${suffix}`}
+            members={effectiveTargets}
+            ariaLabel={
+              isShapeLocal
+                ? "Target chord members in shape"
+                : "Target chord members"
+            }
           />
         )}
         {showOutside && (
           <PillGroup
-            label="Outside"
-            members={outsideMembers}
-            ariaLabel="Outside scale"
+            label={`Outside${suffix}`}
+            members={effectiveOutside}
+            ariaLabel={
+              isShapeLocal ? "Outside scale in shape" : "Outside scale"
+            }
           />
         )}
         {showColor && (
           <ColorPillGroup
-            label="Color"
-            entries={colorNoteEntries}
-            ariaLabel="Characteristic color tones"
+            label={colorLabel}
+            entries={effectiveColor}
+            ariaLabel={
+              isShapeLocal
+                ? "Characteristic color tones in shape"
+                : "Characteristic color tones"
+            }
           />
         )}
       </div>

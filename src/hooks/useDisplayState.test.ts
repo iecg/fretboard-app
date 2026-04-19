@@ -13,6 +13,7 @@ import {
   linkChordRootAtom,
   fingeringPatternAtom,
   npsPositionAtom,
+  cagedShapesAtom,
 } from "../store/atoms";
 import type { CagedShape } from "../shapes";
 
@@ -1457,6 +1458,211 @@ describe("useDisplayState", () => {
       // C Major Triad (C E G) — in CAGED mode, at least some chord tones should
       // appear in the highlighted shape positions
       expect(result.current.shapeLocalTargetMembers.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("isShapeLocalContext", () => {
+    it("is false when fingeringPattern is all", () => {
+      const store = createStore();
+      store.set(fingeringPatternAtom, "all");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.isShapeLocalContext).toBe(false);
+    });
+
+    it("is false when fingeringPattern is caged with multiple shapes selected", () => {
+      const store = createStore();
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      act(() => {
+        store.set(fingeringPatternAtom, "caged");
+        store.set(cagedShapesAtom, new Set(["C", "A", "G", "E", "D"] as const));
+      });
+      expect(result.current.isShapeLocalContext).toBe(false);
+    });
+
+    it("is true when fingeringPattern is caged with exactly one shape", () => {
+      const store = createStore();
+      store.set(fingeringPatternAtom, "caged");
+      store.set(cagedShapesAtom, new Set(["E"] as const));
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.isShapeLocalContext).toBe(true);
+    });
+
+    it("is true when fingeringPattern is 3nps", () => {
+      const store = createStore();
+      store.set(fingeringPatternAtom, "3nps");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.isShapeLocalContext).toBe(true);
+    });
+  });
+
+  describe("shapeContextLabel", () => {
+    it("is null when fingeringPattern is all", () => {
+      const store = createStore();
+      store.set(fingeringPatternAtom, "all");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.shapeContextLabel).toBeNull();
+    });
+
+    it("is null when caged with multiple shapes", () => {
+      const store = createStore();
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      act(() => {
+        store.set(fingeringPatternAtom, "caged");
+        store.set(cagedShapesAtom, new Set(["C", "A", "G", "E", "D"] as const));
+      });
+      expect(result.current.shapeContextLabel).toBeNull();
+    });
+
+    it("returns 'In E shape' when caged with E shape only", () => {
+      const store = createStore();
+      store.set(fingeringPatternAtom, "caged");
+      store.set(cagedShapesAtom, new Set(["E"] as const));
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.shapeContextLabel).toBe("In E shape");
+    });
+
+    it("returns 'In C shape' when caged with C shape only", () => {
+      const store = createStore();
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      act(() => {
+        store.set(fingeringPatternAtom, "caged");
+        store.set(cagedShapesAtom, new Set(["C"] as const));
+      });
+      expect(result.current.shapeContextLabel).toBe("In C shape");
+    });
+
+    it("returns 'In 3NPS position N' for 3nps mode", () => {
+      const store = createStore();
+      store.set(fingeringPatternAtom, "3nps");
+      store.set(npsPositionAtom, 2);
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.shapeContextLabel).toBe("In 3NPS position 2");
+    });
+  });
+
+  describe("shapeLocalOutsideMembers", () => {
+    it("is empty when chordType is null", () => {
+      const store = createStore();
+      store.set(chordTypeAtom, null);
+      store.set(fingeringPatternAtom, "caged");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.shapeLocalOutsideMembers).toEqual([]);
+    });
+
+    it("is empty when fingeringPattern is all", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(chordRootAtom, "D");
+      store.set(chordTypeAtom, "Dominant 7th");
+      store.set(fingeringPatternAtom, "all");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      expect(result.current.shapeLocalOutsideMembers).toEqual([]);
+    });
+
+    it("contains only outside members present in shape highlights for caged mode", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(chordRootAtom, "D");
+      store.set(chordTypeAtom, "Dominant 7th"); // D F# A C — F# outside C Major
+      store.set(fingeringPatternAtom, "caged");
+      store.set(cagedShapesAtom, new Set(["E"] as const));
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      // Every returned member must be an outside-scale chord member
+      expect(result.current.shapeLocalOutsideMembers.every((m) => !m.inScale)).toBe(true);
+    });
+  });
+
+  describe("practiceBarColorNotesFiltered", () => {
+    it("is empty when scale has no color tones (C Major)", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      act(() => { result.current.setScaleName("Major"); });
+      expect(result.current.practiceBarColorNotesFiltered).toEqual([]);
+    });
+
+    it("includes color tones not covered by active chord targets", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "D");
+      store.set(chordRootAtom, "D");
+      store.set(chordTypeAtom, "Minor Triad"); // D F A — B (6th) is color tone, not a chord tone
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      act(() => { result.current.setScaleName("Dorian"); });
+      // B is the color tone for D Dorian and is not in D Minor Triad → should appear
+      expect(result.current.practiceBarColorNotesFiltered.some((n) => n.internalNote === "B")).toBe(true);
+    });
+
+    it("omits color tones that are already covered by active chord targets", () => {
+      const store = createStore();
+      // G Mixolydian color tone = F (b7). G Dominant 7th = G B D F → F is a chord tone.
+      store.set(rootNoteAtom, "G");
+      store.set(chordRootAtom, "G");
+      store.set(chordTypeAtom, "Dominant 7th");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      act(() => { result.current.setScaleName("Mixolydian"); });
+      // F is the color tone but also a chord tone → filtered out
+      expect(result.current.practiceBarColorNotesFiltered.some((n) => n.internalNote === "F")).toBe(false);
+    });
+  });
+
+  describe("shapeLocalColorNotesFiltered", () => {
+    it("is empty when fingeringPattern is all", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "D");
+      store.set(fingeringPatternAtom, "all");
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      act(() => { result.current.setScaleName("Dorian"); });
+      expect(result.current.shapeLocalColorNotesFiltered).toEqual([]);
+    });
+
+    it("omits color tones covered by active chord targets in caged mode", () => {
+      const store = createStore();
+      // G Mixolydian color tone = F (b7). G Dominant 7th = G B D F → F is a chord tone.
+      store.set(rootNoteAtom, "G");
+      store.set(chordRootAtom, "G");
+      store.set(chordTypeAtom, "Dominant 7th");
+      store.set(fingeringPatternAtom, "caged");
+      store.set(cagedShapesAtom, new Set(["E"] as const));
+      const { result } = renderHook(() => useDisplayState(), {
+        wrapper: makeWrapper(store),
+      });
+      act(() => { result.current.setScaleName("Mixolydian"); });
+      // F (color tone) is also a chord target → must be filtered out
+      expect(result.current.shapeLocalColorNotesFiltered.some((n) => n.internalNote === "F")).toBe(false);
     });
   });
 });

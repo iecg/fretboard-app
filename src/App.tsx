@@ -85,7 +85,12 @@ function AppContent() {
     practiceBarBadge,
     practiceBarTargetMembers,
     practiceBarOutsideMembers,
-    practiceBarColorNotes,
+    practiceBarColorNotesFiltered,
+    isShapeLocalContext,
+    shapeContextLabel,
+    shapeLocalTargetMembers,
+    shapeLocalOutsideMembers,
+    shapeLocalColorNotesFiltered,
     recenterKey,
     onShapeClick,
     onRecenter,
@@ -239,7 +244,12 @@ function AppContent() {
           viewMode={viewMode}
           targetMembers={practiceBarTargetMembers}
           outsideMembers={practiceBarOutsideMembers}
-          colorNoteEntries={practiceBarColorNotes}
+          colorNoteEntries={practiceBarColorNotesFiltered}
+          isShapeLocal={isShapeLocalContext}
+          shapeContextLabel={shapeContextLabel}
+          shapeLocalTargetMembers={shapeLocalTargetMembers}
+          shapeLocalOutsideMembers={shapeLocalOutsideMembers}
+          shapeLocalColorNoteEntries={shapeLocalColorNotesFiltered}
         />
       )}
     </div>

@@ -53,6 +53,16 @@
   white-space: nowrap;
 }
 
+/* Context line: shape/position label shown below the title row */
+.chord-practice-bar-context {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: var(--font-weight-medium);
+  color: rgb(255 255 255 / 0.42);
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
 /* Groups row: lays out Targets / Shared / Outside horizontally */
 .chord-practice-bar-groups {
   display: flex;
