@@ -133,7 +133,10 @@ const practiceLensStorage = {
         return initialValue;
       }
       // One-time migration: map old viewMode to a lens on first access
-      const oldViewMode = localStorage.getItem(k("viewMode"));
+      let oldViewMode = localStorage.getItem(k("viewMode"));
+      if (!oldViewMode) {
+        oldViewMode = localStorage.getItem("viewMode");
+      }
       if (oldViewMode) {
         const migrated = migrateViewModeToLens(oldViewMode);
         localStorage.setItem(key, migrated);
