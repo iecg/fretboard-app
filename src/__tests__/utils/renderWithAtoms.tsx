@@ -13,7 +13,7 @@ import { createStore, Provider, type Atom } from "jotai";
  */
 export function renderWithAtoms(
   ui: ReactElement,
-  seeds: ReadonlyArray<[Atom<unknown>, unknown]> = [],
+  seeds: ReadonlyArray<readonly [Atom<unknown>, unknown]> = [],
   options?: Omit<RenderOptions, "wrapper">,
 ) {
   const store = createStore();
@@ -37,7 +37,7 @@ export function renderWithAtoms(
  *   renderWithStore(<MyComponent />, store);
  */
 export function makeAtomStore(
-  seeds: ReadonlyArray<[Atom<unknown>, unknown]> = [],
+  seeds: ReadonlyArray<readonly [Atom<unknown>, unknown]> = [],
 ) {
   const store = createStore();
   for (const [atom, value] of seeds) {
