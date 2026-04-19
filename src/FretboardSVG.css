@@ -6,8 +6,10 @@
   /* stroke-width set inline via CSS var; this class is for targeting in tests */
 }
 
+/* Note Visuals */
 .fretboard-note {
   cursor: pointer;
+  transition: opacity 0.15s ease-out;
 }
 
 .fretboard-note.hidden {
@@ -18,7 +20,126 @@
   outline: none;
 }
 
-.fretboard-note:focus-visible circle {
-  stroke: var(--accent-primary);
-  stroke-width: 3;
+.fretboard-note:focus-visible circle,
+.fretboard-note:focus-visible rect,
+.fretboard-note:focus-visible polygon {
+  stroke: var(--accent-primary) !important;
+  stroke-width: 3 !important;
+}
+
+/* Note Role Styling */
+.fretboard-note circle,
+.fretboard-note rect,
+.fretboard-note polygon {
+  stroke-width: 1.9;
+  paint-order: stroke;
+}
+
+.fretboard-note text {
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+  user-select: none;
+  paint-order: stroke;
+  stroke: rgb(0 0 0 / 0.45);
+  stroke-width: 1.8;
+  fill: #ffffff;
+}
+
+/* Tonic / Key Root */
+.fretboard-note.key-tonic circle,
+.fretboard-note.key-tonic rect,
+.fretboard-note.key-tonic polygon {
+  stroke: var(--note-ring-tonic);
+  fill: rgb(48 32 22 / 0.95);
+  stroke-width: 2.3;
+}
+.fretboard-note.key-tonic text {
+  stroke-width: 2.3;
+}
+
+/* Chord Root */
+.fretboard-note.chord-root circle,
+.fretboard-note.chord-root rect,
+.fretboard-note.chord-root polygon {
+  stroke: var(--note-ring-tonic);
+  fill: rgb(55 35 18 / 0.97);
+  stroke-width: 2.5;
+}
+.fretboard-note.chord-root text {
+  stroke-width: 2.3;
+}
+
+/* Chord Tone in Scale */
+.fretboard-note.chord-tone-in-scale circle,
+.fretboard-note.chord-tone-in-scale rect,
+.fretboard-note.chord-tone-in-scale polygon {
+  stroke: var(--note-ring-tonic);
+  fill: rgb(40 22 10 / 0.88);
+  stroke-width: 2.0;
+}
+
+/* Active Notes / Scale Notes */
+.fretboard-note.note-active circle,
+.fretboard-note.note-active rect,
+.fretboard-note.note-active polygon,
+.fretboard-note.note-blue circle,
+.fretboard-note.note-blue rect,
+.fretboard-note.note-blue polygon {
+  stroke: var(--note-ring);
+  fill: rgb(20 30 40 / 0.92);
+  stroke-width: 1.9;
+}
+
+/* Scale Only (Hollow) */
+.fretboard-note.scale-only circle,
+.fretboard-note.scale-only rect,
+.fretboard-note.scale-only polygon {
+  stroke: var(--note-ring);
+  fill: transparent;
+  stroke-width: 1.9;
+}
+
+/* Color Tone (Characteristic) */
+.fretboard-note.color-tone circle,
+.fretboard-note.color-tone rect,
+.fretboard-note.color-tone polygon {
+  stroke: var(--note-ring-color-tone);
+  fill: rgb(30 18 55 / 0.82);
+  stroke-width: 1.8;
+}
+.fretboard-note.color-tone text {
+  fill: #e8d8ff;
+}
+
+/* Chord Tone Outside Scale (Diamond) */
+.fretboard-note.chord-tone-outside-scale circle,
+.fretboard-note.chord-tone-outside-scale rect,
+.fretboard-note.chord-tone-outside-scale polygon {
+  stroke: var(--neon-orange-dim);
+  fill: rgb(40 22 10 / 0.72);
+  stroke-width: 2.0;
+  stroke-dasharray: 5 3;
+}
+.fretboard-note.chord-tone-outside-scale text {
+  opacity: 0.9;
+}
+
+/* Glow Filters - applied via inline style for dynamic IDs, but we can set defaults */
+.fretboard-note[data-note-role="key-tonic"],
+.fretboard-note[data-note-role="chord-root"],
+.fretboard-note[data-note-role="chord-tone-in-scale"],
+.fretboard-note[data-note-role="chord-tone-outside-scale"] {
+  filter: var(--glow-orange);
+}
+
+.fretboard-note[data-note-role="note-active"],
+.fretboard-note[data-note-role="note-blue"],
+.fretboard-note[data-note-role="scale-only"] {
+  filter: var(--glow-cyan);
+}
+
+.fretboard-note[data-note-role="color-tone"] {
+  filter: var(--glow-violet);
 }
