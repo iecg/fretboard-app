@@ -188,9 +188,9 @@
 [data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]) circle,
 [data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]) rect,
 [data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]) polygon {
-  stroke-width: 1.2;
-  fill: rgb(40 22 10 / 0.38);
-  stroke: rgb(200 110 40 / 0.50);
+  stroke-width: 1.4;
+  fill: rgb(40 22 10 / 0.52);
+  stroke: rgb(200 110 40 / 0.62);
 }
 [data-practice-lens="guide-tones"] .fretboard-note.chord-root:not([data-note-guide-tone]),
 [data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]) {
@@ -201,8 +201,8 @@
 [data-practice-lens="guide-tones"] .fretboard-note.color-tone circle,
 [data-practice-lens="guide-tones"] .fretboard-note.color-tone rect,
 [data-practice-lens="guide-tones"] .fretboard-note.color-tone polygon {
-  stroke: rgb(167 139 250 / 0.40);
-  fill: rgb(30 18 55 / 0.38);
+  stroke: rgb(167 139 250 / 0.52);
+  fill: rgb(30 18 55 / 0.52);
 }
 [data-practice-lens="guide-tones"] .fretboard-note.color-tone {
   filter: none;
@@ -226,8 +226,8 @@
 /* Chord root: semi-recede so color tones lead. */
 [data-practice-lens="color"] .fretboard-note.chord-root rect:last-of-type {
   stroke-width: 1.8;
-  fill: rgb(55 35 18 / 0.62);
-  stroke: rgb(255 154 77 / 0.68);
+  fill: rgb(55 35 18 / 0.65);
+  stroke: rgb(255 154 77 / 0.72);
 }
 [data-practice-lens="color"] .fretboard-note.chord-root {
   filter: none;
@@ -237,9 +237,9 @@
 [data-practice-lens="color"] .fretboard-note.chord-tone-in-scale circle,
 [data-practice-lens="color"] .fretboard-note.chord-tone-in-scale rect,
 [data-practice-lens="color"] .fretboard-note.chord-tone-in-scale polygon {
-  stroke-width: 1.2;
-  fill: rgb(40 22 10 / 0.38);
-  stroke: rgb(200 110 40 / 0.50);
+  stroke-width: 1.4;
+  fill: rgb(40 22 10 / 0.52);
+  stroke: rgb(200 110 40 / 0.62);
 }
 [data-practice-lens="color"] .fretboard-note.chord-tone-in-scale {
   filter: none;
@@ -258,7 +258,7 @@
 [data-practice-lens="tension"] .fretboard-note.chord-tone-outside-scale rect,
 [data-practice-lens="tension"] .fretboard-note.chord-tone-outside-scale polygon {
   stroke: var(--neon-orange);
-  fill: rgb(95 22 0 / 0.97);
+  fill: rgb(115 30 0 / 0.98);
   stroke-dasharray: none;
   stroke-width: 3.8;
 }
@@ -269,7 +269,7 @@
 /* Tension chord root: squircle (root identity) + dashed vivid stroke (tension). */
 [data-practice-lens="tension"] .fretboard-note.chord-root[data-note-tension] rect:last-of-type {
   stroke: var(--neon-orange);
-  fill: rgb(95 22 0 / 0.97);
+  fill: rgb(115 30 0 / 0.98);
   stroke-dasharray: 6 3;
   stroke-width: 3.8;
 }
@@ -277,8 +277,8 @@
 /* Regular chord root (not tension): semi-recede so tension notes lead. */
 [data-practice-lens="tension"] .fretboard-note.chord-root:not([data-note-tension]) rect:last-of-type {
   stroke-width: 1.8;
-  fill: rgb(55 35 18 / 0.62);
-  stroke: rgb(255 154 77 / 0.68);
+  fill: rgb(55 35 18 / 0.65);
+  stroke: rgb(255 154 77 / 0.72);
 }
 [data-practice-lens="tension"] .fretboard-note.chord-root:not([data-note-tension]) {
   filter: none;
@@ -288,9 +288,9 @@
 [data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale circle,
 [data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale rect,
 [data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale polygon {
-  stroke-width: 1.2;
-  fill: rgb(40 22 10 / 0.38);
-  stroke: rgb(200 110 40 / 0.50);
+  stroke-width: 1.4;
+  fill: rgb(40 22 10 / 0.52);
+  stroke: rgb(200 110 40 / 0.62);
 }
 [data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale {
   filter: none;
@@ -300,8 +300,8 @@
 [data-practice-lens="tension"] .fretboard-note.color-tone circle,
 [data-practice-lens="tension"] .fretboard-note.color-tone rect,
 [data-practice-lens="tension"] .fretboard-note.color-tone polygon {
-  stroke: rgb(167 139 250 / 0.40);
-  fill: rgb(30 18 55 / 0.38);
+  stroke: rgb(167 139 250 / 0.52);
+  fill: rgb(30 18 55 / 0.52);
 }
 [data-practice-lens="tension"] .fretboard-note.color-tone {
   filter: none;
