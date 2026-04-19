@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const CIRCLE_OF_FIFTHS_SELECTOR =
-  '.key-column [role="group"][aria-label="Circle of Fifths — select a key"]';
+  '.key-column [role="group"][aria-labelledby="cof-title"]';
 
 async function gotoApp(page: Page, width: number, height: number) {
   await page.setViewportSize({ width, height });
