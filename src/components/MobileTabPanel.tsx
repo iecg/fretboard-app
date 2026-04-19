@@ -17,11 +17,6 @@ const MOBILE_TAB_OPTIONS = [
   { value: "view", label: "View" },
 ] as const;
 
-interface MobileTabPanelProps {
-  /** Called when a CAGED shape button is clicked (mobile recenter). Phase 04 removes this. */
-  onShapeClick?: () => void;
-}
-
 function MobileKeyExplorer() {
   const rootNote = useAtomValue(rootNoteAtom);
   const setRootNote = useSetAtom(setRootNoteAtom);
@@ -41,7 +36,7 @@ function MobileKeyExplorer() {
   );
 }
 
-export function MobileTabPanel({ onShapeClick }: MobileTabPanelProps) {
+export function MobileTabPanel() {
   const [mobileTab, setMobileTab] = useAtom(mobileTabAtom);
 
   return (
@@ -60,7 +55,7 @@ export function MobileTabPanel({ onShapeClick }: MobileTabPanelProps) {
         )}
         {mobileTab === "view" && (
           <div className="mobile-tab-panel mobile-view-tab">
-            <FingeringPatternControls onShapeClick={onShapeClick} />
+            <FingeringPatternControls />
           </div>
         )}
       </div>

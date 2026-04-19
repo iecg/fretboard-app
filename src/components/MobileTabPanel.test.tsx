@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { screen, fireEvent } from "@testing-library/react";
 import { MobileTabPanel } from "./MobileTabPanel";
 import {
@@ -8,10 +8,7 @@ import {
   scaleNameAtom,
   chordTypeAtom,
   chordRootAtom,
-  fingeringPatternAtom,
-  cagedShapesAtom,
 } from "../store/atoms";
-import { type CagedShape } from "../shapes";
 import {
   renderWithAtoms,
   makeAtomStore,
@@ -75,17 +72,4 @@ describe("MobileTabPanel", () => {
     expect(store.get(mobileTabAtom)).toBe("theory");
   });
 
-  it("calls onShapeClick when a CAGED shape is clicked in view tab", () => {
-    const onShapeClick = vi.fn();
-    renderWithAtoms(<MobileTabPanel onShapeClick={onShapeClick} />, [
-      ...BASE_SEEDS,
-      [mobileTabAtom, "view"],
-      [fingeringPatternAtom, "caged"],
-      [cagedShapesAtom, new Set<CagedShape>(["C"])],
-    ]);
-    // FingeringPatternControls shows CAGED shape buttons when fingeringPattern=caged
-    const eButton = screen.getByText("E");
-    fireEvent.click(eButton);
-    expect(onShapeClick).toHaveBeenCalledTimes(1);
-  });
 });
