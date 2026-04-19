@@ -108,6 +108,7 @@ export function Fretboard(props: FretboardProps) {
     if (!el) return;
     setContainerWidth(el.clientWidth);
     const ro = new ResizeObserver((entries) => {
+      if (entries.length === 0) return;
       const entry = entries[0];
       if (entry) setContainerWidth(entry.contentRect.width);
     });
