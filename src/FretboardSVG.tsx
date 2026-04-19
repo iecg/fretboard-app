@@ -1,4 +1,4 @@
-import { useId, type CSSProperties } from "react";
+import { useId, useMemo, useCallback, type CSSProperties } from "react";
 import { clsx } from "clsx";
 import {
   NOTES,
@@ -98,116 +98,59 @@ function classifyNote(
 type NoteShape = "circle" | "squircle" | "diamond" | "hexagon";
 
 type NoteVisuals = {
-  stroke: string;
-  filter: string;
-  fill: string;
-  textFill: string;
   radiusScale: number;
-  strokeWidth: number;
-  textOpacity: number;
-  strokeDasharray?: string;
   noteShape: NoteShape;
 };
 
 function getNoteVisuals(
   noteClass: string,
-  glowFilterUrls: { cyan: string; orange: string; violet: string },
 ): NoteVisuals {
   switch (noteClass) {
     case "key-tonic":
       return {
-        stroke: "var(--note-ring-tonic)",
-        filter: glowFilterUrls.orange,
-        fill: "rgb(48 32 22 / 0.95)",
-        textFill: "#ffffff",
         radiusScale: 0.82,
-        strokeWidth: 2.3,
-        textOpacity: 1,
         noteShape: "circle",
       };
     case "chord-root":
       // Squircle with amber ring — dominant shape among chord tones.
       return {
-        stroke: "var(--note-ring-tonic)",
-        filter: glowFilterUrls.orange,
-        fill: "rgb(55 35 18 / 0.97)",
-        textFill: "#ffffff",
         radiusScale: 0.86,
-        strokeWidth: 2.5,
-        textOpacity: 1,
         noteShape: "squircle",
       };
     case "chord-tone-in-scale":
       // Squircle with amber ring — chord member in scale.
       return {
-        stroke: "var(--note-ring-tonic)",
-        filter: glowFilterUrls.orange,
-        fill: "rgb(40 22 10 / 0.88)",
-        textFill: "#ffffff",
         radiusScale: 0.82,
-        strokeWidth: 2.0,
-        textOpacity: 1,
         noteShape: "squircle",
       };
     case "note-active":
     case "note-blue":
       return {
-        stroke: "var(--note-ring)",
-        filter: glowFilterUrls.cyan,
-        fill: "rgb(20 30 40 / 0.92)",
-        textFill: "#ffffff",
         radiusScale: 0.82,
-        strokeWidth: 1.9,
-        textOpacity: 1,
         noteShape: "circle",
       };
     case "scale-only":
       // Hollow circle — scale note, not a chord tone. Full brightness so the
       // scale map stays readable even when chord overlay is active.
       return {
-        stroke: "var(--note-ring)",
-        filter: glowFilterUrls.cyan,
-        fill: "transparent",
-        textFill: "#ffffff",
         radiusScale: 0.82,
-        strokeWidth: 1.9,
-        textOpacity: 1,
         noteShape: "circle",
       };
     case "color-tone":
       // Hexagon — characteristic/divergent tone for the current mode/scale.
       return {
-        stroke: "var(--note-ring-color-tone)",
-        filter: glowFilterUrls.violet,
-        fill: "rgb(30 18 55 / 0.82)",
-        textFill: "#e8d8ff",
         radiusScale: 0.80,
-        strokeWidth: 1.8,
-        textOpacity: 1,
         noteShape: "hexagon",
       };
     case "chord-tone-outside-scale":
       // Diamond with dashed amber-dim border — outside the scale.
       return {
-        stroke: "var(--neon-orange-dim)",
-        filter: glowFilterUrls.orange,
-        fill: "rgb(40 22 10 / 0.72)",
-        textFill: "#ffffff",
         radiusScale: 0.82,
-        strokeWidth: 2.0,
-        textOpacity: 0.9,
-        strokeDasharray: "5 3",
         noteShape: "diamond",
       };
     default:
       return {
-        stroke: "none",
-        filter: "none",
-        fill: "transparent",
-        textFill: "transparent",
         radiusScale: 0.8,
-        strokeWidth: 0,
-        textOpacity: 0,
         noteShape: "circle",
       };
   }
@@ -244,13 +187,14 @@ export function FretboardSVG({
   // neckWidthPx + scale math, so the value isn't read here.
   void effectiveZoom;
   const defsPrefix = `fretboard-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
-  const svgDefId = (id: string) => `${defsPrefix}-${id}`;
-  const svgDefUrl = (id: string) => `url(#${svgDefId(id)})`;
-  const glowFilterUrls = {
+  const svgDefId = useCallback((id: string) => `${defsPrefix}-${id}`, [defsPrefix]);
+  const svgDefUrl = useCallback((id: string) => `url(#${svgDefId(id)})`, [svgDefId]);
+  const glowFilterUrls = useMemo(() => ({
     cyan: svgDefUrl("glow-cyan"),
     orange: svgDefUrl("glow-orange"),
     violet: svgDefUrl("glow-violet"),
-  };
+  }), [svgDefUrl]);
+
   const noteBubblePx = Math.round(stringRowPx * NOTE_BUBBLE_RATIO);
   const noteFontPx = Math.round(stringRowPx * 0.44);
   const neckHeight = tuning.length * stringRowPx;
@@ -258,31 +202,16 @@ export function FretboardSVG({
   const hasChordOverlay = chordTones.length > 0;
   const numStrings = tuning.length;
 
-  /* Non-uniform fret spacing — the 12th-root-of-2 rule. Total neck width
-     stays `totalColumns * effectiveZoom`, but frets get progressively
-     narrower toward the bridge. For a real guitar, each fret is shorter
-     than the previous by a factor of 2^(1/12).
+  const { openColumnWidth, scaleLeftAnchor, scalePx } = useMemo(() => {
+    const openWidth = startFret === 0 ? Math.max(noteBubblePx + 12, NUT_WIDTH + 4) : 0;
+    const leftAnchor = startFret === 0 ? 1 : Math.pow(2, -(startFret - 1) / 12);
+    const rightAnchor = Math.pow(2, -endFret / 12);
+    const range = leftAnchor - rightAnchor || 1;
+    const px = (neckWidthPx - openWidth) / range;
+    return { openColumnWidth: openWidth, scaleLeftAnchor: leftAnchor, scalePx: px };
+  }, [startFret, endFret, neckWidthPx, noteBubblePx]);
 
-     When `startFret === 0` we reserve a fixed-width column for the open-
-     string row and let frets 1..endFret compress within the remaining
-     space. Otherwise (scrolled past the nut) the full visible width is
-     divided between visible fret wires using the scale rule.
-
-     `wireXRel(n)` returns the pixel position of fret wire `n` (0 = nut)
-     relative to the visible left edge. `fretToX(n)` returns the centre of
-     fret column `n` (where the note circle + inlay sit). */
-  /* Fret 0 column (the open-string "headstock" area) is shrunk to just fit
-     a note circle with a little padding — the open column is visual-only
-     and shouldn't compete with the scale-accurate frets. */
-  const openColumnWidth =
-    startFret === 0 ? Math.max(noteBubblePx + 12, NUT_WIDTH + 4) : 0;
-  const scaleLeftAnchor =
-    startFret === 0 ? 1 : Math.pow(2, -(startFret - 1) / 12);
-  const scaleRightAnchor = Math.pow(2, -endFret / 12);
-  const scaleRange = scaleLeftAnchor - scaleRightAnchor || 1;
-  const scalePx = (neckWidthPx - openColumnWidth) / scaleRange;
-
-  const wireXRel = (wireIndex: number): number => {
+  const wireXRel = useCallback((wireIndex: number): number => {
     if (startFret === 0 && wireIndex === 0) {
       return openColumnWidth;
     }
@@ -290,135 +219,115 @@ export function FretboardSVG({
       openColumnWidth +
       scalePx * (scaleLeftAnchor - Math.pow(2, -wireIndex / 12))
     );
-  };
+  }, [startFret, openColumnWidth, scalePx, scaleLeftAnchor]);
 
-  const fretToX = (fret: number): number => {
+  const fretToX = useCallback((fret: number): number => {
     if (startFret === 0 && fret === 0) {
       return openColumnWidth / 2;
     }
     const leftWire = fret === 0 ? 0 : wireXRel(fret - 1);
     const rightWire = wireXRel(fret);
     return (leftWire + rightWire) / 2;
-  };
+  }, [startFret, openColumnWidth, wireXRel]);
 
-  const fretColumnWidth = (fret: number): number => {
+  const fretColumnWidth = useCallback((fret: number): number => {
     if (startFret === 0 && fret === 0) return openColumnWidth;
     const leftWire = fret === 0 ? 0 : wireXRel(fret - 1);
     const rightWire = wireXRel(fret);
     return rightWire - leftWire;
-  };
+  }, [startFret, openColumnWidth, wireXRel]);
 
-  /* Neck taper — linear widening from nut to bridge following:
-       width(p) = 1 + NECK_TAPER_SCALE * p   where p ∈ [0,1] along scale length
-     Real electric guitars (Fender Strat: nut 41.9 mm → heel ~57 mm) widen
-     ~36 % total; the fingerboard surface alone tapers ~22 %. We use 0.20,
-     which produces a clearly visible, realistic taper at the default fret range
-     without reading as distorted. */
   const NECK_TAPER_SCALE = 0.20;
-  const fretDistRatio = (wireIdx: number) => 1 - Math.pow(2, -wireIdx / 12);
-  const pLeft = startFret === 0 ? 0 : fretDistRatio(startFret - 1);
-  const pRight = fretDistRatio(endFret);
-  const neckWidthAt = (p: number) => 1 + NECK_TAPER_SCALE * p;
-  const leftHeightRatio = neckWidthAt(pLeft) / neckWidthAt(pRight);
-  const taperYLeft = Math.round((neckHeight * (1 - leftHeightRatio)) / 2);
+  const { taperYLeft, taperPath } = useMemo(() => {
+    const fretDistRatio = (wireIdx: number) => 1 - Math.pow(2, -wireIdx / 12);
+    const pLeft = startFret === 0 ? 0 : fretDistRatio(startFret - 1);
+    const pRight = fretDistRatio(endFret);
+    const neckWidthAt = (p: number) => 1 + NECK_TAPER_SCALE * p;
+    const leftHeightRatio = neckWidthAt(pLeft) / neckWidthAt(pRight);
+    const yLeft = Math.round((neckHeight * (1 - leftHeightRatio)) / 2);
 
-  /* Rounded right end (bridge-side corners). Left (nut) end stays sharp
-     because the tapered edge already reads cleanly there. */
-  const cornerR =
-    endFret === maxFret ? Math.min(Math.round(neckHeight * 0.08), 22) : 0;
-  const taperPath =
-    `M 0 ${taperYLeft} ` +
-    `L ${neckWidthPx - cornerR} 0 ` +
-    `Q ${neckWidthPx} 0 ${neckWidthPx} ${cornerR} ` +
-    `L ${neckWidthPx} ${neckHeight - cornerR} ` +
-    `Q ${neckWidthPx} ${neckHeight} ${neckWidthPx - cornerR} ${neckHeight} ` +
-    `L 0 ${neckHeight - taperYLeft} Z`;
+    const cornerR = endFret === maxFret ? Math.min(Math.round(neckHeight * 0.08), 22) : 0;
+    const path =
+      `M 0 ${yLeft} ` +
+      `L ${neckWidthPx - cornerR} 0 ` +
+      `Q ${neckWidthPx} 0 ${neckWidthPx} ${cornerR} ` +
+      `L ${neckWidthPx} ${neckHeight - cornerR} ` +
+      `Q ${neckWidthPx} ${neckHeight} ${neckWidthPx - cornerR} ${neckHeight} ` +
+      `L 0 ${neckHeight - yLeft} Z`;
+    
+    return { taperYLeft: yLeft, taperPath: path };
+  }, [startFret, endFret, neckHeight, neckWidthPx, maxFret]);
 
-  /* String spread — strings converge toward the nut, mirroring real guitar
-     geometry. On a Fender Strat, E-to-E at nut (35.7 mm) vs bridge (53.3 mm)
-     gives a nut/bridge ratio of ~0.67. We use 0.76 — slightly more spread than
-     real for readability — giving a visible fan without crowding note circles.
-     Decoupled from NECK_TAPER_SCALE so each can be tuned independently. */
   const STRING_OCCUPY_FRAC = 0.86;
   const STRING_SPREAD_LEFT_FRAC = 0.76;
-  const stringSpreadAt = (x: number) => {
-    const xFrac =
-      neckWidthPx > 0 ? Math.max(0, Math.min(1, x / neckWidthPx)) : 0;
-    return STRING_SPREAD_LEFT_FRAC + (1 - STRING_SPREAD_LEFT_FRAC) * xFrac;
-  };
-  const stringYAt = (s: number, x: number): number => {
-    const localSpread = stringSpreadAt(x) * neckHeight * STRING_OCCUPY_FRAC;
+  const stringYAt = useCallback((s: number, x: number): number => {
+    const xFrac = neckWidthPx > 0 ? Math.max(0, Math.min(1, x / neckWidthPx)) : 0;
+    const localSpread = (STRING_SPREAD_LEFT_FRAC + (1 - STRING_SPREAD_LEFT_FRAC) * xFrac) * neckHeight * STRING_OCCUPY_FRAC;
     const t = numStrings > 1 ? s / (numStrings - 1) : 0.5;
     return neckHeight / 2 - localSpread / 2 + t * localSpread;
-  };
+  }, [neckWidthPx, neckHeight, numStrings]);
 
-  const fretCenterX = (fret: number) => fretToX(fret);
+  const fretCenterX = useCallback((fret: number) => fretToX(fret), [fretToX]);
 
-  const svgPolygons = shapePolygons.map((poly, polyIdx) => {
-    if (poly.vertices.length === 0) {
-      return {
-        points: "",
-        color: poly.color,
-        key: `${poly.shape}-${polyIdx}`,
-        poly,
-        centerX: 0,
-      };
-    }
-    const pixelPoints: string[] = [];
-    const verts = poly.vertices;
-    const halfVerts = verts.length / 2;
-    const clampedMin = Math.max(0, poly.intendedMin);
-    const clampedMax = Math.min(maxFret, poly.intendedMax);
-    // Only bleed past the edge when at least one vertex is already naturally
-    // outside the boundary (template offsets produce negative / over-max fret
-    // values). Without this guard, shapes whose template left offset is 0 at
-    // rootFret=0 (e.g. A-shape at open position) would be incorrectly pushed
-    // to intendedMin (<0), flooding the open-string column.
-    const minLeftFret = Math.min(...verts.slice(0, halfVerts).map(v => v.fret));
-    const maxRightFret = Math.max(...verts.slice(halfVerts).map(v => v.fret));
-    const resolveLeftFret = (fret: number) =>
-      minLeftFret < 0 && fret === clampedMin && poly.intendedMin < clampedMin
-        ? poly.intendedMin
-        : fret;
-    const resolveRightFret = (fret: number) =>
-      maxRightFret > maxFret && fret === clampedMax && poly.intendedMax > clampedMax
-        ? poly.intendedMax
-        : fret;
+  const svgPolygons = useMemo(() => {
+    return shapePolygons.map((poly, polyIdx) => {
+      if (poly.vertices.length === 0) {
+        return {
+          points: "",
+          color: poly.color,
+          key: `${poly.shape}-${polyIdx}`,
+          poly,
+          centerX: 0,
+        };
+      }
+      const pixelPoints: string[] = [];
+      const verts = poly.vertices;
+      const halfVerts = verts.length / 2;
+      const clampedMin = Math.max(0, poly.intendedMin);
+      const clampedMax = Math.min(maxFret, poly.intendedMax);
+      
+      const minLeftFret = Math.min(...verts.slice(0, halfVerts).map(v => v.fret));
+      const maxRightFret = Math.max(...verts.slice(halfVerts).map(v => v.fret));
+      const resolveLeftFret = (fret: number) =>
+        minLeftFret < 0 && fret === clampedMin && poly.intendedMin < clampedMin
+          ? poly.intendedMin
+          : fret;
+      const resolveRightFret = (fret: number) =>
+        maxRightFret > maxFret && fret === clampedMax && poly.intendedMax > clampedMax
+          ? poly.intendedMax
+          : fret;
 
-    pixelPoints.push(`${fretToX(resolveLeftFret(verts[0].fret))},0`);
-    for (let i = 0; i < halfVerts; i++) {
-      {
+      pixelPoints.push(`${fretToX(resolveLeftFret(verts[0].fret))},0`);
+      for (let i = 0; i < halfVerts; i++) {
         const fx = fretToX(resolveLeftFret(verts[i].fret));
         pixelPoints.push(`${fx},${stringYAt(verts[i].string, fx)}`);
       }
-    }
-    pixelPoints.push(
-      `${fretToX(resolveLeftFret(verts[halfVerts - 1].fret))},${neckHeight}`,
-    );
-    pixelPoints.push(
-      `${fretToX(resolveRightFret(verts[halfVerts].fret))},${neckHeight}`,
-    );
-    for (let i = halfVerts; i < verts.length; i++) {
-      {
+      pixelPoints.push(
+        `${fretToX(resolveLeftFret(verts[halfVerts - 1].fret))},${neckHeight}`,
+      );
+      pixelPoints.push(
+        `${fretToX(resolveRightFret(verts[halfVerts].fret))},${neckHeight}`,
+      );
+      for (let i = halfVerts; i < verts.length; i++) {
         const fx = fretToX(resolveRightFret(verts[i].fret));
         pixelPoints.push(`${fx},${stringYAt(verts[i].string, fx)}`);
       }
-    }
-    pixelPoints.push(
-      `${fretToX(resolveRightFret(verts[verts.length - 1].fret))},0`,
-    );
+      pixelPoints.push(
+        `${fretToX(resolveRightFret(verts[verts.length - 1].fret))},0`,
+      );
 
-    const points = pixelPoints.join(" ");
-    const s5Center = (verts[halfVerts - 1].fret + verts[halfVerts].fret) / 2;
-    const centerX = fretToX(Math.max(startFret, Math.min(endFret, s5Center)));
-    return {
-      points,
-      color: poly.color,
-      key: `${poly.shape}-${polyIdx}`,
-      poly,
-      centerX,
-    };
-  });
+      const points = pixelPoints.join(" ");
+      const s5Center = (verts[halfVerts - 1].fret + verts[halfVerts].fret) / 2;
+      const centerX = fretToX(Math.max(startFret, Math.min(endFret, s5Center)));
+      return {
+        points,
+        color: poly.color,
+        key: `${poly.shape}-${polyIdx}`,
+        poly,
+        centerX,
+      };
+    });
+  }, [shapePolygons, startFret, endFret, maxFret, neckHeight, fretToX, stringYAt]);
 
   const displayRoot = rootNote
     ? getNoteDisplay(rootNote, rootNote, useFlats)
@@ -434,158 +343,330 @@ export function FretboardSVG({
   /* Inlay positions follow the local (tapered) neck geometry — single
      inlays sit at the vertical centre, double (12 / 24) inlays sit between
      string pairs 1–2 and (N-2)–(N-1). */
-  const inlayYAt = () => neckHeight / 2;
-  const inlayYTopAt = (x: number) =>
+  const inlayYAt = useCallback(() => neckHeight / 2, [neckHeight]);
+  const inlayYTopAt = useCallback((x: number) =>
     numStrings >= 4
       ? (stringYAt(1, x) + stringYAt(2, x)) / 2
-      : stringYAt(0, x) + (stringYAt(numStrings - 1, x) - stringYAt(0, x)) / 3;
-  const inlayYBottomAt = (x: number) =>
+      : stringYAt(0, x) + (stringYAt(numStrings - 1, x) - stringYAt(0, x)) / 3, [numStrings, stringYAt]);
+  const inlayYBottomAt = useCallback((x: number) =>
     numStrings >= 4
       ? (stringYAt(numStrings - 3, x) + stringYAt(numStrings - 2, x)) / 2
       : stringYAt(0, x) +
-        ((stringYAt(numStrings - 1, x) - stringYAt(0, x)) * 2) / 3;
-  const inlayR = Math.max(5, stringRowPx * 0.15);
+        ((stringYAt(numStrings - 1, x) - stringYAt(0, x)) * 2) / 3, [numStrings, stringYAt]);
+  const fretWires = useMemo(() => {
+    const wireStart = startFret === 0 ? 1 : startFret - 1;
+    const wires = [];
+    const wireThickness = 4;
+    for (let wireIdx = wireStart; wireIdx < maxFret; wireIdx++) {
+      const x = wireXRel(wireIdx);
+      wires.push(
+        <g key={`fw-${wireIdx}`}>
+          <rect
+            x={x + 0.6}
+            y={0}
+            width={wireThickness}
+            height={neckHeight}
+            fill="rgb(0 0 0 / 0.45)"
+          />
+          <rect
+            x={x - wireThickness / 2}
+            y={0}
+            width={wireThickness}
+            height={neckHeight}
+            fill={svgDefUrl("fret-wire-cylinder")}
+          />
+        </g>,
+      );
+    }
+    return wires;
+  }, [startFret, maxFret, neckHeight, svgDefUrl, wireXRel]);
 
-  // Pre-compute note data for both SVG rendering and accessible button layer
-  const noteData = tuning.flatMap((_openString, stringIndex) =>
-    Array.from({ length: totalColumns + 1 }, (_, idx) => idx).flatMap((idx) => {
+  const inlays = useMemo(() => {
+    const inlayR = Math.max(5, stringRowPx * 0.15);
+    return Array.from({ length: totalColumns + 1 }).map((_, idx) => {
       const fretIndex = startFret + idx;
-      if (fretIndex >= maxFret) return [];
-
-      const noteName = fretboardLayout[stringIndex][fretIndex];
-
-      const isNoteHidden =
-        hiddenNotes != null &&
-        hiddenNotes.size > 0 &&
-        (hiddenNotes.has(noteName) ||
-          !!(ENHARMONICS[noteName] && hiddenNotes.has(ENHARMONICS[noteName])));
-
-      const isHighlighted =
-        !isNoteHidden &&
-        (highlightNotes.includes(noteName) ||
-          highlightNotes.includes(`${stringIndex}-${fretIndex}`));
-      const isChordTone =
-        !isNoteHidden && hasChordOverlay && chordTones.includes(noteName);
-      const isScaleRoot =
-        !isNoteHidden &&
-        (noteName === rootNote ||
-          ENHARMONICS[noteName] === rootNote ||
-          ENHARMONICS[rootNote] === noteName);
-      const isChordRootNote =
-        !isNoteHidden &&
-        !!chordRoot &&
-        (noteName === chordRoot ||
-          ENHARMONICS[noteName] === chordRoot ||
-          ENHARMONICS[chordRoot] === noteName);
-      const isColorNote =
-        !isNoteHidden &&
-        colorNotes.length > 0 &&
-        colorNotes.some(
-          (cn) =>
-            noteName === cn ||
-            ENHARMONICS[noteName] === cn ||
-            ENHARMONICS[cn] === noteName,
+      if (INLAY_FRETS.includes(fretIndex)) {
+        const x = fretCenterX(fretIndex);
+        return (
+          <circle
+            key={`inlay-${fretIndex}`}
+            data-fret-marker={fretIndex}
+            cx={x}
+            cy={inlayYAt()}
+            r={inlayR}
+            fill={svgDefUrl("inlay-pearl")}
+            filter={svgDefUrl("inlay-shadow")}
+          />
         );
-      const isChordInRange =
-        !hasChordOverlay ||
-        !shapePolygons.length ||
-        boxBounds.some(
-          (b) =>
-            fretIndex >= b.minFret - chordFretSpread &&
-            fretIndex <= b.maxFret + chordFretSpread,
+      }
+      if (INLAY_DOUBLE_FRETS.includes(fretIndex)) {
+        const x = fretCenterX(fretIndex);
+        return (
+          <g
+            key={`inlay-${fretIndex}`}
+            data-fret-marker={fretIndex}
+            data-double-marker="true"
+          >
+            <circle
+              cx={x}
+              cy={inlayYTopAt(x)}
+              r={inlayR}
+              fill={svgDefUrl("inlay-pearl")}
+              filter={svgDefUrl("inlay-shadow")}
+            />
+            <circle
+              cx={x}
+              cy={inlayYBottomAt(x)}
+              r={inlayR}
+              fill={svgDefUrl("inlay-pearl")}
+              filter={svgDefUrl("inlay-shadow")}
+            />
+          </g>
         );
+      }
+      return null;
+    });
+  }, [totalColumns, startFret, stringRowPx, svgDefUrl, fretCenterX, inlayYAt, inlayYBottomAt, inlayYTopAt]);
 
-      const noteClass = isNoteHidden
-        ? "note-inactive"
-        : classifyNote(
-            isScaleRoot,
-            isChordRootNote,
-            isColorNote,
-            isHighlighted,
-            isChordTone,
-            hasChordOverlay,
-            isChordInRange,
-            shapePolygons,
-            boxBounds,
-            fretIndex,
+  const strings = useMemo(() => {
+    return tuning.map((_openString, stringIndex) => {
+      const yLeft = stringYAt(stringIndex, 0);
+      const yRight = stringYAt(stringIndex, neckWidthPx);
+      const isBass = stringIndex >= 3;
+      return (
+        <g key={`string-${stringIndex}`}>
+          <line
+            x1={0}
+            y1={yLeft + 1.8}
+            x2={neckWidthPx}
+            y2={yRight + 1.8}
+            stroke="rgb(0 0 0 / 0.7)"
+            style={{
+              strokeWidth: `calc(var(--string-taper-${stringIndex + 1}) + 1.4px)`,
+            }}
+            strokeLinecap="round"
+            filter={svgDefUrl("string-shadow-blur")}
+          />
+          <line
+            x1={0}
+            y1={yLeft}
+            x2={neckWidthPx}
+            y2={yRight}
+            stroke={isBass ? "#c6ccd2" : "#e4e8ee"}
+            style={{
+              strokeWidth: `var(--string-taper-${stringIndex + 1})`,
+            }}
+            strokeLinecap="round"
+            className={`fretboard-string fretboard-string-${stringIndex + 1}`}
+          />
+          {isBass && (
+            <line
+              x1={0}
+              y1={yLeft}
+              x2={neckWidthPx}
+              y2={yRight}
+              stroke="rgb(60 65 72 / 0.55)"
+              style={{
+                strokeWidth: `var(--string-taper-${stringIndex + 1})`,
+              }}
+              strokeLinecap="butt"
+              strokeDasharray="0.6 1.4"
+            />
+          )}
+        </g>
+      );
+    });
+  }, [tuning, neckWidthPx, svgDefUrl, stringYAt]);
+
+  const woodStack = useMemo(() => {
+    return (
+      <>
+        <rect
+          x={0}
+          y={0}
+          width={neckWidthPx}
+          height={neckHeight}
+          fill={svgDefUrl("fretboard-wood")}
+        />
+        <rect
+          x={0}
+          y={0}
+          width={neckWidthPx}
+          height={neckHeight}
+          fill="#000"
+          filter={svgDefUrl("wood-grain-filter")}
+          opacity={0.92}
+        />
+        <rect
+          x={0}
+          y={0}
+          width={neckWidthPx}
+          height={neckHeight}
+          fill="#000"
+          filter={svgDefUrl("wood-highlights-filter")}
+          opacity={0.6}
+        />
+        <rect
+          x={0}
+          y={0}
+          width={neckWidthPx}
+          height={neckHeight}
+          fill="#000"
+          filter={svgDefUrl("wood-pores-filter")}
+          opacity={0.5}
+        />
+        <rect
+          x={0}
+          y={0}
+          width={neckWidthPx}
+          height={neckHeight}
+          fill={svgDefUrl("fretboard-vignette")}
+        />
+      </>
+    );
+  }, [neckWidthPx, neckHeight, svgDefUrl]);
+
+  const noteData = useMemo(() => {
+    return tuning.flatMap((_openString, stringIndex) =>
+      Array.from({ length: totalColumns + 1 }, (_, idx) => idx).flatMap((idx) => {
+        const fretIndex = startFret + idx;
+        if (fretIndex >= maxFret) return [];
+
+        const noteName = fretboardLayout[stringIndex][fretIndex];
+
+        const isNoteHidden =
+          hiddenNotes != null &&
+          hiddenNotes.size > 0 &&
+          (hiddenNotes.has(noteName) ||
+            !!(ENHARMONICS[noteName] && hiddenNotes.has(ENHARMONICS[noteName])));
+
+        const isHighlighted =
+          !isNoteHidden &&
+          (highlightNotes.includes(noteName) ||
+            highlightNotes.includes(`${stringIndex}-${fretIndex}`));
+        const isChordTone =
+          !isNoteHidden && hasChordOverlay && chordTones.includes(noteName);
+        const isScaleRoot =
+          !isNoteHidden &&
+          (noteName === rootNote ||
+            ENHARMONICS[noteName] === rootNote ||
+            ENHARMONICS[rootNote] === noteName);
+        const isChordRootNote =
+          !isNoteHidden &&
+          !!chordRoot &&
+          (noteName === chordRoot ||
+            ENHARMONICS[noteName] === chordRoot ||
+            ENHARMONICS[chordRoot] === noteName);
+        const isColorNote =
+          !isNoteHidden &&
+          colorNotes.length > 0 &&
+          colorNotes.some(
+            (cn) =>
+              noteName === cn ||
+              ENHARMONICS[noteName] === cn ||
+              ENHARMONICS[cn] === noteName,
+          );
+        const isChordInRange =
+          !hasChordOverlay ||
+          !shapePolygons.length ||
+          boxBounds.some(
+            (b) =>
+              fretIndex >= b.minFret - chordFretSpread &&
+              fretIndex <= b.maxFret + chordFretSpread,
           );
 
-      let displayValue = getNoteDisplayInScale(
-        noteName,
-        rootNote,
-        SCALES[scaleName] || [],
-        useFlats,
-      );
-      if (displayFormat === "degrees" && rootNote) {
-        const normRoot = ENHARMONICS[rootNote]?.includes("b")
-          ? ENHARMONICS[rootNote]
-          : rootNote;
-        const rootIdx = NOTES.indexOf(
-          normRoot.includes("#") ? normRoot : rootNote,
-        );
-        const noteIdx = NOTES.indexOf(noteName);
-        if (rootIdx !== -1 && noteIdx !== -1) {
-          displayValue = INTERVAL_NAMES[(noteIdx - rootIdx + 12) % 12];
-        }
-      } else if (
-        fretIndex === 0 &&
-        parseNote(_openString)?.noteName === noteName
-      ) {
-        displayValue = getNoteDisplayInScale(
+        const noteClass = isNoteHidden
+          ? "note-inactive"
+          : classifyNote(
+              isScaleRoot,
+              isChordRootNote,
+              isColorNote,
+              isHighlighted,
+              isChordTone,
+              hasChordOverlay,
+              isChordInRange,
+              shapePolygons,
+              boxBounds,
+              fretIndex,
+            );
+
+        let displayValue = getNoteDisplayInScale(
           noteName,
           rootNote,
           SCALES[scaleName] || [],
           useFlats,
         );
-      }
-
-      const isWrapped = wrappedNotes.has(`${stringIndex}-${fretIndex}`);
-      const isInsideAnyPolygon = shapePolygons.some((poly) => {
-        const leftFret = poly.vertices[stringIndex]?.fret;
-        const rightFret =
-          poly.vertices[poly.vertices.length - 1 - stringIndex]?.fret;
-        return (
-          leftFret !== undefined &&
-          rightFret !== undefined &&
-          fretIndex >= leftFret &&
-          fretIndex <= rightFret
-        );
-      });
-      const applyDimOpacity =
-        (shapePolygons.length > 0 &&
-          !isInsideAnyPolygon &&
-          (noteClass === "note-blue" ||
-            noteClass === "chord-tone-outside-scale" ||
-            noteClass === "chord-tone-in-scale" ||
-            noteClass === "chord-root" ||
-            noteClass === "key-tonic")) ||
-        (isWrapped && isHighlighted);
-
-      const isHidden = (() => {
-        // chord mode: hide all scale-only notes.
-        if (noteClass === "scale-only" && hideNonChordNotes) return true;
-        // outside mode: only outside chord tones (and outside chord root) visible.
-        if (viewMode === "outside" && hasChordOverlay) {
-          if (noteClass === "chord-tone-outside-scale") return false;
-          if (noteClass === "chord-root" && !isHighlighted) return false;
-          return true;
+        if (displayFormat === "degrees" && rootNote) {
+          const normRoot = ENHARMONICS[rootNote]?.includes("b")
+            ? ENHARMONICS[rootNote]
+            : rootNote;
+          const rootIdx = NOTES.indexOf(
+            normRoot.includes("#") ? normRoot : rootNote,
+          );
+          const noteIdx = NOTES.indexOf(noteName);
+          if (rootIdx !== -1 && noteIdx !== -1) {
+            displayValue = INTERVAL_NAMES[(noteIdx - rootIdx + 12) % 12];
+          }
+        } else if (
+          fretIndex === 0 &&
+          parseNote(_openString)?.noteName === noteName
+        ) {
+          displayValue = getNoteDisplayInScale(
+            noteName,
+            rootNote,
+            SCALES[scaleName] || [],
+            useFlats,
+          );
         }
-        return false;
-      })();
 
-      return [
-        {
-          stringIndex,
-          fretIndex,
-          noteName,
-          noteClass,
-          displayValue,
-          applyDimOpacity,
-          isHidden,
-        },
-      ];
-    }),
-  );
+        const isWrapped = wrappedNotes.has(`${stringIndex}-${fretIndex}`);
+        const isInsideAnyPolygon = shapePolygons.some((poly) => {
+          const leftFret = poly.vertices[stringIndex]?.fret;
+          const rightFret =
+            poly.vertices[poly.vertices.length - 1 - stringIndex]?.fret;
+          return (
+            leftFret !== undefined &&
+            rightFret !== undefined &&
+            fretIndex >= leftFret &&
+            fretIndex <= rightFret
+          );
+        });
+        const applyDimOpacity =
+          (shapePolygons.length > 0 &&
+            !isInsideAnyPolygon &&
+            (noteClass === "note-blue" ||
+              noteClass === "chord-tone-outside-scale" ||
+              noteClass === "chord-tone-in-scale" ||
+              noteClass === "chord-root" ||
+              noteClass === "key-tonic")) ||
+          (isWrapped && isHighlighted);
+
+        const isHidden = (() => {
+          // chord mode: hide all scale-only notes.
+          if (noteClass === "scale-only" && hideNonChordNotes) return true;
+          // outside mode: only outside chord tones (and outside chord root) visible.
+          if (viewMode === "outside" && hasChordOverlay) {
+            if (noteClass === "chord-tone-outside-scale") return false;
+            if (noteClass === "chord-root" && !isHighlighted) return false;
+            return true;
+          }
+          return false;
+        })();
+
+        return [
+          {
+            stringIndex,
+            fretIndex,
+            noteName,
+            noteClass,
+            displayValue,
+            applyDimOpacity,
+            isHidden,
+          },
+        ];
+      }),
+    );
+  }, [tuning, totalColumns, startFret, maxFret, fretboardLayout, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, wrappedNotes, hideNonChordNotes, viewMode]);
 
   return (
     <div role="group" aria-label={ariaLabel} className="fretboard-board">
@@ -596,6 +677,9 @@ export function FretboardSVG({
             height: `${neckHeight + NECK_BORDER * 2}px`,
             width: `${neckWidthPx + NECK_BORDER * 2}px`,
             "--string-row-px": `${stringRowPx}px`,
+            "--glow-cyan": glowFilterUrls.cyan,
+            "--glow-orange": glowFilterUrls.orange,
+            "--glow-violet": glowFilterUrls.violet,
           } as CSSProperties
         }
       >
@@ -831,49 +915,7 @@ export function FretboardSVG({
           </defs>
 
           <g clipPath={svgDefUrl("fretboard-taper")}>
-            {/* Wood stack — base gradient, deep horizontal grain, warm ribbon
-                highlights, fine pore noise, then the edge vignette. */}
-            <rect
-              x={0}
-              y={0}
-              width={neckWidthPx}
-              height={neckHeight}
-              fill={svgDefUrl("fretboard-wood")}
-            />
-            <rect
-              x={0}
-              y={0}
-              width={neckWidthPx}
-              height={neckHeight}
-              fill="#000"
-              filter={svgDefUrl("wood-grain-filter")}
-              opacity={0.92}
-            />
-            <rect
-              x={0}
-              y={0}
-              width={neckWidthPx}
-              height={neckHeight}
-              fill="#000"
-              filter={svgDefUrl("wood-highlights-filter")}
-              opacity={0.6}
-            />
-            <rect
-              x={0}
-              y={0}
-              width={neckWidthPx}
-              height={neckHeight}
-              fill="#000"
-              filter={svgDefUrl("wood-pores-filter")}
-              opacity={0.5}
-            />
-            <rect
-              x={0}
-              y={0}
-              width={neckWidthPx}
-              height={neckHeight}
-              fill={svgDefUrl("fretboard-vignette")}
-            />
+            {woodStack}
 
             {/* Headstock face — the fret 0 area uses a distinct material (a
                 near-black lacquered finish) so it reads as the headstock
@@ -945,136 +987,11 @@ export function FretboardSVG({
                 );
               })()}
 
-            {/* Fret wires — each rendered as a single thin rect filled with a
-              horizontal silver gradient that reads as a cylindrical crown.
-              Loop stops at maxFret so wire 24 is the final rendered wire —
-              the post-24 region exists as wood but has no wire at its right 
-              boundary. */}
-            {(() => {
-              const wireStart = startFret === 0 ? 1 : startFret - 1;
-              const wires = [];
-              const wireThickness = 4;
-              for (let wireIdx = wireStart; wireIdx < maxFret; wireIdx++) {
-                const x = wireXRel(wireIdx);
-                wires.push(
-                  <g key={`fw-${wireIdx}`}>
-                    <rect
-                      x={x + 0.6}
-                      y={0}
-                      width={wireThickness}
-                      height={neckHeight}
-                      fill="rgb(0 0 0 / 0.45)"
-                    />
-                    <rect
-                      x={x - wireThickness / 2}
-                      y={0}
-                      width={wireThickness}
-                      height={neckHeight}
-                      fill={svgDefUrl("fret-wire-cylinder")}
-                    />
-                  </g>,
-                );
-              }
-              return wires;
-            })()}
+            {fretWires}
 
-            {/* Inlay dots — mother-of-pearl radial gradient + drop shadow. Y
-              positions are resolved per-fret so inlays track the tapered
-              strings rather than floating off centre on the wider end. */}
-            {Array.from({ length: totalColumns + 1 }).map((_, idx) => {
-              const fretIndex = startFret + idx;
-              if (INLAY_FRETS.includes(fretIndex)) {
-                const x = fretCenterX(fretIndex);
-                return (
-                  <circle
-                    key={`inlay-${fretIndex}`}
-                    data-fret-marker={fretIndex}
-                    cx={x}
-                    cy={inlayYAt()}
-                    r={inlayR}
-                    fill={svgDefUrl("inlay-pearl")}
-                    filter={svgDefUrl("inlay-shadow")}
-                  />
-                );
-              }
-              if (INLAY_DOUBLE_FRETS.includes(fretIndex)) {
-                const x = fretCenterX(fretIndex);
-                return (
-                  <g
-                    key={`inlay-${fretIndex}`}
-                    data-fret-marker={fretIndex}
-                    data-double-marker="true"
-                  >
-                    <circle
-                      cx={x}
-                      cy={inlayYTopAt(x)}
-                      r={inlayR}
-                      fill={svgDefUrl("inlay-pearl")}
-                      filter={svgDefUrl("inlay-shadow")}
-                    />
-                    <circle
-                      cx={x}
-                      cy={inlayYBottomAt(x)}
-                      r={inlayR}
-                      fill={svgDefUrl("inlay-pearl")}
-                      filter={svgDefUrl("inlay-shadow")}
-                    />
-                  </g>
-                );
-              }
-              return null;
-            })}
+            {inlays}
 
-            {/* Strings — tapered (narrower at nut, wider at bridge). All strings
-              are silver-plated; bass strings (3–5) have a second dashed stroke
-              overlaid to suggest the perpendicular winding wraps. */}
-            {tuning.map((_openString, stringIndex) => {
-              const yLeft = stringYAt(stringIndex, 0);
-              const yRight = stringYAt(stringIndex, neckWidthPx);
-              const isBass = stringIndex >= 3;
-              return (
-                <g key={`string-${stringIndex}`}>
-                  <line
-                    x1={0}
-                    y1={yLeft + 1.8}
-                    x2={neckWidthPx}
-                    y2={yRight + 1.8}
-                    stroke="rgb(0 0 0 / 0.7)"
-                    style={{
-                      strokeWidth: `calc(var(--string-taper-${stringIndex + 1}) + 1.4px)`,
-                    }}
-                    strokeLinecap="round"
-                    filter={svgDefUrl("string-shadow-blur")}
-                  />
-                  <line
-                    x1={0}
-                    y1={yLeft}
-                    x2={neckWidthPx}
-                    y2={yRight}
-                    stroke={isBass ? "#c6ccd2" : "#e4e8ee"}
-                    style={{
-                      strokeWidth: `var(--string-taper-${stringIndex + 1})`,
-                    }}
-                    strokeLinecap="round"
-                    className={`fretboard-string fretboard-string-${stringIndex + 1}`}
-                  />
-                  {isBass && (
-                    <line
-                      x1={0}
-                      y1={yLeft}
-                      x2={neckWidthPx}
-                      y2={yRight}
-                      stroke="rgb(60 65 72 / 0.55)"
-                      style={{
-                        strokeWidth: `var(--string-taper-${stringIndex + 1})`,
-                      }}
-                      strokeLinecap="butt"
-                      strokeDasharray="0.6 1.4"
-                    />
-                  )}
-                </g>
-              );
-            })}
+            {strings}
 
             {/* Shape polygons overlay */}
             {svgPolygons.length > 0 &&
@@ -1096,25 +1013,9 @@ export function FretboardSVG({
                 const cx = fretCenterX(fretIndex);
                 const cy = stringYAt(stringIndex, cx);
                 const baseRadius = noteBubblePx / 2;
-                const {
-                  stroke,
-                  filter,
-                  fill,
-                  textFill,
-                  radiusScale,
-                  strokeWidth,
-                  textOpacity,
-                  strokeDasharray,
-                  noteShape,
-                } = getNoteVisuals(noteClass, glowFilterUrls);
+                const { radiusScale, noteShape } = getNoteVisuals(noteClass);
                 const r = baseRadius * radiusScale;
-                const commonShapeProps = {
-                  fill,
-                  stroke,
-                  strokeWidth,
-                  strokeDasharray,
-                  filter: filter !== "none" ? filter : undefined,
-                };
+
                 const shapeEl =
                   noteShape === "squircle" ? (
                     <>
@@ -1138,13 +1039,11 @@ export function FretboardSVG({
                         height={r * 2}
                         rx={r * 0.38}
                         ry={r * 0.38}
-                        {...commonShapeProps}
                       />
                     </>
                   ) : noteShape === "diamond" ? (
                     <polygon
                       points={`${cx},${cy - r} ${cx + r},${cy} ${cx},${cy + r} ${cx - r},${cy}`}
-                      {...commonShapeProps}
                     />
                   ) : noteShape === "hexagon" ? (
                     <polygon
@@ -1152,10 +1051,9 @@ export function FretboardSVG({
                         const a = (Math.PI / 3) * i - Math.PI / 6;
                         return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`;
                       }).join(" ")}
-                      {...commonShapeProps}
                     />
                   ) : (
-                    <circle cx={cx} cy={cy} r={r} {...commonShapeProps} />
+                    <circle cx={cx} cy={cy} r={r} />
                   );
                 return (
                   <g
@@ -1171,23 +1069,7 @@ export function FretboardSVG({
                   >
                     {shapeEl}
                     {displayFormat !== "none" && (
-                      <text
-                        x={cx}
-                        y={cy}
-                        textAnchor="middle"
-                        dominantBaseline="central"
-                        fontSize={noteFontPx}
-                        fontWeight={700}
-                        fill={textFill}
-                        opacity={textOpacity}
-                        style={{
-                          pointerEvents: "none",
-                          userSelect: "none",
-                          paintOrder: "stroke",
-                          stroke: "rgb(0 0 0 / 0.45)",
-                          strokeWidth: noteClass === "chord-root" || noteClass === "key-tonic" ? 2.3 : 1.8,
-                        }}
-                      >
+                      <text x={cx} y={cy}>
                         {formatAccidental(displayValue)}
                       </text>
                     )}
