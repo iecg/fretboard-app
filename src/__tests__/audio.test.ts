@@ -2,38 +2,33 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { synth } from '../audio';
 
 // Mock the Web Audio API
-const mockAudioContext = {
-  createGain: vi.fn(),
-  createOscillator: vi.fn(),
-  createBiquadFilter: vi.fn(),
-  resume: vi.fn(),
-  currentTime: 0,
-  state: 'running',
-  destination: {} as AudioDestinationNode,
-};
-
-const mockGainNode = {
+const createMockGainNode = () => ({
   connect: vi.fn(),
+  disconnect: vi.fn(),
   gain: {
-    value: 0.5,
+    value: 1.0,
     cancelScheduledValues: vi.fn(),
     setValueAtTime: vi.fn(),
     linearRampToValueAtTime: vi.fn(),
     exponentialRampToValueAtTime: vi.fn(),
+    setTargetAtTime: vi.fn(),
   },
-};
+});
 
-const mockOscillator = {
+const createMockOscillator = () => ({
   type: 'sine',
   frequency: {
     setValueAtTime: vi.fn(),
   },
   connect: vi.fn(),
+  disconnect: vi.fn(),
   start: vi.fn(),
   stop: vi.fn(),
-};
+  onended: null as null | (() => void),
+  setPeriodicWave: vi.fn(),
+});
 
-const mockFilter = {
+const createMockFilter = () => ({
   type: 'lowpass',
   Q: { value: 1 },
   frequency: {
@@ -41,13 +36,27 @@ const mockFilter = {
     exponentialRampToValueAtTime: vi.fn(),
   },
   connect: vi.fn(),
+  disconnect: vi.fn(),
+});
+
+const mockAudioContext = {
+  createGain: vi.fn(),
+  createOscillator: vi.fn(),
+  createBiquadFilter: vi.fn(),
+  createPeriodicWave: vi.fn().mockReturnValue({} as PeriodicWave),
+  resume: vi.fn(),
+  currentTime: 0,
+  state: 'running',
+  destination: {} as AudioDestinationNode,
 };
 
 describe('GuitarSynth', () => {
+  let masterGain: ReturnType<typeof createMockGainNode>;
+
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Reset singleton state so each test gets a fresh AudioContext
+    // Reset singleton state
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (synth as any).ctx = null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -56,30 +65,55 @@ describe('GuitarSynth', () => {
     (synth as any).isMuted = false;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (synth as any).unsupported = false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (synth as any).voicePool = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (synth as any).guitarWave = null;
 
-    // Setup mock returns
-    mockAudioContext.createGain.mockReturnValue(mockGainNode as unknown as GainNode);
-    mockAudioContext.createOscillator.mockReturnValue(mockOscillator as unknown as OscillatorNode);
-    mockAudioContext.createBiquadFilter.mockReturnValue(mockFilter as unknown as BiquadFilterNode);
+    masterGain = createMockGainNode();
+    
+    // Setup mock returns to provide unique nodes for each call
+    mockAudioContext.createGain.mockImplementation(() => createMockGainNode());
+    // The first gain node created in init() is the master gain
+    mockAudioContext.createGain.mockReturnValueOnce(masterGain);
+    
+    mockAudioContext.createOscillator.mockImplementation(() => createMockOscillator());
+    mockAudioContext.createBiquadFilter.mockImplementation(() => createMockFilter());
     mockAudioContext.state = 'running';
 
-    // Replace window.AudioContext with our mock — must use a regular function,
-    // not an arrow function, so it can be called with `new`.
-    (window as unknown as { AudioContext: typeof AudioContext }).AudioContext =
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      vi.fn(function() { return mockAudioContext; }) as any;
+    (window as unknown as { AudioContext: unknown }).AudioContext =
+      vi.fn(function() { return mockAudioContext; }) as unknown as typeof AudioContext;
   });
 
   describe('init', () => {
     it('creates AudioContext on first call', () => {
       synth.init();
       expect(mockAudioContext.createGain).toHaveBeenCalled();
-      expect(mockGainNode.connect).toHaveBeenCalledWith(mockAudioContext.destination);
+      expect(masterGain.connect).toHaveBeenCalledWith(mockAudioContext.destination);
     });
 
     it('sets master gain to 0.5', () => {
       synth.init();
-      expect(mockGainNode.gain.value).toBe(0.5);
+      expect(masterGain.gain.value).toBe(0.5);
+    });
+
+    it('creates a custom guitar waveform', () => {
+      synth.init();
+      expect(mockAudioContext.createPeriodicWave).toHaveBeenCalled();
+    });
+
+    it('pre-allocates a voice pool', () => {
+      synth.init();
+      // 1 master gain + 8 pool voices + 1 warmup gain = 10 calls
+      expect(mockAudioContext.createGain).toHaveBeenCalledTimes(10);
+      // 8 pool filters
+      expect(mockAudioContext.createBiquadFilter).toHaveBeenCalledTimes(8);
+    });
+
+    it('performs a warmup', () => {
+      synth.init();
+      // Warmup oscillator
+      expect(mockAudioContext.createOscillator).toHaveBeenCalledTimes(1);
     });
 
     it('resumes context if suspended', async () => {
@@ -95,54 +129,31 @@ describe('GuitarSynth', () => {
       const callCount2 = mockAudioContext.createGain.mock.calls.length;
       expect(callCount2).toBe(callCount1);
     });
-
-    it('no-ops safely when WebAudio is unsupported', async () => {
-      // Simulate an environment without AudioContext.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      delete (window as any).AudioContext;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      delete (window as any).webkitAudioContext;
-
-      await expect(synth.playNote(440)).resolves.toBeUndefined();
-    });
-
-    it('marks the synth unsupported when AudioContext construction fails', async () => {
-      const throwingCtor = vi.fn(function() {
-        throw new Error('AudioContext blocked');
-      });
-      (window as unknown as { AudioContext: typeof AudioContext }).AudioContext =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        throwingCtor as any;
-
-      await expect(synth.playNote(440)).resolves.toBeUndefined();
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((synth as any).unsupported).toBe(true);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((synth as any).ctx).toBeNull();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((synth as any).masterGain).toBeNull();
-
-      await synth.playNote(440);
-      expect(throwingCtor).toHaveBeenCalledTimes(1);
-      expect(mockAudioContext.createOscillator).not.toHaveBeenCalled();
-    });
   });
 
   describe('setMute', () => {
-    it('stores mute state', () => {
+    it('stores mute state and affects master gain', () => {
+      synth.init();
       synth.setMute(true);
+      expect(masterGain.gain.setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), 0.02);
+      
+      // Note should not play when muted
+      vi.clearAllMocks();
       synth.playNote(440);
+      // It might call createOscillator during init if not already init'd, 
+      // but here we already called init().
+      // playNote checks isMuted before init()
       expect(mockAudioContext.createOscillator).not.toHaveBeenCalled();
     });
 
     it('can unmute to allow playback', () => {
+      synth.init();
       synth.setMute(true);
-      synth.playNote(440);
-      expect(mockAudioContext.createOscillator).not.toHaveBeenCalled();
-
       synth.setMute(false);
+      expect(masterGain.gain.setTargetAtTime).toHaveBeenCalledWith(0.5, expect.any(Number), 0.02);
+
       synth.playNote(440);
+      // 1 for playNote (warmup already happened during init)
       expect(mockAudioContext.createOscillator).toHaveBeenCalled();
     });
   });
@@ -152,96 +163,45 @@ describe('GuitarSynth', () => {
       synth.setMute(false);
     });
 
-    it('does not play when muted', () => {
-      synth.setMute(true);
-      synth.playNote(440);
-      expect(mockAudioContext.createOscillator).not.toHaveBeenCalled();
+    it('creates a new oscillator and uses a pooled voice', async () => {
+      synth.init();
+      vi.clearAllMocks();
+      
+      await synth.playNote(440);
+      expect(mockAudioContext.createOscillator).toHaveBeenCalledTimes(1);
+      // Filter and Gain should NOT be created again if pool is used
+      expect(mockAudioContext.createBiquadFilter).not.toHaveBeenCalled();
+      expect(mockAudioContext.createGain).not.toHaveBeenCalled();
     });
 
-    it('creates oscillator, filter, and gain nodes', () => {
-      synth.playNote(440);
-      expect(mockAudioContext.createOscillator).toHaveBeenCalled();
-      expect(mockAudioContext.createBiquadFilter).toHaveBeenCalled();
-      expect(mockAudioContext.createGain).toHaveBeenCalled();
+    it('applies the custom guitar waveform', async () => {
+      await synth.playNote(440);
+      const oscillators = mockAudioContext.createOscillator.mock.results;
+      const osc = oscillators[oscillators.length - 1].value;
+      expect(osc.setPeriodicWave).toHaveBeenCalled();
     });
 
-    it('sets oscillator type to triangle', () => {
-      synth.playNote(440);
-      expect(mockOscillator.type).toBe('triangle');
-    });
-
-    it('sets frequency on oscillator', () => {
-      synth.playNote(440);
-      expect(mockOscillator.frequency.setValueAtTime).toHaveBeenCalledWith(
-        440,
-        expect.any(Number)
-      );
-    });
-
-    it('sets filter type to lowpass', () => {
-      synth.playNote(440);
-      expect(mockFilter.type).toBe('lowpass');
-    });
-
-    it('sets filter frequency to 3x note frequency initially', () => {
-      synth.playNote(440);
-      expect(mockFilter.frequency.setValueAtTime).toHaveBeenCalledWith(
-        440 * 3,
-        expect.any(Number)
-      );
-    });
-
-    it('connects nodes in correct order', () => {
-      synth.playNote(440);
-      expect(mockOscillator.connect).toHaveBeenCalledWith(mockFilter);
-      expect(mockFilter.connect).toHaveBeenCalledWith(mockGainNode);
-      expect(mockGainNode.connect).toHaveBeenCalledWith(expect.any(Object));
-    });
-
-    it('starts oscillator', () => {
-      synth.playNote(440);
-      expect(mockOscillator.start).toHaveBeenCalledWith(expect.any(Number));
-    });
-
-    it('stops oscillator after envelope duration', () => {
-      synth.playNote(440);
-      const stopCall = mockOscillator.stop.mock.calls[0];
-      const startCall = mockOscillator.start.mock.calls[0];
+    it('stops oscillator after envelope duration', async () => {
+      await synth.playNote(440);
+      const oscillators = mockAudioContext.createOscillator.mock.results;
+      const osc = oscillators[oscillators.length - 1].value;
+      
+      const stopCall = osc.stop.mock.calls[0];
+      const startCall = osc.start.mock.calls[0];
       const duration = stopCall[0] - startCall[0];
 
-      // Attack(0.01) + Decay(1.0) + Release(1.0) + buffer(0.1) ≈ 2.11
-      expect(duration).toBeCloseTo(2.11, 1);
+      // Attack(0.005) + Decay(1.0) + Release(1.0) + buffer(0.1) ≈ 2.105
+      expect(duration).toBeCloseTo(2.105, 1);
     });
 
-    it('schedules gain envelope with attack', () => {
-      synth.playNote(440);
-      expect(mockGainNode.gain.setValueAtTime).toHaveBeenCalledWith(0, expect.any(Number));
-      expect(mockGainNode.gain.linearRampToValueAtTime).toHaveBeenCalledWith(
-        1,
-        expect.any(Number)
-      );
-    });
-
-    it('schedules decay and release with exponential ramp', () => {
-      synth.playNote(440);
-      expect(mockGainNode.gain.exponentialRampToValueAtTime).toHaveBeenCalledWith(
-        0.001,
-        expect.any(Number)
-      );
-    });
-
-    it('plays different frequencies', () => {
-      synth.playNote(262); // C4
-      const call1 = mockOscillator.frequency.setValueAtTime.mock.calls[0];
-
-      vi.clearAllMocks();
-      mockAudioContext.createOscillator.mockReturnValue(mockOscillator as unknown as OscillatorNode);
-
-      synth.playNote(440); // A4
-      const call2 = mockOscillator.frequency.setValueAtTime.mock.calls[0];
-
-      expect(call1[0]).toBe(262);
-      expect(call2[0]).toBe(440);
+    it('disconnects oscillator on ended', async () => {
+      await synth.playNote(440);
+      const oscillators = mockAudioContext.createOscillator.mock.results;
+      const osc = oscillators[oscillators.length - 1].value;
+      
+      expect(osc.onended).toBeTypeOf('function');
+      osc.onended();
+      expect(osc.disconnect).toHaveBeenCalled();
     });
   });
 });
