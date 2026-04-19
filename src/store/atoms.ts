@@ -10,8 +10,7 @@ import {
 } from "../shapes";
 import { getFretNote } from "../guitar";
 import { STORAGE_PREFIX } from "../utils/storage";
-import { getScaleNotes, formatAccidental } from "../theory";
-import { NOTES } from "../theory";
+import { getScaleNotes, formatAccidental, NOTES } from "../theory";
 import type {
   NoteRole,
   ChordRowEntry,
@@ -96,10 +95,9 @@ export {
   mobileTabAtom,
   tabletTabAtom,
   landscapeNarrowTabAtom,
+  settingsOverlayOpenAtom,
+  LandscapeNarrowTab,
 } from "./uiAtoms";
-
-export type { LandscapeNarrowTab } from "./uiAtoms";
-export { settingsOverlayOpenAtom } from "./uiAtoms";
 
 export {
   enharmonicDisplayAtom,
