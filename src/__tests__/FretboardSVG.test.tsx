@@ -363,6 +363,61 @@ describe("FretboardSVG", () => {
     });
   });
 
+  describe("scale visibility 'off' mode — empty highlightNotes with chord overlay", () => {
+    it("chord root still renders when highlightNotes is empty", () => {
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          highlightNotes={[]}
+          chordTones={["C", "E", "G"]}
+          chordRoot="C"
+          rootNote="C"
+        />
+      );
+      expect(container.querySelectorAll(".chord-root").length).toBeGreaterThan(0);
+    });
+
+    it("chord tones render as chord-tone-outside-scale when highlightNotes is empty", () => {
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          highlightNotes={[]}
+          chordTones={["C", "E", "G"]}
+          chordRoot="C"
+          rootNote="C"
+        />
+      );
+      // E and G are chord tones but not "in scale" (no highlightNotes) → outside-scale
+      expect(container.querySelectorAll(".chord-tone-outside-scale").length).toBeGreaterThan(0);
+    });
+
+    it("no scale-only or note-active notes rendered when highlightNotes is empty", () => {
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          highlightNotes={[]}
+          chordTones={["C", "E", "G"]}
+          chordRoot="C"
+          rootNote="C"
+        />
+      );
+      expect(container.querySelectorAll(".scale-only").length).toBe(0);
+      expect(container.querySelectorAll(".note-active").length).toBe(0);
+    });
+
+    it("no note-active rendered when highlightNotes is empty and no chord overlay", () => {
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          highlightNotes={[]}
+          rootNote="C"
+        />
+      );
+      expect(container.querySelectorAll(".note-active").length).toBe(0);
+      expect(container.querySelectorAll(".key-tonic").length).toBe(0);
+    });
+  });
+
   describe("composable renderer contract — noteSemantics", () => {
     it("outside chord root gets data-note-tension when noteSemantics provided", () => {
       // C# is the chord root but is outside C Major scale (C,E,G highlights)

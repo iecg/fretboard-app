@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { DegreeChipStrip, type DegreeChip } from '../components/DegreeChipStrip';
 import { axe } from '../test-utils/a11y';
@@ -149,5 +149,93 @@ describe('DegreeChipStrip', () => {
       />
     );
     expect(container.querySelector('.degree-chip-strip-header')).toBeTruthy();
+  });
+
+  describe('mode prop', () => {
+    it("default mode 'all' renders chip list", () => {
+      const { container } = render(
+        <DegreeChipStrip scaleName="A Natural Minor" chips={aMinorChips} />
+      );
+      expect(container.querySelector('.degree-chip-strip-list')).toBeTruthy();
+    });
+
+    it("mode 'off' hides chip list", () => {
+      const { container } = render(
+        <DegreeChipStrip scaleName="A Natural Minor" chips={aMinorChips} mode="off" />
+      );
+      expect(container.querySelector('.degree-chip-strip-list')).toBeNull();
+    });
+
+    it("mode 'off' sets data-visibility-mode=off on section", () => {
+      const { container } = render(
+        <DegreeChipStrip scaleName="A Natural Minor" chips={aMinorChips} mode="off" />
+      );
+      expect(container.querySelector('.degree-chip-strip')?.getAttribute('data-visibility-mode')).toBe('off');
+    });
+
+    it("mode 'all' disables chip buttons when no onChipToggle provided", () => {
+      const { getAllByRole } = render(
+        <DegreeChipStrip scaleName="A Natural Minor" chips={aMinorChips} mode="all" />
+      );
+      const buttons = getAllByRole('button');
+      expect(buttons.every((b) => b.hasAttribute('disabled'))).toBe(true);
+    });
+
+    it("mode 'custom' enables chip buttons when onChipToggle provided", () => {
+      const toggle = vi.fn();
+      const { getAllByRole } = render(
+        <DegreeChipStrip
+          scaleName="A Natural Minor"
+          chips={aMinorChips}
+          mode="custom"
+          onChipToggle={toggle}
+        />
+      );
+      const buttons = getAllByRole('button');
+      expect(buttons.every((b) => !b.hasAttribute('disabled'))).toBe(true);
+    });
+
+    it("headerAction renders inside the strip", () => {
+      const { getByTestId } = render(
+        <DegreeChipStrip
+          scaleName="A Natural Minor"
+          chips={aMinorChips}
+          headerAction={<span data-testid="action-slot">ctrl</span>}
+        />
+      );
+      expect(getByTestId('action-slot')).toBeTruthy();
+    });
+
+    it("mode 'off' still renders headerAction", () => {
+      const { getByTestId } = render(
+        <DegreeChipStrip
+          scaleName="A Natural Minor"
+          chips={aMinorChips}
+          mode="off"
+          headerAction={<span data-testid="action-slot">ctrl</span>}
+        />
+      );
+      expect(getByTestId('action-slot')).toBeTruthy();
+    });
+
+    it("hidden chips show data-hidden in 'custom' mode", () => {
+      const { container } = render(
+        <DegreeChipStrip
+          scaleName="A Natural Minor"
+          chips={aMinorChips}
+          mode="custom"
+          hiddenNotes={new Set(['B'])}
+          onChipToggle={() => {}}
+        />
+      );
+      expect(container.querySelectorAll('[data-hidden="true"]').length).toBe(1);
+    });
+
+    it("no data-hidden chips rendered in 'all' mode (no hiddenNotes passed)", () => {
+      const { container } = render(
+        <DegreeChipStrip scaleName="A Natural Minor" chips={aMinorChips} mode="all" />
+      );
+      expect(container.querySelectorAll('[data-hidden="true"]').length).toBe(0);
+    });
   });
 });
