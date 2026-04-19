@@ -36,6 +36,7 @@ type ToggleBarOption<Value extends string | number> = {
   label: string;
   disabled?: boolean;
   title?: string;
+  ariaLabel?: string;
 };
 
 interface ToggleBarProps<Value extends string | number> extends VariantProps<
@@ -75,6 +76,7 @@ export function ToggleBar<Value extends string | number>({
             onClick={() => onChange(option.value)}
             disabled={option.disabled}
             title={option.title}
+            aria-label={option.ariaLabel}
           >
             {option.label}
           </button>

@@ -99,13 +99,20 @@ export function ChordOverlayControls() {
   // lensAvailabilityAtom emits one entry per LENS_REGISTRY member (same 5 ids as
   // LENS_UI_ORDER), so find() will always succeed. Defensive fallback avoids the
   // non-null assertion and makes the assumption explicit.
+  // The active lens is never rendered disabled — it must remain focusable and visually
+  // active even when the registry marks it unavailable (e.g. targets-color with no color
+  // notes degrades gracefully and is exempt from auto-exit).
   const lensOptions = LENS_UI_ORDER.map((id) => {
     const entry = lensAvailability.find((l) => l.id === id);
+    const isActive = id === practiceLens;
+    const unavailable = entry ? !entry.available : true;
+    const reason = entry?.reason ?? undefined;
     return {
       value: id,
       label: LENS_LABELS[id],
-      disabled: entry ? !entry.available : true,
-      title: entry?.reason ?? undefined,
+      disabled: !isActive && unavailable,
+      title: !isActive && reason ? reason : undefined,
+      ariaLabel: !isActive && reason ? `${LENS_LABELS[id]}: ${reason}` : undefined,
     };
   });
 
