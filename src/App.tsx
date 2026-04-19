@@ -13,12 +13,14 @@ import {
   scaleNameAtom,
   useFlatsAtom,
   enharmonicDisplayAtom,
+  mobileTabAtom,
 } from "./store/atoms";
 import useLayoutMode from "./hooks/useLayoutMode";
 import { AppHeader } from "./components/AppHeader";
 import { BrandMark } from "./components/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark";
 import { SummaryRibbon } from "./components/SummaryRibbon";
+import { VersionBadge } from "./components/VersionBadge";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper";
 import "./App.css";
 
@@ -102,35 +104,7 @@ function AppContent() {
     </div>
   );
 
-  const versionBadge = (
-    <div className="version-badge">
-      <span className="version-text">
-        v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar.
-        Licensed under{" "}
-        <a
-          href="https://www.gnu.org/licenses/agpl-3.0"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          AGPL v3
-        </a>
-        .
-      </span>
-      <a
-        href="https://ko-fi.com/E1E01XFJ0G"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="kofi-badge-btn"
-        title="Support FretFlow on Ko-fi"
-      >
-        <img
-          src="/fretboard-app/kofi_symbol.png"
-          alt="Ko-fi"
-          className="kofi-badge-icon"
-        />
-      </a>
-    </div>
-  );
+  const versionBadge = <VersionBadge />;
 
   return (
     <MainLayoutWrapper
