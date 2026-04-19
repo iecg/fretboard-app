@@ -14,41 +14,42 @@ import { STANDARD_TUNING } from "../guitar";
 import { k } from "./utils/storage";
 
 // Mock child components to isolate App logic
-vi.mock("../Fretboard", () => ({
-  Fretboard: ({
-    highlightNotes,
-    rootNote,
-    stringRowPx,
-    colorNotes,
-  }: {
-    highlightNotes: string[];
-    rootNote: string;
-    stringRowPx?: number;
-    colorNotes?: string[];
-  }) => (
-    <div
-      data-testid="fretboard"
-      data-string-row-px={String(stringRowPx ?? "")}
-      data-color-notes={(colorNotes ?? []).join(",")}
-    >
-      Fretboard: {rootNote} - {highlightNotes.length} notes - row {stringRowPx}
-    </div>
-  ),
-}));
+vi.mock("../Fretboard", async () => {
+  const { useAtomValue } = await import("jotai");
+  const { rootNoteAtom, colorNotesAtom, shapeDataAtom } = await import("../store/atoms");
+  return {
+    Fretboard: ({ stringRowPx }: { stringRowPx?: number }) => {
+      const rootNote = useAtomValue(rootNoteAtom);
+      const { highlightNotes } = useAtomValue(shapeDataAtom);
+      const colorNotes = useAtomValue(colorNotesAtom);
+      return (
+        <div
+          data-testid="fretboard"
+          data-string-row-px={String(stringRowPx ?? "")}
+          data-color-notes={colorNotes.join(",")}
+        >
+          Fretboard: {rootNote} - {highlightNotes.length} notes - row {stringRowPx}
+        </div>
+      );
+    },
+  };
+});
 
-vi.mock("../CircleOfFifths", () => ({
-  CircleOfFifths: ({
-    rootNote,
-    setRootNote,
-  }: {
-    rootNote: string;
-    setRootNote: (note: string) => void;
-  }) => (
-    <button data-testid="circle-of-fifths" onClick={() => setRootNote("G")}>
-      CoF: {rootNote}
-    </button>
-  ),
-}));
+vi.mock("../CircleOfFifths", async () => {
+  const { useAtomValue, useSetAtom } = await import("jotai");
+  const { rootNoteAtom, setRootNoteAtom } = await import("../store/atoms");
+  return {
+    CircleOfFifths: () => {
+      const rootNote = useAtomValue(rootNoteAtom);
+      const setRootNote = useSetAtom(setRootNoteAtom);
+      return (
+        <button data-testid="circle-of-fifths" onClick={() => setRootNote("G")}>
+          CoF: {rootNote}
+        </button>
+      );
+    },
+  };
+});
 
 vi.mock("../DrawerSelector", () => ({
   DrawerSelector: ({

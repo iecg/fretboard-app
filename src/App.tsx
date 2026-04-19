@@ -8,9 +8,14 @@ import {
   mobileTabAtom,
   settingsOverlayOpenAtom,
   toggleMuteAtom,
+  chordTypeAtom,
+  rootNoteAtom,
+  setRootNoteAtom,
+  scaleNameAtom,
+  useFlatsAtom,
+  enharmonicDisplayAtom,
 } from "./store/atoms";
 import useLayoutMode from "./hooks/useLayoutMode";
-import useDisplayState from "./hooks/useDisplayState";
 import { AppHeader } from "./components/AppHeader";
 import { BrandMark } from "./components/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark";
@@ -48,16 +53,12 @@ const MobileTabPanel = lazy(() =>
 );
 
 function AppContent() {
-  const {
-    rootNote,
-    scaleName,
-    useFlats,
-    chordType,
-    enharmonicDisplay,
-    setRootNote,
-    highlightNotes,
-    colorNotes,
-  } = useDisplayState();
+  const rootNote = useAtomValue(rootNoteAtom);
+  const scaleName = useAtomValue(scaleNameAtom);
+  const useFlats = useAtomValue(useFlatsAtom);
+  const chordType = useAtomValue(chordTypeAtom);
+  const enharmonicDisplay = useAtomValue(enharmonicDisplayAtom);
+  const setRootNote = useSetAtom(setRootNoteAtom);
 
   const isMuted = useAtomValue(isMutedAtom);
   const [mobileTab, setMobileTab] = useAtom(mobileTabAtom);
@@ -215,9 +216,6 @@ function AppContent() {
       }
     >
       <Fretboard
-        rootNote={rootNote}
-        highlightNotes={highlightNotes}
-        colorNotes={colorNotes}
         stringRowPx={layout.stringRowPx}
       />
     </MainLayoutWrapper>

@@ -1,8 +1,9 @@
 import { useCallback, useId, useRef, useState } from "react";
+import { useAtom } from "jotai";
 import clsx from "clsx";
 import { CAGED_SHAPES, type CagedShape } from "../shapes";
 import { useShapeState } from "../hooks/useShapeState";
-import useDisplayState from "../hooks/useDisplayState";
+import { displayFormatAtom } from "../store/atoms";
 import { ToggleBar } from "./ToggleBar";
 import "./FingeringPatternControls.css";
 import shared from "./shared.module.css";
@@ -29,7 +30,7 @@ export function FingeringPatternControls() {
     onRecenter,
   } = useShapeState();
 
-  const { displayFormat, setDisplayFormat } = useDisplayState();
+  const [displayFormat, setDisplayFormat] = useAtom(displayFormatAtom);
 
   const shapeLabelId = useId();
   const shapeHelpId = useId();
