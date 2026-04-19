@@ -456,9 +456,8 @@ describe("atoms", () => {
       const store = makeStore();
       store.set(chordRootAtom, "G");
       store.set(linkChordRootAtom, false);
-      store.set(hideNonChordNotesAtom, true);
+      store.set(viewModeAtom, "chord"); // sets hideNonChordNotesAtom to true
       store.set(chordFretSpreadAtom, 5);
-      store.set(viewModeAtom, "chord");
       store.set(focusPresetAtom, "triad");
       store.set(customMembersAtom, ["root", "3"]);
       store.set(fingeringPatternAtom, "caged");
@@ -471,11 +470,13 @@ describe("atoms", () => {
       store.set(mobileTabAtom, "view");
       store.set(landscapeNarrowTabAtom, "key");
 
+      expect(store.get(hideNonChordNotesAtom)).toBe(true);
+
       store.set(resetAtom);
 
       expect(store.get(chordRootAtom)).toBe("C");
       expect(store.get(linkChordRootAtom)).toBe(true);
-      expect(store.get(hideNonChordNotesAtom)).toBe(false);
+      expect(store.get(hideNonChordNotesAtom)).toBe(false); // compare mode -> false
       expect(store.get(chordFretSpreadAtom)).toBe(0);
       expect(store.get(viewModeAtom)).toBe("compare");
       expect(store.get(focusPresetAtom)).toBe("all");
