@@ -3,6 +3,27 @@
  * Uses node pooling and explicit lifecycle management to minimize latency and memory leaks.
  */
 
+const AUDIO_CONFIG = {
+  MASTER_GAIN: 0.5,
+  POOL_SIZE: 8,
+
+  ATTACK_TIME: 0.005,
+  DECAY_TIME: 1.0,
+  RELEASE_TIME: 1.0,
+
+  ENVELOPE_MIN_VALUE: 0.001,
+
+  FILTER_Q: 1,
+  FILTER_FREQ_INIT_MULTIPLIER: 6,
+  FILTER_FREQ_FIRST_TARGET_MULTIPLIER: 1.5,
+  FILTER_DAMPING_TIME: 0.15,
+
+  MUTE_TRANSITION_TIME: 0.02,
+
+  SILENT_OSC_STOP: 0.001,
+  STOP_BUFFER: 0.1,
+} as const;
+
 interface Voice {
   gain: GainNode;
   filter: BiquadFilterNode;
@@ -18,7 +39,7 @@ class GuitarSynth {
 
   // Voice pool to reduce node creation overhead
   private voicePool: Voice[] = [];
-  private readonly POOL_SIZE = 8;
+  private readonly POOL_SIZE = AUDIO_CONFIG.POOL_SIZE;
 
   private getAudioContextConstructor():
     | (new () => AudioContext)
@@ -43,7 +64,7 @@ class GuitarSynth {
       this.ctx = new AudioContextCtor();
       this.masterGain = this.ctx.createGain();
       this.masterGain.connect(this.ctx.destination);
-      this.masterGain.gain.value = 0.5;
+      this.masterGain.gain.value = AUDIO_CONFIG.MASTER_GAIN;
 
       // Create a custom periodic wave that mimics a plucked string
       // Fundamental + overtones with decreasing amplitude
@@ -72,7 +93,7 @@ class GuitarSynth {
         silentOsc.connect(silentGain);
         silentGain.connect(this.ctx.destination);
         silentOsc.start(0);
-        silentOsc.stop(0.001);
+        silentOsc.stop(AUDIO_CONFIG.SILENT_OSC_STOP);
         silentOsc.onended = () => {
           silentOsc.disconnect();
           silentGain.disconnect();
@@ -91,7 +112,7 @@ class GuitarSynth {
     if (this.masterGain) {
       // Smoothly mute/unmute to avoid clicks
       const now = this.ctx?.currentTime ?? 0;
-      this.masterGain.gain.setTargetAtTime(mute ? 0 : 0.5, now, 0.02);
+      this.masterGain.gain.setTargetAtTime(mute ? 0 : AUDIO_CONFIG.MASTER_GAIN, now, AUDIO_CONFIG.MUTE_TRANSITION_TIME);
     }
   }
 
@@ -138,28 +159,26 @@ class GuitarSynth {
     osc.frequency.setValueAtTime(frequency, this.ctx.currentTime);
 
     const now = this.ctx.currentTime;
-    const attackTime = 0.005; // Sharper attack for better responsiveness
-    const decayTime = 1.0;
-    const releaseTime = 1.0;
+    const { ATTACK_TIME, DECAY_TIME, RELEASE_TIME, ENVELOPE_MIN_VALUE, FILTER_Q, FILTER_FREQ_INIT_MULTIPLIER, FILTER_FREQ_FIRST_TARGET_MULTIPLIER, FILTER_DAMPING_TIME, STOP_BUFFER } = AUDIO_CONFIG;
 
     // Amplitude Envelope (natural string decay)
     voice.gain.gain.cancelScheduledValues(now);
     voice.gain.gain.setValueAtTime(0, now);
-    voice.gain.gain.linearRampToValueAtTime(1, now + attackTime);
-    voice.gain.gain.exponentialRampToValueAtTime(0.001, now + attackTime + decayTime + releaseTime);
+    voice.gain.gain.linearRampToValueAtTime(1, now + ATTACK_TIME);
+    voice.gain.gain.exponentialRampToValueAtTime(ENVELOPE_MIN_VALUE, now + ATTACK_TIME + DECAY_TIME + RELEASE_TIME);
 
     // Dynamic Filter (the "pluck" effect)
     // Initially open wide to let harmonics through, then close quickly to simulate damping.
     voice.filter.type = 'lowpass';
-    voice.filter.Q.value = 1;
-    voice.filter.frequency.setValueAtTime(frequency * 6, now);
-    voice.filter.frequency.exponentialRampToValueAtTime(frequency * 1.5, now + attackTime + 0.15); // Fast initial damping
-    voice.filter.frequency.exponentialRampToValueAtTime(frequency, now + attackTime + decayTime);
+    voice.filter.Q.value = FILTER_Q;
+    voice.filter.frequency.setValueAtTime(frequency * FILTER_FREQ_INIT_MULTIPLIER, now);
+    voice.filter.frequency.exponentialRampToValueAtTime(frequency * FILTER_FREQ_FIRST_TARGET_MULTIPLIER, now + ATTACK_TIME + FILTER_DAMPING_TIME);
+    voice.filter.frequency.exponentialRampToValueAtTime(frequency, now + ATTACK_TIME + DECAY_TIME);
 
     osc.connect(voice.filter);
     
     osc.start(now);
-    const stopTime = now + attackTime + decayTime + releaseTime + 0.1;
+    const stopTime = now + ATTACK_TIME + DECAY_TIME + RELEASE_TIME + STOP_BUFFER;
     osc.stop(stopTime);
 
     osc.onended = () => {

@@ -108,6 +108,11 @@ describe("useFocusTrap", () => {
       useFocusTrap({ containerRef, active: true, onEscape })
     );
 
+    // Wait for initial RAF focus to complete before manually focusing
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
+
     button1.focus();
     expect(document.activeElement).toBe(button1);
 
