@@ -97,7 +97,7 @@ export function CircleOfFifths({
   };
 
   return (
-    <div className={styles["circle-fifths-container"]}>
+    <div className={styles["circle-fifths-container"]} data-testid="circle-of-fifths">
       <svg
         viewBox={`0 0 ${SIZE} ${SIZE}`}
         className={styles["circle-fifths-svg"]}

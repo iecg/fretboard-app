@@ -10,7 +10,7 @@ interface TheoryControlsProps {
 
 export function TheoryControls({ keyExplorer }: TheoryControlsProps) {
   return (
-    <div className="theory-controls">
+    <div className="theory-controls" data-testid="theory-controls">
       <ScaleSelector />
       {keyExplorer ? <KeyExplorer>{keyExplorer}</KeyExplorer> : null}
       <ChordOverlayControls />

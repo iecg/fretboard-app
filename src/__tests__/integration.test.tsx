@@ -401,7 +401,7 @@ describe("Integration Tests - User Workflows", () => {
       localStorage.setItem(k("mobileTab"), "theory");
       render(<App />);
 
-      expect(screen.queryByText("Circle of Fifths")).toBeTruthy();
+      expect(await screen.findByText("Circle of Fifths")).toBeTruthy();
     });
 
     it("mobile tab preference persists", async () => {

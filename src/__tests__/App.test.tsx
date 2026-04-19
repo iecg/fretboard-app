@@ -149,38 +149,38 @@ describe("App", () => {
       ).toBeTruthy();
     });
 
-    it("loads persisted state from localStorage", () => {
+    it("loads persisted state from localStorage", async () => {
       localStorage.setItem(k("rootNote"), "G");
       localStorage.setItem(k("scaleName"), "Minor");
       render(<App />);
-      expect(screen.getByTestId("circle-of-fifths")).toHaveTextContent(
+      expect(await screen.findByTestId("circle-of-fifths")).toHaveTextContent(
         "CoF: G",
       );
     });
 
-    it("renders melodic minor summary labels with the jazz alias", () => {
+    it("renders melodic minor summary labels with the jazz alias", async () => {
       localStorage.setItem(k("scaleName"), "Melodic Minor");
       render(<App />);
-      const summary = screen.getByRole("group", { name: /scale degrees/i });
+      const summary = await screen.findByRole("group", { name: /scale degrees/i });
       expect(
         within(summary).getByText("C Melodic Minor (Jazz Minor)"),
       ).toBeInTheDocument();
     });
 
-    it("renders ordinal mode labels in relative browse mode", () => {
+    it("renders ordinal mode labels in relative browse mode", async () => {
       localStorage.setItem(k("rootNote"), "D");
       localStorage.setItem(k("scaleName"), "Dorian");
       localStorage.setItem(k("scaleBrowseMode"), "relative");
       render(<App />);
-      const summary = screen.getByRole("group", { name: /scale degrees/i });
+      const summary = await screen.findByRole("group", { name: /scale degrees/i });
       expect(within(summary).getByText("D Dorian (2nd Mode)")).toBeInTheDocument();
     });
 
-    it("renders Unicode flat intervals in the degree chip strip for Natural Minor", () => {
+    it("renders Unicode flat intervals in the degree chip strip for Natural Minor", async () => {
       localStorage.setItem(k("rootNote"), "A");
       localStorage.setItem(k("scaleName"), "Natural Minor");
       render(<App />);
-      const summary = screen.getByRole("group", { name: /scale degrees/i });
+      const summary = await screen.findByRole("group", { name: /scale degrees/i });
       expect(within(summary).getByText("♭3")).toBeInTheDocument();
       expect(within(summary).getByText("♭6")).toBeInTheDocument();
       expect(within(summary).getByText("♭7")).toBeInTheDocument();
@@ -233,7 +233,7 @@ describe("App", () => {
       render(<App />);
       expect(screen.getByTestId("fretboard")).toHaveTextContent("Fretboard: C");
 
-      const cofButton = screen.getByTestId("circle-of-fifths");
+      const cofButton = await screen.findByTestId("circle-of-fifths");
       fireEvent.click(cofButton);
 
       await waitFor(() => {
@@ -245,7 +245,7 @@ describe("App", () => {
 
     it("persists root note to localStorage", async () => {
       render(<App />);
-      const cofButton = screen.getByTestId("circle-of-fifths");
+      const cofButton = await screen.findByTestId("circle-of-fifths");
       fireEvent.click(cofButton);
 
       await waitFor(() => {
@@ -257,7 +257,7 @@ describe("App", () => {
       localStorage.setItem(k("chordType"), "Major Triad");
       render(<App />);
 
-      const cofButton = screen.getByTestId("circle-of-fifths");
+      const cofButton = await screen.findByTestId("circle-of-fifths");
       fireEvent.click(cofButton);
 
       await waitFor(() => {
@@ -271,7 +271,7 @@ describe("App", () => {
       localStorage.setItem(k("chordRoot"), "D");
       render(<App />);
 
-      const cofButton = screen.getByTestId("circle-of-fifths");
+      const cofButton = await screen.findByTestId("circle-of-fifths");
       fireEvent.click(cofButton);
 
       await waitFor(() => {
@@ -284,7 +284,7 @@ describe("App", () => {
     it("renders the shared theory controls", async () => {
       render(<App />);
       expect(
-        screen.getByRole("combobox", { name: "Scale Family" }),
+        await screen.findByRole("combobox", { name: "Scale Family" }),
       ).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Parallel" })).toBeInTheDocument();
       expect(
@@ -504,8 +504,12 @@ describe("App", () => {
   describe("Chord overlay", () => {
     it("can set chord type", async () => {
       render(<App />);
-      fireEvent.click(screen.getByRole("button", { name: /Chord Overlay/i }));
-      fireEvent.change(screen.getByRole("combobox", { name: "Chord Type" }), {
+      // ExpandedControlsPanel is lazy loaded, wait for it to be ready
+      const chordOverlayBtn = await screen.findByRole("button", { name: /Chord Overlay/i });
+      fireEvent.click(chordOverlayBtn);
+      
+      const chordTypeSelect = await screen.findByRole("combobox", { name: "Chord Type" });
+      fireEvent.change(chordTypeSelect, {
         target: { value: "Major Triad" },
       });
 

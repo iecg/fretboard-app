@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import "./ExpandedControlsPanel.css";
 import shared from "./shared.module.css";
 import { useAtomValue, useSetAtom, useAtom } from "jotai";
@@ -15,9 +16,13 @@ import {
 } from "./FingeringPatternControls";
 import { FretRangeControl } from "./FretRangeControl";
 import { TheoryControls } from "./TheoryControls";
-import { CircleOfFifths } from "../CircleOfFifths";
 import { Card } from "./Card";
 import { MAX_FRET } from "../constants";
+
+// Lazy-loaded component
+const CircleOfFifths = lazy(() =>
+  import("../CircleOfFifths").then((m) => ({ default: m.CircleOfFifths }))
+);
 
 /**
  * Renders the Configuration card: FingeringPatternControls + fret range.
@@ -76,13 +81,15 @@ export function KeyColumn() {
 
   return (
     <Card title="Key Explorer" className="dashboard-card key-column">
-      <CircleOfFifths
-        rootNote={rootNote}
-        setRootNote={handleSetRootNote}
-        scaleName={scaleName}
-        useFlats={useFlats}
-        enharmonicDisplay={enharmonicDisplay}
-      />
+      <Suspense fallback={null}>
+        <CircleOfFifths
+          rootNote={rootNote}
+          setRootNote={handleSetRootNote}
+          scaleName={scaleName}
+          useFlats={useFlats}
+          enharmonicDisplay={enharmonicDisplay}
+        />
+      </Suspense>
     </Card>
   );
 }
