@@ -15,13 +15,25 @@ import { parseNote } from "./guitar";
 import { STRING_ROW_PX_TABLET } from "./layout/responsive";
 import "./FretboardSVG.css";
 import type { ShapePolygon } from "./shapes";
-import { 
-  NECK_BORDER, 
-  NUT_WIDTH, 
-  INLAY_FRETS, 
-  INLAY_DOUBLE_FRETS, 
-  MAX_FRET, 
-  NOTE_BUBBLE_RATIO 
+import {
+  NECK_BORDER,
+  NUT_WIDTH,
+  INLAY_FRETS,
+  INLAY_DOUBLE_FRETS,
+  MAX_FRET,
+  NOTE_BUBBLE_RATIO,
+  NOTE_FONT_RATIO,
+  NECK_TAPER_SCALE,
+  STRING_OCCUPY_FRAC,
+  STRING_SPREAD_LEFT_FRAC,
+  INLAY_RADIUS_RATIO,
+  INLAY_RADIUS_MIN,
+  RADIUS_SCALE_KEY_TONIC,
+  RADIUS_SCALE_CHORD_ROOT,
+  RADIUS_SCALE_CHORD_TONE,
+  RADIUS_SCALE_NOTE_ACTIVE,
+  RADIUS_SCALE_COLOR_TONE,
+  RADIUS_SCALE_DEFAULT,
 } from "./constants";
 
 interface FretboardSVGProps {
@@ -111,49 +123,43 @@ function getNoteVisuals(
   switch (noteClass) {
     case "key-tonic":
       return {
-        radiusScale: 0.82,
+        radiusScale: RADIUS_SCALE_KEY_TONIC,
         noteShape: "circle",
       };
     case "chord-root":
-      // Squircle with amber ring — dominant shape among chord tones.
       return {
-        radiusScale: 0.86,
+        radiusScale: RADIUS_SCALE_CHORD_ROOT,
         noteShape: "squircle",
       };
     case "chord-tone-in-scale":
-      // Squircle with amber ring — chord member in scale.
       return {
-        radiusScale: 0.82,
+        radiusScale: RADIUS_SCALE_CHORD_TONE,
         noteShape: "squircle",
       };
     case "note-active":
     case "note-blue":
       return {
-        radiusScale: 0.82,
+        radiusScale: RADIUS_SCALE_NOTE_ACTIVE,
         noteShape: "circle",
       };
     case "scale-only":
-      // Hollow circle — scale note, not a chord tone. Full brightness so the
-      // scale map stays readable even when chord overlay is active.
       return {
-        radiusScale: 0.82,
+        radiusScale: RADIUS_SCALE_NOTE_ACTIVE,
         noteShape: "circle",
       };
     case "color-tone":
-      // Hexagon — characteristic/divergent tone for the current mode/scale.
       return {
-        radiusScale: 0.80,
+        radiusScale: RADIUS_SCALE_COLOR_TONE,
         noteShape: "hexagon",
       };
     case "chord-tone-outside-scale":
-      // Diamond with dashed amber-dim border — outside the scale.
       return {
-        radiusScale: 0.82,
+        radiusScale: RADIUS_SCALE_CHORD_TONE,
         noteShape: "diamond",
       };
     default:
       return {
-        radiusScale: 0.8,
+        radiusScale: RADIUS_SCALE_DEFAULT,
         noteShape: "circle",
       };
   }
@@ -382,7 +388,7 @@ export const FretboardSVG = memo(function FretboardSVG({
   }), [svgDefUrl]);
 
   const noteBubblePx = Math.round(stringRowPx * NOTE_BUBBLE_RATIO);
-  const noteFontPx = Math.round(stringRowPx * 0.44);
+  const noteFontPx = Math.round(stringRowPx * NOTE_FONT_RATIO);
   const neckHeight = tuning.length * stringRowPx;
   const totalColumns = endFret - startFret;
   const hasChordOverlay = chordTones.length > 0;
@@ -395,7 +401,7 @@ export const FretboardSVG = memo(function FretboardSVG({
     const range = leftAnchor - rightAnchor || 1;
     const px = (neckWidthPx - openWidth) / range;
     return { openColumnWidth: openWidth, scaleLeftAnchor: leftAnchor, scalePx: px };
-  }, [startFret, endFret, neckWidthPx, noteBubblePx]);
+}, [startFret, endFret, neckWidthPx, noteBubblePx]);
 
   const wireXRel = useCallback((wireIndex: number): number => {
     if (startFret === 0 && wireIndex === 0) {
@@ -423,7 +429,6 @@ export const FretboardSVG = memo(function FretboardSVG({
     return rightWire - leftWire;
   }, [startFret, openColumnWidth, wireXRel]);
 
-  const NECK_TAPER_SCALE = 0.20;
   const { taperYLeft, taperPath } = useMemo(() => {
     const fretDistRatio = (wireIdx: number) => 1 - Math.pow(2, -wireIdx / 12);
     const pLeft = startFret === 0 ? 0 : fretDistRatio(startFret - 1);
@@ -444,8 +449,6 @@ export const FretboardSVG = memo(function FretboardSVG({
     return { taperYLeft: yLeft, taperPath: path };
   }, [startFret, endFret, neckHeight, neckWidthPx, maxFret]);
 
-  const STRING_OCCUPY_FRAC = 0.86;
-  const STRING_SPREAD_LEFT_FRAC = 0.76;
   const stringYAt = useCallback((s: number, x: number): number => {
     const xFrac = neckWidthPx > 0 ? Math.max(0, Math.min(1, x / neckWidthPx)) : 0;
     const localSpread = (STRING_SPREAD_LEFT_FRAC + (1 - STRING_SPREAD_LEFT_FRAC) * xFrac) * neckHeight * STRING_OCCUPY_FRAC;
@@ -541,7 +544,7 @@ export const FretboardSVG = memo(function FretboardSVG({
         ((stringYAt(numStrings - 1, x) - stringYAt(0, x)) * 2) / 3, [numStrings, stringYAt]);
 
   const inlays = useMemo(() => {
-    const inlayR = Math.max(5, stringRowPx * 0.15);
+    const inlayR = Math.max(INLAY_RADIUS_MIN, stringRowPx * INLAY_RADIUS_RATIO);
     return Array.from({ length: totalColumns + 1 }).map((_, idx) => {
       const fretIndex = startFret + idx;
       if (INLAY_FRETS.includes(fretIndex)) {
