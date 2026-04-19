@@ -9,6 +9,7 @@ import {
   scaleLabelAtom,
   setRootNoteAtom,
   useFlatsAtom,
+  hiddenNotesAtom,
 } from "../store/atoms";
 
 export function useScaleState() {
@@ -22,6 +23,7 @@ export function useScaleState() {
   const activeBrowseOption = useAtomValue(activeBrowseOptionAtom);
   const scaleLabel = useAtomValue(scaleLabelAtom);
   const useFlats = useAtomValue(useFlatsAtom);
+  const [hiddenNotes, setHiddenNotes] = useAtom(hiddenNotesAtom);
 
   return {
     rootNote,
@@ -35,5 +37,7 @@ export function useScaleState() {
     activeBrowseOption,
     scaleLabel,
     useFlats,
+    hiddenNotes,
+    setHiddenNotes,
   };
 }
