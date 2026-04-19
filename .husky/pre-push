@@ -1,2 +1,15 @@
+# Skip tests/build only if all pushed refs are deletions
+any_non_delete=false
+while read local_ref local_sha remote_ref remote_sha
+do
+    if [ "$local_ref" != "(delete)" ] && [ "$local_sha" != "0000000000000000000000000000000000000000" ]; then
+        any_non_delete=true
+    fi
+done
+
+if [ "$any_non_delete" = false ]; then
+    exit 0
+fi
+
 npm run test
 npm run build
