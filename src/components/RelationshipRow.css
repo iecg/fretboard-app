@@ -1,0 +1,124 @@
+/* Relationship row: chord-scale analysis strip shown in compare mode.
+   Replaces the compact chord rail. Uses capsule pills — not circular chips —
+   to visually distinguish from the scale degree strip above. */
+
+.relationship-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.7rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0 0;
+  border-top: 1px solid rgb(255 255 255 / 0.07);
+}
+
+.relationship-group {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.relationship-group-label {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: var(--font-weight-medium);
+  color: var(--text-soft-white);
+  opacity: 0.5;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.relationship-pill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.22rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Capsule pill — explicitly NOT circular to distinguish from degree chip circles */
+.relationship-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.1rem 0.48rem;
+  border-radius: 9999px;
+  border: 1.5px solid rgb(255 255 255 / 0.2);
+  background: transparent;
+}
+
+/* Shared (in-scale) pills */
+.relationship-group[data-group="shared"] .relationship-pill {
+  border-color: rgb(77 228 255 / 0.5);
+  background: rgb(77 228 255 / 0.06);
+}
+
+/* Shared chord root (edge case: chord root is also in scale) */
+.relationship-group[data-group="shared"] .relationship-pill[data-role="chord-root"] {
+  border-color: rgb(255 154 77 / 0.75);
+  background: rgb(255 154 77 / 0.1);
+}
+
+/* Outside scale pills — dashed border signals tension */
+.relationship-group[data-group="outside"] .relationship-pill {
+  border-color: rgb(204 122 61 / 0.65);
+  border-style: dashed;
+  background: rgb(100 40 15 / 0.2);
+}
+
+/* Outside chord root: solid border, strongest outside emphasis */
+.relationship-group[data-group="outside"] .relationship-pill[data-role="chord-root"] {
+  border-style: solid;
+  border-width: 2px;
+  border-color: rgb(255 154 77 / 0.8);
+  background: rgb(255 154 77 / 0.12);
+}
+
+.relationship-pill-note {
+  font-family: var(--font-sans);
+  font-size: clamp(0.8rem, 1.25vw, 0.9rem);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-soft-white);
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+}
+
+/* Mobile */
+.app-container[data-layout-tier="mobile"] .relationship-row {
+  gap: 0.35rem 0.55rem;
+  padding-top: 0.15rem;
+}
+
+.app-container[data-layout-tier="mobile"] .relationship-group-label {
+  font-size: 0.66rem;
+}
+
+.app-container[data-layout-tier="mobile"] .relationship-pill {
+  padding: 0.08rem 0.42rem;
+}
+
+.app-container[data-layout-tier="mobile"] .relationship-pill-note {
+  font-size: 0.8rem;
+}
+
+/* Desktop */
+.app-container[data-layout-tier="desktop"] .relationship-row {
+  gap: 0.28rem 0.55rem;
+  padding-top: 0.12rem;
+}
+
+.app-container[data-layout-tier="desktop"] .relationship-group-label {
+  font-size: 0.65rem;
+}
+
+.app-container[data-layout-tier="desktop"] .relationship-pill {
+  padding: 0.08rem 0.42rem;
+}
+
+.app-container[data-layout-tier="desktop"] .relationship-pill-note {
+  font-size: clamp(0.74rem, 1.15vw, 0.84rem);
+}
