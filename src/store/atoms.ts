@@ -68,6 +68,7 @@ export {
   chordLabelAtom,
   chordSummaryNotesAtom,
   allChordMembersAtom,
+  chordMemberFactsAtom,
 } from "./chordOverlayAtoms";
 
 export {
@@ -80,6 +81,8 @@ export {
   practiceBarBadgeAtom,
   practiceBarSharedMembersAtom,
   practiceBarOutsideMembersAtom,
+  lensAvailabilityContextAtom,
+  lensAvailabilityAtom,
 } from "./practiceLensAtoms";
 
 export {

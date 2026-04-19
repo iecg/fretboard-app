@@ -73,6 +73,7 @@ export function Fretboard(props: FretboardProps) {
   const hiddenNotes = props.hiddenNotes ?? state.hiddenNotes;
   const useFlats = props.useFlats ?? state.useFlats;
   const scaleName = props.scaleName ?? state.scaleName;
+  const noteSemantics = state.noteSemanticMap.size > 0 ? state.noteSemanticMap : undefined;
   const startFret = state.startFret;
   const endFret = state.endFret;
   const stringRowPx = props.stringRowPx ?? STRING_ROW_PX_DEFAULT;
@@ -249,6 +250,7 @@ export function Fretboard(props: FretboardProps) {
           hiddenNotes={hiddenNotes}
           useFlats={useFlats}
           scaleName={scaleName}
+          noteSemantics={noteSemantics}
           id={id}
           onNoteClick={handleFretClick}
         />

@@ -3,12 +3,14 @@ import {
   NOTES,
   ENHARMONICS,
   INTERVAL_NAMES,
+  LENS_REGISTRY,
   getScaleNotes,
   getNoteDisplay,
   formatAccidental,
 } from "../theory";
 import type {
   ChordMemberName,
+  LensAvailabilityContext,
   NoteSemantics,
   PracticeCue,
   PracticeCueNote,
@@ -332,3 +334,42 @@ export const practiceBarSharedMembersAtom = atom((get) =>
 export const practiceBarOutsideMembersAtom = atom((get) =>
   get(allChordMembersAtom).filter((e) => !e.inScale),
 );
+
+// ---------------------------------------------------------------------------
+// Lens availability — registry-backed availability context + resolved entries
+// ---------------------------------------------------------------------------
+
+/**
+ * Computes the context inputs used by LENS_REGISTRY predicates.
+ * A single atom so callers can read just the context (e.g. for unit tests)
+ * without consuming the full resolved list.
+ */
+export const lensAvailabilityContextAtom = atom((get): LensAvailabilityContext => {
+  const chordType = get(chordTypeAtom);
+  const activeChordMembers = get(activeChordMembersAtom);
+  const colorNotes = get(colorNotesAtom);
+  const hasOutsideChordMembers = get(hasOutsideChordMembersAtom);
+
+  return {
+    hasChordOverlay: !!chordType,
+    hasGuideTones: activeChordMembers.some((m) => GUIDE_TONE_RAW.has(m.name)),
+    hasColorNotes: colorNotes.length > 0,
+    hasOutsideTones: hasOutsideChordMembers,
+  };
+});
+
+/**
+ * Maps every LENS_REGISTRY entry against the current state to produce a list
+ * of lenses annotated with runtime availability and reason strings. Consumers
+ * use this to render lens pickers with disabled states and tooltip explanations.
+ */
+export const lensAvailabilityAtom = atom((get) => {
+  const ctx = get(lensAvailabilityContextAtom);
+  return LENS_REGISTRY.map((entry) => ({
+    id: entry.id,
+    label: entry.label,
+    description: entry.description,
+    available: entry.isAvailable(ctx),
+    reason: entry.unavailableReason(ctx),
+  }));
+});

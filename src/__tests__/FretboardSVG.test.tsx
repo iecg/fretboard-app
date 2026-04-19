@@ -3,6 +3,7 @@ import { render, fireEvent } from "@testing-library/react";
 import { FretboardSVG } from "../FretboardSVG";
 import { getFretboardNotes } from "../guitar";
 import type { CagedShape } from "../shapes";
+import type { NoteSemantics } from "../theory";
 import { axe } from "../test-utils/a11y";
 
 const STANDARD_TUNING = ["E4", "B3", "G3", "D3", "A2", "E2"];
@@ -359,6 +360,158 @@ describe("FretboardSVG", () => {
       // Without chord overlay, color notes are note-blue, not color-tone
       expect(container.querySelectorAll(".note-blue").length).toBeGreaterThan(0);
       expect(container.querySelectorAll(".color-tone").length).toBe(0);
+    });
+  });
+
+  describe("composable renderer contract — noteSemantics", () => {
+    it("outside chord root gets data-note-tension when noteSemantics provided", () => {
+      // C# is the chord root but is outside C Major scale (C,E,G highlights)
+      const semantics = new Map<string, NoteSemantics>([
+        [
+          "C#",
+          {
+            isScaleRoot: false,
+            isChordRoot: true,
+            isChordTone: true,
+            isInScale: false,
+            isColorTone: false,
+            isGuideTone: false,
+            isTension: true,
+            memberName: "root",
+          },
+        ],
+      ]);
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          chordTones={["C#", "F", "G#"]}
+          chordRoot="C#"
+          rootNote="C"
+          highlightNotes={["C", "E", "G"]}
+          noteSemantics={semantics}
+        />,
+      );
+      // C# should be classified as chord-root (visual role)
+      const chordRootNotes = container.querySelectorAll(".chord-root");
+      expect(chordRootNotes.length).toBeGreaterThan(0);
+      // AND carry data-note-tension (composable semantic attribute)
+      const tensionChordRoot = container.querySelectorAll(
+        '.chord-root[data-note-tension="true"]',
+      );
+      expect(tensionChordRoot.length).toBeGreaterThan(0);
+    });
+
+    it("in-scale chord root does NOT get data-note-tension", () => {
+      const semantics = new Map<string, NoteSemantics>([
+        [
+          "C",
+          {
+            isScaleRoot: true,
+            isChordRoot: true,
+            isChordTone: true,
+            isInScale: true,
+            isColorTone: false,
+            isGuideTone: false,
+            isTension: false,
+            memberName: "root",
+          },
+        ],
+      ]);
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          chordTones={["C", "E", "G"]}
+          chordRoot="C"
+          rootNote="C"
+          highlightNotes={["C", "E", "G"]}
+          noteSemantics={semantics}
+        />,
+      );
+      const tensionChordRoot = container.querySelectorAll(
+        '.chord-root[data-note-tension="true"]',
+      );
+      expect(tensionChordRoot.length).toBe(0);
+    });
+
+    it("guide tone gets data-note-guide-tone attribute", () => {
+      // B is the 3rd of G7 — a guide tone
+      const semantics = new Map<string, NoteSemantics>([
+        [
+          "B",
+          {
+            isScaleRoot: false,
+            isChordRoot: false,
+            isChordTone: true,
+            isInScale: true,
+            isColorTone: false,
+            isGuideTone: true,
+            isTension: false,
+            memberName: "3",
+          },
+        ],
+      ]);
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          chordTones={["G", "B", "D", "F"]}
+          chordRoot="G"
+          rootNote="G"
+          highlightNotes={["G", "A", "B", "C", "D", "E", "F"]}
+          noteSemantics={semantics}
+        />,
+      );
+      const guideToneNotes = container.querySelectorAll(
+        '[data-note-guide-tone="true"]',
+      );
+      expect(guideToneNotes.length).toBeGreaterThan(0);
+    });
+
+    it("notes without semantics entry have no data-note-tension or data-note-guide-tone", () => {
+      // Pass semantics for C only; E and G should have no extra attributes
+      const semantics = new Map<string, NoteSemantics>([
+        [
+          "C",
+          {
+            isScaleRoot: true,
+            isChordRoot: true,
+            isChordTone: true,
+            isInScale: true,
+            isColorTone: false,
+            isGuideTone: false,
+            isTension: false,
+            memberName: "root",
+          },
+        ],
+      ]);
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          chordTones={["C", "E", "G"]}
+          chordRoot="C"
+          rootNote="C"
+          highlightNotes={["C", "E", "G"]}
+          noteSemantics={semantics}
+        />,
+      );
+      // Only C has semantics — no tension/guide for E or G
+      const tensionNotes = container.querySelectorAll('[data-note-tension="true"]');
+      expect(tensionNotes.length).toBe(0);
+      const guideNotes = container.querySelectorAll('[data-note-guide-tone="true"]');
+      expect(guideNotes.length).toBe(0);
+    });
+
+    it("without noteSemantics prop no data-note-tension attributes are emitted", () => {
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          chordTones={["C#", "F", "G#"]}
+          chordRoot="C#"
+          rootNote="C"
+          highlightNotes={["C", "E", "G"]}
+        />,
+      );
+      const tensionNotes = container.querySelectorAll('[data-note-tension="true"]');
+      expect(tensionNotes.length).toBe(0);
     });
   });
 });
