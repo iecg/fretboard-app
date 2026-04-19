@@ -17,15 +17,14 @@ import {
   viewModeAtom,
   focusPresetAtom,
   customMembersAtom,
-  accidentalModeAtom,
   enharmonicDisplayAtom,
   fretStartAtom,
   fretEndAtom,
+  useFlatsAtom,
 } from "../store/atoms";
 import {
   NOTES,
   CHORD_DEFINITIONS,
-  resolveAccidentalMode,
   getScaleNotes,
   getChordNotes,
   getAvailableFocusPresets,
@@ -98,11 +97,7 @@ export function ScaleChordSection() {
   const [customMembers, setCustomMembers] = useAtom(customMembersAtom);
   const rootNote = useAtomValue(rootNoteAtom);
   const setRootNote = useSetAtom(setRootNoteAtom);
-  const accidentalMode = useAtomValue(accidentalModeAtom);
-  const useFlats = useMemo(
-    () => resolveAccidentalMode(rootNote, scaleName, accidentalMode),
-    [rootNote, scaleName, accidentalMode],
-  );
+  const useFlats = useAtomValue(useFlatsAtom);
 
   const availableFocusPresets = useMemo((): FocusPreset[] => {
     if (!chordType) return ["all", "custom"];
@@ -170,11 +165,7 @@ export function KeyColumn() {
   const rootNote = useAtomValue(rootNoteAtom);
   const handleSetRootNote = useSetAtom(setRootNoteAtom);
   const [scaleName] = useAtom(scaleNameAtom);
-  const accidentalMode = useAtomValue(accidentalModeAtom);
-  const useFlats = useMemo(
-    () => resolveAccidentalMode(rootNote, scaleName, accidentalMode),
-    [rootNote, scaleName, accidentalMode],
-  );
+  const useFlats = useAtomValue(useFlatsAtom);
   const enharmonicDisplay = useAtomValue(enharmonicDisplayAtom);
 
   return (
