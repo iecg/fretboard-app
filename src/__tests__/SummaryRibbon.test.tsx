@@ -21,7 +21,7 @@ describe("SummaryRibbon", () => {
   it("renders DegreeChipStrip without ChordPracticeBar when chordType is null", () => {
     renderWithAtoms(<SummaryRibbon />, [...BASE_SEEDS]);
     expect(screen.getByRole("group", { name: "Scale degrees" })).toBeInTheDocument();
-    expect(screen.queryByRole("group", { name: /Chord analysis/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: /Practice cues/i })).not.toBeInTheDocument();
   });
 
   it("renders both DegreeChipStrip and ChordPracticeBar when chordType is set and non-diatonic", () => {
@@ -33,6 +33,6 @@ describe("SummaryRibbon", () => {
       [chordTypeAtom, "Major Triad"],
     ]);
     expect(screen.getByRole("group", { name: "Scale degrees" })).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: /Chord analysis/i })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: /Practice cues/i })).toBeInTheDocument();
   });
 });
