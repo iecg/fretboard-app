@@ -48,6 +48,6 @@
 .mobile-tab-bar .mobile-tab:focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
-  box-shadow: 0 0 0 3px rgb(77 228 255 / 0.2);
+  box-shadow: var(--focus-ring-glow);
   color: var(--text-on-accent);
 }

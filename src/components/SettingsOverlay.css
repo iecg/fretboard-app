@@ -73,6 +73,7 @@
 .settings-overlay-close:focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
+  box-shadow: var(--focus-ring-glow);
 }
 
 .settings-overlay-close .icon {
@@ -186,6 +187,7 @@
 .overlay-help-trigger:focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
+  box-shadow: var(--focus-ring-glow);
 }
 
 .overlay-help-trigger .icon {
@@ -247,6 +249,7 @@
 .overlay-reset-btn:focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
+  box-shadow: var(--focus-ring-glow);
 }
 
 @media (max-width: 480px) {

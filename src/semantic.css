@@ -52,9 +52,10 @@
   --panel-surface-pad: var(--space-4);
   --panel-surface-pad-compact: var(--space-3) var(--space-4);
 
-  /* FOCUS-RING TOKEN — neon-cyan matches all active-state indicators in the UI */
+  /* FOCUS-RING TOKEN — neon-cyan glow for keyboard nav visibility against dark theme */
   --focus-ring: 2px solid var(--neon-cyan);
   --focus-ring-offset: 2px;
+  --focus-ring-glow: 0 0 8px rgb(77 228 255 / 0.6), 0 0 16px rgb(77 228 255 / 0.35);
 
   /* Z-INDEX SEMANTIC ALIASES (primitives in tokens.css) */
   --z-note: var(--token-z-note);
