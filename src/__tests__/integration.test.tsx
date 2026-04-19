@@ -415,11 +415,13 @@ describe("Integration Tests - User Workflows", () => {
       // Wait for the lazy-loaded MobileTabPanel + TheoryControls Suspense
       // boundaries to resolve before querying. Lazy imports resolve
       // asynchronously via polling rather than a single act flush.
+      // Timeout raised to 6000ms: under full-suite parallel load the Suspense
+      // resolution takes longer than the previous 3000ms budget allowed.
       await waitFor(
         () => expect(screen.getByRole("button", { name: /Circle of Fifths/i })).toBeInTheDocument(),
-        { timeout: 3000 },
+        { timeout: 6000 },
       );
-    });
+    }, 10000);
 
     it("mobile tab preference persists", async () => {
       localStorage.setItem(k("mobileTab"), "view");
