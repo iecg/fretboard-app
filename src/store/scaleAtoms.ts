@@ -267,3 +267,55 @@ export const toggleHiddenNoteAtom = atom(null, (_get, set, note: string) => {
     return next;
   });
 });
+
+// ---------------------------------------------------------------------------
+// Scale visibility mode — master switch for scale note display
+// ---------------------------------------------------------------------------
+
+export type ScaleVisibilityMode = "all" | "custom" | "off";
+
+const SCALE_VISIBILITY_MODES: readonly ScaleVisibilityMode[] = [
+  "all",
+  "custom",
+  "off",
+];
+
+const scaleVisibilityModeStorage = {
+  getItem(key: string, initialValue: ScaleVisibilityMode): ScaleVisibilityMode {
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored === null) {
+        localStorage.setItem(key, initialValue);
+        return initialValue;
+      }
+      if ((SCALE_VISIBILITY_MODES as readonly string[]).includes(stored)) {
+        return stored as ScaleVisibilityMode;
+      }
+      localStorage.setItem(key, initialValue);
+      return initialValue;
+    } catch {
+      return initialValue;
+    }
+  },
+  setItem(key: string, value: ScaleVisibilityMode): void {
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
+  },
+  removeItem(key: string): void {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Storage blocked or unavailable; ignore.
+    }
+  },
+};
+
+export const scaleVisibilityModeAtom = atomWithStorage<ScaleVisibilityMode>(
+  k("scaleVisibilityMode"),
+  "all",
+  scaleVisibilityModeStorage,
+  GET_ON_INIT,
+);

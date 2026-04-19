@@ -37,6 +37,16 @@
   letter-spacing: 0.01em;
 }
 
+/* When the header contains an action slot, lay it out as a flex row. */
+.degree-chip-strip-header[data-has-action] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  line-height: initial;
+}
+
 .degree-chip-strip-list {
   position: relative;
   display: flex;

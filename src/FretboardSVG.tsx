@@ -118,6 +118,35 @@ function classifyNote(
   return "note-inactive";
 }
 
+// Chord-root + isTension can coexist: outside-scale root stays "chord-root" (squircle/identity).
+function classifyNoteFromSemantics(
+  sem: NoteSemantics,
+  isChordInRange: boolean,
+  hasChordOverlay: boolean,
+  shapePolygons: ShapePolygon[],
+  boxBounds: BoxBound[],
+  fretIndex: number,
+): string {
+  if (!hasChordOverlay) {
+    // Delegate to classifyNote to avoid duplicating the no-overlay logic.
+    return classifyNote(
+      sem.isScaleRoot, sem.isChordRoot, sem.isColorTone, sem.isInScale,
+      sem.isChordTone, hasChordOverlay, isChordInRange, shapePolygons, boxBounds, fretIndex,
+    );
+  }
+  // Chord overlay active: chord-root takes absolute priority, even if outside scale.
+  if (sem.isChordRoot && sem.isChordTone && isChordInRange) return "chord-root";
+  // In-scale chord tones.
+  if (sem.isInScale && sem.isChordTone) return "chord-tone-in-scale";
+  // Color/characteristic tone: scale note not covered by a chord role.
+  if (sem.isInScale && sem.isColorTone) return "color-tone";
+  // Other in-scale notes.
+  if (sem.isInScale) return "scale-only";
+  // Out-of-scale chord tones (tension, non-root).
+  if (sem.isChordTone && isChordInRange) return "chord-tone-outside-scale";
+  return "note-inactive";
+}
+
 type NoteShape = "circle" | "squircle" | "diamond" | "hexagon";
 
 type NoteVisuals = {
@@ -676,20 +705,33 @@ export const FretboardSVG = memo(function FretboardSVG({
               fretIndex <= b.maxFret + chordFretSpread,
           );
 
+        // Use the composable semantic model when available; fall back to booleans.
+        // Keys are sharp-normalized (per project convention) so no enharmonic lookup needed.
+        const semantics = noteSemantics?.get(noteName);
+
         const noteClass = isNoteHidden
           ? "note-inactive"
-          : classifyNote(
-              isScaleRoot,
-              isChordRootNote,
-              isColorNote,
-              isHighlighted,
-              isChordTone,
-              hasChordOverlay,
-              isChordInRange,
-              shapePolygons,
-              boxBounds,
-              fretIndex,
-            );
+          : semantics
+            ? classifyNoteFromSemantics(
+                semantics,
+                isChordInRange,
+                hasChordOverlay,
+                shapePolygons,
+                boxBounds,
+                fretIndex,
+              )
+            : classifyNote(
+                isScaleRoot,
+                isChordRootNote,
+                isColorNote,
+                isHighlighted,
+                isChordTone,
+                hasChordOverlay,
+                isChordInRange,
+                shapePolygons,
+                boxBounds,
+                fretIndex,
+              );
 
         if (noteClass === "note-inactive") continue;
 
@@ -745,7 +787,6 @@ export const FretboardSVG = memo(function FretboardSVG({
           return false;
         })();
 
-        const semantics = noteSemantics?.get(noteName);
         notes.push({
           stringIndex,
           fretIndex,
@@ -1051,6 +1092,9 @@ export const FretboardSVG = memo(function FretboardSVG({
                   noteShape === "squircle" ? (
                     <>
                       {noteClass === "chord-root" && (
+                        /* Outer halo: inline style prevents CSS class rules from overriding
+                           fill/stroke so the halo remains a transparent ring (not a filled rect).
+                           When isTension, the halo echoes the dashed tension signal. */
                         <rect
                           x={cx - r - 3.5}
                           y={cy - r - 3.5}
@@ -1058,9 +1102,15 @@ export const FretboardSVG = memo(function FretboardSVG({
                           height={(r + 3.5) * 2}
                           rx={(r + 3.5) * 0.38}
                           ry={(r + 3.5) * 0.38}
-                          fill="none"
-                          stroke="rgb(255 154 77 / 0.22)"
-                          strokeWidth={1.5}
+                          style={{
+                            fill: "none",
+                            stroke: isTension
+                              ? "rgb(255 154 77 / 0.45)"
+                              : "rgb(255 154 77 / 0.22)",
+                            strokeWidth: isTension ? 1.8 : 1.5,
+                            strokeDasharray: isTension ? "6 3" : undefined,
+                            paintOrder: "stroke",
+                          }}
                         />
                       )}
                       <rect
