@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import clsx from "clsx";
 import { X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { getFocusableElements } from "../utils/dom";
@@ -7,10 +6,9 @@ import { getFocusableElements } from "../utils/dom";
 interface HelpModalProps {
   isOpen: boolean;
   onClose: () => void;
-  fullWidth?: boolean;
 }
 
-export function HelpModal({ isOpen, onClose, fullWidth }: HelpModalProps) {
+export function HelpModal({ isOpen, onClose }: HelpModalProps) {
   const helpModalRef = useRef<HTMLDivElement>(null);
 
   // Focus trap + focus restoration for help modal
@@ -72,9 +70,7 @@ export function HelpModal({ isOpen, onClose, fullWidth }: HelpModalProps) {
         >
           <motion.div
             ref={helpModalRef}
-            className={clsx("help-modal", {
-              "help-modal--full-width": fullWidth,
-            })}
+            className="help-modal"
             role="dialog"
             aria-modal="true"
             aria-labelledby="help-modal-title"

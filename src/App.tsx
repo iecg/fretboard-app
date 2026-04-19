@@ -151,9 +151,6 @@ function AppContent() {
       layoutTier={layout.tier}
       layoutVariant={layout.variant}
       isChordActive={!!chordType}
-      showHeaderSubtitle={layout.showHeaderSubtitle}
-      compactHeaderActions={layout.compactHeaderActions}
-      fullWidthOverlay={layout.fullWidthOverlay}
       showSummary={layout.showSummary}
       showControlsPanel={layout.showControlsPanel}
       showMobileTabs={layout.showMobileTabs}
@@ -206,7 +203,6 @@ function AppContent() {
           <HelpModal
             isOpen={showHelp}
             onClose={() => setShowHelp(false)}
-            fullWidth={layout.fullWidthOverlay}
           />
         </Suspense>
       }

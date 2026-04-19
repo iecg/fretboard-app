@@ -23,9 +23,6 @@ export interface ResponsiveLayout {
   showSummary: boolean;
   isSplitPanel: boolean;
   panelMode: DashboardPanelMode;
-  showHeaderSubtitle: boolean;
-  compactHeaderActions: boolean;
-  fullWidthOverlay: boolean;
 }
 
 export const STRING_ROW_PX_MOBILE = 28;
@@ -37,9 +34,6 @@ const STRING_ROW_PX_BY_TIER: Record<ResponsiveTier, number> = {
   tablet: STRING_ROW_PX_TABLET,
   desktop: STRING_ROW_PX_DESKTOP,
 };
-
-const HEADER_SUBTITLE_MIN_WIDTH = 880;
-const COMPACT_HEADER_ACTIONS_MAX_WIDTH = 1080;
 
 export function getResponsiveTier(viewportWidth: number): ResponsiveTier {
   if (viewportWidth <= BREAKPOINTS.mobileMax) {
@@ -113,11 +107,5 @@ export function getResponsiveLayout(
     showSummary: variant !== "landscape-mobile",
     isSplitPanel,
     panelMode,
-    showHeaderSubtitle:
-      tier !== "mobile" && viewportWidth >= HEADER_SUBTITLE_MIN_WIDTH,
-    compactHeaderActions:
-      variant === "landscape-mobile" ||
-      viewportWidth < COMPACT_HEADER_ACTIONS_MAX_WIDTH,
-    fullWidthOverlay: tier === "mobile",
   };
 }

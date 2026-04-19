@@ -12,9 +12,6 @@ interface MainLayoutWrapperProps {
   layoutTier: string;
   layoutVariant: string;
   isChordActive: boolean;
-  showHeaderSubtitle: boolean;
-  compactHeaderActions: boolean;
-  fullWidthOverlay: boolean;
   showSummary: boolean;
   showControlsPanel: boolean;
   showMobileTabs: boolean;
@@ -32,9 +29,6 @@ export function MainLayoutWrapper({
   layoutTier,
   layoutVariant,
   isChordActive,
-  showHeaderSubtitle,
-  compactHeaderActions,
-  fullWidthOverlay,
   showSummary,
   showControlsPanel,
   showMobileTabs,
@@ -45,9 +39,6 @@ export function MainLayoutWrapper({
       data-layout-tier={layoutTier}
       data-layout-variant={layoutVariant}
       data-chord-active={isChordActive ? "true" : undefined}
-      data-header-subtitle={showHeaderSubtitle ? "visible" : "hidden"}
-      data-header-actions={compactHeaderActions ? "compact" : "default"}
-      data-full-width-overlay={fullWidthOverlay ? "true" : "false"}
     >
       {header}
 

@@ -75,13 +75,17 @@ export function Fretboard({
   const endFret = useAtomValue(fretEndAtom);
   const fretboardLayout = getFretboardNotes(tuning, Math.max(endFret, maxFret));
 
-  const [containerWidth, setContainerWidth] = useState(0);
+  const [containerWidth, setContainerWidth] = useState<number | null>(null);
   const totalColumns = endFret - startFret;
   const noteBubblePx = Math.round(stringRowPx * NOTE_BUBBLE_RATIO);
   const MIN_FRET_WIDTH = Math.max(MIN_FRET_WIDTH_BASE, noteBubblePx + MIN_FRET_WIDTH_OVERFLOW_BUFFER);
+  
+  // Use a sensible default zoom (40) if width is not yet measured to prevent massive jumps
   const autoFitZoom = Math.max(
     MIN_FRET_WIDTH,
-    containerWidth > 0 && totalColumns > 0 ? containerWidth / totalColumns : 30,
+    containerWidth !== null && containerWidth > 0 && totalColumns > 0 
+      ? containerWidth / totalColumns 
+      : 40,
   );
   const desktopZoom =
     fretZoom <= 100 ? autoFitZoom : (autoFitZoom * fretZoom) / 100;
@@ -100,15 +104,25 @@ export function Fretboard({
   useLayoutEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
+
+    // Synchronous initial measurement
     setContainerWidth(el.clientWidth);
-    const ro = new ResizeObserver(() => setContainerWidth(el.clientWidth));
+
+    const ro = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry) {
+        // Use contentRect for more accurate width without padding/borders
+        setContainerWidth(entry.contentRect.width);
+      }
+    });
+
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
 
   useEffect(() => {
     const el = scrollRef.current;
-    if (!el) return;
+    if (!el || containerWidth === null) return;
     setHasOverflow(el.scrollWidth > el.clientWidth + 1);
   }, [effectiveZoom, totalColumns, containerWidth]);
 
@@ -180,7 +194,14 @@ export function Fretboard({
   const neckWidth = totalColumns * effectiveZoom;
 
   return (
-    <div className="fretboard-outer" data-testid="fretboard-main">
+    <div 
+      className="fretboard-outer" 
+      data-testid="fretboard-main"
+      style={{
+        // Reserve vertical space: tuning rows + approx 24px for fret numbers
+        minHeight: `${tuning.length * stringRowPx + 24}px`
+      }}
+    >
       <div
         className={clsx("fretboard-wrapper", "hide-scrollbar")}
         ref={scrollRef}
@@ -190,6 +211,8 @@ export function Fretboard({
         onPointerLeave={handlePointerUp}
         style={{
           cursor: hasOverflow ? (isDragging ? "grabbing" : "grab") : "default",
+          // Hide until measured to prevent the initial "jump" from being painted
+          visibility: containerWidth === null ? "hidden" : "visible",
         }}
       >
         <FretboardSVG

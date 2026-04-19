@@ -507,7 +507,6 @@ function SettingsOverlaySurface({
         aria-modal="true"
         aria-label="Settings"
         data-layout-tier={layout.tier}
-        data-full-width={layout.fullWidthOverlay ? "true" : "false"}
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
         initial={{ x: "100%" }}

@@ -30,7 +30,7 @@
   border-left: 1px solid var(--chrome-border);
 }
 
-.settings-overlay-drawer[data-full-width="true"] {
+.settings-overlay-drawer[data-layout-tier="mobile"] {
   inline-size: 100vw;
   max-inline-size: 100vw;
   border-left: none;
