@@ -9,7 +9,6 @@ import {
 import { synth } from "./audio";
 import { fretZoomAtom } from "./store/atoms";
 import { FretboardSVG } from "./FretboardSVG";
-import { useFretboardState } from "./hooks/useFretboardState";
 import { 
   STRING_ROW_PX_DEFAULT, 
   MAX_FRET, 
@@ -17,8 +16,27 @@ import {
   MIN_FRET_WIDTH_BASE, 
   MIN_FRET_WIDTH_OVERFLOW_BUFFER 
 } from "./constants";
-import type { ViewMode } from "./theory";
-import type { ShapePolygon } from "./shapes";
+import {
+  currentTuningAtom,
+  rootNoteAtom,
+  scaleNameAtom,
+  fretStartAtom,
+  fretEndAtom,
+  displayFormatAtom,
+  useFlatsAtom,
+  shapeDataAtom,
+  autoCenterTargetAtom,
+  recenterKeyAtom,
+  activeChordTonesAtom,
+  chordRootAtom,
+  chordFretSpreadAtom,
+  hideNonChordNotesAtom,
+  viewModeAtom,
+  colorNotesAtom,
+  hiddenNotesAtom,
+  noteSemanticMapAtom,
+  practiceLensAtom,
+} from "./store/atoms";
 
 interface FretboardProps {
   tuning?: string[];
@@ -31,54 +49,70 @@ interface FretboardProps {
   chordRoot?: string;
   chordFretSpread?: number;
   hideNonChordNotes?: boolean;
-  viewMode?: ViewMode;
   colorNotes?: string[];
-  shapePolygons?: ShapePolygon[];
+  shapePolygons?: import("./shapes").ShapePolygon[];
   wrappedNotes?: Set<string>;
   hiddenNotes?: Set<string>;
+  useFlats?: boolean;
+  scaleName?: string;
+  stringRowPx?: number;
   onFretClick?: (
     stringIndex: number,
     fretIndex: number,
     noteName: string,
   ) => void;
-  useFlats?: boolean;
-  scaleName?: string;
-  stringRowPx?: number;
-  autoCenterTarget?: number;
-  recenterKey?: number;
   id?: string;
 }
 
 export function Fretboard(props: FretboardProps) {
-  const state = useFretboardState();
   const fretZoom = useAtomValue(fretZoomAtom);
-
-  // Fallback to props for testability, otherwise use atom-driven state
-  const tuning = props.tuning ?? state.currentTuning;
-  const maxFret = props.maxFret ?? MAX_FRET;
-  const highlightNotes = props.highlightNotes ?? state.highlightNotes;
-  const rootNote = props.rootNote ?? state.rootNote;
-  const displayFormat = props.displayFormat ?? state.displayFormat;
-  const boxBounds = props.boxBounds ?? state.boxBounds;
-  const chordTones = props.chordTones ?? state.chordTones;
-  const chordRoot = props.chordRoot ?? state.chordRoot;
-  const chordFretSpread = props.chordFretSpread ?? state.chordFretSpread;
-  const hideNonChordNotes = props.hideNonChordNotes ?? state.hideNonChordNotes;
-  const viewMode = props.viewMode ?? state.viewMode;
-  const autoCenterTarget = props.autoCenterTarget ?? state.autoCenterTarget;
-  const recenterKey = props.recenterKey ?? state.recenterKey;
-  const colorNotes = props.colorNotes ?? state.colorNotes;
-  const shapePolygons = props.shapePolygons ?? state.shapePolygons;
-  const wrappedNotes = props.wrappedNotes ?? state.wrappedNotes;
-  const hiddenNotes = props.hiddenNotes ?? state.hiddenNotes;
-  const useFlats = props.useFlats ?? state.useFlats;
-  const scaleName = props.scaleName ?? state.scaleName;
-  const noteSemantics = state.noteSemanticMap.size > 0 ? state.noteSemanticMap : undefined;
-  const startFret = state.startFret;
-  const endFret = state.endFret;
-  const stringRowPx = props.stringRowPx ?? STRING_ROW_PX_DEFAULT;
   const onFretClickProp = props.onFretClick;
+
+  const atomTuning = useAtomValue(currentTuningAtom);
+  const atomRootNote = useAtomValue(rootNoteAtom);
+  const atomScaleName = useAtomValue(scaleNameAtom);
+  const startFret = useAtomValue(fretStartAtom);
+  const endFret = useAtomValue(fretEndAtom);
+  const atomDisplayFormat = useAtomValue(displayFormatAtom);
+  const atomUseFlats = useAtomValue(useFlatsAtom);
+  const shapeData = useAtomValue(shapeDataAtom);
+  const atomHighlightNotes = shapeData.highlightNotes;
+  const atomBoxBounds = shapeData.boxBounds;
+  const atomShapePolygons = shapeData.shapePolygons;
+  const atomWrappedNotes = shapeData.wrappedNotes;
+  const autoCenterTarget = useAtomValue(autoCenterTargetAtom);
+  const recenterKey = useAtomValue(recenterKeyAtom);
+  
+  const atomChordTones = useAtomValue(activeChordTonesAtom);
+  const atomChordRoot = useAtomValue(chordRootAtom);
+  const atomChordFretSpread = useAtomValue(chordFretSpreadAtom);
+  const atomHideNonChordNotes = useAtomValue(hideNonChordNotesAtom);
+  const viewMode = useAtomValue(viewModeAtom);
+  const practiceLens = useAtomValue(practiceLensAtom);
+  const atomColorNotes = useAtomValue(colorNotesAtom);
+  const atomHiddenNotes = useAtomValue(hiddenNotesAtom);
+  const noteSemanticMap = useAtomValue(noteSemanticMapAtom);
+
+  // Props override atoms for test compatibility; otherwise use atoms
+  const tuning = props.tuning ?? atomTuning;
+  const rootNote = props.rootNote ?? atomRootNote;
+  const scaleName = props.scaleName ?? atomScaleName;
+  const displayFormat = props.displayFormat ?? atomDisplayFormat;
+  const useFlats = props.useFlats ?? atomUseFlats;
+  const highlightNotes = props.highlightNotes ?? atomHighlightNotes;
+  const boxBounds = props.boxBounds ?? atomBoxBounds;
+  const chordTones = props.chordTones ?? atomChordTones;
+  const chordRoot = props.chordRoot ?? atomChordRoot;
+  const chordFretSpread = props.chordFretSpread ?? atomChordFretSpread;
+  const hideNonChordNotes = props.hideNonChordNotes ?? atomHideNonChordNotes;
+  const colorNotes = props.colorNotes ?? atomColorNotes;
+  const shapePolygons = props.shapePolygons ?? atomShapePolygons;
+  const wrappedNotes = props.wrappedNotes ?? atomWrappedNotes;
+  const hiddenNotes = props.hiddenNotes ?? atomHiddenNotes;
   const id = props.id;
+
+  const stringRowPx = props.stringRowPx ?? STRING_ROW_PX_DEFAULT;
+  const maxFret = props.maxFret ?? MAX_FRET;
 
   const fretboardLayout = getFretboardNotes(tuning, Math.max(endFret, maxFret));
 
@@ -244,14 +278,14 @@ export function Fretboard(props: FretboardProps) {
           chordFretSpread={chordFretSpread}
           hideNonChordNotes={hideNonChordNotes}
           viewMode={viewMode}
-          practiceLens={state.practiceLens}
+          practiceLens={practiceLens}
           colorNotes={colorNotes}
           shapePolygons={shapePolygons}
           wrappedNotes={wrappedNotes}
           hiddenNotes={hiddenNotes}
           useFlats={useFlats}
           scaleName={scaleName}
-          noteSemantics={noteSemantics}
+          noteSemantics={noteSemanticMap.size > 0 ? noteSemanticMap : undefined}
           id={id}
           onNoteClick={handleFretClick}
         />
