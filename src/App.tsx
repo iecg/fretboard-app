@@ -5,7 +5,6 @@ import { HelpCircle, Settings2, Volume2, VolumeX } from "lucide-react";
 import { synth } from "./audio";
 import {
   isMutedAtom,
-  mobileTabAtom,
   settingsOverlayOpenAtom,
   toggleMuteAtom,
   chordTypeAtom,
