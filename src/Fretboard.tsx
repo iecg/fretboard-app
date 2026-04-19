@@ -244,6 +244,7 @@ export function Fretboard(props: FretboardProps) {
           chordFretSpread={chordFretSpread}
           hideNonChordNotes={hideNonChordNotes}
           viewMode={viewMode}
+          practiceLens={state.practiceLens}
           colorNotes={colorNotes}
           shapePolygons={shapePolygons}
           wrappedNotes={wrappedNotes}

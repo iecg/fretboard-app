@@ -763,7 +763,7 @@ export const FretboardSVG = memo(function FretboardSVG({
   }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, wrappedNotes, hideNonChordNotes, practiceLens, tuning, noteSemantics]);
 
   return (
-    <div role="group" aria-label={ariaLabel} className="fretboard-board">
+    <div role="group" aria-label={ariaLabel} className="fretboard-board" data-practice-lens={practiceLens}>
       <div
         className="fretboard-neck"
         style={

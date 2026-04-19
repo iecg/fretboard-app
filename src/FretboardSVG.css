@@ -143,3 +143,183 @@
 .fretboard-note[data-note-role="color-tone"] {
   filter: var(--glow-violet);
 }
+
+/* ==========================================================================
+   Outside chord root: squircle shape signals root identity; dashed stroke
+   signals the root falls outside the active scale (tension note). Both roles
+   coexist — something the old single-role enum couldn't represent.
+   ========================================================================== */
+.fretboard-note.chord-root[data-note-tension] rect {
+  stroke-dasharray: 6 3;
+  fill: rgb(80 28 0 / 0.95);
+}
+
+/* ==========================================================================
+   Lens emphasis — .fretboard-board[data-practice-lens] surfaces the active
+   lens so child notes can be selectively promoted or receded. Scale notes are
+   never globally dimmed; only non-focal notes within each lens recede.
+   ========================================================================== */
+
+/* --- guide-tones lens ---------------------------------------------------- */
+
+/* Guide tones (3rd / 7th) pop: bolder stroke + richer fill. */
+[data-practice-lens="guide-tones"] .fretboard-note[data-note-guide-tone] circle,
+[data-practice-lens="guide-tones"] .fretboard-note[data-note-guide-tone] rect,
+[data-practice-lens="guide-tones"] .fretboard-note[data-note-guide-tone] polygon {
+  stroke-width: 3.2;
+  fill: rgb(85 46 6 / 0.97);
+}
+
+/* Non-guide chord tones recede: thin stroke, dim fill, glow removed. */
+[data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]) circle,
+[data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]) rect,
+[data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]) polygon {
+  stroke-width: 1.2;
+  fill: rgb(40 22 10 / 0.38);
+  stroke: rgb(200 110 40 / 0.50);
+}
+[data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]) {
+  filter: none;
+}
+
+/* Color tones recede: keep hexagon shape, dim the violet ring. */
+[data-practice-lens="guide-tones"] .fretboard-note.color-tone circle,
+[data-practice-lens="guide-tones"] .fretboard-note.color-tone rect,
+[data-practice-lens="guide-tones"] .fretboard-note.color-tone polygon {
+  stroke: rgb(167 139 250 / 0.40);
+  fill: rgb(30 18 55 / 0.38);
+}
+[data-practice-lens="guide-tones"] .fretboard-note.color-tone {
+  filter: none;
+}
+
+/* Scale-only notes: dim the ring so guide tones read as the focal layer. */
+[data-practice-lens="guide-tones"] .fretboard-note.scale-only circle,
+[data-practice-lens="guide-tones"] .fretboard-note.scale-only rect,
+[data-practice-lens="guide-tones"] .fretboard-note.scale-only polygon {
+  stroke: rgb(77 228 255 / 0.38);
+}
+[data-practice-lens="guide-tones"] .fretboard-note.scale-only {
+  filter: none;
+}
+
+/* --- color lens ---------------------------------------------------------- */
+
+/* Color tones pop: bolder stroke + richer violet fill. */
+[data-practice-lens="color"] .fretboard-note.color-tone circle,
+[data-practice-lens="color"] .fretboard-note.color-tone rect,
+[data-practice-lens="color"] .fretboard-note.color-tone polygon {
+  stroke-width: 3.2;
+  fill: rgb(62 32 115 / 0.97);
+}
+
+/* Chord root: semi-recede so color tones lead. */
+[data-practice-lens="color"] .fretboard-note.chord-root circle,
+[data-practice-lens="color"] .fretboard-note.chord-root rect,
+[data-practice-lens="color"] .fretboard-note.chord-root polygon {
+  stroke-width: 1.8;
+  fill: rgb(55 35 18 / 0.62);
+  stroke: rgb(255 154 77 / 0.68);
+}
+[data-practice-lens="color"] .fretboard-note.chord-root {
+  filter: none;
+}
+
+/* Other chord tones recede: thin stroke, dim fill, glow removed. */
+[data-practice-lens="color"] .fretboard-note.chord-tone-in-scale circle,
+[data-practice-lens="color"] .fretboard-note.chord-tone-in-scale rect,
+[data-practice-lens="color"] .fretboard-note.chord-tone-in-scale polygon {
+  stroke-width: 1.2;
+  fill: rgb(40 22 10 / 0.38);
+  stroke: rgb(200 110 40 / 0.50);
+}
+[data-practice-lens="color"] .fretboard-note.chord-tone-in-scale {
+  filter: none;
+}
+
+/* Scale-only notes: dim ring so color tones read as focal layer. */
+[data-practice-lens="color"] .fretboard-note.scale-only circle,
+[data-practice-lens="color"] .fretboard-note.scale-only rect,
+[data-practice-lens="color"] .fretboard-note.scale-only polygon {
+  stroke: rgb(77 228 255 / 0.38);
+}
+[data-practice-lens="color"] .fretboard-note.scale-only {
+  filter: none;
+}
+
+/* --- targets-color lens -------------------------------------------------- */
+
+/* Scale-only: gentle recession so chord + color tones define the hierarchy. */
+[data-practice-lens="targets-color"] .fretboard-note.scale-only circle,
+[data-practice-lens="targets-color"] .fretboard-note.scale-only rect,
+[data-practice-lens="targets-color"] .fretboard-note.scale-only polygon {
+  stroke: rgb(77 228 255 / 0.55);
+}
+[data-practice-lens="targets-color"] .fretboard-note.scale-only {
+  filter: none;
+}
+
+/* --- tension lens -------------------------------------------------------- */
+
+/* Tension notes: vivid solid stroke (override dashed), bright fill. */
+[data-practice-lens="tension"] .fretboard-note.chord-tone-outside-scale circle,
+[data-practice-lens="tension"] .fretboard-note.chord-tone-outside-scale rect,
+[data-practice-lens="tension"] .fretboard-note.chord-tone-outside-scale polygon {
+  stroke: var(--neon-orange);
+  fill: rgb(95 22 0 / 0.97);
+  stroke-dasharray: none;
+  stroke-width: 3.0;
+}
+
+/* Tension chord root: squircle (root) + dashed vivid stroke (tension). */
+[data-practice-lens="tension"] .fretboard-note.chord-root[data-note-tension] rect {
+  stroke: var(--neon-orange);
+  fill: rgb(95 22 0 / 0.97);
+  stroke-dasharray: 6 3;
+  stroke-width: 3.0;
+}
+
+/* Regular chord root (not tension): semi-recede so tension leads. */
+[data-practice-lens="tension"] .fretboard-note.chord-root:not([data-note-tension]) circle,
+[data-practice-lens="tension"] .fretboard-note.chord-root:not([data-note-tension]) rect,
+[data-practice-lens="tension"] .fretboard-note.chord-root:not([data-note-tension]) polygon {
+  stroke-width: 1.8;
+  fill: rgb(55 35 18 / 0.62);
+  stroke: rgb(255 154 77 / 0.68);
+}
+[data-practice-lens="tension"] .fretboard-note.chord-root:not([data-note-tension]) {
+  filter: none;
+}
+
+/* Chord tones in scale recede: thin stroke, dim fill, glow removed. */
+[data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale circle,
+[data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale rect,
+[data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale polygon {
+  stroke-width: 1.2;
+  fill: rgb(40 22 10 / 0.38);
+  stroke: rgb(200 110 40 / 0.50);
+}
+[data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale {
+  filter: none;
+}
+
+/* Scale-only: dim ring to push tension notes forward. */
+[data-practice-lens="tension"] .fretboard-note.scale-only circle,
+[data-practice-lens="tension"] .fretboard-note.scale-only rect,
+[data-practice-lens="tension"] .fretboard-note.scale-only polygon {
+  stroke: rgb(77 228 255 / 0.38);
+}
+[data-practice-lens="tension"] .fretboard-note.scale-only {
+  filter: none;
+}
+
+/* Color tones recede under tension lens. */
+[data-practice-lens="tension"] .fretboard-note.color-tone circle,
+[data-practice-lens="tension"] .fretboard-note.color-tone rect,
+[data-practice-lens="tension"] .fretboard-note.color-tone polygon {
+  stroke: rgb(167 139 250 / 0.40);
+  fill: rgb(30 18 55 / 0.38);
+}
+[data-practice-lens="tension"] .fretboard-note.color-tone {
+  filter: none;
+}
