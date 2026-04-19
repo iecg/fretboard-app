@@ -1,41 +1,25 @@
-import { useState, useMemo, useEffect, useRef } from "react";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import {
-  rootNoteAtom,
-  scaleNameAtom,
-  chordRootAtom,
-  chordTypeAtom,
-  linkChordRootAtom,
-  chordFretSpreadAtom,
-  viewModeAtom,
-  focusPresetAtom,
-  customMembersAtom,
-  fingeringPatternAtom,
-  cagedShapesAtom,
-  npsPositionAtom,
-  fretStartAtom,
-  fretEndAtom,
-  displayFormatAtom,
-  tuningNameAtom,
   accidentalModeAtom,
   enharmonicDisplayAtom,
-  setRootNoteAtom,
-  scaleBrowseModeAtom,
-  useFlatsAtom,
-  currentTuningAtom,
+  chordFretSpreadAtom,
+  hideNonChordNotesAtom,
+  displayFormatAtom,
+  noteRoleMapAtom,
+  summaryChordRowAtom,
+  summaryLegendItemsAtom,
+  chordMemberLabelsAtom,
+  summaryHeaderLeftAtom,
+  summaryHeaderRightAtom,
+  summaryPrimaryModeAtom,
+  showRelationshipRowAtom,
+  sharedChordMembersAtom,
+  outsideChordMembersAtom,
+  summaryNotesAtom,
+  chordLabelAtom,
+  chordSummaryNotesAtom,
 } from "../store/atoms";
 import {
-  SCALES,
-  NOTES,
-  INTERVAL_NAMES,
-  CHORD_DEFINITIONS,
-  getScaleNotes,
-  getChordNotes,
-  getNoteDisplay,
-  getDivergentNotes,
-  formatAccidental,
-  getAvailableFocusPresets,
-  applyFocusPreset,
   type ViewMode,
   type FocusPreset,
   type ChordMemberName,
@@ -45,17 +29,11 @@ import {
   type LegendItem,
   type PracticeBarColorNote,
 } from "../theory";
-import { getFretNote } from "../guitar";
-import { getActiveScaleBrowseOption } from "../theoryCatalog";
-import {
-  CAGED_SHAPES,
-  getCagedCoordinates,
-  get3NPSCoordinates,
-  findMainShape,
-  getShapeCenterFret,
-  type ShapePolygon,
-  type CagedShape,
-} from "../shapes";
+import { useScaleState } from "./useScaleState";
+import { useChordState } from "./useChordState";
+import { useShapeState } from "./useShapeState";
+import { usePracticeBarState } from "./usePracticeBarState";
+import { useFretboardState } from "./useFretboardState";
 
 export type {
   ViewMode,
@@ -69,598 +47,57 @@ export type {
 };
 
 export default function useDisplayState() {
-  // Scale
-  const rootNote = useAtomValue(rootNoteAtom);
-  const [scaleName, setScaleName] = useAtom(scaleNameAtom);
-  const [scaleBrowseMode, setScaleBrowseMode] = useAtom(scaleBrowseModeAtom);
+  const scaleState = useScaleState();
+  const chordState = useChordState();
+  const shapeState = useShapeState();
+  const practiceBarState = usePracticeBarState();
+  const fretboardState = useFretboardState();
 
-  // Chord overlay
-  const [chordRoot, setChordRoot] = useAtom(chordRootAtom);
-  const [chordType, setChordType] = useAtom(chordTypeAtom);
-  const [linkChordRoot, setLinkChordRoot] = useAtom(linkChordRootAtom);
-  const chordFretSpread = useAtomValue(chordFretSpreadAtom);
-  const [viewMode, setViewMode] = useAtom(viewModeAtom);
-  const [focusPreset, setFocusPreset] = useAtom(focusPresetAtom);
-  const [customMembers, setCustomMembers] = useAtom(customMembersAtom);
-
-  // Fingering
-  const [fingeringPattern, setFingeringPattern] = useAtom(fingeringPatternAtom);
-  const [cagedShapes, setCagedShapes] = useAtom(cagedShapesAtom);
-  const [npsPosition, setNpsPosition] = useAtom(npsPositionAtom);
-
-  // Fret range (for auto-center calculation)
-  const startFret = useAtomValue(fretStartAtom);
-  const endFret = useAtomValue(fretEndAtom);
-
-  // Display
-  const [displayFormat, setDisplayFormat] = useAtom(displayFormatAtom);
-  const tuningName = useAtomValue(tuningNameAtom);
-
-  // Accidentals
+  // Atom values not covered by domain hooks yet
   const accidentalMode = useAtomValue(accidentalModeAtom);
   const enharmonicDisplay = useAtomValue(enharmonicDisplayAtom);
+  const [displayFormat, setDisplayFormat] = useAtom(displayFormatAtom);
+  const chordFretSpread = useAtomValue(chordFretSpreadAtom);
+  const hideNonChordNotes = useAtomValue(hideNonChordNotesAtom);
 
-  // Root note setter (write atom for CoF root selection — syncs chordRoot when linked)
-  const setRootNote = useSetAtom(setRootNoteAtom);
+  // Derived values from atoms
+  const noteRoleMap = useAtomValue(noteRoleMapAtom);
+  const summaryChordRow = useAtomValue(summaryChordRowAtom);
+  const summaryLegendItems = useAtomValue(summaryLegendItemsAtom);
+  const chordMemberLabels = useAtomValue(chordMemberLabelsAtom);
+  const summaryHeaderLeft = useAtomValue(summaryHeaderLeftAtom);
+  const summaryHeaderRight = useAtomValue(summaryHeaderRightAtom);
+  const summaryPrimaryMode = useAtomValue(summaryPrimaryModeAtom);
+  const showRelationshipRow = useAtomValue(showRelationshipRowAtom);
+  const sharedChordMembers = useAtomValue(sharedChordMembersAtom);
+  const outsideChordMembers = useAtomValue(outsideChordMembersAtom);
+  const summaryNotes = useAtomValue(summaryNotesAtom);
+  const chordLabel = useAtomValue(chordLabelAtom);
+  const chordSummaryNotes = useAtomValue(chordSummaryNotesAtom);
 
-  // Internalized local state
-  const [clickedShape, setClickedShape] = useState<CagedShape | null>(null);
-  const [recenterKey, setRecenterKey] = useState(0);
-
-  // When in CAGED mode, reset to E shape whenever the scale changes
-  const prevScaleNameRef = useRef<string | null>(null);
-  useEffect(() => {
-    const prev = prevScaleNameRef.current;
-    prevScaleNameRef.current = scaleName;
-    if (prev === null || prev === scaleName) return;
-    if (fingeringPattern !== "caged") return;
-    setCagedShapes(new Set<CagedShape>(["E"]));
-  }, [scaleName, fingeringPattern, setCagedShapes]);
-
-  // Callbacks
-  const onShapeClick = (shape: CagedShape | null) => {
-    setClickedShape(shape);
-  };
-
-  const onRecenter = () => {
-    setRecenterKey((k) => k + 1);
-  };
-
-  // useMemo derivations (copied verbatim from App.tsx)
-
-  const useFlats = useAtomValue(useFlatsAtom);
-
-  const currentTuning = useAtomValue(currentTuningAtom);
-
-  // All chord tones for the selected chord (unfiltered; used for degree strip)
-  const chordTones = useMemo(() => {
-    if (!chordType) return [];
-    return getChordNotes(chordRoot, chordType);
-  }, [chordRoot, chordType]);
-
-  // Available focus presets for the current chord quality
-  const availableFocusPresets = useMemo((): FocusPreset[] => {
-    if (!chordType) return ["all", "custom"];
-    return getAvailableFocusPresets(chordType);
-  }, [chordType]);
-
-  // Resolved chord members with note names attached
-  const chordMembers = useMemo((): ResolvedChordMember[] => {
-    if (!chordType) return [];
-    const def = CHORD_DEFINITIONS[chordType];
-    if (!def) return [];
-    const rootIndex = NOTES.indexOf(chordRoot);
-    if (rootIndex === -1) return [];
-    return def.members.map((m) => ({
-      ...m,
-      note: NOTES[(rootIndex + m.semitone) % 12],
-    }));
-  }, [chordRoot, chordType]);
-
-  // Active chord members after applying focus preset (with graceful fallback)
-  const activeChordMembers = useMemo((): ResolvedChordMember[] => {
-    if (!chordType) return [];
-    const def = CHORD_DEFINITIONS[chordType];
-    if (!def) return [];
-    const rootIndex = NOTES.indexOf(chordRoot);
-    if (rootIndex === -1) return [];
-    const effectivePreset = availableFocusPresets.includes(focusPreset)
-      ? focusPreset
-      : "all";
-    const members = applyFocusPreset(def, effectivePreset, customMembers);
-    return members.map((m) => ({
-      ...m,
-      note: NOTES[(rootIndex + m.semitone) % 12],
-    }));
-  }, [chordRoot, chordType, focusPreset, customMembers, availableFocusPresets]);
-
-  // Note names from active chord members — passed to Fretboard as chordTones
-  const activeChordTones = useMemo(
-    () => activeChordMembers.map((m) => m.note),
-    [activeChordMembers],
+  // Compatibility aliases
+  const showSecondaryChordRail = showRelationshipRow;
+  const practiceBarSharedMembers = practiceBarState.allChordMembers.filter(
+    (e) => e.inScale,
   );
-
-  // Whether any chord member falls outside the current scale
-  const hasOutsideChordMembers = useMemo(() => {
-    if (!chordType || chordTones.length === 0) return false;
-    const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
-    return chordTones.some((note) => !scaleNoteSet.has(note));
-  }, [chordType, chordTones, rootNote, scaleName]);
-
-  // Shared note-role map: every chromatic note → its overlay role when chord active.
-  // Consumed by both the fretboard and the summary strip for consistent semantics.
-  const noteRoleMap = useMemo((): Map<string, NoteRole> => {
-    if (!chordType) return new Map();
-    const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
-    const activeChordToneSet = new Set(activeChordTones);
-    const map = new Map<string, NoteRole>();
-    for (const note of NOTES) {
-      const isInScale = scaleNoteSet.has(note);
-      const isActiveChordTone = activeChordToneSet.has(note);
-      const isChordRootNote = note === chordRoot;
-      if (isChordRootNote && isActiveChordTone) {
-        map.set(note, "chord-root");
-      } else if (isActiveChordTone && isInScale) {
-        map.set(note, "chord-tone-in-scale");
-      } else if (isActiveChordTone && !isInScale) {
-        map.set(note, "chord-tone-outside-scale");
-      } else if (isInScale) {
-        map.set(note, "scale-only");
-      }
-    }
-    return map;
-  }, [chordType, rootNote, scaleName, chordRoot, activeChordTones]);
-
-  // All active chord members as ChordRowEntry[], viewMode-independent.
-  // Consumed by ChordPracticeBar and as the base for summaryChordRow.
-  const allChordMembers = useMemo((): ChordRowEntry[] => {
-    if (!chordType) return [];
-    const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
-    return activeChordMembers.map((m): ChordRowEntry => {
-      const inScale = scaleNoteSet.has(m.note);
-      const isRoot = m.name === "root";
-      let role: ChordRowEntry["role"];
-      if (isRoot) {
-        role = "chord-root";
-      } else if (inScale) {
-        role = "chord-tone-in-scale";
-      } else {
-        role = "chord-tone-outside-scale";
-      }
-      return {
-        internalNote: m.note,
-        displayNote: formatAccidental(getNoteDisplay(m.note, chordRoot, useFlats)),
-        memberName: m.name === "root" ? "1" : formatAccidental(m.name),
-        role,
-        inScale,
-      };
-    });
-  }, [chordType, activeChordMembers, rootNote, scaleName, chordRoot, useFlats]);
-
-  // Chord row entries for the summary strip, filtered by viewMode.
-  const summaryChordRow = useMemo((): ChordRowEntry[] => {
-    if (!chordType) return allChordMembers;
-    // In outside view: keep only outside-scale entries (plus outside chord root).
-    if (viewMode === "outside") {
-      return allChordMembers.filter(
-        (e) =>
-          e.role === "chord-tone-outside-scale" ||
-          (e.role === "chord-root" && !e.inScale),
-      );
-    }
-    return allChordMembers;
-  }, [chordType, allChordMembers, viewMode]);
-
-  // Legend items: only roles actually present in the current chord row.
-  const summaryLegendItems = useMemo((): LegendItem[] => {
-    if (!chordType) return [];
-    const rolesPresent = new Set(summaryChordRow.map((e) => e.role));
-    const items: LegendItem[] = [];
-    if (rolesPresent.has("chord-root"))
-      items.push({ role: "chord-root", label: "Chord root" });
-    if (rolesPresent.has("chord-tone-in-scale"))
-      items.push({ role: "chord-tone-in-scale", label: "Chord tone" });
-    if (rolesPresent.has("chord-tone-outside-scale"))
-      items.push({ role: "chord-tone-outside-scale", label: "Outside scale" });
-    // In compare mode, mention scale-only only when that role is actually present on the board.
-    const hasScaleOnly = Array.from(noteRoleMap.values()).includes("scale-only");
-    if (viewMode === "compare" && hasScaleOnly) {
-      items.push({ role: "scale-only", label: "Scale only" });
-    }
-    return items;
-  }, [chordType, summaryChordRow, viewMode, noteRoleMap]);
-
-  // hideNonChordNotes derived from viewMode for Fretboard rendering path
-  const hideNonChordNotes = viewMode === "chord";
-
-  const {
-    highlightNotes,
-    boxBounds,
-    shapePolygons,
-    wrappedNotes,
-    autoCenterTarget,
-  } = useMemo(() => {
-    let coords: string[] = [];
-    let bounds: { minFret: number; maxFret: number }[] = [];
-    let polygons: ShapePolygon[] = [];
-    const mergedWrappedNotes = new Set<string>();
-
-    if (fingeringPattern === "caged") {
-      const shapesToRender = CAGED_SHAPES.filter((s) => cagedShapes.has(s));
-      const allCoords = new Set<string>();
-      const allBounds: { minFret: number; maxFret: number }[] = [];
-      const allPolygons: ShapePolygon[] = [];
-      for (const shape of shapesToRender) {
-        const res = getCagedCoordinates(
-          rootNote,
-          shape,
-          scaleName,
-          currentTuning,
-          24,
-        );
-        res.coordinates.forEach((c) => allCoords.add(c));
-        allBounds.push(...res.bounds);
-        allPolygons.push(...res.polygons);
-        res.wrappedNotes.forEach((k) => mergedWrappedNotes.add(k));
-      }
-
-      coords = Array.from(allCoords);
-      bounds = allBounds;
-      polygons = allPolygons;
-    } else if (fingeringPattern === "3nps") {
-      const res = get3NPSCoordinates(
-        rootNote,
-        scaleName,
-        currentTuning,
-        24,
-        npsPosition,
-      );
-      coords = res.coordinates;
-      bounds = res.bounds;
-    } else {
-      coords = getScaleNotes(rootNote, scaleName);
-    }
-
-    // Compute auto-center target for CAGED mode
-    let autoCenterTarget: number | undefined;
-    if (fingeringPattern === "caged" && polygons.length > 0) {
-      // If a shape was clicked, center that specific shape
-      if (clickedShape) {
-        const clickedPoly = polygons.find((p) => p.shape === clickedShape);
-        if (clickedPoly && !clickedPoly.truncated) {
-          autoCenterTarget = getShapeCenterFret(clickedPoly);
-        }
-      }
-      // Otherwise find the main (lowest complete) shape
-      if (autoCenterTarget === undefined) {
-        const mainShape = findMainShape(
-          polygons,
-          mergedWrappedNotes,
-          startFret,
-          endFret,
-        );
-        if (mainShape) {
-          autoCenterTarget = getShapeCenterFret(mainShape);
-        }
-      }
-    } else if (fingeringPattern === "3nps" && bounds.length > 0) {
-      // Center on the lowest note of the current 3NPS position
-      const lowestBounds = bounds.reduce((a, b) =>
-        a.minFret <= b.minFret ? a : b,
-      );
-      autoCenterTarget = lowestBounds.minFret;
-    }
-
-    return {
-      highlightNotes: coords,
-      boxBounds: bounds,
-      shapePolygons: polygons,
-      wrappedNotes: mergedWrappedNotes,
-      autoCenterTarget,
-    };
-  }, [
-    rootNote,
-    scaleName,
-    fingeringPattern,
-    cagedShapes,
-    npsPosition,
-    currentTuning,
-    startFret,
-    endFret,
-    clickedShape,
-  ]);
-
-  // Compute color notes: blue notes for blues scales, divergent notes for modal scales
-  const colorNotes = useMemo(() => {
-    const intervals = SCALES[scaleName];
-    if (!intervals) return [];
-    // Minor Blues: blue note is b5 (interval 6)
-    if (scaleName === "Minor Blues") {
-      const rootIdx = NOTES.indexOf(rootNote);
-      return rootIdx >= 0 ? [NOTES[(rootIdx + 6) % 12]] : [];
-    }
-    // Major Blues: blue note is b3 (interval 3)
-    if (scaleName === "Major Blues") {
-      const rootIdx = NOTES.indexOf(rootNote);
-      return rootIdx >= 0 ? [NOTES[(rootIdx + 3) % 12]] : [];
-    }
-    // Modal scales: notes that diverge from the reference major/minor
-    return getDivergentNotes(rootNote, scaleName);
-  }, [rootNote, scaleName]);
-
-  const summaryNotes = useMemo(
-    () => getScaleNotes(rootNote, scaleName),
-    [rootNote, scaleName],
+  const practiceBarOutsideMembers = practiceBarState.allChordMembers.filter(
+    (e) => !e.inScale,
   );
-
-  const activeBrowseOption = useMemo(
-    () =>
-      getActiveScaleBrowseOption(
-        rootNote,
-        scaleName,
-        scaleBrowseMode,
-        useFlats,
-      ),
-    [rootNote, scaleName, scaleBrowseMode, useFlats],
-  );
-
-  const scaleLabel = `${formatAccidental(activeBrowseOption.label)}`;
-
-  const chordLabel = chordType
-    ? `${formatAccidental(getNoteDisplay(chordRoot, chordRoot, useFlats))} ${chordType}`
-    : null;
-
-  const chordSummaryNotes = useMemo(() => {
-    if (!chordType || chordTones.length === 0) return [];
-    const chordRootIdx = NOTES.indexOf(chordRoot);
-    const chordToneSet = new Set(chordTones);
-    return NOTES.slice(chordRootIdx)
-      .concat(NOTES.slice(0, chordRootIdx))
-      .filter((n) => chordToneSet.has(n));
-  }, [chordType, chordTones, chordRoot]);
-
-  // Chord member interval labels for header display (e.g. "1 3 5")
-  const chordMemberLabels = useMemo(
-    () =>
-      activeChordMembers
-        .map((m) => (m.name === "root" ? "1" : formatAccidental(m.name)))
-        .join(" "),
-    [activeChordMembers],
-  );
-
-  // Unified ribbon header — left side text
-  const summaryHeaderLeft = useMemo(() => {
-    if (!chordType) return scaleLabel;
-    if (viewMode === "chord") return chordLabel ?? "";
-    if (viewMode === "outside") return "Outside tones";
-    return scaleLabel; // compare
-  }, [chordType, viewMode, scaleLabel, chordLabel]);
-
-  // Unified ribbon header — right side text (null when no chord)
-  const summaryHeaderRight = useMemo((): string | null => {
-    if (!chordType || !chordLabel) return null;
-    if (viewMode === "chord") return "Chord only";
-    if (viewMode === "outside") return `against ${scaleLabel}`;
-    // compare: chord label only — member intervals moved to relationship row
-    return chordLabel;
-  }, [chordType, viewMode, scaleLabel, chordLabel]);
-
-  // Primary strip mode: "scale" for compare or no chord, "chord"/"outside" for those viewModes
-  const summaryPrimaryMode = useMemo((): "scale" | "chord" | "outside" => {
-    if (!chordType || viewMode === "compare") return "scale";
-    if (viewMode === "chord") return "chord";
-    return "outside";
-  }, [chordType, viewMode]);
-
-  // Whether the secondary compact chord rail should appear (compare mode only, when it adds info)
-  const showSecondaryChordRail = useMemo(
-    () =>
-      !!(
-        chordType &&
-        viewMode === "compare" &&
-        (chordRoot !== rootNote || focusPreset !== "all" || hasOutsideChordMembers)
-      ),
-    [chordType, viewMode, chordRoot, rootNote, focusPreset, hasOutsideChordMembers],
-  );
-
-  // Alias used by the RelationshipRow rendering path (same logic as showSecondaryChordRail)
-  const showRelationshipRow = showSecondaryChordRail;
-
-  // Chord members shared with the scale (in-scale), for the relationship row
-  const sharedChordMembers = useMemo(
-    () => summaryChordRow.filter((e) => e.inScale),
-    [summaryChordRow],
-  );
-
-  // Chord members outside the scale, for the relationship row
-  const outsideChordMembers = useMemo(
-    () => summaryChordRow.filter((e) => !e.inScale),
-    [summaryChordRow],
-  );
-
-  // ── ChordPracticeBar derived values ─────────────────────────────────────────
-
-  // Color/characteristic tone entries with display names and interval labels
-  const practiceBarColorNotes = useMemo((): PracticeBarColorNote[] => {
-    if (colorNotes.length === 0) return [];
-    const rootIdx = NOTES.indexOf(rootNote);
-    if (rootIdx === -1) return [];
-    return colorNotes.map((note) => {
-      const noteIdx = NOTES.indexOf(note);
-      const interval = (noteIdx - rootIdx + 12) % 12;
-      const intervalName = INTERVAL_NAMES[interval] ?? "";
-      return {
-        internalNote: note,
-        displayNote: formatAccidental(getNoteDisplay(note, rootNote, useFlats)),
-        intervalName: formatAccidental(intervalName),
-      };
-    });
-  }, [colorNotes, rootNote, useFlats]);
-
-  // Simple diatonic compare case: tonic chord, all in scale, no focus filter,
-  // no color tones that would add information. Hide the practice bar here.
-  // Non-tonic chords (chordRoot ≠ rootNote) still benefit from showing targets.
-  const isDiatonicSimpleCase = useMemo(() => {
-    if (!chordType) return false;
-    if (viewMode !== "compare") return false;
-    if (focusPreset !== "all") return false;
-    if (hasOutsideChordMembers) return false;
-    if (colorNotes.length > 0) return false;
-    if (chordRoot !== rootNote) return false;
-    return true;
-  }, [chordType, viewMode, focusPreset, hasOutsideChordMembers, colorNotes, chordRoot, rootNote]);
-
-  // Whether the practice bar should render
-  const showChordPracticeBar = useMemo(
-    () => !!chordType && !isDiatonicSimpleCase,
-    [chordType, isDiatonicSimpleCase],
-  );
-
-  // Practice bar title — varies by viewMode
-  const practiceBarTitle = useMemo((): string => {
-    if (!chordType) return "";
-    if (viewMode === "outside") return "Outside tones";
-    return chordLabel ?? "";
-  }, [chordType, viewMode, chordLabel]);
-
-  // Practice bar badge — contextual label beside the title
-  const practiceBarBadge = useMemo((): string | null => {
-    if (!chordType) return null;
-    if (viewMode === "chord") return "Chord only";
-    if (viewMode === "outside") return `against ${scaleLabel}`;
-    return "Compare";
-  }, [chordType, viewMode, scaleLabel]);
-
-  // All active chord members for the "Targets" group
-  const practiceBarTargetMembers = allChordMembers;
-
-  // Active chord members that are also in the scale (kept for backward compat)
-  const practiceBarSharedMembers = useMemo(
-    () => allChordMembers.filter((e) => e.inScale),
-    [allChordMembers],
-  );
-
-  // Active chord members outside the scale, for the "Outside" group
-  const practiceBarOutsideMembers = useMemo(
-    () => allChordMembers.filter((e) => !e.inScale),
-    [allChordMembers],
-  );
-
-  // Shape-local note set: notes that appear within the current highlighted pattern.
-  // Only meaningful in CAGED/3NPS modes where highlightNotes are coord pairs.
-  const shapeHighlightedNoteSet = useMemo((): Set<string> | null => {
-    if (fingeringPattern === "all") return null;
-    const noteSet = new Set<string>();
-    for (const coord of highlightNotes) {
-      const dashIdx = coord.indexOf("-");
-      if (dashIdx === -1) continue; // note name, not a coord
-      const stringIdx = parseInt(coord.slice(0, dashIdx), 10);
-      const fretIdx = parseInt(coord.slice(dashIdx + 1), 10);
-      const openNote = currentTuning[stringIdx];
-      if (openNote) noteSet.add(getFretNote(openNote, fretIdx));
-    }
-    return noteSet;
-  }, [fingeringPattern, highlightNotes, currentTuning]);
-
-  // Which target chord members appear in the current shape's highlighted notes
-  const shapeLocalTargetMembers = useMemo((): ChordRowEntry[] => {
-    if (!shapeHighlightedNoteSet || !chordType) return [];
-    return practiceBarTargetMembers.filter((m) =>
-      shapeHighlightedNoteSet.has(m.internalNote),
-    );
-  }, [shapeHighlightedNoteSet, chordType, practiceBarTargetMembers]);
-
-  // Which color tones appear in the current shape's highlighted notes
-  const shapeLocalColorNotes = useMemo((): PracticeBarColorNote[] => {
-    if (!shapeHighlightedNoteSet) return [];
-    return practiceBarColorNotes.filter((n) =>
-      shapeHighlightedNoteSet.has(n.internalNote),
-    );
-  }, [shapeHighlightedNoteSet, practiceBarColorNotes]);
-
-  // Whether the active view is a single local shape context (CAGED 1-shape or 3NPS)
-  const isShapeLocalContext = useMemo((): boolean => {
-    if (fingeringPattern === "3nps") return true;
-    if (fingeringPattern === "caged" && cagedShapes.size === 1) return true;
-    return false;
-  }, [fingeringPattern, cagedShapes]);
-
-  // User-facing label describing the active shape context
-  const shapeContextLabel = useMemo((): string | null => {
-    if (!isShapeLocalContext) return null;
-    if (fingeringPattern === "3nps") return `In 3NPS position ${npsPosition}`;
-    if (fingeringPattern === "caged") {
-      const shape = Array.from(cagedShapes)[0];
-      return shape ? `In ${shape} shape` : null;
-    }
-    return null;
-  }, [isShapeLocalContext, fingeringPattern, npsPosition, cagedShapes]);
-
-  // Outside chord members that appear within the current shape's highlighted notes
-  const shapeLocalOutsideMembers = useMemo((): ChordRowEntry[] => {
-    if (!shapeHighlightedNoteSet || !chordType) return [];
-    return practiceBarOutsideMembers.filter((m) =>
-      shapeHighlightedNoteSet.has(m.internalNote),
-    );
-  }, [shapeHighlightedNoteSet, chordType, practiceBarOutsideMembers]);
-
-  // Global color notes minus notes already covered by active chord targets
-  const practiceBarColorNotesFiltered = useMemo((): PracticeBarColorNote[] => {
-    const chordToneSet = new Set(activeChordTones);
-    return practiceBarColorNotes.filter((n) => !chordToneSet.has(n.internalNote));
-  }, [practiceBarColorNotes, activeChordTones]);
-
-  // Shape-local color notes minus notes already covered by active chord targets
-  const shapeLocalColorNotesFiltered = useMemo((): PracticeBarColorNote[] => {
-    const chordToneSet = new Set(activeChordTones);
-    return shapeLocalColorNotes.filter((n) => !chordToneSet.has(n.internalNote));
-  }, [shapeLocalColorNotes, activeChordTones]);
+  const practiceBarTargetMembers = practiceBarState.allChordMembers;
 
   return {
-    // Atom values
-    rootNote,
-    scaleName,
-    scaleBrowseMode,
-    chordRoot,
-    chordType,
-    linkChordRoot,
-    hideNonChordNotes,
-    chordFretSpread,
-    viewMode,
-    focusPreset,
-    customMembers,
-    fingeringPattern,
-    cagedShapes,
-    npsPosition,
-    startFret,
-    endFret,
-    displayFormat,
-    tuningName,
+    ...scaleState,
+    ...chordState,
+    ...shapeState,
+    ...practiceBarState,
+    ...fretboardState,
+    // Overrides/Additional values
     accidentalMode,
     enharmonicDisplay,
-    // Setters
-    setScaleName,
-    setScaleBrowseMode,
-    setChordRoot,
-    setChordType,
-    setLinkChordRoot,
-    setViewMode,
-    setFocusPreset,
-    setCustomMembers,
-    setFingeringPattern,
-    setCagedShapes,
-    setNpsPosition,
+    displayFormat,
     setDisplayFormat,
-    setRootNote,
-    // Derived values
-    useFlats,
-    currentTuning,
-    chordTones,
-    chordMembers,
-    availableFocusPresets,
-    activeChordMembers,
-    activeChordTones,
-    hasOutsideChordMembers,
+    chordFretSpread,
+    hideNonChordNotes,
     noteRoleMap,
     summaryChordRow,
     summaryLegendItems,
@@ -668,40 +105,15 @@ export default function useDisplayState() {
     summaryHeaderLeft,
     summaryHeaderRight,
     summaryPrimaryMode,
-    showSecondaryChordRail,
     showRelationshipRow,
+    showSecondaryChordRail,
     sharedChordMembers,
     outsideChordMembers,
-    highlightNotes,
-    boxBounds,
-    shapePolygons,
-    wrappedNotes,
-    autoCenterTarget,
-    colorNotes,
     summaryNotes,
-    scaleLabel,
     chordLabel,
     chordSummaryNotes,
-    allChordMembers,
-    // ChordPracticeBar
-    showChordPracticeBar,
-    practiceBarTitle,
-    practiceBarBadge,
-    practiceBarTargetMembers,
     practiceBarSharedMembers,
     practiceBarOutsideMembers,
-    practiceBarColorNotes,
-    shapeLocalTargetMembers,
-    shapeLocalColorNotes,
-    isShapeLocalContext,
-    shapeContextLabel,
-    shapeLocalOutsideMembers,
-    practiceBarColorNotesFiltered,
-    shapeLocalColorNotesFiltered,
-    // Internal state + callbacks
-    clickedShape,
-    recenterKey,
-    onShapeClick,
-    onRecenter,
+    practiceBarTargetMembers,
   };
 }
