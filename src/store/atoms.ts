@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { atomWithStorage, RESET } from "jotai/utils";
+import { RESET } from "jotai/utils";
 import {
   CAGED_SHAPES,
   getCagedCoordinates,
@@ -8,24 +8,14 @@ import {
   getShapeCenterFret,
   type ShapePolygon,
 } from "../shapes";
-import { k, STORAGE_PREFIX, rawStringStorage, booleanStorage, constrainedNumberStorage, GET_ON_INIT } from "../utils/storage";
-import {
-  NOTES,
-  getScaleNotes,
-  formatAccidental,
-} from "../theory";
+import { getFretNote } from "../guitar";
+import { STORAGE_PREFIX } from "../utils/storage";
+import { getScaleNotes, formatAccidental, NOTES } from "../theory";
 import type {
   NoteRole,
   ChordRowEntry,
   LegendItem,
 } from "../theory";
-import { TUNINGS, STANDARD_TUNING, getFretNote } from "../guitar";
-import {
-  MAX_FRET,
-  FRET_ZOOM_MIN,
-  FRET_ZOOM_MAX,
-  FRET_ZOOM_DEFAULT,
-} from "../constants";
 
 // ---------------------------------------------------------------------------
 // Domain module re-exports — all public atoms flow through atoms.ts so
@@ -92,6 +82,29 @@ export {
   practiceBarOutsideMembersAtom,
 } from "./practiceLensAtoms";
 
+export {
+  tuningNameAtom,
+  fretZoomAtom,
+  fretStartAtom,
+  fretEndAtom,
+  currentTuningAtom,
+} from "./layoutAtoms";
+
+export {
+  displayFormatAtom,
+  mobileTabAtom,
+  tabletTabAtom,
+  landscapeNarrowTabAtom,
+  settingsOverlayOpenAtom,
+  type LandscapeNarrowTab,
+} from "./uiAtoms";
+
+export {
+  enharmonicDisplayAtom,
+  isMutedAtom,
+  toggleMuteAtom,
+} from "./audioAtoms";
+
 // ---------------------------------------------------------------------------
 // Local imports from domain modules (for use in atoms defined below)
 // ---------------------------------------------------------------------------
@@ -130,160 +143,26 @@ import {
   practiceCuesAtom,
   practiceBarColorNotesAtom,
 } from "./practiceLensAtoms";
+import {
+  tuningNameAtom,
+  fretZoomAtom,
+  fretStartAtom,
+  fretEndAtom,
+  currentTuningAtom,
+} from "./layoutAtoms";
+import {
+  displayFormatAtom,
+  mobileTabAtom,
+  tabletTabAtom,
+  landscapeNarrowTabAtom,
+} from "./uiAtoms";
+import {
+  enharmonicDisplayAtom,
+  isMutedAtom,
+} from "./audioAtoms";
 
 // Legacy key migration is performed by utils/storage.ts at module load,
 // before any atomWithStorage({ getOnInit: true }) reads. No action needed here.
-
-// ---------------------------------------------------------------------------
-// Storage helpers for remaining atoms
-// ---------------------------------------------------------------------------
-
-const fretCountStorage = constrainedNumberStorage({ min: 0, max: MAX_FRET, integer: true });
-const fretZoomStorage = constrainedNumberStorage({
-  min: FRET_ZOOM_MIN,
-  max: FRET_ZOOM_MAX,
-  integer: true,
-});
-
-const MOBILE_TABS = ["theory", "view"] as const;
-type MobileTab = (typeof MOBILE_TABS)[number];
-
-const mobileTabStorage = {
-  getItem(key: string, initialValue: MobileTab): MobileTab {
-    try {
-      const stored = localStorage.getItem(key);
-      if (stored === null) {
-        localStorage.setItem(key, initialValue);
-        return initialValue;
-      }
-      if (stored === "key" || stored === "scale") {
-        localStorage.setItem(key, "theory");
-        return "theory";
-      }
-      if (stored === "settings") {
-        localStorage.setItem(key, "view");
-        return "view";
-      }
-      if (stored === "fretboard") {
-        localStorage.setItem(key, "view");
-        return "view";
-      }
-      if ((MOBILE_TABS as readonly string[]).includes(stored)) {
-        return stored as MobileTab;
-      }
-      localStorage.setItem(key, initialValue);
-      return initialValue;
-    } catch {
-      return initialValue;
-    }
-  },
-  setItem(key: string, value: MobileTab): void {
-    try {
-      localStorage.setItem(key, value);
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
-  },
-  removeItem(key: string): void {
-    try {
-      localStorage.removeItem(key);
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
-  },
-};
-
-// ---------------------------------------------------------------------------
-// Display atoms
-// ---------------------------------------------------------------------------
-
-export const displayFormatAtom = atomWithStorage<"notes" | "degrees" | "none">(
-  k("displayFormat"),
-  "notes",
-  rawStringStorage<"notes" | "degrees" | "none">(),
-  GET_ON_INIT,
-);
-
-export const tuningNameAtom = atomWithStorage(
-  k("tuningName"),
-  "Standard",
-  rawStringStorage(),
-  GET_ON_INIT,
-);
-
-export const fretZoomAtom = atomWithStorage(
-  k("fretZoom"),
-  FRET_ZOOM_DEFAULT,
-  fretZoomStorage,
-  GET_ON_INIT,
-);
-
-export const fretStartAtom = atomWithStorage(
-  k("fretStart"),
-  0,
-  fretCountStorage,
-  GET_ON_INIT,
-);
-
-export const fretEndAtom = atomWithStorage(
-  k("fretEnd"),
-  MAX_FRET,
-  fretCountStorage,
-  GET_ON_INIT,
-);
-
-// ---------------------------------------------------------------------------
-// Audio / UI state
-// ---------------------------------------------------------------------------
-
-// enharmonicDisplayAtom is intentionally non-persisted: "auto" preserves the
-// pre-existing CoF enharmonic-display behavior by default.
-export const enharmonicDisplayAtom = atom<"auto" | "on" | "off">("auto");
-
-export const isMutedAtom = atomWithStorage(
-  k("isMuted"),
-  false,
-  booleanStorage,
-  GET_ON_INIT,
-);
-
-export const toggleMuteAtom = atom(null, (get, set) => {
-  set(isMutedAtom, !get(isMutedAtom));
-});
-
-export const mobileTabAtom = atomWithStorage<"theory" | "view">(
-  k("mobileTab"),
-  "theory",
-  mobileTabStorage,
-  GET_ON_INIT,
-);
-
-export const tabletTabAtom = atomWithStorage<"settings" | "scales">(
-  k("tabletTab"),
-  "settings",
-  rawStringStorage<"settings" | "scales">(),
-  GET_ON_INIT,
-);
-
-export type LandscapeNarrowTab = "fretboard" | "scaleChord" | "key";
-
-export const landscapeNarrowTabAtom = atomWithStorage<LandscapeNarrowTab>(
-  k("landscapeNarrowTab"),
-  "fretboard",
-  rawStringStorage<LandscapeNarrowTab>(),
-  GET_ON_INIT,
-);
-
-// settingsOverlayOpenAtom is intentionally non-persisted and always starts closed.
-export const settingsOverlayOpenAtom = atom<boolean>(false);
-
-// ---------------------------------------------------------------------------
-// Derived utility atoms
-// ---------------------------------------------------------------------------
-
-export const currentTuningAtom = atom(
-  (get) => TUNINGS[get(tuningNameAtom)] || STANDARD_TUNING,
-);
 
 // ---------------------------------------------------------------------------
 // Shape derived atoms
