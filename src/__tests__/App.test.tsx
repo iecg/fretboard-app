@@ -503,9 +503,11 @@ describe("App", () => {
       // chord-practice-bar must NOT be nested inside degree-chip-strip
       expect(document.querySelector(".degree-chip-strip .chord-practice-bar")).toBeNull();
       // chord dock includes a compact degree-chip-strip for scale context while practicing
-      expect(document.querySelector(".chord-dock-shell .degree-chip-strip")).toBeTruthy();
-      // scale strip (full interactive version) also present in summary-shell
-      expect(document.querySelector(".summary-shell .degree-chip-strip")).toBeTruthy();
+      expect(document.querySelector(".chord-dock-shell .degree-chip-strip.degree-chip-strip--compact")).toBeTruthy();
+      // scale strip (full interactive version) in summary-shell is NOT compact
+      const summaryStrip = document.querySelector(".summary-shell .degree-chip-strip");
+      expect(summaryStrip).toBeTruthy();
+      expect(summaryStrip!.classList.contains("degree-chip-strip--compact")).toBe(false);
     });
 
     it("chord dock remains visible when scale is hidden (eye-off)", async () => {

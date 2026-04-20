@@ -1201,6 +1201,15 @@
   justify-content: center;
 }
 
+/* Inner column wrapper — stacks practice bar + compact scale strip vertically. */
+.chord-overlay-dock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  width: min(100%, 32rem);
+}
+
 /* Chord overlay active: scale-only fretboard notes dim further so chord tones lead */
 .app-container[data-chord-active="true"] .note-scale-only {
   opacity: 0.45;

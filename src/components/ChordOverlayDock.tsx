@@ -26,7 +26,7 @@ export function ChordOverlayDock() {
   const colorNoteSet = colorNotes.length > 0 ? new Set(colorNotes) : undefined;
 
   return (
-    <>
+    <div className="chord-overlay-dock">
       <ChordPracticeBar
         title={practiceBarTitle}
         badge={practiceBarBadge}
@@ -44,6 +44,6 @@ export function ChordOverlayDock() {
         hideHeader={false}
         aria-label="Scale degrees"
       />
-    </>
+    </div>
   );
 }
