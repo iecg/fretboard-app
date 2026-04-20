@@ -254,6 +254,58 @@ describe("ChordPracticeBar", () => {
     });
   });
 
+  describe("Stacked Land on + Guide tones (guide-tones lens)", () => {
+    it("renders both 'Land on:' and 'Guide tones:' labels when stacked", () => {
+      render(
+        <ChordPracticeBar
+          title="G7"
+          lensLabel="Guide Tones"
+          cues={[landOnCue, guideToneCue]}
+        />
+      );
+      expect(screen.getByText("Land on:")).toBeTruthy();
+      expect(screen.getByText("Guide tones:")).toBeTruthy();
+    });
+
+    it("renders chord tones in land-on row and guide tones in guide-tones row", () => {
+      render(
+        <ChordPracticeBar
+          title="G7"
+          lensLabel="Guide Tones"
+          cues={[landOnCue, guideToneCue]}
+        />
+      );
+      // Land on row has chord tones (from landOnCue fixture: D, F, A, C)
+      expect(screen.getByText("F")).toBeTruthy();
+      // Guide tones row has guide tone notes (from guideToneCue fixture: E, B♭)
+      expect(screen.getByText("E")).toBeTruthy();
+      expect(screen.getByText("B♭")).toBeTruthy();
+    });
+
+    it("land-on pills have chord-root / chord-tone-in-scale roles; guide-tone pills have guide-tone role", () => {
+      const { container } = render(
+        <ChordPracticeBar
+          title="G7"
+          lensLabel="Guide Tones"
+          cues={[landOnCue, guideToneCue]}
+        />
+      );
+      expect(container.querySelector('[data-role="chord-root"]')).toBeTruthy();
+      expect(container.querySelectorAll('[data-role="guide-tone"]').length).toBe(2);
+    });
+
+    it("has no a11y violations with stacked Land on + Guide tones", async () => {
+      const { container } = render(
+        <ChordPracticeBar
+          title="G7"
+          lensLabel="Guide Tones"
+          cues={[landOnCue, guideToneCue]}
+        />
+      );
+      expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
   describe("Targets + Color (default lens)", () => {
     it("renders both Land on and Color note cues", () => {
       render(
