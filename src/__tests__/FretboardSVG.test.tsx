@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, fireEvent } from "@testing-library/react";
 import { FretboardSVG } from "../FretboardSVG";
 import { getFretboardNotes } from "../guitar";
-import type { CagedShape } from "../shapes";
+import type { CagedShape, ShapePolygon } from "../shapes";
 import type { NoteSemantics } from "../theory";
 import { axe } from "../test-utils/a11y";
 
@@ -567,6 +567,202 @@ describe("FretboardSVG", () => {
       );
       const tensionNotes = container.querySelectorAll('[data-note-tension="true"]');
       expect(tensionNotes.length).toBe(0);
+    });
+  });
+
+  describe("shape scope and membership", () => {
+    const singleShapePolygon: ShapePolygon = {
+      shape: "E" as CagedShape,
+      color: "rgba(99,102,241,0.3)",
+      cagedLabel: "E",
+      modalLabel: "Ionian",
+      truncated: false,
+      intendedMin: 0,
+      intendedMax: 4,
+      vertices: [
+        { fret: 0, string: 0 },
+        { fret: 0, string: 1 },
+        { fret: 0, string: 2 },
+        { fret: 4, string: 2 },
+        { fret: 4, string: 1 },
+        { fret: 4, string: 0 },
+      ],
+    };
+
+    const fullShapePolygon: ShapePolygon = {
+      shape: "C" as CagedShape,
+      color: "rgba(236,72,153,0.3)",
+      cagedLabel: "C",
+      modalLabel: "Ionian",
+      truncated: false,
+      intendedMin: 3,
+      intendedMax: 5,
+      vertices: [
+        { fret: 3, string: 0 },
+        { fret: 3, string: 1 },
+        { fret: 3, string: 2 },
+        { fret: 3, string: 3 },
+        { fret: 3, string: 4 },
+        { fret: 3, string: 5 },
+        { fret: 5, string: 5 },
+        { fret: 5, string: 4 },
+        { fret: 5, string: 3 },
+        { fret: 5, string: 2 },
+        { fret: 5, string: 1 },
+        { fret: 5, string: 0 },
+      ],
+    };
+
+    it("single CAGED shape membership - chord tone inside shape is chord-tone-in-scale", () => {
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          chordTones={["C", "E", "G"]}
+          chordRoot="C"
+          highlightNotes={["C", "E", "G"]}
+          shapePolygons={[singleShapePolygon]}
+          activePattern="caged"
+          activeShape="E"
+          shapeScope="single"
+        />,
+      );
+      const inScaleTone = container.querySelectorAll(
+        '.chord-tone-in-scale:not([data-note-role="chord-root"])',
+      );
+      expect(inScaleTone.length).toBeGreaterThan(0);
+    });
+
+    it("single CAGED shape membership - chord tone outside shape falls back to scale-only when in scale", () => {
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          chordTones={["C", "E", "G"]}
+          chordRoot="C"
+          highlightNotes={["C", "E", "G"]}
+          shapePolygons={[singleShapePolygon]}
+          activePattern="caged"
+          activeShape="C"
+          shapeScope="single"
+        />,
+      );
+      const scaleOnlyNotes = container.querySelectorAll(".scale-only");
+      expect(scaleOnlyNotes.length).toBeGreaterThan(0);
+    });
+
+    it("global scope shows chord overlay across all visible shapes", () => {
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          rootNote="C"
+          highlightNotes={["C", "E", "G"]}
+          chordTones={["C", "E", "G"]}
+          chordRoot="C"
+          shapeScope="global"
+          activePattern="all"
+        />,
+      );
+      const chordTonesInScale = container.querySelectorAll(".chord-tone-in-scale");
+      expect(chordTonesInScale.length).toBeGreaterThan(0);
+    });
+
+    it("multi-shape CAGED membership - chord tones in any active shape get chord-tone-in-scale", () => {
+      const multiPolygons: ShapePolygon[] = [
+        singleShapePolygon,
+        {
+          ...singleShapePolygon,
+          shape: "A" as CagedShape,
+          vertices: singleShapePolygon.vertices.map((v) => ({
+            ...v,
+            fret: v.fret + 2,
+          })),
+        },
+      ];
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          chordTones={["C", "E", "G"]}
+          chordRoot="C"
+          highlightNotes={["C", "E", "G"]}
+          shapePolygons={multiPolygons}
+          activePattern="all"
+          activeShape={["E", "A"]}
+          shapeScope="multi"
+        />,
+      );
+      const chordTonesInScale = container.querySelectorAll(".chord-tone-in-scale");
+      expect(chordTonesInScale.length).toBeGreaterThan(0);
+    });
+
+    it("out-of-scale chord tone outside active shape becomes note-inactive", () => {
+      const cShapeSmall: ShapePolygon = {
+        shape: "E" as CagedShape,
+        color: "rgba(99,102,241,0.3)",
+        cagedLabel: "E",
+        modalLabel: "Ionian",
+        truncated: false,
+        intendedMin: 0,
+        intendedMax: 1,
+        vertices: [
+          { fret: 0, string: 0 },
+          { fret: 0, string: 1 },
+          { fret: 0, string: 2 },
+          { fret: 1, string: 2 },
+          { fret: 1, string: 1 },
+          { fret: 1, string: 0 },
+        ],
+      };
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          chordTones={["C#", "F", "G#"]}
+          chordRoot="C#"
+          highlightNotes={["C", "E", "G"]}
+          shapePolygons={[cShapeSmall]}
+          activePattern="caged"
+          activeShape="E"
+          shapeScope="single"
+        />,
+      );
+      const chordRootInShape = container.querySelectorAll('.chord-root[data-note-shape="squircle"]');
+      expect(chordRootInShape.length).toBe(0);
+    });
+
+    it("in-scale chord tone outside active shape renders as scale-only", () => {
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          chordTones={["C", "E", "G", "A"]}
+          chordRoot="C"
+          highlightNotes={["C", "E", "G", "A"]}
+          shapePolygons={[singleShapePolygon, fullShapePolygon]}
+          activePattern="caged"
+          activeShape="E"
+          shapeScope="single"
+        />,
+      );
+      const scaleOnlyNotes = container.querySelectorAll(".scale-only");
+      expect(scaleOnlyNotes.length).toBeGreaterThan(0);
+    });
+
+    it("REGRESSION: multi-shape without shapeScope would fail membership check", () => {
+      const multiPolygons: ShapePolygon[] = [
+        { ...singleShapePolygon, shape: "E" as CagedShape },
+        { ...singleShapePolygon, shape: "A" as CagedShape, vertices: singleShapePolygon.vertices.map(v => ({...v, fret: v.fret + 2})) },
+      ];
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          chordTones={["C", "E", "G"]}
+          chordRoot="C"
+          highlightNotes={["C", "E", "G"]}
+          shapePolygons={multiPolygons}
+          activePattern="all"
+          activeShape="E"
+          shapeScope="global"
+        />,
+      );
+      const chordTonesInScale = container.querySelectorAll(".chord-tone-in-scale");
+      expect(chordTonesInScale.length).toBeGreaterThan(0);
     });
   });
 });

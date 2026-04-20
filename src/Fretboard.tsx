@@ -9,7 +9,7 @@ import {
 import { synth } from "./audio";
 import { fretZoomAtom } from "./store/atoms";
 import { FretboardSVG } from "./FretboardSVG";
-import { useFretboardState } from "./hooks/useFretboardState";
+import { useFretboardState, type ShapeScope, type ActiveShapeType } from "./hooks/useFretboardState";
 import { 
   STRING_ROW_PX_DEFAULT, 
   MAX_FRET, 
@@ -44,6 +44,9 @@ interface FretboardProps {
   stringRowPx?: number;
   autoCenterTarget?: number;
   recenterKey?: number;
+  activePattern?: "caged" | "3nps" | "all";
+  activeShape?: ActiveShapeType;
+  shapeScope?: ShapeScope;
   id?: string;
 }
 
@@ -247,6 +250,9 @@ export function Fretboard(props: FretboardProps) {
           hiddenNotes={hiddenNotes}
           useFlats={useFlats}
           scaleName={scaleName}
+          activePattern={state.activePattern}
+          activeShape={state.activeShape}
+          shapeScope={state.shapeScope}
           noteSemantics={noteSemantics}
           id={id}
           onNoteClick={handleFretClick}
