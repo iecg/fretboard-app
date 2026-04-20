@@ -313,12 +313,15 @@ describe("practiceCuesAtom", () => {
         store.set(chordTypeAtom, "Major Triad"); // C#, F, G#
         store.set(practiceLensAtom, "tension");
         const cues = store.get(practiceCuesAtom);
+        const tensionCue = cues.find((c) => c.kind === "tension");
         const resCue = cues.find((c) => c.kind === "resolution");
+        expect(tensionCue).toBeDefined();
         expect(resCue).toBeDefined();
-        // No duplicate internalNote values
-        const noteNames = resCue!.notes.map((n) => n.internalNote);
-        const uniqueNames = new Set(noteNames);
-        expect(noteNames.length).toBe(uniqueNames.size);
+        const rawTargets = tensionCue!.notes
+          .flatMap((n) => (n.resolvesTo ? [n.resolvesTo.internalNote] : []));
+        const expectedDeduped = [...new Set(rawTargets)];
+        const actualTargets = resCue!.notes.map((n) => n.internalNote);
+        expect(actualTargets).toEqual(expectedDeduped);
       });
 
       it("does not emit a resolution cue when chord is fully in-scale", () => {
@@ -337,9 +340,7 @@ describe("practiceCuesAtom", () => {
         store.set(practiceLensAtom, "tension");
         const cues = store.get(practiceCuesAtom);
         const kinds = cues.map((c) => c.kind);
-        expect(kinds[0]).toBe("land-on");
-        expect(kinds[1]).toBe("tension");
-        expect(kinds[2]).toBe("resolution");
+        expect(kinds).toEqual(["land-on", "tension", "resolution"]);
       });
     });
   });
