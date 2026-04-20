@@ -303,7 +303,7 @@ describe("FretboardSVG", () => {
       expect(colorToneHexagons.length).toBeGreaterThan(0);
     });
 
-    it("color-note notes (scale color notes, no chord overlay) have data-note-shape=hexagon", () => {
+    it("note-blue notes (scale color notes, no chord overlay) have data-note-shape=hexagon", () => {
       const { container } = render(
         <FretboardSVG
           {...BASE_PROPS}
@@ -312,8 +312,8 @@ describe("FretboardSVG", () => {
           colorNotes={["B"]}
         />
       );
-      // No chord overlay: color notes → color-note with hexagon shape
-      const colorNoteHexagons = container.querySelectorAll('.color-note[data-note-shape="hexagon"]');
+      // No chord overlay: color notes → note-blue with hexagon shape
+      const colorNoteHexagons = container.querySelectorAll('.note-blue[data-note-shape="hexagon"]');
       expect(colorNoteHexagons.length).toBeGreaterThan(0);
     });
 
@@ -343,7 +343,7 @@ describe("FretboardSVG", () => {
     });
 
     it("scale-only notes without chord overlay show as note-active (not color-tone)", () => {
-      // No chord overlay: color notes show as color-note, others as note-active
+      // No chord overlay: color notes show as note-blue, others as note-active
       const { container } = render(
         <FretboardSVG
           {...BASE_PROPS}
@@ -352,8 +352,8 @@ describe("FretboardSVG", () => {
           colorNotes={["B"]}
         />
       );
-      // Without chord overlay, color notes are color-note, not color-tone
-      expect(container.querySelectorAll(".color-note").length).toBeGreaterThan(0);
+      // Without chord overlay, color notes are note-blue, not color-tone
+      expect(container.querySelectorAll(".note-blue").length).toBeGreaterThan(0);
       expect(container.querySelectorAll(".color-tone").length).toBe(0);
     });
   });

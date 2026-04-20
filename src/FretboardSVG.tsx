@@ -137,7 +137,7 @@ function getLensEmphasis(
 }
 
 // Roles: key-tonic, chord-root, chord-tone-in-scale, chord-tone-outside-scale,
-//        color-tone, scale-only, note-active, color-note, note-inactive
+//        color-tone, scale-only, note-active, note-blue, note-inactive
 function classifyNote(
   isScaleRoot: boolean,
   isChordRootNote: boolean,
@@ -152,7 +152,7 @@ function classifyNote(
   fretIndex: number,
 ): string {
   if (!hasChordOverlay) {
-    if (isColorNote && isHighlighted) return "color-note";
+    if (isColorNote && isHighlighted) return "note-blue";
     if (isScaleRoot && isHighlighted) return "key-tonic";
     if (isHighlighted) return "note-active";
     if (
@@ -162,7 +162,7 @@ function classifyNote(
         (b) => fretIndex >= b.minFret - 1 && fretIndex <= b.maxFret + 1,
       )
     )
-      return "color-note";
+      return "note-blue";
     return "note-inactive";
   }
   // Chord overlay active: chord-root takes priority (even if outside scale).
@@ -243,7 +243,7 @@ function getNoteVisuals(
         radiusScale: RADIUS_SCALE_NOTE_ACTIVE,
         noteShape: "circle",
       };
-    case "color-note":
+    case "note-blue":
       return {
         radiusScale: RADIUS_SCALE_NOTE_ACTIVE,
         noteShape: "hexagon",
@@ -870,7 +870,7 @@ export const FretboardSVG = memo(function FretboardSVG({
         const applyDimOpacity =
           (shapePolygons.length > 0 &&
             !isInsideAnyPolygon &&
-            (noteClass === "color-note" ||
+            (noteClass === "note-blue" ||
               noteClass === "chord-tone-outside-scale" ||
               noteClass === "chord-tone-in-scale" ||
               noteClass === "chord-root" ||

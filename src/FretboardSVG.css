@@ -90,14 +90,14 @@
 }
 
 /* Scale color notes (hexagon — scale-owned characteristic tone, no chord overlay) */
-.fretboard-note.color-note circle,
-.fretboard-note.color-note rect,
-.fretboard-note.color-note polygon {
+.fretboard-note.note-blue circle,
+.fretboard-note.note-blue rect,
+.fretboard-note.note-blue polygon {
   stroke: var(--note-ring-color-tone);
   fill: rgb(20 30 40 / 0.92);
   stroke-width: 1.9;
 }
-.fretboard-note.color-note text {
+.fretboard-note.note-blue text {
   fill: #e8d8ff;
 }
 
@@ -148,8 +148,8 @@
   filter: var(--glow-cyan);
 }
 
-/* Both no-overlay color notes and overlay color tones use violet glow */
-.fretboard-note[data-note-role="color-note"],
+/* Both no-overlay color notes (note-blue) and overlay color tones use violet glow */
+.fretboard-note[data-note-role="note-blue"],
 .fretboard-note[data-note-role="color-tone"] {
   filter: var(--glow-violet);
 }

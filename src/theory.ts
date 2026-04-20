@@ -90,7 +90,7 @@ export type NoteRole =
   | "color-tone"
   | "scale-only"
   | "note-active"
-  | "color-note";
+  | "note-blue";
 
 // Color/characteristic note entry for the practice bar Color group
 export interface PracticeBarColorNote {
