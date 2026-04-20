@@ -154,6 +154,15 @@
   filter: var(--glow-violet);
 }
 
+/* Scale-owned color notes use a rounder squircle than chord-owned squircles.
+   CSS rx/ry override the SVG attribute (rx = r * 0.38 ≈ 19% of width) to 28%,
+   which gives the characteristic cushion shape at both small and large radii. */
+.fretboard-note[data-note-role="note-blue"] rect,
+.fretboard-note[data-note-role="color-tone"] rect {
+  rx: 28%;
+  ry: 28%;
+}
+
 /* ==========================================================================
    Outside chord root: squircle shape signals root identity; dashed stroke
    signals the root falls outside the active scale (tension note). Both roles
@@ -218,48 +227,6 @@
   filter: none;
 }
 /* scale-only notes intentionally left at base brightness */
-
-/* --- color lens ---------------------------------------------------------- */
-
-/* Color tones: bold stroke, vivid violet fill, explicit violet glow. */
-[data-practice-lens="color"] .fretboard-note.color-tone circle,
-[data-practice-lens="color"] .fretboard-note.color-tone rect,
-[data-practice-lens="color"] .fretboard-note.color-tone polygon {
-  stroke-width: 3.8;
-  fill: rgb(72 32 130 / 0.99);
-  stroke: var(--neon-violet);
-}
-[data-practice-lens="color"] .fretboard-note.color-tone {
-  filter: var(--glow-violet);
-}
-
-/* Chord root: semi-recede so color tones lead. */
-[data-practice-lens="color"] .fretboard-note.chord-root rect:last-of-type {
-  stroke-width: 1.8;
-  fill: rgb(55 35 18 / 0.65);
-  stroke: rgb(255 154 77 / 0.72);
-}
-[data-practice-lens="color"] .fretboard-note.chord-root {
-  filter: none;
-}
-
-/* Other chord tones recede: thin stroke, dim fill, no glow. */
-[data-practice-lens="color"] .fretboard-note.chord-tone-in-scale circle,
-[data-practice-lens="color"] .fretboard-note.chord-tone-in-scale rect,
-[data-practice-lens="color"] .fretboard-note.chord-tone-in-scale polygon {
-  stroke-width: 1.4;
-  fill: rgb(20 30 40 / 0.52);
-  stroke: rgb(200 110 40 / 0.62);
-}
-[data-practice-lens="color"] .fretboard-note.chord-tone-in-scale {
-  filter: none;
-}
-/* scale-only notes intentionally left at base brightness */
-
-/* --- targets-color lens -------------------------------------------------- */
-/* No recession rules — chord tones (squircles) and color tones (hexagons)
-   already distinguish themselves from scale-only circles via shape alone.
-   This lens is the balanced default; all notes show at full base brightness. */
 
 /* --- tension lens -------------------------------------------------------- */
 

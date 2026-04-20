@@ -170,13 +170,14 @@ describe("Focus removal", () => {
 // ---------------------------------------------------------------------------
 
 describe("LENS_REGISTRY", () => {
-  it("contains all five practice lenses", () => {
+  it("contains exactly three chord-overlay lenses (color and targets-color removed)", () => {
     const ids = LENS_REGISTRY.map((e) => e.id);
     expect(ids).toContain("targets");
     expect(ids).toContain("guide-tones");
-    expect(ids).toContain("color");
-    expect(ids).toContain("targets-color");
     expect(ids).toContain("tension");
+    expect(ids).not.toContain("color");
+    expect(ids).not.toContain("targets-color");
+    expect(ids).toHaveLength(3);
   });
 
   it("every entry has a non-empty label and description", () => {
@@ -188,11 +189,12 @@ describe("LENS_REGISTRY", () => {
 
   it("uses correct labels matching the target visible names", () => {
     const byId = Object.fromEntries(LENS_REGISTRY.map((e) => [e.id, e.label]));
-    expect(byId["targets-color"]).toBe("Chord + Color");
     expect(byId["targets"]).toBe("Chord Tones");
     expect(byId["guide-tones"]).toBe("Guide Tones");
-    expect(byId["color"]).toBe("Color Notes");
     expect(byId["tension"]).toBe("Tension");
+    // Removed lenses should not exist
+    expect(byId["targets-color"]).toBeUndefined();
+    expect(byId["color"]).toBeUndefined();
   });
 
   it("tension is the only lens with hideWhenUnavailable=true", () => {
@@ -204,8 +206,8 @@ describe("LENS_REGISTRY", () => {
     }
   });
 
-  it("targets-color is available with chord overlay only (no color notes required)", () => {
-    const entry = LENS_REGISTRY.find((e) => e.id === "targets-color")!;
+  it("targets lens is available with chord overlay only (no color notes required)", () => {
+    const entry = LENS_REGISTRY.find((e) => e.id === "targets")!;
     const ctx: LensAvailabilityContext = {
       hasChordOverlay: true,
       hasGuideTones: false,
@@ -277,28 +279,15 @@ describe("LENS_REGISTRY", () => {
     });
   });
 
-  describe("color lens", () => {
-    const entry = LENS_REGISTRY.find((e) => e.id === "color")!;
-
-    it("is available when chord overlay + color notes both present", () => {
-      const ctx: LensAvailabilityContext = {
-        hasChordOverlay: true,
-        hasGuideTones: false,
-        hasColorNotes: true,
-        hasOutsideTones: false,
-      };
-      expect(entry.isAvailable(ctx)).toBe(true);
+  describe("color lens (removed)", () => {
+    it("color lens id does not exist in LENS_REGISTRY", () => {
+      const entry = LENS_REGISTRY.find((e) => (e.id as string) === "color");
+      expect(entry).toBeUndefined();
     });
 
-    it("is unavailable when scale has no color notes", () => {
-      const ctx: LensAvailabilityContext = {
-        hasChordOverlay: true,
-        hasGuideTones: false,
-        hasColorNotes: false,
-        hasOutsideTones: false,
-      };
-      expect(entry.isAvailable(ctx)).toBe(false);
-      expect(entry.unavailableReason(ctx)).toMatch(/color notes/i);
+    it("targets-color lens id does not exist in LENS_REGISTRY", () => {
+      const entry = LENS_REGISTRY.find((e) => (e.id as string) === "targets-color");
+      expect(entry).toBeUndefined();
     });
   });
 
@@ -426,12 +415,13 @@ describe("lensAvailabilityAtom", () => {
     localStorage.clear();
   });
 
-  it("returns five entries matching LENS_REGISTRY ids", () => {
+  it("returns three entries matching LENS_REGISTRY ids", () => {
     const store = makeStore();
     const entries = store.get(lensAvailabilityAtom);
-    expect(entries).toHaveLength(5);
+    expect(entries).toHaveLength(3);
     const ids = entries.map((e) => e.id);
     expect(ids).toContain("targets");
+    expect(ids).toContain("guide-tones");
     expect(ids).toContain("tension");
   });
 
@@ -485,26 +475,15 @@ describe("lensAvailabilityAtom", () => {
     expect(gtEntry!.reason).toMatch(/guide tones/i);
   });
 
-  it("color lens unavailable for C Major (no color notes)", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordRootAtom, "C");
-    store.set(chordTypeAtom, "Major Triad");
-    const entries = store.get(lensAvailabilityAtom);
-    const colorEntry = entries.find((e) => e.id === "color");
-    expect(colorEntry!.available).toBe(false);
-  });
-
-  it("color lens available for D Dorian (has color notes)", () => {
+  it("color and targets-color lenses are absent from resolved availability", () => {
     const store = makeStore();
     store.set(rootNoteAtom, "D");
     store.set(scaleNameAtom, "Dorian");
     store.set(chordRootAtom, "D");
     store.set(chordTypeAtom, "Minor 7th");
     const entries = store.get(lensAvailabilityAtom);
-    const colorEntry = entries.find((e) => e.id === "color");
-    expect(colorEntry!.available).toBe(true);
+    expect(entries.find((e) => (e.id as string) === "color")).toBeUndefined();
+    expect(entries.find((e) => (e.id as string) === "targets-color")).toBeUndefined();
   });
 
   it("reason is null for available lenses", () => {
@@ -520,16 +499,16 @@ describe("lensAvailabilityAtom", () => {
     expect(targetsEntry!.reason).toBeNull();
   });
 
-  it("targets-color lens available for C Major (chord overlay is all that's required)", () => {
+  it("targets lens available for C Major (chord overlay is all that's required)", () => {
     const store = makeStore();
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Major");
     store.set(chordRootAtom, "C");
     store.set(chordTypeAtom, "Major Triad");
     const entries = store.get(lensAvailabilityAtom);
-    const tcEntry = entries.find((e) => e.id === "targets-color");
-    expect(tcEntry!.available).toBe(true);
-    expect(tcEntry!.reason).toBeNull();
+    const tEntry = entries.find((e) => e.id === "targets");
+    expect(tEntry!.available).toBe(true);
+    expect(tEntry!.reason).toBeNull();
   });
 
   it("tension entry has hideWhenUnavailable=true in resolved availability", () => {

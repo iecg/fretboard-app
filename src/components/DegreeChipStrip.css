@@ -152,12 +152,13 @@
 }
 
 /* Color note (blue note / modal characteristic tone) — squircle geometry + violet glow.
-   border-radius: 38% matches the SVG squircle rx/ry = r * 0.38 on the fretboard. */
+   border-radius: 28% matches the CSS rx: 28% override on the SVG fretboard rects,
+   giving the characteristic cushion shape rather than a near-circular appearance. */
 .degree-chip-item[data-is-color-note='true'] .degree-chip {
   border-color: var(--glow-violet-border);
   box-shadow: var(--glow-violet-sm);
   opacity: 1;
-  border-radius: 38%;
+  border-radius: 28%;
 }
 
 /* Hidden state overrides all active states — connector line grey glow. */

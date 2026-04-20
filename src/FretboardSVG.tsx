@@ -106,7 +106,6 @@ function getLensEmphasis(
   noteClass: string,
   practiceLens: PracticeLens | undefined,
   isGuideTone: boolean,
-  isColorTone: boolean,
   isTension: boolean,
 ): LensEmphasis {
   const defaultEmphasis: LensEmphasis = { radiusBoost: 1, opacityBoost: 1 };
@@ -120,18 +119,6 @@ function getLensEmphasis(
       }
       if (noteClass.includes("chord-") || noteClass.includes("color-")) {
         return { radiusBoost: 0.85, opacityBoost: 0.7 };
-      }
-      return defaultEmphasis;
-
-    case "color":
-      if (isColorTone) {
-        return { glowColor: "violet", radiusBoost: 1.15, opacityBoost: 1 };
-      }
-      return { radiusBoost: 0.9, opacityBoost: 0.75 };
-
-    case "targets-color":
-      if (isColorTone) {
-        return { glowColor: "violet", radiusBoost: 1.1, opacityBoost: 1 };
       }
       return defaultEmphasis;
 
@@ -198,6 +185,7 @@ function classifyNoteFromSemantics(
   isChordInRange: boolean,
   isInActiveShape: boolean,
   hasChordOverlay: boolean,
+  isHighlighted: boolean,
   shapePolygons: ShapePolygon[],
   boxBounds: BoxBound[],
   fretIndex: number,
@@ -214,14 +202,14 @@ function classifyNoteFromSemantics(
   if (sem.isChordRoot && sem.isChordTone && isChordInRange && isInActiveShape) return "chord-root";
   // In-scale chord tones.
   if (sem.isInScale && sem.isChordTone && isChordInRange && isInActiveShape) return "chord-tone-in-scale";
-  // Color/characteristic tone: scale note not covered by a chord role.
-  if (sem.isInScale && sem.isColorTone) return "color-tone";
-  // Other in-scale notes.
-  if (sem.isInScale) return "scale-only";
+  // Color/characteristic tone: must also be shape-highlighted to stay shape-contained.
+  if (sem.isInScale && sem.isColorTone && isHighlighted) return "color-tone";
+  // Other in-scale notes: shape-aware gate prevents leakage outside active shape.
+  if (sem.isInScale && isHighlighted) return "scale-only";
   // Out-of-scale chord tones (tension, non-root).
   if (sem.isChordTone && isChordInRange && isInActiveShape) return "chord-tone-outside-scale";
-  // Outside active shape chord tones become scale-only (visible but not emphasized)
-  if (sem.isChordTone && !isInActiveShape && sem.isInScale) return "scale-only";
+  // Outside active shape chord tones become scale-only only when highlighted.
+  if (sem.isChordTone && !isInActiveShape && sem.isInScale && isHighlighted) return "scale-only";
   return "note-inactive";
 }
 
@@ -832,6 +820,7 @@ export const FretboardSVG = memo(function FretboardSVG({
                 isChordInRange,
                 isInActiveShape,
                 hasChordOverlay,
+                isHighlighted,
                 shapePolygons,
                 boxBounds,
                 fretIndex,
@@ -886,12 +875,12 @@ export const FretboardSVG = memo(function FretboardSVG({
               noteClass === "key-tonic")) ||
           (isWrapped && isHighlighted);
 
-        // Lens-specific emphasis for visual distinction
+        // Lens emphasis only applies when chord overlay is active.
+        // Without an overlay, no lens-driven dimming or emphasis should alter scale notes.
         const lensEmphasis = getLensEmphasis(
           noteClass,
-          practiceLens,
+          hasChordOverlay ? practiceLens : undefined,
           semantics?.isGuideTone ?? false,
-          semantics?.isColorTone ?? isColorNote,
           semantics?.isTension ?? false,
         );
 
@@ -920,7 +909,7 @@ export const FretboardSVG = memo(function FretboardSVG({
   }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, wrappedNotes, hideNonChordNotes, practiceLens, tuning, noteSemantics, activePattern, activeShape, shapeScope]);
 
   return (
-    <div role="group" aria-label={ariaLabel} className="fretboard-board" data-practice-lens={practiceLens}>
+    <div role="group" aria-label={ariaLabel} className="fretboard-board" data-practice-lens={hasChordOverlay ? practiceLens : undefined}>
       <div
         className="fretboard-neck"
         style={

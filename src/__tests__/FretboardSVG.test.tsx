@@ -953,5 +953,193 @@ describe("FretboardSVG", () => {
         expect(el.getAttribute("data-note-shape")).toBe("squircle");
       });
     });
+
+    describe("overlay-on shape containment — noteSemantics path (regression)", () => {
+      // When noteSemantics is provided (chord overlay active), in-scale notes outside
+      // the active shape must NOT render as scale-only or color-tone.
+      // Previously, sem.isInScale alone would classify them — ignoring shape membership.
+
+      const tinyShape: ShapePolygon = {
+        shape: "E" as CagedShape,
+        color: "rgba(99,102,241,0.3)",
+        cagedLabel: "E",
+        modalLabel: "Ionian",
+        truncated: false,
+        intendedMin: 0,
+        intendedMax: 1,
+        vertices: [
+          { fret: 0, string: 0 },
+          { fret: 0, string: 1 },
+          { fret: 0, string: 2 },
+          { fret: 0, string: 3 },
+          { fret: 0, string: 4 },
+          { fret: 0, string: 5 },
+          { fret: 1, string: 5 },
+          { fret: 1, string: 4 },
+          { fret: 1, string: 3 },
+          { fret: 1, string: 2 },
+          { fret: 1, string: 1 },
+          { fret: 1, string: 0 },
+        ],
+      };
+
+      it("scale-only note outside active shape is note-inactive (not scale-only) with noteSemantics", () => {
+        // E is in scale (highlightNotes) and noteSemantics.isInScale=true,
+        // but E at fret 9 is outside the tiny shape (frets 0-1).
+        // With the fix, classifyNoteFromSemantics must use isHighlighted (shape-aware),
+        // so the out-of-shape E becomes note-inactive rather than scale-only.
+        const semantics = new Map<string, NoteSemantics>([
+          [
+            "C",
+            {
+              isScaleRoot: true,
+              isChordRoot: true,
+              isChordTone: true,
+              isInScale: true,
+              isColorTone: false,
+              isGuideTone: false,
+              isTension: false,
+              memberName: "root",
+            },
+          ],
+          [
+            "E",
+            {
+              isScaleRoot: false,
+              isChordRoot: false,
+              isChordTone: false,
+              isInScale: true,
+              isColorTone: false,
+              isGuideTone: false,
+              isTension: false,
+            },
+          ],
+        ]);
+        const { container } = render(
+          <FretboardSVG
+            {...BASE_PROPS}
+            startFret={0}
+            endFret={12}
+            chordTones={["C"]}
+            chordRoot="C"
+            highlightNotes={["C", "E"]}
+            shapePolygons={[tinyShape]}
+            activePattern="caged"
+            activeShape="E"
+            shapeScope="single"
+            chordFretSpread={0}
+            noteSemantics={semantics}
+          />
+        );
+        // All scale-only notes must be within frets 0-1 (inside tiny shape)
+        const scaleOnly = container.querySelectorAll('.fretboard-note.scale-only');
+        scaleOnly.forEach((el) => {
+          const btn = el.closest('.note-bubble') ?? el.querySelector('button');
+          const label = btn?.getAttribute('aria-label') ?? '';
+          // Fret 2+ is outside the shape — no scale-only should appear there
+          expect(label).not.toMatch(/fret [2-9]/);
+        });
+      });
+
+      it("color-tone note outside active shape is note-inactive with noteSemantics", () => {
+        // B is a color note AND in scale, but outside the tiny shape.
+        // Must not appear as color-tone when outside the shape.
+        const semantics = new Map<string, NoteSemantics>([
+          [
+            "C",
+            {
+              isScaleRoot: true,
+              isChordRoot: true,
+              isChordTone: true,
+              isInScale: true,
+              isColorTone: false,
+              isGuideTone: false,
+              isTension: false,
+              memberName: "root",
+            },
+          ],
+          [
+            "B",
+            {
+              isScaleRoot: false,
+              isChordRoot: false,
+              isChordTone: false,
+              isInScale: true,
+              isColorTone: true,
+              isGuideTone: false,
+              isTension: false,
+            },
+          ],
+        ]);
+        const { container } = render(
+          <FretboardSVG
+            {...BASE_PROPS}
+            startFret={0}
+            endFret={12}
+            chordTones={["C"]}
+            chordRoot="C"
+            highlightNotes={["C", "B"]}
+            colorNotes={["B"]}
+            shapePolygons={[tinyShape]}
+            activePattern="caged"
+            activeShape="E"
+            shapeScope="single"
+            chordFretSpread={0}
+            noteSemantics={semantics}
+          />
+        );
+        // All color-tone notes must be within frets 0-1 (inside the shape)
+        const colorTones = container.querySelectorAll('.fretboard-note.color-tone');
+        colorTones.forEach((el) => {
+          const btn = el.closest('.note-bubble') ?? el.querySelector('button');
+          const label = btn?.getAttribute('aria-label') ?? '';
+          expect(label).not.toMatch(/fret [2-9]/);
+        });
+      });
+    });
+  });
+
+  describe("lens leakage — no lens effect when chord overlay is off", () => {
+    it("fretboard-board has no data-practice-lens attribute when no chord overlay", () => {
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          practiceLens="guide-tones"
+        />
+      );
+      const board = container.querySelector('.fretboard-board');
+      expect(board?.getAttribute('data-practice-lens')).toBeNull();
+    });
+
+    it("fretboard-board has data-practice-lens when chord overlay is active", () => {
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          chordTones={["C", "E", "G"]}
+          chordRoot="C"
+          practiceLens="guide-tones"
+        />
+      );
+      const board = container.querySelector('.fretboard-board');
+      expect(board?.getAttribute('data-practice-lens')).toBe('guide-tones');
+    });
+
+    it("scale notes have normal opacity with no chord overlay regardless of practiceLens", () => {
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          practiceLens="guide-tones"
+          highlightNotes={["C", "E", "G"]}
+        />
+      );
+      const noteElements = container.querySelectorAll('.fretboard-note:not(.hidden)');
+      noteElements.forEach((el) => {
+        const opacity = (el as HTMLElement).style.opacity;
+        // No lens dimming: opacity should be 1 or unset (not reduced)
+        if (opacity) {
+          expect(parseFloat(opacity)).toBeGreaterThanOrEqual(1);
+        }
+      });
+    });
   });
 });

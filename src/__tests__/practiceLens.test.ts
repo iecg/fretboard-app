@@ -10,6 +10,7 @@ import {
   hideNonChordNotesAtom,
   showChordPracticeBarAtom,
   practiceBarLensLabelAtom,
+  lensAvailabilityAtom,
   noteSemanticMapAtom,
   rootNoteAtom,
   scaleNameAtom,
@@ -28,9 +29,9 @@ describe("practiceLensAtom", () => {
     localStorage.clear();
   });
 
-  it("defaults to targets-color", () => {
+  it("defaults to targets", () => {
     const store = makeStore();
-    expect(store.get(practiceLensAtom)).toBe("targets-color");
+    expect(store.get(practiceLensAtom)).toBe("targets");
   });
 
   it("reads stored value", () => {
@@ -57,11 +58,28 @@ describe("practiceLensAtom", () => {
     unsub();
   });
 
-  it("migrates old viewMode=compare to targets-color lens", () => {
+  it("migrates old viewMode=compare to targets lens (default)", () => {
     localStorage.setItem(k("viewMode"), "compare");
     const store = makeStore();
     const unsub = store.sub(practiceLensAtom, () => {});
-    expect(store.get(practiceLensAtom)).toBe("targets-color");
+    expect(store.get(practiceLensAtom)).toBe("targets");
+    unsub();
+  });
+
+  it("migrates stored targets-color to targets (removed lens)", () => {
+    localStorage.setItem(k("practiceLens"), "targets-color");
+    const store = makeStore();
+    const unsub = store.sub(practiceLensAtom, () => {});
+    // targets-color is no longer a valid lens — storage adapter falls back to default
+    expect(store.get(practiceLensAtom)).toBe("targets");
+    unsub();
+  });
+
+  it("migrates stored color to targets (removed lens)", () => {
+    localStorage.setItem(k("practiceLens"), "color");
+    const store = makeStore();
+    const unsub = store.sub(practiceLensAtom, () => {});
+    expect(store.get(practiceLensAtom)).toBe("targets");
     unsub();
   });
 
@@ -69,7 +87,7 @@ describe("practiceLensAtom", () => {
     localStorage.setItem(k("practiceLens"), "invalid-lens");
     const store = makeStore();
     const unsub = store.sub(practiceLensAtom, () => {});
-    expect(store.get(practiceLensAtom)).toBe("targets-color");
+    expect(store.get(practiceLensAtom)).toBe("targets");
     unsub();
   });
 });
@@ -77,7 +95,7 @@ describe("practiceLensAtom", () => {
 describe("hideNonChordNotesAtom", () => {
   it("is always false — lenses never hide scale notes", () => {
     const store = makeStore();
-    for (const lens of ["targets", "guide-tones", "color", "targets-color", "tension"] as const) {
+    for (const lens of ["targets", "guide-tones", "tension"] as const) {
       store.set(practiceLensAtom, lens);
       expect(store.get(hideNonChordNotesAtom)).toBe(false);
     }
@@ -164,69 +182,6 @@ describe("practiceCuesAtom", () => {
     });
   });
 
-  describe("color lens", () => {
-    it("returns a color-note cue for a modal scale with divergent notes", () => {
-      // D Dorian has B♮ as its color note (diverges from D Natural Minor)
-      const store = makeChordStore("Dorian", "D", "Minor 7th", "color");
-      const cues = store.get(practiceCuesAtom);
-      expect(cues.some((c) => c.kind === "color-note")).toBe(true);
-    });
-
-    it("returns empty cues when scale has no color tones", () => {
-      // C Major has no divergent notes (reference scale)
-      const store = makeChordStore("Major", "C", "Major Triad", "color");
-      const cues = store.get(practiceCuesAtom);
-      expect(cues.length).toBe(0);
-    });
-
-    it("color notes already in chord tones are filtered out", () => {
-      // G Mixolydian: color note is F (the b7). G7 chord includes F.
-      // F should be filtered from color cue (covered by land-on in targets-color).
-      const store = makeChordStore("Mixolydian", "G", "Dominant 7th", "color");
-      const cues = store.get(practiceCuesAtom);
-      // Color lens: if F is in chord tones, it's filtered → no color cue at all
-      const colorCues = cues.filter((c) => c.kind === "color-note");
-      if (colorCues.length > 0) {
-        const colorNotes = colorCues[0]!.notes.map((n) => n.internalNote);
-        expect(colorNotes).not.toContain("F");
-      }
-    });
-  });
-
-  describe("targets-color lens (default)", () => {
-    it("returns land-on + color-note cues for Dorian + Dm7", () => {
-      const store = makeChordStore("Dorian", "D", "Minor 7th", "targets-color");
-      const cues = store.get(practiceCuesAtom);
-      const kinds = cues.map((c) => c.kind);
-      expect(kinds).toContain("land-on");
-      expect(kinds).toContain("color-note");
-    });
-
-    it("returns only land-on when scale has no color tones (C Major + C Major Triad)", () => {
-      const store = makeChordStore("Major", "C", "Major Triad", "targets-color");
-      const cues = store.get(practiceCuesAtom);
-      const kinds = cues.map((c) => c.kind);
-      expect(kinds).toContain("land-on");
-      expect(kinds).not.toContain("color-note");
-    });
-
-    it("does not duplicate notes already in land-on as color notes", () => {
-      // G Mixolydian + G7: F is in both chord and scale divergence
-      const store = makeChordStore("Mixolydian", "G", "Dominant 7th", "targets-color");
-      const cues = store.get(practiceCuesAtom);
-      const colorCues = cues.filter((c) => c.kind === "color-note");
-      if (colorCues.length > 0) {
-        const landOnNotes = cues
-          .filter((c) => c.kind === "land-on")
-          .flatMap((c) => c.notes.map((n) => n.internalNote));
-        const colorNotes = colorCues[0]!.notes.map((n) => n.internalNote);
-        for (const note of colorNotes) {
-          expect(landOnNotes).not.toContain(note);
-        }
-      }
-    });
-  });
-
   describe("tension lens", () => {
     it("returns land-on + tension cues when chord has outside-scale tones", () => {
       // C Major + C# Minor Triad: C#, E, G# — C# and G# are outside C Major
@@ -277,6 +232,49 @@ describe("practiceCuesAtom", () => {
       const kinds = cues.map((c) => c.kind);
       expect(kinds).toContain("land-on");
       expect(kinds).not.toContain("tension");
+    });
+
+    it("finds resolution target within 2 semitones for pentatonic scale", () => {
+      // C Minor Pentatonic (C Eb F G Bb) + D Minor Triad (D F A)
+      // D is outside the pentatonic. Nearest scale neighbor: Eb (1 step up) or C (2 steps down).
+      const store = makeStore();
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Minor Pentatonic");
+      store.set(chordRootAtom, "D");
+      store.set(chordTypeAtom, "Minor Triad");
+      store.set(practiceLensAtom, "tension");
+      const cues = store.get(practiceCuesAtom);
+      const tensionCue = cues.find((c) => c.kind === "tension");
+      expect(tensionCue).toBeDefined();
+      // D (tension) should resolve to D# / Eb (1 step up, in pentatonic as Eb)
+      const dTension = tensionCue!.notes.find((n) => n.internalNote === "D");
+      expect(dTension?.resolvesTo).toBeDefined();
+    });
+  });
+
+  describe("LENS_REGISTRY — chord-overlay lens model", () => {
+    it("does not include targets-color or color lenses", () => {
+      const store = makeStore();
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad");
+      const availability = store.get(lensAvailabilityAtom);
+      const ids = availability.map((l) => l.id);
+      expect(ids).not.toContain("targets-color");
+      expect(ids).not.toContain("color");
+    });
+
+    it("contains exactly Chord Tones, Guide Tones, and Tension", () => {
+      const store = makeStore();
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major 7th"); // has guide tones
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      const availability = store.get(lensAvailabilityAtom);
+      const ids = availability.map((l) => l.id);
+      expect(ids).toContain("targets");
+      expect(ids).toContain("guide-tones");
+      expect(ids).toContain("tension");
+      expect(ids).toHaveLength(3);
     });
   });
 });
@@ -358,29 +356,29 @@ describe("showChordPracticeBarAtom", () => {
     store.set(scaleNameAtom, "Major");
     store.set(chordRootAtom, "C");
     store.set(chordTypeAtom, "Major Triad");
-    // Diatonic simple case but lens is not targets-color
-    store.set(practiceLensAtom, "targets");
+    // Diatonic simple case but lens is not targets (guide-tones)
+    store.set(practiceLensAtom, "guide-tones");
     expect(store.get(showChordPracticeBarAtom)).toBe(true);
   });
 
-  it("returns false for targets-color lens in diatonic simple case", () => {
+  it("returns false for targets lens in diatonic simple case (root linked, chord in-scale)", () => {
     const store = makeStore();
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Major");
     store.set(chordRootAtom, "C");
     store.set(chordTypeAtom, "Major Triad");
-    store.set(practiceLensAtom, "targets-color");
-    // C Major + C Major Triad — diatonic simple case (chord root == scale root, fully in-scale, no color notes)
+    store.set(practiceLensAtom, "targets");
+    // C Major + C Major Triad — diatonic simple case (chord root == scale root, fully in-scale)
     expect(store.get(showChordPracticeBarAtom)).toBe(false);
   });
 
-  it("returns true for targets-color when there are outside chord members", () => {
+  it("returns true for targets when there are outside chord members", () => {
     const store = makeStore();
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Major");
     store.set(chordRootAtom, "C");
     store.set(chordTypeAtom, "Dominant 7th"); // Bb is outside C Major
-    store.set(practiceLensAtom, "targets-color");
+    store.set(practiceLensAtom, "targets");
     expect(store.get(showChordPracticeBarAtom)).toBe(true);
   });
 });
@@ -417,20 +415,18 @@ describe("practiceBarLensLabelAtom", () => {
     const store = makeStore();
     store.set(chordRootAtom, "C");
     store.set(chordTypeAtom, "Major Triad");
-    store.set(practiceLensAtom, "targets-color");
-    expect(store.get(practiceBarLensLabelAtom)).toBe("Chord + Color");
+    store.set(practiceLensAtom, "targets");
+    expect(store.get(practiceBarLensLabelAtom)).toBe("Chord Tones");
   });
 
-  it("returns correct labels for every lens", () => {
+  it("returns correct labels for every active lens", () => {
     const store = makeStore();
     store.set(chordRootAtom, "C");
     store.set(chordTypeAtom, "Major Triad");
 
     const expected: Record<string, string> = {
-      "targets-color": "Chord + Color",
       targets: "Chord Tones",
       "guide-tones": "Guide Tones",
-      color: "Color Notes",
       tension: "Tension",
     };
     for (const [lens, label] of Object.entries(expected)) {
@@ -460,13 +456,13 @@ describe("showChordPracticeBarAtom — scale visibility independence", () => {
     expect(store.get(showChordPracticeBarAtom)).toBe(true);
   });
 
-  it("shows the dock when scale visibility is off (targets-color with outside tones)", () => {
+  it("shows the dock when scale visibility is off (targets with outside tones)", () => {
     const store = makeStore();
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Major");
     store.set(chordRootAtom, "C#");
     store.set(chordTypeAtom, "Minor Triad");
-    store.set(practiceLensAtom, "targets-color");
+    store.set(practiceLensAtom, "targets");
     store.set(scaleVisibleAtom, false);
     expect(store.get(showChordPracticeBarAtom)).toBe(true);
   });
@@ -477,7 +473,7 @@ describe("showChordPracticeBarAtom — scale visibility independence", () => {
     store.set(scaleNameAtom, "Major");
     store.set(chordRootAtom, "C");
     store.set(chordTypeAtom, "Dominant 7th"); // Bb outside C Major
-    store.set(practiceLensAtom, "targets-color");
+    store.set(practiceLensAtom, "targets");
 
     store.set(scaleVisibleAtom, true);
     const visibleOn = store.get(showChordPracticeBarAtom);
@@ -549,17 +545,17 @@ describe("Chord Tones lens does not hide scale notes", () => {
     expect(store.get(hideNonChordNotesAtom)).toBe(false);
   });
 
-  it("effectiveShapeDataAtom highlightNotes unchanged when switching to targets lens", () => {
+  it("effectiveShapeDataAtom highlightNotes unchanged when switching between lenses", () => {
     const store = makeStore();
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Major");
     store.set(scaleVisibleAtom, true);
     store.set(chordTypeAtom, "Major Triad");
-    store.set(practiceLensAtom, "targets-color");
+    store.set(practiceLensAtom, "targets");
 
     const before = store.get(effectiveShapeDataAtom).highlightNotes.length;
 
-    store.set(practiceLensAtom, "targets");
+    store.set(practiceLensAtom, "guide-tones");
 
     const after = store.get(effectiveShapeDataAtom).highlightNotes.length;
 

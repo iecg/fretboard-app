@@ -79,12 +79,13 @@ describe("TheoryControls", () => {
 
     expect(screen.getByText("Lens")).toBeInTheDocument();
     expect(screen.queryByText("Focus")).not.toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Chord + Color" }),
-    ).toBeInTheDocument();
+    // Chord + Color and Color Notes lenses are removed from the chord overlay
+    expect(screen.queryByRole("button", { name: "Chord + Color" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Color Notes" })).not.toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Chord Tones" }),
     ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Guide Tones" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "All" })).not.toBeInTheDocument();
   });
 

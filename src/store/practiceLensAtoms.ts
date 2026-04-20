@@ -23,6 +23,7 @@ import {
   scaleNotesAtom,
   colorNotesAtom,
   useFlatsAtom,
+  scaleVisibleAtom,
 } from "./scaleAtoms";
 import {
   chordRootAtom,
@@ -146,7 +147,6 @@ export const practiceCuesAtom = atom((get) => {
   const chordRoot = get(chordRootAtom);
   const useFlats = get(useFlatsAtom);
   const allChordMembers = get(allChordMembersAtom);
-  const colorNotesFiltered = get(practiceBarColorNotesFilteredAtom);
   const scaleNotes = get(scaleNotesAtom);
 
   const displayNote = (note: string) =>
@@ -159,22 +159,22 @@ export const practiceCuesAtom = atom((get) => {
     role: e.role,
   });
 
-  // Find the nearest in-scale note (half-step up or down) as a resolution target.
+  // Find the nearest in-scale note (up to 2 semitones in each direction).
+  // Prefers 1-step up, then 1-step down, then 2-step up, then 2-step down.
+  // The 2-step radius ensures coverage for pentatonic scales with wider gaps.
   const findResolution = (
     note: string,
   ): { internalNote: string; displayNote: string } | undefined => {
     const noteIdx = NOTES.indexOf(note);
     if (noteIdx === -1) return undefined;
     const scaleNoteSet = new Set(scaleNotes);
-    const up = NOTES[(noteIdx + 1) % 12];
-    const down = NOTES[(noteIdx + 11) % 12];
-    const resolved = scaleNoteSet.has(up)
-      ? up
-      : scaleNoteSet.has(down)
-        ? down
-        : undefined;
-    if (!resolved) return undefined;
-    return { internalNote: resolved, displayNote: displayNote(resolved) };
+    for (let step = 1; step <= 2; step++) {
+      const up = NOTES[(noteIdx + step) % 12];
+      const down = NOTES[(noteIdx - step + 12) % 12];
+      if (scaleNoteSet.has(up)) return { internalNote: up, displayNote: displayNote(up) };
+      if (scaleNoteSet.has(down)) return { internalNote: down, displayNote: displayNote(down) };
+    }
+    return undefined;
   };
 
   const cues: PracticeCue[] = [];
@@ -210,45 +210,6 @@ export const practiceCuesAtom = atom((get) => {
           kind: "land-on",
           label: "Land on",
           notes: allChordMembers.map(toCueNote),
-        });
-      }
-      break;
-    }
-
-    case "color": {
-      if (colorNotesFiltered.length > 0) {
-        cues.push({
-          kind: "color-note",
-          label: colorNotesFiltered.length === 1 ? "Color note" : "Color notes",
-          notes: colorNotesFiltered.map((n) => ({
-            internalNote: n.internalNote,
-            displayNote: n.displayNote,
-            intervalName: n.intervalName,
-            role: "color-tone" as const,
-          })),
-        });
-      }
-      break;
-    }
-
-    case "targets-color": {
-      if (allChordMembers.length > 0) {
-        cues.push({
-          kind: "land-on",
-          label: "Land on",
-          notes: allChordMembers.map(toCueNote),
-        });
-      }
-      if (colorNotesFiltered.length > 0) {
-        cues.push({
-          kind: "color-note",
-          label: colorNotesFiltered.length === 1 ? "Color note" : "Color notes",
-          notes: colorNotesFiltered.map((n) => ({
-            internalNote: n.internalNote,
-            displayNote: n.displayNote,
-            intervalName: n.intervalName,
-            role: "color-tone" as const,
-          })),
         });
       }
       break;
@@ -292,19 +253,22 @@ export const showChordPracticeBarAtom = atom((get) => {
   const practiceLens = get(practiceLensAtom);
 
   // Non-default lenses always show — user explicitly chose a practice focus.
-  if (practiceLens !== "targets-color") return true;
+  if (practiceLens !== "targets") return true;
 
-  // For targets-color (default): suppress the bar for the diatonic simple case
-  // where the chord is fully in-scale, root is linked, and no color tones exist
-  // (nothing interesting to coach about).
+  // When the scale is hidden, always show the bar — the user needs chord-tone
+  // coaching even if the scale isn't visible on the fretboard.
+  const scaleVisible = get(scaleVisibleAtom);
+  if (!scaleVisible) return true;
+
+  // For targets (default): suppress the bar for the diatonic simple case
+  // where the chord is fully in-scale and the root is linked
+  // (nothing interesting to coach about beyond what the fretboard already shows).
   const hasOutsideChordMembers = get(hasOutsideChordMembersAtom);
-  const colorNotes = get(colorNotesAtom);
   const chordRoot = get(chordRootAtom);
   const rootNote = get(rootNoteAtom);
 
   const isDiatonicSimpleCase =
     !hasOutsideChordMembers &&
-    colorNotes.length === 0 &&
     chordRoot === rootNote;
 
   return !isDiatonicSimpleCase;

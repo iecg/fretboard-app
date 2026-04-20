@@ -119,8 +119,6 @@ export interface LegendItem {
 export type PracticeLens =
   | "targets"       // chord root + active chord tones — for landing and outlining harmony
   | "guide-tones"   // 3rd/7th — for voice-leading and strong chord definition
-  | "color"         // characteristic modal/blue notes — for hearing why the scale sounds like itself
-  | "targets-color" // targets + color (best general-purpose soloing practice view)
   | "tension";      // outside/altered tones — secondary/advanced lens
 
 // Composable note semantics — multiple properties can coexist on one note.
@@ -175,17 +173,9 @@ export interface LensRegistryEntry {
 
 export const LENS_REGISTRY: readonly LensRegistryEntry[] = [
   {
-    id: "targets-color",
-    label: "Chord + Color",
-    description: "Combines chord tones with characteristic scale color notes — best for general-purpose soloing",
-    isAvailable: (ctx) => ctx.hasChordOverlay,
-    unavailableReason: (ctx) =>
-      ctx.hasChordOverlay ? null : "Requires an active chord overlay",
-  },
-  {
     id: "targets",
     label: "Chord Tones",
-    description: "Shows only chord tones — for landing and outlining harmony",
+    description: "Shows chord tones — for landing and outlining harmony",
     isAvailable: (ctx) => ctx.hasChordOverlay,
     unavailableReason: (ctx) =>
       ctx.hasChordOverlay ? null : "Requires an active chord overlay",
@@ -198,17 +188,6 @@ export const LENS_REGISTRY: readonly LensRegistryEntry[] = [
     unavailableReason: (ctx) => {
       if (!ctx.hasChordOverlay) return "Requires an active chord overlay";
       if (!ctx.hasGuideTones) return "Chord has no guide tones (3rd or 7th)";
-      return null;
-    },
-  },
-  {
-    id: "color",
-    label: "Color Notes",
-    description: "Shows characteristic modal or blue notes that give the scale its flavor",
-    isAvailable: (ctx) => ctx.hasChordOverlay && ctx.hasColorNotes,
-    unavailableReason: (ctx) => {
-      if (!ctx.hasChordOverlay) return "Requires an active chord overlay";
-      if (!ctx.hasColorNotes) return "Scale has no characteristic color notes";
       return null;
     },
   },
