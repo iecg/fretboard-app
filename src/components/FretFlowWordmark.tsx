@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import styles from "./AppHeader.module.css";
 
 export interface FretFlowWordmarkProps {
   className?: string;
@@ -18,7 +19,7 @@ export function FretFlowWordmark({ className }: FretFlowWordmarkProps) {
   return (
     <svg
       aria-hidden="true"
-      className={clsx("fretflow-wordmark", className)}
+      className={clsx(styles["fretflow-wordmark"], className)}
       viewBox="0 0 256.74335 39.166794"
       xmlns="http://www.w3.org/2000/svg"
       style={{ overflow: "visible" }}
