@@ -1201,12 +1201,21 @@
   justify-content: center;
 }
 
-/* Inner column wrapper — stacks practice bar + compact scale strip vertically. */
+/* Inner wrapper for the practice bar. Width is kept in lockstep with the
+   degree-chip-strip so the two surfaces line up vertically. See
+   `DegreeChipStrip.css` for the matching clamp values. */
 .chord-overlay-dock {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 0.35rem;
+  width: min(100%, 30rem);
+}
+
+.app-container[data-layout-tier="mobile"] .chord-overlay-dock {
+  width: 100%;
+}
+
+.app-container[data-layout-tier="desktop"] .chord-overlay-dock {
   width: min(100%, 32rem);
 }
 

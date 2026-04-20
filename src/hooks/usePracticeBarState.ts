@@ -4,11 +4,9 @@ import {
   practiceBarTitleAtom,
   practiceBarBadgeAtom,
   practiceBarLensLabelAtom,
-  isShapeLocalContextAtom,
-  shapeContextLabelAtom,
   practiceLensAtom,
-  practiceCuesAtom,
-  shapeLocalPracticeCuesAtom,
+  practiceBarChordGroupAtom,
+  practiceBarLandOnGroupAtom,
 } from "../store/atoms";
 
 export function usePracticeBarState() {
@@ -16,21 +14,17 @@ export function usePracticeBarState() {
   const practiceBarTitle = useAtomValue(practiceBarTitleAtom);
   const practiceBarBadge = useAtomValue(practiceBarBadgeAtom);
   const practiceBarLensLabel = useAtomValue(practiceBarLensLabelAtom);
-  const isShapeLocalContext = useAtomValue(isShapeLocalContextAtom);
-  const shapeContextLabel = useAtomValue(shapeContextLabelAtom);
   const practiceLens = useAtomValue(practiceLensAtom);
-  const practiceCues = useAtomValue(practiceCuesAtom);
-  const shapeLocalPracticeCues = useAtomValue(shapeLocalPracticeCuesAtom);
+  const chordGroup = useAtomValue(practiceBarChordGroupAtom);
+  const landOnGroup = useAtomValue(practiceBarLandOnGroupAtom);
 
   return {
     showChordPracticeBar,
     practiceBarTitle,
     practiceBarBadge,
     practiceBarLensLabel,
-    isShapeLocalContext,
-    shapeContextLabel,
     practiceLens,
-    practiceCues,
-    shapeLocalPracticeCues,
+    chordGroup,
+    landOnGroup,
   };
 }
