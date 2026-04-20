@@ -362,16 +362,18 @@ describe("showChordPracticeBarAtom", () => {
     expect(store.get(showChordPracticeBarAtom)).toBe(false);
   });
 
-  it("returns true whenever a chord is active, regardless of lens or scale", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordRootAtom, "C");
-    store.set(chordTypeAtom, "Major Triad");
-    // Diatonic simple case — bar now always shows when chord is active
-    store.set(practiceLensAtom, "targets");
-    expect(store.get(showChordPracticeBarAtom)).toBe(true);
-  });
+  it.each(["targets", "guide-tones", "tension"] as const)(
+    "returns true when chord is active regardless of lens (%s)",
+    (lens) => {
+      const store = makeStore();
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad");
+      store.set(practiceLensAtom, lens);
+      expect(store.get(showChordPracticeBarAtom)).toBe(true);
+    },
+  );
 
   it("returns true for Am chord on Am scale (previously suppressed)", () => {
     const store = makeStore();
