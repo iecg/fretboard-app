@@ -119,7 +119,8 @@ export interface LegendItem {
 export type PracticeLens =
   | "targets"       // chord root + active chord tones — for landing and outlining harmony
   | "guide-tones"   // 3rd/7th — for voice-leading and strong chord definition
-  | "tension";      // outside/altered tones — secondary/advanced lens
+  | "tension"       // outside/altered tones — secondary/advanced lens
+  | "chord";        // chord tones only — hides all non-chord notes
 
 // Composable note semantics — multiple properties can coexist on one note.
 // A note can be simultaneously a chord root and outside the scale (isTension),
@@ -203,6 +204,14 @@ export const LENS_REGISTRY: readonly LensRegistryEntry[] = [
       return null;
     },
     hideWhenUnavailable: true,
+  },
+  {
+    id: "chord",
+    label: "Chord Only",
+    description: "Shows only chord tones — hides all other scale notes",
+    isAvailable: (ctx) => ctx.hasChordOverlay,
+    unavailableReason: (ctx) =>
+      ctx.hasChordOverlay ? null : "Requires an active chord overlay",
   },
 ];
 

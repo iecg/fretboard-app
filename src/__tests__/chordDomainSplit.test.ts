@@ -170,14 +170,15 @@ describe("Focus removal", () => {
 // ---------------------------------------------------------------------------
 
 describe("LENS_REGISTRY", () => {
-  it("contains exactly three chord-overlay lenses (color and targets-color removed)", () => {
+  it("contains exactly four chord-overlay lenses (color and targets-color removed)", () => {
     const ids = LENS_REGISTRY.map((e) => e.id);
     expect(ids).toContain("targets");
     expect(ids).toContain("guide-tones");
     expect(ids).toContain("tension");
+    expect(ids).toContain("chord");
     expect(ids).not.toContain("color");
     expect(ids).not.toContain("targets-color");
-    expect(ids).toHaveLength(3);
+    expect(ids).toHaveLength(4);
   });
 
   it("every entry has a non-empty label and description", () => {
@@ -415,14 +416,15 @@ describe("lensAvailabilityAtom", () => {
     localStorage.clear();
   });
 
-  it("returns three entries matching LENS_REGISTRY ids", () => {
+  it("returns four entries matching LENS_REGISTRY ids", () => {
     const store = makeStore();
     const entries = store.get(lensAvailabilityAtom);
-    expect(entries).toHaveLength(3);
+    expect(entries).toHaveLength(4);
     const ids = entries.map((e) => e.id);
     expect(ids).toContain("targets");
     expect(ids).toContain("guide-tones");
     expect(ids).toContain("tension");
+    expect(ids).toContain("chord");
   });
 
   it("all entries unavailable when no chord overlay", () => {

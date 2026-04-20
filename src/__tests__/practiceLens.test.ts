@@ -275,7 +275,7 @@ describe("practiceCuesAtom", () => {
       expect(ids).not.toContain("color");
     });
 
-    it("contains exactly Chord Tones, Guide Tones, and Tension", () => {
+    it("contains exactly Chord Tones, Guide Tones, Tension, and Chord Only", () => {
       const store = makeStore();
       store.set(chordRootAtom, "C");
       store.set(chordTypeAtom, "Major 7th"); // has guide tones
@@ -286,7 +286,8 @@ describe("practiceCuesAtom", () => {
       expect(ids).toContain("targets");
       expect(ids).toContain("guide-tones");
       expect(ids).toContain("tension");
-      expect(ids).toHaveLength(3);
+      expect(ids).toContain("chord");
+      expect(ids).toHaveLength(4);
     });
   });
 });

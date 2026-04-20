@@ -238,6 +238,17 @@ export const practiceCuesAtom = atom((get) => {
       }
       break;
     }
+
+    case "chord": {
+      if (allChordMembers.length > 0) {
+        cues.push({
+          kind: "land-on",
+          label: "Chord tones",
+          notes: allChordMembers.map(toCueNote),
+        });
+      }
+      break;
+    }
   }
 
   return cues;
