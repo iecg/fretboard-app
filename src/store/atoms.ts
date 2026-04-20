@@ -398,9 +398,11 @@ export const shapeLocalPracticeCuesAtom = atom((get) => {
   return cues
     .map((cue) => ({
       ...cue,
-      notes: cue.notes.filter((n) =>
-        shapeHighlightedNoteSet.has(n.internalNote),
-      ),
+      // Tension cues are never filtered by shape — tension notes and their
+      // resolve targets must always be visible regardless of position context.
+      notes: cue.kind === "tension"
+        ? cue.notes
+        : cue.notes.filter((n) => shapeHighlightedNoteSet.has(n.internalNote)),
     }))
     .filter((cue) => cue.notes.length > 0);
 });

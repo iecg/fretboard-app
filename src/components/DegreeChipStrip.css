@@ -193,6 +193,28 @@
   letter-spacing: 0.02em;
 }
 
+/* Compact variant — smaller chips for secondary surfaces (e.g. inside the practice dock). */
+.degree-chip-strip--compact {
+  --chip-size: clamp(1.45rem, 2.1vw, 1.65rem);
+
+  padding: 0.28rem 0.65rem 0.3rem;
+  gap: 0.2rem;
+  border-radius: 0.75rem;
+}
+
+.degree-chip-strip--compact .degree-chip-strip-header {
+  font-size: 0.72rem;
+  color: rgb(255 255 255 / 0.45);
+}
+
+.degree-chip-strip--compact .degree-chip-note {
+  font-size: clamp(0.72rem, 1.2vw, 0.84rem);
+}
+
+.degree-chip-strip--compact .degree-chip-interval {
+  font-size: 0.62rem;
+}
+
 .app-container[data-layout-tier="mobile"] .degree-chip-strip {
   --chip-size: 2.15rem;
 

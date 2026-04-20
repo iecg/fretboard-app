@@ -491,7 +491,7 @@ describe("App", () => {
       expect(title.textContent).toContain("Dominant 7th");
     });
 
-    it("chord dock and scale strip are in separate shells — not nested inside each other", async () => {
+    it("chord dock and scale strip are in correct shells", async () => {
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("chordRoot"), "D");
       localStorage.setItem(k("chordType"), "Dominant 7th");
@@ -502,9 +502,9 @@ describe("App", () => {
       });
       // chord-practice-bar must NOT be nested inside degree-chip-strip
       expect(document.querySelector(".degree-chip-strip .chord-practice-bar")).toBeNull();
-      // scale strip must NOT be nested inside chord-dock-shell
-      expect(document.querySelector(".chord-dock-shell .degree-chip-strip")).toBeNull();
-      // each surface in its own shell
+      // chord dock includes a compact degree-chip-strip for scale context while practicing
+      expect(document.querySelector(".chord-dock-shell .degree-chip-strip")).toBeTruthy();
+      // scale strip (full interactive version) also present in summary-shell
       expect(document.querySelector(".summary-shell .degree-chip-strip")).toBeTruthy();
     });
 
