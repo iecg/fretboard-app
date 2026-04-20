@@ -202,15 +202,6 @@
   letter-spacing: 0.02em;
 }
 
-/* Resolution arrow shown after tension notes: "→D" */
-.practice-bar-pill-resolve {
-  font-family: var(--font-sans);
-  font-size: calc(var(--pill-font) - 0.06rem);
-  font-weight: var(--font-weight-medium);
-  color: rgb(167 139 250 / 0.8);
-  line-height: 1;
-  letter-spacing: 0.01em;
-}
 
 /* Responsive — mobile */
 .app-container[data-layout-tier="mobile"] .chord-practice-bar {

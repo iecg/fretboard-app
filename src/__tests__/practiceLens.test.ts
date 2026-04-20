@@ -250,6 +250,98 @@ describe("practiceCuesAtom", () => {
       const dTension = tensionCue!.notes.find((n) => n.internalNote === "D");
       expect(dTension?.resolvesTo).toBeDefined();
     });
+
+    describe("resolution cue row", () => {
+      it("emits a separate resolution cue when tension notes have resolution targets", () => {
+        const store = makeStore();
+        store.set(rootNoteAtom, "C");
+        store.set(scaleNameAtom, "Major");
+        store.set(chordRootAtom, "C#");
+        store.set(chordTypeAtom, "Minor Triad");
+        store.set(practiceLensAtom, "tension");
+        const cues = store.get(practiceCuesAtom);
+        const kinds = cues.map((c) => c.kind);
+        expect(kinds).toContain("resolution");
+      });
+
+      it("resolution cue has label 'Resolve to'", () => {
+        const store = makeStore();
+        store.set(rootNoteAtom, "C");
+        store.set(scaleNameAtom, "Major");
+        store.set(chordRootAtom, "C#");
+        store.set(chordTypeAtom, "Minor Triad");
+        store.set(practiceLensAtom, "tension");
+        const cues = store.get(practiceCuesAtom);
+        const resCue = cues.find((c) => c.kind === "resolution");
+        expect(resCue?.label).toBe("Resolve to");
+      });
+
+      it("resolution cue notes have role chord-tone-in-scale", () => {
+        const store = makeStore();
+        store.set(rootNoteAtom, "C");
+        store.set(scaleNameAtom, "Major");
+        store.set(chordRootAtom, "C#");
+        store.set(chordTypeAtom, "Minor Triad");
+        store.set(practiceLensAtom, "tension");
+        const cues = store.get(practiceCuesAtom);
+        const resCue = cues.find((c) => c.kind === "resolution");
+        expect(resCue).toBeDefined();
+        expect(resCue!.notes.every((n) => n.role === "chord-tone-in-scale")).toBe(true);
+      });
+
+      it("resolution cue target notes are all in the active scale", () => {
+        const store = makeStore();
+        store.set(rootNoteAtom, "C");
+        store.set(scaleNameAtom, "Major");
+        store.set(chordRootAtom, "C#");
+        store.set(chordTypeAtom, "Minor Triad");
+        store.set(practiceLensAtom, "tension");
+        const cues = store.get(practiceCuesAtom);
+        const resCue = cues.find((c) => c.kind === "resolution");
+        // C Major scale notes: C D E F G A B
+        const cMajor = new Set(["C", "D", "E", "F", "G", "A", "B"]);
+        expect(resCue!.notes.every((n) => cMajor.has(n.internalNote))).toBe(true);
+      });
+
+      it("resolution targets are deduped when multiple tension notes share the same target", () => {
+        // Two tension notes both resolve to the same in-scale note
+        // Use C# Major Triad (C#, F, G#) in C Major — C# and G# are outside; both may resolve to D or G/A
+        const store = makeStore();
+        store.set(rootNoteAtom, "C");
+        store.set(scaleNameAtom, "Major");
+        store.set(chordRootAtom, "C#");
+        store.set(chordTypeAtom, "Major Triad"); // C#, F, G#
+        store.set(practiceLensAtom, "tension");
+        const cues = store.get(practiceCuesAtom);
+        const resCue = cues.find((c) => c.kind === "resolution");
+        expect(resCue).toBeDefined();
+        // No duplicate internalNote values
+        const noteNames = resCue!.notes.map((n) => n.internalNote);
+        const uniqueNames = new Set(noteNames);
+        expect(noteNames.length).toBe(uniqueNames.size);
+      });
+
+      it("does not emit a resolution cue when chord is fully in-scale", () => {
+        const store = makeChordStore("Major", "C", "Major Triad", "tension");
+        const cues = store.get(practiceCuesAtom);
+        const kinds = cues.map((c) => c.kind);
+        expect(kinds).not.toContain("resolution");
+      });
+
+      it("tension, resolution, and land-on cues appear together in correct order", () => {
+        const store = makeStore();
+        store.set(rootNoteAtom, "C");
+        store.set(scaleNameAtom, "Major");
+        store.set(chordRootAtom, "C#");
+        store.set(chordTypeAtom, "Minor Triad");
+        store.set(practiceLensAtom, "tension");
+        const cues = store.get(practiceCuesAtom);
+        const kinds = cues.map((c) => c.kind);
+        expect(kinds[0]).toBe("land-on");
+        expect(kinds[1]).toBe("tension");
+        expect(kinds[2]).toBe("resolution");
+      });
+    });
   });
 
   describe("LENS_REGISTRY — chord-overlay lens model", () => {
