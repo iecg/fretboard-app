@@ -15,7 +15,7 @@ import {
   getDivergentNotes,
   formatAccidental,
 } from "../theory";
-import { k, rawStringStorage, GET_ON_INIT } from "../utils/storage";
+import { k, rawStringStorage, booleanStorage, GET_ON_INIT } from "../utils/storage";
 import { fingeringPatternAtom, cagedShapesAtom } from "./fingeringAtoms";
 import type { CagedShape } from "../shapes";
 
@@ -269,53 +269,39 @@ export const toggleHiddenNoteAtom = atom(null, (_get, set, note: string) => {
 });
 
 // ---------------------------------------------------------------------------
-// Scale visibility mode — master switch for scale note display
+// Scale visibility — boolean eye toggle (replaces tri-state All/Custom/Off)
 // ---------------------------------------------------------------------------
 
-export type ScaleVisibilityMode = "all" | "custom" | "off";
+// One-time migration: if the old tri-state key exists, map "off" → false and
+// remove the stale key so subsequent boots use the new boolean key directly.
+function readLegacyScaleVisibility(): boolean {
+  try {
+    const legacy = localStorage.getItem(k("scaleVisibilityMode"));
+    if (legacy === null) return true;
+    localStorage.removeItem(k("scaleVisibilityMode"));
+    return legacy !== "off";
+  } catch {
+    return true;
+  }
+}
 
-const SCALE_VISIBILITY_MODES: readonly ScaleVisibilityMode[] = [
-  "all",
-  "custom",
-  "off",
-];
-
-const scaleVisibilityModeStorage = {
-  getItem(key: string, initialValue: ScaleVisibilityMode): ScaleVisibilityMode {
-    try {
-      const stored = localStorage.getItem(key);
-      if (stored === null) {
-        localStorage.setItem(key, initialValue);
-        return initialValue;
-      }
-      if ((SCALE_VISIBILITY_MODES as readonly string[]).includes(stored)) {
-        return stored as ScaleVisibilityMode;
-      }
-      localStorage.setItem(key, initialValue);
-      return initialValue;
-    } catch {
-      return initialValue;
-    }
-  },
-  setItem(key: string, value: ScaleVisibilityMode): void {
-    try {
-      localStorage.setItem(key, value);
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
-  },
-  removeItem(key: string): void {
-    try {
-      localStorage.removeItem(key);
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
-  },
-};
-
-export const scaleVisibilityModeAtom = atomWithStorage<ScaleVisibilityMode>(
-  k("scaleVisibilityMode"),
-  "all",
-  scaleVisibilityModeStorage,
+// Persisted so users don't lose their preference on refresh.
+// Turning the scale off also clears hidden notes (see toggleScaleVisibleAtom).
+export const scaleVisibleAtom = atomWithStorage<boolean>(
+  k("scaleVisible"),
+  readLegacyScaleVisibility(),
+  booleanStorage,
   GET_ON_INIT,
 );
+
+// Write atom: turns scale on/off. Turning off also clears any per-note hidden
+// state so that turning back on always shows the full scale.
+export const toggleScaleVisibleAtom = atom(null, (get, set) => {
+  const visible = get(scaleVisibleAtom);
+  if (visible) {
+    set(hiddenNotesAtom, new Set<string>());
+    set(scaleVisibleAtom, false);
+  } else {
+    set(scaleVisibleAtom, true);
+  }
+});

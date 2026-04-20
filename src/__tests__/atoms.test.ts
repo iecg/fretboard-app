@@ -32,7 +32,8 @@ import {
   chordTonesAtom,
   colorNotesAtom,
   clickedShapeAtom,
-  scaleVisibilityModeAtom,
+  scaleVisibleAtom,
+  toggleScaleVisibleAtom,
   effectiveHiddenNotesAtom,
   effectiveColorNotesAtom,
   hiddenNotesAtom,
@@ -638,113 +639,140 @@ describe("atoms", () => {
     });
   });
 
-  describe("scaleVisibilityModeAtom", () => {
-    it("defaults to 'all'", () => {
+  describe("scaleVisibleAtom", () => {
+    it("defaults to true", () => {
       const store = makeStore();
-      const unsub = mount(store, scaleVisibilityModeAtom);
-      expect(store.get(scaleVisibilityModeAtom)).toBe("all");
+      const unsub = mount(store, scaleVisibleAtom);
+      expect(store.get(scaleVisibleAtom)).toBe(true);
       unsub();
     });
 
-    it("reads valid stored value from localStorage", () => {
-      localStorage.setItem(k("scaleVisibilityMode"), "custom");
+    it("reads stored true from localStorage", () => {
+      localStorage.setItem(k("scaleVisible"), "true");
       const store = makeStore();
-      const unsub = mount(store, scaleVisibilityModeAtom);
-      expect(store.get(scaleVisibilityModeAtom)).toBe("custom");
+      const unsub = mount(store, scaleVisibleAtom);
+      expect(store.get(scaleVisibleAtom)).toBe(true);
       unsub();
     });
 
-    it("falls back to 'all' for invalid stored value", () => {
-      localStorage.setItem(k("scaleVisibilityMode"), "invalid");
+    it("reads stored false from localStorage", () => {
+      localStorage.setItem(k("scaleVisible"), "false");
       const store = makeStore();
-      const unsub = mount(store, scaleVisibilityModeAtom);
-      expect(store.get(scaleVisibilityModeAtom)).toBe("all");
+      const unsub = mount(store, scaleVisibleAtom);
+      expect(store.get(scaleVisibleAtom)).toBe(false);
       unsub();
     });
 
-    it("persists written value to localStorage", () => {
+    it("falls back to true for invalid stored value", () => {
+      localStorage.setItem(k("scaleVisible"), "invalid");
       const store = makeStore();
-      store.set(scaleVisibilityModeAtom, "off");
-      expect(localStorage.getItem(k("scaleVisibilityMode"))).toBe("off");
+      const unsub = mount(store, scaleVisibleAtom);
+      expect(store.get(scaleVisibleAtom)).toBe(true);
+      unsub();
     });
 
-    it("resetAtom resets scaleVisibilityModeAtom to 'all'", () => {
+    it("persists false to localStorage", () => {
       const store = makeStore();
-      store.set(scaleVisibilityModeAtom, "off");
+      store.set(scaleVisibleAtom, false);
+      expect(localStorage.getItem(k("scaleVisible"))).toBe("false");
+    });
+
+    it("resetAtom resets scaleVisibleAtom to true", () => {
+      const store = makeStore();
+      store.set(scaleVisibleAtom, false);
       store.set(resetAtom);
-      expect(store.get(scaleVisibilityModeAtom)).toBe("all");
+      expect(store.get(scaleVisibleAtom)).toBe(true);
+    });
+  });
+
+  describe("toggleScaleVisibleAtom", () => {
+    it("eye off hides the scale (visible false)", () => {
+      const store = makeStore();
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      expect(store.get(scaleVisibleAtom)).toBe(true);
+      store.set(toggleScaleVisibleAtom);
+      expect(store.get(scaleVisibleAtom)).toBe(false);
+    });
+
+    it("eye off clears individually hidden notes", () => {
+      const store = makeStore();
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      store.set(toggleHiddenNoteAtom, "E");
+      store.set(toggleHiddenNoteAtom, "G");
+      expect(store.get(hiddenNotesAtom).size).toBe(2);
+      store.set(toggleScaleVisibleAtom);
+      expect(store.get(hiddenNotesAtom).size).toBe(0);
+    });
+
+    it("eye on restores the full scale (no hidden notes)", () => {
+      const store = makeStore();
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      store.set(toggleHiddenNoteAtom, "E");
+      store.set(toggleScaleVisibleAtom); // off — clears hidden notes
+      store.set(toggleScaleVisibleAtom); // on
+      expect(store.get(scaleVisibleAtom)).toBe(true);
+      expect(store.get(hiddenNotesAtom).size).toBe(0);
+    });
+
+    it("individual note toggles only matter while scale is visible", () => {
+      const store = makeStore();
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      // Toggle note while visible — it is reflected in effectiveHiddenNotes
+      store.set(toggleHiddenNoteAtom, "B");
+      expect(store.get(effectiveHiddenNotesAtom).has("B")).toBe(true);
+      // Turn scale off — effectiveHiddenNotes returns empty
+      store.set(toggleScaleVisibleAtom);
+      expect(store.get(effectiveHiddenNotesAtom).size).toBe(0);
     });
   });
 
   describe("effectiveHiddenNotesAtom", () => {
-    it("returns empty set in 'all' mode regardless of hidden notes", () => {
+    it("returns hidden notes when scale is visible", () => {
       const store = makeStore();
-      store.set(scaleVisibilityModeAtom, "all");
       store.set(rootNoteAtom, "C");
       store.set(scaleNameAtom, "Major");
       store.set(toggleHiddenNoteAtom, "E");
-      expect(store.get(effectiveHiddenNotesAtom).size).toBe(0);
+      expect(store.get(effectiveHiddenNotesAtom).has("E")).toBe(true);
+      expect(store.get(effectiveHiddenNotesAtom).size).toBe(1);
     });
 
-    it("returns empty set in 'off' mode", () => {
+    it("returns empty set when scale is not visible", () => {
       const store = makeStore();
-      store.set(scaleVisibilityModeAtom, "off");
       store.set(rootNoteAtom, "C");
       store.set(scaleNameAtom, "Major");
       store.set(toggleHiddenNoteAtom, "E");
+      store.set(scaleVisibleAtom, false);
       expect(store.get(effectiveHiddenNotesAtom).size).toBe(0);
-    });
-
-    it("returns hiddenNotesAtom value in 'custom' mode", () => {
-      const store = makeStore();
-      store.set(scaleVisibilityModeAtom, "custom");
-      store.set(rootNoteAtom, "C");
-      store.set(scaleNameAtom, "Major");
-      store.set(toggleHiddenNoteAtom, "E");
-      const effective = store.get(effectiveHiddenNotesAtom);
-      expect(effective.has("E")).toBe(true);
-      expect(effective.size).toBe(1);
-    });
-
-    it("hidden notes persist through mode switches back to custom", () => {
-      const store = makeStore();
-      store.set(rootNoteAtom, "C");
-      store.set(scaleNameAtom, "Major");
-      store.set(scaleVisibilityModeAtom, "custom");
-      store.set(toggleHiddenNoteAtom, "G");
-
-      store.set(scaleVisibilityModeAtom, "all");
-      expect(store.get(effectiveHiddenNotesAtom).size).toBe(0);
-
-      store.set(scaleVisibilityModeAtom, "custom");
-      // Hidden notes preserved in underlying hiddenNotesAtom
-      expect(store.get(hiddenNotesAtom).has("G")).toBe(true);
-      expect(store.get(effectiveHiddenNotesAtom).has("G")).toBe(true);
     });
   });
 
   describe("effectiveColorNotesAtom", () => {
-    it("returns color notes normally in 'all' mode", () => {
+    it("returns color notes when scale is visible", () => {
       const store = makeStore();
-      store.set(scaleVisibilityModeAtom, "all");
+      store.set(scaleVisibleAtom, true);
       store.set(rootNoteAtom, "C");
       store.set(scaleNameAtom, "Minor Blues");
       expect(store.get(effectiveColorNotesAtom)).toEqual(["F#"]);
     });
 
-    it("returns empty array in 'off' mode", () => {
+    it("returns empty array when scale is not visible", () => {
       const store = makeStore();
-      store.set(scaleVisibilityModeAtom, "off");
+      store.set(scaleVisibleAtom, false);
       store.set(rootNoteAtom, "C");
       store.set(scaleNameAtom, "Minor Blues");
       expect(store.get(effectiveColorNotesAtom)).toEqual([]);
     });
 
-    it("returns color notes in 'custom' mode", () => {
+    it("color notes appear without chord overlay when scale is visible", () => {
       const store = makeStore();
-      store.set(scaleVisibilityModeAtom, "custom");
+      store.set(scaleVisibleAtom, true);
       store.set(rootNoteAtom, "C");
       store.set(scaleNameAtom, "Minor Blues");
+      // No chord overlay (chordType remains null by default)
       expect(store.get(effectiveColorNotesAtom)).toEqual(["F#"]);
     });
   });

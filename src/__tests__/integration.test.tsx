@@ -20,6 +20,34 @@ vi.mock("../audio", () => ({
   synth: mockSynth,
 }));
 
+// motion/react uses RAF-sequenced animations which never fire in jsdom, causing
+// AnimatePresence to defer rendering its children indefinitely and making any
+// waitFor that depends on animated content flaky. Replace with instant renders.
+vi.mock("motion/react", async () => {
+  const React = await import("react");
+  const ANIMATION_PROPS = new Set([
+    "initial", "animate", "exit", "transition", "variants",
+    "whileHover", "whileTap", "whileFocus", "whileDrag", "whileInView",
+    "layoutId", "layout",
+  ]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const makeElement = (tag: string) => React.forwardRef<HTMLElement, any>(
+    ({ children, ...props }, ref) => {
+      const rest = Object.fromEntries(
+        Object.entries(props).filter(([k]) => !ANIMATION_PROPS.has(k)),
+      );
+      return React.createElement(tag, { ...rest, ref }, children);
+    },
+  );
+  return {
+    motion: new Proxy({} as Record<string, unknown>, {
+      get(_t, prop: string) { return makeElement(prop); },
+    }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    AnimatePresence: ({ children }: { children: React.ReactNode }) => children as any,
+  };
+});
+
 describe("Integration Tests - User Workflows", () => {
   beforeEach(() => {
     localStorage.clear();

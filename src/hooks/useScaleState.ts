@@ -12,6 +12,8 @@ import {
   hiddenNotesAtom,
   toggleHiddenNoteAtom,
   degreeChipsAtom,
+  scaleVisibleAtom,
+  toggleScaleVisibleAtom,
 } from "../store/atoms";
 
 export function useScaleState() {
@@ -28,6 +30,8 @@ export function useScaleState() {
   const [hiddenNotes, setHiddenNotes] = useAtom(hiddenNotesAtom);
   const toggleHiddenNote = useSetAtom(toggleHiddenNoteAtom);
   const degreeChips = useAtomValue(degreeChipsAtom);
+  const scaleVisible = useAtomValue(scaleVisibleAtom);
+  const toggleScaleVisible = useSetAtom(toggleScaleVisibleAtom);
 
   return {
     rootNote,
@@ -45,5 +49,7 @@ export function useScaleState() {
     setHiddenNotes,
     toggleHiddenNote,
     degreeChips,
+    scaleVisible,
+    toggleScaleVisible,
   };
 }

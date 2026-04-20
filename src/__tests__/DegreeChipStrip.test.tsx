@@ -86,7 +86,6 @@ describe('DegreeChipStrip', () => {
   });
 
   it('scale strip does not render data-chord-active attribute even when chord is active externally', () => {
-    // DegreeChipStrip no longer accepts a chordActive prop — the section never has this attribute
     const { container } = render(
       <DegreeChipStrip
         scaleName="A Natural Minor"
@@ -151,48 +150,55 @@ describe('DegreeChipStrip', () => {
     expect(container.querySelector('.degree-chip-strip-header')).toBeTruthy();
   });
 
-  describe('mode prop', () => {
-    it("default mode 'all' renders chip list", () => {
+  describe('visible prop (eye toggle)', () => {
+    it("default visible=true renders chip list", () => {
       const { container } = render(
         <DegreeChipStrip scaleName="A Natural Minor" chips={aMinorChips} />
       );
       expect(container.querySelector('.degree-chip-strip-list')).toBeTruthy();
     });
 
-    it("mode 'off' hides chip list", () => {
+    it("visible=false hides chip list", () => {
       const { container } = render(
-        <DegreeChipStrip scaleName="A Natural Minor" chips={aMinorChips} mode="off" />
+        <DegreeChipStrip scaleName="A Natural Minor" chips={aMinorChips} visible={false} />
       );
       expect(container.querySelector('.degree-chip-strip-list')).toBeNull();
     });
 
-    it("mode 'off' sets data-visibility-mode=off on section", () => {
+    it("visible=false sets data-scale-visible=false on section", () => {
       const { container } = render(
-        <DegreeChipStrip scaleName="A Natural Minor" chips={aMinorChips} mode="off" />
+        <DegreeChipStrip scaleName="A Natural Minor" chips={aMinorChips} visible={false} />
       );
-      expect(container.querySelector('.degree-chip-strip')?.getAttribute('data-visibility-mode')).toBe('off');
+      expect(container.querySelector('.degree-chip-strip')?.getAttribute('data-scale-visible')).toBe('false');
     });
 
-    it("mode 'all' disables chip buttons when no onChipToggle provided", () => {
-      const { getAllByRole } = render(
-        <DegreeChipStrip scaleName="A Natural Minor" chips={aMinorChips} mode="all" />
+    it("visible=true sets data-scale-visible=true on section", () => {
+      const { container } = render(
+        <DegreeChipStrip scaleName="A Natural Minor" chips={aMinorChips} visible={true} />
       );
-      const buttons = getAllByRole('button');
-      expect(buttons.every((b) => b.hasAttribute('disabled'))).toBe(true);
+      expect(container.querySelector('.degree-chip-strip')?.getAttribute('data-scale-visible')).toBe('true');
     });
 
-    it("mode 'custom' enables chip buttons when onChipToggle provided", () => {
+    it("chip buttons are enabled when onChipToggle provided and visible", () => {
       const toggle = vi.fn();
       const { getAllByRole } = render(
         <DegreeChipStrip
           scaleName="A Natural Minor"
           chips={aMinorChips}
-          mode="custom"
           onChipToggle={toggle}
+          visible={true}
         />
       );
       const buttons = getAllByRole('button');
       expect(buttons.every((b) => !b.hasAttribute('disabled'))).toBe(true);
+    });
+
+    it("chip buttons are disabled when no onChipToggle provided", () => {
+      const { getAllByRole } = render(
+        <DegreeChipStrip scaleName="A Natural Minor" chips={aMinorChips} visible={true} />
+      );
+      const buttons = getAllByRole('button');
+      expect(buttons.every((b) => b.hasAttribute('disabled'))).toBe(true);
     });
 
     it("headerAction renders inside the strip", () => {
@@ -206,24 +212,24 @@ describe('DegreeChipStrip', () => {
       expect(getByTestId('action-slot')).toBeTruthy();
     });
 
-    it("mode 'off' still renders headerAction", () => {
+    it("visible=false still renders headerAction", () => {
       const { getByTestId } = render(
         <DegreeChipStrip
           scaleName="A Natural Minor"
           chips={aMinorChips}
-          mode="off"
+          visible={false}
           headerAction={<span data-testid="action-slot">ctrl</span>}
         />
       );
       expect(getByTestId('action-slot')).toBeTruthy();
     });
 
-    it("hidden chips show data-hidden in 'custom' mode", () => {
+    it("hidden chips show data-hidden when visible", () => {
       const { container } = render(
         <DegreeChipStrip
           scaleName="A Natural Minor"
           chips={aMinorChips}
-          mode="custom"
+          visible={true}
           hiddenNotes={new Set(['B'])}
           onChipToggle={() => {}}
         />
@@ -231,11 +237,58 @@ describe('DegreeChipStrip', () => {
       expect(container.querySelectorAll('[data-hidden="true"]').length).toBe(1);
     });
 
-    it("no data-hidden chips rendered in 'all' mode (no hiddenNotes passed)", () => {
+    it("no data-hidden chips rendered when no hiddenNotes passed", () => {
       const { container } = render(
-        <DegreeChipStrip scaleName="A Natural Minor" chips={aMinorChips} mode="all" />
+        <DegreeChipStrip scaleName="A Natural Minor" chips={aMinorChips} visible={true} />
       );
       expect(container.querySelectorAll('[data-hidden="true"]').length).toBe(0);
+    });
+  });
+
+  describe('colorNotes prop (scale-owned color-note rendering)', () => {
+    it("color note chips get data-is-color-note attribute", () => {
+      const { container } = render(
+        <DegreeChipStrip
+          scaleName="C Minor Blues"
+          chips={aMinorChips}
+          colorNotes={new Set(['E'])}
+          visible={true}
+        />
+      );
+      expect(container.querySelectorAll('[data-is-color-note="true"]').length).toBe(1);
+    });
+
+    it("color notes appear without chord overlay (pure scale feature)", () => {
+      const { container } = render(
+        <DegreeChipStrip
+          scaleName="C Minor Blues"
+          chips={aMinorChips}
+          colorNotes={new Set(['E', 'G'])}
+          visible={true}
+        />
+      );
+      expect(container.querySelectorAll('[data-is-color-note="true"]').length).toBe(2);
+    });
+
+    it("no data-is-color-note attributes when colorNotes not provided", () => {
+      const { container } = render(
+        <DegreeChipStrip scaleName="A Natural Minor" chips={aMinorChips} visible={true} />
+      );
+      expect(container.querySelectorAll('[data-is-color-note="true"]').length).toBe(0);
+    });
+
+    it("chord overlay independence: DegreeChipStrip does not accept chord props", () => {
+      const { container } = render(
+        <DegreeChipStrip
+          scaleName="A Natural Minor"
+          chips={aMinorChips}
+          colorNotes={new Set(['E'])}
+        />
+      );
+      // The strip should have no chord-specific data attributes
+      expect(container.querySelector('[data-in-chord]')).toBeNull();
+      expect(container.querySelector('[data-is-chord-root]')).toBeNull();
+      expect(container.querySelector('[data-chord-active]')).toBeNull();
     });
   });
 });
