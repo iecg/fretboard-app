@@ -151,17 +151,21 @@
   border-width: var(--chip-border-width);
 }
 
-/* Color note (blue note / modal characteristic tone) — hexagon geometry + violet glow.
+/* Color note (blue note / modal characteristic tone) — hexagon geometry + violet ring + glow.
    clip-path clips the chip to a pointy-top hexagon matching the SVG fretboard hexagon.
    filter: drop-shadow is used instead of box-shadow because box-shadow is clipped
    by clip-path while filter is applied after clipping. */
 .degree-chip-item[data-is-color-note='true'] .degree-chip {
   clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
   border-radius: 0;
-  border-color: transparent;
+  border-color: var(--note-ring-color-tone);
   box-shadow: none;
   filter: drop-shadow(0 0 5px rgb(167 139 250 / 0.75));
   opacity: 1;
+}
+
+.degree-chip-item[data-is-color-note='true'] .degree-chip-note {
+  color: #e8d8ff;
 }
 
 /* Hidden state overrides all active states — connector line grey glow. */

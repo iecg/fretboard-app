@@ -448,10 +448,10 @@
   box-shadow: var(--shadow-note-active);
 }
 
-.note-blue {
+.color-note {
   color: white;
-  background-color: var(--note-blue);
-  box-shadow: 0 0 8px var(--note-blue-glow);
+  background-color: var(--color-note);
+  box-shadow: 0 0 8px var(--color-note-glow);
 }
 
 .note-dimmed {

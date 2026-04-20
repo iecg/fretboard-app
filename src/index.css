@@ -13,8 +13,8 @@
   --accent-primary: #0a84ff;
   --accent-secondary: #ff9f0a;
   --accent-glow: rgba(10, 132, 255, 0.15);
-  --note-blue: #9333ea;
-  --note-blue-glow: rgba(147, 51, 234, 0.5);
+  --color-note: #9333ea;
+  --color-note-glow: rgba(147, 51, 234, 0.5);
   --fretboard-wood: #221e1d;
   --fret-wire: #636366;
   --fret-marker: rgba(255, 255, 255, 0.2);
