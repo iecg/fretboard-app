@@ -246,7 +246,7 @@ function getNoteVisuals(
     case "note-blue":
       return {
         radiusScale: RADIUS_SCALE_NOTE_ACTIVE,
-        noteShape: "squircle",
+        noteShape: "hexagon",
       };
     case "scale-only":
       return {
@@ -256,7 +256,7 @@ function getNoteVisuals(
     case "color-tone":
       return {
         radiusScale: RADIUS_SCALE_COLOR_TONE,
-        noteShape: "squircle",
+        noteShape: "hexagon",
       };
     case "chord-tone-outside-scale":
       return {

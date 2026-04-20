@@ -305,9 +305,9 @@ describe("FretboardSVG", () => {
       expect(activeNotes.length).toBeGreaterThan(0);
     });
 
-    it("color-tone notes have data-note-shape=squircle when chord overlay active", () => {
+    it("color-tone notes have data-note-shape=hexagon when chord overlay active", () => {
       // D Dorian scale: D E F G A B C. colorNote=B. chordTones=D F A (Dm triad).
-      // B is in scale, is a color note, NOT a chord tone → color-tone (squircle, scale-owned)
+      // B is in scale, is a color note, NOT a chord tone → color-tone (hexagon, scale-owned)
       const { container } = render(
         <FretboardSVG
           {...BASE_PROPS}
@@ -318,11 +318,11 @@ describe("FretboardSVG", () => {
           chordRoot="D"
         />
       );
-      const colorToneSquircles = container.querySelectorAll('.color-tone[data-note-shape="squircle"]');
-      expect(colorToneSquircles.length).toBeGreaterThan(0);
+      const colorToneHexagons = container.querySelectorAll('.color-tone[data-note-shape="hexagon"]');
+      expect(colorToneHexagons.length).toBeGreaterThan(0);
     });
 
-    it("note-blue notes (scale color notes, no chord overlay) have data-note-shape=squircle", () => {
+    it("note-blue notes (scale color notes, no chord overlay) have data-note-shape=hexagon", () => {
       const { container } = render(
         <FretboardSVG
           {...BASE_PROPS}
@@ -331,9 +331,9 @@ describe("FretboardSVG", () => {
           colorNotes={["B"]}
         />
       );
-      // No chord overlay: color notes → note-blue with squircle shape
-      const colorNoteSquircles = container.querySelectorAll('.note-blue[data-note-shape="squircle"]');
-      expect(colorNoteSquircles.length).toBeGreaterThan(0);
+      // No chord overlay: color notes → note-blue with hexagon shape
+      const colorNoteHexagons = container.querySelectorAll('.note-blue[data-note-shape="hexagon"]');
+      expect(colorNoteHexagons.length).toBeGreaterThan(0);
     });
 
     it("chord role wins over color-tone when a note is both", () => {
