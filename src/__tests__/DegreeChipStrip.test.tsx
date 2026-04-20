@@ -290,5 +290,42 @@ describe('DegreeChipStrip', () => {
       expect(container.querySelector('[data-is-chord-root]')).toBeNull();
       expect(container.querySelector('[data-chord-active]')).toBeNull();
     });
+
+    it("color note chip has data-is-color-note for squircle CSS targeting", () => {
+      // CSS applies border-radius: 38% (squircle geometry) to [data-is-color-note='true'].
+      // This test verifies the data attribute hook is present so CSS can target it.
+      const { container } = render(
+        <DegreeChipStrip
+          scaleName="C Minor Blues"
+          chips={aMinorChips}
+          colorNotes={new Set(['E'])}
+          visible={true}
+        />
+      );
+      const colorNoteItem = container.querySelector('[data-is-color-note="true"]');
+      expect(colorNoteItem).toBeTruthy();
+      // Tonic chip must NOT also have data-is-color-note (distinct roles)
+      const tonicItem = container.querySelector('[data-is-tonic="true"]');
+      expect(tonicItem?.getAttribute('data-is-color-note')).toBeNull();
+    });
+
+    it("color note chips are distinct from tonic and regular in-scale chips", () => {
+      const { container } = render(
+        <DegreeChipStrip
+          scaleName="C Minor Blues"
+          chips={aMinorChips}
+          colorNotes={new Set(['E'])}
+          visible={true}
+        />
+      );
+      const colorItems = container.querySelectorAll('[data-is-color-note="true"]');
+      const tonicItems = container.querySelectorAll('[data-is-tonic="true"]');
+      const inScaleItems = container.querySelectorAll('[data-in-scale="true"]');
+      // Color chips exist separately from tonic chips
+      expect(colorItems.length).toBe(1);
+      expect(tonicItems.length).toBe(1);
+      // In-scale count includes the color note (it is also in scale)
+      expect(inScaleItems.length).toBeGreaterThanOrEqual(colorItems.length);
+    });
   });
 });

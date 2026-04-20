@@ -151,12 +151,13 @@
   border-width: var(--chip-border-width);
 }
 
-/* Color note (blue note / modal characteristic tone) — violet glow matching
-   the fretboard hexagon color-tone rendering (--neon-violet = #A78BFA). */
+/* Color note (blue note / modal characteristic tone) — squircle geometry + violet glow.
+   border-radius: 38% matches the SVG squircle rx/ry = r * 0.38 on the fretboard. */
 .degree-chip-item[data-is-color-note='true'] .degree-chip {
   border-color: var(--glow-violet-border);
   box-shadow: var(--glow-violet-sm);
   opacity: 1;
+  border-radius: 38%;
 }
 
 /* Hidden state overrides all active states — connector line grey glow. */

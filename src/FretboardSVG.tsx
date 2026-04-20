@@ -96,67 +96,6 @@ interface FretboardSVGProps {
 
 type BoxBound = { minFret: number; maxFret: number };
 
-function getNoteShapeMembership(
-  stringIndex: number,
-  fretIndex: number,
-  shapePolygons: ShapePolygon[],
-  activePattern: "caged" | "3nps" | "all" | undefined,
-  activeShape: CagedShape | number | CagedShape[] | undefined,
-  shapeScope: "single" | "multi" | "global" | undefined,
-): boolean {
-  if (!activePattern) {
-    return false;
-  }
-  if (shapePolygons.length === 0) {
-    return true;
-  }
-  if (shapeScope === "global") {
-    return true;
-  }
-  if (shapeScope === "multi") {
-    if (Array.isArray(activeShape)) {
-      return shapePolygons.some((poly) => {
-        if ((activeShape as CagedShape[]).includes(poly.shape as CagedShape)) {
-          const leftFret = poly.vertices[stringIndex]?.fret;
-          const rightFret = poly.vertices[poly.vertices.length - 1 - stringIndex]?.fret;
-          return (
-            leftFret !== undefined &&
-            rightFret !== undefined &&
-            fretIndex >= leftFret &&
-            fretIndex <= rightFret
-          );
-        }
-        return false;
-      });
-    }
-    return shapePolygons.some((poly) => {
-      const leftFret = poly.vertices[stringIndex]?.fret;
-      const rightFret = poly.vertices[poly.vertices.length - 1 - stringIndex]?.fret;
-      return (
-        leftFret !== undefined &&
-        rightFret !== undefined &&
-        fretIndex >= leftFret &&
-        fretIndex <= rightFret
-      );
-    });
-  }
-  if (activeShape === undefined) {
-    return true;
-  }
-  return shapePolygons.some((poly) => {
-    if (activePattern === "caged" && poly.shape !== activeShape) return false;
-    if (activePattern === "3nps" && poly.shape !== activeShape) return false;
-    const leftFret = poly.vertices[stringIndex]?.fret;
-    const rightFret = poly.vertices[poly.vertices.length - 1 - stringIndex]?.fret;
-    return (
-      leftFret !== undefined &&
-      rightFret !== undefined &&
-      fretIndex >= leftFret &&
-      fretIndex <= rightFret
-    );
-  });
-}
-
 type LensEmphasis = {
   glowColor?: "cyan" | "orange" | "violet";
   radiusBoost: number;
@@ -313,10 +252,14 @@ function getNoteVisuals(
         noteShape: "squircle",
       };
     case "note-active":
-    case "note-blue":
       return {
         radiusScale: RADIUS_SCALE_NOTE_ACTIVE,
         noteShape: "circle",
+      };
+    case "note-blue":
+      return {
+        radiusScale: RADIUS_SCALE_NOTE_ACTIVE,
+        noteShape: "squircle",
       };
     case "scale-only":
       return {
@@ -326,7 +269,7 @@ function getNoteVisuals(
     case "color-tone":
       return {
         radiusScale: RADIUS_SCALE_COLOR_TONE,
-        noteShape: "hexagon",
+        noteShape: "squircle",
       };
     case "chord-tone-outside-scale":
       return {
@@ -847,26 +790,35 @@ export const FretboardSVG = memo(function FretboardSVG({
           );
         });
 
-        const inShapeSpread = shapePolygons.some((poly) => {
-          const leftFret = poly.vertices[stringIndex]?.fret;
-          const rightFret =
-            poly.vertices[poly.vertices.length - 1 - stringIndex]?.fret;
-          return (
-            leftFret !== undefined &&
-            rightFret !== undefined &&
-            fretIndex >= leftFret - chordFretSpread &&
-            fretIndex <= rightFret + chordFretSpread
-          );
-        });
+        // Shape-aware, spread-aware playable context.
+        // True when this note coordinate should receive chord overlay emphasis.
+        // Checks only the active shape(s) — not all polygons — so the spread
+        // buffer correctly extends the active shape boundary, not any visible shape.
+        const isInPlayableContext: boolean = (() => {
+          if (!hasChordOverlay) return false;
+          if (shapePolygons.length === 0 || !activePattern) return true;
+          if (shapeScope === "global") return true;
+          return shapePolygons.some((poly) => {
+            if (shapeScope === "single") {
+              if (activePattern === "caged" && poly.shape !== activeShape) return false;
+              if (activePattern === "3nps" && poly.shape !== activeShape) return false;
+            } else if (shapeScope === "multi" && Array.isArray(activeShape)) {
+              if (!(activeShape as CagedShape[]).includes(poly.shape as CagedShape)) return false;
+            }
+            const leftFret = poly.vertices[stringIndex]?.fret;
+            const rightFret = poly.vertices[poly.vertices.length - 1 - stringIndex]?.fret;
+            return (
+              leftFret !== undefined &&
+              rightFret !== undefined &&
+              fretIndex >= leftFret - chordFretSpread &&
+              fretIndex <= rightFret + chordFretSpread
+            );
+          });
+        })();
 
-        const isChordInRange =
-          !hasChordOverlay || !shapePolygons.length || inShapeSpread;
-
-        // Pattern-aware rendering: check if note is within the active shape/position
-        const isInActiveShape =
-          getNoteShapeMembership(stringIndex, fretIndex, shapePolygons, activePattern, activeShape, shapeScope) ||
-          !hasChordOverlay ||
-          !activePattern;
+        // Both range and shape-membership now derive from the same computation.
+        const isChordInRange = isInPlayableContext;
+        const isInActiveShape = isInPlayableContext || !hasChordOverlay || !activePattern;
 
         // Use the composable semantic model when available; fall back to booleans.
         // Keys are sharp-normalized (per project convention) so no enharmonic lookup needed.
