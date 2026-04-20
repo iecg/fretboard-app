@@ -7,7 +7,7 @@ import {
   scaleNameAtom,
   chordTypeAtom,
   chordRootAtom,
-  scaleVisibilityModeAtom,
+  scaleVisibleAtom,
 } from "../store/atoms";
 import { renderWithAtoms } from "./utils/renderWithAtoms";
 
@@ -37,59 +37,61 @@ describe("SummaryRibbon", () => {
     expect(screen.getByRole("group", { name: /Practice cues/i })).toBeInTheDocument();
   });
 
-  describe("scale visibility mode control", () => {
-    it("renders visibility toggle group with All/Custom/Off options", () => {
+  describe("eye toggle scale visibility", () => {
+    it("renders eye toggle button", () => {
       renderWithAtoms(<SummaryRibbon />, [...BASE_SEEDS]);
-      const group = screen.getByRole("group", { name: "Scale visibility" });
-      expect(group).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "All" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Custom" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Off" })).toBeInTheDocument();
+      const eyeButton = screen.getByRole("button", { name: /hide scale|show scale/i });
+      expect(eyeButton).toBeInTheDocument();
     });
 
-    it("mode 'all' shows chip list (default)", () => {
+    it("eye on (default) shows chip list with 7 chips for C Major", () => {
       renderWithAtoms(<SummaryRibbon />, [
         ...BASE_SEEDS,
-        [scaleVisibilityModeAtom, "all"],
-      ]);
-      // 7 chips for C Major
-      expect(screen.getAllByRole("listitem").length).toBe(7);
-    });
-
-    it("mode 'custom' shows chip list with toggleable chips", () => {
-      renderWithAtoms(<SummaryRibbon />, [
-        ...BASE_SEEDS,
-        [scaleVisibilityModeAtom, "custom"],
+        [scaleVisibleAtom, true],
       ]);
       expect(screen.getAllByRole("listitem").length).toBe(7);
-      // Chips should be enabled (custom mode passes onChipToggle)
-      const hideButtons = screen.getAllByRole("button", { name: /Hide|Show/ });
-      expect(hideButtons.every((b) => !b.hasAttribute("disabled"))).toBe(true);
     });
 
-    it("mode 'off' hides the chip list", () => {
+    it("eye off hides the chip list", () => {
       renderWithAtoms(<SummaryRibbon />, [
         ...BASE_SEEDS,
-        [scaleVisibilityModeAtom, "off"],
+        [scaleVisibleAtom, false],
       ]);
       expect(screen.queryAllByRole("listitem").length).toBe(0);
     });
 
-    it("mode 'off' still shows the scale degrees group (for visibility control)", () => {
+    it("eye off still shows the scale degrees group (for eye control)", () => {
       renderWithAtoms(<SummaryRibbon />, [
         ...BASE_SEEDS,
-        [scaleVisibilityModeAtom, "off"],
+        [scaleVisibleAtom, false],
       ]);
       expect(screen.getByRole("group", { name: "Scale degrees" })).toBeInTheDocument();
     });
 
-    it("mode 'all' disables chip toggle buttons", () => {
+    it("eye on shows chip toggle buttons as enabled", () => {
       renderWithAtoms(<SummaryRibbon />, [
         ...BASE_SEEDS,
-        [scaleVisibilityModeAtom, "all"],
+        [scaleVisibleAtom, true],
       ]);
-      const chipButtons = screen.getAllByRole("button", { name: /Hide|Show/ });
-      expect(chipButtons.every((b) => b.hasAttribute("disabled"))).toBe(true);
+      // Chips are enabled when scale is visible (onChipToggle is always passed)
+      const hideButtons = screen.getAllByRole("button", { name: /Hide|Show/ });
+      expect(hideButtons.every((b) => !b.hasAttribute("disabled"))).toBe(true);
+    });
+
+    it("chord overlay does not change scale-strip semantics", () => {
+      renderWithAtoms(<SummaryRibbon />, [
+        [rootNoteAtom, "C"],
+        [scaleNameAtom, "Major"],
+        [chordRootAtom, "C"],
+        [chordTypeAtom, "Major Triad"],
+        [scaleVisibleAtom, true],
+      ]);
+      // Scale strip still shows all 7 scale chips regardless of chord overlay
+      expect(screen.getAllByRole("listitem").length).toBe(7);
+      // No chord-specific attributes on scale strip
+      const scaleGroup = screen.getByRole("group", { name: "Scale degrees" });
+      expect(scaleGroup.getAttribute("data-chord-active")).toBeNull();
+      expect(scaleGroup.getAttribute("data-in-chord")).toBeNull();
     });
   });
 });

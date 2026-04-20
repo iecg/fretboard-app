@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import clsx from 'clsx';
-import type { ScaleVisibilityMode } from '../store/atoms';
 import './DegreeChipStrip.css';
 
 export interface DegreeChip {
@@ -16,11 +15,13 @@ export interface DegreeChipStripProps {
   chips: DegreeChip[];
   hiddenNotes?: Set<string>;
   onChipToggle?: (internalNote: string) => void;
+  /** Scale-owned color notes (blue notes, modal characteristic tones). */
+  colorNotes?: Set<string>;
   className?: string;
   'aria-label'?: string;
   hideHeader?: boolean;
-  /** Controls chip interactivity and list visibility. */
-  mode?: ScaleVisibilityMode;
+  /** When false, hides the chip list. Default true. */
+  visible?: boolean;
   /** Rendered inside the header landmark, to the right of the scale name. */
   headerAction?: ReactNode;
 }
@@ -30,21 +31,21 @@ export function DegreeChipStrip({
   chips,
   hiddenNotes,
   onChipToggle,
+  colorNotes,
   className,
   'aria-label': ariaLabel,
   hideHeader,
-  mode = 'all',
+  visible = true,
   headerAction,
 }: DegreeChipStripProps) {
   const label = ariaLabel ?? `Scale degrees for ${scaleName}`;
-  const showChips = mode !== 'off';
 
   return (
     <section
       role="group"
       aria-label={label}
       className={clsx('degree-chip-strip', className)}
-      data-visibility-mode={mode}
+      data-scale-visible={visible ? 'true' : 'false'}
     >
       {(!hideHeader || headerAction) && (
         <header
@@ -55,10 +56,11 @@ export function DegreeChipStrip({
           {headerAction}
         </header>
       )}
-      {showChips && (
+      {visible && (
         <ul className="degree-chip-strip-list">
           {chips.map((chip, i) => {
             const isHidden = hiddenNotes?.has(chip.internalNote) ?? false;
+            const isColorNote = colorNotes?.has(chip.internalNote) ?? false;
             return (
               <li
                 key={`${chip.note}-${i}`}
@@ -66,6 +68,7 @@ export function DegreeChipStrip({
                 data-in-scale={chip.inScale ? 'true' : undefined}
                 data-is-tonic={chip.isTonic ? 'true' : undefined}
                 data-hidden={isHidden ? 'true' : undefined}
+                data-is-color-note={isColorNote ? 'true' : undefined}
               >
                 <button
                   type="button"
