@@ -7,7 +7,7 @@ import {
   getNoteFrequency,
 } from "./guitar";
 import { synth } from "./audio";
-import { fretZoomAtom } from "./store/atoms";
+import { fretZoomAtom, type AutoCenterTarget } from "./store/atoms";
 import { FretboardSVG } from "./FretboardSVG";
 import { useFretboardState, type ShapeScope, type ActiveShapeType } from "./hooks/useFretboardState";
 import { 
@@ -42,7 +42,7 @@ interface FretboardProps {
   useFlats?: boolean;
   scaleName?: string;
   stringRowPx?: number;
-  autoCenterTarget?: number;
+  autoCenterTarget?: AutoCenterTarget;
   recenterKey?: number;
   activePattern?: "caged" | "3nps" | "all";
   activeShape?: ActiveShapeType;
@@ -134,14 +134,26 @@ export function Fretboard(props: FretboardProps) {
   }, [effectiveZoom]);
 
   useEffect(() => {
-    if (autoCenterTarget === undefined) return;
+    if (!autoCenterTarget) return;
     const el = scrollRef.current;
     if (!el) return;
     const zoom = effectiveZoomRef.current;
-    const targetOffset = (autoCenterTarget - startFret) * zoom;
     const containerW = el.clientWidth;
-    const centerOffset = targetOffset - containerW / 2 + zoom / 2;
-    el.scrollTo({ left: Math.max(0, centerOffset), behavior: "smooth" });
+    const buffer = zoom * 0.5;
+
+    const shapeMinPx = (autoCenterTarget.minFret - startFret) * zoom;
+    const shapeMaxPx = (autoCenterTarget.maxFret - startFret) * zoom;
+    const shapeWidth = shapeMaxPx - shapeMinPx;
+
+    let scrollLeft: number;
+    if (shapeWidth <= containerW - buffer * 2) {
+      const centerPx = (shapeMinPx + shapeMaxPx) / 2;
+      scrollLeft = centerPx - containerW / 2 + zoom / 2;
+    } else {
+      scrollLeft = shapeMinPx - buffer;
+    }
+
+    el.scrollTo({ left: Math.max(0, scrollLeft), behavior: "smooth" });
   }, [autoCenterTarget, recenterKey, startFret]);
 
   const updateCursor = useCallback((dragging: boolean) => {

@@ -249,6 +249,12 @@ export const effectiveColorNotesAtom = atom((get) => {
   return get(colorNotesAtom);
 });
 
+export interface AutoCenterTarget {
+  centerFret: number;
+  minFret: number;
+  maxFret: number;
+}
+
 export const autoCenterTargetAtom = atom((get) => {
   const fingeringPattern = get(fingeringPatternAtom);
   const { shapePolygons, boxBounds, wrappedNotes } = get(shapeDataAtom);
@@ -256,13 +262,17 @@ export const autoCenterTargetAtom = atom((get) => {
   const startFret = get(fretStartAtom);
   const endFret = get(fretEndAtom);
 
-  let target: number | undefined;
+  let target: AutoCenterTarget | undefined;
 
   if (fingeringPattern === "caged" && shapePolygons.length > 0) {
     if (clickedShape) {
       const clickedPoly = shapePolygons.find((p) => p.shape === clickedShape);
       if (clickedPoly && !clickedPoly.truncated) {
-        target = getShapeCenterFret(clickedPoly);
+        target = {
+          centerFret: getShapeCenterFret(clickedPoly),
+          minFret: clickedPoly.intendedMin,
+          maxFret: clickedPoly.intendedMax,
+        };
       }
     }
     if (target === undefined) {
@@ -273,14 +283,22 @@ export const autoCenterTargetAtom = atom((get) => {
         endFret,
       );
       if (mainShape) {
-        target = getShapeCenterFret(mainShape);
+        target = {
+          centerFret: getShapeCenterFret(mainShape),
+          minFret: mainShape.intendedMin,
+          maxFret: mainShape.intendedMax,
+        };
       }
     }
   } else if (fingeringPattern === "3nps" && boxBounds.length > 0) {
     const lowestBounds = boxBounds.reduce((a, b) =>
       a.minFret <= b.minFret ? a : b,
     );
-    target = lowestBounds.minFret;
+    target = {
+      centerFret: (lowestBounds.minFret + lowestBounds.maxFret) / 2,
+      minFret: lowestBounds.minFret,
+      maxFret: lowestBounds.maxFret,
+    };
   }
 
   return target;
