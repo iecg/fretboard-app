@@ -152,8 +152,8 @@ function classifyNote(
   fretIndex: number,
 ): string {
   if (!hasChordOverlay) {
-    if (isColorNote && isHighlighted) return "note-blue";
     if (isScaleRoot && isHighlighted) return "key-tonic";
+    if (isColorNote && isHighlighted) return "note-blue";
     if (isHighlighted) return "note-active";
     if (
       isColorNote &&
