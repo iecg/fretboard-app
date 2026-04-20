@@ -75,6 +75,7 @@ export {
   showChordPracticeBarAtom,
   practiceBarTitleAtom,
   practiceBarBadgeAtom,
+  practiceBarLensLabelAtom,
   practiceBarSharedMembersAtom,
   practiceBarOutsideMembersAtom,
   lensAvailabilityContextAtom,

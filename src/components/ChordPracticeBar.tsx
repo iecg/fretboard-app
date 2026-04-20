@@ -46,6 +46,8 @@ function CueLine({ cue }: CueLineProps) {
 export interface ChordPracticeBarProps {
   title: string;
   badge?: string | null;
+  /** Active lens label sourced from LENS_REGISTRY — shown as a small indicator in the dock header. */
+  lensLabel?: string | null;
   cues: PracticeCue[];
   isShapeLocal?: boolean;
   shapeContextLabel?: string | null;
@@ -57,6 +59,7 @@ export interface ChordPracticeBarProps {
 export function ChordPracticeBar({
   title,
   badge,
+  lensLabel,
   cues,
   isShapeLocal = false,
   shapeContextLabel = null,
@@ -78,6 +81,9 @@ export function ChordPracticeBar({
     >
       <div className="chord-practice-bar-header">
         <span className="chord-practice-bar-title">{title}</span>
+        {lensLabel && (
+          <span className="chord-practice-bar-lens-label">{lensLabel}</span>
+        )}
         {badge && <span className="chord-practice-bar-badge">{badge}</span>}
       </div>
       {shapeContextLabel && (

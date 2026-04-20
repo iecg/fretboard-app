@@ -95,6 +95,38 @@ describe("ChordPracticeBar", () => {
     expect(container.querySelector(".chord-practice-bar-badge")).toBeNull();
   });
 
+  describe("lensLabel prop", () => {
+    it("renders lensLabel text when provided", () => {
+      render(
+        <ChordPracticeBar title="D Minor 7" lensLabel="Chord + Color" cues={[landOnCue]} />
+      );
+      expect(screen.getByText("Chord + Color")).toBeTruthy();
+    });
+
+    it("renders lensLabel in the .chord-practice-bar-lens-label element", () => {
+      const { container } = render(
+        <ChordPracticeBar title="D Minor 7" lensLabel="Guide Tones" cues={[landOnCue]} />
+      );
+      const el = container.querySelector(".chord-practice-bar-lens-label");
+      expect(el).toBeTruthy();
+      expect(el!.textContent).toBe("Guide Tones");
+    });
+
+    it("does not render lens-label element when lensLabel is null", () => {
+      const { container } = render(
+        <ChordPracticeBar title="D Minor 7" lensLabel={null} cues={[landOnCue]} />
+      );
+      expect(container.querySelector(".chord-practice-bar-lens-label")).toBeNull();
+    });
+
+    it("does not render lens-label element when lensLabel is omitted", () => {
+      const { container } = render(
+        <ChordPracticeBar title="D Minor 7" cues={[landOnCue]} />
+      );
+      expect(container.querySelector(".chord-practice-bar-lens-label")).toBeNull();
+    });
+  });
+
   it("returns null when cues array is empty", () => {
     const { container } = render(
       <ChordPracticeBar title="Empty" cues={[]} />

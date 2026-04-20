@@ -3,6 +3,7 @@ import {
   showChordPracticeBarAtom,
   practiceBarTitleAtom,
   practiceBarBadgeAtom,
+  practiceBarLensLabelAtom,
   isShapeLocalContextAtom,
   shapeContextLabelAtom,
   practiceLensAtom,
@@ -14,6 +15,7 @@ export function usePracticeBarState() {
   const showChordPracticeBar = useAtomValue(showChordPracticeBarAtom);
   const practiceBarTitle = useAtomValue(practiceBarTitleAtom);
   const practiceBarBadge = useAtomValue(practiceBarBadgeAtom);
+  const practiceBarLensLabel = useAtomValue(practiceBarLensLabelAtom);
   const isShapeLocalContext = useAtomValue(isShapeLocalContextAtom);
   const shapeContextLabel = useAtomValue(shapeContextLabelAtom);
   const practiceLens = useAtomValue(practiceLensAtom);
@@ -24,6 +26,7 @@ export function usePracticeBarState() {
     showChordPracticeBar,
     practiceBarTitle,
     practiceBarBadge,
+    practiceBarLensLabel,
     isShapeLocalContext,
     shapeContextLabel,
     practiceLens,

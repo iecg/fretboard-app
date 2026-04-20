@@ -9,9 +9,11 @@ import {
   shapeLocalPracticeCuesAtom,
   hideNonChordNotesAtom,
   showChordPracticeBarAtom,
+  practiceBarLensLabelAtom,
   noteSemanticMapAtom,
   rootNoteAtom,
   scaleNameAtom,
+  scaleVisibilityModeAtom,
   chordRootAtom,
   chordTypeAtom,
   fingeringPatternAtom,
@@ -394,5 +396,100 @@ describe("shapeLocalPracticeCuesAtom", () => {
     store.set(practiceLensAtom, "targets");
     store.set(fingeringPatternAtom, "all");
     expect(store.get(shapeLocalPracticeCuesAtom)).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// practiceBarLensLabelAtom — sourced from LENS_REGISTRY labels
+// ---------------------------------------------------------------------------
+
+describe("practiceBarLensLabelAtom", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("returns null when no chord is active", () => {
+    const store = makeStore();
+    store.set(chordTypeAtom, null);
+    expect(store.get(practiceBarLensLabelAtom)).toBeNull();
+  });
+
+  it("returns the LENS_REGISTRY label for the active lens", () => {
+    const store = makeStore();
+    store.set(chordRootAtom, "C");
+    store.set(chordTypeAtom, "Major Triad");
+    store.set(practiceLensAtom, "targets-color");
+    expect(store.get(practiceBarLensLabelAtom)).toBe("Chord + Color");
+  });
+
+  it("returns correct labels for every lens", () => {
+    const store = makeStore();
+    store.set(chordRootAtom, "C");
+    store.set(chordTypeAtom, "Major Triad");
+
+    const expected: Record<string, string> = {
+      "targets-color": "Chord + Color",
+      targets: "Chord Tones",
+      "guide-tones": "Guide Tones",
+      color: "Color Notes",
+      tension: "Tension",
+    };
+    for (const [lens, label] of Object.entries(expected)) {
+      store.set(practiceLensAtom, lens as PracticeLens);
+      expect(store.get(practiceBarLensLabelAtom)).toBe(label);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// showChordPracticeBarAtom — independent of scale visibility
+// ---------------------------------------------------------------------------
+
+describe("showChordPracticeBarAtom — scale visibility independence", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("shows the dock when scale visibility is off (targets lens)", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    store.set(chordRootAtom, "C");
+    store.set(chordTypeAtom, "Major Triad");
+    store.set(practiceLensAtom, "targets");
+    store.set(scaleVisibilityModeAtom, "off");
+    expect(store.get(showChordPracticeBarAtom)).toBe(true);
+  });
+
+  it("shows the dock when scale visibility is off (targets-color with outside tones)", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    store.set(chordRootAtom, "C#");
+    store.set(chordTypeAtom, "Minor Triad");
+    store.set(practiceLensAtom, "targets-color");
+    store.set(scaleVisibilityModeAtom, "off");
+    expect(store.get(showChordPracticeBarAtom)).toBe(true);
+  });
+
+  it("dock visibility does not change when toggling scaleVisibilityMode", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    store.set(chordRootAtom, "C");
+    store.set(chordTypeAtom, "Dominant 7th"); // Bb outside C Major
+    store.set(practiceLensAtom, "targets-color");
+
+    store.set(scaleVisibilityModeAtom, "all");
+    const visibleAll = store.get(showChordPracticeBarAtom);
+
+    store.set(scaleVisibilityModeAtom, "off");
+    const visibleOff = store.get(showChordPracticeBarAtom);
+
+    store.set(scaleVisibilityModeAtom, "custom");
+    const visibleCustom = store.get(showChordPracticeBarAtom);
+
+    expect(visibleAll).toBe(visibleOff);
+    expect(visibleAll).toBe(visibleCustom);
   });
 });
