@@ -55,9 +55,10 @@ describe("HelpModal", () => {
 
   it("lists current lens names matching LENS_REGISTRY labels", () => {
     render(<HelpModal isOpen={true} onClose={vi.fn()} />);
-    expect(screen.getByText("Chord Tones")).toBeTruthy();
-    expect(screen.getByText("Guide Tones")).toBeTruthy();
-    expect(screen.getByText("Tension")).toBeTruthy();
+    expect(screen.getAllByText("Chord Tones").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Guide Tones").length).toBeGreaterThan(0);
+    // "Tension" appears as both <strong> and <em> in the description
+    expect(screen.getAllByText("Tension").length).toBeGreaterThan(0);
     // Removed lenses — must not appear
     expect(screen.queryByText("Chord + Color")).toBeNull();
     expect(screen.queryByText("Color Notes")).toBeNull();
