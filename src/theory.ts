@@ -207,7 +207,7 @@ export const LENS_REGISTRY: readonly LensRegistryEntry[] = [
 ];
 
 // Practice bar coaching cue types
-export type PracticeCueKind = "land-on" | "guide-tones" | "color-note" | "tension" | "resolution";
+export type PracticeCueKind = "land-on" | "guide-tones" | "color-note" | "tension";
 
 export interface PracticeCueNote {
   internalNote: string;

@@ -7,7 +7,6 @@ function cueKindDefaultRole(kind: PracticeCue["kind"]): string {
     case "guide-tones": return "guide-tone";
     case "color-note": return "color-tone";
     case "tension": return "chord-tone-outside-scale";
-    case "resolution": return "chord-tone-in-scale";
     default: return "chord-tone-in-scale";
   }
 }
@@ -31,6 +30,11 @@ function CueLine({ cue }: CueLineProps) {
             <span className="practice-bar-pill-note">{note.displayNote}</span>
             {note.intervalName && (
               <span className="practice-bar-pill-interval">{note.intervalName}</span>
+            )}
+            {note.resolvesTo && (
+              <span className="practice-bar-pill-resolve" aria-label={`resolves to ${note.resolvesTo.displayNote}`}>
+                →{note.resolvesTo.displayNote}
+              </span>
             )}
           </li>
         ))}

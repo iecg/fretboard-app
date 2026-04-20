@@ -235,27 +235,6 @@ export const practiceCuesAtom = atom((get) => {
           label: "Tension",
           notes: tensionNotes,
         });
-        // Separate "Resolve to" row — deduped resolution targets
-        const seen = new Set<string>();
-        const resolutionNotes: PracticeCueNote[] = [];
-        for (const note of tensionNotes) {
-          const target = note.resolvesTo;
-          if (target && !seen.has(target.internalNote)) {
-            seen.add(target.internalNote);
-            resolutionNotes.push({
-              internalNote: target.internalNote,
-              displayNote: target.displayNote,
-              role: "chord-tone-in-scale" as const,
-            });
-          }
-        }
-        if (resolutionNotes.length > 0) {
-          cues.push({
-            kind: "resolution",
-            label: "Resolve to",
-            notes: resolutionNotes,
-          });
-        }
       }
       break;
     }
