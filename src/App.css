@@ -531,37 +531,11 @@
   min-width: 0;
 }
 
-.control-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  overflow: visible;
-  min-width: 0;
-  flex: 1;
-}
-
 .col-span-2 {
   flex: 2;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-}
-
-.control-group h2 {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin: 0;
-}
-
-.control-group .icon {
-  width: 1rem;
-  height: 1rem;
 }
 
 /* Mode grid */
