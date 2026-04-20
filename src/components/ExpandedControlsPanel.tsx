@@ -106,7 +106,7 @@ export function ExpandedControlsPanel({
   mode: "3col" | "split" | "stacked";
 }) {
   return (
-    <div className={clsx(styles["controls-panel"], "controls-panel--dashboard")} data-mode={mode}>
+    <div className={clsx(styles["controls-panel"], styles["controls-panel--dashboard"])} data-mode={mode}>
       <BaseControlsSection />
       <ScaleChordSection />
       <KeyColumn />

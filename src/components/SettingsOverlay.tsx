@@ -222,10 +222,10 @@ function OverlayFieldHeader({
     <div className={styles["overlay-field-header"]}>
       <span className={styles["overlay-field-label"]}>{label}</span>
       {help ? (
-        <div className="overlay-field-help" ref={helpContainerRef}>
+        <div className={styles["overlay-field-help"]} ref={helpContainerRef}>
           <button
             type="button"
-            className="overlay-help-trigger"
+            className={styles["overlay-help-trigger"]}
             aria-label={
               isHelpOpen ? `Hide help for ${label}` : `Show help for ${label}`
             }
@@ -233,12 +233,12 @@ function OverlayFieldHeader({
             aria-controls={`settings-help-${help.id}`}
             onClick={onToggleHelp}
           >
-            <HelpCircle className="icon" />
+            <HelpCircle className={styles.icon} />
           </button>
           {isHelpOpen ? (
             <div
               id={`settings-help-${help.id}`}
-              className="overlay-help-popover"
+              className={styles["overlay-help-popover"]}
             >
               {help.content}
             </div>
@@ -491,7 +491,7 @@ function SettingsOverlaySurface({
             onClick={close}
             aria-label="Close settings"
           >
-            <X className="icon" />
+            <X className={styles.icon} />
           </button>
         </div>
         <div className={clsx(styles["settings-overlay-content"], "custom-scrollbar")}>

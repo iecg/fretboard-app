@@ -1,15 +1,14 @@
-/* stylelint-disable selector-pseudo-class-no-unknown */
-:global(.labeled-select) {
+.labeled-select {
   display: block;
 }
 
-:global(.labeled-select-label) {
+.labeled-select-label {
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
 }
 
-:global(.labeled-select-label-text) {
+.labeled-select-label-text {
   font-size: 0.72rem;
   font-weight: var(--font-weight-medium);
   color: rgb(188 200 214 / 0.8);
@@ -18,13 +17,13 @@
   text-transform: uppercase;
 }
 
-:global(.labeled-select-field) {
+.labeled-select-field {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-:global(.labeled-select-native) {
+.labeled-select-native {
   appearance: none;
   width: 100%;
   min-height: 3rem;
@@ -46,25 +45,25 @@
     background-color var(--transition-fast);
 }
 
-:global(.labeled-select-native):focus-visible {
+.labeled-select-native:focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
   box-shadow: var(--focus-ring-glow);
 }
 
-:global(.labeled-select-native):hover:not(:disabled) {
+.labeled-select-native:hover:not(:disabled) {
   border-color: rgb(77 228 255 / 0.48);
 }
 
-:global(.labeled-select-native):disabled {
+.labeled-select-native:disabled {
   cursor: not-allowed;
 }
 
-:global(.labeled-select--disabled) {
+.labeled-select--disabled {
   opacity: var(--disabled-opacity);
 }
 
-:global(.labeled-select-chevron) {
+.labeled-select-chevron {
   position: absolute;
   right: 0.95rem;
   color: rgb(194 206 220 / 0.65);
@@ -74,11 +73,11 @@
 }
 
 /* Visually-hidden label: accessible to screen readers via <label htmlFor>, invisible visually. */
-:global(.labeled-select--hide-label) :global(.labeled-select-label) {
+.labeled-select--hide-label .labeled-select-label {
   gap: 0;
 }
 
-:global(.labeled-select--hide-label) :global(.labeled-select-label-text) {
+.labeled-select--hide-label .labeled-select-label-text {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -91,16 +90,15 @@
 }
 
 /* Desktop: tighter select height — Phase 3 density pass. */
-:global(.app-container[data-layout-tier="desktop"]) :global(.labeled-select-native) {
+:global(.app-container[data-layout-tier="desktop"]) .labeled-select-native {
   min-height: 2.65rem;
   padding: 0.52rem 2.6rem 0.52rem 0.85rem;
   font-size: 0.93rem;
 }
 
 /* Tablet tier: slightly tighter select height — still comfortably touchable. */
-:global(.app-container[data-layout-tier="tablet"]) :global(.labeled-select-native) {
+:global(.app-container[data-layout-tier="tablet"]) .labeled-select-native {
   min-height: 2.82rem;
   padding: 0.62rem 2.7rem 0.62rem 0.9rem;
   font-size: 0.95rem;
 }
-/* stylelint-enable selector-pseudo-class-no-unknown */
