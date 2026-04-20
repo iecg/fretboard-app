@@ -121,31 +121,43 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
                   <strong>Link chord root to scale</strong> keeps the chord root
                   in sync with the scale root automatically.
                 </li>
+              </ul>
+
+              <h3>Practice Lenses</h3>
+              <p>
+                When a chord overlay is active, a <strong>Lens</strong> selector
+                appears below it. Lenses focus the practice bar coaching cues at
+                the bottom of the screen — they do not hide fretboard notes.
+                Three lenses are available:
+              </p>
+              <ul>
                 <li>
-                  <strong>Lens</strong> controls which notes the practice dock
-                  coaches you toward:
-                  <ul>
-                    <li>
-                      <strong>Chord + Color</strong> — chord tones plus
-                      characteristic scale color notes (default).
-                    </li>
-                    <li>
-                      <strong>Chord Tones</strong> — chord tones only; for
-                      landing and outlining the harmony.
-                    </li>
-                    <li>
-                      <strong>Guide Tones</strong> — 3rd and 7th only; the
-                      tones that most strongly define chord quality.
-                    </li>
-                    <li>
-                      <strong>Color Notes</strong> — characteristic modal or
-                      blue notes that give the scale its flavor.
-                    </li>
-                    <li>
-                      <strong>Tension</strong> — chord tones outside the scale
-                      that need resolution. Only shown when such tones exist.
-                    </li>
-                  </ul>
+                  <strong>Chord Tones</strong> — the default lens. Highlights
+                  every chord member (root, 3rd, 5th, 7th, etc.) and shows a{" "}
+                  <em>Land on</em> cue in the practice bar listing all of them.
+                  Use this to learn the shape of a chord across the neck and
+                  practice landing phrases on strong harmonic tones.
+                </li>
+                <li>
+                  <strong>Guide Tones</strong> — narrows focus to the 3rd and
+                  7th only. These two intervals define chord quality more than
+                  any others, and moving smoothly between them across chord
+                  changes is the core of jazz voice-leading. The practice bar
+                  shows a <em>Guide tones</em> cue with just those two notes
+                  marked. Only available for chords that contain a 3rd or 7th
+                  (not power chords).
+                </li>
+                <li>
+                  <strong>Tension</strong> — surfaces chord tones that fall
+                  outside the active scale. These are the &ldquo;altered&rdquo;
+                  or &ldquo;outside&rdquo; tones that create tension and need
+                  resolution back into the scale. The practice bar shows three
+                  cue rows: <em>Land on</em> (all chord tones),{" "}
+                  <em>Tension</em> (the outside tones), and{" "}
+                  <em>Resolve to</em> (the nearest in-scale neighbors for each
+                  tension note). This lens is hidden automatically when the
+                  chord is fully within the scale — no outside tones, no
+                  tension to show.
                 </li>
               </ul>
 
