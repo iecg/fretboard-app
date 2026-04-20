@@ -54,7 +54,7 @@
   letter-spacing: 0.02em;
 }
 
-.close-button {
+.settings-overlay-close {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -68,9 +68,15 @@
   transition: var(--transition-surface);
 }
 
-.close-button:hover {
+.settings-overlay-close:hover {
   background: var(--chrome-hover-bg);
   color: var(--chrome-fg);
+}
+
+.settings-overlay-close:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  box-shadow: var(--focus-ring-glow);
 }
 
 .settings-overlay-content {
@@ -133,7 +139,11 @@
   color: var(--accent-primary);
 }
 
-.overlay-help-trigger {
+:global(.overlay-field-help) {
+  position: relative;
+}
+
+:global(.overlay-help-trigger) {
   position: relative;
   display: flex;
   align-items: center;
@@ -149,25 +159,25 @@
   transition: var(--transition-surface);
 }
 
-.overlay-help-trigger:hover,
-.overlay-help-trigger[aria-expanded="true"] {
+:global(.overlay-help-trigger):hover,
+:global(.overlay-help-trigger)[aria-expanded="true"] {
   color: var(--chrome-fg);
   border-color: color-mix(in srgb, var(--accent-primary) 42%, var(--chrome-border));
   background: color-mix(in srgb, var(--accent-primary) 12%, var(--surface-raised));
 }
 
-.overlay-help-trigger:focus-visible {
+:global(.overlay-help-trigger):focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
   box-shadow: var(--focus-ring-glow);
 }
 
-.overlay-help-trigger :global(.icon) {
+:global(.overlay-help-trigger) :global(.icon) {
   width: 16px;
   height: 16px;
 }
 
-.overlay-help-popover {
+:global(.overlay-help-popover) {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
@@ -184,7 +194,7 @@
   pointer-events: none;
 }
 
-.overlay-help-popover b {
+:global(.overlay-help-popover) b {
   color: var(--accent-primary);
   font-weight: 600;
 }
@@ -195,7 +205,7 @@
   border-top: 1px solid var(--chrome-border);
 }
 
-.reset-button {
+.overlay-reset-btn {
   width: 100%;
   display: flex;
   align-items: center;
@@ -212,18 +222,18 @@
   transition: var(--transition-surface);
 }
 
-.reset-button:hover {
+.overlay-reset-btn:hover {
   background: rgba(239, 68, 68, 0.15);
   border-color: rgba(239, 68, 68, 0.3);
 }
 
-.reset-button:focus-visible {
+.overlay-reset-btn:focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
   box-shadow: var(--focus-ring-glow);
 }
 
-.reset-button :global(.icon) {
+.overlay-reset-btn :global(.icon) {
   width: 18px;
   height: 18px;
 }
