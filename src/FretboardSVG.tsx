@@ -770,8 +770,14 @@ export const FretboardSVG = memo(function FretboardSVG({
   const noteData = useMemo(() => {
     // practiceLens is the source of truth when provided; hideNonChordNotes is the
     // legacy fallback for callers that haven't migrated yet.
+    // "targets" lens explicitly hides non-chord notes; other defined lenses
+    // use the semantic model instead of this flag.
     const effectiveHideNonChordNotes =
-      practiceLens !== undefined ? false : hideNonChordNotes;
+      practiceLens === "targets"
+        ? true
+        : practiceLens !== undefined
+          ? false
+          : hideNonChordNotes;
     const notes = [];
     const scale = SCALES[scaleName] || [];
     const normRoot = rootNote && (ENHARMONICS[rootNote]?.includes("b") ? ENHARMONICS[rootNote] : rootNote);
