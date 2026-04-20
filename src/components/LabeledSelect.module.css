@@ -1,14 +1,14 @@
-.labeled-select {
+:global(.labeled-select) {
   display: block;
 }
 
-.labeled-select-label {
+:global(.labeled-select-label) {
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
 }
 
-.labeled-select-label-text {
+:global(.labeled-select-label-text) {
   font-size: 0.72rem;
   font-weight: var(--font-weight-medium);
   color: rgb(188 200 214 / 0.8);
@@ -17,13 +17,13 @@
   text-transform: uppercase;
 }
 
-.labeled-select-field {
+:global(.labeled-select-field) {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.labeled-select-native {
+:global(.labeled-select-native) {
   appearance: none;
   width: 100%;
   min-height: 3rem;
@@ -45,25 +45,25 @@
     background-color var(--transition-fast);
 }
 
-.labeled-select-native:focus-visible {
+:global(.labeled-select-native):focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
   box-shadow: var(--focus-ring-glow);
 }
 
-.labeled-select-native:hover:not(:disabled) {
+:global(.labeled-select-native):hover:not(:disabled) {
   border-color: rgb(77 228 255 / 0.48);
 }
 
-.labeled-select-native:disabled {
+:global(.labeled-select-native):disabled {
   cursor: not-allowed;
 }
 
-.labeled-select--disabled {
+:global(.labeled-select--disabled) {
   opacity: var(--disabled-opacity);
 }
 
-.labeled-select-chevron {
+:global(.labeled-select-chevron) {
   position: absolute;
   right: 0.95rem;
   color: rgb(194 206 220 / 0.65);
@@ -73,11 +73,11 @@
 }
 
 /* Visually-hidden label: accessible to screen readers via <label htmlFor>, invisible visually. */
-.labeled-select--hide-label .labeled-select-label {
+:global(.labeled-select--hide-label) :global(.labeled-select-label) {
   gap: 0;
 }
 
-.labeled-select--hide-label .labeled-select-label-text {
+:global(.labeled-select--hide-label) :global(.labeled-select-label-text) {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -90,14 +90,14 @@
 }
 
 /* Desktop: tighter select height — Phase 3 density pass. */
-:global(.app-container[data-layout-tier="desktop"]) .labeled-select-native {
+:global(.app-container[data-layout-tier="desktop"]) :global(.labeled-select-native) {
   min-height: 2.65rem;
   padding: 0.52rem 2.6rem 0.52rem 0.85rem;
   font-size: 0.93rem;
 }
 
 /* Tablet tier: slightly tighter select height — still comfortably touchable. */
-:global(.app-container[data-layout-tier="tablet"]) .labeled-select-native {
+:global(.app-container[data-layout-tier="tablet"]) :global(.labeled-select-native) {
   min-height: 2.82rem;
   padding: 0.62rem 2.7rem 0.62rem 0.9rem;
   font-size: 0.95rem;

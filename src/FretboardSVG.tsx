@@ -13,6 +13,7 @@ import {
 } from "./theory";
 import { parseNote } from "./guitar";
 import { STRING_ROW_PX_TABLET } from "./layout/responsive";
+import "./FretboardSVG.module.css";
 import type { ShapePolygon, CagedShape } from "./shapes";
 import type { ActiveShapeType } from "./hooks/useFretboardState";
 import {

@@ -20,11 +20,9 @@
   outline: none;
 }
 
-:global(.fretboard-note):focus-visible circle,
-:global(.fretboard-note):focus-visible rect,
-:global(.fretboard-note):focus-visible polygon {
-  stroke: var(--accent-primary) !important;
-  stroke-width: 3 !important;
+:global(.note-bubble):focus-visible {
+  outline: 3px solid var(--accent-primary) !important;
+  outline-offset: 2px;
 }
 
 /* Note Role Styling */

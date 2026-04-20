@@ -186,6 +186,3 @@
 .app-container[data-layout-tier="tablet"] .app-header-brand-wordmark .fretflow-wordmark {
   height: clamp(1.35rem, 2.65vw, 2.05rem);
 }
-dmark :global(.fretflow-wordmark) {
-  height: clamp(1.35rem, 2.65vw, 2.05rem);
-}

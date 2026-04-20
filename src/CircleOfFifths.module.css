@@ -38,6 +38,7 @@
 }
 
 .circle-slice.circle-slice--scale {
+  fill: rgb(35 45 60); /* Fallback */
   fill: color-mix(in srgb, var(--neon-cyan) 8%, rgb(27 33 44 / 1));
 }
 
@@ -46,6 +47,7 @@
 }
 
 .circle-slice.active {
+  fill: rgb(70 50 45); /* Fallback */
   fill: color-mix(in srgb, var(--neon-orange) 18%, rgb(32 32 40 / 1));
   stroke: var(--neon-orange) !important;
   stroke-width: 2.3 !important;
@@ -53,6 +55,7 @@
 }
 
 .circle-slice.active:hover {
+  fill: rgb(85 60 55); /* Fallback */
   fill: color-mix(in srgb, var(--neon-orange) 24%, rgb(36 36 44 / 1));
 }
 
