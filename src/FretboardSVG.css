@@ -154,14 +154,7 @@
   filter: var(--glow-violet);
 }
 
-/* Scale-owned color notes use a rounder squircle than chord-owned squircles.
-   CSS rx/ry override the SVG attribute (rx = r * 0.38 ≈ 19% of width) to 28%,
-   which gives the characteristic cushion shape at both small and large radii. */
-.fretboard-note[data-note-role="note-blue"] rect,
-.fretboard-note[data-note-role="color-tone"] rect {
-  rx: 28%;
-  ry: 28%;
-}
+/* Color notes render as hexagon polygons — no rect override needed. */
 
 /* ==========================================================================
    Outside chord root: squircle shape signals root identity; dashed stroke

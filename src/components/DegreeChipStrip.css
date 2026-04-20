@@ -151,14 +151,17 @@
   border-width: var(--chip-border-width);
 }
 
-/* Color note (blue note / modal characteristic tone) — squircle geometry + violet glow.
-   border-radius: 28% matches the CSS rx: 28% override on the SVG fretboard rects,
-   giving the characteristic cushion shape rather than a near-circular appearance. */
+/* Color note (blue note / modal characteristic tone) — hexagon geometry + violet glow.
+   clip-path clips the chip to a pointy-top hexagon matching the SVG fretboard hexagon.
+   filter: drop-shadow is used instead of box-shadow because box-shadow is clipped
+   by clip-path while filter is applied after clipping. */
 .degree-chip-item[data-is-color-note='true'] .degree-chip {
-  border-color: var(--glow-violet-border);
-  box-shadow: var(--glow-violet-sm);
+  clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+  border-radius: 0;
+  border-color: transparent;
+  box-shadow: none;
+  filter: drop-shadow(0 0 5px rgb(167 139 250 / 0.75));
   opacity: 1;
-  border-radius: 28%;
 }
 
 /* Hidden state overrides all active states — connector line grey glow. */

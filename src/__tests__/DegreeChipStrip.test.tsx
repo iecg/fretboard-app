@@ -291,8 +291,8 @@ describe('DegreeChipStrip', () => {
       expect(container.querySelector('[data-chord-active]')).toBeNull();
     });
 
-    it("color note chip has data-is-color-note for squircle CSS targeting", () => {
-      // CSS applies border-radius: 28% (squircle geometry) to [data-is-color-note='true'].
+    it("color note chip has data-is-color-note for hexagon CSS targeting", () => {
+      // CSS applies clip-path hexagon geometry to [data-is-color-note='true'].
       // This test verifies the data attribute hook is present so CSS can target it.
       const { container } = render(
         <DegreeChipStrip
