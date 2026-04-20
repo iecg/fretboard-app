@@ -53,6 +53,15 @@
   padding-top: 0.7rem;
 }
 
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  overflow: visible;
+  min-width: 0;
+  flex: 1;
+}
+
 /* Desktop tier: tighter dashboard grid gap — Phase 3 density pass. */
 :global(.app-container[data-layout-tier="desktop"]) .controls-panel {
   gap: 0.82rem;
