@@ -11,11 +11,10 @@ import {
   effectiveShapeDataAtom,
   autoCenterTargetAtom,
   recenterKeyAtom,
-  activeChordTonesAtom,
+  chordTonesAtom,
   chordRootAtom,
   chordFretSpreadAtom,
   hideNonChordNotesAtom,
-  viewModeAtom,
   practiceLensAtom,
   effectiveColorNotesAtom,
   effectiveHiddenNotesAtom,
@@ -35,11 +34,10 @@ export function useFretboardState() {
   const autoCenterTarget = useAtomValue(autoCenterTargetAtom);
   const recenterKey = useAtomValue(recenterKeyAtom);
 
-  const chordTones = useAtomValue(activeChordTonesAtom);
+  const chordTones = useAtomValue(chordTonesAtom);
   const chordRoot = useAtomValue(chordRootAtom);
   const chordFretSpread = useAtomValue(chordFretSpreadAtom);
   const hideNonChordNotes = useAtomValue(hideNonChordNotesAtom);
-  const viewMode = useAtomValue(viewModeAtom);
   const practiceLens = useAtomValue(practiceLensAtom);
   const colorNotes = useAtomValue(effectiveColorNotesAtom);
   const hiddenNotes = useAtomValue(effectiveHiddenNotesAtom);
@@ -63,7 +61,6 @@ export function useFretboardState() {
     chordRoot,
     chordFretSpread,
     hideNonChordNotes,
-    viewMode,
     practiceLens,
     colorNotes,
     hiddenNotes,

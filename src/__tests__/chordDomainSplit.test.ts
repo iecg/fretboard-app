@@ -5,6 +5,7 @@ import {
   LENS_REGISTRY,
   type LensAvailabilityContext,
 } from "../theory";
+import * as atomsModule from "../store/atoms";
 import {
   chordMemberFactsAtom,
   chordRootAtom,
@@ -120,6 +121,51 @@ describe("chordMemberFactsAtom", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Focus removal — verify Focus atoms no longer exist in the public API
+// ---------------------------------------------------------------------------
+
+describe("Focus removal", () => {
+  it("focusPresetAtom is not exported from atoms", () => {
+    expect("focusPresetAtom" in atomsModule).toBe(false);
+  });
+
+  it("customMembersAtom is not exported from atoms", () => {
+    expect("customMembersAtom" in atomsModule).toBe(false);
+  });
+
+  it("viewModeAtom is not exported from atoms", () => {
+    expect("viewModeAtom" in atomsModule).toBe(false);
+  });
+
+  it("activeChordMembersAtom is not exported from atoms", () => {
+    expect("activeChordMembersAtom" in atomsModule).toBe(false);
+  });
+
+  it("availableFocusPresetsAtom is not exported from atoms", () => {
+    expect("availableFocusPresetsAtom" in atomsModule).toBe(false);
+  });
+
+  it("chord domain is scale-free: chordMemberFactsAtom returns same facts for any scale", () => {
+    const storeA = createStore();
+    storeA.set(chordRootAtom, "C");
+    storeA.set(chordTypeAtom, "Major Triad");
+    storeA.set(rootNoteAtom, "A");
+    storeA.set(scaleNameAtom, "Major");
+
+    const storeB = createStore();
+    storeB.set(chordRootAtom, "C");
+    storeB.set(chordTypeAtom, "Major Triad");
+    storeB.set(rootNoteAtom, "F#");
+    storeB.set(scaleNameAtom, "Dorian");
+
+    const factsA = storeA.get(chordMemberFactsAtom);
+    const factsB = storeB.get(chordMemberFactsAtom);
+    expect(factsA.map((f) => f.internalNote)).toEqual(factsB.map((f) => f.internalNote));
+    expect(factsA.map((f) => f.semitone)).toEqual(factsB.map((f) => f.semitone));
+  });
+});
+
+// ---------------------------------------------------------------------------
 // LENS_REGISTRY — pure data, no atoms
 // ---------------------------------------------------------------------------
 
@@ -138,6 +184,35 @@ describe("LENS_REGISTRY", () => {
       expect(entry.label.length).toBeGreaterThan(0);
       expect(entry.description.length).toBeGreaterThan(0);
     }
+  });
+
+  it("uses correct labels matching the target visible names", () => {
+    const byId = Object.fromEntries(LENS_REGISTRY.map((e) => [e.id, e.label]));
+    expect(byId["targets-color"]).toBe("Chord + Color");
+    expect(byId["targets"]).toBe("Chord Tones");
+    expect(byId["guide-tones"]).toBe("Guide Tones");
+    expect(byId["color"]).toBe("Color Notes");
+    expect(byId["tension"]).toBe("Tension");
+  });
+
+  it("tension is the only lens with hideWhenUnavailable=true", () => {
+    const tensionEntry = LENS_REGISTRY.find((e) => e.id === "tension");
+    expect(tensionEntry?.hideWhenUnavailable).toBe(true);
+    const others = LENS_REGISTRY.filter((e) => e.id !== "tension");
+    for (const entry of others) {
+      expect(entry.hideWhenUnavailable).toBeFalsy();
+    }
+  });
+
+  it("targets-color is available with chord overlay only (no color notes required)", () => {
+    const entry = LENS_REGISTRY.find((e) => e.id === "targets-color")!;
+    const ctx: LensAvailabilityContext = {
+      hasChordOverlay: true,
+      hasGuideTones: false,
+      hasColorNotes: false,
+      hasOutsideTones: false,
+    };
+    expect(entry.isAvailable(ctx)).toBe(true);
   });
 
   describe("targets lens", () => {
@@ -445,7 +520,7 @@ describe("lensAvailabilityAtom", () => {
     expect(targetsEntry!.reason).toBeNull();
   });
 
-  it("targets-color lens unavailable for C Major (no color notes)", () => {
+  it("targets-color lens available for C Major (chord overlay is all that's required)", () => {
     const store = makeStore();
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Major");
@@ -453,19 +528,27 @@ describe("lensAvailabilityAtom", () => {
     store.set(chordTypeAtom, "Major Triad");
     const entries = store.get(lensAvailabilityAtom);
     const tcEntry = entries.find((e) => e.id === "targets-color");
-    expect(tcEntry!.available).toBe(false);
-    expect(tcEntry!.reason).toMatch(/color notes/i);
-  });
-
-  it("targets-color lens available for D Dorian (has color notes)", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "D");
-    store.set(scaleNameAtom, "Dorian");
-    store.set(chordRootAtom, "D");
-    store.set(chordTypeAtom, "Minor 7th");
-    const entries = store.get(lensAvailabilityAtom);
-    const tcEntry = entries.find((e) => e.id === "targets-color");
     expect(tcEntry!.available).toBe(true);
     expect(tcEntry!.reason).toBeNull();
+  });
+
+  it("tension entry has hideWhenUnavailable=true in resolved availability", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    store.set(chordRootAtom, "C");
+    store.set(chordTypeAtom, "Major Triad");
+    const entries = store.get(lensAvailabilityAtom);
+    const tensionEntry = entries.find((e) => e.id === "tension");
+    expect(tensionEntry!.hideWhenUnavailable).toBe(true);
+  });
+
+  it("non-tension entries have hideWhenUnavailable=false in resolved availability", () => {
+    const store = makeStore();
+    const entries = store.get(lensAvailabilityAtom);
+    const others = entries.filter((e) => e.id !== "tension");
+    for (const e of others) {
+      expect(e.hideWhenUnavailable).toBe(false);
+    }
   });
 });

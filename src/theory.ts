@@ -66,14 +66,6 @@ export { normalizeScaleName, SCALES, SCALE_TO_PARENT_MAJOR_OFFSET };
 // Chord overlay types
 export type ChordMemberName = "root" | "b3" | "3" | "b5" | "5" | "b7" | "7";
 export type ChordQuality = "triad" | "seventh" | "power";
-export type ViewMode = "compare" | "chord" | "outside";
-export type FocusPreset =
-  | "all"
-  | "triad"
-  | "shell"
-  | "guide-tones"
-  | "rootless"
-  | "custom";
 
 export interface ChordMember {
   name: ChordMemberName;
@@ -177,20 +169,30 @@ export interface LensRegistryEntry {
   isAvailable: (ctx: LensAvailabilityContext) => boolean;
   /** Returns a human-readable reason when the lens is unavailable, or null. */
   unavailableReason: (ctx: LensAvailabilityContext) => string | null;
+  /** When true, hide this lens from the picker instead of showing it disabled. */
+  hideWhenUnavailable?: boolean;
 }
 
 export const LENS_REGISTRY: readonly LensRegistryEntry[] = [
   {
+    id: "targets-color",
+    label: "Chord + Color",
+    description: "Combines chord tones with characteristic scale color notes — best for general-purpose soloing",
+    isAvailable: (ctx) => ctx.hasChordOverlay,
+    unavailableReason: (ctx) =>
+      ctx.hasChordOverlay ? null : "Requires an active chord overlay",
+  },
+  {
     id: "targets",
-    label: "Chord tones",
-    description: "Shows only chord root and active chord tones — for landing and outlining harmony",
+    label: "Chord Tones",
+    description: "Shows only chord tones — for landing and outlining harmony",
     isAvailable: (ctx) => ctx.hasChordOverlay,
     unavailableReason: (ctx) =>
       ctx.hasChordOverlay ? null : "Requires an active chord overlay",
   },
   {
     id: "guide-tones",
-    label: "Guide tones",
+    label: "Guide Tones",
     description: "Highlights 3rd and 7th — the voice-leading tones that define chord quality",
     isAvailable: (ctx) => ctx.hasChordOverlay && ctx.hasGuideTones,
     unavailableReason: (ctx) => {
@@ -201,7 +203,7 @@ export const LENS_REGISTRY: readonly LensRegistryEntry[] = [
   },
   {
     id: "color",
-    label: "Color notes",
+    label: "Color Notes",
     description: "Shows characteristic modal or blue notes that give the scale its flavor",
     isAvailable: (ctx) => ctx.hasChordOverlay && ctx.hasColorNotes,
     unavailableReason: (ctx) => {
@@ -211,19 +213,8 @@ export const LENS_REGISTRY: readonly LensRegistryEntry[] = [
     },
   },
   {
-    id: "targets-color",
-    label: "Targets + color",
-    description: "Combines chord tones with characteristic scale color notes — best for general-purpose soloing",
-    isAvailable: (ctx) => ctx.hasChordOverlay && ctx.hasColorNotes,
-    unavailableReason: (ctx) => {
-      if (!ctx.hasChordOverlay) return "Requires an active chord overlay";
-      if (!ctx.hasColorNotes) return "Scale has no characteristic color notes";
-      return null;
-    },
-  },
-  {
     id: "tension",
-    label: "Tension notes",
+    label: "Tension",
     description: "Highlights chord tones outside the scale — tones that create tension and need resolution",
     isAvailable: (ctx) => ctx.hasChordOverlay && ctx.hasOutsideTones,
     unavailableReason: (ctx) => {
@@ -232,6 +223,7 @@ export const LENS_REGISTRY: readonly LensRegistryEntry[] = [
         return "Chord is fully within the scale — no outside tones";
       return null;
     },
+    hideWhenUnavailable: true,
   },
 ];
 
@@ -324,57 +316,6 @@ export const CHORDS: Record<string, number[]> = Object.fromEntries(
   ]),
 );
 
-const FOCUS_PRESETS_BY_QUALITY: Record<ChordQuality, FocusPreset[]> = {
-  triad: ["all", "rootless", "custom"],
-  seventh: ["all", "triad", "shell", "guide-tones", "rootless", "custom"],
-  power: ["all", "custom"],
-};
-
-export function getAvailableFocusPresets(chordName: string): FocusPreset[] {
-  const def = CHORD_DEFINITIONS[chordName];
-  if (!def) return ["all", "custom"];
-  return FOCUS_PRESETS_BY_QUALITY[def.quality];
-}
-
-const TRIAD_MEMBER_NAMES = new Set<ChordMemberName>([
-  "root",
-  "b3",
-  "3",
-  "b5",
-  "5",
-]);
-const SHELL_MEMBER_NAMES = new Set<ChordMemberName>([
-  "root",
-  "b3",
-  "3",
-  "b7",
-  "7",
-]);
-const GUIDE_TONE_NAMES = new Set<ChordMemberName>(["b3", "3", "b7", "7"]);
-
-export function applyFocusPreset(
-  def: ChordDefinition,
-  preset: FocusPreset,
-  customMembers: ChordMemberName[],
-): ChordMember[] {
-  switch (preset) {
-    case "all":
-      return def.members;
-    case "triad":
-      return def.members.filter((m) => TRIAD_MEMBER_NAMES.has(m.name));
-    case "shell":
-      return def.members.filter((m) => SHELL_MEMBER_NAMES.has(m.name));
-    case "guide-tones":
-      return def.members.filter((m) => GUIDE_TONE_NAMES.has(m.name));
-    case "rootless":
-      return def.members.filter((m) => m.name !== "root");
-    case "custom":
-      if (customMembers.length === 0) return def.members;
-      return def.members.filter((m) => customMembers.includes(m.name));
-    default:
-      return def.members;
-  }
-}
 
 // Circle of fifths order anchored in root notes (sharps default)
 export const CIRCLE_OF_FIFTHS = [

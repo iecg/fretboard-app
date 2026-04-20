@@ -17,7 +17,6 @@ import {
   MIN_FRET_WIDTH_BASE, 
   MIN_FRET_WIDTH_OVERFLOW_BUFFER 
 } from "./constants";
-import type { ViewMode } from "./theory";
 import type { ShapePolygon } from "./shapes";
 
 interface FretboardProps {
@@ -31,7 +30,6 @@ interface FretboardProps {
   chordRoot?: string;
   chordFretSpread?: number;
   hideNonChordNotes?: boolean;
-  viewMode?: ViewMode;
   colorNotes?: string[];
   shapePolygons?: ShapePolygon[];
   wrappedNotes?: Set<string>;
@@ -64,7 +62,6 @@ export function Fretboard(props: FretboardProps) {
   const chordRoot = props.chordRoot ?? state.chordRoot;
   const chordFretSpread = props.chordFretSpread ?? state.chordFretSpread;
   const hideNonChordNotes = props.hideNonChordNotes ?? state.hideNonChordNotes;
-  const viewMode = props.viewMode ?? state.viewMode;
   const autoCenterTarget = props.autoCenterTarget ?? state.autoCenterTarget;
   const recenterKey = props.recenterKey ?? state.recenterKey;
   const colorNotes = props.colorNotes ?? state.colorNotes;
@@ -243,7 +240,6 @@ export function Fretboard(props: FretboardProps) {
           chordRoot={chordRoot}
           chordFretSpread={chordFretSpread}
           hideNonChordNotes={hideNonChordNotes}
-          viewMode={viewMode}
           practiceLens={state.practiceLens}
           colorNotes={colorNotes}
           shapePolygons={shapePolygons}

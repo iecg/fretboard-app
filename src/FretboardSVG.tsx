@@ -8,7 +8,6 @@ import {
   INTERVAL_NAMES,
   formatAccidental,
   SCALES,
-  type ViewMode,
   type PracticeLens,
   type NoteSemantics,
 } from "./theory";
@@ -54,7 +53,6 @@ interface FretboardSVGProps {
   chordRoot?: string;
   chordFretSpread?: number;
   hideNonChordNotes?: boolean;
-  viewMode?: ViewMode;
   practiceLens?: PracticeLens;
   colorNotes?: string[];
   shapePolygons?: ShapePolygon[];
@@ -397,7 +395,6 @@ export const FretboardSVG = memo(function FretboardSVG({
   chordRoot,
   chordFretSpread = 0,
   hideNonChordNotes = false,
-  viewMode = "compare",
   practiceLens,
   colorNotes = [],
   shapePolygons = [],
@@ -413,8 +410,6 @@ export const FretboardSVG = memo(function FretboardSVG({
   // around it) but non-uniform spacing inside this component is derived from
   // neckWidthPx + scale math, so the value isn't read here.
   void effectiveZoom;
-  // `viewMode` is kept in props for backward compat; emphasis is now via lens.
-  void viewMode;
   const internalId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const defsPrefix = `fretboard-${id ?? internalId}`;
   const svgDefId = useCallback((id: string) => `${defsPrefix}-${id}`, [defsPrefix]);
