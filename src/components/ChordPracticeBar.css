@@ -1,6 +1,6 @@
-/* Chord practice bar — compact analysis cue strip shown below the scale strip
-   when a chord overlay is active. Uses pills/capsules instead of circular chips
-   to read as "analysis" rather than "another note strip". */
+/* Chord practice bar — independent practice surface that shows coaching cues
+   for the active lens. Uses pills/capsules rather than circular chips so it
+   reads as "practice analysis" rather than "another note strip". */
 
 .chord-practice-bar {
   --pill-h: 1.55rem;
@@ -36,6 +36,21 @@
   color: var(--text-soft-white);
   line-height: 1.2;
   letter-spacing: 0.01em;
+}
+
+/* Lens label — small registry-sourced tag identifying the active practice lens. */
+.chord-practice-bar-lens-label {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: var(--font-weight-medium);
+  color: rgb(255 255 255 / 0.5);
+  line-height: 1;
+  letter-spacing: 0.03em;
+  background: rgb(255 255 255 / 0.06);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 0.3rem;
+  padding: 0.15rem 0.35rem;
+  white-space: nowrap;
 }
 
 .chord-practice-bar-badge {

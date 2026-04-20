@@ -1,12 +1,13 @@
 import { usePracticeBarState } from "../hooks/usePracticeBarState";
 import { ChordPracticeBar } from "./ChordPracticeBar";
 
-/** Chord overlay surface: practice bar when a chord with outside members is active. */
+/** Independent chord practice dock — shows coaching cues for the active lens. */
 export function ChordOverlayDock() {
   const {
     showChordPracticeBar,
     practiceBarTitle,
     practiceBarBadge,
+    practiceBarLensLabel,
     isShapeLocalContext,
     shapeContextLabel,
     practiceCues,
@@ -19,6 +20,7 @@ export function ChordOverlayDock() {
     <ChordPracticeBar
       title={practiceBarTitle}
       badge={practiceBarBadge}
+      lensLabel={practiceBarLensLabel}
       cues={practiceCues}
       isShapeLocal={isShapeLocalContext}
       shapeContextLabel={shapeContextLabel}

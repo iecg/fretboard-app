@@ -317,8 +317,18 @@ export const practiceBarTitleAtom = atom((get) => {
   return chordLabel ?? "";
 });
 
-// Badge is now minimal — always null (lens context shown via title + shape subtitle).
+// Badge is now minimal — always null (lens context shown via lensLabel in dock header).
 export const practiceBarBadgeAtom = atom(() => null as string | null);
+
+// Active lens label sourced from LENS_REGISTRY — used by the dock header so the
+// practice surface identifies its own focus without needing the controls open.
+export const practiceBarLensLabelAtom = atom((get): string | null => {
+  const chordType = get(chordTypeAtom);
+  if (!chordType) return null;
+  const lens = get(practiceLensAtom);
+  const entry = LENS_REGISTRY.find((e) => e.id === lens);
+  return entry?.label ?? null;
+});
 
 // ---------------------------------------------------------------------------
 // Practice bar member rows (shared/outside split)

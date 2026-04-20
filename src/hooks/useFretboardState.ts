@@ -59,12 +59,16 @@ export function useFretboardState() {
   let activeShape: ActiveShapeType;
   let shapeScope: ShapeScope = "global";
 
-  if (fingeringPattern === "all" || cagedShapes.size === 0) {
+  if (fingeringPattern === "all") {
     activePattern = "all";
     activeShape = undefined;
     shapeScope = "global";
   } else if (fingeringPattern === "caged") {
-    if (cagedShapes.size === 1) {
+    if (cagedShapes.size === 0) {
+      activePattern = "all";
+      activeShape = undefined;
+      shapeScope = "global";
+    } else if (cagedShapes.size === 1) {
       activePattern = "caged";
       activeShape = Array.from(cagedShapes)[0] as CagedShape;
       shapeScope = "single";

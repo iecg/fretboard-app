@@ -42,6 +42,26 @@ describe("HelpModal", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it("does not contain stale Focus-era control section", () => {
+    render(<HelpModal isOpen={true} onClose={vi.fn()} />);
+    // The old "Focus" UI section should not appear as a section heading or strong label
+    // that describes chord-tone narrowing controls (Triad, Shell, Rootless, Custom).
+    const allStrong = document.querySelectorAll("strong");
+    const focusLabels = Array.from(allStrong).filter(
+      (el) => el.textContent === "Focus",
+    );
+    expect(focusLabels).toHaveLength(0);
+  });
+
+  it("lists current lens names matching LENS_REGISTRY labels", () => {
+    render(<HelpModal isOpen={true} onClose={vi.fn()} />);
+    expect(screen.getByText("Chord + Color")).toBeTruthy();
+    expect(screen.getByText("Chord Tones")).toBeTruthy();
+    expect(screen.getByText("Guide Tones")).toBeTruthy();
+    expect(screen.getByText("Color Notes")).toBeTruthy();
+    expect(screen.getByText("Tension")).toBeTruthy();
+  });
+
   it("restores focus to trigger button when modal closes", () => {
     const onClose = vi.fn();
     const { rerender } = render(

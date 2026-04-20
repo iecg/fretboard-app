@@ -122,35 +122,30 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
                   in sync with the scale root automatically.
                 </li>
                 <li>
-                  <strong>Lens</strong> controls which notes are emphasized:
+                  <strong>Lens</strong> controls which notes the practice dock
+                  coaches you toward:
                   <ul>
                     <li>
-                      <strong>Targets + Color</strong> — chord tones plus
+                      <strong>Chord + Color</strong> — chord tones plus
                       characteristic scale color notes (default).
                     </li>
                     <li>
-                      <strong>Targets</strong> — chord tones only; hides all
-                      other scale notes so you can focus on playable voicings.
+                      <strong>Chord Tones</strong> — chord tones only; for
+                      landing and outlining the harmony.
                     </li>
                     <li>
                       <strong>Guide Tones</strong> — 3rd and 7th only; the
                       tones that most strongly define chord quality.
                     </li>
                     <li>
-                      <strong>Color</strong> — characteristic modal or blue
-                      notes that give the scale its flavor.
+                      <strong>Color Notes</strong> — characteristic modal or
+                      blue notes that give the scale its flavor.
                     </li>
                     <li>
-                      <strong>Tension</strong> — chord tones that fall outside
-                      the scale and need resolution. Only available when the
-                      chord contains notes outside the scale.
+                      <strong>Tension</strong> — chord tones outside the scale
+                      that need resolution. Only shown when such tones exist.
                     </li>
                   </ul>
-                </li>
-                <li>
-                  <strong>Focus</strong> narrows which chord tones appear —
-                  useful for isolating roots, fifths, guide tones, or specific
-                  voicings (Triad, Shell, Rootless, Custom).
                 </li>
               </ul>
 
