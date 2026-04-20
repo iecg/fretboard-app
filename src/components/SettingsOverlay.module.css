@@ -190,7 +190,7 @@
   box-shadow: var(--focus-ring-glow);
 }
 
-.overlay-help-trigger .icon {
+.overlay-help-trigger :global(.icon) {
   width: 16px;
   height: 16px;
 }

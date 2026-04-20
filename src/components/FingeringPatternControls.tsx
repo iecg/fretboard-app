@@ -5,7 +5,7 @@ import { CAGED_SHAPES, type CagedShape } from "../shapes";
 import { useShapeState } from "../hooks/useShapeState";
 import { displayFormatAtom } from "../store/atoms";
 import { ToggleBar } from "./ToggleBar";
-import "./FingeringPatternControls.css";
+import styles from "./FingeringPatternControls.module.css";
 import shared from "./shared.module.css";
 
 const LONG_PRESS_MS = 500;
@@ -98,6 +98,7 @@ export function FingeringPatternControls() {
                   className={clsx(
                     shared["toggle-btn"],
                     cagedShapes.has(s) && shared.active,
+                    pressingShape === s && styles.pressing,
                   )}
                   aria-pressed={cagedShapes.has(s)}
                   title={
@@ -105,7 +106,6 @@ export function FingeringPatternControls() {
                       ? "Tap to select; long press to add/remove"
                       : "Click to select; Shift+click to toggle multiple"
                   }
-                  data-pressing={pressingShape === s ? true : undefined}
                   onPointerDown={(e) => {
                     // Long press only applies to touch/pen — desktop uses Shift+click
                     if (e.pointerType !== "touch" && e.pointerType !== "pen") return;

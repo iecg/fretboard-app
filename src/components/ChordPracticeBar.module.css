@@ -195,29 +195,36 @@
 }
 
 /* Narrow viewports — stack groups vertically. */
-.app-container[data-layout-tier="mobile"] .chord-practice-bar-groups,
-.app-container[data-layout-variant="tablet-stacked"] .chord-practice-bar-groups {
+:global(.app-container[data-layout-tier="mobile"]) .chord-practice-bar-groups,
+:global(.app-container[data-layout-variant="tablet-stacked"]) .chord-practice-bar-groups {
   flex-direction: column;
   align-items: flex-start;
   gap: 0.3rem;
 }
 
-.app-container[data-layout-tier="mobile"] .chord-practice-bar {
+/* Responsive — mobile */
+:global(.app-container[data-layout-tier="mobile"]) .chord-practice-bar {
+  width: 100%;
   border-radius: 0.7rem;
   padding: 0.38rem 0.7rem 0.42rem;
   gap: 0.28rem;
 }
 
-.app-container[data-layout-tier="mobile"] .chord-practice-bar-title {
+:global(.app-container[data-layout-tier="mobile"]) .chord-practice-bar-title {
   font-size: 0.82rem;
 }
 
-/* Desktop — compact vertically, full width used horizontally. */
-.app-container[data-layout-tier="desktop"] .chord-practice-bar {
-  padding: 0.3rem 0.85rem 0.34rem;
-  gap: 0.3rem;
+:global(.app-container[data-layout-tier="mobile"]) .practice-bar-group-label {
+  font-size: 0.64rem;
 }
 
-.app-container[data-layout-tier="desktop"] .chord-practice-bar-title {
-  font-size: clamp(0.78rem, 1.1vw, 0.9rem);
+/* Responsive — desktop */
+:global(.app-container[data-layout-tier="desktop"]) .chord-practice-bar {
+  width: min(100%, 32rem);
+  padding: 0.3rem 0.78rem 0.34rem;
+  gap: 0.28rem;
+}
+
+:global(.app-container[data-layout-tier="desktop"]) .chord-practice-bar-title {
+  font-size: clamp(0.76rem, 1.1vw, 0.88rem);
 }

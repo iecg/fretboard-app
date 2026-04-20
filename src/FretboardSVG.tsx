@@ -13,7 +13,6 @@ import {
 } from "./theory";
 import { parseNote } from "./guitar";
 import { STRING_ROW_PX_TABLET } from "./layout/responsive";
-import "./FretboardSVG.css";
 import type { ShapePolygon, CagedShape } from "./shapes";
 import type { ActiveShapeType } from "./hooks/useFretboardState";
 import {
@@ -296,7 +295,7 @@ function useWoodGrainTexture(width: number, height: number): string | null {
         </filter>
         <filter id="wp" x="0%" y="0%" width="100%" height="100%">
           <feTurbulence type="fractalNoise" baseFrequency="0.55 0.55" numOctaves="1" seed="23" result="pores"/>
-          <feColorMatrix in="pores" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.16 0"/>
+          <feColorMatrix in="pores" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.16 0"/>
         </filter>
       </defs>
       <rect width="${width}" height="${height}" fill="#000" filter="url(#wg)" opacity="0.92"/>
@@ -403,7 +402,7 @@ const FretboardBackground = memo(({
           stroke={isBass ? "#c6ccd2" : "#e4e8ee"}
           style={{ strokeWidth: `var(--string-taper-${stringIndex + 1})` }}
           strokeLinecap="round"
-          className={`fretboard-string fretboard-string-${stringIndex + 1}`}
+          className={clsx("fretboard-string", `fretboard-string-${stringIndex + 1}`)}
         />
         {isBass && (
           <line
@@ -975,7 +974,7 @@ export const FretboardSVG = memo(function FretboardSVG({
                 values="0 0 0 0 0.09
                         0 0 0 0 0.05
                         0 0 0 0 0.03
-                        0 0 0 0.72 0"
+                        0 0 0 0 0.72 0"
                 result="grainTinted"
               />
               <feComposite in="grainTinted" in2="SourceGraphic" operator="in" />
@@ -1001,7 +1000,7 @@ export const FretboardSVG = memo(function FretboardSVG({
                 values="0 0 0 0 0.32
                         0 0 0 0 0.21
                         0 0 0 0 0.12
-                        0 0 0 0.09 0"
+                        0 0 0 0 0.09 0"
               />
             </filter>
             {/* Fine pore noise — tight speckle to break up solid areas. */}
@@ -1025,7 +1024,7 @@ export const FretboardSVG = memo(function FretboardSVG({
                 values="0 0 0 0 0
                         0 0 0 0 0
                         0 0 0 0 0
-                        0 0 0 0.16 0"
+                        0 0 0 0 0.16 0"
               />
             </filter>
             {/* Strings use solid colours (not objectBoundingBox gradients) — on
@@ -1055,10 +1054,7 @@ export const FretboardSVG = memo(function FretboardSVG({
                 with a bright silver highlight down the centre. */}
             <linearGradient
               id={svgDefId("fret-wire-cylinder")}
-              x1="0"
-              y1="0"
-              x2="1"
-              y2="0"
+              x1="0" y1="0" x2="1" y2="0"
             >
               <stop offset="0%" stopColor="#3e444c" />
               <stop offset="25%" stopColor="#a6afbc" />

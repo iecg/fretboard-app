@@ -90,14 +90,14 @@
 }
 
 /* Desktop: tighter select height — Phase 3 density pass. */
-.app-container[data-layout-tier="desktop"] .labeled-select-native {
+:global(.app-container[data-layout-tier="desktop"]) .labeled-select-native {
   min-height: 2.65rem;
   padding: 0.52rem 2.6rem 0.52rem 0.85rem;
   font-size: 0.93rem;
 }
 
 /* Tablet tier: slightly tighter select height — still comfortably touchable. */
-.app-container[data-layout-tier="tablet"] .labeled-select-native {
+:global(.app-container[data-layout-tier="tablet"]) .labeled-select-native {
   min-height: 2.82rem;
   padding: 0.62rem 2.7rem 0.62rem 0.9rem;
   font-size: 0.95rem;

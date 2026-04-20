@@ -35,7 +35,7 @@
      monochrome drop-shadow here — that would muddy the two-tone palette. */
 }
 
-.app-header-brand-icon .brand-mark {
+.app-header-brand-icon :global(.brand-mark) {
   /* Guitar silhouette viewBox is 792×620 (aspect ~1.28:1); sized so the
      mark reads as the hero glyph, visibly taller than the wordmark
      cap-height. The SVG sets `overflow: visible` so its neon halo can
@@ -47,7 +47,7 @@
 }
 
 @media (max-width: 767px) {
-  .app-header-brand-icon .brand-mark {
+  .app-header-brand-icon :global(.brand-mark) {
     width: clamp(3rem, 11vw, 3.75rem);
   }
 }
@@ -184,5 +184,8 @@
 }
 
 .app-container[data-layout-tier="tablet"] .app-header-brand-wordmark .fretflow-wordmark {
+  height: clamp(1.35rem, 2.65vw, 2.05rem);
+}
+dmark :global(.fretflow-wordmark) {
   height: clamp(1.35rem, 2.65vw, 2.05rem);
 }

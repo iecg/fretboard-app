@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { BREAKPOINTS } from "../layout/breakpoints";
 
 const expandedPanelCSS = readFileSync(
-  resolve(__dirname, "../components/ExpandedControlsPanel.css"),
+  resolve(__dirname, "../components/ExpandedControlsPanel.module.css"),
   "utf-8",
 );
 import {

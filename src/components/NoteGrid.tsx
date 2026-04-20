@@ -1,7 +1,6 @@
 import { useRef, useEffect } from "react";
 import clsx from "clsx";
 import { formatAccidental, getNoteDisplay } from "../theory";
-import "./NoteGrid.css";
 import shared from "./shared.module.css";
 
 interface NoteGridProps {

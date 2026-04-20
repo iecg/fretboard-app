@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import "./FretRangeControl.css";
+import styles from "./FretRangeControl.module.css";
 
 export interface FretRangeControlProps {
   startFret: number;
@@ -34,22 +34,22 @@ export function FretRangeControl({
   const inc = incrementSymbol ?? (isToolbar ? "▶" : "+");
 
   return (
-    <div className={clsx("fret-range-control", layout ?? "toolbar")}>
-      <div className="fret-group fret-start">
-        {labels && <span className="fret-label">Start</span>}
+    <div className={clsx(styles["fret-range-control"], styles[layout ?? "toolbar"])}>
+      <div className={clsx(styles["fret-group"], styles["fret-start"])}>
+        {labels && <span className={styles["fret-label"]}>Start</span>}
         <button
           type="button"
-          className="fret-btn"
+          className={styles["fret-btn"]}
           aria-label={`Decrease start fret${labels ? ` (${startFret})` : ""}`}
           onClick={() => onStartChange(Math.max(0, startFret - 1))}
           disabled={startFret <= 0}
         >
           {dec}
         </button>
-        <span className="fret-value">{startFret}</span>
+        <span className={styles["fret-value"]}>{startFret}</span>
         <button
           type="button"
-          className="fret-btn"
+          className={styles["fret-btn"]}
           aria-label={`Increase start fret${labels ? ` (${startFret})` : ""}`}
           onClick={() => onStartChange(Math.min(endFret - 1, startFret + 1))}
           disabled={startFret >= endFret - 1}
@@ -57,22 +57,22 @@ export function FretRangeControl({
           {inc}
         </button>
       </div>
-      {sep && <span className="range-separator">—</span>}
-      <div className="fret-group fret-end">
-        {labels && <span className="fret-label">End</span>}
+      {sep && <span className={styles["range-separator"]}>—</span>}
+      <div className={clsx(styles["fret-group"], styles["fret-end"])}>
+        {labels && <span className={styles["fret-label"]}>End</span>}
         <button
           type="button"
-          className="fret-btn"
+          className={styles["fret-btn"]}
           aria-label={`Decrease end fret${labels ? ` (${endFret})` : ""}`}
           onClick={() => onEndChange(Math.max(startFret + 1, endFret - 1))}
           disabled={endFret <= startFret + 1}
         >
           {dec}
         </button>
-        <span className="fret-value">{endFret}</span>
+        <span className={styles["fret-value"]}>{endFret}</span>
         <button
           type="button"
-          className="fret-btn"
+          className={styles["fret-btn"]}
           aria-label={`Increase end fret${labels ? ` (${endFret})` : ""}`}
           onClick={() => onEndChange(Math.min(maxFret, endFret + 1))}
           disabled={endFret >= maxFret}

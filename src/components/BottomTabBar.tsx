@@ -1,6 +1,6 @@
 import { type ReactNode, useRef, type KeyboardEvent } from 'react';
 import clsx from 'clsx';
-import './BottomTabBar.css';
+import styles from './BottomTabBar.module.css';
 
 export interface BottomTabItem {
   id: string;
@@ -62,8 +62,8 @@ export function BottomTabBar({
   }
 
   return (
-    <nav aria-label={ariaLabel} className={clsx('bottom-tab-bar', className)}>
-      <div role="tablist" className="bottom-tab-bar-list">
+    <nav aria-label={ariaLabel} className={clsx(styles['bottom-tab-bar'], className)}>
+      <div role="tablist" className={styles['bottom-tab-bar-list']}>
         {items.map((item, index) => {
           const isActive = item.id === activeId;
           return (
@@ -75,16 +75,16 @@ export function BottomTabBar({
               aria-label={item.label}
               tabIndex={isActive ? 0 : -1}
               disabled={item.disabled}
-              className={clsx('bottom-tab-bar-btn', { 'is-active': isActive })}
+              className={clsx(styles['bottom-tab-bar-btn'], { [styles['is-active']]: isActive })}
               onClick={() => !item.disabled && onSelect(item.id)}
               onKeyDown={(e) => handleKeyDown(e, index)}
             >
-              <span className="bottom-tab-bar-icon" aria-hidden="true">
+              <span className={styles['bottom-tab-bar-icon']} aria-hidden="true">
                 {item.icon}
               </span>
-              <span className="bottom-tab-bar-label">{item.label}</span>
+              <span className={styles['bottom-tab-bar-label']}>{item.label}</span>
               {item.badge != null && (
-                <span className="bottom-tab-bar-badge" aria-label={`${item.badge} notifications`}>
+                <span className={styles['bottom-tab-bar-badge']} aria-label={`${item.badge} notifications`}>
                   {item.badge}
                 </span>
               )}

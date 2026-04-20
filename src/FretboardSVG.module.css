@@ -1,0 +1,284 @@
+:global(.fretboard-main-svg) {
+  overflow: visible;
+}
+
+:global(.fretboard-string) {
+  /* stroke-width set inline via CSS var; this class is for targeting in tests */
+}
+
+/* Note Visuals */
+:global(.fretboard-note) {
+  cursor: pointer;
+  transition: opacity 0.15s ease-out;
+}
+
+:global(.fretboard-note).hidden {
+  display: none;
+}
+
+:global(.fretboard-note):focus {
+  outline: none;
+}
+
+:global(.fretboard-note):focus-visible circle,
+:global(.fretboard-note):focus-visible rect,
+:global(.fretboard-note):focus-visible polygon {
+  stroke: var(--accent-primary) !important;
+  stroke-width: 3 !important;
+}
+
+/* Note Role Styling */
+:global(.fretboard-note) circle,
+:global(.fretboard-note) rect,
+:global(.fretboard-note) polygon {
+  stroke-width: 1.9;
+  paint-order: stroke;
+}
+
+:global(.fretboard-note) text {
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+  user-select: none;
+  paint-order: stroke;
+  stroke: rgb(0 0 0 / 0.45);
+  stroke-width: 1.8;
+  fill: #ffffff;
+}
+
+/* Tonic / Key Root */
+:global(.fretboard-note).key-tonic circle,
+:global(.fretboard-note).key-tonic rect,
+:global(.fretboard-note).key-tonic polygon {
+  stroke: var(--note-ring-tonic);
+  fill: rgb(48 32 22 / 0.95);
+  stroke-width: 2.3;
+}
+:global(.fretboard-note).key-tonic text {
+  stroke-width: 2.3;
+}
+
+/* Chord Root */
+:global(.fretboard-note).chord-root circle,
+:global(.fretboard-note).chord-root rect,
+:global(.fretboard-note).chord-root polygon {
+  stroke: var(--note-ring-tonic);
+  fill: rgb(55 35 18 / 0.97);
+  stroke-width: 2.5;
+}
+:global(.fretboard-note).chord-root text {
+  stroke-width: 2.3;
+}
+
+/* Chord Tone in Scale — additive: scale fill preserved, orange ring signals chord membership */
+:global(.fretboard-note).chord-tone-in-scale circle,
+:global(.fretboard-note).chord-tone-in-scale rect,
+:global(.fretboard-note).chord-tone-in-scale polygon {
+  stroke: var(--note-ring-tonic);
+  fill: rgb(20 30 40 / 0.92);
+  stroke-width: 2.3;
+}
+
+/* Active Notes (circle — no chord overlay) */
+:global(.fretboard-note).note-active circle,
+:global(.fretboard-note).note-active rect,
+:global(.fretboard-note).note-active polygon {
+  stroke: var(--note-ring);
+  fill: rgb(20 30 40 / 0.92);
+  stroke-width: 1.9;
+}
+
+/* Scale color notes (hexagon — scale-owned characteristic tone, no chord overlay) */
+:global(.fretboard-note).note-blue circle,
+:global(.fretboard-note).note-blue rect,
+:global(.fretboard-note).note-blue polygon {
+  stroke: var(--note-ring-color-tone);
+  fill: rgb(20 30 40 / 0.92);
+  stroke-width: 1.9;
+}
+:global(.fretboard-note).note-blue text {
+  fill: #e8d8ff;
+}
+
+/* Scale Only — visible filled base; slightly recedes relative to chord squircles */
+:global(.fretboard-note).scale-only circle,
+:global(.fretboard-note).scale-only rect,
+:global(.fretboard-note).scale-only polygon {
+  stroke: var(--note-ring);
+  fill: rgb(18 26 38 / 0.82);
+  stroke-width: 1.7;
+}
+
+/* Color Tone (Characteristic) — hexagon, violet ring, matches note-active fill weight */
+:global(.fretboard-note).color-tone circle,
+:global(.fretboard-note).color-tone rect,
+:global(.fretboard-note).color-tone polygon {
+  stroke: var(--note-ring-color-tone);
+  fill: rgb(20 30 40 / 0.92);
+  stroke-width: 1.9;
+}
+:global(.fretboard-note).color-tone text {
+  fill: #e8d8ff;
+}
+
+/* Chord Tone Outside Scale (Diamond) */
+:global(.fretboard-note).chord-tone-outside-scale circle,
+:global(.fretboard-note).chord-tone-outside-scale rect,
+:global(.fretboard-note).chord-tone-outside-scale polygon {
+  stroke: var(--neon-orange-dim);
+  fill: rgb(40 22 10 / 0.72);
+  stroke-width: 2.0;
+  stroke-dasharray: 5 3;
+}
+:global(.fretboard-note).chord-tone-outside-scale text {
+  opacity: 0.9;
+}
+
+/* Glow Filters - applied via inline style for dynamic IDs, but we can set defaults */
+:global(.fretboard-note)[data-note-role="key-tonic"],
+:global(.fretboard-note)[data-note-role="chord-root"],
+:global(.fretboard-note)[data-note-role="chord-tone-in-scale"],
+:global(.fretboard-note)[data-note-role="chord-tone-outside-scale"] {
+  filter: var(--glow-orange);
+}
+
+:global(.fretboard-note)[data-note-role="note-active"],
+:global(.fretboard-note)[data-note-role="scale-only"] {
+  filter: var(--glow-cyan);
+}
+
+/* Both no-overlay color notes (note-blue) and overlay color tones use violet glow */
+:global(.fretboard-note)[data-note-role="note-blue"],
+:global(.fretboard-note)[data-note-role="color-tone"] {
+  filter: var(--glow-violet);
+}
+
+/* Color notes render as hexagon polygons — no rect override needed. */
+
+:global(.fretboard-note).chord-root[data-note-tension] rect:last-of-type {
+  stroke-dasharray: 6 3;
+  fill: rgb(90 28 0 / 0.97);
+  stroke: var(--neon-orange);
+  stroke-width: 2.8;
+}
+
+/* --- guide-tones lens ---------------------------------------------------- */
+
+[data-practice-lens="guide-tones"] :global(.fretboard-note)[data-note-guide-tone] circle,
+[data-practice-lens="guide-tones"] :global(.fretboard-note)[data-note-guide-tone] rect,
+[data-practice-lens="guide-tones"] :global(.fretboard-note)[data-note-guide-tone] polygon {
+  stroke-width: 3.8;
+  fill: rgb(95 52 8 / 0.99);
+  stroke: var(--neon-orange);
+}
+[data-practice-lens="guide-tones"] :global(.fretboard-note)[data-note-guide-tone] {
+  filter: var(--glow-orange);
+}
+
+[data-practice-lens="guide-tones"] :global(.fretboard-note).chord-root:not([data-note-guide-tone]) rect:last-of-type,
+[data-practice-lens="guide-tones"] :global(.fretboard-note).chord-tone-in-scale:not([data-note-guide-tone]) circle,
+[data-practice-lens="guide-tones"] :global(.fretboard-note).chord-tone-in-scale:not([data-note-guide-tone]) rect,
+[data-practice-lens="guide-tones"] :global(.fretboard-note).chord-tone-in-scale:not([data-note-guide-tone]) polygon {
+  stroke-width: 1.4;
+  fill: rgb(20 30 40 / 0.52);
+  stroke: rgb(200 110 40 / 0.62);
+}
+[data-practice-lens="guide-tones"] :global(.fretboard-note).chord-root:not([data-note-guide-tone]),
+[data-practice-lens="guide-tones"] :global(.fretboard-note).chord-tone-in-scale:not([data-note-guide-tone]) {
+  filter: none;
+}
+
+[data-practice-lens="guide-tones"] :global(.fretboard-note).color-tone circle,
+[data-practice-lens="guide-tones"] :global(.fretboard-note).color-tone rect,
+[data-practice-lens="guide-tones"] :global(.fretboard-note).color-tone polygon {
+  stroke: rgb(167 139 250 / 0.52);
+  fill: rgb(30 18 55 / 0.52);
+}
+[data-practice-lens="guide-tones"] :global(.fretboard-note).color-tone {
+  filter: none;
+}
+
+/* --- tension lens -------------------------------------------------------- */
+
+[data-practice-lens="tension"] :global(.fretboard-note).chord-tone-outside-scale circle,
+[data-practice-lens="tension"] :global(.fretboard-note).chord-tone-outside-scale rect,
+[data-practice-lens="tension"] :global(.fretboard-note).chord-tone-outside-scale polygon {
+  stroke: var(--neon-orange);
+  fill: rgb(115 30 0 / 0.98);
+  stroke-dasharray: none;
+  stroke-width: 3.8;
+}
+[data-practice-lens="tension"] :global(.fretboard-note).chord-tone-outside-scale {
+  filter: var(--glow-orange);
+}
+
+[data-practice-lens="tension"] :global(.fretboard-note).chord-root[data-note-tension] rect:last-of-type {
+  stroke: var(--neon-orange);
+  fill: rgb(115 30 0 / 0.98);
+  stroke-dasharray: 6 3;
+  stroke-width: 3.8;
+}
+
+[data-practice-lens="tension"] :global(.fretboard-note).chord-root:not([data-note-tension]) rect:last-of-type {
+  stroke-width: 1.8;
+  fill: rgb(55 35 18 / 0.65);
+  stroke: rgb(255 154 77 / 0.72);
+}
+[data-practice-lens="tension"] :global(.fretboard-note).chord-root:not([data-note-tension]) {
+  filter: none;
+}
+
+[data-practice-lens="tension"] :global(.fretboard-note).chord-tone-in-scale circle,
+[data-practice-lens="tension"] :global(.fretboard-note).chord-tone-in-scale rect,
+[data-practice-lens="tension"] :global(.fretboard-note).chord-tone-in-scale polygon {
+  stroke-width: 1.4;
+  fill: rgb(20 30 40 / 0.52);
+  stroke: rgb(200 110 40 / 0.62);
+}
+[data-practice-lens="tension"] :global(.fretboard-note).chord-tone-in-scale {
+  filter: none;
+}
+
+[data-practice-lens="tension"] :global(.fretboard-note).color-tone circle,
+[data-practice-lens="tension"] :global(.fretboard-note).color-tone rect,
+[data-practice-lens="tension"] :global(.fretboard-note).color-tone polygon {
+  stroke: rgb(167 139 250 / 0.52);
+  fill: rgb(30 18 55 / 0.52);
+}
+[data-practice-lens="tension"] :global(.fretboard-note).color-tone {
+  filter: none;
+}
+
+/* Container and layout classes used by tests */
+:global(.fretboard-board) {
+  /* ... existing layout rules if any, but they are mostly in App.css ... */
+}
+
+:global(.fretboard-neck) {
+  position: relative;
+  background: var(--fretboard-wood);
+  border: 1px solid rgb(255 255 255 / 0.08);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.4);
+}
+
+:global(.fretboard-a11y-layer) {
+  /* ... */
+}
+
+:global(.note-bubble) {
+  /* ... */
+}
+
+:global(.fret-numbers-row) {
+  display: flex;
+  margin-top: 0.5rem;
+}
+
+:global(.fret-number) {
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--chrome-fg-muted);
+}

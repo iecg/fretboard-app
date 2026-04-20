@@ -33,7 +33,7 @@ import {
   ANIMATION_DURATION_STANDARD,
   ANIMATION_EASE,
 } from "../constants";
-import "./SettingsOverlay.css";
+import styles from "./SettingsOverlay.module.css";
 
 const ZOOM_STEP = 10;
 
@@ -439,10 +439,10 @@ function SettingsOverlaySurface({
       <div
         key={field.key}
         className={clsx(
-          "overlay-field",
+          styles["overlay-field"],
           field.className,
-          isHelpOpen && "overlay-field--help-open",
-          index < total - 1 && "overlay-field--divided",
+          isHelpOpen && styles["overlay-field--help-open"],
+          index < total - 1 && styles["overlay-field--divided"],
         )}
       >
         <OverlayFieldHeader
@@ -452,7 +452,7 @@ function SettingsOverlaySurface({
           onToggleHelp={() => field.help && handleHelpToggle(field.help.id)}
           helpContainerRef={helpContainerRef}
         />
-        <div className="overlay-field-control">{control}</div>
+        <div className={styles["overlay-field-control"]}>{control}</div>
       </div>
     );
   };
@@ -460,7 +460,7 @@ function SettingsOverlaySurface({
   return (
     <>
       <motion.div
-        className="settings-overlay-backdrop"
+        className={styles["settings-overlay-backdrop"]}
         onClick={close}
         aria-hidden="true"
         initial={{ opacity: 0 }}
@@ -469,7 +469,7 @@ function SettingsOverlaySurface({
         transition={{ duration: ANIMATION_DURATION_STANDARD, ease: ANIMATION_EASE }}
       />
       <motion.div
-        className="settings-overlay-drawer"
+        className={styles["settings-overlay-drawer"]}
         ref={drawerRef}
         role="dialog"
         aria-modal="true"
@@ -482,19 +482,19 @@ function SettingsOverlaySurface({
         exit={{ x: "100%" }}
         transition={{ duration: ANIMATION_DURATION_STANDARD, ease: ANIMATION_EASE }}
       >
-        <div className="settings-overlay-header">
-          <span className="settings-overlay-title">Settings</span>
+        <div className={styles["settings-overlay-header"]}>
+          <span className={styles["settings-overlay-title"]}>Settings</span>
           <button
             type="button"
             ref={closeButtonRef}
-            className="settings-overlay-close"
+            className={styles["settings-overlay-close"]}
             onClick={close}
             aria-label="Close settings"
           >
             <X className="icon" />
           </button>
         </div>
-        <div className="settings-overlay-content custom-scrollbar">
+        <div className={clsx(styles["settings-overlay-content"], "custom-scrollbar")}>
           {SETTINGS_SECTIONS.map((section) => (
             <OverlaySection
               key={section.id}
@@ -503,14 +503,14 @@ function SettingsOverlaySurface({
               tone={section.tone}
             >
               {section.id === "reset" ? (
-                <div className="overlay-reset-section">
-                  <p className="overlay-reset-copy">
+                <div className={styles["overlay-reset-section"]}>
+                  <p className={styles["overlay-reset-copy"]}>
                     Restore every setting in the app back to its default value.
                   </p>
                   <button
                     type="button"
-                    className={clsx("overlay-reset-btn", {
-                      "overlay-reset-confirming": resetConfirming,
+                    className={clsx(styles["overlay-reset-btn"], {
+                      [styles["overlay-reset-confirming"]]: resetConfirming,
                     })}
                     onClick={handleResetClick}
                   >

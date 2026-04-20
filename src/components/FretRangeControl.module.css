@@ -65,21 +65,21 @@
   text-transform: uppercase;
 }
 
-[data-layout-tier="mobile"] .fret-range-control.mobile,
+:global(.app-container[data-layout-tier="mobile"]) .fret-range-control.mobile,
 .fret-range-control.mobile {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.85rem;
 }
 
-[data-layout-tier="mobile"] .fret-range-control.mobile .fret-group,
+:global(.app-container[data-layout-tier="mobile"]) .fret-range-control.mobile .fret-group,
 .fret-range-control.mobile .fret-group {
   flex-wrap: wrap;
   align-content: flex-start;
   gap: var(--space-1);
 }
 
-[data-layout-tier="mobile"] .fret-range-control.mobile .fret-label,
+:global(.app-container[data-layout-tier="mobile"]) .fret-range-control.mobile .fret-label,
 .fret-range-control.mobile .fret-label {
   flex-basis: 100%;
   min-width: unset;
@@ -91,7 +91,7 @@
   padding-bottom: var(--space-1);
 }
 
-[data-layout-tier="mobile"] .fret-range-control.mobile .fret-btn,
+:global(.app-container[data-layout-tier="mobile"]) .fret-range-control.mobile .fret-btn,
 .fret-range-control.mobile .fret-btn {
   min-height: var(--size-touch-target);
   min-width: var(--size-touch-target);
@@ -101,7 +101,7 @@
 }
 
 /* Tablet: hide Start/End labels in dashboard to prevent overflow in narrow left column. */
-.app-container[data-layout-tier="tablet"] .fret-range-control.dashboard .fret-label {
+:global(.app-container[data-layout-tier="tablet"]) .fret-range-control.dashboard .fret-label {
   display: none;
 }
 

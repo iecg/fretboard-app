@@ -45,25 +45,25 @@
 }
 
 /* Cascade LabeledSelect internals to fill height within compound */
-.theory-browser-main .labeled-select,
-.theory-browser-main .labeled-select-label {
+.theory-browser-main :global(.labeled-select),
+.theory-browser-main :global(.labeled-select-label) {
   display: flex;
   flex: 1;
   min-width: 0;
 }
 
-.theory-browser-main .labeled-select-label {
+.theory-browser-main :global(.labeled-select-label) {
   flex-direction: row;
   gap: 0;
   align-items: stretch;
 }
 
-.theory-browser-main .labeled-select-field {
+.theory-browser-main :global(.labeled-select-field) {
   flex: 1;
 }
 
 /* Strip native select of its own chrome — inherits compound surface */
-.theory-browser-main .labeled-select-native {
+.theory-browser-main :global(.labeled-select-native) {
   border: none;
   border-radius: 0;
   background: transparent;
@@ -72,12 +72,12 @@
   padding-right: 2.4rem;
 }
 
-.theory-browser-main .labeled-select-native:hover {
+.theory-browser-main :global(.labeled-select-native:hover) {
   border-color: transparent;
 }
 
 /* Inset focus ring — avoids overflow:hidden clipping */
-.theory-browser-main .labeled-select-native:focus-visible {
+.theory-browser-main :global(.labeled-select-native:focus-visible) {
   outline: none;
   box-shadow: inset 0 0 0 2px var(--neon-cyan);
 }
@@ -185,34 +185,34 @@
 }
 
 /* Desktop: tighter theory card density — Phase 3. */
-.app-container[data-layout-tier="desktop"] .theory-controls {
+:global(.app-container[data-layout-tier="desktop"]) .theory-controls {
   gap: 0.72rem;
 }
 
-.app-container[data-layout-tier="desktop"] .theory-chord-section,
-.app-container[data-layout-tier="desktop"] .theory-inline-key {
+:global(.app-container[data-layout-tier="desktop"]) .theory-chord-section,
+:global(.app-container[data-layout-tier="desktop"]) .theory-inline-key {
   padding: 0.6rem 0.85rem;
   gap: 0.58rem;
 }
 
 /* Desktop: shrink compound nav to match the desktop select height (2.65rem) */
-.app-container[data-layout-tier="desktop"] .theory-nav-btn {
+:global(.app-container[data-layout-tier="desktop"]) .theory-nav-btn {
   width: 2.5rem;
   height: 2.65rem;
 }
 
 /* Tablet tier: tighter theory card density — touch-safe nav buttons. */
-.app-container[data-layout-tier="tablet"] .theory-controls {
+:global(.app-container[data-layout-tier="tablet"]) .theory-controls {
   gap: 0.82rem;
 }
 
-.app-container[data-layout-tier="tablet"] .theory-chord-section,
-.app-container[data-layout-tier="tablet"] .theory-inline-key {
+:global(.app-container[data-layout-tier="tablet"]) .theory-chord-section,
+:global(.app-container[data-layout-tier="tablet"]) .theory-inline-key {
   padding: 0.72rem 0.92rem;
   gap: 0.66rem;
 }
 
-.app-container[data-layout-tier="tablet"] .theory-nav-btn {
+:global(.app-container[data-layout-tier="tablet"]) .theory-nav-btn {
   width: 2.75rem;
   height: 2.82rem;
 }

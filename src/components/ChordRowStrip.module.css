@@ -179,7 +179,7 @@
 }
 
 /* Responsive tweaks */
-.app-container[data-layout-tier="mobile"] .chord-row-strip {
+:global(.app-container[data-layout-tier="mobile"]) .chord-row-strip {
   --chord-chip-size: 2.15rem;
 
   width: 100%;
@@ -188,19 +188,19 @@
   gap: 0.3rem;
 }
 
-.app-container[data-layout-tier="mobile"] .chord-row-strip-header {
+:global(.app-container[data-layout-tier="mobile"]) .chord-row-strip-header {
   font-size: 0.88rem;
 }
 
-.app-container[data-layout-tier="mobile"] .chord-row-note {
+:global(.app-container[data-layout-tier="mobile"]) .chord-row-note {
   font-size: 1.05rem;
 }
 
-.app-container[data-layout-tier="mobile"] .chord-row-interval {
+:global(.app-container[data-layout-tier="mobile"]) .chord-row-interval {
   font-size: 0.76rem;
 }
 
-.app-container[data-layout-tier="desktop"] .chord-row-strip {
+:global(.app-container[data-layout-tier="desktop"]) .chord-row-strip {
   --chord-chip-size: clamp(1.82rem, 2.45vw, 2.02rem);
 
   padding: 0.3rem 0.78rem 0.34rem;
@@ -208,14 +208,14 @@
   width: min(100%, 32rem);
 }
 
-.app-container[data-layout-tier="desktop"] .chord-row-strip-header {
+:global(.app-container[data-layout-tier="desktop"]) .chord-row-strip-header {
   font-size: clamp(0.8rem, 1.1vw, 0.9rem);
 }
 
-.app-container[data-layout-tier="desktop"] .chord-row-note {
+:global(.app-container[data-layout-tier="desktop"]) .chord-row-note {
   font-size: clamp(0.96rem, 1.6vw, 1.1rem);
 }
 
-.app-container[data-layout-tier="desktop"] .chord-row-interval {
+:global(.app-container[data-layout-tier="desktop"]) .chord-row-interval {
   font-size: 0.74rem;
 }

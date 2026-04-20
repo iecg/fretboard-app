@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import clsx from 'clsx';
-import './DegreeChipStrip.css';
+import styles from './DegreeChipStrip.module.css';
 
 export interface DegreeChip {
   note: string;
@@ -47,12 +47,12 @@ export function DegreeChipStrip({
     <section
       role="group"
       aria-label={label}
-      className={clsx('degree-chip-strip', compact && 'degree-chip-strip--compact', className)}
+      className={clsx(styles['degree-chip-strip'], compact && styles['degree-chip-strip--compact'], className)}
       data-scale-visible={visible ? 'true' : 'false'}
     >
       {(!hideHeader || headerAction) && (
         <header
-          className="degree-chip-strip-header"
+          className={styles['degree-chip-strip-header']}
           data-has-action={headerAction ? 'true' : undefined}
         >
           {headerAction}
@@ -60,14 +60,14 @@ export function DegreeChipStrip({
         </header>
       )}
       {visible && (
-        <ul className="degree-chip-strip-list">
+        <ul className={styles['degree-chip-strip-list']}>
           {chips.map((chip, i) => {
             const isHidden = hiddenNotes?.has(chip.internalNote) ?? false;
             const isColorNote = colorNotes?.has(chip.internalNote) ?? false;
             return (
               <li
                 key={`${chip.note}-${i}`}
-                className="degree-chip-item"
+                className={styles['degree-chip-item']}
                 data-in-scale={chip.inScale ? 'true' : undefined}
                 data-is-tonic={chip.isTonic ? 'true' : undefined}
                 data-hidden={isHidden ? 'true' : undefined}
@@ -75,15 +75,15 @@ export function DegreeChipStrip({
               >
                 <button
                   type="button"
-                  className="degree-chip"
+                  className={styles['degree-chip']}
                   aria-pressed={isHidden}
                   aria-label={`${isHidden ? 'Show' : 'Hide'} ${chip.note}`}
                   onClick={() => onChipToggle?.(chip.internalNote)}
                   disabled={!onChipToggle}
                 >
-                  <span className="degree-chip-note">{chip.note}</span>
+                  <span className={styles['degree-chip-note']}>{chip.note}</span>
                 </button>
-                <span className="degree-chip-interval">{chip.interval}</span>
+                <span className={styles['degree-chip-interval']}>{chip.interval}</span>
               </li>
             );
           })}
