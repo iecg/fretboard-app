@@ -7,12 +7,15 @@ FretFlow = React 19 + TypeScript interactive guitar fretboard + music theory too
 ## Commands
 
 ```bash
-npm run dev          # start dev server
-npm run build        # tsc + vite build
-npm run test         # run tests once (vitest)
-npm run test:watch   # run tests in watch mode
-npm run lint         # eslint
-npm run preview      # preview production build locally
+npm run dev            # start dev server
+npm run build          # tsc + vite build
+npm run build:types    # tsc only (no bundle)
+npm run test           # run tests once (vitest)
+npm run test:watch     # run tests in watch mode
+npm run test:coverage  # vitest with v8 coverage
+npm run test:e2e       # playwright e2e
+npm run lint           # eslint
+npm run preview        # preview production build locally
 ```
 
 Run `npm run lint` + `npm run test` before committing as a quick pre-commit check.
@@ -125,44 +128,103 @@ auto-release.yml  — analyzes commits → computes semver → pushes annotated 
 
 ## Architecture
 
+### Layered model
+
+```
+View: App.tsx (thin orchestrator) → MainLayoutWrapper → panels + Fretboard
+      Fretboard.tsx → FretboardSVG.tsx (direct atom subscriptions)
+Hooks: useLayoutMode, useFretboardState, useShapeState, useScaleState,
+       useChordState, usePracticeBarState, useFocusTrap
+State: src/store/*Atoms.ts (domain-split) → re-exported via store/atoms.ts
+Domain: theory, theoryCatalog, guitar, degrees, circleOfFifthsUtils, shapes/
+Effects: audio.ts (GuitarSynth singleton)
+```
+
+### Key files
+
+**Entry / orchestration**
 | File | Purpose |
 |---|---|
-| `src/App.tsx` | Layout orchestration + derived computations (~686 lines); adaptive layout mode, `stringRowPx` via `useLayoutEffect` |
-| `src/App.css` | Layout styles using `[data-layout-tier="..."]` and `[data-layout-variant="..."]` selectors |
-| `src/Fretboard.tsx` | Pure fretboard SVG renderer; drag, zoom, click; dynamic `stringRowPx` prop (~510 lines) |
-| `src/CircleOfFifths.tsx` | Circle of Fifths SVG — root selection, chord degrees, min font sizes |
-| `src/circleOfFifthsUtils.ts` | Circle of Fifths pure helpers |
-| `src/DrawerSelector.tsx` | Reusable dropdown with upward-flip detection via `getBoundingClientRect` |
-| `src/store/atoms.ts` | All persistent state as Jotai `atomWithStorage` atoms + write atoms (~296 lines) |
-| `src/layout/constants.ts` | Playwright-measured layout tunables: `KEY_MIN_HEIGHT`, `CONTROLS_MIN_HEIGHT`, `STRING_ROW_PX_*`, `CONTROL_HEIGHTS`, `LAYOUT_CHROME_HEIGHT`, `FRETBOARD_MIN_HEIGHT`, `SUMMARY_MIN_HEIGHT` |
-| `src/index.css` | CSS entry point — imports `tokens.css` then `semantic.css` |
-| `src/tokens.css` | Design tokens: spacing, colors, CAGED vars, `--string-row-px` |
-| `src/semantic.css` | Semantic CSS utilities and shared surface classes |
-| `src/theory.ts` | Music theory constants (NOTES, SCALES, CHORDS, ENHARMONICS, key sigs) and pure functions |
-| `src/guitar.ts` | Guitar-specific logic — tunings, fretboard layout, note/frequency math |
-| `src/shapes.ts` | Procedural CAGED + 3NPS fingering pattern computation + polygon vertices (~668 lines) |
-| `src/audio.ts` | Web Audio API synth singleton (`GuitarSynth` class) |
-| `src/degrees.ts` | Interval name and degree display helpers |
-| `src/components/SettingsOverlay.tsx` | Full-screen animated settings overlay (`motion/react`); reads atoms directly |
-| `src/components/ExpandedControlsPanel.tsx` | Desktop-expanded two-column controls; exports `ControlsColumn` for reuse |
-| `src/components/TabletPortraitPanel.tsx` | Tablet portrait two-column panel (tabs + CoF); reads atoms directly |
-| `src/components/MobileTabPanel.tsx` | Mobile tab bar + content panels; reads atoms directly |
-| `src/components/FingeringPatternControls.tsx` | CAGED/3NPS/All fingering selector |
-| `src/components/ScaleChordControls.tsx` | Scale + chord overlay controls |
-| `src/components/FretRangeControl.tsx` | Fret start/end range input |
-| `src/components/StepperControl.tsx` | Reusable +/- stepper control |
-| `src/components/NoteGrid.tsx` | Note selector grid |
-| `src/components/ToggleBar.tsx` | Reusable tab/toggle bar (mobile tabs, tablet tabs, settings toggles) |
+| `src/App.tsx` | Thin orchestrator (~158 lines); wires atoms + `useLayoutMode` into `MainLayoutWrapper` |
+| `src/components/MainLayoutWrapper.tsx` | Routes panel tree per `data-layout-tier` / `data-layout-variant` |
+| `src/hooks/useLayoutMode.ts` | Measures viewport → returns `{ tier, variant }`; emits `--string-row-px` |
+| `src/App.css`, `src/index.css`, `src/tokens.css`, `src/semantic.css` | Layout styles + design tokens |
 
-### CAGED Shape System
+**Fretboard rendering**
+| File | Purpose |
+|---|---|
+| `src/Fretboard.tsx` | Wrapper (~281 lines) — composition + scroll centering |
+| `src/FretboardSVG.tsx` | Primary SVG renderer (~1359 lines, **hotspot**) — drag/zoom/click, direct atom subscriptions, lens emphasis, squircles, additive overlays, tension cues |
+| `src/FretboardSVG.css` | Renderer styles |
+| `src/CircleOfFifths.tsx` / `.module.css` | CoF SVG — root selection, chord degrees |
+| `src/circleOfFifthsUtils.ts` | CoF pure helpers |
 
-Shape computation → three layers:
+**Shapes package**
+| File | Purpose |
+|---|---|
+| `src/shapes/index.ts` | Public surface |
+| `src/shapes/helpers.ts` | Find note positions per shape; `MAJOR_TO_MINOR_SHAPE` remap |
+| `src/shapes/templates.ts` | Fixed per-string offsets for pentatonic/blues CAGED |
+| `src/shapes/polygons.ts` | Build polygon vertices (fixed for pentatonic, dynamic for 7-note) |
+| `src/shapes/threeNPS.ts` | 3-notes-per-string patterns |
+| `src/shapes/analytics.ts` | Shape metrics (main shape, center fret) |
 
-1. **`shapes.ts`** — `getCagedCoordinates()` finds note positions per shape via `SHAPE_CONFIGS` (fret ranges), generates polygon vertices via `SHAPE_TEMPLATES_PENT` (fixed per-string left/right offsets from anchor fret). Major-quality scales → shapes remapped via relative minor (`MAJOR_TO_MINOR_SHAPE`) — e.g., C Major Pentatonic "G shape" uses same pattern as A Minor Pentatonic "E shape". Pentatonic/blues use fixed templates; 7-note scales build polygons dynamically from actual note boundaries.
+**State (Jotai, domain-split)**
+| File | Purpose |
+|---|---|
+| `src/store/atoms.ts` | Aggregator + legacy re-exports (~547) |
+| `src/store/scaleAtoms.ts` | Scale domain (~307) |
+| `src/store/chordOverlayAtoms.ts` | Chord overlay facts + lens registry (~299) |
+| `src/store/practiceLensAtoms.ts` | Lens registry + emphasis model (~347) |
+| `src/store/fingeringAtoms.ts` | CAGED / 3NPS selection |
+| `src/store/layoutAtoms.ts`, `audioAtoms.ts`, `uiAtoms.ts` | Layout / audio / UI atoms |
+| `src/utils/storage.ts` | Prefixed `localStorage` helpers (`STORAGE_PREFIX`) |
 
-2. **`App.tsx`** — Merges adjacent polygon boundaries at midpoints where shapes meet. Adds small overlap buffer (0.3 frets) to kill SVG anti-aliasing gaps.
+**Domain / effects**
+| File | Purpose |
+|---|---|
+| `src/theory.ts` | NOTES, SCALES, CHORDS, ENHARMONICS, keys (~620) |
+| `src/theoryCatalog.ts` | Chord-row entries, legend items, role-aware catalog (~576) |
+| `src/guitar.ts` | Tunings, fretboard layout, note/frequency math |
+| `src/degrees.ts` | Interval / degree display helpers |
+| `src/constants.ts` | Shared numeric constants |
+| `src/audio.ts` | `GuitarSynth` singleton (Web Audio) |
 
-3. **`Fretboard.tsx`** — Converts polygon vertices (fret/string coords) → pixel SVG polygons. Each shape polygon has left-edge vertices (top→bottom) + right-edge vertices (bottom→top), vertical caps extend to top/bottom of fretboard.
+**Layout tunables**
+| File | Purpose |
+|---|---|
+| `src/layout/breakpoints.ts` | Tier / variant breakpoints |
+| `src/layout/responsive.ts` | Playwright-measured layout tunables (string-row px clamps, min heights, chrome) |
+
+**Controls / panels**
+| File | Purpose |
+|---|---|
+| `src/components/AppHeader.tsx`, `BrandMark.tsx`, `FretFlowWordmark.tsx`, `VersionBadge.tsx` | Chrome |
+| `src/components/ExpandedControlsPanel.tsx` (lazy) | Desktop two-column controls |
+| `src/components/MobileTabPanel.tsx` (lazy) + `BottomTabBar.tsx` | Mobile tabs + content |
+| `src/components/SettingsOverlay.tsx` (lazy, ~577) | Full-screen animated settings overlay (`motion/react`) |
+| `src/components/HelpModal.tsx` (lazy, ~230) | Help modal |
+| `src/components/SummaryRibbon.tsx` + `ScaleStripPanel.tsx` + `ChordOverlayDock.tsx` + `ChordOverlayControls.tsx` | Summary / overlay surfaces (split from the old single ribbon) |
+| `src/components/ChordPracticeBar.tsx`, `ChordRowStrip.tsx`, `DegreeChipStrip.tsx` | Chord practice surfaces |
+| `src/components/FingeringPatternControls.tsx` | CAGED / 3NPS / All selector |
+| `src/components/TheoryControls.tsx`, `ScaleSelector.tsx`, `KeyExplorer.tsx` | Scale + chord controls |
+| `src/components/FretRangeControl.tsx`, `StepperControl.tsx`, `NoteGrid.tsx`, `ToggleBar.tsx`, `LabeledSelect.tsx`, `Card.tsx` | Reusable primitives |
+| `src/DrawerSelector.tsx` / `.module.css` | Reusable dropdown with upward-flip detection |
+| `src/components/ErrorBoundary.tsx` | Error boundary |
+
+### CAGED / 3NPS Shape System
+
+Three-stage pipeline:
+
+1. **`src/shapes/` package** — `getCagedCoordinates()` finds note positions per shape via `SHAPE_CONFIGS`; `polygons.ts` generates vertices (fixed templates from `templates.ts` for pentatonic/blues; dynamic boundaries for 7-note scales). Major-quality scales remapped via relative minor (`MAJOR_TO_MINOR_SHAPE`) — e.g. C Major Pentatonic "G shape" uses the same pattern as A Minor Pentatonic "E shape".
+
+2. **Orchestration layer** — Merges adjacent polygon boundaries at midpoints where shapes meet. Adds a small overlap buffer (~0.3 frets) to kill SVG anti-aliasing gaps.
+
+3. **`FretboardSVG.tsx`** — Converts polygon vertices (fret/string coords) → pixel SVG polygons. Each polygon has left-edge vertices (top→bottom) + right-edge vertices (bottom→top); vertical caps extend to top/bottom of fretboard.
+
+### Lens + Semantic Note Model
+
+Every rendered fret cell has a **semantic role** (see Note classification below). **Lenses** (registered in `practiceLensAtoms.ts` + `chordOverlayAtoms.ts`) compose emphasis rules on top of that role — colors, squircles, tension cues, additive overlays. **Scale and chord are independent domains**: each owns its own visibility toggle, color lens, and emphasis. Never cross-wire their state.
 
 ### Circle of Fifths Degrees
 
@@ -177,11 +239,13 @@ Scale degrees on circle use chromatic interval conversion: `(circleIntervalIndex
 **Fretboard cell coordinates** use `"stringIndex-fretIndex"` string keys (e.g. `"2-7"`) throughout props + maps.
 
 **Fretboard rendering coordinates:**
-- `stringRowPx` — adaptive height per string row, derived in App.tsx `useLayoutEffect`; clamped to `[STRING_ROW_PX_MIN=40, STRING_ROW_PX_MAX=72]`; emitted as `--string-row-px` CSS property; small phones forced to `STRING_ROW_PX_SMALL=32`
-- `fretToX(fret)` — maps fret number → pixel X (uniform width, including fret 0)
-- `stringCenterY(s)` — vertical center of string `s` (`stringRowPx / 2 + s * stringRowPx`)
+- `stringRowPx` — adaptive height per string row, derived in `useLayoutMode`; clamped via `STRING_ROW_PX_*` constants; emitted as `--string-row-px` CSS property.
+- `fretToX(fret)` — maps fret number → pixel X (uniform width, including fret 0).
+- `stringCenterY(s)` — vertical center of string `s` (`stringRowPx / 2 + s * stringRowPx`).
 
-**Note classification** in `Fretboard.tsx` (priority order):
+**State (Jotai):** all atoms flow through `src/store/atoms.ts` for import stability; implementations live in domain modules (`scaleAtoms`, `chordOverlayAtoms`, `practiceLensAtoms`, `fingeringAtoms`, `layoutAtoms`, `audioAtoms`, `uiAtoms`). Persistent atoms use `atomWithStorage` with keys prefixed via `STORAGE_PREFIX` from `utils/storage.ts`. Components subscribe to atoms directly (**atomic reactivity**, #223) — avoid prop-drilling large state objects.
+
+**Note classification** in `FretboardSVG.tsx` (priority order) — base semantic role, then lens emphasis:
 - `root-active` — root note highlighted
 - `note-blue` — blue note (blues scale)
 - `chord-tone` — in scale + in chord
@@ -197,6 +261,10 @@ Scale degrees on circle use chromatic interval conversion: `(circleIntervalIndex
 **`motion`** (`motion` package, formerly `framer-motion`) — use for any new animations, not CSS transitions alone. Import from `motion/react`.
 
 **`DrawerSelector`** = accordion dropdown in `src/DrawerSelector.tsx`. Use for any new selector controls → maintains visual consistency.
+
+**CSS Modules** (`*.module.css`) are the direction for component-scoped styles (e.g. `components/shared.module.css`, `DrawerSelector.module.css`, `CircleOfFifths.module.css`). Design tokens + semantic utilities remain global.
+
+**A11y:** `eslint-plugin-jsx-a11y` + `vitest-axe` are in place. `:focus-visible` glow styles available; keyboard navigation supported on `NoteGrid` and others.
 
 ## Worktree Setup
 
