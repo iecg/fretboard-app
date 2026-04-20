@@ -7,7 +7,7 @@ export type { ShapeVertex, ShapePolygon, ShapeResult } from "./polygons";
 export { getCagedCoordinates } from "./polygons";
 
 // From analytics
-export { findMainShape, getShapeCenterFret, isShapeOutOfView } from "./analytics"; // exported for external consumers
+export { findMainShape, getShapeCenterFret, isShapeOutOfView, hasWrappedNotes } from "./analytics"; // exported for external consumers
 
 // From threeNPS
 export { get3NPSCoordinates } from "./threeNPS";
