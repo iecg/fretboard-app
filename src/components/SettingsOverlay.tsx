@@ -190,17 +190,17 @@ function OverlaySection({
       className={clsx(
         "panel-surface",
         "panel-surface--compact",
-        "overlay-section-card",
-        tone === "danger" && "overlay-section-card--danger",
+        styles["overlay-section-card"],
+        tone === "danger" && styles["overlay-section-card--danger"],
       )}
       aria-labelledby={`settings-section-${id}`}
     >
-      <div className="overlay-section-heading">
-        <h2 id={`settings-section-${id}`} className="overlay-section-title">
+      <div className={styles["overlay-section-heading"]}>
+        <h2 id={`settings-section-${id}`} className={styles["overlay-section-title"]}>
           {title}
         </h2>
       </div>
-      <div className="overlay-section-body">{children}</div>
+      <div className={styles["overlay-section-body"]}>{children}</div>
     </section>
   );
 }
@@ -219,8 +219,8 @@ function OverlayFieldHeader({
   helpContainerRef?: Ref<HTMLDivElement>;
 }) {
   return (
-    <div className="overlay-field-header">
-      <span className="overlay-field-label">{label}</span>
+    <div className={styles["overlay-field-header"]}>
+      <span className={styles["overlay-field-label"]}>{label}</span>
       {help ? (
         <div className="overlay-field-help" ref={helpContainerRef}>
           <button
