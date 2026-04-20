@@ -71,8 +71,6 @@ const chordFretSpreadStorage = constrainedNumberStorage({ min: 0, max: 4, intege
 const PRACTICE_LENS_VALUES: PracticeLens[] = [
   "targets",
   "guide-tones",
-  "color",
-  "targets-color",
   "tension",
 ];
 
@@ -80,7 +78,7 @@ function migrateViewModeToLens(viewMode: string): PracticeLens {
   switch (viewMode) {
     case "chord": return "targets";
     case "outside": return "tension";
-    default: return "targets-color";
+    default: return "targets";
   }
 }
 
@@ -167,7 +165,7 @@ export const chordFretSpreadAtom = atomWithStorage(
 // Migrates from legacy viewMode value on first access (handled by practiceLensStorage).
 export const practiceLensAtom = atomWithStorage<PracticeLens>(
   k("practiceLens"),
-  "targets-color",
+  "targets",
   practiceLensStorage,
   GET_ON_INIT,
 );

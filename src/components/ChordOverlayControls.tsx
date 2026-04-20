@@ -26,12 +26,10 @@ const CHORD_OPTIONS: (string | { divider: string })[] = [
 
 const CHORD_NONE_VALUE = "__none__";
 
-// Display order for the lens ToggleBar (targets-color is the default and shown first).
+// Display order for the lens ToggleBar.
 const LENS_UI_ORDER: readonly PracticeLens[] = [
-  "targets-color",
   "targets",
   "guide-tones",
-  "color",
   "tension",
 ];
 
@@ -88,23 +86,18 @@ export function ChordOverlayControls() {
 
   const currentLensEntry = lensAvailability.find((l) => l.id === practiceLens);
 
-  // Auto-exit unavailable lenses. targets-color is exempt — it degrades gracefully
-  // (shows chord tones, omits color highlights) when no color notes are present, so
-  // it is never auto-exited and serves as the primary fallback.
-  // Fallback chain: targets-color → targets (targets requires only an active chord
-  // overlay and is always available when another lens becomes unavailable mid-session).
+  // Auto-exit unavailable lenses. "targets" is exempt — it requires only an active
+  // chord overlay and is always available when any other lens becomes unavailable.
   // When no lens is available (chord overlay removed), preserve the stored value.
   useEffect(() => {
     if (
       currentLensEntry &&
       !currentLensEntry.available &&
-      currentLensEntry.id !== "targets-color"
+      currentLensEntry.id !== "targets"
     ) {
-      const tcAvailable = lensAvailability.find((l) => l.id === "targets-color")?.available;
       const tAvailable = lensAvailability.find((l) => l.id === "targets")?.available;
-      const fallback = tcAvailable ? "targets-color" : tAvailable ? "targets" : null;
-      if (fallback) {
-        setPracticeLens(fallback);
+      if (tAvailable) {
+        setPracticeLens("targets");
       }
     }
   }, [currentLensEntry, lensAvailability, setPracticeLens]);
