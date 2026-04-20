@@ -1031,13 +1031,15 @@ describe("FretboardSVG", () => {
             noteSemantics={semantics}
           />
         );
-        // All scale-only notes must be within frets 0-1 (inside tiny shape)
-        const scaleOnly = container.querySelectorAll('.fretboard-note.scale-only');
+        // aria-label lives on .note-bubble buttons (a11y layer), not on .fretboard-note SVG elements.
+        // Query buttons directly — they share the same noteClass as the SVG peers.
+        const scaleOnly = container.querySelectorAll('.note-bubble.scale-only');
         scaleOnly.forEach((el) => {
-          const btn = el.closest('.note-bubble') ?? el.querySelector('button');
-          const label = btn?.getAttribute('aria-label') ?? '';
-          // Fret 2+ is outside the shape — no scale-only should appear there
-          expect(label).not.toMatch(/fret [2-9]/);
+          const label = el.getAttribute("aria-label") ?? "";
+          // Each button must carry a fret label — empty means lookup failed.
+          expect(label).toMatch(/fret \d+/i);
+          // Fret 2+ (including 10-12) is outside the tiny shape.
+          expect(label).not.toMatch(/fret (?:[2-9]|1[0-2])\b/i);
         });
       });
 
@@ -1089,11 +1091,11 @@ describe("FretboardSVG", () => {
           />
         );
         // All color-tone notes must be within frets 0-1 (inside the shape)
-        const colorTones = container.querySelectorAll('.fretboard-note.color-tone');
+        const colorTones = container.querySelectorAll('.note-bubble.color-tone');
         colorTones.forEach((el) => {
-          const btn = el.closest('.note-bubble') ?? el.querySelector('button');
-          const label = btn?.getAttribute('aria-label') ?? '';
-          expect(label).not.toMatch(/fret [2-9]/);
+          const label = el.getAttribute("aria-label") ?? "";
+          expect(label).toMatch(/fret \d+/i);
+          expect(label).not.toMatch(/fret (?:[2-9]|1[0-2])\b/i);
         });
       });
     });
@@ -1134,11 +1136,9 @@ describe("FretboardSVG", () => {
       );
       const noteElements = container.querySelectorAll('.fretboard-note:not(.hidden)');
       noteElements.forEach((el) => {
-        const opacity = (el as HTMLElement).style.opacity;
-        // No lens dimming: opacity should be 1 or unset (not reduced)
-        if (opacity) {
-          expect(parseFloat(opacity)).toBeGreaterThanOrEqual(1);
-        }
+        // Use computed style — inline style misses stylesheet-applied opacity.
+        const opacity = parseFloat(getComputedStyle(el as Element).opacity);
+        expect(opacity).toBeGreaterThanOrEqual(1);
       });
     });
   });

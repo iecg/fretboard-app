@@ -202,14 +202,13 @@ function classifyNoteFromSemantics(
   if (sem.isChordRoot && sem.isChordTone && isChordInRange && isInActiveShape) return "chord-root";
   // In-scale chord tones.
   if (sem.isInScale && sem.isChordTone && isChordInRange && isInActiveShape) return "chord-tone-in-scale";
-  // Color/characteristic tone: must also be shape-highlighted to stay shape-contained.
-  if (sem.isInScale && sem.isColorTone && isHighlighted) return "color-tone";
-  // Other in-scale notes: shape-aware gate prevents leakage outside active shape.
-  if (sem.isInScale && isHighlighted) return "scale-only";
-  // Out-of-scale chord tones (tension, non-root).
+  // Color/characteristic tone: isInActiveShape (shape-aware) gates containment.
+  if (sem.isInScale && sem.isColorTone && isInActiveShape && isHighlighted) return "color-tone";
+  // Other in-scale notes: shape-aware gate — outside the active shape → note-inactive.
+  if (sem.isInScale && isInActiveShape && isHighlighted) return "scale-only";
+  // Out-of-scale chord tones (tension, non-root) within the shape.
   if (sem.isChordTone && isChordInRange && isInActiveShape) return "chord-tone-outside-scale";
-  // Outside active shape chord tones become scale-only only when highlighted.
-  if (sem.isChordTone && !isInActiveShape && sem.isInScale && isHighlighted) return "scale-only";
+  // Everything else outside the active shape: suppress entirely.
   return "note-inactive";
 }
 
