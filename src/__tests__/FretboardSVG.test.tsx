@@ -646,7 +646,9 @@ describe("FretboardSVG", () => {
       expect(inScaleTone.length).toBeGreaterThan(0);
     });
 
-    it("single CAGED shape membership - chord tone outside shape falls back to scale-only when in scale", () => {
+    it("single CAGED shape membership - chord tone outside shape is suppressed (not scale-only)", () => {
+      // activeShape="C" but polygon is shape "E" — no polygon matches active shape,
+      // so isInActiveShape=false everywhere. All notes should be note-inactive.
       const { container } = render(
         <FretboardSVG
           {...BASE_PROPS}
@@ -660,7 +662,7 @@ describe("FretboardSVG", () => {
         />,
       );
       const scaleOnlyNotes = container.querySelectorAll(".scale-only");
-      expect(scaleOnlyNotes.length).toBeGreaterThan(0);
+      expect(scaleOnlyNotes.length).toBe(0);
     });
 
     it("global scope shows chord overlay across all visible shapes", () => {
@@ -741,7 +743,10 @@ describe("FretboardSVG", () => {
       expect(chordRootInShape.length).toBe(0);
     });
 
-    it("in-scale chord tone outside active shape renders as scale-only", () => {
+    it("in-scale chord tone outside active shape is suppressed (not scale-only)", () => {
+      // shapeScope="single" + activeShape="E" — only the E polygon is active.
+      // Notes in the E shape → chord-tone-in-scale. Notes outside → note-inactive.
+      // The C-shape polygon (fullShapePolygon) is visible but not the active shape.
       const { container } = render(
         <FretboardSVG
           {...BASE_PROPS}
@@ -755,7 +760,10 @@ describe("FretboardSVG", () => {
         />,
       );
       const scaleOnlyNotes = container.querySelectorAll(".scale-only");
-      expect(scaleOnlyNotes.length).toBeGreaterThan(0);
+      expect(scaleOnlyNotes.length).toBe(0);
+      // In-shape chord tones must still render correctly.
+      const chordTonesInShape = container.querySelectorAll(".chord-tone-in-scale");
+      expect(chordTonesInShape.length).toBeGreaterThan(0);
     });
 
     it("REGRESSION: multi-shape without shapeScope would fail membership check", () => {

@@ -169,13 +169,12 @@ function classifyNote(
   // With pattern-aware rendering, skip chord notes outside the active shape.
   if (isChordRootNote && isChordTone && isChordInRange && isInActiveShape) return "chord-root";
   if (isHighlighted && isChordTone && isChordInRange && isInActiveShape) return "chord-tone-in-scale";
-  // Color/characteristic tone: scale note not covered by chord role → hexagon.
-  if (isHighlighted && isColorNote) return "color-tone";
-  if (isHighlighted) return "scale-only";
+  // Color/characteristic tone: shape-aware gate prevents leakage outside active shape.
+  if (isHighlighted && isColorNote && isInActiveShape) return "color-tone";
+  // In-scale notes: shape-aware gate — outside the active shape → note-inactive.
+  if (isHighlighted && isInActiveShape) return "scale-only";
   if (!isHighlighted && isChordTone && isChordInRange && isInActiveShape)
     return "chord-tone-outside-scale";
-  // Outside active shape chord tones become scale-only (visible but not emphasized)
-  if (isChordTone && !isInActiveShape && isHighlighted) return "scale-only";
   return "note-inactive";
 }
 
@@ -192,8 +191,9 @@ function classifyNoteFromSemantics(
 ): string {
   if (!hasChordOverlay) {
     // Delegate to classifyNote to avoid duplicating the no-overlay logic.
+    // isHighlighted (position/shape-aware) must be passed, not sem.isInScale (pitch-only).
     return classifyNote(
-      sem.isScaleRoot, sem.isChordRoot, sem.isColorTone, sem.isInScale,
+      sem.isScaleRoot, sem.isChordRoot, sem.isColorTone, isHighlighted,
       sem.isChordTone, hasChordOverlay, isChordInRange, isInActiveShape, shapePolygons, boxBounds, fretIndex,
     );
   }
