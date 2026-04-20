@@ -1,8 +1,5 @@
-import { useAtomValue } from "jotai";
 import { usePracticeBarState } from "../hooks/usePracticeBarState";
 import { ChordPracticeBar } from "./ChordPracticeBar";
-import { DegreeChipStrip } from "./DegreeChipStrip";
-import { degreeChipsAtom, scaleLabelAtom, colorNotesAtom } from "../store/atoms";
 
 /** Independent chord practice dock — shows coaching cues for the active lens. */
 export function ChordOverlayDock() {
@@ -11,19 +8,11 @@ export function ChordOverlayDock() {
     practiceBarTitle,
     practiceBarBadge,
     practiceBarLensLabel,
-    isShapeLocalContext,
-    shapeContextLabel,
-    practiceCues,
-    shapeLocalPracticeCues,
+    chordGroup,
+    landOnGroup,
   } = usePracticeBarState();
 
-  const degreeChips = useAtomValue(degreeChipsAtom);
-  const scaleLabel = useAtomValue(scaleLabelAtom);
-  const colorNotes = useAtomValue(colorNotesAtom);
-
   if (!showChordPracticeBar) return null;
-
-  const colorNoteSet = colorNotes.length > 0 ? new Set(colorNotes) : undefined;
 
   return (
     <div className="chord-overlay-dock">
@@ -31,18 +20,8 @@ export function ChordOverlayDock() {
         title={practiceBarTitle}
         badge={practiceBarBadge}
         lensLabel={practiceBarLensLabel}
-        cues={practiceCues}
-        isShapeLocal={isShapeLocalContext}
-        shapeContextLabel={shapeContextLabel}
-        shapeLocalCues={shapeLocalPracticeCues}
-      />
-      <DegreeChipStrip
-        scaleName={scaleLabel}
-        chips={degreeChips}
-        colorNotes={colorNoteSet}
-        compact
-        hideHeader={false}
-        aria-label="Scale degrees"
+        chordGroup={chordGroup}
+        landOnGroup={landOnGroup}
       />
     </div>
   );

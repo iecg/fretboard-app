@@ -9,6 +9,8 @@ import {
   shapeLocalPracticeCuesAtom,
   showChordPracticeBarAtom,
   practiceBarLensLabelAtom,
+  practiceBarChordGroupAtom,
+  practiceBarLandOnGroupAtom,
   lensAvailabilityAtom,
   noteSemanticMapAtom,
   rootNoteAtom,
@@ -374,6 +376,140 @@ describe("showChordPracticeBarAtom", () => {
     store.set(chordTypeAtom, "Minor Triad");
     store.set(practiceLensAtom, "targets");
     expect(store.get(showChordPracticeBarAtom)).toBe(true);
+  });
+});
+
+describe("practiceBarChordGroupAtom", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("is lens-independent — same chord regardless of active lens", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    store.set(chordRootAtom, "C");
+    store.set(chordTypeAtom, "Dominant 7th");
+
+    const notesByLens: Record<string, string[]> = {};
+    for (const lens of ["targets", "guide-tones", "tension"] as const) {
+      store.set(practiceLensAtom, lens);
+      notesByLens[lens] = store
+        .get(practiceBarChordGroupAtom)
+        .notes.map((n) => n.internalNote);
+    }
+    expect(notesByLens.targets).toEqual(notesByLens["guide-tones"]);
+    expect(notesByLens.targets).toEqual(notesByLens.tension);
+  });
+
+  it("always contains all chord members", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    store.set(chordRootAtom, "G");
+    store.set(chordTypeAtom, "Dominant 7th"); // G B D F
+    const notes = store
+      .get(practiceBarChordGroupAtom)
+      .notes.map((n) => n.internalNote);
+    expect(notes).toEqual(expect.arrayContaining(["G", "B", "D", "F"]));
+  });
+
+  it("outside chord root carries both isChordRoot and isTension", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    store.set(chordRootAtom, "C#");
+    store.set(chordTypeAtom, "Minor Triad"); // C# E G#
+
+    const group = store.get(practiceBarChordGroupAtom);
+    const cSharp = group.notes.find((n) => n.internalNote === "C#");
+    expect(cSharp).toBeDefined();
+    expect(cSharp!.isChordRoot).toBe(true);
+    expect(cSharp!.isTension).toBe(true);
+    expect(cSharp!.isInScale).toBe(false);
+  });
+
+  it("guide tones carry isGuideTone, ordinary chord tones do not", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "G");
+    store.set(scaleNameAtom, "Major");
+    store.set(chordRootAtom, "G");
+    store.set(chordTypeAtom, "Dominant 7th"); // G B D F
+
+    const group = store.get(practiceBarChordGroupAtom);
+    const b = group.notes.find((n) => n.internalNote === "B"); // major 3rd
+    const f = group.notes.find((n) => n.internalNote === "F"); // ♭7
+    const d = group.notes.find((n) => n.internalNote === "D"); // 5th
+    expect(b?.isGuideTone).toBe(true);
+    expect(f?.isGuideTone).toBe(true);
+    expect(d?.isGuideTone).toBe(false);
+  });
+});
+
+describe("practiceBarLandOnGroupAtom", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  function mkStore(lens: "targets" | "guide-tones" | "tension") {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    return { store, lens };
+  }
+
+  it("targets lens — contains all chord members", () => {
+    const { store, lens } = mkStore("targets");
+    store.set(chordRootAtom, "C");
+    store.set(chordTypeAtom, "Major Triad");
+    store.set(practiceLensAtom, lens);
+    const notes = store
+      .get(practiceBarLandOnGroupAtom)
+      .notes.map((n) => n.internalNote);
+    expect(notes).toEqual(expect.arrayContaining(["C", "E", "G"]));
+  });
+
+  it("guide-tones lens — contains only 3rd/7th members", () => {
+    const { store, lens } = mkStore("guide-tones");
+    store.set(chordRootAtom, "G");
+    store.set(chordTypeAtom, "Dominant 7th"); // G B D F
+    store.set(practiceLensAtom, lens);
+    const notes = store
+      .get(practiceBarLandOnGroupAtom)
+      .notes.map((n) => n.internalNote);
+    expect(notes).toEqual(expect.arrayContaining(["B", "F"]));
+    expect(notes).not.toContain("D");
+    expect(notes).not.toContain("G");
+  });
+
+  it("tension lens — contains only outside-scale chord members with resolutions", () => {
+    const { store, lens } = mkStore("tension");
+    store.set(chordRootAtom, "C#");
+    store.set(chordTypeAtom, "Minor Triad"); // C# E G#
+    store.set(practiceLensAtom, lens);
+    const notes = store.get(practiceBarLandOnGroupAtom).notes;
+    const internals = notes.map((n) => n.internalNote);
+    expect(internals).toEqual(expect.arrayContaining(["C#", "G#"]));
+    expect(internals).not.toContain("E");
+    // Outside chord root still carries isChordRoot + isTension in land-on too.
+    const cSharp = notes.find((n) => n.internalNote === "C#");
+    expect(cSharp?.isChordRoot).toBe(true);
+    expect(cSharp?.isTension).toBe(true);
+    expect(cSharp?.resolvesTo).toBeDefined();
+  });
+
+  it("group label is always 'Land on' regardless of lens", () => {
+    const { store, lens } = mkStore("targets");
+    store.set(chordRootAtom, "C");
+    store.set(chordTypeAtom, "Major Triad");
+    store.set(practiceLensAtom, lens);
+    expect(store.get(practiceBarLandOnGroupAtom).label).toBe("Land on");
+
+    store.set(practiceLensAtom, "guide-tones");
+    expect(store.get(practiceBarLandOnGroupAtom).label).toBe("Land on");
+
+    store.set(practiceLensAtom, "tension");
+    expect(store.get(practiceBarLandOnGroupAtom).label).toBe("Land on");
   });
 });
 

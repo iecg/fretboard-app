@@ -226,6 +226,29 @@ export interface PracticeCue {
   notes: PracticeCueNote[];
 }
 
+// ---------------------------------------------------------------------------
+// Practice bar note model — composable semantic flags (multiple can coexist).
+// Mirrors the fretboard's semantic model so that e.g. an outside chord root
+// simultaneously carries isChordRoot + isTension, and guide tones stay
+// distinct from ordinary chord tones.
+// ---------------------------------------------------------------------------
+
+export interface PracticeBarNote {
+  internalNote: string;
+  displayNote: string;
+  intervalName?: string;
+  isChordRoot: boolean;
+  isGuideTone: boolean;
+  isTension: boolean;
+  isInScale: boolean;
+  resolvesTo?: { internalNote: string; displayNote: string };
+}
+
+export interface PracticeBarGroup {
+  label: string;
+  notes: PracticeBarNote[];
+}
+
 export const CHORD_DEFINITIONS: Record<string, ChordDefinition> = {
   "Major Triad": {
     quality: "triad",

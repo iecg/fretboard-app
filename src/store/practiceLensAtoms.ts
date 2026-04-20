@@ -16,6 +16,8 @@ import type {
   PracticeCueNote,
   ChordRowEntry,
   PracticeBarColorNote,
+  PracticeBarNote,
+  PracticeBarGroup,
 } from "../theory";
 import {
   rootNoteAtom,
@@ -236,6 +238,93 @@ export const practiceCuesAtom = atom((get) => {
   }
 
   return cues;
+});
+
+// ---------------------------------------------------------------------------
+// Practice bar groups — composable two-group model (Chord + Land on)
+// ---------------------------------------------------------------------------
+
+const entryToBarNote = (e: ChordRowEntry): PracticeBarNote => ({
+  internalNote: e.internalNote,
+  displayNote: e.displayNote,
+  intervalName: e.memberName,
+  isChordRoot: e.role === "chord-root",
+  isGuideTone: GUIDE_TONE_FORMATTED.has(e.memberName),
+  isTension: !e.inScale,
+  isInScale: e.inScale,
+});
+
+/**
+ * Chord group — lens-independent. Always shows all chord members.
+ * Never filtered by shape-local context.
+ */
+export const practiceBarChordGroupAtom = atom((get): PracticeBarGroup => {
+  const members = get(allChordMembersAtom);
+  return {
+    label: "Chord",
+    notes: members.map(entryToBarNote),
+  };
+});
+
+/**
+ * Land-on group (shape-agnostic base) — lens-driven coaching subset.
+ *  - targets      → all chord members
+ *  - guide-tones  → only the 3rd/7th members (falls back to all if none)
+ *  - tension      → only outside-scale chord members, with resolution arrows
+ *
+ * Shape-local narrowing is applied on top of this in `atoms.ts` so we can
+ * read `shapeHighlightedNoteSetAtom` without a circular import.
+ */
+export const practiceBarLandOnGroupBaseAtom = atom((get): PracticeBarGroup => {
+  const chordType = get(chordTypeAtom);
+  if (!chordType) return { label: "Land on", notes: [] };
+
+  const lens = get(practiceLensAtom);
+  const chordRoot = get(chordRootAtom);
+  const useFlats = get(useFlatsAtom);
+  const allMembers = get(allChordMembersAtom);
+  const scaleNotes = get(scaleNotesAtom);
+
+  const displayNote = (note: string) =>
+    formatAccidental(getNoteDisplay(note, chordRoot, useFlats));
+
+  const findResolution = (
+    note: string,
+  ): { internalNote: string; displayNote: string } | undefined => {
+    const noteIdx = NOTES.indexOf(note);
+    if (noteIdx === -1) return undefined;
+    const scaleNoteSet = new Set(scaleNotes);
+    for (let step = 1; step <= 2; step++) {
+      const up = NOTES[(noteIdx + step) % 12];
+      const down = NOTES[(noteIdx - step + 12) % 12];
+      if (scaleNoteSet.has(up)) return { internalNote: up, displayNote: displayNote(up) };
+      if (scaleNoteSet.has(down)) return { internalNote: down, displayNote: displayNote(down) };
+    }
+    return undefined;
+  };
+
+  let subset: ChordRowEntry[];
+  switch (lens) {
+    case "guide-tones": {
+      const gt = allMembers.filter((e) => GUIDE_TONE_FORMATTED.has(e.memberName));
+      subset = gt.length > 0 ? gt : allMembers;
+      break;
+    }
+    case "tension":
+      subset = allMembers.filter((e) => !e.inScale);
+      break;
+    default:
+      subset = allMembers;
+  }
+
+  const notes: PracticeBarNote[] = subset.map((e) => {
+    const base = entryToBarNote(e);
+    return lens === "tension"
+      ? { ...base, resolvesTo: findResolution(e.internalNote) }
+      : base;
+  });
+
+  return { label: "Land on", notes };
 });
 
 // ---------------------------------------------------------------------------

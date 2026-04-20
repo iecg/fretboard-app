@@ -71,6 +71,7 @@ export {
   practiceBarColorNotesFilteredAtom,
   noteSemanticMapAtom,
   practiceCuesAtom,
+  practiceBarChordGroupAtom,
   showChordPracticeBarAtom,
   practiceBarTitleAtom,
   practiceBarBadgeAtom,
@@ -140,6 +141,7 @@ import {
 import {
   practiceCuesAtom,
   practiceBarColorNotesAtom,
+  practiceBarLandOnGroupBaseAtom,
 } from "./practiceLensAtoms";
 import {
   tuningNameAtom,
@@ -389,6 +391,23 @@ export const shapeLocalColorNotesAtom = atom((get) => {
   return practiceBarColorNotes.filter((n) =>
     shapeHighlightedNoteSet.has(n.internalNote),
   );
+});
+
+/**
+ * Shape-aware Land-on group. Narrows the base lens subset to notes present in
+ * the active shape context (except for tension, which stays global). The
+ * Chord group never goes through this — it is always all chord members.
+ */
+export const practiceBarLandOnGroupAtom = atom((get) => {
+  const base = get(practiceBarLandOnGroupBaseAtom);
+  const lens = get(practiceLensAtom);
+  const shapeHighlightedNoteSet = get(shapeHighlightedNoteSetAtom);
+  if (!shapeHighlightedNoteSet || lens === "tension") return base;
+  const filtered = base.notes.filter((n) =>
+    shapeHighlightedNoteSet.has(n.internalNote),
+  );
+  if (filtered.length === 0) return base;
+  return { ...base, notes: filtered };
 });
 
 export const shapeLocalPracticeCuesAtom = atom((get) => {
