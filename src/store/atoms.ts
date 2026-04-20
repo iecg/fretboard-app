@@ -295,7 +295,7 @@ export const autoCenterTargetAtom = atom((get) => {
       a.minFret <= b.minFret ? a : b,
     );
     target = {
-      centerFret: lowestBounds.minFret,
+      centerFret: (lowestBounds.minFret + lowestBounds.maxFret) / 2,
       minFret: lowestBounds.minFret,
       maxFret: lowestBounds.maxFret,
     };
