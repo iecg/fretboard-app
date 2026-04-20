@@ -39,14 +39,12 @@ export const CircleOfFifths = memo(function CircleOfFifths({
   scaleName = "Major",
   useFlats = false,
   enharmonicDisplay = "auto",
-  variant = "card",
 }: {
   rootNote: string;
   setRootNote: (n: string) => void;
   scaleName?: string;
   useFlats?: boolean;
   enharmonicDisplay?: "auto" | "on" | "off";
-  variant?: "card" | "inline";
 }) {
   const rootIndex = CIRCLE_OF_FIFTHS.indexOf(rootNote);
   const scaleIntervals = SCALES[scaleName] || [];
@@ -98,14 +96,13 @@ export const CircleOfFifths = memo(function CircleOfFifths({
   };
 
   return (
-    <div className={styles["circle-fifths-container"]} data-testid="circle-of-fifths" data-variant={variant}>
+    <div className={styles["circle-fifths-container"]} data-testid="circle-of-fifths">
       <svg
         viewBox={`0 0 ${SIZE} ${SIZE}`}
         className={styles["circle-fifths-svg"]}
         role="group"
         aria-labelledby="cof-title"
         aria-describedby="cof-desc"
-        data-testid="circle-of-fifths-svg"
       >
         <title id="cof-title">Circle of Fifths</title>
         <desc id="cof-desc">Interactive diagram to select the root note of the scale. Each segment represents a key, arranged in intervals of perfect fifths.</desc>
@@ -136,7 +133,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
               d={slicePath(index)}
               className={clsx(styles["circle-slice"], {
                 [styles.active]: isActive,
-                [styles["circle-slice--scale"]]: degreeStr,
+                [styles["circle-slice--scale"]]: !isActive && degreeStr,
                 [styles["circle-slice--muted"]]: !isActive && !degreeStr,
               })}
               stroke="var(--surface-highlight)"

@@ -8,11 +8,53 @@
 /* Migrated from --interactive-primary (iOS-blue) to the neon visual system
    to match FretRangeControl.css and the shared fretboard UI language. */
 .stepper-btn {
+<<<<<<< HEAD
   composes: control-button from './shared.module.css';
 }
 
 .stepper-value {
   composes: control-value from './shared.module.css';
+=======
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.02)),
+    rgb(14 19 27 / 0.92);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: var(--radius-sm);
+  color: rgb(224 233 243 / 0.88);
+  cursor: pointer;
+  transition: var(--transition-surface);
+  line-height: 1.2;
+}
+
+.stepper-btn:hover:not(:disabled) {
+  background:
+    linear-gradient(180deg, rgb(77 228 255 / 0.18), rgb(77 228 255 / 0.08)),
+    rgb(18 31 43 / 0.95);
+  color: white;
+  border-color: rgb(77 228 255 / 0.42);
+}
+
+/* Uses --focus-ring semantic token from semantic.css — do not use component-specific colors */
+.stepper-btn:focus-visible:not(:disabled) {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  box-shadow: var(--focus-ring-glow);
+}
+
+.stepper-btn:disabled {
+  opacity: var(--disabled-opacity);
+  cursor: default;
+}
+
+.stepper-value {
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-main);
+  min-width: 1.5rem;
+  text-align: center;
+>>>>>>> 818a26b (refactor: migrate remaining component CSS to CSS Modules)
 }
 
 .stepper-control.mobile .stepper-btn {

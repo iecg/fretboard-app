@@ -15,7 +15,6 @@ export interface LabeledSelectProps {
   onChange: (value: string) => void;
   id?: string;
   className?: string;
-  'data-testid'?: string;
   'aria-describedby'?: string;
   disabled?: boolean;
   hideLabel?: boolean;
@@ -28,7 +27,6 @@ export function LabeledSelect({
   onChange,
   id,
   className,
-  'data-testid': dataTestId,
   'aria-describedby': ariaDescribedBy,
   disabled,
   hideLabel,
@@ -37,23 +35,13 @@ export function LabeledSelect({
   const selectId = id ?? generatedId;
 
   return (
-    <div
-      className={clsx(
-        styles['labeled-select'],
-        {
-          [styles['labeled-select--disabled']]: disabled,
-          [styles['labeled-select--hide-label']]: hideLabel,
-        },
-        className,
-      )}
-    >
+    <div className={clsx(styles['labeled-select'], { [styles['labeled-select--disabled']]: disabled, [styles['labeled-select--hide-label']]: hideLabel }, className)}>
       <label className={styles['labeled-select-label']} htmlFor={selectId}>
         <span className={styles['labeled-select-label-text']}>{label}</span>
         <div className={styles['labeled-select-field']}>
           <select
             id={selectId}
             className={styles['labeled-select-native']}
-            data-testid={dataTestId}
             value={value}
             onChange={(event) => onChange(event.target.value)}
             aria-describedby={ariaDescribedBy}

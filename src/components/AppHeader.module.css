@@ -107,6 +107,12 @@
   align-items: center;
 }
 
+.app-header-brand-wordmark .fretflow-wordmark {
+  height: clamp(1.55rem, 3.1vw, 2.45rem);
+  width: auto;
+  display: block;
+}
+
 .app-header-brand-subtitle {
   font-size: clamp(0.66rem, 1vw, 0.8rem);
   color: rgb(197 213 230 / 0.72);
@@ -141,30 +147,45 @@
   .app-header-brand-title {
     font-size: clamp(1.72rem, 9vw, 2.3rem);
   }
+
+  .app-header-brand-wordmark .fretflow-wordmark {
+    height: clamp(1.1rem, 5.5vw, 1.5rem);
+  }
 }
 
 /* Phase 2: Desktop compact header — smaller brand mark, tighter vertical padding.
    Targets ~78px total header height (down from ~111px).
    Brand legibility is preserved; action buttons shrink proportionally. */
-:global(.app-container[data-layout-tier="desktop"]) .app-header {
+.app-container[data-layout-tier="desktop"] .app-header {
   padding-top: clamp(0.52rem, 0.86vw, 0.7rem);
   padding-bottom: clamp(0.52rem, 0.86vw, 0.7rem);
 }
 
-:global(.app-container[data-layout-tier="desktop"]) .app-header-brand-icon :global(.brand-mark) {
+.app-container[data-layout-tier="desktop"] .app-header-brand-icon .brand-mark {
   width: clamp(2.75rem, 4.8vw, 3.65rem);
 }
 
-:global(.app-container[data-layout-tier="desktop"]) .app-header-brand-subtitle {
+.app-container[data-layout-tier="desktop"] .app-header-brand-wordmark .fretflow-wordmark {
+  height: clamp(1.22rem, 2.1vw, 1.72rem);
+}
+
+.app-container[data-layout-tier="desktop"] .app-header-brand-subtitle {
   font-size: clamp(0.6rem, 0.85vw, 0.7rem);
 }
 
 /* Tablet tier: compact header — tighter padding and slightly smaller brand mark. */
-:global(.app-container[data-layout-tier="tablet"]) .app-header {
+.app-container[data-layout-tier="tablet"] .app-header {
   padding-top: clamp(0.62rem, 1vw, 0.8rem);
   padding-bottom: clamp(0.62rem, 1vw, 0.8rem);
 }
 
-:global(.app-container[data-layout-tier="tablet"]) .app-header-brand-icon :global(.brand-mark) {
+.app-container[data-layout-tier="tablet"] .app-header-brand-icon .brand-mark {
   width: clamp(3.15rem, 5.8vw, 4.1rem);
+}
+
+.app-container[data-layout-tier="tablet"] .app-header-brand-wordmark .fretflow-wordmark {
+  height: clamp(1.35rem, 2.65vw, 2.05rem);
+}
+dmark :global(.fretflow-wordmark) {
+  height: clamp(1.35rem, 2.65vw, 2.05rem);
 }

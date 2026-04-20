@@ -6,8 +6,7 @@
 
 /* ── Mode browser panel ─────────────────────────────────────────────────── */
 
-/* stylelint-disable selector-pseudo-class-no-unknown */
-.theory-mode-browser:global(.panel-surface) {
+.theory-mode-browser {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
@@ -16,21 +15,21 @@
   background:
     linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.01)),
     rgb(12 17 25 / 0.68);
-  border: 1px solid var(--chrome-border);
+  border: 1px solid rgb(255 255 255 / 0.1);
   /* Top-edge gleam + soft outer shadow for nested depth */
   box-shadow:
     0 1px 0 rgb(255 255 255 / 0.06) inset,
     0 2px 10px rgb(0 0 0 / 0.18);
 }
-/* stylelint-enable selector-pseudo-class-no-unknown */
 
+/* Compound nav strip: left-btn | select | right-btn as one connected widget */
 .theory-browser-main {
   min-width: 0;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: stretch;
   gap: 0;
-  border: 1px solid var(--chrome-border);
+  border: 1px solid rgb(255 255 255 / 0.1);
   border-radius: var(--radius-lg);
   background:
     linear-gradient(180deg, rgb(255 255 255 / 0.035), rgb(255 255 255 / 0.018)),
@@ -46,41 +45,41 @@
 }
 
 /* Cascade LabeledSelect internals to fill height within compound */
-.theory-browser-selector > div,
-.theory-browser-selector label {
+.theory-browser-main :global(.labeled-select),
+.theory-browser-main :global(.labeled-select-label) {
   display: flex;
   flex: 1;
   min-width: 0;
 }
 
-.theory-browser-selector label {
+.theory-browser-main :global(.labeled-select-label) {
   flex-direction: row;
   gap: 0;
   align-items: stretch;
 }
 
-.theory-browser-selector label > div {
+.theory-browser-main :global(.labeled-select-field) {
   flex: 1;
 }
 
 /* Strip native select of its own chrome — inherits compound surface */
-.theory-browser-selector select {
-  border: none !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  min-height: unset !important;
-  padding-left: 0.85rem !important;
-  padding-right: 2.4rem !important;
+.theory-browser-main :global(.labeled-select-native) {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  min-height: unset;
+  padding-left: 0.85rem;
+  padding-right: 2.4rem;
 }
 
-.theory-browser-selector select:hover {
-  border-color: transparent !important;
+.theory-browser-main :global(.labeled-select-native:hover) {
+  border-color: transparent;
 }
 
 /* Inset focus ring — avoids overflow:hidden clipping */
-.theory-browser-selector select:focus-visible {
-  outline: none !important;
-  box-shadow: inset 0 0 0 2px var(--neon-cyan) !important;
+.theory-browser-main :global(.labeled-select-native:focus-visible) {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--neon-cyan);
 }
 
 /* Nav buttons — no individual border/bg; inner dividers via border-right/left */
@@ -91,10 +90,10 @@
   align-items: center;
   justify-content: center;
   border: none;
-  border-right: 1px solid var(--surface-card-header-border);
+  border-right: 1px solid rgb(255 255 255 / 0.08);
   border-radius: 0;
   background: transparent;
-  color: var(--chrome-fg);
+  color: rgb(228 238 248 / 0.92);
   cursor: pointer;
   transition: background-color var(--transition-fast) ease, color var(--transition-fast) ease;
   flex-shrink: 0;
@@ -102,21 +101,12 @@
 
 .theory-browser-main > .theory-nav-btn:last-child {
   border-right: none;
-  border-left: 1px solid var(--surface-card-header-border);
+  border-left: 1px solid rgb(255 255 255 / 0.08);
 }
 
-.theory-nav-btn:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--neon-cyan) 9%, transparent);
-  color: var(--chrome-fg);
-}
-
-.theory-nav-btn:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.theory-nav-btn:disabled {
-  opacity: 0.3;
-  cursor: default;
+.theory-nav-btn:hover {
+  background: rgb(77 228 255 / 0.09);
+  color: white;
 }
 
 /* Inset focus for nav buttons — same reason as select */
@@ -125,25 +115,14 @@
   box-shadow: inset 0 0 0 2px var(--neon-cyan);
 }
 
-/* stylelint-disable selector-pseudo-class-no-unknown */
-.theory-nav-btn :global(.icon) {
-  width: 1.18rem;
-  height: 1.18rem;
-}
-/* stylelint-enable selector-pseudo-class-no-unknown */
-
-@media (max-width: 767px) {
-  .theory-nav-btn {
-    width: 2.7rem;
-    /* height stays 3rem — matches select min-height on mobile */
-  }
+.theory-disclosure-btn:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  box-shadow: var(--focus-ring-glow);
 }
 
-/* ── Chord overlay section ─────────────────────────────────────────────── */
-
-/* stylelint-disable selector-pseudo-class-no-unknown */
-.theory-chord-section:global(.panel-surface),
-.theory-inline-key:global(.panel-surface) {
+.theory-chord-section,
+.theory-inline-key {
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
@@ -154,7 +133,6 @@
     rgb(12 17 25 / 0.7);
   border: 1px solid rgb(255 255 255 / 0.08);
 }
-/* stylelint-enable selector-pseudo-class-no-unknown */
 
 .theory-disclosure-btn {
   width: 100%;
@@ -168,12 +146,6 @@
   color: inherit;
   text-align: left;
   cursor: pointer;
-}
-
-.theory-disclosure-btn:focus-visible {
-  outline: var(--focus-ring);
-  outline-offset: var(--focus-ring-offset);
-  box-shadow: var(--focus-ring-glow);
 }
 
 .theory-disclosure-title {
@@ -200,16 +172,19 @@
   gap: 0.9rem;
 }
 
-/* ── Inline Circle of Fifths ────────────────────────────────────────────── */
-
 .theory-inline-key-content {
-  width: 100%;
   display: flex;
   justify-content: center;
 }
 
-/* Responsive Overrides */
-/* stylelint-disable selector-pseudo-class-no-unknown */
+@media (max-width: 767px) {
+  .theory-nav-btn {
+    width: 2.7rem;
+    /* height stays 3rem — matches select min-height on mobile */
+  }
+}
+
+/* Desktop: tighter theory card density — Phase 3. */
 :global(.app-container[data-layout-tier="desktop"]) .theory-controls {
   gap: 0.72rem;
 }
@@ -226,7 +201,7 @@
   height: 2.65rem;
 }
 
-/* Tablet tier: slightly tighter chrome */
+/* Tablet tier: tighter theory card density — touch-safe nav buttons. */
 :global(.app-container[data-layout-tier="tablet"]) .theory-controls {
   gap: 0.82rem;
 }
@@ -241,10 +216,3 @@
   width: 2.75rem;
   height: 2.82rem;
 }
-
-/* Mobile tier: ensure touch targets meet min-height */
-:global(.app-container[data-layout-tier="mobile"]) .theory-nav-btn,
-:global(.app-container[data-layout-tier="mobile"]) .theory-disclosure-btn {
-  min-height: 36px;
-}
-/* stylelint-enable selector-pseudo-class-no-unknown */

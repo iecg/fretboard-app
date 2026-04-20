@@ -39,7 +39,7 @@ function CardHeader({ title, icon, action, id }: CardHeaderProps) {
 
 function CardBody({ children, className }: CardBodyProps) {
   return (
-    <div className={clsx(styles['card-body'], className)} data-card-body>
+    <div className={clsx(styles['card-body'], className)}>
       {children}
     </div>
   );
@@ -55,7 +55,7 @@ export function Card({
   'aria-labelledby': ariaLabelledBy,
   'aria-label': ariaLabel,
   ...rest
-}: CardProps & React.HTMLAttributes<HTMLElement>) {
+}: CardProps) {
   const generatedId = useId();
   const headerId = title ? generatedId : undefined;
 
@@ -67,7 +67,7 @@ export function Card({
 
   return (
     <As
-      className={clsx(styles.card, "dashboard-card", className)}
+      className={clsx(styles.card, className)}
       aria-labelledby={labelledBy}
       aria-label={!title ? ariaLabel : undefined}
       {...rest}

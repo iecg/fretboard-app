@@ -5,6 +5,7 @@ import { CAGED_SHAPES, type CagedShape } from "../shapes";
 import { useShapeState } from "../hooks/useShapeState";
 import { displayFormatAtom } from "../store/atoms";
 import { ToggleBar } from "./ToggleBar";
+import styles from "./FingeringPatternControls.module.css";
 import shared from "./shared.module.css";
 
 const LONG_PRESS_MS = 500;
@@ -97,8 +98,8 @@ export function FingeringPatternControls() {
                   className={clsx(
                     shared["toggle-btn"],
                     cagedShapes.has(s) && shared.active,
+                    pressingShape === s && styles.pressing,
                   )}
-                  data-pressing={pressingShape === s || undefined}
                   aria-pressed={cagedShapes.has(s)}
                   title={
                     isTouchPrimary

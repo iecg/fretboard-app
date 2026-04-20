@@ -34,7 +34,6 @@ import {
   ANIMATION_EASE,
 } from "../constants";
 import styles from "./SettingsOverlay.module.css";
-import sharedStyles from "./shared.module.css";
 
 const ZOOM_STEP = 10;
 
@@ -191,17 +190,17 @@ function OverlaySection({
       className={clsx(
         "panel-surface",
         "panel-surface--compact",
-        styles["overlay-section-card"],
-        tone === "danger" && styles["overlay-section-card--danger"],
+        "overlay-section-card",
+        tone === "danger" && "overlay-section-card--danger",
       )}
       aria-labelledby={`settings-section-${id}`}
     >
-      <div className={styles["overlay-section-heading"]}>
-        <h2 id={`settings-section-${id}`} className={styles["overlay-section-title"]}>
+      <div className="overlay-section-heading">
+        <h2 id={`settings-section-${id}`} className="overlay-section-title">
           {title}
         </h2>
       </div>
-      <div className={styles["overlay-section-body"]}>{children}</div>
+      <div className="overlay-section-body">{children}</div>
     </section>
   );
 }
@@ -220,13 +219,13 @@ function OverlayFieldHeader({
   helpContainerRef?: Ref<HTMLDivElement>;
 }) {
   return (
-    <div className={styles["overlay-field-header"]}>
-      <span className={styles["overlay-field-label"]}>{label}</span>
+    <div className="overlay-field-header">
+      <span className="overlay-field-label">{label}</span>
       {help ? (
-        <div className={styles["overlay-field-help"]} ref={helpContainerRef}>
+        <div className="overlay-field-help" ref={helpContainerRef}>
           <button
             type="button"
-            className={styles["overlay-help-trigger"]}
+            className="overlay-help-trigger"
             aria-label={
               isHelpOpen ? `Hide help for ${label}` : `Show help for ${label}`
             }
@@ -239,7 +238,7 @@ function OverlayFieldHeader({
           {isHelpOpen ? (
             <div
               id={`settings-help-${help.id}`}
-              className={styles["overlay-help-popover"]}
+              className="overlay-help-popover"
             >
               {help.content}
             </div>
@@ -471,7 +470,6 @@ function SettingsOverlaySurface({
       />
       <motion.div
         className={styles["settings-overlay-drawer"]}
-        data-testid="settings-drawer"
         ref={drawerRef}
         role="dialog"
         aria-modal="true"
@@ -489,7 +487,7 @@ function SettingsOverlaySurface({
           <button
             type="button"
             ref={closeButtonRef}
-            className={clsx(sharedStyles["icon-button"], styles["settings-overlay-close"])}
+            className={styles["settings-overlay-close"]}
             onClick={close}
             aria-label="Close settings"
           >

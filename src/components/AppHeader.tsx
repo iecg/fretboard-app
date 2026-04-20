@@ -34,8 +34,8 @@ export function AppHeader({
 }: AppHeaderProps) {
   const [titlePrimary, titleSecondary] = splitBrandTitle(brandTitle);
   return (
-    <header role="banner" className={clsx(styles['app-header'], className)} data-testid="app-header">
-      <div className={styles['app-header-brand']} data-testid="app-header-brand">
+    <header role="banner" className={clsx(styles['app-header'], className)}>
+      <div className={styles['app-header-brand']}>
         {brandIcon && (
           <span className={styles['app-header-brand-icon']} aria-hidden="true">
             {brandIcon}
@@ -47,12 +47,11 @@ export function AppHeader({
               className={styles['app-header-brand-wordmark']}
               aria-label={brandTitle}
               role="img"
-              data-testid="app-header-brand-wordmark"
             >
               {brandWordmark}
             </span>
           ) : (
-            <span className={styles['app-header-brand-title']} data-testid="app-header-brand-title">
+            <span className={styles['app-header-brand-title']}>
               <span className={styles['app-header-brand-title-primary']}>{titlePrimary}</span>
               {titleSecondary && (
                 <span className={styles['app-header-brand-title-secondary']}>
@@ -62,12 +61,12 @@ export function AppHeader({
             </span>
           )}
           {brandSubtitle && (
-            <span className={styles['app-header-brand-subtitle']} data-testid="app-header-brand-subtitle">{brandSubtitle}</span>
+            <span className={styles['app-header-brand-subtitle']}>{brandSubtitle}</span>
           )}
         </div>
       </div>
       {actions && (
-        <div className={styles['app-header-actions']} data-testid="app-header-actions">
+        <div className={styles['app-header-actions']}>
           {actions}
         </div>
       )}

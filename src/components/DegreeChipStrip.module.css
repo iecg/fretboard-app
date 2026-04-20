@@ -8,7 +8,7 @@
   --chip-glow-cyan:   0 0 6px var(--neon-cyan);
   --chip-glow-orange: 0 0 6px var(--neon-orange);
   /* drop-shadow for hexagons — box-shadow is clipped by clip-path. */
-  --chip-glow-violet: drop-shadow(0 0 5px rgb(167 139 250 / 0.75));
+  --chip-glow-violet: drop-shadow(0 0 5px rgb(167 139(250 / 0.75)));
   --chip-border-width: 2px;
   --chip-border-muted: rgb(255 255 255 / 0.22);
   --chip-line-muted:   rgb(255 255 255 / 0.18);

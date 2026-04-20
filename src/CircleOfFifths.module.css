@@ -94,19 +94,10 @@
   letter-spacing: 0.04em;
 }
 
-/* ── Container Overrides ────────────────────────────────────────────────── */
-
-@container (min-width: 300px) {
-  .circle-fifths-svg {
-    max-width: 100cqw;
-    max-height: 100cqw;
-  }
-}
-
-/* ── Layout Tier Adjustments ───────────────────────────────────────────── */
-
+/* layout overrides */
+/* stylelint-disable selector-pseudo-class-no-unknown */
 :global(.app-container[data-layout-variant="desktop-3col"]) .circle-fifths-container {
-  max-height: min(22rem, 46vh);
+  max-height: min(18rem, 40vh);
 }
 
 :global(.app-container[data-layout-variant="desktop-split"]) .circle-fifths-container {
@@ -125,7 +116,15 @@
   margin: 0 auto;
 }
 
-.circle-fifths-container[data-variant="inline"] {
+:global(.theory-inline-key) .circle-fifths-container {
   width: 100%;
   max-width: min(100%, 20rem);
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
+
+@container (min-width: 300px) {
+  .circle-fifths-svg {
+    max-width: 90cqw;
+    max-height: 90cqw;
+  }
 }

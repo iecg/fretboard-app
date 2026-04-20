@@ -1,20 +1,6 @@
-import { cva, type VariantProps } from "class-variance-authority";
+import clsx from "clsx";
 import styles from "./StepperControl.module.css";
 import shared from "./shared.module.css";
-
-const stepperControlVariants = cva(styles["stepper-control"], {
-  variants: {
-    variant: {
-      toolbar: styles.toolbar,
-      mobile: styles.mobile,
-    },
-  },
-  defaultVariants: {
-    variant: "toolbar",
-  },
-});
-
-export type StepperControlVariant = VariantProps<typeof stepperControlVariants>["variant"];
 
 export interface StepperControlProps {
   value: number;
@@ -24,7 +10,7 @@ export interface StepperControlProps {
   step?: number;
   label?: string;
   formatValue?: (val: number) => string;
-  buttonVariant?: StepperControlVariant;
+  buttonVariant?: "toolbar" | "mobile";
 }
 
 export function StepperControl({
@@ -38,7 +24,7 @@ export function StepperControl({
   buttonVariant = "toolbar",
 }: StepperControlProps) {
   return (
-    <div className={stepperControlVariants({ variant: buttonVariant })}>
+    <div className={clsx(styles["stepper-control"], styles[buttonVariant])}>
       {label && <span className={shared["section-label"]}>{label}</span>}
       <div
         className={styles["stepper-group"]}

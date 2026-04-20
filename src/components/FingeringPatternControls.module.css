@@ -2,7 +2,7 @@
 /* Layout styles (.control-section, .toggle-group, .toggle-btn) are in shared.module.css */
 
 /* Visual "charging" feedback while a long press is building up */
-[data-pressing] {
+.pressing {
   box-shadow:
     0 0 0 2px color-mix(in srgb, var(--neon-cyan) 55%, transparent),
     0 0 10px color-mix(in srgb, var(--neon-cyan) 22%, transparent) !important;
