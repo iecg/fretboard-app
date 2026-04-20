@@ -46,9 +46,7 @@
 }
 
 /* Tonic / Key Root */
-:global(.fretboard-note).key-tonic circle,
-:global(.fretboard-note).key-tonic rect,
-:global(.fretboard-note).key-tonic polygon {
+:global(.fretboard-note).key-tonic :is(circle, rect, polygon) {
   stroke: var(--note-ring-tonic);
   fill: rgb(48 32 22 / 0.95);
   stroke-width: 2.3;
@@ -58,9 +56,7 @@
 }
 
 /* Chord Root */
-:global(.fretboard-note).chord-root circle,
-:global(.fretboard-note).chord-root rect,
-:global(.fretboard-note).chord-root polygon {
+:global(.fretboard-note).chord-root :is(circle, rect, polygon) {
   stroke: var(--note-ring-tonic);
   fill: rgb(55 35 18 / 0.97);
   stroke-width: 2.5;
@@ -70,27 +66,21 @@
 }
 
 /* Chord Tone in Scale — additive: scale fill preserved, orange ring signals chord membership */
-:global(.fretboard-note).chord-tone-in-scale circle,
-:global(.fretboard-note).chord-tone-in-scale rect,
-:global(.fretboard-note).chord-tone-in-scale polygon {
+:global(.fretboard-note).chord-tone-in-scale :is(circle, rect, polygon) {
   stroke: var(--note-ring-tonic);
   fill: rgb(20 30 40 / 0.92);
   stroke-width: 2.3;
 }
 
 /* Active Notes (circle — no chord overlay) */
-:global(.fretboard-note).note-active circle,
-:global(.fretboard-note).note-active rect,
-:global(.fretboard-note).note-active polygon {
+:global(.fretboard-note).note-active :is(circle, rect, polygon) {
   stroke: var(--note-ring);
   fill: rgb(20 30 40 / 0.92);
   stroke-width: 1.9;
 }
 
 /* Scale color notes (hexagon — scale-owned characteristic tone, no chord overlay) */
-:global(.fretboard-note).note-blue circle,
-:global(.fretboard-note).note-blue rect,
-:global(.fretboard-note).note-blue polygon {
+:global(.fretboard-note).note-blue :is(circle, rect, polygon) {
   stroke: var(--note-ring-color-tone);
   fill: rgb(20 30 40 / 0.92);
   stroke-width: 1.9;
@@ -100,18 +90,14 @@
 }
 
 /* Scale Only — visible filled base; slightly recedes relative to chord squircles */
-:global(.fretboard-note).scale-only circle,
-:global(.fretboard-note).scale-only rect,
-:global(.fretboard-note).scale-only polygon {
+:global(.fretboard-note).scale-only :is(circle, rect, polygon) {
   stroke: var(--note-ring);
   fill: rgb(18 26 38 / 0.82);
   stroke-width: 1.7;
 }
 
 /* Color Tone (Characteristic) — hexagon, violet ring, matches note-active fill weight */
-:global(.fretboard-note).color-tone circle,
-:global(.fretboard-note).color-tone rect,
-:global(.fretboard-note).color-tone polygon {
+:global(.fretboard-note).color-tone :is(circle, rect, polygon) {
   stroke: var(--note-ring-color-tone);
   fill: rgb(20 30 40 / 0.92);
   stroke-width: 1.9;
@@ -121,9 +107,7 @@
 }
 
 /* Chord Tone Outside Scale (Diamond) */
-:global(.fretboard-note).chord-tone-outside-scale circle,
-:global(.fretboard-note).chord-tone-outside-scale rect,
-:global(.fretboard-note).chord-tone-outside-scale polygon {
+:global(.fretboard-note).chord-tone-outside-scale :is(circle, rect, polygon) {
   stroke: var(--neon-orange-dim);
   fill: rgb(40 22 10 / 0.72);
   stroke-width: 2.0;
@@ -150,6 +134,18 @@
 :global(.fretboard-note)[data-note-role="note-blue"],
 :global(.fretboard-note)[data-note-role="color-tone"] {
   filter: var(--glow-violet);
+}
+
+:global(.fretboard-note)[data-lens-emphasis="cyan"] {
+  filter: var(--glow-cyan) !important;
+}
+
+:global(.fretboard-note)[data-lens-emphasis="orange"] {
+  filter: var(--glow-orange) !important;
+}
+
+:global(.fretboard-note)[data-lens-emphasis="violet"] {
+  filter: var(--glow-violet) !important;
 }
 
 /* Color notes render as hexagon polygons — no rect override needed. */
