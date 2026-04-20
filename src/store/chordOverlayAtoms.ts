@@ -176,10 +176,9 @@ export const practiceLensAtom = atomWithStorage<PracticeLens>(
 // Overlay semantics — lens availability + derived flags
 // ---------------------------------------------------------------------------
 
-// Targets lens hides scale-only notes so only chord tones are shown.
-export const hideNonChordNotesAtom = atom(
-  (get) => get(practiceLensAtom) === "targets",
-);
+// Lenses control coaching cues only — no lens hides scale notes.
+// Kept as a stable export for legacy callers; always returns false.
+export const hideNonChordNotesAtom = atom(() => false);
 
 // ---------------------------------------------------------------------------
 // Chord derived atoms

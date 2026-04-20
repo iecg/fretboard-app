@@ -498,6 +498,51 @@ describe("App", () => {
       expect(title.textContent).toContain("C");
       expect(title.textContent).toContain("Dominant 7th");
     });
+
+    it("chord dock and scale strip are sibling cards — not nested inside each other", async () => {
+      localStorage.setItem(k("rootNote"), "C");
+      localStorage.setItem(k("chordRoot"), "D");
+      localStorage.setItem(k("chordType"), "Dominant 7th");
+      localStorage.setItem(k("practiceLens"), "tension");
+      render(<App />);
+      await waitFor(() => {
+        expect(document.querySelector(".summary-ribbon .chord-practice-bar")).toBeTruthy();
+      });
+      // The chord-practice-bar must NOT be nested inside degree-chip-strip
+      expect(
+        document.querySelector(".degree-chip-strip .chord-practice-bar")
+      ).toBeNull();
+      // Both surfaces exist as direct children of summary-ribbon
+      const ribbon = document.querySelector(".summary-ribbon")!;
+      const strip = ribbon.querySelector(":scope > .degree-chip-strip, :scope > section");
+      expect(strip).toBeTruthy();
+    });
+
+    it("chord dock remains visible when scale is hidden (eye-off)", async () => {
+      localStorage.setItem(k("rootNote"), "C");
+      localStorage.setItem(k("chordRoot"), "C");
+      localStorage.setItem(k("chordType"), "Dominant 7th");
+      localStorage.setItem(k("practiceLens"), "tension");
+      localStorage.setItem(k("scaleVisible"), "false");
+      render(<App />);
+      await waitFor(() => {
+        expect(document.querySelector(".chord-practice-bar")).toBeTruthy();
+      });
+    });
+
+    it("eye toggle button appears before the scale name text in the strip header", async () => {
+      render(<App />);
+      await waitFor(() => {
+        expect(document.querySelector(".degree-chip-strip-header")).toBeTruthy();
+      });
+      const header = document.querySelector(".degree-chip-strip-header")!;
+      const children = Array.from(header.childNodes).filter(
+        (n) => n.nodeType === Node.ELEMENT_NODE || (n.nodeType === Node.TEXT_NODE && n.textContent?.trim())
+      );
+      // First meaningful child should be the eye toggle button
+      const firstEl = children.find((n) => n.nodeType === Node.ELEMENT_NODE) as Element;
+      expect(firstEl?.tagName.toLowerCase()).toBe("button");
+    });
   });
 
   describe("Chord overlay", () => {

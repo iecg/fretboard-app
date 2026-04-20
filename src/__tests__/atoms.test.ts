@@ -463,7 +463,7 @@ describe("atoms", () => {
       const store = makeStore();
       store.set(chordRootAtom, "G");
       store.set(linkChordRootAtom, false);
-      store.set(practiceLensAtom, "targets"); // targets lens → hideNonChordNotesAtom = true
+      store.set(practiceLensAtom, "targets");
       store.set(chordFretSpreadAtom, 5);
       store.set(fingeringPatternAtom, "caged");
       store.set(npsPositionAtom, 3);
@@ -475,13 +475,14 @@ describe("atoms", () => {
       store.set(mobileTabAtom, "view");
       store.set(landscapeNarrowTabAtom, "key");
 
-      expect(store.get(hideNonChordNotesAtom)).toBe(true);
+      // hideNonChordNotesAtom is always false — lenses never hide scale notes
+      expect(store.get(hideNonChordNotesAtom)).toBe(false);
 
       store.set(resetAtom);
 
       expect(store.get(chordRootAtom)).toBe("C");
       expect(store.get(linkChordRootAtom)).toBe(true);
-      expect(store.get(hideNonChordNotesAtom)).toBe(false); // targets-color lens → false
+      expect(store.get(hideNonChordNotesAtom)).toBe(false);
       expect(store.get(chordFretSpreadAtom)).toBe(0);
       expect(store.get(fingeringPatternAtom)).toBe("all");
       expect(store.get(npsPositionAtom)).toBe(1);
