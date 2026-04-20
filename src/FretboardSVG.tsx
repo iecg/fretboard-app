@@ -783,6 +783,14 @@ export const FretboardSVG = memo(function FretboardSVG({
         // buffer correctly extends the active shape boundary, not any visible shape.
         const isInPlayableContext: boolean = (() => {
           if (!hasChordOverlay) return false;
+          // 3NPS has no polygon shapes; gate chord overlay by aggregate fret bounds
+          if (activePattern === "3nps" && shapeScope !== "global" && boxBounds.length > 0) {
+            return boxBounds.some(
+              (b) =>
+                fretIndex >= b.minFret - chordFretSpread &&
+                fretIndex <= b.maxFret + chordFretSpread,
+            );
+          }
           if (shapePolygons.length === 0 || !activePattern) return true;
           if (shapeScope === "global") return true;
           return shapePolygons.some((poly) => {
