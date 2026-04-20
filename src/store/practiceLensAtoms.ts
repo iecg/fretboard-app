@@ -42,6 +42,26 @@ const GUIDE_TONE_RAW = new Set(["b3", "3", "b7", "7"]);
 // After formatAccidental: "b3"→"♭3", "b7"→"♭7"
 const GUIDE_TONE_FORMATTED = new Set(["♭3", "3", "♭7", "7"]);
 
+// Nearest in-scale resolution (≤2 semitones, step-up preferred).
+// Shared between practiceCuesAtom and practiceBarLandOnGroupBaseAtom so the
+// radius + tie-breaking stay in lockstep.
+function findNearestScaleResolution(
+  note: string,
+  scaleNotes: readonly string[],
+  displayNote: (n: string) => string,
+): { internalNote: string; displayNote: string } | undefined {
+  const noteIdx = NOTES.indexOf(note);
+  if (noteIdx === -1) return undefined;
+  const scaleNoteSet = new Set(scaleNotes);
+  for (let step = 1; step <= 2; step++) {
+    const up = NOTES[(noteIdx + step) % 12];
+    const down = NOTES[(noteIdx - step + 12) % 12];
+    if (scaleNoteSet.has(up)) return { internalNote: up, displayNote: displayNote(up) };
+    if (scaleNoteSet.has(down)) return { internalNote: down, displayNote: displayNote(down) };
+  }
+  return undefined;
+}
+
 // ---------------------------------------------------------------------------
 // Practice bar color notes — derived from scale color tones
 // ---------------------------------------------------------------------------
@@ -160,23 +180,8 @@ export const practiceCuesAtom = atom((get) => {
     role: e.role,
   });
 
-  // Find the nearest in-scale note (up to 2 semitones in each direction).
-  // Prefers 1-step up, then 1-step down, then 2-step up, then 2-step down.
-  // The 2-step radius ensures coverage for pentatonic scales with wider gaps.
-  const findResolution = (
-    note: string,
-  ): { internalNote: string; displayNote: string } | undefined => {
-    const noteIdx = NOTES.indexOf(note);
-    if (noteIdx === -1) return undefined;
-    const scaleNoteSet = new Set(scaleNotes);
-    for (let step = 1; step <= 2; step++) {
-      const up = NOTES[(noteIdx + step) % 12];
-      const down = NOTES[(noteIdx - step + 12) % 12];
-      if (scaleNoteSet.has(up)) return { internalNote: up, displayNote: displayNote(up) };
-      if (scaleNoteSet.has(down)) return { internalNote: down, displayNote: displayNote(down) };
-    }
-    return undefined;
-  };
+  const findResolution = (note: string) =>
+    findNearestScaleResolution(note, scaleNotes, displayNote);
 
   const buildLandOnCue = (): PracticeCue => ({
     kind: "land-on",
@@ -288,20 +293,8 @@ export const practiceBarLandOnGroupBaseAtom = atom((get): PracticeBarGroup => {
   const displayNote = (note: string) =>
     formatAccidental(getNoteDisplay(note, chordRoot, useFlats));
 
-  const findResolution = (
-    note: string,
-  ): { internalNote: string; displayNote: string } | undefined => {
-    const noteIdx = NOTES.indexOf(note);
-    if (noteIdx === -1) return undefined;
-    const scaleNoteSet = new Set(scaleNotes);
-    for (let step = 1; step <= 2; step++) {
-      const up = NOTES[(noteIdx + step) % 12];
-      const down = NOTES[(noteIdx - step + 12) % 12];
-      if (scaleNoteSet.has(up)) return { internalNote: up, displayNote: displayNote(up) };
-      if (scaleNoteSet.has(down)) return { internalNote: down, displayNote: displayNote(down) };
-    }
-    return undefined;
-  };
+  const findResolution = (note: string) =>
+    findNearestScaleResolution(note, scaleNotes, displayNote);
 
   let subset: ChordRowEntry[];
   switch (lens) {
