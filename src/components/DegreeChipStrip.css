@@ -153,19 +153,37 @@
 
 /* Color note (blue note / modal characteristic tone) — hexagon geometry + violet ring + glow.
    clip-path clips the chip to a pointy-top hexagon matching the SVG fretboard hexagon.
-   filter: drop-shadow is used instead of box-shadow because box-shadow is clipped
-   by clip-path while filter is applied after clipping. */
+   CSS border doesn't render along clip-path polygon edges (the rectangular border is mostly
+   clipped away), so the violet ring is achieved via a two-layer approach: the element
+   background is the ring color and a ::before pseudo-element provides the dark inner fill.
+   filter: drop-shadow is used for the glow (box-shadow is clipped by clip-path). */
 .degree-chip-item[data-is-color-note='true'] .degree-chip {
   clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
   border-radius: 0;
-  border-color: var(--note-ring-color-tone);
+  border-color: transparent;
+  background: var(--note-ring-color-tone);
   box-shadow: none;
   filter: drop-shadow(0 0 5px rgb(167 139 250 / 0.75));
   opacity: 1;
+  position: relative;
+}
+
+/* Dark fill layer — the inner hexagon masks the center of the violet ring background.
+   inset: 2px offsets the pseudo-element so the ring color shows around the edges.
+   z-index: 0 keeps it above the parent background but below z-index: 1 content. */
+.degree-chip-item[data-is-color-note='true'] .degree-chip::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: rgb(20 30 40 / 0.92);
+  clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+  z-index: 0;
 }
 
 .degree-chip-item[data-is-color-note='true'] .degree-chip-note {
   color: #e8d8ff;
+  position: relative;
+  z-index: 1;
 }
 
 /* Hidden state overrides all active states — connector line grey glow. */
