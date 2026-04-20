@@ -484,7 +484,7 @@ describe("App", () => {
       localStorage.setItem(k("chordRoot"), "C");
       // Dominant 7th has Bb which is outside C Major → bar is non-trivial and shown
       localStorage.setItem(k("chordType"), "Dominant 7th");
-      localStorage.setItem(k("practiceLens"), "targets-color");
+      localStorage.setItem(k("practiceLens"), "targets");
       render(<App />);
       await waitFor(() => {
         expect(document.querySelector(".chord-practice-bar")).toBeTruthy();

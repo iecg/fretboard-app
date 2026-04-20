@@ -64,6 +64,15 @@ const tensionCue: PracticeCue = {
   ],
 };
 
+const resolutionCue: PracticeCue = {
+  kind: "resolution",
+  label: "Resolve to",
+  notes: [
+    { internalNote: "D", displayNote: "D", role: "chord-tone-in-scale" },
+    { internalNote: "A", displayNote: "A", role: "chord-tone-in-scale" },
+  ],
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe("ChordPracticeBar", () => {
@@ -223,16 +232,12 @@ describe("ChordPracticeBar", () => {
       expect(pills.length).toBe(2);
     });
 
-    it("renders resolution arrows for tension notes with resolvesTo", () => {
+    it("does not render inline resolution arrows on tension pills", () => {
       render(<ChordPracticeBar title="C# Minor Triad" cues={[tensionCue]} />);
-      const resolves = screen.getAllByText(/→/);
-      expect(resolves.length).toBe(2);
-      expect(resolves[0]!.textContent).toBe("→D");
-      expect(resolves[1]!.textContent).toBe("→A");
+      expect(screen.queryByText(/→/)).toBeNull();
     });
 
     it("outside chord root appears in tension cue (semantic fix)", () => {
-      // A chord root that is outside the scale should appear in a tension cue
       const outsideRootTension: PracticeCue = {
         kind: "tension",
         label: "Tension",
@@ -241,7 +246,7 @@ describe("ChordPracticeBar", () => {
             internalNote: "C#",
             displayNote: "C♯",
             intervalName: "1",
-            role: "chord-root",  // root role, but also tension
+            role: "chord-root",
             resolvesTo: { internalNote: "D", displayNote: "D" },
           },
         ],
@@ -249,7 +254,40 @@ describe("ChordPracticeBar", () => {
       render(<ChordPracticeBar title="C# Minor" cues={[outsideRootTension]} />);
       expect(screen.getByText("Tension:")).toBeTruthy();
       expect(screen.getByText("C♯")).toBeTruthy();
-      expect(screen.getByText("→D")).toBeTruthy();
+    });
+  });
+
+  describe("Resolution cue row", () => {
+    it("renders 'Resolve to:' label", () => {
+      render(<ChordPracticeBar title="C# Minor Triad" cues={[tensionCue, resolutionCue]} />);
+      expect(screen.getByText("Resolve to:")).toBeTruthy();
+    });
+
+    it("renders resolution target note names", () => {
+      render(<ChordPracticeBar title="C# Minor Triad" cues={[tensionCue, resolutionCue]} />);
+      expect(screen.getByText("D")).toBeTruthy();
+      expect(screen.getByText("A")).toBeTruthy();
+    });
+
+    it("resolution pills have data-role=chord-tone-in-scale", () => {
+      const { container } = render(
+        <ChordPracticeBar title="C# Minor Triad" cues={[tensionCue, resolutionCue]} />
+      );
+      const resolvePills = container.querySelectorAll(
+        '.practice-bar-pill-list[aria-label="Resolve to"] [data-role="chord-tone-in-scale"]'
+      );
+      expect(resolvePills.length).toBe(2);
+    });
+
+    it("does not render resolution row when no resolution cue is provided", () => {
+      render(<ChordPracticeBar title="C# Minor Triad" cues={[tensionCue]} />);
+      expect(screen.queryByText("Resolve to:")).toBeNull();
+    });
+
+    it("renders tension and resolution rows together", () => {
+      render(<ChordPracticeBar title="C# Minor Triad" cues={[tensionCue, resolutionCue]} />);
+      expect(screen.getByText("Tension:")).toBeTruthy();
+      expect(screen.getByText("Resolve to:")).toBeTruthy();
     });
   });
 
@@ -379,9 +417,9 @@ describe("ChordPracticeBar", () => {
       expect(await axe(container)).toHaveNoViolations();
     });
 
-    it("has no a11y violations with tension cue and resolution arrows", async () => {
+    it("has no a11y violations with tension cue and resolution row", async () => {
       const { container } = render(
-        <ChordPracticeBar title="C# Minor Triad" cues={[tensionCue]} />
+        <ChordPracticeBar title="C# Minor Triad" cues={[tensionCue, resolutionCue]} />
       );
       expect(await axe(container)).toHaveNoViolations();
     });

@@ -225,15 +225,37 @@ export const practiceCuesAtom = atom((get) => {
       }
       const tensionMembers = allChordMembers.filter((e) => !e.inScale);
       if (tensionMembers.length > 0) {
+        const tensionNotes = tensionMembers.map((e) => ({
+          ...toCueNote(e),
+          role: "chord-tone-outside-scale" as const,
+          resolvesTo: findResolution(e.internalNote),
+        }));
         cues.push({
           kind: "tension",
           label: "Tension",
-          notes: tensionMembers.map((e) => ({
-            ...toCueNote(e),
-            role: "chord-tone-outside-scale" as const,
-            resolvesTo: findResolution(e.internalNote),
-          })),
+          notes: tensionNotes,
         });
+        // Separate "Resolve to" row — deduped resolution targets
+        const seen = new Set<string>();
+        const resolutionNotes: PracticeCueNote[] = [];
+        for (const note of tensionNotes) {
+          const target = note.resolvesTo;
+          if (target && !seen.has(target.internalNote)) {
+            seen.add(target.internalNote);
+            resolutionNotes.push({
+              internalNote: target.internalNote,
+              displayNote: target.displayNote,
+              role: "chord-tone-in-scale" as const,
+            });
+          }
+        }
+        if (resolutionNotes.length > 0) {
+          cues.push({
+            kind: "resolution",
+            label: "Resolve to",
+            notes: resolutionNotes,
+          });
+        }
       }
       break;
     }
