@@ -135,7 +135,6 @@ import {
   practiceLensAtom,
   chordTonesAtom,
   chordMembersAtom,
-  hasOutsideChordMembersAtom,
   chordLabelAtom,
   allChordMembersAtom,
 } from "./chordOverlayAtoms";
@@ -463,18 +462,6 @@ export const summaryLegendItemsAtom = atom((get) => {
     items.push({ role: "scale-only", label: "Scale only" });
   }
   return items;
-});
-
-export const showRelationshipRowAtom = atom((get) => {
-  const chordType = get(chordTypeAtom);
-  const chordRoot = get(chordRootAtom);
-  const rootNote = get(rootNoteAtom);
-  const hasOutsideChordMembers = get(hasOutsideChordMembersAtom);
-
-  return !!(
-    chordType &&
-    (chordRoot !== rootNote || hasOutsideChordMembers)
-  );
 });
 
 export const summaryNotesAtom = atom((get) => get(scaleNotesAtom));
