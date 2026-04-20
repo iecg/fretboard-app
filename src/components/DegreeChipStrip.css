@@ -178,6 +178,20 @@
   z-index: 1;
 }
 
+/* Opaque circle at z-index:-1 masks the connector line — opacity:0.38 on the chip would otherwise let it bleed through. */
+.degree-chip-item[data-hidden='true']::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--chip-size);
+  height: var(--chip-size);
+  border-radius: 50%;
+  background: var(--strip-fill);
+  z-index: -1;
+}
+
 /* Hidden overrides all active states. */
 .degree-chip-item[data-hidden='true'] .degree-chip {
   border-color: var(--chip-border-muted);
