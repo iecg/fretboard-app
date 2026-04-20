@@ -1,11 +1,15 @@
-# Build artifacts
+# === Build Artifacts & Caches ===
 node_modules/
 dist/
 coverage/
 .vite/
 
-# VBW archived milestones (read-only historical record, large)
+# === Tooling ===
+.husky/_/
+
+# === VBW Planning ===
+# Archived milestones are read-only historical records (large)
 .vbw-planning/milestones/
 
-# Tooling caches
-.husky/_/
+# === Generated Files ===
+.gemini/

@@ -1,5 +1,11 @@
-# Logs
-logs
+# === Dependencies & Build ===
+node_modules/
+dist/
+dist-ssr/
+coverage/
+
+# === Logs ===
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,35 +13,32 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-coverage
-*.local
+# === Testing ===
+test-results/
+src/__tests__/__snapshots__/
 
-# Editor directories and files
+# === IDE & Editor ===
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
-.vbw-planning/
+# === OS-Specific ===
+.DS_Store
 
-.claude/
-
+# === Local Development ===
+*.local
 *.local.md
 
-.remember/
+# === Project Tools ===
+.vbw-planning/
+.claude/
+.vbw-planning
+.gemini/
 
-test-results/
-
-# Vitest snapshots are Node-version-sensitive; regenerated per environment
-src/__tests__/__snapshots__/
-
+# === Generated Files ===
 scripts/gif-capture/frames/
-.gemini
