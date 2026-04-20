@@ -37,11 +37,13 @@
   letter-spacing: 0.01em;
 }
 
-/* When the header contains an action slot, lay it out as a flex row. */
+/* When the header contains an action slot, lay it out as a flex row.
+   Action renders before the title so the eye toggle sits left-aligned
+   inline with the scale name rather than isolated at the far edge. */
 .degree-chip-strip-header[data-has-action] {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 0.5rem;
   width: 100%;
   line-height: initial;

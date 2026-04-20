@@ -768,16 +768,10 @@ export const FretboardSVG = memo(function FretboardSVG({
   }, [totalColumns, startFret, stringRowPx, svgDefUrl, fretCenterX, inlayYAt, inlayYBottomAt, inlayYTopAt]);
 
   const noteData = useMemo(() => {
-    // practiceLens is the source of truth when provided; hideNonChordNotes is the
-    // legacy fallback for callers that haven't migrated yet.
-    // "targets" lens explicitly hides non-chord notes; other defined lenses
-    // use the semantic model instead of this flag.
+    // Lenses control coaching cues only — no lens hides scale notes.
+    // hideNonChordNotes is the legacy prop fallback for callers without practiceLens.
     const effectiveHideNonChordNotes =
-      practiceLens === "targets"
-        ? true
-        : practiceLens !== undefined
-          ? false
-          : hideNonChordNotes;
+      practiceLens !== undefined ? false : hideNonChordNotes;
     const notes = [];
     const scale = SCALES[scaleName] || [];
     const normRoot = rootNote && (ENHARMONICS[rootNote]?.includes("b") ? ENHARMONICS[rootNote] : rootNote);
@@ -950,9 +944,9 @@ export const FretboardSVG = memo(function FretboardSVG({
         );
 
         const isHidden = (() => {
-          // Targets lens: hide all non-chord scale notes, including color tones.
+          // Legacy hideNonChordNotes prop: hides scale-only and color-tone notes.
+          // With practiceLens set, effectiveHideNonChordNotes is always false.
           if (effectiveHideNonChordNotes && (noteClass === "scale-only" || noteClass === "color-tone")) return true;
-          // All other lenses show all notes; tension lens emphasizes through the practice bar.
           return false;
         })();
 

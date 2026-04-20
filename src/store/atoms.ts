@@ -429,7 +429,6 @@ export const summaryLegendItemsAtom = atom((get) => {
   if (!chordType) return [] as LegendItem[];
 
   const summaryChordRow = get(summaryChordRowAtom);
-  const practiceLens = get(practiceLensAtom);
   const noteRoleMap = get(noteRoleMapAtom);
 
   const rolesPresent = new Set(summaryChordRow.map((e) => e.role));
@@ -440,9 +439,9 @@ export const summaryLegendItemsAtom = atom((get) => {
     items.push({ role: "chord-tone-in-scale", label: "Chord tone" });
   if (rolesPresent.has("chord-tone-outside-scale"))
     items.push({ role: "chord-tone-outside-scale", label: "Outside scale" });
-  // Show scale-only legend entry when the lens is not targets (which hides them).
+  // Scale-only notes are always visible — no lens hides them.
   const hasScaleOnly = Array.from(noteRoleMap.values()).includes("scale-only");
-  if (practiceLens !== "targets" && hasScaleOnly) {
+  if (hasScaleOnly) {
     items.push({ role: "scale-only", label: "Scale only" });
   }
   return items;
@@ -450,14 +449,12 @@ export const summaryLegendItemsAtom = atom((get) => {
 
 export const showRelationshipRowAtom = atom((get) => {
   const chordType = get(chordTypeAtom);
-  const practiceLens = get(practiceLensAtom);
   const chordRoot = get(chordRootAtom);
   const rootNote = get(rootNoteAtom);
   const hasOutsideChordMembers = get(hasOutsideChordMembersAtom);
 
   return !!(
     chordType &&
-    practiceLens !== "targets" &&
     (chordRoot !== rootNote || hasOutsideChordMembers)
   );
 });
@@ -471,33 +468,21 @@ export const chordMemberLabelsAtom = atom((get) =>
 );
 
 export const summaryHeaderLeftAtom = atom((get) => {
-  const chordType = get(chordTypeAtom);
-  const practiceLens = get(practiceLensAtom);
   const scaleLabel = get(scaleLabelAtom);
-  const chordLabel = get(chordLabelAtom);
-
-  if (!chordType) return scaleLabel;
-  // Targets lens is chord-focused: show the chord name as the primary header.
-  if (practiceLens === "targets") return chordLabel ?? scaleLabel;
   return scaleLabel;
 });
 
 export const summaryHeaderRightAtom = atom((get) => {
   const chordType = get(chordTypeAtom);
   const chordLabel = get(chordLabelAtom);
-  const practiceLens = get(practiceLensAtom);
 
   if (!chordType || !chordLabel) return null;
-  // Targets lens already shows the chord in the left header.
-  if (practiceLens === "targets") return null;
   return chordLabel;
 });
 
 export const summaryPrimaryModeAtom = atom((get) => {
   const chordType = get(chordTypeAtom);
-  const practiceLens = get(practiceLensAtom);
   if (!chordType) return "scale";
-  if (practiceLens === "targets") return "chord";
   return "scale";
 });
 

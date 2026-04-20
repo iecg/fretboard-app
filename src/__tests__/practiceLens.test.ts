@@ -75,18 +75,17 @@ describe("practiceLensAtom", () => {
 });
 
 describe("hideNonChordNotesAtom", () => {
-  it("is true when lens is targets", () => {
+  it("is always false — lenses never hide scale notes", () => {
     const store = makeStore();
-    store.set(practiceLensAtom, "targets");
-    expect(store.get(hideNonChordNotesAtom)).toBe(true);
-  });
-
-  it("is false for all other lenses", () => {
-    const store = makeStore();
-    for (const lens of ["guide-tones", "color", "targets-color", "tension"] as const) {
+    for (const lens of ["targets", "guide-tones", "color", "targets-color", "tension"] as const) {
       store.set(practiceLensAtom, lens);
       expect(store.get(hideNonChordNotesAtom)).toBe(false);
     }
+  });
+
+  it("is false when no chord is set", () => {
+    const store = makeStore();
+    expect(store.get(hideNonChordNotesAtom)).toBe(false);
   });
 });
 
@@ -487,5 +486,124 @@ describe("showChordPracticeBarAtom — scale visibility independence", () => {
     const visibleOff = store.get(showChordPracticeBarAtom);
 
     expect(visibleOn).toBe(visibleOff);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Ownership model — scale/chord separation contracts
+// ---------------------------------------------------------------------------
+
+import {
+  colorNotesAtom,
+  effectiveColorNotesAtom,
+  effectiveShapeDataAtom,
+  toggleScaleVisibleAtom,
+} from "../store/atoms";
+
+describe("chord overlay does not control scale visibility", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("enabling chord overlay does not change effectiveShapeDataAtom highlightNotes count", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    store.set(scaleVisibleAtom, true);
+
+    const before = store.get(effectiveShapeDataAtom).highlightNotes.length;
+
+    store.set(chordTypeAtom, "Major Triad");
+
+    const after = store.get(effectiveShapeDataAtom).highlightNotes.length;
+
+    expect(after).toBe(before);
+  });
+
+  it("disabling chord overlay does not change scale highlight notes", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    store.set(scaleVisibleAtom, true);
+    store.set(chordTypeAtom, "Major Triad");
+
+    const before = store.get(effectiveShapeDataAtom).highlightNotes.length;
+
+    store.set(chordTypeAtom, null);
+
+    const after = store.get(effectiveShapeDataAtom).highlightNotes.length;
+
+    expect(after).toBe(before);
+  });
+});
+
+describe("Chord Tones lens does not hide scale notes", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("hideNonChordNotesAtom is false when targets lens is active", () => {
+    const store = makeStore();
+    store.set(chordTypeAtom, "Major Triad");
+    store.set(practiceLensAtom, "targets");
+    expect(store.get(hideNonChordNotesAtom)).toBe(false);
+  });
+
+  it("effectiveShapeDataAtom highlightNotes unchanged when switching to targets lens", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    store.set(scaleVisibleAtom, true);
+    store.set(chordTypeAtom, "Major Triad");
+    store.set(practiceLensAtom, "targets-color");
+
+    const before = store.get(effectiveShapeDataAtom).highlightNotes.length;
+
+    store.set(practiceLensAtom, "targets");
+
+    const after = store.get(effectiveShapeDataAtom).highlightNotes.length;
+
+    expect(after).toBe(before);
+  });
+});
+
+describe("color notes are scale-owned — independent of chord overlay", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("colorNotesAtom returns color notes for Minor Blues scale without chord overlay", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Minor Blues");
+    // Minor Blues has a flat-5 blue note (Gb/F#)
+    expect(store.get(colorNotesAtom).length).toBeGreaterThan(0);
+  });
+
+  it("colorNotesAtom is unaffected by chord type changes", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Minor Blues");
+
+    const before = store.get(colorNotesAtom);
+
+    store.set(chordTypeAtom, "Dominant 7th");
+    const after = store.get(colorNotesAtom);
+
+    expect(after).toEqual(before);
+  });
+
+  it("effectiveColorNotesAtom is cleared by scaleVisible=false, not by chord overlay", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Minor Blues");
+    store.set(chordTypeAtom, "Dominant 7th");
+    store.set(scaleVisibleAtom, true);
+
+    expect(store.get(effectiveColorNotesAtom).length).toBeGreaterThan(0);
+
+    store.set(toggleScaleVisibleAtom);
+
+    expect(store.get(effectiveColorNotesAtom)).toHaveLength(0);
   });
 });

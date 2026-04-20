@@ -52,8 +52,8 @@ export function DegreeChipStrip({
           className="degree-chip-strip-header"
           data-has-action={headerAction ? 'true' : undefined}
         >
-          {!hideHeader && scaleName}
           {headerAction}
+          {!hideHeader && scaleName}
         </header>
       )}
       {visible && (
