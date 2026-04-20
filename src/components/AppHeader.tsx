@@ -35,7 +35,7 @@ export function AppHeader({
   const [titlePrimary, titleSecondary] = splitBrandTitle(brandTitle);
   return (
     <header role="banner" className={clsx(styles['app-header'], className)}>
-      <div className={styles['app-header-brand']}>
+      <div className="app-header-brand">
         {brandIcon && (
           <span className={styles['app-header-brand-icon']} aria-hidden="true">
             {brandIcon}
@@ -61,12 +61,12 @@ export function AppHeader({
             </span>
           )}
           {brandSubtitle && (
-            <span className={styles['app-header-brand-subtitle']}>{brandSubtitle}</span>
+            <span className="app-header-brand-subtitle">{brandSubtitle}</span>
           )}
         </div>
       </div>
       {actions && (
-        <div className={styles['app-header-actions']}>
+        <div className="app-header-actions">
           {actions}
         </div>
       )}

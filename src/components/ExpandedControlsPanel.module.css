@@ -4,57 +4,62 @@
      "split"   → tablet 2-column (Base + Theory stacked left, Key on right)
      "stacked" → compact single column (tablet-stacked / fallbacks) */
 
-.controls-panel.controls-panel--dashboard {
+.controls-panel,
+:global(.controls-panel--dashboard) {
   display: grid;
   gap: 1.25rem;
   align-items: start;
 }
 
-.controls-panel.controls-panel--dashboard[data-mode="3col"] {
+.controls-panel[data-mode="3col"],
+:global(.controls-panel--dashboard)[data-mode="3col"] {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(18rem, 20rem);
 }
 
-.controls-panel.controls-panel--dashboard[data-mode="split"] {
+.controls-panel[data-mode="split"],
+:global(.controls-panel--dashboard)[data-mode="split"] {
   grid-template-columns: minmax(0, 1fr) minmax(18rem, 1fr);
 }
 
-.controls-panel.controls-panel--dashboard[data-mode="split"]
-  .dashboard-card--configuration,
-.controls-panel.controls-panel--dashboard[data-mode="split"]
-  .dashboard-card--theory {
+.controls-panel[data-mode="split"] :global(.dashboard-card--configuration),
+:global(.controls-panel--dashboard)[data-mode="split"] :global(.dashboard-card--configuration),
+.controls-panel[data-mode="split"] :global(.dashboard-card--theory),
+:global(.controls-panel--dashboard)[data-mode="split"] :global(.dashboard-card--theory) {
   grid-column: 1;
 }
 
-.controls-panel.controls-panel--dashboard[data-mode="split"] .key-column {
+.controls-panel[data-mode="split"] :global(.key-column),
+:global(.controls-panel--dashboard)[data-mode="split"] :global(.key-column) {
   grid-column: 2;
   grid-row: 1 / span 2;
 }
 
-.controls-panel.controls-panel--dashboard[data-mode="stacked"] {
+.controls-panel[data-mode="stacked"],
+:global(.controls-panel--dashboard)[data-mode="stacked"] {
   grid-template-columns: minmax(0, 1fr);
 }
 
-.controls-panel--dashboard :global(.dashboard-card) {
+:global(.dashboard-card) {
   min-width: 0;
 }
 
-.controls-panel--dashboard :global(.dashboard-card) :global(.card-body) {
+:global(.dashboard-card) :global(.card-body) {
   display: flex;
   flex-direction: column;
   gap: 0.95rem;
 }
 
-.controls-panel--dashboard :global(.key-column) :global(.card-body) {
+:global(.key-column) :global(.card-body) {
   padding-top: 0.7rem;
 }
 
 /* Desktop tier: tighter dashboard grid gap — Phase 3 density pass. */
-:global(.app-container[data-layout-tier="desktop"]) .controls-panel--dashboard {
+:global(.app-container[data-layout-tier="desktop"]) .controls-panel {
   gap: 0.82rem;
 }
 
 /* Desktop tier: tighter inter-section gap inside each card body. */
-:global(.app-container[data-layout-tier="desktop"]) .controls-panel--dashboard :global(.card-body) {
+:global(.app-container[data-layout-tier="desktop"]) :global(.card-body) {
   gap: 0.68rem;
 }
 
@@ -62,36 +67,37 @@
    instead of single-column to avoid horizontal waste and keep Key Explorer
    visually adjacent to the Theory card.
    Mirrors desktop-3col proportions with a narrower Key column cap. */
-:global(.app-container[data-layout-variant="desktop-stacked"]) .controls-panel--dashboard {
+:global(.app-container[data-layout-variant="desktop-stacked"]) .controls-panel {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(13rem, 17rem);
 }
 
-:global(.app-container[data-layout-variant="desktop-stacked"]) .dashboard-card--configuration {
+:global(.app-container[data-layout-variant="desktop-stacked"]) :global(.dashboard-card--configuration) {
   grid-column: 1;
   grid-row: 1;
 }
 
-:global(.app-container[data-layout-variant="desktop-stacked"]) .dashboard-card--theory {
+:global(.app-container[data-layout-variant="desktop-stacked"]) :global(.dashboard-card--theory) {
   grid-column: 2;
   grid-row: 1;
 }
 
-:global(.app-container[data-layout-variant="desktop-stacked"]) .key-column {
+:global(.app-container[data-layout-variant="desktop-stacked"]) :global(.key-column) {
   grid-column: 3;
   grid-row: 1;
 }
 
 /* tablet-split (768x1024 iPad portrait): give the Key Explorer column extra
    horizontal weight so the circle fills its card without the 320px default cap. */
-:global(.app-container[data-layout-variant="tablet-split"]) .controls-panel--dashboard {
+:global(.app-container[data-layout-variant="tablet-split"]) .controls-panel {
   grid-template-columns: minmax(0, 1fr) minmax(20rem, 1.2fr);
 }
 
 /* Tablet tier: tighter dashboard grid and card body gaps. */
-:global(.app-container[data-layout-tier="tablet"]) .controls-panel--dashboard {
+:global(.app-container[data-layout-tier="tablet"]) .controls-panel,
+:global(.app-container[data-layout-tier="tablet"]) :global(.controls-panel--dashboard) {
   gap: 1rem;
 }
 
-:global(.app-container[data-layout-tier="tablet"]) .controls-panel--dashboard :global(.card-body) {
+:global(.app-container[data-layout-tier="tablet"]) :global(.card-body) {
   gap: 0.78rem;
 }

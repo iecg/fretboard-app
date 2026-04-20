@@ -7,7 +7,7 @@
   background: var(--chrome-scrim);
 }
 
-.settings-overlay-drawer {
+:global(.settings-overlay-drawer) {
   position: fixed;
   top: 0;
   right: 0;
@@ -30,7 +30,7 @@
   border-left: 1px solid var(--chrome-border);
 }
 
-.settings-overlay-drawer[data-layout-tier="mobile"] {
+:global(.settings-overlay-drawer)[data-layout-tier="mobile"] {
   inline-size: 100vw;
   max-inline-size: 100vw;
   border-left: none;

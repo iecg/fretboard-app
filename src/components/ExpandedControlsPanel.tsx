@@ -35,7 +35,7 @@ export function BaseControlsSection() {
   return (
     <Card
       title="Configuration"
-      className={clsx("dashboard-card", styles["dashboard-card--configuration"])}
+      className={clsx("dashboard-card", "dashboard-card--configuration")}
     >
       <div className={styles["control-group"]}>
         <FingeringPatternControls />
@@ -62,7 +62,7 @@ export function ScaleChordSection() {
   return (
     <Card
       title="Music Theory"
-      className={clsx("dashboard-card", styles["dashboard-card--theory"])}
+      className={clsx("dashboard-card", "dashboard-card--theory")}
     >
       <TheoryControls />
     </Card>
@@ -81,7 +81,7 @@ export function KeyColumn() {
   const enharmonicDisplay = useAtomValue(enharmonicDisplayAtom);
 
   return (
-    <Card title="Key Explorer" className={clsx("dashboard-card", styles["key-column"])}>
+    <Card title="Key Explorer" className={clsx("dashboard-card", "key-column")}>
       <Suspense fallback={null}>
         <CircleOfFifths
           rootNote={rootNote}
@@ -106,7 +106,7 @@ export function ExpandedControlsPanel({
   mode: "3col" | "split" | "stacked";
 }) {
   return (
-    <div className={clsx(styles["controls-panel"], styles["controls-panel--dashboard"])} data-mode={mode}>
+    <div className={clsx(styles["controls-panel"], "controls-panel--dashboard")} data-mode={mode}>
       <BaseControlsSection />
       <ScaleChordSection />
       <KeyColumn />

@@ -7,6 +7,14 @@ async function gotoApp(page: Page, width: number, height: number) {
   await page.setViewportSize({ width, height });
   await page.goto("/", { waitUntil: "networkidle" });
   await expect(page.locator(".app-container")).toBeVisible();
+
+  const tier = await page.evaluate(() =>
+    document.querySelector(".app-container")?.getAttribute("data-layout-tier"),
+  );
+  if (tier !== "mobile") {
+    // Wait for lazy-loaded controls panel if not on mobile
+    await expect(page.locator(".dashboard-card")).toHaveCount(3);
+  }
 }
 
 async function getMetrics(page: Page) {
