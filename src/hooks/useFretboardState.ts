@@ -14,7 +14,6 @@ import {
   chordTonesAtom,
   chordRootAtom,
   chordFretSpreadAtom,
-  hideNonChordNotesAtom,
   practiceLensAtom,
   effectiveColorNotesAtom,
   effectiveHiddenNotesAtom,
@@ -46,7 +45,6 @@ export function useFretboardState() {
   const chordTones = useAtomValue(chordTonesAtom);
   const chordRoot = useAtomValue(chordRootAtom);
   const chordFretSpread = useAtomValue(chordFretSpreadAtom);
-  const hideNonChordNotes = useAtomValue(hideNonChordNotesAtom);
   const practiceLens = useAtomValue(practiceLensAtom);
   const colorNotes = useAtomValue(effectiveColorNotesAtom);
   const hiddenNotes = useAtomValue(effectiveHiddenNotesAtom);
@@ -101,7 +99,6 @@ export function useFretboardState() {
     chordTones,
     chordRoot,
     chordFretSpread,
-    hideNonChordNotes,
     practiceLens,
     colorNotes,
     hiddenNotes,

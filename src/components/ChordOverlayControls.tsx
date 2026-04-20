@@ -2,7 +2,6 @@ import { startTransition, useEffect, useId, useState } from "react";
 import { useAtomValue } from "jotai";
 import clsx from "clsx";
 import { NOTES } from "../theory";
-import type { PracticeLens } from "../theory";
 import { lensAvailabilityAtom } from "../store/atoms";
 import { LabeledSelect, type LabeledSelectOption } from "./LabeledSelect";
 import { NoteGrid } from "./NoteGrid";
@@ -25,13 +24,6 @@ const CHORD_OPTIONS: (string | { divider: string })[] = [
 ];
 
 const CHORD_NONE_VALUE = "__none__";
-
-// Display order for the lens ToggleBar.
-const LENS_UI_ORDER: readonly PracticeLens[] = [
-  "targets",
-  "guide-tones",
-  "tension",
-];
 
 export function ChordOverlayControls() {
   const { rootNote } = useScaleState();
@@ -64,11 +56,11 @@ export function ChordOverlayControls() {
 
   // Build lens options from LENS_REGISTRY via lensAvailabilityAtom.
   // Tension is hidden (not just disabled) when unavailable and not currently active.
-  const lensOptions = LENS_UI_ORDER.flatMap((id) => {
-    const entry = lensAvailability.find((l) => l.id === id);
+  const lensOptions = lensAvailability.flatMap((entry) => {
+    const { id } = entry;
     const isActive = id === practiceLens;
-    const available = entry ? entry.available : false;
-    const reason = entry?.reason ?? undefined;
+    const available = entry.available;
+    const reason = entry.reason ?? undefined;
 
     // Hide lenses marked hideWhenUnavailable when they're unavailable and not active.
     if (!available && !isActive && entry?.hideWhenUnavailable) return [];

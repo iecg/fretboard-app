@@ -417,7 +417,7 @@ describe("App", () => {
       });
     });
 
-    it("targets lens: chord practice bar hidden in simple diatonic case (same root, all preset, all in scale, C Major)", async () => {
+    it("targets lens: chord practice bar shown even in simple diatonic case (C Major Triad over C Major)", async () => {
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("scaleName"), "Major");
       localStorage.setItem(k("chordRoot"), "C");
@@ -425,11 +425,8 @@ describe("App", () => {
       localStorage.setItem(k("practiceLens"), "targets");
       render(<App />);
       await waitFor(() => {
-        expect(document.querySelector(".degree-chip-strip")).toBeTruthy();
+        expect(document.querySelector(".chord-practice-bar")).toBeTruthy();
       });
-      // Bar is intentionally hidden: C Major Triad over C Major is fully diatonic, no new information.
-      expect(document.querySelector(".chord-practice-bar")).toBeNull();
-      expect(document.querySelector(".relationship-row")).toBeNull();
     });
 
     it("targets lens: shows chord practice bar when chordRoot differs from scale root", async () => {

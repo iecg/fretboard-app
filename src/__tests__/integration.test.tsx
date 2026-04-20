@@ -157,22 +157,6 @@ describe("Integration Tests - User Workflows", () => {
       expect(localStorage.getItem(k("chordType"))).toBe("Major Triad");
     });
 
-    it("enabling hideNonChordNotes filters display", async () => {
-      render(<App />);
-
-      localStorage.setItem(k("chordType"), "Major Triad");
-      localStorage.setItem(k("hideNonChordNotes"), "false");
-
-      const { rerender } = render(<App />);
-      expect(localStorage.getItem(k("hideNonChordNotes"))).toBe("false");
-
-      // User enables filter
-      localStorage.setItem(k("hideNonChordNotes"), "true");
-      rerender(<App />);
-
-      expect(localStorage.getItem(k("hideNonChordNotes"))).toBe("true");
-    });
-
     it("chord root links to scale root by default", async () => {
       render(<App />);
 

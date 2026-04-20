@@ -15,7 +15,6 @@ const LEGACY_KEYS = [
   "chordRoot",
   "chordType",
   "linkChordRoot",
-  "hideNonChordNotes",
   "chordFretSpread",
   "chordIntervalFilter",
   "fingeringPattern",

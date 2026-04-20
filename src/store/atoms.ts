@@ -57,7 +57,6 @@ export {
   linkChordRootAtom,
   chordFretSpreadAtom,
   practiceLensAtom,
-  hideNonChordNotesAtom,
   chordTonesAtom,
   chordMembersAtom,
   hasOutsideChordMembersAtom,

@@ -9,7 +9,6 @@ import {
   hasOutsideChordMembersAtom,
   chordLabelAtom,
   chordFretSpreadAtom,
-  hideNonChordNotesAtom,
 } from "../store/atoms";
 
 export function useChordState() {
@@ -18,7 +17,6 @@ export function useChordState() {
   const [linkChordRoot, setLinkChordRoot] = useAtom(linkChordRootAtom);
   const [practiceLens, setPracticeLens] = useAtom(practiceLensAtom);
   const chordFretSpread = useAtomValue(chordFretSpreadAtom);
-  const hideNonChordNotes = useAtomValue(hideNonChordNotesAtom);
 
   const chordTones = useAtomValue(chordTonesAtom);
   const chordMembers = useAtomValue(chordMembersAtom);
@@ -35,7 +33,6 @@ export function useChordState() {
     practiceLens,
     setPracticeLens,
     chordFretSpread,
-    hideNonChordNotes,
     chordTones,
     chordMembers,
     hasOutsideChordMembers,

@@ -7,7 +7,6 @@ import {
   practiceLensAtom,
   practiceCuesAtom,
   shapeLocalPracticeCuesAtom,
-  hideNonChordNotesAtom,
   showChordPracticeBarAtom,
   practiceBarLensLabelAtom,
   lensAvailabilityAtom,
@@ -89,21 +88,6 @@ describe("practiceLensAtom", () => {
     const unsub = store.sub(practiceLensAtom, () => {});
     expect(store.get(practiceLensAtom)).toBe("targets");
     unsub();
-  });
-});
-
-describe("hideNonChordNotesAtom", () => {
-  it("is always false — lenses never hide scale notes", () => {
-    const store = makeStore();
-    for (const lens of ["targets", "guide-tones", "tension"] as const) {
-      store.set(practiceLensAtom, lens);
-      expect(store.get(hideNonChordNotesAtom)).toBe(false);
-    }
-  });
-
-  it("is false when no chord is set", () => {
-    const store = makeStore();
-    expect(store.get(hideNonChordNotesAtom)).toBe(false);
   });
 });
 
@@ -362,34 +346,25 @@ describe("showChordPracticeBarAtom", () => {
     expect(store.get(showChordPracticeBarAtom)).toBe(false);
   });
 
-  it("returns true for non-default lenses even in diatonic simple case", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordRootAtom, "C");
-    store.set(chordTypeAtom, "Major Triad");
-    // Diatonic simple case but lens is not targets (guide-tones)
-    store.set(practiceLensAtom, "guide-tones");
-    expect(store.get(showChordPracticeBarAtom)).toBe(true);
-  });
+  it.each(["targets", "guide-tones", "tension"] as const)(
+    "returns true when chord is active regardless of lens (%s)",
+    (lens) => {
+      const store = makeStore();
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad");
+      store.set(practiceLensAtom, lens);
+      expect(store.get(showChordPracticeBarAtom)).toBe(true);
+    },
+  );
 
-  it("returns false for targets lens in diatonic simple case (root linked, chord in-scale)", () => {
+  it("returns true for Am chord on Am scale (previously suppressed)", () => {
     const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordRootAtom, "C");
-    store.set(chordTypeAtom, "Major Triad");
-    store.set(practiceLensAtom, "targets");
-    // C Major + C Major Triad — diatonic simple case (chord root == scale root, fully in-scale)
-    expect(store.get(showChordPracticeBarAtom)).toBe(false);
-  });
-
-  it("returns true for targets when there are outside chord members", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordRootAtom, "C");
-    store.set(chordTypeAtom, "Dominant 7th"); // Bb is outside C Major
+    store.set(rootNoteAtom, "A");
+    store.set(scaleNameAtom, "Natural Minor");
+    store.set(chordRootAtom, "A");
+    store.set(chordTypeAtom, "Minor Triad");
     store.set(practiceLensAtom, "targets");
     expect(store.get(showChordPracticeBarAtom)).toBe(true);
   });
@@ -548,13 +523,6 @@ describe("chord overlay does not control scale visibility", () => {
 describe("Chord Tones lens does not hide scale notes", () => {
   beforeEach(() => {
     localStorage.clear();
-  });
-
-  it("hideNonChordNotesAtom is false when targets lens is active", () => {
-    const store = makeStore();
-    store.set(chordTypeAtom, "Major Triad");
-    store.set(practiceLensAtom, "targets");
-    expect(store.get(hideNonChordNotesAtom)).toBe(false);
   });
 
   it("effectiveShapeDataAtom highlightNotes unchanged when switching between lenses", () => {
