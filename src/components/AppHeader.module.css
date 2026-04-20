@@ -179,7 +179,7 @@
   padding-bottom: clamp(0.62rem, 1vw, 0.8rem);
 }
 
-.app-container[data-layout-tier="tablet"] .app-header-brand-icon .brand-mark {
+.app-container[data-layout-tier="tablet"] .app-header-brand-icon :global(.brand-mark) {
   width: clamp(3.15rem, 5.8vw, 4.1rem);
 }
 

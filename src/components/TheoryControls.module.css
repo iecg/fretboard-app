@@ -99,18 +99,18 @@
   flex-shrink: 0;
 }
 
-.theory-browser-main > .theory-nav-btn:last-child {
+:global(.theory-browser-main) > :global(.theory-nav-btn):last-child {
   border-right: none;
   border-left: 1px solid rgb(255 255 255 / 0.08);
 }
 
-.theory-nav-btn:hover {
+:global(.theory-nav-btn):hover {
   background: rgb(77 228 255 / 0.09);
   color: white;
 }
 
 /* Inset focus for nav buttons — same reason as select */
-.theory-nav-btn:focus-visible {
+:global(.theory-nav-btn):focus-visible {
   outline: none;
   box-shadow: inset 0 0 0 2px var(--neon-cyan);
 }

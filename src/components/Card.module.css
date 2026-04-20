@@ -1,3 +1,4 @@
+/* stylelint-disable selector-pseudo-class-no-unknown */
 .card {
   background: rgb(22 27 38 / 0.96);
   border: 1px solid rgb(255 255 255 / 0.1);
@@ -78,3 +79,4 @@
 :global(.app-container[data-layout-tier="tablet"]) .card-header-title {
   font-size: 1.1rem;
 }
+/* stylelint-enable selector-pseudo-class-no-unknown */
