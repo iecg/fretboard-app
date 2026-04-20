@@ -11,7 +11,7 @@ interface NoteGridProps {
   useFlats: boolean;
 }
 
-const GRID_COLS = 4;
+const GRID_COLS = 6;
 
 export function NoteGrid({
   notes,
@@ -55,7 +55,7 @@ export function NoteGrid({
         if (nextIndex < notes.length) {
           onSelect(notes[nextIndex]);
         } else {
-          onSelect(notes[index % cols]);
+          onSelect(notes[nextIndex - notes.length]);
         }
         break;
       }
@@ -66,7 +66,7 @@ export function NoteGrid({
         if (prevIndex >= 0) {
           onSelect(notes[prevIndex]);
         } else {
-          onSelect(notes[notes.length - 1]);
+          onSelect(notes[prevIndex + notes.length]);
         }
         break;
       }
