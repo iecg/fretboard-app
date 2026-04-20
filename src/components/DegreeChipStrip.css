@@ -174,7 +174,7 @@
 .degree-chip-item[data-is-color-note='true'] .degree-chip::before {
   content: '';
   position: absolute;
-  inset: 2px;
+  inset: 0px;
   background: rgb(20 30 40 / 0.92);
   clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
   z-index: 0;
