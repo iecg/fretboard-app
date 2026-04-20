@@ -1,6 +1,18 @@
 import type { ShapePolygon } from "./polygons";
 
 /**
+ * Check if a shape has any wrapped notes.
+ */
+export function hasWrappedNotes(poly: ShapePolygon, wrappedNotes: Set<string>): boolean {
+  for (const vert of poly.vertices) {
+    if (wrappedNotes.has(`${vert.string}-${vert.fret}`)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * Find the main CAGED shape to auto-center.
  * The main shape is the one with the lowest root fret that is "complete"
  * (no wrapped notes, not truncated, and entirely within visible fret range).

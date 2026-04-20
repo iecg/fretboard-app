@@ -10,12 +10,13 @@ import { synth } from "./audio";
 import { fretZoomAtom, type AutoCenterTarget } from "./store/atoms";
 import { FretboardSVG } from "./FretboardSVG";
 import { useFretboardState, type ShapeScope, type ActiveShapeType } from "./hooks/useFretboardState";
-import { 
-  STRING_ROW_PX_DEFAULT, 
-  MAX_FRET, 
-  NOTE_BUBBLE_RATIO, 
-  MIN_FRET_WIDTH_BASE, 
-  MIN_FRET_WIDTH_OVERFLOW_BUFFER 
+import {
+  STRING_ROW_PX_DEFAULT,
+  MAX_FRET,
+  NOTE_BUBBLE_RATIO,
+  NUT_WIDTH,
+  MIN_FRET_WIDTH_BASE,
+  MIN_FRET_WIDTH_OVERFLOW_BUFFER
 } from "./constants";
 import type { ShapePolygon } from "./shapes";
 
@@ -128,33 +129,35 @@ export function Fretboard(props: FretboardProps) {
     setHasOverflow(el.scrollWidth > el.clientWidth + 1);
   }, [effectiveZoom, totalColumns, containerWidth]);
 
-  const effectiveZoomRef = useRef(effectiveZoom);
-  useEffect(() => {
-    effectiveZoomRef.current = effectiveZoom;
-  }, [effectiveZoom]);
-
   useEffect(() => {
     if (!autoCenterTarget) return;
     const el = scrollRef.current;
     if (!el) return;
-    const zoom = effectiveZoomRef.current;
+    const zoom = effectiveZoom;
     const containerW = el.clientWidth;
-    const buffer = zoom * 0.5;
+    if (containerW <= 0) return;
 
-    const shapeMinPx = (autoCenterTarget.minFret - startFret) * zoom;
-    const shapeMaxPx = (autoCenterTarget.maxFret - startFret) * zoom;
-    const shapeWidth = shapeMaxPx - shapeMinPx;
+    // Replicate the tapered fret coordinate system from FretboardSVG so scroll
+    // targets match actual rendered positions (real guitar frets are non-uniform).
+    const neckWidth = totalColumns * zoom;
+    const noteBubblePx = Math.round(stringRowPx * NOTE_BUBBLE_RATIO);
+    const openWidth = startFret === 0 ? Math.max(noteBubblePx + 12, NUT_WIDTH + 4) : 0;
+    const leftAnchor = startFret === 0 ? 1 : Math.pow(2, -(startFret - 1) / 12);
+    const rightAnchor = Math.pow(2, -endFret / 12);
+    const scaleRange = leftAnchor - rightAnchor || 1;
+    const scalePx = (neckWidth - openWidth) / scaleRange;
 
-    let scrollLeft: number;
-    if (shapeWidth <= containerW - buffer * 2) {
-      const centerPx = (shapeMinPx + shapeMaxPx) / 2;
-      scrollLeft = centerPx - containerW / 2 + zoom / 2;
-    } else {
-      scrollLeft = shapeMinPx - buffer;
-    }
+    const wireX = (wireIndex: number): number => {
+      if (startFret === 0 && wireIndex === 0) return openWidth;
+      return openWidth + scalePx * (leftAnchor - Math.pow(2, -wireIndex / 12));
+    };
 
-    el.scrollTo({ left: Math.max(0, scrollLeft), behavior: "smooth" });
-  }, [autoCenterTarget, recenterKey, startFret]);
+    const shapeLeft = autoCenterTarget.minFret === 0 ? 0 : wireX(autoCenterTarget.minFret - 1);
+    const shapeRight = wireX(autoCenterTarget.maxFret);
+    const shapeCenter = (shapeLeft + shapeRight) / 2;
+
+    el.scrollTo({ left: Math.max(0, shapeCenter - containerW / 2), behavior: "smooth" });
+  }, [autoCenterTarget, recenterKey, startFret, endFret, effectiveZoom, stringRowPx, totalColumns, containerWidth]);
 
   const updateCursor = useCallback((dragging: boolean) => {
     if (!scrollRef.current) return;
