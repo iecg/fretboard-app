@@ -1,18 +1,23 @@
-/* Chip sizing tokens — reused by container width, connector line, and chip itself
-   so the horizontal line terminates exactly at the first and last chip centers. */
+/* ─── Tokens ─────────────────────────────────────────────────────────────── */
 .degree-chip-strip {
   --chip-size: clamp(2.15rem, 3.4vw, 2.5rem);
   --chip-half: calc(var(--chip-size) / 2);
-  /* Matches the Card primitive fill (see Card.css). Solid RGB is used rather
-     than rgb(22 27 38 / 0.96) because the chip circles reuse this value to
-     mask the connector line — an opaque fill keeps the line from showing
-     under each ring while being visually indistinguishable from 0.96 alpha. */
+  /* Opaque fill so chips mask the connector line (matches Card bg visually). */
   --strip-fill: rgb(22 27 38);
-  /* Matches the SVG fretboard glow filters (see FretboardSVG.tsx
-     #glow-cyan / #glow-orange — feDropShadow stdDeviation=3, opacity=0.65). */
-  --chip-glow-cyan: 0 0 6px rgb(77 228 255 / 0.65);
+  /* Glow shadows — match FretboardSVG feDropShadow filters. */
+  --chip-glow-cyan:   0 0 6px rgb(77 228 255 / 0.65);
   --chip-glow-orange: 0 0 6px rgb(255 154 77 / 0.65);
+  /* drop-shadow for hexagons — box-shadow is clipped by clip-path. */
+  --chip-glow-violet: drop-shadow(0 0 5px rgb(167 139 250 / 0.75));
   --chip-border-width: 2px;
+  --chip-border-muted: rgb(255 255 255 / 0.22);
+  --chip-line-muted:   rgb(255 255 255 / 0.18);
+  --chip-focus-ring:   rgb(77 228 255 / 0.7);
+  /* Hexagon geometry and colors for color-note chips. */
+  --chip-hexagon-clip:     polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+  --color-note-ring-color: var(--note-ring-color-tone);
+  --color-note-inner-fill: rgb(20 30 40 / 0.92);
+  --color-note-text:       #e8d8ff;
 
   display: flex;
   flex-direction: column;
@@ -37,9 +42,7 @@
   letter-spacing: 0.01em;
 }
 
-/* When the header contains an action slot, lay it out as a flex row.
-   Action renders before the title so the eye toggle sits left-aligned
-   inline with the scale name rather than isolated at the far edge. */
+/* Action slot (eye toggle) left-aligns the header as a flex row. */
 .degree-chip-strip-header[data-has-action] {
   display: flex;
   align-items: center;
@@ -49,7 +52,6 @@
   line-height: initial;
 }
 
-/* Eye visibility toggle button */
 .scale-eye-toggle {
   display: inline-flex;
   align-items: center;
@@ -65,19 +67,15 @@
   flex-shrink: 0;
 }
 
-.scale-eye-toggle:hover {
-  opacity: 1;
-}
+.scale-eye-toggle:hover { opacity: 1; }
 
 .scale-eye-toggle:focus-visible {
-  outline: 2px solid rgb(77 228 255 / 0.7);
+  outline: 2px solid var(--chip-focus-ring);
   outline-offset: 2px;
   opacity: 1;
 }
 
-.scale-eye-toggle[aria-pressed="true"] {
-  opacity: 0.4;
-}
+.scale-eye-toggle[aria-pressed="true"] { opacity: 0.4; }
 
 .degree-chip-strip-list {
   position: relative;
@@ -90,7 +88,7 @@
   width: 100%;
 }
 
-/* Connector line spans exactly from first chip center to last chip center. */
+/* Connector line spans first-to-last chip center. */
 .degree-chip-strip-list::before {
   content: "";
   position: absolute;
@@ -98,7 +96,7 @@
   right: var(--chip-half);
   top: calc(var(--chip-half) - 1px);
   height: 2px;
-  background: rgb(255 255 255 / 0.18);
+  background: var(--chip-line-muted);
   pointer-events: none;
   z-index: 0;
 }
@@ -119,11 +117,9 @@
   width: var(--chip-size);
   height: var(--chip-size);
   border-radius: 50%;
-  /* Fill matches the strip surface — visually reads as "no fill" because it
-     blends with the container, but it hides the connector line behind the
-     chip so the line stops cleanly at each ring edge. */
+  /* Opaque fill hides the connector line behind each chip ring. */
   background: var(--strip-fill);
-  border: var(--chip-border-width) solid rgb(255 255 255 / 0.22);
+  border: var(--chip-border-width) solid var(--chip-border-muted);
   opacity: 0.55;
   cursor: pointer;
   padding: 0;
@@ -134,7 +130,7 @@
 }
 
 .degree-chip:focus-visible {
-  outline: 2px solid rgb(77 228 255 / 0.7);
+  outline: 2px solid var(--chip-focus-ring);
   outline-offset: 2px;
 }
 
@@ -148,42 +144,79 @@
   border-color: rgb(255 154 77 / 0.95);
   box-shadow: var(--chip-glow-orange);
   opacity: 1;
-  border-width: var(--chip-border-width);
 }
 
-/* Color note (blue note / modal characteristic tone) — hexagon geometry + violet ring + glow.
-   clip-path clips the chip to a pointy-top hexagon matching the SVG fretboard hexagon.
-   filter: drop-shadow is used instead of box-shadow because box-shadow is clipped
-   by clip-path while filter is applied after clipping. */
+/* Color-note chip: hexagon shape with violet ring + glow.
+   The ring is the chip background (violet) visible around the dark ::before fill.
+   The chip's 2px transparent border creates the ring gap at inset:0.
+   Glow sits on the item (not the chip) so clip-path doesn't consume the drop-shadow. */
+.degree-chip-item[data-is-color-note='true'] {
+  filter: var(--chip-glow-violet);
+}
+
 .degree-chip-item[data-is-color-note='true'] .degree-chip {
-  clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
-  border-radius: 0;
-  border-color: var(--note-ring-color-tone);
+  clip-path: var(--chip-hexagon-clip);
+  border-color: transparent;
+  background: var(--color-note-ring-color);
   box-shadow: none;
-  filter: drop-shadow(0 0 5px rgb(167 139 250 / 0.75));
   opacity: 1;
+  position: relative;
+}
+
+/* Dark inner fill — inset:0 sits inside the 2px transparent border, leaving the ring. */
+.degree-chip-item[data-is-color-note='true'] .degree-chip::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--color-note-inner-fill);
+  clip-path: var(--chip-hexagon-clip);
 }
 
 .degree-chip-item[data-is-color-note='true'] .degree-chip-note {
-  color: #e8d8ff;
+  color: var(--color-note-text);
+  position: relative;
+  z-index: 1;
 }
 
-/* Hidden state overrides all active states — connector line grey glow. */
+/* Opaque circle at z-index:-1 masks the connector line — opacity:0.38 on the chip would otherwise let it bleed through. */
+.degree-chip-item[data-hidden='true']::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--chip-size);
+  height: var(--chip-size);
+  border-radius: 50%;
+  background: var(--strip-fill);
+  z-index: -1;
+}
+
+/* Hidden overrides all active states. */
 .degree-chip-item[data-hidden='true'] .degree-chip {
-  border-color: rgb(255 255 255 / 0.22);
-  box-shadow: 0 0 6px rgb(255 255 255 / 0.18);
+  border-color: var(--chip-border-muted);
+  box-shadow: 0 0 6px var(--chip-line-muted);
+  filter: none;
   opacity: 0.38;
 }
 
+.degree-chip-item[data-hidden='true'][data-is-color-note='true'] {
+  filter: none;
+}
+
+.degree-chip-item[data-hidden='true'][data-is-color-note='true'] .degree-chip {
+  border-color: transparent;
+  background: var(--chip-border-muted);
+}
+
 .degree-chip-note {
-  /* Match the chip's own height so the line-box centers glyphs vertically
-     regardless of Inter's ascender/descender asymmetry. */
   display: inline-flex;
   align-items: center;
   font-family: var(--font-sans);
   font-weight: var(--font-weight-semibold);
   font-size: clamp(1.1rem, 1.9vw, 1.28rem);
   color: var(--text-soft-white);
+  /* line-height matches chip height to vertically center glyphs past ascender/descender asymmetry. */
   line-height: calc(var(--chip-size) - var(--chip-border-width) * 2);
   letter-spacing: 0.01em;
 }
@@ -206,36 +239,19 @@
   gap: 0.35rem;
 }
 
-.app-container[data-layout-tier="mobile"] .degree-chip-strip-header {
-  font-size: 0.92rem;
-}
+.app-container[data-layout-tier="mobile"] .degree-chip-strip-header { font-size: 0.92rem; }
+.app-container[data-layout-tier="mobile"] .degree-chip-note        { font-size: 1.1rem; }
+.app-container[data-layout-tier="mobile"] .degree-chip-interval    { font-size: 0.82rem; }
 
-.app-container[data-layout-tier="mobile"] .degree-chip-note {
-  font-size: 1.1rem;
-}
-
-.app-container[data-layout-tier="mobile"] .degree-chip-interval {
-  font-size: 0.82rem;
-}
-
-/* Phase 2: Desktop compact chip strip — smaller chips, tighter padding.
-   Targets ~82px strip height (down from ~104px), keeping chip glyph legible. */
+/* Desktop: smaller chips, tighter padding (~82px strip height). */
 .app-container[data-layout-tier="desktop"] .degree-chip-strip {
   --chip-size: clamp(1.82rem, 2.45vw, 2.02rem);
+
   padding: 0.34rem 0.78rem 0.38rem;
   gap: 0.24rem;
-
   width: min(100%, 32rem);
 }
 
-.app-container[data-layout-tier="desktop"] .degree-chip-strip-header {
-  font-size: clamp(0.84rem, 1.2vw, 0.96rem);
-}
-
-.app-container[data-layout-tier="desktop"] .degree-chip-note {
-  font-size: clamp(1rem, 1.7vw, 1.15rem);
-}
-
-.app-container[data-layout-tier="desktop"] .degree-chip-interval {
-  font-size: 0.78rem;
-}
+.app-container[data-layout-tier="desktop"] .degree-chip-strip-header { font-size: clamp(0.84rem, 1.2vw, 0.96rem); }
+.app-container[data-layout-tier="desktop"] .degree-chip-note         { font-size: clamp(1rem, 1.7vw, 1.15rem); }
+.app-container[data-layout-tier="desktop"] .degree-chip-interval     { font-size: 0.78rem; }
