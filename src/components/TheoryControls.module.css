@@ -22,6 +22,7 @@
     0 2px 10px rgb(0 0 0 / 0.18);
 }
 
+/* stylelint-disable selector-pseudo-class-no-unknown */
 /* Compound nav strip: left-btn | select | right-btn as one connected widget */
 .theory-browser-main {
   min-width: 0;
@@ -216,3 +217,4 @@
   width: 2.75rem;
   height: 2.82rem;
 }
+/* stylelint-enable selector-pseudo-class-no-unknown */
