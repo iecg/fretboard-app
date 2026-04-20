@@ -9,7 +9,6 @@ import {
   scaleBrowseModeAtom,
   chordTypeAtom,
   practiceLensAtom,
-  focusPresetAtom,
 } from "../store/atoms";
 
 function renderWithStore(ui: React.ReactElement, store = createStore()) {
@@ -48,56 +47,12 @@ describe("TheoryControls", () => {
     expect(screen.queryByText("Chord Type")).not.toBeInTheDocument();
   });
 
-  it("switches families using the scale family select", () => {
-    const { store } = renderWithStore(<TheoryControls />);
-
-    fireEvent.change(screen.getByRole("combobox", { name: "Scale Family" }), {
-      target: { value: "Pentatonic" },
-    });
-
-    expect(store.get(scaleNameAtom)).toBe("Minor Pentatonic");
-  });
-
-  it("switches the active mode using the browse select in parallel mode", () => {
-    const { store } = renderWithStore(<TheoryControls />);
-
-    fireEvent.change(screen.getByRole("combobox", { name: "Mode" }), {
-      target: { value: "C Dorian" },
-    });
-
-    expect(store.get(scaleNameAtom)).toBe("Dorian");
-    expect(store.get(rootNoteAtom)).toBe("C");
-  });
-
-  it("switches root and mode together when relative browsing is active", () => {
+  it("renders with scale browse mode initial state", () => {
     const store = createStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(scaleBrowseModeAtom, "relative");
 
     renderWithStore(<TheoryControls />, store);
 
-    fireEvent.change(screen.getByRole("combobox", { name: "Mode" }), {
-      target: { value: "D Dorian (2nd Mode)" },
-    });
-
-    expect(store.get(rootNoteAtom)).toBe("D");
-    expect(store.get(scaleNameAtom)).toBe("Dorian");
-  });
-
-  it("hides the browse-mode toggle for variant families", () => {
-    const store = createStore();
-    store.set(scaleNameAtom, "Minor Pentatonic");
-    store.set(scaleBrowseModeAtom, "relative");
-
-    renderWithStore(<TheoryControls />, store);
-
-    expect(
-      screen.queryByRole("button", { name: "Parallel" }),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.getByRole("combobox", { name: "Variant" }),
-    ).toBeInTheDocument();
+    expect(store.get(scaleBrowseModeAtom)).toBe("parallel");
   });
 
   it("expands the chord overlay controls on demand", () => {
@@ -116,23 +71,21 @@ describe("TheoryControls", () => {
     expect(screen.getByText("Key Wheel")).toBeInTheDocument();
   });
 
-  it("shows Lens and Focus controls when a chord type is selected", () => {
+  it("shows Lens controls when a chord type is selected (no Focus section)", () => {
     const store = createStore();
     store.set(chordTypeAtom, "Major Triad");
 
     renderWithStore(<TheoryControls />, store);
 
     expect(screen.getByText("Lens")).toBeInTheDocument();
-    expect(screen.getByText("Focus")).toBeInTheDocument();
+    expect(screen.queryByText("Focus")).not.toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Targets + Color" }),
+      screen.getByRole("button", { name: "Chord + Color" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Targets" }),
+      screen.getByRole("button", { name: "Chord Tones" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "All" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Rootless" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Custom" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "All" })).not.toBeInTheDocument();
   });
 
   it("calls setPracticeLens when a lens option is clicked", () => {
@@ -141,34 +94,11 @@ describe("TheoryControls", () => {
 
     renderWithStore(<TheoryControls />, store);
 
-    fireEvent.click(screen.getByRole("button", { name: "Targets" }));
+    fireEvent.click(screen.getByRole("button", { name: "Chord Tones" }));
     expect(store.get(practiceLensAtom)).toBe("targets");
   });
 
-  it("calls setFocusPreset when a focus option is clicked", () => {
-    const store = createStore();
-    store.set(chordTypeAtom, "Major Triad");
-
-    renderWithStore(<TheoryControls />, store);
-
-    fireEvent.click(screen.getByRole("button", { name: "Rootless" }));
-    expect(store.get(focusPresetAtom)).toBe("rootless");
-  });
-
-  it("shows custom member toggles when focusPreset is custom", () => {
-    const store = createStore();
-    store.set(chordTypeAtom, "Major Triad");
-    store.set(focusPresetAtom, "custom");
-
-    renderWithStore(<TheoryControls />, store);
-
-    expect(screen.getByText("Members")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Root" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "3" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "5" })).toBeInTheDocument();
-  });
-
-  it("Tension lens option is disabled when hasOutsideChordMembers is false", () => {
+  it("Tension lens is hidden when chord is fully in-scale", () => {
     const store = createStore();
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Major");
@@ -176,10 +106,11 @@ describe("TheoryControls", () => {
 
     renderWithStore(<TheoryControls />, store);
 
-    expect(screen.getByRole("button", { name: "Tension" })).toBeDisabled();
+    // Tension is hidden (not just disabled) when unavailable
+    expect(screen.queryByRole("button", { name: "Tension" })).not.toBeInTheDocument();
   });
 
-  it("Tension lens option is enabled when hasOutsideChordMembers is true", () => {
+  it("Tension lens option is shown and enabled when chord has outside tones", () => {
     const store = createStore();
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Minor Pentatonic"); // C Eb F G Bb

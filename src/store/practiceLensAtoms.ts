@@ -28,11 +28,10 @@ import {
   chordRootAtom,
   chordTypeAtom,
   chordLabelAtom,
+  chordTonesAtom,
+  chordMembersAtom,
   practiceLensAtom,
-  focusPresetAtom,
   hasOutsideChordMembersAtom,
-  activeChordMembersAtom,
-  activeChordTonesAtom,
   allChordMembersAtom,
 } from "./chordOverlayAtoms";
 
@@ -66,9 +65,9 @@ export const practiceBarColorNotesAtom = atom((get) => {
 });
 
 export const practiceBarColorNotesFilteredAtom = atom((get) => {
-  const activeChordTones = get(activeChordTonesAtom);
+  const chordTones = get(chordTonesAtom);
   const practiceBarColorNotes = get(practiceBarColorNotesAtom);
-  const chordToneSet = new Set(activeChordTones);
+  const chordToneSet = new Set(chordTones);
   return practiceBarColorNotes.filter((n) => !chordToneSet.has(n.internalNote));
 });
 
@@ -89,15 +88,15 @@ export const noteSemanticMapAtom = atom((get) => {
   const rootNote = get(rootNoteAtom);
   const scaleName = get(scaleNameAtom);
   const chordRoot = get(chordRootAtom);
-  const activeChordMembers = get(activeChordMembersAtom);
+  const chordMembers = get(chordMembersAtom);
   const colorNotes = get(colorNotesAtom);
 
   const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
   const colorNoteSet = new Set(colorNotes);
 
-  const memberByNote = new Map<string, (typeof activeChordMembers)[number]>();
-  for (const m of activeChordMembers) memberByNote.set(m.note, m);
-  const activeChordToneSet = new Set(activeChordMembers.map((m) => m.note));
+  const memberByNote = new Map<string, (typeof chordMembers)[number]>();
+  for (const m of chordMembers) memberByNote.set(m.note, m);
+  const activeChordToneSet = new Set(chordMembers.map((m) => m.note));
 
   const map = new Map<string, NoteSemantics>();
   for (const note of NOTES) {
@@ -298,14 +297,12 @@ export const showChordPracticeBarAtom = atom((get) => {
   // For targets-color (default): suppress the bar for the diatonic simple case
   // where the chord is fully in-scale, root is linked, and no color tones exist
   // (nothing interesting to coach about).
-  const focusPreset = get(focusPresetAtom);
   const hasOutsideChordMembers = get(hasOutsideChordMembersAtom);
   const colorNotes = get(colorNotesAtom);
   const chordRoot = get(chordRootAtom);
   const rootNote = get(rootNoteAtom);
 
   const isDiatonicSimpleCase =
-    focusPreset === "all" &&
     !hasOutsideChordMembers &&
     colorNotes.length === 0 &&
     chordRoot === rootNote;
@@ -346,13 +343,13 @@ export const practiceBarOutsideMembersAtom = atom((get) =>
  */
 export const lensAvailabilityContextAtom = atom((get): LensAvailabilityContext => {
   const chordType = get(chordTypeAtom);
-  const activeChordMembers = get(activeChordMembersAtom);
+  const chordMembers = get(chordMembersAtom);
   const colorNotes = get(colorNotesAtom);
   const hasOutsideChordMembers = get(hasOutsideChordMembersAtom);
 
   return {
     hasChordOverlay: !!chordType,
-    hasGuideTones: activeChordMembers.some((m) => GUIDE_TONE_RAW.has(m.name)),
+    hasGuideTones: chordMembers.some((m) => GUIDE_TONE_RAW.has(m.name)),
     hasColorNotes: colorNotes.length > 0,
     hasOutsideTones: hasOutsideChordMembers,
   };
@@ -371,5 +368,6 @@ export const lensAvailabilityAtom = atom((get) => {
     description: entry.description,
     available: entry.isAvailable(ctx),
     reason: entry.unavailableReason(ctx),
+    hideWhenUnavailable: entry.hideWhenUnavailable ?? false,
   }));
 });

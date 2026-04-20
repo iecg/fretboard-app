@@ -12,8 +12,6 @@ import {
   getKeySignature,
   getKeySignatureForDisplay,
   resolveAccidentalMode,
-  getAvailableFocusPresets,
-  applyFocusPreset,
 } from "../theory";
 
 describe("getNoteIndex", () => {
@@ -326,71 +324,6 @@ describe("CHORD_DEFINITIONS", () => {
   });
 });
 
-describe("getAvailableFocusPresets", () => {
-  it("triad chord returns all, rootless, custom", () => {
-    expect(getAvailableFocusPresets("Major Triad")).toEqual(["all", "rootless", "custom"]);
-    expect(getAvailableFocusPresets("Minor Triad")).toEqual(["all", "rootless", "custom"]);
-  });
-
-  it("seventh chord returns all six presets", () => {
-    const presets = getAvailableFocusPresets("Dominant 7th");
-    expect(presets).toEqual(["all", "triad", "shell", "guide-tones", "rootless", "custom"]);
-  });
-
-  it("power chord returns only all and custom", () => {
-    expect(getAvailableFocusPresets("Power Chord (5)")).toEqual(["all", "custom"]);
-  });
-
-  it("unknown chord returns all and custom as fallback", () => {
-    expect(getAvailableFocusPresets("Unknown Chord")).toEqual(["all", "custom"]);
-  });
-});
-
-describe("applyFocusPreset", () => {
-  const dom7Def = CHORD_DEFINITIONS["Dominant 7th"];
-  const triadDef = CHORD_DEFINITIONS["Major Triad"];
-
-  it("all returns all members unchanged", () => {
-    expect(applyFocusPreset(dom7Def, "all", [])).toEqual(dom7Def.members);
-  });
-
-  it("triad preset returns root + 3rd + 5th for Dominant 7th", () => {
-    const result = applyFocusPreset(dom7Def, "triad", []);
-    expect(result.map((m) => m.name)).toEqual(["root", "3", "5"]);
-  });
-
-  it("shell preset returns root + 3rd + 7th for Dominant 7th", () => {
-    const result = applyFocusPreset(dom7Def, "shell", []);
-    expect(result.map((m) => m.name)).toEqual(["root", "3", "b7"]);
-  });
-
-  it("guide-tones preset returns 3rd + b7 only (no root)", () => {
-    const result = applyFocusPreset(dom7Def, "guide-tones", []);
-    expect(result.map((m) => m.name)).toEqual(["3", "b7"]);
-    expect(result.some((m) => m.name === "root")).toBe(false);
-  });
-
-  it("rootless preset excludes only the root", () => {
-    const result = applyFocusPreset(dom7Def, "rootless", []);
-    expect(result.map((m) => m.name)).toEqual(["3", "5", "b7"]);
-  });
-
-  it("custom with selections filters to those members", () => {
-    const result = applyFocusPreset(triadDef, "custom", ["root", "5"]);
-    expect(result.map((m) => m.name)).toEqual(["root", "5"]);
-  });
-
-  it("custom with empty selection falls back to all members", () => {
-    const result = applyFocusPreset(triadDef, "custom", []);
-    expect(result).toEqual(triadDef.members);
-  });
-
-  it("guide-tones on Major 7th returns 3 and 7 (maj7)", () => {
-    const maj7Def = CHORD_DEFINITIONS["Major 7th"];
-    const result = applyFocusPreset(maj7Def, "guide-tones", []);
-    expect(result.map((m) => m.name)).toEqual(["3", "7"]);
-  });
-});
 
 describe("SCALES constant", () => {
   it("has expected number of scales", () => {

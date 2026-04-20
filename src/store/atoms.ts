@@ -56,16 +56,10 @@ export {
   chordTypeAtom,
   linkChordRootAtom,
   chordFretSpreadAtom,
-  viewModeAtom,
   practiceLensAtom,
-  focusPresetAtom,
-  customMembersAtom,
   hideNonChordNotesAtom,
   chordTonesAtom,
-  availableFocusPresetsAtom,
   chordMembersAtom,
-  activeChordMembersAtom,
-  activeChordTonesAtom,
   hasOutsideChordMembersAtom,
   chordLabelAtom,
   chordSummaryNotesAtom,
@@ -137,12 +131,9 @@ import {
   chordTypeAtom,
   linkChordRootAtom,
   chordFretSpreadAtom,
-  viewModeAtom,
   practiceLensAtom,
-  focusPresetAtom,
-  customMembersAtom,
-  activeChordTonesAtom,
-  activeChordMembersAtom,
+  chordTonesAtom,
+  chordMembersAtom,
   hasOutsideChordMembersAtom,
   chordLabelAtom,
   allChordMembersAtom,
@@ -361,12 +352,12 @@ export const shapeLocalOutsideMembersAtom = atom((get) => {
 
 export const shapeLocalColorNotesFilteredAtom = atom((get) => {
   const shapeHighlightedNoteSet = get(shapeHighlightedNoteSetAtom);
-  const activeChordTones = get(activeChordTonesAtom);
+  const chordTones = get(chordTonesAtom);
   const practiceBarColorNotes = get(practiceBarColorNotesAtom);
 
   if (!shapeHighlightedNoteSet) return [] as typeof practiceBarColorNotes;
 
-  const chordToneSet = new Set(activeChordTones);
+  const chordToneSet = new Set(chordTones);
   return practiceBarColorNotes.filter(
     (n) =>
       shapeHighlightedNoteSet.has(n.internalNote) &&
@@ -406,7 +397,7 @@ export const noteRoleMapAtom = atom((get) => {
   const rootNote = get(rootNoteAtom);
   const scaleName = get(scaleNameAtom);
   const chordRoot = get(chordRootAtom);
-  const activeChordTones = get(activeChordTonesAtom);
+  const activeChordTones = get(chordTonesAtom);
 
   if (!chordType) return new Map<string, NoteRole>();
   const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
@@ -461,20 +452,19 @@ export const showRelationshipRowAtom = atom((get) => {
   const practiceLens = get(practiceLensAtom);
   const chordRoot = get(chordRootAtom);
   const rootNote = get(rootNoteAtom);
-  const focusPreset = get(focusPresetAtom);
   const hasOutsideChordMembers = get(hasOutsideChordMembersAtom);
 
   return !!(
     chordType &&
     practiceLens !== "targets" &&
-    (chordRoot !== rootNote || focusPreset !== "all" || hasOutsideChordMembers)
+    (chordRoot !== rootNote || hasOutsideChordMembers)
   );
 });
 
 export const summaryNotesAtom = atom((get) => get(scaleNotesAtom));
 
 export const chordMemberLabelsAtom = atom((get) =>
-  get(activeChordMembersAtom)
+  get(chordMembersAtom)
     .map((m) => (m.name === "root" ? "1" : formatAccidental(m.name)))
     .join(" "),
 );
@@ -548,10 +538,7 @@ export const resetAtom = atom(null, (_get, set) => {
   set(chordTypeAtom, RESET);
   set(linkChordRootAtom, RESET);
   set(chordFretSpreadAtom, RESET);
-  set(viewModeAtom, RESET);
   set(practiceLensAtom, RESET);
-  set(focusPresetAtom, RESET);
-  set(customMembersAtom, RESET);
   set(fingeringPatternAtom, RESET);
   set(cagedShapesAtom, RESET);
   set(npsPositionAtom, RESET);

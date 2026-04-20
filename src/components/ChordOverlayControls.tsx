@@ -1,12 +1,8 @@
 import { startTransition, useEffect, useId, useState } from "react";
 import { useAtomValue } from "jotai";
 import clsx from "clsx";
-import {
-  NOTES,
-  type PracticeLens,
-  type FocusPreset,
-  type ChordMemberName,
-} from "../theory";
+import { NOTES } from "../theory";
+import type { PracticeLens } from "../theory";
 import { lensAvailabilityAtom } from "../store/atoms";
 import { LabeledSelect, type LabeledSelectOption } from "./LabeledSelect";
 import { NoteGrid } from "./NoteGrid";
@@ -30,14 +26,6 @@ const CHORD_OPTIONS: (string | { divider: string })[] = [
 
 const CHORD_NONE_VALUE = "__none__";
 
-const LENS_LABELS: Record<PracticeLens, string> = {
-  "targets-color": "Targets + Color",
-  targets: "Targets",
-  "guide-tones": "Guide Tones",
-  color: "Color",
-  tension: "Tension",
-};
-
 // Display order for the lens ToggleBar (targets-color is the default and shown first).
 const LENS_UI_ORDER: readonly PracticeLens[] = [
   "targets-color",
@@ -46,20 +34,6 @@ const LENS_UI_ORDER: readonly PracticeLens[] = [
   "color",
   "tension",
 ];
-
-const FOCUS_PRESET_LABELS: Record<FocusPreset, string> = {
-  all: "All",
-  triad: "Triad",
-  shell: "Shell",
-  "guide-tones": "Guide Tones",
-  rootless: "Rootless",
-  custom: "Custom",
-};
-
-function formatMemberName(name: ChordMemberName): string {
-  if (name === "root") return "Root";
-  return name.replace("b", "♭");
-}
 
 export function ChordOverlayControls() {
   const { rootNote } = useScaleState();
@@ -72,12 +46,6 @@ export function ChordOverlayControls() {
     setLinkChordRoot,
     practiceLens,
     setPracticeLens,
-    focusPreset,
-    setFocusPreset,
-    customMembers,
-    setCustomMembers,
-    availableFocusPresets,
-    chordMembers,
   } = useChordState();
 
   const { useFlats } = useScaleState();
@@ -96,24 +64,26 @@ export function ChordOverlayControls() {
     })),
   ];
 
-  // lensAvailabilityAtom emits one entry per LENS_REGISTRY member (same 5 ids as
-  // LENS_UI_ORDER), so find() will always succeed. Defensive fallback avoids the
-  // non-null assertion and makes the assumption explicit.
-  // The active lens is never rendered disabled — it must remain focusable and visually
-  // active even when the registry marks it unavailable (e.g. targets-color with no color
-  // notes degrades gracefully and is exempt from auto-exit).
-  const lensOptions = LENS_UI_ORDER.map((id) => {
+  // Build lens options from LENS_REGISTRY via lensAvailabilityAtom.
+  // Tension is hidden (not just disabled) when unavailable and not currently active.
+  const lensOptions = LENS_UI_ORDER.flatMap((id) => {
     const entry = lensAvailability.find((l) => l.id === id);
     const isActive = id === practiceLens;
-    const unavailable = entry ? !entry.available : true;
+    const available = entry ? entry.available : false;
     const reason = entry?.reason ?? undefined;
-    return {
-      value: id,
-      label: LENS_LABELS[id],
-      disabled: !isActive && unavailable,
-      title: !isActive && reason ? reason : undefined,
-      description: !isActive && reason ? reason : undefined,
-    };
+
+    // Hide lenses marked hideWhenUnavailable when they're unavailable and not active.
+    if (!available && !isActive && entry?.hideWhenUnavailable) return [];
+
+    return [
+      {
+        value: id,
+        label: entry?.label ?? id,
+        disabled: !isActive && !available,
+        title: !isActive && reason ? reason : undefined,
+        description: !isActive && reason ? reason : undefined,
+      },
+    ];
   });
 
   const currentLensEntry = lensAvailability.find((l) => l.id === practiceLens);
@@ -138,15 +108,6 @@ export function ChordOverlayControls() {
       }
     }
   }, [currentLensEntry, lensAvailability, setPracticeLens]);
-
-  const focusPresetOptions = availableFocusPresets.map((preset) => ({
-    value: preset,
-    label: FOCUS_PRESET_LABELS[preset],
-  }));
-
-  const effectiveFocusPreset = availableFocusPresets.includes(focusPreset)
-    ? focusPreset
-    : "all";
 
   const handleChordTypeChange = (nextChordType: string | null) => {
     startTransition(() => {
@@ -229,54 +190,6 @@ export function ChordOverlayControls() {
                   <p className={shared["lens-hint"]}>{currentLensEntry.description}</p>
                 ) : null}
               </div>
-
-              <div className={shared["control-section"]}>
-                <span className={shared["section-label"]}>Focus</span>
-                <ToggleBar
-                  options={focusPresetOptions}
-                  value={effectiveFocusPreset}
-                  onChange={setFocusPreset}
-                  label="Focus preset"
-                />
-              </div>
-
-              {effectiveFocusPreset === "custom" ? (
-                <div className={shared["control-section"]}>
-                  <span className={shared["section-label"]}>Members</span>
-                  <div
-                    className={clsx(
-                      shared["toggle-group"],
-                      shared["toggle-group--default"],
-                    )}
-                    role="group"
-                    aria-label="Custom chord members"
-                  >
-                    {chordMembers.map((m) => {
-                      const isActive = customMembers.includes(m.name);
-                      return (
-                        <button
-                          key={m.name}
-                          type="button"
-                          aria-pressed={isActive}
-                          className={clsx(
-                            shared["toggle-btn"],
-                            isActive && shared.active,
-                          )}
-                          onClick={() =>
-                            setCustomMembers(
-                              isActive
-                                ? customMembers.filter((n) => n !== m.name)
-                                : [...customMembers, m.name],
-                            )
-                          }
-                        >
-                          {formatMemberName(m.name)}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ) : null}
             </>
           ) : null}
         </div>

@@ -369,7 +369,7 @@ describe("showChordPracticeBarAtom", () => {
     store.set(chordRootAtom, "C");
     store.set(chordTypeAtom, "Major Triad");
     store.set(practiceLensAtom, "targets-color");
-    // C Major + C Major Triad with all preset — diatonic simple case
+    // C Major + C Major Triad — diatonic simple case (chord root == scale root, fully in-scale, no color notes)
     expect(store.get(showChordPracticeBarAtom)).toBe(false);
   });
 

@@ -6,14 +6,9 @@ import {
   getChordNotes,
   getScaleNotes,
   getNoteDisplay,
-  getAvailableFocusPresets,
-  applyFocusPreset,
   formatAccidental,
 } from "../theory";
 import type {
-  ViewMode,
-  FocusPreset,
-  ChordMemberName,
   ChordMemberFact,
   ResolvedChordMember,
   PracticeLens,
@@ -73,40 +68,6 @@ const chordFretSpreadStorage = constrainedNumberStorage({ min: 0, max: 4, intege
 // Practice lens storage adapters
 // ---------------------------------------------------------------------------
 
-const VIEW_MODE_VALUES: ViewMode[] = ["compare", "chord", "outside"];
-
-const viewModeStorage = {
-  getItem(key: string, initialValue: ViewMode): ViewMode {
-    try {
-      const stored = localStorage.getItem(key);
-      if (stored === null) {
-        localStorage.setItem(key, initialValue);
-        return initialValue;
-      }
-      if ((VIEW_MODE_VALUES as string[]).includes(stored))
-        return stored as ViewMode;
-      localStorage.setItem(key, initialValue);
-      return initialValue;
-    } catch {
-      return initialValue;
-    }
-  },
-  setItem(key: string, value: ViewMode): void {
-    try {
-      localStorage.setItem(key, value);
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
-  },
-  removeItem(key: string): void {
-    try {
-      localStorage.removeItem(key);
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
-  },
-};
-
 const PRACTICE_LENS_VALUES: PracticeLens[] = [
   "targets",
   "guide-tones",
@@ -165,81 +126,6 @@ const practiceLensStorage = {
   },
 };
 
-const FOCUS_PRESET_VALUES: FocusPreset[] = [
-  "all",
-  "triad",
-  "shell",
-  "guide-tones",
-  "rootless",
-  "custom",
-];
-
-const focusPresetStorage = {
-  getItem(key: string, initialValue: FocusPreset): FocusPreset {
-    try {
-      const stored = localStorage.getItem(key);
-      if (stored === null) {
-        localStorage.setItem(key, initialValue);
-        return initialValue;
-      }
-      if ((FOCUS_PRESET_VALUES as string[]).includes(stored))
-        return stored as FocusPreset;
-      localStorage.setItem(key, initialValue);
-      return initialValue;
-    } catch {
-      return initialValue;
-    }
-  },
-  setItem(key: string, value: FocusPreset): void {
-    try {
-      localStorage.setItem(key, value);
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
-  },
-  removeItem(key: string): void {
-    try {
-      localStorage.removeItem(key);
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
-  },
-};
-
-const customMembersStorage = {
-  getItem(key: string, initialValue: ChordMemberName[]): ChordMemberName[] {
-    try {
-      const stored = localStorage.getItem(key);
-      if (stored === null) {
-        localStorage.setItem(key, JSON.stringify(initialValue));
-        return initialValue;
-      }
-      try {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) return parsed as ChordMemberName[];
-        return initialValue;
-      } catch {
-        return initialValue;
-      }
-    } catch {
-      return initialValue;
-    }
-  },
-  setItem(key: string, value: ChordMemberName[]): void {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
-  },
-  removeItem(key: string): void {
-    try {
-      localStorage.removeItem(key);
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
-  },
-};
 
 // ---------------------------------------------------------------------------
 // Chord overlay base atoms
@@ -277,33 +163,12 @@ export const chordFretSpreadAtom = atomWithStorage(
 // Practice lens base atoms
 // ---------------------------------------------------------------------------
 
-export const viewModeAtom = atomWithStorage<ViewMode>(
-  k("viewMode"),
-  "compare",
-  viewModeStorage,
-  GET_ON_INIT,
-);
-
-// Primary user-facing practice state — replaces viewMode as the UI concept.
-// Stored separately; migrates from old viewMode on first access.
+// Primary user-facing practice state.
+// Migrates from legacy viewMode value on first access (handled by practiceLensStorage).
 export const practiceLensAtom = atomWithStorage<PracticeLens>(
   k("practiceLens"),
   "targets-color",
   practiceLensStorage,
-  GET_ON_INIT,
-);
-
-export const focusPresetAtom = atomWithStorage<FocusPreset>(
-  k("focusPreset"),
-  "all",
-  focusPresetStorage,
-  GET_ON_INIT,
-);
-
-export const customMembersAtom = atomWithStorage<ChordMemberName[]>(
-  k("customMembers"),
-  [],
-  customMembersStorage,
   GET_ON_INIT,
 );
 
@@ -327,12 +192,6 @@ export const chordTonesAtom = atom((get) => {
   return getChordNotes(chordRoot, chordType);
 });
 
-export const availableFocusPresetsAtom = atom((get) => {
-  const chordType = get(chordTypeAtom);
-  if (!chordType) return ["all", "custom"] as FocusPreset[];
-  return getAvailableFocusPresets(chordType);
-});
-
 export const chordMembersAtom = atom((get) => {
   const chordRoot = get(chordRootAtom);
   const chordType = get(chordTypeAtom);
@@ -346,32 +205,6 @@ export const chordMembersAtom = atom((get) => {
     note: NOTES[(rootIndex + m.semitone) % 12],
   }));
 });
-
-export const activeChordMembersAtom = atom((get) => {
-  const chordRoot = get(chordRootAtom);
-  const chordType = get(chordTypeAtom);
-  const focusPreset = get(focusPresetAtom);
-  const customMembers = get(customMembersAtom);
-  const availablePresets = get(availableFocusPresetsAtom);
-
-  if (!chordType) return [] as ResolvedChordMember[];
-  const def = CHORD_DEFINITIONS[chordType];
-  if (!def) return [] as ResolvedChordMember[];
-  const rootIndex = NOTES.indexOf(chordRoot);
-  if (rootIndex === -1) return [] as ResolvedChordMember[];
-  const effectivePreset = availablePresets.includes(focusPreset)
-    ? focusPreset
-    : "all";
-  const members = applyFocusPreset(def, effectivePreset, customMembers);
-  return members.map((m) => ({
-    ...m,
-    note: NOTES[(rootIndex + m.semitone) % 12],
-  }));
-});
-
-export const activeChordTonesAtom = atom((get) =>
-  get(activeChordMembersAtom).map((m) => m.note),
-);
 
 export const hasOutsideChordMembersAtom = atom((get) => {
   const chordType = get(chordTypeAtom);
@@ -445,10 +278,10 @@ export const allChordMembersAtom = atom((get) => {
   const scaleName = get(scaleNameAtom);
   const chordRoot = get(chordRootAtom);
   const useFlats = get(useFlatsAtom);
-  const activeChordMembers = get(activeChordMembersAtom);
+  const chordMembers = get(chordMembersAtom);
   const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
 
-  return activeChordMembers.map((m): ChordRowEntry => {
+  return chordMembers.map((m): ChordRowEntry => {
     const inScale = scaleNoteSet.has(m.note);
     const isRoot = m.name === "root";
     let role: ChordRowEntry["role"];

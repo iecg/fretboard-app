@@ -23,10 +23,7 @@ import {
   npsPositionAtom,
   hideNonChordNotesAtom,
   chordFretSpreadAtom,
-  viewModeAtom,
   practiceLensAtom,
-  focusPresetAtom,
-  customMembersAtom,
   setRootNoteAtom,
   resetAtom,
   landscapeNarrowTabAtom,
@@ -467,8 +464,6 @@ describe("atoms", () => {
       store.set(linkChordRootAtom, false);
       store.set(practiceLensAtom, "targets"); // targets lens → hideNonChordNotesAtom = true
       store.set(chordFretSpreadAtom, 5);
-      store.set(focusPresetAtom, "triad");
-      store.set(customMembersAtom, ["root", "3"]);
       store.set(fingeringPatternAtom, "caged");
       store.set(npsPositionAtom, 3);
       store.set(scaleBrowseModeAtom, "relative");
@@ -487,9 +482,6 @@ describe("atoms", () => {
       expect(store.get(linkChordRootAtom)).toBe(true);
       expect(store.get(hideNonChordNotesAtom)).toBe(false); // targets-color lens → false
       expect(store.get(chordFretSpreadAtom)).toBe(0);
-      expect(store.get(viewModeAtom)).toBe("compare");
-      expect(store.get(focusPresetAtom)).toBe("all");
-      expect(store.get(customMembersAtom)).toEqual([]);
       expect(store.get(fingeringPatternAtom)).toBe("all");
       expect(store.get(npsPositionAtom)).toBe(1);
       expect(store.get(scaleBrowseModeAtom)).toBe("parallel");
