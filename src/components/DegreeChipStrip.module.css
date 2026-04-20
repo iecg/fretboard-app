@@ -257,7 +257,6 @@
 
 :global(.app-container[data-layout-tier="mobile"]) .degree-chip-strip {
   --chip-size: 2.15rem;
-
   width: 100%;
   border-radius: 0.85rem;
   padding: 0.45rem 0.7rem 0.5rem;

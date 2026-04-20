@@ -8,10 +8,8 @@ async function gotoApp(page: Page, width: number, height: number) {
   await page.goto("/", { waitUntil: "networkidle" });
   await expect(page.locator(".app-container")).toBeVisible();
 
-  const tier = await page.evaluate(() =>
-    document.querySelector(".app-container")?.getAttribute("data-layout-tier"),
-  );
-  if (tier !== "mobile") {
+  const tier = await page.locator(".app-container").getAttribute("data-layout-tier");
+  if (tier && tier !== "mobile") {
     // Wait for lazy-loaded controls panel if not on mobile
     await expect(page.locator(".dashboard-card")).toHaveCount(3);
   }
