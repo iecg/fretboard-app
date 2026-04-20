@@ -191,6 +191,7 @@
 }
 
 .degree-chip-item[data-hidden='true'][data-is-color-note='true'] .degree-chip {
+  border-color: transparent;
   background: var(--chip-border-muted);
 }
 
