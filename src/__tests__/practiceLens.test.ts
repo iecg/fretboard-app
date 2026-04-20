@@ -13,7 +13,7 @@ import {
   noteSemanticMapAtom,
   rootNoteAtom,
   scaleNameAtom,
-  scaleVisibilityModeAtom,
+  scaleVisibleAtom,
   chordRootAtom,
   chordTypeAtom,
   fingeringPatternAtom,
@@ -457,7 +457,7 @@ describe("showChordPracticeBarAtom — scale visibility independence", () => {
     store.set(chordRootAtom, "C");
     store.set(chordTypeAtom, "Major Triad");
     store.set(practiceLensAtom, "targets");
-    store.set(scaleVisibilityModeAtom, "off");
+    store.set(scaleVisibleAtom, false);
     expect(store.get(showChordPracticeBarAtom)).toBe(true);
   });
 
@@ -468,11 +468,11 @@ describe("showChordPracticeBarAtom — scale visibility independence", () => {
     store.set(chordRootAtom, "C#");
     store.set(chordTypeAtom, "Minor Triad");
     store.set(practiceLensAtom, "targets-color");
-    store.set(scaleVisibilityModeAtom, "off");
+    store.set(scaleVisibleAtom, false);
     expect(store.get(showChordPracticeBarAtom)).toBe(true);
   });
 
-  it("dock visibility does not change when toggling scaleVisibilityMode", () => {
+  it("dock visibility does not change when toggling scaleVisibleAtom", () => {
     const store = makeStore();
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Major");
@@ -480,16 +480,12 @@ describe("showChordPracticeBarAtom — scale visibility independence", () => {
     store.set(chordTypeAtom, "Dominant 7th"); // Bb outside C Major
     store.set(practiceLensAtom, "targets-color");
 
-    store.set(scaleVisibilityModeAtom, "all");
-    const visibleAll = store.get(showChordPracticeBarAtom);
+    store.set(scaleVisibleAtom, true);
+    const visibleOn = store.get(showChordPracticeBarAtom);
 
-    store.set(scaleVisibilityModeAtom, "off");
+    store.set(scaleVisibleAtom, false);
     const visibleOff = store.get(showChordPracticeBarAtom);
 
-    store.set(scaleVisibilityModeAtom, "custom");
-    const visibleCustom = store.get(showChordPracticeBarAtom);
-
-    expect(visibleAll).toBe(visibleOff);
-    expect(visibleAll).toBe(visibleCustom);
+    expect(visibleOn).toBe(visibleOff);
   });
 });
