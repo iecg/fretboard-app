@@ -176,21 +176,26 @@ export const practiceCuesAtom = atom((get) => {
     return undefined;
   };
 
+  const buildLandOnCue = (): PracticeCue => ({
+    kind: "land-on",
+    label: "Land on",
+    notes: allChordMembers.map(toCueNote),
+  });
+
   const cues: PracticeCue[] = [];
 
   switch (practiceLens) {
     case "targets": {
       if (allChordMembers.length > 0) {
-        cues.push({
-          kind: "land-on",
-          label: "Land on",
-          notes: allChordMembers.map(toCueNote),
-        });
+        cues.push(buildLandOnCue());
       }
       break;
     }
 
     case "guide-tones": {
+      if (allChordMembers.length > 0) {
+        cues.push(buildLandOnCue());
+      }
       const guideNotes = allChordMembers.filter((e) =>
         GUIDE_TONE_FORMATTED.has(e.memberName),
       );
@@ -203,24 +208,14 @@ export const practiceCuesAtom = atom((get) => {
             role: "guide-tone" as const,
           })),
         });
-      } else {
-        // Fallback for power chords (no 3rd/7th): show all chord tones.
-        cues.push({
-          kind: "land-on",
-          label: "Land on",
-          notes: allChordMembers.map(toCueNote),
-        });
       }
+      // Power chords / no-guide-tone chords: land-on already pushed, nothing more.
       break;
     }
 
     case "tension": {
       if (allChordMembers.length > 0) {
-        cues.push({
-          kind: "land-on",
-          label: "Land on",
-          notes: allChordMembers.map(toCueNote),
-        });
+        cues.push(buildLandOnCue());
       }
       const tensionMembers = allChordMembers.filter((e) => !e.inScale);
       if (tensionMembers.length > 0) {

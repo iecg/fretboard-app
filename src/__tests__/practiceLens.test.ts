@@ -133,36 +133,43 @@ describe("practiceCuesAtom", () => {
   });
 
   describe("guide-tones lens", () => {
-    it("returns guide tones cue for a seventh chord (3rd + 7th)", () => {
+    it("returns land-on + guide-tones cues for a seventh chord (3rd + 7th)", () => {
       const store = makeChordStore("Major", "G", "Dominant 7th", "guide-tones");
       const cues = store.get(practiceCuesAtom);
-      expect(cues.length).toBe(1);
-      expect(cues[0]!.kind).toBe("guide-tones");
-      expect(cues[0]!.label).toBe("Guide tones");
+      expect(cues.length).toBe(2);
+      expect(cues[0]!.kind).toBe("land-on");
+      expect(cues[0]!.label).toBe("Land on");
+      expect(cues[1]!.kind).toBe("guide-tones");
+      expect(cues[1]!.label).toBe("Guide tones");
       // G7 = G B D F; guide tones = B (3) and F (b7)
-      const noteNames = cues[0]!.notes.map((n) => n.internalNote);
+      const noteNames = cues[1]!.notes.map((n) => n.internalNote);
       expect(noteNames).toContain("B");
       expect(noteNames).toContain("F");
     });
 
-    it("guide tones for a triad returns the 3rd", () => {
+    it("guide tones for a triad returns land-on first, then guide-tones with the 3rd", () => {
       const store = makeChordStore("Major", "C", "Major Triad", "guide-tones");
       const cues = store.get(practiceCuesAtom);
-      expect(cues[0]!.kind).toBe("guide-tones");
-      const noteNames = cues[0]!.notes.map((n) => n.internalNote);
+      expect(cues.length).toBe(2);
+      expect(cues[0]!.kind).toBe("land-on");
+      expect(cues[1]!.kind).toBe("guide-tones");
+      const noteNames = cues[1]!.notes.map((n) => n.internalNote);
       expect(noteNames).toContain("E"); // major 3rd
     });
 
-    it("falls back to land-on for power chord (no 3rd/7th)", () => {
+    it("shows only land-on for power chord (no 3rd/7th)", () => {
       const store = makeChordStore("Major", "G", "Power Chord (5)", "guide-tones");
       const cues = store.get(practiceCuesAtom);
+      expect(cues.length).toBe(1);
       expect(cues[0]!.kind).toBe("land-on");
     });
 
     it("guide tone notes have role=guide-tone", () => {
       const store = makeChordStore("Major", "G", "Dominant 7th", "guide-tones");
       const cues = store.get(practiceCuesAtom);
-      expect(cues[0]!.notes.every((n) => n.role === "guide-tone")).toBe(true);
+      const guideToneCue = cues.find((c) => c.kind === "guide-tones");
+      expect(guideToneCue).toBeDefined();
+      expect(guideToneCue!.notes.every((n) => n.role === "guide-tone")).toBe(true);
     });
   });
 
