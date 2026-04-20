@@ -35,7 +35,7 @@ export const RADIUS_SCALE_KEY_TONIC = 0.82;
 export const RADIUS_SCALE_CHORD_ROOT = 0.86;
 export const RADIUS_SCALE_CHORD_TONE = 0.82;
 export const RADIUS_SCALE_NOTE_ACTIVE = 0.82;
-export const RADIUS_SCALE_COLOR_TONE = 0.80;
+export const RADIUS_SCALE_COLOR_TONE = 0.82;
 export const RADIUS_SCALE_DEFAULT = 0.8;
 
 // Fret markers

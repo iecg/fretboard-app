@@ -89,13 +89,13 @@
   stroke-width: 1.9;
 }
 
-/* Scale color notes (squircle — scale-owned characteristic tone, no chord overlay) */
+/* Scale color notes (hexagon — scale-owned characteristic tone, no chord overlay) */
 .fretboard-note.note-blue circle,
 .fretboard-note.note-blue rect,
 .fretboard-note.note-blue polygon {
   stroke: var(--note-ring-color-tone);
-  fill: rgb(30 18 55 / 0.82);
-  stroke-width: 1.8;
+  fill: rgb(20 30 40 / 0.92);
+  stroke-width: 1.9;
 }
 .fretboard-note.note-blue text {
   fill: #e8d8ff;
@@ -110,13 +110,13 @@
   stroke-width: 1.7;
 }
 
-/* Color Tone (Characteristic) */
+/* Color Tone (Characteristic) — hexagon, violet ring, matches note-active fill weight */
 .fretboard-note.color-tone circle,
 .fretboard-note.color-tone rect,
 .fretboard-note.color-tone polygon {
   stroke: var(--note-ring-color-tone);
-  fill: rgb(30 18 55 / 0.82);
-  stroke-width: 1.8;
+  fill: rgb(20 30 40 / 0.92);
+  stroke-width: 1.9;
 }
 .fretboard-note.color-tone text {
   fill: #e8d8ff;
