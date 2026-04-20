@@ -14,7 +14,8 @@ import {
 import { parseNote } from "./guitar";
 import { STRING_ROW_PX_TABLET } from "./layout/responsive";
 import "./FretboardSVG.css";
-import type { ShapePolygon } from "./shapes";
+import type { ShapePolygon, CagedShape } from "./shapes";
+import type { ActiveShapeType } from "./hooks/useFretboardState";
 import {
   NECK_BORDER,
   NUT_WIDTH,
@@ -61,6 +62,24 @@ interface FretboardSVGProps {
   useFlats?: boolean;
   scaleName?: string;
   /**
+   * Active pattern context for shape-constrained chord overlay rendering.
+   * When provided along with activeShape, the chord overlay will only highlight
+   * chord tones that fall within the active shape/position boundaries.
+   */
+  activePattern?: "caged" | "3nps" | "all";
+  /**
+   * Active shape (CAGED letter or 3NPS position number) for shape-constrained
+   * chord overlay rendering.
+   */
+  activeShape?: ActiveShapeType;
+  /**
+   * Shape scope context: distinguishes single-shape, multi-shape, and global rendering modes.
+   * - "single": chord overlay constrained to one specific shape/position
+   * - "multi": chord overlay spans multiple CAGED shapes or applies to current 3NPS position
+   * - "global": chord overlay applies to all visible shapes (fingeringPattern="all")
+   */
+  shapeScope?: "single" | "multi" | "global";
+  /**
    * Composable per-note semantics from noteSemanticMapAtom. When provided,
    * each rendered note element gains supplementary data attributes
    * (data-note-tension, data-note-guide-tone) so a note can carry multiple
@@ -77,6 +96,120 @@ interface FretboardSVGProps {
 
 type BoxBound = { minFret: number; maxFret: number };
 
+function getNoteShapeMembership(
+  stringIndex: number,
+  fretIndex: number,
+  shapePolygons: ShapePolygon[],
+  activePattern: "caged" | "3nps" | "all" | undefined,
+  activeShape: CagedShape | number | CagedShape[] | undefined,
+  shapeScope: "single" | "multi" | "global" | undefined,
+): boolean {
+  if (!activePattern) {
+    return false;
+  }
+  if (shapePolygons.length === 0) {
+    return true;
+  }
+  if (shapeScope === "global") {
+    return true;
+  }
+  if (shapeScope === "multi") {
+    if (Array.isArray(activeShape)) {
+      return shapePolygons.some((poly) => {
+        if ((activeShape as CagedShape[]).includes(poly.shape as CagedShape)) {
+          const leftFret = poly.vertices[stringIndex]?.fret;
+          const rightFret = poly.vertices[poly.vertices.length - 1 - stringIndex]?.fret;
+          return (
+            leftFret !== undefined &&
+            rightFret !== undefined &&
+            fretIndex >= leftFret &&
+            fretIndex <= rightFret
+          );
+        }
+        return false;
+      });
+    }
+    return shapePolygons.some((poly) => {
+      const leftFret = poly.vertices[stringIndex]?.fret;
+      const rightFret = poly.vertices[poly.vertices.length - 1 - stringIndex]?.fret;
+      return (
+        leftFret !== undefined &&
+        rightFret !== undefined &&
+        fretIndex >= leftFret &&
+        fretIndex <= rightFret
+      );
+    });
+  }
+  if (activeShape === undefined) {
+    return true;
+  }
+  return shapePolygons.some((poly) => {
+    if (activePattern === "caged" && poly.shape !== activeShape) return false;
+    if (activePattern === "3nps" && poly.shape !== activeShape) return false;
+    const leftFret = poly.vertices[stringIndex]?.fret;
+    const rightFret = poly.vertices[poly.vertices.length - 1 - stringIndex]?.fret;
+    return (
+      leftFret !== undefined &&
+      rightFret !== undefined &&
+      fretIndex >= leftFret &&
+      fretIndex <= rightFret
+    );
+  });
+}
+
+type LensEmphasis = {
+  glowColor?: "cyan" | "orange" | "violet";
+  radiusBoost: number;
+  opacityBoost: number;
+};
+
+function getLensEmphasis(
+  noteClass: string,
+  practiceLens: PracticeLens | undefined,
+  isGuideTone: boolean,
+  isColorTone: boolean,
+  isTension: boolean,
+): LensEmphasis {
+  const defaultEmphasis: LensEmphasis = { radiusBoost: 1, opacityBoost: 1 };
+
+  if (!practiceLens) return defaultEmphasis;
+
+  switch (practiceLens) {
+    case "guide-tones":
+      if (isGuideTone) {
+        return { glowColor: "cyan", radiusBoost: 1.15, opacityBoost: 1 };
+      }
+      if (noteClass.includes("chord-") || noteClass.includes("color-")) {
+        return { radiusBoost: 0.85, opacityBoost: 0.7 };
+      }
+      return defaultEmphasis;
+
+    case "color":
+      if (isColorTone) {
+        return { glowColor: "violet", radiusBoost: 1.15, opacityBoost: 1 };
+      }
+      return { radiusBoost: 0.9, opacityBoost: 0.75 };
+
+    case "targets-color":
+      if (isColorTone) {
+        return { glowColor: "violet", radiusBoost: 1.1, opacityBoost: 1 };
+      }
+      return defaultEmphasis;
+
+    case "tension":
+      if (isTension) {
+        return { glowColor: "orange", radiusBoost: 1.15, opacityBoost: 1 };
+      }
+      if (noteClass.includes("chord-")) {
+        return { radiusBoost: 0.85, opacityBoost: 0.7 };
+      }
+      return defaultEmphasis;
+
+    default:
+      return defaultEmphasis;
+  }
+}
+
 // Roles: key-tonic, chord-root, chord-tone-in-scale, chord-tone-outside-scale,
 //        color-tone, scale-only, note-active, note-blue, note-inactive
 function classifyNote(
@@ -87,6 +220,7 @@ function classifyNote(
   isChordTone: boolean,
   hasChordOverlay: boolean,
   isChordInRange: boolean,
+  isInActiveShape: boolean,
   shapePolygons: ShapePolygon[],
   boxBounds: BoxBound[],
   fretIndex: number,
@@ -106,13 +240,16 @@ function classifyNote(
     return "note-inactive";
   }
   // Chord overlay active: chord-root takes priority (even if outside scale).
-  if (isChordRootNote && isChordTone && isChordInRange) return "chord-root";
-  if (isHighlighted && isChordTone) return "chord-tone-in-scale";
+  // With pattern-aware rendering, skip chord notes outside the active shape.
+  if (isChordRootNote && isChordTone && isChordInRange && isInActiveShape) return "chord-root";
+  if (isHighlighted && isChordTone && isChordInRange && isInActiveShape) return "chord-tone-in-scale";
   // Color/characteristic tone: scale note not covered by chord role → hexagon.
   if (isHighlighted && isColorNote) return "color-tone";
   if (isHighlighted) return "scale-only";
-  if (!isHighlighted && isChordTone && isChordInRange)
+  if (!isHighlighted && isChordTone && isChordInRange && isInActiveShape)
     return "chord-tone-outside-scale";
+  // Outside active shape chord tones become scale-only (visible but not emphasized)
+  if (isChordTone && !isInActiveShape && isHighlighted) return "scale-only";
   return "note-inactive";
 }
 
@@ -120,6 +257,7 @@ function classifyNote(
 function classifyNoteFromSemantics(
   sem: NoteSemantics,
   isChordInRange: boolean,
+  isInActiveShape: boolean,
   hasChordOverlay: boolean,
   shapePolygons: ShapePolygon[],
   boxBounds: BoxBound[],
@@ -129,19 +267,22 @@ function classifyNoteFromSemantics(
     // Delegate to classifyNote to avoid duplicating the no-overlay logic.
     return classifyNote(
       sem.isScaleRoot, sem.isChordRoot, sem.isColorTone, sem.isInScale,
-      sem.isChordTone, hasChordOverlay, isChordInRange, shapePolygons, boxBounds, fretIndex,
+      sem.isChordTone, hasChordOverlay, isChordInRange, isInActiveShape, shapePolygons, boxBounds, fretIndex,
     );
   }
   // Chord overlay active: chord-root takes absolute priority, even if outside scale.
-  if (sem.isChordRoot && sem.isChordTone && isChordInRange) return "chord-root";
+  // With pattern-aware rendering, skip chord notes outside the active shape.
+  if (sem.isChordRoot && sem.isChordTone && isChordInRange && isInActiveShape) return "chord-root";
   // In-scale chord tones.
-  if (sem.isInScale && sem.isChordTone) return "chord-tone-in-scale";
+  if (sem.isInScale && sem.isChordTone && isChordInRange && isInActiveShape) return "chord-tone-in-scale";
   // Color/characteristic tone: scale note not covered by a chord role.
   if (sem.isInScale && sem.isColorTone) return "color-tone";
   // Other in-scale notes.
   if (sem.isInScale) return "scale-only";
   // Out-of-scale chord tones (tension, non-root).
-  if (sem.isChordTone && isChordInRange) return "chord-tone-outside-scale";
+  if (sem.isChordTone && isChordInRange && isInActiveShape) return "chord-tone-outside-scale";
+  // Outside active shape chord tones become scale-only (visible but not emphasized)
+  if (sem.isChordTone && !isInActiveShape && sem.isInScale) return "scale-only";
   return "note-inactive";
 }
 
@@ -402,6 +543,9 @@ export const FretboardSVG = memo(function FretboardSVG({
   hiddenNotes,
   useFlats = false,
   scaleName = "",
+  activePattern,
+  activeShape,
+  shapeScope,
   noteSemantics,
   id,
   onNoteClick,
@@ -627,7 +771,7 @@ export const FretboardSVG = memo(function FretboardSVG({
     // practiceLens is the source of truth when provided; hideNonChordNotes is the
     // legacy fallback for callers that haven't migrated yet.
     const effectiveHideNonChordNotes =
-      practiceLens !== undefined ? practiceLens === "targets" : hideNonChordNotes;
+      practiceLens !== undefined ? false : hideNonChordNotes;
     const notes = [];
     const scale = SCALES[scaleName] || [];
     const normRoot = rootNote && (ENHARMONICS[rootNote]?.includes("b") ? ENHARMONICS[rootNote] : rootNote);
@@ -691,14 +835,38 @@ export const FretboardSVG = memo(function FretboardSVG({
           (ENHARMONICS[noteName] && colorNoteSet.has(ENHARMONICS[noteName]!))
         ));
 
-        const isChordInRange =
-          !hasChordOverlay ||
-          !shapePolygons.length ||
-          boxBounds.some(
-            (b) =>
-              fretIndex >= b.minFret - chordFretSpread &&
-              fretIndex <= b.maxFret + chordFretSpread,
+        const isInsideAnyPolygon = shapePolygons.some((poly) => {
+          const leftFret = poly.vertices[stringIndex]?.fret;
+          const rightFret =
+            poly.vertices[poly.vertices.length - 1 - stringIndex]?.fret;
+          return (
+            leftFret !== undefined &&
+            rightFret !== undefined &&
+            fretIndex >= leftFret &&
+            fretIndex <= rightFret
           );
+        });
+
+        const inShapeSpread = shapePolygons.some((poly) => {
+          const leftFret = poly.vertices[stringIndex]?.fret;
+          const rightFret =
+            poly.vertices[poly.vertices.length - 1 - stringIndex]?.fret;
+          return (
+            leftFret !== undefined &&
+            rightFret !== undefined &&
+            fretIndex >= leftFret - chordFretSpread &&
+            fretIndex <= rightFret + chordFretSpread
+          );
+        });
+
+        const isChordInRange =
+          !hasChordOverlay || !shapePolygons.length || inShapeSpread;
+
+        // Pattern-aware rendering: check if note is within the active shape/position
+        const isInActiveShape =
+          getNoteShapeMembership(stringIndex, fretIndex, shapePolygons, activePattern, activeShape, shapeScope) ||
+          !hasChordOverlay ||
+          !activePattern;
 
         // Use the composable semantic model when available; fall back to booleans.
         // Keys are sharp-normalized (per project convention) so no enharmonic lookup needed.
@@ -710,6 +878,7 @@ export const FretboardSVG = memo(function FretboardSVG({
             ? classifyNoteFromSemantics(
                 semantics,
                 isChordInRange,
+                isInActiveShape,
                 hasChordOverlay,
                 shapePolygons,
                 boxBounds,
@@ -723,6 +892,7 @@ export const FretboardSVG = memo(function FretboardSVG({
                 isChordTone,
                 hasChordOverlay,
                 isChordInRange,
+                isInActiveShape,
                 shapePolygons,
                 boxBounds,
                 fretIndex,
@@ -754,17 +924,6 @@ export const FretboardSVG = memo(function FretboardSVG({
         }
 
         const isWrapped = wrappedNotes.has(`${stringIndex}-${fretIndex}`);
-        const isInsideAnyPolygon = shapePolygons.some((poly) => {
-          const leftFret = poly.vertices[stringIndex]?.fret;
-          const rightFret =
-            poly.vertices[poly.vertices.length - 1 - stringIndex]?.fret;
-          return (
-            leftFret !== undefined &&
-            rightFret !== undefined &&
-            fretIndex >= leftFret &&
-            fretIndex <= rightFret
-          );
-        });
         const applyDimOpacity =
           (shapePolygons.length > 0 &&
             !isInsideAnyPolygon &&
@@ -774,6 +933,15 @@ export const FretboardSVG = memo(function FretboardSVG({
               noteClass === "chord-root" ||
               noteClass === "key-tonic")) ||
           (isWrapped && isHighlighted);
+
+        // Lens-specific emphasis for visual distinction
+        const lensEmphasis = getLensEmphasis(
+          noteClass,
+          practiceLens,
+          semantics?.isGuideTone ?? false,
+          semantics?.isColorTone ?? isColorNote,
+          semantics?.isTension ?? false,
+        );
 
         const isHidden = (() => {
           // Targets lens: hide all non-chord scale notes, including color tones.
@@ -789,6 +957,7 @@ export const FretboardSVG = memo(function FretboardSVG({
           noteClass,
           displayValue,
           applyDimOpacity,
+          applyLensEmphasis: lensEmphasis,
           isHidden,
           isTension: semantics?.isTension ?? false,
           isGuideTone: semantics?.isGuideTone ?? false,
@@ -796,7 +965,7 @@ export const FretboardSVG = memo(function FretboardSVG({
       }
     }
     return notes;
-  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, wrappedNotes, hideNonChordNotes, practiceLens, tuning, noteSemantics]);
+  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, wrappedNotes, hideNonChordNotes, practiceLens, tuning, noteSemantics, activePattern, activeShape, shapeScope]);
 
   return (
     <div role="group" aria-label={ariaLabel} className="fretboard-board" data-practice-lens={practiceLens}>
@@ -1073,6 +1242,7 @@ export const FretboardSVG = memo(function FretboardSVG({
                 noteClass,
                 displayValue,
                 applyDimOpacity,
+                applyLensEmphasis,
                 isHidden,
                 isTension,
                 isGuideTone,
@@ -1081,7 +1251,7 @@ export const FretboardSVG = memo(function FretboardSVG({
                 const cy = stringYAt(stringIndex, cx);
                 const baseRadius = noteBubblePx / 2;
                 const { radiusScale, noteShape } = getNoteVisuals(noteClass);
-                const r = baseRadius * radiusScale;
+                const r = baseRadius * radiusScale * applyLensEmphasis.radiusBoost;
 
                 const shapeEl =
                   noteShape === "squircle" ? (
@@ -1131,6 +1301,9 @@ export const FretboardSVG = memo(function FretboardSVG({
                   ) : (
                     <circle cx={cx} cy={cy} r={r} />
                   );
+                // Apply lens emphasis
+                const baseOpacity = applyDimOpacity ? 0.8 : 1;
+                const finalOpacity = baseOpacity * applyLensEmphasis.opacityBoost;
                 return (
                   <g
                     key={`note-${stringIndex}-${fretIndex}`}
@@ -1143,7 +1316,10 @@ export const FretboardSVG = memo(function FretboardSVG({
                     data-note-shape={noteShape}
                     data-note-tension={isTension || undefined}
                     data-note-guide-tone={isGuideTone || undefined}
-                    style={{ opacity: applyDimOpacity ? 0.8 : 1 }}
+                    data-lens-emphasis={applyLensEmphasis.glowColor ?? undefined}
+                    style={{
+                      opacity: finalOpacity,
+                    }}
                   >
                     {shapeEl}
                     {displayFormat !== "none" && (

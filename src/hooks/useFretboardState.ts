@@ -18,7 +18,16 @@ import {
   practiceLensAtom,
   effectiveColorNotesAtom,
   effectiveHiddenNotesAtom,
+  fingeringPatternAtom,
+  cagedShapesAtom,
+  npsPositionAtom,
 } from "../store/atoms";
+import type { CagedShape } from "../shapes";
+
+type ActivePatternType = "caged" | "3nps" | "all";
+export type ActiveShapeType = CagedShape | number | CagedShape[] | undefined;
+
+export type ShapeScope = "single" | "multi" | "global";
 
 export function useFretboardState() {
   const currentTuning = useAtomValue(currentTuningAtom);
@@ -42,6 +51,34 @@ export function useFretboardState() {
   const colorNotes = useAtomValue(effectiveColorNotesAtom);
   const hiddenNotes = useAtomValue(effectiveHiddenNotesAtom);
 
+  const fingeringPattern = useAtomValue(fingeringPatternAtom);
+  const cagedShapes = useAtomValue(cagedShapesAtom);
+  const npsPosition = useAtomValue(npsPositionAtom);
+
+  let activePattern: ActivePatternType | undefined;
+  let activeShape: ActiveShapeType;
+  let shapeScope: ShapeScope = "global";
+
+  if (fingeringPattern === "all" || cagedShapes.size === 0) {
+    activePattern = "all";
+    activeShape = undefined;
+    shapeScope = "global";
+  } else if (fingeringPattern === "caged") {
+    if (cagedShapes.size === 1) {
+      activePattern = "caged";
+      activeShape = Array.from(cagedShapes)[0] as CagedShape;
+      shapeScope = "single";
+    } else {
+      activePattern = "all";
+      activeShape = Array.from(cagedShapes) as CagedShape[];
+      shapeScope = "multi";
+    }
+  } else if (fingeringPattern === "3nps") {
+    activePattern = "3nps";
+    activeShape = npsPosition;
+    shapeScope = npsPosition !== undefined && npsPosition > 0 ? "single" : "global";
+  }
+
   return {
     currentTuning,
     rootNote,
@@ -64,5 +101,8 @@ export function useFretboardState() {
     practiceLens,
     colorNotes,
     hiddenNotes,
+    activePattern,
+    activeShape,
+    shapeScope,
   };
 }
