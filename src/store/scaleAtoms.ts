@@ -272,11 +272,24 @@ export const toggleHiddenNoteAtom = atom(null, (_get, set, note: string) => {
 // Scale visibility — boolean eye toggle (replaces tri-state All/Custom/Off)
 // ---------------------------------------------------------------------------
 
+// One-time migration: if the old tri-state key exists, map "off" → false and
+// remove the stale key so subsequent boots use the new boolean key directly.
+function readLegacyScaleVisibility(): boolean {
+  try {
+    const legacy = localStorage.getItem(k("scaleVisibilityMode"));
+    if (legacy === null) return true;
+    localStorage.removeItem(k("scaleVisibilityMode"));
+    return legacy !== "off";
+  } catch {
+    return true;
+  }
+}
+
 // Persisted so users don't lose their preference on refresh.
 // Turning the scale off also clears hidden notes (see toggleScaleVisibleAtom).
 export const scaleVisibleAtom = atomWithStorage<boolean>(
   k("scaleVisible"),
-  true,
+  readLegacyScaleVisibility(),
   booleanStorage,
   GET_ON_INIT,
 );

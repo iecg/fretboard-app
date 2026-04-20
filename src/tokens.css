@@ -101,6 +101,8 @@
   --glow-orange-sm: 0 0 6px rgb(255 154 77 / 0.5);
   --glow-orange-md: 0 0 12px rgb(255 154 77 / 0.6);
   --glow-orange-lg: 0 0 24px rgb(255 154 77 / 0.5);
+  --glow-violet-sm: 0 0 6px rgb(167 139 250 / 0.65);
+  --glow-violet-border: rgb(167 139 250 / 0.85);
 
   /* filter drop-shadows for SVG glyphs (brand icon) */
   --glow-filter-cyan: drop-shadow(0 0 6px rgb(77 228 255 / 0.65));

@@ -1,7 +1,5 @@
-import { useAtomValue, useSetAtom } from "jotai";
 import { useScaleState } from "../hooks/useScaleState";
 import { DegreeChipStrip } from "./DegreeChipStrip";
-import { scaleVisibleAtom, toggleScaleVisibleAtom, colorNotesAtom } from "../store/atoms";
 
 function EyeOpenIcon() {
   return (
@@ -24,10 +22,15 @@ function EyeClosedIcon() {
 
 /** Scale surface: degree chips + eye visibility toggle. No chord concerns. */
 export function ScaleStripPanel() {
-  const { scaleLabel, hiddenNotes, toggleHiddenNote, degreeChips } = useScaleState();
-  const scaleVisible = useAtomValue(scaleVisibleAtom);
-  const toggleScaleVisible = useSetAtom(toggleScaleVisibleAtom);
-  const colorNotes = useAtomValue(colorNotesAtom);
+  const {
+    scaleLabel,
+    hiddenNotes,
+    toggleHiddenNote,
+    degreeChips,
+    colorNotes,
+    scaleVisible,
+    toggleScaleVisible,
+  } = useScaleState();
 
   const colorNoteSet = colorNotes.length > 0 ? new Set(colorNotes) : undefined;
 

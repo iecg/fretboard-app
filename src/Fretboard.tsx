@@ -73,6 +73,9 @@ export function Fretboard(props: FretboardProps) {
   const hiddenNotes = props.hiddenNotes ?? state.hiddenNotes;
   const useFlats = props.useFlats ?? state.useFlats;
   const scaleName = props.scaleName ?? state.scaleName;
+  const activePattern = props.activePattern ?? state.activePattern;
+  const activeShape = props.activeShape ?? state.activeShape;
+  const shapeScope = props.shapeScope ?? state.shapeScope;
   const noteSemantics = state.noteSemanticMap.size > 0 ? state.noteSemanticMap : undefined;
   const startFret = state.startFret;
   const endFret = state.endFret;
@@ -250,9 +253,9 @@ export function Fretboard(props: FretboardProps) {
           hiddenNotes={hiddenNotes}
           useFlats={useFlats}
           scaleName={scaleName}
-          activePattern={state.activePattern}
-          activeShape={state.activeShape}
-          shapeScope={state.shapeScope}
+          activePattern={activePattern}
+          activeShape={activeShape}
+          shapeScope={shapeScope}
           noteSemantics={noteSemantics}
           id={id}
           onNoteClick={handleFretClick}
