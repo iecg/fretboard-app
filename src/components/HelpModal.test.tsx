@@ -55,11 +55,12 @@ describe("HelpModal", () => {
 
   it("lists current lens names matching LENS_REGISTRY labels", () => {
     render(<HelpModal isOpen={true} onClose={vi.fn()} />);
-    expect(screen.getByText("Chord + Color")).toBeTruthy();
     expect(screen.getByText("Chord Tones")).toBeTruthy();
     expect(screen.getByText("Guide Tones")).toBeTruthy();
-    expect(screen.getByText("Color Notes")).toBeTruthy();
     expect(screen.getByText("Tension")).toBeTruthy();
+    // Removed lenses — must not appear
+    expect(screen.queryByText("Chord + Color")).toBeNull();
+    expect(screen.queryByText("Color Notes")).toBeNull();
   });
 
   it("restores focus to trigger button when modal closes", () => {
