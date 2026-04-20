@@ -23,7 +23,6 @@ import {
   scaleNotesAtom,
   colorNotesAtom,
   useFlatsAtom,
-  scaleVisibleAtom,
 } from "./scaleAtoms";
 import {
   chordRootAtom,
@@ -239,16 +238,6 @@ export const practiceCuesAtom = atom((get) => {
       break;
     }
 
-    case "chord": {
-      if (allChordMembers.length > 0) {
-        cues.push({
-          kind: "land-on",
-          label: "Chord tones",
-          notes: allChordMembers.map(toCueNote),
-        });
-      }
-      break;
-    }
   }
 
   return cues;
@@ -259,31 +248,7 @@ export const practiceCuesAtom = atom((get) => {
 // ---------------------------------------------------------------------------
 
 export const showChordPracticeBarAtom = atom((get) => {
-  const chordType = get(chordTypeAtom);
-  if (!chordType) return false;
-
-  const practiceLens = get(practiceLensAtom);
-
-  // Non-default lenses always show — user explicitly chose a practice focus.
-  if (practiceLens !== "targets") return true;
-
-  // When the scale is hidden, always show the bar — the user needs chord-tone
-  // coaching even if the scale isn't visible on the fretboard.
-  const scaleVisible = get(scaleVisibleAtom);
-  if (!scaleVisible) return true;
-
-  // For targets (default): suppress the bar for the diatonic simple case
-  // where the chord is fully in-scale and the root is linked
-  // (nothing interesting to coach about beyond what the fretboard already shows).
-  const hasOutsideChordMembers = get(hasOutsideChordMembersAtom);
-  const chordRoot = get(chordRootAtom);
-  const rootNote = get(rootNoteAtom);
-
-  const isDiatonicSimpleCase =
-    !hasOutsideChordMembers &&
-    chordRoot === rootNote;
-
-  return !isDiatonicSimpleCase;
+  return !!get(chordTypeAtom);
 });
 
 export const practiceBarTitleAtom = atom((get) => {

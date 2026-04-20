@@ -275,7 +275,7 @@ describe("practiceCuesAtom", () => {
       expect(ids).not.toContain("color");
     });
 
-    it("contains exactly Chord Tones, Guide Tones, Tension, and Chord Only", () => {
+    it("contains exactly Chord Tones, Guide Tones, and Tension", () => {
       const store = makeStore();
       store.set(chordRootAtom, "C");
       store.set(chordTypeAtom, "Major 7th"); // has guide tones
@@ -286,38 +286,7 @@ describe("practiceCuesAtom", () => {
       expect(ids).toContain("targets");
       expect(ids).toContain("guide-tones");
       expect(ids).toContain("tension");
-      expect(ids).toContain("chord");
-      expect(ids).toHaveLength(4);
-    });
-  });
-
-  describe("chord lens", () => {
-    it("returns a Chord tones land-on cue with all chord members", () => {
-      const store = makeStore();
-      store.set(rootNoteAtom, "C");
-      store.set(scaleNameAtom, "Major");
-      store.set(chordRootAtom, "C");
-      store.set(chordTypeAtom, "Major Triad");
-      store.set(practiceLensAtom, "chord");
-      const cues = store.get(practiceCuesAtom);
-      expect(cues).toHaveLength(1);
-      expect(cues[0]!.kind).toBe("land-on");
-      expect(cues[0]!.label).toBe("Chord tones");
-      const noteNames = cues[0]!.notes.map((n) => n.internalNote);
-      expect(noteNames).toEqual(expect.arrayContaining(["C", "E", "G"]));
-    });
-
-    it("shows chord tones for an all-in-scale chord (Am on Am)", () => {
-      const store = makeStore();
-      store.set(rootNoteAtom, "A");
-      store.set(scaleNameAtom, "Natural Minor");
-      store.set(chordRootAtom, "A");
-      store.set(chordTypeAtom, "Minor Triad");
-      store.set(practiceLensAtom, "chord");
-      const cues = store.get(practiceCuesAtom);
-      expect(cues).toHaveLength(1);
-      const noteNames = cues[0]!.notes.map((n) => n.internalNote);
-      expect(noteNames).toEqual(expect.arrayContaining(["A", "C", "E"]));
+      expect(ids).toHaveLength(3);
     });
   });
 });
@@ -393,34 +362,23 @@ describe("showChordPracticeBarAtom", () => {
     expect(store.get(showChordPracticeBarAtom)).toBe(false);
   });
 
-  it("returns true for non-default lenses even in diatonic simple case", () => {
+  it("returns true whenever a chord is active, regardless of lens or scale", () => {
     const store = makeStore();
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Major");
     store.set(chordRootAtom, "C");
     store.set(chordTypeAtom, "Major Triad");
-    // Diatonic simple case but lens is not targets (guide-tones)
-    store.set(practiceLensAtom, "guide-tones");
+    // Diatonic simple case — bar now always shows when chord is active
+    store.set(practiceLensAtom, "targets");
     expect(store.get(showChordPracticeBarAtom)).toBe(true);
   });
 
-  it("returns false for targets lens in diatonic simple case (root linked, chord in-scale)", () => {
+  it("returns true for Am chord on Am scale (previously suppressed)", () => {
     const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordRootAtom, "C");
-    store.set(chordTypeAtom, "Major Triad");
-    store.set(practiceLensAtom, "targets");
-    // C Major + C Major Triad — diatonic simple case (chord root == scale root, fully in-scale)
-    expect(store.get(showChordPracticeBarAtom)).toBe(false);
-  });
-
-  it("returns true for targets when there are outside chord members", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordRootAtom, "C");
-    store.set(chordTypeAtom, "Dominant 7th"); // Bb is outside C Major
+    store.set(rootNoteAtom, "A");
+    store.set(scaleNameAtom, "Natural Minor");
+    store.set(chordRootAtom, "A");
+    store.set(chordTypeAtom, "Minor Triad");
     store.set(practiceLensAtom, "targets");
     expect(store.get(showChordPracticeBarAtom)).toBe(true);
   });

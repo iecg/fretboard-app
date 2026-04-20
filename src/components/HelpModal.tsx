@@ -126,17 +126,17 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
               <h3>Practice Lenses</h3>
               <p>
                 When a chord overlay is active, a <strong>Lens</strong> selector
-                appears below it. Lenses shape what the fretboard and practice
-                bar show. Four lenses are available:
+                appears below it. Lenses focus the practice bar coaching cues at
+                the bottom of the screen — they do not hide fretboard notes.
+                Three lenses are available:
               </p>
               <ul>
                 <li>
                   <strong>Chord Tones</strong> — the default lens. Highlights
                   every chord member (root, 3rd, 5th, 7th, etc.) and shows a{" "}
                   <em>Land on</em> cue in the practice bar listing all of them.
-                  Scale notes remain visible. Use this to learn the shape of a
-                  chord across the neck and practice landing phrases on strong
-                  harmonic tones.
+                  Use this to learn the shape of a chord across the neck and
+                  practice landing phrases on strong harmonic tones.
                 </li>
                 <li>
                   <strong>Guide Tones</strong> — narrows focus to the 3rd and
@@ -158,12 +158,6 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
                   tension note). This lens is hidden automatically when the
                   chord is fully within the scale — no outside tones, no
                   tension to show.
-                </li>
-                <li>
-                  <strong>Chord Only</strong> — hides all scale notes that are
-                  not part of the chord, leaving only the chord tones visible on
-                  the fretboard. Use this to see exactly where each chord tone
-                  sits without the distraction of the surrounding scale.
                 </li>
               </ul>
 
