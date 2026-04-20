@@ -4,6 +4,7 @@ interface MainLayoutWrapperProps {
   children: ReactNode;
   header: ReactNode;
   summary?: ReactNode;
+  chordDock?: ReactNode;
   controlsPanel?: ReactNode;
   mobileTabs?: ReactNode;
   helpModal?: ReactNode;
@@ -21,6 +22,7 @@ export function MainLayoutWrapper({
   children,
   header,
   summary,
+  chordDock,
   controlsPanel,
   mobileTabs,
   helpModal,
@@ -43,6 +45,8 @@ export function MainLayoutWrapper({
       {header}
 
       {showSummary && <div className="summary-shell">{summary}</div>}
+
+      <div className="chord-dock-shell">{chordDock}</div>
 
       {helpModal}
 

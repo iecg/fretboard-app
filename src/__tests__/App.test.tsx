@@ -390,26 +390,30 @@ describe("App", () => {
   });
 
   describe("Summary ribbon", () => {
-    it("renders standalone DegreeChipStrip when no chord is active", () => {
+    it("scale strip renders alone in the summary-shell — no chord dock nested inside", () => {
       render(<App />);
-      expect(document.querySelector(".summary-ribbon")).toBeNull();
-      expect(document.querySelector(".degree-chip-strip")).toBeTruthy();
+      expect(document.querySelector(".summary-shell .degree-chip-strip")).toBeTruthy();
+      expect(document.querySelector(".summary-shell .chord-practice-bar")).toBeNull();
     });
 
-    it("renders summary-ribbon when chord is active", async () => {
-      localStorage.setItem(k("chordType"), "Major Triad");
+    it("chord dock renders in chord-dock-shell, not inside summary-shell", async () => {
+      localStorage.setItem(k("rootNote"), "C");
+      localStorage.setItem(k("chordRoot"), "D");
+      localStorage.setItem(k("chordType"), "Dominant 7th");
+      localStorage.setItem(k("practiceLens"), "tension");
       render(<App />);
       await waitFor(() => {
-        expect(document.querySelector(".summary-ribbon")).toBeTruthy();
+        expect(document.querySelector(".chord-dock-shell .chord-practice-bar")).toBeTruthy();
       });
+      expect(document.querySelector(".summary-shell .chord-practice-bar")).toBeNull();
     });
 
-    it("targets-color lens: renders primary scale strip inside ribbon", async () => {
+    it("targets-color lens: scale strip always in summary-shell", async () => {
       localStorage.setItem(k("chordType"), "Major Triad");
       localStorage.setItem(k("practiceLens"), "targets-color");
       render(<App />);
       await waitFor(() => {
-        expect(document.querySelector(".summary-ribbon .degree-chip-strip")).toBeTruthy();
+        expect(document.querySelector(".summary-shell .degree-chip-strip")).toBeTruthy();
       });
     });
 
@@ -422,7 +426,7 @@ describe("App", () => {
       localStorage.setItem(k("practiceLens"), "targets-color");
       render(<App />);
       await waitFor(() => {
-        expect(document.querySelector(".summary-ribbon")).toBeTruthy();
+        expect(document.querySelector(".degree-chip-strip")).toBeTruthy();
       });
       // Bar is intentionally hidden: C Major Triad over C Major is fully diatonic, no new information.
       expect(document.querySelector(".chord-practice-bar")).toBeNull();
@@ -441,25 +445,25 @@ describe("App", () => {
       });
     });
 
-    it("targets lens: renders chord practice bar and keeps degree-chip-strip inside ribbon", async () => {
+    it("targets lens: renders chord practice bar in dock shell and scale strip in summary shell", async () => {
       localStorage.setItem(k("chordType"), "Major Triad");
       localStorage.setItem(k("practiceLens"), "targets");
       render(<App />);
       await waitFor(() => {
-        expect(document.querySelector(".summary-ribbon .chord-practice-bar")).toBeTruthy();
-        expect(document.querySelector(".summary-ribbon .degree-chip-strip")).toBeTruthy();
+        expect(document.querySelector(".chord-dock-shell .chord-practice-bar")).toBeTruthy();
+        expect(document.querySelector(".summary-shell .degree-chip-strip")).toBeTruthy();
       });
     });
 
-    it("tension lens: renders chord practice bar and keeps degree-chip-strip inside ribbon", async () => {
+    it("tension lens: renders chord practice bar in dock shell and scale strip in summary shell", async () => {
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("chordRoot"), "D");
       localStorage.setItem(k("chordType"), "Dominant 7th");
       localStorage.setItem(k("practiceLens"), "tension");
       render(<App />);
       await waitFor(() => {
-        expect(document.querySelector(".summary-ribbon .chord-practice-bar")).toBeTruthy();
-        expect(document.querySelector(".summary-ribbon .degree-chip-strip")).toBeTruthy();
+        expect(document.querySelector(".chord-dock-shell .chord-practice-bar")).toBeTruthy();
+        expect(document.querySelector(".summary-shell .degree-chip-strip")).toBeTruthy();
       });
     });
 
@@ -468,7 +472,7 @@ describe("App", () => {
       localStorage.setItem(k("practiceLens"), "targets-color");
       render(<App />);
       await waitFor(() => {
-        expect(document.querySelector(".summary-ribbon")).toBeTruthy();
+        expect(document.querySelector(".chord-dock-shell")).toBeTruthy();
       });
       expect(document.querySelector(".chord-row-legend")).toBeNull();
     });
@@ -478,7 +482,7 @@ describe("App", () => {
       localStorage.setItem(k("practiceLens"), "targets");
       render(<App />);
       await waitFor(() => {
-        expect(document.querySelector(".summary-ribbon")).toBeTruthy();
+        expect(document.querySelector(".chord-dock-shell .chord-practice-bar")).toBeTruthy();
       });
       expect(document.querySelector(".chord-row-legend")).toBeNull();
     });
@@ -499,23 +503,21 @@ describe("App", () => {
       expect(title.textContent).toContain("Dominant 7th");
     });
 
-    it("chord dock and scale strip are sibling cards — not nested inside each other", async () => {
+    it("chord dock and scale strip are in separate shells — not nested inside each other", async () => {
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("chordRoot"), "D");
       localStorage.setItem(k("chordType"), "Dominant 7th");
       localStorage.setItem(k("practiceLens"), "tension");
       render(<App />);
       await waitFor(() => {
-        expect(document.querySelector(".summary-ribbon .chord-practice-bar")).toBeTruthy();
+        expect(document.querySelector(".chord-dock-shell .chord-practice-bar")).toBeTruthy();
       });
-      // The chord-practice-bar must NOT be nested inside degree-chip-strip
-      expect(
-        document.querySelector(".degree-chip-strip .chord-practice-bar")
-      ).toBeNull();
-      // Both surfaces exist as direct children of summary-ribbon
-      const ribbon = document.querySelector(".summary-ribbon")!;
-      const strip = ribbon.querySelector(":scope > .degree-chip-strip, :scope > section");
-      expect(strip).toBeTruthy();
+      // chord-practice-bar must NOT be nested inside degree-chip-strip
+      expect(document.querySelector(".degree-chip-strip .chord-practice-bar")).toBeNull();
+      // scale strip must NOT be nested inside chord-dock-shell
+      expect(document.querySelector(".chord-dock-shell .degree-chip-strip")).toBeNull();
+      // each surface in its own shell
+      expect(document.querySelector(".summary-shell .degree-chip-strip")).toBeTruthy();
     });
 
     it("chord dock remains visible when scale is hidden (eye-off)", async () => {

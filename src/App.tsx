@@ -15,6 +15,7 @@ import { AppHeader } from "./components/AppHeader";
 import { BrandMark } from "./components/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark";
 import { SummaryRibbon } from "./components/SummaryRibbon";
+import { ChordOverlayDock } from "./components/ChordOverlayDock";
 import { VersionBadge } from "./components/VersionBadge";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper";
 import "./App.css";
@@ -108,6 +109,7 @@ function AppContent() {
         />
       }
       summary={<SummaryRibbon />}
+      chordDock={<ChordOverlayDock />}
       helpModal={
         <Suspense fallback={<div className="loading-spinner" />}>
           <HelpModal

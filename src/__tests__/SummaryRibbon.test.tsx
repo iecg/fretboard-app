@@ -19,22 +19,20 @@ const BASE_SEEDS = [
 ] as const;
 
 describe("SummaryRibbon", () => {
-  it("renders DegreeChipStrip without ChordPracticeBar when chordType is null", () => {
-    renderWithAtoms(<SummaryRibbon />, [...BASE_SEEDS]);
-    expect(screen.getByRole("group", { name: "Scale degrees" })).toBeInTheDocument();
-    expect(screen.queryByRole("group", { name: /Practice cues/i })).not.toBeInTheDocument();
-  });
-
-  it("renders both DegreeChipStrip and ChordPracticeBar when chordType is set and non-diatonic", () => {
+  it("renders only DegreeChipStrip — no ChordPracticeBar — regardless of chord state", () => {
     renderWithAtoms(<SummaryRibbon />, [
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      // F# is outside C Major — triggers hasOutsideChordMembers, so showChordPracticeBar = true
       [chordRootAtom, "F#"],
       [chordTypeAtom, "Major Triad"],
     ]);
     expect(screen.getByRole("group", { name: "Scale degrees" })).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: /Practice cues/i })).toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: /Practice cues/i })).not.toBeInTheDocument();
+  });
+
+  it("renders DegreeChipStrip when chordType is null", () => {
+    renderWithAtoms(<SummaryRibbon />, [...BASE_SEEDS]);
+    expect(screen.getByRole("group", { name: "Scale degrees" })).toBeInTheDocument();
   });
 
   describe("eye toggle scale visibility", () => {
@@ -73,7 +71,6 @@ describe("SummaryRibbon", () => {
         ...BASE_SEEDS,
         [scaleVisibleAtom, true],
       ]);
-      // Chips are enabled when scale is visible (onChipToggle is always passed)
       const hideButtons = screen.getAllByRole("button", { name: /Hide|Show/ });
       expect(hideButtons.every((b) => !b.hasAttribute("disabled"))).toBe(true);
     });
