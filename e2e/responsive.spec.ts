@@ -1,15 +1,17 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const CIRCLE_OF_FIFTHS_SELECTOR =
-  '[data-testid="circle-of-fifths-svg"]';
+  '.key-column [role="group"][aria-labelledby="cof-title"]';
 
 async function gotoApp(page: Page, width: number, height: number) {
   await page.setViewportSize({ width, height });
   await page.goto("/", { waitUntil: "networkidle" });
-  await expect(page.locator('[data-testid="app-container"]')).toBeVisible();
+  await expect(page.locator(".app-container")).toBeVisible();
 
-  const tier = await page.locator('[data-testid="app-container"]').getAttribute("data-layout-tier");
-  if (tier && tier !== "mobile") {
+  const tier = await page.evaluate(() =>
+    document.querySelector(".app-container")?.getAttribute("data-layout-tier"),
+  );
+  if (tier !== "mobile") {
     // Wait for lazy-loaded controls panel if not on mobile
     await expect(page.locator(".dashboard-card")).toHaveCount(3);
   }
@@ -17,21 +19,21 @@ async function gotoApp(page: Page, width: number, height: number) {
 
 async function getMetrics(page: Page) {
   return page.evaluate((circleSelector) => {
-    const app = document.querySelector('[data-testid="app-container"]');
-    const badge = document.querySelector('[data-testid="version-badge"]');
+    const app = document.querySelector(".app-container");
+    const badge = document.querySelector(".version-badge");
     const badgeRect = badge?.getBoundingClientRect();
-    const toolbar = document.querySelector('[data-testid="fretboard-outer"]');
-    const title = document.querySelector('[data-testid="app-header-brand"]');
-    const actions = document.querySelector('[data-testid="app-header-actions"]');
-    const settingsDrawer = document.querySelector('[data-testid="settings-drawer"]');
-    const helpModal = document.querySelector('[data-testid="help-modal"]');
-    const helpContent = document.querySelector('[data-testid="help-modal-content"]');
+    const toolbar = document.querySelector(".fretboard-outer");
+    const title = document.querySelector(".app-header-brand");
+    const actions = document.querySelector(".app-header-actions");
+    const settingsDrawer = document.querySelector(".settings-overlay-drawer");
+    const helpModal = document.querySelector(".help-modal");
+    const helpContent = document.querySelector(".help-modal-content");
     const circle = document.querySelector(circleSelector);
-    const controlsColumn = document.querySelector('[data-testid="dashboard-card-configuration"]');
-    const keyColumn = document.querySelector('[data-testid="key-column"]');
+    const controlsColumn = document.querySelector(".dashboard-card--configuration");
+    const keyColumn = document.querySelector(".key-column");
 
-    const subtitle = document.querySelector('[data-testid="app-header-brand-subtitle"]');
-    const kofiDesktop = document.querySelector('[data-testid="kofi-btn-desktop"]');
+    const subtitle = document.querySelector(".app-header-brand-subtitle");
+    const kofiDesktop = document.querySelector(".kofi-btn-desktop");
 
     const getRect = (element: Element | null) => {
       if (!(element instanceof HTMLElement || element instanceof SVGElement)) {
@@ -57,7 +59,7 @@ async function getMetrics(page: Page) {
       headerSubtitle: subtitle ? getComputedStyle(subtitle).display === "none" ? "hidden" : "visible" : "hidden",
       headerActionsMode: kofiDesktop ? getComputedStyle(kofiDesktop).display === "none" ? "compact" : "default" : "compact",
       isFullWidthSettings: settingsRect ? Math.abs(settingsRect.width - window.innerWidth) < 5 : false,
-      summaryCount: document.querySelectorAll('[data-testid="summary-shell"]').length,
+      summaryCount: document.querySelectorAll(".summary-shell").length,
       scrollHeight: document.documentElement.scrollHeight,
       scrollWidth: document.documentElement.scrollWidth,
       innerHeight: window.innerHeight,
@@ -99,7 +101,7 @@ test.describe("responsive layout regressions", () => {
       expect(before.variant, viewport.name).toBe("mobile");
       expect(before.summaryCount, viewport.name).toBe(1);
 
-      await page.locator('[data-testid="version-badge"]').scrollIntoViewIfNeeded();
+      await page.locator(".version-badge").scrollIntoViewIfNeeded();
 
       const after = await getMetrics(page);
       expect(after.badgeBottom, viewport.name).not.toBeNull();
@@ -127,8 +129,8 @@ test.describe("responsive layout regressions", () => {
     expect(initial.tier).toBe("mobile");
     expect(initial.variant).toBe("landscape-mobile");
     expect(initial.summaryCount).toBe(0);
-    await expect(page.locator('[data-testid="main-fretboard"]')).toBeVisible();
-    await expect(page.locator('[data-testid="mobile-tab-content"]')).toHaveCount(0);
+    await expect(page.locator(".main-fretboard")).toBeVisible();
+    await expect(page.locator(".mobile-tab-content")).toHaveCount(0);
 
     await page.getByRole("button", { name: "Open help" }).click();
     const withHelp = await getMetrics(page);
@@ -164,7 +166,7 @@ test.describe("responsive layout regressions", () => {
       expect(before.summaryCount).toBe(1);
       expect(before.toolbarDisplay).toBe("flex");
 
-      await page.locator('[data-testid="version-badge"]').scrollIntoViewIfNeeded();
+      await page.locator(".version-badge").scrollIntoViewIfNeeded();
 
       const after = await getMetrics(page);
       expect(after.badgeBottom).not.toBeNull();
@@ -206,17 +208,17 @@ test.describe("responsive layout regressions", () => {
     expect(metrics.tier).toBe("desktop");
     expect(metrics.variant).toBe("desktop-split");
     expect(metrics.summaryCount).toBe(1);
-    await expect(page.locator('[data-testid="fretboard-outer"]')).toBeVisible();
+    await expect(page.locator(".fretboard-outer")).toBeVisible();
   });
 
   test("keeps the fretboard visible on tablet and desktop layouts", async ({ page }) => {
     await gotoApp(page, 768, 1024);
     expect((await getMetrics(page)).variant).toBe("tablet-split");
-    await expect(page.locator('[data-testid="fretboard-outer"]')).toBeVisible();
+    await expect(page.locator(".fretboard-outer")).toBeVisible();
 
     await gotoApp(page, 1024, 768);
     expect((await getMetrics(page)).variant).toBe("desktop-stacked");
-    await expect(page.locator('[data-testid="fretboard-outer"]')).toBeVisible();
+    await expect(page.locator(".fretboard-outer")).toBeVisible();
   });
 
   test("keeps desktop stacked key content and summary comfortably reachable", async ({
