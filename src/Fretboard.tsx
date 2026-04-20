@@ -30,7 +30,6 @@ interface FretboardProps {
   chordTones?: string[];
   chordRoot?: string;
   chordFretSpread?: number;
-  hideNonChordNotes?: boolean;
   colorNotes?: string[];
   shapePolygons?: ShapePolygon[];
   wrappedNotes?: Set<string>;
@@ -65,7 +64,6 @@ export function Fretboard(props: FretboardProps) {
   const chordTones = props.chordTones ?? state.chordTones;
   const chordRoot = props.chordRoot ?? state.chordRoot;
   const chordFretSpread = props.chordFretSpread ?? state.chordFretSpread;
-  const hideNonChordNotes = props.hideNonChordNotes ?? state.hideNonChordNotes;
   const autoCenterTarget = props.autoCenterTarget ?? state.autoCenterTarget;
   const recenterKey = props.recenterKey ?? state.recenterKey;
   const colorNotes = props.colorNotes ?? state.colorNotes;
@@ -260,7 +258,6 @@ export function Fretboard(props: FretboardProps) {
           chordTones={chordTones}
           chordRoot={chordRoot}
           chordFretSpread={chordFretSpread}
-          hideNonChordNotes={hideNonChordNotes}
           practiceLens={state.practiceLens}
           colorNotes={colorNotes}
           shapePolygons={shapePolygons}

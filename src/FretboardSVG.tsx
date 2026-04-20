@@ -53,7 +53,6 @@ interface FretboardSVGProps {
   chordTones?: string[];
   chordRoot?: string;
   chordFretSpread?: number;
-  hideNonChordNotes?: boolean;
   practiceLens?: PracticeLens;
   colorNotes?: string[];
   shapePolygons?: ShapePolygon[];
@@ -131,6 +130,7 @@ function getLensEmphasis(
       }
       return defaultEmphasis;
 
+    case "targets":
     default:
       return defaultEmphasis;
   }
@@ -465,7 +465,6 @@ export const FretboardSVG = memo(function FretboardSVG({
   chordTones = [],
   chordRoot,
   chordFretSpread = 0,
-  hideNonChordNotes = false,
   practiceLens,
   colorNotes = [],
   shapePolygons = [],
@@ -698,10 +697,6 @@ export const FretboardSVG = memo(function FretboardSVG({
   }, [totalColumns, startFret, stringRowPx, svgDefUrl, fretCenterX, inlayYAt, inlayYBottomAt, inlayYTopAt]);
 
   const noteData = useMemo(() => {
-    // Lenses control coaching cues only — no lens hides scale notes.
-    // hideNonChordNotes is the legacy prop fallback for callers without practiceLens.
-    const effectiveHideNonChordNotes =
-      practiceLens !== undefined ? false : hideNonChordNotes;
     const notes = [];
     const scale = SCALES[scaleName] || [];
     const normRoot = rootNote && (ENHARMONICS[rootNote]?.includes("b") ? ENHARMONICS[rootNote] : rootNote);
@@ -883,12 +878,7 @@ export const FretboardSVG = memo(function FretboardSVG({
           semantics?.isTension ?? false,
         );
 
-        const isHidden = (() => {
-          // Legacy hideNonChordNotes prop: hides scale-only and color-tone notes.
-          // With practiceLens set, effectiveHideNonChordNotes is always false.
-          if (effectiveHideNonChordNotes && (noteClass === "scale-only" || noteClass === "color-tone")) return true;
-          return false;
-        })();
+        const isHidden = false;
 
         notes.push({
           stringIndex,
@@ -905,7 +895,7 @@ export const FretboardSVG = memo(function FretboardSVG({
       }
     }
     return notes;
-  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, wrappedNotes, hideNonChordNotes, practiceLens, tuning, noteSemantics, activePattern, activeShape, shapeScope]);
+  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, wrappedNotes, practiceLens, tuning, noteSemantics, activePattern, activeShape, shapeScope]);
 
   return (
     <div role="group" aria-label={ariaLabel} className="fretboard-board" data-practice-lens={hasChordOverlay ? practiceLens : undefined}>

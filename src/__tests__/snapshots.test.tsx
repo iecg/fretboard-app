@@ -79,25 +79,9 @@ describe("Component Snapshots", () => {
           rootNote="C"
           displayFormat="notes"
           chordTones={["C", "E", "G"]}
-          hideNonChordNotes={false}
         />,
       );
       expect(container).toMatchSnapshot("fretboard-with-chord-tones");
-    });
-
-    it("renders with chord tones filtered snapshot", () => {
-      const { container } = render(
-        <Fretboard id="test-id"
-          tuning={STANDARD_TUNING}
-          maxFret={24}
-          highlightNotes={["C", "D", "E", "F", "G", "A", "B"]}
-          rootNote="C"
-          displayFormat="notes"
-          chordTones={["C", "E", "G"]}
-          hideNonChordNotes={true}
-        />,
-      );
-      expect(container).toMatchSnapshot("fretboard-chord-tones-filtered");
     });
 
     it("renders with CAGED shapes snapshot", () => {

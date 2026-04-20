@@ -3,6 +3,7 @@ import { atomWithStorage } from "jotai/utils";
 import {
   NOTES,
   CHORD_DEFINITIONS,
+  LENS_REGISTRY,
   getChordNotes,
   getScaleNotes,
   getNoteDisplay,
@@ -68,11 +69,7 @@ const chordFretSpreadStorage = constrainedNumberStorage({ min: 0, max: 4, intege
 // Practice lens storage adapters
 // ---------------------------------------------------------------------------
 
-const PRACTICE_LENS_VALUES: PracticeLens[] = [
-  "targets",
-  "guide-tones",
-  "tension",
-];
+const PRACTICE_LENS_VALUES = LENS_REGISTRY.map((e) => e.id) as PracticeLens[];
 
 function migrateViewModeToLens(viewMode: string): PracticeLens {
   switch (viewMode) {
@@ -173,10 +170,6 @@ export const practiceLensAtom = atomWithStorage<PracticeLens>(
 // ---------------------------------------------------------------------------
 // Overlay semantics — lens availability + derived flags
 // ---------------------------------------------------------------------------
-
-// Lenses control coaching cues only — no lens hides scale notes.
-// Kept as a stable export for legacy callers; always returns false.
-export const hideNonChordNotesAtom = atom(() => false);
 
 // ---------------------------------------------------------------------------
 // Chord derived atoms

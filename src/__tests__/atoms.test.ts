@@ -21,7 +21,6 @@ import {
   accidentalModeAtom,
   mobileTabAtom,
   npsPositionAtom,
-  hideNonChordNotesAtom,
   chordFretSpreadAtom,
   practiceLensAtom,
   setRootNoteAtom,
@@ -475,14 +474,10 @@ describe("atoms", () => {
       store.set(mobileTabAtom, "view");
       store.set(landscapeNarrowTabAtom, "key");
 
-      // hideNonChordNotesAtom is always false — lenses never hide scale notes
-      expect(store.get(hideNonChordNotesAtom)).toBe(false);
-
       store.set(resetAtom);
 
       expect(store.get(chordRootAtom)).toBe("C");
       expect(store.get(linkChordRootAtom)).toBe(true);
-      expect(store.get(hideNonChordNotesAtom)).toBe(false);
       expect(store.get(chordFretSpreadAtom)).toBe(0);
       expect(store.get(fingeringPatternAtom)).toBe("all");
       expect(store.get(npsPositionAtom)).toBe(1);

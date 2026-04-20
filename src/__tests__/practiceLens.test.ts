@@ -7,7 +7,6 @@ import {
   practiceLensAtom,
   practiceCuesAtom,
   shapeLocalPracticeCuesAtom,
-  hideNonChordNotesAtom,
   showChordPracticeBarAtom,
   practiceBarLensLabelAtom,
   lensAvailabilityAtom,
@@ -89,21 +88,6 @@ describe("practiceLensAtom", () => {
     const unsub = store.sub(practiceLensAtom, () => {});
     expect(store.get(practiceLensAtom)).toBe("targets");
     unsub();
-  });
-});
-
-describe("hideNonChordNotesAtom", () => {
-  it("is always false — lenses never hide scale notes", () => {
-    const store = makeStore();
-    for (const lens of ["targets", "guide-tones", "tension"] as const) {
-      store.set(practiceLensAtom, lens);
-      expect(store.get(hideNonChordNotesAtom)).toBe(false);
-    }
-  });
-
-  it("is false when no chord is set", () => {
-    const store = makeStore();
-    expect(store.get(hideNonChordNotesAtom)).toBe(false);
   });
 });
 
@@ -539,13 +523,6 @@ describe("chord overlay does not control scale visibility", () => {
 describe("Chord Tones lens does not hide scale notes", () => {
   beforeEach(() => {
     localStorage.clear();
-  });
-
-  it("hideNonChordNotesAtom is false when targets lens is active", () => {
-    const store = makeStore();
-    store.set(chordTypeAtom, "Major Triad");
-    store.set(practiceLensAtom, "targets");
-    expect(store.get(hideNonChordNotesAtom)).toBe(false);
   });
 
   it("effectiveShapeDataAtom highlightNotes unchanged when switching between lenses", () => {

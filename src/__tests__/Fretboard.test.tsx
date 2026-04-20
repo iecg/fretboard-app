@@ -260,28 +260,6 @@ describe("Fretboard", () => {
       expect(document.body).toBeTruthy();
     });
 
-    it("filters to only chord tones when hideNonChordNotes is true", () => {
-      const { rerender } = render(
-        <Fretboard
-          {...defaultProps}
-          highlightNotes={["C", "D", "E", "F", "G", "A", "B"]}
-          chordTones={["C", "E", "G"]}
-          hideNonChordNotes={false}
-        />,
-      );
-
-      rerender(
-        <Fretboard
-          {...defaultProps}
-          highlightNotes={["C", "D", "E", "F", "G", "A", "B"]}
-          chordTones={["C", "E", "G"]}
-          hideNonChordNotes={true}
-        />,
-      );
-
-      expect(document.body).toBeTruthy();
-    });
-
     it("handles chord fret spread calculation", () => {
       render(
         <Fretboard
