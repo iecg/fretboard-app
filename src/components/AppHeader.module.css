@@ -65,7 +65,7 @@
   font-family: var(--font-display);
   /* Bold glyph weight + thin text-stroke + only soft/wide glow. */
   font-weight: var(--font-brand-weight);
-  font-size: clamp(2rem, 4vw, 3.15rem);
+  font-size: clamp(1.65rem, 3.2vw, 2.45rem);
   letter-spacing: 0.035em;
   line-height: 0.92;
   white-space: nowrap;
@@ -145,7 +145,7 @@
   }
 
   .app-header-brand-title {
-    font-size: clamp(1.72rem, 9vw, 2.3rem);
+    font-size: clamp(1.4rem, 7.5vw, 1.9rem);
   }
 
   .app-header-brand-wordmark .fretflow-wordmark {

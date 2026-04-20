@@ -56,7 +56,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.2rem;
+  padding: 0;
   border: none;
   background: transparent;
   color: var(--text-soft-white);

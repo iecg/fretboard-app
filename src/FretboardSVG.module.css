@@ -255,8 +255,11 @@
 
 :global(.fretboard-neck) {
   position: relative;
-  background: var(--fretboard-wood);
+  background: transparent;
   border: 1px solid rgb(255 255 255 / 0.08);
+}
+
+:global(.fretboard-board) {
   box-shadow: 0 12px 40px rgb(0 0 0 / 0.4);
 }
 
@@ -275,8 +278,8 @@
 
 :global(.fret-number) {
   text-align: center;
-  font-family: var(--font-display);
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--chrome-fg-muted);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgb(210 220 232 / 0.78);
 }
