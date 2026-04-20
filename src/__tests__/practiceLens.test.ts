@@ -290,6 +290,36 @@ describe("practiceCuesAtom", () => {
       expect(ids).toHaveLength(4);
     });
   });
+
+  describe("chord lens", () => {
+    it("returns a Chord tones land-on cue with all chord members", () => {
+      const store = makeStore();
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      store.set(chordRootAtom, "C");
+      store.set(chordTypeAtom, "Major Triad");
+      store.set(practiceLensAtom, "chord");
+      const cues = store.get(practiceCuesAtom);
+      expect(cues).toHaveLength(1);
+      expect(cues[0]!.kind).toBe("land-on");
+      expect(cues[0]!.label).toBe("Chord tones");
+      const noteNames = cues[0]!.notes.map((n) => n.internalNote);
+      expect(noteNames).toEqual(expect.arrayContaining(["C", "E", "G"]));
+    });
+
+    it("shows chord tones for an all-in-scale chord (Am on Am)", () => {
+      const store = makeStore();
+      store.set(rootNoteAtom, "A");
+      store.set(scaleNameAtom, "Natural Minor");
+      store.set(chordRootAtom, "A");
+      store.set(chordTypeAtom, "Minor Triad");
+      store.set(practiceLensAtom, "chord");
+      const cues = store.get(practiceCuesAtom);
+      expect(cues).toHaveLength(1);
+      const noteNames = cues[0]!.notes.map((n) => n.internalNote);
+      expect(noteNames).toEqual(expect.arrayContaining(["A", "C", "E"]));
+    });
+  });
 });
 
 describe("noteSemanticMapAtom", () => {

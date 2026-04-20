@@ -72,6 +72,7 @@ const PRACTICE_LENS_VALUES: PracticeLens[] = [
   "targets",
   "guide-tones",
   "tension",
+  "chord",
 ];
 
 function migrateViewModeToLens(viewMode: string): PracticeLens {

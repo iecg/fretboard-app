@@ -31,6 +31,7 @@ const LENS_UI_ORDER: readonly PracticeLens[] = [
   "targets",
   "guide-tones",
   "tension",
+  "chord",
 ];
 
 export function ChordOverlayControls() {
