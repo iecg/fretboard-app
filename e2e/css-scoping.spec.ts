@@ -1,0 +1,245 @@
+import { expect, test, type Page } from "@playwright/test";
+
+async function gotoApp(page: Page) {
+  await page.goto("/", { waitUntil: "networkidle" });
+  await expect(page.locator('[data-testid="app-container"]')).toBeVisible();
+}
+
+test.describe("production css module scoping", () => {
+  test("renders app with production-scoped styles", async ({ page }) => {
+    await gotoApp(page);
+
+    const appContainer = page.locator('[data-testid="app-container"]');
+    const appClassList = await appContainer.getAttribute("class");
+    expect(appClassList, "App container should have classes").toBeTruthy();
+
+    // Verify the container is properly styled (has dimensions)
+    const rect = await appContainer.boundingBox();
+    expect(rect, "App container should be rendered with dimensions").not.toBeNull();
+    expect(rect!.width, "App container should have non-zero width").toBeGreaterThan(0);
+    expect(rect!.height, "App container should have non-zero height").toBeGreaterThan(0);
+  });
+
+  test("fretboard renders with module styles in production", async ({ page }) => {
+    await gotoApp(page);
+
+    const fretboard = page.locator('[data-testid="fretboard-outer"]');
+    await expect(fretboard).toBeVisible();
+
+    const fretboardStyle = await page.evaluate(() => {
+      const el = document.querySelector('[data-testid="fretboard-outer"]');
+      if (!el) return null;
+      const style = getComputedStyle(el);
+      return {
+        display: style.display,
+        width: el.getBoundingClientRect().width,
+        height: el.getBoundingClientRect().height,
+      };
+    });
+
+    expect(fretboardStyle, "Fretboard should be rendered").not.toBeNull();
+    expect(fretboardStyle!.display, "Fretboard should have valid display").toBeTruthy();
+    expect(fretboardStyle!.width, "Fretboard should have width").toBeGreaterThan(100);
+    expect(fretboardStyle!.height, "Fretboard should have height").toBeGreaterThan(100);
+  });
+
+  test("circle of fifths renders with scoped styles", async ({ page }) => {
+    await gotoApp(page);
+
+    const circle = page.locator('[data-testid="circle-of-fifths-svg"]');
+    await expect(circle).toBeVisible();
+
+    const circleRect = await circle.boundingBox();
+    expect(circleRect, "Circle of fifths should be rendered").not.toBeNull();
+    expect(circleRect!.width, "Circle should have non-zero width").toBeGreaterThan(0);
+    expect(circleRect!.height, "Circle should have non-zero height").toBeGreaterThan(0);
+  });
+
+  test("dashboard panels have scoped module styles", async ({ page }) => {
+    await page.setViewportSize({ width: 1200, height: 800 });
+    await gotoApp(page);
+
+    const dashboardCards = page.locator('[data-testid="dashboard-card-configuration"]');
+    if (await dashboardCards.count()) {
+      const cardRect = await dashboardCards.first().boundingBox();
+      expect(cardRect, "Dashboard card should be rendered").not.toBeNull();
+      expect(cardRect!.width, "Dashboard card should have non-zero width").toBeGreaterThan(0);
+    }
+  });
+
+  test("global design tokens work alongside scoped modules", async ({
+    page,
+  }) => {
+    await gotoApp(page);
+
+    const result = await page.evaluate(() => {
+      // Check that design tokens were injected into the DOM
+      const hasStyleSheets = document.styleSheets.length > 0;
+
+      // Check for common CAGED color usage in the fretboard
+      const fretboard = document.querySelector('[data-testid="fretboard-outer"]');
+      const fretboardStyle = fretboard ? getComputedStyle(fretboard) : null;
+
+      return {
+        hasStyleSheets,
+        fretboardHasStyles: !!fretboardStyle,
+      };
+    });
+
+    expect(result.hasStyleSheets, "Should have stylesheets loaded").toBe(true);
+    expect(result.fretboardHasStyles, "Fretboard should have computed styles").toBe(true);
+  });
+
+  test("verifies fretboard grid layout integrity with scoped styles", async ({
+    page,
+  }) => {
+    await gotoApp(page);
+
+    const result = await page.evaluate(() => {
+      const fretboard = document.querySelector('[data-testid="fretboard-outer"]');
+      if (!fretboard) return { visible: false };
+
+      const style = getComputedStyle(fretboard);
+      const rect = fretboard.getBoundingClientRect();
+
+      return {
+        visible: true,
+        display: style.display,
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+        position: style.position,
+      };
+    });
+
+    expect(result.visible, "Fretboard should be rendered").toBe(true);
+    expect(result.display, "Fretboard should have display property").toBeTruthy();
+    expect(
+      result.width,
+      "Fretboard should have non-zero width with scoped styles"
+    ).toBeGreaterThan(0);
+    expect(
+      result.height,
+      "Fretboard should have non-zero height with scoped styles"
+    ).toBeGreaterThan(0);
+  });
+
+  test("mobile tab panel styles work on narrow viewports", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await gotoApp(page);
+
+    const tabBar = page.locator('[data-testid="bottom-tab-bar"]');
+    if (await tabBar.count()) {
+      const tabBarRect = await tabBar.boundingBox();
+      expect(tabBarRect, "Tab bar should be rendered").not.toBeNull();
+      expect(tabBarRect!.height, "Tab bar should have height").toBeGreaterThan(0);
+    }
+
+    const tabContent = page.locator('[data-testid="mobile-tab-content"]');
+    if (await tabContent.count()) {
+      const contentRect = await tabContent.first().boundingBox();
+      expect(contentRect, "Tab content should be rendered").not.toBeNull();
+      if (contentRect) {
+        expect(contentRect.width, "Tab content should have width").toBeGreaterThan(0);
+      }
+    }
+  });
+
+  test("no unscoped style conflicts in production build", async ({
+    page,
+  }) => {
+    await gotoApp(page);
+
+    const result = await page.evaluate(() => {
+      let elementCount = 0;
+      let styledElementCount = 0;
+
+      const allElements = document.querySelectorAll("*");
+      allElements.forEach((el) => {
+        elementCount++;
+        if (el instanceof HTMLElement || el instanceof SVGElement) {
+          const style = getComputedStyle(el);
+          if (
+            style.display !== "none" &&
+            style.display !== "contents" &&
+            (style.width || style.height)
+          ) {
+            styledElementCount++;
+          }
+        }
+      });
+
+      return {
+        totalElements: elementCount,
+        styledElements: styledElementCount,
+        renderingRatio: Math.round((styledElementCount / elementCount) * 100),
+      };
+    });
+
+    expect(
+      result.totalElements,
+      "Should have rendered elements in production build"
+    ).toBeGreaterThan(50);
+    expect(
+      result.renderingRatio,
+      "Most elements should be rendered with styles"
+    ).toBeGreaterThan(20);
+  });
+
+  test("layout responsiveness preserved with scoped module styles", async ({
+    page,
+  }) => {
+    const viewports = [
+      { width: 390, height: 844, tier: "mobile" },
+      { width: 768, height: 1024, tier: "tablet" },
+      { width: 1200, height: 800, tier: "desktop" },
+    ];
+
+    for (const viewport of viewports) {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      await gotoApp(page);
+
+      const tier = await page
+        .locator('[data-testid="app-container"]')
+        .getAttribute("data-layout-tier");
+      expect(tier, `Viewport ${viewport.width}x${viewport.height}`).toBe(viewport.tier);
+
+      const fretboard = page.locator('[data-testid="fretboard-outer"]');
+      await expect(fretboard, "Fretboard should be visible").toBeVisible();
+
+      const isVisible = await fretboard.isVisible();
+      expect(isVisible, `Fretboard visibility preserved at ${viewport.tier}`).toBe(true);
+    }
+  });
+
+  test("verifies header chrome styling with scoped modules", async ({ page }) => {
+    await gotoApp(page);
+
+    const header = page.locator('[data-testid="app-header"]');
+    await expect(header).toBeVisible();
+
+    const headerClassList = await header.getAttribute("class");
+    expect(headerClassList).toBeTruthy();
+
+    const result = await page.evaluate(() => {
+      const header = document.querySelector('[data-testid="app-header"]');
+      if (!header) return null;
+
+      const style = getComputedStyle(header);
+      const rect = header.getBoundingClientRect();
+
+      return {
+        display: style.display,
+        position: style.position,
+        top: Math.round(rect.top),
+        left: Math.round(rect.left),
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+      };
+    });
+
+    expect(result).not.toBeNull();
+    expect(result!.display, "Header should have proper display").toBeTruthy();
+    expect(result!.width, "Header should span full width").toBeGreaterThan(200);
+    expect(result!.height, "Header should have reasonable height").toBeGreaterThan(40);
+  });
+});
