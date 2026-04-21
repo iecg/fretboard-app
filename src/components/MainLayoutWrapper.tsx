@@ -47,12 +47,23 @@ export function MainLayoutWrapper({
       {header}
 
       {showSummary && (
-        <div className={styles["summary-shell"]} data-testid="summary-shell">
+        <div
+          className={styles["summary-shell"]}
+          data-testid="summary-shell"
+          data-layout-tier={layoutTier}
+          data-layout-variant={layoutVariant}
+        >
           {summary}
         </div>
       )}
 
-      <div className={styles["chord-dock-shell"]}>{chordDock}</div>
+      <div
+        className={styles["chord-dock-shell"]}
+        data-layout-tier={layoutTier}
+        data-layout-variant={layoutVariant}
+      >
+        {chordDock}
+      </div>
 
       {helpModal}
 

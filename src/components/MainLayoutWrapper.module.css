@@ -18,7 +18,7 @@
    tighter "top band" zone (header + key summary) vs. the fretboard below.
    Combined with gap: 0.5rem, the strip sits 0.32rem below the header while
    the fretboard gets the full 0.5rem gap (unified feel without margins). */
-:global(.app-container[data-layout-tier="desktop"]) .summary-shell {
+.summary-shell[data-layout-tier="desktop"] {
   margin-top: -0.18rem;
 }
 
@@ -26,18 +26,18 @@
    from the controls dashboard below. Combined with the 0.5rem container gap,
    total fretboard→controls space is ~0.95rem — intentionally wider than the
    0.32rem between chrome sections above the fretboard. */
-:global(.app-container[data-layout-tier="desktop"]) .main-fretboard {
+.main-fretboard[data-layout-tier="desktop"] {
   margin-bottom: 0.45rem;
 }
 
-:global(.app-container[data-layout-tier="tablet"]) .summary-shell {
+.summary-shell[data-layout-tier="tablet"] {
   margin-top: -0.1rem;
 }
 
-:global(.app-container[data-layout-tier="tablet"]) .main-fretboard {
+.main-fretboard[data-layout-tier="tablet"] {
   margin-bottom: 0.3rem;
 }
 
-:global(.app-container[data-layout-variant="landscape-mobile"]) .main-fretboard {
+.main-fretboard[data-layout-variant="landscape-mobile"] {
   margin-bottom: 0;
 }
