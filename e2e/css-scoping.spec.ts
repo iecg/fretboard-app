@@ -73,21 +73,15 @@ test.describe("production css module scoping", () => {
     await gotoApp(page);
 
     const result = await page.evaluate(() => {
-      // Check that design tokens were injected into the DOM
-      const hasStyleSheets = document.styleSheets.length > 0;
-
-      // Check for common CAGED color usage in the fretboard
-      const fretboard = document.querySelector('[data-testid="fretboard-outer"]');
-      const fretboardStyle = fretboard ? getComputedStyle(fretboard) : null;
-
-      return {
-        hasStyleSheets,
-        fretboardHasStyles: !!fretboardStyle,
-      };
+      const root = document.documentElement;
+      const rootStyle = getComputedStyle(root);
+      const neonCyan = rootStyle.getPropertyValue("--neon-cyan").trim();
+      const spaceToken = rootStyle.getPropertyValue("--space-4").trim();
+      return { neonCyan, spaceToken };
     });
 
-    expect(result.hasStyleSheets, "Should have stylesheets loaded").toBe(true);
-    expect(result.fretboardHasStyles, "Fretboard should have computed styles").toBe(true);
+    expect(result.neonCyan, "tokens.css --neon-cyan should be applied").toBe("#4DE4FF");
+    expect(result.spaceToken, "tokens.css --space-4 should be applied").toBe("1rem");
   });
 
   test("mobile tab panel styles work on narrow viewports", async ({ page }) => {
@@ -282,6 +276,20 @@ test.describe("production css module scoping", () => {
     await gotoApp(page);
 
     const result = await page.evaluate(() => {
+      const KNOWN_GLOBALS = new Set([
+        "app-container",
+        "panel-surface",
+        "panel-surface--compact",
+        "panel-surface--inset",
+        "icon",
+        "icon-active",
+        "icon-muted",
+        "loading-spinner",
+        "custom-scrollbar",
+        "hide-scrollbar",
+        "brand-mark",
+      ]);
+
       const elements = document.querySelectorAll("[class]");
       const classInfo: Record<string, number> = {};
       let nonUtilityClasses = 0;
@@ -289,11 +297,13 @@ test.describe("production css module scoping", () => {
       elements.forEach((el) => {
         const classes = (el.getAttribute("class") || "").split(/\s+/).filter(Boolean);
         classes.forEach((cls) => {
-          // Track class names
           classInfo[cls] = (classInfo[cls] || 0) + 1;
 
-          // Non-utility classes are likely CSS Modules (contain underscores, hyphens, longer names)
-          if (cls.length > 5 && (cls.includes('_') || /[a-z]-[a-z]/.test(cls))) {
+          if (
+            !KNOWN_GLOBALS.has(cls) &&
+            cls.length > 5 &&
+            (cls.includes("_") || /[a-z]-[a-z]/.test(cls))
+          ) {
             nonUtilityClasses++;
           }
         });
