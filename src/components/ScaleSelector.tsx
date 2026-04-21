@@ -1,4 +1,5 @@
 import { startTransition } from "react";
+import clsx from "clsx";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { NOTES } from "../theory";
 import {
@@ -132,7 +133,7 @@ export function ScaleSelector() {
       </div>
 
       <div className={shared["control-section"]}>
-        <div className={`${theoryStyles["theory-mode-browser"]} panel-surface panel-surface--compact`}>
+        <div className={clsx(theoryStyles["theory-mode-browser"], "panel-surface panel-surface--compact")}>
           <span className={shared["section-label"]}>{memberTerm}</span>
           <div
             className={theoryStyles["theory-browser-main"]}

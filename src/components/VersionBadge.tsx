@@ -1,7 +1,9 @@
+import styles from "./VersionBadge.module.css";
+
 export function VersionBadge() {
   return (
     <div className="version-badge">
-      <span className="version-text">
+      <span className={styles["version-text"]}>
         v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar.
         Licensed under{" "}
         <a
@@ -17,13 +19,13 @@ export function VersionBadge() {
         href="https://ko-fi.com/E1E01XFJ0G"
         target="_blank"
         rel="noopener noreferrer"
-        className="kofi-badge-btn"
+        className={styles["kofi-badge-btn"]}
         title="Support FretFlow on Ko-fi"
       >
         <img
           src="/fretboard-app/kofi_symbol.png"
           alt="Ko-fi"
-          className="kofi-badge-icon"
+          className={styles["kofi-badge-icon"]}
         />
       </a>
     </div>

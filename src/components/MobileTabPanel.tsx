@@ -1,4 +1,5 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import clsx from "clsx";
 import {
   mobileTabAtom,
   rootNoteAtom,
@@ -11,6 +12,7 @@ import { CircleOfFifths } from "../CircleOfFifths";
 import { TheoryControls } from "./TheoryControls";
 import { FingeringPatternControls } from "./FingeringPatternControls";
 import { ToggleBar } from "./ToggleBar";
+import styles from "./MobileTabPanel.module.css";
 
 const MOBILE_TAB_OPTIONS = [
   { value: "theory", label: "Theory" },
@@ -24,7 +26,7 @@ function MobileKeyExplorer() {
   const useFlats = useAtomValue(useFlatsAtom);
   const enharmonicDisplay = useAtomValue(enharmonicDisplayAtom);
   return (
-    <div className="cof-container">
+    <div className={styles["cof-container"]}>
       <CircleOfFifths
         rootNote={rootNote}
         setRootNote={setRootNote}
@@ -49,12 +51,12 @@ export function MobileTabPanel() {
       />
       <div className="mobile-tab-content">
         {mobileTab === "theory" && (
-          <div className="mobile-tab-panel mobile-theory-tab">
+          <div className={clsx(styles["mobile-tab-panel"], styles["mobile-theory-tab"])}>
             <TheoryControls keyExplorer={<MobileKeyExplorer />} />
           </div>
         )}
         {mobileTab === "view" && (
-          <div className="mobile-tab-panel mobile-view-tab">
+          <div className={clsx(styles["mobile-tab-panel"], styles["mobile-view-tab"])}>
             <FingeringPatternControls />
           </div>
         )}

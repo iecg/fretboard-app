@@ -133,7 +133,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
               d={slicePath(index)}
               className={clsx(styles["circle-slice"], {
                 [styles.active]: isActive,
-                [styles["circle-slice--scale"]]: !isActive && degreeStr,
+                [styles["circle-slice--scale"]]: degreeStr,
                 [styles["circle-slice--muted"]]: !isActive && !degreeStr,
               })}
               stroke="var(--surface-highlight)"

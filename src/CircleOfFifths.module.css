@@ -37,35 +37,35 @@
 }
 
 .circle-slice.active {
-  stroke: rgb(77 228 255 / 0.75);
-  fill: rgb(77 228 255 / 0.12);
+  stroke: var(--neon-orange);
+  fill: rgb(255 154 77 / 0.12);
   stroke-width: 2.2;
 }
 
 .circle-slice.active:hover {
-  fill: rgb(77 228 255 / 0.22);
-  stroke: rgb(77 228 255 / 0.85);
+  fill: rgb(255 154 77 / 0.22);
+  stroke: var(--neon-orange-bright);
 }
 
 .circle-slice--scale {
-  fill: rgb(48 33 22 / 0.9);
-  stroke: rgb(255 154 77 / 0.22);
+  fill: rgb(11 36 43 / 0.9);
+  stroke: rgb(77 228 255 / 0.22);
 }
 
 .circle-slice--scale:hover {
-  fill: rgb(58 43 32 / 0.98);
-  stroke: rgb(255 154 77 / 0.38);
+  fill: rgb(15 46 55 / 0.98);
+  stroke: rgb(77 228 255 / 0.38);
 }
 
 .circle-slice--scale.active {
-  stroke: rgb(255 154 77);
+  stroke: var(--neon-orange);
   fill: rgb(255 154 77 / 0.16);
   stroke-width: 2.5;
 }
 
 .circle-slice--scale.active:hover {
   fill: rgb(255 154 77 / 0.26);
-  stroke: rgb(255 154 77 / 0.85);
+  stroke: var(--neon-orange-bright);
 }
 
 .circle-slice--muted {

@@ -1,5 +1,5 @@
 /* stylelint-disable selector-pseudo-class-no-unknown */
-.card {
+:global(.dashboard-card) {
   background: rgb(22 27 38 / 0.96);
   border: 1px solid rgb(255 255 255 / 0.1);
   border-radius: var(--radius-card);

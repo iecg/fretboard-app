@@ -67,7 +67,7 @@ export function Card({
 
   return (
     <As
-      className={clsx(styles.card, className)}
+      className={clsx("dashboard-card", className)}
       aria-labelledby={labelledBy}
       aria-label={!title ? ariaLabel : undefined}
       {...rest}

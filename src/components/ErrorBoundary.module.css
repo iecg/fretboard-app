@@ -1,0 +1,44 @@
+.error-fallback {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: var(--bg-color);
+  color: var(--text-main);
+}
+
+.error-fallback__content {
+  text-align: center;
+  max-width: 24rem;
+}
+
+.error-fallback__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--neon-orange-bright);
+}
+
+.error-fallback__message {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+}
+
+.error-fallback__button {
+  background: var(--surface-raised);
+  border: 1px solid var(--surface-highlight);
+  color: var(--text-main);
+  padding: 0.6rem 1.25rem;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-surface);
+}
+
+.error-fallback__button:hover {
+  border-color: var(--accent-primary);
+  background: var(--surface-highlight);
+}

@@ -1,0 +1,14 @@
+.chord-overlay-dock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: min(100%, 30rem);
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .chord-overlay-dock {
+  width: 100%;
+}
+
+:global(.app-container[data-layout-tier="desktop"]) .chord-overlay-dock {
+  width: min(100%, 32rem);
+}
