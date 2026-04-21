@@ -10,11 +10,6 @@
   align-items: start;
 }
 
-/* Dashboard variant — extends base .controls-panel (inherits shared grid rules). */
-/* stylelint-disable-next-line block-no-empty */
-.controls-panel--dashboard {
-}
-
 .controls-panel[data-mode="3col"] {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr);
 }
