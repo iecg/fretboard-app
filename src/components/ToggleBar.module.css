@@ -51,3 +51,8 @@
   box-shadow: var(--focus-ring-glow);
   color: var(--text-on-accent);
 }
+
+/* Suppress tabs in landscape-mobile layout */
+:global(.app-container[data-layout-variant="landscape-mobile"]) .mobile-tab-bar {
+  display: none !important;
+}

@@ -40,4 +40,10 @@
 :global(.app-container[data-layout-variant="landscape-mobile"]) .mobile-tab-content {
   display: none;
 }
+
+/* Ensure touch targets are min 44px tall */
+.mobile-tab-panel :global(.theory-nav-btn),
+.mobile-tab-panel :global(.theory-disclosure-btn) {
+  min-height: 36px;
+}
 /* stylelint-enable selector-pseudo-class-no-unknown */
