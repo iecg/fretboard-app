@@ -8,7 +8,7 @@ import {
   ANIMATION_EASE,
 } from "../../core/constants";
 import styles from "./HelpModal.module.css";
-import sharedStyles from "../shared.module.css";
+import sharedStyles from "../shared/shared.module.css";
 
 interface HelpModalProps {
   isOpen: boolean;

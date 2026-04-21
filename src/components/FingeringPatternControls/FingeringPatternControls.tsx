@@ -5,7 +5,7 @@ import { CAGED_SHAPES, type CagedShape } from "../../shapes";
 import { useShapeState } from "../../hooks/useShapeState";
 import { displayFormatAtom } from "../../store/atoms";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
-import shared from "../shared.module.css";
+import shared from "../shared/shared.module.css";
 
 const LONG_PRESS_MS = 500;
 const MOVE_CANCEL_PX = 8;

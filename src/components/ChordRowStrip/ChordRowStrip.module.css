@@ -1,7 +1,7 @@
 /* Chord overlay summary strip — chord member row + compact legend. */
 
 .chord-row-strip {
-  composes: strip-surface from "../shared.module.css";
+  composes: strip-surface from "../shared/shared.module.css";
 
   display: flex;
   flex-direction: column;

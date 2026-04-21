@@ -6,7 +6,7 @@
 }
 
 .fret-btn {
-  composes: control-button from '../shared.module.css';
+  composes: control-button from '../shared/shared.module.css';
   min-width: 2.35rem;
   min-height: 2.35rem;
   padding: 0.4rem 0.55rem;
@@ -15,7 +15,7 @@
 }
 
 .fret-value {
-  composes: control-value from '../shared.module.css';
+  composes: control-value from '../shared/shared.module.css';
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--chrome-fg);
