@@ -135,184 +135,6 @@
   contain: layout paint;
 }
 
-/* Dynamic Box Overlays behind strings */
-
-.fret-backgrounds {
-  position: absolute;
-  inset: 0;
-  display: flex;
-}
-
-.fret-column {
-  box-sizing: border-box;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  border-left: 1px solid rgba(0, 0, 0, 0.4);
-}
-
-.fret-zero {
-  background-color: var(--fret-nut-bg);
-  border-right: 4px solid var(--fret-nut-wire);
-}
-
-.fret-standard {
-  border-right: 2px solid var(--fret-wire);
-}
-
-.fret-numbers-row {
-  display: flex;
-}
-
-.fret-number {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: rgb(210 220 232 / 0.78);
-  user-select: none;
-  -webkit-user-select: none;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-.fret-marker-container {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  pointer-events: none;
-}
-
-.marker-double {
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--string-row-px) * 0.6);
-  /* proportional: 24px at 40px row, 43.2px at 72px */
-}
-
-.marker-dot {
-  width: calc(var(--string-row-px) * 0.4);
-  /* proportional: 16px at 40px, 28.8px at 72px */
-  height: calc(var(--string-row-px) * 0.4);
-  border-radius: 9999px;
-  background-color: var(--fret-marker);
-}
-
-.strings-container {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.string-row {
-  position: relative;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  height: 40px;
-}
-
-.string-line {
-  position: absolute;
-  width: 100%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  pointer-events: none;
-  opacity: 0.8;
-  background-color: var(--string-color);
-}
-
-.string-notes {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  /* z-index token — see semantic.css for the full z-index registry */
-  z-index: var(--z-note);
-}
-
-.note-cell {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-@keyframes note-ping {
-  0% {
-    box-shadow: 0 0 0 0 var(--shadow-ping-start);
-  }
-
-  100% {
-    box-shadow: 0 0 0 12px var(--shadow-ping-end);
-  }
-}
-
-/* Controls panel shared by tablet and desktop layouts. */
-.controls-panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  flex: 0 0 auto;
-  overflow: visible;
-  min-width: 0;
-}
-
-.controls-panel-column {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  min-width: 0;
-}
-
-.col-span-2 {
-  flex: 2;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Mode grid */
-.mode-grid {
-  display: flex;
-  background-color: var(--surface-raised);
-  border: 1px solid var(--surface-highlight);
-  border-radius: var(--radius-md);
-  padding: var(--space-1);
-}
-
-/* Tuning controls */
-.tuning-select-label {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.tuning-select-label span {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-}
-
-.tuning-select {
-  background-color: var(--surface-raised);
-  border: 1px solid var(--surface-highlight);
-  font-size: var(--text-sm);
-  border-radius: var(--radius-md);
-  padding: var(--space-2) var(--space-3);
-  outline: none;
-  transition: border-color var(--transition-fast);
-  color: var(--text-main);
-}
-
-.tuning-select:focus-visible {
-  outline: var(--focus-ring);
-  outline-offset: var(--focus-ring-offset);
-  border-color: var(--neon-cyan);
-}
-
-/* Fret range controls */
-
 /* Key column */
 .key-column {
   position: relative;
@@ -333,104 +155,6 @@
   border-radius: 9999px;
 }
 
-/* Pattern Section (scale + chord overlay stacked in one column) */
-.pattern-section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  flex: 1 1 0;
-  min-height: 0;
-  overflow: hidden;
-}
-
-/* Pattern Selection */
-.pattern-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  overflow-y: auto;
-  padding-right: 0.5rem;
-  flex: 1 1 0;
-  min-height: 0;
-}
-
-/* =============================================
-   RESPONSIVE LAYOUT
-   data-layout-tier and data-layout-variant are set in App.tsx:
-     mobile / landscape-mobile → mobile chrome and tabs
-     tablet-split / tablet-stacked
-     desktop-3col
-   ============================================= */
-
-/* Fret range mobile layout */
-.fret-range-mobile {
-  display: flex;
-  gap: var(--space-4);
-}
-
-.fret-range-group {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.fret-range-label {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-  min-width: 2.5rem;
-}
-
-
-/* Mobile tab bar — display controlled by ToggleBar.css; component is only
-   mounted when showMobileTabs=true (mobile portrait), so no CSS guard needed.
-   Landscape suppression: [data-layout-variant="landscape-mobile"] rule below. */
-
-/* Mobile inline layout */
-@media (max-width: 767px) {
-  .app-container {
-    padding: 0.875rem;
-    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
-  }
-
-  /* Hide desktop controls panel — all controls live in mobile tabs */
-  .controls-panel {
-    display: none !important;
-  }
-
-  .main-fretboard {
-    width: 100%;
-    overflow: hidden;
-  }
-
-  .fretboard-wrapper {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* Ensure touch targets are min 44px tall */
-  .mobile-tab-panel .theory-nav-btn,
-  .mobile-tab-panel .theory-disclosure-btn,
-  .mobile-tab-panel .toolbar-btn {
-    min-height: 36px;
-  }
-
-  .mobile-tab-panel .toolbar-btn {
-    min-width: 36px;
-  }
-
-  .mobile-tab-panel .fret-range-controls {
-    width: 100%;
-  }
-
-  .fret-range-label {
-    min-width: auto;
-  }
-
-  .fret-range-group {
-    gap: var(--space-1);
-  }
-}
-
 .summary-shell {
   display: flex;
   justify-content: center;
@@ -439,10 +163,6 @@
 /* Dedicated slot for the chord practice dock — sits between the scale strip and fretboard.
    The dock manages its own visibility; this shell just provides centering. */
 
-/* Chord overlay active: scale-only fretboard notes dim further so chord tones lead */
-.app-container[data-chord-active="true"] .note-scale-only {
-  opacity: 0.45;
-}
 
 /* =============================================
    Phase 1 Layout Architecture
@@ -527,29 +247,6 @@
     display: none !important;
   }
 
-  .summary-area {
-    gap: var(--space-2);
-  }
-
-  .summary-disclosure-btn {
-    padding: var(--space-2) var(--space-3);
-  }
-
-  .summary-note {
-    width: auto;
-    height: auto;
-    flex: 0 0 auto;
-    min-width: 2.5rem;
-    min-height: 2.5rem;
-    font-size: var(--text-sm);
-    padding: var(--space-1);
-  }
-
-  .summary-notes {
-    gap: var(--space-2);
-    width: 100%;
-  }
-
   .main-fretboard {
     width: 100%;
     overflow: hidden;
@@ -558,27 +255,6 @@
   .fretboard-wrapper {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-  }
-
-
-
-  .mobile-tab-panel {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-  }
-
-  .cof-container {
-    position: relative;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-  }
-
-  .cof-toggle {
-    position: absolute;
-    top: 0;
-    right: 0;
   }
 
   /* Ensure touch targets are min 44px tall */
@@ -657,10 +333,6 @@
   display: none !important;
 }
 
-.app-container[data-layout-variant="landscape-mobile"] .summary-area {
-  display: none !important;
-}
-
 .app-container[data-layout-variant="landscape-mobile"] .main-fretboard {
   margin-bottom: 0;
 }
@@ -727,25 +399,6 @@
   cursor: default;
 }
 
-/* ===== 3-Tier Note Classes ===== */
-.chord-tone {
-  color: white;
-  background-color: var(--accent-primary);
-  box-shadow: 0 0 0 2.5px var(--accent-secondary), var(--shadow-note-active);
-}
-
-.note-scale-only.hidden,
-.note-bubble.hidden {
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.chord-outside {
-  color: var(--accent-secondary);
-  background-color: rgba(255, 159, 10, 0.2);
-  border: 2px solid var(--accent-secondary);
-  opacity: 1;
-}
 
 /* =============================================
    Phase 5 Fidelity Overrides
@@ -764,10 +417,6 @@
   justify-content: center;
 }
 
-/* Chord overlay active: scale-only fretboard notes dim further so chord tones lead */
-.app-container[data-chord-active="true"] .note-scale-only {
-  opacity: 0.45;
-}
 
 .header-btn {
   width: 2.95rem;
@@ -832,16 +481,6 @@
   padding: 0;
 }
 
-.fret-number {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: rgb(191 204 216 / 0.72);
-}
-
-.cof-container {
-  padding-top: 0.25rem;
-}
-
 .app-container[data-layout-tier="desktop"] {
   max-width: 92rem;
   /* Phase 2: tightened further — hero band is now compact chrome */
@@ -863,45 +502,4 @@
   .viewport-jumps {
     padding-inline: 0.3rem;
   }
-}
-
-/* =============================================
-   Phase 1 Layout Architecture
-   Hierarchy: header chrome → summary band → fretboard hero → controls dashboard
-   ============================================= */
-
-/* Phase 2: compact action buttons on desktop tier — 2.65rem vs 2.95rem base. */
-.app-container[data-layout-tier="desktop"] .header-btn {
-  width: 2.65rem;
-  height: 2.65rem;
-}
-
-/* Phase 2: pull summary-shell 0.18rem closer to the header — creates a
-   tighter "top band" zone (header + key summary) vs. the fretboard below.
-   Combined with gap: 0.5rem, the strip sits 0.32rem below the header while
-   the fretboard gets the full 0.5rem gap (unified feel without margins). */
-.app-container[data-layout-tier="desktop"] .summary-shell {
-  margin-top: -0.18rem;
-}
-
-/* Fretboard hero gets an explicit margin-bottom to visually separate it
-   from the controls dashboard below. Combined with the 0.5rem container gap,
-   total fretboard→controls space is ~0.95rem — intentionally wider than the
-   0.32rem between chrome sections above the fretboard. */
-.app-container[data-layout-tier="desktop"] .main-fretboard {
-  margin-bottom: 0.45rem;
-}
-
-/* Tablet tier: tighter chrome — reduce container gap and pull summary closer to header.
-   Mirrors the desktop intent at a touch-appropriate scale. */
-.app-container[data-layout-tier="tablet"] {
-  gap: 0.72rem;
-}
-
-.app-container[data-layout-tier="tablet"] .summary-shell {
-  margin-top: -0.1rem;
-}
-
-.app-container[data-layout-tier="tablet"] .main-fretboard {
-  margin-bottom: 0.3rem;
 }
