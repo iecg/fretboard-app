@@ -10,9 +10,9 @@
   margin: 0 auto;
   padding: 0.45rem 0.9rem 0.5rem;
   border-radius: 1rem;
-  background: var(--chord-strip-fill);
-  border: 1px solid rgb(255 255 255 / 0.06);
-  box-shadow: 0 6px 18px rgb(0 0 0 / 0.22);
+  background: var(--strip-fill);
+  border: var(--strip-border);
+  box-shadow: var(--strip-shadow);
   align-items: center;
   text-align: center;
 }
@@ -63,23 +63,23 @@
 
 /* Role-based chip styling */
 .chord-row-item[data-role="chord-root"] .chord-row-chip {
-  background: rgb(255 154 77 / 0.22);
-  border-color: rgb(255 154 77);
+  background: color-mix(in srgb, var(--neon-orange) 22%, transparent);
+  border-color: var(--neon-orange);
   border-width: calc(var(--chord-chip-border-width) + 1px);
-  box-shadow: var(--chord-chip-glow-orange), 0 0 0 3px rgb(255 154 77 / 0.14);
+  box-shadow: var(--chord-chip-glow-orange), 0 0 0 3px color-mix(in srgb, var(--neon-orange) 14%, transparent);
   opacity: 1;
 }
 
 .chord-row-item[data-role="chord-tone-in-scale"] .chord-row-chip {
-  background: rgb(255 154 77 / 0.1);
-  border-color: rgb(255 154 77 / 0.85);
+  background: color-mix(in srgb, var(--neon-orange) 10%, transparent);
+  border-color: var(--neon-orange);
   box-shadow: var(--chord-chip-glow-orange);
   opacity: 1;
 }
 
 .chord-row-item[data-role="chord-tone-outside-scale"] .chord-row-chip {
-  background: rgb(120 50 20 / 0.3);
-  border-color: rgb(204 122 61 / 0.85);
+  background: color-mix(in srgb, var(--neon-orange) 30%, transparent);
+  border-color: color-mix(in srgb, var(--neon-orange) 85%, transparent);
   box-shadow: var(--chord-chip-glow-orange);
   border-style: dashed;
   opacity: 1;
@@ -135,23 +135,23 @@
 }
 
 .chord-row-legend-item[data-role="chord-root"] .chord-row-legend-swatch {
-  border-color: rgb(255 154 77 / 0.9);
-  box-shadow: 0 0 4px rgb(255 154 77 / 0.5);
+  border-color: var(--neon-orange);
+  box-shadow: 0 0 4px color-mix(in srgb, var(--neon-orange) 50%, transparent);
 }
 
 .chord-row-legend-item[data-role="chord-tone-in-scale"] .chord-row-legend-swatch {
-  border-color: rgb(77 228 255 / 0.75);
-  box-shadow: 0 0 4px rgb(77 228 255 / 0.4);
+  border-color: var(--chip-border-active);
+  box-shadow: 0 0 4px color-mix(in srgb, var(--neon-cyan) 40%, transparent);
 }
 
 .chord-row-legend-item[data-role="chord-tone-outside-scale"] .chord-row-legend-swatch {
-  border-color: rgb(204 122 61 / 0.8);
+  border-color: color-mix(in srgb, var(--neon-orange) 80%, transparent);
   border-style: dashed;
-  box-shadow: 0 0 4px rgb(204 122 61 / 0.35);
+  box-shadow: 0 0 4px color-mix(in srgb, var(--neon-orange) 35%, transparent);
 }
 
 .chord-row-legend-item[data-role="scale-only"] .chord-row-legend-swatch {
-  border-color: rgb(46 181 204 / 0.55);
+  border-color: var(--neon-cyan);
   opacity: 0.65;
 }
 

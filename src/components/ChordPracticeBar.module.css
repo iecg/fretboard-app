@@ -4,27 +4,13 @@
    (e.g. outside chord root = root + tension) render correctly. */
 
 .chord-practice-bar {
-  --pill-h: 1.55rem;
-  --pill-font: 0.82rem;
-  --pill-px: 0.55rem;
-  --pill-gap: 0.3rem;
-  --bar-fill: rgb(18 23 34);
-
-  --amber-strong: rgb(255 154 77);
-  --amber-soft: rgb(255 154 77 / 0.55);
-  --amber-bg-strong: rgb(255 154 77 / 0.22);
-  --amber-bg-soft: rgb(255 154 77 / 0.1);
-  --tension-border: rgb(255 122 61);
-  --guide-blue: rgb(96 165 250);
-  --guide-blue-bg: rgb(30 60 120 / 0.25);
-
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
   width: 100%;
   padding: 0.38rem 0.85rem 0.42rem;
   border-radius: 0.85rem;
-  background: var(--bar-fill);
+  background: var(--practice-bar-fill);
   border: 1px solid rgb(255 255 255 / 0.07);
   box-shadow: 0 4px 14px rgb(0 0 0 / 0.2);
 }
@@ -110,7 +96,7 @@
 .practice-bar-pill-list {
   display: flex;
   align-items: center;
-  gap: var(--pill-gap);
+  gap: var(--practice-pill-gap);
   flex-wrap: wrap;
   list-style: none;
   margin: 0;
@@ -122,8 +108,8 @@
   display: inline-flex;
   align-items: center;
   gap: 0.22rem;
-  height: var(--pill-h);
-  padding: 0 var(--pill-px);
+  height: var(--practice-pill-h);
+  padding: 0 var(--practice-pill-px);
   border-radius: 999px;
   background: rgb(255 255 255 / 0.05);
   border: 1.5px solid rgb(255 255 255 / 0.18);
@@ -132,28 +118,28 @@
 
 /* In-scale chord tone — subtle amber outline. */
 .practice-bar-pill[data-in-scale="true"] {
-  background: var(--amber-bg-soft);
-  border-color: var(--amber-soft);
+  background: var(--practice-pill-amber-bg-soft);
+  border-color: var(--practice-pill-amber-soft);
 }
 
 /* Guide tone — cool blue accent, distinct from ordinary chord tones. */
 .practice-bar-pill[data-guide-tone="true"] {
-  background: var(--guide-blue-bg);
+  background: var(--practice-pill-guide-blue-bg);
   border-color: rgb(96 165 250 / 0.75);
   box-shadow: 0 0 5px rgb(96 165 250 / 0.28);
 }
 
 /* Chord root — solid amber emphasis. */
 .practice-bar-pill[data-chord-root="true"] {
-  background: var(--amber-bg-strong);
-  border-color: var(--amber-strong);
+  background: var(--practice-pill-amber-bg-strong);
+  border-color: var(--practice-pill-amber-strong);
   border-style: solid;
   box-shadow: 0 0 6px rgb(255 154 77 / 0.4);
 }
 
 /* Tension — dashed orange border. */
 .practice-bar-pill[data-tension="true"] {
-  border-color: var(--tension-border);
+  border-color: var(--practice-pill-tension-border);
   border-style: dashed;
 }
 
@@ -161,15 +147,15 @@
    This is the overlapping-semantic case that the old single-role model
    could not represent. */
 .practice-bar-pill[data-chord-root="true"][data-tension="true"] {
-  background: var(--amber-bg-strong);
-  border-color: var(--tension-border);
+  background: var(--practice-pill-amber-bg-strong);
+  border-color: var(--practice-pill-tension-border);
   border-style: dashed;
   box-shadow: 0 0 6px rgb(255 154 77 / 0.4);
 }
 
 .practice-bar-pill-note {
   font-family: var(--font-sans);
-  font-size: var(--pill-font);
+  font-size: var(--practice-pill-font);
   font-weight: var(--font-weight-semibold);
   color: var(--text-soft-white);
   line-height: 1;
@@ -178,7 +164,7 @@
 
 .practice-bar-pill-interval {
   font-family: var(--font-sans);
-  font-size: calc(var(--pill-font) - 0.06rem);
+  font-size: calc(var(--practice-pill-font) - 0.06rem);
   font-weight: var(--font-weight-medium);
   color: rgb(255 255 255 / 0.48);
   line-height: 1;
@@ -187,7 +173,7 @@
 
 .practice-bar-pill-resolve {
   font-family: var(--font-sans);
-  font-size: calc(var(--pill-font) - 0.06rem);
+  font-size: calc(var(--practice-pill-font) - 0.06rem);
   font-weight: var(--font-weight-medium);
   color: rgb(167 139 250 / 0.85);
   line-height: 1;
