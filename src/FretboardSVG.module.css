@@ -250,7 +250,6 @@
 /* Fret numbers row */
 .fret-numbers-row {
   display: flex;
-  margin-top: 0.5rem;
 }
 
 .fret-number {
@@ -265,5 +264,4 @@
 
 /* Responsive Overrides */
 :global(.app-container[data-layout-tier="desktop"]) .fret-number {
-  /* Inherit base Phase 5 font-size: 0.9rem */
 }
