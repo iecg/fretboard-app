@@ -205,19 +205,10 @@ describe("CSS Global Classes Guard", () => {
       const message =
         "Found unapproved global class names. Add them to APPROVED_GLOBALS with justification:\n" +
         unapproved.map((cls) => `  - "${cls}"`).join("\n");
-      expect(unapproved).toEqual([]);
-      throw new Error(message);
+      expect.fail(message);
     }
 
     expect(unapproved).toEqual([]);
-  });
-
-  it("should document all approved global classes", () => {
-    // Verify that APPROVED_GLOBALS contains all currently used classes
-    const found = scanGlobalClasses(srcDir);
-    const missing = Array.from(found).filter((cls) => !APPROVED_GLOBALS.has(cls));
-
-    expect(missing).toEqual([]);
   });
 
   it("should have justified entries in APPROVED_GLOBALS", () => {
