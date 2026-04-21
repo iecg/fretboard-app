@@ -203,7 +203,6 @@
 }
 
 /* Responsive Overrides */
-/* stylelint-disable selector-pseudo-class-no-unknown */
 :global(.app-container[data-layout-tier="desktop"]) .theory-controls {
   gap: 0.72rem;
 }
@@ -241,4 +240,3 @@
 :global(.app-container[data-layout-tier="mobile"]) .theory-disclosure-btn {
   min-height: 36px;
 }
-/* stylelint-enable selector-pseudo-class-no-unknown */

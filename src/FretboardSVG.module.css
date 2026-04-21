@@ -263,5 +263,3 @@
 }
 
 /* Responsive Overrides */
-:global(.app-container[data-layout-tier="desktop"]) .fret-number {
-}
