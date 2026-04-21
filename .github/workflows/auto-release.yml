@@ -72,7 +72,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG_NAME: ${{ steps.tag.outputs.new_tag }}
         run: |
-          gh workflow run deploy.yml --ref "refs/tags/$TAG_NAME"
+          gh workflow run deploy.yml --ref "$TAG_NAME"
 
       - name: Create version bump PR
         if: steps.tag.outputs.new_tag
