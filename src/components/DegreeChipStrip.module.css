@@ -265,7 +265,7 @@
   font-size: 0.82rem;
 }
 
-/* Phase 2: Desktop compact chip strip — targets ~82px strip height. */
+/* Desktop compact chip strip — targets ~82px strip height. */
 :global(.app-container[data-layout-tier="desktop"]) .degree-chip-strip {
   --chip-size: clamp(1.82rem, 2.45vw, 2.02rem);
 

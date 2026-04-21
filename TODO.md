@@ -1,18 +1,18 @@
 # FretFlow Improvement Roadmap
 
-**Last Updated**: 2026-04-12
+**Last Updated**: 2026-04-21
 
 ## Critical Issues
 
 ### 1. State Management Fragmentation
 **Severity**: CRITICAL | **Effort**: HIGH
 - 19+ independent state variables in `App.tsx` cause excessive re-renders and complex sync logic.
-- **Solution**: Consolidate into a single state object with a custom `useAppState` hook. Batch updates and consider Zustand for future growth.
+- **Solution**: [PARTIAL] Migrated domain state to Jotai storage atoms in `src/store/`. Remaining: Split `App.tsx` into sub-components to reduce prop-drilling and reduce its ~1k line length.
 
 ### 2. Missing Error Handling
 **Severity**: CRITICAL | **Effort**: MEDIUM
 - Silent fallbacks in `parseNote()` and unsafe type casting in `audio.ts` risk stability.
-- **Solution**: Add explicit validation, guard AudioContext creation, and use try-catch for localStorage/JSON operations. Use Zod for schema validation.
+- **Solution**: [PARTIAL] Added `console.warn` guards to Jotai storage atom catch blocks to improve visibility of persistence failures. Remaining: Add Zod validation for `parseNote()` and AudioContext guards.
 
 ### 3. Summary Rendering Duplication
 **Severity**: HIGH | **Effort**: LOW
@@ -29,7 +29,7 @@
 ### 5. Shapes Polygon Logic Documentation
 **Severity**: HIGH | **Effort**: MEDIUM
 - Complex geometry logic in `shapes.ts` lacks documentation.
-- **Solution**: Add inline comments for geometry algorithms and extract named helper functions for clarity.
+- **Solution**: [DONE] Simplified coordinate wrapping and polygon generation logic; pruned repetitive boilerplate.
 
 ## Medium-Impact Issues
 
@@ -48,7 +48,7 @@
 - **Solution**: Move hardcoded values (string height, zoom max, fret markers) to `src/constants.ts`.
 
 ### 10. Refactoring Component Sizes
-- **Solution**: Split `App.tsx` (~1k lines) into smaller components (`SettingsPanel`, `SummaryArea`, `TheoryControls`).
+- **Solution**: [DONE] TheoryControls refactored into structured sections with dedicated layout variant styling. Remaining: split `App.tsx` (~1k lines) into `SettingsPanel` and `SummaryArea`.
 
 ---
 

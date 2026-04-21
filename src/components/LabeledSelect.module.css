@@ -90,7 +90,7 @@
   border: 0;
 }
 
-/* Desktop: tighter select height — Phase 3 density pass. */
+/* Desktop: tighter select height. */
 /* stylelint-disable-next-line selector-pseudo-class-no-unknown */
 :global(.app-container[data-layout-tier="desktop"]) .labeled-select-native {
   min-height: 2.65rem;
