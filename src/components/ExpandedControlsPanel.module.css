@@ -4,11 +4,15 @@
      "split"   → tablet 2-column (Base + Theory stacked left, Key on right)
      "stacked" → compact single column (tablet-stacked / fallbacks) */
 
-.controls-panel,
-.controls-panel--dashboard {
+.controls-panel {
   display: grid;
   gap: 1.25rem;
   align-items: start;
+}
+
+/* Dashboard variant — extends base .controls-panel (inherits shared grid rules). */
+/* stylelint-disable-next-line block-no-empty */
+.controls-panel--dashboard {
 }
 
 .controls-panel[data-mode="3col"] {
@@ -33,17 +37,17 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
-:global(.dashboard-card) {
+.controls-panel :global(.dashboard-card) {
   min-width: 0;
 }
 
-:global(.dashboard-card) [data-card-body] {
+.controls-panel :global(.dashboard-card) [data-card-body] {
   display: flex;
   flex-direction: column;
   gap: 0.95rem;
 }
 
-:global([data-layout-column="key"]) [data-card-body] {
+.controls-panel :global([data-layout-column="key"]) [data-card-body] {
   padding-top: 0.7rem;
 }
 

@@ -190,7 +190,6 @@
 
 /* Responsive — mobile */
 :global(.app-container[data-layout-tier="mobile"]) .chord-practice-bar {
-  width: 100%;
   border-radius: 0.7rem;
   padding: 0.38rem 0.7rem 0.42rem;
   gap: 0.28rem;

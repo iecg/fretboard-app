@@ -157,8 +157,10 @@ function scanGlobalClasses(srcDir: string): Set<string> {
 
   for (const file of tsxFiles) {
     const content = readFileSync(file, "utf-8");
+    // Match className="..." or className='...' (quoted string literals only)
+    // Supports both className="foo" and className={'bar'} formats
     const matches = content.matchAll(
-      /className=["']([a-z-]+(?:\s+[a-z-]+)*)["']/g
+      /className=(?:\{)?["']([a-z-]+(?:\s+[a-z-]+)*)["'](?:\})?/g
     );
 
     for (const match of matches) {

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 async function gotoApp(page: Page) {
-  await page.goto("/", { waitUntil: "networkidle" });
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(page.locator('[data-testid="app-container"]')).toBeVisible();
 }
 
@@ -164,14 +164,17 @@ test.describe("production css module scoping", () => {
       };
     });
 
+    // Ensure production build renders substantial DOM with proper styling.
+    // At least 100 elements expected in standard fretboard layout.
     expect(
       result.totalElements,
       "Should have rendered elements in production build"
-    ).toBeGreaterThan(50);
+    ).toBeGreaterThan(100);
+    // Most visible elements should have computed styles (strict threshold).
     expect(
       result.renderingRatio,
       "Most elements should be rendered with styles"
-    ).toBeGreaterThan(20);
+    ).toBeGreaterThan(50);
   });
 
   test("layout responsiveness preserved with scoped module styles", async ({
@@ -268,23 +271,25 @@ test.describe("production css module scoping", () => {
   });
 
   test("no stale global class selectors present", async ({ page }) => {
+    // Allowlist of unscoped class names that should NOT appear in production DOM.
+    // These were historically used as global CSS classes and have been migrated to CSS Modules.
+    // Format: class name without the dot prefix.
+    const staleGlobalClasses = [
+      "controls-panel",    // Migrated to .controls-panel in ExpandedControlsPanel.module.css
+      "header-btn",        // Migrated to module scoped in AppHeader.tsx
+      "key-column",        // Migrated to :global([data-layout-column="key"]) in ExpandedControlsPanel.module.css
+      "control-btn",       // Migrated to module scoped components
+      "scale-selector",    // Migrated to .scale-selector in ScaleSelector.module.css
+    ];
+
     await gotoApp(page);
 
-    const result = await page.evaluate(() => {
-      const staleGlobalClasses = [
-        ".controls-panel",
-        ".header-btn",
-        ".key-column",
-        ".control-btn",
-        ".scale-selector",
-      ];
-
+    const result = await page.evaluate((classesToCheck: string[]) => {
       const foundClasses = new Set<string>();
 
       document.querySelectorAll("[class]").forEach((el) => {
         const classes = (el.getAttribute("class") || "").split(/\s+/);
-        staleGlobalClasses.forEach((selector) => {
-          const className = selector.replace(".", "");
+        classesToCheck.forEach((className) => {
           if (classes.includes(className)) {
             foundClasses.add(className);
           }
@@ -295,11 +300,11 @@ test.describe("production css module scoping", () => {
         foundStaleClasses: Array.from(foundClasses),
         totalElementsChecked: document.querySelectorAll("[class]").length,
       };
-    });
+    }, staleGlobalClasses);
 
     expect(
       result.foundStaleClasses,
-      "Should not find stale global classes in production build"
+      `Should not find stale global classes in production build. Found: ${result.foundStaleClasses.join(", ")}`
     ).toEqual([]);
   });
 
@@ -310,7 +315,6 @@ test.describe("production css module scoping", () => {
       const elements = document.querySelectorAll("[class]");
       const classInfo: Record<string, number> = {};
       let nonUtilityClasses = 0;
-      let scopedPatternClasses = 0;
 
       elements.forEach((el) => {
         const classes = (el.getAttribute("class") || "").split(/\s+/).filter(Boolean);
@@ -321,10 +325,6 @@ test.describe("production css module scoping", () => {
           // Non-utility classes are likely CSS Modules (contain underscores, hyphens, longer names)
           if (cls.length > 5 && (cls.includes('_') || /[a-z]-[a-z]/.test(cls))) {
             nonUtilityClasses++;
-            // Some vite/webpack scoping patterns to look for
-            if (cls.includes('__') || cls.match(/^[a-zA-Z]+[a-zA-Z0-9]*_[a-zA-Z0-9_]+$/)) {
-              scopedPatternClasses++;
-            }
           }
         });
       });
@@ -332,7 +332,6 @@ test.describe("production css module scoping", () => {
       return {
         totalClasses: Object.keys(classInfo).length,
         nonUtilityClasses,
-        scopedPatternClasses,
         sampleClasses: Object.keys(classInfo).slice(0, 10),
       };
     });
