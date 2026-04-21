@@ -23,113 +23,76 @@
 }
 
 .circle-slice {
-  cursor: pointer;
-  stroke: rgb(255 255 255 / 0.08);
-  stroke-width: 1;
   fill: rgb(28 33 45 / 0.9);
+  cursor: pointer;
   transition:
     fill var(--transition-fast),
-    stroke var(--transition-fast),
-    opacity var(--transition-fast);
-  paint-order: stroke;
+    filter var(--transition-fast),
+    stroke var(--transition-fast);
+  stroke: rgb(255 255 255 / 0.08) !important;
+  stroke-width: 1.2 !important;
 }
 
 .circle-slice:hover {
-  fill: rgb(38 43 55 / 0.98);
-  stroke: rgb(255 255 255 / 0.16);
+  fill: rgb(37 45 61 / 0.96);
+  filter: drop-shadow(0 0 6px rgb(77 228 255 / 0.18));
+}
+
+.circle-slice.circle-slice--scale {
+  fill: color-mix(in srgb, var(--neon-cyan) 8%, rgb(27 33 44 / 1));
+}
+
+.circle-slice.circle-slice--muted {
+  fill: rgb(24 29 39 / 0.94);
 }
 
 .circle-slice.active {
-  stroke: var(--neon-orange);
-  fill: rgb(255 154 77 / 0.12);
-  stroke-width: 2.2;
+  fill: color-mix(in srgb, var(--neon-orange) 18%, rgb(32 32 40 / 1));
+  stroke: var(--neon-orange) !important;
+  stroke-width: 2.3 !important;
+  filter: drop-shadow(0 0 7px rgb(255 154 77 / 0.35));
 }
 
 .circle-slice.active:hover {
-  fill: rgb(255 154 77 / 0.22);
-  stroke: var(--neon-orange-bright);
+  fill: color-mix(in srgb, var(--neon-orange) 24%, rgb(36 36 44 / 1));
 }
 
-.circle-slice--scale {
-  fill: rgb(11 36 43 / 0.9);
-  stroke: rgb(77 228 255 / 0.22);
-}
-
-.circle-slice--scale:hover {
-  fill: rgb(15 46 55 / 0.98);
-  stroke: rgb(77 228 255 / 0.38);
-}
-
-.circle-slice--scale.active {
-  stroke: var(--neon-orange);
-  fill: rgb(255 154 77 / 0.16);
-  stroke-width: 2.5;
-}
-
-.circle-slice--scale.active:hover {
-  fill: rgb(255 154 77 / 0.26);
-  stroke: var(--neon-orange-bright);
-}
-
-.circle-slice--muted {
-  opacity: 0.35;
+.circle-slice:focus,
+.circle-slice:focus-visible {
+  outline: none;
+  box-shadow: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .circle-slice-focus-ring {
-  fill: none;
-  stroke: var(--accent-primary);
-  stroke-width: 3.5;
+  stroke: var(--neon-cyan-bright) !important;
+  filter: drop-shadow(0 0 7px rgb(77 228 255 / 0.42));
   pointer-events: none;
+}
+
+.circle-note-label,
+.circle-degree-label,
+.circle-center-note,
+.circle-center-signature {
+  user-select: none;
 }
 
 .circle-note-label {
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(1rem, 1.5vw, 1.25rem);
-  text-anchor: middle;
-  dominant-baseline: central;
-  fill: #ffffff;
-  pointer-events: none;
-  user-select: none;
-  paint-order: stroke;
-  stroke: rgb(0 0 0 / 0.45);
-  stroke-width: 1.5;
+  letter-spacing: 0.01em;
 }
 
 .circle-degree-label {
   font-family: var(--font-sans);
-  font-weight: 600;
-  font-size: clamp(0.6rem, 1vw, 0.72rem);
-  text-anchor: middle;
-  dominant-baseline: central;
-  fill: rgb(255 255 255 / 0.65);
-  pointer-events: none;
-  user-select: none;
 }
 
 .circle-center-note {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(2rem, 3.5vw, 3rem);
-  text-anchor: middle;
-  dominant-baseline: central;
-  fill: #ffffff;
-  pointer-events: none;
-  user-select: none;
-  paint-order: stroke;
-  stroke: rgb(0 0 0 / 0.35);
-  stroke-width: 2;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .circle-center-signature {
-  font-family: var(--font-sans);
-  font-weight: 500;
-  font-size: clamp(0.9rem, 1.4vw, 1.15rem);
-  text-anchor: middle;
-  dominant-baseline: central;
-  fill: rgb(255 255 255 / 0.55);
-  pointer-events: none;
-  user-select: none;
+  letter-spacing: 0.04em;
 }
 
 /* ── Container Overrides ────────────────────────────────────────────────── */
