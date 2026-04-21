@@ -938,7 +938,6 @@
     linear-gradient(180deg, rgb(77 228 255 / 0.12), rgb(77 228 255 / 0.03)),
     rgb(12 17 25 / 0.92);
   border-color: rgb(77 228 255 / 0.26);
-  transform: translateY(-1px);
 }
 
 .header-btn .icon {
