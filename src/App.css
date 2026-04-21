@@ -72,14 +72,6 @@
    mounted when showMobileTabs=true (mobile portrait), so no CSS guard needed.
    Landscape suppression: [data-layout-variant="landscape-mobile"] rule below. */
 
-/* Mobile inline layout */
-@media (max-width: 767px) {
-  .app-container {
-    padding: 0.875rem;
-    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
-  }
-}
-
 /* =============================================
    LAYOUT VARIANTS
    Set by App.tsx via data-layout-tier + data-layout-variant.
