@@ -263,7 +263,7 @@ test.describe("production css module scoping", () => {
       expect(
         btn.height,
         `Mobile button should meet touch target (36px minimum): button has ${btn.height}px`
-      ).toBeGreaterThanOrEqual(30);
+      ).toBeGreaterThanOrEqual(36);
     });
   });
 
