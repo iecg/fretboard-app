@@ -4,7 +4,7 @@
 /* Visual "charging" feedback while a long press is building up */
 [data-pressing] {
   box-shadow:
-    0 0 0 2px rgb(77 228 255 / 0.55),
-    0 0 10px rgb(77 228 255 / 0.22) !important;
+    0 0 0 2px color-mix(in srgb, var(--neon-cyan) 55%, transparent),
+    0 0 10px color-mix(in srgb, var(--neon-cyan) 22%, transparent) !important;
   transition: box-shadow 0.45s ease !important;
 }
