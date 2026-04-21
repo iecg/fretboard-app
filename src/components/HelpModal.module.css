@@ -57,7 +57,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  background: color-mix(in srgb, var(--chrome-fg) 8%, transparent);
   border: none;
   color: var(--chrome-fg-muted);
   cursor: pointer;

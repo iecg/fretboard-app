@@ -58,7 +58,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  background: color-mix(in srgb, var(--chrome-fg) 8%, transparent);
   border: none;
   color: var(--chrome-fg-muted);
   cursor: pointer;
@@ -229,7 +229,7 @@
 .overlay-reset-btn {
   width: 100%;
   padding: 10px 16px;
-  background: transparent;
+  background: color-mix(in srgb, var(--chrome-fg) 8%, transparent);
   border: 1px solid var(--accent-secondary);
   color: var(--accent-secondary);
   border-radius: var(--radius-sm, 6px);
