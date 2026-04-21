@@ -151,7 +151,7 @@ jobs:
 
       - name: PR status comment
         if: always() && github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           PR_BRANCH: ${{ github.head_ref }}
         with:
