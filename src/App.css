@@ -496,10 +496,6 @@
 
 /* Dedicated slot for the chord practice dock — sits between the scale strip and fretboard.
    The dock manages its own visibility; this shell just provides centering. */
-.chord-dock-shell {
-  display: flex;
-  justify-content: center;
-}
 
 /* Chord overlay active: scale-only fretboard notes dim further so chord tones lead */
 .app-container[data-chord-active="true"] .note-scale-only {
