@@ -4,20 +4,15 @@
   gap: 0.95rem;
 }
 
-/* ── Mode browser panel ─────────────────────────────────────────────────── */
-
 /* stylelint-disable selector-pseudo-class-no-unknown */
 .theory-mode-browser:global(.panel-surface) {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
-  /* Override panel-surface flat token — align with the frosted cool-blue
-     language used by .theory-chord-section and .theory-inline-key */
   background:
     linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.01)),
     rgb(12 17 25 / 0.68);
   border: 1px solid var(--chrome-border);
-  /* Top-edge gleam + soft outer shadow for nested depth */
   box-shadow:
     0 1px 0 rgb(255 255 255 / 0.06) inset,
     0 2px 10px rgb(0 0 0 / 0.18);
@@ -38,14 +33,12 @@
   overflow: hidden;
 }
 
-/* Selector cell stretches to fill compound height */
 .theory-browser-selector {
   display: flex;
   align-items: stretch;
   min-width: 0;
 }
 
-/* Cascade LabeledSelect internals to fill height within compound */
 .theory-browser-selector > div,
 .theory-browser-selector label {
   display: flex;
@@ -63,7 +56,6 @@
   flex: 1;
 }
 
-/* Strip native select of its own chrome — inherits compound surface */
 .theory-browser-selector select {
   border: none !important;
   border-radius: 0 !important;
@@ -77,13 +69,11 @@
   border-color: transparent !important;
 }
 
-/* Inset focus ring — avoids overflow:hidden clipping */
 .theory-browser-selector select:focus-visible {
   outline: none !important;
   box-shadow: inset 0 0 0 2px var(--neon-cyan) !important;
 }
 
-/* Nav buttons — no individual border/bg; inner dividers via border-right/left */
 .theory-nav-btn {
   width: 2.75rem;
   height: 3rem;
@@ -119,7 +109,6 @@
   cursor: default;
 }
 
-/* Inset focus for nav buttons — same reason as select */
 .theory-nav-btn:focus-visible {
   outline: none;
   box-shadow: inset 0 0 0 2px var(--neon-cyan);
@@ -135,11 +124,8 @@
 @media (max-width: 767px) {
   .theory-nav-btn {
     width: 2.7rem;
-    /* height stays 3rem — matches select min-height on mobile */
   }
 }
-
-/* ── Chord overlay section ─────────────────────────────────────────────── */
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
 .theory-chord-section:global(.panel-surface),
@@ -200,15 +186,12 @@
   gap: 0.9rem;
 }
 
-/* ── Inline Circle of Fifths ────────────────────────────────────────────── */
-
 .theory-inline-key-content {
   width: 100%;
   display: flex;
   justify-content: center;
 }
 
-/* Responsive Overrides */
 /* stylelint-disable selector-pseudo-class-no-unknown */
 :global(.app-container[data-layout-tier="desktop"]) .theory-controls {
   gap: 0.72rem;
@@ -220,13 +203,11 @@
   gap: 0.58rem;
 }
 
-/* Desktop: shrink compound nav to match the desktop select height (2.65rem) */
 :global(.app-container[data-layout-tier="desktop"]) .theory-nav-btn {
   width: 2.5rem;
   height: 2.65rem;
 }
 
-/* Tablet tier: slightly tighter chrome */
 :global(.app-container[data-layout-tier="tablet"]) .theory-controls {
   gap: 0.82rem;
 }
@@ -242,7 +223,6 @@
   height: 2.82rem;
 }
 
-/* Mobile tier: ensure touch targets meet min-height */
 :global(.app-container[data-layout-tier="mobile"]) .theory-nav-btn,
 :global(.app-container[data-layout-tier="mobile"]) .theory-disclosure-btn {
   min-height: 36px;

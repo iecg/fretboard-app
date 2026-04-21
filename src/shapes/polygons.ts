@@ -20,7 +20,6 @@ import {
 } from "./helpers";
 import type { ShapeVertex } from "./helpers";
 
-// Re-export helpers so consumers can import from "../shapes/polygons"
 export type { ShapeVertex } from "./helpers";
 export { MAX_WRAP_OVERSHOOT } from "./helpers";
 export {
@@ -68,7 +67,6 @@ export function getCagedCoordinates(
   const { rootStringFocus, fretOffsetMin, fretOffsetMax, maxNotesPerString = {} } =
     SHAPE_CONFIGS[effectiveShape];
 
-  // Find all instances of anchor note on the target string
   const rootFrets: number[] = [];
   let searchFret = 0;
   while (searchFret <= frets) {
@@ -82,14 +80,13 @@ export function getCagedCoordinates(
   const bounds: { minFret: number; maxFret: number }[] = [];
   const allWrappedNotes = new Set<string>();
 
-  // Determine blue note (exempt from dedup) for blues scales
+  // Determine blue note (exempt from deduplication)
   const blueNoteIntervals: Record<string, number> = { 'Minor Blues': 6, 'Major Blues': 3 };
   const blueInterval = blueNoteIntervals[scaleName];
   const blueNoteName = blueInterval != null
     ? NOTES[(NOTES.indexOf(rootNote) + blueInterval) % 12]
     : null;
 
-  // Determine template strategy
   const scaleIntervals = SCALES[scaleName];
   const isBlues = scaleName.includes('Blues');
   const usePentTemplate = isBlues || (scaleIntervals && scaleIntervals.length <= 5);
@@ -110,7 +107,6 @@ export function getCagedCoordinates(
 
     bounds.push({ minFret: shapeMin, maxFret: shapeMax });
 
-    // Collect notes per string
     const perStringNotes: number[][] = [];
     for (let s = 0; s < tuning.length; s++) {
       const stringNotes: number[] = [];
@@ -123,34 +119,29 @@ export function getCagedCoordinates(
       perStringNotes.push(cap != null ? stringNotes.slice(0, cap) : stringNotes);
     }
 
-    // Wrap overshoot notes to adjacent strings; returns count of unwrapped notes and Set of wrapped keys.
-    // Snapshot state before wrapping so we can revert if too many notes wrap.
+    // Wrap overshoot notes. Snapshot state for potential revert.
     const preWrapNotes = perStringNotes.map(arr => [...arr]);
     const { wrappedNotes: shapeWrapped } = wrapOvershootNotes(
       perStringNotes, layout, validNotes, intendedMin, intendedMax, shapeMin, shapeMax, frets,
     );
     let polygonWrappedNotes = shapeWrapped;
-    // If more than 2 notes were relocated by wrapping, the overall shape becomes
-    // unrecognizable — revert to the pre-wrap note set entirely.
-    // (MAX_WRAP_OVERSHOOT caps the fret overshoot per direction; this caps the total note count.)
+
+    // Revert if >2 notes relocated to maintain shape identity
     if (shapeWrapped.size > 2) {
       for (let s = 0; s < perStringNotes.length; s++) {
         perStringNotes[s] = preWrapNotes[s];
       }
       polygonWrappedNotes = new Set();
-      // shapeWrapped is discarded — do not add to allWrappedNotes
     } else {
       for (const key of shapeWrapped) allWrappedNotes.add(key);
     }
 
     const truncated = isShapeTruncated(intendedMin, intendedMax, shapeMin, shapeMax);
 
-    // Deduplicate for 7-note scales
     if (validNotes.length > 5) {
       deduplicateAdjacentStrings(perStringNotes, layout, blueNoteName);
     }
 
-    // Add to coordinates
     for (let s = 0; s < tuning.length; s++) {
       for (const f of perStringNotes[s]) {
         coordinates.add(`${s}-${f}`);
@@ -158,7 +149,6 @@ export function getCagedCoordinates(
     }
     coordinates.add(`${rootStringFocus}-${rootFret}`);
 
-    // Compute labels
     const isMinorQuality = !isMajorScale(scaleName);
     const cagedLabel = `${shape}${isMinorQuality ? 'm' : ''} Shape`;
 
@@ -176,9 +166,7 @@ export function getCagedCoordinates(
       }
     }
 
-    // Build polygon
     if (usePentTemplate) {
-      // Use fixed pentatonic template
       const template = SHAPE_TEMPLATES_PENT[effectiveShape];
       const leftEdge: ShapeVertex[] = template.perString.map(([l], s) => ({
         fret: rootFret + l,
@@ -191,7 +179,6 @@ export function getCagedCoordinates(
 
       polygons.push({ vertices: [...leftEdge, ...rightEdge], shape, color, cagedLabel, modalLabel, truncated, intendedMin, intendedMax });
     } else if (use7NoteTemplate) {
-      // Use scale-specific fixed 7-note template
       const template = sevenNoteTemplate[effectiveShape];
       const leftEdge: ShapeVertex[] = template.perString.map(([l], s) => ({
         fret: rootFret + l,
@@ -204,7 +191,7 @@ export function getCagedCoordinates(
 
       polygons.push({ vertices: [...leftEdge, ...rightEdge], shape, color, cagedLabel, modalLabel, truncated, intendedMin, intendedMax });
     } else {
-      // Dynamic polygon from actual note positions (modes other than Natural Minor)
+      // Dynamic polygon from note positions
       const vertices = buildPolygonFromNotes(
         perStringNotes,
         tuning.length,

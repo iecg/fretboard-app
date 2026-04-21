@@ -17,10 +17,7 @@ import type {
   LegendItem,
 } from "../theory";
 
-// ---------------------------------------------------------------------------
-// Domain module re-exports — all public atoms flow through atoms.ts so
-// existing import paths (from "../store/atoms") continue to work unchanged.
-// ---------------------------------------------------------------------------
+// Domain module re-exports: all public atoms flow through atoms.ts to maintain stable import paths.
 
 export type { FingeringPattern } from "./fingeringAtoms";
 export {
@@ -105,10 +102,6 @@ export {
   toggleMuteAtom,
 } from "./audioAtoms";
 
-// ---------------------------------------------------------------------------
-// Local imports from domain modules (for use in atoms defined below)
-// ---------------------------------------------------------------------------
-
 import {
   fingeringPatternAtom,
   cagedShapesAtom,
@@ -161,12 +154,7 @@ import {
   isMutedAtom,
 } from "./audioAtoms";
 
-// Legacy key migration is performed by utils/storage.ts at module load,
-// before any atomWithStorage({ getOnInit: true }) reads. No action needed here.
-
-// ---------------------------------------------------------------------------
-// Shape derived atoms
-// ---------------------------------------------------------------------------
+// Legacy key migration performed by utils/storage.ts at module load.
 
 export const shapeDataAtom = atom((get) => {
   const fingeringPattern = get(fingeringPatternAtom);
@@ -225,8 +213,7 @@ export const shapeDataAtom = atom((get) => {
   };
 });
 
-// Effective shape data: eye-off returns empty highlightNotes so the fretboard
-// renders no scale notes, while chord overlay continues to work via chordTones.
+// Returns empty highlightNotes when scale is hidden; chord overlay remains active via chordTones.
 export const effectiveShapeDataAtom = atom((get) => {
   const visible = get(scaleVisibleAtom);
   const data = get(shapeDataAtom);
@@ -234,15 +221,13 @@ export const effectiveShapeDataAtom = atom((get) => {
   return data;
 });
 
-// Effective hidden notes: returns actual hidden notes when scale is visible.
 export const effectiveHiddenNotesAtom = atom((get) => {
   const visible = get(scaleVisibleAtom);
   if (!visible) return new Set<string>();
   return get(hiddenNotesAtom);
 });
 
-// Effective color notes: cleared when scale is off since color notes are
-// part of the scale (blue notes, modal characteristic tones).
+// Color notes (blue notes, characteristic tones) are cleared when scale is off.
 export const effectiveColorNotesAtom = atom((get) => {
   const visible = get(scaleVisibleAtom);
   if (!visible) return [] as string[];
@@ -345,10 +330,6 @@ export const shapeHighlightedNoteSetAtom = atom((get) => {
   return noteSet;
 });
 
-// ---------------------------------------------------------------------------
-// Shape-local atoms (depend on shapeHighlightedNoteSetAtom)
-// ---------------------------------------------------------------------------
-
 export const shapeLocalTargetMembersAtom = atom((get) => {
   const shapeHighlightedNoteSet = get(shapeHighlightedNoteSetAtom);
   const chordType = get(chordTypeAtom);
@@ -426,10 +407,6 @@ export const shapeLocalPracticeCuesAtom = atom((get) => {
     .filter((cue) => cue.notes.length > 0);
 });
 
-// ---------------------------------------------------------------------------
-// Combined / summary derived atoms
-// ---------------------------------------------------------------------------
-
 export const noteRoleMapAtom = atom((get) => {
   const chordType = get(chordTypeAtom);
   const rootNote = get(rootNoteAtom);
@@ -476,7 +453,7 @@ export const summaryLegendItemsAtom = atom((get) => {
     items.push({ role: "chord-tone-in-scale", label: "Chord tone" });
   if (rolesPresent.has("chord-tone-outside-scale"))
     items.push({ role: "chord-tone-outside-scale", label: "Outside scale" });
-  // Scale-only notes are always visible — no lens hides them.
+  // Scale-only notes are always visible.
   const hasScaleOnly = Array.from(noteRoleMap.values()).includes("scale-only");
   if (hasScaleOnly) {
     items.push({ role: "scale-only", label: "Scale only" });
@@ -519,17 +496,13 @@ export const outsideChordMembersAtom = atom((get) =>
   get(summaryChordRowAtom).filter((e) => !e.inScale),
 );
 
-// ---------------------------------------------------------------------------
 // Actions
-// ---------------------------------------------------------------------------
 
-// Sets rootNote and syncs chordRoot when linkChordRoot is enabled
 export const setRootNoteAtom = atom(null, (get, set, note: string) => {
   set(rootNoteAtom, note);
   if (get(linkChordRootAtom)) set(chordRootAtom, note);
 });
 
-// Resets all persisted state to defaults and clears localStorage
 export const resetAtom = atom(null, (_get, set) => {
   try {
     const keysToRemove: string[] = [];
@@ -539,7 +512,7 @@ export const resetAtom = atom(null, (_get, set) => {
     }
     for (const key of keysToRemove) localStorage.removeItem(key);
   } catch {
-    // If storage is blocked or throws, still reset atoms in-memory.
+    // Silent fail if storage is blocked; atoms are still reset in-memory.
   }
   set(rootNoteAtom, RESET);
   set(baseScaleNameAtom, RESET);

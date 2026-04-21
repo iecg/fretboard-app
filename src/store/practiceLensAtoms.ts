@@ -37,14 +37,14 @@ import {
   allChordMembersAtom,
 } from "./chordOverlayAtoms";
 
-// Guide tone member names: 3rd and 7th (before formatAccidental)
+// Guide tone members: 3rd and 7th
 const GUIDE_TONE_RAW = new Set(["b3", "3", "b7", "7"]);
-// After formatAccidental: "b3"→"♭3", "b7"→"♭7"
 const GUIDE_TONE_FORMATTED = new Set(["♭3", "3", "♭7", "7"]);
 
-// Nearest in-scale resolution (≤2 semitones, step-up preferred).
-// Shared between practiceCuesAtom and practiceBarLandOnGroupBaseAtom so the
-// radius + tie-breaking stay in lockstep.
+/**
+ * Finds nearest in-scale resolution (≤2 semitones, step-up preferred).
+ * Logic shared between practiceCuesAtom and practiceBarLandOnGroupBaseAtom.
+ */
 function findNearestScaleResolution(
   note: string,
   scaleNotes: readonly string[],
@@ -61,10 +61,6 @@ function findNearestScaleResolution(
   }
   return undefined;
 }
-
-// ---------------------------------------------------------------------------
-// Practice bar color notes — derived from scale color tones
-// ---------------------------------------------------------------------------
 
 export const practiceBarColorNotesAtom = atom((get) => {
   const colorNotes = get(colorNotesAtom);
@@ -93,15 +89,9 @@ export const practiceBarColorNotesFilteredAtom = atom((get) => {
   return practiceBarColorNotes.filter((n) => !chordToneSet.has(n.internalNote));
 });
 
-// ---------------------------------------------------------------------------
-// Note semantic map — composable properties per note (multiple can coexist)
-// ---------------------------------------------------------------------------
-
 /**
- * Returns a map of note → NoteSemantics where multiple boolean properties can
- * coexist on one note. Crucially, a chord root that is outside the scale will
- * have both isChordRoot=true and isTension=true — something the old single-role
- * enum (NoteRole) could not represent.
+ * Maps note → NoteSemantics allowing multiple properties to coexist.
+ * Accommodates notes with multiple roles (e.g., chord root outside scale).
  */
 export const noteSemanticMapAtom = atom((get) => {
   const chordType = get(chordTypeAtom);
@@ -151,14 +141,8 @@ export const noteSemanticMapAtom = atom((get) => {
   return map;
 });
 
-// ---------------------------------------------------------------------------
-// Practice cues — coaching lines derived from the active practice lens
-// ---------------------------------------------------------------------------
-
 /**
- * Derives ordered coaching cues for the practice bar based on the active lens.
- * Each cue has a label ("Land on", "Guide tones", "Color note", "Tension") and
- * a list of notes with styling hints and optional resolution targets.
+ * Derives ordered coaching cues for the practice bar based on active lens.
  */
 export const practiceCuesAtom = atom((get) => {
   const chordType = get(chordTypeAtom);
@@ -216,7 +200,6 @@ export const practiceCuesAtom = atom((get) => {
           })),
         });
       }
-      // Power chords / no-guide-tone chords: land-on already pushed, nothing more.
       break;
     }
 
@@ -239,15 +222,10 @@ export const practiceCuesAtom = atom((get) => {
       }
       break;
     }
-
   }
 
   return cues;
 });
-
-// ---------------------------------------------------------------------------
-// Practice bar groups — composable two-group model (Chord + Land on)
-// ---------------------------------------------------------------------------
 
 const entryToBarNote = (e: ChordRowEntry): PracticeBarNote => ({
   internalNote: e.internalNote,
@@ -261,7 +239,6 @@ const entryToBarNote = (e: ChordRowEntry): PracticeBarNote => ({
 
 /**
  * Chord group — lens-independent. Always shows all chord members.
- * Never filtered by shape-local context.
  */
 export const practiceBarChordGroupAtom = atom((get): PracticeBarGroup => {
   const members = get(allChordMembersAtom);
@@ -272,13 +249,12 @@ export const practiceBarChordGroupAtom = atom((get): PracticeBarGroup => {
 });
 
 /**
- * Land-on group (shape-agnostic base) — lens-driven coaching subset.
- *  - targets      → all chord members
- *  - guide-tones  → only the 3rd/7th members (falls back to all if none)
- *  - tension      → only outside-scale chord members, with resolution arrows
+ * Land-on group base — lens-driven coaching subset.
+ *  - targets: all chord members
+ *  - guide-tones: 3rd/7th members (falls back to all if none)
+ *  - tension: outside-scale members with resolutions
  *
- * Shape-local narrowing is applied on top of this in `atoms.ts` so we can
- * read `shapeHighlightedNoteSetAtom` without a circular import.
+ * Shape narrowing applied in atoms.ts to avoid circular imports.
  */
 export const practiceBarLandOnGroupBaseAtom = atom((get): PracticeBarGroup => {
   const chordType = get(chordTypeAtom);
@@ -320,10 +296,6 @@ export const practiceBarLandOnGroupBaseAtom = atom((get): PracticeBarGroup => {
   return { label: "Land on", notes };
 });
 
-// ---------------------------------------------------------------------------
-// Practice bar visibility + title
-// ---------------------------------------------------------------------------
-
 export const showChordPracticeBarAtom = atom((get) => {
   return !!get(chordTypeAtom);
 });
@@ -335,11 +307,11 @@ export const practiceBarTitleAtom = atom((get) => {
   return chordLabel ?? "";
 });
 
-// Badge is now minimal — always null (lens context shown via lensLabel in dock header).
 export const practiceBarBadgeAtom = atom(() => null as string | null);
 
-// Active lens label sourced from LENS_REGISTRY — used by the dock header so the
-// practice surface identifies its own focus without needing the controls open.
+/**
+ * Active lens label from LENS_REGISTRY.
+ */
 export const practiceBarLensLabelAtom = atom((get): string | null => {
   const chordType = get(chordTypeAtom);
   if (!chordType) return null;
@@ -347,10 +319,6 @@ export const practiceBarLensLabelAtom = atom((get): string | null => {
   const entry = LENS_REGISTRY.find((e) => e.id === lens);
   return entry?.label ?? null;
 });
-
-// ---------------------------------------------------------------------------
-// Practice bar member rows (shared/outside split)
-// ---------------------------------------------------------------------------
 
 export const practiceBarSharedMembersAtom = atom((get) =>
   get(allChordMembersAtom).filter((e) => e.inScale),
@@ -360,14 +328,8 @@ export const practiceBarOutsideMembersAtom = atom((get) =>
   get(allChordMembersAtom).filter((e) => !e.inScale),
 );
 
-// ---------------------------------------------------------------------------
-// Lens availability — registry-backed availability context + resolved entries
-// ---------------------------------------------------------------------------
-
 /**
- * Computes the context inputs used by LENS_REGISTRY predicates.
- * A single atom so callers can read just the context (e.g. for unit tests)
- * without consuming the full resolved list.
+ * Context inputs for LENS_REGISTRY predicates.
  */
 export const lensAvailabilityContextAtom = atom((get): LensAvailabilityContext => {
   const chordType = get(chordTypeAtom);
@@ -384,9 +346,7 @@ export const lensAvailabilityContextAtom = atom((get): LensAvailabilityContext =
 });
 
 /**
- * Maps every LENS_REGISTRY entry against the current state to produce a list
- * of lenses annotated with runtime availability and reason strings. Consumers
- * use this to render lens pickers with disabled states and tooltip explanations.
+ * Resolved list of lenses with availability and reasons.
  */
 export const lensAvailabilityAtom = atom((get) => {
   const ctx = get(lensAvailabilityContextAtom);

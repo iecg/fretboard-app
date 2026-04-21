@@ -1088,7 +1088,6 @@ describe("App", () => {
       const minusButtons = screen.queryAllByText("−");
       const plusButtons = screen.queryAllByText("+");
 
-      // Click all fret range buttons (Start −, Start +, End −, End +)
       for (const btn of minusButtons) fireEvent.click(btn);
       for (const btn of plusButtons) fireEvent.click(btn);
     });

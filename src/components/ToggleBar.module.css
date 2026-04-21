@@ -1,10 +1,4 @@
-/* ToggleBar — variant overrides for "tabs" variant */
-/* "default" variant reuses shared.module.css classes */
-
-/* Ensure base container styles remain in shared.module.css */
-
-/* "tabs" variant: mobile-tab-bar / mobile-tab styles */
-/* These override the display:none set in App.css for .mobile-tab-bar */
+/* Override display:none for .mobile-tab-bar. */
 .mobile-tab-bar {
   display: flex;
   background:
@@ -52,7 +46,6 @@
   color: var(--text-on-accent);
 }
 
-/* Suppress tabs in landscape-mobile layout */
 :global(.app-container[data-layout-variant="landscape-mobile"]) .mobile-tab-bar {
   display: none !important;
 }

@@ -5,12 +5,8 @@ export interface ShapeVertex {
 }
 
 /**
- * Maximum overshoot (in frets) that wrapping will attempt to recover.
- * Shapes near the nut (fret 0) or body end (max fret) may have 1–2 notes that
- * fall just outside the fretboard boundary. Wrapping relocates those notes to
- * an adjacent string so the shape remains playable at the edge.
- * Beyond 2 frets of overshoot the relocated notes are too far from their
- * original position and the result no longer resembles the intended shape.
+ * Max overshoot for wrapping. Relocated notes must stay near original position 
+ * to maintain shape identity.
  */
 export const MAX_WRAP_OVERSHOOT = 2;
 
@@ -29,8 +25,8 @@ export function deduplicateAdjacentStrings(
     const lower = perStringNotes[s + 1];
     if (!upper.length || !lower.length) continue;
 
-    // Build a set of note names on each string for fast lookup
-    const upperNotes = new Map<string, number[]>(); // noteName -> [fret indices into upper array]
+    // Map note names to array indices for fast lookup
+    const upperNotes = new Map<string, number[]>();
     for (let i = 0; i < upper.length; i++) {
       const name = layout[s][upper[i]];
       if (!upperNotes.has(name)) upperNotes.set(name, []);
@@ -46,7 +42,6 @@ export function deduplicateAdjacentStrings(
       const upperIndices = upperNotes.get(name);
       if (!upperIndices) continue;
 
-      // This note name exists on both strings — resolve each pair
       for (const i of upperIndices) {
         if (toRemoveUpper.has(i)) continue;
 
@@ -69,7 +64,7 @@ export function deduplicateAdjacentStrings(
       }
     }
 
-    // Remove marked indices (reverse order to preserve indices)
+    // Remove marked indices
     if (toRemoveUpper.size > 0) {
       const filtered = upper.filter((_, i) => !toRemoveUpper.has(i));
       perStringNotes[s] = filtered;
@@ -83,8 +78,7 @@ export function deduplicateAdjacentStrings(
 
 /**
  * Wrap notes that overshoot fretboard edges to adjacent strings.
- * Returns the number of notes that couldn't be wrapped (truly lost) and a Set
- * of coordinate keys ("stringIndex-fretIndex") for every note placed by wrapping.
+ * Returns unwrapped count and Set of wrapped coordinate keys.
  * Called after note collection, before deduplication.
  */
 export function wrapOvershootNotes(
@@ -102,22 +96,20 @@ export function wrapOvershootNotes(
   let unwrapped = 0;
   const wrappedNotes = new Set<string>();
 
-  // Search margin: allow wrapped notes slightly outside the strict shape range
+  // Margin allows wrapped notes slightly outside strict range
   const wrapSearchMin = Math.max(0, shapeMin - 2);
   const wrapSearchMax = Math.min(frets, shapeMax + 2);
 
-  // Positive overshoot: wrap to thinner string (s-1)
-  // Only check strings that have notes in the shape
-  // Skip if overshoot exceeds MAX_WRAP_OVERSHOOT — large overshoots produce unrecognizable shapes
+  // Wrap positive overshoot to thinner string
   if (intendedMax > frets && intendedMax - frets <= MAX_WRAP_OVERSHOOT) {
     for (let s = numStrings - 1; s >= 0; s--) {
-      if (perStringNotes[s].length === 0) continue; // string not used in shape
+      if (perStringNotes[s].length === 0) continue;
       const target = s - 1;
       for (let f = frets + 1; f <= intendedMax; f++) {
         const proxyFret = ((f % 12) + 12) % 12;
         const noteName = layout[s][proxyFret];
         if (!validNotes.includes(noteName)) continue;
-        if (target < 0) continue; // topmost string — can't wrap further up
+        if (target < 0) continue;
         let bestFret = -1;
         let bestDist = Infinity;
         for (let tf = wrapSearchMin; tf <= wrapSearchMax; tf++) {
@@ -139,17 +131,16 @@ export function wrapOvershootNotes(
     }
   }
 
-  // Negative overshoot: wrap to thicker string (s+1)
-  // Skip if overshoot exceeds MAX_WRAP_OVERSHOOT — large overshoots produce unrecognizable shapes
+  // Wrap negative overshoot to thicker string
   if (intendedMin < 0 && -intendedMin <= MAX_WRAP_OVERSHOOT) {
     for (let s = 0; s < numStrings; s++) {
-      if (perStringNotes[s].length === 0) continue; // string not used in shape
+      if (perStringNotes[s].length === 0) continue;
       const target = s + 1;
       for (let f = intendedMin; f < 0; f++) {
         const proxyFret = ((f % 12) + 12) % 12;
         const noteName = layout[s][proxyFret];
         if (!validNotes.includes(noteName)) continue;
-        if (target >= numStrings) continue; // bottommost string — can't wrap further down
+        if (target >= numStrings) continue;
         let bestFret = -1;
         let bestDist = Infinity;
         for (let tf = wrapSearchMin; tf <= wrapSearchMax; tf++) {
@@ -171,7 +162,7 @@ export function wrapOvershootNotes(
     }
   }
 
-  // Sort and deduplicate each string
+  // Sort and deduplicate strings
   for (let s = 0; s < numStrings; s++) {
     perStringNotes[s] = [...new Set(perStringNotes[s])].sort((a, b) => a - b);
   }
@@ -180,10 +171,8 @@ export function wrapOvershootNotes(
 }
 
 /**
- * Build polygon vertices from per-string note boundaries.
- * Left edge top→bottom, right edge bottom→top.
- * Wrapped notes are excluded from edge vertex selection so the polygon
- * reflects the core shape position without extension at fret boundaries.
+ * Build vertices from string boundaries. Excludes wrapped notes to preserve 
+ * core shape position. Left edge top→bottom, right edge bottom→top.
  */
 export function buildPolygonFromNotes(
   perStringNotes: number[][],

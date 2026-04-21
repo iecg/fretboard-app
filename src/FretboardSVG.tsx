@@ -136,8 +136,6 @@ function getLensEmphasis(
   }
 }
 
-// Roles: key-tonic, chord-root, chord-tone-in-scale, chord-tone-outside-scale,
-//        color-tone, scale-only, note-active, note-blue, note-inactive
 function classifyNote(
   isScaleRoot: boolean,
   isChordRootNote: boolean,
@@ -165,20 +163,16 @@ function classifyNote(
       return "note-blue";
     return "note-inactive";
   }
-  // Chord overlay active: chord-root takes priority (even if outside scale).
-  // With pattern-aware rendering, skip chord notes outside the active shape.
+
   if (isChordRootNote && isChordTone && isChordInRange && isInActiveShape) return "chord-root";
   if (isHighlighted && isChordTone && isChordInRange && isInActiveShape) return "chord-tone-in-scale";
-  // Color/characteristic tone: shape-aware gate prevents leakage outside active shape.
   if (isHighlighted && isColorNote && isInActiveShape) return "color-tone";
-  // In-scale notes: shape-aware gate — outside the active shape → note-inactive.
   if (isHighlighted && isInActiveShape) return "scale-only";
   if (!isHighlighted && isChordTone && isChordInRange && isInActiveShape)
     return "chord-tone-outside-scale";
   return "note-inactive";
 }
 
-// Chord-root + isTension can coexist: outside-scale root stays "chord-root" (squircle/identity).
 function classifyNoteFromSemantics(
   sem: NoteSemantics,
   isChordInRange: boolean,
@@ -190,25 +184,17 @@ function classifyNoteFromSemantics(
   fretIndex: number,
 ): string {
   if (!hasChordOverlay) {
-    // Delegate to classifyNote to avoid duplicating the no-overlay logic.
-    // isHighlighted (position/shape-aware) must be passed, not sem.isInScale (pitch-only).
     return classifyNote(
       sem.isScaleRoot, sem.isChordRoot, sem.isColorTone, isHighlighted,
       sem.isChordTone, hasChordOverlay, isChordInRange, isInActiveShape, shapePolygons, boxBounds, fretIndex,
     );
   }
-  // Chord overlay active: chord-root takes absolute priority, even if outside scale.
-  // With pattern-aware rendering, skip chord notes outside the active shape.
+
   if (sem.isChordRoot && sem.isChordTone && isChordInRange && isInActiveShape) return "chord-root";
-  // In-scale chord tones.
   if (sem.isInScale && sem.isChordTone && isChordInRange && isInActiveShape) return "chord-tone-in-scale";
-  // Color/characteristic tone: isInActiveShape (shape-aware) gates containment.
   if (sem.isInScale && sem.isColorTone && isInActiveShape && isHighlighted) return "color-tone";
-  // Other in-scale notes: shape-aware gate — outside the active shape → note-inactive.
   if (sem.isInScale && isInActiveShape && isHighlighted) return "scale-only";
-  // Out-of-scale chord tones (tension, non-root) within the shape.
   if (sem.isChordTone && isChordInRange && isInActiveShape) return "chord-tone-outside-scale";
-  // Everything else outside the active shape: suppress entirely.
   return "note-inactive";
 }
 
@@ -271,9 +257,7 @@ function getNoteVisuals(
   }
 }
 
-/** Pre-rasterizes the three feTurbulence wood-grain layers to a PNG dataURL so
- *  the browser can GPU-composite it during scroll instead of re-running
- *  CPU-bound fractalNoise every frame. */
+/** Pre-rasterizes wood-grain layers to PNG for GPU-composited scrolling. */
 function useWoodGrainTexture(width: number, height: number): string | null {
   const [dataUrl, setDataUrl] = useState<string | null>(null);
   const prevKey = useRef('');
@@ -635,9 +619,7 @@ export const FretboardSVG = memo(function FretboardSVG({
     .filter(Boolean)
     .join(" ");
 
-  /* Inlay positions follow the local (tapered) neck geometry — single
-     inlays sit at the vertical centre, double (12 / 24) inlays sit between
-     string pairs 1–2 and (N-2)–(N-1). */
+  // Inlays follow local tapered geometry.
   const inlayYAt = useCallback(() => neckHeight / 2, [neckHeight]);
   const inlayYTopAt = useCallback((x: number) =>
     numStrings >= 4
@@ -946,7 +928,6 @@ export const FretboardSVG = memo(function FretboardSVG({
               <stop offset="55%" stopColor="#0d0805" />
               <stop offset="100%" stopColor="var(--fretboard-wood-bottom)" />
             </linearGradient>
-            {/* Side-to-side vignette — edges slightly darker than centre. */}
             <linearGradient
               id={svgDefId("fretboard-vignette")}
               x1="0"
@@ -960,7 +941,6 @@ export const FretboardSVG = memo(function FretboardSVG({
               <stop offset="92%" stopColor="rgb(0 0 0 / 0.16)" />
               <stop offset="100%" stopColor="rgb(0 0 0 / 0.55)" />
             </linearGradient>
-            {/* Deep ebony grain — long, tight horizontal streaks. */}
             <filter
               id={svgDefId("wood-grain-filter")}
               x="0%"
@@ -986,7 +966,6 @@ export const FretboardSVG = memo(function FretboardSVG({
               />
               <feComposite in="grainTinted" in2="SourceGraphic" operator="in" />
             </filter>
-            {/* Warmer mid-tone streaks — rare but visible ribbons of brown. */}
             <filter
               id={svgDefId("wood-highlights-filter")}
               x="0%"
@@ -1010,7 +989,6 @@ export const FretboardSVG = memo(function FretboardSVG({
                         0 0 0 0.09 0"
               />
             </filter>
-            {/* Fine pore noise — tight speckle to break up solid areas. */}
             <filter
               id={svgDefId("wood-pores-filter")}
               x="0%"
@@ -1034,12 +1012,7 @@ export const FretboardSVG = memo(function FretboardSVG({
                         0 0 0 0.16 0"
               />
             </filter>
-            {/* Strings use solid colours (not objectBoundingBox gradients) — on
-                 thin horizontal lines a y-axis gradient collapses because the
-                 element's bounding box has near-zero height. */}
-            {/* Soft cast shadow under each string — blurs a dark offset line.
-                filterUnits=userSpaceOnUse so the filter region isn't sized to
-                the line's zero-height bbox. */}
+            {/* userSpaceOnUse ensures filter region isn't sized to zero-height line bbox */}
             <filter
               id={svgDefId("string-shadow-blur")}
               filterUnits="userSpaceOnUse"
@@ -1050,15 +1023,12 @@ export const FretboardSVG = memo(function FretboardSVG({
             >
               <feGaussianBlur stdDeviation="0.75" />
             </filter>
-            {/* Bone nut — near-pure white with a subtle grey shadow for depth. */}
             <linearGradient id={svgDefId("nut-material")} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#ffffff" />
               <stop offset="35%" stopColor="#f4f4f1" />
               <stop offset="75%" stopColor="#d8d4cb" />
               <stop offset="100%" stopColor="#a9a59b" />
             </linearGradient>
-            {/* Fret wire — horizontal gradient simulates a cylindrical crown
-                with a bright silver highlight down the centre. */}
             <linearGradient
               id={svgDefId("fret-wire-cylinder")}
               x1="0" y1="0" x2="1" y2="0"
@@ -1069,7 +1039,6 @@ export const FretboardSVG = memo(function FretboardSVG({
               <stop offset="75%" stopColor="#a6afbc" />
               <stop offset="100%" stopColor="#3e444c" />
             </linearGradient>
-            {/* Mother-of-pearl inlay — off-centre hot spot for subtle iridescence. */}
             <radialGradient id={svgDefId("inlay-pearl")} cx="35%" cy="32%" r="75%">
               <stop
                 offset="0%"
@@ -1147,9 +1116,6 @@ export const FretboardSVG = memo(function FretboardSVG({
                 floodOpacity="0.65"
               />
             </filter>
-            {/* Trapezoidal fretboard silhouette — everything inside the tapered
-                region is clipped. Strings, frets, inlays, polygons, and note
-                circles all live inside this clip. */}
             <clipPath id={svgDefId("fretboard-taper")}>
               <path d={taperPath} />
             </clipPath>

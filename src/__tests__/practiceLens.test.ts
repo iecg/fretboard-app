@@ -71,7 +71,6 @@ describe("practiceLensAtom", () => {
     localStorage.setItem(k("practiceLens"), "targets-color");
     const store = makeStore();
     const unsub = store.sub(practiceLensAtom, () => {});
-    // targets-color is no longer a valid lens — storage adapter falls back to default
     expect(store.get(practiceLensAtom)).toBe("targets");
     unsub();
   });
@@ -143,7 +142,6 @@ describe("practiceCuesAtom", () => {
       expect(cues[0]!.label).toBe("Land on");
       expect(cues[1]!.kind).toBe("guide-tones");
       expect(cues[1]!.label).toBe("Guide tones");
-      // G7 = G B D F; guide tones = B (3) and F (b7)
       const noteNames = cues[1]!.notes.map((n) => n.internalNote);
       expect(noteNames).toContain("B");
       expect(noteNames).toContain("F");
@@ -156,7 +154,7 @@ describe("practiceCuesAtom", () => {
       expect(cues[0]!.kind).toBe("land-on");
       expect(cues[1]!.kind).toBe("guide-tones");
       const noteNames = cues[1]!.notes.map((n) => n.internalNote);
-      expect(noteNames).toContain("E"); // major 3rd
+      expect(noteNames).toContain("E");
     });
 
     it("shows only land-on for power chord (no 3rd/7th)", () => {
@@ -177,7 +175,6 @@ describe("practiceCuesAtom", () => {
 
   describe("tension lens", () => {
     it("returns land-on + tension cues when chord has outside-scale tones", () => {
-      // C Major + C# Minor Triad: C#, E, G# — C# and G# are outside C Major
       const store = makeStore();
       store.set(rootNoteAtom, "C");
       store.set(scaleNameAtom, "Major");
@@ -191,7 +188,6 @@ describe("practiceCuesAtom", () => {
     });
 
     it("tension notes include outside chord root (semantic fix)", () => {
-      // The chord root (C#) is outside C Major — must appear in tension cue
       const store = makeStore();
       store.set(rootNoteAtom, "C");
       store.set(scaleNameAtom, "Major");
@@ -202,7 +198,7 @@ describe("practiceCuesAtom", () => {
       const tensionCue = cues.find((c) => c.kind === "tension");
       expect(tensionCue).toBeDefined();
       const tensionNotes = tensionCue!.notes.map((n) => n.internalNote);
-      expect(tensionNotes).toContain("C#"); // chord root, outside scale
+      expect(tensionNotes).toContain("C#");
     });
 
     it("tension notes have resolution targets (resolvesTo)", () => {
@@ -214,7 +210,6 @@ describe("practiceCuesAtom", () => {
       store.set(practiceLensAtom, "tension");
       const cues = store.get(practiceCuesAtom);
       const tensionCue = cues.find((c) => c.kind === "tension");
-      // At least one tension note should have a resolution target
       const hasResolution = tensionCue!.notes.some((n) => n.resolvesTo !== undefined);
       expect(hasResolution).toBe(true);
     });
@@ -228,8 +223,6 @@ describe("practiceCuesAtom", () => {
     });
 
     it("finds resolution target within 2 semitones for pentatonic scale", () => {
-      // C Minor Pentatonic (C Eb F G Bb) + D Minor Triad (D F A)
-      // D is outside the pentatonic. Nearest scale neighbor: Eb (1 step up) or C (2 steps down).
       const store = makeStore();
       store.set(rootNoteAtom, "C");
       store.set(scaleNameAtom, "Minor Pentatonic");
@@ -239,7 +232,6 @@ describe("practiceCuesAtom", () => {
       const cues = store.get(practiceCuesAtom);
       const tensionCue = cues.find((c) => c.kind === "tension");
       expect(tensionCue).toBeDefined();
-      // D (tension) should resolve to D# / Eb (1 step up, in pentatonic as Eb)
       const dTension = tensionCue!.notes.find((n) => n.internalNote === "D");
       expect(dTension?.resolvesTo).toBeDefined();
     });
@@ -271,7 +263,7 @@ describe("practiceCuesAtom", () => {
     it("contains exactly Chord Tones, Guide Tones, and Tension", () => {
       const store = makeStore();
       store.set(chordRootAtom, "C");
-      store.set(chordTypeAtom, "Major 7th"); // has guide tones
+      store.set(chordTypeAtom, "Major 7th");
       store.set(rootNoteAtom, "C");
       store.set(scaleNameAtom, "Major");
       const availability = store.get(lensAvailabilityAtom);
@@ -312,19 +304,15 @@ describe("noteSemanticMapAtom", () => {
     store.set(chordTypeAtom, "Dominant 7th");
 
     const semanticMap = store.get(noteSemanticMapAtom);
-    // B = major 3rd of G7
     const bSemantics = semanticMap.get("B");
     expect(bSemantics?.isGuideTone).toBe(true);
-    // F = b7 of G7
     const fSemantics = semanticMap.get("F");
     expect(fSemantics?.isGuideTone).toBe(true);
-    // D = 5th, not a guide tone
     const dSemantics = semanticMap.get("D");
     expect(dSemantics?.isGuideTone).toBe(false);
   });
 
   it("a note can be both color tone and chord tone", () => {
-    // G Mixolydian: F is the b7 color note AND a chord tone of G7
     const store = makeStore();
     store.set(rootNoteAtom, "G");
     store.set(scaleNameAtom, "Mixolydian");
@@ -407,7 +395,7 @@ describe("practiceBarChordGroupAtom", () => {
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Major");
     store.set(chordRootAtom, "G");
-    store.set(chordTypeAtom, "Dominant 7th"); // G B D F
+    store.set(chordTypeAtom, "Dominant 7th");
     const notes = store
       .get(practiceBarChordGroupAtom)
       .notes.map((n) => n.internalNote);
@@ -419,7 +407,7 @@ describe("practiceBarChordGroupAtom", () => {
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Major");
     store.set(chordRootAtom, "C#");
-    store.set(chordTypeAtom, "Minor Triad"); // C# E G#
+    store.set(chordTypeAtom, "Minor Triad");
 
     const group = store.get(practiceBarChordGroupAtom);
     const cSharp = group.notes.find((n) => n.internalNote === "C#");
@@ -434,12 +422,12 @@ describe("practiceBarChordGroupAtom", () => {
     store.set(rootNoteAtom, "G");
     store.set(scaleNameAtom, "Major");
     store.set(chordRootAtom, "G");
-    store.set(chordTypeAtom, "Dominant 7th"); // G B D F
+    store.set(chordTypeAtom, "Dominant 7th");
 
     const group = store.get(practiceBarChordGroupAtom);
-    const b = group.notes.find((n) => n.internalNote === "B"); // major 3rd
-    const f = group.notes.find((n) => n.internalNote === "F"); // ♭7
-    const d = group.notes.find((n) => n.internalNote === "D"); // 5th
+    const b = group.notes.find((n) => n.internalNote === "B");
+    const f = group.notes.find((n) => n.internalNote === "F");
+    const d = group.notes.find((n) => n.internalNote === "D");
     expect(b?.isGuideTone).toBe(true);
     expect(f?.isGuideTone).toBe(true);
     expect(d?.isGuideTone).toBe(false);
@@ -472,7 +460,7 @@ describe("practiceBarLandOnGroupAtom", () => {
   it("guide-tones lens — contains only 3rd/7th members", () => {
     const { store, lens } = mkStore("guide-tones");
     store.set(chordRootAtom, "G");
-    store.set(chordTypeAtom, "Dominant 7th"); // G B D F
+    store.set(chordTypeAtom, "Dominant 7th");
     store.set(practiceLensAtom, lens);
     const notes = store
       .get(practiceBarLandOnGroupAtom)
@@ -485,13 +473,12 @@ describe("practiceBarLandOnGroupAtom", () => {
   it("tension lens — contains only outside-scale chord members with resolutions", () => {
     const { store, lens } = mkStore("tension");
     store.set(chordRootAtom, "C#");
-    store.set(chordTypeAtom, "Minor Triad"); // C# E G#
+    store.set(chordTypeAtom, "Minor Triad");
     store.set(practiceLensAtom, lens);
     const notes = store.get(practiceBarLandOnGroupAtom).notes;
     const internals = notes.map((n) => n.internalNote);
     expect(internals).toEqual(expect.arrayContaining(["C#", "G#"]));
     expect(internals).not.toContain("E");
-    // Outside chord root still carries isChordRoot + isTension in land-on too.
     const cSharp = notes.find((n) => n.internalNote === "C#");
     expect(cSharp?.isChordRoot).toBe(true);
     expect(cSharp?.isTension).toBe(true);
@@ -525,10 +512,6 @@ describe("shapeLocalPracticeCuesAtom", () => {
     expect(store.get(shapeLocalPracticeCuesAtom)).toHaveLength(0);
   });
 });
-
-// ---------------------------------------------------------------------------
-// practiceBarLensLabelAtom — sourced from LENS_REGISTRY labels
-// ---------------------------------------------------------------------------
 
 describe("practiceBarLensLabelAtom", () => {
   beforeEach(() => {
@@ -566,10 +549,6 @@ describe("practiceBarLensLabelAtom", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// showChordPracticeBarAtom — independent of scale visibility
-// ---------------------------------------------------------------------------
-
 describe("showChordPracticeBarAtom — scale visibility independence", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -602,7 +581,7 @@ describe("showChordPracticeBarAtom — scale visibility independence", () => {
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Major");
     store.set(chordRootAtom, "C");
-    store.set(chordTypeAtom, "Dominant 7th"); // Bb outside C Major
+    store.set(chordTypeAtom, "Dominant 7th");
     store.set(practiceLensAtom, "targets");
 
     store.set(scaleVisibleAtom, true);
@@ -614,10 +593,6 @@ describe("showChordPracticeBarAtom — scale visibility independence", () => {
     expect(visibleOn).toBe(visibleOff);
   });
 });
-
-// ---------------------------------------------------------------------------
-// Ownership model — scale/chord separation contracts
-// ---------------------------------------------------------------------------
 
 import {
   colorNotesAtom,
@@ -695,7 +670,6 @@ describe("color notes are scale-owned — independent of chord overlay", () => {
     const store = makeStore();
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Minor Blues");
-    // Minor Blues has a flat-5 blue note (Gb/F#)
     expect(store.get(colorNotesAtom).length).toBeGreaterThan(0);
   });
 

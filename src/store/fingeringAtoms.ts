@@ -6,6 +6,7 @@ import {
 } from "../shapes";
 import {
   k,
+  createStorage,
   rawStringStorage,
   constrainedNumberStorage,
   GET_ON_INIT,
@@ -13,38 +14,10 @@ import {
 
 export type FingeringPattern = "all" | "caged" | "3nps";
 
-const cagedShapesStorage = {
-  getItem(key: string, initialValue: Set<CagedShape>): Set<CagedShape> {
-    try {
-      const stored = localStorage.getItem(key);
-      if (stored === null) {
-        localStorage.setItem(key, JSON.stringify(Array.from(initialValue)));
-        return initialValue;
-      }
-      try {
-        return new Set(JSON.parse(stored) as CagedShape[]);
-      } catch {
-        return initialValue;
-      }
-    } catch {
-      return initialValue;
-    }
-  },
-  setItem(key: string, value: Set<CagedShape>): void {
-    try {
-      localStorage.setItem(key, JSON.stringify(Array.from(value)));
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
-  },
-  removeItem(key: string): void {
-    try {
-      localStorage.removeItem(key);
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
-  },
-};
+const cagedShapesStorage = createStorage<Set<CagedShape>>({
+  serialize: (s) => JSON.stringify(Array.from(s)),
+  deserialize: (v) => new Set(JSON.parse(v) as CagedShape[]),
+});
 
 const npsPositionStorage = constrainedNumberStorage({ min: 1, max: 12, integer: true });
 

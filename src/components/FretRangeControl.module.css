@@ -1,6 +1,3 @@
-/* Interactive colors use --interactive-primary (semantic alias of --accent-primary).
-   CAGED colors (--caged-c) must not appear in generic controls. See semantic.css. */
-
 .fret-range-control,
 .fret-group {
   display: flex;
@@ -73,12 +70,11 @@
   justify-content: center;
 }
 
-/* Tablet: hide Start/End labels in dashboard to prevent overflow in narrow left column. */
+/* Hide labels on tablet dashboard to prevent overflow. */
 :global(.app-container[data-layout-tier="tablet"]) .fret-range-control.dashboard .fret-label {
   display: none;
 }
 
-/* Dashboard: compact, no wrap, labels visible — fits card context on tablet/desktop */
 .fret-range-control.dashboard {
   flex-wrap: nowrap;
   gap: 0.55rem;

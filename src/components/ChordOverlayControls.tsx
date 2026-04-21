@@ -55,15 +55,13 @@ export function ChordOverlayControls() {
     })),
   ];
 
-  // Build lens options from LENS_REGISTRY via lensAvailabilityAtom.
-  // Tension is hidden (not just disabled) when unavailable and not currently active.
+  // Hide tension lens when unavailable and not currently active.
   const lensOptions = lensAvailability.flatMap((entry) => {
     const { id } = entry;
     const isActive = id === practiceLens;
     const available = entry.available;
     const reason = entry.reason ?? undefined;
 
-    // Hide lenses marked hideWhenUnavailable when they're unavailable and not active.
     if (!available && !isActive && entry?.hideWhenUnavailable) return [];
 
     return [
@@ -79,9 +77,7 @@ export function ChordOverlayControls() {
 
   const currentLensEntry = lensAvailability.find((l) => l.id === practiceLens);
 
-  // Auto-exit unavailable lenses. "targets" is exempt — it requires only an active
-  // chord overlay and is always available when any other lens becomes unavailable.
-  // When no lens is available (chord overlay removed), preserve the stored value.
+  // Auto-exit unavailable lenses (except "targets").
   useEffect(() => {
     if (
       currentLensEntry &&

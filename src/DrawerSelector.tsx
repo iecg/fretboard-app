@@ -42,16 +42,13 @@ export function DrawerSelector(props: DrawerSelectorProps) {
   const listboxRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
-  // Build flat options list for keyboard navigation (null option + string options)
   const flatOptions = [
     ...(nullable ? [null as string | null] : []),
     ...options.filter((o): o is string => typeof o === "string"),
   ];
 
-  // Find index of currently selected value
   const selectedIndex = flatOptions.findIndex((opt) => opt === value);
 
-  // Track active index for keyboard navigation (starts at selected value)
   const [activeIndex, setActiveIndex] = useState(selectedIndex >= 0 ? selectedIndex : 0);
 
   const [prevOpen, setPrevOpen] = useState(open);
@@ -62,14 +59,12 @@ export function DrawerSelector(props: DrawerSelectorProps) {
     }
   }
 
-  // Reliably move focus to the listbox when it opens (autoFocus on div is not reliable)
   useEffect(() => {
     if (open && listboxRef.current) {
       listboxRef.current.focus();
     }
   }, [open]);
 
-  // Scroll the focused option into view when activeIndex changes
   useEffect(() => {
     if (!open || !listboxRef.current) return;
     const focused = listboxRef.current.querySelector<HTMLElement>(

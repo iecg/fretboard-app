@@ -21,15 +21,12 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
-  // jsx-a11y: accessibility lint rules — all warn in Phase 4 (pre-existing violations).
-  // Promote critical rules to 'error' in Phase 5 after primitive a11y work completes.
+  // Set all jsx-a11y rules to 'warn' to surface issues without breaking CI.
+  // Promote to 'error' after primitive work completes.
   {
     files: ['**/*.{ts,tsx}'],
     plugins: { 'jsx-a11y': jsxA11y },
     rules: {
-      // All jsx-a11y recommended rules set to warn so pre-existing violations
-      // surface without breaking CI. Promote to 'error' in Phase 5 after all
-      // primitives are fixed. See: Phase 4 Plan 04-02.
       ...Object.fromEntries(
         Object.entries(jsxA11y.configs.recommended.rules).map(([rule, value]) => [
           rule,

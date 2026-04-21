@@ -1,6 +1,4 @@
-/* Chord overlay summary strip — chord member row + compact legend.
-   Sits below the scale DegreeChipStrip in the summary band.
-   Tokens are centralised in tokens.css (--chord-chip-size, --chord-strip-fill, etc.) */
+/* Chord overlay summary strip — chord member row + compact legend. */
 
 .chord-row-strip {
   composes: strip-surface from "./shared.module.css";
@@ -29,7 +27,6 @@
   opacity: 0.85;
 }
 
-/* Chord member chips row */
 .chord-row-list {
   position: relative;
   display: flex;
@@ -63,7 +60,6 @@
   padding: 0;
 }
 
-/* Role-based chip styling */
 .chord-row-item[data-role="chord-root"] .chord-row-chip {
   background: color-mix(in srgb, var(--neon-orange) 22%, transparent);
   border-color: var(--neon-orange);
@@ -108,7 +104,6 @@
   letter-spacing: 0.02em;
 }
 
-/* Legend */
 .chord-row-legend {
   display: flex;
   align-items: center;
@@ -167,7 +162,6 @@
   white-space: nowrap;
 }
 
-/* Compact secondary rail — notably smaller than the primary scale strip */
 .chord-row-strip--compact {
   --chord-chip-size: clamp(1.6rem, 2.2vw, 1.82rem);
 }
@@ -180,7 +174,6 @@
   font-size: 0.7rem;
 }
 
-/* Responsive tweaks */
 :global(.app-container[data-layout-tier="mobile"]) .chord-row-strip {
   --chord-chip-size: 2.15rem;
 

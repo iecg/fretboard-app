@@ -15,85 +15,20 @@ import {
   getDivergentNotes,
   formatAccidental,
 } from "../theory";
-import { k, rawStringStorage, booleanStorage, GET_ON_INIT } from "../utils/storage";
+import { k, createStorage, rawStringStorage, booleanStorage, GET_ON_INIT } from "../utils/storage";
 import { fingeringPatternAtom, cagedShapesAtom } from "./fingeringAtoms";
 import type { CagedShape } from "../shapes";
 
-// ---------------------------------------------------------------------------
-// Scale-specific storage adapters
-// ---------------------------------------------------------------------------
-
 const SCALE_BROWSE_MODES = ["parallel", "relative"] as const;
 
-const scaleBrowseModeStorage = {
-  getItem(key: string, initialValue: ScaleBrowseMode): ScaleBrowseMode {
-    try {
-      const stored = localStorage.getItem(key);
-      if (stored === null) {
-        localStorage.setItem(key, initialValue);
-        return initialValue;
-      }
-      if ((SCALE_BROWSE_MODES as readonly string[]).includes(stored)) {
-        return stored as ScaleBrowseMode;
-      }
-      localStorage.setItem(key, initialValue);
-      return initialValue;
-    } catch {
-      return initialValue;
-    }
-  },
-  setItem(key: string, value: ScaleBrowseMode): void {
-    try {
-      localStorage.setItem(key, value);
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
-  },
-  removeItem(key: string): void {
-    try {
-      localStorage.removeItem(key);
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
-  },
-};
+const scaleBrowseModeStorage = createStorage<ScaleBrowseMode>({
+  validate: (v) => (SCALE_BROWSE_MODES as readonly string[]).includes(v),
+});
 
-const scaleNameStorage = {
-  getItem(key: string, initialValue: string): string {
-    try {
-      const stored = localStorage.getItem(key);
-      if (stored === null) {
-        localStorage.setItem(key, initialValue);
-        return initialValue;
-      }
-      const normalized = normalizeScaleName(stored);
-      if (normalized !== stored) {
-        localStorage.setItem(key, normalized);
-      }
-      return normalized;
-    } catch {
-      return initialValue;
-    }
-  },
-  setItem(key: string, value: string): void {
-    try {
-      localStorage.setItem(key, normalizeScaleName(value));
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
-  },
-  removeItem(key: string): void {
-    try {
-      localStorage.removeItem(key);
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
-  },
-};
-
-// ---------------------------------------------------------------------------
-// Scale base atoms
-// ---------------------------------------------------------------------------
+const scaleNameStorage = createStorage<string>({
+  onRead: normalizeScaleName,
+  onWrite: normalizeScaleName,
+});
 
 export const rootNoteAtom = atomWithStorage(
   k("rootNote"),
@@ -109,8 +44,7 @@ export const baseScaleNameAtom = atomWithStorage(
   GET_ON_INIT,
 );
 
-// Primary scale setter: resets CAGED shapes to "E" when scale changes,
-// matching old useDisplayState useEffect.
+// Resets CAGED shapes to "E" when scale changes to maintain position consistency.
 export const scaleNameAtom = atom(
   (get) => get(baseScaleNameAtom),
   (get, set, value: string) => {
@@ -132,26 +66,20 @@ export const scaleBrowseModeAtom = atomWithStorage<ScaleBrowseMode>(
   GET_ON_INIT,
 );
 
-// ---------------------------------------------------------------------------
-// Accidentals — session-only, not persisted
-// ---------------------------------------------------------------------------
-
-// Reads a one-time legacy "useFlats" key from localStorage and translates it
-// to the new mode. Clears the legacy key so subsequent loads start at "auto".
+// Translates legacy "useFlats" to new mode and clears the stale key.
 function readLegacyAccidentalMode(): "sharps" | "flats" | "auto" {
   try {
     const legacy = localStorage.getItem("useFlats");
     if (legacy === null) return "auto";
     localStorage.removeItem("useFlats");
     return legacy === "true" ? "flats" : "sharps";
-  } catch {
+  } catch (e) {
+    console.warn("localStorage access failed", { e });
     return "auto";
   }
 }
 
-// Non-persisted: "auto" is a smart default that picks the best enharmonic
-// spelling per root+scale, so session-only state avoids sticking a stale
-// user choice across sessions.
+// Session-only: "auto" picks best enharmonic spelling per root+scale.
 export const accidentalModeAtom = atom<"sharps" | "flats" | "auto">(
   readLegacyAccidentalMode(),
 );
@@ -164,10 +92,6 @@ export const useFlatsAtom = atom((get) =>
   ),
 );
 
-// ---------------------------------------------------------------------------
-// Scale derived atoms
-// ---------------------------------------------------------------------------
-
 export const scaleNotesAtom = atom((get) =>
   getScaleNotes(get(rootNoteAtom), get(scaleNameAtom)),
 );
@@ -177,17 +101,16 @@ export const colorNotesAtom = atom((get) => {
   const rootNote = get(rootNoteAtom);
   const intervals = SCALES[scaleName];
   if (!intervals) return [];
-  // Minor Blues: blue note is b5 (interval 6)
+  // Blue note is b5 in Minor Blues, b3 in Major Blues.
   if (scaleName === "Minor Blues") {
     const rootIdx = NOTES.indexOf(rootNote);
     return rootIdx >= 0 ? [NOTES[(rootIdx + 6) % 12]] : [];
   }
-  // Major Blues: blue note is b3 (interval 3)
   if (scaleName === "Major Blues") {
     const rootIdx = NOTES.indexOf(rootNote);
     return rootIdx >= 0 ? [NOTES[(rootIdx + 3) % 12]] : [];
   }
-  // Modal scales: notes that diverge from the reference major/minor
+  // Modal scales: notes that diverge from the reference major/minor.
   return getDivergentNotes(rootNote, scaleName);
 });
 
@@ -229,10 +152,7 @@ export const degreeChipsAtom = atom((get) => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// Hidden notes — transient (resets when root or scale changes)
-// ---------------------------------------------------------------------------
-
+// Transient: resets when root or scale changes.
 const internalHiddenNotesAtom = atom<{
   root: string;
   scale: string;
@@ -268,25 +188,19 @@ export const toggleHiddenNoteAtom = atom(null, (_get, set, note: string) => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// Scale visibility — boolean eye toggle (replaces tri-state All/Custom/Off)
-// ---------------------------------------------------------------------------
-
-// One-time migration: if the old tri-state key exists, map "off" → false and
-// remove the stale key so subsequent boots use the new boolean key directly.
+// Maps old tri-state "off" → false and removes the stale key.
 function readLegacyScaleVisibility(): boolean {
   try {
     const legacy = localStorage.getItem(k("scaleVisibilityMode"));
     if (legacy === null) return true;
     localStorage.removeItem(k("scaleVisibilityMode"));
     return legacy !== "off";
-  } catch {
+  } catch (e) {
+    console.warn("localStorage access failed", { e });
     return true;
   }
 }
 
-// Persisted so users don't lose their preference on refresh.
-// Turning the scale off also clears hidden notes (see toggleScaleVisibleAtom).
 export const scaleVisibleAtom = atomWithStorage<boolean>(
   k("scaleVisible"),
   readLegacyScaleVisibility(),
@@ -294,8 +208,7 @@ export const scaleVisibleAtom = atomWithStorage<boolean>(
   GET_ON_INIT,
 );
 
-// Write atom: turns scale on/off. Turning off also clears any per-note hidden
-// state so that turning back on always shows the full scale.
+// Toggling off also clears per-note hidden state so that re-enabling shows the full scale.
 export const toggleScaleVisibleAtom = atom(null, (get, set) => {
   const visible = get(scaleVisibleAtom);
   if (visible) {

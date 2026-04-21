@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-"""
-Combine captured PNG frames into an animated GIF.
-Usage: python3 scripts/gif-capture/make_gif.py
-"""
+"""Combine PNG frames into an animated GIF."""
 import os
 import re
 import sys
@@ -12,14 +9,13 @@ from PIL import Image
 FRAMES_DIR = Path(__file__).parent / "frames"
 OUT = Path(__file__).parent.parent.parent / "public" / "demo.gif"
 
-# Per-scene hold durations (ms for the LAST frame in each scene)
-# scene prefix (first 4 digits of filename) -> last-frame hold ms
+# Per-scene hold durations (ms for the last frame in each scene)
 SCENE_HOLD = {
-    "0000": 1200,   # default state — pause so viewer can orient
+    "0000": 1200,   # default state — orientation pause
     "0001": 600,
     "0002": 600,
     "0003": 600,
-    "0004": 900,    # scale type change — meaningful moment
+    "0004": 900,    # scale family change
     "0005": 900,    # CAGED all shapes
     "0006": 700,
     "0007": 700,
@@ -28,13 +24,12 @@ SCENE_HOLD = {
     "0010": 800,    # all shapes again
     "0011": 900,    # interval display
     "0012": 700,
-    "0013": 1200,   # back to start — loop hold
+    "0013": 1200,   # loop hold
 }
-DEFAULT_FRAME_DUR = 100    # ms between duplicate frames (effectively 0 for static dupes)
+DEFAULT_FRAME_DUR = 100
 DEFAULT_HOLD = 700
 
-# Target display size (stays legible at < 1 MB)
-# 960×900 matches capture aspect ratio 1280×1200 at 75% scale
+# 960x900 matches 1280x1200 capture at 75% scale (stays < 1MB)
 DISPLAY_W, DISPLAY_H = 960, 900
 N_COLORS = 128
 
@@ -50,16 +45,15 @@ def make_gif():
     images = []
     durations = []
 
-    # Collect one representative frame per scene (the last in each group)
-    # Expected filename pattern: 4-digit scene prefix followed by optional content
+    # Map scene prefix to representative frame (last in group wins)
     scene_frames = {}
-    filename_pattern = re.compile(r"^\d{4}")  # Validate 4-digit prefix
+    filename_pattern = re.compile(r"^\d{4}")
     for fp in frame_paths:
         if not filename_pattern.match(fp.stem):
-            print(f"Warning: Skipping file with unexpected name pattern: {fp.name} (expected 4-digit prefix)")
+            print(f"Warning: Skipping file with unexpected name: {fp.name} (expected 4-digit scene prefix)")
             continue
         prefix = fp.stem[:4]
-        scene_frames[prefix] = fp  # last wins → last frame of scene
+        scene_frames[prefix] = fp
 
     for prefix, fp in sorted(scene_frames.items()):
         dur = SCENE_HOLD.get(prefix, DEFAULT_HOLD)
@@ -70,7 +64,6 @@ def make_gif():
         durations.append(dur)
         print(f"  scene {prefix}: {fp.name} → {dur}ms")
 
-    # Ensure output directory exists before saving
     out_dir = os.path.dirname(OUT)
     os.makedirs(out_dir, exist_ok=True)
 

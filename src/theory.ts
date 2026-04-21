@@ -47,7 +47,7 @@ export const ENHARMONICS: Record<string, string> = {
   Bb: "A#",
 };
 
-// Keys that natively prefer flats for cleaner display
+// Keys preferring flats for cleaner display
 export const FLAT_KEYS = [
   "F",
   "Bb",
@@ -63,7 +63,6 @@ export const FLAT_KEYS = [
 
 export { normalizeScaleName, SCALES, SCALE_TO_PARENT_MAJOR_OFFSET };
 
-// Chord overlay types
 export type ChordMemberName = "root" | "b3" | "3" | "b5" | "5" | "b7" | "7";
 export type ChordQuality = "triad" | "seventh" | "power";
 
@@ -81,7 +80,7 @@ export interface ResolvedChordMember extends ChordMember {
   note: string;
 }
 
-// Shared note-role model — consumed by both fretboard rendering and summary strip.
+// Shared note-role model for fretboard rendering and summary strip
 export type NoteRole =
   | "key-tonic"
   | "chord-root"
@@ -92,7 +91,7 @@ export type NoteRole =
   | "note-active"
   | "note-blue";
 
-// Color/characteristic note entry for the practice bar Color group
+// Color note entry for practice bar
 export interface PracticeBarColorNote {
   internalNote: string;
   displayNote: string;
@@ -112,18 +111,13 @@ export interface LegendItem {
   label: string;
 }
 
-// ---------------------------------------------------------------------------
-// Practice lenses — user-facing practice model replacing raw viewMode
-// ---------------------------------------------------------------------------
-
+// Practice lenses replace raw viewMode
 export type PracticeLens =
-  | "targets"       // chord root + active chord tones — for landing and outlining harmony
-  | "guide-tones"   // 3rd/7th — for voice-leading and strong chord definition
-  | "tension";      // outside/altered tones — secondary/advanced lens
+  | "targets"       // chord root + active chord tones
+  | "guide-tones"   // 3rd/7th — for strong chord definition
+  | "tension";      // outside/altered tones
 
-// Composable note semantics — multiple properties can coexist on one note.
-// A note can be simultaneously a chord root and outside the scale (isTension),
-// which the old single-role enum could not represent correctly.
+// Composable note semantics
 export interface NoteSemantics {
   isScaleRoot: boolean;
   isChordRoot: boolean;
@@ -135,9 +129,7 @@ export interface NoteSemantics {
   memberName?: ChordMemberName;
 }
 
-// Pure chord member fact — no scale context.
-// Separates what the chord defines (notes, intervals, root) from what the scale
-// adds (in-scale membership, tension roles).
+// Pure chord member fact (no scale context)
 export interface ChordMemberFact {
   internalNote: string;
   /** Formatted using chord-root-relative accidentals — scale-independent. */
@@ -148,7 +140,7 @@ export interface ChordMemberFact {
   isChordRoot: boolean;
 }
 
-// Context supplied to lens availability predicates.
+// Context for lens availability predicates
 export interface LensAvailabilityContext {
   hasChordOverlay: boolean;
   /** Chord definition includes a 3rd or 7th member. */
@@ -159,7 +151,7 @@ export interface LensAvailabilityContext {
   hasOutsideTones: boolean;
 }
 
-// Registry entry for a practice lens: description + availability contract.
+// Practice lens registry entry
 export interface LensRegistryEntry {
   id: PracticeLens;
   label: string;
@@ -206,7 +198,6 @@ export const LENS_REGISTRY: readonly LensRegistryEntry[] = [
   },
 ];
 
-// Practice bar coaching cue types
 export type PracticeCueKind = "land-on" | "guide-tones" | "color-note" | "tension";
 
 export interface PracticeCueNote {
@@ -226,13 +217,7 @@ export interface PracticeCue {
   notes: PracticeCueNote[];
 }
 
-// ---------------------------------------------------------------------------
-// Practice bar note model — composable semantic flags (multiple can coexist).
-// Mirrors the fretboard's semantic model so that e.g. an outside chord root
-// simultaneously carries isChordRoot + isTension, and guide tones stay
-// distinct from ordinary chord tones.
-// ---------------------------------------------------------------------------
-
+// Composable semantic flags for practice bar notes
 export interface PracticeBarNote {
   internalNote: string;
   displayNote: string;
@@ -310,7 +295,7 @@ export const CHORD_DEFINITIONS: Record<string, ChordDefinition> = {
   },
 };
 
-// Derived from CHORD_DEFINITIONS for backward compatibility
+// Backward compatibility mapping from CHORD_DEFINITIONS
 export const CHORDS: Record<string, number[]> = Object.fromEntries(
   Object.entries(CHORD_DEFINITIONS).map(([name, def]) => [
     name,
@@ -319,7 +304,7 @@ export const CHORDS: Record<string, number[]> = Object.fromEntries(
 );
 
 
-// Circle of fifths order anchored in root notes (sharps default)
+// Circle of fifths root order (defaults to sharps)
 export const CIRCLE_OF_FIFTHS = [
   "C",
   "G",
@@ -386,12 +371,12 @@ export function getNoteDisplayInScale(
   scaleIntervals: number[],
   useFlats?: boolean,
 ): string {
-  // Only apply scale-aware spelling for 7-note scales
+  // Apply scale-aware spelling for 7-note scales
   if (scaleIntervals.length !== 7) {
     return getNoteDisplay(noteName, rootNote, useFlats);
   }
 
-  // Normalize inputs to sharp representation for internal lookup
+  // Normalize to sharps for internal lookup
   const normNote =
     noteName.includes("b") && ENHARMONICS[noteName]
       ? ENHARMONICS[noteName]
@@ -408,40 +393,34 @@ export function getNoteDisplayInScale(
 
   const interval = (noteIdx - rootIdx + 12) % 12;
 
-  // Check if this note is in the scale
   const degreeIndex = scaleIntervals.indexOf(interval);
   if (degreeIndex === -1) {
-    // Note is not in the scale — use standard display
     return getNoteDisplay(noteName, rootNote, useFlats);
   }
 
-  // Determine the root's letter name
   const rootDisplay = getNoteDisplay(rootNote, rootNote, useFlats);
   const rootLetter = rootDisplay.charAt(0);
   const rootLetterIdx = LETTER_NAMES.indexOf(rootLetter);
   if (rootLetterIdx === -1) return getNoteDisplay(noteName, rootNote, useFlats);
 
-  // Expected letter for this scale degree
   const expectedLetter = LETTER_NAMES[(rootLetterIdx + degreeIndex) % 7];
   const expectedBasePitch = LETTER_PITCHES[expectedLetter];
   const targetPitch = (rootIdx + interval) % 12;
 
-  // Compute accidental needed
   const diff = (targetPitch - expectedBasePitch + 12) % 12;
 
   if (diff === 0) {
-    return expectedLetter; // Natural
+    return expectedLetter;
   } else if (diff === 1) {
-    return expectedLetter + "#"; // Sharp
+    return expectedLetter + "#";
   } else if (diff === 11) {
-    return expectedLetter + "b"; // Flat
+    return expectedLetter + "b";
   } else if (diff === 2) {
-    return expectedLetter + "##"; // Double sharp (rare)
+    return expectedLetter + "##";
   } else if (diff === 10) {
-    return expectedLetter + "bb"; // Double flat (rare)
+    return expectedLetter + "bb";
   }
 
-  // Fallback
   return getNoteDisplay(noteName, rootNote, useFlats);
 }
 
@@ -506,7 +485,7 @@ export function getDivergentNotes(
     .map((interval) => NOTES[(rootIdx + interval) % 12]);
 }
 
-// Key signature accidental counts (positive = sharps, negative = flats)
+// Key signature accidental counts (+ sharps, - flats)
 export const KEY_SIGNATURES: Record<string, number> = {
   C: 0,
   G: 1,
@@ -538,7 +517,6 @@ export function getKeySignatureForDisplay(
 ): number {
   const offset = SCALE_TO_PARENT_MAJOR_OFFSET[normalizeScaleName(scaleName)] ?? 0;
 
-  // Normalize rootNote to sharp index
   const sharpRoot =
     rootNote.includes("b") && ENHARMONICS[rootNote]
       ? ENHARMONICS[rootNote]
@@ -549,9 +527,7 @@ export function getKeySignatureForDisplay(
   const parentIdx = (rootIdx + offset) % 12;
   const parentSharp = NOTES[parentIdx];
 
-  // When the originally-selected root is sharp-spelled, always return the
-  // sharp-side key signature regardless of the useFlats auto-resolution.
-  // This preserves the user's intended root spelling (e.g., G# Major → sharps).
+  // Preserve user's intended root spelling for sharp-side key signatures
   const originalIsSharp = rootNote.includes("#");
   if (!originalIsSharp && useFlats && ENHARMONICS[parentSharp]) {
     const flatName = ENHARMONICS[parentSharp];
@@ -560,9 +536,7 @@ export function getKeySignatureForDisplay(
     }
   }
   const sig = KEY_SIGNATURES[parentSharp] ?? 0;
-  // When the root is sharp-spelled, a negative signature means the KEY_SIGNATURES
-  // table only stores the flat-equivalent (e.g. G#=-4 same as Ab=-4).
-  // Convert to the enharmonic sharp count: 12 + sig (e.g. -4 → 8 sharps).
+  // Convert flat-equivalent negative signature to enharmonic sharp count
   if (originalIsSharp && sig < 0) {
     return 12 + sig;
   }
@@ -572,11 +546,7 @@ export function getKeySignatureForDisplay(
 export type AccidentalMode = "sharps" | "flats" | "auto";
 
 /**
- * Resolve the user-facing accidental mode into a concrete useFlats boolean for
- * downstream display code. Natural roots fall back to the historical default
- * (FLAT_KEYS membership). Enharmonic roots in "auto" mode compare the scale
- * spellings generated from the sharp and flat equivalents, pick the one with
- * fewer total accidentals, and break ties toward sharps.
+ * Resolve accidental mode to useFlats. Auto mode picks the spelling with fewer accidentals.
  */
 export function resolveAccidentalMode(
   rootNote: string,
@@ -589,7 +559,6 @@ export function resolveAccidentalMode(
   const isNatural = !rootNote.includes("#") && !rootNote.includes("b");
   if (isNatural) return FLAT_KEYS.includes(rootNote);
 
-  // Enharmonic root in "auto" mode — pick spelling with fewer accidentals
   const sharpRoot =
     rootNote.includes("b") && ENHARMONICS[rootNote]
       ? ENHARMONICS[rootNote]
@@ -623,10 +592,9 @@ export function resolveAccidentalMode(
   const sharpCount = countAccidentals(sharpDisplays);
   const flatCount = countAccidentals(flatDisplays);
 
-  return flatCount < sharpCount; // strict less; tie → sharps (false)
+  return flatCount < sharpCount; // tie → sharps (false)
 }
 
-// Circle of fifths display labels
 export const CIRCLE_DISPLAY_LABELS: Record<string, string> = {
   C: "C",
   G: "G",

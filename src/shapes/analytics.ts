@@ -23,16 +23,14 @@ export function findMainShape(
   startFret: number,
   endFret: number,
 ): ShapePolygon | null {
-  // Filter to complete shapes (no wrapped notes, not truncated, fully visible)
+  // Filter to complete, fully visible shapes
   const completeShapes = polygons.filter((poly) => {
     if (poly.truncated) return false;
-    // Check if any vertex is a wrapped note
     for (const vert of poly.vertices) {
       if (wrappedNotes.has(`${vert.string}-${vert.fret}`)) {
         return false;
       }
     }
-    // Entire shape must be within visible fret range
     if (poly.intendedMin < startFret || poly.intendedMax > endFret) {
       return false;
     }
@@ -41,7 +39,7 @@ export function findMainShape(
 
   if (completeShapes.length === 0) return null;
 
-  // Find the shape with the lowest intendedMin (lowest root position)
+  // Find shape with lowest intendedMin
   return completeShapes.reduce((lowest, current) =>
     current.intendedMin < lowest.intendedMin ? current : lowest
   );
@@ -56,14 +54,12 @@ export function getShapeCenterFret(poly: ShapePolygon): number {
 
 /**
  * Check if any part of a shape is outside the visible fret range.
- * exported for external consumers
  */
 export function isShapeOutOfView(
   poly: ShapePolygon,
   startFret: number,
   endFret: number,
 ): boolean {
-  // Shape is out of view if any part extends beyond visible range
   const shapeMin = Math.max(0, poly.intendedMin);
   const shapeMax = poly.intendedMax;
   return shapeMin < startFret || shapeMax > endFret;

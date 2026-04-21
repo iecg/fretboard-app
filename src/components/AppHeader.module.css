@@ -143,7 +143,7 @@
   }
 }
 
-/* Phase 2: Desktop compact header — smaller brand mark, tighter vertical padding.
+/* Desktop compact header — smaller brand mark, tighter vertical padding.
    Targets ~78px total header height (down from ~111px).
    Brand legibility is preserved; action buttons shrink proportionally. */
 :global(.app-container[data-layout-tier="desktop"]) .app-header {

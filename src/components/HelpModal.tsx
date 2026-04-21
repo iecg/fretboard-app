@@ -26,7 +26,7 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
     restoreFocusRef: triggerRef,
   });
 
-  // Outside-click handler — close when clicking outside the modal container
+  // Close when clicking outside the modal container.
   useEffect(() => {
     if (!isOpen) return;
     const handlePointerDown = (e: PointerEvent) => {

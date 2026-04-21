@@ -55,7 +55,7 @@ export function Fretboard(props: FretboardProps) {
   const state = useFretboardState();
   const fretZoom = useAtomValue(fretZoomAtom);
 
-  // Fallback to props for testability, otherwise use atom-driven state
+  // Fallback to props for testability; default to atom-driven state.
   const tuning = props.tuning ?? state.currentTuning;
   const maxFret = props.maxFret ?? MAX_FRET;
   const highlightNotes = props.highlightNotes ?? state.highlightNotes;
@@ -136,8 +136,7 @@ export function Fretboard(props: FretboardProps) {
     const containerW = el.clientWidth;
     if (containerW <= 0) return;
 
-    // Replicate the tapered fret coordinate system from FretboardSVG so scroll
-    // targets match actual rendered positions (real guitar frets are non-uniform).
+    // Match tapered fret coordinates from FretboardSVG for accurate scroll targeting.
     const neckWidth = totalColumns * zoom;
     const noteBubblePx = Math.round(stringRowPx * NOTE_BUBBLE_RATIO);
     const openWidth = startFret === 0 ? Math.max(noteBubblePx + 12, NUT_WIDTH + 4) : 0;

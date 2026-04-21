@@ -2,7 +2,7 @@
   --font-sans: "Inter", system-ui, "Avenir", "Helvetica", "Arial", sans-serif;
 
   color-scheme: dark;
-  /* Spacing scale */
+
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -14,65 +14,52 @@
   --space-12: 3rem;
   --space-16: 4rem;
 
-  /* Control sizing */
   --size-touch-target: 2.25rem;
 
-  /* Typography scale */
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-base: 1rem;
-  /* NOTE: --text-lg = 1.5rem (historical naming; --text-xl = 1.25rem is the corrected step) */
   --text-lg: 1.5rem;
   --text-xl: 1.25rem;
 
-  /* Font weight scale */
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
 
-  /* Line height scale */
   --leading-tight: 1.2;
   --leading-snug: 1.4;
   --leading-normal: 1.5;
 
-  /* Icon sizes */
   --icon-sm: 1rem;      /* 16px */
   --icon-md: 1.25rem;   /* 20px */
   --icon-lg: 1.5rem;    /* 24px */
 
-  /* Border radius */
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
   --radius-full: 9999px;
 
-  /* Transitions */
   --transition-fast: 0.12s ease-out;
   --transition-base: 0.2s ease;
   --transition-slow: 0.3s ease;
 
-  /* Z-index scale (primitives — semantic aliases in semantic.css) */
   --token-z-note: 10;
   --token-z-dropdown: 50;
   --token-z-header: 80;
   --token-z-bottom-nav: 100;
   --token-z-help-overlay: 1000;
 
-  /* Opacity primitives */
   --token-disabled-opacity: 0.3;
 
-  /* Border/surface color primitives (subtle alpha whites) */
   --token-border-subtle: rgb(255 255 255 / 0.06);
   --token-border-subtler: rgb(255 255 255 / 0.04);
   --token-border-faint: rgb(255 255 255 / 0.08);
   --token-surface-dim: rgb(255 255 255 / 0.04);
 
-  /* Card surface base (used by semantic --surface-card) */
   --token-surface-card-base: rgb(22 27 38);
 
-  /* Chip color primitives */
   --token-chip-active-bg: rgb(77 228 255 / 0.08);
   --token-chip-tonic-bg: rgb(255 154 77 / 0.1);
 
@@ -82,22 +69,19 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* === Neon palette (Phase 5 visual language — unused in Phase 4) === */
 :root {
-  --neon-cyan: #4DE4FF;            /* primary ring/interval color */
-  --neon-cyan-bright: #8CEEFF;     /* brighter hover/focus variant */
-  --neon-cyan-dim: #2EB5CC;        /* dimmed / disabled variant */
-  --neon-orange: #FF9A4D;          /* tonic / chord-tone emphasis */
-  --neon-orange-bright: #FFB366;   /* brighter hover/focus variant */
-  --neon-orange-dim: #CC7A3D;      /* dimmed variant */
-  --neon-violet: #A78BFA;          /* color/characteristic tone accent */
-  --neon-violet-dim: #7C5FD4;      /* dimmed violet variant */
+  --neon-cyan: #4DE4FF;
+  --neon-cyan-bright: #8CEEFF;
+  --neon-cyan-dim: #2EB5CC;
+  --neon-orange: #FF9A4D;
+  --neon-orange-bright: #FFB366;
+  --neon-orange-dim: #CC7A3D;
+  --neon-violet: #A78BFA;
+  --neon-violet-dim: #7C5FD4;
   --neon-brand-gradient: linear-gradient(90deg, #4DE4FF 0%, #A78BFA 50%, #4DE4FF 100%);
 }
 
-/* === Glow effects (box-shadow / filter) === */
 :root {
-  /* box-shadow glows — used on note circles, cards, brand icon */
   --glow-cyan-sm: 0 0 6px rgb(77 228 255 / 0.45);
   --glow-cyan-md: 0 0 12px rgb(77 228 255 / 0.6);
   --glow-cyan-lg: 0 0 24px rgb(77 228 255 / 0.5);
@@ -107,66 +91,57 @@
   --glow-violet-sm: 0 0 6px rgb(167 139 250 / 0.65);
   --glow-violet-border: rgb(167 139 250 / 0.85);
 
-  /* filter drop-shadows for SVG glyphs (brand icon) */
   --glow-filter-cyan: drop-shadow(0 0 6px rgb(77 228 255 / 0.65));
   --glow-filter-orange: drop-shadow(0 0 6px rgb(255 154 77 / 0.65));
 }
 
-/* === Display font (Phase 5 brand — alias to current body font in Phase 4) === */
 :root {
   --font-display: 'Space Grotesk', var(--font-sans);
   --font-brand-weight: 700;
   --font-brand-tracking: 0.02em;
 }
 
-/* === Card surface geometry === */
 :root {
-  --radius-card: 1rem;        /* 16px */
-  --radius-chip: 0.5rem;      /* 8px */
-  --radius-pill: 9999px;      /* already available as --radius-full; kept as semantic alias */
+  --radius-card: 1rem;
+  --radius-chip: 0.5rem;
+  --radius-pill: 9999px;
   --space-card-x: 1.5rem;
   --space-card-y: 1.25rem;
 }
 
-/* === Elevation shadows === */
 :root {
   --elevation-card: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 2px 8px rgb(0 0 0 / 0.25);
   --elevation-overlay: 0 8px 32px rgb(0 0 0 / 0.55);
   --elevation-float: 0 4px 16px rgb(0 0 0 / 0.35);
 }
 
-/* === Fretboard visual tokens (Phase 5 — unused in Phase 4) === */
 :root {
-  /* Ebony-style fingerboard: near-black with only a whisper of warmth.
-     The SVG grain + highlight filters in FretboardSVG.tsx layer over this. */
   --fretboard-wood-top: #160d07;
   --fretboard-wood-bottom: #080403;
   --fretboard-wood-grain: rgb(255 255 255 / 0.02);
-  --fret-wire-v2: #9aa0a6;          /* Phase 5 fret wire (brighter); --fret-wire in index.css is Phase 4 value */
+  --fret-wire-v2: #9aa0a6;
   --fret-wire-dark: #4a5058;
   --fret-wire-highlight: rgb(255 255 255 / 0.25);
   --string-wire: #c8c8c8;
-  --string-wire-bass: #b0a080;      /* wound strings (lower 3) */
-  --string-taper-1: 1px;             /* high E */
+  --string-wire-bass: #b0a080;
+  --string-taper-1: 1px;
   --string-taper-2: 1.25px;
   --string-taper-3: 1.5px;
   --string-taper-4: 2px;
   --string-taper-5: 2.5px;
-  --string-taper-6: 3px;             /* low E */
+  --string-taper-6: 3px;
   --inlay-dot: rgb(210 210 210 / 0.18);
   --inlay-dot-12: rgb(210 210 210 / 0.28);
   --nut: #e0d4a8;
   --fretboard-edge-shadow: 0 0 16px rgb(0 0 0 / 0.45) inset;
 }
 
-/* === App background tokens (Phase 5 — unused in Phase 4) === */
 :root {
   --bg-app-gradient-start: #0c1822;
   --bg-app-gradient-end: #0a1420;
   --bg-app-accent-glow: radial-gradient(ellipse at 50% 0%, rgb(77 228 255 / 0.06), transparent 60%);
 }
 
-/* === Chord row strip tokens === */
 :root {
   --chord-chip-size: clamp(2.15rem, 3.4vw, 2.5rem);
   --chord-strip-fill: rgb(22 27 38);
@@ -175,7 +150,6 @@
   --chord-chip-border-width: 2px;
 }
 
-/* === Practice bar pill tokens === */
 :root {
   --practice-bar-fill: rgb(18 23 34);
   --practice-pill-h: 1.55rem;

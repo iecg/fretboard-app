@@ -5,7 +5,6 @@ import { readFileSync } from 'node:fs'
 
 const { version } = JSON.parse(readFileSync('./package.json', 'utf-8')) as { version: string }
 
-// https://vite.dev/config/
 export default defineConfig({
   base: '/fretboard-app/',
   plugins: [react()],
@@ -30,11 +29,8 @@ export default defineConfig({
     },
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     exclude: ['e2e/**'],
-    // vitest 4.x defaults to updateSnapshot="none" when CI=true, causing tests
-    // to fail when no snapshot file is present. "new" restores the expected
-    // behavior: missing snapshots are written on first run rather than failing.
-    // Snapshots are gitignored because Node 22 (local) and Node 24 (CI) produce
-    // slightly different floating-point SVG coordinates.
+    // Vitest 4 CI defaults to updateSnapshot="none". "new" ensures missing snapshots
+    // are written. Snapshots are gitignored as Node 22/24 produce slight SVG differences.
     update: 'new',
     coverage: {
       provider: 'v8',
