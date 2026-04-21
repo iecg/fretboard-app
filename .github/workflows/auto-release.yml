@@ -64,6 +64,16 @@ jobs:
           git tag -a "$TAG_NAME" -F "$TAG_MESSAGE_FILE"
           git push origin "refs/tags/$TAG_NAME"
 
+      # GITHUB_TOKEN push events do not trigger other workflows (GitHub security
+      # restriction), so we must explicitly dispatch deploy after the tag push.
+      - name: Trigger deploy
+        if: steps.tag.outputs.new_tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ steps.tag.outputs.new_tag }}
+        run: |
+          gh workflow run deploy.yml --ref "$TAG_NAME"
+
       - name: Create version bump PR
         if: steps.tag.outputs.new_tag
         run: |
