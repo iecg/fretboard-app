@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useSetAtom, useAtomValue, createStore, Provider } from "jotai";
+import clsx from "clsx";
 import { Fretboard } from "./Fretboard";
 import { HelpCircle, Settings2, Volume2, VolumeX } from "lucide-react";
 import { synth } from "./audio";
@@ -18,6 +19,7 @@ import { SummaryRibbon } from "./components/SummaryRibbon";
 import { ChordOverlayDock } from "./components/ChordOverlayDock";
 import { VersionBadge } from "./components/VersionBadge";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper";
+import sharedStyles from "./components/shared.module.css";
 import "./App.css";
 
 // Lazy-loaded components
@@ -75,7 +77,7 @@ function AppContent() {
               <button
                 type="button"
                 onClick={() => setSettingsOverlayOpen((v) => !v)}
-                className="header-btn"
+                className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--lg"])}
                 title="Settings"
                 aria-label="Open settings"
               >
@@ -84,7 +86,7 @@ function AppContent() {
               <button
                 type="button"
                 onClick={toggleMute}
-                className="header-btn"
+                className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--lg"])}
                 title={isMuted ? "Unmute" : "Mute"}
                 aria-label={isMuted ? "Unmute audio" : "Mute audio"}
               >
@@ -98,7 +100,7 @@ function AppContent() {
                 ref={helpTriggerRef}
                 type="button"
                 onClick={() => setShowHelp(true)}
-                className="header-btn"
+                className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--lg"])}
                 title="Help & Instructions"
                 aria-label="Open help"
               >

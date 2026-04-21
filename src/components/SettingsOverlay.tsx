@@ -34,6 +34,7 @@ import {
   ANIMATION_EASE,
 } from "../constants";
 import styles from "./SettingsOverlay.module.css";
+import sharedStyles from "./shared.module.css";
 
 const ZOOM_STEP = 10;
 
@@ -488,7 +489,7 @@ function SettingsOverlaySurface({
           <button
             type="button"
             ref={closeButtonRef}
-            className={styles["settings-overlay-close"]}
+            className={clsx(sharedStyles["icon-button"])}
             onClick={close}
             aria-label="Close settings"
           >

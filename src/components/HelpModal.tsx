@@ -1,12 +1,14 @@
 import { useEffect, useRef, type RefObject } from "react";
 import { X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import clsx from "clsx";
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import {
   ANIMATION_DURATION_FAST,
   ANIMATION_EASE,
 } from "../constants";
 import styles from "./HelpModal.module.css";
+import sharedStyles from "./shared.module.css";
 
 interface HelpModalProps {
   isOpen: boolean;
@@ -64,7 +66,7 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
               <h2 id="help-modal-title">FretFlow Help</h2>
               <button
                 type="button"
-                className={styles["help-modal-close"]}
+                className={clsx(sharedStyles["icon-button"])}
                 onClick={onClose}
                 aria-label="Close help"
               >
