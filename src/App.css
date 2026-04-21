@@ -1,13 +1,4 @@
 /* Custom Scrollbar Styles */
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
@@ -52,64 +43,7 @@
     linear-gradient(180deg, #0a1420 0%, #0b1623 32%, #09111b 100%);
 }
 
-/* Header action buttons (rendered inside AppHeader actions slot) */
-.header-btn {
-  padding: var(--space-3);
-  border-radius: 9999px;
-  background-color: var(--surface-raised);
-  border: 1px solid var(--surface-highlight);
-  transition: background-color var(--transition-fast), transform var(--transition-fast);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.header-btn:hover {
-  background-color: var(--surface-highlight);
-  transform: scale(1.05);
-}
-
-.header-btn:active {
-  transform: scale(0.95);
-}
-
-.header-btn:focus-visible {
-  outline: var(--focus-ring);
-  outline-offset: var(--focus-ring-offset);
-  box-shadow: var(--focus-ring-glow);
-}
-
-.header-btn .icon {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-.header-btn .icon-active {
-  color: white;
-}
-
-.header-btn .icon-muted {
-  color: var(--text-muted);
-}
-
-/* Compact header actions: < 1080px or landscape-mobile */
-@media (max-width: 1079px) {
-  .header-btn {
-    padding: var(--space-2);
-  }
-}
-
-.app-container[data-layout-variant="landscape-mobile"] .header-btn {
-  padding: var(--space-2);
-}
-
-@media (max-width: 767px) {
-  .header-btn {
-    padding: var(--space-2);
-  }
-}
+/* Header action button styles migrated to src/components/shared.module.css */
 
 /* Dedicated slot for the chord practice dock — sits between the scale strip and fretboard.
    The dock manages its own visibility; this shell just provides centering. */
@@ -120,11 +54,6 @@
    Hierarchy: header chrome → summary band → fretboard hero → controls dashboard
    ============================================= */
 
-/* Phase 2: compact action buttons on desktop tier — 2.65rem vs 2.95rem base. */
-.app-container[data-layout-tier="desktop"] .header-btn {
-  width: 2.65rem;
-  height: 2.65rem;
-}
 
 /* Tablet tier: tighter chrome — reduce container gap and pull summary closer to header.
    Mirrors the desktop intent at a touch-appropriate scale. */
