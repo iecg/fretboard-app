@@ -262,7 +262,7 @@ Scale degrees on circle use chromatic interval conversion: `(circleIntervalIndex
 
 **`DrawerSelector`** = accordion dropdown in `src/DrawerSelector.tsx`. Use for any new selector controls → maintains visual consistency.
 
-**CSS Modules** (`*.module.css`) are the standard for all component-scoped styles — migration complete (18 modules across `src/` and `src/components/`, including `FretboardSVG.module.css`, `CircleOfFifths.module.css`, `DrawerSelector.module.css`, and all `components/*.module.css`). Shared module CSS lives in `components/shared.module.css`. Only `tokens.css`, `semantic.css`, `App.css`, and `index.css` remain global (design tokens + root layout). New components: always pair `.tsx` with a `.module.css` sibling — do not add plain `.css` files.
+**CSS Modules** (`*.module.css`) are the standard for all component-scoped styles — migration complete (26 modules across `src/` and `src/components/`, including `FretboardSVG.module.css`, `CircleOfFifths.module.css`, `DrawerSelector.module.css`, and all `components/*.module.css`). Shared module CSS lives in `components/shared.module.css`. Only `tokens.css`, `semantic.css`, `App.css`, and `index.css` remain global (design tokens + root layout). New components: always pair `.tsx` with a `.module.css` sibling — do not add plain `.css` files.
 
 **A11y:** `eslint-plugin-jsx-a11y` + `vitest-axe` are in place. `:focus-visible` glow styles available; keyboard navigation supported on `NoteGrid` and others.
 

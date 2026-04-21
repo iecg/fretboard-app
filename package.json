@@ -16,9 +16,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "test:e2e:dev": "playwright test",
     "test:e2e:production": "npm run build && playwright test --config=playwright.config.production.ts",
-    "test:e2e:css-scoping": "npm run build && playwright test e2e/css-scoping.spec.ts --config=playwright.config.production.ts",
+    "test:e2e:css-scoping": "npm run test:e2e:production -- e2e/css-scoping.spec.ts",
     "prepare": "husky"
   },
   "dependencies": {
