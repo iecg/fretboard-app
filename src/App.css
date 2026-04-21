@@ -111,26 +111,6 @@
   }
 }
 
-/* Key column */
-.key-column {
-  position: relative;
-  align-items: center;
-}
-
-.key-column>h2 {
-  display: block;
-  text-align: center;
-}
-
-.badge {
-  font-size: var(--text-xs);
-  color: var(--neon-cyan-bright);
-  text-transform: uppercase;
-  background-color: var(--token-chip-active-bg);
-  padding: 0.125rem var(--space-2);
-  border-radius: 9999px;
-}
-
 /* Dedicated slot for the chord practice dock — sits between the scale strip and fretboard.
    The dock manages its own visibility; this shell just provides centering. */
 
@@ -175,10 +155,6 @@
     display: none !important;
   }
 }
-
-@media (max-height: 520px) {
-}
-
 
 /* =============================================
    LAYOUT VARIANTS
@@ -253,11 +229,6 @@
   color: rgb(176 188 201 / 0.66);
 }
 
-.app-container[data-layout-tier="desktop"] {
-  max-width: 92rem;
-  /* Phase 2: tightened further — hero band is now compact chrome */
-  gap: 0.5rem;
-}
 
 @media (max-width: 767px) {
   .app-container {

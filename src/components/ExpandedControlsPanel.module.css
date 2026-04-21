@@ -103,4 +103,15 @@
 :global(.app-container[data-layout-tier="tablet"]) :global(.card-body) {
   gap: 0.78rem;
 }
+
+/* Key column base styles */
+:global(.key-column) {
+  position: relative;
+  align-items: center;
+}
+
+:global(.key-column) > h2 {
+  display: block;
+  text-align: center;
+}
 /* stylelint-enable selector-pseudo-class-no-unknown */
