@@ -79,19 +79,48 @@ Four global files held at root level for design tokens and layout foundations. N
 ```bash
 npm run build
 ```
-✅ **Result:** `✓ built in 269ms` — all CSS properly bundled, no scoping errors.
+✅ **Result:** `✓ built in 270ms` — all CSS properly bundled, no scoping errors.
 
-### Tests
+### Unit Tests
 ```bash
 npm run test
 ```
 ✅ **Result:** `43 passed (43), 919 tests passed` — all CSS scope and rendering tests pass.
 
-### Production CSS Scoping
-Verified via `test: add production CSS scoping tests` (commit `ab9db5c`):
-- CSS Module imports create isolated scopes
-- No class name collisions across components
-- Global tokens accessible to all modules via CSS custom properties
+### Production CSS Scoping (E2E Verification)
+
+**Problem:** Vitest uses `css.modules.classNameStrategy = 'non-scoped'` for speed, which hides production-only CSS Module selector drift. Tests against dev server class names don't catch hashed/scoped selector issues.
+
+**Solution:** Two-track E2E testing:
+
+1. **Dev-mode smoke tests** (existing):
+   ```bash
+   npm run test:e2e
+   ```
+   Runs against dev server; validates basic rendering with non-scoped class names.
+
+2. **Production-build smoke tests** (new):
+   ```bash
+   npm run test:e2e:production
+   # or specifically:
+   npm run test:e2e:css-scoping
+   ```
+   - Builds production bundle (`npm run build`)
+   - Runs preview server (`npm run preview`)
+   - Tests against hashed/scoped CSS Module class names
+   - Uses `playwright.config.production.ts`
+
+**Coverage:**
+- ChordRowStrip computed styles (background/border/shadow from module)
+- Mobile theory buttons touch targets (`min-height: 36px` enforced)
+- Stale global class selectors absent (`.controls-panel`, `.header-btn`, `.key-column` not found)
+- CSS Module scoping patterns present in production DOM
+- Responsive layout integrity under scoped class names
+
+**Latest results:** `test: add scoped module migration smoke coverage` (commit `6e40668`):
+- ✅ 14 production-build E2E tests, all passing
+- ✅ No unscoped global class conflicts
+- ✅ Hashed module class names verified in DOM
 
 ## Recent Commits (CSS Phase)
 
@@ -120,10 +149,16 @@ Reference history of CSS migration work:
 
 ## Next Steps
 
-No further CSS migration work required. Future styling follows conventions:
+No further CSS migration work required. Future work follows conventions + verification:
+
+### Development
 - **New components:** pair `.tsx` with `.module.css` sibling
 - **Global tokens:** add to `tokens.css` or `semantic.css`
 - **Layout rules:** add to `App.css` with `[data-layout-*]` selectors
 - **Shared primitives:** add to `components/shared.module.css`
+
+### Verification (before PR)
+- `npm run lint` + `npm run test` + `npm run build` (always required)
+- `npm run test:e2e:css-scoping` (optional, but recommended when changing CSS Module imports)
 
 See `CLAUDE.md` § CSS Modules for full conventions.
