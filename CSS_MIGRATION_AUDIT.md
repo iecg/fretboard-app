@@ -112,3 +112,19 @@ The following selectors are used within CSS Modules via `:global()` to reference
 - `:global(.brand-mark)`
 - `:global(.icon)`
 - `:global(.mobile-tab-panel)`
+
+---
+
+## Migration Risks & Common Errors
+
+### Utility Class Overrides
+During the migration from global CSS to CSS Modules, a recurring risk involves component-specific classes improperly overriding shared utility classes (e.g., `.panel-surface`, `.panel-surface--compact`, `.dashboard-card`).
+
+**Example Case:**
+In the `main` branch, `.theory-mode-browser` did NOT have explicit `padding` declarations. It relied entirely on the `.panel-surface--compact` utility class applied in the TSX template (`className={clsx(styles["theory-mode-browser"], "panel-surface panel-surface--compact")}`).
+
+During migration, explicit `padding` values and responsive `:global(.app-container)` overrides were incorrectly added to `.theory-mode-browser` in `TheoryControls.module.css`. Because CSS Modules often inject styles later in the document head or have higher specificity via `:global()` composition, these new rules clobbered the intended padding from `.panel-surface--compact`.
+
+**Audit Action Required:**
+- Components utilizing `.panel-surface`, `.panel-surface--compact`, `.panel-surface--inset`, or `.dashboard-card` MUST NOT declare explicit `padding`, `border-radius`, or structural properties that conflict with the utility class definitions found in `semantic.css` or `App.css`.
+- When verifying migrated modules, cross-reference the original global CSS to ensure styles were not duplicated from the utility class into the component-specific class.
