@@ -15,69 +15,20 @@ import {
   getDivergentNotes,
   formatAccidental,
 } from "../theory";
-import { k, rawStringStorage, booleanStorage, GET_ON_INIT } from "../utils/storage";
+import { k, createStorage, rawStringStorage, booleanStorage, GET_ON_INIT } from "../utils/storage";
 import { fingeringPatternAtom, cagedShapesAtom } from "./fingeringAtoms";
 import type { CagedShape } from "../shapes";
 
 const SCALE_BROWSE_MODES = ["parallel", "relative"] as const;
 
-const scaleBrowseModeStorage = {
-  getItem(key: string, initialValue: ScaleBrowseMode): ScaleBrowseMode {
-    try {
-      const stored = localStorage.getItem(key);
-      if (stored === null) {
-        localStorage.setItem(key, initialValue);
-        return initialValue;
-      }
-      if ((SCALE_BROWSE_MODES as readonly string[]).includes(stored)) {
-        return stored as ScaleBrowseMode;
-      }
-      localStorage.setItem(key, initialValue);
-      return initialValue;
-    } catch {
-      return initialValue;
-    }
-  },
-  setItem(key: string, value: ScaleBrowseMode): void {
-    try {
-      localStorage.setItem(key, value);
-    } catch {}
-  },
-  removeItem(key: string): void {
-    try {
-      localStorage.removeItem(key);
-    } catch {}
-  },
-};
+const scaleBrowseModeStorage = createStorage<ScaleBrowseMode>({
+  validate: (v) => (SCALE_BROWSE_MODES as readonly string[]).includes(v),
+});
 
-const scaleNameStorage = {
-  getItem(key: string, initialValue: string): string {
-    try {
-      const stored = localStorage.getItem(key);
-      if (stored === null) {
-        localStorage.setItem(key, initialValue);
-        return initialValue;
-      }
-      const normalized = normalizeScaleName(stored);
-      if (normalized !== stored) {
-        localStorage.setItem(key, normalized);
-      }
-      return normalized;
-    } catch {
-      return initialValue;
-    }
-  },
-  setItem(key: string, value: string): void {
-    try {
-      localStorage.setItem(key, normalizeScaleName(value));
-    } catch {}
-  },
-  removeItem(key: string): void {
-    try {
-      localStorage.removeItem(key);
-    } catch {}
-  },
-};
+const scaleNameStorage = createStorage<string>({
+  onRead: normalizeScaleName,
+  onWrite: normalizeScaleName,
+});
 
 export const rootNoteAtom = atomWithStorage(
   k("rootNote"),
@@ -122,7 +73,8 @@ function readLegacyAccidentalMode(): "sharps" | "flats" | "auto" {
     if (legacy === null) return "auto";
     localStorage.removeItem("useFlats");
     return legacy === "true" ? "flats" : "sharps";
-  } catch {
+  } catch (e) {
+    console.warn("localStorage access failed", { e });
     return "auto";
   }
 }
@@ -243,7 +195,8 @@ function readLegacyScaleVisibility(): boolean {
     if (legacy === null) return true;
     localStorage.removeItem(k("scaleVisibilityMode"));
     return legacy !== "off";
-  } catch {
+  } catch (e) {
+    console.warn("localStorage access failed", { e });
     return true;
   }
 }

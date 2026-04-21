@@ -38,67 +38,108 @@ function migrateLegacyKeys() {
       localStorage.setItem(prefixedKey, legacyValue);
       localStorage.removeItem(legacyKey);
     }
-  } catch {}
+  } catch (e) {
+    console.warn("Legacy key migration failed", e);
+  }
 }
 migrateLegacyKeys();
 
 // Sync read from localStorage on atom initialization to prevent default flash.
 export const GET_ON_INIT = { getOnInit: true } as const;
 
-export function rawStringStorage<T extends string>() {
+export interface StorageOptions<T> {
+  serialize?: (value: T) => string;
+  deserialize?: (value: string) => T;
+  validate?: (value: T) => boolean;
+  onRead?: (value: T) => T;
+  onWrite?: (value: T) => T;
+  migrate?: () => T | undefined;
+}
+
+/**
+ * Factory for creating Jotai atomWithStorage adapters with consistent error handling
+ * and lifecycle hooks for validation, migration, and serialization.
+ */
+export function createStorage<T>(options: StorageOptions<T> = {}) {
+  const {
+    serialize = (v: unknown) => String(v),
+    deserialize = (v: string) => v as unknown as T,
+    validate = () => true,
+    onRead = (v: T) => v,
+    onWrite = (v: T) => v,
+    migrate,
+  } = options;
+
+  const save = (key: string, value: T) => {
+    localStorage.setItem(key, serialize(onWrite(value)));
+  };
+
   return {
     getItem(key: string, initialValue: T): T {
       try {
         const stored = localStorage.getItem(key);
         if (stored === null) {
-          localStorage.setItem(key, initialValue);
+          if (migrate) {
+            const migrated = migrate();
+            if (migrated !== undefined) {
+              save(key, migrated);
+              return migrated;
+            }
+          }
+          save(key, initialValue);
           return initialValue;
         }
-        return stored as T;
-      } catch {
+
+        const deserialized = deserialize(stored);
+        const processed = onRead(deserialized);
+
+        if (!validate(processed)) {
+          save(key, initialValue);
+          return initialValue;
+        }
+
+        // Self-heal: if onRead normalized the value (e.g. legacy scale names), save it.
+        // We use serialize(processed) to ensure we compare with the string form in localStorage.
+        if (serialize(processed) !== stored) {
+          save(key, processed);
+        }
+
+        return processed;
+      } catch (e) {
+        console.warn("localStorage.getItem failed", { key, e });
         return initialValue;
       }
     },
     setItem(key: string, value: T): void {
       try {
-        localStorage.setItem(key, value);
-      } catch {}
+        save(key, value);
+      } catch (e) {
+        console.warn("localStorage.setItem failed", { key, e });
+      }
     },
     removeItem(key: string): void {
       try {
         localStorage.removeItem(key);
-      } catch {}
+      } catch (e) {
+        console.warn("localStorage.removeItem failed", { key, e });
+      }
     },
   };
 }
 
-export const booleanStorage = {
-  getItem(key: string, initialValue: boolean): boolean {
-    try {
-      const stored = localStorage.getItem(key);
-      if (stored === null) {
-        localStorage.setItem(key, String(initialValue));
-        return initialValue;
-      }
-      if (stored === "true") return true;
-      if (stored === "false") return false;
-      localStorage.setItem(key, String(initialValue));
-      return initialValue;
-    } catch {
-      return initialValue;
-    }
+export function rawStringStorage<T extends string>() {
+  return createStorage<T>();
+}
+
+export const booleanStorage = createStorage<boolean>({
+  serialize: (v) => String(v),
+  deserialize: (v) => {
+    if (v === "true") return true;
+    if (v === "false") return false;
+    return undefined as unknown as boolean;
   },
-  setItem(key: string, value: boolean): void {
-    try {
-      localStorage.setItem(key, String(value));
-    } catch {}
-  },
-  removeItem(key: string): void {
-    try {
-      localStorage.removeItem(key);
-    } catch {}
-  },
-};
+  validate: (v) => typeof v === "boolean",
+});
 
 export type NumberConstraints = {
   min?: number;
@@ -107,49 +148,18 @@ export type NumberConstraints = {
 };
 
 export function constrainedNumberStorage(constraints: NumberConstraints) {
-  return {
-    getItem(key: string, initialValue: number): number {
-      try {
-        const stored = localStorage.getItem(key);
-        if (stored === null) {
-          localStorage.setItem(key, String(initialValue));
-          return initialValue;
-        }
-        if (stored.trim() === "") {
-          localStorage.setItem(key, String(initialValue));
-          return initialValue;
-        }
-        const num = Number(stored);
-        if (!Number.isFinite(num)) {
-          localStorage.setItem(key, String(initialValue));
-          return initialValue;
-        }
-        if (constraints.integer && !Number.isInteger(num)) {
-          localStorage.setItem(key, String(initialValue));
-          return initialValue;
-        }
-        if (constraints.min !== undefined && num < constraints.min) {
-          localStorage.setItem(key, String(initialValue));
-          return initialValue;
-        }
-        if (constraints.max !== undefined && num > constraints.max) {
-          localStorage.setItem(key, String(initialValue));
-          return initialValue;
-        }
-        return num;
-      } catch {
-        return initialValue;
-      }
+  return createStorage<number>({
+    serialize: (v) => String(v),
+    deserialize: (v) => {
+      const num = Number(v);
+      return Number.isNaN(num) ? (undefined as unknown as number) : num;
     },
-    setItem(key: string, value: number): void {
-      try {
-        localStorage.setItem(key, String(value));
-      } catch {}
+    validate: (num) => {
+      if (typeof num !== "number" || !Number.isFinite(num)) return false;
+      if (constraints.integer && !Number.isInteger(num)) return false;
+      if (constraints.min !== undefined && num < constraints.min) return false;
+      if (constraints.max !== undefined && num > constraints.max) return false;
+      return true;
     },
-    removeItem(key: string): void {
-      try {
-        localStorage.removeItem(key);
-      } catch {}
-    },
-  };
+  });
 }

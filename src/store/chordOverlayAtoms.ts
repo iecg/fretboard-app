@@ -17,6 +17,7 @@ import type {
 } from "../theory";
 import {
   k,
+  createStorage,
   rawStringStorage,
   booleanStorage,
   constrainedNumberStorage,
@@ -29,33 +30,16 @@ import {
   scaleNameAtom,
 } from "./scaleAtoms";
 
-// Stored as '' when null to match legacy behavior.
-const chordTypeStorage = {
-  getItem(key: string, initialValue: string | null): string | null {
-    try {
-      const stored = localStorage.getItem(key);
-      if (stored === null) {
-        localStorage.setItem(key, "");
-        return initialValue;
-      }
-      return stored === "" ? null : stored;
-    } catch {
-      return initialValue;
-    }
-  },
-  setItem(key: string, value: string | null): void {
-    try {
-      localStorage.setItem(key, value ?? "");
-    } catch {}
-  },
-  removeItem(key: string): void {
-    try {
-      localStorage.removeItem(key);
-    } catch {}
-  },
-};
+const chordTypeStorage = createStorage<string | null>({
+  serialize: (v) => v ?? "",
+  deserialize: (v) => (v === "" ? null : v),
+});
 
-const chordFretSpreadStorage = constrainedNumberStorage({ min: 0, max: 4, integer: true });
+const chordFretSpreadStorage = constrainedNumberStorage({
+  min: 0,
+  max: 4,
+  integer: true,
+});
 
 const PRACTICE_LENS_VALUES = LENS_REGISTRY.map((e) => e.id) as PracticeLens[];
 
@@ -67,40 +51,18 @@ function migrateViewModeToLens(viewMode: string): PracticeLens {
   }
 }
 
-const practiceLensStorage = {
-  getItem(key: string, initialValue: PracticeLens): PracticeLens {
-    try {
-      const stored = localStorage.getItem(key);
-      if (stored !== null) {
-        if ((PRACTICE_LENS_VALUES as string[]).includes(stored))
-          return stored as PracticeLens;
-        localStorage.setItem(key, initialValue);
-        return initialValue;
-      }
-      // One-time migration: map old viewMode to a lens.
-      let oldViewMode = localStorage.getItem(k("viewMode")) || localStorage.getItem("viewMode");
-      if (oldViewMode) {
-        const migrated = migrateViewModeToLens(oldViewMode);
-        localStorage.setItem(key, migrated);
-        return migrated;
-      }
-      localStorage.setItem(key, initialValue);
-      return initialValue;
-    } catch {
-      return initialValue;
+const practiceLensStorage = createStorage<PracticeLens>({
+  validate: (v) => (PRACTICE_LENS_VALUES as string[]).includes(v),
+  migrate: () => {
+    const oldViewMode = localStorage.getItem(k("viewMode")) || localStorage.getItem("viewMode");
+    if (oldViewMode) {
+      const migrated = migrateViewModeToLens(oldViewMode);
+      // Optional: cleanup legacy keys could go here, but legacy behavior just returned migrated
+      return migrated;
     }
+    return undefined;
   },
-  setItem(key: string, value: PracticeLens): void {
-    try {
-      localStorage.setItem(key, value);
-    } catch {}
-  },
-  removeItem(key: string): void {
-    try {
-      localStorage.removeItem(key);
-    } catch {}
-  },
-};
+});
 
 export const chordRootAtom = atomWithStorage(
   k("chordRoot"),
