@@ -3,6 +3,8 @@
    Tokens are centralised in tokens.css (--chord-chip-size, --chord-strip-fill, etc.) */
 
 .chord-row-strip {
+  composes: strip-surface from "./shared.module.css";
+
   display: flex;
   flex-direction: column;
   gap: 0.4rem;

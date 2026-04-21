@@ -235,4 +235,10 @@
   width: 2.75rem;
   height: 2.82rem;
 }
+
+/* Mobile tier: ensure touch targets meet min-height */
+:global(.app-container[data-layout-tier="mobile"]) .theory-nav-btn,
+:global(.app-container[data-layout-tier="mobile"]) .theory-disclosure-btn {
+  min-height: 36px;
+}
 /* stylelint-enable selector-pseudo-class-no-unknown */

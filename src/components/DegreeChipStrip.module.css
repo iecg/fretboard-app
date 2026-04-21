@@ -1,9 +1,9 @@
 /* ─── Tokens ─────────────────────────────────────────────────────────────── */
 .degree-chip-strip {
+  composes: strip-surface from "./shared.module.css";
+
   --chip-size: clamp(2.15rem, 3.4vw, 2.5rem);
   --chip-half: calc(var(--chip-size) / 2);
-  /* Opaque fill so chips mask the connector line (matches Card bg visually). */
-  --strip-fill: var(--surface-card);
   /* Glow shadows — match FretboardSVG feDropShadow filters. */
   --chip-glow-cyan:   0 0 6px var(--neon-cyan);
   --chip-glow-orange: 0 0 6px var(--neon-orange);
@@ -27,8 +27,8 @@
   padding: 0.5rem 0.9rem 0.55rem;
   border-radius: 1rem;
   background: var(--strip-fill);
-  border: 1px solid rgb(255 255 255 / 0.06);
-  box-shadow: 0 6px 18px rgb(0 0 0 / 0.22);
+  border: var(--strip-border);
+  box-shadow: var(--strip-shadow);
   align-items: center;
   text-align: center;
 }

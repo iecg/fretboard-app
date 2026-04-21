@@ -1,3 +1,11 @@
+/* ===== Shared Strip Surface ===== */
+/* Base styles and tokens for card-like strip containers (degree chip strip, chord row strip) */
+.strip-surface {
+  --strip-fill: var(--surface-card);
+  --strip-border: 1px solid rgb(255 255 255 / 0.06);
+  --strip-shadow: 0 6px 18px rgb(0 0 0 / 0.22);
+}
+
 /* ===== Shared Control Button Chrome ===== */
 /* Base button styles for stepper, fret range, and other interactive controls */
 .control-button {
