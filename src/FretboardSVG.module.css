@@ -256,14 +256,14 @@
 .fret-number {
   text-align: center;
   font-family: var(--font-sans);
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: rgb(210 220 232 / 0.78);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: rgb(191 204 216 / 0.72);
   user-select: none;
   -webkit-user-select: none;
 }
 
 /* Responsive Overrides */
 :global(.app-container[data-layout-tier="desktop"]) .fret-number {
-  font-size: 0.82rem;
+  /* Inherit base Phase 5 font-size: 0.9rem */
 }
