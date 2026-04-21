@@ -1,0 +1,20 @@
+/* FretFlowWordmark SVG sizing — adaptive height per layout tier */
+.fretflow-wordmark {
+  height: clamp(1.55rem, 3.1vw, 2.45rem);
+  width: auto;
+  display: block;
+}
+
+@media (max-width: 767px) {
+  .fretflow-wordmark {
+    height: clamp(1.1rem, 5.5vw, 1.5rem);
+  }
+}
+
+:global(.app-container[data-layout-tier="desktop"]) .fretflow-wordmark {
+  height: clamp(1.22rem, 2.1vw, 1.72rem);
+}
+
+:global(.app-container[data-layout-tier="tablet"]) .fretflow-wordmark {
+  height: clamp(1.35rem, 2.65vw, 2.05rem);
+}

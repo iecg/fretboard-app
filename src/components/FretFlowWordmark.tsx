@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import styles from "./AppHeader.module.css";
+import styles from "./FretFlowWordmark.module.css";
 
 export interface FretFlowWordmarkProps {
   className?: string;
