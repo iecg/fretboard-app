@@ -78,11 +78,6 @@
     padding: 0.875rem;
     padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
   }
-
-  /* Hide desktop controls panel — all controls live in mobile tabs */
-  .controls-panel {
-    display: none !important;
-  }
 }
 
 /* =============================================
