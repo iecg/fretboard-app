@@ -6,6 +6,7 @@
 
 /* ── Mode browser panel ─────────────────────────────────────────────────── */
 
+/* stylelint-disable selector-pseudo-class-no-unknown */
 .theory-mode-browser:global(.panel-surface) {
   display: flex;
   flex-direction: column;
@@ -21,6 +22,7 @@
     0 1px 0 rgb(255 255 255 / 0.06) inset,
     0 2px 10px rgb(0 0 0 / 0.18);
 }
+/* stylelint-enable selector-pseudo-class-no-unknown */
 
 .theory-browser-main {
   min-width: 0;
@@ -123,10 +125,12 @@
   box-shadow: inset 0 0 0 2px var(--neon-cyan);
 }
 
+/* stylelint-disable selector-pseudo-class-no-unknown */
 .theory-nav-btn :global(.icon) {
   width: 1.18rem;
   height: 1.18rem;
 }
+/* stylelint-enable selector-pseudo-class-no-unknown */
 
 @media (max-width: 767px) {
   .theory-nav-btn {
@@ -137,6 +141,7 @@
 
 /* ── Chord overlay section ─────────────────────────────────────────────── */
 
+/* stylelint-disable selector-pseudo-class-no-unknown */
 .theory-chord-section:global(.panel-surface),
 .theory-inline-key:global(.panel-surface) {
   display: flex;
@@ -149,6 +154,7 @@
     rgb(12 17 25 / 0.7);
   border: 1px solid rgb(255 255 255 / 0.08);
 }
+/* stylelint-enable selector-pseudo-class-no-unknown */
 
 .theory-disclosure-btn {
   width: 100%;
@@ -203,6 +209,7 @@
 }
 
 /* Responsive Overrides */
+/* stylelint-disable selector-pseudo-class-no-unknown */
 :global(.app-container[data-layout-tier="desktop"]) .theory-controls {
   gap: 0.72rem;
 }
@@ -240,3 +247,4 @@
 :global(.app-container[data-layout-tier="mobile"]) .theory-disclosure-btn {
   min-height: 36px;
 }
+/* stylelint-enable selector-pseudo-class-no-unknown */

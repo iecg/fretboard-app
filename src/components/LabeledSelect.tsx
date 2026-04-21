@@ -15,6 +15,7 @@ export interface LabeledSelectProps {
   onChange: (value: string) => void;
   id?: string;
   className?: string;
+  'data-testid'?: string;
   'aria-describedby'?: string;
   disabled?: boolean;
   hideLabel?: boolean;
@@ -27,6 +28,7 @@ export function LabeledSelect({
   onChange,
   id,
   className,
+  'data-testid': dataTestId,
   'aria-describedby': ariaDescribedBy,
   disabled,
   hideLabel,
@@ -51,6 +53,7 @@ export function LabeledSelect({
           <select
             id={selectId}
             className={styles['labeled-select-native']}
+            data-testid={dataTestId}
             value={value}
             onChange={(event) => onChange(event.target.value)}
             aria-describedby={ariaDescribedBy}

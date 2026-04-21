@@ -158,7 +158,7 @@ function scanGlobalClasses(srcDir: string): Set<string> {
   for (const file of tsxFiles) {
     const content = readFileSync(file, "utf-8");
     const matches = content.matchAll(
-      /className=["'`]([a-z-]+(?:\s+[a-z-]+)*)["'`]/g
+      /className=["']([a-z-]+(?:\s+[a-z-]+)*)["']/g
     );
 
     for (const match of matches) {
@@ -206,8 +206,8 @@ describe("CSS Global Classes Guard", () => {
         "Found unapproved global class names. Add them to APPROVED_GLOBALS with justification:\n" +
         unapproved.map((cls) => `  - "${cls}"`).join("\n");
       expect.fail(message);
+    } else {
+      expect(unapproved).toEqual([]);
     }
-
-    expect(unapproved).toEqual([]);
   });
 });

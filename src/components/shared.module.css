@@ -308,6 +308,7 @@
   box-shadow: inset 0 0 0 2px var(--neon-cyan);
 }
 
+/* stylelint-disable selector-pseudo-class-no-unknown */
 .icon-button :global(.icon) {
   width: 1.18rem;
   height: 1.18rem;
@@ -345,6 +346,7 @@
     height: 1.18rem;
   }
 }
+/* stylelint-enable selector-pseudo-class-no-unknown */
 
 @media (max-width: 767px) {
   .icon-button--lg {

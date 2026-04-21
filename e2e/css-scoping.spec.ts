@@ -194,9 +194,6 @@ test.describe("production css module scoping", () => {
 
       const fretboard = page.locator('[data-testid="fretboard-outer"]');
       await expect(fretboard, "Fretboard should be visible").toBeVisible();
-
-      const isVisible = await fretboard.isVisible();
-      expect(isVisible, `Fretboard visibility preserved at ${viewport.tier}`).toBe(true);
     }
   });
 
@@ -204,13 +201,16 @@ test.describe("production css module scoping", () => {
     await page.setViewportSize({ width: 768, height: 1024 });
     await gotoApp(page);
 
-    const styles = await page.evaluate(() => {
-      // Find chord-related controls by looking for select elements (chord type selector)
-      const selects = document.querySelectorAll('select');
-      if (selects.length === 0) return null;
+    const chordDisclosure = page.getByRole("button", { name: /Chord Overlay/i });
+    if ((await chordDisclosure.getAttribute("aria-expanded")) !== "true") {
+      await chordDisclosure.click();
+    }
+    await expect(page.locator('[data-testid="chord-type-select"]')).toBeVisible();
 
-      // Get the first select which should be a chord selector
-      const el = selects[0];
+    const styles = await page.evaluate(() => {
+      const el = document.querySelector('[data-testid="chord-type-select"]');
+      if (!el) return null;
+
       const computed = getComputedStyle(el);
       return {
         backgroundColor: computed.backgroundColor,

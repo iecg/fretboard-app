@@ -35,7 +35,7 @@ export function BaseControlsSection() {
   return (
     <Card
       title="Configuration"
-      className={clsx("dashboard-card", "dashboard-card--configuration")}
+      className={clsx("dashboard-card--configuration")}
       data-testid="dashboard-card-configuration"
     >
       <div className={styles["control-group"]}>
@@ -63,7 +63,7 @@ export function ScaleChordSection() {
   return (
     <Card
       title="Music Theory"
-      className={clsx("dashboard-card", "dashboard-card--theory")}
+      className={clsx("dashboard-card--theory")}
       data-testid="dashboard-card-theory"
     >
       <TheoryControls />

@@ -125,6 +125,7 @@ export function ChordOverlayControls() {
         <div className={styles["theory-chord-content"]}>
           <LabeledSelect
             label="Chord Type"
+            data-testid="chord-type-select"
             value={chordType ?? CHORD_NONE_VALUE}
             options={chordSelectOptions}
             onChange={(value) =>

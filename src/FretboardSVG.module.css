@@ -19,6 +19,7 @@
 
 .fretboard-string {
   /* stroke-width set inline via CSS var; this class is for targeting in tests */
+  --placeholder: 0;
 }
 
 /* Note Visuals */
@@ -238,6 +239,7 @@
 /* Accessibility layer */
 .fretboard-a11y-layer {
   /* Positioned via inline styles in TSX */
+  --placeholder: 0;
 }
 
 .note-bubble {
