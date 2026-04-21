@@ -59,21 +59,16 @@ function Group({ variant, group }: GroupProps) {
 export interface ChordPracticeBarProps {
   title: string;
   badge?: string | null;
-  /** Active lens label sourced from LENS_REGISTRY. */
+  /** Active lens label from LENS_REGISTRY. */
   lensLabel?: string | null;
-  /** Chord group — lens-independent; always all chord members. */
+  /** All chord members. */
   chordGroup: PracticeBarGroup;
-  /** Land on group — lens-driven coaching subset. */
+  /** Lens-driven coaching subset. */
   landOnGroup: PracticeBarGroup;
   className?: string;
 }
 
-/**
- * Two groups are semantically identical when they cover the same notes in
- * the same order AND the Land on group adds no extra coaching data (e.g.
- * resolution arrows). In that case we collapse the bar to a single group
- * (preferring Land on) to avoid showing the same row twice.
- */
+/** Collapse groups when notes match and no coaching data (resolutions) is present. */
 function landOnMatchesChord(
   chordGroup: PracticeBarGroup,
   landOnGroup: PracticeBarGroup,

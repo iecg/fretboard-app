@@ -76,23 +76,19 @@ describe("Integration Tests - User Workflows", () => {
       const { rerender } = render(<App />);
       rerender(<App />);
 
-      // Assert state updated
       expect(localStorage.getItem(k("scaleName"))).toBe("Dorian");
     });
 
     it("user changes root note → scale notes update", async () => {
       render(<App />);
 
-      // Start: C Major
       expect(localStorage.getItem(k("rootNote"))).toBe("C");
 
-      // User clicks G in circle of fifths
       localStorage.setItem(k("rootNote"), "G");
 
       const { rerender } = render(<App />);
       rerender(<App />);
 
-      // Assert root changed
       expect(localStorage.getItem(k("rootNote"))).toBe("G");
     });
 
@@ -303,9 +299,6 @@ describe("Integration Tests - User Workflows", () => {
       render(<App />);
 
       expect(localStorage.getItem(k("rootNote"))).toBe("C");
-
-      // In real app, clicking fret 0 on low E string would play E2
-      // Clicking fret 12 would play E3 (2x frequency)
     });
   });
 
@@ -673,29 +666,24 @@ describe("Integration Tests - User Workflows", () => {
     it("complete user session: root → scale → chord → toggle display", async () => {
       render(<App />);
 
-      // Step 1: Select key
       localStorage.setItem(k("rootNote"), "A");
       const { rerender } = render(<App />);
       rerender(<App />);
       expect(localStorage.getItem(k("rootNote"))).toBe("A");
 
-      // Step 2: Select scale
       localStorage.setItem(k("scaleName"), "Natural Minor");
       rerender(<App />);
       expect(localStorage.getItem(k("scaleName"))).toBe("Natural Minor");
 
-      // Step 3: Add chord
       localStorage.setItem(k("chordType"), "Minor 7th");
       localStorage.setItem(k("chordRoot"), "A");
       rerender(<App />);
       expect(localStorage.getItem(k("chordType"))).toBe("Minor 7th");
 
-      // Step 4: Switch display
       localStorage.setItem(k("displayFormat"), "degrees");
       rerender(<App />);
       expect(localStorage.getItem(k("displayFormat"))).toBe("degrees");
 
-      // Step 5: All settings should coexist (accidentalMode is non-persisted)
       expect(localStorage.getItem(k("rootNote"))).toBe("A");
       expect(localStorage.getItem(k("scaleName"))).toBe("Natural Minor");
       expect(localStorage.getItem(k("chordType"))).toBe("Minor 7th");

@@ -158,7 +158,6 @@ const SETTINGS_SECTIONS: readonly SettingsSectionConfig[] = [
   },
 ] as const;
 
-// Retained for: auto-close overlay on layout-tier change (resize/rotate detection).
 const getLayoutTier = (): ResponsiveTier => {
   if (typeof window === "undefined") return "desktop";
   return getResponsiveTier(window.innerWidth);
@@ -304,7 +303,6 @@ function SettingsOverlaySurface({
     setActiveHelpField((current) => (current === fieldId ? null : fieldId));
   };
 
-  // Auto-clear confirming state after 3 seconds
   useEffect(() => {
     if (!resetConfirming) return;
     const t = setTimeout(() => setResetConfirming(false), 3000);
@@ -324,7 +322,6 @@ function SettingsOverlaySurface({
     return () => document.removeEventListener("mousedown", handlePointerDown);
   }, [activeHelpField]);
 
-  // Capture trigger element at open time so useFocusTrap can restore focus on close.
   useEffect(() => {
     triggerRef.current =
       document.activeElement instanceof HTMLElement
@@ -332,7 +329,7 @@ function SettingsOverlaySurface({
         : null;
   }, []);
 
-  // Trap focus inside the drawer while open and restore focus on close.
+  /* Trap focus inside drawer. */
   useFocusTrap({
     containerRef: drawerRef,
     active: true,
@@ -540,14 +537,12 @@ export default function SettingsOverlay() {
   const openTierRef = useRef<ResponsiveTier | null>(null);
   const layout = getResponsiveLayout(viewport.width, viewport.height);
 
-  // Preserve atomWithStorage initialization behavior even while the drawer is closed.
   useAtomValue(fretZoomAtom);
   useAtomValue(fretStartAtom);
   useAtomValue(fretEndAtom);
   useAtomValue(tuningNameAtom);
   useAtomValue(chordFretSpreadAtom);
 
-  // Track layout tier at the moment the overlay opens.
   useEffect(() => {
     const onResize = () => setViewport(getViewportSnapshot());
     window.addEventListener("resize", onResize);
@@ -559,9 +554,7 @@ export default function SettingsOverlay() {
     openTierRef.current = isOpen ? getLayoutTier() : null;
   }, [isOpen]);
 
-  // Auto-close the overlay when the layout tier changes (e.g., rotate,
-  // desktop → mobile resize). Resizes within the same tier keep the drawer
-  // open and allow CSS to adapt the surface.
+  /* Close on tier change (e.g. rotation). */
   useEffect(() => {
     if (!isOpen || !openTierRef.current) return;
     if (layout.tier !== openTierRef.current) {

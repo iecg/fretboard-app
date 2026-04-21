@@ -94,16 +94,12 @@
   letter-spacing: 0.04em;
 }
 
-/* ── Container Overrides ────────────────────────────────────────────────── */
-
 @container (min-width: 300px) {
   .circle-fifths-svg {
     max-width: 100cqw;
     max-height: 100cqw;
   }
 }
-
-/* ── Layout Tier Adjustments ───────────────────────────────────────────── */
 
 :global(.app-container[data-layout-variant="desktop-3col"]) .circle-fifths-container {
   max-height: min(22rem, 46vh);

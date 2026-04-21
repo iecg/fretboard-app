@@ -1,14 +1,8 @@
 export const STORAGE_PREFIX = "fretflow:";
 export const storageKey = (key: string) => `${STORAGE_PREFIX}${key}`;
-// Shorthand alias for convenience
 export const k = storageKey;
 
-// ---------------------------------------------------------------------------
-// Legacy key migration — runs once at module load, before any atom reads.
-// This module is imported by every domain atom file, so the migration is
-// guaranteed to finish before any atomWithStorage({ getOnInit: true }) reads.
-// ---------------------------------------------------------------------------
-
+// Legacy key migration: runs once at module load before any atom reads.
 const LEGACY_KEYS = [
   "rootNote",
   "scaleName",
@@ -32,8 +26,6 @@ const LEGACY_KEYS = [
 ] as const;
 
 function migrateLegacyKeys() {
-  // Idempotent: only migrates when prefixed key doesn't exist.
-  // Also removes the legacy key after copying to reduce drift.
   try {
     for (const legacyKey of LEGACY_KEYS) {
       const prefixedKey = k(legacyKey);
@@ -46,20 +38,12 @@ function migrateLegacyKeys() {
       localStorage.setItem(prefixedKey, legacyValue);
       localStorage.removeItem(legacyKey);
     }
-  } catch {
-    // If storage is blocked or throws (Safari private mode, etc), ignore.
-  }
+  } catch {}
 }
 migrateLegacyKeys();
 
-// Passed to atomWithStorage to read localStorage synchronously on atom
-// initialization, preventing a visible flash from the hardcoded default.
+// Sync read from localStorage on atom initialization to prevent default flash.
 export const GET_ON_INIT = { getOnInit: true } as const;
-
-// ---------------------------------------------------------------------------
-// Generic localStorage adapters — match the old localStorage.setItem(key, String(value))
-// format and write defaults on first access.
-// ---------------------------------------------------------------------------
 
 export function rawStringStorage<T extends string>() {
   return {
@@ -78,16 +62,12 @@ export function rawStringStorage<T extends string>() {
     setItem(key: string, value: T): void {
       try {
         localStorage.setItem(key, value);
-      } catch {
-        // Storage blocked or unavailable; ignore.
-      }
+      } catch {}
     },
     removeItem(key: string): void {
       try {
         localStorage.removeItem(key);
-      } catch {
-        // Storage blocked or unavailable; ignore.
-      }
+      } catch {}
     },
   };
 }
@@ -111,16 +91,12 @@ export const booleanStorage = {
   setItem(key: string, value: boolean): void {
     try {
       localStorage.setItem(key, String(value));
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
+    } catch {}
   },
   removeItem(key: string): void {
     try {
       localStorage.removeItem(key);
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
+    } catch {}
   },
 };
 
@@ -168,16 +144,12 @@ export function constrainedNumberStorage(constraints: NumberConstraints) {
     setItem(key: string, value: number): void {
       try {
         localStorage.setItem(key, String(value));
-      } catch {
-        // Storage blocked or unavailable; ignore.
-      }
+      } catch {}
     },
     removeItem(key: string): void {
       try {
         localStorage.removeItem(key);
-      } catch {
-        // Storage blocked or unavailable; ignore.
-      }
+      } catch {}
     },
   };
 }

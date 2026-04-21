@@ -1,8 +1,4 @@
-/* Dashboard panel layout — driven by data-mode, which App.tsx wires from
-   ResponsiveLayout.panelMode:
-     "3col"    → desktop 3-column (Configuration | Music Theory | Key Explorer)
-     "split"   → tablet 2-column (Base + Theory stacked left, Key on right)
-     "stacked" → compact single column (tablet-stacked / fallbacks) */
+/* Dashboard panel layout modes. */
 
 .controls-panel {
   display: grid;
@@ -55,20 +51,15 @@
   flex: 1;
 }
 
-/* Desktop tier: tighter dashboard grid gap — Phase 3 density pass. */
 :global(.app-container[data-layout-tier="desktop"]) .controls-panel {
   gap: 0.82rem;
 }
 
-/* Desktop tier: tighter inter-section gap inside each card body. */
 :global(.app-container[data-layout-tier="desktop"]) [data-card-body] {
   gap: 0.68rem;
 }
 
-/* Desktop-stacked (compact height, wide viewport): use a 3-column grid
-   instead of single-column to avoid horizontal waste and keep Key Explorer
-   visually adjacent to the Theory card.
-   Mirrors desktop-3col proportions with a narrower Key column cap. */
+/* Use 3-column grid for wide viewports with limited vertical space. */
 :global(.app-container[data-layout-variant="desktop-stacked"]) .controls-panel {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(13rem, 17rem);
 }
@@ -88,13 +79,11 @@
   grid-row: 1;
 }
 
-/* tablet-split (768x1024 iPad portrait): give the Key Explorer column extra
-   horizontal weight so the circle fills its card without the 320px default cap. */
+/* Increase Key Explorer column weight for iPad portrait. */
 :global(.app-container[data-layout-variant="tablet-split"]) .controls-panel {
   grid-template-columns: minmax(0, 1fr) minmax(20rem, 1.2fr);
 }
 
-/* Tablet tier: tighter dashboard grid and card body gaps. */
 :global(.app-container[data-layout-tier="tablet"]) .controls-panel {
   gap: 1rem;
 }
@@ -103,7 +92,6 @@
   gap: 0.78rem;
 }
 
-/* Key column base styles */
 :global([data-layout-column="key"]) {
   position: relative;
   align-items: center;

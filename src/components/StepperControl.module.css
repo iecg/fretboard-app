@@ -5,8 +5,6 @@
   gap: var(--space-1);
 }
 
-/* Migrated from --interactive-primary (iOS-blue) to the neon visual system
-   to match FretRangeControl.css and the shared fretboard UI language. */
 .stepper-btn {
   composes: control-button from './shared.module.css';
 }

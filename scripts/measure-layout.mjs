@@ -1,8 +1,6 @@
 /**
- * T01 measurement script — captures DOM heights at critical viewports.
- * Run after `npm run dev` is up (default port 5173).
- * Usage: node scripts/measure-layout.mjs
- * Env: SCREENSHOT_URL — override base URL (default: http://localhost:5173/fretboard-app/)
+ * Measure DOM heights at critical viewports for layout derivation.
+ * Requires `npm run dev` on :5173.
  */
 import { chromium } from '@playwright/test';
 
@@ -10,7 +8,7 @@ const BASE_URL = process.env.SCREENSHOT_URL ?? 'http://localhost:5173/fretboard-
 
 const VIEWPORTS = [
   { name: '1200×1080', width: 1200, height: 1080 },  // desktop-expanded (controls fit)
-  { name: '1200×720',  width: 1200, height: 720  },   // tablet-portrait (controls don't fit at 720)
+  { name: '1200×720',  width: 1200, height: 720  },   // tablet-portrait (controls overflow)
   { name: '1200×600',  width: 1200, height: 600  },   // tablet-portrait short
   { name: '375×667',   width: 375,  height: 667  },   // mobile portrait
 ];
@@ -50,7 +48,7 @@ async function run() {
     const page = await browser.newPage();
     await page.setViewportSize({ width: vp.width, height: vp.height });
     await page.goto(BASE_URL, { waitUntil: 'networkidle' });
-    await page.waitForTimeout(1000); // layout stabilisation
+    await page.waitForTimeout(1000); // Allow layout to settle
     const data = await measure(page, vp.name);
     results.push(data);
     await page.close();
@@ -60,10 +58,8 @@ async function run() {
 
   await browser.close();
 
-  // Print summary for derivation
   console.log('\n\n=== DERIVATION SUMMARY ===');
 
-  // Use desktop measurement from 1200×1080 for constant derivation
   const desktopExpanded = results.find(r => r.layoutTier === 'desktop');
   const mobile667 = results.find(r => r.viewport === '375×667');
 
@@ -84,11 +80,11 @@ async function run() {
     console.log(`  fretboardNeckH    = ${desktopExpanded.fretboardNeckH}`);
     console.log(`  summaryAreaH      = ${desktopExpanded.summaryAreaH}`);
     console.log(`\nDerived proposals:`);
-    console.log(`  CONTROLS_MIN_HEIGHT = ${CONTROLS_MIN_HEIGHT}  (ctrlH=${ctrlH} + 20px buffer, ceil to 10)`);
-    console.log(`  KEY_MIN_HEIGHT      = ${KEY_MIN_HEIGHT}  (max(keyH=${keyH}, 280))`);
-    console.log(`  #root min-height    = ${rootMinHeight}  (chrome=${chromeH} + fretboard=${fretboardMin} + max(ctrl,key)=${Math.max(CONTROLS_MIN_HEIGHT, KEY_MIN_HEIGHT)} + summary=${summaryMin} + 20, ceil to 10)`);
+    console.log(`  CONTROLS_MIN_HEIGHT = ${CONTROLS_MIN_HEIGHT} (ctrlH+20px buffer)`);
+    console.log(`  KEY_MIN_HEIGHT      = ${KEY_MIN_HEIGHT} (max(keyH, 280))`);
+    console.log(`  #root min-height    = ${rootMinHeight} (derived from elements + buffer)`);
   } else {
-    console.log('\nWARNING: No desktop-expanded measurement found. Fallback to conservative estimates.');
+    console.log('\nWARNING: No desktop-expanded measurement found.');
   }
 
   if (mobile667) {

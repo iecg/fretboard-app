@@ -4,33 +4,23 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF'
-Rewrite existing semver release tags as annotated tags while preserving
-their target commits.
-
-By default this is a dry run. Use --execute to rewrite local tags, and
---push to force-push the updated tags to the remote.
+Rewrite release tags as annotated tags while preserving target commits.
+Dry run by default. Use --execute to rewrite local, --push to force-push.
 
 Usage:
   scripts/retag-release-annotations.sh [options]
 
 Options:
   --execute          Rewrite local tags in place.
-  --push             Force-push rewritten tags to the remote. Requires --execute.
-  --remote <name>    Remote to push to. Default: origin
-  --tag <tag>        Retag a specific release tag. Repeatable.
-  --help             Show this help.
-
-Examples:
-  scripts/retag-release-annotations.sh
-  scripts/retag-release-annotations.sh --tag v1.3.0
-  scripts/retag-release-annotations.sh --execute --tag v1.3.0
-  scripts/retag-release-annotations.sh --execute --push
+  --push             Force-push rewritten tags to remote. Requires --execute.
+  --remote <name>    Remote name. Default: origin
+  --tag <tag>        Retag specific release. Repeatable.
+  --help             Show help.
 
 Notes:
-  - Only tags matching v*.*.* are considered.
-  - The annotation body is generated from the tagged commit message:
-    first line is the tag name, followed by the full commit message.
-  - Force-pushing release tags may retrigger workflows that listen for tag pushes.
+  - Only v*.*.* tags are considered.
+  - Annotation body is generated from the commit message.
+  - Force-pushing may retrigger workflows.
 EOF
 }
 

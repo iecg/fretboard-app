@@ -29,11 +29,7 @@ import {
   scaleNameAtom,
 } from "./scaleAtoms";
 
-// ---------------------------------------------------------------------------
-// Chord overlay storage adapters
-// ---------------------------------------------------------------------------
-
-// chordType is stored as '' when null (matching old behavior)
+// Stored as '' when null to match legacy behavior.
 const chordTypeStorage = {
   getItem(key: string, initialValue: string | null): string | null {
     try {
@@ -50,24 +46,16 @@ const chordTypeStorage = {
   setItem(key: string, value: string | null): void {
     try {
       localStorage.setItem(key, value ?? "");
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
+    } catch {}
   },
   removeItem(key: string): void {
     try {
       localStorage.removeItem(key);
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
+    } catch {}
   },
 };
 
 const chordFretSpreadStorage = constrainedNumberStorage({ min: 0, max: 4, integer: true });
-
-// ---------------------------------------------------------------------------
-// Practice lens storage adapters
-// ---------------------------------------------------------------------------
 
 const PRACTICE_LENS_VALUES = LENS_REGISTRY.map((e) => e.id) as PracticeLens[];
 
@@ -89,11 +77,8 @@ const practiceLensStorage = {
         localStorage.setItem(key, initialValue);
         return initialValue;
       }
-      // One-time migration: map old viewMode to a lens on first access
-      let oldViewMode = localStorage.getItem(k("viewMode"));
-      if (!oldViewMode) {
-        oldViewMode = localStorage.getItem("viewMode");
-      }
+      // One-time migration: map old viewMode to a lens.
+      let oldViewMode = localStorage.getItem(k("viewMode")) || localStorage.getItem("viewMode");
       if (oldViewMode) {
         const migrated = migrateViewModeToLens(oldViewMode);
         localStorage.setItem(key, migrated);
@@ -108,23 +93,14 @@ const practiceLensStorage = {
   setItem(key: string, value: PracticeLens): void {
     try {
       localStorage.setItem(key, value);
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
+    } catch {}
   },
   removeItem(key: string): void {
     try {
       localStorage.removeItem(key);
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
+    } catch {}
   },
 };
-
-
-// ---------------------------------------------------------------------------
-// Chord overlay base atoms
-// ---------------------------------------------------------------------------
 
 export const chordRootAtom = atomWithStorage(
   k("chordRoot"),
@@ -154,26 +130,13 @@ export const chordFretSpreadAtom = atomWithStorage(
   GET_ON_INIT,
 );
 
-// ---------------------------------------------------------------------------
-// Practice lens base atoms
-// ---------------------------------------------------------------------------
-
-// Primary user-facing practice state.
-// Migrates from legacy viewMode value on first access (handled by practiceLensStorage).
+// Migrates from legacy viewMode value on first access.
 export const practiceLensAtom = atomWithStorage<PracticeLens>(
   k("practiceLens"),
   "targets",
   practiceLensStorage,
   GET_ON_INIT,
 );
-
-// ---------------------------------------------------------------------------
-// Overlay semantics — lens availability + derived flags
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// Chord derived atoms
-// ---------------------------------------------------------------------------
 
 export const chordTonesAtom = atom((get) => {
   const chordRoot = get(chordRootAtom);
@@ -225,19 +188,10 @@ export const chordSummaryNotesAtom = atom((get) => {
     .filter((n) => chordToneSet.has(n));
 });
 
-// ---------------------------------------------------------------------------
-// allChordMembersAtom — ChordRowEntry list with scale-membership and roles
-// Used by practiceLensAtoms and atoms.ts summary atoms.
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// chordMemberFactsAtom — pure chord facts, no scale context
-//
-// Reads only chordRootAtom and chordTypeAtom. Does NOT read scaleNotesAtom,
-// rootNoteAtom, or scaleNameAtom. This is the scale-independent layer from
-// which scale-aware atoms (allChordMembersAtom) are built.
-// ---------------------------------------------------------------------------
-
+/**
+ * Scale-independent chord facts.
+ * displayNote uses chord-root-relative accidentals, NOT scale-derived accidentals.
+ */
 export const chordMemberFactsAtom = atom((get): ChordMemberFact[] => {
   const chordRoot = get(chordRootAtom);
   const chordType = get(chordTypeAtom);
@@ -246,8 +200,6 @@ export const chordMemberFactsAtom = atom((get): ChordMemberFact[] => {
   if (!def) return [];
   const rootIndex = NOTES.indexOf(chordRoot);
   if (rootIndex === -1) return [];
-  // displayNote uses chord-root-relative accidentals (FLAT_KEYS membership of
-  // chordRoot), NOT the scale-derived useFlats — keeping this atom scale-free.
   return def.members.map((m): ChordMemberFact => {
     const note = NOTES[(rootIndex + m.semitone) % 12];
     return {
@@ -260,6 +212,10 @@ export const chordMemberFactsAtom = atom((get): ChordMemberFact[] => {
   });
 });
 
+/**
+ * ChordRowEntry list with scale-membership and roles.
+ * Used by practiceLensAtoms and atoms.ts summary atoms.
+ */
 export const allChordMembersAtom = atom((get) => {
   const chordType = get(chordTypeAtom);
   if (!chordType) return [] as ChordRowEntry[];

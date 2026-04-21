@@ -10,7 +10,7 @@ import shared from "./shared.module.css";
 const LONG_PRESS_MS = 500;
 const MOVE_CANCEL_PX = 8;
 
-/** True when the primary pointer is coarse (touch/pen). Evaluated once at load. */
+/** Primary pointer is coarse (touch/pen). */
 const isTouchPrimary =
   typeof window !== "undefined" &&
   window.matchMedia("(pointer: coarse)").matches;
@@ -34,7 +34,7 @@ export function FingeringPatternControls() {
   const shapeLabelId = useId();
   const shapeHelpId = useId();
 
-  // Long-press tracking refs — shared across all shape buttons
+  // Long-press tracking for shape buttons.
   const pressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pressStartRef = useRef<{ x: number; y: number } | null>(null);
   const longPressedShapeRef = useRef<CagedShape | null>(null);

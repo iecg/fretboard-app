@@ -173,7 +173,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
           );
         })}
 
-        {/* Focus ring overlay — keyboard-only, traces pie-slice shape (WCAG 2.4.7) */}
+        {/* Focus ring for keyboard nav (WCAG 2.4.7) */}
         {keyboardFocused && focusedIndex >= 0 && focusedIndex < CIRCLE_OF_FIFTHS.length && (
           <path
             key={`focus-ring-${CIRCLE_OF_FIFTHS[focusedIndex]}`}
@@ -188,7 +188,6 @@ export const CircleOfFifths = memo(function CircleOfFifths({
           />
         )}
 
-        {/* Text labels inside segments */}
         {CIRCLE_OF_FIFTHS.map((note, index) => {
           const angle = ((index * 30 - 90) * Math.PI) / 180;
           const lx = CX + LABEL_RADIUS * Math.cos(angle);

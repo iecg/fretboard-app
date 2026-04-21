@@ -21,10 +21,6 @@ function makeStore() {
   return createStore();
 }
 
-// ---------------------------------------------------------------------------
-// chordMemberFactsAtom — scale-independent chord member facts
-// ---------------------------------------------------------------------------
-
 describe("chordMemberFactsAtom", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -120,10 +116,6 @@ describe("chordMemberFactsAtom", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// Focus removal — verify Focus atoms no longer exist in the public API
-// ---------------------------------------------------------------------------
-
 describe("Focus removal", () => {
   it("focusPresetAtom is not exported from atoms", () => {
     expect("focusPresetAtom" in atomsModule).toBe(false);
@@ -165,10 +157,6 @@ describe("Focus removal", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// LENS_REGISTRY — pure data, no atoms
-// ---------------------------------------------------------------------------
-
 describe("LENS_REGISTRY", () => {
   it("contains exactly three chord-overlay lenses (color and targets-color removed)", () => {
     const ids = LENS_REGISTRY.map((e) => e.id);
@@ -192,7 +180,6 @@ describe("LENS_REGISTRY", () => {
     expect(byId["targets"]).toBe("Chord Tones");
     expect(byId["guide-tones"]).toBe("Guide Tones");
     expect(byId["tension"]).toBe("Tension");
-    // Removed lenses should not exist
     expect(byId["targets-color"]).toBeUndefined();
     expect(byId["color"]).toBeUndefined();
   });
@@ -317,10 +304,6 @@ describe("LENS_REGISTRY", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// lensAvailabilityContextAtom — computes context from live atom state
-// ---------------------------------------------------------------------------
-
 describe("lensAvailabilityContextAtom", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -405,10 +388,6 @@ describe("lensAvailabilityContextAtom", () => {
     expect(ctx.hasOutsideTones).toBe(false);
   });
 });
-
-// ---------------------------------------------------------------------------
-// lensAvailabilityAtom — resolved registry entries with available + reason
-// ---------------------------------------------------------------------------
 
 describe("lensAvailabilityAtom", () => {
   beforeEach(() => {

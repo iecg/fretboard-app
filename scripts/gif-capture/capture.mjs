@@ -1,8 +1,6 @@
 /**
- * Capture screenshots of FretFlow for animated GIF.
- * Run: node scripts/gif-capture/capture.mjs
- * (Preview server must be running on port 4173)
- * Env: PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH — override Chromium binary path
+ * Capture screenshots for demo GIF.
+ * Requires preview server on :4173.
  */
 import { chromium } from "playwright";
 import { mkdir, rm } from "fs/promises";
@@ -14,8 +12,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = path.join(__dirname, "frames");
 
 const BASE_URL = "http://127.0.0.1:4173/fretboard-app/";
-// desktop-split layout requires height > 899; 1200 gives enough room for CoF (576px)
-// plus header+fretboard+summary chrome (~480px) + padding (32px) = ~1088px total
+// desktop-split layout requires height > 899; 1200 provides enough room for CoF + chrome
 const VIEWPORT = { width: 1280, height: 1200 };
 
 let frameIdx = 0;
@@ -35,11 +32,6 @@ async function waitReady(page) {
   await page.waitForTimeout(400);
 }
 
-/**
- * Click a note on the Circle of Fifths by its note name.
- * The CoF SVG has role="group" aria-label="Circle of Fifths — select a key".
- * Each slice is a <path role="button" aria-label="G — not selected">.
- */
 async function clickNote(page, noteName) {
   const cof = page.getByRole("group", {
     name: /Circle of Fifths — select a key/i,
@@ -55,10 +47,6 @@ async function clickNote(page, noteName) {
   }
 }
 
-/**
- * Select a scale family via the "Scale Family" labeled <select>.
- * Family labels: "Major Modes", "Harmonic Minor", "Melodic Minor", "Pentatonic", "Blues"
- */
 async function selectFamily(page, familyLabel) {
   await page.getByLabel("Scale Family").selectOption(familyLabel);
   await page.waitForTimeout(400);
@@ -74,10 +62,6 @@ async function clickBtn(page, name, parent = page) {
   }
 }
 
-/**
- * Click a CAGED shape button by label (All / C / A / G / E / D).
- * The shape buttons live in a role="group" aria-labelledby pointing to "Shape".
- */
 async function clickCagedShape(page, shape) {
   const shapeGroup = page.getByRole("group", { name: /^Shape$/i });
   const btn = shapeGroup
@@ -115,61 +99,59 @@ async function main() {
 
     console.log("Capturing frames...\n");
 
-    // ── Scene 1: Default state (C Major, All notes) ──────────────────
-    // Hold 5 frames so viewers see the starting position
+    // Scene 1: Default state (C Major, All notes)
     await shot(page, "s1_default", 5);
 
-    // ── Scene 2: Switch root to G ────────────────────────────────────
+    // Scene 2: Switch root to G
     await clickNote(page, "G");
     await shot(page, "s2_root_G", 3);
 
-    // ── Scene 3: Switch root to D ───────────────────────────────────
+    // Scene 3: Switch root to D
     await clickNote(page, "D");
     await shot(page, "s3_root_D", 3);
 
-    // ── Scene 4: Switch root to A ────────────────────────────────────
+    // Scene 4: Switch root to A
     await clickNote(page, "A");
     await shot(page, "s4_root_A", 3);
 
-    // ── Scene 5: Switch family to Pentatonic (A Minor Pentatonic) ────
+    // Scene 5: Switch family to Pentatonic (A Minor Pentatonic)
     await selectFamily(page, "Pentatonic");
     await shot(page, "s5_minor_pent", 4);
 
-    // ── Scene 6: Activate CAGED view, show all shapes ─────────────────
+    // Scene 6: Activate CAGED view, show all shapes
     await clickBtn(page, "CAGED");
     await shot(page, "s6_caged_all", 4);
 
-    // ── Scene 7: Isolate C shape ──────────────────────────────────────
+    // Scene 7: Isolate C shape
     await clickCagedShape(page, "C");
     await shot(page, "s7_caged_c", 3);
 
-    // ── Scene 8: Isolate A shape ──────────────────────────────────────
+    // Scene 8: Isolate A shape
     await clickCagedShape(page, "A");
     await shot(page, "s8_caged_a", 3);
 
-    // ── Scene 9: Isolate G shape ──────────────────────────────────────
+    // Scene 9: Isolate G shape
     await clickCagedShape(page, "G");
     await shot(page, "s9_caged_g", 3);
 
-    // ── Scene 10: Isolate E shape ─────────────────────────────────────
+    // Scene 10: Isolate E shape
     await clickCagedShape(page, "E");
     await shot(page, "s10_caged_e", 3);
 
-    // ── Scene 11: Back to All shapes ──────────────────────────────────
+    // Scene 11: Back to All shapes
     await clickCagedShape(page, "All");
     await shot(page, "s11_caged_all_again", 3);
 
-    // ── Scene 12: Switch to interval mode ─────────────────────────────
+    // Scene 12: Switch to interval mode
     await clickBtn(page, "Intervals");
     await shot(page, "s12_intervals", 4);
 
-    // ── Scene 13: Switch back to notes ───────────────────────────────
+    // Scene 13: Switch back to notes
     await clickBtn(page, "Notes");
     await shot(page, "s13_notes", 3);
 
-    // ── Scene 14: Switch back to Major Modes, root C ──────────────────
-    // Scope to the fingering toggle row (contains CAGED + 3NPS) to avoid
-    // accidentally hitting the Shape group's "All" button.
+    // Scene 14: Switch back to Major Modes, root C
+    // Scope to the fingering toggle row to avoid Shape group's "All" button
     const fingeringBar = page
       .locator("div")
       .filter({ has: page.getByRole("button", { name: "CAGED", exact: true }) })

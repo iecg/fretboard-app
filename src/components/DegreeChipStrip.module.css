@@ -1,19 +1,17 @@
-/* ─── Tokens ─────────────────────────────────────────────────────────────── */
 .degree-chip-strip {
   composes: strip-surface from "./shared.module.css";
 
   --chip-size: clamp(2.15rem, 3.4vw, 2.5rem);
   --chip-half: calc(var(--chip-size) / 2);
-  /* Glow shadows — match FretboardSVG feDropShadow filters. */
+  /* Matches FretboardSVG feDropShadow filters. */
   --chip-glow-cyan:   0 0 6px var(--neon-cyan);
   --chip-glow-orange: 0 0 6px var(--neon-orange);
-  /* drop-shadow for hexagons — box-shadow is clipped by clip-path. */
+  /* Use drop-shadow for hexagons as box-shadow is clipped by clip-path. */
   --chip-glow-violet: drop-shadow(0 0 5px rgb(167 139 250 / 0.75));
   --chip-border-width: 2px;
   --chip-border-muted: rgb(255 255 255 / 0.22);
   --chip-line-muted:   rgb(255 255 255 / 0.18);
   --chip-focus-ring:   rgb(77 228 255 / 0.7);
-  /* Hexagon geometry and colors for color-note chips. */
   --chip-hexagon-clip:     polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
   --color-note-ring-color: var(--note-ring-color-tone);
   --color-note-inner-fill: rgb(20 30 40 / 0.92);
@@ -42,7 +40,7 @@
   letter-spacing: 0.01em;
 }
 
-/* Action slot (eye toggle) left-aligns the header as a flex row. */
+/* Left-align header with eye toggle. */
 .degree-chip-strip-header[data-has-action] {
   display: flex;
   align-items: center;
@@ -88,7 +86,6 @@
   width: 100%;
 }
 
-/* Connector line spans first-to-last chip center. */
 .degree-chip-strip-list::before {
   content: "";
   position: absolute;
@@ -117,7 +114,6 @@
   width: var(--chip-size);
   height: var(--chip-size);
   border-radius: 50%;
-  /* Opaque fill hides the connector line behind each chip ring. */
   background: var(--strip-fill);
   border: var(--chip-border-width) solid var(--chip-border-muted);
   opacity: 0.55;
@@ -146,10 +142,7 @@
   opacity: 1;
 }
 
-/* Color-note chip: hexagon shape with violet ring + glow.
-   The ring is the chip background (violet) visible around the dark ::before fill.
-   The chip's 2px transparent border creates the ring gap at inset:0.
-   Glow sits on the item (not the chip) so clip-path doesn't consume the drop-shadow. */
+/* Apply drop-shadow to item so clip-path doesn't consume the effect. */
 .degree-chip-item[data-is-color-note='true'] {
   filter: drop-shadow(0 0 5px rgb(167 139 250 / 0.75));
   will-change: filter;
@@ -164,7 +157,6 @@
   position: relative;
 }
 
-/* Dark inner fill — inset:0 sits inside the 2px transparent border, leaving the ring. */
 .degree-chip-item[data-is-color-note='true'] .degree-chip::before {
   content: '';
   position: absolute;
@@ -179,7 +171,7 @@
   z-index: 1;
 }
 
-/* Opaque circle at z-index:-1 masks the connector line — opacity:0.38 on the chip would otherwise let it bleed through. */
+/* Masks connector line when chip opacity is low. */
 .degree-chip-item[data-hidden='true']::before {
   content: '';
   position: absolute;
@@ -193,7 +185,6 @@
   z-index: -1;
 }
 
-/* Hidden overrides all active states. */
 .degree-chip-item[data-hidden='true'] .degree-chip {
   border-color: var(--chip-border-muted);
   box-shadow: 0 0 6px var(--chip-line-muted);
@@ -217,7 +208,7 @@
   font-weight: var(--font-weight-semibold);
   font-size: clamp(1.1rem, 1.9vw, 1.28rem);
   color: var(--text-soft-white);
-  /* line-height matches chip height to vertically center glyphs past ascender/descender asymmetry. */
+  /* Center glyphs past ascender/descender asymmetry. */
   line-height: calc(var(--chip-size) - var(--chip-border-width) * 2);
   letter-spacing: 0.01em;
 }
@@ -231,9 +222,7 @@
   letter-spacing: 0.02em;
 }
 
-/* Compact variant — smaller chips for secondary surfaces (e.g. inside the practice dock).
-   Selectors include .degree-chip-strip base class so they out-specifify the layout-tier
-   rules below (which use .app-container[...] .degree-chip-strip). */
+/* Compact variant for secondary surfaces. Out-specifies layout-tier rules. */
 .degree-chip-strip.degree-chip-strip--compact {
   --chip-size: clamp(1.45rem, 2.1vw, 1.65rem);
 
@@ -276,8 +265,7 @@
   font-size: 0.82rem;
 }
 
-/* Phase 2: Desktop compact chip strip — smaller chips, tighter padding.
-   Targets ~82px strip height (down from ~104px), keeping chip glyph legible. */
+/* Phase 2: Desktop compact chip strip — targets ~82px strip height. */
 :global(.app-container[data-layout-tier="desktop"]) .degree-chip-strip {
   --chip-size: clamp(1.82rem, 2.45vw, 2.02rem);
 

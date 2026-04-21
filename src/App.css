@@ -1,4 +1,3 @@
-/* Custom Scrollbar Styles */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
@@ -16,10 +15,7 @@
   background: var(--accent-primary);
 }
 
-/* Base App Layout. The app gradient is painted on `body` (see index.css)
-   so it fills the entire viewport — the .app-container is a transparent
-   centered layout wrapper (max-width: 80rem) so the header/content don't
-   appear to sit on a boxed-in panel at large viewports. */
+/* Paint app gradient on body (see index.css) to fill viewport; app-container remains transparent. */
 .app-container {
   flex: 1 1 auto;
   align-self: stretch;
@@ -43,67 +39,27 @@
     linear-gradient(180deg, #0a1420 0%, #0b1623 32%, #09111b 100%);
 }
 
-/* Header action button styles migrated to src/components/shared.module.css */
-
-/* Dedicated slot for the chord practice dock — sits between the scale strip and fretboard.
-   The dock manages its own visibility; this shell just provides centering. */
-
-
-/* =============================================
-   Phase 1 Layout Architecture
-   Hierarchy: header chrome → summary band → fretboard hero → controls dashboard
-   ============================================= */
-
-
-/* Tablet tier: tighter chrome — reduce container gap and pull summary closer to header.
-   Mirrors the desktop intent at a touch-appropriate scale. */
 .app-container[data-layout-tier="tablet"] {
   gap: 0.72rem;
 }
-/* =============================================
-   RESPONSIVE LAYOUT
-   data-layout-tier and data-layout-variant are set in App.tsx:
-     mobile / landscape-mobile → mobile chrome and tabs
-     tablet-split / tablet-stacked
-     desktop-3col
-   ============================================= */
-
-/* Mobile tab bar — display controlled by ToggleBar.css; component is only
-   mounted when showMobileTabs=true (mobile portrait), so no CSS guard needed.
-   Landscape suppression: [data-layout-variant="landscape-mobile"] rule below. */
-
-/* =============================================
-   LAYOUT VARIANTS
-   Set by App.tsx via data-layout-tier + data-layout-variant.
-   Variants:
-     mobile / landscape-mobile  — phone chrome and tabs
-     tablet-split               — side-by-side panels (tall tablet)
-     tablet-stacked             — single column (compact-height tablet)
-     desktop-split              — 2-column, narrow desktop / iPad Pro portrait
-     desktop-stacked            — single column, compact-height desktop
-     desktop-3col               — 3-column, full desktop (≥1280px wide, >899px tall)
-   ============================================= */
 
 .app-container[data-layout-tier="desktop"] {
   max-width: 120rem;
 }
 
-/* Split variants (tablet-split, desktop-split): key column flush with grid cell. */
+/* Split variants: keep key column flush with grid cell. */
 .app-container[data-layout-variant="tablet-split"] [data-layout-column="key"],
 .app-container[data-layout-variant="desktop-split"] [data-layout-column="key"],
 .app-container[data-layout-variant="desktop-3col"] [data-layout-column="key"] {
   min-width: 0;
 }
 
-/* tablet-stacked: single column, centered key card. */
-/* desktop-stacked uses 3-col grid (ExpandedControlsPanel.css) — no centering needed. */
 .app-container[data-layout-variant="tablet-stacked"] [data-layout-column="key"] {
   max-width: 32rem;
   width: 100%;
   margin: 0 auto;
 }
 
-/* Landscape mobile: fretboard hero, minimal chrome */
 .app-container[data-layout-variant="landscape-mobile"] {
   padding: 0.5rem;
   gap: 0.5rem;

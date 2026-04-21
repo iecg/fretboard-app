@@ -65,7 +65,7 @@ export function getResponsiveVariant(
     return isCompactHeight(viewportHeight) ? "tablet-stacked" : "tablet-split";
   }
 
-  // Desktop tier: height takes priority, then width determines split vs 3col.
+  // Desktop: height priority determines stacked vs grid/3col.
   if (isCompactHeight(viewportHeight)) {
     return "desktop-stacked";
   }

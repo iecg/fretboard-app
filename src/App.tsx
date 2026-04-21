@@ -23,7 +23,6 @@ import { MainLayoutWrapper } from "./components/MainLayoutWrapper";
 import sharedStyles from "./components/shared.module.css";
 import "./App.css";
 
-// Lazy-loaded components
 const ExpandedControlsPanel = lazy(() =>
   import("./components/ExpandedControlsPanel").then((m) => ({
     default: m.ExpandedControlsPanel,
@@ -43,8 +42,7 @@ function AppContent() {
   const chordType = useAtomValue(chordTypeAtom);
   const isMuted = useAtomValue(isMutedAtom);
   const showChordPracticeBar = useAtomValue(showChordPracticeBarAtom);
-  // Mount mobileTabAtom so atomWithStorage writes its default to localStorage
-  // on first render — required for correct initial tab state across layout modes.
+  // Mount mobileTabAtom to ensure atomWithStorage persists default state on first render.
   useAtomValue(mobileTabAtom);
   const setSettingsOverlayOpen = useSetAtom(settingsOverlayOpenAtom);
   const toggleMute = useSetAtom(toggleMuteAtom);
@@ -53,7 +51,6 @@ function AppContent() {
   const helpTriggerRef = useRef<HTMLButtonElement>(null);
   const layout = useLayoutMode();
 
-  // Sync mute state to audio synth (runs on mount and whenever isMuted changes)
   useEffect(() => {
     synth.setMute(isMuted);
   }, [isMuted]);
@@ -148,9 +145,7 @@ function AppContent() {
   );
 }
 
-// Wraps AppContent with a fresh Jotai store per mount.
-// useState lazy initializer ensures one store per component instance:
-// stable across re-renders, isolated between mounts (e.g. in tests).
+// Use isolated Jotai store per mount for stability and test isolation.
 function App() {
   const [store] = useState(() => createStore());
   return (

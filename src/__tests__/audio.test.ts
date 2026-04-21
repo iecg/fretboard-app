@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { synth } from '../audio';
 
-// Mock the Web Audio API
 const createMockGainNode = () => ({
   connect: vi.fn(),
   disconnect: vi.fn(),
@@ -57,24 +56,16 @@ describe('GuitarSynth', () => {
     vi.clearAllMocks();
 
     // Reset singleton state
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (synth as any).ctx = null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (synth as any).masterGain = null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (synth as any).isMuted = false;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (synth as any).unsupported = false;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (synth as any).voicePool = [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (synth as any).guitarWave = null;
 
     masterGain = createMockGainNode();
     
-    // Setup mock returns to provide unique nodes for each call
     mockAudioContext.createGain.mockImplementation(() => createMockGainNode());
-    // The first gain node created in init() is the master gain
     mockAudioContext.createGain.mockReturnValueOnce(masterGain);
     
     mockAudioContext.createOscillator.mockImplementation(() => createMockOscillator());
@@ -112,7 +103,6 @@ describe('GuitarSynth', () => {
 
     it('performs a warmup', () => {
       synth.init();
-      // Warmup oscillator
       expect(mockAudioContext.createOscillator).toHaveBeenCalledTimes(1);
     });
 
@@ -137,12 +127,8 @@ describe('GuitarSynth', () => {
       synth.setMute(true);
       expect(masterGain.gain.setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), 0.02);
       
-      // Note should not play when muted
       vi.clearAllMocks();
       synth.playNote(440);
-      // It might call createOscillator during init if not already init'd, 
-      // but here we already called init().
-      // playNote checks isMuted before init()
       expect(mockAudioContext.createOscillator).not.toHaveBeenCalled();
     });
 
@@ -153,7 +139,6 @@ describe('GuitarSynth', () => {
       expect(masterGain.gain.setTargetAtTime).toHaveBeenCalledWith(0.5, expect.any(Number), 0.02);
 
       synth.playNote(440);
-      // 1 for playNote (warmup already happened during init)
       expect(mockAudioContext.createOscillator).toHaveBeenCalled();
     });
   });

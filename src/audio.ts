@@ -37,7 +37,7 @@ class GuitarSynth {
   private unsupported: boolean = false;
   private guitarWave: PeriodicWave | null = null;
 
-  // Voice pool to reduce node creation overhead
+  // Pool reduces node creation overhead
   private voicePool: Voice[] = [];
   private readonly POOL_SIZE = AUDIO_CONFIG.POOL_SIZE;
 
@@ -66,8 +66,7 @@ class GuitarSynth {
       this.masterGain.connect(this.ctx.destination);
       this.masterGain.gain.value = AUDIO_CONFIG.MASTER_GAIN;
 
-      // Create a custom periodic wave that mimics a plucked string
-      // Fundamental + overtones with decreasing amplitude
+      // Mimic plucked string harmonics
       const real = new Float32Array([0, 1, 0.6, 0.4, 0.3, 0.2, 0.1, 0.06]);
       const imag = new Float32Array(real.length).fill(0);
       this.guitarWave = this.ctx.createPeriodicWave(real, imag);
@@ -77,7 +76,6 @@ class GuitarSynth {
         const gain = this.ctx.createGain();
         const filter = this.ctx.createBiquadFilter();
         
-        // Initial state: silent and disconnected
         gain.gain.value = 0;
         filter.connect(gain);
         gain.connect(this.masterGain);
@@ -85,7 +83,7 @@ class GuitarSynth {
         this.voicePool.push({ gain, filter, active: false });
       }
 
-      // Warm up: create a silent oscillator to kickstart the context
+      // Warm up kickstarts context
       if (this.ctx.state !== 'closed') {
         const silentOsc = this.ctx.createOscillator();
         const silentGain = this.ctx.createGain();
@@ -110,7 +108,7 @@ class GuitarSynth {
   setMute(mute: boolean) {
     this.isMuted = mute;
     if (this.masterGain) {
-      // Smoothly mute/unmute to avoid clicks
+      // Smooth transition avoids clicks
       const now = this.ctx?.currentTime ?? 0;
       this.masterGain.gain.setTargetAtTime(mute ? 0 : AUDIO_CONFIG.MASTER_GAIN, now, AUDIO_CONFIG.MUTE_TRANSITION_TIME);
     }
@@ -120,7 +118,7 @@ class GuitarSynth {
     const voice = this.voicePool.find(v => !v.active);
     if (voice) return voice;
     
-    // If pool is exhausted and we have a context, create a temporary voice
+    // Create temporary voice if pool exhausted
     if (this.ctx && this.masterGain) {
       const gain = this.ctx.createGain();
       const filter = this.ctx.createBiquadFilter();
@@ -137,12 +135,12 @@ class GuitarSynth {
     this.init();
     if (!this.ctx || !this.masterGain || !this.guitarWave) return;
 
-    // Ensure context is running (required for many browsers after a period of inactivity)
+    // Ensure context is running
     if (this.ctx.state === 'suspended') {
       try {
         await this.ctx.resume();
       } catch (e) {
-        // Fallback for browsers that block resume without user gesture
+        // Fallback for browser gesture blocking
         console.warn('AudioContext resume failed:', e);
         return;
       }
@@ -154,21 +152,19 @@ class GuitarSynth {
     voice.active = true;
     const osc = this.ctx.createOscillator();
     
-    // Use the custom guitar waveform
     osc.setPeriodicWave(this.guitarWave);
     osc.frequency.setValueAtTime(frequency, this.ctx.currentTime);
 
     const now = this.ctx.currentTime;
     const { ATTACK_TIME, DECAY_TIME, RELEASE_TIME, ENVELOPE_MIN_VALUE, FILTER_Q, FILTER_FREQ_INIT_MULTIPLIER, FILTER_FREQ_FIRST_TARGET_MULTIPLIER, FILTER_DAMPING_TIME, STOP_BUFFER } = AUDIO_CONFIG;
 
-    // Amplitude Envelope (natural string decay)
+    // Natural string decay
     voice.gain.gain.cancelScheduledValues(now);
     voice.gain.gain.setValueAtTime(0, now);
     voice.gain.gain.linearRampToValueAtTime(1, now + ATTACK_TIME);
     voice.gain.gain.exponentialRampToValueAtTime(ENVELOPE_MIN_VALUE, now + ATTACK_TIME + DECAY_TIME + RELEASE_TIME);
 
-    // Dynamic Filter (the "pluck" effect)
-    // Initially open wide to let harmonics through, then close quickly to simulate damping.
+    // Dynamic Filter: open for harmonics, then close for damping
     voice.filter.type = 'lowpass';
     voice.filter.Q.value = FILTER_Q;
     voice.filter.frequency.setValueAtTime(frequency * FILTER_FREQ_INIT_MULTIPLIER, now);
@@ -185,7 +181,7 @@ class GuitarSynth {
       osc.disconnect();
       voice.active = false;
       
-      // If this was a temporary voice (not in the pool), clean it up
+      // Clean up non-pool voices
       if (!this.voicePool.includes(voice)) {
         voice.filter.disconnect();
         voice.gain.disconnect();

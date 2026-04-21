@@ -37,16 +37,12 @@ const mobileTabStorage = {
   setItem(key: string, value: MobileTab): void {
     try {
       localStorage.setItem(key, value);
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
+    } catch {}
   },
   removeItem(key: string): void {
     try {
       localStorage.removeItem(key);
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
+    } catch {}
   },
 };
 

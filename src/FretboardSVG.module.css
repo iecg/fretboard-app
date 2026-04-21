@@ -3,7 +3,6 @@
   flex-direction: column;
   width: 100%;
   min-width: 0;
-  /* Box shadow moved here from App.css to keep the hero unit self-contained. */
   box-shadow: 0 10px 30px rgb(0 0 0 / 0.45);
 }
 
@@ -18,11 +17,9 @@
 }
 
 .fretboard-string {
-  /* stroke-width set inline via CSS var; this class is for targeting in tests */
   --placeholder: 0;
 }
 
-/* Note Visuals */
 .fretboard-note {
   cursor: pointer;
   transition: opacity 0.15s ease-out;
@@ -36,7 +33,6 @@
   outline: none;
 }
 
-/* Map SVG children selectors */
 .fretboard-note :is(circle, rect, polygon) {
   stroke-width: 1.9;
   paint-order: stroke;
@@ -59,7 +55,6 @@
   fill: #ffffff;
 }
 
-/* Tonic / Key Root */
 .fretboard-note.key-tonic :is(circle, rect, polygon) {
   stroke: var(--note-ring-tonic);
   fill: rgb(48 32 22 / 0.95);
@@ -69,7 +64,6 @@
   stroke-width: 2.3;
 }
 
-/* Chord Root */
 .fretboard-note.chord-root :is(circle, rect, polygon) {
   stroke: var(--note-ring-tonic);
   fill: rgb(55 35 18 / 0.97);
@@ -79,21 +73,18 @@
   stroke-width: 2.3;
 }
 
-/* Chord Tone in Scale — additive: scale fill preserved, orange ring signals chord membership */
 .fretboard-note.chord-tone-in-scale :is(circle, rect, polygon) {
   stroke: var(--note-ring-tonic);
   fill: rgb(20 30 40 / 0.92);
   stroke-width: 2.3;
 }
 
-/* Active Notes (circle — no chord overlay) */
 .fretboard-note.note-active :is(circle, rect, polygon) {
   stroke: var(--note-ring);
   fill: rgb(20 30 40 / 0.92);
   stroke-width: 1.9;
 }
 
-/* Scale color notes (hexagon — scale-owned characteristic tone, no chord overlay) */
 .fretboard-note.note-blue :is(circle, rect, polygon) {
   stroke: var(--note-ring-color-tone);
   fill: rgb(20 30 40 / 0.92);
@@ -103,14 +94,12 @@
   fill: #e8d8ff;
 }
 
-/* Scale Only — visible filled base; slightly recedes relative to chord squircles */
 .fretboard-note.scale-only :is(circle, rect, polygon) {
   stroke: var(--note-ring);
   fill: rgb(18 26 38 / 0.82);
   stroke-width: 1.7;
 }
 
-/* Color Tone (Characteristic) — hexagon, violet ring, matches note-active fill weight */
 .fretboard-note.color-tone :is(circle, rect, polygon) {
   stroke: var(--note-ring-color-tone);
   fill: rgb(20 30 40 / 0.92);
@@ -120,7 +109,6 @@
   fill: #e8d8ff;
 }
 
-/* Chord Tone Outside Scale (Diamond) */
 .fretboard-note.chord-tone-outside-scale :is(circle, rect, polygon) {
   stroke: var(--neon-orange-dim);
   fill: rgb(40 22 10 / 0.72);
@@ -131,7 +119,6 @@
   opacity: 0.9;
 }
 
-/* Glow Filters - applied via inline style for dynamic IDs, but we can set defaults */
 .fretboard-note[data-note-role="key-tonic"],
 .fretboard-note[data-note-role="chord-root"],
 .fretboard-note[data-note-role="chord-tone-in-scale"],
@@ -144,19 +131,11 @@
   filter: var(--fretboard-svg-glow-cyan-url);
 }
 
-/* Both no-overlay color notes (note-blue) and overlay color tones use violet glow */
 .fretboard-note[data-note-role="note-blue"],
 .fretboard-note[data-note-role="color-tone"] {
   filter: var(--fretboard-svg-glow-violet-url);
 }
 
-/* ==========================================================================
-   Outside chord root: squircle shape signals root identity; dashed stroke
-   signals the root falls outside the active scale (tension note). Both roles
-   coexist — the old single-role enum couldn't represent this.
-   The outer halo rect uses inline style (see FretboardSVG.tsx) so CSS can't
-   override fill:none there; this rule targets only the inner fill rect.
-   ========================================================================== */
 .fretboard-note.chord-root[data-note-tension] rect:last-of-type {
   stroke-dasharray: 6 3;
   fill: rgb(90 28 0 / 0.97);

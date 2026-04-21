@@ -33,16 +33,12 @@ const cagedShapesStorage = {
   setItem(key: string, value: Set<CagedShape>): void {
     try {
       localStorage.setItem(key, JSON.stringify(Array.from(value)));
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
+    } catch {}
   },
   removeItem(key: string): void {
     try {
       localStorage.removeItem(key);
-    } catch {
-      // Storage blocked or unavailable; ignore.
-    }
+    } catch {}
   },
 };
 

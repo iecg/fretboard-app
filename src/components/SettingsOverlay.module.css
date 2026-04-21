@@ -1,6 +1,4 @@
 /* stylelint-disable selector-pseudo-class-no-unknown */
-/* SettingsOverlay — drawer shell (backdrop + right-side slide-in panel). */
-
 .settings-overlay-backdrop {
   position: fixed;
   inset: 0;
