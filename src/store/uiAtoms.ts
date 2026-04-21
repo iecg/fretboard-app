@@ -1,50 +1,18 @@
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
-import { k, rawStringStorage, GET_ON_INIT } from "../utils/storage";
+import { k, createStorage, rawStringStorage, GET_ON_INIT } from "../utils/storage";
 
 const MOBILE_TABS = ["theory", "view"] as const;
 type MobileTab = (typeof MOBILE_TABS)[number];
 
-const mobileTabStorage = {
-  getItem(key: string, initialValue: MobileTab): MobileTab {
-    try {
-      const stored = localStorage.getItem(key);
-      if (stored === null) {
-        localStorage.setItem(key, initialValue);
-        return initialValue;
-      }
-      if (stored === "key" || stored === "scale") {
-        localStorage.setItem(key, "theory");
-        return "theory";
-      }
-      if (stored === "settings") {
-        localStorage.setItem(key, "view");
-        return "view";
-      }
-      if (stored === "fretboard") {
-        localStorage.setItem(key, "view");
-        return "view";
-      }
-      if ((MOBILE_TABS as readonly string[]).includes(stored)) {
-        return stored as MobileTab;
-      }
-      localStorage.setItem(key, initialValue);
-      return initialValue;
-    } catch {
-      return initialValue;
-    }
+const mobileTabStorage = createStorage<MobileTab>({
+  validate: (v) => (MOBILE_TABS as readonly string[]).includes(v),
+  onRead: (v) => {
+    if (v === ("key" as unknown as string) || v === ("scale" as unknown as string)) return "theory";
+    if (v === ("settings" as unknown as string) || v === ("fretboard" as unknown as string)) return "view";
+    return v;
   },
-  setItem(key: string, value: MobileTab): void {
-    try {
-      localStorage.setItem(key, value);
-    } catch {}
-  },
-  removeItem(key: string): void {
-    try {
-      localStorage.removeItem(key);
-    } catch {}
-  },
-};
+});
 
 export const displayFormatAtom = atomWithStorage<"notes" | "degrees" | "none">(
   k("displayFormat"),
