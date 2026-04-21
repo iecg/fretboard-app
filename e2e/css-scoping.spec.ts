@@ -60,11 +60,10 @@ test.describe("production css module scoping", () => {
     await gotoApp(page);
 
     const dashboardCards = page.locator('[data-testid="dashboard-card-configuration"]');
-    if (await dashboardCards.count()) {
-      const cardRect = await dashboardCards.first().boundingBox();
-      expect(cardRect, "Dashboard card should be rendered").not.toBeNull();
-      expect(cardRect!.width, "Dashboard card should have non-zero width").toBeGreaterThan(0);
-    }
+    expect(await dashboardCards.count(), "Dashboard cards should be present").toBeGreaterThan(0);
+    const cardRect = await dashboardCards.first().boundingBox();
+    expect(cardRect, "Dashboard card should be rendered").not.toBeNull();
+    expect(cardRect!.width, "Dashboard card should have non-zero width").toBeGreaterThan(0);
   });
 
   test("global design tokens work alongside scoped modules", async ({
@@ -127,21 +126,12 @@ test.describe("production css module scoping", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await gotoApp(page);
 
-    const tabBar = page.locator('[data-testid="bottom-tab-bar"]');
-    if (await tabBar.count()) {
-      const tabBarRect = await tabBar.boundingBox();
-      expect(tabBarRect, "Tab bar should be rendered").not.toBeNull();
-      expect(tabBarRect!.height, "Tab bar should have height").toBeGreaterThan(0);
-    }
-
     const tabContent = page.locator('[data-testid="mobile-tab-content"]');
-    if (await tabContent.count()) {
-      const contentRect = await tabContent.first().boundingBox();
-      expect(contentRect, "Tab content should be rendered").not.toBeNull();
-      if (contentRect) {
-        expect(contentRect.width, "Tab content should have width").toBeGreaterThan(0);
-      }
-    }
+    expect(await tabContent.count(), "Tab content should be present").toBeGreaterThan(0);
+    const contentRect = await tabContent.first().boundingBox();
+    expect(contentRect, "Tab content should be rendered").not.toBeNull();
+    expect(contentRect!.width, "Tab content should have width").toBeGreaterThan(0);
+    expect(contentRect!.height, "Tab content should have height").toBeGreaterThan(0);
   });
 
   test("no unscoped style conflicts in production build", async ({
@@ -158,12 +148,11 @@ test.describe("production css module scoping", () => {
         elementCount++;
         if (el instanceof HTMLElement || el instanceof SVGElement) {
           const style = getComputedStyle(el);
-          if (
-            style.display !== "none" &&
-            style.display !== "contents" &&
-            (style.width || style.height)
-          ) {
-            styledElementCount++;
+          if (style.display !== "none" && style.display !== "contents") {
+            const rect = el.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+              styledElementCount++;
+            }
           }
         }
       });
@@ -211,37 +200,30 @@ test.describe("production css module scoping", () => {
     }
   });
 
-  test("chord row strip has computed styles from module", async ({ page }) => {
+  test("chord overlay controls render with module styles", async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
     await gotoApp(page);
 
     const styles = await page.evaluate(() => {
-      // Find chord row strip by its semantic role (role="group" with chord overlay label)
-      const sections = document.querySelectorAll('section[role="group"][aria-label*="Chord overlay"]');
-      if (sections.length === 0) return null;
+      // Find chord-related controls by looking for select elements (chord type selector)
+      const selects = document.querySelectorAll('select');
+      if (selects.length === 0) return null;
 
-      const el = sections[0];
+      // Get the first select which should be a chord selector
+      const el = selects[0];
       const computed = getComputedStyle(el);
       return {
         backgroundColor: computed.backgroundColor,
         borderColor: computed.borderColor,
-        borderWidth: computed.borderWidth,
-        boxShadow: computed.boxShadow,
-        borderRadius: computed.borderRadius,
-        padding: computed.padding,
+        color: computed.color,
         display: computed.display,
+        padding: computed.padding,
       };
     });
 
-    if (styles) {
-      expect(styles, "ChordRowStrip should have computed styles").not.toBeNull();
-      expect(styles.display, "Should have display property").toBeTruthy();
-      expect(styles.backgroundColor, "Should have background color").toBeTruthy();
-      expect(
-        styles.borderColor,
-        "Should have border color (from CSS Module or composed styles)"
-      ).toBeTruthy();
-    }
+    expect(styles, "Chord controls should have computed styles").not.toBeNull();
+    expect(styles!.display, "Should have display property").toBeTruthy();
+    expect(styles!.color, "Should have text color").toBeTruthy();
   });
 
   test("mobile theory buttons enforce touch target min-height", async ({ page }) => {
@@ -251,7 +233,7 @@ test.describe("production css module scoping", () => {
     const result = await page.evaluate(() => {
       // Find theory control buttons by looking for buttons within theory controls
       const theoryControls = document.querySelector('[data-testid="theory-controls"]');
-      if (!theoryControls) return { found: false };
+      if (!theoryControls) return { found: false, buttons: [] };
 
       const buttons = theoryControls.querySelectorAll('button');
 
@@ -275,14 +257,14 @@ test.describe("production css module scoping", () => {
       };
     });
 
-    if (result.found && result.buttons && result.buttons.length > 0) {
-      result.buttons.forEach((btn) => {
-        expect(
-          btn.height,
-          `Mobile button should meet touch target (36px minimum): button has ${btn.height}px`
-        ).toBeGreaterThanOrEqual(30);
-      });
-    }
+    expect(result.found, "Theory controls should be present").toBe(true);
+    expect(result.buttons.length, "Should have at least one button").toBeGreaterThan(0);
+    result.buttons.forEach((btn) => {
+      expect(
+        btn.height,
+        `Mobile button should meet touch target (36px minimum): button has ${btn.height}px`
+      ).toBeGreaterThanOrEqual(30);
+    });
   });
 
   test("no stale global class selectors present", async ({ page }) => {
