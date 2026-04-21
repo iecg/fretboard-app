@@ -15,6 +15,7 @@ interface MainLayoutWrapperProps {
   layoutVariant: string;
   isChordActive: boolean;
   showSummary: boolean;
+  showChordDock: boolean;
   showControlsPanel: boolean;
   showMobileTabs: boolean;
 }
@@ -33,6 +34,7 @@ export function MainLayoutWrapper({
   layoutVariant,
   isChordActive,
   showSummary,
+  showChordDock,
   showControlsPanel,
   showMobileTabs,
 }: MainLayoutWrapperProps) {
@@ -57,13 +59,15 @@ export function MainLayoutWrapper({
         </div>
       )}
 
-      <div
-        className={styles["chord-dock-shell"]}
-        data-layout-tier={layoutTier}
-        data-layout-variant={layoutVariant}
-      >
-        {chordDock}
-      </div>
+      {showChordDock && (
+        <div
+          className={styles["chord-dock-shell"]}
+          data-layout-tier={layoutTier}
+          data-layout-variant={layoutVariant}
+        >
+          {chordDock}
+        </div>
+      )}
 
       {helpModal}
 

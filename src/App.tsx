@@ -10,6 +10,7 @@ import {
   toggleMuteAtom,
   chordTypeAtom,
   mobileTabAtom,
+  showChordPracticeBarAtom,
 } from "./store/atoms";
 import useLayoutMode from "./hooks/useLayoutMode";
 import { AppHeader } from "./components/AppHeader";
@@ -41,6 +42,7 @@ const MobileTabPanel = lazy(() =>
 function AppContent() {
   const chordType = useAtomValue(chordTypeAtom);
   const isMuted = useAtomValue(isMutedAtom);
+  const showChordPracticeBar = useAtomValue(showChordPracticeBarAtom);
   // Mount mobileTabAtom so atomWithStorage writes its default to localStorage
   // on first render — required for correct initial tab state across layout modes.
   useAtomValue(mobileTabAtom);
@@ -64,6 +66,7 @@ function AppContent() {
       layoutVariant={layout.variant}
       isChordActive={!!chordType}
       showSummary={layout.showSummary}
+      showChordDock={showChordPracticeBar}
       showControlsPanel={layout.showControlsPanel}
       showMobileTabs={layout.showMobileTabs}
       header={
