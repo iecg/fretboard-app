@@ -33,6 +33,7 @@ function MobileKeyExplorer() {
         scaleName={scaleName}
         useFlats={useFlats}
         enharmonicDisplay={enharmonicDisplay}
+        variant="inline"
       />
     </div>
   );
@@ -49,7 +50,7 @@ export function MobileTabPanel() {
         onChange={setMobileTab}
         variant="tabs"
       />
-      <div className={styles["mobile-tab-content"]} data-testid="mobile-tab-content">
+      <div className={styles["mobile-tab-content"]} data-layout-scope="mobile-tabs" data-testid="mobile-tab-content">
         {mobileTab === "theory" && (
           <div className={clsx(styles["mobile-tab-panel"], styles["mobile-theory-tab"])}>
             <TheoryControls keyExplorer={<MobileKeyExplorer />} />
