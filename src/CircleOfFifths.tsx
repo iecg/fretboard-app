@@ -39,12 +39,14 @@ export const CircleOfFifths = memo(function CircleOfFifths({
   scaleName = "Major",
   useFlats = false,
   enharmonicDisplay = "auto",
+  variant = "card",
 }: {
   rootNote: string;
   setRootNote: (n: string) => void;
   scaleName?: string;
   useFlats?: boolean;
   enharmonicDisplay?: "auto" | "on" | "off";
+  variant?: "card" | "inline";
 }) {
   const rootIndex = CIRCLE_OF_FIFTHS.indexOf(rootNote);
   const scaleIntervals = SCALES[scaleName] || [];
@@ -96,7 +98,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
   };
 
   return (
-    <div className={styles["circle-fifths-container"]} data-testid="circle-of-fifths">
+    <div className={styles["circle-fifths-container"]} data-testid="circle-of-fifths" data-variant={variant}>
       <svg
         viewBox={`0 0 ${SIZE} ${SIZE}`}
         className={styles["circle-fifths-svg"]}

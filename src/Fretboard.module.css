@@ -14,6 +14,16 @@
   contain: layout paint;
 }
 
+/* Hide scrollbar while preserving scroll behavior */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Tablet: enable native touch scroll on the fretboard (same as mobile). */
 :global(.app-container[data-layout-tier="tablet"]) .fretboard-wrapper {
   overflow-x: auto;

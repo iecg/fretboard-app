@@ -125,7 +125,7 @@
   margin: 0 auto;
 }
 
-:global(.theory-inline-key) .circle-fifths-container {
+.circle-fifths-container[data-variant="inline"] {
   width: 100%;
   max-width: min(100%, 20rem);
 }

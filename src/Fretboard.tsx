@@ -233,7 +233,7 @@ export function Fretboard(props: FretboardProps) {
       }}
     >
       <div
-        className={clsx(styles["fretboard-wrapper"], "hide-scrollbar")}
+        className={clsx(styles["fretboard-wrapper"], styles["hide-scrollbar"])}
         ref={scrollRef}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
