@@ -63,22 +63,22 @@
 
 /* Strip native select of its own chrome — inherits compound surface */
 .theory-browser-selector select {
-  border: none;
-  border-radius: 0;
-  background: transparent;
-  min-height: unset;
-  padding-left: 0.85rem;
-  padding-right: 2.4rem;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  min-height: unset !important;
+  padding-left: 0.85rem !important;
+  padding-right: 2.4rem !important;
 }
 
 .theory-browser-selector select:hover {
-  border-color: transparent;
+  border-color: transparent !important;
 }
 
 /* Inset focus ring — avoids overflow:hidden clipping */
 .theory-browser-selector select:focus-visible {
-  outline: none;
-  box-shadow: inset 0 0 0 2px var(--neon-cyan);
+  outline: none !important;
+  box-shadow: inset 0 0 0 2px var(--neon-cyan) !important;
 }
 
 /* Nav buttons — no individual border/bg; inner dividers via border-right/left */
@@ -126,6 +126,13 @@
 .theory-nav-btn :global(.icon) {
   width: 1.18rem;
   height: 1.18rem;
+}
+
+@media (max-width: 767px) {
+  .theory-nav-btn {
+    width: 2.7rem;
+    /* height stays 3rem — matches select min-height on mobile */
+  }
 }
 
 /* ── Chord overlay section ─────────────────────────────────────────────── */
@@ -207,8 +214,9 @@
   gap: 0.58rem;
 }
 
+/* Desktop: shrink compound nav to match the desktop select height (2.65rem) */
 :global(.app-container[data-layout-tier="desktop"]) .theory-nav-btn {
-  width: 2.65rem;
+  width: 2.5rem;
   height: 2.65rem;
 }
 
