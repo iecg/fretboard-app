@@ -80,7 +80,7 @@ test.describe("production css module scoping", () => {
       return { neonCyan, spaceToken };
     });
 
-    expect(result.neonCyan, "tokens.css --neon-cyan should be applied").toBe("#4DE4FF");
+    expect(result.neonCyan.toLowerCase(), "tokens.css --neon-cyan should be applied").toBe("#4de4ff");
     expect(result.spaceToken, "tokens.css --space-4 should be applied").toBe("1rem");
   });
 
