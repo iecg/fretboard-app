@@ -19,6 +19,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Guard — main branch only
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "❌ Auto Release must be dispatched from main (got: ${{ github.ref }})"
+          exit 1
+
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
@@ -57,12 +63,6 @@ jobs:
 
           git tag -a "$TAG_NAME" -F "$TAG_MESSAGE_FILE"
           git push origin "refs/tags/$TAG_NAME"
-
-      - name: Trigger deploy workflow
-        if: steps.tag.outputs.new_tag
-        run: gh workflow run deploy.yml --ref ${{ steps.tag.outputs.new_tag }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create version bump PR
         if: steps.tag.outputs.new_tag

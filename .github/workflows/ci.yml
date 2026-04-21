@@ -10,10 +10,6 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened, ready_for_review]
-    paths-ignore:
-      - '**.md'
-      - 'LICENSE'
-      - '.husky/**'
 
 permissions:
   contents: read
@@ -24,9 +20,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3
+        id: filter
+        with:
+          filters: |
+            code:
+              - '**'
+              - '!**.md'
+              - '!LICENSE'
+              - '!.husky/**'
+
   test:
     name: Tests
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     steps:
       - uses: actions/checkout@v5
 
@@ -43,31 +58,11 @@ jobs:
       - name: Unit tests
         run: npm run test
 
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 24
-          cache: npm
-
-      - run: npm ci
-      - run: npm run build
-
-      - name: Upload dist artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
-          retention-days: 1
-
   e2e:
     name: Responsive E2E
     runs-on: ubuntu-latest
-    needs: build
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     steps:
       - uses: actions/checkout@v5
 
@@ -77,12 +72,6 @@ jobs:
           cache: npm
 
       - run: npm ci
-
-      - name: Download dist artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist/
 
       - name: Cache Playwright browsers
         uses: actions/cache@v4
@@ -93,8 +82,8 @@ jobs:
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
 
-      - name: Run production E2E tests
-        run: npx playwright test --config=playwright.config.production.ts
+      - name: Run responsive smoke tests
+        run: npm run test:e2e
 
       - name: Archive Playwright results
         if: always()
@@ -106,29 +95,55 @@ jobs:
             test-results/
           retention-days: 14
 
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [changes, test]
+    if: needs.changes.outputs.code == 'true'
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
   quality-gate:
     name: Quality Gate
     runs-on: ubuntu-latest
-    needs: [test, e2e, build]
+    needs: [changes, test, e2e, build]
     if: always()
     steps:
       - name: Check results
         run: |
           FAIL=0
-          [ "${{ needs.test.result }}"  != "success" ] && echo "❌ Tests failed" && FAIL=1
-          [ "${{ needs.e2e.result }}"   != "success" ] && echo "❌ E2E failed"   && FAIL=1
-          [ "${{ needs.build.result }}" != "success" ] && echo "❌ Build failed" && FAIL=1
-          [ "$FAIL" -eq 0 ] && echo "✅ All checks passed"
+          check() {
+            case "$2" in
+              success|skipped) ;;
+              *) echo "❌ $1 failed ($2)"; FAIL=1 ;;
+            esac
+          }
+          if [ "${{ needs.changes.result }}" != "success" ]; then
+            echo "❌ Changes detector failed (${{ needs.changes.result }})"
+            FAIL=1
+          fi
+          check "Tests" "${{ needs.test.result }}"
+          check "E2E"   "${{ needs.e2e.result }}"
+          check "Build" "${{ needs.build.result }}"
+          [ "$FAIL" -eq 0 ] && echo "✅ All required checks passed (or skipped for docs-only)"
           exit $FAIL
 
       - name: PR status comment
-        if: github.event_name == 'pull_request'
+        if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         env:
           PR_BRANCH: ${{ github.head_ref }}
         with:
           script: |
-            const r = s => s === 'success' ? '✅ Pass' : '❌ Fail';
+            const r = s => s === 'success' ? '✅ Pass' : s === 'skipped' ? '⏭ Skipped' : '❌ Fail';
             const branch = process.env.PR_BRANCH;
             const body = [
               '## CI Status',
