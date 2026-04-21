@@ -37,13 +37,13 @@
   min-width: 0;
 }
 
-:global(.dashboard-card) :global(.card-body) {
+:global(.dashboard-card) [data-card-body] {
   display: flex;
   flex-direction: column;
   gap: 0.95rem;
 }
 
-:global(.key-column) :global(.card-body) {
+:global(.key-column) [data-card-body] {
   padding-top: 0.7rem;
 }
 
@@ -62,7 +62,7 @@
 }
 
 /* Desktop tier: tighter inter-section gap inside each card body. */
-:global(.app-container[data-layout-tier="desktop"]) :global(.card-body) {
+:global(.app-container[data-layout-tier="desktop"]) [data-card-body] {
   gap: 0.68rem;
 }
 
@@ -100,7 +100,7 @@
   gap: 1rem;
 }
 
-:global(.app-container[data-layout-tier="tablet"]) :global(.card-body) {
+:global(.app-container[data-layout-tier="tablet"]) [data-card-body] {
   gap: 0.78rem;
 }
 

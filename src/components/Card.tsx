@@ -39,7 +39,7 @@ function CardHeader({ title, icon, action, id }: CardHeaderProps) {
 
 function CardBody({ children, className }: CardBodyProps) {
   return (
-    <div className={clsx(styles['card-body'], className)}>
+    <div className={clsx(styles['card-body'], className)} data-card-body>
       {children}
     </div>
   );
