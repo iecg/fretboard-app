@@ -98,15 +98,15 @@
 
 @container (min-width: 300px) {
   .circle-fifths-svg {
-    max-width: 90cqw;
-    max-height: 90cqw;
+    max-width: 100cqw;
+    max-height: 100cqw;
   }
 }
 
 /* ── Layout Tier Adjustments ───────────────────────────────────────────── */
 
 :global(.app-container[data-layout-variant="desktop-3col"]) .circle-fifths-container {
-  max-height: min(18rem, 40vh);
+  max-height: min(22rem, 46vh);
 }
 
 :global(.app-container[data-layout-variant="desktop-split"]) .circle-fifths-container {

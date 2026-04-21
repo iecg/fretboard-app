@@ -12,7 +12,7 @@
 }
 
 .controls-panel[data-mode="3col"] {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(18rem, 20rem);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr);
 }
 
 .controls-panel[data-mode="split"] {
