@@ -10,8 +10,8 @@ import {
   SCALES,
   type PracticeLens,
   type NoteSemantics,
-} from "./theory";
-import { parseNote } from "./guitar";
+} from "./core/theory";
+import { parseNote } from "./core/guitar";
 import { STRING_ROW_PX_TABLET } from "./layout/responsive";
 import styles from "./FretboardSVG.module.css";
 import type { ShapePolygon, CagedShape } from "./shapes";
@@ -35,7 +35,7 @@ import {
   RADIUS_SCALE_NOTE_ACTIVE,
   RADIUS_SCALE_COLOR_TONE,
   RADIUS_SCALE_DEFAULT,
-} from "./constants";
+} from "./core/constants";
 
 interface FretboardSVGProps {
   effectiveZoom: number;

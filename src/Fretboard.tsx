@@ -6,8 +6,8 @@ import {
   getFretboardNotes,
   getFretNoteWithOctave,
   getNoteFrequency,
-} from "./guitar";
-import { synth } from "./audio";
+} from "./core/guitar";
+import { synth } from "./core/audio";
 import { fretZoomAtom, type AutoCenterTarget } from "./store/atoms";
 import { FretboardSVG } from "./FretboardSVG";
 import { useFretboardState, type ShapeScope, type ActiveShapeType } from "./hooks/useFretboardState";
@@ -18,7 +18,7 @@ import {
   NUT_WIDTH,
   MIN_FRET_WIDTH_BASE,
   MIN_FRET_WIDTH_OVERFLOW_BUFFER
-} from "./constants";
+} from "./core/constants";
 import type { ShapePolygon } from "./shapes";
 
 interface FretboardProps {

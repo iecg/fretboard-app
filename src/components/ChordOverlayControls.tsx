@@ -1,7 +1,7 @@
 import { startTransition, useEffect, useId, useState } from "react";
 import { useAtomValue } from "jotai";
 import clsx from "clsx";
-import { NOTES } from "../theory";
+import { NOTES } from "../core/theory";
 import { lensAvailabilityAtom } from "../store/atoms";
 import { LabeledSelect, type LabeledSelectOption } from "./LabeledSelect";
 import { NoteGrid } from "./NoteGrid";

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { ChordRowStrip } from "../components/ChordRowStrip";
-import type { ChordRowEntry, LegendItem } from "../theory";
+import type { ChordRowEntry, LegendItem } from "../core/theory";
 import { axe } from "../test-utils/a11y";
 
 const cMajorRow: ChordRowEntry[] = [

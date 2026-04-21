@@ -14,8 +14,8 @@ import {
   chordFretSpreadAtom,
   resetAtom,
 } from "../store/atoms";
-import { TUNINGS } from "../guitar";
-import { synth } from "../audio";
+import { TUNINGS } from "../core/guitar";
+import { synth } from "../core/audio";
 import { StepperControl } from "./StepperControl";
 import { FretRangeControl } from "./FretRangeControl";
 import { LabeledSelect } from "./LabeledSelect";
@@ -32,7 +32,7 @@ import {
   FRET_ZOOM_MAX,
   ANIMATION_DURATION_STANDARD,
   ANIMATION_EASE,
-} from "../constants";
+} from "../core/constants";
 import styles from "./SettingsOverlay.module.css";
 import sharedStyles from "./shared.module.css";
 

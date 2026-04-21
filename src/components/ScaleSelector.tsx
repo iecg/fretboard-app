@@ -1,7 +1,7 @@
 import { startTransition } from "react";
 import clsx from "clsx";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { NOTES } from "../theory";
+import { NOTES } from "../core/theory";
 import {
   getActiveScaleBrowseOption,
   getAdjacentScaleBrowseOption,
@@ -13,7 +13,7 @@ import {
   resolveScaleCatalogEntry,
   supportsRelativeScaleBrowsing,
   type ScaleBrowseMode,
-} from "../theoryCatalog";
+} from "../core/theoryCatalog";
 import { LabeledSelect, type LabeledSelectOption } from "./LabeledSelect";
 import { NoteGrid } from "./NoteGrid";
 import { ToggleBar } from "./ToggleBar";

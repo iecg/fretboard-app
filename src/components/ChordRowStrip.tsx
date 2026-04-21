@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import type { ChordRowEntry, LegendItem } from "../theory";
+import type { ChordRowEntry, LegendItem } from "../core/theory";
 import styles from "./ChordRowStrip.module.css";
 
 interface ChordRowStripProps {

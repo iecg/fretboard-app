@@ -7,7 +7,7 @@ import {
   getScaleNotes,
   getNoteDisplay,
   formatAccidental,
-} from "../theory";
+} from "../core/theory";
 import type {
   ChordMemberName,
   LensAvailabilityContext,
@@ -18,7 +18,7 @@ import type {
   PracticeBarColorNote,
   PracticeBarNote,
   PracticeBarGroup,
-} from "../theory";
+} from "../core/theory";
 import {
   rootNoteAtom,
   scaleNameAtom,

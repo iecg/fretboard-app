@@ -8,14 +8,14 @@ import {
   getShapeCenterFret,
   type ShapePolygon,
 } from "../shapes";
-import { getFretNote } from "../guitar";
+import { getFretNote } from "../core/guitar";
 import { STORAGE_PREFIX } from "../utils/storage";
-import { getScaleNotes, formatAccidental, NOTES } from "../theory";
+import { getScaleNotes, formatAccidental, NOTES } from "../core/theory";
 import type {
   NoteRole,
   ChordRowEntry,
   LegendItem,
-} from "../theory";
+} from "../core/theory";
 
 // Domain module re-exports: all public atoms flow through atoms.ts to maintain stable import paths.
 

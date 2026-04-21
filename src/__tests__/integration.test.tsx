@@ -16,7 +16,7 @@ const mockSynth = vi.hoisted(() => ({
   init: vi.fn(),
 }));
 
-vi.mock("../audio", () => ({
+vi.mock("../core/audio", () => ({
   synth: mockSynth,
 }));
 

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import clsx from "clsx";
 import styles from "./DrawerSelector.module.css";
-import { DRAWER_DROPUP_THRESHOLD } from "./constants";
+import { DRAWER_DROPUP_THRESHOLD } from "./core/constants";
 
 type DrawerSelectorOption = string | { divider: string };
 

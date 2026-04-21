@@ -8,13 +8,13 @@ import {
   getScaleNotes,
   getNoteDisplay,
   formatAccidental,
-} from "../theory";
+} from "../core/theory";
 import type {
   ChordMemberFact,
   ResolvedChordMember,
   PracticeLens,
   ChordRowEntry,
-} from "../theory";
+} from "../core/theory";
 import {
   k,
   createStorage,

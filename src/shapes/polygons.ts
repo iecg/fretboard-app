@@ -1,5 +1,5 @@
-import { getScaleNotes, SCALES, NOTES, getNoteDisplay } from "../theory";
-import { getFretboardNotes } from "../guitar";
+import { getScaleNotes, SCALES, NOTES, getNoteDisplay } from "../core/theory";
+import { getFretboardNotes } from "../core/guitar";
 import {
   CAGED_SHAPE_COLORS,
   SHAPE_CONFIGS,
