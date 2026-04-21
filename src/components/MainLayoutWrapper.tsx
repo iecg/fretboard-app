@@ -1,4 +1,5 @@
 import { type ReactNode } from "react";
+import styles from "./MainLayoutWrapper.module.css";
 
 interface MainLayoutWrapperProps {
   children: ReactNode;
@@ -46,16 +47,16 @@ export function MainLayoutWrapper({
       {header}
 
       {showSummary && (
-        <div className="summary-shell" data-testid="summary-shell">
+        <div className={styles["summary-shell"]} data-testid="summary-shell">
           {summary}
         </div>
       )}
 
-      <div className="chord-dock-shell">{chordDock}</div>
+      <div className={styles["chord-dock-shell"]}>{chordDock}</div>
 
       {helpModal}
 
-      <main className="main-fretboard" data-testid="main-fretboard">
+      <main className={styles["main-fretboard"]} data-testid="main-fretboard">
         {children}
       </main>
 

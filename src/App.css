@@ -111,30 +111,6 @@
   }
 }
 
-/* Main Fretboard */
-.main-fretboard {
-  width: 100%;
-  flex: 0 0 auto;
-  min-width: 0;
-}
-
-.fretboard-outer {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  min-width: 0;
-  gap: 0.55rem;
-}
-
-/* Fretboard Internal Styles */
-.fretboard-wrapper {
-  position: relative;
-  width: 100%;
-  min-width: 0;
-  overflow-x: hidden;
-  contain: layout paint;
-}
-
 /* Key column */
 .key-column {
   position: relative;
@@ -155,11 +131,6 @@
   border-radius: 9999px;
 }
 
-.summary-shell {
-  display: flex;
-  justify-content: center;
-}
-
 /* Dedicated slot for the chord practice dock — sits between the scale strip and fretboard.
    The dock manages its own visibility; this shell just provides centering. */
 
@@ -175,34 +146,10 @@
   height: 2.65rem;
 }
 
-/* Phase 2: pull summary-shell 0.18rem closer to the header — creates a
-   tighter "top band" zone (header + key summary) vs. the fretboard below.
-   Combined with gap: 0.5rem, the strip sits 0.32rem below the header while
-   the fretboard gets the full 0.5rem gap (unified feel without margins). */
-.app-container[data-layout-tier="desktop"] .summary-shell {
-  margin-top: -0.18rem;
-}
-
-/* Fretboard hero gets an explicit margin-bottom to visually separate it
-   from the controls dashboard below. Combined with the 0.5rem container gap,
-   total fretboard→controls space is ~0.95rem — intentionally wider than the
-   0.32rem between chrome sections above the fretboard. */
-.app-container[data-layout-tier="desktop"] .main-fretboard {
-  margin-bottom: 0.45rem;
-}
-
 /* Tablet tier: tighter chrome — reduce container gap and pull summary closer to header.
    Mirrors the desktop intent at a touch-appropriate scale. */
 .app-container[data-layout-tier="tablet"] {
   gap: 0.72rem;
-}
-
-.app-container[data-layout-tier="tablet"] .summary-shell {
-  margin-top: -0.1rem;
-}
-
-.app-container[data-layout-tier="tablet"] .main-fretboard {
-  margin-bottom: 0.3rem;
 }
 /* =============================================
    RESPONSIVE LAYOUT
@@ -211,25 +158,6 @@
      tablet-split / tablet-stacked
      desktop-3col
    ============================================= */
-
-/* Fret range mobile layout */
-.fret-range-mobile {
-  display: flex;
-  gap: var(--space-4);
-}
-
-.fret-range-group {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.fret-range-label {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-  min-width: 2.5rem;
-}
-
 
 /* Mobile tab bar — display controlled by ToggleBar.css; component is only
    mounted when showMobileTabs=true (mobile portrait), so no CSS guard needed.
@@ -247,37 +175,10 @@
     display: none !important;
   }
 
-  .main-fretboard {
-    width: 100%;
-    overflow: hidden;
-  }
-
-  .fretboard-wrapper {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
   /* Ensure touch targets are min 44px tall */
   .mobile-tab-panel .theory-nav-btn,
-  .mobile-tab-panel .theory-disclosure-btn,
-  .mobile-tab-panel .toolbar-btn {
+  .mobile-tab-panel .theory-disclosure-btn {
     min-height: 36px;
-  }
-
-  .mobile-tab-panel .toolbar-btn {
-    min-width: 36px;
-  }
-
-  .mobile-tab-panel .fret-range-controls {
-    width: 100%;
-  }
-
-  .fret-range-label {
-    min-width: auto;
-  }
-
-  .fret-range-group {
-    gap: var(--space-1);
   }
 }
 
@@ -316,12 +217,6 @@
   margin: 0 auto;
 }
 
-/* Tablet: enable native touch scroll on the fretboard (same as mobile). */
-.app-container[data-layout-tier="tablet"] .fretboard-wrapper {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
 /* Landscape mobile: fretboard hero, minimal chrome */
 .app-container[data-layout-variant="landscape-mobile"] {
   padding: 0.5rem;
@@ -333,90 +228,11 @@
   display: none !important;
 }
 
-.app-container[data-layout-variant="landscape-mobile"] .main-fretboard {
-  margin-bottom: 0;
-}
-
-/* ===== Fretboard Outer ===== */
-.fretboard-outer {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  min-width: 0;
-}
-
-.viewport-jumps,
-.zoom-controls,
-.fret-range-controls {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-}
-
-.toolbar-range-val {
-  font-size: var(--text-xs);
-  font-weight: 700;
-  color: var(--text-main);
-  min-width: 1.5rem;
-  text-align: center;
-}
-
-.toolbar-range-sep {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-  padding: 0 var(--space-1);
-}
-
-.toolbar-btn {
-  padding: var(--space-1) var(--space-2);
-  font-size: var(--text-xs);
-  background: var(--surface-raised);
-  border: 1px solid var(--surface-highlight);
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: color var(--transition-fast), border-color var(--transition-fast);
-  line-height: 1.2;
-  min-height: 1.75rem;
-  min-width: 1.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.toolbar-btn:hover:not(:disabled) {
-  color: white;
-  border-color: var(--accent-primary);
-}
-
-.toolbar-btn:focus-visible {
-  outline: var(--focus-ring);
-  outline-offset: var(--focus-ring-offset);
-}
-
-.toolbar-btn:disabled {
-  opacity: 0.3;
-  cursor: default;
-}
 
 
 /* =============================================
    Phase 5 Fidelity Overrides
    ============================================= */
-
-
-.summary-shell {
-  display: flex;
-  justify-content: center;
-}
-
-/* Dedicated slot for the chord practice dock — sits between the scale strip and fretboard.
-   The dock manages its own visibility; this shell just provides centering. */
-.chord-dock-shell {
-  display: flex;
-  justify-content: center;
-}
-
 
 .header-btn {
   width: 2.95rem;
@@ -447,40 +263,6 @@
   color: rgb(176 188 201 / 0.66);
 }
 
-.fretboard-outer {
-  gap: 0.55rem;
-}
-
-.viewport-jumps {
-  gap: 0.45rem;
-  padding: 0.3rem 0.4rem;
-  border-radius: 999px;
-  background: rgb(10 17 26 / 0.52);
-  border: 1px solid rgb(255 255 255 / 0.06);
-}
-
-.toolbar-btn {
-  min-height: 2rem;
-  min-width: 2rem;
-  padding: 0.35rem 0.7rem;
-  border-radius: 999px;
-  font-size: 0.76rem;
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0.015)),
-    rgb(12 17 25 / 0.9);
-  border: 1px solid rgb(255 255 255 / 0.08);
-  color: rgb(215 225 236 / 0.78);
-}
-
-.toolbar-btn:hover:not(:disabled) {
-  color: white;
-  border-color: rgb(77 228 255 / 0.36);
-}
-
-.fretboard-wrapper {
-  padding: 0;
-}
-
 .app-container[data-layout-tier="desktop"] {
   max-width: 92rem;
   /* Phase 2: tightened further — hero band is now compact chrome */
@@ -497,9 +279,5 @@
   .header-btn {
     width: 2.7rem;
     height: 2.7rem;
-  }
-
-  .viewport-jumps {
-    padding-inline: 0.3rem;
   }
 }

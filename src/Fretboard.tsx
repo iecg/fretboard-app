@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from "react";
 import { clsx } from "clsx";
 import { useAtomValue } from "jotai";
+import styles from "./Fretboard.module.css";
 import {
   getFretboardNotes,
   getFretNoteWithOctave,
@@ -223,8 +224,8 @@ export function Fretboard(props: FretboardProps) {
   const neckWidth = totalColumns * effectiveZoom;
 
   return (
-    <div 
-      className="fretboard-outer" 
+    <div
+      className={styles["fretboard-outer"]}
       data-testid="fretboard-outer"
       aria-label="Interactive guitar fretboard"
       style={{
@@ -232,7 +233,7 @@ export function Fretboard(props: FretboardProps) {
       }}
     >
       <div
-        className={clsx("fretboard-wrapper", "hide-scrollbar")}
+        className={clsx(styles["fretboard-wrapper"], "hide-scrollbar")}
         ref={scrollRef}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
