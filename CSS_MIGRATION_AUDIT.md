@@ -1,164 +1,140 @@
 # CSS Migration Audit
 
-**Status:** ✅ **COMPLETE**  
+**Status:** COMPLETE  
 **Date:** 2026-04-21  
-**Branch:** `feature/phase-06-css-modules-fretboard`
+**Branch:** `feature/phase-06-css-modules-fretboard`  
+**Last Verified:** `npm run build`, `npm run test`, `npm run test:e2e:css-scoping`
 
 ## Overview
 
-CSS Module migration is 100% complete. All component-scoped styles now use `.module.css` files. Global styles are scoped to an intentional allowlist of 4 files containing design tokens and root layout rules.
+The CSS Module migration is complete for component styles. The current tree has 25 CSS Module files and 4 intentional global CSS files. No plain component-level `.css` files remain.
+
+The remaining global CSS surface is limited to design tokens, semantic tokens, root imports, and top-level layout rules that are intentionally driven by stable data attributes such as `[data-layout-tier]`, `[data-layout-variant]`, and `[data-layout-column]`.
 
 ## Migration Summary
 
 | Category | Count | Status |
-|---|---|---|
-| CSS Modules (component-scoped) | 25 | ✅ Migrated |
-| Global CSS files | 4 | ✅ Intentional |
-| Plain `.css` component files | 0 | ✅ Removed |
-| Total components with styles | 25+ | ✅ All covered |
+|---|---:|---|
+| CSS Modules | 25 | Complete |
+| Plain component `.css` files | 0 | Complete |
+| Intentional global CSS files | 4 | Allowed |
+| Total CSS files | 29 | Verified |
 
-## CSS Modules (Migrated)
+## CSS Modules
 
-All component styles scoped to modules. No global class leakage. Each module imported as TypeScript object:
+Component-scoped CSS Module files:
 
-### Core Renderers
-- `src/FretboardSVG.module.css` — fretboard SVG canvas, drag/zoom, tension cues, additive overlays
-- `src/CircleOfFifths.module.css` — circle of fifths SVG, root selection, degree display
-- `src/Fretboard.module.css` — fretboard wrapper, scroll centering
+- `src/CircleOfFifths.module.css`
+- `src/DrawerSelector.module.css`
+- `src/Fretboard.module.css`
+- `src/FretboardSVG.module.css`
+- `src/components/AppHeader.module.css`
+- `src/components/BottomTabBar.module.css`
+- `src/components/Card.module.css`
+- `src/components/ChordOverlayDock.module.css`
+- `src/components/ChordPracticeBar.module.css`
+- `src/components/ChordRowStrip.module.css`
+- `src/components/DegreeChipStrip.module.css`
+- `src/components/ErrorBoundary.module.css`
+- `src/components/ExpandedControlsPanel.module.css`
+- `src/components/FingeringPatternControls.module.css`
+- `src/components/FretRangeControl.module.css`
+- `src/components/HelpModal.module.css`
+- `src/components/LabeledSelect.module.css`
+- `src/components/MainLayoutWrapper.module.css`
+- `src/components/MobileTabPanel.module.css`
+- `src/components/SettingsOverlay.module.css`
+- `src/components/StepperControl.module.css`
+- `src/components/TheoryControls.module.css`
+- `src/components/ToggleBar.module.css`
+- `src/components/VersionBadge.module.css`
+- `src/components/shared.module.css`
 
-### Layout & Panels
-- `src/components/MainLayoutWrapper.module.css` — tier/variant routing, responsive layout tree
-- `src/components/AppHeader.module.css` — header chrome, branding, version badge
-- `src/components/ExpandedControlsPanel.module.css` — desktop two-column control layout
-- `src/components/MobileTabPanel.module.css` — mobile tab panel content
-- `src/components/BottomTabBar.module.css` — mobile bottom tab navigation
+## Global CSS Allowlist
 
-### Control Components
-- `src/components/TheoryControls.module.css` — scale/chord control block
-- `src/components/ScaleSelector.module.css` — (none; uses TheoryControls module)
-- `src/components/KeyExplorer.module.css` — (none; uses TheoryControls module)
-- `src/components/FretRangeControl.module.css` — fret range slider
-- `src/components/FingeringPatternControls.module.css` — CAGED / 3NPS selector
-- `src/components/StepperControl.module.css` — numeric stepper input
-- `src/components/ToggleBar.module.css` — toggle button bar
-- `src/components/LabeledSelect.module.css` — labeled dropdown select
-
-### Chord Practice Surfaces
-- `src/components/ChordPracticeBar.module.css` — chord bar shell + degree/note grids
-- `src/components/ChordRowStrip.module.css` — chord row display
-- `src/components/DegreeChipStrip.module.css` — degree chip row
-
-### Overlay & Docks
-- `src/components/ChordOverlayDock.module.css` — chord overlay control dock
-- `src/components/SettingsOverlay.module.css` — full-screen settings panel (motion/react)
-- `src/components/HelpModal.module.css` — help overlay modal
-
-### Primitives & Shared
-- `src/components/Card.module.css` — card container
-- `src/components/shared.module.css` — shared button/icon/layout primitives
-- `src/DrawerSelector.module.css` — dropdown selector accordion
-- `src/components/ErrorBoundary.module.css` — error boundary fallback UI
-- `src/components/VersionBadge.module.css` — version display badge
-
-## Global CSS (Intentional Allowlist)
-
-Four global files held at root level for design tokens and layout foundations. No component-level styles leak into global scope.
+Four global files remain by design:
 
 | File | Purpose | Scope |
 |---|---|---|
-| `src/index.css` | Entry point, imports other globals | Import root only |
-| `src/tokens.css` | Design tokens (colors, spacing, typography, shadows) | CSS custom properties in `:root` |
-| `src/semantic.css` | Semantic color tokens derived from base tokens | Semantic color mapping in `:root` |
-| `src/App.css` | Top-level layout rules, breakpoint selectors | `[data-layout-tier]` / `[data-layout-variant]` layout |
+| `src/index.css` | CSS entry point | Imports global foundations only |
+| `src/tokens.css` | Base design tokens | CSS custom properties in `:root` |
+| `src/semantic.css` | Semantic token aliases | CSS custom properties in `:root` |
+| `src/App.css` | App-level layout | Stable `[data-layout-*]` selectors |
 
-**No other global CSS files exist.** All component styles scoped to modules.
+## Shared Composition
+
+Shared utility/composition lives in `src/components/shared.module.css`.
+
+Current shared primitives include:
+
+- `strip-surface` for `DegreeChipStrip` and `ChordRowStrip` surface tokens.
+- `control-button`, `control-container`, and `control-value` for stepper/range style reuse.
+- `icon-button` variants for header icon controls.
+- Shared panel, toggle, and section primitives used by migrated control surfaces.
+
+This keeps reusable styling module-scoped while avoiding ad hoc globals.
+
+## Recent Cleanup
+
+The follow-up CSS audit issues were resolved:
+
+- `ChordRowStrip` no longer references undefined strip variables; strip surface tokens are composed from `shared.module.css`.
+- `MobileTabPanel` no longer targets `TheoryControls` module classes through `:global(...)`.
+- Stale `.header-btn` globals were removed from `App.css`.
+- The old global `.controls-panel` mobile hide rule was removed from `App.css`.
+- The `key-column` class hook was replaced with the stable `data-layout-column="key"` hook.
+- Dead `overlay-field--selector` rules were removed from `DrawerSelector.module.css`.
+- Production CSS scoping coverage was added through `npm run test:e2e:css-scoping`.
 
 ## Verification
 
 ### Build
+
 ```bash
 npm run build
 ```
-✅ **Result:** `✓ built in 270ms` — all CSS properly bundled, no scoping errors.
+
+Result: passed.
 
 ### Unit Tests
+
 ```bash
 npm run test
 ```
-✅ **Result:** `43 passed (43), 919 tests passed` — all CSS scope and rendering tests pass.
 
-### Production CSS Scoping (E2E Verification)
+Result: 43 test files passed, 919 tests passed.
 
-**Problem:** Vitest uses `css.modules.classNameStrategy = 'non-scoped'` for speed, which hides production-only CSS Module selector drift. Tests against dev server class names don't catch hashed/scoped selector issues.
+### Production CSS Scoping
 
-**Solution:** Two-track E2E testing:
+```bash
+npm run test:e2e:css-scoping
+```
 
-1. **Dev-mode smoke tests** (existing):
-   ```bash
-   npm run test:e2e
-   ```
-   Runs against dev server; validates basic rendering with non-scoped class names.
+Result: 14 Playwright tests passed against a production build and `vite preview`.
 
-2. **Production-build smoke tests** (new):
-   ```bash
-   npm run test:e2e:production
-   # or specifically:
-   npm run test:e2e:css-scoping
-   ```
-   - Builds production bundle (`npm run build`)
-   - Runs preview server (`npm run preview`)
-   - Tests against hashed/scoped CSS Module class names
-   - Uses `playwright.config.production.ts`
-
-**Coverage:**
-- ChordRowStrip computed styles (background/border/shadow from module)
-- Mobile theory buttons touch targets (`min-height: 36px` enforced)
-- Stale global class selectors absent (`.controls-panel`, `.header-btn`, `.key-column` not found)
-- CSS Module scoping patterns present in production DOM
-- Responsive layout integrity under scoped class names
-
-**Latest results:** `test: add scoped module migration smoke coverage` (commit `6e40668`):
-- ✅ 14 production-build E2E tests, all passing
-- ✅ No unscoped global class conflicts
-- ✅ Hashed module class names verified in DOM
-
-## Recent Commits (CSS Phase)
-
-Reference history of CSS migration work:
-
-| Commit | Message |
-|---|---|
-| `d9a5855` | refactor(css): adopt semantic surface tokens |
-| `d22e0cd` | refactor(css): scope fretboard runtime css variables |
-| `357b97a` | refactor(css): adopt semantic tokens in card & chip components |
-| `10b9788` | refactor(css): scope fretboard glow filter variables |
-| `ac7d939` | refactor(css): compose shared control chrome |
-| `eb02c4b` | refactor(css): compose shared icon button chrome |
-| `ab9db5c` | test: add production CSS scoping tests |
-| `23b417c` | refactor(css): remove circle of fifths global parent coupling |
+This test path verifies hashed/scoped CSS Module behavior that Vitest can miss because the unit test config uses `css.modules.classNameStrategy = 'non-scoped'`.
 
 ## Remaining Risks
 
-**None.** Migration is complete and verified:
-- ✅ All component styles scoped
-- ✅ No global class pollution
-- ✅ Design tokens centralized in 4 global files
-- ✅ Build passes with no CSS warnings
-- ✅ All tests pass (43 test files, 919 tests)
-- ✅ No circular dependencies or scoping conflicts
+No known CSS Module migration blockers remain.
 
-## Next Steps
+Watch items:
 
-No further CSS migration work required. Future work follows conventions + verification:
+1. **Intentional global layout hooks** - `App.css` still owns app-level layout selectors. Keep those selectors restricted to documented data attributes and avoid targeting module-local class names from globals.
+2. **Vitest class names are non-scoped** - continue using the production CSS scoping test for module-boundary validation.
+3. **Shared utilities need ownership discipline** - add reusable classes to `shared.module.css` only when at least two components need the primitive; keep one-off styles in the owning component module.
+4. **Visual regressions are still possible** - build and automated tests pass, but layout-heavy CSS changes should still be checked with targeted screenshots or Playwright viewport coverage when the visual surface changes.
 
-### Development
-- **New components:** pair `.tsx` with `.module.css` sibling
-- **Global tokens:** add to `tokens.css` or `semantic.css`
-- **Layout rules:** add to `App.css` with `[data-layout-*]` selectors
-- **Shared primitives:** add to `components/shared.module.css`
+## Maintenance Standards
 
-### Verification (before PR)
-- `npm run lint` + `npm run test` + `npm run build` (always required)
-- `npm run test:e2e:css-scoping` (optional, but recommended when changing CSS Module imports)
+- New component styles should use sibling `.module.css` files.
+- Global tokens belong in `tokens.css` or `semantic.css`.
+- App layout rules belong in `App.css` and should use stable data attributes, not component module class names.
+- Reusable component primitives belong in `src/components/shared.module.css`.
+- Before PR, run:
 
-See `CLAUDE.md` § CSS Modules for full conventions.
+```bash
+npm run build
+npm run test
+npm run test:e2e:css-scoping
+```
