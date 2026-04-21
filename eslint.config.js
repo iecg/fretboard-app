@@ -21,8 +21,8 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
-  // Phase 4: All jsx-a11y rules set to 'warn' to surface issues without breaking CI.
-  // Promote to 'error' in Phase 5 after primitive work completes.
+  // Set all jsx-a11y rules to 'warn' to surface issues without breaking CI.
+  // Promote to 'error' after primitive work completes.
   {
     files: ['**/*.{ts,tsx}'],
     plugins: { 'jsx-a11y': jsxA11y },

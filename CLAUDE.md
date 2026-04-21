@@ -41,7 +41,7 @@ npm run preview        # preview build locally
 - **CSS:**
   - CSS Modules (`*.module.css`) for all components.
   - Global foundations in `tokens.css`, `semantic.css`, `App.css`, `index.css`.
-  - Use `clsx` for conditional classes and `motion/react` for animations.
+  - Use `clsx` for conditional classes, `cva` for variant class systems, and `motion` for animations.
 - **A11y:** Use ARIA labels and semantic HTML. Focus-visible styles required.
 
 ## CAGED / 3NPS System

@@ -50,7 +50,7 @@ def make_gif():
     filename_pattern = re.compile(r"^\d{4}")
     for fp in frame_paths:
         if not filename_pattern.match(fp.stem):
-            print(f"Warning: Skipping file with unexpected name: {fp.name}")
+            print(f"Warning: Skipping file with unexpected name: {fp.name} (expected 4-digit scene prefix)")
             continue
         prefix = fp.stem[:4]
         scene_frames[prefix] = fp
