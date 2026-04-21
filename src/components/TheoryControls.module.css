@@ -23,40 +23,89 @@
 }
 
 .theory-browser-main {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: 0;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.035), rgb(255 255 255 / 0.018)),
+    rgb(12 16 24 / 0.95);
+  overflow: hidden;
 }
 
+/* Selector cell stretches to fill compound height */
 .theory-browser-selector {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+}
+
+/* Cascade LabeledSelect internals to fill height within compound */
+.theory-browser-selector > div,
+.theory-browser-selector label {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.theory-browser-selector label {
+  flex-direction: row;
+  gap: 0;
+  align-items: stretch;
+}
+
+.theory-browser-selector label > div {
   flex: 1;
 }
 
+/* Strip native select of its own chrome — inherits compound surface */
+.theory-browser-selector select {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  min-height: unset;
+  padding-left: 0.85rem;
+  padding-right: 2.4rem;
+}
+
+.theory-browser-selector select:hover {
+  border-color: transparent;
+}
+
+/* Inset focus ring — avoids overflow:hidden clipping */
+.theory-browser-selector select:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--neon-cyan);
+}
+
+/* Nav buttons — no individual border/bg; inner dividers via border-right/left */
 .theory-nav-btn {
-  width: 2.95rem;
-  height: 2.95rem;
-  padding: 0;
-  border-radius: 999px;
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0.02)),
-    rgb(12 17 25 / 0.82);
-  border: 1px solid rgb(255 255 255 / 0.1);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
-  display: flex;
+  width: 2.75rem;
+  height: 3rem;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: rgb(230 238 247 / 0.86);
+  border: none;
+  border-right: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 0;
+  background: transparent;
+  color: rgb(228 238 248 / 0.92);
   cursor: pointer;
-  transition: var(--transition-surface);
+  transition: background-color var(--transition-fast) ease, color var(--transition-fast) ease;
+  flex-shrink: 0;
+}
+
+.theory-browser-main > .theory-nav-btn:last-child {
+  border-right: none;
+  border-left: 1px solid rgb(255 255 255 / 0.08);
 }
 
 .theory-nav-btn:hover:not(:disabled) {
-  background:
-    linear-gradient(180deg, rgb(77 228 255 / 0.12), rgb(77 228 255 / 0.03)),
-    rgb(12 17 25 / 0.92);
-  border-color: rgb(77 228 255 / 0.26);
-  transform: translateY(-1px);
+  background: rgb(77 228 255 / 0.09);
+  color: white;
 }
 
 .theory-nav-btn:active:not(:disabled) {
@@ -66,6 +115,12 @@
 .theory-nav-btn:disabled {
   opacity: 0.3;
   cursor: default;
+}
+
+/* Inset focus for nav buttons — same reason as select */
+.theory-nav-btn:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--neon-cyan);
 }
 
 .theory-nav-btn :global(.icon) {
