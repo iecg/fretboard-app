@@ -123,10 +123,6 @@
   opacity: 0.55;
   cursor: pointer;
   padding: 0;
-  transition:
-    opacity var(--transition-fast),
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast);
 }
 
 .degree-chip:focus-visible {
