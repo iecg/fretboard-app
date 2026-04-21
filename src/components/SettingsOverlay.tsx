@@ -469,7 +469,8 @@ function SettingsOverlaySurface({
         transition={{ duration: ANIMATION_DURATION_STANDARD, ease: ANIMATION_EASE }}
       />
       <motion.div
-        className="settings-overlay-drawer"
+        className={styles["settings-overlay-drawer"]}
+        data-testid="settings-drawer"
         ref={drawerRef}
         role="dialog"
         aria-modal="true"

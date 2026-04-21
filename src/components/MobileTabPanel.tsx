@@ -49,7 +49,7 @@ export function MobileTabPanel() {
         onChange={setMobileTab}
         variant="tabs"
       />
-      <div className="mobile-tab-content">
+      <div className={styles["mobile-tab-content"]} data-testid="mobile-tab-content">
         {mobileTab === "theory" && (
           <div className={clsx(styles["mobile-tab-panel"], styles["mobile-theory-tab"])}>
             <TheoryControls keyExplorer={<MobileKeyExplorer />} />

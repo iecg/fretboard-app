@@ -1,4 +1,4 @@
-:global(.version-badge) {
+.version-badge {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -13,7 +13,7 @@
   margin-top: 0;
 }
 
-:global(.version-badge) a {
+.version-badge a {
   color: rgb(210 225 238 / 0.74);
   pointer-events: auto;
 }

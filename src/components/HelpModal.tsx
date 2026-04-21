@@ -48,7 +48,8 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
         >
           <motion.div
             ref={helpModalRef}
-            className="help-modal"
+            className={styles["help-modal"]}
+            data-testid="help-modal"
             role="dialog"
             aria-modal="true"
             aria-labelledby="help-modal-title"
@@ -70,7 +71,7 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
                 <X className="icon" />
               </button>
               </div>
-              <div className="help-modal-content">
+              <div className={styles["help-modal-content"]} data-testid="help-modal-content">
               <h3>Getting Started</h3>
 
               <p>

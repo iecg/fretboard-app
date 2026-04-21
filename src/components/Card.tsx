@@ -55,7 +55,7 @@ export function Card({
   'aria-labelledby': ariaLabelledBy,
   'aria-label': ariaLabel,
   ...rest
-}: CardProps) {
+}: CardProps & React.HTMLAttributes<HTMLElement>) {
   const generatedId = useId();
   const headerId = title ? generatedId : undefined;
 
@@ -67,7 +67,7 @@ export function Card({
 
   return (
     <As
-      className={clsx("dashboard-card", className)}
+      className={clsx(styles.card, "dashboard-card", className)}
       aria-labelledby={labelledBy}
       aria-label={!title ? ariaLabel : undefined}
       {...rest}

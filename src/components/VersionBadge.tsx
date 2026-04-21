@@ -2,8 +2,9 @@ import styles from "./VersionBadge.module.css";
 
 export function VersionBadge() {
   return (
-    <div className="version-badge">
+    <div className={styles["version-badge"]} data-testid="version-badge">
       <span className={styles["version-text"]}>
+
         v{__APP_VERSION__}&nbsp;·&nbsp;© {new Date().getFullYear()} Isaac Cocar.
         Licensed under{" "}
         <a

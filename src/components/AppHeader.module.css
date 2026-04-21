@@ -19,7 +19,7 @@
   z-index: var(--z-header);
 }
 
-:global(.app-header-brand) {
+.app-header-brand {
   display: flex;
   align-items: center;
   gap: clamp(0.2rem, 0.6vw, 0.4rem);
@@ -113,7 +113,7 @@
   display: block;
 }
 
-:global(.app-header-brand-subtitle) {
+.app-header-brand-subtitle {
   font-size: clamp(0.66rem, 1vw, 0.8rem);
   color: rgb(197 213 230 / 0.72);
   line-height: 1.2;
@@ -124,12 +124,12 @@
 }
 
 @media (max-width: 879px) {
-  :global(.app-header-brand-subtitle) {
+  .app-header-brand-subtitle {
     display: none;
   }
 }
 
-:global(.app-header-actions) {
+.app-header-actions {
   display: flex;
   align-items: center;
   gap: clamp(0.35rem, 1vw, 0.6rem);
@@ -156,6 +156,7 @@
 /* Phase 2: Desktop compact header — smaller brand mark, tighter vertical padding.
    Targets ~78px total header height (down from ~111px).
    Brand legibility is preserved; action buttons shrink proportionally. */
+/* stylelint-disable selector-pseudo-class-no-unknown */
 :global(.app-container[data-layout-tier="desktop"]) .app-header {
   padding-top: clamp(0.52rem, 0.86vw, 0.7rem);
   padding-bottom: clamp(0.52rem, 0.86vw, 0.7rem);
@@ -169,7 +170,7 @@
   height: clamp(1.22rem, 2.1vw, 1.72rem);
 }
 
-:global(.app-container[data-layout-tier="desktop"]) :global(.app-header-brand-subtitle) {
+:global(.app-container[data-layout-tier="desktop"]) .app-header-brand-subtitle {
   font-size: clamp(0.6rem, 0.85vw, 0.7rem);
 }
 
@@ -186,3 +187,4 @@
 :global(.app-container[data-layout-tier="tablet"]) .app-header-brand-wordmark .fretflow-wordmark {
   height: clamp(1.35rem, 2.65vw, 2.05rem);
 }
+/* stylelint-enable selector-pseudo-class-no-unknown */

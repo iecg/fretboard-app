@@ -36,6 +36,7 @@ export function BaseControlsSection() {
     <Card
       title="Configuration"
       className={clsx("dashboard-card", "dashboard-card--configuration")}
+      data-testid="dashboard-card-configuration"
     >
       <div className={styles["control-group"]}>
         <FingeringPatternControls />
@@ -63,6 +64,7 @@ export function ScaleChordSection() {
     <Card
       title="Music Theory"
       className={clsx("dashboard-card", "dashboard-card--theory")}
+      data-testid="dashboard-card-theory"
     >
       <TheoryControls />
     </Card>
@@ -81,7 +83,7 @@ export function KeyColumn() {
   const enharmonicDisplay = useAtomValue(enharmonicDisplayAtom);
 
   return (
-    <Card title="Key Explorer" className="key-column">
+    <Card title="Key Explorer" className="key-column" data-testid="key-column">
       <Suspense fallback={null}>
         <CircleOfFifths
           rootNote={rootNote}

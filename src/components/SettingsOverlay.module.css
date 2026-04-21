@@ -262,20 +262,20 @@
   }
 }
 
-:global(.settings-overlay-drawer)[data-layout-tier="mobile"] .settings-overlay-header {
+.settings-overlay-drawer[data-layout-tier="mobile"] .settings-overlay-header {
   padding: 12px 16px;
 }
 
-:global(.settings-overlay-drawer)[data-layout-tier="mobile"] .settings-overlay-content {
+.settings-overlay-drawer[data-layout-tier="mobile"] .settings-overlay-content {
   gap: 12px;
   padding: 12px 16px max(24px, env(safe-area-inset-bottom, 0px));
 }
 
-:global(.settings-overlay-drawer)[data-layout-tier="mobile"] .overlay-section-card {
+.settings-overlay-drawer[data-layout-tier="mobile"] .overlay-section-card {
   gap: 12px;
 }
 
-:global(.settings-overlay-drawer)[data-layout-tier="mobile"] .overlay-field {
+.settings-overlay-drawer[data-layout-tier="mobile"] .overlay-field {
   gap: 8px;
 }
 

@@ -41,16 +41,23 @@ export function MainLayoutWrapper({
       data-layout-tier={layoutTier}
       data-layout-variant={layoutVariant}
       data-chord-active={isChordActive ? "true" : undefined}
+      data-testid="app-container"
     >
       {header}
 
-      {showSummary && <div className="summary-shell">{summary}</div>}
+      {showSummary && (
+        <div className="summary-shell" data-testid="summary-shell">
+          {summary}
+        </div>
+      )}
 
       <div className="chord-dock-shell">{chordDock}</div>
 
       {helpModal}
 
-      <main className="main-fretboard">{children}</main>
+      <main className="main-fretboard" data-testid="main-fretboard">
+        {children}
+      </main>
 
       {showControlsPanel && controlsPanel}
 

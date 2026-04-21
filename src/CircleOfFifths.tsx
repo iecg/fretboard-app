@@ -103,6 +103,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
         role="group"
         aria-labelledby="cof-title"
         aria-describedby="cof-desc"
+        data-testid="circle-of-fifths-svg"
       >
         <title id="cof-title">Circle of Fifths</title>
         <desc id="cof-desc">Interactive diagram to select the root note of the scale. Each segment represents a key, arranged in intervals of perfect fifths.</desc>

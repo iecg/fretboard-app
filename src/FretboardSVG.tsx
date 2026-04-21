@@ -911,6 +911,7 @@ export const FretboardSVG = memo(function FretboardSVG({
       aria-label={ariaLabel}
       className={styles["fretboard-board"]}
       data-practice-lens={hasChordOverlay ? practiceLens : undefined}
+      data-testid="fretboard-svg"
     >
       <div
         className={styles["fretboard-neck"]}
