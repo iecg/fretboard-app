@@ -67,7 +67,12 @@ export function MainLayoutWrapper({
 
       {helpModal}
 
-      <main className={styles["main-fretboard"]} data-testid="main-fretboard">
+      <main
+        className={styles["main-fretboard"]}
+        data-layout-tier={layoutTier}
+        data-layout-variant={layoutVariant}
+        data-testid="main-fretboard"
+      >
         {children}
       </main>
 
