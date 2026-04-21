@@ -33,7 +33,6 @@ function MobileKeyExplorer() {
         scaleName={scaleName}
         useFlats={useFlats}
         enharmonicDisplay={enharmonicDisplay}
-        variant="inline"
       />
     </div>
   );

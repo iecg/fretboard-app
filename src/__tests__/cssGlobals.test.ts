@@ -140,6 +140,22 @@ const APPROVED_GLOBALS = new Set([
   "custom-scrollbar",
   "hide-scrollbar",
   "brand-mark",
+  // Fretboard layout and display
+  "fretboard-board",
+  "fretboard-neck",
+  "fretboard-main-svg",
+  "fret-numbers-row",
+  "fret-number",
+  // App header layout
+  "app-header-brand",
+  "app-header-brand-subtitle",
+  "app-header-actions",
+  // Help modal overlay
+  "overlay-field-help",
+  "overlay-help-trigger",
+  "overlay-help-popover",
+  // Settings overlay drawer
+  "settings-overlay-drawer",
 ]);
 
 /**
