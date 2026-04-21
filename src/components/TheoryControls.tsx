@@ -2,7 +2,7 @@ import { type ReactNode } from "react";
 import { ScaleSelector } from "./ScaleSelector";
 import { ChordOverlayControls } from "./ChordOverlayControls";
 import { KeyExplorer } from "./KeyExplorer";
-import "./TheoryControls.css";
+import styles from "./TheoryControls.module.css";
 
 interface TheoryControlsProps {
   keyExplorer?: ReactNode;
@@ -10,7 +10,7 @@ interface TheoryControlsProps {
 
 export function TheoryControls({ keyExplorer }: TheoryControlsProps) {
   return (
-    <div className="theory-controls" data-testid="theory-controls">
+    <div className={styles["theory-controls"]} data-testid="theory-controls">
       <ScaleSelector />
       {keyExplorer ? <KeyExplorer>{keyExplorer}</KeyExplorer> : null}
       <ChordOverlayControls />

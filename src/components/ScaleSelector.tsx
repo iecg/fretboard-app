@@ -1,4 +1,5 @@
 import { startTransition } from "react";
+import clsx from "clsx";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { NOTES } from "../theory";
 import {
@@ -18,6 +19,7 @@ import { NoteGrid } from "./NoteGrid";
 import { ToggleBar } from "./ToggleBar";
 import { useScaleState } from "../hooks/useScaleState";
 import shared from "./shared.module.css";
+import theoryStyles from "./TheoryControls.module.css";
 
 export function ScaleSelector() {
   const {
@@ -131,22 +133,22 @@ export function ScaleSelector() {
       </div>
 
       <div className={shared["control-section"]}>
-        <div className="theory-mode-browser panel-surface panel-surface--compact">
+        <div className={clsx(theoryStyles["theory-mode-browser"], "panel-surface panel-surface--compact")}>
           <span className={shared["section-label"]}>{memberTerm}</span>
           <div
-            className="theory-browser-main"
+            className={theoryStyles["theory-browser-main"]}
             role="group"
             aria-label={`Browse ${memberTerm}`}
           >
             <button
               type="button"
-              className="theory-nav-btn"
+              className={theoryStyles["theory-nav-btn"]}
               onClick={() => handleStepBrowse(-1)}
               aria-label={`Previous ${memberTerm}`}
             >
               <ChevronLeft size={16} />
             </button>
-            <div className="theory-browser-selector">
+            <div className={theoryStyles["theory-browser-selector"]}>
               <LabeledSelect
                 label={memberTerm}
                 hideLabel
@@ -157,7 +159,7 @@ export function ScaleSelector() {
             </div>
             <button
               type="button"
-              className="theory-nav-btn"
+              className={theoryStyles["theory-nav-btn"]}
               onClick={() => handleStepBrowse(1)}
               aria-label={`Next ${memberTerm}`}
             >

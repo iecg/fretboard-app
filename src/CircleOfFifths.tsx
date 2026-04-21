@@ -1,6 +1,5 @@
 import React, { memo } from "react";
 import clsx from "clsx";
-import "./CircleOfFifths.css";
 import {
   CIRCLE_OF_FIFTHS,
   getNoteDisplayInScale,
@@ -40,12 +39,14 @@ export const CircleOfFifths = memo(function CircleOfFifths({
   scaleName = "Major",
   useFlats = false,
   enharmonicDisplay = "auto",
+  variant = "card",
 }: {
   rootNote: string;
   setRootNote: (n: string) => void;
   scaleName?: string;
   useFlats?: boolean;
   enharmonicDisplay?: "auto" | "on" | "off";
+  variant?: "card" | "inline";
 }) {
   const rootIndex = CIRCLE_OF_FIFTHS.indexOf(rootNote);
   const scaleIntervals = SCALES[scaleName] || [];
@@ -97,13 +98,14 @@ export const CircleOfFifths = memo(function CircleOfFifths({
   };
 
   return (
-    <div className={styles["circle-fifths-container"]} data-testid="circle-of-fifths">
+    <div className={styles["circle-fifths-container"]} data-testid="circle-of-fifths" data-variant={variant}>
       <svg
         viewBox={`0 0 ${SIZE} ${SIZE}`}
         className={styles["circle-fifths-svg"]}
         role="group"
         aria-labelledby="cof-title"
         aria-describedby="cof-desc"
+        data-testid="circle-of-fifths-svg"
       >
         <title id="cof-title">Circle of Fifths</title>
         <desc id="cof-desc">Interactive diagram to select the root note of the scale. Each segment represents a key, arranged in intervals of perfect fifths.</desc>
@@ -132,10 +134,10 @@ export const CircleOfFifths = memo(function CircleOfFifths({
               key={note}
               ref={(el) => { segmentRefs.current[index] = el; }}
               d={slicePath(index)}
-              className={clsx("circle-slice", {
-                active: isActive,
-                "circle-slice--scale": !isActive && degreeStr,
-                "circle-slice--muted": !isActive && !degreeStr,
+              className={clsx(styles["circle-slice"], {
+                [styles.active]: isActive,
+                [styles["circle-slice--scale"]]: degreeStr,
+                [styles["circle-slice--muted"]]: !isActive && !degreeStr,
               })}
               stroke="var(--surface-highlight)"
               strokeWidth={1}
@@ -182,7 +184,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
             strokeLinejoin="round"
             pointerEvents="none"
             aria-hidden="true"
-            className="circle-slice-focus-ring"
+            className={styles["circle-slice-focus-ring"]}
           />
         )}
 
@@ -238,7 +240,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
                   fontSize={noteFontSize}
                   fontWeight="bold"
                   fill={noteTone}
-                  className="circle-note-label"
+                  className={styles["circle-note-label"]}
                 >
                   <tspan
                     x={lx}
@@ -271,7 +273,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
                   fontSize={noteFontSize}
                   fontWeight="bold"
                   fill={noteTone}
-                  className="circle-note-label"
+                  className={styles["circle-note-label"]}
                 >
                   <tspan
                     x={lx}
@@ -298,7 +300,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
                   stroke="rgba(0,0,0,0.3)"
                   strokeWidth="1.5"
                   paintOrder="stroke"
-                  className="circle-degree-label"
+                  className={styles["circle-degree-label"]}
                 >
                   {degreeStr}
                 </text>
@@ -330,7 +332,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
           stroke="rgba(0,0,0,0.3)"
           strokeWidth="2"
           paintOrder="stroke"
-          className="circle-center-note"
+          className={styles["circle-center-note"]}
         >
           {formatAccidental(rootDisplayLabel)}
         </text>
@@ -346,7 +348,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
           stroke="rgba(0,0,0,0.3)"
           strokeWidth="2"
           paintOrder="stroke"
-          className="circle-center-signature"
+          className={styles["circle-center-signature"]}
         >
           {keySigText}
         </text>

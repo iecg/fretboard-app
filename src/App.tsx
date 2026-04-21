@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useSetAtom, useAtomValue, createStore, Provider } from "jotai";
+import clsx from "clsx";
 import { Fretboard } from "./Fretboard";
 import { HelpCircle, Settings2, Volume2, VolumeX } from "lucide-react";
 import { synth } from "./audio";
@@ -9,6 +10,7 @@ import {
   toggleMuteAtom,
   chordTypeAtom,
   mobileTabAtom,
+  showChordPracticeBarAtom,
 } from "./store/atoms";
 import useLayoutMode from "./hooks/useLayoutMode";
 import { AppHeader } from "./components/AppHeader";
@@ -18,6 +20,7 @@ import { SummaryRibbon } from "./components/SummaryRibbon";
 import { ChordOverlayDock } from "./components/ChordOverlayDock";
 import { VersionBadge } from "./components/VersionBadge";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper";
+import sharedStyles from "./components/shared.module.css";
 import "./App.css";
 
 // Lazy-loaded components
@@ -39,6 +42,7 @@ const MobileTabPanel = lazy(() =>
 function AppContent() {
   const chordType = useAtomValue(chordTypeAtom);
   const isMuted = useAtomValue(isMutedAtom);
+  const showChordPracticeBar = useAtomValue(showChordPracticeBarAtom);
   // Mount mobileTabAtom so atomWithStorage writes its default to localStorage
   // on first render — required for correct initial tab state across layout modes.
   useAtomValue(mobileTabAtom);
@@ -62,6 +66,7 @@ function AppContent() {
       layoutVariant={layout.variant}
       isChordActive={!!chordType}
       showSummary={layout.showSummary}
+      showChordDock={showChordPracticeBar}
       showControlsPanel={layout.showControlsPanel}
       showMobileTabs={layout.showMobileTabs}
       header={
@@ -75,7 +80,7 @@ function AppContent() {
               <button
                 type="button"
                 onClick={() => setSettingsOverlayOpen((v) => !v)}
-                className="header-btn"
+                className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--lg"])}
                 title="Settings"
                 aria-label="Open settings"
               >
@@ -84,7 +89,7 @@ function AppContent() {
               <button
                 type="button"
                 onClick={toggleMute}
-                className="header-btn"
+                className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--lg"])}
                 title={isMuted ? "Unmute" : "Mute"}
                 aria-label={isMuted ? "Unmute audio" : "Mute audio"}
               >
@@ -98,7 +103,7 @@ function AppContent() {
                 ref={helpTriggerRef}
                 type="button"
                 onClick={() => setShowHelp(true)}
-                className="header-btn"
+                className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--lg"])}
                 title="Help & Instructions"
                 aria-label="Open help"
               >

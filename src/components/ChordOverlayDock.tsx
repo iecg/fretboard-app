@@ -1,5 +1,6 @@
 import { usePracticeBarState } from "../hooks/usePracticeBarState";
 import { ChordPracticeBar } from "./ChordPracticeBar";
+import styles from "./ChordOverlayDock.module.css";
 
 /** Independent chord practice dock — shows coaching cues for the active lens. */
 export function ChordOverlayDock() {
@@ -15,7 +16,7 @@ export function ChordOverlayDock() {
   if (!showChordPracticeBar) return null;
 
   return (
-    <div className="chord-overlay-dock">
+    <div className={styles["chord-overlay-dock"]}>
       <ChordPracticeBar
         title={practiceBarTitle}
         badge={practiceBarBadge}

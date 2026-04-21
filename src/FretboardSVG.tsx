@@ -13,7 +13,7 @@ import {
 } from "./theory";
 import { parseNote } from "./guitar";
 import { STRING_ROW_PX_TABLET } from "./layout/responsive";
-import "./FretboardSVG.css";
+import styles from "./FretboardSVG.module.css";
 import type { ShapePolygon, CagedShape } from "./shapes";
 import type { ActiveShapeType } from "./hooks/useFretboardState";
 import {
@@ -403,7 +403,7 @@ const FretboardBackground = memo(({
           stroke={isBass ? "#c6ccd2" : "#e4e8ee"}
           style={{ strokeWidth: `var(--string-taper-${stringIndex + 1})` }}
           strokeLinecap="round"
-          className={`fretboard-string fretboard-string-${stringIndex + 1}`}
+          className={clsx(styles["fretboard-string"], `fretboard-string-${stringIndex + 1}`)}
         />
         {isBass && (
           <line
@@ -906,24 +906,30 @@ export const FretboardSVG = memo(function FretboardSVG({
   }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, wrappedNotes, practiceLens, tuning, noteSemantics, activePattern, activeShape, shapeScope]);
 
   return (
-    <div role="group" aria-label={ariaLabel} className="fretboard-board" data-practice-lens={hasChordOverlay ? practiceLens : undefined}>
+    <div
+      role="group"
+      aria-label={ariaLabel}
+      className={styles["fretboard-board"]}
+      data-practice-lens={hasChordOverlay ? practiceLens : undefined}
+      data-testid="fretboard-svg"
+    >
       <div
-        className="fretboard-neck"
+        className={styles["fretboard-neck"]}
         style={
           {
             height: `${neckHeight + NECK_BORDER * 2}px`,
             width: `${neckWidthPx + NECK_BORDER * 2}px`,
             willChange: "transform",
             "--string-row-px": `${stringRowPx}px`,
-            "--glow-cyan": glowFilterUrls.cyan,
-            "--glow-orange": glowFilterUrls.orange,
-            "--glow-violet": glowFilterUrls.violet,
+            "--fretboard-svg-glow-cyan-url": glowFilterUrls.cyan,
+            "--fretboard-svg-glow-orange-url": glowFilterUrls.orange,
+            "--fretboard-svg-glow-violet-url": glowFilterUrls.violet,
           } as CSSProperties
         }
       >
         {/* Visual SVG — aria-hidden; accessible buttons rendered separately below */}
         <svg
-          className="fretboard-main-svg"
+          className={styles["fretboard-main-svg"]}
           width={neckWidthPx}
           height={neckHeight}
           style={{
@@ -1055,10 +1061,7 @@ export const FretboardSVG = memo(function FretboardSVG({
                 with a bright silver highlight down the centre. */}
             <linearGradient
               id={svgDefId("fret-wire-cylinder")}
-              x1="0"
-              y1="0"
-              x2="1"
-              y2="0"
+              x1="0" y1="0" x2="1" y2="0"
             >
               <stop offset="0%" stopColor="#3e444c" />
               <stop offset="25%" stopColor="#a6afbc" />
@@ -1246,8 +1249,8 @@ export const FretboardSVG = memo(function FretboardSVG({
                   <g
                     key={`note-${stringIndex}-${fretIndex}`}
                     className={clsx(
-                      "fretboard-note",
-                      noteClass,
+                      styles["fretboard-note"],
+                      styles[noteClass],
                       isHidden && "hidden",
                     )}
                     data-note-role={noteClass !== "note-inactive" ? noteClass : undefined}
@@ -1274,7 +1277,7 @@ export const FretboardSVG = memo(function FretboardSVG({
 
         {/* Accessible button layer — transparent, positioned over SVG circles */}
         <div
-          className="fretboard-a11y-layer"
+          className={styles["fretboard-a11y-layer"]}
           style={{
             position: "absolute",
             top: NECK_BORDER,
@@ -1305,8 +1308,8 @@ export const FretboardSVG = memo(function FretboardSVG({
                   data-note-tension={isTension || undefined}
                   data-note-guide-tone={isGuideTone || undefined}
                   className={clsx(
-                    "note-bubble",
-                    noteClass,
+                    styles["note-bubble"],
+                    styles[noteClass],
                     isHidden && "hidden",
                   )}
                   style={{
@@ -1331,7 +1334,7 @@ export const FretboardSVG = memo(function FretboardSVG({
           matches the visual width of its fret column so the numbers stay
           centred beneath each box (columns are non-uniform). */}
       <div
-        className="fret-numbers-row"
+        className={styles["fret-numbers-row"]}
         aria-hidden="true"
         style={{
           width: `${neckWidthPx + NECK_BORDER * 2}px`,
@@ -1343,7 +1346,7 @@ export const FretboardSVG = memo(function FretboardSVG({
           return (
             <span
               key={`fn-${fretIndex}`}
-              className="fret-number"
+              className={styles["fret-number"]}
               style={{ width: `${fretColumnWidth(fretIndex)}px` }}
             >
               {fretIndex > 0 && fretIndex < maxFret ? fretIndex : ""}

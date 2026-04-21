@@ -9,46 +9,19 @@
 }
 
 .fret-btn {
+  composes: control-button from './shared.module.css';
   min-width: 2.35rem;
   min-height: 2.35rem;
   padding: 0.4rem 0.55rem;
   font-size: 0.88rem;
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.02)),
-    rgb(14 19 27 / 0.92);
-  border: 1px solid rgb(255 255 255 / 0.12);
   border-radius: 0.8rem;
-  color: rgb(224 233 243 / 0.88);
-  cursor: pointer;
-  transition: var(--transition-surface);
-  line-height: 1.2;
-}
-
-.fret-btn:hover:not(:disabled) {
-  background:
-    linear-gradient(180deg, rgb(77 228 255 / 0.18), rgb(77 228 255 / 0.08)),
-    rgb(18 31 43 / 0.95);
-  color: white;
-  border-color: rgb(77 228 255 / 0.42);
-}
-
-.fret-btn:disabled {
-  opacity: 0.3;
-  cursor: default;
-}
-
-.fret-btn:focus-visible {
-  outline: var(--focus-ring);
-  outline-offset: var(--focus-ring-offset);
-  box-shadow: var(--focus-ring-glow);
 }
 
 .fret-value {
+  composes: control-value from './shared.module.css';
   font-size: 0.85rem;
   font-weight: 700;
-  color: rgb(246 249 252 / 0.95);
-  min-width: 1.5rem;
-  text-align: center;
+  color: var(--chrome-fg);
 }
 
 .range-separator {
@@ -59,27 +32,27 @@
 
 .fret-label {
   font-size: 0.72rem;
-  color: rgb(188 200 214 / 0.8);
+  color: var(--chrome-fg-muted);
   min-width: 2.5rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-[data-layout-tier="mobile"] .fret-range-control.mobile,
+:global(.app-container[data-layout-tier="mobile"]) .fret-range-control.mobile,
 .fret-range-control.mobile {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.85rem;
 }
 
-[data-layout-tier="mobile"] .fret-range-control.mobile .fret-group,
+:global(.app-container[data-layout-tier="mobile"]) .fret-range-control.mobile .fret-group,
 .fret-range-control.mobile .fret-group {
   flex-wrap: wrap;
   align-content: flex-start;
   gap: var(--space-1);
 }
 
-[data-layout-tier="mobile"] .fret-range-control.mobile .fret-label,
+:global(.app-container[data-layout-tier="mobile"]) .fret-range-control.mobile .fret-label,
 .fret-range-control.mobile .fret-label {
   flex-basis: 100%;
   min-width: unset;
@@ -91,7 +64,7 @@
   padding-bottom: var(--space-1);
 }
 
-[data-layout-tier="mobile"] .fret-range-control.mobile .fret-btn,
+:global(.app-container[data-layout-tier="mobile"]) .fret-range-control.mobile .fret-btn,
 .fret-range-control.mobile .fret-btn {
   min-height: var(--size-touch-target);
   min-width: var(--size-touch-target);
@@ -101,7 +74,7 @@
 }
 
 /* Tablet: hide Start/End labels in dashboard to prevent overflow in narrow left column. */
-.app-container[data-layout-tier="tablet"] .fret-range-control.dashboard .fret-label {
+:global(.app-container[data-layout-tier="tablet"]) .fret-range-control.dashboard .fret-label {
   display: none;
 }
 

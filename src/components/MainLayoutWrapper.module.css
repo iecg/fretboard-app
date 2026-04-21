@@ -1,0 +1,43 @@
+.main-fretboard {
+  width: 100%;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.summary-shell {
+  display: flex;
+  justify-content: center;
+}
+
+.chord-dock-shell {
+  display: flex;
+  justify-content: center;
+}
+
+/* Phase 2: pull summary-shell 0.18rem closer to the header — creates a
+   tighter "top band" zone (header + key summary) vs. the fretboard below.
+   Combined with gap: 0.5rem, the strip sits 0.32rem below the header while
+   the fretboard gets the full 0.5rem gap (unified feel without margins). */
+.summary-shell[data-layout-tier="desktop"] {
+  margin-top: -0.18rem;
+}
+
+/* Fretboard hero gets an explicit margin-bottom to visually separate it
+   from the controls dashboard below. Combined with the 0.5rem container gap,
+   total fretboard→controls space is ~0.95rem — intentionally wider than the
+   0.32rem between chrome sections above the fretboard. */
+.main-fretboard[data-layout-tier="desktop"] {
+  margin-bottom: 0.45rem;
+}
+
+.summary-shell[data-layout-tier="tablet"] {
+  margin-top: -0.1rem;
+}
+
+.main-fretboard[data-layout-tier="tablet"] {
+  margin-bottom: 0.3rem;
+}
+
+.main-fretboard[data-layout-variant="landscape-mobile"] {
+  margin-bottom: 0;
+}

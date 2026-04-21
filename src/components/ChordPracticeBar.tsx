@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import type { PracticeBarGroup, PracticeBarNote } from "../theory";
-import "./ChordPracticeBar.css";
+import styles from "./ChordPracticeBar.module.css";
 
 interface PillProps {
   note: PracticeBarNote;
@@ -10,20 +10,20 @@ function Pill({ note }: PillProps) {
   const aria = [note.displayNote, note.intervalName].filter(Boolean).join(", ");
   return (
     <li
-      className="practice-bar-pill"
+      className={styles["practice-bar-pill"]}
       data-chord-root={note.isChordRoot ? "true" : undefined}
       data-guide-tone={note.isGuideTone ? "true" : undefined}
       data-tension={note.isTension ? "true" : undefined}
       data-in-scale={note.isInScale ? "true" : undefined}
       aria-label={aria}
     >
-      <span className="practice-bar-pill-note">{note.displayNote}</span>
+      <span className={styles["practice-bar-pill-note"]}>{note.displayNote}</span>
       {note.intervalName && (
-        <span className="practice-bar-pill-interval">{note.intervalName}</span>
+        <span className={styles["practice-bar-pill-interval"]}>{note.intervalName}</span>
       )}
       {note.resolvesTo && (
         <span
-          className="practice-bar-pill-resolve"
+          className={styles["practice-bar-pill-resolve"]}
           aria-label={`resolves to ${note.resolvesTo.displayNote}`}
         >
           →{note.resolvesTo.displayNote}
@@ -42,12 +42,12 @@ function Group({ variant, group }: GroupProps) {
   if (group.notes.length === 0) return null;
   return (
     <div
-      className="practice-bar-group"
+      className={styles["practice-bar-group"]}
       data-group-variant={variant}
       aria-label={group.label}
     >
-      <span className="practice-bar-group-label">{group.label}:</span>
-      <ul className="practice-bar-pill-list">
+      <span className={styles["practice-bar-group-label"]}>{group.label}:</span>
+      <ul className={styles["practice-bar-pill-list"]}>
         {group.notes.map((n, i) => (
           <Pill key={`${variant}-${n.internalNote}-${i}`} note={n} />
         ))}
@@ -107,16 +107,16 @@ export function ChordPracticeBar({
     <section
       role="group"
       aria-label={`Practice cues: ${title}`}
-      className={clsx("chord-practice-bar", className)}
+      className={clsx(styles["chord-practice-bar"], className)}
     >
-      <div className="chord-practice-bar-header">
-        <span className="chord-practice-bar-title">{title}</span>
+      <div className={styles["chord-practice-bar-header"]}>
+        <span className={styles["chord-practice-bar-title"]}>{title}</span>
         {lensLabel && (
-          <span className="chord-practice-bar-lens-label">{lensLabel}</span>
+          <span className={styles["chord-practice-bar-lens-label"]}>{lensLabel}</span>
         )}
-        {badge && <span className="chord-practice-bar-badge">{badge}</span>}
+        {badge && <span className={styles["chord-practice-bar-badge"]}>{badge}</span>}
       </div>
-      <div className="chord-practice-bar-groups">
+      <div className={styles["chord-practice-bar-groups"]}>
         {!collapse && <Group variant="chord" group={chordGroup} />}
         <Group variant="land-on" group={landOnGroup} />
       </div>

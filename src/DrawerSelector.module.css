@@ -23,9 +23,9 @@
   background:
     linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.02)),
     rgb(12 17 25 / 0.88);
-  border: 1px solid rgb(255 255 255 / 0.1);
+  border: 1px solid var(--chrome-border);
   border-radius: 0.95rem;
-  color: var(--text-main);
+  color: var(--chrome-fg);
   cursor: pointer;
   font-size: var(--text-sm);
   transition: border-color var(--transition-fast);
@@ -33,11 +33,11 @@
 }
 
 .drawer-trigger:hover {
-  border-color: rgb(77 228 255 / 0.38);
+  border-color: color-mix(in srgb, var(--neon-cyan) 38%, transparent);
 }
 
 .drawer-trigger.open {
-  border-color: rgb(77 228 255 / 0.48);
+  border-color: color-mix(in srgb, var(--neon-cyan) 48%, transparent);
 }
 
 .drawer-trigger:focus-visible {
@@ -130,8 +130,8 @@
 }
 
 .drawer-option.active {
-  background: rgb(77 228 255 / 0.1);
-  color: rgb(226 249 255 / 0.98);
+  background: var(--selected-bg);
+  color: var(--selected-fg);
   font-weight: 500;
 }
 
@@ -154,20 +154,9 @@
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
 @media (max-width: 767px) {
-  :global(.mobile-tab-panel) .drawer-trigger {
+  [data-layout-scope="mobile-tabs"] .drawer-trigger {
     min-height: 36px;
   }
 }
 
-:global(.overlay-field--selector) .drawer-label {
-  display: none;
-}
-
-:global(.overlay-field--selector) .drawer-trigger {
-  width: 100%;
-}
-
-:global(.overlay-field--selector) .drawer-value {
-  margin-left: 0;
-}
 /* stylelint-enable selector-pseudo-class-no-unknown */

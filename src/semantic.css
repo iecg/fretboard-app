@@ -77,7 +77,7 @@
   --transition-motion: transform var(--transition-fast) ease, opacity var(--transition-base) ease;
 
   /* CARD SURFACE */
-  --surface-card: var(--surface-raised);
+  --surface-card: color-mix(in srgb, var(--token-surface-card-base) 96%, transparent);
   --surface-card-border: rgb(255 255 255 / 0.1);
   --surface-card-header-border: var(--token-border-subtler);
 

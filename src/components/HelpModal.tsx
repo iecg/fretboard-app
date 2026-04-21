@@ -1,11 +1,14 @@
 import { useEffect, useRef, type RefObject } from "react";
 import { X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import clsx from "clsx";
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import {
   ANIMATION_DURATION_FAST,
   ANIMATION_EASE,
 } from "../constants";
+import styles from "./HelpModal.module.css";
+import sharedStyles from "./shared.module.css";
 
 interface HelpModalProps {
   isOpen: boolean;
@@ -39,7 +42,7 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
     <AnimatePresence>
       {isOpen ? (
         <motion.div
-          className="help-modal-overlay"
+          className={styles["help-modal-overlay"]}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -47,7 +50,8 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
         >
           <motion.div
             ref={helpModalRef}
-            className="help-modal"
+            className={styles["help-modal"]}
+            data-testid="help-modal"
             role="dialog"
             aria-modal="true"
             aria-labelledby="help-modal-title"
@@ -58,19 +62,20 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
             exit={{ opacity: 0, scale: 0.96 }}
             transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
           >
-            <div className="help-modal-header">
+            <div className={styles["help-modal-header"]}>
               <h2 id="help-modal-title">FretFlow Help</h2>
               <button
                 type="button"
-                className="help-modal-close"
+                className={clsx(sharedStyles["icon-button"])}
                 onClick={onClose}
                 aria-label="Close help"
               >
                 <X className="icon" />
               </button>
-            </div>
-            <div className="help-modal-content">
+              </div>
+              <div className={styles["help-modal-content"]} data-testid="help-modal-content">
               <h3>Getting Started</h3>
+
               <p>
                 FretFlow is an interactive guitar fretboard and music theory
                 tool. Choose a root note, scale, and optional chord overlay to

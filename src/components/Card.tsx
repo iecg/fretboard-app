@@ -1,6 +1,6 @@
 import { type ReactNode, useId } from 'react';
 import clsx from 'clsx';
-import './Card.css';
+import styles from './Card.module.css';
 
 export interface CardProps {
   title?: string;
@@ -27,19 +27,19 @@ interface CardBodyProps {
 
 function CardHeader({ title, icon, action, id }: CardHeaderProps) {
   return (
-    <div className="card-header">
-      <div className="card-header-title-row">
-        {icon && <span className="card-header-icon" aria-hidden="true">{icon}</span>}
-        <h2 className="card-header-title" id={id}>{title}</h2>
+    <div className={styles['card-header']}>
+      <div className={styles['card-header-title-row']}>
+        {icon && <span className={styles['card-header-icon']} aria-hidden="true">{icon}</span>}
+        <h2 className={styles['card-header-title']} id={id}>{title}</h2>
       </div>
-      {action && <div className="card-header-action">{action}</div>}
+      {action && <div className={styles['card-header-action']}>{action}</div>}
     </div>
   );
 }
 
 function CardBody({ children, className }: CardBodyProps) {
   return (
-    <div className={clsx('card-body', className)}>
+    <div className={clsx(styles['card-body'], className)} data-card-body>
       {children}
     </div>
   );
@@ -55,7 +55,7 @@ export function Card({
   'aria-labelledby': ariaLabelledBy,
   'aria-label': ariaLabel,
   ...rest
-}: CardProps) {
+}: CardProps & React.HTMLAttributes<HTMLElement>) {
   const generatedId = useId();
   const headerId = title ? generatedId : undefined;
 
@@ -67,7 +67,7 @@ export function Card({
 
   return (
     <As
-      className={clsx('card', className)}
+      className={clsx(styles.card, "dashboard-card", className)}
       aria-labelledby={labelledBy}
       aria-label={!title ? ariaLabel : undefined}
       {...rest}

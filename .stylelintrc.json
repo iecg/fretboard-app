@@ -1,0 +1,19 @@
+{
+  "extends": ["stylelint-config-recommended"],
+  "rules": {
+    "selector-pseudo-class-no-unknown": [
+      true,
+      {
+        "ignorePseudoClasses": ["global"]
+      }
+    ],
+    "property-no-unknown": [
+      true,
+      {
+        "ignoreProperties": ["composes"]
+      }
+    ],
+    "no-descending-specificity": null,
+    "no-duplicate-selectors": null
+  }
+}

@@ -1,5 +1,6 @@
 import { useScaleState } from "../hooks/useScaleState";
 import { DegreeChipStrip } from "./DegreeChipStrip";
+import styles from "./DegreeChipStrip.module.css";
 
 function EyeOpenIcon() {
   return (
@@ -46,7 +47,7 @@ export function ScaleStripPanel() {
       headerAction={
         <button
           type="button"
-          className="scale-eye-toggle"
+          className={styles["scale-eye-toggle"]}
           aria-label={scaleVisible ? "Hide scale" : "Show scale"}
           aria-pressed={!scaleVisible}
           onClick={toggleScaleVisible}

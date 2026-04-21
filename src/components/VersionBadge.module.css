@@ -1,0 +1,51 @@
+.version-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  font-size: 0.65rem;
+  color: rgb(196 209 223 / 0.46);
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+  padding: var(--space-2) 0 calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
+  margin-top: 0;
+}
+
+.version-badge a {
+  color: rgb(210 225 238 / 0.74);
+  pointer-events: auto;
+}
+
+.kofi-badge-btn {
+  display: flex;
+  align-items: center;
+  pointer-events: auto;
+  opacity: 0.6;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.kofi-badge-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.kofi-badge-icon {
+  height: 18px;
+  display: block;
+}
+
+/* stylelint-disable selector-pseudo-class-no-unknown */
+@media (max-width: 767px) {
+  .version-badge {
+    font-size: 0.6rem;
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .kofi-badge-icon {
+    height: 16px;
+  }
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */

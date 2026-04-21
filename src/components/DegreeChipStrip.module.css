@@ -1,12 +1,12 @@
 /* ─── Tokens ─────────────────────────────────────────────────────────────── */
 .degree-chip-strip {
+  composes: strip-surface from "./shared.module.css";
+
   --chip-size: clamp(2.15rem, 3.4vw, 2.5rem);
   --chip-half: calc(var(--chip-size) / 2);
-  /* Opaque fill so chips mask the connector line (matches Card bg visually). */
-  --strip-fill: rgb(22 27 38);
   /* Glow shadows — match FretboardSVG feDropShadow filters. */
-  --chip-glow-cyan:   0 0 6px rgb(77 228 255 / 0.65);
-  --chip-glow-orange: 0 0 6px rgb(255 154 77 / 0.65);
+  --chip-glow-cyan:   0 0 6px var(--neon-cyan);
+  --chip-glow-orange: 0 0 6px var(--neon-orange);
   /* drop-shadow for hexagons — box-shadow is clipped by clip-path. */
   --chip-glow-violet: drop-shadow(0 0 5px rgb(167 139 250 / 0.75));
   --chip-border-width: 2px;
@@ -27,8 +27,8 @@
   padding: 0.5rem 0.9rem 0.55rem;
   border-radius: 1rem;
   background: var(--strip-fill);
-  border: 1px solid rgb(255 255 255 / 0.06);
-  box-shadow: 0 6px 18px rgb(0 0 0 / 0.22);
+  border: var(--strip-border);
+  box-shadow: var(--strip-shadow);
   align-items: center;
   text-align: center;
 }
@@ -135,13 +135,13 @@
 }
 
 .degree-chip-item[data-in-scale='true'] .degree-chip {
-  border-color: rgb(77 228 255 / 0.75);
+  border-color: var(--chip-border-active);
   box-shadow: var(--chip-glow-cyan);
   opacity: 1;
 }
 
 .degree-chip-item[data-is-tonic='true'] .degree-chip {
-  border-color: rgb(255 154 77 / 0.95);
+  border-color: var(--chip-border-tonic);
   box-shadow: var(--chip-glow-orange);
   opacity: 1;
 }
@@ -151,7 +151,8 @@
    The chip's 2px transparent border creates the ring gap at inset:0.
    Glow sits on the item (not the chip) so clip-path doesn't consume the drop-shadow. */
 .degree-chip-item[data-is-color-note='true'] {
-  filter: var(--chip-glow-violet);
+  filter: drop-shadow(0 0 5px rgb(167 139 250 / 0.75));
+  will-change: filter;
 }
 
 .degree-chip-item[data-is-color-note='true'] .degree-chip {
@@ -243,7 +244,7 @@
 
 .degree-chip-strip.degree-chip-strip--compact .degree-chip-strip-header {
   font-size: 0.72rem;
-  color: rgb(255 255 255 / 0.45);
+  color: var(--chip-text-inactive);
 }
 
 .degree-chip-strip.degree-chip-strip--compact .degree-chip-note {
@@ -254,7 +255,7 @@
   font-size: 0.62rem;
 }
 
-.app-container[data-layout-tier="mobile"] .degree-chip-strip {
+:global(.app-container[data-layout-tier="mobile"]) .degree-chip-strip {
   --chip-size: 2.15rem;
 
   width: 100%;
@@ -263,12 +264,21 @@
   gap: 0.35rem;
 }
 
-.app-container[data-layout-tier="mobile"] .degree-chip-strip-header { font-size: 0.92rem; }
-.app-container[data-layout-tier="mobile"] .degree-chip-note        { font-size: 1.1rem; }
-.app-container[data-layout-tier="mobile"] .degree-chip-interval    { font-size: 0.82rem; }
+:global(.app-container[data-layout-tier="mobile"]) .degree-chip-strip-header {
+  font-size: 0.92rem;
+}
 
-/* Desktop: smaller chips, tighter padding (~82px strip height). */
-.app-container[data-layout-tier="desktop"] .degree-chip-strip {
+:global(.app-container[data-layout-tier="mobile"]) .degree-chip-note {
+  font-size: 1.1rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .degree-chip-interval {
+  font-size: 0.82rem;
+}
+
+/* Phase 2: Desktop compact chip strip — smaller chips, tighter padding.
+   Targets ~82px strip height (down from ~104px), keeping chip glyph legible. */
+:global(.app-container[data-layout-tier="desktop"]) .degree-chip-strip {
   --chip-size: clamp(1.82rem, 2.45vw, 2.02rem);
 
   padding: 0.34rem 0.78rem 0.38rem;
@@ -276,6 +286,14 @@
   width: min(100%, 32rem);
 }
 
-.app-container[data-layout-tier="desktop"] .degree-chip-strip-header { font-size: clamp(0.84rem, 1.2vw, 0.96rem); }
-.app-container[data-layout-tier="desktop"] .degree-chip-note         { font-size: clamp(1rem, 1.7vw, 1.15rem); }
-.app-container[data-layout-tier="desktop"] .degree-chip-interval     { font-size: 0.78rem; }
+:global(.app-container[data-layout-tier="desktop"]) .degree-chip-strip-header {
+  font-size: clamp(0.84rem, 1.2vw, 0.96rem);
+}
+
+:global(.app-container[data-layout-tier="desktop"]) .degree-chip-note {
+  font-size: clamp(1rem, 1.7vw, 1.15rem);
+}
+
+:global(.app-container[data-layout-tier="desktop"]) .degree-chip-interval {
+  font-size: 0.78rem;
+}

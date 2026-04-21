@@ -1,3 +1,4 @@
+/* stylelint-disable selector-pseudo-class-no-unknown */
 /* SettingsOverlay — drawer shell (backdrop + right-side slide-in panel). */
 
 .settings-overlay-backdrop {
@@ -50,36 +51,9 @@
   font-size: 1rem;
   font-weight: 600;
   color: var(--chrome-fg);
+  margin: 0;
 }
 
-.settings-overlay-close {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  color: var(--chrome-fg-muted);
-  cursor: pointer;
-  padding: 6px;
-  border-radius: var(--radius-sm, 0.375rem);
-  transition: var(--transition-surface);
-}
-
-.settings-overlay-close:hover {
-  color: var(--chrome-fg);
-  background-color: var(--chrome-hover-bg);
-}
-
-.settings-overlay-close:focus-visible {
-  outline: var(--focus-ring);
-  outline-offset: var(--focus-ring-offset);
-  box-shadow: var(--focus-ring-glow);
-}
-
-.settings-overlay-close .icon {
-  width: 20px;
-  height: 20px;
-}
 
 .settings-overlay-content {
   flex: 1;
@@ -173,7 +147,7 @@
   border: 1px solid color-mix(in srgb, var(--chrome-border) 82%, transparent);
   background: color-mix(in srgb, var(--surface-raised) 90%, transparent);
   color: var(--chrome-fg-muted);
-  cursor: pointer;
+  cursor: help;
   transition: var(--transition-surface);
 }
 
@@ -190,7 +164,7 @@
   box-shadow: var(--focus-ring-glow);
 }
 
-.overlay-help-trigger .icon {
+.overlay-help-trigger :global(.icon) {
   width: 16px;
   height: 16px;
 }
@@ -227,7 +201,7 @@
 .overlay-reset-btn {
   width: 100%;
   padding: 10px 16px;
-  background: transparent;
+  background: color-mix(in srgb, var(--chrome-fg) 8%, transparent);
   border: 1px solid var(--accent-secondary);
   color: var(--accent-secondary);
   border-radius: var(--radius-sm, 6px);
@@ -260,6 +234,23 @@
   }
 }
 
+.settings-overlay-drawer[data-layout-tier="mobile"] .settings-overlay-header {
+  padding: 12px 16px;
+}
+
+.settings-overlay-drawer[data-layout-tier="mobile"] .settings-overlay-content {
+  gap: 12px;
+  padding: 12px 16px max(24px, env(safe-area-inset-bottom, 0px));
+}
+
+.settings-overlay-drawer[data-layout-tier="mobile"] .overlay-section-card {
+  gap: 12px;
+}
+
+.settings-overlay-drawer[data-layout-tier="mobile"] .overlay-field {
+  gap: 8px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .settings-overlay-close,
   .overlay-help-trigger,
@@ -268,22 +259,4 @@
     animation: none;
   }
 }
-
-@media (max-height: 520px) {
-  .settings-overlay-header {
-    padding: 10px 14px;
-  }
-
-  .settings-overlay-content {
-    gap: 12px;
-    padding: 12px 14px max(20px, env(safe-area-inset-bottom, 0px));
-  }
-
-  .overlay-section-card {
-    gap: 12px;
-  }
-
-  .overlay-field {
-    gap: 8px;
-  }
-}
+/* stylelint-enable selector-pseudo-class-no-unknown */

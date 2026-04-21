@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { BREAKPOINTS } from "../layout/breakpoints";
 
 const expandedPanelCSS = readFileSync(
-  resolve(__dirname, "../components/ExpandedControlsPanel.css"),
+  resolve(__dirname, "../components/ExpandedControlsPanel.module.css"),
   "utf-8",
 );
 import {
@@ -19,8 +19,8 @@ import {
 // Regression guard: if ExpandedControlsPanel.css is unimported or its grid rule
 // is removed, the dashboard silently falls back to flex — this test catches it.
 describe("dashboard panel CSS contract", () => {
-  it("declares display: grid on .controls-panel--dashboard", () => {
-    expect(expandedPanelCSS).toContain(".controls-panel.controls-panel--dashboard");
+  it("declares display: grid on .controls-panel", () => {
+    expect(expandedPanelCSS).toContain(".controls-panel");
     expect(expandedPanelCSS).toContain("display: grid");
   });
 

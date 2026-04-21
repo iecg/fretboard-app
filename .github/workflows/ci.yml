@@ -43,45 +43,9 @@ jobs:
       - name: Unit tests
         run: npm run test
 
-  e2e:
-    name: Responsive E2E
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 24
-          cache: npm
-
-      - run: npm ci
-
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-
-      - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
-
-      - name: Run responsive smoke tests
-        run: npm run test:e2e
-
-      - name: Archive Playwright results
-        if: always()
-        uses: actions/upload-artifact@v5
-        with:
-          name: playwright-results
-          path: |
-            playwright-report/
-            test-results/
-          retention-days: 14
-
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: test
     steps:
       - uses: actions/checkout@v5
 
@@ -92,6 +56,55 @@ jobs:
 
       - run: npm ci
       - run: npm run build
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 1
+
+  e2e:
+    name: Responsive E2E
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Run production E2E tests
+        run: npx playwright test --config=playwright.config.production.ts
+
+      - name: Archive Playwright results
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: playwright-results
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
 
   quality-gate:
     name: Quality Gate

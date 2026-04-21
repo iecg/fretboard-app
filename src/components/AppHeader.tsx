@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
 import clsx from 'clsx';
-import './AppHeader.css';
+import styles from './AppHeader.module.css';
 
 export interface AppHeaderProps {
   brandTitle: string;
@@ -34,39 +34,40 @@ export function AppHeader({
 }: AppHeaderProps) {
   const [titlePrimary, titleSecondary] = splitBrandTitle(brandTitle);
   return (
-    <header role="banner" className={clsx('app-header', className)}>
-      <div className="app-header-brand">
+    <header role="banner" className={clsx(styles['app-header'], className)} data-testid="app-header">
+      <div className={styles['app-header-brand']} data-testid="app-header-brand">
         {brandIcon && (
-          <span className="app-header-brand-icon" aria-hidden="true">
+          <span className={styles['app-header-brand-icon']} aria-hidden="true">
             {brandIcon}
           </span>
         )}
-        <div className="app-header-brand-text">
+        <div className={styles['app-header-brand-text']}>
           {brandWordmark ? (
             <span
-              className="app-header-brand-wordmark"
+              className={styles['app-header-brand-wordmark']}
               aria-label={brandTitle}
               role="img"
+              data-testid="app-header-brand-wordmark"
             >
               {brandWordmark}
             </span>
           ) : (
-            <span className="app-header-brand-title">
-              <span className="app-header-brand-title-primary">{titlePrimary}</span>
+            <span className={styles['app-header-brand-title']} data-testid="app-header-brand-title">
+              <span className={styles['app-header-brand-title-primary']}>{titlePrimary}</span>
               {titleSecondary && (
-                <span className="app-header-brand-title-secondary">
+                <span className={styles['app-header-brand-title-secondary']}>
                   {titleSecondary}
                 </span>
               )}
             </span>
           )}
           {brandSubtitle && (
-            <span className="app-header-brand-subtitle">{brandSubtitle}</span>
+            <span className={styles['app-header-brand-subtitle']} data-testid="app-header-brand-subtitle">{brandSubtitle}</span>
           )}
         </div>
       </div>
       {actions && (
-        <div className="app-header-actions">
+        <div className={styles['app-header-actions']} data-testid="app-header-actions">
           {actions}
         </div>
       )}

@@ -1,6 +1,6 @@
 import { useId } from 'react';
 import clsx from 'clsx';
-import './LabeledSelect.css';
+import styles from './LabeledSelect.module.css';
 
 export interface LabeledSelectOption {
   value: string;
@@ -15,6 +15,7 @@ export interface LabeledSelectProps {
   onChange: (value: string) => void;
   id?: string;
   className?: string;
+  'data-testid'?: string;
   'aria-describedby'?: string;
   disabled?: boolean;
   hideLabel?: boolean;
@@ -27,6 +28,7 @@ export function LabeledSelect({
   onChange,
   id,
   className,
+  'data-testid': dataTestId,
   'aria-describedby': ariaDescribedBy,
   disabled,
   hideLabel,
@@ -35,13 +37,23 @@ export function LabeledSelect({
   const selectId = id ?? generatedId;
 
   return (
-    <div className={clsx('labeled-select', { 'labeled-select--disabled': disabled, 'labeled-select--hide-label': hideLabel }, className)}>
-      <label className="labeled-select-label" htmlFor={selectId}>
-        <span className="labeled-select-label-text">{label}</span>
-        <div className="labeled-select-field">
+    <div
+      className={clsx(
+        styles['labeled-select'],
+        {
+          [styles['labeled-select--disabled']]: disabled,
+          [styles['labeled-select--hide-label']]: hideLabel,
+        },
+        className,
+      )}
+    >
+      <label className={styles['labeled-select-label']} htmlFor={selectId}>
+        <span className={styles['labeled-select-label-text']}>{label}</span>
+        <div className={styles['labeled-select-field']}>
           <select
             id={selectId}
-            className="labeled-select-native"
+            className={styles['labeled-select-native']}
+            data-testid={dataTestId}
             value={value}
             onChange={(event) => onChange(event.target.value)}
             aria-describedby={ariaDescribedBy}
@@ -57,7 +69,7 @@ export function LabeledSelect({
               </option>
             ))}
           </select>
-          <span className="labeled-select-chevron" aria-hidden="true">
+          <span className={styles['labeled-select-chevron']} aria-hidden="true">
             ▾
           </span>
         </div>

@@ -1,13 +1,13 @@
 import { useId } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
-import "./ToggleBar.css";
+import styles from "./ToggleBar.module.css";
 import shared from "./shared.module.css";
 
 const toggleBarVariants = cva(shared["toggle-group"], {
   variants: {
     variant: {
       default: shared["toggle-group--default"],
-      tabs: "mobile-tab-bar",
+      tabs: styles["mobile-tab-bar"],
     },
   },
   defaultVariants: {
@@ -19,7 +19,7 @@ const toggleButtonVariants = cva("", {
   variants: {
     variant: {
       default: shared["toggle-btn"],
-      tabs: "mobile-tab",
+      tabs: styles["mobile-tab"],
     },
     isActive: {
       true: shared.active,

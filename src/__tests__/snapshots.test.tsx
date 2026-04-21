@@ -385,7 +385,7 @@ describe("Component Snapshots", () => {
 
       localStorage.clear();
       const { container } = render(<App />);
-      await screen.findByTestId("fretboard-main", {}, { timeout: 5000 });
+      await screen.findByTestId("fretboard-outer", {}, { timeout: 5000 });
       await screen.findByTestId("theory-controls", {}, { timeout: 5000 });
       expect(container).toMatchSnapshot("app-mobile-default");
     });
@@ -449,7 +449,7 @@ describe("Component Snapshots", () => {
 
       localStorage.clear();
       const { container } = render(<App />);
-      await screen.findByTestId("fretboard-main", {}, { timeout: 5000 });
+      await screen.findByTestId("fretboard-outer", {}, { timeout: 5000 });
       await screen.findByTestId("theory-controls", {}, { timeout: 5000 });
       expect(container).toMatchSnapshot("app-iphone-se-portrait");
     });
@@ -506,7 +506,7 @@ describe("Component Snapshots", () => {
 
       localStorage.clear();
       const { container } = render(<App />);
-      await screen.findByTestId("fretboard-main", {}, { timeout: 5000 });
+      await screen.findByTestId("fretboard-outer", {}, { timeout: 5000 });
       await screen.findByTestId("theory-controls", {}, { timeout: 5000 });
       expect(container).toMatchSnapshot("app-iphone-12-pro-portrait");
     });

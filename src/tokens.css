@@ -69,6 +69,9 @@
   --token-border-faint: rgb(255 255 255 / 0.08);
   --token-surface-dim: rgb(255 255 255 / 0.04);
 
+  /* Card surface base (used by semantic --surface-card) */
+  --token-surface-card-base: rgb(22 27 38);
+
   /* Chip color primitives */
   --token-chip-active-bg: rgb(77 228 255 / 0.08);
   --token-chip-tonic-bg: rgb(255 154 77 / 0.1);
@@ -170,4 +173,19 @@
   --chord-chip-glow-orange: 0 0 6px rgb(255 154 77 / 0.65);
   --chord-chip-glow-cyan: 0 0 6px rgb(77 228 255 / 0.65);
   --chord-chip-border-width: 2px;
+}
+
+/* === Practice bar pill tokens === */
+:root {
+  --practice-bar-fill: rgb(18 23 34);
+  --practice-pill-h: 1.55rem;
+  --practice-pill-font: 0.82rem;
+  --practice-pill-px: 0.55rem;
+  --practice-pill-gap: 0.3rem;
+  --practice-pill-amber-strong: rgb(255 154 77);
+  --practice-pill-amber-soft: rgb(255 154 77 / 0.55);
+  --practice-pill-amber-bg-strong: rgb(255 154 77 / 0.22);
+  --practice-pill-amber-bg-soft: rgb(255 154 77 / 0.1);
+  --practice-pill-tension-border: rgb(255 122 61);
+  --practice-pill-guide-blue-bg: rgb(30 60 120 / 0.25);
 }

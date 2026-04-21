@@ -1,7 +1,8 @@
 import { lazy, Suspense } from "react";
-import "./ExpandedControlsPanel.css";
+import styles from "./ExpandedControlsPanel.module.css";
 import shared from "./shared.module.css";
 import { useAtomValue, useSetAtom, useAtom } from "jotai";
+import clsx from "clsx";
 import {
   rootNoteAtom,
   setRootNoteAtom,
@@ -34,9 +35,10 @@ export function BaseControlsSection() {
   return (
     <Card
       title="Configuration"
-      className="dashboard-card dashboard-card--configuration"
+      className={clsx("dashboard-card--configuration")}
+      data-testid="dashboard-card-configuration"
     >
-      <div className="control-group">
+      <div className={styles["control-group"]}>
         <FingeringPatternControls />
         <div className={shared["control-section"]}>
           <span className={shared["section-label"]}>Fret Range</span>
@@ -61,7 +63,8 @@ export function ScaleChordSection() {
   return (
     <Card
       title="Music Theory"
-      className="dashboard-card dashboard-card--theory"
+      className={clsx("dashboard-card--theory")}
+      data-testid="dashboard-card-theory"
     >
       <TheoryControls />
     </Card>
@@ -80,7 +83,7 @@ export function KeyColumn() {
   const enharmonicDisplay = useAtomValue(enharmonicDisplayAtom);
 
   return (
-    <Card title="Key Explorer" className="dashboard-card key-column">
+    <Card title="Key Explorer" data-layout-column="key" data-testid="key-column">
       <Suspense fallback={null}>
         <CircleOfFifths
           rootNote={rootNote}
@@ -105,7 +108,7 @@ export function ExpandedControlsPanel({
   mode: "3col" | "split" | "stacked";
 }) {
   return (
-    <div className="controls-panel controls-panel--dashboard" data-mode={mode}>
+    <div className={styles["controls-panel"]} data-mode={mode}>
       <BaseControlsSection />
       <ScaleChordSection />
       <KeyColumn />

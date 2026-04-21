@@ -8,6 +8,7 @@ import { NoteGrid } from "./NoteGrid";
 import { ToggleBar } from "./ToggleBar";
 import { useChordState } from "../hooks/useChordState";
 import { useScaleState } from "../hooks/useScaleState";
+import styles from "./TheoryControls.module.css";
 import shared from "./shared.module.css";
 
 const CHORD_OPTIONS: (string | { divider: string })[] = [
@@ -107,23 +108,24 @@ export function ChordOverlayControls() {
   const chordOverlayOpen = isChordOverlayOpen || Boolean(chordType);
 
   return (
-    <div className="theory-chord-section panel-surface panel-surface--compact">
+    <div className={clsx(styles["theory-chord-section"], "panel-surface panel-surface--compact")}>
       <button
         type="button"
-        className={clsx("theory-disclosure-btn", {
-          "theory-disclosure-btn--open": chordOverlayOpen,
+        className={clsx(styles["theory-disclosure-btn"], {
+          [styles["theory-disclosure-btn--open"]]: chordOverlayOpen,
         })}
         aria-expanded={chordOverlayOpen}
         onClick={() => setChordOverlayOpen((value) => !value)}
       >
-        <span className="theory-disclosure-title">Chord Overlay</span>
-        <span className="theory-disclosure-summary">{chordSummary}</span>
+        <span className={styles["theory-disclosure-title"]}>Chord Overlay</span>
+        <span className={styles["theory-disclosure-summary"]}>{chordSummary}</span>
       </button>
 
       {chordOverlayOpen ? (
-        <div className="theory-chord-content">
+        <div className={styles["theory-chord-content"]}>
           <LabeledSelect
             label="Chord Type"
+            data-testid="chord-type-select"
             value={chordType ?? CHORD_NONE_VALUE}
             options={chordSelectOptions}
             onChange={(value) =>

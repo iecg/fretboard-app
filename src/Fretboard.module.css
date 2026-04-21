@@ -1,0 +1,44 @@
+.fretboard-outer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  gap: 0.55rem;
+}
+
+.fretboard-wrapper {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+  contain: layout paint;
+}
+
+/* Hide scrollbar while preserving scroll behavior */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Tablet: enable native touch scroll on the fretboard (same as mobile). */
+:global(.app-container[data-layout-tier="tablet"]) .fretboard-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile inline layout */
+@media (max-width: 767px) {
+  .fretboard-outer {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .fretboard-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
