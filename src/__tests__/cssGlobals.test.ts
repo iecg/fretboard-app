@@ -17,7 +17,6 @@ import { describe, it, expect } from "vitest";
  * - loading-spinner: Suspense fallback animation
  * - custom-scrollbar: scrollbar styling utility
  * - brand-mark: brand icon container
- * - header-btn: header action button style
  * - hide-scrollbar: scrollbar hiding utility
  *
  * **Note state/semantic classes** (fretboard data-driven, no CSS):
@@ -142,7 +141,6 @@ const APPROVED_GLOBALS = new Set([
   "custom-scrollbar",
   "hide-scrollbar",
   "brand-mark",
-  "header-btn",
   "key-column",
 ]);
 
