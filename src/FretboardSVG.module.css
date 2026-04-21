@@ -135,18 +135,18 @@
 .fretboard-note[data-note-role="chord-root"],
 .fretboard-note[data-note-role="chord-tone-in-scale"],
 .fretboard-note[data-note-role="chord-tone-outside-scale"] {
-  filter: var(--glow-orange);
+  filter: var(--fretboard-svg-glow-orange-url);
 }
 
 .fretboard-note[data-note-role="note-active"],
 .fretboard-note[data-note-role="scale-only"] {
-  filter: var(--glow-cyan);
+  filter: var(--fretboard-svg-glow-cyan-url);
 }
 
 /* Both no-overlay color notes (note-blue) and overlay color tones use violet glow */
 .fretboard-note[data-note-role="note-blue"],
 .fretboard-note[data-note-role="color-tone"] {
-  filter: var(--glow-violet);
+  filter: var(--fretboard-svg-glow-violet-url);
 }
 
 /* ==========================================================================
@@ -170,7 +170,7 @@
   stroke: var(--neon-orange);
 }
 [data-practice-lens="guide-tones"] .fretboard-note[data-note-guide-tone] {
-  filter: var(--glow-orange);
+  filter: var(--fretboard-svg-glow-orange-url);
 }
 
 [data-practice-lens="guide-tones"] .fretboard-note.chord-root:not([data-note-guide-tone]) rect:last-of-type,
@@ -199,7 +199,7 @@
   stroke-width: 3.8;
 }
 [data-practice-lens="tension"] .fretboard-note.chord-tone-outside-scale {
-  filter: var(--glow-orange);
+  filter: var(--fretboard-svg-glow-orange-url);
 }
 
 [data-practice-lens="tension"] .fretboard-note.chord-root[data-note-tension] rect:last-of-type {

@@ -921,9 +921,9 @@ export const FretboardSVG = memo(function FretboardSVG({
             width: `${neckWidthPx + NECK_BORDER * 2}px`,
             willChange: "transform",
             "--string-row-px": `${stringRowPx}px`,
-            "--glow-cyan": glowFilterUrls.cyan,
-            "--glow-orange": glowFilterUrls.orange,
-            "--glow-violet": glowFilterUrls.violet,
+            "--fretboard-svg-glow-cyan-url": glowFilterUrls.cyan,
+            "--fretboard-svg-glow-orange-url": glowFilterUrls.orange,
+            "--fretboard-svg-glow-violet-url": glowFilterUrls.violet,
           } as CSSProperties
         }
       >
