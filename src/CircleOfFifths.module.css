@@ -8,6 +8,9 @@
   max-width: 320px;
   min-height: 0;
   overflow: hidden;
+  aspect-ratio: 1;
+  max-height: min(320px, 58vh);
+  margin: 0 auto;
 }
 
 .circle-fifths-svg {
@@ -140,11 +143,28 @@
 
 /* ── Layout Tier Adjustments ───────────────────────────────────────────── */
 
-:global(.app-container[data-layout-tier="desktop"]) .circle-fifths-container {
-  max-width: min(100%, 26rem);
+:global(.app-container[data-layout-variant="desktop-3col"]) .circle-fifths-container {
+  max-height: min(18rem, 40vh);
 }
 
-:global(.app-container[data-layout-tier="tablet"]) .circle-fifths-container {
+:global(.app-container[data-layout-variant="desktop-split"]) .circle-fifths-container {
+  max-height: min(22rem, 46vh);
+}
+
+:global(.app-container[data-layout-variant="tablet-split"]) .circle-fifths-container {
+  max-width: min(100%, 24rem);
+  max-height: min(24rem, 52vh);
+}
+
+:global(.app-container[data-layout-variant="tablet-stacked"]) .circle-fifths-container,
+:global(.app-container[data-layout-variant="desktop-stacked"]) .circle-fifths-container {
+  max-width: min(100%, 28rem);
+  width: 100%;
+  margin: 0 auto;
+}
+
+:global(.theory-inline-key) .circle-fifths-container {
+  width: 100%;
   max-width: min(100%, 20rem);
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
