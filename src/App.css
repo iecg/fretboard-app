@@ -664,22 +664,6 @@
 }
 
 @media (max-height: 520px) {
-  .help-modal-overlay {
-    align-items: flex-start;
-    padding: 0.5rem;
-  }
-
-  .help-modal {
-    max-height: calc(100dvh - 1rem);
-  }
-
-  .help-modal-header {
-    padding: 0.75rem 1rem;
-  }
-
-  .help-modal-content {
-    padding: 0.875rem 1rem 1rem;
-  }
 }
 
 
@@ -833,21 +817,6 @@
   border: 2px solid var(--accent-secondary);
   opacity: 1;
 }
-/* ===== Version Badge ===== */
-.version-badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  font-size: 0.65rem;
-  color: rgba(255, 255, 255, 0.35);
-  letter-spacing: 0.04em;
-  pointer-events: none;
-  user-select: none;
-  white-space: nowrap;
-  padding: var(--space-2) 0 calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
-  margin-top: 0;
-}
 
 /* =============================================
    Phase 5 Fidelity Overrides
@@ -864,24 +833,6 @@
 .chord-dock-shell {
   display: flex;
   justify-content: center;
-}
-
-/* Inner wrapper for the practice bar. Width is kept in lockstep with the
-   degree-chip-strip so the two surfaces line up vertically. See
-   `DegreeChipStrip.css` for the matching clamp values. */
-.chord-overlay-dock {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  width: min(100%, 30rem);
-}
-
-.app-container[data-layout-tier="mobile"] .chord-overlay-dock {
-  width: 100%;
-}
-
-.app-container[data-layout-tier="desktop"] .chord-overlay-dock {
-  width: min(100%, 32rem);
 }
 
 /* Chord overlay active: scale-only fretboard notes dim further so chord tones lead */
@@ -958,40 +909,8 @@
   color: rgb(191 204 216 / 0.72);
 }
 
-.mobile-tab-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-}
-
-.mobile-tab-panel {
-  padding: 0.15rem 0;
-}
-
-.mobile-tab-panel.mobile-theory-tab,
-.mobile-tab-panel.mobile-view-tab {
-  background:
-    linear-gradient(180deg, rgb(28 33 45 / 0.96), rgb(20 24 34 / 0.98));
-  border: 1px solid rgb(255 255 255 / 0.08);
-  border-radius: 1.15rem;
-  padding: 1rem;
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.04),
-    0 18px 36px rgb(0 0 0 / 0.24);
-}
-
 .cof-container {
   padding-top: 0.25rem;
-}
-
-.version-badge {
-  color: rgb(196 209 223 / 0.46);
-  pointer-events: none;
-}
-
-.version-badge a {
-  color: rgb(210 225 238 / 0.74);
-  pointer-events: auto;
 }
 
 .app-container[data-layout-tier="desktop"] {
@@ -1010,12 +929,6 @@
   .header-btn {
     width: 2.7rem;
     height: 2.7rem;
-  }
-
-  .mobile-tab-panel.mobile-theory-tab,
-  .mobile-tab-panel.mobile-view-tab {
-    padding: 0.9rem;
-    border-radius: 1rem;
   }
 
   .viewport-jumps {
