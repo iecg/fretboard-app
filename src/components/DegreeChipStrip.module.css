@@ -151,7 +151,8 @@
    The chip's 2px transparent border creates the ring gap at inset:0.
    Glow sits on the item (not the chip) so clip-path doesn't consume the drop-shadow. */
 .degree-chip-item[data-is-color-note='true'] {
-  filter: drop-shadow(0 0 5px rgb(167 139 250 / 0.75)); will-change: filter;
+  filter: drop-shadow(0 0 5px rgb(167 139 250 / 0.75));
+  will-change: filter;
 }
 
 .degree-chip-item[data-is-color-note='true'] .degree-chip {
