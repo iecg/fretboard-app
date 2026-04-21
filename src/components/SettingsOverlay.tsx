@@ -489,7 +489,7 @@ function SettingsOverlaySurface({
           <button
             type="button"
             ref={closeButtonRef}
-            className={clsx(sharedStyles["icon-button"])}
+            className={clsx(sharedStyles["icon-button"], styles["settings-overlay-close"])}
             onClick={close}
             aria-label="Close settings"
           >
