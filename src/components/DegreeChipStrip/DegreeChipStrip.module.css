@@ -1,0 +1,287 @@
+.degree-chip-strip {
+  composes: strip-surface from "../shared.module.css";
+
+  --chip-size: clamp(2.15rem, 3.4vw, 2.5rem);
+  --chip-half: calc(var(--chip-size) / 2);
+  /* Matches FretboardSVG feDropShadow filters. */
+  --chip-glow-cyan:   0 0 6px var(--neon-cyan);
+  --chip-glow-orange: 0 0 6px var(--neon-orange);
+  /* Use drop-shadow for hexagons as box-shadow is clipped by clip-path. */
+  --chip-glow-violet: drop-shadow(0 0 5px rgb(167 139 250 / 0.75));
+  --chip-border-width: 2px;
+  --chip-border-muted: rgb(255 255 255 / 0.22);
+  --chip-line-muted:   rgb(255 255 255 / 0.18);
+  --chip-focus-ring:   rgb(77 228 255 / 0.7);
+  --chip-hexagon-clip:     polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+  --color-note-ring-color: var(--note-ring-color-tone);
+  --color-note-inner-fill: rgb(20 30 40 / 0.92);
+  --color-note-text:       #e8d8ff;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: min(100%, 30rem);
+  margin: 0 auto;
+  padding: 0.5rem 0.9rem 0.55rem;
+  border-radius: 1rem;
+  background: var(--strip-fill);
+  border: var(--strip-border);
+  box-shadow: var(--strip-shadow);
+  align-items: center;
+  text-align: center;
+}
+
+.degree-chip-strip-header {
+  font-family: var(--font-sans);
+  font-size: clamp(0.92rem, 1.5vw, 1.05rem);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-soft-white);
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+/* Left-align header with eye toggle. */
+.degree-chip-strip-header[data-has-action] {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  width: 100%;
+  line-height: initial;
+}
+
+.scale-eye-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem;
+  border: none;
+  background: transparent;
+  color: var(--text-soft-white);
+  opacity: 0.6;
+  cursor: pointer;
+  border-radius: 0.3rem;
+  transition: opacity var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.scale-eye-toggle:hover { opacity: 1; }
+
+.scale-eye-toggle:focus-visible {
+  outline: 2px solid var(--chip-focus-ring);
+  outline-offset: 2px;
+  opacity: 1;
+}
+
+.scale-eye-toggle[aria-pressed="true"] { opacity: 0.4; }
+
+.degree-chip-strip-list {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.degree-chip-strip-list::before {
+  content: "";
+  position: absolute;
+  left: var(--chip-half);
+  right: var(--chip-half);
+  top: calc(var(--chip-half) - 1px);
+  height: 2px;
+  background: var(--chip-line-muted);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.degree-chip-item {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.28rem;
+  flex: 0 0 auto;
+}
+
+.degree-chip {
+  display: grid;
+  place-items: center;
+  width: var(--chip-size);
+  height: var(--chip-size);
+  border-radius: 50%;
+  background: var(--strip-fill);
+  border: var(--chip-border-width) solid var(--chip-border-muted);
+  opacity: 0.55;
+  cursor: pointer;
+  padding: 0;
+  transition:
+    opacity var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.degree-chip:focus-visible {
+  outline: 2px solid var(--chip-focus-ring);
+  outline-offset: 2px;
+}
+
+.degree-chip-item[data-in-scale='true'] .degree-chip {
+  border-color: var(--chip-border-active);
+  box-shadow: var(--chip-glow-cyan);
+  opacity: 1;
+}
+
+.degree-chip-item[data-is-tonic='true'] .degree-chip {
+  border-color: var(--chip-border-tonic);
+  box-shadow: var(--chip-glow-orange);
+  opacity: 1;
+}
+
+/* Apply drop-shadow to item so clip-path doesn't consume the effect. */
+.degree-chip-item[data-is-color-note='true'] {
+  filter: drop-shadow(0 0 5px rgb(167 139 250 / 0.75));
+  will-change: filter;
+}
+
+.degree-chip-item[data-is-color-note='true'] .degree-chip {
+  clip-path: var(--chip-hexagon-clip);
+  border-color: transparent;
+  background: var(--color-note-ring-color);
+  box-shadow: none;
+  opacity: 1;
+  position: relative;
+}
+
+.degree-chip-item[data-is-color-note='true'] .degree-chip::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--color-note-inner-fill);
+  clip-path: var(--chip-hexagon-clip);
+}
+
+.degree-chip-item[data-is-color-note='true'] .degree-chip-note {
+  color: var(--color-note-text);
+  position: relative;
+  z-index: 1;
+}
+
+/* Masks connector line when chip opacity is low. */
+.degree-chip-item[data-hidden='true']::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--chip-size);
+  height: var(--chip-size);
+  border-radius: 50%;
+  background: var(--strip-fill);
+  z-index: -1;
+}
+
+.degree-chip-item[data-hidden='true'] .degree-chip {
+  border-color: var(--chip-border-muted);
+  box-shadow: 0 0 6px var(--chip-line-muted);
+  filter: none;
+  opacity: 0.38;
+}
+
+.degree-chip-item[data-hidden='true'][data-is-color-note='true'] {
+  filter: none;
+}
+
+.degree-chip-item[data-hidden='true'][data-is-color-note='true'] .degree-chip {
+  border-color: transparent;
+  background: var(--chip-border-muted);
+}
+
+.degree-chip-note {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-semibold);
+  font-size: clamp(1.1rem, 1.9vw, 1.28rem);
+  color: var(--text-soft-white);
+  /* Center glyphs past ascender/descender asymmetry. */
+  line-height: calc(var(--chip-size) - var(--chip-border-width) * 2);
+  letter-spacing: 0.01em;
+}
+
+.degree-chip-interval {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-soft-white);
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+/* Compact variant for secondary surfaces. Out-specifies layout-tier rules. */
+.degree-chip-strip.degree-chip-strip--compact {
+  --chip-size: clamp(1.45rem, 2.1vw, 1.65rem);
+
+  padding: 0.28rem 0.65rem 0.3rem;
+  gap: 0.2rem;
+  border-radius: 0.75rem;
+}
+
+.degree-chip-strip.degree-chip-strip--compact .degree-chip-strip-header {
+  font-size: 0.72rem;
+  color: var(--chip-text-inactive);
+}
+
+.degree-chip-strip.degree-chip-strip--compact .degree-chip-note {
+  font-size: clamp(0.72rem, 1.2vw, 0.84rem);
+}
+
+.degree-chip-strip.degree-chip-strip--compact .degree-chip-interval {
+  font-size: 0.62rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .degree-chip-strip {
+  --chip-size: 2.15rem;
+
+  width: 100%;
+  border-radius: 0.85rem;
+  padding: 0.45rem 0.7rem 0.5rem;
+  gap: 0.35rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .degree-chip-strip-header {
+  font-size: 0.92rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .degree-chip-note {
+  font-size: 1.1rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .degree-chip-interval {
+  font-size: 0.82rem;
+}
+
+/* Desktop compact chip strip — targets ~82px strip height. */
+:global(.app-container[data-layout-tier="desktop"]) .degree-chip-strip {
+  --chip-size: clamp(1.82rem, 2.45vw, 2.02rem);
+
+  padding: 0.34rem 0.78rem 0.38rem;
+  gap: 0.24rem;
+  width: min(100%, 32rem);
+}
+
+:global(.app-container[data-layout-tier="desktop"]) .degree-chip-strip-header {
+  font-size: clamp(0.84rem, 1.2vw, 0.96rem);
+}
+
+:global(.app-container[data-layout-tier="desktop"]) .degree-chip-note {
+  font-size: clamp(1rem, 1.7vw, 1.15rem);
+}
+
+:global(.app-container[data-layout-tier="desktop"]) .degree-chip-interval {
+  font-size: 0.78rem;
+}

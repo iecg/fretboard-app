@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useSetAtom, useAtomValue, createStore, Provider } from "jotai";
 import clsx from "clsx";
-import { Fretboard } from "./Fretboard";
+import { Fretboard } from "./components/Fretboard/Fretboard";
 import { HelpCircle, Settings2, Volume2, VolumeX } from "lucide-react";
 import { synth } from "./core/audio";
 import {
@@ -13,27 +13,27 @@ import {
   showChordPracticeBarAtom,
 } from "./store/atoms";
 import useLayoutMode from "./hooks/useLayoutMode";
-import { AppHeader } from "./components/AppHeader";
-import { BrandMark } from "./components/BrandMark";
-import { FretFlowWordmark } from "./components/FretFlowWordmark";
-import { SummaryRibbon } from "./components/SummaryRibbon";
-import { ChordOverlayDock } from "./components/ChordOverlayDock";
-import { VersionBadge } from "./components/VersionBadge";
-import { MainLayoutWrapper } from "./components/MainLayoutWrapper";
+import { AppHeader } from "./components/AppHeader/AppHeader";
+import { BrandMark } from "./components/BrandMark/BrandMark";
+import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark";
+import { SummaryRibbon } from "./components/SummaryRibbon/SummaryRibbon";
+import { ChordOverlayDock } from "./components/ChordOverlayDock/ChordOverlayDock";
+import { VersionBadge } from "./components/VersionBadge/VersionBadge";
+import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
 import sharedStyles from "./components/shared.module.css";
 import "./App.css";
 
 const ExpandedControlsPanel = lazy(() =>
-  import("./components/ExpandedControlsPanel").then((m) => ({
+  import("./components/ExpandedControlsPanel/ExpandedControlsPanel").then((m) => ({
     default: m.ExpandedControlsPanel,
   }))
 );
-const SettingsOverlay = lazy(() => import("./components/SettingsOverlay"));
+const SettingsOverlay = lazy(() => import("./components/SettingsOverlay/SettingsOverlay"));
 const HelpModal = lazy(() =>
-  import("./components/HelpModal").then((m) => ({ default: m.HelpModal }))
+  import("./components/HelpModal/HelpModal").then((m) => ({ default: m.HelpModal }))
 );
 const MobileTabPanel = lazy(() =>
-  import("./components/MobileTabPanel").then((m) => ({
+  import("./components/MobileTabPanel/MobileTabPanel").then((m) => ({
     default: m.MobileTabPanel,
   }))
 );
