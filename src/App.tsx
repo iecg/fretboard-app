@@ -3,7 +3,7 @@ import { useSetAtom, useAtomValue, createStore, Provider } from "jotai";
 import clsx from "clsx";
 import { Fretboard } from "./Fretboard";
 import { HelpCircle, Settings2, Volume2, VolumeX } from "lucide-react";
-import { synth } from "./audio";
+import { synth } from "./core/audio";
 import {
   isMutedAtom,
   settingsOverlayOpenAtom,

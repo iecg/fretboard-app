@@ -6,7 +6,7 @@ import { useFocusTrap } from "../hooks/useFocusTrap";
 import {
   ANIMATION_DURATION_FAST,
   ANIMATION_EASE,
-} from "../constants";
+} from "../core/constants";
 import styles from "./HelpModal.module.css";
 import sharedStyles from "./shared.module.css";
 

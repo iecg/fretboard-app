@@ -6,9 +6,9 @@ import {
   getKeySignatureForDisplay,
   formatAccidental,
   SCALES,
-} from "./theory";
-import { getDegreesForScale } from "./degrees";
-import { getCircleNoteLabels } from "./circleOfFifthsUtils";
+} from "./core/theory";
+import { getDegreesForScale } from "./core/degrees";
+import { getCircleNoteLabels } from "./core/circleOfFifthsUtils";
 import styles from "./CircleOfFifths.module.css";
 
 const SIZE = 320;

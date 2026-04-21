@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getCagedCoordinates, CAGED_SHAPES, findMainShape, getShapeCenterFret } from '../shapes';
-import { STANDARD_TUNING } from '../guitar';
+import { STANDARD_TUNING } from '../core/guitar';
 
 describe('getCagedCoordinates', () => {
   it('returns non-empty coordinates for standard input', () => {

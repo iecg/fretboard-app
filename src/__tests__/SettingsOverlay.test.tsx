@@ -3,11 +3,11 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
 import { Provider, createStore } from "jotai";
 import SettingsOverlay from "../components/SettingsOverlay";
-import { synth } from "../audio";
+import { synth } from "../core/audio";
 import { settingsOverlayOpenAtom, fretZoomAtom } from "../store/atoms";
 
 // Mock the audio synth singleton — we only care that setMute is called on reset.
-vi.mock("../audio", () => ({
+vi.mock("../core/audio", () => ({
   synth: {
     setMute: vi.fn(),
     init: vi.fn(),

@@ -4,10 +4,10 @@ import { render, act, screen } from "@testing-library/react";
 import { Fretboard } from "../Fretboard";
 import { CircleOfFifths } from "../CircleOfFifths";
 import App from "../App";
-import { STANDARD_TUNING } from "../guitar";
+import { STANDARD_TUNING } from "../core/guitar";
 
 // Mock components to avoid complex setup
-vi.mock("../audio", () => ({
+vi.mock("../core/audio", () => ({
   synth: {
     setMute: vi.fn(),
     init: vi.fn(),

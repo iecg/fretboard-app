@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import type { PracticeBarGroup, PracticeBarNote } from "../theory";
+import type { PracticeBarGroup, PracticeBarNote } from "../core/theory";
 import styles from "./ChordPracticeBar.module.css";
 
 interface PillProps {

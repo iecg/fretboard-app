@@ -1,4 +1,4 @@
-import { SCALES, NOTES } from "../theory";
+import { SCALES, NOTES } from "../core/theory";
 
 /** Mode names for degrees of the major scale (Ionian through Locrian). */
 export const MAJOR_MODE_NAMES = [

@@ -38,7 +38,7 @@ import {
   hiddenNotesAtom,
   toggleHiddenNoteAtom,
 } from "../store/atoms";
-import { STANDARD_TUNING, TUNINGS } from "../guitar";
+import { STANDARD_TUNING, TUNINGS } from "../core/guitar";
 import { CAGED_SHAPES } from "../shapes";
 
 function makeStore() {

@@ -8,9 +8,9 @@ import {
   within,
 } from "@testing-library/react";
 import App from "../App";
-import { synth } from "../audio";
+import { synth } from "../core/audio";
 import { get3NPSCoordinates } from "../shapes";
-import { STANDARD_TUNING } from "../guitar";
+import { STANDARD_TUNING } from "../core/guitar";
 import { k } from "./utils/storage";
 
 // Mock child components to isolate App logic
@@ -78,7 +78,7 @@ vi.mock("../DrawerSelector", () => ({
   ),
 }));
 
-vi.mock("../audio", () => ({
+vi.mock("../core/audio", () => ({
   synth: {
     setMute: vi.fn(),
     init: vi.fn(),

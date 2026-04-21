@@ -1,5 +1,5 @@
-import { getScaleNotes } from "../theory";
-import { getFretboardNotes } from "../guitar";
+import { getScaleNotes } from "../core/theory";
+import { getFretboardNotes } from "../core/guitar";
 import type { ShapeResult } from "./polygons";
 
 export function get3NPSCoordinates(

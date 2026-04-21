@@ -2,7 +2,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { NoteGrid } from "./NoteGrid";
-import { NOTES } from "../theory";
+import { NOTES } from "../core/theory";
 
 describe("NoteGrid", () => {
   it("renders 12 note buttons", () => {

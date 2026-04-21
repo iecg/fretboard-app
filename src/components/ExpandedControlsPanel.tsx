@@ -18,7 +18,7 @@ import {
 import { FretRangeControl } from "./FretRangeControl";
 import { TheoryControls } from "./TheoryControls";
 import { Card } from "./Card";
-import { MAX_FRET } from "../constants";
+import { MAX_FRET } from "../core/constants";
 
 // Lazy-loaded component
 const CircleOfFifths = lazy(() =>

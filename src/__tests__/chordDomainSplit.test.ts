@@ -4,7 +4,7 @@ import { createStore } from "jotai";
 import {
   LENS_REGISTRY,
   type LensAvailabilityContext,
-} from "../theory";
+} from "../core/theory";
 import * as atomsModule from "../store/atoms";
 import {
   chordMemberFactsAtom,

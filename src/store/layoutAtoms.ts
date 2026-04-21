@@ -1,7 +1,7 @@
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
-import { TUNINGS, STANDARD_TUNING } from "../guitar";
-import { MAX_FRET, FRET_ZOOM_MIN, FRET_ZOOM_MAX, FRET_ZOOM_DEFAULT } from "../constants";
+import { TUNINGS, STANDARD_TUNING } from "../core/guitar";
+import { MAX_FRET, FRET_ZOOM_MIN, FRET_ZOOM_MAX, FRET_ZOOM_DEFAULT } from "../core/constants";
 import { k, rawStringStorage, constrainedNumberStorage, GET_ON_INIT } from "../utils/storage";
 
 const fretCountStorage = constrainedNumberStorage({ min: 0, max: MAX_FRET, integer: true });

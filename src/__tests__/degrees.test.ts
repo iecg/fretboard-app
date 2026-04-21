@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getDegreesForScale, DEGREE_COLORS } from '../degrees';
+import { getDegreesForScale, DEGREE_COLORS } from '../core/degrees';
 
 describe('getDegreesForScale', () => {
   describe('Major modes', () => {

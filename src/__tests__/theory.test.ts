@@ -12,7 +12,7 @@ import {
   getKeySignature,
   getKeySignatureForDisplay,
   resolveAccidentalMode,
-} from "../theory";
+} from "../core/theory";
 
 describe("getNoteIndex", () => {
   it("returns correct index for sharp notes", () => {

@@ -4,7 +4,7 @@ import {
   normalizeScaleName,
   type ScaleBrowseMode,
   getActiveScaleBrowseOption,
-} from "../theoryCatalog";
+} from "../core/theoryCatalog";
 import {
   resolveAccidentalMode,
   SCALES,
@@ -14,7 +14,7 @@ import {
   getNoteDisplayInScale,
   getDivergentNotes,
   formatAccidental,
-} from "../theory";
+} from "../core/theory";
 import { k, createStorage, rawStringStorage, booleanStorage, GET_ON_INIT } from "../utils/storage";
 import { fingeringPatternAtom, cagedShapesAtom } from "./fingeringAtoms";
 import type { CagedShape } from "../shapes";

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { ChordPracticeBar } from "../components/ChordPracticeBar";
-import type { PracticeBarGroup, PracticeBarNote } from "../theory";
+import type { PracticeBarGroup, PracticeBarNote } from "../core/theory";
 import { axe } from "../test-utils/a11y";
 
 // ── Fixture notes ────────────────────────────────────────────────────────────

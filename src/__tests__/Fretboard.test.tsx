@@ -4,11 +4,11 @@ import { render, screen, fireEvent, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Provider, createStore } from "jotai";
 import { Fretboard } from "../Fretboard";
-import { STANDARD_TUNING } from "../guitar";
+import { STANDARD_TUNING } from "../core/guitar";
 import { fretEndAtom, fretStartAtom, fretZoomAtom } from "../store/atoms";
 
 // Mock audio synth
-vi.mock("../audio", () => ({
+vi.mock("../core/audio", () => ({
   synth: {
     playNote: vi.fn(),
     setMute: vi.fn(),

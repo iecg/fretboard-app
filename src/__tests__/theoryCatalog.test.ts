@@ -10,7 +10,7 @@ import {
   resolveScaleCatalogEntry,
   SCALE_TO_PARENT_MAJOR_OFFSET,
   SCALES,
-} from "../theoryCatalog";
+} from "../core/theoryCatalog";
 
 describe("theory catalog", () => {
   it("resolves every persisted scaleName to the correct family and member", () => {
