@@ -69,6 +69,9 @@
   --token-border-faint: rgb(255 255 255 / 0.08);
   --token-surface-dim: rgb(255 255 255 / 0.04);
 
+  /* Card surface base (used by semantic --surface-card) */
+  --token-surface-card-base: rgb(22 27 38);
+
   /* Chip color primitives */
   --token-chip-active-bg: rgb(77 228 255 / 0.08);
   --token-chip-tonic-bg: rgb(255 154 77 / 0.1);
