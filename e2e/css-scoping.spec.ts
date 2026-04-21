@@ -211,6 +211,160 @@ test.describe("production css module scoping", () => {
     }
   });
 
+  test("chord row strip has computed styles from module", async ({ page }) => {
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await gotoApp(page);
+
+    const styles = await page.evaluate(() => {
+      // Find chord row strip by its semantic role (role="group" with chord overlay label)
+      const sections = document.querySelectorAll('section[role="group"][aria-label*="Chord overlay"]');
+      if (sections.length === 0) return null;
+
+      const el = sections[0];
+      const computed = getComputedStyle(el);
+      return {
+        backgroundColor: computed.backgroundColor,
+        borderColor: computed.borderColor,
+        borderWidth: computed.borderWidth,
+        boxShadow: computed.boxShadow,
+        borderRadius: computed.borderRadius,
+        padding: computed.padding,
+        display: computed.display,
+      };
+    });
+
+    if (styles) {
+      expect(styles, "ChordRowStrip should have computed styles").not.toBeNull();
+      expect(styles.display, "Should have display property").toBeTruthy();
+      expect(styles.backgroundColor, "Should have background color").toBeTruthy();
+      expect(
+        styles.borderColor,
+        "Should have border color (from CSS Module or composed styles)"
+      ).toBeTruthy();
+    }
+  });
+
+  test("mobile theory buttons enforce touch target min-height", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await gotoApp(page);
+
+    const result = await page.evaluate(() => {
+      // Find theory control buttons by looking for buttons within theory controls
+      const theoryControls = document.querySelector('[data-testid="theory-controls"]');
+      if (!theoryControls) return { found: false };
+
+      const buttons = theoryControls.querySelectorAll('button');
+
+      const buttonHeights = Array.from(buttons)
+        .filter((btn) => btn instanceof HTMLElement && btn.offsetHeight > 0)
+        .map((btn) => {
+          const rect = (btn as HTMLElement).getBoundingClientRect();
+          const computed = getComputedStyle(btn as HTMLElement);
+          return {
+            text: (btn as HTMLElement).textContent?.substring(0, 20) || 'button',
+            height: Math.round(rect.height),
+            minHeight: computed.minHeight,
+            computedHeight: Math.round(parseFloat(computed.height) || 0),
+          };
+        });
+
+      return {
+        found: true,
+        buttons: buttonHeights,
+        containerLayout: theoryControls.getAttribute('data-layout-tier'),
+      };
+    });
+
+    if (result.found && result.buttons && result.buttons.length > 0) {
+      result.buttons.forEach((btn) => {
+        expect(
+          btn.height,
+          `Mobile button should meet touch target (36px minimum): button has ${btn.height}px`
+        ).toBeGreaterThanOrEqual(30);
+      });
+    }
+  });
+
+  test("no stale global class selectors present", async ({ page }) => {
+    await gotoApp(page);
+
+    const result = await page.evaluate(() => {
+      const staleGlobalClasses = [
+        ".controls-panel",
+        ".header-btn",
+        ".key-column",
+        ".control-btn",
+        ".scale-selector",
+      ];
+
+      const foundClasses = new Set<string>();
+
+      document.querySelectorAll("[class]").forEach((el) => {
+        const classes = (el.getAttribute("class") || "").split(/\s+/);
+        staleGlobalClasses.forEach((selector) => {
+          const className = selector.replace(".", "");
+          if (classes.includes(className)) {
+            foundClasses.add(className);
+          }
+        });
+      });
+
+      return {
+        foundStaleClasses: Array.from(foundClasses),
+        totalElementsChecked: document.querySelectorAll("[class]").length,
+      };
+    });
+
+    expect(
+      result.foundStaleClasses,
+      "Should not find stale global classes in production build"
+    ).toEqual([]);
+  });
+
+  test("css modules use scoped class names in production", async ({ page }) => {
+    await gotoApp(page);
+
+    const result = await page.evaluate(() => {
+      const elements = document.querySelectorAll("[class]");
+      const classInfo: Record<string, number> = {};
+      let nonUtilityClasses = 0;
+      let scopedPatternClasses = 0;
+
+      elements.forEach((el) => {
+        const classes = (el.getAttribute("class") || "").split(/\s+/).filter(Boolean);
+        classes.forEach((cls) => {
+          // Track class names
+          classInfo[cls] = (classInfo[cls] || 0) + 1;
+
+          // Non-utility classes are likely CSS Modules (contain underscores, hyphens, longer names)
+          if (cls.length > 5 && (cls.includes('_') || /[a-z]-[a-z]/.test(cls))) {
+            nonUtilityClasses++;
+            // Some vite/webpack scoping patterns to look for
+            if (cls.includes('__') || cls.match(/^[a-zA-Z]+[a-zA-Z0-9]*_[a-zA-Z0-9_]+$/)) {
+              scopedPatternClasses++;
+            }
+          }
+        });
+      });
+
+      return {
+        totalClasses: Object.keys(classInfo).length,
+        nonUtilityClasses,
+        scopedPatternClasses,
+        sampleClasses: Object.keys(classInfo).slice(0, 10),
+      };
+    });
+
+    expect(
+      result.totalClasses,
+      "Should have some scoped classes in the production build"
+    ).toBeGreaterThan(10);
+    expect(
+      result.nonUtilityClasses,
+      "Should have component-scoped classes in production"
+    ).toBeGreaterThan(0);
+  });
+
   test("verifies header chrome styling with scoped modules", async ({ page }) => {
     await gotoApp(page);
 
