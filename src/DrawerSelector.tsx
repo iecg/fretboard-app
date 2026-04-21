@@ -54,12 +54,13 @@ export function DrawerSelector(props: DrawerSelectorProps) {
   // Track active index for keyboard navigation (starts at selected value)
   const [activeIndex, setActiveIndex] = useState(selectedIndex >= 0 ? selectedIndex : 0);
 
-  // Reset activeIndex when opening to match current selection
-  useEffect(() => {
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setActiveIndex(selectedIndex >= 0 ? selectedIndex : 0);
     }
-  }, [open, selectedIndex]);
+  }
 
   // Reliably move focus to the listbox when it opens (autoFocus on div is not reliable)
   useEffect(() => {
