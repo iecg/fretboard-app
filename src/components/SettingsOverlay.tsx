@@ -234,7 +234,7 @@ function OverlayFieldHeader({
             aria-controls={`settings-help-${help.id}`}
             onClick={onToggleHelp}
           >
-            <HelpCircle className={styles.icon} />
+            <HelpCircle className="icon" />
           </button>
           {isHelpOpen ? (
             <div
@@ -493,7 +493,7 @@ function SettingsOverlaySurface({
             onClick={close}
             aria-label="Close settings"
           >
-            <X className={styles.icon} />
+            <X className="icon" />
           </button>
         </div>
         <div className={clsx(styles["settings-overlay-content"], "custom-scrollbar")}>
