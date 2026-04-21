@@ -97,15 +97,15 @@
 }
 
 /* Split variants (tablet-split, desktop-split): key column flush with grid cell. */
-.app-container[data-layout-variant="tablet-split"] .key-column,
-.app-container[data-layout-variant="desktop-split"] .key-column,
-.app-container[data-layout-variant="desktop-3col"] .key-column {
+.app-container[data-layout-variant="tablet-split"] [data-layout-column="key"],
+.app-container[data-layout-variant="desktop-split"] [data-layout-column="key"],
+.app-container[data-layout-variant="desktop-3col"] [data-layout-column="key"] {
   min-width: 0;
 }
 
 /* tablet-stacked: single column, centered key card. */
 /* desktop-stacked uses 3-col grid (ExpandedControlsPanel.css) — no centering needed. */
-.app-container[data-layout-variant="tablet-stacked"] .key-column {
+.app-container[data-layout-variant="tablet-stacked"] [data-layout-column="key"] {
   max-width: 32rem;
   width: 100%;
   margin: 0 auto;

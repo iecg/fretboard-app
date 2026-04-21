@@ -159,15 +159,4 @@
   }
 }
 
-:global(.overlay-field--selector) .drawer-label {
-  display: none;
-}
-
-:global(.overlay-field--selector) .drawer-trigger {
-  width: 100%;
-}
-
-:global(.overlay-field--selector) .drawer-value {
-  margin-left: 0;
-}
 /* stylelint-enable selector-pseudo-class-no-unknown */

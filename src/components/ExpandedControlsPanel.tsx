@@ -83,7 +83,7 @@ export function KeyColumn() {
   const enharmonicDisplay = useAtomValue(enharmonicDisplayAtom);
 
   return (
-    <Card title="Key Explorer" className="key-column" data-testid="key-column">
+    <Card title="Key Explorer" data-layout-column="key" data-testid="key-column">
       <Suspense fallback={null}>
         <CircleOfFifths
           rootNote={rootNote}

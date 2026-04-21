@@ -69,7 +69,6 @@ import { describe, it, expect } from "vitest";
  * - pattern-section: pattern section wrapper
  * - mode-grid: layout grid for mode buttons
  * - tuning-select, tuning-select-label: tuning control
- * - key-column: key explorer column
  * - badge: badge display
  * - range-separator: range separator symbol
  * - error-fallback: error boundary fallback
@@ -141,7 +140,6 @@ const APPROVED_GLOBALS = new Set([
   "custom-scrollbar",
   "hide-scrollbar",
   "brand-mark",
-  "key-column",
 ]);
 
 /**
