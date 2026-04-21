@@ -45,7 +45,11 @@
   min-height: 100dvh;
   container-type: inline-size;
   container-name: app-layout;
-  background: transparent;
+  background:
+    radial-gradient(circle at 14% 18%, rgb(77 228 255 / 0.08), transparent 24%),
+    radial-gradient(circle at 82% 22%, rgb(92 112 255 / 0.08), transparent 28%),
+    radial-gradient(circle at 50% 56%, rgb(12 75 94 / 0.12), transparent 45%),
+    linear-gradient(180deg, #0a1420 0%, #0b1623 32%, #09111b 100%);
 }
 
 /* Header action buttons (rendered inside AppHeader actions slot) */
@@ -1107,12 +1111,3 @@
   margin-bottom: 0.3rem;
 }
 
-/* FINAL BACKGROUND OVERRIDE */
-.app-container {
-  max-width: 88rem !important;
-  background:
-    radial-gradient(circle at 14% 18%, rgb(77 228 255 / 0.08), transparent 24%),
-    radial-gradient(circle at 82% 22%, rgb(92 112 255 / 0.08), transparent 28%),
-    radial-gradient(circle at 50% 56%, rgb(12 75 94 / 0.12), transparent 45%),
-    linear-gradient(180deg, #0a1420 0%, #0b1623 32%, #09111b 100%) !important;
-}
