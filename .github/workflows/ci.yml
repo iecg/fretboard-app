@@ -65,8 +65,8 @@ jobs:
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
 
-      - name: Run responsive smoke tests
-        run: npm run test:e2e
+      - name: Run production E2E tests
+        run: npm run test:e2e:production
 
       - name: Archive Playwright results
         if: always()
