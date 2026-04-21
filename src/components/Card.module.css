@@ -1,7 +1,7 @@
 /* stylelint-disable selector-pseudo-class-no-unknown */
 .card {
-  background: rgb(22 27 38 / 0.96);
-  border: 1px solid rgb(255 255 255 / 0.1);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-card-border);
   border-radius: var(--radius-card);
   /* Inset top-edge gleam + moderate drop shadow — recedes behind the fretboard hero */
   box-shadow: 0 1px 0 rgb(255 255 255 / 0.05) inset, 0 6px 20px rgb(0 0 0 / 0.28);
@@ -14,7 +14,7 @@
   justify-content: space-between;
   gap: 0.8rem;
   padding: 1.15rem 1.3rem 0.9rem;
-  border-bottom: 1px solid rgb(255 255 255 / 0.08);
+  border-bottom: 1px solid var(--surface-card-header-border);
 }
 
 .card-header-title-row {
