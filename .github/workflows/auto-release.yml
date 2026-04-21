@@ -25,7 +25,7 @@ jobs:
           echo "❌ Auto Release must be dispatched from main (got: ${{ github.ref }})"
           exit 1
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
