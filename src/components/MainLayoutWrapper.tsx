@@ -48,7 +48,7 @@ export function MainLayoutWrapper({
     >
       {header}
 
-      {showSummary && (
+      {showSummary && !!summary && (
         <div
           className={styles["summary-shell"]}
           data-testid="summary-shell"
@@ -59,7 +59,7 @@ export function MainLayoutWrapper({
         </div>
       )}
 
-      {showChordDock && (
+      {showChordDock && !!chordDock && (
         <div
           className={styles["chord-dock-shell"]}
           data-layout-tier={layoutTier}

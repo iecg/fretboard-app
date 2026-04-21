@@ -977,7 +977,7 @@ describe("App", () => {
       });
 
       const panel = document.querySelector(
-        ".controls-panel",
+        '.controls-panel[data-mode="3col"]',
       ) as HTMLElement;
       expect(panel).toBeTruthy();
 
@@ -1010,7 +1010,7 @@ describe("App", () => {
       });
 
       const panel = document.querySelector(
-        ".controls-panel",
+        '.controls-panel[data-mode="split"]',
       ) as HTMLElement;
       expect(panel).toBeTruthy();
 

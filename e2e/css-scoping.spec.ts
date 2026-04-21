@@ -20,7 +20,7 @@ test.describe("production css module scoping", () => {
     expect(rect!.height, "App container should have non-zero height").toBeGreaterThan(0);
   });
 
-  test("fretboard renders with module styles in production", async ({ page }) => {
+  test("fretboard renders with module styles and grid layout", async ({ page }) => {
     await gotoApp(page);
 
     const fretboard = page.locator('[data-testid="fretboard-outer"]');
@@ -60,6 +60,7 @@ test.describe("production css module scoping", () => {
     await gotoApp(page);
 
     const dashboardCards = page.locator('[data-testid="dashboard-card-configuration"]');
+    await expect(dashboardCards.first()).toBeVisible();
     expect(await dashboardCards.count(), "Dashboard cards should be present").toBeGreaterThan(0);
     const cardRect = await dashboardCards.first().boundingBox();
     expect(cardRect, "Dashboard card should be rendered").not.toBeNull();
@@ -89,44 +90,12 @@ test.describe("production css module scoping", () => {
     expect(result.fretboardHasStyles, "Fretboard should have computed styles").toBe(true);
   });
 
-  test("verifies fretboard grid layout integrity with scoped styles", async ({
-    page,
-  }) => {
-    await gotoApp(page);
-
-    const result = await page.evaluate(() => {
-      const fretboard = document.querySelector('[data-testid="fretboard-outer"]');
-      if (!fretboard) return { visible: false };
-
-      const style = getComputedStyle(fretboard);
-      const rect = fretboard.getBoundingClientRect();
-
-      return {
-        visible: true,
-        display: style.display,
-        width: Math.round(rect.width),
-        height: Math.round(rect.height),
-        position: style.position,
-      };
-    });
-
-    expect(result.visible, "Fretboard should be rendered").toBe(true);
-    expect(result.display, "Fretboard should have display property").toBeTruthy();
-    expect(
-      result.width,
-      "Fretboard should have non-zero width with scoped styles"
-    ).toBeGreaterThan(0);
-    expect(
-      result.height,
-      "Fretboard should have non-zero height with scoped styles"
-    ).toBeGreaterThan(0);
-  });
-
   test("mobile tab panel styles work on narrow viewports", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await gotoApp(page);
 
     const tabContent = page.locator('[data-testid="mobile-tab-content"]');
+    await expect(tabContent.first()).toBeVisible();
     expect(await tabContent.count(), "Tab content should be present").toBeGreaterThan(0);
     const contentRect = await tabContent.first().boundingBox();
     expect(contentRect, "Tab content should be rendered").not.toBeNull();
@@ -232,6 +201,7 @@ test.describe("production css module scoping", () => {
   test("mobile theory buttons enforce touch target min-height", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await gotoApp(page);
+    await page.waitForSelector('[data-testid="theory-controls"]');
 
     const result = await page.evaluate(() => {
       // Find theory control buttons by looking for buttons within theory controls

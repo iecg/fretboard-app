@@ -158,9 +158,9 @@ function scanGlobalClasses(srcDir: string): Set<string> {
   for (const file of tsxFiles) {
     const content = readFileSync(file, "utf-8");
     // Match className="..." or className='...' (quoted string literals only)
-    // Supports both className="foo" and className={'bar'} formats
+    // Supports both className="foo" and className={'bar'} formats with optional whitespace
     const matches = content.matchAll(
-      /className=(?:\{)?["']([a-z-]+(?:\s+[a-z-]+)*)["'](?:\})?/g
+      /className=\{?\s*["']([a-z-]+(?:\s+[a-z-]+)*)["']\s*\}?/g
     );
 
     for (const match of matches) {
@@ -183,13 +183,13 @@ function findTsxFiles(dir: string): string[] {
   const entries = readdirSync(dir, { withFileTypes: true });
 
   for (const entry of entries) {
-    const path = join(dir, entry.name);
+    const entryPath = join(dir, entry.name);
     if (entry.isDirectory()) {
       if (!entry.name.startsWith(".") && entry.name !== "node_modules") {
-        files.push(...findTsxFiles(path));
+        files.push(...findTsxFiles(entryPath));
       }
     } else if (entry.name.endsWith(".tsx")) {
-      files.push(path);
+      files.push(entryPath);
     }
   }
 
