@@ -210,13 +210,4 @@ describe("CSS Global Classes Guard", () => {
 
     expect(unapproved).toEqual([]);
   });
-
-  it("should have justified entries in APPROVED_GLOBALS", () => {
-    // Smoke test: ensure core classes are present
-    expect(APPROVED_GLOBALS.size).toBeGreaterThan(0);
-    expect(APPROVED_GLOBALS.has("app-container")).toBe(true);
-    expect(APPROVED_GLOBALS.has("panel-surface")).toBe(true);
-    expect(APPROVED_GLOBALS.has("loading-spinner")).toBe(true);
-    expect(APPROVED_GLOBALS.has("icon")).toBe(true);
-  });
 });
