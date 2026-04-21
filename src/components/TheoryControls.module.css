@@ -148,46 +148,37 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: var(--space-3);
   padding: 0;
-  background: transparent;
   border: none;
-  cursor: pointer;
+  background: transparent;
   color: inherit;
-  transition: var(--transition-surface);
   text-align: left;
+  cursor: pointer;
 }
 
 .theory-disclosure-btn:focus-visible {
   outline: var(--focus-ring);
-  outline-offset: -2px;
+  outline-offset: var(--focus-ring-offset);
+  box-shadow: var(--focus-ring-glow);
 }
 
 .theory-disclosure-title {
   font-size: 0.95rem;
   font-weight: 600;
   color: rgb(247 249 253 / 0.96);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 .theory-disclosure-summary {
   font-size: 0.78rem;
+  color: rgb(187 201 214 / 0.72);
+  white-space: nowrap;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.theory-disclosure-btn--open .theory-disclosure-summary {
   color: var(--neon-cyan-bright);
-  font-weight: 500;
-  margin-left: auto;
-  opacity: 0.85;
-}
-
-.theory-disclosure-btn::after {
-  content: "▾";
-  font-size: 0.8rem;
-  color: rgb(188 200 214 / 0.5);
-  transition: transform 0.2s ease;
-}
-
-.theory-disclosure-btn--open::after {
-  transform: rotate(180deg);
 }
 
 .theory-chord-content {
