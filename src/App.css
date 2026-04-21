@@ -239,60 +239,6 @@
   align-items: center;
 }
 
-
-.root-active {
-  color: white;
-  background-color: var(--accent-secondary);
-  box-shadow: var(--shadow-note-root);
-}
-
-.note-active {
-  color: white;
-  background-color: var(--accent-primary);
-  box-shadow: var(--shadow-note-active);
-}
-
-.note-blue {
-  color: white;
-  background-color: var(--note-blue);
-  box-shadow: 0 0 8px var(--note-blue-glow);
-}
-
-.note-dimmed {
-  background-color: var(--surface-highlight);
-  color: var(--text-muted);
-  opacity: 0.6 !important;
-  border: 1px dashed var(--accent-primary);
-}
-
-.note-inactive {
-  background-color: rgba(0, 0, 0, 0.4);
-  color: transparent;
-  opacity: 0;
-}
-
-.note-inactive:hover {
-  color: white;
-  opacity: 1 !important;
-}
-
-/* Enharmonic overlay within note bubbles */
-.note-enharmonic {
-  font-size: 0.55em;
-  font-weight: 600;
-  opacity: 0.85;
-  line-height: 1;
-  -webkit-text-stroke: 2.5px rgba(0, 0, 0, 0.7);
-  paint-order: stroke fill;
-  letter-spacing: 0;
-  order: -1;
-  /* renders above main label */
-}
-
-.note-main-label {
-  line-height: 1;
-}
-
 @keyframes note-ping {
   0% {
     box-shadow: 0 0 0 0 var(--shadow-ping-start);
@@ -301,10 +247,6 @@
   100% {
     box-shadow: 0 0 0 12px var(--shadow-ping-end);
   }
-}
-
-.note-played {
-  animation: note-ping 0.4s ease-out;
 }
 
 /* Controls panel shared by tablet and desktop layouts. */
@@ -790,19 +732,6 @@
   color: white;
   background-color: var(--accent-primary);
   box-shadow: 0 0 0 2.5px var(--accent-secondary), var(--shadow-note-active);
-}
-
-.note-scale-dimmed {
-  color: var(--text-main);
-  background-color: var(--surface-highlight);
-  opacity: 0.5;
-  border: 1px dashed var(--accent-primary);
-}
-
-.note-scale-only {
-  color: var(--text-main);
-  background-color: var(--surface-highlight);
-  opacity: 0.85;
 }
 
 .note-scale-only.hidden,
