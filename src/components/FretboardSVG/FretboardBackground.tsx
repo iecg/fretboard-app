@@ -130,3 +130,4 @@ export const FretboardBackground = memo(({
     </>
   );
 });
+FretboardBackground.displayName = 'FretboardBackground';

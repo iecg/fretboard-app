@@ -34,6 +34,8 @@ export function useWoodGrainTexture(width: number, height: number): string | nul
     const blob = new Blob([svg], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
     const img = new Image();
+    let cancelled = false;
+
     img.onload = () => {
       const canvas = document.createElement('canvas');
       canvas.width = width;
@@ -42,10 +44,18 @@ export function useWoodGrainTexture(width: number, height: number): string | nul
       if (!ctx) { URL.revokeObjectURL(url); return; }
       ctx.drawImage(img, 0, 0);
       URL.revokeObjectURL(url);
-      try { setDataUrl(canvas.toDataURL('image/png')); } catch { /* tainted canvas — stay on live filters */ }
+      if (!cancelled) {
+        try { setDataUrl(canvas.toDataURL('image/png')); } catch { /* tainted canvas — stay on live filters */ }
+      }
     };
     img.onerror = () => URL.revokeObjectURL(url);
     img.src = url;
+
+    return () => {
+      cancelled = true;
+      img.onload = null;
+      img.onerror = null;
+    };
   }, [width, height]);
 
   return dataUrl;

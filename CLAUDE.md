@@ -44,7 +44,7 @@ npm run preview               # preview build locally
 
 ## File Layout
 
-```
+```text
 src/
 ├── App.tsx                   # thin orchestrator
 ├── main.tsx
