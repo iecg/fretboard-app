@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import clsx from "clsx";
 import { AnimatePresence, motion } from "motion/react";
 import { X } from "lucide-react";
@@ -10,10 +10,8 @@ import {
   fretEndAtom,
   tuningNameAtom,
   chordFretSpreadAtom,
-  resetAtom,
 } from "../../store/atoms";
 import { TUNINGS } from "../../core/guitar";
-import { synth } from "../../core/audio";
 import { StepperControl } from "../StepperControl/StepperControl";
 import { FretRangeControl } from "../FretRangeControl/FretRangeControl";
 import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
@@ -40,6 +38,7 @@ import {
   SETTINGS_SECTIONS,
 } from "./constants";
 import { OverlaySection, OverlayFieldHeader } from "./shared";
+import { ResetSettingsSection } from "./sections/ResetSettingsSection";
 import { useSettingsForm } from "./useSettingsForm";
 import { useHelpPopover } from "./useHelpPopover";
 import styles from "./SettingsOverlay.module.css";
@@ -93,9 +92,6 @@ function SettingsOverlaySurface({
     handleHelpToggle,
   } = useHelpPopover();
 
-  const dispatchReset = useSetAtom(resetAtom);
-  const [resetConfirming, setResetConfirming] = useState(false);
-
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
@@ -103,22 +99,6 @@ function SettingsOverlaySurface({
   const close = () => {
     setIsOpen(false);
   };
-
-  const handleResetClick = () => {
-    if (resetConfirming) {
-      dispatchReset();
-      synth.setMute(false);
-      setIsOpen(false);
-    } else {
-      setResetConfirming(true);
-    }
-  };
-
-  useEffect(() => {
-    if (!resetConfirming) return;
-    const t = setTimeout(() => setResetConfirming(false), 3000);
-    return () => clearTimeout(t);
-  }, [resetConfirming]);
 
   useEffect(() => {
     triggerRef.current =
@@ -299,22 +279,7 @@ function SettingsOverlaySurface({
               tone={section.tone}
             >
               {section.id === "reset" ? (
-                <div className={styles["overlay-reset-section"]}>
-                  <p className={styles["overlay-reset-copy"]}>
-                    Restore every setting in the app back to its default value.
-                  </p>
-                  <button
-                    type="button"
-                    className={clsx(styles["overlay-reset-btn"], {
-                      [styles["overlay-reset-confirming"]]: resetConfirming,
-                    })}
-                    onClick={handleResetClick}
-                  >
-                    {resetConfirming
-                      ? "Click again to confirm"
-                      : "Reset all settings"}
-                  </button>
-                </div>
+                <ResetSettingsSection onClose={close} />
               ) : (
                 section.fields.map((fieldKey, index) =>
                   renderField(fieldKey, index, section.fields.length),
