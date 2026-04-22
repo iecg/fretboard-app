@@ -3,12 +3,12 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { ToggleBar } from "./ToggleBar/ToggleBar";
-import { NoteGrid } from "./NoteGrid/NoteGrid";
-import { NOTES } from "../core/theory";
+import { ToggleBar } from "../../components/ToggleBar/ToggleBar";
+import { NoteGrid } from "../../components/NoteGrid/NoteGrid";
+import { NOTES } from "../../core/theory";
 
 const sharedCSS = readFileSync(
-  resolve(__dirname, "../components/shared.module.css"),
+  resolve(__dirname, "./shared.module.css"),
   "utf-8",
 );
 

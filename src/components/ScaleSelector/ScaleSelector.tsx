@@ -18,7 +18,7 @@ import { LabeledSelect, type LabeledSelectOption } from "../LabeledSelect/Labele
 import { NoteGrid } from "../NoteGrid/NoteGrid";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { useScaleState } from "../../hooks/useScaleState";
-import shared from "../shared.module.css";
+import shared from "../shared/shared.module.css";
 import theoryStyles from "../TheoryControls/TheoryControls.module.css";
 
 export function ScaleSelector() {

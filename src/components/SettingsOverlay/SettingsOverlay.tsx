@@ -34,7 +34,7 @@ import {
   ANIMATION_EASE,
 } from "../../core/constants";
 import styles from "./SettingsOverlay.module.css";
-import sharedStyles from "../shared.module.css";
+import sharedStyles from "../shared/shared.module.css";
 
 const ZOOM_STEP = 10;
 

@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import styles from "./ExpandedControlsPanel.module.css";
-import shared from "../shared.module.css";
+import shared from "../shared/shared.module.css";
 import { useAtomValue, useSetAtom, useAtom } from "jotai";
 import clsx from "clsx";
 import {

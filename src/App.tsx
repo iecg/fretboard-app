@@ -20,7 +20,7 @@ import { SummaryRibbon } from "./components/SummaryRibbon/SummaryRibbon";
 import { ChordOverlayDock } from "./components/ChordOverlayDock/ChordOverlayDock";
 import { VersionBadge } from "./components/VersionBadge/VersionBadge";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
-import sharedStyles from "./components/shared.module.css";
+import sharedStyles from "./components/shared/shared.module.css";
 import "./styles/App.css";
 
 const ExpandedControlsPanel = lazy(() =>

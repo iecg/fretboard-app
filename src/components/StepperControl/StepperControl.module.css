@@ -6,11 +6,11 @@
 }
 
 .stepper-btn {
-  composes: control-button from '../shared.module.css';
+  composes: control-button from '../shared/shared.module.css';
 }
 
 .stepper-value {
-  composes: control-value from '../shared.module.css';
+  composes: control-value from '../shared/shared.module.css';
 }
 
 .stepper-control.mobile .stepper-btn {

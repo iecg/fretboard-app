@@ -1,7 +1,7 @@
 import { useId } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import styles from "./ToggleBar.module.css";
-import shared from "../shared.module.css";
+import shared from "../shared/shared.module.css";
 
 const toggleBarVariants = cva(shared["toggle-group"], {
   variants: {

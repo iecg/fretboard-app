@@ -9,7 +9,7 @@ import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { useChordState } from "../../hooks/useChordState";
 import { useScaleState } from "../../hooks/useScaleState";
 import styles from "../TheoryControls/TheoryControls.module.css";
-import shared from "../shared.module.css";
+import shared from "../shared/shared.module.css";
 
 const CHORD_OPTIONS: (string | { divider: string })[] = [
   { divider: "Triads" },

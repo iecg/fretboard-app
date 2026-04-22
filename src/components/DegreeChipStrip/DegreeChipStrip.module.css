@@ -1,5 +1,5 @@
 .degree-chip-strip {
-  composes: strip-surface from "../shared.module.css";
+  composes: strip-surface from "../shared/shared.module.css";
 
   --chip-size: clamp(2.15rem, 3.4vw, 2.5rem);
   --chip-half: calc(var(--chip-size) / 2);
