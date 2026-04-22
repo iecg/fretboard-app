@@ -18,6 +18,9 @@
     "test:e2e": "playwright test",
     "test:e2e:production": "npm run build && playwright test --config=playwright.config.production.ts",
     "test:e2e:css-scoping": "npm run test:e2e:production -- e2e/css-scoping.spec.ts",
+    "test:visual": "playwright test --config=playwright.config.visual.ts",
+    "test:visual:ci": "npm run build && playwright test --config=playwright.config.visual.ts",
+    "test:visual:update": "playwright test --config=playwright.config.visual.ts --update-snapshots",
     "prepare": "husky"
   },
   "dependencies": {

@@ -123,9 +123,46 @@ CSS overrides use `[data-layout-tier="..."]` and `[data-layout-variant="..."]` s
 
 ## Tests
 
-- Unit tests for pure computation modules (`theory.ts`, `guitar.ts`, `shapes.ts`) in `src/__tests__/`
-- Snapshot tests for component rendering
-- Run with `npm test` — all tests must pass before submitting a PR
+- **Unit tests:** Pure computation modules (`theory.ts`, `guitar.ts`, `shapes.ts`) in `src/core/` and `src/shapes/`. Run with `npm test`.
+- **Component tests:** Vitest + React Testing Library + Snapshots in `src/components/`. Run with `npm test`.
+- **Visual tests:** Playwright visual regression tests in `e2e/`. Run with `npm run test:visual`.
+
+All tests must pass before submitting a PR.
+
+## Visual Regression Testing
+
+We use Playwright for visual regression testing to ensure UI consistency across different devices and layout modes.
+
+### Running Visual Tests
+
+To run the visual tests locally:
+
+```bash
+npm run test:visual
+```
+
+This compares current screenshots against the baselines stored in `e2e/**/*.visual.spec.ts-snapshots/`.
+
+### Updating Baselines
+
+If you've intentionally changed the UI and need to update the baseline screenshots:
+
+```bash
+npm run test:visual:update
+```
+
+### Reviewing Diffs
+
+When a visual test fails, Playwright generates a diff image highlighting the differences. You can review these in the `test-results/` directory. If you want a visual report, run:
+
+```bash
+npx playwright show-report
+```
+
+### Source of Truth
+
+**Note:** The CI Linux Chromium baselines are the absolute source of truth. Due to differences in font rendering and anti-aliasing between operating systems (macOS, Windows, Linux), local snapshots may show minor diffs compared to CI. Always verify your changes against the CI build results.
+
 
 ## License
 
