@@ -1,16 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom } from "jotai";
 import clsx from "clsx";
 import { AnimatePresence, motion } from "motion/react";
 import { X } from "lucide-react";
-import {
-  settingsOverlayOpenAtom,
-  fretZoomAtom,
-  fretStartAtom,
-  fretEndAtom,
-  tuningNameAtom,
-  chordFretSpreadAtom,
-} from "../../store/atoms";
+import { settingsOverlayOpenAtom } from "../../store/atoms";
 import {
   getResponsiveLayout,
   getResponsiveTier,
@@ -21,9 +14,6 @@ import {
   ANIMATION_DURATION_STANDARD,
   ANIMATION_EASE,
 } from "../../core/constants";
-import {
-  SETTINGS_SECTIONS,
-} from "./constants";
 import { OverlaySection } from "./shared";
 import { useHelpPopover } from "./useHelpPopover";
 import { ViewSettingsSection } from "./sections/ViewSettingsSection";
@@ -133,44 +123,25 @@ function SettingsOverlaySurface({
           </button>
         </div>
         <div className={clsx(styles["settings-overlay-content"], "custom-scrollbar")}>
-          {SETTINGS_SECTIONS.map((section) => {
-            if (section.id === "notation") {
-              return (
-                <NotationSettingsSection
-                  key={section.id}
-                  activeHelpField={activeHelpField}
-                  handleHelpToggle={handleHelpToggle}
-                  registerHelpContainer={registerHelpContainer}
-                />
-              );
-            }
-            if (section.id === "chord-layout") {
-              return (
-                <ChordLayoutSettingsSection
-                  key={section.id}
-                  activeHelpField={activeHelpField}
-                  handleHelpToggle={handleHelpToggle}
-                  registerHelpContainer={registerHelpContainer}
-                />
-              );
-            }
-            return (
-              <OverlaySection
-                key={section.id}
-                id={section.id}
-                title={section.title}
-                tone={section.tone}
-              >
-                {section.id === "reset" ? (
-                  <ResetSettingsSection onClose={close} />
-                ) : section.id === "view" ? (
-                  <ViewSettingsSection />
-                ) : section.id === "instrument" ? (
-                  <InstrumentSettingsSection />
-                ) : null}
-              </OverlaySection>
-            );
-          })}
+          <OverlaySection id="view" title="View">
+            <ViewSettingsSection />
+          </OverlaySection>
+          <OverlaySection id="instrument" title="Instrument">
+            <InstrumentSettingsSection />
+          </OverlaySection>
+          <NotationSettingsSection
+            activeHelpField={activeHelpField}
+            handleHelpToggle={handleHelpToggle}
+            registerHelpContainer={registerHelpContainer}
+          />
+          <ChordLayoutSettingsSection
+            activeHelpField={activeHelpField}
+            handleHelpToggle={handleHelpToggle}
+            registerHelpContainer={registerHelpContainer}
+          />
+          <OverlaySection id="reset" title="Reset" tone="danger">
+            <ResetSettingsSection onClose={close} />
+          </OverlaySection>
         </div>
       </motion.div>
     </>
@@ -182,12 +153,6 @@ export default function SettingsOverlay() {
   const [viewport, setViewport] = useState(getViewportSnapshot);
   const openTierRef = useRef<ResponsiveTier | null>(null);
   const layout = getResponsiveLayout(viewport.width, viewport.height);
-
-  useAtomValue(fretZoomAtom);
-  useAtomValue(fretStartAtom);
-  useAtomValue(fretEndAtom);
-  useAtomValue(tuningNameAtom);
-  useAtomValue(chordFretSpreadAtom);
 
   useEffect(() => {
     const onResize = () => setViewport(getViewportSnapshot());
