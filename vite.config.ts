@@ -19,7 +19,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: ['./src/__tests__/setup.ts'],
+    setupFiles: ['./src/test-utils/setup.ts'],
     testTimeout: 15000,
     css: {
       include: /.+/,
@@ -37,7 +37,7 @@ export default defineConfig({
       reporter: ['text', 'json', 'html', 'lcov', 'json-summary', 'text-summary'],
       exclude: [
         'node_modules/',
-        'src/__tests__/',
+        'src/test-utils/',
         '**/*.test.*',
         '**/*.spec.*',
         '**/*.d.ts',

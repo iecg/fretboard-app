@@ -4,7 +4,7 @@ import './tokens.css'
 import './index.css'
 import './semantic.css'
 import App from './App.tsx'
-import { ErrorBoundary, ErrorFallback } from './components/ErrorBoundary'
+import { ErrorBoundary, ErrorFallback } from './components/ErrorBoundary/ErrorBoundary'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -16,6 +16,7 @@ lerna-debug.log*
 # === Testing ===
 test-results/
 src/__tests__/__snapshots__/
+src/__snapshots__/
 
 # === IDE & Editor ===
 .vscode/*
