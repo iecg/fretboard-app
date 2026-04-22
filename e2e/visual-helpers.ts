@@ -1,0 +1,170 @@
+import { expect, type Locator, type Page } from "@playwright/test";
+
+/**
+ * Waits for the layout to be stable by checking if the layout state remains
+ * unchanged for several consecutive animation frames.
+ */
+export async function waitForStableLayout(page: Page, timeout = 2000) {
+  await page.evaluate(async (timeoutMs) => {
+    const getLayoutState = () => {
+      const { clientWidth, clientHeight, scrollHeight, scrollWidth } = document.documentElement;
+      return JSON.stringify({
+        clientWidth,
+        clientHeight,
+        scrollHeight,
+        scrollWidth,
+        elementCount: document.querySelectorAll("*").length,
+        // Include bounding boxes of all visible elements might be too expensive, 
+        // but we can check the body's bounding box
+        bodyRect: document.body.getBoundingClientRect(),
+      });
+    };
+
+    let lastState = getLayoutState();
+    let stableFrames = 0;
+    const startTime = Date.now();
+
+    return new Promise((resolve, reject) => {
+      function check() {
+        const currentState = getLayoutState();
+        if (currentState === lastState) {
+          stableFrames++;
+        } else {
+          stableFrames = 0;
+          lastState = currentState;
+        }
+
+        if (stableFrames >= 5) {
+          resolve(true);
+        } else if (Date.now() - startTime > timeoutMs) {
+          reject(new Error("visual stability timeout: page layout was not stable"));
+        } else {
+          requestAnimationFrame(check);
+        }
+      }
+      requestAnimationFrame(check);
+    });
+  }, timeout);
+}
+
+/**
+ * Waits for a specific locator to have a stable bounding box.
+ */
+export async function waitForStable(locator: Locator, timeout = 2000) {
+  const page = locator.page();
+  const element = await locator.elementHandle();
+  if (!element) return;
+
+  await page.evaluate(async ({ el, timeoutMs }) => {
+    const getRect = () => {
+      const { top, left, width, height } = el.getBoundingClientRect();
+      return JSON.stringify({ top, left, width, height });
+    };
+    let lastRect = getRect();
+    let stableFrames = 0;
+    const startTime = Date.now();
+
+    return new Promise((resolve, reject) => {
+      function check() {
+        const currentRect = getRect();
+        if (currentRect === lastRect) {
+          stableFrames++;
+        } else {
+          stableFrames = 0;
+          lastRect = currentRect;
+        }
+
+        if (stableFrames >= 10) {
+          resolve(true);
+        } else if (Date.now() - startTime > timeoutMs) {
+          reject(new Error("visual stability timeout: locator bounding box was not stable"));
+        } else {
+          requestAnimationFrame(check);
+        }
+      }
+      requestAnimationFrame(check);
+    });
+  }, { el: element, timeoutMs: timeout });
+}
+
+/**
+ * Prepares a page for visual regression testing by setting the viewport,
+ * enabling reduced motion, and ensuring the page is in a stable state.
+ */
+export async function prepareVisualPage(page: Page, viewport = { width: 1280, height: 720 }) {
+  await page.setViewportSize(viewport);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  
+  // Disable all animations, transitions, and hide scrollbars globally
+  await page.addStyleTag({
+    content: `
+      *, *::before, *::after {
+        animation-duration: 0s !important;
+        animation-delay: 0s !important;
+        transition-duration: 0s !important;
+        transition-delay: 0s !important;
+        caret-color: transparent !important;
+      }
+      ::-webkit-scrollbar {
+        display: none !important;
+      }
+      * {
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+      }
+    `,
+  });
+
+  await page.waitForLoadState("networkidle");
+  await page.evaluate(() => document.fonts.ready);
+  await waitForStableLayout(page);
+}
+
+/**
+ * Captures a full-page screenshot with the version badge masked.
+ */
+export async function expectFullPageVisual(page: Page, name: string) {
+  await waitForStableLayout(page);
+  
+  await expect(page).toHaveScreenshot(`${name}.png`, {
+    fullPage: true,
+    mask: [page.getByTestId("version-badge")],
+    animations: "disabled",
+    scale: "css",
+  });
+}
+
+/**
+ * Captures a screenshot of a specific locator.
+ */
+export async function expectLocatorVisual(locator: Locator, name: string) {
+  await waitForStable(locator);
+  await expect(locator).toHaveScreenshot(`${name}.png`, {
+    animations: "disabled",
+    scale: "css",
+  });
+}
+
+/**
+ * Opens the settings drawer and waits for it to be stable.
+ */
+export async function openSettings(page: Page) {
+  await page.getByLabel("Open settings").click();
+  const drawer = page.locator('[data-testid="settings-drawer"]');
+  await drawer.waitFor({ state: "visible" });
+  await page.evaluate(() => document.fonts.ready);
+  await waitForStable(drawer);
+  await waitForStableLayout(page);
+}
+
+/**
+ * Opens the help modal and waits for it to be stable.
+ */
+export async function openHelp(page: Page) {
+  await page.getByLabel("Open help").click();
+  const modal = page.locator('[data-testid="help-modal"]');
+  await modal.waitFor({ state: "visible" });
+  await page.evaluate(() => document.fonts.ready);
+  await waitForStable(modal);
+  await waitForStableLayout(page);
+}
