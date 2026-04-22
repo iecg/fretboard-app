@@ -229,6 +229,7 @@
 }
 
 .note-bubble:focus-visible {
+  opacity: 1 !important;
   outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
   box-shadow: 0 0 0 4px rgb(79 209 197 / 0.3);
