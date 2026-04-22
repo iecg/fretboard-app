@@ -170,7 +170,8 @@ export const shapeContextLabelAtom = atom((get) => {
 
   const fingeringPattern = get(fingeringPatternAtom);
   if (fingeringPattern === "3nps") {
-    return `In 3NPS position ${get(npsPositionAtom)}`;
+    const oct = get(npsOctaveAtom) === 0 ? "Low" : "High";
+    return `In 3NPS position ${get(npsPositionAtom)} (${oct})`;
   }
   if (fingeringPattern === "caged") {
     const shape = Array.from(get(cagedShapesAtom))[0];
