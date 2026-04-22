@@ -286,5 +286,5 @@ export function useNoteData({
       }
     }
     return notes;
-  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, wrappedNotes, practiceLens, tuning, noteSemantics, activePattern, activeShape, shapeScope]);
+  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, wrappedNotes, practiceLens, noteSemantics, activePattern, activeShape, shapeScope]);
 }
