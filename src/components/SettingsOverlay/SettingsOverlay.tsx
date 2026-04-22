@@ -1,16 +1,14 @@
-import { useEffect, useRef, useState, type ReactNode, type Ref } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import clsx from "clsx";
 import { AnimatePresence, motion } from "motion/react";
-import { HelpCircle, X } from "lucide-react";
+import { X } from "lucide-react";
 import {
   settingsOverlayOpenAtom,
   fretZoomAtom,
   fretStartAtom,
   fretEndAtom,
   tuningNameAtom,
-  accidentalModeAtom,
-  enharmonicDisplayAtom,
   chordFretSpreadAtom,
   resetAtom,
 } from "../../store/atoms";
@@ -33,130 +31,19 @@ import {
   ANIMATION_DURATION_STANDARD,
   ANIMATION_EASE,
 } from "../../core/constants";
+import { type SettingFieldKey } from "./types";
+import {
+  ZOOM_STEP,
+  ACCIDENTAL_OPTIONS,
+  ENHARMONIC_DISPLAY_OPTIONS,
+  SETTING_FIELDS,
+  SETTINGS_SECTIONS,
+} from "./constants";
+import { OverlaySection, OverlayFieldHeader } from "./shared";
+import { useSettingsForm } from "./useSettingsForm";
+import { useHelpPopover } from "./useHelpPopover";
 import styles from "./SettingsOverlay.module.css";
 import sharedStyles from "../shared/shared.module.css";
-
-const ZOOM_STEP = 10;
-
-type AccidentalOptionValue = "auto" | "sharps" | "flats";
-type EnharmonicDisplayValue = "auto" | "on" | "off";
-type HelpFieldId = "chordSpread" | "accidentals" | "enharmonicDisplay";
-type SettingFieldKey =
-  | "zoom"
-  | "fretRange"
-  | "tuning"
-  | "accidentals"
-  | "enharmonicDisplay"
-  | "chordSpread";
-
-type FieldHelp = {
-  id: HelpFieldId;
-  content: string;
-};
-
-type SettingFieldConfig = {
-  key: SettingFieldKey;
-  label: string;
-  help?: FieldHelp;
-  className?: string;
-};
-
-type SettingsSectionConfig = {
-  id: string;
-  title: string;
-  tone?: "default" | "danger";
-  fields: SettingFieldKey[];
-};
-
-const ACCIDENTAL_OPTIONS = [
-  { label: "Auto", value: "auto" },
-  { label: "\u266F", value: "sharps" },
-  { label: "\u266D", value: "flats" },
-] as const satisfies readonly {
-  label: string;
-  value: AccidentalOptionValue;
-}[];
-
-const ENHARMONIC_DISPLAY_OPTIONS = [
-  { label: "Auto", value: "auto" },
-  { label: "On", value: "on" },
-  { label: "Off", value: "off" },
-] as const satisfies readonly {
-  label: string;
-  value: EnharmonicDisplayValue;
-}[];
-
-const SETTING_FIELDS: Record<SettingFieldKey, SettingFieldConfig> = {
-  zoom: {
-    key: "zoom",
-    label: "Zoom",
-  },
-  fretRange: {
-    key: "fretRange",
-    label: "Fret Range",
-  },
-  tuning: {
-    key: "tuning",
-    label: "Tuning",
-  },
-  accidentals: {
-    key: "accidentals",
-    label: "Accidentals",
-    className: "overlay-field--accidentals",
-    help: {
-      id: "accidentals",
-      content:
-        "Auto chooses sharps or flats based on the current musical context.",
-    },
-  },
-  enharmonicDisplay: {
-    key: "enharmonicDisplay",
-    label: "Enharmonic Display",
-    help: {
-      id: "enharmonicDisplay",
-      content:
-        "Controls whether equivalent note spellings appear when they clarify the theory view.",
-    },
-  },
-  chordSpread: {
-    key: "chordSpread",
-    label: "Chord Spread",
-    help: {
-      id: "chordSpread",
-      content:
-        "Limits how far the visible chord tones can span across frets on the fretboard.",
-    },
-  },
-};
-
-const SETTINGS_SECTIONS: readonly SettingsSectionConfig[] = [
-  {
-    id: "view",
-    title: "View",
-    fields: ["zoom", "fretRange"],
-  },
-  {
-    id: "instrument",
-    title: "Instrument",
-    fields: ["tuning"],
-  },
-  {
-    id: "notation",
-    title: "Notation",
-    fields: ["accidentals", "enharmonicDisplay"],
-  },
-  {
-    id: "chord-layout",
-    title: "Chord Layout",
-    fields: ["chordSpread"],
-  },
-  {
-    id: "reset",
-    title: "Reset",
-    tone: "danger",
-    fields: [],
-  },
-] as const;
 
 const getLayoutTier = (): ResponsiveTier => {
   if (typeof window === "undefined") return "desktop";
@@ -174,81 +61,6 @@ function getViewportSnapshot() {
   };
 }
 
-function OverlaySection({
-  id,
-  title,
-  tone = "default",
-  children,
-}: {
-  id: string;
-  title: string;
-  tone?: "default" | "danger";
-  children: ReactNode;
-}) {
-  return (
-    <section
-      className={clsx(
-        "panel-surface",
-        "panel-surface--compact",
-        styles["overlay-section-card"],
-        tone === "danger" && styles["overlay-section-card--danger"],
-      )}
-      aria-labelledby={`settings-section-${id}`}
-    >
-      <div className={styles["overlay-section-heading"]}>
-        <h2 id={`settings-section-${id}`} className={styles["overlay-section-title"]}>
-          {title}
-        </h2>
-      </div>
-      <div className={styles["overlay-section-body"]}>{children}</div>
-    </section>
-  );
-}
-
-function OverlayFieldHeader({
-  label,
-  help,
-  isHelpOpen,
-  onToggleHelp,
-  helpContainerRef,
-}: {
-  label: string;
-  help?: FieldHelp;
-  isHelpOpen: boolean;
-  onToggleHelp: () => void;
-  helpContainerRef?: Ref<HTMLDivElement>;
-}) {
-  return (
-    <div className={styles["overlay-field-header"]}>
-      <span className={styles["overlay-field-label"]}>{label}</span>
-      {help ? (
-        <div className={styles["overlay-field-help"]} ref={helpContainerRef}>
-          <button
-            type="button"
-            className={styles["overlay-help-trigger"]}
-            aria-label={
-              isHelpOpen ? `Hide help for ${label}` : `Show help for ${label}`
-            }
-            aria-expanded={isHelpOpen}
-            aria-controls={`settings-help-${help.id}`}
-            onClick={onToggleHelp}
-          >
-            <HelpCircle className="icon" />
-          </button>
-          {isHelpOpen ? (
-            <div
-              id={`settings-help-${help.id}`}
-              className={styles["overlay-help-popover"]}
-            >
-              {help.content}
-            </div>
-          ) : null}
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
 function SettingsOverlaySurface({
   layout,
   setIsOpen,
@@ -256,34 +68,37 @@ function SettingsOverlaySurface({
   layout: ReturnType<typeof getResponsiveLayout>;
   setIsOpen: (value: boolean) => void;
 }) {
-  const [fretZoom, setFretZoom] = useAtom(fretZoomAtom);
-  const [fretStart, setFretStart] = useAtom(fretStartAtom);
-  const [fretEnd, setFretEnd] = useAtom(fretEndAtom);
-  const [tuningName, setTuningName] = useAtom(tuningNameAtom);
-  const [accidentalMode, setAccidentalMode] = useAtom(accidentalModeAtom);
-  const [enharmonicDisplay, setEnharmonicDisplay] = useAtom(
-    enharmonicDisplayAtom,
-  );
-  const [chordFretSpread, setChordFretSpread] = useAtom(chordFretSpreadAtom);
+  const {
+    fretZoom,
+    setFretZoom,
+    fretStart,
+    setFretStart,
+    fretEnd,
+    setFretEnd,
+    tuningName,
+    setTuningName,
+    accidentalMode,
+    setAccidentalMode,
+    enharmonicDisplay,
+    setEnharmonicDisplay,
+    chordFretSpread,
+    setChordFretSpread,
+  } = useSettingsForm();
+
+  const {
+    activeHelpField,
+    activeHelpFieldRef,
+    helpContainerRefs,
+    setActiveHelpField,
+    handleHelpToggle,
+  } = useHelpPopover();
+
   const dispatchReset = useSetAtom(resetAtom);
   const [resetConfirming, setResetConfirming] = useState(false);
-  const [activeHelpField, setActiveHelpField] = useState<HelpFieldId | null>(
-    null,
-  );
-  const activeHelpFieldRef = useRef<HelpFieldId | null>(null);
-
-  useEffect(() => {
-    activeHelpFieldRef.current = activeHelpField;
-  }, [activeHelpField]);
 
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
-  const helpContainerRefs = useRef<Record<HelpFieldId, HTMLDivElement | null>>({
-    chordSpread: null,
-    accidentals: null,
-    enharmonicDisplay: null,
-  });
 
   const close = () => {
     setIsOpen(false);
@@ -299,28 +114,11 @@ function SettingsOverlaySurface({
     }
   };
 
-  const handleHelpToggle = (fieldId: HelpFieldId) => {
-    setActiveHelpField((current) => (current === fieldId ? null : fieldId));
-  };
-
   useEffect(() => {
     if (!resetConfirming) return;
     const t = setTimeout(() => setResetConfirming(false), 3000);
     return () => clearTimeout(t);
   }, [resetConfirming]);
-
-  useEffect(() => {
-    if (!activeHelpField) return;
-
-    const handlePointerDown = (event: MouseEvent) => {
-      const helpContainer = helpContainerRefs.current[activeHelpField];
-      if (helpContainer?.contains(event.target as Node)) return;
-      setActiveHelpField(null);
-    };
-
-    document.addEventListener("mousedown", handlePointerDown);
-    return () => document.removeEventListener("mousedown", handlePointerDown);
-  }, [activeHelpField]);
 
   useEffect(() => {
     triggerRef.current =
@@ -367,7 +165,6 @@ function SettingsOverlaySurface({
             onChange={setFretZoom}
             min={FRET_ZOOM_MIN}
             max={FRET_ZOOM_MAX}
-
             step={ZOOM_STEP}
             formatValue={(zoom) => (zoom <= 100 ? "Auto" : `${zoom}%`)}
             buttonVariant="mobile"
@@ -403,7 +200,7 @@ function SettingsOverlaySurface({
             options={ACCIDENTAL_OPTIONS}
             value={accidentalMode}
             onChange={(value) =>
-              setAccidentalMode(value as AccidentalOptionValue)
+              setAccidentalMode(value as typeof accidentalMode)
             }
           />
         );
@@ -414,7 +211,7 @@ function SettingsOverlaySurface({
             options={ENHARMONIC_DISPLAY_OPTIONS}
             value={enharmonicDisplay}
             onChange={(value) =>
-              setEnharmonicDisplay(value as EnharmonicDisplayValue)
+              setEnharmonicDisplay(value as typeof enharmonicDisplay)
             }
           />
         );
