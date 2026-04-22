@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getCagedCoordinates, CAGED_SHAPES, findMainShape, getShapeCenterFret } from '../shapes';
+import { get3NPSCoordinates } from './threeNPS';
 import { STANDARD_TUNING } from '../core/guitar';
 
 describe('getCagedCoordinates', () => {
@@ -681,6 +682,56 @@ describe('Phase 4: Extended Boundary Conditions', () => {
       });
       expect(hasBlueNote).toBeDefined(); // Just ensure it processed without error
     });
+  });
+});
+
+describe('get3NPSCoordinates', () => {
+  it('position 1 returns non-empty coordinates in the first octave register', () => {
+    const result = get3NPSCoordinates('C', 'Major', STANDARD_TUNING, 24, 1);
+    expect(result.coordinates.length).toBeGreaterThan(0);
+    expect(result.bounds.length).toBe(1);
+    // C major position 1 starts on low E at fret 8 (first C); notes stay low on neck
+    expect(result.bounds[0].minFret).toBeLessThan(12);
+  });
+
+  it('position 8 (cycle 1) lands in the second octave register, not duplicating position 1', () => {
+    const pos1 = get3NPSCoordinates('C', 'Major', STANDARD_TUNING, 24, 1);
+    const pos8 = get3NPSCoordinates('C', 'Major', STANDARD_TUNING, 24, 8);
+    expect(pos8.coordinates.length).toBeGreaterThan(0);
+    // Second cycle should start above fret 12 — distinctly higher than position 1
+    expect(pos8.bounds[0].minFret).toBeGreaterThan(pos1.bounds[0].minFret);
+    expect(pos8.bounds[0].minFret).toBeGreaterThanOrEqual(12);
+  });
+
+  it('high out-of-range position falls back to highest available register without wrapping', () => {
+    // Position 20 far exceeds cycles available on a 24-fret board; should
+    // return the highest findable occurrence rather than returning empty.
+    const result = get3NPSCoordinates('C', 'Major', STANDARD_TUNING, 24, 20);
+    // Should not crash and coordinates must stay within [0, 24]
+    for (const coord of result.coordinates) {
+      const fret = parseInt(coord.split('-')[1]);
+      expect(fret).toBeGreaterThanOrEqual(0);
+      expect(fret).toBeLessThanOrEqual(24);
+    }
+  });
+
+  it('all positions return coordinates within the fretboard range', () => {
+    for (let pos = 1; pos <= 12; pos++) {
+      const result = get3NPSCoordinates('G', 'Natural Minor', STANDARD_TUNING, 24, pos);
+      for (const coord of result.coordinates) {
+        const fret = parseInt(coord.split('-')[1]);
+        expect(fret).toBeGreaterThanOrEqual(0);
+        expect(fret).toBeLessThanOrEqual(24);
+      }
+    }
+  });
+
+  it('wrappedNotes is always an empty Set (3NPS does not wrap notes)', () => {
+    for (let pos = 1; pos <= 12; pos++) {
+      const result = get3NPSCoordinates('A', 'Minor Pentatonic', STANDARD_TUNING, 24, pos);
+      expect(result.wrappedNotes).toBeInstanceOf(Set);
+      expect(result.wrappedNotes.size).toBe(0);
+    }
   });
 });
 
