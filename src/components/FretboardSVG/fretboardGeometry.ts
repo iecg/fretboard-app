@@ -110,13 +110,17 @@ export function getTaperGeometry(
 
   const cornerR =
     endFret === maxFret ? Math.min(Math.round(neckHeight * 0.08), 22) : 0;
-  const taperPath =
-    `M 0 ${yLeft} ` +
-    `L ${neckWidthPx - cornerR} 0 ` +
-    `Q ${neckWidthPx} 0 ${neckWidthPx} ${cornerR} ` +
-    `L ${neckWidthPx} ${neckHeight - cornerR} ` +
-    `Q ${neckWidthPx} ${neckHeight} ${neckWidthPx - cornerR} ${neckHeight} ` +
-    `L 0 ${neckHeight - yLeft} Z`;
+  const taperPath = cornerR > 0
+    ? `M 0 ${yLeft} ` +
+      `L ${neckWidthPx - cornerR} 0 ` +
+      `Q ${neckWidthPx} 0 ${neckWidthPx} ${cornerR} ` +
+      `L ${neckWidthPx} ${neckHeight - cornerR} ` +
+      `Q ${neckWidthPx} ${neckHeight} ${neckWidthPx - cornerR} ${neckHeight} ` +
+      `L 0 ${neckHeight - yLeft} Z`
+    : `M 0 ${yLeft} ` +
+      `L ${neckWidthPx} 0 ` +
+      `L ${neckWidthPx} ${neckHeight} ` +
+      `L 0 ${neckHeight - yLeft} Z`;
 
   return { taperYLeft: yLeft, taperPath };
 }

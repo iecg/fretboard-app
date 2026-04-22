@@ -8,7 +8,7 @@ import {
   getStringY,
 } from "../fretboardGeometry";
 
-interface FretboardGeometryParams {
+export interface FretboardGeometryParams {
   startFret: number;
   endFret: number;
   maxFret: number;
