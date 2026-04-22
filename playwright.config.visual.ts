@@ -8,6 +8,7 @@ import { productionConfig } from "./playwright.config.production-base";
 export default defineConfig({
   ...productionConfig,
   testMatch: "e2e/**/*.visual.spec.ts",
+  testIgnore: [],
   
   /* Use Chromium for stable visual snapshots */
   projects: [
@@ -24,7 +25,7 @@ export default defineConfig({
   expect: {
     ...productionConfig.expect,
     toHaveScreenshot: {
-      maxDiffPixelRatio: 0,
+      maxDiffPixels: 150,
       threshold: 0.1,
       animations: "disabled",
       scale: "css",

@@ -24,7 +24,7 @@ export async function waitForStableLayout(page: Page, timeout = 2000) {
     let stableFrames = 0;
     const startTime = Date.now();
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       function check() {
         const currentState = getLayoutState();
         if (currentState === lastState) {
@@ -37,7 +37,7 @@ export async function waitForStableLayout(page: Page, timeout = 2000) {
         if (stableFrames >= 5) {
           resolve(true);
         } else if (Date.now() - startTime > timeoutMs) {
-          resolve(false); // Proceed even if not perfectly stable after timeout
+          reject(new Error("visual stability timeout: page layout was not stable"));
         } else {
           requestAnimationFrame(check);
         }
@@ -64,7 +64,7 @@ export async function waitForStable(locator: Locator, timeout = 2000) {
     let stableFrames = 0;
     const startTime = Date.now();
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       function check() {
         const currentRect = getRect();
         if (currentRect === lastRect) {
@@ -77,7 +77,7 @@ export async function waitForStable(locator: Locator, timeout = 2000) {
         if (stableFrames >= 10) {
           resolve(true);
         } else if (Date.now() - startTime > timeoutMs) {
-          resolve(false);
+          reject(new Error("visual stability timeout: locator bounding box was not stable"));
         } else {
           requestAnimationFrame(check);
         }

@@ -143,11 +143,13 @@ npm run test:visual
 
 This builds the app and compares current screenshots against the baselines stored in `e2e/**/*.visual.spec.ts-snapshots/`.
 
-To run tests without rebuilding (e.g., in CI or if you've already run a build):
+To run the CI-equivalent Linux visual check in the Playwright Docker image:
 
 ```bash
 npm run test:visual:ci
 ```
+
+This command expects `dist/` to already exist and is intended for CI or for debugging Linux snapshot behavior locally with Docker. The regular Responsive E2E suite excludes `*.visual.spec.ts`; visual screenshots run only through the visual config.
 
 ### Updating Baselines
 
@@ -185,6 +187,8 @@ The project provides a helper script to safely regenerate Linux baselines from a
 ```
 
 This script uses a Playwright Docker container to run the update. It utilizes an isolated `node_modules` volume within the container so that your local macOS `node_modules` are not overwritten or corrupted by Linux-specific dependencies during the process.
+
+CI runs visual regression tests in the same Docker image family as this update script, so committed Linux baselines should be generated with this script rather than with the host runner directly.
 
 
 ## License

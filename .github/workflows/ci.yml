@@ -137,22 +137,11 @@ jobs:
           node-version: 24
           cache: npm
 
-      - run: npm ci
-
       - name: Download dist artifact
         uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
-
-      - name: Cache Playwright browsers
-        uses: actions/cache@v5
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-
-      - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
 
       - name: Run visual regression tests
         run: npm run test:visual:ci

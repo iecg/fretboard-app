@@ -19,7 +19,7 @@
     "test:e2e:production": "npm run build && playwright test --config=playwright.config.production.ts",
     "test:e2e:css-scoping": "npm run test:e2e:production -- e2e/css-scoping.spec.ts",
     "test:visual": "npm run build && playwright test --config=playwright.config.visual.ts",
-    "test:visual:ci": "playwright test --config=playwright.config.visual.ts",
+    "test:visual:ci": "bash scripts/run-linux-visual-tests.sh",
     "test:visual:update": "npm run build && playwright test --config=playwright.config.visual.ts --update-snapshots",
     "test:visual:update:linux": "bash scripts/update-linux-snapshots.sh",
     "prepare": "husky"
