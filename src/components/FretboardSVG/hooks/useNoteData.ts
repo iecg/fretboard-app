@@ -8,7 +8,6 @@ import {
   type PracticeLens,
   type NoteSemantics,
 } from "../../../core/theory";
-import { parseNote } from "../../../core/guitar";
 import type { ShapePolygon, CagedShape } from "../../../shapes";
 import type { ActiveShapeType } from "../../../hooks/useFretboardState";
 import {
@@ -115,7 +114,6 @@ export function useNoteData({
 
     for (let stringIndex = 0; stringIndex < numStrings; stringIndex++) {
       const layoutRow = fretboardLayout[stringIndex];
-      const openNoteName = parseNote(tuning[stringIndex])?.noteName;
 
       for (let idx = 0; idx <= totalColumns; idx++) {
         const fretIndex = startFret + idx;
