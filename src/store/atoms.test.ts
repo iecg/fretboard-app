@@ -136,13 +136,16 @@ describe("atoms", () => {
     });
 
     it("returns initialValue when localStorage.getItem throws", () => {
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
       const spy = vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
         throw new Error("storage blocked");
       });
       const store = makeStore();
       const unsub = mount(store, isMutedAtom);
       expect(store.get(isMutedAtom)).toBe(false);
+      expect(warnSpy).toHaveBeenCalledWith("localStorage.getItem failed", expect.objectContaining({ key: k("isMuted") }));
       spy.mockRestore();
+      warnSpy.mockRestore();
       unsub();
     });
   });
@@ -213,13 +216,16 @@ describe("atoms", () => {
     });
 
     it("returns initialValue when localStorage.getItem throws", () => {
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
       const spy = vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
         throw new Error("storage blocked");
       });
       const store = makeStore();
       const unsub = mount(store, fretZoomAtom);
       expect(store.get(fretZoomAtom)).toBe(100);
+      expect(warnSpy).toHaveBeenCalledWith("localStorage.getItem failed", expect.objectContaining({ key: k("fretZoom") }));
       spy.mockRestore();
+      warnSpy.mockRestore();
       unsub();
     });
   });
@@ -369,12 +375,15 @@ describe("atoms", () => {
     });
 
     it("falls back to default Set on invalid JSON", () => {
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
       localStorage.setItem(k("cagedShapes"), "not-valid-json{{{");
       const store = makeStore();
       const unsub = mount(store, cagedShapesAtom);
       const shapes = store.get(cagedShapesAtom);
       expect(shapes).toBeInstanceOf(Set);
       expect(shapes.size).toBe(CAGED_SHAPES.length);
+      expect(warnSpy).toHaveBeenCalledWith("localStorage.getItem failed", expect.objectContaining({ key: k("cagedShapes") }));
+      warnSpy.mockRestore();
       unsub();
     });
 
