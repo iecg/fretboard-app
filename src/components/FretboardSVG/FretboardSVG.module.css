@@ -123,6 +123,11 @@
   fill: #e8d8ff;
 }
 
+:global([data-theme="modern-light"]) .fretboard-note.note-blue text {
+  stroke: rgb(255 255 255 / 0.6);
+  fill: #1a1a2e;
+}
+
 .fretboard-note.scale-only :is(circle, rect, polygon) {
   stroke: var(--note-ring);
   fill: rgb(18 26 38 / 0.82);
@@ -144,6 +149,11 @@
 }
 .fretboard-note.color-tone text {
   fill: #e8d8ff;
+}
+
+:global([data-theme="modern-light"]) .fretboard-note.color-tone text {
+  stroke: rgb(255 255 255 / 0.6);
+  fill: #1a1a2e;
 }
 
 .fretboard-note.chord-tone-outside-scale :is(circle, rect, polygon) {
