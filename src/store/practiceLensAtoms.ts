@@ -2,7 +2,7 @@ import { atom } from "jotai";
 import {
   NOTES,
   ENHARMONICS,
-  INTERVAL_NAMES,
+  
   LENS_REGISTRY,
   getScaleNotes,
   getNoteDisplay,
@@ -15,7 +15,7 @@ import type {
   PracticeCue,
   PracticeCueNote,
   ChordRowEntry,
-  PracticeBarColorNote,
+  
   PracticeBarNote,
   PracticeBarGroup,
 } from "../core/theory";
@@ -25,6 +25,7 @@ import {
   scaleNotesAtom,
   colorNotesAtom,
   useFlatsAtom,
+  practiceBarColorNotesAtom,
 } from "./scaleAtoms";
 import {
   chordRootAtom,
@@ -36,6 +37,7 @@ import {
   hasOutsideChordMembersAtom,
   allChordMembersAtom,
 } from "./chordOverlayAtoms";
+import { shapeHighlightedNoteSetAtom } from "./shapeAtoms";
 
 // Guide tone members: 3rd and 7th
 const GUIDE_TONE_RAW = new Set(["b3", "3", "b7", "7"]);
@@ -61,26 +63,6 @@ function findNearestScaleResolution(
   }
   return undefined;
 }
-
-export const practiceBarColorNotesAtom = atom((get) => {
-  const colorNotes = get(colorNotesAtom);
-  const rootNote = get(rootNoteAtom);
-  const useFlats = get(useFlatsAtom);
-
-  if (colorNotes.length === 0) return [] as PracticeBarColorNote[];
-  const rootIdx = NOTES.indexOf(rootNote);
-  if (rootIdx === -1) return [] as PracticeBarColorNote[];
-  return colorNotes.map((note) => {
-    const noteIdx = NOTES.indexOf(note);
-    const interval = (noteIdx - rootIdx + 12) % 12;
-    const intervalName = INTERVAL_NAMES[interval] ?? "";
-    return {
-      internalNote: note,
-      displayNote: formatAccidental(getNoteDisplay(note, rootNote, useFlats)),
-      intervalName: formatAccidental(intervalName),
-    };
-  });
-});
 
 export const practiceBarColorNotesFilteredAtom = atom((get) => {
   const chordTones = get(chordTonesAtom);
@@ -294,6 +276,39 @@ export const practiceBarLandOnGroupBaseAtom = atom((get): PracticeBarGroup => {
   });
 
   return { label: "Land on", notes };
+});
+
+/**
+ * Shape-aware Land-on group. Narrows the base lens subset to notes present in
+ * the active shape context (except for tension, which stays global). The
+ * Chord group never goes through this — it is always all chord members.
+ */
+export const practiceBarLandOnGroupAtom = atom((get) => {
+  const base = get(practiceBarLandOnGroupBaseAtom);
+  const lens = get(practiceLensAtom);
+  const shapeHighlightedNoteSet = get(shapeHighlightedNoteSetAtom);
+  if (!shapeHighlightedNoteSet || lens === "tension") return base;
+  const filtered = base.notes.filter((n) =>
+    shapeHighlightedNoteSet.has(n.internalNote),
+  );
+  if (filtered.length === 0) return base;
+  return { ...base, notes: filtered };
+});
+
+export const shapeLocalPracticeCuesAtom = atom((get) => {
+  const shapeHighlightedNoteSet = get(shapeHighlightedNoteSetAtom);
+  const cues = get(practiceCuesAtom);
+  if (!shapeHighlightedNoteSet) return [] as typeof cues;
+  return cues
+    .map((cue) => ({
+      ...cue,
+      // Tension cues are never filtered by shape — tension notes and their
+      // resolve targets must always be visible regardless of position context.
+      notes: cue.kind === "tension"
+        ? cue.notes
+        : cue.notes.filter((n) => shapeHighlightedNoteSet.has(n.internalNote)),
+    }))
+    .filter((cue) => cue.notes.length > 0);
 });
 
 export const showChordPracticeBarAtom = atom((get) => {

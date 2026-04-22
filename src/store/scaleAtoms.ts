@@ -11,13 +11,14 @@ import {
   NOTES,
   INTERVAL_NAMES,
   getScaleNotes,
-  getNoteDisplayInScale,
+  getNoteDisplay, getNoteDisplayInScale,
   getDivergentNotes,
   formatAccidental,
 } from "../core/theory";
 import { k, createStorage, rawStringStorage, booleanStorage, GET_ON_INIT } from "../utils/storage";
 import { fingeringPatternAtom, cagedShapesAtom } from "./fingeringAtoms";
 import type { CagedShape } from "../shapes";
+import type { PracticeBarColorNote } from "../core/theory";
 
 const SCALE_BROWSE_MODES = ["parallel", "relative"] as const;
 
@@ -207,6 +208,40 @@ export const scaleVisibleAtom = atomWithStorage<boolean>(
   booleanStorage,
   GET_ON_INIT,
 );
+
+// Returns a set of notes that are hidden in the current scale.
+export const effectiveHiddenNotesAtom = atom((get) => {
+  const visible = get(scaleVisibleAtom);
+  if (!visible) return new Set<string>();
+  return get(hiddenNotesAtom);
+});
+
+// Color notes (blue notes, characteristic tones) are cleared when scale is off.
+export const effectiveColorNotesAtom = atom((get) => {
+  const visible = get(scaleVisibleAtom);
+  if (!visible) return [] as string[];
+  return get(colorNotesAtom);
+});
+
+export const practiceBarColorNotesAtom = atom((get) => {
+  const colorNotes = get(colorNotesAtom);
+  const rootNote = get(rootNoteAtom);
+  const useFlats = get(useFlatsAtom);
+
+  if (colorNotes.length === 0) return [] as PracticeBarColorNote[];
+  const rootIdx = NOTES.indexOf(rootNote);
+  if (rootIdx === -1) return [] as PracticeBarColorNote[];
+  return colorNotes.map((note) => {
+    const noteIdx = NOTES.indexOf(note);
+    const interval = (noteIdx - rootIdx + 12) % 12;
+    const intervalName = INTERVAL_NAMES[interval] ?? "";
+    return {
+      internalNote: note,
+      displayNote: formatAccidental(getNoteDisplay(note, rootNote, useFlats)),
+      intervalName: formatAccidental(intervalName),
+    };
+  });
+});
 
 // Toggling off also clears per-note hidden state so that re-enabling shows the full scale.
 export const toggleScaleVisibleAtom = atom(null, (get, set) => {
