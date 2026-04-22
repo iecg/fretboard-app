@@ -40,7 +40,6 @@ export const SETTING_FIELDS: Record<SettingFieldKey, SettingFieldConfig> = {
   accidentals: {
     key: "accidentals",
     label: "Accidentals",
-    className: "overlay-field--accidentals",
     help: {
       id: "accidentals",
       content:
