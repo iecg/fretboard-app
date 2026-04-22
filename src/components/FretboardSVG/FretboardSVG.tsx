@@ -81,9 +81,6 @@ interface FretboardSVGProps {
   ) => void;
 }
 
-
-
-
 export const FretboardSVG = memo(function FretboardSVG({
   effectiveZoom,
   neckWidthPx,
