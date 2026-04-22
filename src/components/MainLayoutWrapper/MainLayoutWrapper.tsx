@@ -18,6 +18,7 @@ interface MainLayoutWrapperProps {
   showChordDock: boolean;
   showControlsPanel: boolean;
   showMobileTabs: boolean;
+  theme: "modern-dark" | "modern-light";
 }
 
 export function MainLayoutWrapper({
@@ -37,12 +38,14 @@ export function MainLayoutWrapper({
   showChordDock,
   showControlsPanel,
   showMobileTabs,
+  theme,
 }: MainLayoutWrapperProps) {
   return (
     <div
       className="app-container"
       data-layout-tier={layoutTier}
       data-layout-variant={layoutVariant}
+      data-theme={theme}
       data-chord-active={isChordActive ? "true" : undefined}
       data-testid="app-container"
     >

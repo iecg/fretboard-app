@@ -13,6 +13,7 @@ import {
   enharmonicDisplayAtom,
   chordFretSpreadAtom,
   resetAtom,
+  themeAtom,
 } from "../../store/atoms";
 import { TUNINGS } from "../../core/guitar";
 import { synth } from "../../core/audio";
@@ -40,14 +41,16 @@ const ZOOM_STEP = 10;
 
 type AccidentalOptionValue = "auto" | "sharps" | "flats";
 type EnharmonicDisplayValue = "auto" | "on" | "off";
-type HelpFieldId = "chordSpread" | "accidentals" | "enharmonicDisplay";
+type ThemeOptionValue = "light" | "dark" | "system";
+type HelpFieldId = "chordSpread" | "accidentals" | "enharmonicDisplay" | "theme";
 type SettingFieldKey =
   | "zoom"
   | "fretRange"
   | "tuning"
   | "accidentals"
   | "enharmonicDisplay"
-  | "chordSpread";
+  | "chordSpread"
+  | "theme";
 
 type FieldHelp = {
   id: HelpFieldId;
@@ -84,6 +87,15 @@ const ENHARMONIC_DISPLAY_OPTIONS = [
 ] as const satisfies readonly {
   label: string;
   value: EnharmonicDisplayValue;
+}[];
+
+const THEME_OPTIONS = [
+  { label: "Light", value: "light" },
+  { label: "Dark", value: "dark" },
+  { label: "System", value: "system" },
+] as const satisfies readonly {
+  label: string;
+  value: ThemeOptionValue;
 }[];
 
 const SETTING_FIELDS: Record<SettingFieldKey, SettingFieldConfig> = {
@@ -127,6 +139,15 @@ const SETTING_FIELDS: Record<SettingFieldKey, SettingFieldConfig> = {
         "Limits how far the visible chord tones can span across frets on the fretboard.",
     },
   },
+  theme: {
+    key: "theme",
+    label: "Theme",
+    help: {
+      id: "theme",
+      content:
+        "Choose your preferred color theme. System matches your device settings.",
+    },
+  },
 };
 
 const SETTINGS_SECTIONS: readonly SettingsSectionConfig[] = [
@@ -139,6 +160,11 @@ const SETTINGS_SECTIONS: readonly SettingsSectionConfig[] = [
     id: "instrument",
     title: "Instrument",
     fields: ["tuning"],
+  },
+  {
+    id: "appearance",
+    title: "Appearance",
+    fields: ["theme"],
   },
   {
     id: "notation",
@@ -265,6 +291,7 @@ function SettingsOverlaySurface({
     enharmonicDisplayAtom,
   );
   const [chordFretSpread, setChordFretSpread] = useAtom(chordFretSpreadAtom);
+  const [theme, setTheme] = useAtom(themeAtom);
   const dispatchReset = useSetAtom(resetAtom);
   const [resetConfirming, setResetConfirming] = useState(false);
   const [activeHelpField, setActiveHelpField] = useState<HelpFieldId | null>(
@@ -283,6 +310,7 @@ function SettingsOverlaySurface({
     chordSpread: null,
     accidentals: null,
     enharmonicDisplay: null,
+    theme: null,
   });
 
   const close = () => {
@@ -428,6 +456,15 @@ function SettingsOverlaySurface({
             max={4}
             step={1}
             buttonVariant="mobile"
+          />
+        );
+        break;
+      case "theme":
+        control = (
+          <ToggleBar
+            options={THEME_OPTIONS}
+            value={theme}
+            onChange={(value) => setTheme(value as ThemeOptionValue)}
           />
         );
         break;

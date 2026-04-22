@@ -26,6 +26,7 @@ import {
   mobileTabAtom,
   tabletTabAtom,
   landscapeNarrowTabAtom,
+  themeAtom,
 } from "./uiAtoms";
 import {
   tuningNameAtom,
@@ -78,4 +79,5 @@ export const resetAtom = atom(null, (_get, set) => {
   set(mobileTabAtom, RESET);
   set(tabletTabAtom, RESET);
   set(landscapeNarrowTabAtom, RESET);
+  set(themeAtom, RESET);
 });

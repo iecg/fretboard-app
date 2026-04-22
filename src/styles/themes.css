@@ -1,0 +1,184 @@
+/*
+   Theme Overrides — Modern Light
+   Layer 2.5: Theme-specific overrides for the light mode palette.
+   Imported after semantic.css to override both primitives and semantic tokens.
+*/
+
+[data-theme="modern-light"] {
+  color-scheme: light;
+
+  /* Primitive Colors — Light gray/off-white spectrum */
+  --bg-color: #f8f9fa;
+  --surface-base: #ffffff;
+  --surface-raised: #f1f3f5;
+  --surface-highlight: #e9ecef;
+  --text-main: #1a1a2e;
+  --text-muted: #6c757d;
+  --text-on-highlight: #1a1a2e;
+  --text-on-accent: #ffffff;
+  --text-soft-white: #495057;
+
+  /* Semantic Colors */
+  --chrome-bg: color-mix(in srgb, var(--bg-color) 90%, var(--surface-raised) 10%);
+  --chrome-border: color-mix(in srgb, var(--surface-highlight) 60%, rgb(0 0 0 / 0.1));
+  --surface-card: #ffffff;
+  --surface-card-border: rgb(0 0 0 / 0.08);
+  --surface-card-header-border: rgb(0 0 0 / 0.06);
+
+  /* Focus ring — reduced glow for light backgrounds */
+  --focus-ring-glow: 0 0 6px rgb(77 228 255 / 0.35), 0 0 12px rgb(77 228 255 / 0.2);
+
+  /* Accent colors adjusted for light backgrounds */
+  --accent-primary: #0066cc;
+  --accent-glow: rgba(0, 102, 204, 0.12);
+
+  /* Neon colors — slightly muted for light mode */
+  --neon-cyan: #0891b2;
+  --neon-cyan-bright: #06b6d4;
+  --neon-cyan-dim: #0e7490;
+  --neon-orange: #ea580c;
+  --neon-orange-bright: #f97316;
+  --neon-orange-dim: #c2410c;
+  --neon-violet: #7c3aed;
+  --neon-violet-dim: #6d28d9;
+  --neon-brand-gradient: linear-gradient(90deg, #0891b2 0%, #7c3aed 50%, #0891b2 100%);
+
+  /* Glow effects — reduced opacity for light mode */
+  --glow-cyan-sm: 0 0 4px rgb(8 145 178 / 0.3);
+  --glow-cyan-md: 0 0 8px rgb(8 145 178 / 0.4);
+  --glow-cyan-lg: 0 0 16px rgb(8 145 178 / 0.35);
+  --glow-orange-sm: 0 0 4px rgb(234 88 12 / 0.35);
+  --glow-orange-md: 0 0 8px rgb(234 88 12 / 0.45);
+  --glow-orange-lg: 0 0 16px rgb(234 88 12 / 0.4);
+  --glow-violet-sm: 0 0 4px rgb(124 58 237 / 0.4);
+  --glow-violet-border: rgb(124 58 237 / 0.6);
+
+  /* Glow filters — reduced intensity */
+  --glow-filter-cyan: drop-shadow(0 0 4px rgb(8 145 178 / 0.45));
+  --glow-filter-orange: drop-shadow(0 0 4px rgb(234 88 12 / 0.45));
+
+  /* Token surface colors — inverted for light */
+  --token-border-subtle: rgb(0 0 0 / 0.08);
+  --token-border-subtler: rgb(0 0 0 / 0.05);
+  --token-border-faint: rgb(0 0 0 / 0.1);
+  --token-surface-dim: rgb(0 0 0 / 0.04);
+
+  /* Chip backgrounds — adjusted for light surfaces */
+  --token-chip-active-bg: rgb(8 145 178 / 0.12);
+  --token-chip-tonic-bg: rgb(234 88 12 / 0.12);
+
+  /* Elevation shadows — lighter, more subtle */
+  --elevation-card: 0 1px 0 rgb(255 255 255 / 0.8) inset, 0 2px 8px rgb(0 0 0 / 0.08);
+  --elevation-overlay: 0 8px 32px rgb(0 0 0 / 0.15);
+  --elevation-float: 0 4px 16px rgb(0 0 0 / 0.1);
+
+  /* Fretboard wood — lighter appearance */
+  --fretboard-wood: #d4c5b5;
+  --fretboard-wood-top: #c9b8a5;
+  --fretboard-wood-bottom: #b8a692;
+  --fretboard-wood-grain: rgb(0 0 0 / 0.03);
+  --fret-wire: #8b949e;
+  --fret-wire-dark: #6e7a86;
+  --fret-wire-highlight: rgb(0 0 0 / 0.15);
+  --fret-marker: rgba(0, 0, 0, 0.15);
+  --fret-nut-bg: #e8d5c4;
+  --fret-nut-wire: #9ca3af;
+  --fretboard-border: #b8a692;
+
+  /* String colors */
+  --string-color: #4b5563;
+  --string-wire: #6b7280;
+  --string-wire-bass: #52525b;
+
+  /* Inlays */
+  --inlay-dot: rgb(100 100 100 / 0.2);
+  --inlay-dot-12: rgb(80 80 80 / 0.3);
+  --nut: #d4c5b5;
+  --fretboard-edge-shadow: 0 0 16px rgb(0 0 0 / 0.08) inset;
+
+  /* Note colors — adjusted for light backgrounds */
+  --note-blue: #7c3aed;
+  --note-blue-glow: rgba(124, 58, 237, 0.35);
+
+  /* Shadows for notes */
+  --shadow-note-root: 0 0 6px rgba(234, 88, 12, 0.3);
+  --shadow-note-active: 0 0 5px rgba(0, 102, 204, 0.25);
+  --shadow-ping-start: rgba(0, 102, 204, 0.4);
+  --shadow-ping-end: rgba(0, 102, 204, 0);
+
+  /* Selection and chord accents */
+  --selection-accent: #2563eb;
+  --selection-accent-fg: #ffffff;
+  --selection-accent-bg: rgba(37, 99, 235, 0.12);
+  --chord-accent: #ea580c;
+  --chord-accent-fg: #ffffff;
+
+  /* Semantic tokens derived from primitives */
+  --chrome-fg: var(--text-main);
+  --chrome-fg-muted: var(--text-muted);
+  --chrome-hover-bg: var(--surface-highlight);
+  --chrome-scrim: color-mix(in srgb, var(--bg-color) 80%, rgba(0, 0, 0, 0.2));
+
+  /* Panel surface */
+  --panel-surface-bg: var(--surface-base);
+  --panel-surface-border: 1px solid var(--surface-highlight);
+
+  /* Note semantic tokens */
+  --note-ring: var(--neon-cyan);
+  --note-ring-tonic: var(--neon-orange);
+  --note-ring-dim: var(--neon-cyan-dim);
+  --note-ring-color-tone: var(--neon-violet);
+  --note-text-in-scale: var(--neon-cyan-bright);
+  --note-text-tonic: var(--neon-orange-bright);
+  --note-glow: var(--glow-cyan-sm);
+  --note-glow-tonic: var(--glow-orange-sm);
+
+  /* Brand text */
+  --text-brand: var(--neon-cyan-bright);
+  --text-brand-gradient: var(--neon-brand-gradient);
+  --brand-icon-glow: var(--glow-filter-cyan);
+
+  /* Header surface */
+  --header-surface: var(--surface-base);
+  --header-border: var(--token-border-subtle);
+
+  /* Chip tokens */
+  --chip-surface-inactive: var(--token-surface-dim);
+  --chip-surface-active: var(--token-chip-active-bg);
+  --chip-surface-tonic: var(--token-chip-tonic-bg);
+  --chip-border-inactive: var(--token-border-faint);
+  --chip-border-active: var(--neon-cyan);
+  --chip-border-tonic: var(--neon-orange);
+  --chip-text-inactive: var(--text-muted);
+  --chip-text-active: var(--neon-cyan-bright);
+  --chip-text-tonic: var(--neon-orange-bright);
+
+  /* App background tokens */
+  --bg-app-gradient-start: #f0f4f8;
+  --bg-app-gradient-end: #e8eef4;
+  --bg-app-accent-glow: radial-gradient(ellipse at 50% 0%, rgb(8 145 178 / 0.04), transparent 60%);
+
+  /* Chord strip tokens */
+  --chord-strip-fill: #ffffff;
+  --chord-chip-glow-orange: 0 0 4px rgb(234 88 12 / 0.45);
+  --chord-chip-glow-cyan: 0 0 4px rgb(8 145 178 / 0.45);
+
+  /* Practice bar tokens */
+  --practice-bar-fill: #ffffff;
+  --practice-pill-amber-strong: rgb(234 88 12);
+  --practice-pill-amber-soft: rgb(234 88 12 / 0.55);
+  --practice-pill-amber-bg-strong: rgb(234 88 12 / 0.18);
+  --practice-pill-amber-bg-soft: rgb(234 88 12 / 0.08);
+  --practice-pill-tension-border: rgb(234 88 12);
+  --practice-pill-guide-blue-bg: rgb(37 99 235 / 0.15);
+
+  /* Surface card base */
+  --token-surface-card-base: rgb(255 255 255);
+
+  /* Selected state tokens */
+  --selected-bg: var(--selection-accent-bg);
+  --selected-fg: var(--selection-accent-fg);
+  --selected-border: var(--selection-accent);
+  --selected-chord-bg: var(--chord-accent);
+  --selected-chord-fg: var(--chord-accent-fg);
+}

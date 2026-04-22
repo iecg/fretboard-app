@@ -13,6 +13,7 @@ import {
   showChordPracticeBarAtom,
 } from "./store/atoms";
 import useLayoutMode from "./hooks/useLayoutMode";
+import { useResolvedTheme } from "./hooks/useResolvedTheme";
 import { AppHeader } from "./components/AppHeader/AppHeader";
 import { BrandMark } from "./components/BrandMark/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark";
@@ -50,6 +51,7 @@ function AppContent() {
   const [showHelp, setShowHelp] = useState(false);
   const helpTriggerRef = useRef<HTMLButtonElement>(null);
   const layout = useLayoutMode();
+  const theme = useResolvedTheme();
 
   useEffect(() => {
     synth.setMute(isMuted);
@@ -61,6 +63,7 @@ function AppContent() {
     <MainLayoutWrapper
       layoutTier={layout.tier}
       layoutVariant={layout.variant}
+      theme={theme}
       isChordActive={!!chordType}
       showSummary={layout.showSummary}
       showChordDock={showChordPracticeBar}
