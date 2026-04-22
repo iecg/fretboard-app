@@ -1,4 +1,5 @@
 import { expect, type Locator, type Page } from "@playwright/test";
+import { STORAGE_PREFIX, LEGACY_KEYS } from "../src/utils/storageConstants";
 
 export interface VisualState {
   rootNote?: string;
@@ -28,48 +29,26 @@ export async function loadVisualState(
   await page.emulateMedia({ reducedMotion: "reduce" });
 
   // Inject state into localStorage before the app boots
-  await page.addInitScript((s) => {
-    const PREFIX = "fretflow:";
+  await page.addInitScript(
+    ({ s, prefix, legacyKeys }) => {
+      // Clear previous state
+      Object.keys(localStorage).forEach((key) => {
+        const legacy = legacyKeys as readonly string[];
+        if (key.startsWith(prefix) || legacy.includes(key)) {
+          localStorage.removeItem(key);
+        }
+      });
 
-    // Known legacy keys that the app migration can copy back
-    const LEGACY_KEYS = [
-      "rootNote",
-      "scaleName",
-      "chordRoot",
-      "chordType",
-      "linkChordRoot",
-      "chordFretSpread",
-      "chordIntervalFilter",
-      "fingeringPattern",
-      "cagedShapes",
-      "npsPosition",
-      "displayFormat",
-      "tuningName",
-      "fretZoom",
-      "fretStart",
-      "fretEnd",
-      "isMuted",
-      "mobileTab",
-      "tabletTab",
-      "landscapeNarrowTab",
-    ];
-
-    // Clear both prefixed and legacy keys to prevent nondeterministic visuals
-    Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith(PREFIX) || LEGACY_KEYS.includes(key)) {
-        localStorage.removeItem(key);
-      }
-    });
-
-    // Write requested state with proper serialization
-    Object.entries(s).forEach(([key, value]) => {
-      if (value === undefined || value === null) return;
-      
-      // Serialize: booleans as "true"/"false", numbers as strings, strings as-is.
-      // chordType as "" or omitted for no overlay, never "null".
-      localStorage.setItem(`${PREFIX}${key}`, String(value));
-    });
-  }, state);
+      // Write new state
+      Object.entries(s).forEach(([key, value]) => {
+        if (value === undefined || value === null) return;
+        
+        // Serialize simple types as strings
+        localStorage.setItem(`${prefix}${key}`, String(value));
+      });
+    },
+    { s: state, prefix: STORAGE_PREFIX, legacyKeys: LEGACY_KEYS }
+  );
 
   await page.goto("/");
 
