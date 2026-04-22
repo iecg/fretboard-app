@@ -47,3 +47,60 @@ window.matchMedia = vi.fn().mockImplementation((query: string) => ({
   removeEventListener: vi.fn(),
   dispatchEvent: vi.fn(),
 }));
+
+/**
+ * Snapshot serializer that normalizes React useId() generated IDs.
+ * React generated IDs (e.g., _r_c_) shift between runs, causing snapshot instability.
+ * This serializer replaces them with stable tokens like react-id-1, react-id-2, etc.
+ */
+const normalizedNodes = new WeakSet<Node>();
+
+expect.addSnapshotSerializer({
+  test(val) {
+    return (
+      val &&
+      typeof val === 'object' &&
+      (val.nodeType === 1 || val.nodeType === 11) &&
+      !normalizedNodes.has(val)
+    );
+  },
+  serialize(val, config, indentation, depth, refs, printer) {
+    const clone = val.cloneNode(true) as Element | DocumentFragment;
+    normalizedNodes.add(val);
+    normalizedNodes.add(clone);
+
+    const idMap = new Map<string, string>();
+    let idCounter = 1;
+    const reactIdRegExp = /_r_[a-z0-9]+_/g;
+
+    const normalize = (text: string) => {
+      return text.replace(reactIdRegExp, (match) => {
+        if (!idMap.has(match)) {
+          idMap.set(match, `react-id-${idCounter++}`);
+        }
+        return idMap.get(match)!;
+      });
+    };
+
+    const walk = (node: Node) => {
+      if (node.nodeType === 1) {
+        // Element
+        const el = node as Element;
+        const attrs = el.attributes;
+        for (let i = 0; i < attrs.length; i++) {
+          const attr = attrs[i];
+          if (attr.value.match(reactIdRegExp)) {
+            attr.value = normalize(attr.value);
+          }
+        }
+      }
+      for (let i = 0; i < node.childNodes.length; i++) {
+        walk(node.childNodes[i]);
+      }
+    };
+
+    walk(clone);
+
+    return printer(clone, config, indentation, depth, refs);
+  },
+});
