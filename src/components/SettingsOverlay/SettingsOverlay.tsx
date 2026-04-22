@@ -15,7 +15,6 @@ import { TUNINGS } from "../../core/guitar";
 import { StepperControl } from "../StepperControl/StepperControl";
 import { FretRangeControl } from "../FretRangeControl/FretRangeControl";
 import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
-import { ToggleBar } from "../ToggleBar/ToggleBar";
 import {
   getResponsiveLayout,
   getResponsiveTier,
@@ -32,8 +31,6 @@ import {
 import { type SettingFieldKey } from "./types";
 import {
   ZOOM_STEP,
-  ACCIDENTAL_OPTIONS,
-  ENHARMONIC_DISPLAY_OPTIONS,
   SETTING_FIELDS,
   SETTINGS_SECTIONS,
 } from "./constants";
@@ -41,6 +38,8 @@ import { OverlaySection, OverlayFieldHeader } from "./shared";
 import { ResetSettingsSection } from "./sections/ResetSettingsSection";
 import { useSettingsForm } from "./useSettingsForm";
 import { useHelpPopover } from "./useHelpPopover";
+import { NotationSettingsSection } from "./sections/NotationSettingsSection";
+import { ChordLayoutSettingsSection } from "./sections/ChordLayoutSettingsSection";
 import styles from "./SettingsOverlay.module.css";
 import sharedStyles from "../shared/shared.module.css";
 
@@ -76,18 +75,13 @@ function SettingsOverlaySurface({
     setFretEnd,
     tuningName,
     setTuningName,
-    accidentalMode,
-    setAccidentalMode,
-    enharmonicDisplay,
-    setEnharmonicDisplay,
-    chordFretSpread,
-    setChordFretSpread,
   } = useSettingsForm();
 
   const {
     activeHelpField,
     activeHelpFieldRef,
     helpContainerRefs,
+    registerHelpContainer,
     setActiveHelpField,
     handleHelpToggle,
   } = useHelpPopover();
@@ -174,40 +168,6 @@ function SettingsOverlaySurface({
           />
         );
         break;
-      case "accidentals":
-        control = (
-          <ToggleBar
-            options={ACCIDENTAL_OPTIONS}
-            value={accidentalMode}
-            onChange={(value) =>
-              setAccidentalMode(value as typeof accidentalMode)
-            }
-          />
-        );
-        break;
-      case "enharmonicDisplay":
-        control = (
-          <ToggleBar
-            options={ENHARMONIC_DISPLAY_OPTIONS}
-            value={enharmonicDisplay}
-            onChange={(value) =>
-              setEnharmonicDisplay(value as typeof enharmonicDisplay)
-            }
-          />
-        );
-        break;
-      case "chordSpread":
-        control = (
-          <StepperControl
-            value={chordFretSpread}
-            onChange={setChordFretSpread}
-            min={0}
-            max={4}
-            step={1}
-            buttonVariant="mobile"
-          />
-        );
-        break;
     }
 
     return (
@@ -271,22 +231,44 @@ function SettingsOverlaySurface({
           </button>
         </div>
         <div className={clsx(styles["settings-overlay-content"], "custom-scrollbar")}>
-          {SETTINGS_SECTIONS.map((section) => (
-            <OverlaySection
-              key={section.id}
-              id={section.id}
-              title={section.title}
-              tone={section.tone}
-            >
-              {section.id === "reset" ? (
-                <ResetSettingsSection onClose={close} />
-              ) : (
-                section.fields.map((fieldKey, index) =>
-                  renderField(fieldKey, index, section.fields.length),
-                )
-              )}
-            </OverlaySection>
-          ))}
+          {SETTINGS_SECTIONS.map((section) => {
+            if (section.id === "notation") {
+              return (
+                <NotationSettingsSection
+                  key={section.id}
+                  activeHelpField={activeHelpField}
+                  handleHelpToggle={handleHelpToggle}
+                  registerHelpContainer={registerHelpContainer}
+                />
+              );
+            }
+            if (section.id === "chord-layout") {
+              return (
+                <ChordLayoutSettingsSection
+                  key={section.id}
+                  activeHelpField={activeHelpField}
+                  handleHelpToggle={handleHelpToggle}
+                  registerHelpContainer={registerHelpContainer}
+                />
+              );
+            }
+            return (
+              <OverlaySection
+                key={section.id}
+                id={section.id}
+                title={section.title}
+                tone={section.tone}
+              >
+                {section.id === "reset" ? (
+                  <ResetSettingsSection onClose={close} />
+                ) : (
+                  section.fields.map((fieldKey, index) =>
+                    renderField(fieldKey, index, section.fields.length),
+                  )
+                )}
+              </OverlaySection>
+            );
+          })}
         </div>
       </motion.div>
     </>

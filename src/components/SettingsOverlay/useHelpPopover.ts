@@ -31,10 +31,15 @@ export function useHelpPopover() {
     return () => document.removeEventListener("mousedown", handlePointerDown);
   }, [activeHelpField]);
 
+  const registerHelpContainer = (id: HelpFieldId, node: HTMLDivElement | null) => {
+    helpContainerRefs.current[id] = node;
+  };
+
   return {
     activeHelpField,
     activeHelpFieldRef,
     helpContainerRefs,
+    registerHelpContainer,
     setActiveHelpField,
     handleHelpToggle,
   };
