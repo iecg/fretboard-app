@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAtom, useAtomValue } from "jotai";
 import clsx from "clsx";
 import { AnimatePresence, motion } from "motion/react";
@@ -11,10 +11,6 @@ import {
   tuningNameAtom,
   chordFretSpreadAtom,
 } from "../../store/atoms";
-import { TUNINGS } from "../../core/guitar";
-import { StepperControl } from "../StepperControl/StepperControl";
-import { FretRangeControl } from "../FretRangeControl/FretRangeControl";
-import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
 import {
   getResponsiveLayout,
   getResponsiveTier,
@@ -22,24 +18,19 @@ import {
 } from "../../layout/responsive";
 import { useFocusTrap } from "../../hooks/useFocusTrap";
 import {
-  MAX_FRET,
-  FRET_ZOOM_MIN,
-  FRET_ZOOM_MAX,
   ANIMATION_DURATION_STANDARD,
   ANIMATION_EASE,
 } from "../../core/constants";
-import { type SettingFieldKey } from "./types";
 import {
-  ZOOM_STEP,
-  SETTING_FIELDS,
   SETTINGS_SECTIONS,
 } from "./constants";
-import { OverlaySection, OverlayFieldHeader } from "./shared";
-import { ResetSettingsSection } from "./sections/ResetSettingsSection";
-import { useSettingsForm } from "./useSettingsForm";
+import { OverlaySection } from "./shared";
 import { useHelpPopover } from "./useHelpPopover";
+import { ViewSettingsSection } from "./sections/ViewSettingsSection";
+import { InstrumentSettingsSection } from "./sections/InstrumentSettingsSection";
 import { NotationSettingsSection } from "./sections/NotationSettingsSection";
 import { ChordLayoutSettingsSection } from "./sections/ChordLayoutSettingsSection";
+import { ResetSettingsSection } from "./sections/ResetSettingsSection";
 import styles from "./SettingsOverlay.module.css";
 import sharedStyles from "../shared/shared.module.css";
 
@@ -67,20 +58,8 @@ function SettingsOverlaySurface({
   setIsOpen: (value: boolean) => void;
 }) {
   const {
-    fretZoom,
-    setFretZoom,
-    fretStart,
-    setFretStart,
-    fretEnd,
-    setFretEnd,
-    tuningName,
-    setTuningName,
-  } = useSettingsForm();
-
-  const {
     activeHelpField,
     activeHelpFieldRef,
-    helpContainerRefs,
     registerHelpContainer,
     setActiveHelpField,
     handleHelpToggle,
@@ -114,83 +93,6 @@ function SettingsOverlaySurface({
     },
     restoreFocusRef: triggerRef,
   });
-
-  const renderField = (
-    fieldKey: SettingFieldKey,
-    index: number,
-    total: number,
-  ) => {
-    const field = SETTING_FIELDS[fieldKey];
-    const isHelpOpen = field.help?.id === activeHelpField;
-    const helpId = field.help?.id;
-    const helpContainerRef = helpId
-      ? (node: HTMLDivElement | null) => {
-          helpContainerRefs.current[helpId] = node;
-        }
-      : undefined;
-
-    let control: ReactNode = null;
-
-    switch (field.key) {
-      case "zoom":
-        control = (
-          <StepperControl
-            value={fretZoom}
-            onChange={setFretZoom}
-            min={FRET_ZOOM_MIN}
-            max={FRET_ZOOM_MAX}
-            step={ZOOM_STEP}
-            formatValue={(zoom) => (zoom <= 100 ? "Auto" : `${zoom}%`)}
-            buttonVariant="mobile"
-          />
-        );
-        break;
-      case "fretRange":
-        control = (
-          <FretRangeControl
-            startFret={fretStart}
-            endFret={fretEnd}
-            onStartChange={setFretStart}
-            onEndChange={setFretEnd}
-            maxFret={MAX_FRET}
-            layout="mobile"
-          />
-        );
-        break;
-      case "tuning":
-        control = (
-          <LabeledSelect
-            label={field.label}
-            value={tuningName}
-            options={Object.keys(TUNINGS).map((name) => ({ value: name, label: name }))}
-            onChange={setTuningName}
-            hideLabel
-          />
-        );
-        break;
-    }
-
-    return (
-      <div
-        key={field.key}
-        className={clsx(
-          styles["overlay-field"],
-          field.className,
-          isHelpOpen && styles["overlay-field--help-open"],
-          index < total - 1 && styles["overlay-field--divided"],
-        )}
-      >
-        <OverlayFieldHeader
-          label={field.label}
-          help={field.help}
-          isHelpOpen={Boolean(isHelpOpen)}
-          onToggleHelp={() => field.help && handleHelpToggle(field.help.id)}
-          helpContainerRef={helpContainerRef}
-        />
-        <div className={styles["overlay-field-control"]}>{control}</div>
-      </div>
-    );
-  };
 
   return (
     <>
@@ -261,11 +163,11 @@ function SettingsOverlaySurface({
               >
                 {section.id === "reset" ? (
                   <ResetSettingsSection onClose={close} />
-                ) : (
-                  section.fields.map((fieldKey, index) =>
-                    renderField(fieldKey, index, section.fields.length),
-                  )
-                )}
+                ) : section.id === "view" ? (
+                  <ViewSettingsSection />
+                ) : section.id === "instrument" ? (
+                  <InstrumentSettingsSection />
+                ) : null}
               </OverlaySection>
             );
           })}
