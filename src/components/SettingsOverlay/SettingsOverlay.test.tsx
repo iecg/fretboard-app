@@ -81,6 +81,7 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(headings).toEqual([
       "View",
       "Instrument",
+      "Appearance",
       "Notation",
       "Chord Layout",
       "Reset",
