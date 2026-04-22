@@ -123,7 +123,7 @@ CSS overrides use `[data-layout-tier="..."]` and `[data-layout-variant="..."]` s
 
 ## Tests
 
-- **Unit tests:** Pure computation modules (`theory.ts`, `guitar.ts`, `shapes.ts`) in `src/core/` and `src/shapes/`. Run with `npm test`.
+- **Unit tests:** Pure computation modules (`theory.ts`, `guitar.ts`, `degrees.ts`, `shapes/`) in `src/core/` and `src/shapes/`. Run with `npm test`.
 - **Component tests:** Vitest + React Testing Library + Snapshots in `src/components/`. Run with `npm test`.
 - **Visual tests:** Playwright visual regression tests in `e2e/`. Run with `npm run test:visual`.
 

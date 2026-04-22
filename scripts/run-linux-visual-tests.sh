@@ -18,7 +18,7 @@ if ! docker info >/dev/null 2>&1; then
   exit 1
 fi
 
-PW_VERSION="$(node -p "require('./package.json').devDependencies['@playwright/test']" | sed 's/[\^~]//')"
+PW_VERSION="$(node -p "require('./package-lock.json').packages['node_modules/@playwright/test'].version")"
 
 if [ -z "$PW_VERSION" ] || [ "$PW_VERSION" = "undefined" ]; then
   echo "Error: Could not determine @playwright/test version from package.json."
