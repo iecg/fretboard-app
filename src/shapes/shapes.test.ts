@@ -707,6 +707,7 @@ describe('get3NPSCoordinates', () => {
     // Position 20 far exceeds cycles available on a 24-fret board; should
     // return the highest findable occurrence rather than returning empty.
     const result = get3NPSCoordinates('C', 'Major', STANDARD_TUNING, 24, 20);
+    expect(result.coordinates.length).toBeGreaterThan(0);
     // Should not crash and coordinates must stay within [0, 24]
     for (const coord of result.coordinates) {
       const fret = parseInt(coord.split('-')[1]);
@@ -718,6 +719,7 @@ describe('get3NPSCoordinates', () => {
   it('all positions return coordinates within the fretboard range', () => {
     for (let pos = 1; pos <= 12; pos++) {
       const result = get3NPSCoordinates('G', 'Natural Minor', STANDARD_TUNING, 24, pos);
+      expect(result.coordinates.length).toBeGreaterThan(0);
       for (const coord of result.coordinates) {
         const fret = parseInt(coord.split('-')[1]);
         expect(fret).toBeGreaterThanOrEqual(0);
