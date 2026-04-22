@@ -1,30 +1,11 @@
-export const STORAGE_PREFIX = "fretflow:";
+import { STORAGE_PREFIX, LEGACY_KEYS } from "./storageConstants";
+
+export { STORAGE_PREFIX, LEGACY_KEYS };
+
 export const storageKey = (key: string) => `${STORAGE_PREFIX}${key}`;
 export const k = storageKey;
 
-// Legacy key migration: runs once at module load before any atom reads.
-const LEGACY_KEYS = [
-  "rootNote",
-  "scaleName",
-  "chordRoot",
-  "chordType",
-  "linkChordRoot",
-  "chordFretSpread",
-  "chordIntervalFilter",
-  "fingeringPattern",
-  "cagedShapes",
-  "npsPosition",
-  "displayFormat",
-  "tuningName",
-  "fretZoom",
-  "fretStart",
-  "fretEnd",
-  "isMuted",
-  "mobileTab",
-  "tabletTab",
-  "landscapeNarrowTab",
-] as const;
-
+// Migrate legacy keys on module load.
 function migrateLegacyKeys() {
   try {
     for (const legacyKey of LEGACY_KEYS) {

@@ -21,4 +21,6 @@ test.describe("App Components Visual", () => {
     await locator.scrollIntoViewIfNeeded();
     await expectLocatorVisual(locator, "circle-of-fifths-desktop-1280x900");
   });
+
 });
+

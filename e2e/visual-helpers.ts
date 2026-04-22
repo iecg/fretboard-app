@@ -1,4 +1,82 @@
 import { expect, type Locator, type Page } from "@playwright/test";
+import { STORAGE_PREFIX, LEGACY_KEYS } from "../src/utils/storageConstants";
+
+export interface VisualState {
+  rootNote?: string;
+  scaleName?: string;
+  displayFormat?: "notes" | "degrees" | "none";
+  scaleVisible?: boolean;
+  chordRoot?: string;
+  chordType?: string;
+  linkChordRoot?: boolean;
+  chordFretSpread?: number;
+  practiceLens?: string;
+  [key: string]: string | number | boolean | undefined;
+}
+
+/**
+ * Loads the application in a specific visual state by setting localStorage
+ * before navigation and ensuring the page is stable.
+ */
+export async function loadVisualState(
+  page: Page,
+  state: VisualState,
+  viewport?: { width: number; height: number }
+) {
+  if (viewport) {
+    await page.setViewportSize(viewport);
+  }
+  await page.emulateMedia({ reducedMotion: "reduce" });
+
+  // Inject state into localStorage before the app boots
+  await page.addInitScript(
+    ({ s, prefix, legacyKeys }) => {
+      // Clear previous state
+      Object.keys(localStorage).forEach((key) => {
+        const legacy = legacyKeys as readonly string[];
+        if (key.startsWith(prefix) || legacy.includes(key)) {
+          localStorage.removeItem(key);
+        }
+      });
+
+      // Write new state
+      Object.entries(s).forEach(([key, value]) => {
+        if (value === undefined || value === null) return;
+        
+        // Serialize simple types as strings
+        localStorage.setItem(`${prefix}${key}`, String(value));
+      });
+    },
+    { s: state, prefix: STORAGE_PREFIX, legacyKeys: LEGACY_KEYS }
+  );
+
+  await page.goto("/");
+
+  // Apply visual "detox" for deterministic screenshots
+  await page.addStyleTag({
+    content: `
+      *, *::before, *::after {
+        animation-duration: 0s !important;
+        animation-delay: 0s !important;
+        transition-duration: 0s !important;
+        transition-delay: 0s !important;
+        caret-color: transparent !important;
+      }
+      ::-webkit-scrollbar {
+        display: none !important;
+      }
+      * {
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+      }
+    `,
+  });
+
+  await page.waitForSelector('[data-testid="app-container"]');
+  await page.waitForLoadState("networkidle");
+  await page.evaluate(() => document.fonts.ready);
+  await waitForStableLayout(page);
+}
 
 /**
  * Waits for the layout to be stable by checking if the layout state remains
