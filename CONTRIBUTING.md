@@ -141,7 +141,13 @@ To run the visual tests locally:
 npm run test:visual
 ```
 
-This compares current screenshots against the baselines stored in `e2e/**/*.visual.spec.ts-snapshots/`.
+This builds the app and compares current screenshots against the baselines stored in `e2e/**/*.visual.spec.ts-snapshots/`.
+
+To run tests without rebuilding (e.g., in CI or if you've already run a build):
+
+```bash
+npm run test:visual:ci
+```
 
 ### Updating Baselines
 
@@ -153,15 +159,32 @@ npm run test:visual:update
 
 ### Reviewing Diffs
 
-When a visual test fails, Playwright generates a diff image highlighting the differences. You can review these in the `test-results/` directory. If you want a visual report, run:
+When a visual test fails, Playwright generates a diff image highlighting the differences. You can review these in the `test-results/` directory. Each failure will have a sub-folder containing the expected image, the actual image, and the `diff.png`.
+
+If you want a visual report, run:
 
 ```bash
 npx playwright show-report
 ```
 
-### Source of Truth
+### OS and Environment Baselines
 
-**Note:** The CI Linux Chromium baselines are the absolute source of truth. Due to differences in font rendering and anti-aliasing between operating systems (macOS, Windows, Linux), local snapshots may show minor diffs compared to CI. Always verify your changes against the CI build results.
+**Important:** Snapshot baselines are platform-specific due to differences in font rendering and anti-aliasing.
+
+- **macOS Baselines:** Useful for local review and development on macOS.
+- **Linux Baselines:** These are the **source of truth** used by CI.
+
+If CI fails due to visual diffs, you **must** regenerate the Linux baselines from a Linux/Ubuntu environment (e.g., via Docker or a Linux machine), not from macOS. Snapshots generated on macOS will not match the Linux snapshots exactly.
+
+#### Regenerating Linux Baselines
+
+The project provides a helper script to safely regenerate Linux baselines from a macOS host using Docker:
+
+```bash
+./scripts/update-linux-snapshots.sh
+```
+
+This script uses a Playwright Docker container to run the update. It utilizes an isolated `node_modules` volume within the container so that your local macOS `node_modules` are not overwritten or corrupted by Linux-specific dependencies during the process.
 
 
 ## License

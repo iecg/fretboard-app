@@ -11,7 +11,6 @@ test.describe("App Overlays Visual", () => {
     await page.goto("/");
     await prepareVisualPage(page, { width: 390, height: 844 });
     await openSettings(page);
-    await page.waitForSelector('[data-testid="settings-drawer"]', { state: "visible" });
     await expectFullPageVisual(page, "app-settings-mobile-390x844");
   });
 
@@ -19,7 +18,6 @@ test.describe("App Overlays Visual", () => {
     await page.goto("/");
     await prepareVisualPage(page, { width: 667, height: 375 });
     await openHelp(page);
-    await page.waitForSelector('[data-testid="help-modal"]', { state: "visible" });
     await expectFullPageVisual(page, "app-help-landscape-667x375");
   });
 });
