@@ -58,7 +58,7 @@ src/
 ├── styles/                   # tokens.css, semantic.css, App.css, index.css (global only)
 ├── assets/                   # static images
 ├── components/               # PascalCase folders; tests + CSS modules co-located
-└── __tests__/__snapshots__/  # retained snapshot fixtures
+└── __tests__/__snapshots__/  # gitignored; auto-generated in CI (vitest.update='new' seeds missing snapshots)
 ```
 
 ## Conventions
