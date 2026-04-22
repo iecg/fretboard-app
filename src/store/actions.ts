@@ -19,6 +19,7 @@ import {
   fingeringPatternAtom,
   cagedShapesAtom,
   npsPositionAtom,
+  npsOctaveAtom,
 } from "./fingeringAtoms";
 import {
   displayFormatAtom,
@@ -65,6 +66,7 @@ export const resetAtom = atom(null, (_get, set) => {
   set(fingeringPatternAtom, RESET);
   set(cagedShapesAtom, RESET);
   set(npsPositionAtom, RESET);
+  set(npsOctaveAtom, RESET);
   set(displayFormatAtom, RESET);
   set(tuningNameAtom, RESET);
   set(fretZoomAtom, RESET);

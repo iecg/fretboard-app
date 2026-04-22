@@ -19,7 +19,8 @@ const cagedShapesStorage = createStorage<Set<CagedShape>>({
   deserialize: (v) => new Set(JSON.parse(v) as CagedShape[]),
 });
 
-const npsPositionStorage = constrainedNumberStorage({ min: 1, max: 12, integer: true });
+const npsPositionStorage = constrainedNumberStorage({ min: 1, max: 7, integer: true });
+const npsOctaveStorage = constrainedNumberStorage({ min: 0, max: 1, integer: true });
 
 export const fingeringPatternAtom = atomWithStorage<FingeringPattern>(
   k("fingeringPattern"),
@@ -57,6 +58,13 @@ export const npsPositionAtom = atomWithStorage(
   k("npsPosition"),
   1,
   npsPositionStorage,
+  GET_ON_INIT,
+);
+
+export const npsOctaveAtom = atomWithStorage(
+  k("npsOctave"),
+  0,
+  npsOctaveStorage,
   GET_ON_INIT,
 );
 

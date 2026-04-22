@@ -9,6 +9,7 @@ export {
   toggleCagedShapeAtom,
   selectSingleCagedShapeAtom,
   npsPositionAtom,
+  npsOctaveAtom,
   clickedShapeAtom,
   recenterKeyAtom,
 } from "./fingeringAtoms";

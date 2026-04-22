@@ -779,11 +779,13 @@ export const FretboardSVG = memo(function FretboardSVG({
             }
             const leftFret = poly.vertices[stringIndex]?.fret;
             const rightFret = poly.vertices[poly.vertices.length - 1 - stringIndex]?.fret;
+            if (leftFret === undefined || rightFret === undefined) return false;
+            const clampedLeft = Math.min(maxFret, Math.max(0, leftFret));
+            const clampedRight = Math.min(maxFret, Math.max(0, rightFret));
+            if (clampedLeft > clampedRight) return false;
             return (
-              leftFret !== undefined &&
-              rightFret !== undefined &&
-              fretIndex >= leftFret - chordFretSpread &&
-              fretIndex <= rightFret + chordFretSpread
+              fretIndex >= clampedLeft - chordFretSpread &&
+              fretIndex <= clampedRight + chordFretSpread
             );
           });
         })();

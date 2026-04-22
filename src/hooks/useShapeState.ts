@@ -5,6 +5,7 @@ import {
   toggleCagedShapeAtom,
   selectSingleCagedShapeAtom,
   npsPositionAtom,
+  npsOctaveAtom,
   clickedShapeAtom,
   recenterKeyAtom,
   shapeDataAtom,
@@ -20,6 +21,7 @@ export function useShapeState() {
   const toggleCagedShape = useSetAtom(toggleCagedShapeAtom);
   const selectSingleCagedShape = useSetAtom(selectSingleCagedShapeAtom);
   const [npsPosition, setNpsPosition] = useAtom(npsPositionAtom);
+  const [npsOctave, setNpsOctave] = useAtom(npsOctaveAtom);
   const [clickedShape, setClickedShape] = useAtom(clickedShapeAtom);
   const [recenterKey, setRecenterKey] = useAtom(recenterKeyAtom);
 
@@ -46,6 +48,8 @@ export function useShapeState() {
     selectSingleCagedShape,
     npsPosition,
     setNpsPosition,
+    npsOctave,
+    setNpsOctave,
     clickedShape,
     setClickedShape,
     recenterKey,
