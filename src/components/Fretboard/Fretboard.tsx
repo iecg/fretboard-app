@@ -10,12 +10,12 @@ import {
 import { synth } from "../../core/audio";
 import { fretZoomAtom, type AutoCenterTarget } from "../../store/atoms";
 import { FretboardSVG } from "../FretboardSVG/FretboardSVG";
+import { getFretboardScale, getWireX } from "../FretboardSVG/fretboardGeometry";
 import { useFretboardState, type ShapeScope, type ActiveShapeType } from "../../hooks/useFretboardState";
 import {
   STRING_ROW_PX_DEFAULT,
   MAX_FRET,
   NOTE_BUBBLE_RATIO,
-  NUT_WIDTH,
   MIN_FRET_WIDTH_BASE,
   MIN_FRET_WIDTH_OVERFLOW_BUFFER
 } from "../../core/constants";
@@ -139,16 +139,16 @@ export function Fretboard(props: FretboardProps) {
     // Match tapered fret coordinates from FretboardSVG for accurate scroll targeting.
     const neckWidth = totalColumns * zoom;
     const noteBubblePx = Math.round(stringRowPx * NOTE_BUBBLE_RATIO);
-    const openWidth = startFret === 0 ? Math.max(noteBubblePx + 12, NUT_WIDTH + 4) : 0;
-    const leftAnchor = startFret === 0 ? 1 : Math.pow(2, -(startFret - 1) / 12);
-    const rightAnchor = Math.pow(2, -endFret / 12);
-    const scaleRange = leftAnchor - rightAnchor || 1;
-    const scalePx = (neckWidth - openWidth) / scaleRange;
+    
+    const { openColumnWidth, scaleLeftAnchor, scalePx } = getFretboardScale(
+      startFret,
+      endFret,
+      neckWidth,
+      noteBubblePx
+    );
 
-    const wireX = (wireIndex: number): number => {
-      if (startFret === 0 && wireIndex === 0) return openWidth;
-      return openWidth + scalePx * (leftAnchor - Math.pow(2, -wireIndex / 12));
-    };
+    const wireX = (wireIndex: number): number =>
+      getWireX(wireIndex, startFret, openColumnWidth, scalePx, scaleLeftAnchor);
 
     const shapeLeft = autoCenterTarget.minFret === 0 ? 0 : wireX(autoCenterTarget.minFret - 1);
     const shapeRight = wireX(autoCenterTarget.maxFret);
