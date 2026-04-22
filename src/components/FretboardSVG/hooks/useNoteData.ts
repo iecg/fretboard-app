@@ -89,7 +89,9 @@ export function useNoteData({
   return useMemo(() => {
     const notes: NoteData[] = [];
     const scale = SCALES[scaleName] || [];
-    const normRoot = rootNote && (rootNote.includes("b") ? ENHARMONICS[rootNote] : rootNote);
+    const normRoot = rootNote && (rootNote.includes("b") && ENHARMONICS[rootNote]
+      ? ENHARMONICS[rootNote]
+      : rootNote);
     const rootIdx = rootNote ? NOTES.indexOf(normRoot.includes("#") ? normRoot : rootNote) : -1;
 
     // Pre-calculate normalized hidden notes for faster lookup
