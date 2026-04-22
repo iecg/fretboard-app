@@ -66,6 +66,7 @@ expect.addSnapshotSerializer({
   },
   serialize(val, config, indentation, depth, refs, printer) {
     const clone = val.cloneNode(true) as Element | DocumentFragment;
+    normalizedNodes.add(val);
     normalizedNodes.add(clone);
 
     const idMap = new Map<string, string>();
