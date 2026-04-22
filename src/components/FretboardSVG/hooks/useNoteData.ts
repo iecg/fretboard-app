@@ -83,10 +83,6 @@ export function useNoteData({
   displayFormat,
   wrappedNotes,
   practiceLens,
-  wrappedNotes,
-  practiceLens,
-  noteSemantics,
-}: UseNoteDataProps): NoteData[] {
   noteSemantics,
 }: UseNoteDataProps): NoteData[] {
   return useMemo(() => {
