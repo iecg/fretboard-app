@@ -123,9 +123,73 @@ CSS overrides use `[data-layout-tier="..."]` and `[data-layout-variant="..."]` s
 
 ## Tests
 
-- Unit tests for pure computation modules (`theory.ts`, `guitar.ts`, `shapes.ts`) in `src/__tests__/`
-- Snapshot tests for component rendering
-- Run with `npm test` — all tests must pass before submitting a PR
+- **Unit tests:** Pure computation modules (`theory.ts`, `guitar.ts`, `degrees.ts`, `shapes/`) in `src/core/` and `src/shapes/`. Run with `npm test`.
+- **Component tests:** Vitest + React Testing Library + Snapshots in `src/components/`. Run with `npm test`.
+- **Visual tests:** Playwright visual regression tests in `e2e/`. Run with `npm run test:visual`.
+
+All tests must pass before submitting a PR.
+
+## Visual Regression Testing
+
+We use Playwright for visual regression testing to ensure UI consistency across different devices and layout modes.
+
+### Running Visual Tests
+
+To run the visual tests locally:
+
+```bash
+npm run test:visual
+```
+
+This builds the app and compares current screenshots against the baselines stored in `e2e/**/*.visual.spec.ts-snapshots/`.
+
+To run the CI-equivalent Linux visual check in the Playwright Docker image:
+
+```bash
+npm run test:visual:ci
+```
+
+This command expects `dist/` to already exist and is intended for CI or for debugging Linux snapshot behavior locally with Docker. The regular Responsive E2E suite excludes `*.visual.spec.ts`; visual screenshots run only through the visual config.
+
+### Updating Baselines
+
+If you've intentionally changed the UI and need to update the baseline screenshots:
+
+```bash
+npm run test:visual:update
+```
+
+### Reviewing Diffs
+
+When a visual test fails, Playwright generates a diff image highlighting the differences. You can review these in the `test-results/` directory. Each failure will have a sub-folder containing the expected image, the actual image, and the `diff.png`.
+
+If you want a visual report, run:
+
+```bash
+npx playwright show-report
+```
+
+### OS and Environment Baselines
+
+**Important:** Snapshot baselines are platform-specific due to differences in font rendering and anti-aliasing.
+
+- **macOS Baselines:** Useful for local review and development on macOS.
+- **Linux Baselines:** These are the **source of truth** used by CI.
+
+If CI fails due to visual diffs, you **must** regenerate the Linux baselines from a Linux/Ubuntu environment (e.g., via Docker or a Linux machine), not from macOS. Snapshots generated on macOS will not match the Linux snapshots exactly.
+
+#### Regenerating Linux Baselines
+
+The project provides a helper script to safely regenerate Linux baselines from a macOS host using Docker:
+
+```bash
+./scripts/update-linux-snapshots.sh
+```
+
+This script uses a Playwright Docker container to run the update. It utilizes an isolated `node_modules` volume within the container so that your local macOS `node_modules` are not overwritten or corrupted by Linux-specific dependencies during the process.
+
+CI runs visual regression tests in the same Docker image family as this update script, so committed Linux baselines should be generated with this script rather than with the host runner directly.
+
 
 ## License
 
