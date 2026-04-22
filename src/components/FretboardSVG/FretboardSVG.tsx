@@ -14,6 +14,7 @@ import {
 import { parseNote } from "../../core/guitar";
 import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
 import styles from "./FretboardSVG.module.css";
+import { useFretboardGeometry } from "./hooks/useFretboardGeometry";
 import type { ShapePolygon, CagedShape } from "../../shapes";
 import type { ActiveShapeType } from "../../hooks/useFretboardState";
 import {
@@ -24,9 +25,6 @@ import {
   MAX_FRET,
   NOTE_BUBBLE_RATIO,
   NOTE_FONT_RATIO,
-  NECK_TAPER_SCALE,
-  STRING_OCCUPY_FRAC,
-  STRING_SPREAD_LEFT_FRAC,
   INLAY_RADIUS_RATIO,
   INLAY_RADIUS_MIN,
   RADIUS_SCALE_KEY_TONIC,
@@ -484,69 +482,23 @@ export const FretboardSVG = memo(function FretboardSVG({
   const hasChordOverlay = chordTones.length > 0;
   const numStrings = tuning.length;
 
-  const { openColumnWidth, scaleLeftAnchor, scalePx } = useMemo(() => {
-    const openWidth = startFret === 0 ? Math.max(noteBubblePx + 12, NUT_WIDTH + 4) : 0;
-    const leftAnchor = startFret === 0 ? 1 : Math.pow(2, -(startFret - 1) / 12);
-    const rightAnchor = Math.pow(2, -endFret / 12);
-    const range = leftAnchor - rightAnchor || 1;
-    const px = (neckWidthPx - openWidth) / range;
-    return { openColumnWidth: openWidth, scaleLeftAnchor: leftAnchor, scalePx: px };
-}, [startFret, endFret, neckWidthPx, noteBubblePx]);
-
-  const wireXRel = useCallback((wireIndex: number): number => {
-    if (startFret === 0 && wireIndex === 0) {
-      return openColumnWidth;
-    }
-    return (
-      openColumnWidth +
-      scalePx * (scaleLeftAnchor - Math.pow(2, -wireIndex / 12))
-    );
-  }, [startFret, openColumnWidth, scalePx, scaleLeftAnchor]);
-
-  const fretToX = useCallback((fret: number): number => {
-    if (startFret === 0 && fret === 0) {
-      return openColumnWidth / 2;
-    }
-    const leftWire = fret === 0 ? 0 : wireXRel(fret - 1);
-    const rightWire = wireXRel(fret);
-    return (leftWire + rightWire) / 2;
-  }, [startFret, openColumnWidth, wireXRel]);
-
-  const fretColumnWidth = useCallback((fret: number): number => {
-    if (startFret === 0 && fret === 0) return openColumnWidth;
-    const leftWire = fret === 0 ? 0 : wireXRel(fret - 1);
-    const rightWire = wireXRel(fret);
-    return rightWire - leftWire;
-  }, [startFret, openColumnWidth, wireXRel]);
-
-  const { taperYLeft, taperPath } = useMemo(() => {
-    const fretDistRatio = (wireIdx: number) => 1 - Math.pow(2, -wireIdx / 12);
-    const pLeft = startFret === 0 ? 0 : fretDistRatio(startFret - 1);
-    const pRight = fretDistRatio(endFret);
-    const neckWidthAt = (p: number) => 1 + NECK_TAPER_SCALE * p;
-    const leftHeightRatio = neckWidthAt(pLeft) / neckWidthAt(pRight);
-    const yLeft = Math.round((neckHeight * (1 - leftHeightRatio)) / 2);
-
-    const cornerR = endFret === maxFret ? Math.min(Math.round(neckHeight * 0.08), 22) : 0;
-    const path =
-      `M 0 ${yLeft} ` +
-      `L ${neckWidthPx - cornerR} 0 ` +
-      `Q ${neckWidthPx} 0 ${neckWidthPx} ${cornerR} ` +
-      `L ${neckWidthPx} ${neckHeight - cornerR} ` +
-      `Q ${neckWidthPx} ${neckHeight} ${neckWidthPx - cornerR} ${neckHeight} ` +
-      `L 0 ${neckHeight - yLeft} Z`;
-    
-    return { taperYLeft: yLeft, taperPath: path };
-  }, [startFret, endFret, neckHeight, neckWidthPx, maxFret]);
-
-  const stringYAt = useCallback((s: number, x: number): number => {
-    const xFrac = neckWidthPx > 0 ? Math.max(0, Math.min(1, x / neckWidthPx)) : 0;
-    const localSpread = (STRING_SPREAD_LEFT_FRAC + (1 - STRING_SPREAD_LEFT_FRAC) * xFrac) * neckHeight * STRING_OCCUPY_FRAC;
-    const t = numStrings > 1 ? s / (numStrings - 1) : 0.5;
-    return neckHeight / 2 - localSpread / 2 + t * localSpread;
-  }, [neckWidthPx, neckHeight, numStrings]);
-
-  const fretCenterX = useCallback((fret: number) => fretToX(fret), [fretToX]);
+  const {
+    wireXRel,
+    fretToX,
+    fretCenterX,
+    fretColumnWidth,
+    taperYLeft,
+    taperPath,
+    stringYAt,
+  } = useFretboardGeometry({
+    startFret,
+    endFret,
+    maxFret,
+    neckWidthPx,
+    neckHeight,
+    noteBubblePx,
+    numStrings,
+  });
 
   const svgPolygons = useMemo(() => {
     return shapePolygons.map((poly, polyIdx) => {
