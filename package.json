@@ -61,7 +61,7 @@
     "stylelint-config-standard": "^40.0.0",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.59.0",
-    "vite": "^8.0.8",
+    "vite": "^8.0.9",
     "vitest": "^4.1.5",
     "vitest-axe": "^0.1.0"
   },
