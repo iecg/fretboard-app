@@ -14,6 +14,7 @@ import {
   fingeringPatternAtom,
   cagedShapesAtom,
   npsPositionAtom,
+  npsOctaveAtom,
   clickedShapeAtom,
 } from "./fingeringAtoms";
 import {
@@ -40,6 +41,7 @@ export const shapeDataAtom = atom((get) => {
   const currentTuning = get(currentTuningAtom);
   const cagedShapes = get(cagedShapesAtom);
   const npsPosition = get(npsPositionAtom);
+  const npsOctave = get(npsOctaveAtom);
 
   let coords: string[] = [];
   let bounds: { minFret: number; maxFret: number }[] = [];
@@ -75,6 +77,7 @@ export const shapeDataAtom = atom((get) => {
       currentTuning,
       24,
       npsPosition,
+      npsOctave,
     );
     coords = res.coordinates;
     bounds = res.bounds;

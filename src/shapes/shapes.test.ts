@@ -694,21 +694,20 @@ describe('get3NPSCoordinates', () => {
     expect(result.bounds[0].minFret).toBeLessThan(12);
   });
 
-  it('position 8 (cycle 1) lands in the second octave register, not duplicating position 1', () => {
-    const pos1 = get3NPSCoordinates('C', 'Major', STANDARD_TUNING, 24, 1);
-    const pos8 = get3NPSCoordinates('C', 'Major', STANDARD_TUNING, 24, 8);
-    expect(pos8.coordinates.length).toBeGreaterThan(0);
-    // Second cycle should start above fret 12 — distinctly higher than position 1
-    expect(pos8.bounds[0].minFret).toBeGreaterThan(pos1.bounds[0].minFret);
-    expect(pos8.bounds[0].minFret).toBeGreaterThanOrEqual(12);
+  it('octave=1 lands in the second register, higher than octave=0 for the same position', () => {
+    const low = get3NPSCoordinates('C', 'Major', STANDARD_TUNING, 24, 1, 0);
+    const high = get3NPSCoordinates('C', 'Major', STANDARD_TUNING, 24, 1, 1);
+    expect(high.coordinates.length).toBeGreaterThan(0);
+    // Second register should start at or above fret 12
+    expect(high.bounds[0].minFret).toBeGreaterThan(low.bounds[0].minFret);
+    expect(high.bounds[0].minFret).toBeGreaterThanOrEqual(12);
   });
 
-  it('high out-of-range position falls back to highest available register without wrapping', () => {
-    // Position 20 far exceeds cycles available on a 24-fret board; should
-    // return the highest findable occurrence rather than returning empty.
-    const result = get3NPSCoordinates('C', 'Major', STANDARD_TUNING, 24, 20);
+  it('octave=1 falls back to highest available register when second occurrence is out of range', () => {
+    // Requesting octave=1 when the note only appears once within 0-24 frets should
+    // fall back to the first (only) occurrence rather than returning empty.
+    const result = get3NPSCoordinates('C', 'Major', STANDARD_TUNING, 24, 1, 5);
     expect(result.coordinates.length).toBeGreaterThan(0);
-    // Should not crash and coordinates must stay within [0, 24]
     for (const coord of result.coordinates) {
       const fret = parseInt(coord.split('-')[1]);
       expect(fret).toBeGreaterThanOrEqual(0);
@@ -716,23 +715,27 @@ describe('get3NPSCoordinates', () => {
     }
   });
 
-  it('all positions return coordinates within the fretboard range', () => {
-    for (let pos = 1; pos <= 12; pos++) {
-      const result = get3NPSCoordinates('G', 'Natural Minor', STANDARD_TUNING, 24, pos);
-      expect(result.coordinates.length).toBeGreaterThan(0);
-      for (const coord of result.coordinates) {
-        const fret = parseInt(coord.split('-')[1]);
-        expect(fret).toBeGreaterThanOrEqual(0);
-        expect(fret).toBeLessThanOrEqual(24);
+  it('all positions (both octaves) return coordinates within the fretboard range', () => {
+    for (let pos = 1; pos <= 7; pos++) {
+      for (const oct of [0, 1]) {
+        const result = get3NPSCoordinates('G', 'Natural Minor', STANDARD_TUNING, 24, pos, oct);
+        expect(result.coordinates.length).toBeGreaterThan(0);
+        for (const coord of result.coordinates) {
+          const fret = parseInt(coord.split('-')[1]);
+          expect(fret).toBeGreaterThanOrEqual(0);
+          expect(fret).toBeLessThanOrEqual(24);
+        }
       }
     }
   });
 
   it('wrappedNotes is always an empty Set (3NPS does not wrap notes)', () => {
-    for (let pos = 1; pos <= 12; pos++) {
-      const result = get3NPSCoordinates('A', 'Minor Pentatonic', STANDARD_TUNING, 24, pos);
-      expect(result.wrappedNotes).toBeInstanceOf(Set);
-      expect(result.wrappedNotes.size).toBe(0);
+    for (let pos = 1; pos <= 7; pos++) {
+      for (const oct of [0, 1]) {
+        const result = get3NPSCoordinates('A', 'Minor Pentatonic', STANDARD_TUNING, 24, pos, oct);
+        expect(result.wrappedNotes).toBeInstanceOf(Set);
+        expect(result.wrappedNotes.size).toBe(0);
+      }
     }
   });
 });

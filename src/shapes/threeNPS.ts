@@ -8,6 +8,7 @@ export function get3NPSCoordinates(
   tuning: string[],
   frets: number,
   position: number,
+  octave = 0,
 ): ShapeResult {
   const scaleNotes = getScaleNotes(rootNote, scalePattern);
   if (scaleNotes.length === 0) return { coordinates: [], bounds: [], polygons: [], wrappedNotes: new Set() };
@@ -15,16 +16,15 @@ export function get3NPSCoordinates(
   const layout = getFretboardNotes(tuning, frets);
 
   const degreeIdx = (position - 1) % scaleNotes.length;
-  const cycleIdx = Math.floor((position - 1) / scaleNotes.length);
   const startNote = scaleNotes[degreeIdx];
   const startString = tuning.length - 1;
 
-  // Find the cycleIdx-th occurrence of startNote on the lowest string so that
-  // higher positions land in the correct octave rather than wrapping back to
-  // the lowest available fret.
+  // Find the octave-th occurrence of startNote on the lowest string.
+  // octave=0 → first register (lower neck), octave=1 → second register (upper neck).
+  // Falls back to the highest available occurrence if the requested one doesn't exist.
   let currentFretFocus = -1;
   let searchFrom = 0;
-  for (let i = 0; i <= cycleIdx; i++) {
+  for (let i = 0; i <= octave; i++) {
     const idx = layout[startString].indexOf(startNote, searchFrom);
     if (idx === -1) break;
     currentFretFocus = idx;
