@@ -90,7 +90,7 @@ export function useNoteData({
   return useMemo(() => {
     const notes: NoteData[] = [];
     const scale = SCALES[scaleName] || [];
-    const normRoot = rootNote && (ENHARMONICS[rootNote]?.includes("b") ? ENHARMONICS[rootNote] : rootNote);
+    const normRoot = rootNote && (rootNote.includes("b") ? ENHARMONICS[rootNote] : rootNote);
     const rootIdx = rootNote ? NOTES.indexOf(normRoot.includes("#") ? normRoot : rootNote) : -1;
 
     // Pre-calculate normalized hidden notes for faster lookup
@@ -247,16 +247,6 @@ export function useNoteData({
           if (rootIdx !== -1 && noteIdx !== -1) {
             displayValue = INTERVAL_NAMES[(noteIdx - rootIdx + 12) % 12];
           }
-        } else if (
-          fretIndex === 0 &&
-          openNoteName === noteName
-        ) {
-          displayValue = getNoteDisplayInScale(
-            noteName,
-            rootNote,
-            scale,
-            useFlats,
-          );
         }
 
         const isWrapped = wrappedNotes.has(`${stringIndex}-${fretIndex}`);

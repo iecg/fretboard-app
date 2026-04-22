@@ -30,7 +30,7 @@ describe("useNoteData", () => {
         scaleName: "minor-pentatonic",
         useFlats: false,
         wrappedNotes: new Set(),
-        tuning: ["E2", "A2", "D3", "G3", "B3", "E4"]
+        tuning: ["E4", "B3", "G3", "D3", "A2", "E2"]
       })
     );
 
@@ -41,4 +41,3 @@ describe("useNoteData", () => {
     expect(e2Note?.noteClass).toBe("key-tonic");
   });
 });
-
