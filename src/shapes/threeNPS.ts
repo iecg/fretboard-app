@@ -14,17 +14,27 @@ export function get3NPSCoordinates(
 
   const layout = getFretboardNotes(tuning, frets);
 
-  const startNote = scaleNotes[(position - 1) % scaleNotes.length];
+  const degreeIdx = (position - 1) % scaleNotes.length;
+  const cycleIdx = Math.floor((position - 1) / scaleNotes.length);
+  const startNote = scaleNotes[degreeIdx];
   const startString = tuning.length - 1;
-  let currentFretFocus = layout[startString].indexOf(startNote);
-  if (currentFretFocus === -1) {
-    currentFretFocus = layout[startString].indexOf(startNote, 1);
+
+  // Find the cycleIdx-th occurrence of startNote on the lowest string so that
+  // higher positions land in the correct octave rather than wrapping back to
+  // the lowest available fret.
+  let currentFretFocus = -1;
+  let searchFrom = 0;
+  for (let i = 0; i <= cycleIdx; i++) {
+    const idx = layout[startString].indexOf(startNote, searchFrom);
+    if (idx === -1) break;
+    currentFretFocus = idx;
+    searchFrom = idx + 1;
   }
 
   if (currentFretFocus === -1) return { coordinates: [], bounds: [], polygons: [], wrappedNotes: new Set() };
 
   const coords: string[] = [];
-  let scaleIndex = scaleNotes.indexOf(startNote);
+  let scaleIndex = degreeIdx;
   let aggregateMinFret = 99;
   let aggregateMaxFret = -1;
   let localFocus = currentFretFocus;
