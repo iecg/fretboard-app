@@ -1,5 +1,79 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 
+export interface VisualState {
+  rootNote?: string;
+  scaleName?: string;
+  displayFormat?: "notes" | "degrees" | "none";
+  scaleVisible?: boolean;
+  chordRoot?: string;
+  chordType?: string;
+  linkChordRoot?: boolean;
+  chordFretSpread?: number;
+  practiceLens?: string;
+  [key: string]: string | number | boolean | undefined;
+}
+
+/**
+ * Loads the application in a specific visual state by setting localStorage
+ * before navigation and ensuring the page is stable.
+ */
+export async function loadVisualState(
+  page: Page,
+  state: VisualState,
+  viewport = { width: 1280, height: 720 }
+) {
+  await page.setViewportSize(viewport);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+
+  // Inject state into localStorage before the app boots
+  await page.addInitScript((s) => {
+    const PREFIX = "fretflow:";
+    
+    // Clear only app-specific keys
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith(PREFIX)) {
+        localStorage.removeItem(key);
+      }
+    });
+
+    // Write requested state with proper serialization
+    Object.entries(s).forEach(([key, value]) => {
+      if (value === undefined || value === null) return;
+      
+      // Serialize: booleans as "true"/"false", numbers as strings, strings as-is.
+      // chordType as "" or omitted for no overlay, never "null".
+      localStorage.setItem(`${PREFIX}${key}`, String(value));
+    });
+  }, state);
+
+  await page.goto("/");
+
+  // Apply visual "detox" for deterministic screenshots
+  await page.addStyleTag({
+    content: `
+      *, *::before, *::after {
+        animation-duration: 0s !important;
+        animation-delay: 0s !important;
+        transition-duration: 0s !important;
+        transition-delay: 0s !important;
+        caret-color: transparent !important;
+      }
+      ::-webkit-scrollbar {
+        display: none !important;
+      }
+      * {
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+      }
+    `,
+  });
+
+  await page.waitForSelector('[data-testid="app-container"]');
+  await page.waitForLoadState("networkidle");
+  await page.evaluate(() => document.fonts.ready);
+  await waitForStableLayout(page);
+}
+
 /**
  * Waits for the layout to be stable by checking if the layout state remains
  * unchanged for several consecutive animation frames.

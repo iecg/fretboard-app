@@ -133,6 +133,12 @@ All tests must pass before submitting a PR.
 
 We use Playwright for visual regression testing to ensure UI consistency across different devices and layout modes.
 
+Fretboard SVG visual coverage exists specifically to protect the upcoming `FretboardSVG` refactor. The following states are protected:
+
+- **default C Major**
+- **C Minor Blues color-note scale**
+- **C Major with G Dominant 7th chord overlay**
+
 ### Running Visual Tests
 
 To run the visual tests locally:
