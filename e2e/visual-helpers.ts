@@ -20,18 +20,43 @@ export interface VisualState {
 export async function loadVisualState(
   page: Page,
   state: VisualState,
-  viewport = { width: 1280, height: 720 }
+  viewport?: { width: number; height: number }
 ) {
-  await page.setViewportSize(viewport);
+  if (viewport) {
+    await page.setViewportSize(viewport);
+  }
   await page.emulateMedia({ reducedMotion: "reduce" });
 
   // Inject state into localStorage before the app boots
   await page.addInitScript((s) => {
     const PREFIX = "fretflow:";
-    
-    // Clear only app-specific keys
+
+    // Known legacy keys that the app migration can copy back
+    const LEGACY_KEYS = [
+      "rootNote",
+      "scaleName",
+      "chordRoot",
+      "chordType",
+      "linkChordRoot",
+      "chordFretSpread",
+      "chordIntervalFilter",
+      "fingeringPattern",
+      "cagedShapes",
+      "npsPosition",
+      "displayFormat",
+      "tuningName",
+      "fretZoom",
+      "fretStart",
+      "fretEnd",
+      "isMuted",
+      "mobileTab",
+      "tabletTab",
+      "landscapeNarrowTab",
+    ];
+
+    // Clear both prefixed and legacy keys to prevent nondeterministic visuals
     Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith(PREFIX)) {
+      if (key.startsWith(PREFIX) || LEGACY_KEYS.includes(key)) {
         localStorage.removeItem(key);
       }
     });
