@@ -201,5 +201,6 @@
   --selected-border: #1e3a8a;
   --selected-chord-bg: #ea580c;
   --selected-chord-fg: #ffffff;
+  --selected-highlight: rgb(255 255 255 / 0.15);
 }
 

@@ -11,6 +11,7 @@
   --selected-border: var(--selection-accent);
   --selected-chord-bg: var(--chord-accent);
   --selected-chord-fg: var(--chord-accent-fg);
+  --selected-highlight: rgb(255 255 255 / 0.1);
 
   --chrome-bg: color-mix(in srgb, var(--bg-color) 84%, var(--surface-raised) 16%);
   --chrome-fg: var(--text-main);

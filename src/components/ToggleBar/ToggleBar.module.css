@@ -34,7 +34,7 @@
 .mobile-tab-bar .mobile-tab[aria-selected="true"] {
   background: var(--selected-bg);
   color: var(--chrome-fg);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1);
+  box-shadow: inset 0 1px 0 var(--selected-highlight);
 }
 
 :global([data-theme="modern-dark"]) .mobile-tab-bar .mobile-tab[aria-selected="true"] {
