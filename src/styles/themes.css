@@ -107,9 +107,9 @@
   --shadow-ping-end: rgba(0, 102, 204, 0);
 
   /* Selection and chord accents */
-  --selection-accent: #2563eb;
-  --selection-accent-fg: #ffffff;
-  --selection-accent-bg: rgba(37, 99, 235, 0.12);
+  --selection-accent: #0066cc;
+  --selection-accent-fg: #0066cc;
+  --selection-accent-bg: rgba(0, 102, 204, 0.08);
   --chord-accent: #ea580c;
   --chord-accent-fg: #ffffff;
 
@@ -181,7 +181,7 @@
 
   /* Selected state tokens */
   --selected-bg: var(--selection-accent-bg);
-  --selected-fg: var(--selection-accent-fg);
+  --selected-fg: var(--accent-primary);
   --selected-border: var(--selection-accent);
   --selected-chord-bg: var(--chord-accent);
   --selected-chord-fg: var(--chord-accent-fg);

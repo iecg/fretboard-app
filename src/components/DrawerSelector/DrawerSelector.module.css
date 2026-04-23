@@ -20,9 +20,7 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.02)),
-    rgb(12 17 25 / 0.88);
+  background: var(--chrome-bg);
   border: 1px solid var(--chrome-border);
   border-radius: 0.95rem;
   color: var(--chrome-fg);
@@ -30,6 +28,12 @@
   font-size: var(--text-sm);
   transition: border-color var(--transition-fast);
   text-align: left;
+}
+
+:global([data-theme="modern-dark"]) .drawer-trigger {
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.02)),
+    rgb(12 17 25 / 0.88);
 }
 
 .drawer-trigger:hover {
@@ -57,7 +61,7 @@
 .drawer-value {
   flex: 1;
   font-weight: 500;
-  color: white;
+  color: var(--chrome-fg);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -81,12 +85,10 @@
   left: 0;
   right: 0;
   z-index: var(--z-dropdown);
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.03), rgb(255 255 255 / 0.01)),
-    rgb(10 15 22 / 0.96);
-  border: 1px solid rgb(255 255 255 / 0.1);
+  background: var(--surface-card);
+  border: 1px solid var(--chrome-border);
   border-radius: 0.95rem;
-  box-shadow: 0 10px 25px rgb(0 0 0 / 0.55);
+  box-shadow: var(--elevation-overlay);
   max-height: 240px;
   overflow-y: auto;
   padding: var(--space-1);
@@ -94,6 +96,14 @@
   flex-direction: column;
   gap: 2px;
   transition: opacity var(--transition-slow);
+}
+
+:global([data-theme="modern-dark"]) .drawer-options {
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.03), rgb(255 255 255 / 0.01)),
+    rgb(10 15 22 / 0.96);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  box-shadow: 0 10px 25px rgb(0 0 0 / 0.55);
 }
 
 .drawer-options:focus-visible {
@@ -120,7 +130,7 @@
 
 .drawer-option:hover {
   background: var(--surface-raised);
-  color: white;
+  color: var(--chrome-fg);
 }
 
 .drawer-option:focus-visible {
@@ -137,7 +147,7 @@
 
 .drawer-option.focused {
   background: var(--surface-raised);
-  color: white;
+  color: var(--chrome-fg);
 }
 
 .drawer-divider {

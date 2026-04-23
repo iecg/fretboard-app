@@ -146,16 +146,27 @@
 }
 
 .accidental-toggle:hover {
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+  background: var(--chrome-hover-bg);
+}
+
+:global([data-theme="modern-dark"]) .accidental-toggle:hover {
   color: var(--text-on-accent);
   border-color: var(--text-muted);
+  background: none;
 }
 
 .accidental-toggle:focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
-  color: var(--text-on-accent);
+  color: var(--accent-primary);
   border-color: var(--neon-cyan);
   box-shadow: var(--focus-ring-glow);
+}
+
+:global([data-theme="modern-dark"]) .accidental-toggle:focus-visible {
+  color: var(--text-on-accent);
 }
 
 .chord-root-row {

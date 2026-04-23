@@ -9,13 +9,13 @@
   /* Use drop-shadow for hexagons as box-shadow is clipped by clip-path. */
   --chip-glow-violet: drop-shadow(0 0 5px rgb(167 139 250 / 0.75));
   --chip-border-width: 2px;
-  --chip-border-muted: rgb(255 255 255 / 0.22);
-  --chip-line-muted:   rgb(255 255 255 / 0.18);
-  --chip-focus-ring:   rgb(77 228 255 / 0.7);
+  --chip-border-muted: var(--token-border-subtle);
+  --chip-line-muted:   var(--token-border-subtler);
+  --chip-focus-ring:   var(--accent-primary);
   --chip-hexagon-clip:     polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
   --color-note-ring-color: var(--note-ring-color-tone);
-  --color-note-inner-fill: rgb(20 30 40 / 0.92);
-  --color-note-text:       #e8d8ff;
+  --color-note-inner-fill: var(--surface-base);
+  --color-note-text:       var(--neon-violet);
 
   display: flex;
   flex-direction: column;
@@ -35,7 +35,7 @@
   font-family: var(--font-sans);
   font-size: clamp(0.92rem, 1.5vw, 1.05rem);
   font-weight: var(--font-weight-medium);
-  color: var(--text-soft-white);
+  color: var(--text-main);
   line-height: 1.2;
   letter-spacing: 0.01em;
 }
@@ -57,7 +57,7 @@
   padding: 0.2rem;
   border: none;
   background: transparent;
-  color: var(--text-soft-white);
+  color: var(--text-main);
   opacity: 0.6;
   cursor: pointer;
   border-radius: 0.3rem;
@@ -207,7 +207,7 @@
   font-family: var(--font-sans);
   font-weight: var(--font-weight-semibold);
   font-size: clamp(1.1rem, 1.9vw, 1.28rem);
-  color: var(--text-soft-white);
+  color: var(--text-main);
   /* Center glyphs past ascender/descender asymmetry. */
   line-height: calc(var(--chip-size) - var(--chip-border-width) * 2);
   letter-spacing: 0.01em;
@@ -217,9 +217,16 @@
   font-family: var(--font-sans);
   font-size: 0.88rem;
   font-weight: var(--font-weight-semibold);
-  color: var(--text-soft-white);
+  color: var(--text-main);
   line-height: 1;
   letter-spacing: 0.02em;
+}
+
+:global([data-theme="modern-dark"]) .degree-chip-strip {
+  --chip-border-muted: rgb(255 255 255 / 0.22);
+  --chip-line-muted:   rgb(255 255 255 / 0.18);
+  --color-note-inner-fill: rgb(20 30 40 / 0.92);
+  --color-note-text:       #e8d8ff;
 }
 
 /* Compact variant for secondary surfaces. Out-specifies layout-tier rules. */
