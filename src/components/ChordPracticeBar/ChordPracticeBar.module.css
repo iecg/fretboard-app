@@ -40,7 +40,7 @@
   color: var(--text-muted);
   line-height: 1;
   letter-spacing: 0.03em;
-  background: var(--token-surface-dim);
+  background: var(--surface-muted);
   border: 1px solid var(--token-border-subtle);
   border-radius: 0.3rem;
   padding: 0.15rem 0.35rem;
@@ -61,7 +61,7 @@
   line-height: 1;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  background: var(--token-surface-dim);
+  background: var(--surface-muted);
   border: 1px solid var(--token-border-subtle);
   border-radius: 0.3rem;
   padding: 0.15rem 0.35rem;
@@ -134,7 +134,7 @@
   height: var(--practice-pill-h);
   padding: 0 var(--practice-pill-px);
   border-radius: 999px;
-  background: var(--token-surface-dim);
+  background: var(--surface-muted);
   border: 1.5px solid var(--token-border-subtle);
   cursor: default;
 }

@@ -6,14 +6,30 @@
 */
 
 :root {
-  --selected-bg: var(--selection-accent-bg);
-  --selected-fg: var(--selection-accent-fg);
-  --selected-border: var(--selection-accent);
-  --selected-chord-bg: var(--chord-accent);
-  --selected-chord-fg: var(--chord-accent-fg);
+  /* Semantic Selection Roles */
   --selected-highlight: rgb(255 255 255 / 0.1);
   --selected-bg-image: none;
   --selected-shadow: none;
+
+  /* Surface Roles */
+  --surface-control: var(--chrome-bg);
+  --surface-control-fg: var(--chrome-fg);
+  --surface-control-fg-muted: var(--chrome-fg-muted);
+  --surface-control-border: var(--chrome-border);
+
+  --surface-panel: var(--panel-surface-bg);
+  --surface-panel-border: var(--panel-surface-border);
+
+  --surface-overlay: color-mix(in srgb, var(--token-surface-card-base) 96%, transparent);
+  --surface-overlay-border: var(--surface-card-border);
+
+  --surface-muted: var(--token-surface-dim);
+  --surface-hover: var(--chrome-hover-bg);
+  --surface-hover-border: var(--chrome-hover-border);
+
+  --surface-card: var(--surface-overlay);
+  --surface-card-border: rgb(255 255 255 / 0.1);
+  --surface-card-header-border: var(--token-border-subtler);
 
   --chrome-bg: color-mix(in srgb, var(--bg-color) 84%, var(--surface-raised) 16%);
   --chrome-fg: var(--text-main);
@@ -29,31 +45,32 @@
   --panel-surface-pad: var(--space-4);
   --panel-surface-pad-compact: var(--space-3) var(--space-4);
 
-  /* Neon-cyan glow for keyboard nav visibility against dark theme. */
+  /* Focus ring — global affordance model */
   --focus-ring: 2px solid var(--neon-cyan);
   --focus-ring-offset: 2px;
   --focus-ring-glow: 0 0 8px rgb(77 228 255 / 0.6), 0 0 16px rgb(77 228 255 / 0.35);
 
+  /* Z-index layers */
   --z-note: var(--token-z-note);
   --z-dropdown: var(--token-z-dropdown);
   --z-help-overlay: var(--token-z-help-overlay);
   --z-bottom-nav: var(--token-z-bottom-nav);
   --z-header: var(--token-z-header);
 
+  /* Interaction Roles */
   --interactive-primary: var(--accent-primary);
   --interactive-hover: color-mix(in srgb, var(--accent-primary) 85%, white);
   --interactive-active: color-mix(in srgb, var(--accent-primary) 70%, white);
   --interactive-focus: var(--neon-cyan);
+
+  --chrome-hover-border: var(--interactive-primary);
+  --chrome-hover-bg-tint: color-mix(in srgb, var(--neon-cyan) 12%, transparent);
 
   --disabled-opacity: var(--token-disabled-opacity);
 
   --transition-surface: background-color var(--transition-fast) ease, color var(--transition-fast) ease, border-color var(--transition-fast) ease;
   --transition-accent: box-shadow var(--transition-fast) ease, fill var(--transition-fast) ease;
   --transition-motion: transform var(--transition-fast) ease, opacity var(--transition-base) ease;
-
-  --surface-card: color-mix(in srgb, var(--token-surface-card-base) 96%, transparent);
-  --surface-card-border: rgb(255 255 255 / 0.1);
-  --surface-card-header-border: var(--token-border-subtler);
 
   --note-ring: var(--neon-cyan);
   --note-ring-tonic: var(--neon-orange);
@@ -89,15 +106,20 @@
 }
 
 [data-theme="modern-dark"] {
+  --selected-bg: rgb(18 31 43 / 0.95);
   --selected-bg-image: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--neon-cyan) 25%, transparent),
-    color-mix(in srgb, var(--neon-cyan) 15%, transparent)
+    color-mix(in srgb, var(--neon-cyan) 22%, transparent),
+    color-mix(in srgb, var(--neon-cyan) 8%, transparent)
   );
-  --selected-border: var(--neon-cyan);
+  --selected-border: color-mix(in srgb, var(--neon-cyan) 32%, transparent);
   --selected-shadow: 
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 0 10px color-mix(in srgb, var(--neon-cyan) 20%, transparent);
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 0 0 1px color-mix(in srgb, var(--neon-cyan) 12%, transparent),
+    0 0 8px color-mix(in srgb, var(--neon-cyan) 16%, transparent);
+  
+  --chrome-hover-border: color-mix(in srgb, var(--neon-cyan) 48%, transparent);
+  --chrome-hover-bg: color-mix(in srgb, var(--neon-cyan) 12%, transparent);
 }
 
 .panel-surface {

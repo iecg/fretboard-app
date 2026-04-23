@@ -17,8 +17,8 @@
   background:
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--chrome-bg) 92%, white 8%) 0%,
-      var(--chrome-bg) 100%
+      color-mix(in srgb, var(--surface-control) 92%, white 8%) 0%,
+      var(--surface-control) 100%
     );
   color: var(--chrome-fg);
   display: flex;
@@ -42,7 +42,7 @@
   padding: 12px 16px;
   border-bottom: 1px solid var(--chrome-border);
   flex-shrink: 0;
-  background: color-mix(in srgb, var(--chrome-bg) 92%, white 8%);
+  background: color-mix(in srgb, var(--surface-control) 92%, white 8%);
 }
 
 .settings-overlay-title {
@@ -75,8 +75,8 @@
   background:
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--panel-surface-bg) 88%, var(--accent-secondary) 12%) 0%,
-      var(--panel-surface-bg) 100%
+      color-mix(in srgb, var(--surface-panel) 88%, var(--accent-secondary) 12%) 0%,
+      var(--surface-panel) 100%
     );
 }
 
@@ -180,7 +180,7 @@
   color: var(--chrome-fg);
   font-size: 0.8125rem;
   line-height: 1.45;
-  box-shadow: 0 12px 32px color-mix(in srgb, var(--chrome-bg) 82%, transparent);
+  box-shadow: 0 12px 32px color-mix(in srgb, var(--surface-control) 82%, transparent);
 }
 
 .overlay-reset-section {

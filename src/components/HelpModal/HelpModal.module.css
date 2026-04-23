@@ -10,7 +10,7 @@
 }
 
 .help-modal {
-  background: var(--panel-surface-bg);
+  background: var(--surface-panel);
   border-radius: var(--radius-xl);
   border: var(--panel-surface-border);
   box-shadow: var(--elevation-overlay);
@@ -42,7 +42,7 @@
   padding: 12px clamp(1rem, 3vw, 1.25rem);
   border-bottom: 1px solid var(--chrome-border);
   flex-shrink: 0;
-  background: color-mix(in srgb, var(--panel-surface-bg) 92%, white 8%);
+  background: color-mix(in srgb, var(--surface-panel) 92%, white 8%);
 }
 
 .help-modal-header h2 {

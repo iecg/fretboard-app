@@ -10,15 +10,7 @@
   --fretboard-board-shadow: rgb(0 0 0 / 0.15);
   --fretboard-note-text-fill: #ffffff;
   --fretboard-note-text-stroke: rgba(0, 0, 0, 0.25);
-  --fretboard-note-tonic-fill: var(--note-ring-tonic);
-  --fretboard-note-chord-root-fill: var(--note-ring-tonic);
-  --fretboard-note-chord-tone-in-scale-fill: var(--note-ring);
-  --fretboard-note-active-fill: var(--note-ring);
-  --fretboard-note-blue-fill: var(--note-ring-color-tone);
-  --fretboard-note-scale-only-fill: var(--note-ring);
-  --fretboard-note-color-tone-fill: var(--note-ring-color-tone);
   --fretboard-note-chord-tone-outside-fill: var(--neon-orange-dim);
-  --fretboard-note-chord-root-tension-fill: var(--note-ring-tonic);
   --fretboard-guide-tones-emphasis-fill: var(--note-ring-tonic);
   --fretboard-guide-tones-deemphasis-fill: color-mix(in srgb, var(--note-ring-tonic) 15%, #ffffff);
   --fretboard-guide-tones-deemphasis-stroke: color-mix(in srgb, var(--note-ring-tonic) 40%, transparent);
@@ -99,7 +91,7 @@
 }
 
 :global([data-theme="modern-light"]) .fretboard-note.key-tonic :is(circle, rect, polygon) {
-  fill: var(--fretboard-note-tonic-fill);
+  fill: var(--note-ring-tonic);
 }
 .fretboard-note.key-tonic text {
   stroke-width: 2.3;
@@ -112,7 +104,7 @@
 }
 
 :global([data-theme="modern-light"]) .fretboard-note.chord-root :is(circle, rect, polygon) {
-  fill: var(--fretboard-note-chord-root-fill);
+  fill: var(--note-ring-tonic);
 }
 .fretboard-note.chord-root text {
   stroke-width: 2.3;
@@ -125,7 +117,7 @@
 }
 
 :global([data-theme="modern-light"]) .fretboard-note.chord-tone-in-scale :is(circle, rect, polygon) {
-  fill: var(--fretboard-note-chord-tone-in-scale-fill);
+  fill: var(--note-ring);
 }
 
 .fretboard-note.note-active :is(circle, rect, polygon) {
@@ -135,7 +127,7 @@
 }
 
 :global([data-theme="modern-light"]) .fretboard-note.note-active :is(circle, rect, polygon) {
-  fill: var(--fretboard-note-active-fill);
+  fill: var(--note-ring);
 }
 
 .fretboard-note.note-blue :is(circle, rect, polygon) {
@@ -145,7 +137,7 @@
 }
 
 :global([data-theme="modern-light"]) .fretboard-note.note-blue :is(circle, rect, polygon) {
-  fill: var(--fretboard-note-blue-fill);
+  fill: var(--note-ring-color-tone);
 }
 .fretboard-note.note-blue text {
   fill: #e8d8ff;
@@ -163,7 +155,7 @@
 }
 
 :global([data-theme="modern-light"]) .fretboard-note.scale-only :is(circle, rect, polygon) {
-  fill: var(--fretboard-note-scale-only-fill);
+  fill: var(--note-ring);
 }
 
 .fretboard-note.color-tone :is(circle, rect, polygon) {
@@ -173,7 +165,7 @@
 }
 
 :global([data-theme="modern-light"]) .fretboard-note.color-tone :is(circle, rect, polygon) {
-  fill: var(--fretboard-note-color-tone-fill);
+  fill: var(--note-ring-color-tone);
 }
 .fretboard-note.color-tone text {
   fill: #e8d8ff;
@@ -223,7 +215,7 @@
 }
 
 :global([data-theme="modern-light"]) .fretboard-note.chord-root[data-note-tension] rect:last-of-type {
-  fill: var(--fretboard-note-chord-root-tension-fill);
+  fill: var(--note-ring-tonic);
 }
 
 /* Lens emphasis selectors */

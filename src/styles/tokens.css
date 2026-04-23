@@ -120,13 +120,12 @@
   --fretboard-wood-mid: #0d0805;
   --fretboard-wood-bottom: #080403;
   --fretboard-wood-grain: rgb(255 255 255 / 0.02);
-  --fret-wire-v2: #9aa0a6;
   --fret-wire-dark: #4a5058;
   --fret-wire-medium: #a6afbc;
   --fret-wire-bright: #ebeff5;
   --fret-wire-highlight: rgb(255 255 255 / 0.25);
-  --string-wire: #c8c8c8;
-  --string-wire-bass: #b0a080;
+  --string-wire: #e4e8ee;
+  --string-wire-bass: #c6ccd2;
   --string-taper-1: 1px;
   --string-taper-2: 1.25px;
   --string-taper-3: 1.5px;

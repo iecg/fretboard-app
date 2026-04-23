@@ -28,7 +28,7 @@
   width: 100%;
   min-height: 3rem;
   padding: 0.72rem 2.8rem 0.72rem 0.95rem;
-  background: var(--chrome-bg);
+  background: var(--surface-control);
   border: 1px solid var(--chrome-border);
   border-radius: 0.95rem;
   font-family: var(--font-sans);
@@ -56,7 +56,11 @@
 }
 
 .labeled-select-native:hover:not(:disabled) {
-  border-color: var(--interactive-primary);
+  border-color: var(--chrome-hover-border);
+}
+
+:global([data-theme="modern-dark"]) .labeled-select-native:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--neon-cyan) 48%, transparent);
 }
 
 .labeled-select-native:disabled {

@@ -1,7 +1,7 @@
 /* ===== Shared Strip Surface ===== */
 /* Base styles and tokens for card-like strip containers (degree chip strip, chord row strip) */
 .strip-surface {
-  --strip-fill: var(--surface-card);
+  --strip-fill: var(--surface-overlay);
   --strip-border: 1px solid var(--surface-card-border);
   --strip-shadow: var(--elevation-card);
 }
@@ -11,19 +11,26 @@
 .control-button {
   padding: var(--space-1) var(--space-2);
   font-size: var(--text-xs);
-  background: var(--chrome-bg);
-  border: 1px solid var(--chrome-border);
+  background: var(--surface-control);
+  border: 1px solid var(--surface-control-border);
   border-radius: var(--radius-sm);
-  color: var(--chrome-fg-muted);
+  color: var(--surface-control-fg-muted);
   cursor: pointer;
   transition: var(--transition-surface);
   line-height: 1.2;
 }
 
 .control-button:hover:not(:disabled) {
-  background: var(--chrome-hover-bg);
-  color: var(--chrome-fg);
-  border-color: var(--interactive-primary);
+  background: var(--surface-hover);
+  color: var(--surface-control-fg);
+  border-color: var(--surface-hover-border);
+}
+
+:global([data-theme="modern-dark"]) .control-button:hover:not(:disabled) {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--neon-cyan) 18%, transparent), color-mix(in srgb, var(--neon-cyan) 8%, transparent)),
+    rgb(18 31 43 / 0.95);
+  border-color: color-mix(in srgb, var(--neon-cyan) 42%, transparent);
 }
 
 .control-button:focus-visible {
@@ -66,7 +73,7 @@
 
 .section-label {
   font-size: 0.72rem;
-  color: var(--chrome-fg-muted);
+  color: var(--surface-control-fg-muted);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -75,8 +82,8 @@
 .toggle-group {
   display: flex;
   gap: 0.22rem;
-  background: var(--chrome-bg);
-  border: 1px solid var(--chrome-border);
+  background: var(--surface-control);
+  border: 1px solid var(--surface-control-border);
   border-radius: 1rem;
   padding: 0.25rem;
 }
@@ -96,12 +103,12 @@
   text-transform: none;
   background: transparent;
   border: none;
-  color: var(--chrome-fg-muted);
+  color: var(--surface-control-fg-muted);
   cursor: pointer;
 }
 
-.toggle-btn:hover {
-  color: var(--chrome-fg);
+.toggle-btn:hover:not(.active) {
+  color: var(--surface-control-fg);
 }
 
 .toggle-btn:active {
@@ -117,7 +124,7 @@
   background: var(--selected-bg);
   background-image: var(--selected-bg-image);
   color: var(--selected-fg);
-  border: 1px solid var(--selected-border);
+  border: none;
   box-shadow: var(--selected-shadow);
 }
 
@@ -129,7 +136,7 @@
   align-items: center;
   justify-content: center;
   background: none;
-  border: 1px solid var(--chrome-border);
+  border: 1px solid var(--surface-control-border);
   border-radius: 9999px;
   color: var(--text-muted);
   cursor: pointer;
@@ -140,9 +147,9 @@
 }
 
 .accidental-toggle:hover {
-  color: var(--chrome-fg);
-  border-color: var(--interactive-primary);
-  background: var(--chrome-hover-bg);
+  color: var(--surface-control-fg);
+  border-color: var(--surface-hover-border);
+  background: var(--surface-hover);
 }
 
 :global([data-theme="modern-dark"]) .accidental-toggle:hover {
@@ -154,13 +161,14 @@
 .accidental-toggle:focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
-  color: var(--chrome-fg);
-  border-color: var(--interactive-primary);
+  color: var(--surface-control-fg);
+  border-color: var(--surface-hover-border);
   box-shadow: var(--focus-ring-glow);
 }
 
 :global([data-theme="modern-dark"]) .accidental-toggle:focus-visible {
   color: var(--text-on-accent);
+  border-color: var(--neon-cyan);
 }
 
 .chord-root-row {
@@ -181,16 +189,24 @@
   padding: 0;
   font-size: 0.96rem;
   font-weight: 600;
-  background: var(--chrome-bg);
-  border: 1px solid var(--chrome-border);
+  background: var(--surface-control);
+  border: 1px solid var(--surface-control-border);
   border-radius: 0.95rem;
-  color: var(--chrome-fg-muted);
+  color: var(--surface-control-fg-muted);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   transition: var(--transition-surface);
+}
+
+:global([data-theme="modern-dark"]) .note-btn {
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.02)),
+    rgb(12 17 25 / 0.88);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  color: rgb(223 232 242 / 0.84);
 }
 
 .note-btn-label {
@@ -203,8 +219,13 @@
 }
 
 .note-btn:hover {
-  color: var(--chrome-fg);
-  border-color: var(--accent-primary);
+  color: var(--surface-control-fg);
+  border-color: var(--surface-hover-border);
+}
+
+:global([data-theme="modern-dark"]) .note-btn:hover {
+  color: white;
+  border-color: rgb(77 228 255 / 0.38);
 }
 
 .note-btn:active {
@@ -214,8 +235,8 @@
 .note-btn:focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
-  color: var(--chrome-fg);
-  border-color: var(--accent-primary);
+  color: var(--surface-control-fg);
+  border-color: var(--surface-hover-border);
 }
 
 .note-btn.active {
@@ -224,6 +245,18 @@
   color: var(--selected-fg);
   border-color: var(--selected-border);
   box-shadow: var(--selected-shadow);
+}
+
+:global([data-theme="modern-dark"]) .note-btn.active {
+  background:
+    radial-gradient(circle at 50% 20%, rgb(77 228 255 / 0.24), transparent 65%),
+    linear-gradient(180deg, rgb(77 228 255 / 0.18), rgb(77 228 255 / 0.08));
+  color: rgb(243, 251, 255);
+  border-color: rgb(77 228 255 / 0.45);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.14),
+    0 0 0 1px rgb(77 228 255 / 0.16),
+    0 0 8px rgb(77 228 255 / 0.12);
 }
 
 /* ===== Desktop: tighter interactive controls ===== */
@@ -275,20 +308,36 @@
   height: 2.75rem;
   padding: 0;
   border-radius: 999px;
-  background: var(--chrome-bg);
-  border: 1px solid var(--chrome-border);
+  background: var(--surface-control);
+  border: 1px solid var(--surface-control-border);
   box-shadow: var(--elevation-card);
-  color: var(--chrome-fg-muted);
+  color: var(--surface-control-fg-muted);
   cursor: pointer;
   transition: var(--transition-surface), transform var(--transition-fast);
   flex-shrink: 0;
 }
 
+:global([data-theme="modern-dark"]) .icon-button {
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0.02)),
+    rgb(12 17 25 / 0.82);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
+  color: rgb(230 238 247 / 0.86);
+}
+
 .icon-button:hover {
-  background: var(--chrome-hover-bg);
-  color: var(--chrome-fg);
-  border-color: var(--interactive-primary);
+  background: var(--surface-hover);
+  color: var(--surface-control-fg);
+  border-color: var(--surface-hover-border);
   transform: translateY(-1px);
+}
+
+:global([data-theme="modern-dark"]) .icon-button:hover {
+  background:
+    linear-gradient(180deg, rgb(77 228 255 / 0.12), rgb(77 228 255 / 0.03)),
+    rgb(12 17 25 / 0.92);
+  border-color: rgb(77 228 255 / 0.26);
 }
 
 .icon-button:active {
@@ -298,6 +347,11 @@
 .icon-button:focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
+}
+
+:global([data-theme="modern-dark"]) .icon-button:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--neon-cyan);
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */

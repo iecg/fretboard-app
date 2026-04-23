@@ -20,7 +20,7 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
-  background: var(--chrome-bg);
+  background: var(--surface-control);
   border: 1px solid var(--chrome-border);
   border-radius: 0.95rem;
   color: var(--chrome-fg);
@@ -85,7 +85,7 @@
   left: 0;
   right: 0;
   z-index: var(--z-dropdown);
-  background: var(--surface-card);
+  background: var(--surface-overlay);
   border: 1px solid var(--chrome-border);
   border-radius: 0.95rem;
   box-shadow: var(--elevation-overlay);

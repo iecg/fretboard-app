@@ -28,9 +28,13 @@
   /* Focus ring — restrained for light backgrounds */
   --focus-ring-glow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 
-  /* Accent colors — solid professional blue */
+  /* Interaction — Primary theme accent */
   --accent-primary: #2563eb;
   --accent-glow: rgba(37, 99, 235, 0.04);
+  
+  --interactive-hover: color-mix(in srgb, var(--accent-primary) 90%, black);
+  --interactive-active: color-mix(in srgb, var(--accent-primary) 80%, black);
+  --interactive-focus: #2563eb;
 
   /* Neon colors — significantly restrained for a professional look */
   --neon-cyan: #0891b2;
@@ -80,7 +84,6 @@
   --fretboard-wood-mid: #ebd5b0;
   --fretboard-wood-bottom: #dec395;
   --fretboard-wood-grain: rgba(90, 60, 40, 0.08);
-  --fret-wire: #334155;
   --fret-wire-dark: #1e293b;
   --fret-wire-medium: #475569;
   --fret-wire-bright: #94a3b8;
@@ -91,7 +94,6 @@
   --fretboard-border: #8b5e3c;
 
   /* String colors — charcoal slate */
-  --string-color: #334155;
   --string-wire: #475569;
   --string-wire-bass: #334155;
 
@@ -112,7 +114,7 @@
   --fretboard-headstock-bg: var(--bg-color);
   --fretboard-glow-opacity: 0;
 
-  /* Note colors — solid deep blue and orange */
+  /* Note colors — primary and secondary note emphasis */
   --note-blue: #1d4ed8;
   --note-blue-glow: transparent;
 
@@ -122,85 +124,13 @@
   --shadow-ping-start: rgba(29, 78, 216, 0.2);
   --shadow-ping-end: rgba(29, 78, 216, 0);
 
-  /* Selection and chord accents — solid blue active */
-  --selection-accent: #1d4ed8;
-  --selection-accent-fg: #ffffff;
-  --selection-accent-bg: #1d4ed8;
-  --chord-accent: #ea580c;
-  --chord-accent-fg: #ffffff;
-
-  /* Semantic tokens */
-  --chrome-fg: var(--text-main);
-  --chrome-fg-muted: var(--text-muted);
-  --chrome-hover-bg: #f1f5f9;
-  --chrome-scrim: rgba(248, 250, 252, 0.8);
-
-  /* Panel surface */
-  --panel-surface-bg: var(--surface-base);
-  --panel-surface-border: 1px solid var(--surface-highlight);
-
-  /* Note semantic tokens */
-  --note-ring: #1d4ed8;
-  --note-ring-tonic: #ea580c;
-  --note-ring-dim: #1e3a8a;
-  --note-ring-color-tone: #7c3aed;
-  --note-text-in-scale: #1d4ed8;
-  --note-text-tonic: #ea580c;
-  --note-glow: none;
-  --note-glow-tonic: none;
-
-  /* Brand text — solid, no glow */
-  --text-brand: #1d4ed8;
-  --text-brand-gradient: none;
-  --brand-icon-glow: none;
-
-  /* Header surface */
-  --header-surface: var(--surface-base);
-  --header-border: var(--token-border-subtle);
-
-  /* Chip tokens — solid active states */
-  --chip-surface-inactive: #f1f5f9;
-  --chip-surface-active: #1d4ed8;
-  --chip-surface-tonic: #ea580c;
-  --chip-border-inactive: #e2e8f0;
-  --chip-border-active: #1e3a8a;
-  --chip-border-tonic: #c2410c;
-  --chip-text-inactive: #64748b;
-  --chip-text-active: #ffffff;
-  --chip-text-tonic: #ffffff;
-
-  /* App background tokens — very subtle or removed accent glows */
-  --bg-app-gradient-start: #f8fafc;
-  --bg-app-gradient-mid: #f8fafc;
-  --bg-app-gradient-end: #f1f5f9;
-  --bg-app-accent-glow: none;
-  --bg-app-accent-glow-1: transparent;
-  --bg-app-accent-glow-2: transparent;
-  --bg-app-accent-glow-3: transparent;
-
-  /* Chord strip tokens */
-  --chord-strip-fill: #ffffff;
-  --chord-chip-glow-orange: none;
-  --chord-chip-glow-cyan: none;
-
-  /* Practice bar tokens */
-  --practice-bar-fill: #ffffff;
-  --practice-pill-amber-strong: #ea580c;
-  --practice-pill-amber-soft: #f97316;
-  --practice-pill-amber-bg-strong: #fff7ed;
-  --practice-pill-amber-bg-soft: #fff7ed;
-  --practice-pill-tension-border: #fed7aa;
-  --practice-pill-guide-blue-bg: #eff6ff;
-
-  /* Surface card base */
-  --token-surface-card-base: #ffffff;
-
-  /* Selected state tokens — Solid Blue */
+  /* Interaction — Selection & Persistent States */
   --selected-bg: #1d4ed8;
   --selected-fg: #ffffff;
   --selected-border: #1e3a8a;
   --selected-chord-bg: #ea580c;
   --selected-chord-fg: #ffffff;
+  --selected-chord-border: #c2410c;
   --selected-highlight: rgb(255 255 255 / 0.15);
 }
 
