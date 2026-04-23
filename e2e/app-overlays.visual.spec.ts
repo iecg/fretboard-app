@@ -27,4 +27,10 @@ test.describe("App Overlays Visual", () => {
     await openHelp(page);
     await expectFullPageVisual(page, "app-help-landscape-667x375");
   });
+
+  test("app-help-light-landscape-667x375", async ({ page }) => {
+    await loadVisualState(page, { theme: "light" }, { width: 667, height: 375 });
+    await openHelp(page);
+    await expectFullPageVisual(page, "app-help-light-landscape-667x375");
+  });
 });

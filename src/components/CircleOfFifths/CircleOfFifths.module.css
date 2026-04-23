@@ -1,11 +1,11 @@
 .circle-fifths-container {
-  --cof-center-start: rgb(255 255 255 / 0.95);
-  --cof-center-end: rgb(241 245 249 / 1);
-  --cof-inner-stroke: rgb(15 23 42 / 0.08);
+  --cof-center-start: color-mix(in srgb, var(--surface-base) 95%, transparent);
+  --cof-center-end: var(--surface-raised);
+  --cof-inner-stroke: var(--token-border-subtle);
   --cof-text-stroke: transparent;
-  --cof-text-muted: rgb(100 116 139 / 0.8);
-  --cof-enharmonic-muted: rgb(148 163 184 / 0.8);
-  --cof-degree-muted: rgb(148 163 184 / 0.7);
+  --cof-text-muted: var(--text-muted);
+  --cof-enharmonic-muted: color-mix(in srgb, var(--text-muted) 80%, transparent);
+  --cof-degree-muted: color-mix(in srgb, var(--text-muted) 70%, transparent);
 
   container-type: inline-size;
   flex: 1 1 auto;

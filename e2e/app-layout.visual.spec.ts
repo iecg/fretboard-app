@@ -13,6 +13,12 @@ test.describe("App Layout Visual Regression", () => {
     await expectFullPageVisual(page, "app-desktop-light-1280x900");
   });
 
+  test("app-desktop-split-light-1280x900", async ({ page }) => {
+    await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
+    // Force split layout if needed, though 1280 width should trigger it
+    await expectFullPageVisual(page, "app-desktop-split-light-1280x900");
+  });
+
   test("app-compact-desktop-1024x768", async ({ page }) => {
     await page.goto("/");
     await prepareVisualPage(page, { width: 1024, height: 768 });

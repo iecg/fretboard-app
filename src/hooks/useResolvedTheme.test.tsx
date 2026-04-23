@@ -90,7 +90,7 @@ describe("useResolvedTheme", () => {
   it("updates when system preference changes", () => {
     store.set(themeAtom, "system");
     
-    let changeHandler: ((e: { matches: boolean }) => void) | null = null;
+    let changeHandler: ((e: { matches: boolean }) => void) | undefined;
     
     Object.defineProperty(window, "matchMedia", {
       writable: true,
@@ -100,8 +100,8 @@ describe("useResolvedTheme", () => {
         onchange: null,
         addListener: vi.fn(),
         removeListener: vi.fn(),
-        addEventListener: vi.fn((type, handler) => {
-          if (type === "change") changeHandler = handler;
+        addEventListener: vi.fn((type: string, handler: unknown) => {
+          if (type === "change") changeHandler = handler as (e: { matches: boolean }) => void;
         }),
         removeEventListener: vi.fn(),
         dispatchEvent: vi.fn(),
