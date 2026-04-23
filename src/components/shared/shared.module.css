@@ -23,7 +23,7 @@
 .control-button:hover:not(:disabled) {
   background: var(--chrome-hover-bg);
   color: var(--chrome-fg);
-  border-color: var(--accent-primary);
+  border-color: var(--interactive-primary);
 }
 
 .control-button:focus-visible {
@@ -115,13 +115,10 @@
 
 .toggle-btn.active {
   background: var(--selected-bg);
+  background-image: var(--selected-bg-image);
   color: var(--selected-fg);
   border: 1px solid var(--selected-border);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-:global([data-theme="modern-light"]) .toggle-btn.active {
-  box-shadow: none;
+  box-shadow: var(--selected-shadow);
 }
 
 .accidental-toggle {
@@ -143,8 +140,8 @@
 }
 
 .accidental-toggle:hover {
-  color: var(--accent-primary);
-  border-color: var(--accent-primary);
+  color: var(--chrome-fg);
+  border-color: var(--interactive-primary);
   background: var(--chrome-hover-bg);
 }
 
@@ -157,8 +154,8 @@
 .accidental-toggle:focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
-  color: var(--accent-primary);
-  border-color: var(--accent-primary);
+  color: var(--chrome-fg);
+  border-color: var(--interactive-primary);
   box-shadow: var(--focus-ring-glow);
 }
 
@@ -223,8 +220,10 @@
 
 .note-btn.active {
   background: var(--selected-bg);
+  background-image: var(--selected-bg-image);
   color: var(--selected-fg);
   border-color: var(--selected-border);
+  box-shadow: var(--selected-shadow);
 }
 
 /* ===== Desktop: tighter interactive controls ===== */
@@ -288,7 +287,7 @@
 .icon-button:hover {
   background: var(--chrome-hover-bg);
   color: var(--chrome-fg);
-  border-color: var(--accent-primary);
+  border-color: var(--interactive-primary);
   transform: translateY(-1px);
 }
 
@@ -312,8 +311,8 @@
   color: var(--text-muted);
 }
 
-.icon-button :global(.icon-active) {
-  color: var(--accent-primary);
+.icon-button :global(.icon-accent) {
+  color: var(--interactive-primary);
 }
 
 /* Large variant: header action buttons */

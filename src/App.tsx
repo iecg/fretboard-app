@@ -100,7 +100,7 @@ function AppContent() {
                 {isMuted ? (
                   <VolumeX className="icon icon-muted" />
                 ) : (
-                  <Volume2 className="icon icon-active" />
+                  <Volume2 className="icon" />
                 )}
               </button>
               <button

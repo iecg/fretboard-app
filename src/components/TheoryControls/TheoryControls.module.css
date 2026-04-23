@@ -80,7 +80,7 @@
 
 .theory-browser-selector select:focus-visible {
   outline: none !important;
-  box-shadow: inset 0 0 0 2px var(--neon-cyan) !important;
+  box-shadow: inset 0 0 0 2px var(--interactive-focus) !important;
 }
 
 .theory-nav-btn {
@@ -105,8 +105,8 @@
 }
 
 .theory-nav-btn:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--neon-cyan) 9%, transparent);
-  color: var(--chrome-fg);
+  background: var(--chrome-hover-bg);
+  color: var(--interactive-primary);
 }
 
 .theory-nav-btn:active:not(:disabled) {
@@ -120,7 +120,7 @@
 
 .theory-nav-btn:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 2px var(--neon-cyan);
+  box-shadow: inset 0 0 0 2px var(--interactive-focus);
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
@@ -192,7 +192,7 @@
 }
 
 .theory-disclosure-btn--open .theory-disclosure-summary {
-  color: var(--neon-cyan-bright);
+  color: var(--interactive-primary);
 }
 
 .theory-chord-content {

@@ -56,7 +56,7 @@
 }
 
 .labeled-select-native:hover:not(:disabled) {
-  border-color: color-mix(in srgb, var(--neon-cyan) 48%, transparent);
+  border-color: var(--interactive-primary);
 }
 
 .labeled-select-native:disabled {
