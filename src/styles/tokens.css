@@ -137,9 +137,13 @@
 }
 
 :root {
-  --bg-app-gradient-start: #0c1822;
-  --bg-app-gradient-end: #0a1420;
+  --bg-app-gradient-start: #0a1420;
+  --bg-app-gradient-mid: #0b1623;
+  --bg-app-gradient-end: #09111b;
   --bg-app-accent-glow: radial-gradient(ellipse at 50% 0%, rgb(77 228 255 / 0.06), transparent 60%);
+  --bg-app-accent-glow-1: rgb(77 228 255 / 0.08);
+  --bg-app-accent-glow-2: rgb(92 112 255 / 0.08);
+  --bg-app-accent-glow-3: rgb(12 75 94 / 0.12);
 }
 
 :root {

@@ -33,10 +33,10 @@
   container-type: inline-size;
   container-name: app-layout;
   background:
-    radial-gradient(circle at 14% 18%, rgb(77 228 255 / 0.08), transparent 24%),
-    radial-gradient(circle at 82% 22%, rgb(92 112 255 / 0.08), transparent 28%),
-    radial-gradient(circle at 50% 56%, rgb(12 75 94 / 0.12), transparent 45%),
-    linear-gradient(180deg, #0a1420 0%, #0b1623 32%, #09111b 100%);
+    radial-gradient(circle at 14% 18%, var(--bg-app-accent-glow-1, rgb(77 228 255 / 0.08)), transparent 24%),
+    radial-gradient(circle at 82% 22%, var(--bg-app-accent-glow-2, rgb(92 112 255 / 0.08)), transparent 28%),
+    radial-gradient(circle at 50% 56%, var(--bg-app-accent-glow-3, rgb(12 75 94 / 0.12)), transparent 45%),
+    linear-gradient(180deg, var(--bg-app-gradient-start) 0%, var(--bg-app-gradient-mid, var(--bg-app-gradient-start)) 32%, var(--bg-app-gradient-end) 100%);
 }
 
 .app-container[data-layout-tier="tablet"] {
@@ -73,19 +73,10 @@
   }
 }
 
-/* Light mode background — softer gradients, reduced spotlight effects */
-.app-container[data-theme="modern-light"] {
-  background:
-    radial-gradient(circle at 14% 18%, rgb(8 145 178 / 0.06), transparent 24%),
-    radial-gradient(circle at 82% 22%, rgb(124 58 237 / 0.05), transparent 28%),
-    radial-gradient(circle at 50% 56%, rgb(8 145 178 / 0.08), transparent 45%),
-    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 32%, #e2e8f0 100%);
-}
-
-.app-container[data-theme="modern-light"][data-layout-tier="tablet"] {
+.app-container[data-layout-tier="tablet"] {
   gap: 0.72rem;
 }
 
-.app-container[data-theme="modern-light"][data-layout-tier="desktop"] {
+.app-container[data-layout-tier="desktop"] {
   max-width: 120rem;
 }

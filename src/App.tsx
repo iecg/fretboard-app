@@ -54,6 +54,10 @@ function AppContent() {
   const theme = useResolvedTheme();
 
   useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
+
+  useEffect(() => {
     synth.setMute(isMuted);
   }, [isMuted]);
 

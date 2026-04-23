@@ -2,14 +2,8 @@
 /* Base styles and tokens for card-like strip containers (degree chip strip, chord row strip) */
 .strip-surface {
   --strip-fill: var(--surface-card);
-  --strip-border: 1px solid rgb(255 255 255 / 0.06);
-  --strip-shadow: 0 6px 18px rgb(0 0 0 / 0.22);
-}
-
-:global([data-theme="modern-light"]) .strip-surface {
-  --strip-fill: var(--surface-card);
-  --strip-border: 1px solid rgb(0 0 0 / 0.06);
-  --strip-shadow: 0 6px 18px rgb(0 0 0 / 0.08);
+  --strip-border: 1px solid var(--surface-card-border);
+  --strip-shadow: var(--elevation-card);
 }
 
 /* ===== Shared Control Button Chrome ===== */
@@ -17,9 +11,7 @@
 .control-button {
   padding: var(--space-1) var(--space-2);
   font-size: var(--text-xs);
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.02)),
-    rgb(14 19 27 / 0.92);
+  background: var(--chrome-bg);
   border: 1px solid var(--chrome-border);
   border-radius: var(--radius-sm);
   color: var(--chrome-fg-muted);
@@ -28,28 +20,10 @@
   line-height: 1.2;
 }
 
-:global([data-theme="modern-light"]) .control-button {
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.8), rgb(255 255 255 / 0.6)),
-    rgb(241 245 249 / 0.95);
-  border-color: rgb(0 0 0 / 0.1);
-  color: rgb(75 85 99);
-}
-
 .control-button:hover:not(:disabled) {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--neon-cyan) 18%, transparent), color-mix(in srgb, var(--neon-cyan) 8%, transparent)),
-    rgb(18 31 43 / 0.95);
+  background: var(--chrome-hover-bg);
   color: var(--chrome-fg);
-  border-color: color-mix(in srgb, var(--neon-cyan) 42%, transparent);
-}
-
-:global([data-theme="modern-light"]) .control-button:hover:not(:disabled) {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--neon-cyan) 12%, rgb(255 255 255)), color-mix(in srgb, var(--neon-cyan) 6%, rgb(255 255 255))),
-    rgb(248 250 252 / 0.98);
-  color: var(--text-main);
-  border-color: color-mix(in srgb, var(--neon-cyan) 35%, rgb(0 0 0 / 0.15));
+  border-color: var(--accent-primary);
 }
 
 .control-button:focus-visible {
@@ -101,19 +75,10 @@
 .toggle-group {
   display: flex;
   gap: 0.22rem;
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.03), rgb(255 255 255 / 0.01)),
-    rgb(12 17 25 / 0.88);
+  background: var(--chrome-bg);
   border: 1px solid var(--chrome-border);
   border-radius: 1rem;
   padding: 0.25rem;
-}
-
-:global([data-theme="modern-light"]) .toggle-group {
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.6), rgb(255 255 255 / 0.4)),
-    rgb(241 245 249 / 0.9);
-  border-color: rgb(0 0 0 / 0.08);
 }
 
 .toggle-group--default {
@@ -149,25 +114,17 @@
 }
 
 .toggle-btn.active {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--neon-cyan) 22%, transparent), color-mix(in srgb, var(--neon-cyan) 8%, transparent)),
-    rgb(18 31 43 / 0.95);
+  background: var(--selected-bg);
   color: var(--selected-fg);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.12),
-    0 0 0 1px color-mix(in srgb, var(--neon-cyan) 32%, transparent),
-    0 0 8px color-mix(in srgb, var(--neon-cyan) 16%, transparent);
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 0 1px var(--selected-border);
 }
 
 :global([data-theme="modern-light"]) .toggle-btn.active {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--neon-cyan) 18%, rgb(255 255 255)), color-mix(in srgb, var(--neon-cyan) 8%, rgb(255 255 255))),
-    rgb(248 250 252 / 0.98);
-  color: var(--text-main);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.6),
-    0 0 0 1px color-mix(in srgb, var(--neon-cyan) 28%, rgb(0 0 0 / 0.1)),
-    0 0 6px color-mix(in srgb, var(--neon-cyan) 12%, transparent);
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 0 0 1px var(--selected-border);
 }
 
 .accidental-toggle {
@@ -219,26 +176,16 @@
   padding: 0;
   font-size: 0.96rem;
   font-weight: 600;
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.02)),
-    rgb(12 17 25 / 0.88);
-  border: 1px solid rgb(255 255 255 / 0.1);
+  background: var(--chrome-bg);
+  border: 1px solid var(--chrome-border);
   border-radius: 0.95rem;
-  color: rgb(223 232 242 / 0.84);
+  color: var(--chrome-fg-muted);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   transition: var(--transition-surface);
-}
-
-:global([data-theme="modern-light"]) .note-btn {
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.8), rgb(255 255 255 / 0.6)),
-    rgb(241 245 249 / 0.95);
-  border-color: rgb(0 0 0 / 0.08);
-  color: rgb(75 85 99);
 }
 
 .note-btn-label {
@@ -251,13 +198,8 @@
 }
 
 .note-btn:hover {
-  color: white;
-  border-color: rgb(77 228 255 / 0.38);
-}
-
-:global([data-theme="modern-light"]) .note-btn:hover {
-  color: var(--text-main);
-  border-color: rgb(8 145 178 / 0.35);
+  color: var(--chrome-fg);
+  border-color: var(--accent-primary);
 }
 
 .note-btn:active {
@@ -267,33 +209,14 @@
 .note-btn:focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
-  color: white;
-  border-color: var(--neon-cyan);
-  box-shadow: 0 0 0 3px rgb(77 228 255 / 0.2);
+  color: var(--chrome-fg);
+  border-color: var(--accent-primary);
 }
 
 .note-btn.active {
-  background:
-    radial-gradient(circle at 50% 20%, rgb(77 228 255 / 0.24), transparent 65%),
-    linear-gradient(180deg, rgb(77 228 255 / 0.18), rgb(77 228 255 / 0.08));
-  color: rgb(243 251 255 / 0.98);
-  border-color: rgb(77 228 255 / 0.45);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.14),
-    0 0 0 1px rgb(77 228 255 / 0.16),
-    0 0 8px rgb(77 228 255 / 0.12);
-}
-
-:global([data-theme="modern-light"]) .note-btn.active {
-  background:
-    radial-gradient(circle at 50% 20%, rgb(8 145 178 / 0.18), transparent 65%),
-    linear-gradient(180deg, rgb(8 145 178 / 0.14), rgb(8 145 178 / 0.06));
-  color: rgb(8 145 178);
-  border-color: rgb(8 145 178 / 0.35);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.5),
-    0 0 0 1px rgb(8 145 178 / 0.12),
-    0 0 6px rgb(8 145 178 / 0.1);
+  background: var(--selected-bg);
+  color: var(--selected-fg);
+  border-color: var(--selected-border);
 }
 
 /* ===== Desktop: tighter interactive controls ===== */
@@ -322,7 +245,7 @@
 
 .shape-hint {
   font-size: 0.68rem;
-  color: rgb(188 200 214 / 0.45);
+  color: var(--text-muted);
   text-align: center;
   line-height: 1;
   margin: 0;
@@ -331,7 +254,7 @@
 
 .lens-hint {
   font-size: 0.75rem;
-  color: rgb(188 200 214 / 0.72);
+  color: var(--text-muted);
   line-height: 1.4;
   margin: 0;
 }
@@ -345,39 +268,20 @@
   height: 2.75rem;
   padding: 0;
   border-radius: 999px;
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0.02)),
-    rgb(12 17 25 / 0.82);
-  border: 1px solid rgb(255 255 255 / 0.1);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
-  color: rgb(230 238 247 / 0.86);
+  background: var(--chrome-bg);
+  border: 1px solid var(--chrome-border);
+  box-shadow: var(--elevation-card);
+  color: var(--chrome-fg-muted);
   cursor: pointer;
   transition: var(--transition-surface), transform var(--transition-fast);
   flex-shrink: 0;
 }
 
-:global([data-theme="modern-light"]) .icon-button {
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.7), rgb(255 255 255 / 0.5)),
-    rgb(241 245 249 / 0.9);
-  border-color: rgb(0 0 0 / 0.08);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6);
-  color: rgb(75 85 99);
-}
-
 .icon-button:hover {
-  background:
-    linear-gradient(180deg, rgb(77 228 255 / 0.12), rgb(77 228 255 / 0.03)),
-    rgb(12 17 25 / 0.92);
-  border-color: rgb(77 228 255 / 0.26);
+  background: var(--chrome-hover-bg);
+  color: var(--chrome-fg);
+  border-color: var(--accent-primary);
   transform: translateY(-1px);
-}
-
-:global([data-theme="modern-light"]) .icon-button:hover {
-  background:
-    linear-gradient(180deg, rgb(8 145 178 / 0.1), rgb(8 145 178 / 0.03)),
-    rgb(248 250 252 / 0.95);
-  border-color: rgb(8 145 178 / 0.22);
 }
 
 .icon-button:active {
@@ -385,8 +289,8 @@
 }
 
 .icon-button:focus-visible {
-  outline: none;
-  box-shadow: inset 0 0 0 2px var(--neon-cyan);
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
@@ -397,15 +301,11 @@
 }
 
 .icon-button :global(.icon-muted) {
-  color: rgb(176 188 201 / 0.66);
-}
-
-:global([data-theme="modern-light"]) .icon-button :global(.icon-muted) {
-  color: rgb(156 163 175);
+  color: var(--text-muted);
 }
 
 .icon-button :global(.icon-active) {
-  color: white;
+  color: var(--accent-primary);
 }
 
 /* Large variant: header action buttons */
@@ -457,13 +357,9 @@
   align-items: center;
   gap: var(--space-2);
   font-size: 0.86rem;
-  color: rgb(204 214 225 / 0.82);
+  color: var(--text-muted);
   cursor: pointer;
   user-select: none;
-}
-
-:global([data-theme="modern-light"]) .link-toggle {
-  color: rgb(107 114 128);
 }
 
 .link-toggle input[type="checkbox"] {

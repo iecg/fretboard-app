@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './styles/tokens.css'
 import './styles/index.css'
 import './styles/semantic.css'
+import './styles/themes.css'
 import App from './App.tsx'
 import { ErrorBoundary, ErrorFallback } from './components/ErrorBoundary/ErrorBoundary'
 

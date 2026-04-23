@@ -7,30 +7,30 @@
 [data-theme="modern-light"] {
   color-scheme: light;
 
-  /* Primitive Colors — Light gray/off-white spectrum */
-  --bg-color: #f8f9fa;
+  /* Primitive Colors — Light blue-gray spectrum */
+  --bg-color: #f1f5f9;
   --surface-base: #ffffff;
-  --surface-raised: #f1f3f5;
-  --surface-highlight: #e9ecef;
-  --text-main: #1a1a2e;
-  --text-muted: #6c757d;
-  --text-on-highlight: #1a1a2e;
+  --surface-raised: #e2e8f0;
+  --surface-highlight: #cbd5e1;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-on-highlight: #0f172a;
   --text-on-accent: #ffffff;
-  --text-soft-white: #495057;
+  --text-soft-white: #334155;
 
   /* Semantic Colors */
-  --chrome-bg: color-mix(in srgb, var(--bg-color) 90%, var(--surface-raised) 10%);
-  --chrome-border: color-mix(in srgb, var(--surface-highlight) 60%, rgb(0 0 0 / 0.1));
+  --chrome-bg: #f8fafc;
+  --chrome-border: #cbd5e1;
   --surface-card: #ffffff;
-  --surface-card-border: rgb(0 0 0 / 0.08);
-  --surface-card-header-border: rgb(0 0 0 / 0.06);
+  --surface-card-border: rgba(0, 0, 0, 0.1);
+  --surface-card-header-border: rgba(0, 0, 0, 0.08);
 
   /* Focus ring — reduced glow for light backgrounds */
-  --focus-ring-glow: 0 0 6px rgb(77 228 255 / 0.35), 0 0 12px rgb(77 228 255 / 0.2);
+  --focus-ring-glow: 0 0 0 3px rgba(0, 102, 204, 0.2);
 
   /* Accent colors adjusted for light backgrounds */
   --accent-primary: #0066cc;
-  --accent-glow: rgba(0, 102, 204, 0.12);
+  --accent-glow: rgba(0, 102, 204, 0.08);
 
   /* Neon colors — slightly muted for light mode */
   --neon-cyan: #0891b2;
@@ -58,19 +58,19 @@
   --glow-filter-orange: drop-shadow(0 0 4px rgb(234 88 12 / 0.45));
 
   /* Token surface colors — inverted for light */
-  --token-border-subtle: rgb(0 0 0 / 0.08);
-  --token-border-subtler: rgb(0 0 0 / 0.05);
-  --token-border-faint: rgb(0 0 0 / 0.1);
-  --token-surface-dim: rgb(0 0 0 / 0.04);
+  --token-border-subtle: rgba(0, 0, 0, 0.08);
+  --token-border-subtler: rgba(0, 0, 0, 0.06);
+  --token-border-faint: rgba(0, 0, 0, 0.12);
+  --token-surface-dim: rgba(0, 0, 0, 0.04);
 
   /* Chip backgrounds — adjusted for light surfaces */
-  --token-chip-active-bg: rgb(8 145 178 / 0.12);
-  --token-chip-tonic-bg: rgb(234 88 12 / 0.12);
+  --token-chip-active-bg: rgba(0, 102, 204, 0.1);
+  --token-chip-tonic-bg: rgba(234, 88, 12, 0.1);
 
   /* Elevation shadows — lighter, more subtle */
-  --elevation-card: 0 1px 0 rgb(255 255 255 / 0.8) inset, 0 2px 8px rgb(0 0 0 / 0.08);
-  --elevation-overlay: 0 8px 32px rgb(0 0 0 / 0.15);
-  --elevation-float: 0 4px 16px rgb(0 0 0 / 0.1);
+  --elevation-card: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --elevation-overlay: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --elevation-float: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 
   /* Fretboard wood — lighter appearance */
   --fretboard-wood: #d4c5b5;
@@ -116,8 +116,8 @@
   /* Semantic tokens derived from primitives */
   --chrome-fg: var(--text-main);
   --chrome-fg-muted: var(--text-muted);
-  --chrome-hover-bg: var(--surface-highlight);
-  --chrome-scrim: color-mix(in srgb, var(--bg-color) 80%, rgba(0, 0, 0, 0.2));
+  --chrome-hover-bg: var(--surface-raised);
+  --chrome-scrim: rgba(0, 0, 0, 0.3);
 
   /* Panel surface */
   --panel-surface-bg: var(--surface-base);
@@ -128,10 +128,10 @@
   --note-ring-tonic: var(--neon-orange);
   --note-ring-dim: var(--neon-cyan-dim);
   --note-ring-color-tone: var(--neon-violet);
-  --note-text-in-scale: var(--neon-cyan-bright);
-  --note-text-tonic: var(--neon-orange-bright);
-  --note-glow: var(--glow-cyan-sm);
-  --note-glow-tonic: var(--glow-orange-sm);
+  --note-text-in-scale: var(--neon-cyan);
+  --note-text-tonic: var(--neon-orange);
+  --note-glow: none;
+  --note-glow-tonic: none;
 
   /* Brand text */
   --text-brand: var(--neon-cyan-bright);
@@ -154,9 +154,13 @@
   --chip-text-tonic: var(--neon-orange-bright);
 
   /* App background tokens */
-  --bg-app-gradient-start: #f0f4f8;
-  --bg-app-gradient-end: #e8eef4;
+  --bg-app-gradient-start: #f8fafc;
+  --bg-app-gradient-mid: #f1f5f9;
+  --bg-app-gradient-end: #e2e8f0;
   --bg-app-accent-glow: radial-gradient(ellipse at 50% 0%, rgb(8 145 178 / 0.04), transparent 60%);
+  --bg-app-accent-glow-1: rgb(8 145 178 / 0.06);
+  --bg-app-accent-glow-2: rgb(124 58 237 / 0.05);
+  --bg-app-accent-glow-3: rgb(8 145 178 / 0.08);
 
   /* Chord strip tokens */
   --chord-strip-fill: #ffffff;

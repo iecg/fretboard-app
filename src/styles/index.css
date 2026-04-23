@@ -1,5 +1,3 @@
-@import './themes.css';
-
 :root {
   --bg-color: #121212;
   --surface-base: #1c1c1e;
@@ -148,11 +146,4 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--accent-primary);
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    --text-on-highlight: #111827;
-    --text-on-accent: #111827;
-  }
 }
