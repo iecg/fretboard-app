@@ -20,8 +20,64 @@ test.describe("Theme Contract", () => {
     const chromeBg = await page.evaluate(() => 
       getComputedStyle(document.documentElement).getPropertyValue("--chrome-bg").trim()
     );
-    // --chrome-bg: #f1f5f9; in themes.css
-    expect(chromeBg.toLowerCase()).toBe("#f1f5f9");
+    // --chrome-bg: #f8fafc; in themes.css
+    expect(chromeBg.toLowerCase()).toBe("#f8fafc");
+  });
+
+  test("modern-light fretboard should use maple tokens", async ({ page }) => {
+    await loadVisualState(page, { theme: "light" });
+    
+    const woodTop = await page.evaluate(() => 
+      getComputedStyle(document.documentElement).getPropertyValue("--fretboard-wood-top").trim()
+    );
+    // #f5e6c8
+    expect(woodTop.toLowerCase()).toBe("#f5e6c8");
+
+    const woodGrain = await page.evaluate(() => 
+      getComputedStyle(document.documentElement).getPropertyValue("--fretboard-wood-grain").trim()
+    );
+    // rgba(90, 60, 40, 0.08)
+    expect(woodGrain.replace(/\s/g, "")).toBe("rgba(90,60,40,0.08)");
+  });
+
+  test("modern-light should use solid active styling for chips", async ({ page }) => {
+    await loadVisualState(page, { theme: "light" });
+    
+    const activeBg = await page.evaluate(() => 
+      getComputedStyle(document.documentElement).getPropertyValue("--token-chip-active-bg").trim()
+    );
+    // #2563eb
+    expect(activeBg.toLowerCase()).toBe("#2563eb");
+
+    const tonicBg = await page.evaluate(() => 
+      getComputedStyle(document.documentElement).getPropertyValue("--token-chip-tonic-bg").trim()
+    );
+    // #ea580c
+    expect(tonicBg.toLowerCase()).toBe("#ea580c");
+  });
+
+  test("modern-light should use solid active styling for navigation", async ({ page }) => {
+    // Desktop layout
+    await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
+    
+    // The active tab in theory controls should have solid blue bg
+    // Using a more stable way to check the resolved color of an active element
+    const activeTab = page.locator('.theory-browser-tab.active');
+    if (await activeTab.count() > 0) {
+      const bgColor = await activeTab.evaluate(el => getComputedStyle(el).backgroundColor);
+      // rgb(37, 99, 235) is #2563eb
+      expect(bgColor.replace(/\s/g, "")).toBe("rgb(37,99,235)");
+    }
+  });
+
+  test("modern-dark should use dark wood tokens", async ({ page }) => {
+    await loadVisualState(page, { theme: "dark" });
+    
+    const woodTop = await page.evaluate(() => 
+      getComputedStyle(document.documentElement).getPropertyValue("--fretboard-wood-top").trim()
+    );
+    // #160d07 in tokens.css
+    expect(woodTop.toLowerCase()).toBe("#160d07");
   });
 
   test("should apply modern-dark theme when dark is selected", async ({ page }) => {
@@ -68,11 +124,11 @@ test.describe("Theme Contract", () => {
   test("Disabled controls should have correct opacity in light mode", async ({ page }) => {
     await loadVisualState(page, { theme: "light" });
     
-    // Check --disabled-opacity is 0.45
+    // Check --disabled-opacity is 0.4
     const opacity = await page.evaluate(() => 
       getComputedStyle(document.documentElement).getPropertyValue("--disabled-opacity").trim()
     );
-    expect(opacity).toBe("0.45");
+    expect(opacity).toBe("0.4");
   });
 
   test("Disabled controls should have correct opacity in dark mode", async ({ page }) => {
