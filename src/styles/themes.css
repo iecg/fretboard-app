@@ -75,39 +75,39 @@
   /* Disabled state — more visible than dark mode's 0.3 */
   --disabled-opacity: 0.45;
 
-  /* Fretboard wood — lighter appearance */
-  --fretboard-wood: #d4c5b5;
-  --fretboard-wood-top: #c9b8a5;
-  --fretboard-wood-bottom: #b8a692;
-  --fretboard-wood-grain: rgb(0 0 0 / 0.03);
-  --fret-wire: #8b949e;
-  --fret-wire-dark: #6e7a86;
-  --fret-wire-highlight: rgb(0 0 0 / 0.15);
-  --fret-marker: rgba(0, 0, 0, 0.15);
-  --fret-nut-bg: #e8d5c4;
+  /* Fretboard wood — realistic and dark even in light mode */
+  --fretboard-wood-top: #1a1410;
+  --fretboard-wood-bottom: #0f0a08;
+  --fretboard-wood-grain: rgb(255 255 255 / 0.03);
+  --fret-wire: #9ca3af;
+  --fret-wire-dark: #4b5563;
+  --fret-wire-highlight: rgb(255 255 255 / 0.15);
+  --fret-marker: rgba(255, 255, 255, 0.12);
+  --fret-nut-bg: #d4c5b5;
   --fret-nut-wire: #9ca3af;
-  --fretboard-border: #b8a692;
+  --fretboard-border: #2a2420;
 
-  /* String colors */
-  --string-color: #4b5563;
-  --string-wire: #6b7280;
-  --string-wire-bass: #52525b;
+  /* String colors — consistent across themes for realism */
+  --string-color: #94a3b8;
+  --string-wire: #cbd5e1;
+  --string-wire-bass: #94a3b8;
 
   /* Inlays */
-  --inlay-dot: rgb(100 100 100 / 0.2);
-  --inlay-dot-12: rgb(80 80 80 / 0.3);
+  --inlay-dot: rgb(255 255 255 / 0.15);
+  --inlay-dot-12: rgb(255 255 255 / 0.22);
   --nut: #d4c5b5;
-  --fretboard-edge-shadow: 0 0 16px rgb(0 0 0 / 0.08) inset;
+  --fretboard-edge-shadow: 0 0 20px rgb(0 0 0 / 0.5) inset;
+  --fretboard-glow-opacity: 0.35;
 
   /* Note colors — adjusted for light backgrounds */
   --note-blue: #7c3aed;
-  --note-blue-glow: rgba(124, 58, 237, 0.3);
+  --note-blue-glow: rgba(124, 58, 237, 0.2);
 
-  /* Shadows for notes */
-  --shadow-note-root: 0 0 6px rgba(234, 88, 12, 0.25);
-  --shadow-note-active: 0 0 5px rgba(0, 102, 204, 0.2);
-  --shadow-ping-start: rgba(0, 102, 204, 0.3);
-  --shadow-ping-end: rgba(0, 102, 204, 0);
+  /* Shadows for notes — tighter for light theme */
+  --shadow-note-root: 0 0 4px rgba(234, 88, 12, 0.3);
+  --shadow-note-active: 0 0 4px rgba(8, 145, 178, 0.25);
+  --shadow-ping-start: rgba(8, 145, 178, 0.25);
+  --shadow-ping-end: rgba(8, 145, 178, 0);
 
   /* Selection and chord accents */
   --selection-accent: #0066cc;

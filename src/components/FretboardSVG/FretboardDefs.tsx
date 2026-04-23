@@ -174,8 +174,8 @@ export const FretboardDefs = memo(({
           dx="0"
           dy="0"
           stdDeviation="3"
-          floodColor="#4DE4FF"
-          floodOpacity="0.65"
+          floodColor="var(--neon-cyan)"
+          floodOpacity="var(--fretboard-glow-opacity)"
         />
       </filter>
       <filter
@@ -189,8 +189,8 @@ export const FretboardDefs = memo(({
           dx="0"
           dy="0"
           stdDeviation="3"
-          floodColor="#FF9A4D"
-          floodOpacity="0.65"
+          floodColor="var(--neon-orange)"
+          floodOpacity="var(--fretboard-glow-opacity)"
         />
       </filter>
       <filter
@@ -204,8 +204,8 @@ export const FretboardDefs = memo(({
           dx="0"
           dy="0"
           stdDeviation="3"
-          floodColor="#A78BFA"
-          floodOpacity="0.65"
+          floodColor="var(--neon-violet)"
+          floodOpacity="var(--fretboard-glow-opacity)"
         />
       </filter>
       <clipPath id={svgDefId("fretboard-taper")}>

@@ -7,31 +7,31 @@
 }
 
 :global([data-theme="modern-light"]) {
-  --fretboard-board-shadow: rgb(0 0 0 / 0.12);
-  --fretboard-note-text-fill: #1a1a2e;
-  --fretboard-note-text-stroke: rgb(255 255 255 / 0.6);
-  --fretboard-note-tonic-fill: rgb(254 243 230 / 0.95);
-  --fretboard-note-chord-root-fill: rgb(255 237 213 / 0.97);
-  --fretboard-note-chord-tone-in-scale-fill: rgb(255 247 237 / 0.95);
-  --fretboard-note-active-fill: rgb(240 253 255 / 0.95);
-  --fretboard-note-blue-fill: rgb(245 243 255 / 0.95);
-  --fretboard-note-scale-only-fill: rgb(240 249 255 / 0.9);
-  --fretboard-note-color-tone-fill: rgb(245 243 255 / 0.95);
-  --fretboard-note-chord-tone-outside-fill: rgb(255 237 213 / 0.8);
-  --fretboard-note-chord-root-tension-fill: rgb(254 242 230 / 0.95);
-  --fretboard-guide-tones-emphasis-fill: rgb(255 251 235 / 0.98);
-  --fretboard-guide-tones-deemphasis-fill: rgb(255 247 237 / 0.7);
-  --fretboard-guide-tones-deemphasis-stroke: rgb(234 88 12 / 0.5);
-  --fretboard-guide-tones-color-tone-fill: rgb(245 243 255 / 0.7);
-  --fretboard-guide-tones-color-tone-stroke: rgb(124 58 237 / 0.45);
-  --fretboard-tension-emphasis-fill: rgb(254 242 230 / 0.95);
-  --fretboard-tension-deemphasis-fill: rgb(255 247 237 / 0.75);
-  --fretboard-tension-deemphasis-stroke: rgb(234 88 12 / 0.6);
-  --fretboard-tension-chord-tone-fill: rgb(255 251 235 / 0.7);
-  --fretboard-tension-chord-tone-stroke: rgb(234 88 12 / 0.5);
-  --fretboard-tension-color-tone-fill: rgb(250 245 255 / 0.7);
-  --fretboard-tension-color-tone-stroke: rgb(124 58 237 / 0.45);
-  --fretboard-fret-number-color: rgb(107 114 128);
+  --fretboard-board-shadow: rgb(0 0 0 / 0.22);
+  --fretboard-note-text-fill: #0f172a;
+  --fretboard-note-text-stroke: rgb(255 255 255 / 0.7);
+  --fretboard-note-tonic-fill: rgb(255 255 255 / 0.98);
+  --fretboard-note-chord-root-fill: rgb(255 252 248 / 0.98);
+  --fretboard-note-chord-tone-in-scale-fill: rgb(255 255 255 / 0.96);
+  --fretboard-note-active-fill: rgb(252 254 255 / 0.96);
+  --fretboard-note-blue-fill: rgb(253 251 255 / 0.96);
+  --fretboard-note-scale-only-fill: rgb(252 254 255 / 0.94);
+  --fretboard-note-color-tone-fill: rgb(253 251 255 / 0.96);
+  --fretboard-note-chord-tone-outside-fill: rgb(255 252 248 / 0.85);
+  --fretboard-note-chord-root-tension-fill: rgb(255 255 255 / 0.98);
+  --fretboard-guide-tones-emphasis-fill: rgb(255 255 255 / 1);
+  --fretboard-guide-tones-deemphasis-fill: rgb(255 255 255 / 0.75);
+  --fretboard-guide-tones-deemphasis-stroke: rgb(234 88 12 / 0.55);
+  --fretboard-guide-tones-color-tone-fill: rgb(255 255 255 / 0.75);
+  --fretboard-guide-tones-color-tone-stroke: rgb(124 58 237 / 0.5);
+  --fretboard-tension-emphasis-fill: rgb(255 255 255 / 0.98);
+  --fretboard-tension-deemphasis-fill: rgb(255 255 255 / 0.8);
+  --fretboard-tension-deemphasis-stroke: rgb(234 88 12 / 0.65);
+  --fretboard-tension-chord-tone-fill: rgb(255 255 255 / 0.75);
+  --fretboard-tension-chord-tone-stroke: rgb(234 88 12 / 0.55);
+  --fretboard-tension-color-tone-fill: rgb(255 255 255 / 0.75);
+  --fretboard-tension-color-tone-stroke: rgb(124 58 237 / 0.5);
+  --fretboard-fret-number-color: #64748b;
 }
 
 :global([data-theme="modern-light"]) .fretboard-board {

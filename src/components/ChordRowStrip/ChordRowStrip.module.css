@@ -64,6 +64,10 @@
   border-color: rgb(255 255 255 / 0.22);
 }
 
+:global([data-theme="modern-light"]) .chord-row-chip {
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
 .chord-row-item[data-role="chord-root"] .chord-row-chip {
   background: color-mix(in srgb, var(--neon-orange) 22%, transparent);
   border-color: var(--neon-orange);
@@ -125,6 +129,10 @@
   border-top: 1px solid rgb(255 255 255 / 0.06);
 }
 
+:global([data-theme="modern-light"]) .chord-row-legend {
+  border-top: 1px solid rgba(15, 23, 42, 0.06);
+}
+
 .chord-row-legend-item {
   display: flex;
   align-items: center;
@@ -141,6 +149,10 @@
 
 :global([data-theme="modern-dark"]) .chord-row-legend-swatch {
   border: 1.5px solid rgb(255 255 255 / 0.22);
+}
+
+:global([data-theme="modern-light"]) .chord-row-legend-swatch {
+  border: 1.5px solid rgba(15, 23, 42, 0.15);
 }
 
 .chord-row-legend-item[data-role="chord-root"] .chord-row-legend-swatch {

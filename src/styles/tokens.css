@@ -134,6 +134,7 @@
   --inlay-dot-12: rgb(210 210 210 / 0.28);
   --nut: #e0d4a8;
   --fretboard-edge-shadow: 0 0 16px rgb(0 0 0 / 0.45) inset;
+  --fretboard-glow-opacity: 0.65;
 }
 
 :root {

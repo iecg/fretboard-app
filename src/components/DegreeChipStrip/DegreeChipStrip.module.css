@@ -229,6 +229,13 @@
   --color-note-text:       #e8d8ff;
 }
 
+:global([data-theme="modern-light"]) .degree-chip-strip {
+  --chip-border-muted: rgba(15, 23, 42, 0.12);
+  --chip-line-muted:   rgba(15, 23, 42, 0.08);
+  --color-note-inner-fill: #ffffff;
+  --color-note-text:       var(--neon-violet);
+}
+
 /* Compact variant for secondary surfaces. Out-specifies layout-tier rules. */
 .degree-chip-strip.degree-chip-strip--compact {
   --chip-size: clamp(1.45rem, 2.1vw, 1.65rem);
