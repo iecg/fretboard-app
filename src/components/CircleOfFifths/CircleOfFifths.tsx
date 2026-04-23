@@ -111,8 +111,8 @@ export const CircleOfFifths = memo(function CircleOfFifths({
         <desc id="cof-desc">Interactive diagram to select the root note of the scale. Each segment represents a key, arranged in intervals of perfect fifths.</desc>
         <defs>
           <radialGradient id="circle-center-fill" cx="50%" cy="38%" r="74%">
-            <stop offset="0%" stopColor="rgb(34 40 54 / 0.98)" />
-            <stop offset="100%" stopColor="rgb(16 20 29 / 1)" />
+            <stop offset="0%" stopColor="var(--cof-center-start)" />
+            <stop offset="100%" stopColor="var(--cof-center-end)" />
           </radialGradient>
         </defs>
         {CIRCLE_OF_FIFTHS.map((note, index) => {
@@ -199,21 +199,22 @@ export const CircleOfFifths = memo(function CircleOfFifths({
           const intervalIndex = (index - rootIndex + 12) % 12;
           const chromaticInterval = (intervalIndex * 7) % 12;
           const degreeStr = degreeMap[chromaticInterval] ?? "";
+
           const noteTone = isActive
             ? "var(--neon-orange-bright)"
             : degreeStr
               ? "var(--neon-cyan-bright)"
-              : "rgb(184 197 212 / 0.74)";
+              : "var(--cof-text-muted)";
           const enharmonicTone = isActive
-            ? "rgb(255 214 177 / 0.96)"
+            ? "color-mix(in srgb, var(--neon-orange-bright), white 30%)"
             : degreeStr
-              ? "rgb(192 242 255 / 0.82)"
-              : "rgb(171 183 197 / 0.74)";
+              ? "color-mix(in srgb, var(--neon-cyan-bright), white 30%)"
+              : "var(--cof-enharmonic-muted)";
           const degreeTone = isActive
             ? "var(--neon-orange)"
             : degreeStr
               ? "var(--neon-cyan)"
-              : "rgb(165 176 188 / 0.56)";
+              : "var(--cof-degree-muted)";
 
           const { primary, enharmonic } = getCircleNoteLabels(
             note,
@@ -244,7 +245,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
                   <tspan
                     x={lx}
                     dy="-0.3em"
-                    stroke="rgba(0,0,0,0.3)"
+                    stroke="var(--cof-text-stroke)"
                     strokeWidth="2"
                     paintOrder="stroke"
                   >
@@ -256,8 +257,8 @@ export const CircleOfFifths = memo(function CircleOfFifths({
                     fontSize={Math.max(11, noteFontSize * 0.65)}
                     fontWeight="500"
                     fill={enharmonicTone}
-                    stroke="rgba(0,0,0,0.6)"
-                    strokeWidth="2.5"
+                    stroke="var(--cof-text-stroke)"
+                    strokeWidth="2"
                     paintOrder="stroke"
                   >
                     {enharmonic}
@@ -277,7 +278,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
                   <tspan
                     x={lx}
                     dy="0"
-                    stroke="rgba(0,0,0,0.3)"
+                    stroke="var(--cof-text-stroke)"
                     strokeWidth="2"
                     paintOrder="stroke"
                   >
@@ -296,7 +297,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
                   fontSize={degreeFontSize}
                   fontWeight="bold"
                   opacity={isActive ? 1 : 0.92}
-                  stroke="rgba(0,0,0,0.3)"
+                  stroke="var(--cof-text-stroke)"
                   strokeWidth="1.5"
                   paintOrder="stroke"
                   className={styles["circle-degree-label"]}
@@ -314,7 +315,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
           cy={CY}
           r={INNER_RADIUS}
           fill="url(#circle-center-fill)"
-          stroke="rgb(255 255 255 / 0.08)"
+          stroke="var(--cof-inner-stroke)"
           strokeWidth={1.4}
         />
 
@@ -328,7 +329,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
           fontSize={Math.max(16, SIZE * 0.058)}
           fontWeight="bold"
           fontFamily="var(--font-display)"
-          stroke="rgba(0,0,0,0.3)"
+          stroke="var(--cof-text-stroke)"
           strokeWidth="2"
           paintOrder="stroke"
           className={styles["circle-center-note"]}
@@ -344,7 +345,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
           fontSize={Math.max(16, SIZE * 0.064)}
           fontWeight="bold"
           fontFamily="var(--font-display)"
-          stroke="rgba(0,0,0,0.3)"
+          stroke="var(--cof-text-stroke)"
           strokeWidth="2"
           paintOrder="stroke"
           className={styles["circle-center-signature"]}

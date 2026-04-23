@@ -1,4 +1,12 @@
 .circle-fifths-container {
+  --cof-center-start: rgb(255 255 255 / 0.95);
+  --cof-center-end: rgb(241 245 249 / 1);
+  --cof-inner-stroke: rgb(15 23 42 / 0.08);
+  --cof-text-stroke: transparent;
+  --cof-text-muted: rgb(100 116 139 / 0.8);
+  --cof-enharmonic-muted: rgb(148 163 184 / 0.8);
+  --cof-degree-muted: rgb(148 163 184 / 0.7);
+
   container-type: inline-size;
   flex: 1 1 auto;
   display: flex;
@@ -11,6 +19,16 @@
   aspect-ratio: 1;
   max-height: min(320px, 58vh);
   margin: 0 auto;
+}
+
+:global([data-theme="modern-dark"]) .circle-fifths-container {
+  --cof-center-start: rgb(34 40 54 / 0.98);
+  --cof-center-end: rgb(16 20 29 / 1);
+  --cof-inner-stroke: rgb(255 255 255 / 0.1);
+  --cof-text-stroke: rgba(0, 0, 0, 0.4);
+  --cof-text-muted: rgb(184 197 212 / 0.74);
+  --cof-enharmonic-muted: rgb(171 183 197 / 0.74);
+  --cof-degree-muted: rgb(165 176 188 / 0.56);
 }
 
 .circle-fifths-svg {
@@ -28,8 +46,8 @@
     fill var(--transition-fast),
     filter var(--transition-fast),
     stroke var(--transition-fast);
-  stroke: var(--token-border-subtle) !important;
-  stroke-width: 1.2 !important;
+  stroke: var(--surface-highlight) !important;
+  stroke-width: 1 !important;
 }
 
 :global([data-theme="modern-dark"]) .circle-slice {
@@ -48,7 +66,7 @@
 }
 
 .circle-slice.circle-slice--scale {
-  fill: color-mix(in srgb, var(--neon-cyan) 8%, var(--surface-base));
+  fill: color-mix(in srgb, var(--neon-cyan) 12%, var(--surface-base));
 }
 
 :global([data-theme="modern-dark"]) .circle-slice.circle-slice--scale {
@@ -57,7 +75,7 @@
 
 .circle-slice.circle-slice--muted {
   fill: var(--surface-raised);
-  opacity: 0.6;
+  opacity: 0.8;
 }
 
 :global([data-theme="modern-dark"]) .circle-slice.circle-slice--muted {
@@ -66,7 +84,7 @@
 }
 
 .circle-slice.active {
-  fill: color-mix(in srgb, var(--neon-orange) 18%, var(--surface-base));
+  fill: color-mix(in srgb, var(--neon-orange) 22%, var(--surface-base));
   stroke: var(--neon-orange) !important;
   stroke-width: 2.3 !important;
   filter: var(--glow-filter-orange);
@@ -94,7 +112,7 @@
 
 .circle-slice-focus-ring {
   stroke: var(--neon-cyan-bright) !important;
-  filter: drop-shadow(0 0 7px rgb(77 228 255 / 0.42));
+  filter: var(--glow-filter-cyan);
   pointer-events: none;
 }
 
