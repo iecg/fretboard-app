@@ -1,5 +1,5 @@
 import { test } from "@playwright/test";
-import { prepareVisualPage, expectLocatorVisual } from "./visual-helpers";
+import { prepareVisualPage, expectLocatorVisual, loadVisualState } from "./visual-helpers";
 
 test.describe("App Components Visual", () => {
   test.beforeEach(async ({ page }) => {
@@ -22,5 +22,11 @@ test.describe("App Components Visual", () => {
     await expectLocatorVisual(locator, "circle-of-fifths-desktop-1280x900");
   });
 
+  test("circle-of-fifths-light-1280x900", async ({ page }) => {
+    await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
+    const locator = page.getByTestId("circle-of-fifths-svg");
+    await locator.scrollIntoViewIfNeeded();
+    await expectLocatorVisual(locator, "circle-of-fifths-light-1280x900");
+  });
 });
 

@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { prepareVisualPage, expectFullPageVisual } from "./visual-helpers";
+import { prepareVisualPage, expectFullPageVisual, loadVisualState } from "./visual-helpers";
 
 test.describe("App Mobile Visual", () => {
   test("app-mobile-portrait-390x844", async ({ page }) => {
@@ -14,6 +14,16 @@ test.describe("App Mobile Visual", () => {
     
     // Captures full-page snapshot with version badge masked
     await expectFullPageVisual(page, "app-mobile-portrait-390x844");
+  });
+
+  test("app-mobile-light-portrait-390x844", async ({ page }) => {
+    await loadVisualState(page, { theme: "light" }, { width: 390, height: 844 });
+    
+    // Assert app container is visible
+    await expect(page.getByTestId("app-container")).toBeVisible();
+    
+    // Captures full-page snapshot with version badge masked
+    await expectFullPageVisual(page, "app-mobile-light-portrait-390x844");
   });
 
   test("app-mobile-landscape-667x375", async ({ page }) => {

@@ -537,6 +537,42 @@ describe("App", () => {
     });
   });
 
+  describe("Theme behavior", () => {
+    it("applies modern-dark theme by default", () => {
+      render(<App />);
+      expect(document.documentElement.getAttribute("data-theme")).toBe(
+        "modern-dark",
+      );
+    });
+
+    it("applies modern-light theme when light is selected", async () => {
+      localStorage.setItem(k("theme"), "light");
+      render(<App />);
+      expect(document.documentElement.getAttribute("data-theme")).toBe(
+        "modern-light",
+      );
+    });
+
+    it("updates theme when changed in settings", async () => {
+      render(<App />);
+      
+      fireEvent.click(screen.getByLabelText("Open settings"));
+      
+      await waitFor(() => {
+        expect(screen.getByText("Settings")).toBeInTheDocument();
+      });
+
+      const lightButton = screen.getByRole("button", { name: /light/i });
+      fireEvent.click(lightButton);
+
+      await waitFor(() => {
+        expect(document.documentElement.getAttribute("data-theme")).toBe(
+          "modern-light",
+        );
+      });
+    });
+  });
+
   describe("Chord overlay", () => {
     it("can set chord type", async () => {
       render(<App />);

@@ -11,6 +11,7 @@ export interface VisualState {
   linkChordRoot?: boolean;
   chordFretSpread?: number;
   practiceLens?: string;
+  theme?: "light" | "dark" | "system";
   [key: string]: string | number | boolean | undefined;
 }
 
