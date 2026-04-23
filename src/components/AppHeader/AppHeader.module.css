@@ -132,7 +132,7 @@
 }
 
 :global([data-theme="modern-light"]) .app-header-brand-subtitle {
-  color: rgb(107 114 128);
+  color: #4b5563; /* Slightly darker than previous rgb(107 114 128) */
 }
 
 @media (max-width: 879px) {

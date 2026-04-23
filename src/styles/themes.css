@@ -8,29 +8,29 @@
   color-scheme: light;
 
   /* Primitive Colors — Light blue-gray spectrum */
-  --bg-color: #f1f5f9;
+  --bg-color: #f8fafc;
   --surface-base: #ffffff;
-  --surface-raised: #e2e8f0;
-  --surface-highlight: #cbd5e1;
+  --surface-raised: #f1f5f9;
+  --surface-highlight: #e2e8f0;
   --text-main: #0f172a;
-  --text-muted: #475569;
+  --text-muted: #334155;
   --text-on-highlight: #0f172a;
   --text-on-accent: #ffffff;
-  --text-soft-white: #334155;
+  --text-soft-white: #1e293b;
 
   /* Semantic Colors */
-  --chrome-bg: #f8fafc;
+  --chrome-bg: #f1f5f9;
   --chrome-border: #cbd5e1;
   --surface-card: #ffffff;
-  --surface-card-border: rgba(0, 0, 0, 0.1);
-  --surface-card-header-border: rgba(0, 0, 0, 0.08);
+  --surface-card-border: rgba(15, 23, 42, 0.08);
+  --surface-card-header-border: rgba(15, 23, 42, 0.06);
 
   /* Focus ring — reduced glow for light backgrounds */
-  --focus-ring-glow: 0 0 0 3px rgba(0, 102, 204, 0.2);
+  --focus-ring-glow: 0 0 0 3px rgba(0, 102, 204, 0.15);
 
   /* Accent colors adjusted for light backgrounds */
   --accent-primary: #0066cc;
-  --accent-glow: rgba(0, 102, 204, 0.08);
+  --accent-glow: rgba(0, 102, 204, 0.06);
 
   /* Neon colors — slightly muted for light mode */
   --neon-cyan: #0891b2;
@@ -44,33 +44,36 @@
   --neon-brand-gradient: linear-gradient(90deg, #0891b2 0%, #7c3aed 50%, #0891b2 100%);
 
   /* Glow effects — reduced opacity for light mode */
-  --glow-cyan-sm: 0 0 4px rgb(8 145 178 / 0.3);
-  --glow-cyan-md: 0 0 8px rgb(8 145 178 / 0.4);
-  --glow-cyan-lg: 0 0 16px rgb(8 145 178 / 0.35);
-  --glow-orange-sm: 0 0 4px rgb(234 88 12 / 0.35);
-  --glow-orange-md: 0 0 8px rgb(234 88 12 / 0.45);
-  --glow-orange-lg: 0 0 16px rgb(234 88 12 / 0.4);
-  --glow-violet-sm: 0 0 4px rgb(124 58 237 / 0.4);
-  --glow-violet-border: rgb(124 58 237 / 0.6);
+  --glow-cyan-sm: 0 0 4px rgb(8 145 178 / 0.25);
+  --glow-cyan-md: 0 0 8px rgb(8 145 178 / 0.3);
+  --glow-cyan-lg: 0 0 16px rgb(8 145 178 / 0.25);
+  --glow-orange-sm: 0 0 4px rgb(234 88 12 / 0.3);
+  --glow-orange-md: 0 0 8px rgb(234 88 12 / 0.35);
+  --glow-orange-lg: 0 0 16px rgb(234 88 12 / 0.3);
+  --glow-violet-sm: 0 0 4px rgb(124 58 237 / 0.3);
+  --glow-violet-border: rgb(124 58 237 / 0.5);
 
   /* Glow filters — reduced intensity */
-  --glow-filter-cyan: drop-shadow(0 0 4px rgb(8 145 178 / 0.45));
-  --glow-filter-orange: drop-shadow(0 0 4px rgb(234 88 12 / 0.45));
+  --glow-filter-cyan: drop-shadow(0 0 4px rgb(8 145 178 / 0.35));
+  --glow-filter-orange: drop-shadow(0 0 4px rgb(234 88 12 / 0.35));
 
   /* Token surface colors — inverted for light */
-  --token-border-subtle: rgba(0, 0, 0, 0.08);
-  --token-border-subtler: rgba(0, 0, 0, 0.06);
-  --token-border-faint: rgba(0, 0, 0, 0.12);
-  --token-surface-dim: rgba(0, 0, 0, 0.04);
+  --token-border-subtle: rgba(15, 23, 42, 0.08);
+  --token-border-subtler: rgba(15, 23, 42, 0.06);
+  --token-border-faint: rgba(15, 23, 42, 0.1);
+  --token-surface-dim: rgba(15, 23, 42, 0.03);
 
   /* Chip backgrounds — adjusted for light surfaces */
-  --token-chip-active-bg: rgba(0, 102, 204, 0.1);
-  --token-chip-tonic-bg: rgba(234, 88, 12, 0.1);
+  --token-chip-active-bg: rgba(0, 102, 204, 0.05);
+  --token-chip-tonic-bg: rgba(234, 88, 12, 0.06);
 
-  /* Elevation shadows — lighter, more subtle */
-  --elevation-card: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --elevation-overlay: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --elevation-float: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  /* Elevation shadows — lighter, more subtle but defined */
+  --elevation-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.03);
+  --elevation-overlay: 0 12px 24px -4px rgba(0, 0, 0, 0.1), 0 8px 16px -4px rgba(0, 0, 0, 0.05);
+  --elevation-float: 0 4px 8px -2px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+
+  /* Disabled state — more visible than dark mode's 0.3 */
+  --disabled-opacity: 0.45;
 
   /* Fretboard wood — lighter appearance */
   --fretboard-wood: #d4c5b5;
@@ -98,18 +101,18 @@
 
   /* Note colors — adjusted for light backgrounds */
   --note-blue: #7c3aed;
-  --note-blue-glow: rgba(124, 58, 237, 0.35);
+  --note-blue-glow: rgba(124, 58, 237, 0.3);
 
   /* Shadows for notes */
-  --shadow-note-root: 0 0 6px rgba(234, 88, 12, 0.3);
-  --shadow-note-active: 0 0 5px rgba(0, 102, 204, 0.25);
-  --shadow-ping-start: rgba(0, 102, 204, 0.4);
+  --shadow-note-root: 0 0 6px rgba(234, 88, 12, 0.25);
+  --shadow-note-active: 0 0 5px rgba(0, 102, 204, 0.2);
+  --shadow-ping-start: rgba(0, 102, 204, 0.3);
   --shadow-ping-end: rgba(0, 102, 204, 0);
 
   /* Selection and chord accents */
   --selection-accent: #0066cc;
   --selection-accent-fg: #0066cc;
-  --selection-accent-bg: rgba(0, 102, 204, 0.08);
+  --selection-accent-bg: rgba(0, 102, 204, 0.06);
   --chord-accent: #ea580c;
   --chord-accent-fg: #ffffff;
 
@@ -117,7 +120,7 @@
   --chrome-fg: var(--text-main);
   --chrome-fg-muted: var(--text-muted);
   --chrome-hover-bg: var(--surface-raised);
-  --chrome-scrim: rgba(0, 0, 0, 0.3);
+  --chrome-scrim: rgba(248, 250, 252, 0.8);
 
   /* Panel surface */
   --panel-surface-bg: var(--surface-base);
@@ -158,23 +161,23 @@
   --bg-app-gradient-mid: #f1f5f9;
   --bg-app-gradient-end: #e2e8f0;
   --bg-app-accent-glow: radial-gradient(ellipse at 50% 0%, rgb(8 145 178 / 0.04), transparent 60%);
-  --bg-app-accent-glow-1: rgb(8 145 178 / 0.06);
-  --bg-app-accent-glow-2: rgb(124 58 237 / 0.05);
-  --bg-app-accent-glow-3: rgb(8 145 178 / 0.08);
+  --bg-app-accent-glow-1: rgb(8 145 178 / 0.05);
+  --bg-app-accent-glow-2: rgb(124 58 237 / 0.04);
+  --bg-app-accent-glow-3: rgb(8 145 178 / 0.06);
 
   /* Chord strip tokens */
   --chord-strip-fill: #ffffff;
-  --chord-chip-glow-orange: 0 0 4px rgb(234 88 12 / 0.45);
-  --chord-chip-glow-cyan: 0 0 4px rgb(8 145 178 / 0.45);
+  --chord-chip-glow-orange: 0 0 4px rgb(234 88 12 / 0.35);
+  --chord-chip-glow-cyan: 0 0 4px rgb(8 145 178 / 0.35);
 
   /* Practice bar tokens */
   --practice-bar-fill: #ffffff;
   --practice-pill-amber-strong: rgb(234 88 12);
   --practice-pill-amber-soft: rgb(234 88 12 / 0.55);
-  --practice-pill-amber-bg-strong: rgb(234 88 12 / 0.18);
-  --practice-pill-amber-bg-soft: rgb(234 88 12 / 0.08);
+  --practice-pill-amber-bg-strong: rgb(234 88 12 / 0.15);
+  --practice-pill-amber-bg-soft: rgb(234 88 12 / 0.06);
   --practice-pill-tension-border: rgb(234 88 12);
-  --practice-pill-guide-blue-bg: rgb(37 99 235 / 0.15);
+  --practice-pill-guide-blue-bg: rgb(37 99 235 / 0.12);
 
   /* Surface card base */
   --token-surface-card-base: rgb(255 255 255);
@@ -186,3 +189,4 @@
   --selected-chord-bg: var(--chord-accent);
   --selected-chord-fg: var(--chord-accent-fg);
 }
+
