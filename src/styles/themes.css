@@ -7,75 +7,75 @@
 [data-theme="modern-light"] {
   color-scheme: light;
 
-  /* Primitive Colors — Light blue-gray spectrum */
+  /* Primitive Colors — Pale cool blue-gray spectrum */
   --bg-color: #f8fafc;
   --surface-base: #ffffff;
   --surface-raised: #f1f5f9;
   --surface-highlight: #e2e8f0;
   --text-main: #0f172a;
-  --text-muted: #334155;
+  --text-muted: #475569;
   --text-on-highlight: #0f172a;
   --text-on-accent: #ffffff;
   --text-soft-white: #1e293b;
 
   /* Semantic Colors */
-  --chrome-bg: #f1f5f9;
-  --chrome-border: #cbd5e1;
+  --chrome-bg: #f8fafc;
+  --chrome-border: #e2e8f0;
   --surface-card: #ffffff;
-  --surface-card-border: rgba(15, 23, 42, 0.08);
-  --surface-card-header-border: rgba(15, 23, 42, 0.06);
+  --surface-card-border: #e2e8f0;
+  --surface-card-header-border: #f1f5f9;
 
-  /* Focus ring — reduced glow for light backgrounds */
-  --focus-ring-glow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+  /* Focus ring — restrained for light backgrounds */
+  --focus-ring-glow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 
-  /* Accent colors adjusted for light backgrounds */
-  --accent-primary: #0066cc;
-  --accent-glow: rgba(0, 102, 204, 0.06);
+  /* Accent colors — solid professional blue */
+  --accent-primary: #2563eb;
+  --accent-glow: rgba(37, 99, 235, 0.04);
 
-  /* Neon colors — slightly muted for light mode */
+  /* Neon colors — significantly restrained for a professional look */
   --neon-cyan: #0891b2;
-  --neon-cyan-bright: #06b6d4;
-  --neon-cyan-dim: #0e7490;
+  --neon-cyan-bright: #0e7490;
+  --neon-cyan-dim: #155e75;
   --neon-orange: #ea580c;
-  --neon-orange-bright: #f97316;
-  --neon-orange-dim: #c2410c;
+  --neon-orange-bright: #c2410c;
+  --neon-orange-dim: #9a3412;
   --neon-violet: #7c3aed;
   --neon-violet-dim: #6d28d9;
-  --neon-brand-gradient: linear-gradient(90deg, #0891b2 0%, #7c3aed 50%, #0891b2 100%);
+  --neon-brand-gradient: linear-gradient(90deg, #0891b2 0%, #2563eb 100%);
 
-  /* Glow effects — reduced opacity for light mode */
-  --glow-cyan-sm: 0 0 4px rgb(8 145 178 / 0.25);
-  --glow-cyan-md: 0 0 8px rgb(8 145 178 / 0.3);
-  --glow-cyan-lg: 0 0 16px rgb(8 145 178 / 0.25);
-  --glow-orange-sm: 0 0 4px rgb(234 88 12 / 0.3);
-  --glow-orange-md: 0 0 8px rgb(234 88 12 / 0.35);
-  --glow-orange-lg: 0 0 16px rgb(234 88 12 / 0.3);
-  --glow-violet-sm: 0 0 4px rgb(124 58 237 / 0.3);
-  --glow-violet-border: rgb(124 58 237 / 0.5);
+  /* Glow effects — minimal to none in modern-light */
+  --glow-cyan-sm: 0 1px 2px rgba(8, 145, 178, 0.1);
+  --glow-cyan-md: none;
+  --glow-cyan-lg: none;
+  --glow-orange-sm: 0 1px 2px rgba(234, 88, 12, 0.1);
+  --glow-orange-md: none;
+  --glow-orange-lg: none;
+  --glow-violet-sm: none;
+  --glow-violet-border: transparent;
 
-  /* Glow filters — reduced intensity */
-  --glow-filter-cyan: drop-shadow(0 0 4px rgb(8 145 178 / 0.35));
-  --glow-filter-orange: drop-shadow(0 0 4px rgb(234 88 12 / 0.35));
+  /* Glow filters — removed for light mode */
+  --glow-filter-cyan: none;
+  --glow-filter-orange: none;
 
-  /* Token surface colors — inverted for light */
-  --token-border-subtle: rgba(15, 23, 42, 0.08);
-  --token-border-subtler: rgba(15, 23, 42, 0.06);
-  --token-border-faint: rgba(15, 23, 42, 0.1);
-  --token-surface-dim: rgba(15, 23, 42, 0.03);
+  /* Token surface colors */
+  --token-border-subtle: #e2e8f0;
+  --token-border-subtler: #f1f5f9;
+  --token-border-faint: #f8fafc;
+  --token-surface-dim: #f8fafc;
 
-  /* Chip backgrounds — adjusted for light surfaces */
-  --token-chip-active-bg: rgba(0, 102, 204, 0.05);
-  --token-chip-tonic-bg: rgba(234, 88, 12, 0.06);
+  /* Chip backgrounds — using solid accents for active states */
+  --token-chip-active-bg: #2563eb;
+  --token-chip-tonic-bg: #ea580c;
 
-  /* Elevation shadows — lighter, more subtle but defined */
-  --elevation-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.03);
-  --elevation-overlay: 0 12px 24px -4px rgba(0, 0, 0, 0.1), 0 8px 16px -4px rgba(0, 0, 0, 0.05);
-  --elevation-float: 0 4px 8px -2px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  /* Elevation shadows — softer, smaller, professional */
+  --elevation-card: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --elevation-overlay: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --elevation-float: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
 
-  /* Disabled state — more visible than dark mode's 0.3 */
-  --disabled-opacity: 0.45;
+  /* Disabled state — clearly inactive */
+  --disabled-opacity: 0.4;
 
-  /* Fretboard wood — realistic and dark even in light mode */
+  /* Fretboard wood — realistic and dark */
   --fretboard-wood-top: #1a1410;
   --fretboard-wood-bottom: #0f0a08;
   --fretboard-wood-grain: rgb(255 255 255 / 0.03);
@@ -87,7 +87,7 @@
   --fret-nut-wire: #9ca3af;
   --fretboard-border: #2a2420;
 
-  /* String colors — consistent across themes for realism */
+  /* String colors */
   --string-color: #94a3b8;
   --string-wire: #cbd5e1;
   --string-wire-bass: #94a3b8;
@@ -97,29 +97,29 @@
   --inlay-dot-12: rgb(255 255 255 / 0.22);
   --nut: #d4c5b5;
   --fretboard-edge-shadow: 0 0 20px rgb(0 0 0 / 0.5) inset;
-  --fretboard-glow-opacity: 0.35;
+  --fretboard-glow-opacity: 0.2;
 
-  /* Note colors — adjusted for light backgrounds */
-  --note-blue: #7c3aed;
-  --note-blue-glow: rgba(124, 58, 237, 0.2);
+  /* Note colors */
+  --note-blue: #2563eb;
+  --note-blue-glow: transparent;
 
-  /* Shadows for notes — tighter for light theme */
-  --shadow-note-root: 0 0 4px rgba(234, 88, 12, 0.3);
-  --shadow-note-active: 0 0 4px rgba(8, 145, 178, 0.25);
-  --shadow-ping-start: rgba(8, 145, 178, 0.25);
-  --shadow-ping-end: rgba(8, 145, 178, 0);
+  /* Shadows for notes — removed glow */
+  --shadow-note-root: none;
+  --shadow-note-active: none;
+  --shadow-ping-start: rgba(37, 99, 235, 0.2);
+  --shadow-ping-end: rgba(37, 99, 235, 0);
 
-  /* Selection and chord accents */
-  --selection-accent: #0066cc;
-  --selection-accent-fg: #0066cc;
-  --selection-accent-bg: rgba(0, 102, 204, 0.06);
+  /* Selection and chord accents — solid blue active */
+  --selection-accent: #2563eb;
+  --selection-accent-fg: #ffffff;
+  --selection-accent-bg: #2563eb;
   --chord-accent: #ea580c;
   --chord-accent-fg: #ffffff;
 
-  /* Semantic tokens derived from primitives */
+  /* Semantic tokens */
   --chrome-fg: var(--text-main);
   --chrome-fg-muted: var(--text-muted);
-  --chrome-hover-bg: var(--surface-raised);
+  --chrome-hover-bg: #f1f5f9;
   --chrome-scrim: rgba(248, 250, 252, 0.8);
 
   /* Panel surface */
@@ -127,66 +127,66 @@
   --panel-surface-border: 1px solid var(--surface-highlight);
 
   /* Note semantic tokens */
-  --note-ring: var(--neon-cyan);
-  --note-ring-tonic: var(--neon-orange);
-  --note-ring-dim: var(--neon-cyan-dim);
-  --note-ring-color-tone: var(--neon-violet);
-  --note-text-in-scale: var(--neon-cyan);
-  --note-text-tonic: var(--neon-orange);
+  --note-ring: #0891b2;
+  --note-ring-tonic: #ea580c;
+  --note-ring-dim: #155e75;
+  --note-ring-color-tone: #7c3aed;
+  --note-text-in-scale: #0891b2;
+  --note-text-tonic: #ea580c;
   --note-glow: none;
   --note-glow-tonic: none;
 
-  /* Brand text */
-  --text-brand: var(--neon-cyan-bright);
-  --text-brand-gradient: var(--neon-brand-gradient);
-  --brand-icon-glow: var(--glow-filter-cyan);
+  /* Brand text — solid, no glow */
+  --text-brand: #0891b2;
+  --text-brand-gradient: none;
+  --brand-icon-glow: none;
 
   /* Header surface */
   --header-surface: var(--surface-base);
   --header-border: var(--token-border-subtle);
 
-  /* Chip tokens */
-  --chip-surface-inactive: var(--token-surface-dim);
-  --chip-surface-active: var(--token-chip-active-bg);
-  --chip-surface-tonic: var(--token-chip-tonic-bg);
-  --chip-border-inactive: var(--token-border-faint);
-  --chip-border-active: var(--neon-cyan);
-  --chip-border-tonic: var(--neon-orange);
-  --chip-text-inactive: var(--text-muted);
-  --chip-text-active: var(--neon-cyan-bright);
-  --chip-text-tonic: var(--neon-orange-bright);
+  /* Chip tokens — solid active states */
+  --chip-surface-inactive: #f1f5f9;
+  --chip-surface-active: #2563eb;
+  --chip-surface-tonic: #ea580c;
+  --chip-border-inactive: #e2e8f0;
+  --chip-border-active: #1d4ed8;
+  --chip-border-tonic: #c2410c;
+  --chip-text-inactive: #64748b;
+  --chip-text-active: #ffffff;
+  --chip-text-tonic: #ffffff;
 
-  /* App background tokens */
+  /* App background tokens — very subtle or removed accent glows */
   --bg-app-gradient-start: #f8fafc;
-  --bg-app-gradient-mid: #f1f5f9;
-  --bg-app-gradient-end: #e2e8f0;
-  --bg-app-accent-glow: radial-gradient(ellipse at 50% 0%, rgb(8 145 178 / 0.04), transparent 60%);
-  --bg-app-accent-glow-1: rgb(8 145 178 / 0.05);
-  --bg-app-accent-glow-2: rgb(124 58 237 / 0.04);
-  --bg-app-accent-glow-3: rgb(8 145 178 / 0.06);
+  --bg-app-gradient-mid: #f8fafc;
+  --bg-app-gradient-end: #f1f5f9;
+  --bg-app-accent-glow: none;
+  --bg-app-accent-glow-1: transparent;
+  --bg-app-accent-glow-2: transparent;
+  --bg-app-accent-glow-3: transparent;
 
   /* Chord strip tokens */
   --chord-strip-fill: #ffffff;
-  --chord-chip-glow-orange: 0 0 4px rgb(234 88 12 / 0.35);
-  --chord-chip-glow-cyan: 0 0 4px rgb(8 145 178 / 0.35);
+  --chord-chip-glow-orange: none;
+  --chord-chip-glow-cyan: none;
 
   /* Practice bar tokens */
   --practice-bar-fill: #ffffff;
-  --practice-pill-amber-strong: rgb(234 88 12);
-  --practice-pill-amber-soft: rgb(234 88 12 / 0.55);
-  --practice-pill-amber-bg-strong: rgb(234 88 12 / 0.15);
-  --practice-pill-amber-bg-soft: rgb(234 88 12 / 0.06);
-  --practice-pill-tension-border: rgb(234 88 12);
-  --practice-pill-guide-blue-bg: rgb(37 99 235 / 0.12);
+  --practice-pill-amber-strong: #ea580c;
+  --practice-pill-amber-soft: #f97316;
+  --practice-pill-amber-bg-strong: #fff7ed;
+  --practice-pill-amber-bg-soft: #fff7ed;
+  --practice-pill-tension-border: #fed7aa;
+  --practice-pill-guide-blue-bg: #eff6ff;
 
   /* Surface card base */
-  --token-surface-card-base: rgb(255 255 255);
+  --token-surface-card-base: #ffffff;
 
-  /* Selected state tokens */
-  --selected-bg: var(--selection-accent-bg);
-  --selected-fg: var(--accent-primary);
-  --selected-border: var(--selection-accent);
-  --selected-chord-bg: var(--chord-accent);
-  --selected-chord-fg: var(--chord-accent-fg);
+  /* Selected state tokens — Solid Blue */
+  --selected-bg: #2563eb;
+  --selected-fg: #ffffff;
+  --selected-border: #1d4ed8;
+  --selected-chord-bg: #ea580c;
+  --selected-chord-fg: #ffffff;
 }
 

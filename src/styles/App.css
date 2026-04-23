@@ -72,11 +72,3 @@
     gap: 0.8rem;
   }
 }
-
-.app-container[data-layout-tier="tablet"] {
-  gap: 0.72rem;
-}
-
-.app-container[data-layout-tier="desktop"] {
-  max-width: 120rem;
-}
