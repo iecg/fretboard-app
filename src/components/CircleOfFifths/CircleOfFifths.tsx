@@ -201,19 +201,19 @@ export const CircleOfFifths = memo(function CircleOfFifths({
           const degreeStr = degreeMap[chromaticInterval] ?? "";
 
           const noteTone = isActive
-            ? "var(--neon-orange-bright)"
+            ? "var(--cof-note-active)"
             : degreeStr
-              ? "var(--neon-cyan-bright)"
-              : "var(--cof-text-muted)";
+              ? "var(--cof-note-scale)"
+              : "var(--cof-note-muted)";
           const enharmonicTone = isActive
-            ? "color-mix(in srgb, var(--neon-orange-bright), white 30%)"
+            ? "var(--cof-enharmonic-active)"
             : degreeStr
-              ? "color-mix(in srgb, var(--neon-cyan-bright), white 30%)"
+              ? "var(--cof-enharmonic-scale)"
               : "var(--cof-enharmonic-muted)";
           const degreeTone = isActive
-            ? "var(--neon-orange)"
+            ? "var(--cof-degree-active)"
             : degreeStr
-              ? "var(--neon-cyan)"
+              ? "var(--cof-degree-scale)"
               : "var(--cof-degree-muted)";
 
           const { primary, enharmonic } = getCircleNoteLabels(
@@ -325,7 +325,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
           y={CY - SIZE * 0.04}
           textAnchor="middle"
           dominantBaseline="middle"
-          fill="var(--neon-orange-bright)"
+          fill="var(--cof-center-note)"
           fontSize={Math.max(16, SIZE * 0.058)}
           fontWeight="bold"
           fontFamily="var(--font-display)"
@@ -341,7 +341,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
           y={CY + SIZE * 0.04}
           textAnchor="middle"
           dominantBaseline="middle"
-          fill="var(--neon-cyan-bright)"
+          fill="var(--cof-center-signature)"
           fontSize={Math.max(16, SIZE * 0.064)}
           fontWeight="bold"
           fontFamily="var(--font-display)"

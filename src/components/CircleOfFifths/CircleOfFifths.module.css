@@ -7,6 +7,19 @@
   --cof-enharmonic-muted: color-mix(in srgb, var(--text-muted) 80%, transparent);
   --cof-degree-muted: color-mix(in srgb, var(--text-muted) 70%, transparent);
 
+  /* Note tones — default/dark defaults */
+  --cof-note-active: var(--neon-orange-bright);
+  --cof-note-scale: var(--neon-cyan-bright);
+  --cof-note-muted: var(--text-muted);
+  --cof-enharmonic-active: color-mix(in srgb, var(--neon-orange-bright), white 30%);
+  --cof-enharmonic-scale: color-mix(in srgb, var(--neon-cyan-bright), white 30%);
+  --cof-degree-active: var(--neon-orange);
+  --cof-degree-scale: var(--neon-cyan);
+
+  /* Center labels */
+  --cof-center-note: var(--neon-orange-bright);
+  --cof-center-signature: var(--neon-cyan-bright);
+
   container-type: inline-size;
   flex: 1 1 auto;
   display: flex;
@@ -29,6 +42,25 @@
   --cof-text-muted: rgb(184 197 212 / 0.74);
   --cof-enharmonic-muted: rgb(171 183 197 / 0.74);
   --cof-degree-muted: rgb(165 176 188 / 0.56);
+}
+
+:global([data-theme="modern-light"]) .circle-fifths-container {
+  --cof-center-start: var(--surface-base);
+  --cof-center-end: var(--bg-color);
+  --cof-inner-stroke: var(--surface-highlight);
+  --cof-text-stroke: transparent;
+
+  /* Readable dark labels for light mode */
+  --cof-note-active: var(--neon-orange-dim);
+  --cof-note-scale: var(--neon-cyan-dim);
+  --cof-note-muted: var(--text-muted);
+  --cof-enharmonic-active: color-mix(in srgb, var(--neon-orange-dim) 75%, transparent);
+  --cof-enharmonic-scale: color-mix(in srgb, var(--neon-cyan-dim) 75%, transparent);
+  --cof-degree-active: var(--neon-orange-dim);
+  --cof-degree-scale: var(--neon-cyan-dim);
+
+  --cof-center-note: var(--neon-orange-dim);
+  --cof-center-signature: var(--neon-cyan-dim);
 }
 
 .circle-fifths-svg {
@@ -55,6 +87,11 @@
   stroke: rgb(255 255 255 / 0.08) !important;
 }
 
+:global([data-theme="modern-light"]) .circle-slice {
+  fill: var(--surface-base);
+  stroke: var(--surface-highlight) !important;
+}
+
 .circle-slice:hover {
   fill: var(--surface-raised);
   filter: var(--glow-filter-cyan);
@@ -65,12 +102,21 @@
   filter: drop-shadow(0 0 6px rgb(77 228 255 / 0.18));
 }
 
+:global([data-theme="modern-light"]) .circle-slice:hover {
+  fill: var(--bg-color);
+  filter: none;
+}
+
 .circle-slice.circle-slice--scale {
   fill: color-mix(in srgb, var(--neon-cyan) 12%, var(--surface-base));
 }
 
 :global([data-theme="modern-dark"]) .circle-slice.circle-slice--scale {
   fill: color-mix(in srgb, var(--neon-cyan) 8%, rgb(27 33 44 / 1));
+}
+
+:global([data-theme="modern-light"]) .circle-slice.circle-slice--scale {
+  fill: color-mix(in srgb, var(--neon-cyan) 10%, var(--surface-base));
 }
 
 .circle-slice.circle-slice--muted {
@@ -81,6 +127,11 @@
 :global([data-theme="modern-dark"]) .circle-slice.circle-slice--muted {
   fill: rgb(24 29 39 / 0.94);
   opacity: 1;
+}
+
+:global([data-theme="modern-light"]) .circle-slice.circle-slice--muted {
+  fill: var(--surface-raised);
+  opacity: 0.6;
 }
 
 .circle-slice.active {
@@ -95,12 +146,22 @@
   filter: drop-shadow(0 0 7px rgb(255 154 77 / 0.35));
 }
 
+:global([data-theme="modern-light"]) .circle-slice.active {
+  fill: color-mix(in srgb, var(--neon-orange) 18%, var(--surface-base));
+  stroke: var(--neon-orange) !important;
+  filter: none;
+}
+
 .circle-slice.active:hover {
   fill: color-mix(in srgb, var(--neon-orange) 24%, var(--surface-base));
 }
 
 :global([data-theme="modern-dark"]) .circle-slice.active:hover {
   fill: color-mix(in srgb, var(--neon-orange) 24%, rgb(36 36 44 / 1));
+}
+
+:global([data-theme="modern-light"]) .circle-slice.active:hover {
+  fill: color-mix(in srgb, var(--neon-orange) 22%, var(--surface-base));
 }
 
 .circle-slice:focus,
@@ -114,6 +175,11 @@
   stroke: var(--neon-cyan-bright) !important;
   filter: var(--glow-filter-cyan);
   pointer-events: none;
+}
+
+:global([data-theme="modern-light"]) .circle-slice-focus-ring {
+  stroke: var(--accent-primary) !important;
+  filter: none;
 }
 
 .circle-note-label,
