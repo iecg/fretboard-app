@@ -56,8 +56,8 @@ export const FretboardNoteLayer = memo(({
                   style={{
                     fill: "none",
                     stroke: isTension
-                      ? "rgb(255 154 77 / 0.45)"
-                      : "rgb(255 154 77 / 0.22)",
+                      ? "var(--neon-orange-dim)"
+                      : "color-mix(in srgb, var(--neon-orange) 22%, transparent)",
                     strokeWidth: isTension ? 1.8 : 1.5,
                     strokeDasharray: isTension ? "6 3" : undefined,
                     paintOrder: "stroke",

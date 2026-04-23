@@ -82,7 +82,7 @@ export const FretboardBackground = memo(({
         />
         <line
           x1={0} y1={yLeft} x2={neckWidthPx} y2={yRight}
-          stroke={isBass ? "#c6ccd2" : "#e4e8ee"}
+          stroke={isBass ? "var(--string-wire-bass, #c6ccd2)" : "var(--string-wire, #e4e8ee)"}
           style={{ strokeWidth: `var(--string-taper-${stringIndex + 1})` }}
           strokeLinecap="round"
           className={clsx(styles["fretboard-string"], `fretboard-string-${stringIndex + 1}`)}
@@ -108,7 +108,7 @@ export const FretboardBackground = memo(({
       <g clipPath={svgDefUrl("fretboard-taper")}>
         {woodStack}
         {startFret === 0 && (
-          <rect x={0} y={0} width={Math.max(0, nutRightX - NUT_WIDTH)} height={neckHeight} fill="#07050a" />
+          <rect x={0} y={0} width={Math.max(0, nutRightX - NUT_WIDTH)} height={neckHeight} fill="var(--fretboard-headstock-bg)" />
         )}
         {startFret === 0 && (
           <g>
@@ -117,7 +117,7 @@ export const FretboardBackground = memo(({
             <line x1={nutLeftX} y1={neckHeight - 0.5} x2={nutRightX} y2={neckHeight - 0.5} stroke="rgb(0 0 0 / 0.5)" strokeWidth={1} />
             <line x1={nutRightX - 0.5} y1={0} x2={nutRightX - 0.5} y2={neckHeight} stroke="rgb(0 0 0 / 0.55)" strokeWidth={0.6} />
             {tuning.map((_, i) => (
-              <rect key={`nut-slot-${i}`} x={nutRightX - 2} y={stringYAt(i, nutRightX) - 0.9} width={2.4} height={1.8} rx={0.9} fill="rgb(12 8 4 / 0.55)" />
+              <rect key={`nut-slot-${i}`} x={nutRightX - 2} y={stringYAt(i, nutRightX) - 0.9} width={2.4} height={1.8} rx={0.9} fill="var(--fretboard-nut-slot-color)" />
             ))}
           </g>
         )}
@@ -125,8 +125,8 @@ export const FretboardBackground = memo(({
         {inlays}
         {strings}
       </g>
-      <path d={`M 0 ${taperYLeft} L ${neckWidthPx} 0`} stroke="rgb(218 182 138 / 0.22)" strokeWidth={0.9} fill="none" />
-      <path d={`M 0 ${neckHeight - taperYLeft} L ${neckWidthPx} ${neckHeight}`} stroke="rgb(0 0 0 / 0.75)" strokeWidth={1} fill="none" />
+      <path d={`M 0 ${taperYLeft} L ${neckWidthPx} 0`} stroke="var(--fretboard-top-edge-color)" strokeWidth={0.9} fill="none" />
+      <path d={`M 0 ${neckHeight - taperYLeft} L ${neckWidthPx} ${neckHeight}`} stroke="var(--fretboard-bottom-edge-color)" strokeWidth={1} fill="none" />
     </>
   );
 });

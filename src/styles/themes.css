@@ -75,44 +75,57 @@
   /* Disabled state — clearly inactive */
   --disabled-opacity: 0.4;
 
-  /* Fretboard wood — realistic and dark */
-  --fretboard-wood-top: #1a1410;
-  --fretboard-wood-bottom: #0f0a08;
-  --fretboard-wood-grain: rgb(255 255 255 / 0.03);
-  --fret-wire: #9ca3af;
-  --fret-wire-dark: #4b5563;
-  --fret-wire-highlight: rgb(255 255 255 / 0.15);
-  --fret-marker: rgba(255, 255, 255, 0.12);
-  --fret-nut-bg: #d4c5b5;
-  --fret-nut-wire: #9ca3af;
-  --fretboard-border: #2a2420;
+  /* Fretboard wood — warm maple */
+  --fretboard-wood-top: #f5e6c8;
+  --fretboard-wood-mid: #ebd5b0;
+  --fretboard-wood-bottom: #dec395;
+  --fretboard-wood-grain: rgba(90, 60, 40, 0.08);
+  --fret-wire: #334155;
+  --fret-wire-dark: #1e293b;
+  --fret-wire-medium: #475569;
+  --fret-wire-bright: #94a3b8;
+  --fret-wire-highlight: rgba(255, 255, 255, 0.2);
+  --fret-marker: rgba(0, 0, 0, 0.08);
+  --fret-nut-bg: #f8f4e8;
+  --fret-nut-wire: #475569;
+  --fretboard-border: #8b5e3c;
 
-  /* String colors */
-  --string-color: #94a3b8;
-  --string-wire: #cbd5e1;
-  --string-wire-bass: #94a3b8;
+  /* String colors — charcoal slate */
+  --string-color: #334155;
+  --string-wire: #475569;
+  --string-wire-bass: #334155;
 
   /* Inlays */
-  --inlay-dot: rgb(255 255 255 / 0.15);
-  --inlay-dot-12: rgb(255 255 255 / 0.22);
-  --nut: #d4c5b5;
-  --fretboard-edge-shadow: 0 0 20px rgb(0 0 0 / 0.5) inset;
-  --fretboard-glow-opacity: 0.2;
+  --inlay-dot: rgba(0, 0, 0, 0.1);
+  --inlay-dot-12: rgba(0, 0, 0, 0.15);
+  --inlay-pearl-stop1: #475569;
+  --inlay-pearl-stop2: #334155;
+  --inlay-pearl-stop3: #1e293b;
+  --inlay-pearl-opacity1: 0.25;
+  --inlay-pearl-opacity2: 0.2;
+  --inlay-pearl-opacity3: 0.15;
+  --nut: #f8f4e8;
+  --fretboard-edge-shadow: inset 0 0 15px rgba(0, 0, 0, 0.1);
+  --fretboard-top-edge-color: rgba(255, 255, 255, 0.4);
+  --fretboard-bottom-edge-color: rgba(0, 0, 0, 0.15);
+  --fretboard-nut-slot-color: rgba(0, 0, 0, 0.2);
+  --fretboard-headstock-bg: var(--bg-color);
+  --fretboard-glow-opacity: 0;
 
-  /* Note colors */
-  --note-blue: #2563eb;
+  /* Note colors — solid deep blue and orange */
+  --note-blue: #1d4ed8;
   --note-blue-glow: transparent;
 
   /* Shadows for notes — removed glow */
   --shadow-note-root: none;
   --shadow-note-active: none;
-  --shadow-ping-start: rgba(37, 99, 235, 0.2);
-  --shadow-ping-end: rgba(37, 99, 235, 0);
+  --shadow-ping-start: rgba(29, 78, 216, 0.2);
+  --shadow-ping-end: rgba(29, 78, 216, 0);
 
   /* Selection and chord accents — solid blue active */
-  --selection-accent: #2563eb;
+  --selection-accent: #1d4ed8;
   --selection-accent-fg: #ffffff;
-  --selection-accent-bg: #2563eb;
+  --selection-accent-bg: #1d4ed8;
   --chord-accent: #ea580c;
   --chord-accent-fg: #ffffff;
 
@@ -127,17 +140,17 @@
   --panel-surface-border: 1px solid var(--surface-highlight);
 
   /* Note semantic tokens */
-  --note-ring: #0891b2;
+  --note-ring: #1d4ed8;
   --note-ring-tonic: #ea580c;
-  --note-ring-dim: #155e75;
+  --note-ring-dim: #1e3a8a;
   --note-ring-color-tone: #7c3aed;
-  --note-text-in-scale: #0891b2;
+  --note-text-in-scale: #1d4ed8;
   --note-text-tonic: #ea580c;
   --note-glow: none;
   --note-glow-tonic: none;
 
   /* Brand text — solid, no glow */
-  --text-brand: #0891b2;
+  --text-brand: #1d4ed8;
   --text-brand-gradient: none;
   --brand-icon-glow: none;
 
@@ -147,10 +160,10 @@
 
   /* Chip tokens — solid active states */
   --chip-surface-inactive: #f1f5f9;
-  --chip-surface-active: #2563eb;
+  --chip-surface-active: #1d4ed8;
   --chip-surface-tonic: #ea580c;
   --chip-border-inactive: #e2e8f0;
-  --chip-border-active: #1d4ed8;
+  --chip-border-active: #1e3a8a;
   --chip-border-tonic: #c2410c;
   --chip-text-inactive: #64748b;
   --chip-text-active: #ffffff;
@@ -183,9 +196,9 @@
   --token-surface-card-base: #ffffff;
 
   /* Selected state tokens — Solid Blue */
-  --selected-bg: #2563eb;
+  --selected-bg: #1d4ed8;
   --selected-fg: #ffffff;
-  --selected-border: #1d4ed8;
+  --selected-border: #1e3a8a;
   --selected-chord-bg: #ea580c;
   --selected-chord-fg: #ffffff;
 }

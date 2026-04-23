@@ -117,10 +117,13 @@
 
 :root {
   --fretboard-wood-top: #160d07;
+  --fretboard-wood-mid: #0d0805;
   --fretboard-wood-bottom: #080403;
   --fretboard-wood-grain: rgb(255 255 255 / 0.02);
   --fret-wire-v2: #9aa0a6;
   --fret-wire-dark: #4a5058;
+  --fret-wire-medium: #a6afbc;
+  --fret-wire-bright: #ebeff5;
   --fret-wire-highlight: rgb(255 255 255 / 0.25);
   --string-wire: #c8c8c8;
   --string-wire-bass: #b0a080;
@@ -132,8 +135,18 @@
   --string-taper-6: 3px;
   --inlay-dot: rgb(210 210 210 / 0.18);
   --inlay-dot-12: rgb(210 210 210 / 0.28);
+  --inlay-pearl-stop1: rgb(250 247 232);
+  --inlay-pearl-stop2: rgb(218 209 182);
+  --inlay-pearl-stop3: rgb(156 144 118);
+  --inlay-pearl-opacity1: 0.98;
+  --inlay-pearl-opacity2: 0.88;
+  --inlay-pearl-opacity3: 0.75;
   --nut: #e0d4a8;
   --fretboard-edge-shadow: 0 0 16px rgb(0 0 0 / 0.45) inset;
+  --fretboard-top-edge-color: rgb(218 182 138 / 0.22);
+  --fretboard-bottom-edge-color: rgb(0 0 0 / 0.75);
+  --fretboard-nut-slot-color: rgb(12 8 4 / 0.55);
+  --fretboard-headstock-bg: #07050a;
   --fretboard-glow-opacity: 0.65;
 }
 

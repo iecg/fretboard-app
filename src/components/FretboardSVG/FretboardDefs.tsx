@@ -17,7 +17,7 @@ export const FretboardDefs = memo(({
     <defs>
       <linearGradient id={svgDefId("fretboard-wood")} x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%" stopColor="var(--fretboard-wood-top)" />
-        <stop offset="55%" stopColor="#0d0805" />
+        <stop offset="55%" stopColor="var(--fretboard-wood-mid)" />
         <stop offset="100%" stopColor="var(--fretboard-wood-bottom)" />
       </linearGradient>
       <linearGradient
@@ -125,27 +125,27 @@ export const FretboardDefs = memo(({
         id={svgDefId("fret-wire-cylinder")}
         x1="0" y1="0" x2="1" y2="0"
       >
-        <stop offset="0%" stopColor="#3e444c" />
-        <stop offset="25%" stopColor="#a6afbc" />
-        <stop offset="50%" stopColor="#ebeff5" />
-        <stop offset="75%" stopColor="#a6afbc" />
-        <stop offset="100%" stopColor="#3e444c" />
+        <stop offset="0%" stopColor="var(--fret-wire-dark)" />
+        <stop offset="25%" stopColor="var(--fret-wire-medium)" />
+        <stop offset="50%" stopColor="var(--fret-wire-bright)" />
+        <stop offset="75%" stopColor="var(--fret-wire-medium)" />
+        <stop offset="100%" stopColor="var(--fret-wire-dark)" />
       </linearGradient>
       <radialGradient id={svgDefId("inlay-pearl")} cx="35%" cy="32%" r="75%">
         <stop
           offset="0%"
-          stopColor="rgb(250 247 232)"
-          stopOpacity="0.98"
+          stopColor="var(--inlay-pearl-stop1)"
+          stopOpacity="var(--inlay-pearl-opacity1)"
         />
         <stop
           offset="55%"
-          stopColor="rgb(218 209 182)"
-          stopOpacity="0.88"
+          stopColor="var(--inlay-pearl-stop2)"
+          stopOpacity="var(--inlay-pearl-opacity2)"
         />
         <stop
           offset="100%"
-          stopColor="rgb(156 144 118)"
-          stopOpacity="0.75"
+          stopColor="var(--inlay-pearl-stop3)"
+          stopOpacity="var(--inlay-pearl-opacity3)"
         />
       </radialGradient>
       <filter
