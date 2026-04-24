@@ -333,7 +333,7 @@
 }
 
 .icon-button :global(.icon-active) {
-  color: var(--interactive-primary);
+  color: var(--surface-control-fg);
 }
 
 /* Large variant: header action buttons */

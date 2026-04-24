@@ -32,25 +32,21 @@
   gap: 0;
   border: 1px solid var(--chrome-border);
   border-radius: var(--radius-lg);
-  background: var(--surface-control);
+  background-color: var(--surface-control);
+  background-image: var(--surface-control-bg-image);
   overflow: hidden;
-}
-
-:global([data-theme="modern-dark"]) .theory-browser-main {
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.035), rgb(255 255 255 / 0.018)),
-    rgb(12 16 24 / 0.95);
 }
 
 .theory-browser-selector {
   display: flex;
   align-items: stretch;
   min-width: 0;
-  transition: background-color var(--transition-fast) ease;
+  transition: var(--transition-surface);
 }
 
-:global([data-theme="modern-light"]) .theory-browser-selector:hover {
-  background: var(--surface-hover);
+.theory-browser-selector:hover {
+  background-color: var(--surface-control-hover-bg);
+  background-image: var(--surface-control-hover-bg-image);
 }
 
 .theory-browser-selector > div,
@@ -101,7 +97,7 @@
   background: transparent;
   color: var(--chrome-fg);
   cursor: pointer;
-  transition: background-color var(--transition-fast) ease, color var(--transition-fast) ease;
+  transition: var(--transition-surface);
   flex-shrink: 0;
 }
 
@@ -111,11 +107,8 @@
 }
 
 .theory-nav-btn:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--neon-cyan) 15%, transparent);
-}
-
-:global([data-theme="modern-light"]) .theory-nav-btn:hover:not(:disabled) {
-  background: var(--surface-hover);
+  background-color: var(--surface-control-hover-bg);
+  background-image: var(--surface-control-hover-bg-image);
 }
 
 .theory-nav-btn:active:not(:disabled) {
