@@ -14,15 +14,6 @@
   --accent-secondary: #ff9f0a;
   --accent-glow: rgba(10, 132, 255, 0.15);
 
-  /* Interaction — Selection & Persistent States */
-  --selected-bg: rgba(59, 130, 246, 0.18);
-  --selected-fg: #eff6ff;
-  --selected-border: #3b82f6;
-
-  --selected-chord-bg: #ff9f0a;
-  --selected-chord-fg: #ffffff;
-  --selected-chord-border: #ff9f0a;
-
   /* Note colors (note-blue refers to the musical "blue note") */
   --note-blue: #9333ea;
   --note-blue-glow: rgba(147, 51, 234, 0.5);

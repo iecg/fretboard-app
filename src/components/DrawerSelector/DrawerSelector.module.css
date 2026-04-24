@@ -141,7 +141,10 @@
 
 .drawer-option.active {
   background: var(--selected-bg);
+  background-image: var(--selected-bg-image);
   color: var(--selected-fg);
+  border: 1px solid var(--selected-border);
+  box-shadow: var(--selected-shadow);
   font-weight: 500;
 }
 

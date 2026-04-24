@@ -24,6 +24,7 @@
   --surface-card: #ffffff;
   --surface-card-border: #e2e8f0;
   --surface-card-header-border: #f1f5f9;
+  --surface-overlay: #ffffff;
 
   /* Focus ring — restrained for light backgrounds */
   --focus-ring-glow: 0 0 0 3px rgba(37, 99, 235, 0.15);
@@ -125,12 +126,14 @@
   --shadow-ping-end: rgba(29, 78, 216, 0);
 
   /* Interaction — Selection & Persistent States */
-  --selected-bg: #1d4ed8;
+  --selected-bg: #2563eb;
   --selected-fg: #ffffff;
-  --selected-border: #1e3a8a;
+  --selected-border: #1e40af;
+  --selected-bg-image: none;
+  --selected-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
   --selected-chord-bg: #ea580c;
   --selected-chord-fg: #ffffff;
   --selected-chord-border: #c2410c;
-  --selected-highlight: rgb(255 255 255 / 0.15);
+  --selected-highlight: rgb(255 255 255 / 0.15); /* Backward compatibility alias */
 }
 

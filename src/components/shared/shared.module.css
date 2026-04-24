@@ -124,7 +124,7 @@
   background: var(--selected-bg);
   background-image: var(--selected-bg-image);
   color: var(--selected-fg);
-  border: none;
+  border: 1px solid var(--selected-border);
   box-shadow: var(--selected-shadow);
 }
 
@@ -252,18 +252,6 @@
   color: var(--selected-fg);
   border-color: var(--selected-border);
   box-shadow: var(--selected-shadow);
-}
-
-:global([data-theme="modern-dark"]) .note-btn.active {
-  background:
-    radial-gradient(circle at 50% 20%, rgb(77 228 255 / 0.24), transparent 65%),
-    linear-gradient(180deg, rgb(77 228 255 / 0.18), rgb(77 228 255 / 0.08));
-  color: rgb(243, 251, 255);
-  border-color: rgb(77 228 255 / 0.45);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.14),
-    0 0 0 1px rgb(77 228 255 / 0.16),
-    0 0 8px rgb(77 228 255 / 0.12);
 }
 
 /* ===== Desktop: tighter interactive controls ===== */

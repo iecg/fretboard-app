@@ -6,30 +6,38 @@
 */
 
 :root {
-  /* Semantic Selection Roles */
-  --selected-highlight: rgb(255 255 255 / 0.1);
+  /* Semantic Selection Roles — Standard recipe for active/selected controls */
+  --selected-bg: var(--accent-primary);
   --selected-bg-image: none;
+  --selected-border: transparent;
+  --selected-fg: var(--text-on-accent);
   --selected-shadow: none;
+  --selected-highlight: transparent; /* Backward compatibility alias */
 
-  /* Surface Roles */
-  --surface-control: var(--chrome-bg);
-  --surface-control-fg: var(--chrome-fg);
-  --surface-control-fg-muted: var(--chrome-fg-muted);
-  --surface-control-border: var(--chrome-border);
+  /* Surface Roles — Rationalized container types */
+  --surface-chrome: var(--chrome-bg);
+  --surface-chrome-fg: var(--chrome-fg);
+  --surface-chrome-fg-muted: var(--chrome-fg-muted);
+  --surface-chrome-border: var(--chrome-border);
+
+  --surface-control: var(--surface-chrome);
+  --surface-control-fg: var(--surface-chrome-fg);
+  --surface-control-fg-muted: var(--surface-chrome-fg-muted);
+  --surface-control-border: var(--surface-chrome-border);
 
   --surface-panel: var(--panel-surface-bg);
   --surface-panel-border: var(--panel-surface-border);
 
   --surface-overlay: color-mix(in srgb, var(--token-surface-card-base) 96%, transparent);
-  --surface-overlay-border: var(--surface-card-border);
-
-  --surface-muted: var(--token-surface-dim);
-  --surface-hover: var(--chrome-hover-bg);
-  --surface-hover-border: var(--chrome-hover-border);
+  --surface-overlay-border: var(--chrome-border);
 
   --surface-card: var(--surface-overlay);
   --surface-card-border: rgb(255 255 255 / 0.1);
   --surface-card-header-border: var(--token-border-subtler);
+
+  --surface-muted: var(--token-surface-dim);
+  --surface-hover: var(--chrome-hover-bg);
+  --surface-hover-border: var(--chrome-hover-border);
 
   --chrome-bg: color-mix(in srgb, var(--bg-color) 84%, var(--surface-raised) 16%);
   --chrome-fg: var(--text-main);
@@ -107,16 +115,15 @@
 
 [data-theme="modern-dark"] {
   --selected-bg: rgb(18 31 43 / 0.95);
-  --selected-bg-image: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--neon-cyan) 22%, transparent),
-    color-mix(in srgb, var(--neon-cyan) 8%, transparent)
-  );
-  --selected-border: color-mix(in srgb, var(--neon-cyan) 32%, transparent);
+  --selected-bg-image: radial-gradient(circle at 50% 20%, rgb(77 228 255 / 0.24), transparent 65%),
+    linear-gradient(180deg, color-mix(in srgb, var(--neon-cyan) 22%, transparent), color-mix(in srgb, var(--neon-cyan) 8%, transparent));
+  --selected-fg: rgb(243, 251, 255);
+  --selected-border: color-mix(in srgb, var(--neon-cyan) 45%, transparent);
   --selected-shadow: 
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 0 0 1px color-mix(in srgb, var(--neon-cyan) 12%, transparent),
-    0 0 8px color-mix(in srgb, var(--neon-cyan) 16%, transparent);
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 0 0 1px color-mix(in srgb, var(--neon-cyan) 16%, transparent),
+    0 0 8px color-mix(in srgb, var(--neon-cyan) 12%, transparent);
+  --selected-highlight: rgb(255 255 255 / 0.1); /* Backward compatibility alias */
   
   --chrome-hover-border: color-mix(in srgb, var(--neon-cyan) 48%, transparent);
   --chrome-hover-bg: color-mix(in srgb, var(--neon-cyan) 12%, transparent);
