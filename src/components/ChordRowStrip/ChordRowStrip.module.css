@@ -60,15 +60,11 @@
   width: var(--chord-chip-size);
   height: var(--chord-chip-size);
   border-radius: 50%;
-  background: var(--chord-strip-fill);
-  border: var(--chord-chip-border-width) solid var(--token-border-subtle);
+  background: var(--strip-fill);
+  border: var(--chord-chip-border-width) solid var(--chip-border-inactive);
   opacity: 0.6;
   padding: 0;
   transition: var(--transition-surface);
-}
-
-:global([data-theme="modern-dark"]) .chord-row-chip {
-  border-color: rgb(255 255 255 / 0.22);
 }
 
 .chord-row-item[data-role="chord-root"] .chord-row-chip {
@@ -143,12 +139,8 @@
   width: 0.7rem;
   height: 0.7rem;
   border-radius: 50%;
-  border: 1.5px solid var(--token-border-subtle);
+  border: 1.5px solid var(--chip-border-inactive);
   flex-shrink: 0;
-}
-
-:global([data-theme="modern-dark"]) .chord-row-legend-swatch {
-  border: 1.5px solid rgb(255 255 255 / 0.22);
 }
 
 .chord-row-legend-item[data-role="chord-root"] .chord-row-legend-swatch {
