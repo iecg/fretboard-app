@@ -14,6 +14,7 @@ const mockSynth = vi.hoisted(() => ({
   playNote: vi.fn(),
   setMute: vi.fn(),
   init: vi.fn(),
+  resume: vi.fn(),
 }));
 
 vi.mock("./core/audio", () => ({

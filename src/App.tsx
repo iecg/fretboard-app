@@ -61,6 +61,21 @@ function AppContent() {
     synth.setMute(isMuted);
   }, [isMuted]);
 
+  // Safari/iOS robustness: resume AudioContext on first interaction
+  useEffect(() => {
+    const handleGesture = () => {
+      void synth.resume();
+      window.removeEventListener("click", handleGesture);
+      window.removeEventListener("touchstart", handleGesture);
+    };
+    window.addEventListener("click", handleGesture);
+    window.addEventListener("touchstart", handleGesture);
+    return () => {
+      window.removeEventListener("click", handleGesture);
+      window.removeEventListener("touchstart", handleGesture);
+    };
+  }, []);
+
   const versionBadge = <VersionBadge />;
 
   return (

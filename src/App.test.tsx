@@ -83,6 +83,7 @@ vi.mock("./core/audio", () => ({
     setMute: vi.fn(),
     init: vi.fn(),
     playNote: vi.fn(),
+    resume: vi.fn(),
   },
 }));
 
