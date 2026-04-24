@@ -15,6 +15,12 @@
   box-shadow: var(--strip-shadow);
   align-items: center;
   text-align: center;
+
+  /* Role language tokens — aligned across summary surfaces */
+  --role-cyan-border: var(--neon-cyan);
+  --role-orange-border: var(--neon-orange);
+  --role-orange-bg: color-mix(in srgb, var(--neon-orange) 10%, transparent);
+  --role-orange-bg-strong: color-mix(in srgb, var(--neon-orange) 22%, transparent);
 }
 
 .chord-row-strip-header {
@@ -58,35 +64,33 @@
   border: var(--chord-chip-border-width) solid var(--token-border-subtle);
   opacity: 0.6;
   padding: 0;
+  transition: var(--transition-surface);
 }
 
 :global([data-theme="modern-dark"]) .chord-row-chip {
   border-color: rgb(255 255 255 / 0.22);
 }
 
-:global([data-theme="modern-light"]) .chord-row-chip {
-  border-color: rgba(15, 23, 42, 0.12);
-}
-
 .chord-row-item[data-role="chord-root"] .chord-row-chip {
-  background: color-mix(in srgb, var(--neon-orange) 22%, transparent);
-  border-color: var(--neon-orange);
+  background: var(--role-orange-bg-strong);
+  border-color: var(--role-orange-border);
   border-width: calc(var(--chord-chip-border-width) + 1px);
-  box-shadow: var(--chord-chip-glow-orange), 0 0 0 3px color-mix(in srgb, var(--neon-orange) 14%, transparent);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--role-orange-border) 65%, transparent), 
+              0 0 0 3px color-mix(in srgb, var(--role-orange-border) 14%, transparent);
   opacity: 1;
 }
 
 .chord-row-item[data-role="chord-tone-in-scale"] .chord-row-chip {
-  background: color-mix(in srgb, var(--neon-orange) 10%, transparent);
-  border-color: var(--neon-orange);
-  box-shadow: var(--chord-chip-glow-orange);
+  background: var(--role-orange-bg);
+  border-color: var(--role-orange-border);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--role-orange-border) 65%, transparent);
   opacity: 1;
 }
 
 .chord-row-item[data-role="chord-tone-outside-scale"] .chord-row-chip {
-  background: color-mix(in srgb, var(--neon-orange) 30%, transparent);
-  border-color: color-mix(in srgb, var(--neon-orange) 85%, transparent);
-  box-shadow: var(--chord-chip-glow-orange);
+  background: color-mix(in srgb, var(--role-orange-border) 30%, transparent);
+  border-color: color-mix(in srgb, var(--role-orange-border) 85%, transparent);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--role-orange-border) 65%, transparent);
   border-style: dashed;
   opacity: 1;
 }
@@ -129,10 +133,6 @@
   border-top: 1px solid rgb(255 255 255 / 0.06);
 }
 
-:global([data-theme="modern-light"]) .chord-row-legend {
-  border-top: 1px solid rgba(15, 23, 42, 0.06);
-}
-
 .chord-row-legend-item {
   display: flex;
   align-items: center;
@@ -151,30 +151,27 @@
   border: 1.5px solid rgb(255 255 255 / 0.22);
 }
 
-:global([data-theme="modern-light"]) .chord-row-legend-swatch {
-  border: 1.5px solid rgba(15, 23, 42, 0.15);
-}
-
 .chord-row-legend-item[data-role="chord-root"] .chord-row-legend-swatch {
-  border-color: var(--neon-orange);
-  box-shadow: 0 0 4px color-mix(in srgb, var(--neon-orange) 50%, transparent);
+  border-color: var(--role-orange-border);
+  box-shadow: 0 0 4px color-mix(in srgb, var(--role-orange-border) 50%, transparent);
 }
 
 .chord-row-legend-item[data-role="chord-tone-in-scale"] .chord-row-legend-swatch {
-  border-color: var(--chip-border-active);
-  box-shadow: 0 0 4px color-mix(in srgb, var(--neon-cyan) 40%, transparent);
+  border-color: var(--role-orange-border);
+  box-shadow: 0 0 4px color-mix(in srgb, var(--role-orange-border) 40%, transparent);
 }
 
 .chord-row-legend-item[data-role="chord-tone-outside-scale"] .chord-row-legend-swatch {
-  border-color: color-mix(in srgb, var(--neon-orange) 80%, transparent);
+  border-color: color-mix(in srgb, var(--role-orange-border) 80%, transparent);
   border-style: dashed;
-  box-shadow: 0 0 4px color-mix(in srgb, var(--neon-orange) 35%, transparent);
+  box-shadow: 0 0 4px color-mix(in srgb, var(--role-orange-border) 35%, transparent);
 }
 
 .chord-row-legend-item[data-role="scale-only"] .chord-row-legend-swatch {
-  border-color: var(--neon-cyan);
+  border-color: var(--role-cyan-border);
   opacity: 0.65;
 }
+
 
 .chord-row-legend-label {
   font-family: var(--font-sans);

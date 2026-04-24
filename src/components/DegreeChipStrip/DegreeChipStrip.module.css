@@ -3,19 +3,19 @@
 
   --chip-size: clamp(2.15rem, 3.4vw, 2.5rem);
   --chip-half: calc(var(--chip-size) / 2);
-  /* Matches FretboardSVG feDropShadow filters. */
-  --chip-glow-cyan:   0 0 6px var(--neon-cyan);
-  --chip-glow-orange: 0 0 6px var(--neon-orange);
-  /* Use drop-shadow for hexagons as box-shadow is clipped by clip-path. */
-  --chip-glow-violet: drop-shadow(0 0 5px rgb(167 139 250 / 0.75));
+
+  /* Role language tokens — aligned across summary surfaces */
+  --role-cyan-border: var(--neon-cyan);
+  --role-orange-border: var(--neon-orange);
+  --role-violet-ring: var(--neon-violet);
+  --role-violet-text: var(--neon-violet);
+
   --chip-border-width: 2px;
   --chip-border-muted: var(--token-border-subtle);
   --chip-line-muted:   var(--token-border-subtler);
   --chip-focus-ring:   var(--accent-primary);
   --chip-hexagon-clip:     polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
-  --color-note-ring-color: var(--note-ring-color-tone);
   --color-note-inner-fill: var(--surface-base);
-  --color-note-text:       var(--neon-violet);
 
   display: flex;
   flex-direction: column;
@@ -131,27 +131,27 @@
 }
 
 .degree-chip-item[data-in-scale='true'] .degree-chip {
-  border-color: var(--chip-border-active);
-  box-shadow: var(--chip-glow-cyan);
+  border-color: var(--role-cyan-border);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--role-cyan-border) 45%, transparent);
   opacity: 1;
 }
 
 .degree-chip-item[data-is-tonic='true'] .degree-chip {
-  border-color: var(--chip-border-tonic);
-  box-shadow: var(--chip-glow-orange);
+  border-color: var(--role-orange-border);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--role-orange-border) 50%, transparent);
   opacity: 1;
 }
 
 /* Apply drop-shadow to item so clip-path doesn't consume the effect. */
 .degree-chip-item[data-is-color-note='true'] {
-  filter: drop-shadow(0 0 5px rgb(167 139 250 / 0.75));
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--role-violet-ring) 75%, transparent));
   will-change: filter;
 }
 
 .degree-chip-item[data-is-color-note='true'] .degree-chip {
   clip-path: var(--chip-hexagon-clip);
   border-color: transparent;
-  background: var(--color-note-ring-color);
+  background: var(--role-violet-ring);
   box-shadow: none;
   opacity: 1;
   position: relative;
@@ -166,7 +166,7 @@
 }
 
 .degree-chip-item[data-is-color-note='true'] .degree-chip-note {
-  color: var(--color-note-text);
+  color: var(--role-violet-text);
   position: relative;
   z-index: 1;
 }
@@ -226,15 +226,12 @@
   --chip-border-muted: rgb(255 255 255 / 0.22);
   --chip-line-muted:   rgb(255 255 255 / 0.18);
   --color-note-inner-fill: rgb(20 30 40 / 0.92);
-  --color-note-text:       #e8d8ff;
 }
 
 :global([data-theme="modern-light"]) .degree-chip-strip {
-  --chip-border-muted: rgba(15, 23, 42, 0.12);
-  --chip-line-muted:   rgba(15, 23, 42, 0.08);
   --color-note-inner-fill: #ffffff;
-  --color-note-text:       var(--neon-violet);
 }
+
 
 /* Compact variant for secondary surfaces. Out-specifies layout-tier rules. */
 .degree-chip-strip.degree-chip-strip--compact {
