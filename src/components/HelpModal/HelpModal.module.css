@@ -42,7 +42,7 @@
   padding: 12px clamp(1rem, 3vw, 1.25rem);
   border-bottom: 1px solid var(--chrome-border);
   flex-shrink: 0;
-  background: color-mix(in srgb, var(--surface-panel) 92%, white 8%);
+  background: var(--surface-float);
 }
 
 .help-modal-header h2 {
