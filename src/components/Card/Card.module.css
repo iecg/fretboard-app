@@ -1,6 +1,6 @@
 /* stylelint-disable selector-pseudo-class-no-unknown */
 .card {
-  background: var(--surface-overlay);
+  background: var(--surface-card-top);
   border: 1px solid var(--surface-card-border);
   border-radius: var(--radius-card);
   /* Inset top-edge gleam for dark mode, elevation shadow for both. */
