@@ -4,7 +4,7 @@ import { themeAtom } from "../../../store/atoms";
 import { ToggleBar } from "../../ToggleBar/ToggleBar";
 import { OverlaySection, OverlayFieldHeader } from "../shared";
 import { THEME_OPTIONS, SETTING_FIELDS } from "../constants";
-import { type HelpFieldId, type ThemeOptionValue } from "../types";
+import { type HelpFieldId } from "../types";
 import styles from "../SettingsOverlay.module.css";
 
 interface AppearanceSettingsSectionProps {
@@ -46,7 +46,7 @@ export function AppearanceSettingsSection({
           <ToggleBar
             options={THEME_OPTIONS}
             value={theme}
-            onChange={(v) => setTheme(v as ThemeOptionValue)}
+            onChange={(v) => setTheme(v as typeof theme)}
           />
         </div>
       </div>

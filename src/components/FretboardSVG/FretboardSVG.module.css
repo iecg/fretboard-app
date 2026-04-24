@@ -6,26 +6,6 @@
   box-shadow: 0 10px 30px rgb(0 0 0 / 0.45);
 }
 
-:global([data-theme="modern-light"]) {
-  --fretboard-board-shadow: rgb(0 0 0 / 0.15);
-  --fretboard-note-text-fill: #ffffff;
-  --fretboard-note-text-stroke: rgba(0, 0, 0, 0.25);
-  --fretboard-note-chord-tone-outside-fill: var(--neon-orange-dim);
-  --fretboard-guide-tones-emphasis-fill: var(--note-ring-tonic);
-  --fretboard-guide-tones-deemphasis-fill: color-mix(in srgb, var(--note-ring-tonic) 15%, #ffffff);
-  --fretboard-guide-tones-deemphasis-stroke: color-mix(in srgb, var(--note-ring-tonic) 40%, transparent);
-  --fretboard-guide-tones-color-tone-fill: color-mix(in srgb, var(--note-ring-color-tone) 15%, #ffffff);
-  --fretboard-guide-tones-color-tone-stroke: color-mix(in srgb, var(--note-ring-color-tone) 40%, transparent);
-  --fretboard-tension-emphasis-fill: var(--note-ring-tonic);
-  --fretboard-tension-deemphasis-fill: color-mix(in srgb, var(--note-ring-tonic) 15%, #ffffff);
-  --fretboard-tension-deemphasis-stroke: color-mix(in srgb, var(--note-ring-tonic) 40%, transparent);
-  --fretboard-tension-chord-tone-fill: color-mix(in srgb, var(--note-ring-tonic) 15%, #ffffff);
-  --fretboard-tension-chord-tone-stroke: color-mix(in srgb, var(--note-ring-tonic) 40%, transparent);
-  --fretboard-tension-color-tone-fill: color-mix(in srgb, var(--note-ring-color-tone) 15%, #ffffff);
-  --fretboard-tension-color-tone-stroke: color-mix(in srgb, var(--note-ring-color-tone) 40%, transparent);
-  --fretboard-fret-number-color: #475569;
-}
-
 :global([data-theme="modern-light"]) .fretboard-board {
   box-shadow: 0 10px 30px var(--fretboard-board-shadow);
 }

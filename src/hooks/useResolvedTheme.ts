@@ -4,21 +4,19 @@ import { themeAtom } from "../store/atoms";
 
 export type ResolvedTheme = "modern-dark" | "modern-light";
 
+const DARK_QUERY = "(prefers-color-scheme: dark)";
+
 export function useResolvedTheme(): ResolvedTheme {
   const userPreference = useAtomValue(themeAtom);
-  const [systemDark, setSystemDark] = useState<boolean>(() => {
-    if (typeof window === "undefined") return true;
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
-  });
+  const [systemDark, setSystemDark] = useState<boolean>(
+    () => window.matchMedia(DARK_QUERY).matches,
+  );
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const mediaQuery = window.matchMedia(DARK_QUERY);
     const handler = (event: MediaQueryListEvent) => {
       setSystemDark(event.matches);
     };
-
     mediaQuery.addEventListener("change", handler);
     return () => mediaQuery.removeEventListener("change", handler);
   }, []);

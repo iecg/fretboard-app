@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from "react";
 import { useSetAtom, useAtomValue, createStore, Provider } from "jotai";
 import clsx from "clsx";
 import { Fretboard } from "./components/Fretboard/Fretboard";
@@ -53,7 +53,7 @@ function AppContent() {
   const layout = useLayoutMode();
   const theme = useResolvedTheme();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
@@ -82,7 +82,6 @@ function AppContent() {
     <MainLayoutWrapper
       layoutTier={layout.tier}
       layoutVariant={layout.variant}
-      theme={theme}
       isChordActive={!!chordType}
       showSummary={layout.showSummary}
       showChordDock={showChordPracticeBar}

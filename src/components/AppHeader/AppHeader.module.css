@@ -94,7 +94,7 @@
 
 :global([data-theme="modern-light"]) .app-header-brand-title-primary {
   -webkit-text-stroke: 0;
-  color: #0891b2;
+  color: var(--neon-cyan);
   text-shadow: none;
 }
 
@@ -107,7 +107,7 @@
 
 :global([data-theme="modern-light"]) .app-header-brand-title-secondary {
   -webkit-text-stroke: 0;
-  color: #ea580c;
+  color: var(--neon-orange);
   text-shadow: none;
 }
 
@@ -130,7 +130,7 @@
 }
 
 :global([data-theme="modern-light"]) .app-header-brand-subtitle {
-  color: #4b5563; /* Slightly darker than previous rgb(107 114 128) */
+  color: var(--text-muted);
 }
 
 @media (max-width: 879px) {

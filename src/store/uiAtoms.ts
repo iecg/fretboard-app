@@ -46,9 +46,11 @@ export const landscapeNarrowTabAtom = atomWithStorage<LandscapeNarrowTab>(
 
 export const settingsOverlayOpenAtom = atom<boolean>(false);
 
-export const themeAtom = atomWithStorage<"light" | "dark" | "system">(
+export type ThemePreference = "light" | "dark" | "system";
+
+export const themeAtom = atomWithStorage<ThemePreference>(
   k("theme"),
   "dark",
-  rawStringStorage<"light" | "dark" | "system">(),
+  rawStringStorage<ThemePreference>(),
   GET_ON_INIT,
 );
