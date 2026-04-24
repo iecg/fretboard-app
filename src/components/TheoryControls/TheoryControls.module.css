@@ -9,14 +9,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
-  background: var(--surface-overlay);
-  border: 1px solid var(--chrome-border);
-  box-shadow: var(--elevation-card);
-}
-
-:global([data-theme="modern-dark"]) .theory-mode-browser:global(.panel-surface) {
-  background: var(--surface-overlay);
-  border: 1px solid var(--chrome-border);
+  background: var(--surface-card-top);
+  border: 1px solid var(--surface-card-border);
   box-shadow: var(--elevation-card);
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
@@ -146,13 +140,7 @@
   padding: 0.9rem 1rem;
   border-radius: var(--radius-xl);
   background: var(--surface-card-nested);
-  border: 1px solid var(--chrome-border);
-}
-
-:global([data-theme="modern-dark"]) .theory-chord-section:global(.panel-surface),
-:global([data-theme="modern-dark"]) .theory-inline-key:global(.panel-surface) {
-  background: var(--surface-overlay);
-  border: 1px solid var(--chrome-border);
+  border: 1px solid var(--surface-card-border);
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 

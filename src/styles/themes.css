@@ -46,7 +46,6 @@
   --surface-card-border:        var(--surface-highlight);  /* was #e2e8f0 */
   --surface-card-header-border: var(--surface-raised);    /* was #f1f5f9 */
   --surface-overlay:            var(--surface-card-top);  /* was #ffffff → card-level near-white */
-  --surface-panel:              var(--surface-card-top);  /* was --surface-base; panels = card-level */
 
   /* Focus ring — restrained for light backgrounds */
   --focus-ring-glow: 0 0 0 3px rgba(8, 145, 178, 0.15);
