@@ -171,8 +171,8 @@ test.describe("Theme Contract", () => {
     // Light mode should NOT have a gradient background
     expect(styles.backgroundImage).toBe('none');
     
-    // Should be the solid blue: #1d4ed8 -> rgb(29, 78, 216)
-    expect(styles.backgroundColor.replace(/\s/g, "")).toBe("rgb(29,78,216)");
+    // Should be the solid blue: #2563eb -> rgb(37, 99, 235)
+    expect(styles.backgroundColor.replace(/\s/g, "")).toBe("rgb(37,99,235)");
   });
 
   test("Circle of Fifths should use light colors in light mode", async ({ page }) => {

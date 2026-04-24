@@ -11,7 +11,8 @@
 .control-button {
   padding: var(--space-1) var(--space-2);
   font-size: var(--text-xs);
-  background: var(--surface-control);
+  background-color: var(--surface-control);
+  background-image: var(--surface-control-bg-image);
   border: 1px solid var(--surface-control-border);
   border-radius: var(--radius-sm);
   color: var(--surface-control-fg-muted);
@@ -21,16 +22,10 @@
 }
 
 .control-button:hover:not(:disabled) {
-  background: var(--surface-hover);
-  color: var(--surface-control-fg);
-  border-color: var(--surface-hover-border);
-}
-
-:global([data-theme="modern-dark"]) .control-button:hover:not(:disabled) {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--neon-cyan) 18%, transparent), color-mix(in srgb, var(--neon-cyan) 8%, transparent)),
-    rgb(18 31 43 / 0.95);
-  border-color: color-mix(in srgb, var(--neon-cyan) 42%, transparent);
+  background-color: var(--surface-control-hover-bg);
+  background-image: var(--surface-control-hover-bg-image);
+  color: var(--surface-control-hover-fg);
+  border-color: var(--surface-control-hover-border);
 }
 
 .control-button:focus-visible {
@@ -82,7 +77,8 @@
 .toggle-group {
   display: flex;
   gap: 0.22rem;
-  background: var(--surface-control);
+  background-color: var(--surface-control);
+  background-image: var(--surface-control-bg-image);
   border: 1px solid var(--surface-control-border);
   border-radius: 1rem;
   padding: 0.25rem;
@@ -189,7 +185,8 @@
   padding: 0;
   font-size: 0.96rem;
   font-weight: 600;
-  background: var(--surface-control);
+  background-color: var(--surface-control);
+  background-image: var(--surface-control-bg-image);
   border: 1px solid var(--surface-control-border);
   border-radius: 0.95rem;
   color: var(--surface-control-fg-muted);
@@ -199,14 +196,6 @@
   justify-content: center;
   text-align: center;
   transition: var(--transition-surface);
-}
-
-:global([data-theme="modern-dark"]) .note-btn {
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.02)),
-    rgb(12 17 25 / 0.88);
-  border: 1px solid rgb(255 255 255 / 0.1);
-  color: rgb(223 232 242 / 0.84);
 }
 
 .note-btn-label {
@@ -219,13 +208,10 @@
 }
 
 .note-btn:hover {
-  color: var(--surface-control-fg);
-  border-color: var(--surface-hover-border);
-}
-
-:global([data-theme="modern-dark"]) .note-btn:hover {
-  color: white;
-  border-color: rgb(77 228 255 / 0.38);
+  background-color: var(--surface-control-hover-bg);
+  background-image: var(--surface-control-hover-bg-image);
+  color: var(--surface-control-hover-fg);
+  border-color: var(--surface-control-hover-border);
 }
 
 .note-btn:active {
@@ -303,7 +289,8 @@
   height: 2.75rem;
   padding: 0;
   border-radius: 999px;
-  background: var(--surface-control);
+  background-color: var(--surface-control);
+  background-image: var(--surface-control-bg-image);
   border: 1px solid var(--surface-control-border);
   box-shadow: var(--elevation-card);
   color: var(--surface-control-fg-muted);
@@ -312,27 +299,12 @@
   flex-shrink: 0;
 }
 
-:global([data-theme="modern-dark"]) .icon-button {
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0.02)),
-    rgb(12 17 25 / 0.82);
-  border: 1px solid rgb(255 255 255 / 0.1);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
-  color: rgb(230 238 247 / 0.86);
-}
-
 .icon-button:hover {
-  background: var(--surface-hover);
-  color: var(--surface-control-fg);
-  border-color: var(--surface-hover-border);
+  background-color: var(--surface-control-hover-bg);
+  background-image: var(--surface-control-hover-bg-image);
+  color: var(--surface-control-hover-fg);
+  border-color: var(--surface-control-hover-border);
   transform: translateY(-1px);
-}
-
-:global([data-theme="modern-dark"]) .icon-button:hover {
-  background:
-    linear-gradient(180deg, rgb(77 228 255 / 0.12), rgb(77 228 255 / 0.03)),
-    rgb(12 17 25 / 0.92);
-  border-color: rgb(77 228 255 / 0.26);
 }
 
 .icon-button:active {

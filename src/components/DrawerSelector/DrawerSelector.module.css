@@ -20,28 +20,25 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
-  background: var(--surface-control);
-  border: 1px solid var(--chrome-border);
+  background-color: var(--surface-control);
+  background-image: var(--surface-control-bg-image);
+  border: 1px solid var(--surface-control-border);
   border-radius: 0.95rem;
   color: var(--chrome-fg);
   cursor: pointer;
   font-size: var(--text-sm);
-  transition: border-color var(--transition-fast);
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
   text-align: left;
 }
 
-:global([data-theme="modern-dark"]) .drawer-trigger {
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.02)),
-    rgb(12 17 25 / 0.88);
-}
-
 .drawer-trigger:hover {
-  border-color: color-mix(in srgb, var(--neon-cyan) 38%, transparent);
+  background-color: var(--surface-control-hover-bg);
+  background-image: var(--surface-control-hover-bg-image);
+  border-color: var(--surface-control-hover-border);
 }
 
 .drawer-trigger.open {
-  border-color: color-mix(in srgb, var(--neon-cyan) 48%, transparent);
+  border-color: var(--surface-control-hover-border);
 }
 
 .drawer-trigger:focus-visible {
