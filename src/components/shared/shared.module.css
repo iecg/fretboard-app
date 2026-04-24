@@ -114,6 +114,7 @@
 .toggle-btn:focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
+  box-shadow: var(--focus-ring-glow);
 }
 
 .toggle-btn.active {
@@ -223,13 +224,14 @@
   outline-offset: var(--focus-ring-offset);
   color: var(--surface-control-fg);
   border-color: var(--surface-hover-border);
+  box-shadow: var(--focus-ring-glow);
 }
 
 :global([data-theme="modern-dark"]) .note-btn:focus-visible {
   outline: none;
   color: white;
   border-color: var(--neon-cyan);
-  box-shadow: 0 0 0 3px rgb(77 228 255 / 0.2);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--neon-cyan) 25%, transparent);
 }
 
 .note-btn.active {
