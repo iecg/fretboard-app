@@ -17,7 +17,7 @@ test.describe("App Layout Visual Regression", () => {
     await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
     await expect(page.getByTestId("app-container")).toHaveAttribute(
       "data-layout-variant",
-      "desktop-split"
+      "desktop-3col"
     );
     await expectFullPageVisual(page, "app-desktop-split-light-1280x900");
   });
