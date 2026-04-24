@@ -28,7 +28,7 @@
   width: 100%;
   max-width: 320px;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
   aspect-ratio: 1;
   max-height: min(320px, 58vh);
   margin: 0 auto;
@@ -99,6 +99,7 @@
 
 :global([data-theme="modern-dark"]) .circle-slice.circle-slice--scale {
   fill: color-mix(in srgb, var(--neon-cyan) 8%, rgb(27 33 44 / 1));
+  filter: drop-shadow(0 0 5px rgb(77 228 255 / 0.12));
 }
 
 :global([data-theme="modern-light"]) .circle-slice.circle-slice--scale {
@@ -128,7 +129,7 @@
 
 :global([data-theme="modern-dark"]) .circle-slice.circle-slice--scale:not(.active):hover {
   fill: color-mix(in srgb, var(--neon-cyan) 15%, rgb(35 42 56 / 1));
-  filter: drop-shadow(0 0 6px rgb(77 228 255 / 0.18));
+  filter: drop-shadow(0 0 8px rgb(77 228 255 / 0.25));
 }
 
 :global([data-theme="modern-light"]) .circle-slice.circle-slice--scale:not(.active):hover {
@@ -159,7 +160,7 @@
 
 :global([data-theme="modern-dark"]) .circle-slice.active {
   fill: color-mix(in srgb, var(--neon-orange) 18%, rgb(32 32 40 / 1));
-  filter: drop-shadow(0 0 7px rgb(255 154 77 / 0.35));
+  filter: drop-shadow(0 0 8px rgb(255 154 77 / 0.42));
 }
 
 :global([data-theme="modern-light"]) .circle-slice.active {

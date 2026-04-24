@@ -68,10 +68,13 @@
 .labeled-select-chevron {
   position: absolute;
   right: 0.95rem;
+  top: 50%;
+  transform: translateY(-50%);
   color: var(--chrome-fg-muted);
   pointer-events: none;
   flex-shrink: 0;
-  font-size: 0.92rem;
+  font-size: 1.15rem;
+  line-height: 1;
 }
 
 /* Visually-hidden label: accessible to screen readers via <label htmlFor>, invisible visually. */

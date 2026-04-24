@@ -65,7 +65,8 @@
 }
 
 .drawer-chevron {
-  font-size: 0.6rem;
+  width: 1.15rem;
+  height: 1.15rem;
   color: var(--text-muted);
   transition: transform var(--transition-fast);
   flex-shrink: 0;

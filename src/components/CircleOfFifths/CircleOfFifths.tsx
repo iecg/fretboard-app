@@ -100,7 +100,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
   return (
     <div className={styles["circle-fifths-container"]} data-testid="circle-of-fifths" data-variant={variant}>
       <svg
-        viewBox={`0 0 ${SIZE} ${SIZE}`}
+        viewBox={`-10 -10 ${SIZE + 20} ${SIZE + 20}`}
         className={styles["circle-fifths-svg"]}
         role="group"
         aria-labelledby="cof-title"
