@@ -464,6 +464,69 @@ test.describe("Theme Contract", () => {
           const focusOutline = await select.evaluate((el) => getComputedStyle(el).outlineStyle);
           expect(focusOutline).toBe("solid");
         });
+
+        test("audio icon should not use accent color when unmuted", async ({ page }) => {
+          const audioBtn = page.getByLabel("Mute audio");
+          await expect(audioBtn).toBeVisible();
+
+          const icon = audioBtn.locator(".icon-active");
+          await expect(icon).toBeVisible();
+
+          const iconColor = await icon.evaluate((el) => getComputedStyle(el).color);
+
+          // Get accent colors to compare
+          const accentColors = await page.evaluate(() => {
+            const cs = getComputedStyle(document.documentElement);
+            return {
+              primary: cs.getPropertyValue("--accent-primary").trim(),
+              interactive: cs.getPropertyValue("--interactive-primary").trim()
+            };
+          });
+
+          // Function to normalize colors for comparison
+          const normalize = (c: string) => {
+            if (c.startsWith("#")) return c.toLowerCase();
+            return c.replace(/\s/g, "").toLowerCase();
+          };
+
+          expect(normalize(iconColor)).not.toBe(normalize(accentColors.primary));
+          expect(normalize(iconColor)).not.toBe(normalize(accentColors.interactive));
+        });
+
+        test("theory browser selector should use shared control hover treatment", async ({ page }) => {
+          const browserSelector = page.locator('[class*="theory-browser-selector"]').first();
+          await expect(browserSelector).toBeVisible();
+
+          const beforeStyles = await browserSelector.evaluate((el) => {
+            const cs = getComputedStyle(el);
+            return {
+              bg: cs.backgroundColor,
+              bgImg: cs.backgroundImage
+            };
+          });
+
+          await browserSelector.hover();
+
+          const afterStyles = await browserSelector.evaluate((el) => {
+            const cs = getComputedStyle(el);
+            return {
+              bg: cs.backgroundColor,
+              bgImg: cs.backgroundImage
+            };
+          });
+
+          expect(afterStyles.bg).not.toBe(beforeStyles.bg);
+
+          if (theme === "dark") {
+            // In dark mode, it should have a gradient hover
+            expect(afterStyles.bgImg).not.toBe("none");
+            expect(afterStyles.bgImg).toContain("gradient");
+          } else {
+            // In light mode, it should be a solid color change
+            // light surface hover: #e2e8f0 -> rgb(226, 232, 240)
+            expect(afterStyles.bg.replace(/\s/g, "")).toBe("rgb(226,232,240)");
+          }
+        });
       });
     }
   });

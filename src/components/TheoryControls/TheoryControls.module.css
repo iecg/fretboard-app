@@ -145,7 +145,7 @@
   flex-direction: column;
   gap: 0.8rem;
   padding: 0.9rem 1rem;
-  border-radius: 1rem;
+  border-radius: var(--radius-xl);
   background: var(--surface-overlay);
   border: 1px solid var(--chrome-border);
 }
@@ -175,7 +175,7 @@
   color: inherit;
   text-align: left;
   cursor: pointer;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   transition: background-color var(--transition-fast) ease, color var(--transition-fast) ease;
 }
 

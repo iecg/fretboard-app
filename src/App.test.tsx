@@ -341,6 +341,19 @@ describe("App", () => {
         });
       }
     });
+
+    it("renders unmuted audio icon with active class", () => {
+      render(<App />);
+      const audioBtn = screen.getByLabelText("Mute audio");
+      expect(audioBtn.querySelector(".icon-active")).toBeTruthy();
+    });
+
+    it("renders muted audio icon with muted class", async () => {
+      localStorage.setItem(k("isMuted"), "true");
+      render(<App />);
+      const audioBtn = await screen.findByLabelText("Unmute audio");
+      expect(audioBtn.querySelector(".icon-muted")).toBeTruthy();
+    });
   });
 
   describe("Reset functionality", () => {
