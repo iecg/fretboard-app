@@ -57,8 +57,8 @@ test.describe("Theme Contract", () => {
     const activeBg = await page.evaluate(() => 
       getComputedStyle(document.documentElement).getPropertyValue("--token-chip-active-bg").trim()
     );
-    // #2563eb
-    expect(activeBg.toLowerCase()).toBe("#2563eb");
+    // #0891b2
+    expect(activeBg.toLowerCase()).toBe("#0891b2");
 
     const tonicBg = await page.evaluate(() => 
       getComputedStyle(document.documentElement).getPropertyValue("--token-chip-tonic-bg").trim()
@@ -67,10 +67,47 @@ test.describe("Theme Contract", () => {
     expect(tonicBg.toLowerCase()).toBe("#ea580c");
   });
 
+  test("light shell vars do not resolve to dark navy defaults", async ({ page }) => {
+    await loadVisualState(page, { theme: "light" });
+    
+    const bgAppStart = await page.evaluate(() => 
+      getComputedStyle(document.documentElement).getPropertyValue("--bg-app-gradient-start").trim()
+    );
+    // modern-light: #f1f5f9
+    expect(bgAppStart.toLowerCase()).toBe("#f1f5f9");
+    
+    const bgAppMid = await page.evaluate(() => 
+      getComputedStyle(document.documentElement).getPropertyValue("--bg-app-gradient-mid").trim()
+    );
+    // modern-light: #f8fafc
+    expect(bgAppMid.toLowerCase()).toBe("#f8fafc");
+  });
+
+  test("practice bar is light-readable in light mode", async ({ page }) => {
+    // Need a chord to show the practice bar. Use the full name from CHORD_DEFINITIONS.
+    await loadVisualState(page, { theme: "light", chordType: "Major 7th" });
+    
+    // The practice bar is an aria-role="group" with "Practice cues" in its label
+    const practiceBar = page.locator('section[aria-label^="Practice cues:"]');
+    await expect(practiceBar).toBeVisible();
+    
+    const styles = await practiceBar.evaluate((el) => {
+      const cs = getComputedStyle(el);
+      return {
+        backgroundColor: cs.backgroundColor,
+        color: cs.color
+      };
+    });
+    
+    // modern-light: --practice-bar-fill: #f1f5f9 -> rgb(241, 245, 249)
+    expect(styles.backgroundColor.replace(/\s/g, "")).toBe("rgb(241,245,249)");
+    // text-main: #0f172a -> rgb(15, 23, 42)
+    expect(styles.color.replace(/\s/g, "")).toBe("rgb(15,23,42)");
+  });
+
   test("BottomTabBar should use theme-appropriate active indicators", async ({ page }) => {
-    // Mobile layout
+    // Mobile layout uses ToggleBar as tabs
     await loadVisualState(page, { theme: "dark" }, { width: 390, height: 844 });
-    // In MobileTabPanel, the ToggleBar with variant="tabs" is used for navigation
     const darkTab = page.getByRole("tab", { name: /Theory/i });
     await expect(darkTab).toBeVisible();
     
@@ -78,13 +115,47 @@ test.describe("Theme Contract", () => {
       const cs = getComputedStyle(el);
       return {
         color: cs.color,
-        background: cs.background,
-        boxShadow: cs.boxShadow
+        bgImg: cs.backgroundImage
       };
     });
+    // modern-dark: --selected-fg: rgb(243, 251, 255)
+    expect(darkStyles.color.replace(/\s/g, "")).toBe("rgb(243,251,255)");
+    // Should use neon-cyan in the gradient: rgb(77, 228, 255)
+    // Handle both rgb(77, 228, 255) and color(srgb 0.301961 0.894118 1) formats
+    expect(darkStyles.bgImg).toMatch(/77,\s*228,\s*255|0\.301961\s+0\.894118\s+1/);
+
+    // Light mode
+    await loadVisualState(page, { theme: "light" }, { width: 390, height: 844 });
+    const lightTab = page.getByRole("tab", { name: /Theory/i });
+    await expect(lightTab).toBeVisible();
+    const lightColor = await lightTab.evaluate((el) => getComputedStyle(el).color);
+    // modern-light: --selected-fg: #ffffff -> rgb(255, 255, 255)
+    expect(lightColor.replace(/\s/g, "")).toBe("rgb(255,255,255)");
+  });
+
+  test("fretboard notes and summary chips have coherent role colors in light mode", async ({ page }) => {
+    await loadVisualState(page, { theme: "light" });
     
-    // In dark mode, the active tab should NOT use the light mode accent blue.
-    expect(darkStyles.color.replace(/\s/g, "")).not.toBe("rgb(37,99,235)");
+    // Check summary chips - use a non-tonic scale note to check scale color
+    const activeChip = page.locator('li[data-in-scale="true"]:not([data-is-tonic="true"]) button').first();
+    await expect(activeChip).toBeVisible();
+    const activeChipBorder = await activeChip.evaluate((el) => getComputedStyle(el).borderColor);
+    // app-cyan: rgb(8, 145, 178)
+    expect(activeChipBorder.replace(/\s/g, "")).toBe("rgb(8,145,178)");
+
+    const tonicChip = page.locator('li[data-is-tonic="true"] button').first();
+    await expect(tonicChip).toBeVisible();
+    const tonicChipBorder = await tonicChip.evaluate((el) => getComputedStyle(el).borderColor);
+    // neon-orange: #ea580c -> rgb(234, 88, 12)
+    expect(tonicChipBorder.replace(/\s/g, "")).toBe("rgb(234,88,12)");
+
+    // Check fretboard notes - they use stroke for the ring. 
+    // The role class is on the g element, so we look for circle inside.
+    const tonicNote = page.locator('g[data-note-role="key-tonic"] circle').first();
+    await expect(tonicNote).toBeVisible();
+    const tonicNoteStroke = await tonicNote.evaluate((el) => getComputedStyle(el).stroke);
+    // --note-ring-tonic: var(--neon-orange) -> rgb(234, 88, 12)
+    expect(tonicNoteStroke.replace(/\s/g, "")).toBe("rgb(234,88,12)");
   });
 
   test("modern-dark should use dark wood tokens", async ({ page }) => {
@@ -161,7 +232,7 @@ test.describe("Theme Contract", () => {
     expect(found).toBe(true);
   });
 
-  test("modern-light active shared controls should remain solid blue", async ({ page }) => {
+  test("modern-light active shared controls should use app cyan", async ({ page }) => {
     await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
     
     // Wait for the controls to be loaded (they are lazy-loaded)
@@ -182,8 +253,8 @@ test.describe("Theme Contract", () => {
     // Light mode should NOT have a gradient background
     expect(styles.backgroundImage).toBe('none');
     
-    // Should be the solid blue: #2563eb -> rgb(37, 99, 235)
-    expect(styles.backgroundColor.replace(/\s/g, "")).toBe("rgb(37,99,235)");
+    // Should be the app cyan: #0891b2 -> rgb(8, 145, 178)
+    expect(styles.backgroundColor.replace(/\s/g, "")).toBe("rgb(8,145,178)");
   });
 
   test("Circle of Fifths should use light colors in light mode", async ({ page }) => {
@@ -201,9 +272,9 @@ test.describe("Theme Contract", () => {
       return resolved;
     });
     
-    // In light mode: should be white or nearly white
-    // Handle both rgb(255, 255, 255) and color(srgb 1 1 1) formats
-    expect(centerStart).toMatch(/255|1 1 1/);
+    // In light mode: should be white or nearly white (#fafbfd)
+    // Handle both rgb(250, 251, 253) and color(srgb 1 1 1) formats
+    expect(centerStart).toMatch(/250|255|1 1 1/);
   });
 
   test("Circle of Fifths should use dark colors in dark mode", async ({ page }) => {
@@ -328,7 +399,7 @@ test.describe("Theme Contract", () => {
 
           if (theme === "light") {
             expect(hoverStyles.color.replace(/\s/g, "")).toBe("rgb(15,23,42)");
-            expect(hoverStyles.borderColor.replace(/\s/g, "")).toBe("rgb(37,99,235)");
+            expect(hoverStyles.borderColor.replace(/\s/g, "")).toBe("rgb(8,145,178)");
           } else {
             expect(hoverStyles.color.replace(/\s/g, "")).toBe("rgb(255,255,255)");
             expect(isCyanLike(hoverStyles.borderColor)).toBe(true);
@@ -464,7 +535,7 @@ test.describe("Theme Contract", () => {
           await select.hover();
           const hoverBorder = await select.evaluate((el) => getComputedStyle(el).borderColor);
           if (theme === "light") {
-            expect(hoverBorder.replace(/\s/g, "")).toBe("rgb(37,99,235)");
+            expect(hoverBorder.replace(/\s/g, "")).toBe("rgb(8,145,178)");
           } else {
             expect(isCyanLike(hoverBorder)).toBe(true);
           }
