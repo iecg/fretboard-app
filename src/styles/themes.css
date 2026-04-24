@@ -9,7 +9,7 @@
 
   /* Primitive Colors — Pale cool blue-gray spectrum */
   --bg-color: #f8fafc;
-  --surface-base: #ffffff;
+  --surface-base: #fafbfd;
   --surface-raised: #f1f5f9;
   --surface-highlight: #e2e8f0;
   --text-main: #0f172a;
@@ -17,6 +17,18 @@
   --text-on-highlight: #0f172a;
   --text-on-accent: #ffffff;
   --text-soft-white: #1e293b;
+
+  /* App Shell — Modern Light */
+  --bg-app-gradient-start: #f1f5f9;
+  --bg-app-gradient-mid: #f8fafc;
+  --bg-app-gradient-end: #f1f5f9;
+  --bg-app-accent-glow: radial-gradient(ellipse at 50% 0%, rgb(8 145 178 / 0.05), transparent 60%);
+  --bg-app-accent-glow-1: rgb(8 145 178 / 0.03);
+  --bg-app-accent-glow-2: rgb(8 145 178 / 0.04);
+  --bg-app-accent-glow-3: rgb(8 145 178 / 0.04);
+
+  --chord-strip-fill: #f1f5f9;
+  --practice-bar-fill: #f1f5f9;
 
   /* Semantic Colors */
   --chrome-bg: #f8fafc;
@@ -27,15 +39,15 @@
   --surface-overlay: #ffffff;
 
   /* Focus ring — restrained for light backgrounds */
-  --focus-ring-glow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  --focus-ring-glow: 0 0 0 3px rgba(8, 145, 178, 0.15);
 
   /* Interaction — Primary theme accent */
-  --accent-primary: #2563eb;
-  --accent-glow: rgba(37, 99, 235, 0.04);
+  --accent-primary: #0891b2;
+  --accent-glow: rgba(8, 145, 178, 0.04);
   
   --interactive-hover: color-mix(in srgb, var(--accent-primary) 90%, black);
   --interactive-active: color-mix(in srgb, var(--accent-primary) 80%, black);
-  --interactive-focus: #2563eb;
+  --interactive-focus: #0891b2;
 
   /* Neon colors — significantly restrained for a professional look */
   --neon-cyan: #0891b2;
@@ -46,7 +58,7 @@
   --neon-orange-dim: #9a3412;
   --neon-violet: #7c3aed;
   --neon-violet-dim: #6d28d9;
-  --neon-brand-gradient: linear-gradient(90deg, #0891b2 0%, #2563eb 100%);
+  --neon-brand-gradient: linear-gradient(90deg, #0891b2 0%, #0e7490 100%);
 
   /* Glow effects — minimal to none in modern-light */
   --glow-cyan-sm: 0 1px 2px rgba(8, 145, 178, 0.1);
@@ -69,7 +81,7 @@
   --token-surface-dim: #f8fafc;
 
   /* Chip backgrounds — using solid accents for active states */
-  --token-chip-active-bg: #2563eb;
+  --token-chip-active-bg: #0891b2;
   --token-chip-tonic-bg: #ea580c;
 
   /* Elevation shadows — softer, smaller, professional */
@@ -116,19 +128,19 @@
   --fretboard-glow-opacity: 0;
 
   /* Note colors — primary and secondary note emphasis */
-  --note-blue: #1d4ed8;
+  --note-blue: #0891b2;
   --note-blue-glow: transparent;
 
   /* Shadows for notes — removed glow */
   --shadow-note-root: none;
   --shadow-note-active: none;
-  --shadow-ping-start: rgba(29, 78, 216, 0.2);
-  --shadow-ping-end: rgba(29, 78, 216, 0);
+  --shadow-ping-start: rgba(8, 145, 178, 0.2);
+  --shadow-ping-end: rgba(8, 145, 178, 0);
 
   /* Interaction — Selection & Persistent States */
-  --selected-bg: #2563eb;
+  --selected-bg: #0891b2;
   --selected-fg: #ffffff;
-  --selected-border: #1e40af;
+  --selected-border: #0e7490;
   --selected-bg-image: none;
   --selected-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
   --selected-chord-bg: #ea580c;

@@ -16,6 +16,22 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet" />
 
+    <script>
+      (function() {
+        try {
+          var theme = localStorage.getItem('fretflow:theme');
+          var supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (!theme || theme === 'system') {
+            theme = supportDarkMode ? 'modern-dark' : 'modern-light';
+          } else {
+            theme = theme === 'light' ? 'modern-light' : 'modern-dark';
+          }
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'modern-light');
+        }
+      })();
+    </script>
     <!-- Open Graph / Facebook / LinkedIn / iMessage -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="FretFlow" />
