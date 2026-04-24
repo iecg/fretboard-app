@@ -44,7 +44,7 @@
 }
 
 .bottom-tab-bar-btn.is-active {
-  color: var(--accent-primary);
+  color: var(--neon-cyan-bright);
 }
 
 :global([data-theme="modern-light"]) .bottom-tab-bar-btn.is-active {
@@ -52,7 +52,7 @@
 }
 
 .bottom-tab-bar-btn.is-active::before {
-  background: var(--accent-primary);
+  background: var(--neon-cyan);
   box-shadow: var(--glow-cyan-sm);
 }
 

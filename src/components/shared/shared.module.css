@@ -239,6 +239,13 @@
   border-color: var(--surface-hover-border);
 }
 
+:global([data-theme="modern-dark"]) .note-btn:focus-visible {
+  outline: none;
+  color: white;
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 0 3px rgb(77 228 255 / 0.2);
+}
+
 .note-btn.active {
   background: var(--selected-bg);
   background-image: var(--selected-bg-image);
@@ -365,7 +372,7 @@
   color: var(--text-muted);
 }
 
-.icon-button :global(.icon-accent) {
+.icon-button :global(.icon-active) {
   color: var(--interactive-primary);
 }
 

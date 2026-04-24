@@ -49,7 +49,7 @@
   transition: background-color var(--transition-fast) ease;
 }
 
-.theory-browser-selector:hover {
+:global([data-theme="modern-light"]) .theory-browser-selector:hover {
   background: var(--surface-hover);
 }
 
@@ -111,6 +111,10 @@
 }
 
 .theory-nav-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--neon-cyan) 15%, transparent);
+}
+
+:global([data-theme="modern-light"]) .theory-nav-btn:hover:not(:disabled) {
   background: var(--surface-hover);
 }
 
@@ -182,14 +186,30 @@
   transition: background-color var(--transition-fast) ease, color var(--transition-fast) ease;
 }
 
+:global([data-theme="modern-dark"]) .theory-disclosure-btn {
+  width: 100%;
+  margin: 0;
+  padding: 0.1rem 0;
+  border-radius: 0;
+}
+
 .theory-disclosure-btn:hover {
   background: var(--surface-hover);
+}
+
+:global([data-theme="modern-dark"]) .theory-disclosure-btn:hover {
+  background: transparent;
 }
 
 .theory-disclosure-btn:focus-visible {
   outline: none;
   background: var(--surface-hover);
   box-shadow: 0 0 0 2px var(--interactive-focus);
+}
+
+:global([data-theme="modern-dark"]) .theory-disclosure-btn:focus-visible {
+  background: transparent;
+  box-shadow: 0 0 0 2px var(--neon-cyan), var(--glow-cyan-sm);
 }
 
 .theory-disclosure-title {
@@ -215,6 +235,10 @@
 }
 
 .theory-disclosure-btn--open .theory-disclosure-summary {
+  color: var(--neon-cyan-bright);
+}
+
+:global([data-theme="modern-light"]) .theory-disclosure-btn--open .theory-disclosure-summary {
   color: var(--interactive-primary);
 }
 
