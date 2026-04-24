@@ -11,8 +11,8 @@
   --role-violet-text: var(--neon-violet);
 
   --chip-border-width: 2px;
-  --chip-border-muted: var(--token-border-subtle);
-  --chip-line-muted:   var(--token-border-subtler);
+  --chip-border-muted: var(--chip-border-inactive);
+  --chip-line-muted:   var(--chip-border-inactive);
   --chip-focus-ring:   var(--accent-primary);
   --chip-hexagon-clip:     polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
   --color-note-inner-fill: var(--surface-base);
