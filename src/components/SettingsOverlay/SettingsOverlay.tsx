@@ -18,6 +18,7 @@ import { OverlaySection } from "./shared";
 import { useHelpPopover } from "./useHelpPopover";
 import { ViewSettingsSection } from "./sections/ViewSettingsSection";
 import { InstrumentSettingsSection } from "./sections/InstrumentSettingsSection";
+import { AppearanceSettingsSection } from "./sections/AppearanceSettingsSection";
 import { NotationSettingsSection } from "./sections/NotationSettingsSection";
 import { ChordLayoutSettingsSection } from "./sections/ChordLayoutSettingsSection";
 import { ResetSettingsSection } from "./sections/ResetSettingsSection";
@@ -129,6 +130,11 @@ function SettingsOverlaySurface({
           <OverlaySection id="instrument" title="Instrument">
             <InstrumentSettingsSection />
           </OverlaySection>
+          <AppearanceSettingsSection
+            activeHelpField={activeHelpField}
+            handleHelpToggle={handleHelpToggle}
+            registerHelpContainer={registerHelpContainer}
+          />
           <NotationSettingsSection
             activeHelpField={activeHelpField}
             handleHelpToggle={handleHelpToggle}

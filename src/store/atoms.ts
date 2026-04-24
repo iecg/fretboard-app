@@ -81,6 +81,7 @@ export {
   tabletTabAtom,
   landscapeNarrowTabAtom,
   settingsOverlayOpenAtom,
+  themeAtom,
   type LandscapeNarrowTab,
 } from "./uiAtoms";
 

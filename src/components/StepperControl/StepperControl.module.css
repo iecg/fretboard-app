@@ -7,10 +7,18 @@
 
 .stepper-btn {
   composes: control-button from '../shared/shared.module.css';
+  min-width: 2.35rem;
+  min-height: 2.35rem;
+  padding: 0.4rem 0.55rem;
+  font-size: 0.88rem;
+  border-radius: 0.8rem;
 }
 
 .stepper-value {
   composes: control-value from '../shared/shared.module.css';
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--chrome-fg);
 }
 
 .stepper-control.mobile .stepper-btn {

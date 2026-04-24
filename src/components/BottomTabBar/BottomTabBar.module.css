@@ -47,9 +47,18 @@
   color: var(--neon-cyan-bright);
 }
 
+:global([data-theme="modern-light"]) .bottom-tab-bar-btn.is-active {
+  color: var(--accent-primary);
+}
+
 .bottom-tab-bar-btn.is-active::before {
   background: var(--neon-cyan);
   box-shadow: var(--glow-cyan-sm);
+}
+
+:global([data-theme="modern-light"]) .bottom-tab-bar-btn.is-active::before {
+  background: var(--accent-primary);
+  box-shadow: none;
 }
 
 .bottom-tab-bar-btn:focus-visible {

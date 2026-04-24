@@ -4,7 +4,7 @@ import { render, screen, fireEvent, act } from "@testing-library/react";
 import { Provider, createStore } from "jotai";
 import SettingsOverlay from "./SettingsOverlay";
 import { synth } from "../../core/audio";
-import { settingsOverlayOpenAtom, fretZoomAtom } from "../../store/atoms";
+import { settingsOverlayOpenAtom, fretZoomAtom, themeAtom } from "../../store/atoms";
 
 // Mock the audio synth singleton — we only care that setMute is called on reset.
 vi.mock("../../core/audio", () => ({
@@ -81,6 +81,7 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(headings).toEqual([
       "View",
       "Instrument",
+      "Appearance",
       "Notation",
       "Chord Layout",
       "Reset",
@@ -96,8 +97,28 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(screen.getByRole("combobox", { name: "Tuning" })).toBeTruthy();
     expect(screen.getByText("Accidentals")).toBeTruthy();
     expect(screen.getByText("Enharmonic Display")).toBeTruthy();
+    expect(screen.getByText("Theme")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /light/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /dark/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /system/i })).toBeTruthy();
     expect(screen.getByText("Chord Spread")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Reset all settings" })).toBeTruthy();
+  });
+
+  it("changes theme when theme buttons are clicked", () => {
+    const { store } = renderOpenOverlay();
+    
+    const lightButton = screen.getByRole("button", { name: /light/i });
+    fireEvent.click(lightButton);
+    expect(store.get(themeAtom)).toBe("light");
+
+    const darkButton = screen.getByRole("button", { name: /dark/i });
+    fireEvent.click(darkButton);
+    expect(store.get(themeAtom)).toBe("dark");
+
+    const systemButton = screen.getByRole("button", { name: /system/i });
+    fireEvent.click(systemButton);
+    expect(store.get(themeAtom)).toBe("system");
   });
 
   it("shows help buttons only for the less-obvious settings", () => {

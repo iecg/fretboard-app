@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from "react";
 import { useSetAtom, useAtomValue, createStore, Provider } from "jotai";
 import clsx from "clsx";
 import { Fretboard } from "./components/Fretboard/Fretboard";
@@ -13,6 +13,7 @@ import {
   showChordPracticeBarAtom,
 } from "./store/atoms";
 import useLayoutMode from "./hooks/useLayoutMode";
+import { useResolvedTheme } from "./hooks/useResolvedTheme";
 import { AppHeader } from "./components/AppHeader/AppHeader";
 import { BrandMark } from "./components/BrandMark/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark";
@@ -50,10 +51,30 @@ function AppContent() {
   const [showHelp, setShowHelp] = useState(false);
   const helpTriggerRef = useRef<HTMLButtonElement>(null);
   const layout = useLayoutMode();
+  const theme = useResolvedTheme();
+
+  useLayoutEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
 
   useEffect(() => {
     synth.setMute(isMuted);
   }, [isMuted]);
+
+  // Safari/iOS robustness: resume AudioContext on first interaction
+  useEffect(() => {
+    const handleGesture = () => {
+      void synth.resume();
+      window.removeEventListener("click", handleGesture);
+      window.removeEventListener("touchstart", handleGesture);
+    };
+    window.addEventListener("click", handleGesture);
+    window.addEventListener("touchstart", handleGesture);
+    return () => {
+      window.removeEventListener("click", handleGesture);
+      window.removeEventListener("touchstart", handleGesture);
+    };
+  }, []);
 
   const versionBadge = <VersionBadge />;
 

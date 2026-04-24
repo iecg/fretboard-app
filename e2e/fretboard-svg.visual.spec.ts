@@ -18,6 +18,18 @@ test.describe("Fretboard SVG Visual Tests", () => {
     await expectLocatorVisual(locator, "fretboard-default-c-major");
   });
 
+  test("light mode C Major", async ({ page }) => {
+    await loadVisualState(page, {
+      rootNote: "C",
+      scaleName: "Major",
+      theme: "light"
+    });
+    
+    const locator = page.getByTestId("fretboard-svg");
+    await locator.scrollIntoViewIfNeeded();
+    await expectLocatorVisual(locator, "fretboard-light-c-major");
+  });
+
   test("C Minor Blues color-note scale", async ({ page }) => {
     await loadVisualState(page, {
       rootNote: "C",

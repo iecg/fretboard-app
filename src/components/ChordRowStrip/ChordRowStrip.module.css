@@ -21,7 +21,7 @@
   font-family: var(--font-sans);
   font-size: clamp(0.88rem, 1.4vw, 1rem);
   font-weight: var(--font-weight-medium);
-  color: var(--text-soft-white);
+  color: var(--text-main);
   line-height: 1.2;
   letter-spacing: 0.01em;
   opacity: 0.85;
@@ -55,9 +55,17 @@
   height: var(--chord-chip-size);
   border-radius: 50%;
   background: var(--chord-strip-fill);
-  border: var(--chord-chip-border-width) solid rgb(255 255 255 / 0.22);
+  border: var(--chord-chip-border-width) solid var(--token-border-subtle);
   opacity: 0.6;
   padding: 0;
+}
+
+:global([data-theme="modern-dark"]) .chord-row-chip {
+  border-color: rgb(255 255 255 / 0.22);
+}
+
+:global([data-theme="modern-light"]) .chord-row-chip {
+  border-color: rgba(15, 23, 42, 0.12);
 }
 
 .chord-row-item[data-role="chord-root"] .chord-row-chip {
@@ -89,7 +97,7 @@
   font-family: var(--font-sans);
   font-weight: var(--font-weight-semibold);
   font-size: clamp(1.05rem, 1.8vw, 1.22rem);
-  color: var(--text-soft-white);
+  color: var(--text-main);
   line-height: calc(var(--chord-chip-size) - var(--chord-chip-border-width) * 2);
   letter-spacing: 0.01em;
 }
@@ -98,7 +106,7 @@
   font-family: var(--font-sans);
   font-size: 0.82rem;
   font-weight: var(--font-weight-semibold);
-  color: var(--text-soft-white);
+  color: var(--text-main);
   opacity: 0.7;
   line-height: 1;
   letter-spacing: 0.02em;
@@ -114,7 +122,15 @@
   margin: 0;
   padding: 0.1rem 0 0;
   width: 100%;
+  border-top: 1px solid var(--token-border-subtle);
+}
+
+:global([data-theme="modern-dark"]) .chord-row-legend {
   border-top: 1px solid rgb(255 255 255 / 0.06);
+}
+
+:global([data-theme="modern-light"]) .chord-row-legend {
+  border-top: 1px solid rgba(15, 23, 42, 0.06);
 }
 
 .chord-row-legend-item {
@@ -127,8 +143,16 @@
   width: 0.7rem;
   height: 0.7rem;
   border-radius: 50%;
-  border: 1.5px solid rgb(255 255 255 / 0.22);
+  border: 1.5px solid var(--token-border-subtle);
   flex-shrink: 0;
+}
+
+:global([data-theme="modern-dark"]) .chord-row-legend-swatch {
+  border: 1.5px solid rgb(255 255 255 / 0.22);
+}
+
+:global([data-theme="modern-light"]) .chord-row-legend-swatch {
+  border: 1.5px solid rgba(15, 23, 42, 0.15);
 }
 
 .chord-row-legend-item[data-role="chord-root"] .chord-row-legend-swatch {
@@ -156,7 +180,7 @@
   font-family: var(--font-sans);
   font-size: 0.75rem;
   font-weight: var(--font-weight-medium);
-  color: var(--text-soft-white);
+  color: var(--text-main);
   opacity: 0.65;
   letter-spacing: 0.02em;
   white-space: nowrap;

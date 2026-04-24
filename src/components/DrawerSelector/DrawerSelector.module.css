@@ -20,24 +20,25 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.02)),
-    rgb(12 17 25 / 0.88);
-  border: 1px solid var(--chrome-border);
+  background-color: var(--surface-control);
+  background-image: var(--surface-control-bg-image);
+  border: 1px solid var(--surface-control-border);
   border-radius: 0.95rem;
   color: var(--chrome-fg);
   cursor: pointer;
   font-size: var(--text-sm);
-  transition: border-color var(--transition-fast);
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
   text-align: left;
 }
 
 .drawer-trigger:hover {
-  border-color: color-mix(in srgb, var(--neon-cyan) 38%, transparent);
+  background-color: var(--surface-control-hover-bg);
+  background-image: var(--surface-control-hover-bg-image);
+  border-color: var(--surface-control-hover-border);
 }
 
 .drawer-trigger.open {
-  border-color: color-mix(in srgb, var(--neon-cyan) 48%, transparent);
+  border-color: var(--surface-control-hover-border);
 }
 
 .drawer-trigger:focus-visible {
@@ -57,14 +58,15 @@
 .drawer-value {
   flex: 1;
   font-weight: 500;
-  color: white;
+  color: var(--chrome-fg);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .drawer-chevron {
-  font-size: 0.6rem;
+  width: 1.15rem;
+  height: 1.15rem;
   color: var(--text-muted);
   transition: transform var(--transition-fast);
   flex-shrink: 0;
@@ -81,12 +83,10 @@
   left: 0;
   right: 0;
   z-index: var(--z-dropdown);
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.03), rgb(255 255 255 / 0.01)),
-    rgb(10 15 22 / 0.96);
-  border: 1px solid rgb(255 255 255 / 0.1);
+  background: var(--surface-overlay);
+  border: 1px solid var(--chrome-border);
   border-radius: 0.95rem;
-  box-shadow: 0 10px 25px rgb(0 0 0 / 0.55);
+  box-shadow: var(--elevation-overlay);
   max-height: 240px;
   overflow-y: auto;
   padding: var(--space-1);
@@ -94,6 +94,14 @@
   flex-direction: column;
   gap: 2px;
   transition: opacity var(--transition-slow);
+}
+
+:global([data-theme="modern-dark"]) .drawer-options {
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.03), rgb(255 255 255 / 0.01)),
+    rgb(10 15 22 / 0.96);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  box-shadow: 0 10px 25px rgb(0 0 0 / 0.55);
 }
 
 .drawer-options:focus-visible {
@@ -120,7 +128,7 @@
 
 .drawer-option:hover {
   background: var(--surface-raised);
-  color: white;
+  color: var(--chrome-fg);
 }
 
 .drawer-option:focus-visible {
@@ -131,13 +139,16 @@
 
 .drawer-option.active {
   background: var(--selected-bg);
+  background-image: var(--selected-bg-image);
   color: var(--selected-fg);
+  border: 1px solid var(--selected-border);
+  box-shadow: var(--selected-shadow);
   font-weight: 500;
 }
 
 .drawer-option.focused {
   background: var(--surface-raised);
-  color: white;
+  color: var(--chrome-fg);
 }
 
 .drawer-divider {

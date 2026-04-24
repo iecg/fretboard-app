@@ -1,6 +1,7 @@
 import {
   type AccidentalOptionValue,
   type EnharmonicDisplayValue,
+  type ThemeOptionValue,
   type SettingFieldKey,
   type SettingFieldConfig,
   type SettingsSectionConfig,
@@ -22,6 +23,15 @@ export const ENHARMONIC_DISPLAY_OPTIONS = [
 ] as const satisfies readonly {
   label: string;
   value: EnharmonicDisplayValue;
+}[];
+
+export const THEME_OPTIONS = [
+  { label: "Light", value: "light" },
+  { label: "Dark", value: "dark" },
+  { label: "System", value: "system" },
+] as const satisfies readonly {
+  label: string;
+  value: ThemeOptionValue;
 }[];
 
 export const SETTING_FIELDS: Record<SettingFieldKey, SettingFieldConfig> = {
@@ -65,6 +75,15 @@ export const SETTING_FIELDS: Record<SettingFieldKey, SettingFieldConfig> = {
         "Limits how far the visible chord tones can span across frets on the fretboard.",
     },
   },
+  theme: {
+    key: "theme",
+    label: "Theme",
+    help: {
+      id: "theme",
+      content:
+        "Choose your preferred color theme. System matches your device settings.",
+    },
+  },
 };
 
 export const SETTINGS_SECTIONS: readonly SettingsSectionConfig[] = [
@@ -77,6 +96,11 @@ export const SETTINGS_SECTIONS: readonly SettingsSectionConfig[] = [
     id: "instrument",
     title: "Instrument",
     fields: ["tuning"],
+  },
+  {
+    id: "appearance",
+    title: "Appearance",
+    fields: ["theme"],
   },
   {
     id: "notation",

@@ -8,27 +8,15 @@
   --text-on-highlight: #ffffff;
   --text-on-accent: #ffffff;
   --text-soft-white: #e8eef6;
+
+  /* Interaction — Primary theme accent (cyan-leaning in dark) */
   --accent-primary: #0a84ff;
   --accent-secondary: #ff9f0a;
   --accent-glow: rgba(10, 132, 255, 0.15);
+
+  /* Note colors (note-blue refers to the musical "blue note") */
   --note-blue: #9333ea;
   --note-blue-glow: rgba(147, 51, 234, 0.5);
-  --fretboard-wood: #221e1d;
-  --fret-wire: #636366;
-  --fret-marker: rgba(255, 255, 255, 0.2);
-  --string-color: #d1d1d6;
-  --fret-nut-bg: #111;
-  --fret-nut-wire: #e2e8f0;
-  --fretboard-border: #1a100b;
-  --shadow-note-root: 0 0 8px rgba(255, 159, 10, 0.4);
-  --shadow-note-active: 0 0 6px rgba(10, 132, 255, 0.3);
-  --shadow-ping-start: rgba(10, 132, 255, 0.5);
-  --shadow-ping-end: rgba(10, 132, 255, 0);
-  --selection-accent: #3b82f6;
-  --selection-accent-fg: #eff6ff;
-  --selection-accent-bg: rgba(59, 130, 246, 0.18);
-  --chord-accent: #ff9f0a;
-  --chord-accent-fg: #ffffff;
   --caged-e: #ef4444;
   --caged-e-fg: #fff1f2;
   --caged-d: #eab308;
@@ -146,11 +134,4 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--accent-primary);
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    --text-on-highlight: #111827;
-    --text-on-accent: #111827;
-  }
 }

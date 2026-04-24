@@ -1,4 +1,25 @@
 .circle-fifths-container {
+  --cof-center-start: color-mix(in srgb, var(--surface-base) 95%, transparent);
+  --cof-center-end: var(--surface-raised);
+  --cof-inner-stroke: var(--token-border-subtle);
+  --cof-text-stroke: transparent;
+  --cof-text-muted: var(--text-muted);
+  --cof-enharmonic-muted: color-mix(in srgb, var(--text-muted) 80%, transparent);
+  --cof-degree-muted: color-mix(in srgb, var(--text-muted) 70%, transparent);
+
+  /* Note tones — default/dark defaults */
+  --cof-note-active: var(--neon-orange-bright);
+  --cof-note-scale: var(--neon-cyan-bright);
+  --cof-note-muted: var(--text-muted);
+  --cof-enharmonic-active: color-mix(in srgb, var(--neon-orange-bright), white 30%);
+  --cof-enharmonic-scale: color-mix(in srgb, var(--neon-cyan-bright), white 30%);
+  --cof-degree-active: var(--neon-orange);
+  --cof-degree-scale: var(--neon-cyan);
+
+  /* Center labels */
+  --cof-center-note: var(--neon-orange-bright);
+  --cof-center-signature: var(--neon-cyan-bright);
+
   container-type: inline-size;
   flex: 1 1 auto;
   display: flex;
@@ -7,10 +28,39 @@
   width: 100%;
   max-width: 320px;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
   aspect-ratio: 1;
   max-height: min(320px, 58vh);
   margin: 0 auto;
+}
+
+:global([data-theme="modern-dark"]) .circle-fifths-container {
+  --cof-center-start: rgb(34 40 54 / 0.98);
+  --cof-center-end: rgb(16 20 29 / 1);
+  --cof-inner-stroke: rgb(255 255 255 / 0.1);
+  --cof-text-stroke: rgba(0, 0, 0, 0.4);
+  --cof-text-muted: rgb(184 197 212 / 0.74);
+  --cof-enharmonic-muted: rgb(171 183 197 / 0.74);
+  --cof-degree-muted: rgb(165 176 188 / 0.56);
+}
+
+:global([data-theme="modern-light"]) .circle-fifths-container {
+  --cof-center-start: var(--surface-base);
+  --cof-center-end: var(--bg-color);
+  --cof-inner-stroke: var(--surface-highlight);
+  --cof-text-stroke: transparent;
+
+  /* Readable dark labels for light mode */
+  --cof-note-active: var(--neon-orange-dim);
+  --cof-note-scale: var(--neon-cyan-dim);
+  --cof-note-muted: var(--text-muted);
+  --cof-enharmonic-active: color-mix(in srgb, var(--neon-orange-dim) 75%, transparent);
+  --cof-enharmonic-scale: color-mix(in srgb, var(--neon-cyan-dim) 75%, transparent);
+  --cof-degree-active: var(--neon-orange-dim);
+  --cof-degree-scale: var(--neon-cyan-dim);
+
+  --cof-center-note: var(--neon-orange-dim);
+  --cof-center-signature: var(--neon-cyan-dim);
 }
 
 .circle-fifths-svg {
@@ -22,38 +72,113 @@
 }
 
 .circle-slice {
-  fill: rgb(28 33 45 / 0.9);
+  fill: var(--surface-base);
   cursor: pointer;
   transition:
     fill var(--transition-fast),
     filter var(--transition-fast),
+    opacity var(--transition-fast),
     stroke var(--transition-fast);
-  stroke: rgb(255 255 255 / 0.08) !important;
-  stroke-width: 1.2 !important;
+  stroke: var(--surface-highlight) !important;
+  stroke-width: 1 !important;
 }
 
-.circle-slice:hover {
-  fill: rgb(37 45 61 / 0.96);
-  filter: drop-shadow(0 0 6px rgb(77 228 255 / 0.18));
+:global([data-theme="modern-dark"]) .circle-slice {
+  fill: rgb(28 33 45 / 0.9);
+  stroke: rgb(255 255 255 / 0.08) !important;
+}
+
+:global([data-theme="modern-light"]) .circle-slice {
+  fill: var(--surface-base);
+  stroke: var(--surface-highlight) !important;
 }
 
 .circle-slice.circle-slice--scale {
+  fill: color-mix(in srgb, var(--neon-cyan) 12%, var(--surface-base));
+}
+
+:global([data-theme="modern-dark"]) .circle-slice.circle-slice--scale {
   fill: color-mix(in srgb, var(--neon-cyan) 8%, rgb(27 33 44 / 1));
+  filter: drop-shadow(0 0 5px rgb(77 228 255 / 0.12));
+}
+
+:global([data-theme="modern-light"]) .circle-slice.circle-slice--scale {
+  fill: color-mix(in srgb, var(--neon-cyan) 10%, var(--surface-base));
 }
 
 .circle-slice.circle-slice--muted {
+  fill: var(--surface-raised);
+  opacity: 0.8;
+}
+
+:global([data-theme="modern-dark"]) .circle-slice.circle-slice--muted {
   fill: rgb(24 29 39 / 0.94);
+  opacity: 1;
+}
+
+:global([data-theme="modern-light"]) .circle-slice.circle-slice--muted {
+  fill: var(--surface-raised);
+  opacity: 0.6;
+}
+
+.circle-slice.circle-slice--scale:not(.active):hover {
+  fill: color-mix(in srgb, var(--neon-cyan) 20%, var(--surface-base));
+  filter: var(--glow-filter-cyan);
+  opacity: 1;
+}
+
+:global([data-theme="modern-dark"]) .circle-slice.circle-slice--scale:not(.active):hover {
+  fill: color-mix(in srgb, var(--neon-cyan) 15%, rgb(35 42 56 / 1));
+  filter: drop-shadow(0 0 8px rgb(77 228 255 / 0.25));
+}
+
+:global([data-theme="modern-light"]) .circle-slice.circle-slice--scale:not(.active):hover {
+  fill: color-mix(in srgb, var(--neon-cyan) 15%, var(--surface-base));
+  filter: none;
+}
+
+.circle-slice.circle-slice--muted:not(.active):hover {
+  fill: var(--surface-highlight);
+  filter: none;
+  opacity: 1;
+}
+
+:global([data-theme="modern-dark"]) .circle-slice.circle-slice--muted:not(.active):hover {
+  fill: rgb(42 48 64 / 1);
+}
+
+:global([data-theme="modern-light"]) .circle-slice.circle-slice--muted:not(.active):hover {
+  fill: var(--surface-highlight);
 }
 
 .circle-slice.active {
-  fill: color-mix(in srgb, var(--neon-orange) 18%, rgb(32 32 40 / 1));
+  fill: color-mix(in srgb, var(--neon-orange) 22%, var(--surface-base));
   stroke: var(--neon-orange) !important;
   stroke-width: 2.3 !important;
-  filter: drop-shadow(0 0 7px rgb(255 154 77 / 0.35));
+  filter: var(--glow-filter-orange);
+}
+
+:global([data-theme="modern-dark"]) .circle-slice.active {
+  fill: color-mix(in srgb, var(--neon-orange) 18%, rgb(32 32 40 / 1));
+  filter: drop-shadow(0 0 8px rgb(255 154 77 / 0.42));
+}
+
+:global([data-theme="modern-light"]) .circle-slice.active {
+  fill: color-mix(in srgb, var(--neon-orange) 18%, var(--surface-base));
+  stroke: var(--neon-orange) !important;
+  filter: none;
 }
 
 .circle-slice.active:hover {
+  fill: color-mix(in srgb, var(--neon-orange) 24%, var(--surface-base));
+}
+
+:global([data-theme="modern-dark"]) .circle-slice.active:hover {
   fill: color-mix(in srgb, var(--neon-orange) 24%, rgb(36 36 44 / 1));
+}
+
+:global([data-theme="modern-light"]) .circle-slice.active:hover {
+  fill: color-mix(in srgb, var(--neon-orange) 22%, var(--surface-base));
 }
 
 .circle-slice:focus,
@@ -65,8 +190,13 @@
 
 .circle-slice-focus-ring {
   stroke: var(--neon-cyan-bright) !important;
-  filter: drop-shadow(0 0 7px rgb(77 228 255 / 0.42));
+  filter: var(--glow-filter-cyan);
   pointer-events: none;
+}
+
+:global([data-theme="modern-light"]) .circle-slice-focus-ring {
+  stroke: var(--accent-primary) !important;
+  filter: none;
 }
 
 .circle-note-label,

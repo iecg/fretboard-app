@@ -46,11 +46,11 @@ export const FretboardHitTargetLayer = memo(({
             key={`btn-${stringIndex}-${fretIndex}`}
             type="button"
             onClick={
-              onNoteClick && !isHidden
+              onNoteClick
                 ? () => onNoteClick(stringIndex, fretIndex, noteName)
                 : undefined
             }
-            disabled={!onNoteClick || isHidden}
+            disabled={!onNoteClick}
             aria-hidden={isHidden || undefined}
             tabIndex={isHidden ? -1 : undefined}
             aria-label={`${formatAccidental(displayValue)} on string ${stringIndex + 1}, fret ${fretIndex}`}
@@ -70,7 +70,7 @@ export const FretboardHitTargetLayer = memo(({
               height: noteBubblePx,
               fontSize: `${noteFontPx}px`,
               opacity: 0,
-              pointerEvents: onNoteClick && !isHidden ? "auto" : "none",
+              pointerEvents: onNoteClick ? "auto" : "none",
             }}
           />
         );

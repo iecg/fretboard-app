@@ -8,6 +8,7 @@ export function useHelpPopover() {
     chordSpread: null,
     accidentals: null,
     enharmonicDisplay: null,
+    theme: null,
   });
 
   useEffect(() => {

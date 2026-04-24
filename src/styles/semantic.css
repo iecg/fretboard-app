@@ -6,11 +6,44 @@
 */
 
 :root {
-  --selected-bg: var(--selection-accent-bg);
-  --selected-fg: var(--selection-accent-fg);
-  --selected-border: var(--selection-accent);
-  --selected-chord-bg: var(--chord-accent);
-  --selected-chord-fg: var(--chord-accent-fg);
+  /* Semantic Selection Roles — Standard recipe for active/selected controls */
+  --selected-bg: var(--accent-primary);
+  --selected-bg-image: none;
+  --selected-border: transparent;
+  --selected-fg: var(--text-on-accent);
+  --selected-shadow: none;
+  --selected-highlight: transparent; /* Backward compatibility alias */
+
+  /* Surface Roles — Rationalized container types */
+  --surface-chrome: var(--chrome-bg);
+  --surface-chrome-fg: var(--chrome-fg);
+  --surface-chrome-fg-muted: var(--chrome-fg-muted);
+  --surface-chrome-border: var(--chrome-border);
+
+  --surface-control: var(--surface-chrome);
+  --surface-control-bg-image: none;
+  --surface-control-fg: var(--surface-chrome-fg);
+  --surface-control-fg-muted: var(--surface-chrome-fg-muted);
+  --surface-control-border: var(--surface-chrome-border);
+
+  --surface-control-hover-bg: var(--surface-hover);
+  --surface-control-hover-bg-image: none;
+  --surface-control-hover-border: var(--chrome-hover-border);
+  --surface-control-hover-fg: var(--surface-control-fg);
+
+  --surface-panel: var(--panel-surface-bg);
+  --surface-panel-border: var(--panel-surface-border);
+
+  --surface-overlay: color-mix(in srgb, var(--token-surface-card-base) 96%, transparent);
+  --surface-overlay-border: var(--chrome-border);
+
+  --surface-card: var(--surface-overlay);
+  --surface-card-border: rgb(255 255 255 / 0.1);
+  --surface-card-header-border: var(--token-border-subtler);
+
+  --surface-muted: var(--token-surface-dim);
+  --surface-hover: var(--chrome-hover-bg);
+  --surface-hover-border: var(--chrome-hover-border);
 
   --chrome-bg: color-mix(in srgb, var(--bg-color) 84%, var(--surface-raised) 16%);
   --chrome-fg: var(--text-main);
@@ -26,27 +59,32 @@
   --panel-surface-pad: var(--space-4);
   --panel-surface-pad-compact: var(--space-3) var(--space-4);
 
-  /* Neon-cyan glow for keyboard nav visibility against dark theme. */
+  /* Focus ring — global affordance model */
   --focus-ring: 2px solid var(--neon-cyan);
   --focus-ring-offset: 2px;
   --focus-ring-glow: 0 0 8px rgb(77 228 255 / 0.6), 0 0 16px rgb(77 228 255 / 0.35);
 
+  /* Z-index layers */
   --z-note: var(--token-z-note);
   --z-dropdown: var(--token-z-dropdown);
   --z-help-overlay: var(--token-z-help-overlay);
   --z-bottom-nav: var(--token-z-bottom-nav);
   --z-header: var(--token-z-header);
 
+  /* Interaction Roles */
   --interactive-primary: var(--accent-primary);
+  --interactive-hover: color-mix(in srgb, var(--accent-primary) 85%, white);
+  --interactive-active: color-mix(in srgb, var(--accent-primary) 70%, white);
+  --interactive-focus: var(--neon-cyan);
+
+  --chrome-hover-border: var(--interactive-primary);
+  --chrome-hover-bg-tint: color-mix(in srgb, var(--neon-cyan) 12%, transparent);
+
   --disabled-opacity: var(--token-disabled-opacity);
 
   --transition-surface: background-color var(--transition-fast) ease, color var(--transition-fast) ease, border-color var(--transition-fast) ease;
   --transition-accent: box-shadow var(--transition-fast) ease, fill var(--transition-fast) ease;
   --transition-motion: transform var(--transition-fast) ease, opacity var(--transition-base) ease;
-
-  --surface-card: color-mix(in srgb, var(--token-surface-card-base) 96%, transparent);
-  --surface-card-border: rgb(255 255 255 / 0.1);
-  --surface-card-header-border: var(--token-border-subtler);
 
   --note-ring: var(--neon-cyan);
   --note-ring-tonic: var(--neon-orange);
@@ -79,6 +117,26 @@
 
   --card-padding-y: var(--space-card-y);
   --card-padding-x: var(--space-card-x);
+}
+
+[data-theme="modern-dark"] {
+  --selected-bg: rgb(18 31 43 / 0.95);
+  --selected-bg-image: radial-gradient(circle at 50% 20%, rgb(77 228 255 / 0.24), transparent 65%),
+    linear-gradient(180deg, color-mix(in srgb, var(--neon-cyan) 22%, transparent), color-mix(in srgb, var(--neon-cyan) 8%, transparent));
+  --selected-fg: rgb(243, 251, 255);
+  --selected-border: color-mix(in srgb, var(--neon-cyan) 45%, transparent);
+  --selected-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 0 0 1px color-mix(in srgb, var(--neon-cyan) 16%, transparent),
+    0 0 8px color-mix(in srgb, var(--neon-cyan) 12%, transparent);
+  --selected-highlight: rgb(255 255 255 / 0.1); /* Backward compatibility alias */
+  
+  --chrome-hover-border: color-mix(in srgb, var(--neon-cyan) 48%, transparent);
+  --chrome-hover-bg: color-mix(in srgb, var(--neon-cyan) 12%, transparent);
+
+  --surface-control-bg-image: linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.02));
+  --surface-control-hover-bg-image: linear-gradient(180deg, color-mix(in srgb, var(--neon-cyan) 18%, transparent), color-mix(in srgb, var(--neon-cyan) 8%, transparent));
+  --surface-control-hover-fg: white;
 }
 
 .panel-surface {

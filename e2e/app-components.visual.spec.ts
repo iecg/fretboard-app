@@ -1,5 +1,5 @@
 import { test } from "@playwright/test";
-import { prepareVisualPage, expectLocatorVisual } from "./visual-helpers";
+import { prepareVisualPage, expectLocatorVisual, loadVisualState } from "./visual-helpers";
 
 test.describe("App Components Visual", () => {
   test.beforeEach(async ({ page }) => {
@@ -15,6 +15,13 @@ test.describe("App Components Visual", () => {
     await expectLocatorVisual(locator, "fretboard-desktop-1280x900");
   });
 
+  test("fretboard-light-1280x900", async ({ page }) => {
+    await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
+    const locator = page.getByTestId("fretboard-outer");
+    await locator.scrollIntoViewIfNeeded();
+    await expectLocatorVisual(locator, "fretboard-light-1280x900");
+  });
+
   test("circle-of-fifths-desktop-1280x900", async ({ page }) => {
     const locator = page.getByTestId("circle-of-fifths-svg");
     // Scroll locator into view before capturing as requested
@@ -22,5 +29,11 @@ test.describe("App Components Visual", () => {
     await expectLocatorVisual(locator, "circle-of-fifths-desktop-1280x900");
   });
 
+  test("circle-of-fifths-light-1280x900", async ({ page }) => {
+    await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
+    const locator = page.getByTestId("circle-of-fifths-svg");
+    await locator.scrollIntoViewIfNeeded();
+    await expectLocatorVisual(locator, "circle-of-fifths-light-1280x900");
+  });
 });
 

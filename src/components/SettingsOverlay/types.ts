@@ -1,6 +1,7 @@
 export type AccidentalOptionValue = "auto" | "sharps" | "flats";
 export type EnharmonicDisplayValue = "auto" | "on" | "off";
-export type HelpFieldId = "chordSpread" | "accidentals" | "enharmonicDisplay";
+export type { ThemePreference as ThemeOptionValue } from "../../store/uiAtoms";
+export type HelpFieldId = "chordSpread" | "accidentals" | "enharmonicDisplay" | "theme";
 
 export type SettingFieldKey =
   | "zoom"
@@ -8,7 +9,8 @@ export type SettingFieldKey =
   | "tuning"
   | "accidentals"
   | "enharmonicDisplay"
-  | "chordSpread";
+  | "chordSpread"
+  | "theme";
 
 export type FieldHelp = {
   id: HelpFieldId;

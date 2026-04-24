@@ -8,6 +8,11 @@
   padding: 0.38rem 0.85rem 0.42rem;
   border-radius: 0.85rem;
   background: var(--practice-bar-fill);
+  border: 1px solid var(--chrome-border);
+  box-shadow: var(--elevation-card);
+}
+
+:global([data-theme="modern-dark"]) .chord-practice-bar {
   border: 1px solid rgb(255 255 255 / 0.07);
   box-shadow: 0 4px 14px rgb(0 0 0 / 0.2);
 }
@@ -23,7 +28,7 @@
   font-family: var(--font-sans);
   font-size: clamp(0.82rem, 1.3vw, 0.94rem);
   font-weight: var(--font-weight-semibold);
-  color: var(--text-soft-white);
+  color: var(--text-main);
   line-height: 1.2;
   letter-spacing: 0.01em;
 }
@@ -32,29 +37,41 @@
   font-family: var(--font-sans);
   font-size: 0.78rem;
   font-weight: var(--font-weight-medium);
-  color: rgb(255 255 255 / 0.5);
+  color: var(--text-muted);
   line-height: 1;
   letter-spacing: 0.03em;
-  background: rgb(255 255 255 / 0.06);
-  border: 1px solid rgb(255 255 255 / 0.1);
+  background: var(--surface-muted);
+  border: 1px solid var(--token-border-subtle);
   border-radius: 0.3rem;
   padding: 0.15rem 0.35rem;
   white-space: nowrap;
+}
+
+:global([data-theme="modern-dark"]) .chord-practice-bar-lens-label {
+  color: rgb(255 255 255 / 0.5);
+  background: rgb(255 255 255 / 0.06);
+  border: 1px solid rgb(255 255 255 / 0.1);
 }
 
 .chord-practice-bar-badge {
   font-family: var(--font-sans);
   font-size: 0.7rem;
   font-weight: var(--font-weight-medium);
-  color: rgb(255 255 255 / 0.45);
+  color: var(--text-muted);
   line-height: 1;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  background: rgb(255 255 255 / 0.07);
-  border: 1px solid rgb(255 255 255 / 0.1);
+  background: var(--surface-muted);
+  border: 1px solid var(--token-border-subtle);
   border-radius: 0.3rem;
   padding: 0.15rem 0.35rem;
   white-space: nowrap;
+}
+
+:global([data-theme="modern-dark"]) .chord-practice-bar-badge {
+  color: rgb(255 255 255 / 0.45);
+  background: rgb(255 255 255 / 0.07);
+  border: 1px solid rgb(255 255 255 / 0.1);
 }
 
 .chord-practice-bar-groups {
@@ -77,15 +94,27 @@
   font-family: var(--font-sans);
   font-size: 0.68rem;
   font-weight: var(--font-weight-semibold);
-  color: rgb(255 255 255 / 0.42);
+  color: var(--text-muted);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
   flex-shrink: 0;
+  opacity: 0.6;
+}
+
+:global([data-theme="modern-dark"]) .practice-bar-group-label {
+  color: rgb(255 255 255 / 0.42);
+  opacity: 1;
 }
 
 .practice-bar-group[data-group-variant="land-on"] .practice-bar-group-label {
+  color: var(--text-muted);
+  opacity: 0.85;
+}
+
+:global([data-theme="modern-dark"]) .practice-bar-group[data-group-variant="land-on"] .practice-bar-group-label {
   color: rgb(255 255 255 / 0.66);
+  opacity: 1;
 }
 
 .practice-bar-pill-list {
@@ -105,9 +134,14 @@
   height: var(--practice-pill-h);
   padding: 0 var(--practice-pill-px);
   border-radius: 999px;
+  background: var(--surface-muted);
+  border: 1.5px solid var(--token-border-subtle);
+  cursor: default;
+}
+
+:global([data-theme="modern-dark"]) .practice-bar-pill {
   background: rgb(255 255 255 / 0.05);
   border: 1.5px solid rgb(255 255 255 / 0.18);
-  cursor: default;
 }
 
 .practice-bar-pill[data-in-scale="true"] {
@@ -145,7 +179,7 @@
   font-family: var(--font-sans);
   font-size: var(--practice-pill-font);
   font-weight: var(--font-weight-semibold);
-  color: var(--text-soft-white);
+  color: var(--text-main);
   line-height: 1;
   letter-spacing: 0.01em;
 }
@@ -154,18 +188,26 @@
   font-family: var(--font-sans);
   font-size: calc(var(--practice-pill-font) - 0.06rem);
   font-weight: var(--font-weight-medium);
-  color: rgb(255 255 255 / 0.48);
+  color: var(--text-muted);
   line-height: 1;
   letter-spacing: 0.02em;
+}
+
+:global([data-theme="modern-dark"]) .practice-bar-pill-interval {
+  color: rgb(255 255 255 / 0.48);
 }
 
 .practice-bar-pill-resolve {
   font-family: var(--font-sans);
   font-size: calc(var(--practice-pill-font) - 0.06rem);
   font-weight: var(--font-weight-medium);
-  color: rgb(167 139 250 / 0.85);
+  color: var(--neon-violet);
   line-height: 1;
   letter-spacing: 0.01em;
+}
+
+:global([data-theme="modern-dark"]) .practice-bar-pill-resolve {
+  color: rgb(167 139 250 / 0.85);
 }
 
 :global(.app-container[data-layout-tier="mobile"]) .chord-practice-bar-groups,

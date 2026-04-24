@@ -92,11 +92,23 @@
     0 0 24px rgb(77 228 255 / 0.3);
 }
 
+:global([data-theme="modern-light"]) .app-header-brand-title-primary {
+  -webkit-text-stroke: 0;
+  color: var(--neon-cyan);
+  text-shadow: none;
+}
+
 .app-header-brand-title-secondary {
   -webkit-text-stroke: 1.2px #FF9A4D;
   text-shadow:
     0 0 10px rgb(255 154 77 / 0.55),
     0 0 24px rgb(255 154 77 / 0.3);
+}
+
+:global([data-theme="modern-light"]) .app-header-brand-title-secondary {
+  -webkit-text-stroke: 0;
+  color: var(--neon-orange);
+  text-shadow: none;
 }
 
 /* SVG wordmark wrapper — sizes the FretFlowWordmark to match the
@@ -115,6 +127,10 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+:global([data-theme="modern-light"]) .app-header-brand-subtitle {
+  color: var(--text-muted);
 }
 
 @media (max-width: 879px) {

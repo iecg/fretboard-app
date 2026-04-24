@@ -1,0 +1,158 @@
+/*
+   Theme Overrides — Modern Light
+   Layer 2.5: Theme-specific overrides for the light mode palette.
+   Imported after semantic.css to override both primitives and semantic tokens.
+*/
+
+[data-theme="modern-light"] {
+  color-scheme: light;
+
+  /* Primitive Colors — Pale cool blue-gray spectrum */
+  --bg-color: #f8fafc;
+  --surface-base: #ffffff;
+  --surface-raised: #f1f5f9;
+  --surface-highlight: #e2e8f0;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-on-highlight: #0f172a;
+  --text-on-accent: #ffffff;
+  --text-soft-white: #1e293b;
+
+  /* Semantic Colors */
+  --chrome-bg: #f8fafc;
+  --chrome-border: #e2e8f0;
+  --surface-card: #ffffff;
+  --surface-card-border: #e2e8f0;
+  --surface-card-header-border: #f1f5f9;
+  --surface-overlay: #ffffff;
+
+  /* Focus ring — restrained for light backgrounds */
+  --focus-ring-glow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+
+  /* Interaction — Primary theme accent */
+  --accent-primary: #2563eb;
+  --accent-glow: rgba(37, 99, 235, 0.04);
+  
+  --interactive-hover: color-mix(in srgb, var(--accent-primary) 90%, black);
+  --interactive-active: color-mix(in srgb, var(--accent-primary) 80%, black);
+  --interactive-focus: #2563eb;
+
+  /* Neon colors — significantly restrained for a professional look */
+  --neon-cyan: #0891b2;
+  --neon-cyan-bright: #0e7490;
+  --neon-cyan-dim: #155e75;
+  --neon-orange: #ea580c;
+  --neon-orange-bright: #c2410c;
+  --neon-orange-dim: #9a3412;
+  --neon-violet: #7c3aed;
+  --neon-violet-dim: #6d28d9;
+  --neon-brand-gradient: linear-gradient(90deg, #0891b2 0%, #2563eb 100%);
+
+  /* Glow effects — minimal to none in modern-light */
+  --glow-cyan-sm: 0 1px 2px rgba(8, 145, 178, 0.1);
+  --glow-cyan-md: none;
+  --glow-cyan-lg: none;
+  --glow-orange-sm: 0 1px 2px rgba(234, 88, 12, 0.1);
+  --glow-orange-md: none;
+  --glow-orange-lg: none;
+  --glow-violet-sm: none;
+  --glow-violet-border: transparent;
+
+  /* Glow filters — removed for light mode */
+  --glow-filter-cyan: none;
+  --glow-filter-orange: none;
+
+  /* Token surface colors */
+  --token-border-subtle: #e2e8f0;
+  --token-border-subtler: #f1f5f9;
+  --token-border-faint: #f8fafc;
+  --token-surface-dim: #f8fafc;
+
+  /* Chip backgrounds — using solid accents for active states */
+  --token-chip-active-bg: #2563eb;
+  --token-chip-tonic-bg: #ea580c;
+
+  /* Elevation shadows — softer, smaller, professional */
+  --elevation-card: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --elevation-overlay: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --elevation-float: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+
+  /* Disabled state — clearly inactive */
+  --disabled-opacity: 0.4;
+
+  /* Fretboard wood — warm maple */
+  --fretboard-wood-top: #f5e6c8;
+  --fretboard-wood-mid: #ebd5b0;
+  --fretboard-wood-bottom: #dec395;
+  --fretboard-wood-grain: rgba(90, 60, 40, 0.08);
+  --fret-wire-dark: #1e293b;
+  --fret-wire-medium: #475569;
+  --fret-wire-bright: #94a3b8;
+  --fret-wire-highlight: rgba(255, 255, 255, 0.2);
+  --fret-marker: rgba(0, 0, 0, 0.08);
+  --fret-nut-bg: #f8f4e8;
+  --fret-nut-wire: #475569;
+  --fretboard-border: #8b5e3c;
+
+  /* String colors — charcoal slate */
+  --string-wire: #475569;
+  --string-wire-bass: #334155;
+
+  /* Inlays */
+  --inlay-dot: rgba(0, 0, 0, 0.1);
+  --inlay-dot-12: rgba(0, 0, 0, 0.15);
+  --inlay-pearl-stop1: #475569;
+  --inlay-pearl-stop2: #334155;
+  --inlay-pearl-stop3: #1e293b;
+  --inlay-pearl-opacity1: 0.25;
+  --inlay-pearl-opacity2: 0.2;
+  --inlay-pearl-opacity3: 0.15;
+  --nut: #f8f4e8;
+  --fretboard-edge-shadow: inset 0 0 15px rgba(0, 0, 0, 0.1);
+  --fretboard-top-edge-color: rgba(255, 255, 255, 0.4);
+  --fretboard-bottom-edge-color: rgba(0, 0, 0, 0.15);
+  --fretboard-nut-slot-color: rgba(0, 0, 0, 0.2);
+  --fretboard-headstock-bg: var(--bg-color);
+  --fretboard-glow-opacity: 0;
+
+  /* Note colors — primary and secondary note emphasis */
+  --note-blue: #1d4ed8;
+  --note-blue-glow: transparent;
+
+  /* Shadows for notes — removed glow */
+  --shadow-note-root: none;
+  --shadow-note-active: none;
+  --shadow-ping-start: rgba(29, 78, 216, 0.2);
+  --shadow-ping-end: rgba(29, 78, 216, 0);
+
+  /* Interaction — Selection & Persistent States */
+  --selected-bg: #2563eb;
+  --selected-fg: #ffffff;
+  --selected-border: #1e40af;
+  --selected-bg-image: none;
+  --selected-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  --selected-chord-bg: #ea580c;
+  --selected-chord-fg: #ffffff;
+  --selected-chord-border: #c2410c;
+  --selected-highlight: rgb(255 255 255 / 0.15); /* Backward compatibility alias */
+
+  /* Fretboard SVG — light-mode rings, fills, and number color */
+  --fretboard-board-shadow: rgb(0 0 0 / 0.15);
+  --fretboard-note-text-fill: #ffffff;
+  --fretboard-note-text-stroke: rgba(0, 0, 0, 0.25);
+  --fretboard-note-chord-tone-outside-fill: var(--neon-orange-dim);
+  --fretboard-guide-tones-emphasis-fill: var(--note-ring-tonic);
+  --fretboard-guide-tones-deemphasis-fill: color-mix(in srgb, var(--note-ring-tonic) 15%, #ffffff);
+  --fretboard-guide-tones-deemphasis-stroke: color-mix(in srgb, var(--note-ring-tonic) 40%, transparent);
+  --fretboard-guide-tones-color-tone-fill: color-mix(in srgb, var(--note-ring-color-tone) 15%, #ffffff);
+  --fretboard-guide-tones-color-tone-stroke: color-mix(in srgb, var(--note-ring-color-tone) 40%, transparent);
+  --fretboard-tension-emphasis-fill: var(--note-ring-tonic);
+  --fretboard-tension-deemphasis-fill: color-mix(in srgb, var(--note-ring-tonic) 15%, #ffffff);
+  --fretboard-tension-deemphasis-stroke: color-mix(in srgb, var(--note-ring-tonic) 40%, transparent);
+  --fretboard-tension-chord-tone-fill: color-mix(in srgb, var(--note-ring-tonic) 15%, #ffffff);
+  --fretboard-tension-chord-tone-stroke: color-mix(in srgb, var(--note-ring-tonic) 40%, transparent);
+  --fretboard-tension-color-tone-fill: color-mix(in srgb, var(--note-ring-color-tone) 15%, #ffffff);
+  --fretboard-tension-color-tone-stroke: color-mix(in srgb, var(--note-ring-color-tone) 40%, transparent);
+  --fretboard-fret-number-color: #475569;
+}
+

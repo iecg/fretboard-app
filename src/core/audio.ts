@@ -105,19 +105,38 @@ class GuitarSynth {
     }
   }
 
+  async resume() {
+    this.init();
+    if (this.ctx && (this.ctx.state === "suspended" || this.ctx.state === "interrupted")) {
+      try {
+        await this.ctx.resume();
+      } catch (e) {
+        console.warn("AudioContext resume failed:", e);
+      }
+    }
+  }
+
   setMute(mute: boolean) {
     this.isMuted = mute;
     if (this.masterGain) {
       // Smooth transition avoids clicks
       const now = this.ctx?.currentTime ?? 0;
-      this.masterGain.gain.setTargetAtTime(mute ? 0 : AUDIO_CONFIG.MASTER_GAIN, now, AUDIO_CONFIG.MUTE_TRANSITION_TIME);
+      this.masterGain.gain.setTargetAtTime(
+        mute ? 0 : AUDIO_CONFIG.MASTER_GAIN,
+        now,
+        AUDIO_CONFIG.MUTE_TRANSITION_TIME,
+      );
+    }
+    // Toggling mute is a user gesture; use it to resume the context if needed.
+    if (!mute) {
+      void this.resume();
     }
   }
 
   private getAvailableVoice(): Voice | null {
-    const voice = this.voicePool.find(v => !v.active);
+    const voice = this.voicePool.find((v) => !v.active);
     if (voice) return voice;
-    
+
     // Create temporary voice if pool exhausted
     if (this.ctx && this.masterGain) {
       const gain = this.ctx.createGain();
@@ -126,7 +145,7 @@ class GuitarSynth {
       gain.connect(this.masterGain);
       return { gain, filter, active: false };
     }
-    
+
     return null;
   }
 
@@ -135,13 +154,14 @@ class GuitarSynth {
     this.init();
     if (!this.ctx || !this.masterGain || !this.guitarWave) return;
 
-    // Ensure context is running
-    if (this.ctx.state === 'suspended') {
+    // Ensure context is running - Safari often starts suspended.
+    // Interrupted state covers iOS phone calls/siri.
+    if (this.ctx.state !== "running") {
       try {
         await this.ctx.resume();
       } catch (e) {
         // Fallback for browser gesture blocking
-        console.warn('AudioContext resume failed:', e);
+        console.warn("AudioContext resume failed in playNote:", e);
         return;
       }
     }

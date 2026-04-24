@@ -6,6 +6,10 @@
   box-shadow: 0 10px 30px rgb(0 0 0 / 0.45);
 }
 
+:global([data-theme="modern-light"]) .fretboard-board {
+  box-shadow: 0 10px 30px var(--fretboard-board-shadow);
+}
+
 .fretboard-neck {
   position: relative;
   background: transparent;
@@ -14,6 +18,7 @@
 
 .fretboard-main-svg {
   overflow: visible;
+  pointer-events: none;
 }
 
 .fretboard-string {
@@ -21,7 +26,6 @@
 }
 
 .fretboard-note {
-  cursor: pointer;
   transition: opacity 0.15s ease-out;
 }
 
@@ -36,6 +40,7 @@
 .fretboard-note :is(circle, rect, polygon) {
   stroke-width: 1.9;
   paint-order: stroke;
+  transition: stroke-width 0.12s ease-out, stroke 0.12s ease-out;
 }
 
 .fretboard-note:focus-visible :is(circle, rect, polygon) {
@@ -55,10 +60,19 @@
   fill: #ffffff;
 }
 
+:global([data-theme="modern-light"]) .fretboard-note text {
+  stroke: var(--fretboard-note-text-stroke);
+  fill: var(--fretboard-note-text-fill);
+}
+
 .fretboard-note.key-tonic :is(circle, rect, polygon) {
   stroke: var(--note-ring-tonic);
   fill: rgb(48 32 22 / 0.95);
   stroke-width: 2.3;
+}
+
+:global([data-theme="modern-light"]) .fretboard-note.key-tonic :is(circle, rect, polygon) {
+  fill: var(--note-ring-tonic);
 }
 .fretboard-note.key-tonic text {
   stroke-width: 2.3;
@@ -68,6 +82,10 @@
   stroke: var(--note-ring-tonic);
   fill: rgb(55 35 18 / 0.97);
   stroke-width: 2.5;
+}
+
+:global([data-theme="modern-light"]) .fretboard-note.chord-root :is(circle, rect, polygon) {
+  fill: var(--note-ring-tonic);
 }
 .fretboard-note.chord-root text {
   stroke-width: 2.3;
@@ -79,10 +97,18 @@
   stroke-width: 2.3;
 }
 
+:global([data-theme="modern-light"]) .fretboard-note.chord-tone-in-scale :is(circle, rect, polygon) {
+  fill: var(--note-ring);
+}
+
 .fretboard-note.note-active :is(circle, rect, polygon) {
   stroke: var(--note-ring);
   fill: rgb(20 30 40 / 0.92);
   stroke-width: 1.9;
+}
+
+:global([data-theme="modern-light"]) .fretboard-note.note-active :is(circle, rect, polygon) {
+  fill: var(--note-ring);
 }
 
 .fretboard-note.note-blue :is(circle, rect, polygon) {
@@ -90,8 +116,17 @@
   fill: rgb(20 30 40 / 0.92);
   stroke-width: 1.9;
 }
+
+:global([data-theme="modern-light"]) .fretboard-note.note-blue :is(circle, rect, polygon) {
+  fill: var(--note-ring-color-tone);
+}
 .fretboard-note.note-blue text {
   fill: #e8d8ff;
+}
+
+:global([data-theme="modern-light"]) .fretboard-note.note-blue text {
+  stroke: var(--fretboard-note-text-stroke);
+  fill: var(--fretboard-note-text-fill);
 }
 
 .fretboard-note.scale-only :is(circle, rect, polygon) {
@@ -100,13 +135,26 @@
   stroke-width: 1.7;
 }
 
+:global([data-theme="modern-light"]) .fretboard-note.scale-only :is(circle, rect, polygon) {
+  fill: var(--note-ring);
+}
+
 .fretboard-note.color-tone :is(circle, rect, polygon) {
   stroke: var(--note-ring-color-tone);
   fill: rgb(20 30 40 / 0.92);
   stroke-width: 1.9;
 }
+
+:global([data-theme="modern-light"]) .fretboard-note.color-tone :is(circle, rect, polygon) {
+  fill: var(--note-ring-color-tone);
+}
 .fretboard-note.color-tone text {
   fill: #e8d8ff;
+}
+
+:global([data-theme="modern-light"]) .fretboard-note.color-tone text {
+  stroke: var(--fretboard-note-text-stroke);
+  fill: var(--fretboard-note-text-fill);
 }
 
 .fretboard-note.chord-tone-outside-scale :is(circle, rect, polygon) {
@@ -114,6 +162,10 @@
   fill: rgb(40 22 10 / 0.72);
   stroke-width: 2.0;
   stroke-dasharray: 5 3;
+}
+
+:global([data-theme="modern-light"]) .fretboard-note.chord-tone-outside-scale :is(circle, rect, polygon) {
+  fill: var(--fretboard-note-chord-tone-outside-fill);
 }
 .fretboard-note.chord-tone-outside-scale text {
   opacity: 0.9;
@@ -143,11 +195,19 @@
   stroke-width: 2.8;
 }
 
+:global([data-theme="modern-light"]) .fretboard-note.chord-root[data-note-tension] rect:last-of-type {
+  fill: var(--note-ring-tonic);
+}
+
 /* Lens emphasis selectors */
 [data-practice-lens="guide-tones"] .fretboard-note[data-note-guide-tone] :is(circle, rect, polygon) {
   stroke-width: 3.8;
   fill: rgb(95 52 8 / 0.99);
   stroke: var(--neon-orange);
+}
+
+:global([data-theme="modern-light"]) [data-practice-lens="guide-tones"] .fretboard-note[data-note-guide-tone] :is(circle, rect, polygon) {
+  fill: var(--fretboard-guide-tones-emphasis-fill);
 }
 [data-practice-lens="guide-tones"] .fretboard-note[data-note-guide-tone] {
   filter: var(--fretboard-svg-glow-orange-url);
@@ -159,6 +219,12 @@
   fill: rgb(20 30 40 / 0.52);
   stroke: rgb(200 110 40 / 0.62);
 }
+
+:global([data-theme="modern-light"]) [data-practice-lens="guide-tones"] .fretboard-note.chord-root:not([data-note-guide-tone]) rect:last-of-type,
+:global([data-theme="modern-light"]) [data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]) :is(circle, rect, polygon) {
+  fill: var(--fretboard-guide-tones-deemphasis-fill);
+  stroke: var(--fretboard-guide-tones-deemphasis-stroke);
+}
 [data-practice-lens="guide-tones"] .fretboard-note.chord-root:not([data-note-guide-tone]),
 [data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]) {
   filter: none;
@@ -167,6 +233,11 @@
 [data-practice-lens="guide-tones"] .fretboard-note.color-tone :is(circle, rect, polygon) {
   stroke: rgb(167 139 250 / 0.52);
   fill: rgb(30 18 55 / 0.52);
+}
+
+:global([data-theme="modern-light"]) [data-practice-lens="guide-tones"] .fretboard-note.color-tone :is(circle, rect, polygon) {
+  stroke: var(--fretboard-guide-tones-color-tone-stroke);
+  fill: var(--fretboard-guide-tones-color-tone-fill);
 }
 [data-practice-lens="guide-tones"] .fretboard-note.color-tone {
   filter: none;
@@ -177,6 +248,10 @@
   fill: rgb(115 30 0 / 0.98);
   stroke-dasharray: none;
   stroke-width: 3.8;
+}
+
+:global([data-theme="modern-light"]) [data-practice-lens="tension"] .fretboard-note.chord-tone-outside-scale :is(circle, rect, polygon) {
+  fill: var(--fretboard-tension-emphasis-fill);
 }
 [data-practice-lens="tension"] .fretboard-note.chord-tone-outside-scale {
   filter: var(--fretboard-svg-glow-orange-url);
@@ -189,10 +264,19 @@
   stroke-width: 3.8;
 }
 
+:global([data-theme="modern-light"]) [data-practice-lens="tension"] .fretboard-note.chord-root[data-note-tension] rect:last-of-type {
+  fill: var(--fretboard-tension-emphasis-fill);
+}
+
 [data-practice-lens="tension"] .fretboard-note.chord-root:not([data-note-tension]) rect:last-of-type {
   stroke-width: 1.8;
   fill: rgb(55 35 18 / 0.65);
   stroke: rgb(255 154 77 / 0.72);
+}
+
+:global([data-theme="modern-light"]) [data-practice-lens="tension"] .fretboard-note.chord-root:not([data-note-tension]) rect:last-of-type {
+  fill: var(--fretboard-tension-deemphasis-fill);
+  stroke: var(--fretboard-tension-deemphasis-stroke);
 }
 [data-practice-lens="tension"] .fretboard-note.chord-root:not([data-note-tension]) {
   filter: none;
@@ -203,6 +287,11 @@
   fill: rgb(20 30 40 / 0.52);
   stroke: rgb(200 110 40 / 0.62);
 }
+
+:global([data-theme="modern-light"]) [data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale :is(circle, rect, polygon) {
+  fill: var(--fretboard-tension-chord-tone-fill);
+  stroke: var(--fretboard-tension-chord-tone-stroke);
+}
 [data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale {
   filter: none;
 }
@@ -210,6 +299,11 @@
 [data-practice-lens="tension"] .fretboard-note.color-tone :is(circle, rect, polygon) {
   stroke: rgb(167 139 250 / 0.52);
   fill: rgb(30 18 55 / 0.52);
+}
+
+:global([data-theme="modern-light"]) [data-practice-lens="tension"] .fretboard-note.color-tone :is(circle, rect, polygon) {
+  stroke: var(--fretboard-tension-color-tone-stroke);
+  fill: var(--fretboard-tension-color-tone-fill);
 }
 [data-practice-lens="tension"] .fretboard-note.color-tone {
   filter: none;
@@ -226,6 +320,19 @@
   cursor: pointer;
   border: none;
   background: transparent;
+  transition: background-color 0.12s ease-out;
+  border-radius: 50%; /* Default for circular notes, squircle/diamond will just get center highlight */
+}
+
+.note-bubble:hover {
+  background-color: rgb(255 255 255 / 0.15);
+  mix-blend-mode: soft-light;
+  opacity: 1 !important;
+}
+
+:global([data-theme="modern-light"]) .note-bubble:hover {
+  background-color: rgb(0 0 0 / 0.05);
+  mix-blend-mode: multiply;
 }
 
 .note-bubble:focus-visible {
@@ -248,4 +355,8 @@
   color: rgb(191 204 216 / 0.72);
   user-select: none;
   -webkit-user-select: none;
+}
+
+:global([data-theme="modern-light"]) .fret-number {
+  color: var(--fretboard-fret-number-color);
 }
