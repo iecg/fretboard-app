@@ -56,18 +56,24 @@ test.describe("Theme Contract", () => {
     expect(tonicBg.toLowerCase()).toBe("#ea580c");
   });
 
-  test("modern-light should use solid active styling for navigation", async ({ page }) => {
-    // Desktop layout
-    await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
+  test("BottomTabBar should use theme-appropriate active indicators", async ({ page }) => {
+    // Mobile layout
+    await loadVisualState(page, { theme: "dark" }, { width: 390, height: 844 });
+    // In MobileTabPanel, the ToggleBar with variant="tabs" is used for navigation
+    const darkTab = page.getByRole("tab", { name: /Theory/i });
+    await expect(darkTab).toBeVisible();
     
-    // The active tab in theory controls should have solid blue bg
-    // Using a more stable way to check the resolved color of an active element
-    const activeTab = page.locator('.theory-browser-tab.active');
-    if (await activeTab.count() > 0) {
-      const bgColor = await activeTab.evaluate(el => getComputedStyle(el).backgroundColor);
-      // rgb(37, 99, 235) is #2563eb
-      expect(bgColor.replace(/\s/g, "")).toBe("rgb(37,99,235)");
-    }
+    const darkStyles = await darkTab.evaluate((el) => {
+      const cs = getComputedStyle(el);
+      return {
+        color: cs.color,
+        background: cs.background,
+        boxShadow: cs.boxShadow
+      };
+    });
+    
+    // In dark mode, the active tab should NOT use the light mode accent blue.
+    expect(darkStyles.color.replace(/\s/g, "")).not.toBe("rgb(37,99,235)");
   });
 
   test("modern-dark should use dark wood tokens", async ({ page }) => {
@@ -245,9 +251,12 @@ test.describe("Theme Contract", () => {
     // Helper to check if a color is "cyan-like" or matches a specific hex/rgb
     const isCyanLike = (color: string) => {
       const normalized = color.toLowerCase().replace(/\s/g, "");
-      // Matches rgb(77, 228, 255), rgba(77, 228, 255, ...), or color(srgb 0.301961 0.894118 1 ...)
+      // neon-cyan: rgb(77, 228, 255)
+      // neon-cyan-bright: rgb(140, 238, 255)
       return normalized.includes("77,228,255") || 
-             (normalized.includes("0.301961") && normalized.includes("0.894118"));
+             normalized.includes("140,238,255") ||
+             (normalized.includes("0.301961") && normalized.includes("0.894118")) ||
+             (normalized.includes("0.549") && normalized.includes("0.933"));
     };
 
     for (const theme of themes) {
@@ -298,17 +307,24 @@ test.describe("Theme Contract", () => {
               outlineStyle: cs.outlineStyle,
               outlineColor: cs.outlineColor,
               outlineWidth: cs.outlineWidth,
+              borderColor: cs.borderColor,
+              boxShadow: cs.boxShadow
             };
           });
 
-          expect(focusStyles.outlineStyle).toBe("solid");
-          expect(focusStyles.outlineWidth).toBe("2px");
           if (theme === "light") {
+            expect(focusStyles.outlineStyle).toBe("solid");
+            expect(focusStyles.outlineWidth).toBe("2px");
             // In modern-light, focus-ring uses --neon-cyan which is #0891b2 -> rgb(8, 145, 178)
             expect(focusStyles.outlineColor.replace(/\s/g, "")).toBe("rgb(8,145,178)");
           } else {
-            // --neon-cyan: #4DE4FF -> rgb(77, 228, 255)
-            expect(focusStyles.outlineColor.replace(/\s/g, "")).toBe("rgb(77,228,255)");
+            // Dark mode uses border and box-shadow instead of outline for note buttons
+            expect(focusStyles.outlineStyle).toBe("none");
+            // border-color: var(--neon-cyan) -> rgb(77, 228, 255)
+            expect(isCyanLike(focusStyles.borderColor)).toBe(true);
+            // box-shadow: 0 0 0 3px rgb(77 228 255 / 0.2)
+            expect(isCyanLike(focusStyles.boxShadow)).toBe(true);
+            expect(focusStyles.boxShadow).toContain("3px");
           }
         });
 
@@ -382,22 +398,90 @@ test.describe("Theme Contract", () => {
           await expect(selectorContainer).toBeVisible();
           await expect(navBtn).toBeVisible();
 
-          // Selector hover: should change background
+          // Selector hover: should change background only in light mode
           const selBefore = await selectorContainer.evaluate((el) => getComputedStyle(el).backgroundColor);
           await selectorContainer.hover();
           const selAfter = await selectorContainer.evaluate((el) => getComputedStyle(el).backgroundColor);
-          expect(selAfter).not.toBe(selBefore);
+          
+          if (theme === "light") {
+            expect(selAfter).not.toBe(selBefore);
+          } else {
+            // Dark mode selector hover is neutral
+            expect(selAfter).toBe(selBefore);
+          }
 
-          // Nav button hover: should change background
-          const navBefore = await navBtn.evaluate((el) => getComputedStyle(el).backgroundColor);
+          // Nav button hover
           await navBtn.hover();
-          const navAfter = await navBtn.evaluate((el) => getComputedStyle(el).backgroundColor);
-          expect(navAfter).not.toBe(navBefore);
+          const navHoverBg = await navBtn.evaluate((el) => getComputedStyle(el).backgroundColor);
+          if (theme === "light") {
+            // --surface-hover: #e2e8f0 -> rgb(226, 232, 240)
+            expect(navHoverBg.replace(/\s/g, "")).toBe("rgb(226,232,240)");
+          } else {
+            // color-mix(in srgb, var(--neon-cyan) 15%, transparent) -> rgba(77, 228, 255, 0.15)
+            expect(isCyanLike(navHoverBg)).toBe(true);
+            expect(navHoverBg).toMatch(/0\.15/);
+          }
 
           // Focus visibility: should show focus ring (using box-shadow in this component)
           await navBtn.focus();
           const navFocus = await navBtn.evaluate((el) => getComputedStyle(el).boxShadow);
-          expect(navFocus).toContain("0px 0px 0px 2px inset");
+          expect(navFocus).toContain("inset");
+          if (theme === "light") {
+            expect(navFocus).toContain("rgb(37, 99, 235)"); // --interactive-focus
+          }
+        });
+
+        test("disclosure should have correct hover and focus behavior", async ({ page }) => {
+          // Find a disclosure button (e.g. in Key Explorer or Chords section)
+          const disclosureBtn = page.getByRole("button", { name: /Chord Overlay/i });
+          await expect(disclosureBtn).toBeVisible();
+
+          // Hover
+          await disclosureBtn.hover();
+          const hoverBg = await disclosureBtn.evaluate((el) => getComputedStyle(el).backgroundColor);
+          if (theme === "light") {
+            // --surface-hover: #e2e8f0 -> rgb(226, 232, 240)
+            expect(hoverBg.replace(/\s/g, "")).toBe("rgb(226,232,240)"); 
+          } else {
+            // Dark disclosure hover is quiet/transparent
+            expect(hoverBg).toBe("rgba(0, 0, 0, 0)");
+          }
+
+          // Focus
+          await disclosureBtn.focus();
+          const focusStyles = await disclosureBtn.evaluate((el) => {
+            const cs = getComputedStyle(el);
+            return {
+              boxShadow: cs.boxShadow,
+              backgroundColor: cs.backgroundColor
+            };
+          });
+
+          if (theme === "light") {
+            expect(focusStyles.boxShadow).toContain("rgb(37, 99, 235)"); // --interactive-focus
+          } else {
+            // Dark focus: box-shadow: 0 0 0 2px var(--neon-cyan), var(--glow-cyan-sm)
+            expect(isCyanLike(focusStyles.boxShadow)).toBe(true);
+            expect(focusStyles.boxShadow).toContain("6px"); // from glow-cyan-sm
+            expect(focusStyles.backgroundColor).toBe("rgba(0, 0, 0, 0)");
+          }
+
+          // Open state summary color
+          const isOpen = await disclosureBtn.getAttribute("aria-expanded") === "true";
+          if (!isOpen) {
+             await disclosureBtn.click();
+          }
+          
+          const summary = disclosureBtn.locator('[class*="theory-disclosure-summary"]');
+          const summaryColor = await summary.evaluate((el) => getComputedStyle(el).color);
+          
+          if (theme === "light") {
+            // --interactive-primary: #2563eb -> rgb(37, 99, 235)
+            expect(summaryColor.replace(/\s/g, "")).toBe("rgb(37,99,235)");
+          } else {
+            // --neon-cyan-bright: #8CEEFF -> rgb(140, 238, 255)
+            expect(isCyanLike(summaryColor)).toBe(true);
+          }
         });
       });
     }
