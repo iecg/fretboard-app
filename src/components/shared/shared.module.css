@@ -1,9 +1,16 @@
 /* ===== Shared Strip Surface ===== */
-/* Base styles and tokens for card-like strip containers (degree chip strip, chord row strip) */
+/* Base styles and tokens for strip containers (degree chip strip, chord row strip).
+   Strips sit at shell/base level — no elevation, no overlay fill. */
 .strip-surface {
-  --strip-fill: var(--surface-overlay);
-  --strip-border: 1px solid var(--surface-card-border);
-  --strip-shadow: var(--elevation-card);
+  --strip-fill: var(--surface-strip);
+  --strip-border: 1px solid var(--chrome-border);
+  --strip-shadow: none;
+}
+
+/* Inset / nested card surface — apply to content panels nested inside a top-level card. */
+.nested-surface {
+  background: var(--surface-card-nested);
+  border-radius: var(--radius-md);
 }
 
 /* ===== Shared Control Button Chrome ===== */
