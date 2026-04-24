@@ -27,7 +27,9 @@
             theme = theme === 'light' ? 'modern-light' : 'modern-dark';
           }
           document.documentElement.setAttribute('data-theme', theme);
-        } catch (e) {}
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'modern-light');
+        }
       })();
     </script>
     <!-- Open Graph / Facebook / LinkedIn / iMessage -->

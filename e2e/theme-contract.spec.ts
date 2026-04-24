@@ -259,7 +259,7 @@ test.describe("Theme Contract", () => {
 
   test("Circle of Fifths should use light colors in light mode", async ({ page }) => {
     await loadVisualState(page, { theme: "light" });
-    
+
     // Check Circle center start color
     const cofContainer = page.getByTestId("circle-of-fifths");
     const centerStart = await cofContainer.evaluate((el) => {
@@ -271,10 +271,31 @@ test.describe("Theme Contract", () => {
       document.body.removeChild(temp);
       return resolved;
     });
-    
-    // In light mode: should be white or nearly white (#fafbfd)
-    // Handle both rgb(250, 251, 253) and color(srgb 1 1 1) formats
-    expect(centerStart).toMatch(/250|255|1 1 1/);
+
+    // In light mode: should be white or nearly white (#fafbfd or #ffffff)
+    // Parse and verify each channel >= 250 (0.98 for normalized srgb)
+    const normalized = centerStart.trim().toLowerCase();
+    let r = 0, g = 0, b = 0;
+
+    // Parse rgb(r, g, b) or rgba(r, g, b, a)
+    const rgbMatch = normalized.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+    if (rgbMatch) {
+      r = Number(rgbMatch[1]);
+      g = Number(rgbMatch[2]);
+      b = Number(rgbMatch[3]);
+    } else {
+      // Parse color(srgb r g b) where values are 0–1
+      const srgbMatch = normalized.match(/color\(srgb\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)/);
+      if (srgbMatch) {
+        r = Math.round(Number(srgbMatch[1]) * 255);
+        g = Math.round(Number(srgbMatch[2]) * 255);
+        b = Math.round(Number(srgbMatch[3]) * 255);
+      }
+    }
+
+    expect(r).toBeGreaterThanOrEqual(250);
+    expect(g).toBeGreaterThanOrEqual(250);
+    expect(b).toBeGreaterThanOrEqual(250);
   });
 
   test("Circle of Fifths should use dark colors in dark mode", async ({ page }) => {

@@ -117,6 +117,11 @@
   box-shadow: var(--focus-ring-glow);
 }
 
+:global([data-theme="modern-dark"]) .toggle-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--neon-cyan) 25%, transparent);
+}
+
 .toggle-btn.active {
   background: var(--selected-bg);
   background-image: var(--selected-bg-image);
