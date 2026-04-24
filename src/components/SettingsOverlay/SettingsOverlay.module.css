@@ -14,12 +14,7 @@
   inline-size: min(100vw, clamp(20rem, 32vw, 24rem));
   max-inline-size: 100vw;
   z-index: var(--z-overlay-drawer);
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--surface-control) 92%, white 8%) 0%,
-      var(--surface-control) 100%
-    );
+  background: var(--surface-float);
   color: var(--chrome-fg);
   display: flex;
   flex-direction: column;
@@ -42,7 +37,7 @@
   padding: 12px 16px;
   border-bottom: 1px solid var(--chrome-border);
   flex-shrink: 0;
-  background: color-mix(in srgb, var(--surface-control) 92%, white 8%);
+  background: var(--surface-float);
 }
 
 .settings-overlay-title {
@@ -75,8 +70,8 @@
   background:
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--surface-panel) 88%, var(--accent-secondary) 12%) 0%,
-      var(--surface-panel) 100%
+      color-mix(in srgb, var(--surface-card-nested) 88%, var(--accent-secondary) 12%) 0%,
+      var(--surface-card-nested) 100%
     );
 }
 
@@ -176,11 +171,11 @@
   padding: 10px 12px;
   border-radius: var(--radius-md);
   border: 1px solid color-mix(in srgb, var(--accent-primary) 22%, var(--chrome-border));
-  background: color-mix(in srgb, var(--surface-base) 94%, white 6%);
+  background: var(--surface-float);
   color: var(--chrome-fg);
   font-size: 0.8125rem;
   line-height: 1.45;
-  box-shadow: 0 12px 32px color-mix(in srgb, var(--surface-control) 82%, transparent);
+  box-shadow: var(--elevation-float);
 }
 
 .overlay-reset-section {
