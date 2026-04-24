@@ -119,6 +119,7 @@
 
 :global([data-theme="modern-dark"]) .toggle-btn:focus-visible {
   outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 255, 255, 0.25);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--neon-cyan) 25%, transparent);
 }
 
@@ -236,6 +237,7 @@
   outline: none;
   color: white;
   border-color: var(--neon-cyan);
+  box-shadow: 0 0 0 3px rgba(0, 255, 255, 0.25);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--neon-cyan) 25%, transparent);
 }
 
