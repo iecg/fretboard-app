@@ -38,6 +38,7 @@
 
 .fretboard-main-svg {
   overflow: visible;
+  pointer-events: none;
 }
 
 .fretboard-string {
@@ -45,7 +46,6 @@
 }
 
 .fretboard-note {
-  cursor: pointer;
   transition: opacity 0.15s ease-out;
 }
 
@@ -60,6 +60,7 @@
 .fretboard-note :is(circle, rect, polygon) {
   stroke-width: 1.9;
   paint-order: stroke;
+  transition: stroke-width 0.12s ease-out, stroke 0.12s ease-out;
 }
 
 .fretboard-note:focus-visible :is(circle, rect, polygon) {
@@ -339,6 +340,19 @@
   cursor: pointer;
   border: none;
   background: transparent;
+  transition: background-color 0.12s ease-out;
+  border-radius: 50%; /* Default for circular notes, squircle/diamond will just get center highlight */
+}
+
+.note-bubble:hover {
+  background-color: rgb(255 255 255 / 0.15);
+  mix-blend-mode: soft-light;
+  opacity: 1 !important;
+}
+
+:global([data-theme="modern-light"]) .note-bubble:hover {
+  background-color: rgb(0 0 0 / 0.05);
+  mix-blend-mode: multiply;
 }
 
 .note-bubble:focus-visible {
