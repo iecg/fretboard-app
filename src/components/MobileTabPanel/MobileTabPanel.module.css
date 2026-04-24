@@ -22,7 +22,7 @@
   padding: 1rem;
   gap: 1.25rem;
   background: var(--surface-float);
-  border: 1px solid var(--chrome-border);
+  border: 1px solid var(--surface-card-border);
   border-radius: 1.15rem;
   box-shadow: var(--elevation-overlay);
 }

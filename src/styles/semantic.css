@@ -31,7 +31,7 @@
   --surface-control-hover-border: var(--chrome-hover-border);
   --surface-control-hover-fg: var(--surface-control-fg);
 
-  --surface-panel: var(--panel-surface-bg);
+  --surface-panel: var(--surface-card-top);
   --surface-panel-border: var(--panel-surface-border);
 
   --surface-overlay: color-mix(in srgb, var(--token-surface-card-base) 96%, transparent);
@@ -147,10 +147,11 @@
   --surface-control-bg-image: linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.02));
   --surface-control-hover-bg-image: linear-gradient(180deg, color-mix(in srgb, var(--neon-cyan) 18%, transparent), color-mix(in srgb, var(--neon-cyan) 8%, transparent));
   --surface-control-hover-fg: white;
+  --elevation-card: 0 1px 0 rgb(255 255 255 / 0.05) inset, 0 6px 20px rgb(0 0 0 / 0.28);
 }
 
 .panel-surface {
-  background: var(--panel-surface-bg);
+  background: var(--surface-panel);
   border: var(--panel-surface-border);
   border-radius: var(--panel-surface-radius);
   padding: var(--panel-surface-pad);

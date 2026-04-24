@@ -12,7 +12,7 @@
 .help-modal {
   background: var(--surface-panel);
   border-radius: var(--radius-xl);
-  border: var(--panel-surface-border);
+  border: 1px solid var(--surface-card-border);
   box-shadow: var(--elevation-overlay);
   width: min(42rem, calc(100vw - 2 * clamp(0.75rem, 3vw, 1.25rem)));
   max-width: 100%;
@@ -40,7 +40,7 @@
   align-items: center;
   gap: var(--space-3);
   padding: 12px clamp(1rem, 3vw, 1.25rem);
-  border-bottom: 1px solid var(--chrome-border);
+  border-bottom: 1px solid var(--surface-card-header-border);
   flex-shrink: 0;
   background: var(--surface-float);
 }
