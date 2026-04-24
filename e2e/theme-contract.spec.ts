@@ -443,8 +443,8 @@ test.describe("Theme Contract", () => {
             // --surface-hover: #e2e8f0 -> rgb(226, 232, 240)
             expect(hoverBg.replace(/\s/g, "")).toBe("rgb(226,232,240)"); 
           } else {
-            // Dark disclosure hover is quiet/transparent
-            expect(hoverBg).toBe("rgba(0, 0, 0, 0)");
+            // Dark disclosure hover now has a subtle cyan background
+            expect(isCyanLike(hoverBg)).toBe(true);
           }
 
           // Focus
@@ -463,7 +463,8 @@ test.describe("Theme Contract", () => {
             // Dark focus: box-shadow: 0 0 0 2px var(--neon-cyan), var(--glow-cyan-sm)
             expect(isCyanLike(focusStyles.boxShadow)).toBe(true);
             expect(focusStyles.boxShadow).toContain("6px"); // from glow-cyan-sm
-            expect(focusStyles.backgroundColor).toBe("rgba(0, 0, 0, 0)");
+            // Dark focus now also includes a background
+            expect(isCyanLike(focusStyles.backgroundColor)).toBe(true);
           }
 
           // Open state summary color
