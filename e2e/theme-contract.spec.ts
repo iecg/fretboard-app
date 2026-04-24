@@ -1,6 +1,17 @@
 import { test, expect } from "@playwright/test";
 import { loadVisualState } from "./visual-helpers";
 
+function colorToHex(color: string): string {
+  const c = color.replace(/\s*,\s*/g, ",").replace(/\s+/g, " ").trim().toLowerCase();
+  if (c.startsWith("#")) return c;
+  const m = c.match(/^rgba?\((\d+)[, ]+(\d+)[, ]+(\d+)(?:[/, ]+([0-9.]+))?\)/);
+  if (!m) return c;
+  const toH = (n: string) => parseInt(n).toString(16).padStart(2, "0");
+  const hex = `#${toH(m[1])}${toH(m[2])}${toH(m[3])}`;
+  if (m[4]) return hex + Math.round(parseFloat(m[4]) * 255).toString(16).padStart(2, "0");
+  return hex;
+}
+
 test.describe("Theme Contract", () => {
   test("should apply modern-light theme when light is selected", async ({ page }) => {
     await loadVisualState(page, { theme: "light" });
@@ -36,8 +47,8 @@ test.describe("Theme Contract", () => {
     const woodGrain = await page.evaluate(() => 
       getComputedStyle(document.documentElement).getPropertyValue("--fretboard-wood-grain").trim()
     );
-    // rgba(90, 60, 40, 0.08)
-    expect(woodGrain.replace(/\s/g, "")).toBe("rgba(90,60,40,0.08)");
+    // rgba(90, 60, 40, 0.08) == #5a3c2814 (minified)
+    expect(colorToHex(woodGrain)).toBe("#5a3c2814");
   });
 
   test("modern-light should use solid active styling for chips", async ({ page }) => {
@@ -203,10 +214,8 @@ test.describe("Theme Contract", () => {
       getComputedStyle(el).getPropertyValue("--cof-center-start").trim()
     );
     
-    // In dark mode: rgb(34 40 54 / 0.98)
-    expect(centerStart).toContain("34");
-    expect(centerStart).toContain("40");
-    expect(centerStart).toContain("54");
+    // In dark mode: rgb(34 40 54 / 0.98) == #222836fa (minified)
+    expect(colorToHex(centerStart)).toBe("#222836fa");
   });
 
   test("Disabled controls should have correct opacity in light mode", async ({ page }) => {
@@ -216,17 +225,17 @@ test.describe("Theme Contract", () => {
     const opacity = await page.evaluate(() => 
       getComputedStyle(document.documentElement).getPropertyValue("--disabled-opacity").trim()
     );
-    expect(opacity).toBe("0.4");
+    expect(parseFloat(opacity)).toBe(0.4);
   });
 
   test("Disabled controls should have correct opacity in dark mode", async ({ page }) => {
     await loadVisualState(page, { theme: "dark" });
-    
-    const opacity = await page.evaluate(() => 
+
+    const opacity = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue("--disabled-opacity").trim()
     );
     // In dark mode it should be 0.3 (from tokens.css)
-    expect(opacity).toBe("0.3");
+    expect(parseFloat(opacity)).toBe(0.3);
   });
 
   test("should follow system preference (dark)", async ({ page }) => {
