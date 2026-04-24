@@ -37,13 +37,23 @@
   --surface-overlay: color-mix(in srgb, var(--token-surface-card-base) 96%, transparent);
   --surface-overlay-border: var(--chrome-border);
 
-  --surface-card: var(--surface-overlay);
+  --surface-card: var(--surface-card-top); /* compat alias → surface-card-top */
   --surface-card-border: rgb(255 255 255 / 0.1);
   --surface-card-header-border: var(--token-border-subtler);
 
   --surface-muted: var(--token-surface-dim);
   --surface-hover: var(--chrome-hover-bg);
   --surface-hover-border: var(--chrome-hover-border);
+
+  /* Surface Ladder — explicit container hierarchy from deepest to highest elevation.
+     Prefer these tokens in new components over bare surface-base/raised/overlay primitives.
+     Theme overrides (themes.css) set light-mode values; dark defaults alias existing primitives. */
+  --surface-shell:       var(--bg-color);
+  --surface-card-top:    var(--surface-overlay);
+  --surface-card-nested: color-mix(in srgb, var(--bg-color) 60%, var(--surface-raised) 40%);
+  --surface-well:        var(--surface-raised);
+  --surface-strip:       var(--bg-color);
+  --surface-float:       var(--surface-overlay);
 
   --chrome-bg: color-mix(in srgb, var(--bg-color) 84%, var(--surface-raised) 16%);
   --chrome-fg: var(--text-main);
