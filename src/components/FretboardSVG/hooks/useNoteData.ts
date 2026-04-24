@@ -233,7 +233,9 @@ export function useNoteData({
                 fretIndex,
               );
 
-        if (noteClass === "note-inactive") continue;
+        // Skip explicitly hidden notes, but keep "note-inactive" (those not in the 
+        // current scale/chord) as hit targets so they remain playable.
+        if (isNoteHidden) continue;
 
         let displayValue = getNoteDisplayInScale(
           noteName,
@@ -268,7 +270,8 @@ export function useNoteData({
           semantics?.isTension ?? false,
         );
 
-        const isHidden = false;
+        // Visual hiddenness: inactive notes are not rendered in the note layer.
+        const isHidden = noteClass === "note-inactive";
 
         notes.push({
           stringIndex,
@@ -282,8 +285,8 @@ export function useNoteData({
           isTension: semantics?.isTension ?? false,
           isGuideTone: semantics?.isGuideTone ?? false,
         });
-      }
-    }
-    return notes;
-  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, wrappedNotes, practiceLens, noteSemantics, activePattern, activeShape, shapeScope]);
-}
+        }
+        }
+        return notes;
+        }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, wrappedNotes, practiceLens, noteSemantics, activePattern, activeShape, shapeScope]);
+        }

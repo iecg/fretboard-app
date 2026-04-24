@@ -145,8 +145,8 @@ describe("Fretboard/Fretboard", () => {
 
       expect(container.querySelectorAll(".key-tonic")).toHaveLength(0);
       expect(container.querySelectorAll(".note-active")).toHaveLength(0);
-      // SVG renderer skips inactive notes entirely; no active note elements expected
-      expect(container.querySelectorAll(".fretboard-note")).toHaveLength(0);
+      // SVG renderer now includes inactive notes as hidden hit targets
+      expect(container.querySelectorAll(".fretboard-note")).toHaveLength(144);
     });
   });
 
