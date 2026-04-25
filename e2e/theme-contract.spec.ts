@@ -19,6 +19,28 @@ function colorToHex(color: string): string {
   return hex;
 }
 
+function parseRgbChannels(color: string): [number, number, number] {
+  const normalized = color.trim().toLowerCase().replace(/\s*,\s*/g, ",");
+  const rgb = normalized.match(/rgba?\((\d+(?:\.\d+)?)[,\s]+(\d+(?:\.\d+)?)[,\s]+(\d+(?:\.\d+)?)/);
+  if (rgb) return [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])];
+
+  const srgb = normalized.match(/color\(srgb\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)/);
+  if (srgb) {
+    return [
+      Math.round(Number(srgb[1]) * 255),
+      Math.round(Number(srgb[2]) * 255),
+      Math.round(Number(srgb[3]) * 255)
+    ];
+  }
+
+  throw new Error(`Unable to parse color: ${color}`);
+}
+
+function brightness(color: string): number {
+  const [r, g, b] = parseRgbChannels(color);
+  return r + g + b;
+}
+
 test.describe("Theme Contract", () => {
   test("should apply modern-light theme when light is selected", async ({ page }) => {
     await loadVisualState(page, { theme: "light" });
@@ -106,8 +128,8 @@ test.describe("Theme Contract", () => {
       };
     });
     
-    // modern-light: --practice-bar-fill = --surface-strip = #eaeff6 -> rgb(234, 239, 246)
-    expect(styles.backgroundColor.replace(/\s/g, "")).toBe("rgb(234,239,246)");
+    // modern-light: --practice-bar-fill = --surface-strip = --surface-card-top -> rgb(250, 251, 253)
+    expect(styles.backgroundColor.replace(/\s/g, "")).toBe("rgb(250,251,253)");
     // text-main: #0f172a -> rgb(15, 23, 42)
     expect(styles.color.replace(/\s/g, "")).toBe("rgb(15,23,42)");
   });
@@ -602,25 +624,27 @@ test.describe("Theme Contract", () => {
           expect(normalize(iconColor)).not.toBe(normalize(accentColors.interactive));
         });
 
-        test("theory browser selector should use shared control hover treatment", async ({ page }) => {
-          const browserSelector = page.locator('[class*="theory-browser-selector"]').first();
-          await expect(browserSelector).toBeVisible();
+        test("theory browser main should use shared control hover treatment", async ({ page }) => {
+          const browserMain = page.locator('[class*="theory-browser-main"]').first();
+          await expect(browserMain).toBeVisible();
 
-          const beforeStyles = await browserSelector.evaluate((el) => {
+          const beforeStyles = await browserMain.evaluate((el) => {
             const cs = getComputedStyle(el);
             return {
               bg: cs.backgroundColor,
-              bgImg: cs.backgroundImage
+              bgImg: cs.backgroundImage,
+              border: cs.borderColor
             };
           });
 
-          await browserSelector.hover();
+          await browserMain.hover();
 
-          const afterStyles = await browserSelector.evaluate((el) => {
+          const afterStyles = await browserMain.evaluate((el) => {
             const cs = getComputedStyle(el);
             return {
               bg: cs.backgroundColor,
-              bgImg: cs.backgroundImage
+              bgImg: cs.backgroundImage,
+              border: cs.borderColor
             };
           });
 
@@ -630,10 +654,13 @@ test.describe("Theme Contract", () => {
             // In dark mode, it should have a gradient hover
             expect(afterStyles.bgImg).not.toBe("none");
             expect(afterStyles.bgImg).toContain("gradient");
+            expect(isCyanLike(afterStyles.border)).toBe(true);
           } else {
             // In light mode, it should be a solid color change
             // light surface hover: --surface-highlight = #dde4ef -> rgb(221, 228, 239)
             expect(afterStyles.bg.replace(/\s/g, "")).toBe("rgb(221,228,239)");
+            // hover border: --surface-control-hover-border = app cyan = #0891b2 -> rgb(8, 145, 178)
+            expect(afterStyles.border.replace(/\s/g, "")).toBe("rgb(8,145,178)");
           }
         });
 
@@ -671,7 +698,7 @@ test.describe("Theme Contract", () => {
   });
 
   test.describe("Surface Hierarchy", () => {
-    test("light surface ladder tokens are all distinct and none are pure white", async ({ page }) => {
+    test("light surface ladder separates controls from nested cards", async ({ page }) => {
       await loadVisualState(page, { theme: "light" });
 
       const tokens = await page.evaluate(() => {
@@ -682,49 +709,59 @@ test.describe("Theme Contract", () => {
           nested:   cs.getPropertyValue("--surface-card-nested").trim(),
           well:     cs.getPropertyValue("--surface-well").trim(),
           strip:    cs.getPropertyValue("--surface-strip").trim(),
+          control:  cs.getPropertyValue("--surface-control").trim(),
           float:    cs.getPropertyValue("--surface-float").trim(),
         };
       });
 
-      // All six surface rungs must be distinct
-      const values = Object.values(tokens);
-      const unique = new Set(values);
-      expect(unique.size, `Expected 6 distinct surface tokens, got: ${JSON.stringify(tokens)}`).toBe(6);
-
-      // Exact light-mode values from themes.css surface ladder
+      // Exact light-mode values from themes.css surface ladder.
       // Vite/lightning-css minifies `#ffffff` → `#fff` in production builds, so
-      // canonicalize before comparing.
+      // canonicalize via colorToHex before comparing.
       expect(colorToHex(tokens.shell)).toBe("#eef2f7");
       expect(colorToHex(tokens.cardTop)).toBe("#fafbfd");
-      expect(colorToHex(tokens.nested)).toBe("#ebf0f7");
+      expect(colorToHex(tokens.nested)).toBe("#f2f6fb");
       expect(colorToHex(tokens.well)).toBe("#e5ecf5");
-      expect(colorToHex(tokens.strip)).toBe("#eaeff6");
       expect(colorToHex(tokens.float)).toBe("#ffffff");
 
-      // card-top is the brightest non-float level — it must not equal pure white
+      // Summary strips intentionally join the card family, while controls remain sunken wells.
+      expect(tokens.strip).toBe(tokens.cardTop);
+      expect(tokens.control).toBe(tokens.well);
+      expect(tokens.cardTop).not.toBe(tokens.nested);
+      expect(tokens.nested).not.toBe(tokens.well);
+
       expect(colorToHex(tokens.cardTop)).not.toBe("#ffffff");
     });
 
-    test("dark surface ladder maintains internal hierarchy", async ({ page }) => {
+    test("dark surface ladder separates controls from nested cards", async ({ page }) => {
       await loadVisualState(page, { theme: "dark" });
 
-      const tokens = await page.evaluate(() => {
-        const cs = getComputedStyle(document.documentElement);
+      const colors = await page.evaluate(() => {
+        const resolveBg = (token: string) => {
+          const el = document.createElement("div");
+          el.style.background = `var(${token})`;
+          document.body.appendChild(el);
+          const color = getComputedStyle(el).backgroundColor;
+          el.remove();
+          return color;
+        };
+
         return {
-          shell:   cs.getPropertyValue("--surface-shell").trim(),
-          cardTop: cs.getPropertyValue("--surface-card-top").trim(),
-          float:   cs.getPropertyValue("--surface-float").trim(),
+          shell:   resolveBg("--surface-shell"),
+          cardTop: resolveBg("--surface-card-top"),
+          nested:  resolveBg("--surface-card-nested"),
+          well:    resolveBg("--surface-well"),
+          control: resolveBg("--surface-control"),
+          strip:   resolveBg("--surface-strip"),
+          float:   resolveBg("--surface-float"),
         };
       });
 
       // In dark mode, all three should be dark (no channel brighter than 80)
-      const parseDark = (v: string) => {
-        const m = v.match(/rgb\((\d+),?\s*(\d+),?\s*(\d+)/);
-        return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : [0, 0, 0];
-      };
-      const [sr, sg, sb] = parseDark(tokens.shell);
-      const [cr, cg, cb] = parseDark(tokens.cardTop);
-      const [fr, fg, fb] = parseDark(tokens.float);
+      const [sr, sg, sb] = parseRgbChannels(colors.shell);
+      const [cr, cg, cb] = parseRgbChannels(colors.cardTop);
+      const [nr, ng, nb] = parseRgbChannels(colors.nested);
+      const [wr, wg, wb] = parseRgbChannels(colors.well);
+      const [fr, fg, fb] = parseRgbChannels(colors.float);
 
       // Shell is the darkest base — all channels < 60
       expect(sr).toBeLessThan(60);
@@ -733,6 +770,15 @@ test.describe("Theme Contract", () => {
 
       // Card top should be slightly elevated (higher R channel than shell)
       expect(cr).toBeGreaterThanOrEqual(sr);
+
+      // Nested content cards stay visually above sunken controls.
+      expect(brightness(colors.nested)).toBeGreaterThan(brightness(colors.control));
+      expect(colors.control).toBe(colors.well);
+      expect(colors.strip).toBe(colors.cardTop);
+
+      expect(nr).toBeGreaterThanOrEqual(wr);
+      expect(ng).toBeGreaterThanOrEqual(wg);
+      expect(nb).toBeGreaterThanOrEqual(wb);
 
       // Float is the highest elevation — at least as bright as card
       expect(fr).toBeGreaterThanOrEqual(cr);
@@ -771,38 +817,38 @@ test.describe("Theme Contract", () => {
         )
       );
 
-      // surface-card-nested = #ebf0f7 → rgb(235, 240, 247)
-      const hasNested = backgrounds.some((bg) => bg.replace(/\s/g, "") === "rgb(235,240,247)");
+      // surface-card-nested = #f2f6fb → rgb(242, 246, 251)
+      const hasNested = backgrounds.some((bg) => bg.replace(/\s/g, "") === "rgb(242,246,251)");
       expect(hasNested, `Expected at least one panel-surface with surface-card-nested. Got: ${JSON.stringify(backgrounds)}`).toBe(true);
     });
 
-    test("chord practice strip uses surface-strip token in light mode", async ({ page }) => {
+    test("chord practice strip aligns with card surface in light mode", async ({ page }) => {
       await loadVisualState(page, { theme: "light", chordType: "Major 7th" });
 
       const practiceBar = page.locator('section[aria-label^="Practice cues:"]');
       await expect(practiceBar).toBeVisible();
 
       const bg = await practiceBar.evaluate((el) => getComputedStyle(el).backgroundColor);
-      // surface-strip = #eaeff6 → rgb(234, 239, 246)
-      expect(bg.replace(/\s/g, "")).toBe("rgb(234,239,246)");
+      // surface-strip = --surface-card-top → rgb(250, 251, 253)
+      expect(bg.replace(/\s/g, "")).toBe("rgb(250,251,253)");
       // Must not be pure white or the old f1f5f9 value
       expect(bg.replace(/\s/g, "")).not.toBe("rgb(255,255,255)");
       expect(bg.replace(/\s/g, "")).not.toBe("rgb(241,245,249)");
     });
 
-    test("chord practice strip is visually distinct from card-top in light mode", async ({ page }) => {
+    test("chord practice and degree strips share the card surface in light mode", async ({ page }) => {
       await loadVisualState(page, { theme: "light", chordType: "Major 7th" });
 
       const practiceBar = page.locator('section[aria-label^="Practice cues:"]');
       await expect(practiceBar).toBeVisible();
+      const degreeStrip = page.locator('[class*="degree-chip-strip"]').first();
+      await expect(degreeStrip).toBeVisible();
 
-      const bg = await practiceBar.evaluate((el) => getComputedStyle(el).backgroundColor);
-      // surface-strip (#eaeff6) must be distinct from surface-card-top (#fafbfd)
-      expect(bg.replace(/\s/g, "")).not.toBe("rgb(250,251,253)");
-      // And distinct from pure white
-      expect(bg.replace(/\s/g, "")).not.toBe("rgb(255,255,255)");
-      // Correct strip value
-      expect(bg.replace(/\s/g, "")).toBe("rgb(234,239,246)");
+      const practiceBg = await practiceBar.evaluate((el) => getComputedStyle(el).backgroundColor);
+      const degreeBg = await degreeStrip.evaluate((el) => getComputedStyle(el).backgroundColor);
+
+      expect(practiceBg.replace(/\s/g, "")).toBe("rgb(250,251,253)");
+      expect(degreeBg.replace(/\s/g, "")).toBe(practiceBg.replace(/\s/g, ""));
     });
 
     test("degree chip strip uses surface-strip token in light mode", async ({ page }) => {
@@ -813,8 +859,8 @@ test.describe("Theme Contract", () => {
       await expect(degreeStrip).toBeVisible();
 
       const bg = await degreeStrip.evaluate((el) => getComputedStyle(el).backgroundColor);
-      // strip-surface sets background via --strip-fill = --surface-strip = #eaeff6 → rgb(234, 239, 246)
-      expect(bg.replace(/\s/g, "")).toBe("rgb(234,239,246)");
+      // strip-surface sets background via --strip-fill = --surface-strip = --surface-card-top
+      expect(bg.replace(/\s/g, "")).toBe("rgb(250,251,253)");
     });
 
     test("settings overlay uses surface-float (highest elevation) in light mode", async ({ page }) => {
@@ -827,6 +873,40 @@ test.describe("Theme Contract", () => {
       const bg = await drawer.evaluate((el) => getComputedStyle(el).backgroundColor);
       // surface-float = #ffffff → rgb(255, 255, 255) — highest elevation, pure white
       expect(bg.replace(/\s/g, "")).toBe("rgb(255,255,255)");
+    });
+
+    test("settings section cards use aligned nested surface tokens in light mode", async ({ page }) => {
+      await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
+
+      await page.getByLabel("Open settings").click();
+      const drawer = page.getByTestId("settings-drawer");
+      await expect(drawer).toBeVisible();
+
+      // Find a section card in the settings drawer
+      const sectionCard = drawer.locator('[class*="overlay-section-card"]').first();
+      await expect(sectionCard).toBeVisible();
+
+      const styles = await sectionCard.evaluate((el) => {
+        const cs = getComputedStyle(el);
+        return {
+          backgroundColor: cs.backgroundColor,
+          borderColor: cs.borderColor,
+          borderRadius: cs.borderRadius,
+          boxShadow: cs.boxShadow
+        };
+      });
+
+      // --nested-card-bg = --surface-card-nested = #f2f6fb → rgb(242, 246, 251)
+      expect(styles.backgroundColor.replace(/\s/g, "")).toBe("rgb(242,246,251)");
+
+      // --nested-card-border = --surface-card-border = --surface-highlight = #dde4ef → rgb(221, 228, 239)
+      expect(styles.borderColor.replace(/\s/g, "")).toBe("rgb(221,228,239)");
+
+      // --nested-card-radius = --radius-lg = 12px
+      expect(styles.borderRadius).toBe("12px");
+
+      // --nested-card-shadow = none
+      expect(styles.boxShadow).toBe("none");
     });
 
     test("help modal uses surface hierarchy tokens in light mode", async ({ page }) => {
@@ -901,24 +981,59 @@ test.describe("Theme Contract", () => {
       }
     });
 
-    test("theory-mode-browser and theory-chord-section use distinct surface tokens in light mode", async ({ page }) => {
+    test("theory-mode-browser and theory-chord-section use aligned nested surface tokens in light mode", async ({ page }) => {
       await loadVisualState(page, { theme: "light", chordType: "Major 7th" }, { width: 1280, height: 900 });
       await expect(page.getByTestId("theory-controls")).toBeVisible();
 
-      // theory-mode-browser overrides to --surface-card-top = #fafbfd → rgb(250, 251, 253)
+      // theory-mode-browser now uses --nested-card-bg = --surface-card-nested = #f2f6fb → rgb(242, 246, 251)
       const modeBrowser = page.locator('[class*="theory-mode-browser"]');
       await expect(modeBrowser).toBeVisible();
       const modeBg = await modeBrowser.evaluate((el) => getComputedStyle(el).backgroundColor);
-      expect(modeBg.replace(/\s/g, "")).toBe("rgb(250,251,253)");
+      expect(modeBg.replace(/\s/g, "")).toBe("rgb(242,246,251)");
 
-      // theory-chord-section uses --surface-card-nested = #ebf0f7 → rgb(235, 240, 247)
+      // theory-chord-section also uses --surface-card-nested = #f2f6fb → rgb(242, 246, 251)
       const chordSection = page.locator('[class*="theory-chord-section"]');
       await expect(chordSection).toBeVisible();
       const chordBg = await chordSection.evaluate((el) => getComputedStyle(el).backgroundColor);
-      expect(chordBg.replace(/\s/g, "")).toBe("rgb(235,240,247)");
+      expect(chordBg.replace(/\s/g, "")).toBe("rgb(242,246,251)");
 
-      // Outer panel (card-top) must be brighter than nested panel (card-nested)
-      expect(modeBg).not.toBe(chordBg);
+      // Both should now be aligned to the same nested surface level
+      expect(modeBg).toBe(chordBg);
+    });
+
+    test("rendered controls are visually sunken from nested cards in both themes", async ({ page }) => {
+      for (const theme of ["light", "dark"] as const) {
+        await loadVisualState(page, { theme, chordType: "Major 7th" }, { width: 1280, height: 900 });
+        await expect(page.getByTestId("theory-controls")).toBeVisible();
+
+        const modeBrowser = page.locator('[class*="theory-mode-browser"]').first();
+        const browserMain = page.locator('[class*="theory-browser-main"]').first();
+        const scaleFamilySelect = page.getByLabel("Scale Family").first();
+        const toggleGroup = page.locator('[class*="toggle-group"]').first();
+
+        await expect(modeBrowser).toBeVisible();
+        await expect(browserMain).toBeVisible();
+        await expect(scaleFamilySelect).toBeVisible();
+        await expect(toggleGroup).toBeVisible();
+
+        const nestedBg = await modeBrowser.evaluate((el) => getComputedStyle(el).backgroundColor);
+        const browserBg = await browserMain.evaluate((el) => getComputedStyle(el).backgroundColor);
+        const selectBg = await scaleFamilySelect.evaluate((el) => getComputedStyle(el).backgroundColor);
+        const toggleBg = await toggleGroup.evaluate((el) => getComputedStyle(el).backgroundColor);
+
+        expect(browserBg).not.toBe(nestedBg);
+        expect(selectBg).not.toBe(nestedBg);
+        expect(toggleBg).not.toBe(nestedBg);
+        expect(brightness(nestedBg)).toBeGreaterThan(brightness(browserBg));
+        expect(brightness(nestedBg)).toBeGreaterThan(brightness(selectBg));
+        expect(brightness(nestedBg)).toBeGreaterThan(brightness(toggleBg));
+
+        await page.getByLabel("Open settings").click();
+        const sectionCard = page.getByTestId("settings-drawer").locator('[class*="overlay-section-card"]').first();
+        await expect(sectionCard).toBeVisible();
+        const settingsNestedBg = await sectionCard.evaluate((el) => getComputedStyle(el).backgroundColor);
+        expect(settingsNestedBg).toBe(nestedBg);
+      }
     });
   });
 

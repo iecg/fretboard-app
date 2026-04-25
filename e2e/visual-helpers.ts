@@ -1,6 +1,12 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 import { STORAGE_PREFIX, LEGACY_KEYS } from "../src/utils/storageConstants";
 
+export interface FullPageVisualOptions {
+  maxDiffPixels?: number;
+  maxDiffPixelRatio?: number;
+  threshold?: number;
+}
+
 export interface VisualState {
   rootNote?: string;
   scaleName?: string;
@@ -202,7 +208,7 @@ export async function prepareVisualPage(page: Page, viewport = { width: 1280, he
 /**
  * Captures a full-page screenshot with the version badge masked.
  */
-export async function expectFullPageVisual(page: Page, name: string) {
+export async function expectFullPageVisual(page: Page, name: string, options: FullPageVisualOptions = {}) {
   await waitForStableLayout(page);
   
   await expect(page).toHaveScreenshot(`${name}.png`, {
@@ -210,6 +216,7 @@ export async function expectFullPageVisual(page: Page, name: string) {
     mask: [page.getByTestId("version-badge")],
     animations: "disabled",
     scale: "css",
+    ...options,
   });
 }
 

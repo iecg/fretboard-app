@@ -23,8 +23,10 @@
           var supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
           if (!theme || theme === 'system') {
             theme = supportDarkMode ? 'modern-dark' : 'modern-light';
+          } else if (theme === 'light' || theme === 'modern-light') {
+            theme = 'modern-light';
           } else {
-            theme = theme === 'light' ? 'modern-light' : 'modern-dark';
+            theme = 'modern-dark';
           }
           document.documentElement.setAttribute('data-theme', theme);
         } catch (e) {
