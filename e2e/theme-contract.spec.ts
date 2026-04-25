@@ -819,6 +819,40 @@ test.describe("Theme Contract", () => {
       expect(bg.replace(/\s/g, "")).toBe("rgb(255,255,255)");
     });
 
+    test("settings section cards use aligned nested surface tokens in light mode", async ({ page }) => {
+      await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
+
+      await page.getByLabel("Open settings").click();
+      const drawer = page.getByTestId("settings-drawer");
+      await expect(drawer).toBeVisible();
+
+      // Find a section card in the settings drawer
+      const sectionCard = drawer.locator('[class*="overlay-section-card"]').first();
+      await expect(sectionCard).toBeVisible();
+
+      const styles = await sectionCard.evaluate((el) => {
+        const cs = getComputedStyle(el);
+        return {
+          backgroundColor: cs.backgroundColor,
+          borderColor: cs.borderColor,
+          borderRadius: cs.borderRadius,
+          boxShadow: cs.boxShadow
+        };
+      });
+
+      // --nested-card-bg = --surface-card-nested = #f2f6fb → rgb(242, 246, 251)
+      expect(styles.backgroundColor.replace(/\s/g, "")).toBe("rgb(242,246,251)");
+      
+      // --nested-card-border = --surface-card-border = --surface-highlight = #dde4ef → rgb(221, 228, 239)
+      expect(styles.borderColor.replace(/\s/g, "")).toBe("rgb(221,228,239)");
+      
+      // --nested-card-radius = --radius-lg = 12px
+      expect(styles.borderRadius).toBe("12px");
+      
+      // --nested-card-shadow = none
+      expect(styles.boxShadow).toBe("none");
+    });
+
     test("help modal uses surface hierarchy tokens in light mode", async ({ page }) => {
       await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
 
