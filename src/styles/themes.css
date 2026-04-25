@@ -32,8 +32,9 @@
   --surface-card-top:    #fafbfd; /* top-level card: near-white, brighter than shell */
   --surface-card-nested: #f2f6fb; /* inset card: visibly recessed from card-top without reading like a control well */
   --surface-well:        #e5ecf5; /* control well: distinctly sunken */
-  --surface-strip:       #f6f9fc; /* practice/chord strip: card-adjacent */
+  --surface-strip:       var(--surface-card-top); /* practice/chord strip: card-aligned */
   --surface-float:       #ffffff; /* floating overlay (dropdown, modal): highest elevation */
+  --surface-control:     var(--surface-well); /* controls sit lower than nested content cards */
 
   /* Strip tokens — routed through ladder */
   --chord-strip-fill:  var(--surface-strip); /* was #f1f5f9 */
