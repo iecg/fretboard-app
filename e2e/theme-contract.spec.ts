@@ -595,11 +595,11 @@ test.describe("Theme Contract", () => {
           expect(normalize(iconColor)).not.toBe(normalize(accentColors.interactive));
         });
 
-        test("theory browser selector should use shared control hover treatment", async ({ page }) => {
-          const browserSelector = page.locator('[class*="theory-browser-selector"]').first();
-          await expect(browserSelector).toBeVisible();
+        test("theory browser main should use shared control hover treatment", async ({ page }) => {
+          const browserMain = page.locator('[class*="theory-browser-main"]').first();
+          await expect(browserMain).toBeVisible();
 
-          const beforeStyles = await browserSelector.evaluate((el) => {
+          const beforeStyles = await browserMain.evaluate((el) => {
             const cs = getComputedStyle(el);
             return {
               bg: cs.backgroundColor,
@@ -607,9 +607,9 @@ test.describe("Theme Contract", () => {
             };
           });
 
-          await browserSelector.hover();
+          await browserMain.hover();
 
-          const afterStyles = await browserSelector.evaluate((el) => {
+          const afterStyles = await browserMain.evaluate((el) => {
             const cs = getComputedStyle(el);
             return {
               bg: cs.backgroundColor,
@@ -891,24 +891,24 @@ test.describe("Theme Contract", () => {
       }
     });
 
-    test("theory-mode-browser and theory-chord-section use distinct surface tokens in light mode", async ({ page }) => {
+    test("theory-mode-browser and theory-chord-section use aligned nested surface tokens in light mode", async ({ page }) => {
       await loadVisualState(page, { theme: "light", chordType: "Major 7th" }, { width: 1280, height: 900 });
       await expect(page.getByTestId("theory-controls")).toBeVisible();
 
-      // theory-mode-browser overrides to --surface-card-top = #fafbfd → rgb(250, 251, 253)
+      // theory-mode-browser now uses --nested-card-bg = --surface-card-nested = #f2f6fb → rgb(242, 246, 251)
       const modeBrowser = page.locator('[class*="theory-mode-browser"]');
       await expect(modeBrowser).toBeVisible();
       const modeBg = await modeBrowser.evaluate((el) => getComputedStyle(el).backgroundColor);
-      expect(modeBg.replace(/\s/g, "")).toBe("rgb(250,251,253)");
+      expect(modeBg.replace(/\s/g, "")).toBe("rgb(242,246,251)");
 
-      // theory-chord-section uses --surface-card-nested = #f2f6fb → rgb(242, 246, 251)
+      // theory-chord-section also uses --surface-card-nested = #f2f6fb → rgb(242, 246, 251)
       const chordSection = page.locator('[class*="theory-chord-section"]');
       await expect(chordSection).toBeVisible();
       const chordBg = await chordSection.evaluate((el) => getComputedStyle(el).backgroundColor);
       expect(chordBg.replace(/\s/g, "")).toBe("rgb(242,246,251)");
 
-      // Outer panel (card-top) must be brighter than nested panel (card-nested)
-      expect(modeBg).not.toBe(chordBg);
+      // Both should now be aligned to the same nested surface level
+      expect(modeBg).toBe(chordBg);
     });
   });
 
