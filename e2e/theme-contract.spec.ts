@@ -603,7 +603,8 @@ test.describe("Theme Contract", () => {
             const cs = getComputedStyle(el);
             return {
               bg: cs.backgroundColor,
-              bgImg: cs.backgroundImage
+              bgImg: cs.backgroundImage,
+              border: cs.borderColor
             };
           });
 
@@ -613,7 +614,8 @@ test.describe("Theme Contract", () => {
             const cs = getComputedStyle(el);
             return {
               bg: cs.backgroundColor,
-              bgImg: cs.backgroundImage
+              bgImg: cs.backgroundImage,
+              border: cs.borderColor
             };
           });
 
@@ -623,10 +625,13 @@ test.describe("Theme Contract", () => {
             // In dark mode, it should have a gradient hover
             expect(afterStyles.bgImg).not.toBe("none");
             expect(afterStyles.bgImg).toContain("gradient");
+            expect(isCyanLike(afterStyles.border)).toBe(true);
           } else {
             // In light mode, it should be a solid color change
             // light surface hover: --surface-highlight = #dde4ef -> rgb(221, 228, 239)
             expect(afterStyles.bg.replace(/\s/g, "")).toBe("rgb(221,228,239)");
+            // hover border: --surface-control-hover-border = app cyan = #0891b2 -> rgb(8, 145, 178)
+            expect(afterStyles.border.replace(/\s/g, "")).toBe("rgb(8,145,178)");
           }
         });
 
@@ -765,9 +770,9 @@ test.describe("Theme Contract", () => {
       // surface-card-nested = #f2f6fb → rgb(242, 246, 251)
       const hasNested = backgrounds.some((bg) => bg.replace(/\s/g, "") === "rgb(242,246,251)");
       expect(hasNested, `Expected at least one panel-surface with surface-card-nested. Got: ${JSON.stringify(backgrounds)}`).toBe(true);
-      });
+    });
 
-      test("chord practice strip uses surface-strip token in light mode", async ({ page }) => {
+    test("chord practice strip uses surface-strip token in light mode", async ({ page }) => {
       await loadVisualState(page, { theme: "light", chordType: "Major 7th" });
 
       const practiceBar = page.locator('section[aria-label^="Practice cues:"]');
@@ -779,9 +784,9 @@ test.describe("Theme Contract", () => {
       // Must not be pure white or the old f1f5f9 value
       expect(bg.replace(/\s/g, "")).not.toBe("rgb(255,255,255)");
       expect(bg.replace(/\s/g, "")).not.toBe("rgb(241,245,249)");
-      });
+    });
 
-      test("chord practice strip is visually distinct from card-top in light mode", async ({ page }) => {
+    test("chord practice strip is visually distinct from card-top in light mode", async ({ page }) => {
       await loadVisualState(page, { theme: "light", chordType: "Major 7th" });
 
       const practiceBar = page.locator('section[aria-label^="Practice cues:"]');
@@ -794,9 +799,9 @@ test.describe("Theme Contract", () => {
       expect(bg.replace(/\s/g, "")).not.toBe("rgb(255,255,255)");
       // Correct strip value
       expect(bg.replace(/\s/g, "")).toBe("rgb(246,249,252)");
-      });
+    });
 
-      test("degree chip strip uses surface-strip token in light mode", async ({ page }) => {
+    test("degree chip strip uses surface-strip token in light mode", async ({ page }) => {
       await loadVisualState(page, { theme: "light" });
 
       // DegreeChipStrip is rendered inside the scale summary area
@@ -806,7 +811,7 @@ test.describe("Theme Contract", () => {
       const bg = await degreeStrip.evaluate((el) => getComputedStyle(el).backgroundColor);
       // strip-surface sets background via --strip-fill = --surface-strip = #f6f9fc → rgb(246, 249, 252)
       expect(bg.replace(/\s/g, "")).toBe("rgb(246,249,252)");
-      });
+    });
     test("settings overlay uses surface-float (highest elevation) in light mode", async ({ page }) => {
       await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
 
