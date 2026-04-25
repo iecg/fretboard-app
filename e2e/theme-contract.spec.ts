@@ -3,7 +3,14 @@ import { loadVisualState } from "./visual-helpers";
 
 function colorToHex(color: string): string {
   const c = color.replace(/\s*,\s*/g, ",").replace(/\s+/g, " ").trim().toLowerCase();
-  if (c.startsWith("#")) return c;
+  if (c.startsWith("#")) {
+    // Expand short hex (#abc → #aabbcc, #abcd → #aabbccdd) so vite/lightning-css
+    // minified values compare equal to their authored long-form counterparts.
+    if (/^#[0-9a-f]{3,4}$/.test(c)) {
+      return "#" + c.slice(1).split("").map((ch) => ch + ch).join("");
+    }
+    return c;
+  }
   const m = c.match(/^rgba?\((\d+)[, ]+(\d+)[, ]+(\d+)(?:[/, ]+([0-9.]+))?\)/);
   if (!m) return c;
   const toH = (n: string) => parseInt(n).toString(16).padStart(2, "0");
@@ -685,15 +692,17 @@ test.describe("Theme Contract", () => {
       expect(unique.size, `Expected 6 distinct surface tokens, got: ${JSON.stringify(tokens)}`).toBe(6);
 
       // Exact light-mode values from themes.css surface ladder
-      expect(tokens.shell.toLowerCase()).toBe("#eef2f7");
-      expect(tokens.cardTop.toLowerCase()).toBe("#fafbfd");
-      expect(tokens.nested.toLowerCase()).toBe("#ebf0f7");
-      expect(tokens.well.toLowerCase()).toBe("#e5ecf5");
-      expect(tokens.strip.toLowerCase()).toBe("#eaeff6");
-      expect(tokens.float.toLowerCase()).toBe("#ffffff");
+      // Vite/lightning-css minifies `#ffffff` → `#fff` in production builds, so
+      // canonicalize before comparing.
+      expect(colorToHex(tokens.shell)).toBe("#eef2f7");
+      expect(colorToHex(tokens.cardTop)).toBe("#fafbfd");
+      expect(colorToHex(tokens.nested)).toBe("#ebf0f7");
+      expect(colorToHex(tokens.well)).toBe("#e5ecf5");
+      expect(colorToHex(tokens.strip)).toBe("#eaeff6");
+      expect(colorToHex(tokens.float)).toBe("#ffffff");
 
       // card-top is the brightest non-float level — it must not equal pure white
-      expect(tokens.cardTop.toLowerCase()).not.toBe("#ffffff");
+      expect(colorToHex(tokens.cardTop)).not.toBe("#ffffff");
     });
 
     test("dark surface ladder maintains internal hierarchy", async ({ page }) => {
@@ -919,16 +928,17 @@ test.describe("Theme Contract", () => {
       const lightVal = await page.evaluate(() =>
         getComputedStyle(document.documentElement).getPropertyValue("--fretboard-a11y-hover-bg").trim()
       );
-      // Light: rgb(0 0 0 / 0.05) — dark translucent overlay
-      expect(lightVal).toMatch(/^rgb\(0\s+0\s+0/);
+      // Light: rgb(0 0 0 / 0.05) — dark translucent overlay. Production builds
+      // minify this to `#0000000d`, so canonicalize before asserting.
+      expect(colorToHex(lightVal).slice(0, 7)).toBe("#000000");
 
       await loadVisualState(page, { theme: "dark" });
       const darkVal = await page.evaluate(() =>
         getComputedStyle(document.documentElement).getPropertyValue("--fretboard-a11y-hover-bg").trim()
       );
-      // Dark: rgb(255 255 255 / 0.15) — light translucent overlay
-      expect(darkVal).toMatch(/^rgb\(255\s+255\s+255/);
-      expect(lightVal).not.toBe(darkVal);
+      // Dark: rgb(255 255 255 / 0.15) — light translucent overlay. Same minification caveat.
+      expect(colorToHex(darkVal).slice(0, 7)).toBe("#ffffff");
+      expect(colorToHex(lightVal)).not.toBe(colorToHex(darkVal));
     });
 
     test("practice pills render with role-scale-border for in-scale notes in light mode", async ({ page }) => {
