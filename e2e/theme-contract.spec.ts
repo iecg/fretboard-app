@@ -629,6 +629,36 @@ test.describe("Theme Contract", () => {
             expect(afterStyles.bg.replace(/\s/g, "")).toBe("rgb(221,228,239)");
           }
         });
+
+        test("theory disclosure focus uses tokenized focus glow", async ({ page }) => {
+          // Mobile viewport: disclosure buttons are visible there
+          await loadVisualState(page, { theme }, { width: 390, height: 844 });
+
+          const disclosureBtn = page.getByRole("button", { name: /Chord Overlay/i });
+          await expect(disclosureBtn).toBeVisible();
+          // Ensure it is collapsed before focusing
+          if (await disclosureBtn.getAttribute("aria-expanded") === "true") {
+            await disclosureBtn.click();
+            await expect(disclosureBtn).toHaveAttribute("aria-expanded", "false");
+          }
+
+          await disclosureBtn.focus();
+          const focusStyles = await disclosureBtn.evaluate((el) => {
+            const cs = getComputedStyle(el);
+            return { outlineStyle: cs.outlineStyle, boxShadow: cs.boxShadow };
+          });
+
+          if (theme === "dark") {
+            // Dark mode: --control-focus-ring = none; glow via --control-focus-glow (cyan)
+            expect(focusStyles.outlineStyle).toBe("none");
+            expect(focusStyles.boxShadow).not.toBe("none");
+            // The glow resolves from --neon-cyan (77, 228, 255 in dark mode)
+            expect(isCyanLike(focusStyles.boxShadow)).toBe(true);
+          } else {
+            // Light mode: --control-focus-ring = 2px solid neon-cyan → solid outline
+            expect(focusStyles.outlineStyle).toBe("solid");
+          }
+        });
       });
     }
   });
@@ -860,6 +890,105 @@ test.describe("Theme Contract", () => {
           expect(Number(m[3])).toBeLessThan(100);     // B low
         }
       }
+    });
+
+    test("theory-mode-browser and theory-chord-section use distinct surface tokens in light mode", async ({ page }) => {
+      await loadVisualState(page, { theme: "light", chordType: "Major 7th" }, { width: 1280, height: 900 });
+      await expect(page.getByTestId("theory-controls")).toBeVisible();
+
+      // theory-mode-browser overrides to --surface-card-top = #fafbfd → rgb(250, 251, 253)
+      const modeBrowser = page.locator('[class*="theory-mode-browser"]');
+      await expect(modeBrowser).toBeVisible();
+      const modeBg = await modeBrowser.evaluate((el) => getComputedStyle(el).backgroundColor);
+      expect(modeBg.replace(/\s/g, "")).toBe("rgb(250,251,253)");
+
+      // theory-chord-section uses --surface-card-nested = #ebf0f7 → rgb(235, 240, 247)
+      const chordSection = page.locator('[class*="theory-chord-section"]');
+      await expect(chordSection).toBeVisible();
+      const chordBg = await chordSection.evaluate((el) => getComputedStyle(el).backgroundColor);
+      expect(chordBg.replace(/\s/g, "")).toBe("rgb(235,240,247)");
+
+      // Outer panel (card-top) must be brighter than nested panel (card-nested)
+      expect(modeBg).not.toBe(chordBg);
+    });
+  });
+
+  test.describe("Role Token Contract", () => {
+    test("fretboard a11y hover token is dark in light mode and white in dark mode", async ({ page }) => {
+      await loadVisualState(page, { theme: "light" });
+      const lightVal = await page.evaluate(() =>
+        getComputedStyle(document.documentElement).getPropertyValue("--fretboard-a11y-hover-bg").trim()
+      );
+      // Light: rgb(0 0 0 / 0.05) — dark translucent overlay
+      expect(lightVal).toMatch(/^rgb\(0\s+0\s+0/);
+
+      await loadVisualState(page, { theme: "dark" });
+      const darkVal = await page.evaluate(() =>
+        getComputedStyle(document.documentElement).getPropertyValue("--fretboard-a11y-hover-bg").trim()
+      );
+      // Dark: rgb(255 255 255 / 0.15) — light translucent overlay
+      expect(darkVal).toMatch(/^rgb\(255\s+255\s+255/);
+      expect(lightVal).not.toBe(darkVal);
+    });
+
+    test("practice pills render with role-scale-border for in-scale notes in light mode", async ({ page }) => {
+      await loadVisualState(page, { theme: "light", chordType: "Major 7th" });
+      const practiceBar = page.locator('section[aria-label^="Practice cues:"]');
+      await expect(practiceBar).toBeVisible();
+
+      // Exclude chord-root/guide-tone pills (they override to orange); target a pure scale note
+      const inScalePill = practiceBar.locator(
+        '[data-in-scale="true"]:not([data-chord-root="true"]):not([data-guide-tone="true"])'
+      ).first();
+      await expect(inScalePill).toBeVisible();
+      const border = await inScalePill.evaluate((el) => getComputedStyle(el).borderColor);
+      // --role-scale-border = --neon-cyan = #0891b2 → rgb(8, 145, 178)
+      expect(border.replace(/\s/g, "")).toBe("rgb(8,145,178)");
+    });
+
+    test("practice pills render with role-chord-border for guide-tone notes in light mode", async ({ page }) => {
+      await loadVisualState(page, { theme: "light", chordType: "Major 7th" });
+      const practiceBar = page.locator('section[aria-label^="Practice cues:"]');
+      await expect(practiceBar).toBeVisible();
+
+      const guidePill = practiceBar.locator('[data-guide-tone="true"], [data-chord-root="true"]').first();
+      await expect(guidePill).toBeVisible();
+      const border = await guidePill.evaluate((el) => getComputedStyle(el).borderColor);
+      // --role-chord-border = --neon-orange = #ea580c → rgb(234, 88, 12)
+      expect(border.replace(/\s/g, "")).toBe("rgb(234,88,12)");
+    });
+
+    test("degree chips use role-scale-border for in-scale notes in light mode", async ({ page }) => {
+      await loadVisualState(page, { theme: "light" });
+
+      const degreeStrip = page.locator('[class*="degree-chip-strip"]').first();
+      await expect(degreeStrip).toBeVisible();
+
+      // Exclude tonic chips — their CSS rule is declared after in-scale and overrides to orange
+      const inScaleItem = degreeStrip.locator('[data-in-scale="true"]:not([data-is-tonic="true"])').first();
+      await expect(inScaleItem).toBeVisible();
+
+      const chip = inScaleItem.locator('button').first();
+      await expect(chip).toBeVisible();
+      const border = await chip.evaluate((el) => getComputedStyle(el).borderColor);
+      // --role-scale-border = --neon-cyan = #0891b2 → rgb(8, 145, 178)
+      expect(border.replace(/\s/g, "")).toBe("rgb(8,145,178)");
+    });
+
+    test("degree chips use role-chord-border for tonic note in light mode", async ({ page }) => {
+      await loadVisualState(page, { theme: "light" });
+
+      const degreeStrip = page.locator('[class*="degree-chip-strip"]').first();
+      await expect(degreeStrip).toBeVisible();
+
+      const tonicItem = degreeStrip.locator('[data-is-tonic="true"]').first();
+      await expect(tonicItem).toBeVisible();
+
+      const chip = tonicItem.locator('button').first();
+      await expect(chip).toBeVisible();
+      const border = await chip.evaluate((el) => getComputedStyle(el).borderColor);
+      // --role-chord-border = --neon-orange = #ea580c → rgb(234, 88, 12)
+      expect(border.replace(/\s/g, "")).toBe("rgb(234,88,12)");
     });
   });
 });
