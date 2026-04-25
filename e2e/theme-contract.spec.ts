@@ -714,12 +714,14 @@ test.describe("Theme Contract", () => {
         };
       });
 
-      // Exact light-mode values from themes.css surface ladder
-      expect(tokens.shell.toLowerCase()).toBe("#eef2f7");
-      expect(tokens.cardTop.toLowerCase()).toBe("#fafbfd");
-      expect(tokens.nested.toLowerCase()).toBe("#f2f6fb");
-      expect(tokens.well.toLowerCase()).toBe("#e5ecf5");
-      expect(tokens.float.toLowerCase()).toBe("#ffffff");
+      // Exact light-mode values from themes.css surface ladder.
+      // Vite/lightning-css minifies `#ffffff` → `#fff` in production builds, so
+      // canonicalize via colorToHex before comparing.
+      expect(colorToHex(tokens.shell)).toBe("#eef2f7");
+      expect(colorToHex(tokens.cardTop)).toBe("#fafbfd");
+      expect(colorToHex(tokens.nested)).toBe("#f2f6fb");
+      expect(colorToHex(tokens.well)).toBe("#e5ecf5");
+      expect(colorToHex(tokens.float)).toBe("#ffffff");
 
       // Summary strips intentionally join the card family, while controls remain sunken wells.
       expect(tokens.strip).toBe(tokens.cardTop);
@@ -727,7 +729,7 @@ test.describe("Theme Contract", () => {
       expect(tokens.cardTop).not.toBe(tokens.nested);
       expect(tokens.nested).not.toBe(tokens.well);
 
-      expect(tokens.cardTop.toLowerCase()).not.toBe("#ffffff");
+      expect(colorToHex(tokens.cardTop)).not.toBe("#ffffff");
     });
 
     test("dark surface ladder separates controls from nested cards", async ({ page }) => {
