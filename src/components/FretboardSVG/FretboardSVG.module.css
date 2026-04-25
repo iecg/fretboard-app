@@ -325,21 +325,20 @@
 }
 
 .note-bubble:hover {
-  background-color: rgb(255 255 255 / 0.15);
+  background-color: var(--fretboard-a11y-hover-bg);
   mix-blend-mode: soft-light;
   opacity: 1 !important;
 }
 
 :global([data-theme="modern-light"]) .note-bubble:hover {
-  background-color: rgb(0 0 0 / 0.05);
   mix-blend-mode: multiply;
 }
 
 .note-bubble:focus-visible {
   opacity: 1 !important;
-  outline: 2px solid var(--accent-primary);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgb(79 209 197 / 0.3);
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  box-shadow: var(--focus-ring-glow);
 }
 
 /* Fret numbers row */

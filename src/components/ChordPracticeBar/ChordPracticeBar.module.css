@@ -13,13 +13,6 @@
   border: var(--strip-border);
   box-shadow: var(--strip-shadow);
 
-  /* Role language tokens — aligned across summary surfaces */
-  --role-cyan-bg: color-mix(in srgb, var(--neon-cyan) 8%, transparent);
-  --role-cyan-border: var(--neon-cyan);
-  --role-orange-bg: color-mix(in srgb, var(--neon-orange) 10%, transparent);
-  --role-orange-bg-strong: color-mix(in srgb, var(--neon-orange) 22%, transparent);
-  --role-orange-border: var(--neon-orange);
-  --role-violet-text: var(--neon-violet);
 }
 
 :global([data-theme="modern-dark"]) .chord-practice-bar {
@@ -139,36 +132,36 @@
 
 /* Role: In-scale (Cyan) */
 .practice-bar-pill[data-in-scale="true"] {
-  background: var(--role-cyan-bg);
-  border-color: var(--role-cyan-border);
+  background: var(--role-scale-bg);
+  border-color: var(--role-scale-border);
 }
 
 /* Role: Guide tones / Chord members (Orange) */
 .practice-bar-pill[data-guide-tone="true"] {
-  background: var(--role-orange-bg);
-  border-color: var(--role-orange-border);
+  background: var(--role-chord-bg);
+  border-color: var(--role-chord-border);
 }
 
 /* Role: Chord Root / Tonic (Strong Orange) */
 .practice-bar-pill[data-chord-root="true"] {
-  background: var(--role-orange-bg-strong);
-  border-color: var(--role-orange-border);
+  background: var(--role-chord-bg-strong);
+  border-color: var(--role-chord-border);
   border-style: solid;
-  box-shadow: 0 0 6px color-mix(in srgb, var(--role-orange-border) 40%, transparent);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--role-chord-border) 40%, transparent);
 }
 
 /* Role: Tension (Dashed Orange) */
 .practice-bar-pill[data-tension="true"] {
-  border-color: var(--role-orange-border);
+  border-color: var(--role-chord-border);
   border-style: dashed;
 }
 
 /* Outside chord root case: overlapping root + tension semantics. */
 .practice-bar-pill[data-chord-root="true"][data-tension="true"] {
-  background: var(--role-orange-bg-strong);
-  border-color: var(--role-orange-border);
+  background: var(--role-chord-bg-strong);
+  border-color: var(--role-chord-border);
   border-style: dashed;
-  box-shadow: 0 0 6px color-mix(in srgb, var(--role-orange-border) 40%, transparent);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--role-chord-border) 40%, transparent);
 }
 
 .practice-bar-pill-note {
@@ -193,7 +186,7 @@
   font-family: var(--font-sans);
   font-size: calc(var(--practice-pill-font) - 0.06rem);
   font-weight: var(--font-weight-medium);
-  color: var(--role-violet-text);
+  color: var(--role-color-tone-text);
   line-height: 1;
   letter-spacing: 0.01em;
 }
