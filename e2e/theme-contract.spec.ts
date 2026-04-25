@@ -3,7 +3,14 @@ import { loadVisualState } from "./visual-helpers";
 
 function colorToHex(color: string): string {
   const c = color.replace(/\s*,\s*/g, ",").replace(/\s+/g, " ").trim().toLowerCase();
-  if (c.startsWith("#")) return c;
+  if (c.startsWith("#")) {
+    // Expand short hex (#abc → #aabbcc, #abcd → #aabbccdd) so vite/lightning-css
+    // minified values compare equal to their authored long-form counterparts.
+    if (/^#[0-9a-f]{3,4}$/.test(c)) {
+      return "#" + c.slice(1).split("").map((ch) => ch + ch).join("");
+    }
+    return c;
+  }
   const m = c.match(/^rgba?\((\d+)[, ]+(\d+)[, ]+(\d+)(?:[/, ]+([0-9.]+))?\)/);
   if (!m) return c;
   const toH = (n: string) => parseInt(n).toString(16).padStart(2, "0");
@@ -853,6 +860,7 @@ test.describe("Theme Contract", () => {
       // strip-surface sets background via --strip-fill = --surface-strip = --surface-card-top
       expect(bg.replace(/\s/g, "")).toBe("rgb(250,251,253)");
     });
+
     test("settings overlay uses surface-float (highest elevation) in light mode", async ({ page }) => {
       await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
 
@@ -888,13 +896,13 @@ test.describe("Theme Contract", () => {
 
       // --nested-card-bg = --surface-card-nested = #f2f6fb → rgb(242, 246, 251)
       expect(styles.backgroundColor.replace(/\s/g, "")).toBe("rgb(242,246,251)");
-      
+
       // --nested-card-border = --surface-card-border = --surface-highlight = #dde4ef → rgb(221, 228, 239)
       expect(styles.borderColor.replace(/\s/g, "")).toBe("rgb(221,228,239)");
-      
+
       // --nested-card-radius = --radius-lg = 12px
       expect(styles.borderRadius).toBe("12px");
-      
+
       // --nested-card-shadow = none
       expect(styles.boxShadow).toBe("none");
     });
@@ -1033,16 +1041,17 @@ test.describe("Theme Contract", () => {
       const lightVal = await page.evaluate(() =>
         getComputedStyle(document.documentElement).getPropertyValue("--fretboard-a11y-hover-bg").trim()
       );
-      // Light: rgb(0 0 0 / 0.05) — dark translucent overlay
-      expect(lightVal).toMatch(/^rgb\(0\s+0\s+0/);
+      // Light: rgb(0 0 0 / 0.05) — dark translucent overlay. Production builds
+      // minify this to `#0000000d`, so canonicalize before asserting.
+      expect(colorToHex(lightVal).slice(0, 7)).toBe("#000000");
 
       await loadVisualState(page, { theme: "dark" });
       const darkVal = await page.evaluate(() =>
         getComputedStyle(document.documentElement).getPropertyValue("--fretboard-a11y-hover-bg").trim()
       );
-      // Dark: rgb(255 255 255 / 0.15) — light translucent overlay
-      expect(darkVal).toMatch(/^rgb\(255\s+255\s+255/);
-      expect(lightVal).not.toBe(darkVal);
+      // Dark: rgb(255 255 255 / 0.15) — light translucent overlay. Same minification caveat.
+      expect(colorToHex(darkVal).slice(0, 7)).toBe("#ffffff");
+      expect(colorToHex(lightVal)).not.toBe(colorToHex(darkVal));
     });
 
     test("practice pills render with role-scale-border for in-scale notes in light mode", async ({ page }) => {

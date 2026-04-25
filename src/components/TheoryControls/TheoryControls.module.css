@@ -227,6 +227,11 @@
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
+:global([data-theme="modern-light"]) .theory-browser-main {
+  background-color: var(--surface-well);
+  background-image: none;
+}
+
 :global(.app-container[data-layout-tier="desktop"]) .theory-controls {
   gap: 0.72rem;
 }

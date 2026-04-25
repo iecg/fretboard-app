@@ -21,11 +21,17 @@ export default defineConfig({
     },
   ],
 
-  /* Visual-specific snapshot settings */
+  /* Visual-specific snapshot settings.
+     maxDiffPixels: GH Actions ubuntu-latest visits a fresh VM each run, and
+     dark-mode text-heavy overlays (help modal, settings panel) show ~1500-1700
+     pixels of subpixel antialiasing variance between runs even with identical
+     code/baselines. 2500 absorbs that flake while still being <1% of any full-
+     page capture, so genuine visual regressions (color shifts, layout drift)
+     still trip the budget. */
   expect: {
     ...productionConfig.expect,
     toHaveScreenshot: {
-      maxDiffPixels: 150,
+      maxDiffPixels: 2500,
       threshold: 0.1,
       animations: "disabled",
       scale: "css",
