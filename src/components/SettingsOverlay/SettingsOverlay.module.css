@@ -14,12 +14,7 @@
   inline-size: min(100vw, clamp(20rem, 32vw, 24rem));
   max-inline-size: 100vw;
   z-index: var(--z-overlay-drawer);
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--surface-control) 92%, white 8%) 0%,
-      var(--surface-control) 100%
-    );
+  background: var(--surface-float);
   color: var(--chrome-fg);
   display: flex;
   flex-direction: column;
@@ -42,7 +37,7 @@
   padding: 12px 16px;
   border-bottom: 1px solid var(--chrome-border);
   flex-shrink: 0;
-  background: color-mix(in srgb, var(--surface-control) 92%, white 8%);
+  background: var(--surface-float);
 }
 
 .settings-overlay-title {
@@ -67,6 +62,10 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  background: var(--surface-card-nested);
+  border: 1px solid var(--surface-card-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
   box-shadow: var(--elevation-card);
 }
 
@@ -75,8 +74,8 @@
   background:
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--surface-panel) 88%, var(--accent-secondary) 12%) 0%,
-      var(--surface-panel) 100%
+      color-mix(in srgb, var(--surface-card-nested) 88%, var(--accent-secondary) 12%) 0%,
+      var(--surface-card-nested) 100%
     );
 }
 
@@ -108,7 +107,7 @@
 
 .overlay-field--divided {
   padding-bottom: 14px;
-  border-bottom: 1px solid color-mix(in srgb, var(--chrome-border) 74%, transparent);
+  border-bottom: 1px solid var(--surface-card-header-border);
   margin-bottom: 14px;
 }
 
@@ -142,18 +141,18 @@
   width: 1.875rem;
   height: 1.875rem;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--chrome-border) 82%, transparent);
-  background: color-mix(in srgb, var(--surface-raised) 90%, transparent);
-  color: var(--chrome-fg-muted);
+  border: 1px solid var(--surface-control-border);
+  background: var(--surface-control);
+  color: var(--surface-control-fg-muted);
   cursor: help;
   transition: var(--transition-surface);
 }
 
 .overlay-help-trigger:hover,
 .overlay-help-trigger[aria-expanded="true"] {
-  color: var(--chrome-fg);
-  border-color: color-mix(in srgb, var(--accent-primary) 42%, var(--chrome-border));
-  background: color-mix(in srgb, var(--accent-primary) 12%, var(--surface-raised));
+  color: var(--surface-control-hover-fg);
+  border-color: var(--surface-control-hover-border);
+  background: var(--surface-control-hover-bg);
 }
 
 .overlay-help-trigger:focus-visible {
@@ -175,12 +174,12 @@
   width: min(17rem, calc(100vw - 64px));
   padding: 10px 12px;
   border-radius: var(--radius-md);
-  border: 1px solid color-mix(in srgb, var(--accent-primary) 22%, var(--chrome-border));
-  background: color-mix(in srgb, var(--surface-base) 94%, white 6%);
+  border: 1px solid var(--surface-overlay-border);
+  background: var(--surface-float);
   color: var(--chrome-fg);
   font-size: 0.8125rem;
   line-height: 1.45;
-  box-shadow: 0 12px 32px color-mix(in srgb, var(--surface-control) 82%, transparent);
+  box-shadow: var(--elevation-float);
 }
 
 .overlay-reset-section {
@@ -199,9 +198,9 @@
 .overlay-reset-btn {
   width: 100%;
   padding: 10px 16px;
-  background: color-mix(in srgb, var(--chrome-fg) 8%, transparent);
-  border: 1px solid var(--accent-secondary);
-  color: var(--accent-secondary);
+  background: var(--destructive-control-bg);
+  border: 1px solid var(--destructive-control-border);
+  color: var(--destructive-control-fg);
   border-radius: var(--radius-sm, 6px);
   cursor: pointer;
   font-size: 0.875rem;
@@ -210,12 +209,12 @@
 }
 
 .overlay-reset-btn:hover {
-  background: color-mix(in srgb, var(--accent-secondary) 16%, transparent);
+  background: var(--destructive-control-hover-bg);
 }
 
 .overlay-reset-btn.overlay-reset-confirming {
-  background: var(--accent-secondary);
-  color: #ffffff;
+  background: var(--destructive-control-confirmed-bg);
+  color: var(--destructive-control-confirmed-fg);
 }
 
 .overlay-reset-btn:focus-visible {

@@ -7,11 +7,11 @@
 [data-theme="modern-light"] {
   color-scheme: light;
 
-  /* Primitive Colors — Pale cool blue-gray spectrum */
-  --bg-color: #f8fafc;
-  --surface-base: #fafbfd;
-  --surface-raised: #f1f5f9;
-  --surface-highlight: #e2e8f0;
+  /* Primitive Colors — Cool blue-gray spectrum with intentional steps */
+  --bg-color: #eef2f7;        /* distinctly cool-neutral shell (was #f8fafc — too close to white) */
+  --surface-base: #f3f7fc;    /* near-white panel base (was #fafbfd — barely distinct from shell) */
+  --surface-raised: #ebf0f7;  /* inset/nested context (was #f1f5f9) */
+  --surface-highlight: #dde4ef; /* borders, dividers (was #e2e8f0) */
   --text-main: #0f172a;
   --text-muted: #475569;
   --text-on-highlight: #0f172a;
@@ -19,24 +19,33 @@
   --text-soft-white: #1e293b;
 
   /* App Shell — Modern Light */
-  --bg-app-gradient-start: #f1f5f9;
-  --bg-app-gradient-mid: #f8fafc;
-  --bg-app-gradient-end: #f1f5f9;
+  --bg-app-gradient-start: #eef2f7; /* matches new --bg-color shell */
+  --bg-app-gradient-mid: #eef2f7;
+  --bg-app-gradient-end: #eef2f7;
   --bg-app-accent-glow: radial-gradient(ellipse at 50% 0%, rgb(8 145 178 / 0.05), transparent 60%);
   --bg-app-accent-glow-1: rgb(8 145 178 / 0.03);
   --bg-app-accent-glow-2: rgb(8 145 178 / 0.04);
   --bg-app-accent-glow-3: rgb(8 145 178 / 0.04);
 
-  --chord-strip-fill: #f1f5f9;
-  --practice-bar-fill: #f1f5f9;
+  /* Surface Ladder — intentional light-mode values (deepest → highest) */
+  --surface-shell:       #eef2f7; /* = shell/bg, cool blue-gray */
+  --surface-card-top:    #fafbfd; /* top-level card: near-white, brighter than shell */
+  --surface-card-nested: #ebf0f7; /* inset card: visibly recessed from card-top */
+  --surface-well:        #e5ecf5; /* control well: distinctly sunken */
+  --surface-strip:       #eaeff6; /* practice/chord strip: shell-adjacent */
+  --surface-float:       #ffffff; /* floating overlay (dropdown, modal): highest elevation */
 
-  /* Semantic Colors */
-  --chrome-bg: #f8fafc;
-  --chrome-border: #e2e8f0;
-  --surface-card: #ffffff;
-  --surface-card-border: #e2e8f0;
-  --surface-card-header-border: #f1f5f9;
-  --surface-overlay: #ffffff;
+  /* Strip tokens — routed through ladder */
+  --chord-strip-fill:  var(--surface-strip); /* was #f1f5f9 */
+  --practice-bar-fill: var(--surface-strip); /* was #f1f5f9 */
+
+  /* Semantic Colors — backward-compat aliases mapped to the surface ladder */
+  --chrome-bg:                  var(--surface-shell);     /* was #f8fafc */
+  --chrome-border:              var(--surface-highlight);  /* was #e2e8f0 */
+  --surface-card:               var(--surface-card-top);  /* was #ffffff → now near-white */
+  --surface-card-border:        var(--surface-highlight);  /* was #e2e8f0 */
+  --surface-card-header-border: var(--surface-raised);    /* was #f1f5f9 */
+  --surface-overlay:            var(--surface-card-top);  /* was #ffffff → card-level near-white */
 
   /* Focus ring — restrained for light backgrounds */
   --focus-ring-glow: 0 0 0 3px rgba(8, 145, 178, 0.15);
@@ -74,11 +83,11 @@
   --glow-filter-cyan: none;
   --glow-filter-orange: none;
 
-  /* Token surface colors */
-  --token-border-subtle: #e2e8f0;
-  --token-border-subtler: #f1f5f9;
-  --token-border-faint: #f8fafc;
-  --token-surface-dim: #f8fafc;
+  /* Token surface colors — aligned with ladder */
+  --token-border-subtle:  var(--surface-highlight); /* was #e2e8f0 */
+  --token-border-subtler: var(--surface-raised);    /* was #f1f5f9 */
+  --token-border-faint:   var(--surface-shell);     /* was #f8fafc */
+  --token-surface-dim:    var(--surface-shell);     /* was #f8fafc */
 
   /* Chip backgrounds — using solid accents for active states */
   --token-chip-active-bg: #0891b2;
@@ -137,6 +146,16 @@
   --shadow-ping-start: rgba(8, 145, 178, 0.2);
   --shadow-ping-end: rgba(8, 145, 178, 0);
 
+  /* Nav active tokens — light mode routes to accent-primary */
+  --nav-active-fg: var(--accent-primary);
+  --nav-active-indicator: var(--accent-primary);
+  --nav-active-glow: none;
+
+  /* Destructive control tokens — light mode orange */
+  --destructive-control-fg: var(--neon-orange);
+  --destructive-control-border: var(--neon-orange);
+  --destructive-control-confirmed-bg: var(--neon-orange);
+
   /* Interaction — Selection & Persistent States */
   --selected-bg: #0891b2;
   --selected-fg: #ffffff;
@@ -147,6 +166,9 @@
   --selected-chord-fg: #ffffff;
   --selected-chord-border: #c2410c;
   --selected-highlight: rgb(255 255 255 / 0.15); /* Backward compatibility alias */
+
+  /* Fretboard accessibility chrome — light-mode override */
+  --fretboard-a11y-hover-bg: rgb(0 0 0 / 0.05);
 
   /* Fretboard SVG — light-mode rings, fills, and number color */
   --fretboard-board-shadow: rgb(0 0 0 / 0.15);
@@ -166,5 +188,11 @@
   --fretboard-tension-color-tone-fill: color-mix(in srgb, var(--note-ring-color-tone) 15%, #ffffff);
   --fretboard-tension-color-tone-stroke: color-mix(in srgb, var(--note-ring-color-tone) 40%, transparent);
   --fretboard-fret-number-color: #475569;
+
+  /* Dead-token candidates — no var() consumers found via rg across src/components.
+     Safe to remove in a future cleanup pass after confirming unused:
+     --text-on-highlight, --text-soft-white, --accent-glow,
+     --note-blue, --note-blue-glow, --shadow-note-root, --shadow-note-active,
+     --shadow-ping-start, --shadow-ping-end */
 }
 

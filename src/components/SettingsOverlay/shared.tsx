@@ -18,8 +18,6 @@ export function OverlaySection({
   return (
     <section
       className={clsx(
-        "panel-surface",
-        "panel-surface--compact",
         styles["overlay-section-card"],
         tone === "danger" && styles["overlay-section-card--danger"],
       )}

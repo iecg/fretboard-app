@@ -16,11 +16,6 @@
   align-items: center;
   text-align: center;
 
-  /* Role language tokens — aligned across summary surfaces */
-  --role-cyan-border: var(--neon-cyan);
-  --role-orange-border: var(--neon-orange);
-  --role-orange-bg: color-mix(in srgb, var(--neon-orange) 10%, transparent);
-  --role-orange-bg-strong: color-mix(in srgb, var(--neon-orange) 22%, transparent);
 }
 
 .chord-row-strip-header {
@@ -60,37 +55,33 @@
   width: var(--chord-chip-size);
   height: var(--chord-chip-size);
   border-radius: 50%;
-  background: var(--chord-strip-fill);
-  border: var(--chord-chip-border-width) solid var(--token-border-subtle);
+  background: var(--strip-fill);
+  border: var(--chord-chip-border-width) solid var(--chip-border-inactive);
   opacity: 0.6;
   padding: 0;
   transition: var(--transition-surface);
 }
 
-:global([data-theme="modern-dark"]) .chord-row-chip {
-  border-color: rgb(255 255 255 / 0.22);
-}
-
 .chord-row-item[data-role="chord-root"] .chord-row-chip {
-  background: var(--role-orange-bg-strong);
-  border-color: var(--role-orange-border);
+  background: var(--role-chord-bg-strong);
+  border-color: var(--role-chord-border);
   border-width: calc(var(--chord-chip-border-width) + 1px);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--role-orange-border) 65%, transparent), 
-              0 0 0 3px color-mix(in srgb, var(--role-orange-border) 14%, transparent);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--role-chord-border) 65%, transparent), 
+              0 0 0 3px color-mix(in srgb, var(--role-chord-border) 14%, transparent);
   opacity: 1;
 }
 
 .chord-row-item[data-role="chord-tone-in-scale"] .chord-row-chip {
-  background: var(--role-orange-bg);
-  border-color: var(--role-orange-border);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--role-orange-border) 65%, transparent);
+  background: var(--role-chord-bg);
+  border-color: var(--role-chord-border);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--role-chord-border) 65%, transparent);
   opacity: 1;
 }
 
 .chord-row-item[data-role="chord-tone-outside-scale"] .chord-row-chip {
-  background: color-mix(in srgb, var(--role-orange-border) 30%, transparent);
-  border-color: color-mix(in srgb, var(--role-orange-border) 85%, transparent);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--role-orange-border) 65%, transparent);
+  background: color-mix(in srgb, var(--role-chord-border) 30%, transparent);
+  border-color: color-mix(in srgb, var(--role-chord-border) 85%, transparent);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--role-chord-border) 65%, transparent);
   border-style: dashed;
   opacity: 1;
 }
@@ -143,32 +134,28 @@
   width: 0.7rem;
   height: 0.7rem;
   border-radius: 50%;
-  border: 1.5px solid var(--token-border-subtle);
+  border: 1.5px solid var(--chip-border-inactive);
   flex-shrink: 0;
 }
 
-:global([data-theme="modern-dark"]) .chord-row-legend-swatch {
-  border: 1.5px solid rgb(255 255 255 / 0.22);
-}
-
 .chord-row-legend-item[data-role="chord-root"] .chord-row-legend-swatch {
-  border-color: var(--role-orange-border);
-  box-shadow: 0 0 4px color-mix(in srgb, var(--role-orange-border) 50%, transparent);
+  border-color: var(--role-chord-border);
+  box-shadow: 0 0 4px color-mix(in srgb, var(--role-chord-border) 50%, transparent);
 }
 
 .chord-row-legend-item[data-role="chord-tone-in-scale"] .chord-row-legend-swatch {
-  border-color: var(--role-orange-border);
-  box-shadow: 0 0 4px color-mix(in srgb, var(--role-orange-border) 40%, transparent);
+  border-color: var(--role-chord-border);
+  box-shadow: 0 0 4px color-mix(in srgb, var(--role-chord-border) 40%, transparent);
 }
 
 .chord-row-legend-item[data-role="chord-tone-outside-scale"] .chord-row-legend-swatch {
-  border-color: color-mix(in srgb, var(--role-orange-border) 80%, transparent);
+  border-color: color-mix(in srgb, var(--role-chord-border) 80%, transparent);
   border-style: dashed;
-  box-shadow: 0 0 4px color-mix(in srgb, var(--role-orange-border) 35%, transparent);
+  box-shadow: 0 0 4px color-mix(in srgb, var(--role-chord-border) 35%, transparent);
 }
 
 .chord-row-legend-item[data-role="scale-only"] .chord-row-legend-swatch {
-  border-color: var(--role-cyan-border);
+  border-color: var(--role-scale-border);
   opacity: 0.65;
 }
 

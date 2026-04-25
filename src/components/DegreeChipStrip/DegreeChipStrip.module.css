@@ -4,15 +4,9 @@
   --chip-size: clamp(2.15rem, 3.4vw, 2.5rem);
   --chip-half: calc(var(--chip-size) / 2);
 
-  /* Role language tokens — aligned across summary surfaces */
-  --role-cyan-border: var(--neon-cyan);
-  --role-orange-border: var(--neon-orange);
-  --role-violet-ring: var(--neon-violet);
-  --role-violet-text: var(--neon-violet);
-
   --chip-border-width: 2px;
-  --chip-border-muted: var(--token-border-subtle);
-  --chip-line-muted:   var(--token-border-subtler);
+  --chip-border-muted: var(--chip-border-inactive);
+  --chip-line-muted:   var(--chip-border-inactive);
   --chip-focus-ring:   var(--accent-primary);
   --chip-hexagon-clip:     polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
   --color-note-inner-fill: var(--surface-base);
@@ -131,27 +125,27 @@
 }
 
 .degree-chip-item[data-in-scale='true'] .degree-chip {
-  border-color: var(--role-cyan-border);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--role-cyan-border) 45%, transparent);
+  border-color: var(--role-scale-border);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--role-scale-border) 45%, transparent);
   opacity: 1;
 }
 
 .degree-chip-item[data-is-tonic='true'] .degree-chip {
-  border-color: var(--role-orange-border);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--role-orange-border) 50%, transparent);
+  border-color: var(--role-chord-border);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--role-chord-border) 50%, transparent);
   opacity: 1;
 }
 
 /* Apply drop-shadow to item so clip-path doesn't consume the effect. */
 .degree-chip-item[data-is-color-note='true'] {
-  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--role-violet-ring) 75%, transparent));
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--role-color-tone-ring) 75%, transparent));
   will-change: filter;
 }
 
 .degree-chip-item[data-is-color-note='true'] .degree-chip {
   clip-path: var(--chip-hexagon-clip);
   border-color: transparent;
-  background: var(--role-violet-ring);
+  background: var(--role-color-tone-ring);
   box-shadow: none;
   opacity: 1;
   position: relative;
@@ -166,7 +160,7 @@
 }
 
 .degree-chip-item[data-is-color-note='true'] .degree-chip-note {
-  color: var(--role-violet-text);
+  color: var(--role-color-tone-text);
   position: relative;
   z-index: 1;
 }

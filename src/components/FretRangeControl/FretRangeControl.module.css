@@ -18,7 +18,7 @@
   composes: control-value from '../shared/shared.module.css';
   font-size: 0.85rem;
   font-weight: 700;
-  color: var(--chrome-fg);
+  color: var(--surface-control-fg);
 }
 
 .range-separator {
@@ -29,7 +29,7 @@
 
 .fret-label {
   font-size: 0.72rem;
-  color: var(--chrome-fg-muted);
+  color: var(--surface-control-fg-muted);
   min-width: 2.5rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -55,7 +55,7 @@
   min-width: unset;
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--chrome-fg-muted);
+  color: var(--surface-control-fg-muted);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   padding-bottom: var(--space-1);

@@ -9,14 +9,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
-  background: var(--surface-overlay);
-  border: 1px solid var(--chrome-border);
-  box-shadow: var(--elevation-card);
-}
-
-:global([data-theme="modern-dark"]) .theory-mode-browser:global(.panel-surface) {
-  background: var(--surface-overlay);
-  border: 1px solid var(--chrome-border);
+  background: var(--surface-card-top);
+  border: 1px solid var(--surface-card-border);
   box-shadow: var(--elevation-card);
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
@@ -70,7 +64,7 @@
   min-height: unset !important;
   padding-left: 0.85rem !important;
   padding-right: 2.4rem !important;
-  color: var(--chrome-fg) !important;
+  color: var(--surface-control-fg) !important;
 }
 
 .theory-browser-selector select:hover {
@@ -93,7 +87,7 @@
   border-right: 1px solid var(--surface-card-header-border);
   border-radius: 0;
   background: transparent;
-  color: var(--chrome-fg);
+  color: var(--surface-control-fg);
   cursor: pointer;
   transition: var(--transition-surface);
   flex-shrink: 0;
@@ -107,6 +101,7 @@
 .theory-nav-btn:hover:not(:disabled) {
   background-color: var(--surface-control-hover-bg);
   background-image: var(--surface-control-hover-bg-image);
+  color: var(--surface-control-hover-fg);
 }
 
 .theory-nav-btn:active:not(:disabled) {
@@ -145,14 +140,8 @@
   gap: 0.8rem;
   padding: 0.9rem 1rem;
   border-radius: var(--radius-xl);
-  background: var(--surface-overlay);
-  border: 1px solid var(--chrome-border);
-}
-
-:global([data-theme="modern-dark"]) .theory-chord-section:global(.panel-surface),
-:global([data-theme="modern-dark"]) .theory-inline-key:global(.panel-surface) {
-  background: var(--surface-overlay);
-  border: 1px solid var(--chrome-border);
+  background: var(--surface-card-nested);
+  border: 1px solid var(--surface-card-border);
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
@@ -177,17 +166,13 @@
 }
 
 .theory-disclosure-btn:hover {
-  background: var(--surface-hover);
+  background: var(--surface-control-hover-bg);
 }
 
 .theory-disclosure-btn:focus-visible {
-  outline: none;
-  background: var(--surface-hover);
-  box-shadow: 0 0 0 2px var(--interactive-focus);
-}
-
-:global([data-theme="modern-dark"]) .theory-disclosure-btn:focus-visible {
-  box-shadow: 0 0 0 2px var(--neon-cyan);
+  outline: var(--control-focus-ring);
+  background: var(--surface-control-hover-bg);
+  box-shadow: var(--control-focus-glow);
 }
 
 .theory-disclosure-title {
@@ -233,6 +218,11 @@
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
+:global([data-theme="modern-light"]) .theory-browser-main {
+  background-color: var(--surface-well);
+  background-image: none;
+}
+
 :global(.app-container[data-layout-tier="desktop"]) .theory-controls {
   gap: 0.72rem;
 }

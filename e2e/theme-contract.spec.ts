@@ -3,7 +3,14 @@ import { loadVisualState } from "./visual-helpers";
 
 function colorToHex(color: string): string {
   const c = color.replace(/\s*,\s*/g, ",").replace(/\s+/g, " ").trim().toLowerCase();
-  if (c.startsWith("#")) return c;
+  if (c.startsWith("#")) {
+    // Expand short hex (#abc → #aabbcc, #abcd → #aabbccdd) so vite/lightning-css
+    // minified values compare equal to their authored long-form counterparts.
+    if (/^#[0-9a-f]{3,4}$/.test(c)) {
+      return "#" + c.slice(1).split("").map((ch) => ch + ch).join("");
+    }
+    return c;
+  }
   const m = c.match(/^rgba?\((\d+)[, ]+(\d+)[, ]+(\d+)(?:[/, ]+([0-9.]+))?\)/);
   if (!m) return c;
   const toH = (n: string) => parseInt(n).toString(16).padStart(2, "0");
@@ -20,19 +27,19 @@ test.describe("Theme Contract", () => {
     const theme = await page.evaluate(() => document.documentElement.getAttribute("data-theme"));
     expect(theme).toBe("modern-light");
     
-    // Check background color matches modern-light --bg-color (#f8fafc)
+    // Check background color matches modern-light --bg-color (#eef2f7 — cool blue-gray shell)
     // Playwright returns rgb values
-    const bgColor = await page.evaluate(() => 
+    const bgColor = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue("--bg-color").trim()
     );
-    expect(bgColor.toLowerCase()).toBe("#f8fafc");
+    expect(bgColor.toLowerCase()).toBe("#eef2f7");
 
     // Check a semantic token
-    const chromeBg = await page.evaluate(() => 
+    const chromeBg = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue("--chrome-bg").trim()
     );
-    // --chrome-bg: #f8fafc; in themes.css
-    expect(chromeBg.toLowerCase()).toBe("#f8fafc");
+    // --chrome-bg maps to --surface-shell = #eef2f7 in modern-light
+    expect(chromeBg.toLowerCase()).toBe("#eef2f7");
   });
 
   test("modern-light fretboard should use maple tokens", async ({ page }) => {
@@ -70,17 +77,17 @@ test.describe("Theme Contract", () => {
   test("light shell vars do not resolve to dark navy defaults", async ({ page }) => {
     await loadVisualState(page, { theme: "light" });
     
-    const bgAppStart = await page.evaluate(() => 
+    const bgAppStart = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue("--bg-app-gradient-start").trim()
     );
-    // modern-light: #f1f5f9
-    expect(bgAppStart.toLowerCase()).toBe("#f1f5f9");
-    
-    const bgAppMid = await page.evaluate(() => 
+    // modern-light: #eef2f7 (matches --surface-shell; was #f1f5f9 before surface ladder refactor)
+    expect(bgAppStart.toLowerCase()).toBe("#eef2f7");
+
+    const bgAppMid = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue("--bg-app-gradient-mid").trim()
     );
-    // modern-light: #f8fafc
-    expect(bgAppMid.toLowerCase()).toBe("#f8fafc");
+    // modern-light: #eef2f7 (was #f8fafc before refactor)
+    expect(bgAppMid.toLowerCase()).toBe("#eef2f7");
   });
 
   test("practice bar is light-readable in light mode", async ({ page }) => {
@@ -99,8 +106,8 @@ test.describe("Theme Contract", () => {
       };
     });
     
-    // modern-light: --practice-bar-fill: #f1f5f9 -> rgb(241, 245, 249)
-    expect(styles.backgroundColor.replace(/\s/g, "")).toBe("rgb(241,245,249)");
+    // modern-light: --practice-bar-fill = --surface-strip = #eaeff6 -> rgb(234, 239, 246)
+    expect(styles.backgroundColor.replace(/\s/g, "")).toBe("rgb(234,239,246)");
     // text-main: #0f172a -> rgb(15, 23, 42)
     expect(styles.color.replace(/\s/g, "")).toBe("rgb(15,23,42)");
   });
@@ -293,9 +300,10 @@ test.describe("Theme Contract", () => {
       }
     }
 
-    expect(r).toBeGreaterThanOrEqual(250);
-    expect(g).toBeGreaterThanOrEqual(250);
-    expect(b).toBeGreaterThanOrEqual(250);
+    // surface-base (#f3f7fc = 243, 247, 252) is clearly light — threshold 230 excludes dark navy (34–54)
+    expect(r).toBeGreaterThanOrEqual(230);
+    expect(g).toBeGreaterThanOrEqual(230);
+    expect(b).toBeGreaterThanOrEqual(230);
   });
 
   test("Circle of Fifths should use dark colors in dark mode", async ({ page }) => {
@@ -470,8 +478,8 @@ test.describe("Theme Contract", () => {
             if (theme === "dark") {
               expect(isCyanLike(afterBg)).toBe(true);
             } else {
-              // light surface hover: #e2e8f0 -> rgb(226, 232, 240)
-              expect(afterBg.replace(/\s/g, "")).toBe("rgb(226,232,240)");
+              // light surface hover: --surface-highlight = #dde4ef -> rgb(221, 228, 239)
+              expect(afterBg.replace(/\s/g, "")).toBe("rgb(221,228,239)");
             }
           }
         });
@@ -624,11 +632,373 @@ test.describe("Theme Contract", () => {
             expect(afterStyles.bgImg).toContain("gradient");
           } else {
             // In light mode, it should be a solid color change
-            // light surface hover: #e2e8f0 -> rgb(226, 232, 240)
-            expect(afterStyles.bg.replace(/\s/g, "")).toBe("rgb(226,232,240)");
+            // light surface hover: --surface-highlight = #dde4ef -> rgb(221, 228, 239)
+            expect(afterStyles.bg.replace(/\s/g, "")).toBe("rgb(221,228,239)");
+          }
+        });
+
+        test("theory disclosure focus uses tokenized focus glow", async ({ page }) => {
+          // Mobile viewport: disclosure buttons are visible there
+          await loadVisualState(page, { theme }, { width: 390, height: 844 });
+
+          const disclosureBtn = page.getByRole("button", { name: /Chord Overlay/i });
+          await expect(disclosureBtn).toBeVisible();
+          // Ensure it is collapsed before focusing
+          if (await disclosureBtn.getAttribute("aria-expanded") === "true") {
+            await disclosureBtn.click();
+            await expect(disclosureBtn).toHaveAttribute("aria-expanded", "false");
+          }
+
+          await disclosureBtn.focus();
+          const focusStyles = await disclosureBtn.evaluate((el) => {
+            const cs = getComputedStyle(el);
+            return { outlineStyle: cs.outlineStyle, boxShadow: cs.boxShadow };
+          });
+
+          if (theme === "dark") {
+            // Dark mode: --control-focus-ring = none; glow via --control-focus-glow (cyan)
+            expect(focusStyles.outlineStyle).toBe("none");
+            expect(focusStyles.boxShadow).not.toBe("none");
+            // The glow resolves from --neon-cyan (77, 228, 255 in dark mode)
+            expect(isCyanLike(focusStyles.boxShadow)).toBe(true);
+          } else {
+            // Light mode: --control-focus-ring = 2px solid neon-cyan → solid outline
+            expect(focusStyles.outlineStyle).toBe("solid");
           }
         });
       });
     }
+  });
+
+  test.describe("Surface Hierarchy", () => {
+    test("light surface ladder tokens are all distinct and none are pure white", async ({ page }) => {
+      await loadVisualState(page, { theme: "light" });
+
+      const tokens = await page.evaluate(() => {
+        const cs = getComputedStyle(document.documentElement);
+        return {
+          shell:    cs.getPropertyValue("--surface-shell").trim(),
+          cardTop:  cs.getPropertyValue("--surface-card-top").trim(),
+          nested:   cs.getPropertyValue("--surface-card-nested").trim(),
+          well:     cs.getPropertyValue("--surface-well").trim(),
+          strip:    cs.getPropertyValue("--surface-strip").trim(),
+          float:    cs.getPropertyValue("--surface-float").trim(),
+        };
+      });
+
+      // All six surface rungs must be distinct
+      const values = Object.values(tokens);
+      const unique = new Set(values);
+      expect(unique.size, `Expected 6 distinct surface tokens, got: ${JSON.stringify(tokens)}`).toBe(6);
+
+      // Exact light-mode values from themes.css surface ladder
+      // Vite/lightning-css minifies `#ffffff` → `#fff` in production builds, so
+      // canonicalize before comparing.
+      expect(colorToHex(tokens.shell)).toBe("#eef2f7");
+      expect(colorToHex(tokens.cardTop)).toBe("#fafbfd");
+      expect(colorToHex(tokens.nested)).toBe("#ebf0f7");
+      expect(colorToHex(tokens.well)).toBe("#e5ecf5");
+      expect(colorToHex(tokens.strip)).toBe("#eaeff6");
+      expect(colorToHex(tokens.float)).toBe("#ffffff");
+
+      // card-top is the brightest non-float level — it must not equal pure white
+      expect(colorToHex(tokens.cardTop)).not.toBe("#ffffff");
+    });
+
+    test("dark surface ladder maintains internal hierarchy", async ({ page }) => {
+      await loadVisualState(page, { theme: "dark" });
+
+      const tokens = await page.evaluate(() => {
+        const cs = getComputedStyle(document.documentElement);
+        return {
+          shell:   cs.getPropertyValue("--surface-shell").trim(),
+          cardTop: cs.getPropertyValue("--surface-card-top").trim(),
+          float:   cs.getPropertyValue("--surface-float").trim(),
+        };
+      });
+
+      // In dark mode, all three should be dark (no channel brighter than 80)
+      const parseDark = (v: string) => {
+        const m = v.match(/rgb\((\d+),?\s*(\d+),?\s*(\d+)/);
+        return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : [0, 0, 0];
+      };
+      const [sr, sg, sb] = parseDark(tokens.shell);
+      const [cr, cg, cb] = parseDark(tokens.cardTop);
+      const [fr, fg, fb] = parseDark(tokens.float);
+
+      // Shell is the darkest base — all channels < 60
+      expect(sr).toBeLessThan(60);
+      expect(sg).toBeLessThan(60);
+      expect(sb).toBeLessThan(80);
+
+      // Card top should be slightly elevated (higher R channel than shell)
+      expect(cr).toBeGreaterThanOrEqual(sr);
+
+      // Float is the highest elevation — at least as bright as card
+      expect(fr).toBeGreaterThanOrEqual(cr);
+      expect(fg).toBeGreaterThanOrEqual(cg);
+      expect(fb).toBeGreaterThanOrEqual(cb);
+    });
+
+    test("top-level Card uses surface-card-top (not pure white) in light mode", async ({ page }) => {
+      await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
+
+      // Card is the primary content container — locate the first one in the layout
+      const card = page.locator('[class*="card"]:not([class*="card-header"]):not([class*="card-body"])').first();
+      await expect(card).toBeVisible();
+
+      const bg = await card.evaluate((el) => getComputedStyle(el).backgroundColor);
+      // surface-card-top = #fafbfd → rgb(250, 251, 253)
+      expect(bg.replace(/\s/g, "")).toBe("rgb(250,251,253)");
+      // Verify it is NOT pure white — the card-top is intentionally near-white
+      expect(bg.replace(/\s/g, "")).not.toBe("rgb(255,255,255)");
+    });
+
+    test("theory nested panels use surface-card-nested token in light mode", async ({ page }) => {
+      // chordType activates the chord overlay section which renders .theory-chord-section.panel-surface
+      await loadVisualState(page, { theme: "light", chordType: "Major 7th" }, { width: 1280, height: 900 });
+      await expect(page.getByTestId("theory-controls")).toBeVisible();
+
+      // Multiple .panel-surface elements exist; at least one must resolve to surface-card-nested.
+      // The .theory-chord-section.panel-surface and .theory-inline-key.panel-surface use --surface-card-nested.
+      const panelSurfaces = page.getByTestId("theory-controls").locator(".panel-surface");
+      const count = await panelSurfaces.count();
+      expect(count).toBeGreaterThan(0);
+
+      const backgrounds = await Promise.all(
+        Array.from({ length: count }, (_, i) =>
+          panelSurfaces.nth(i).evaluate((el) => getComputedStyle(el).backgroundColor)
+        )
+      );
+
+      // surface-card-nested = #ebf0f7 → rgb(235, 240, 247)
+      const hasNested = backgrounds.some((bg) => bg.replace(/\s/g, "") === "rgb(235,240,247)");
+      expect(hasNested, `Expected at least one panel-surface with surface-card-nested. Got: ${JSON.stringify(backgrounds)}`).toBe(true);
+    });
+
+    test("chord practice strip uses surface-strip token in light mode", async ({ page }) => {
+      await loadVisualState(page, { theme: "light", chordType: "Major 7th" });
+
+      const practiceBar = page.locator('section[aria-label^="Practice cues:"]');
+      await expect(practiceBar).toBeVisible();
+
+      const bg = await practiceBar.evaluate((el) => getComputedStyle(el).backgroundColor);
+      // surface-strip = #eaeff6 → rgb(234, 239, 246)
+      expect(bg.replace(/\s/g, "")).toBe("rgb(234,239,246)");
+      // Must not be pure white or the old f1f5f9 value
+      expect(bg.replace(/\s/g, "")).not.toBe("rgb(255,255,255)");
+      expect(bg.replace(/\s/g, "")).not.toBe("rgb(241,245,249)");
+    });
+
+    test("chord practice strip is visually distinct from card-top in light mode", async ({ page }) => {
+      await loadVisualState(page, { theme: "light", chordType: "Major 7th" });
+
+      const practiceBar = page.locator('section[aria-label^="Practice cues:"]');
+      await expect(practiceBar).toBeVisible();
+
+      const bg = await practiceBar.evaluate((el) => getComputedStyle(el).backgroundColor);
+      // surface-strip (#eaeff6) must be distinct from surface-card-top (#fafbfd)
+      expect(bg.replace(/\s/g, "")).not.toBe("rgb(250,251,253)");
+      // And distinct from pure white
+      expect(bg.replace(/\s/g, "")).not.toBe("rgb(255,255,255)");
+      // Correct strip value
+      expect(bg.replace(/\s/g, "")).toBe("rgb(234,239,246)");
+    });
+
+    test("degree chip strip uses surface-strip token in light mode", async ({ page }) => {
+      await loadVisualState(page, { theme: "light" });
+
+      // DegreeChipStrip is rendered inside the scale summary area
+      const degreeStrip = page.locator('section[role="group"]').filter({ hasText: /C|D|E|F|G|A|B/ }).first();
+      await expect(degreeStrip).toBeVisible();
+
+      const bg = await degreeStrip.evaluate((el) => getComputedStyle(el).backgroundColor);
+      // strip-surface sets background via --strip-fill = --surface-strip = #eaeff6 → rgb(234, 239, 246)
+      expect(bg.replace(/\s/g, "")).toBe("rgb(234,239,246)");
+    });
+
+    test("settings overlay uses surface-float (highest elevation) in light mode", async ({ page }) => {
+      await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
+
+      await page.getByLabel("Open settings").click();
+      const drawer = page.getByTestId("settings-drawer");
+      await expect(drawer).toBeVisible();
+
+      const bg = await drawer.evaluate((el) => getComputedStyle(el).backgroundColor);
+      // surface-float = #ffffff → rgb(255, 255, 255) — highest elevation, pure white
+      expect(bg.replace(/\s/g, "")).toBe("rgb(255,255,255)");
+    });
+
+    test("help modal uses surface hierarchy tokens in light mode", async ({ page }) => {
+      await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
+
+      await page.getByLabel(/help|keyboard shortcuts/i).click();
+      const modal = page.getByTestId("help-modal");
+      await expect(modal).toBeVisible();
+
+      // Modal body uses --surface-panel = --surface-card-top = #fafbfd → rgb(250, 251, 253)
+      const bodyBg = await modal.evaluate((el) => getComputedStyle(el).backgroundColor);
+      expect(bodyBg.replace(/\s/g, "")).toBe("rgb(250,251,253)");
+
+      // Modal header uses --surface-float (highest elevation) = #ffffff → rgb(255, 255, 255)
+      const header = modal.locator('[class*="help-modal-header"]');
+      await expect(header).toBeVisible();
+      const headerBg = await header.evaluate((el) => getComputedStyle(el).backgroundColor);
+      expect(headerBg.replace(/\s/g, "")).toBe("rgb(255,255,255)");
+    });
+
+    test("selected controls use cyan identity in both themes", async ({ page }) => {
+      for (const theme of ["light", "dark"] as const) {
+        await loadVisualState(page, { theme }, { width: 1280, height: 900 });
+        await expect(page.getByTestId("theory-controls")).toBeVisible();
+
+        // Find any active (selected) toggle button
+        const activeBtn = page.getByTestId("theory-controls").locator('button[aria-pressed="true"]').first();
+        await expect(activeBtn).toBeVisible();
+
+        const styles = await activeBtn.evaluate((el) => {
+          const cs = getComputedStyle(el);
+          return { bg: cs.backgroundColor, color: cs.color };
+        });
+
+        if (theme === "light") {
+          // light: --selected-bg = #0891b2 → rgb(8, 145, 178) — cyan solid
+          expect(styles.bg.replace(/\s/g, "")).toBe("rgb(8,145,178)");
+          // text on accent: white
+          expect(styles.color.replace(/\s/g, "")).toBe("rgb(255,255,255)");
+        } else {
+          // dark: selected-bg is a gradient; backgroundColor is the base dark navy
+          // Just verify the text is light (near-white)
+          const m = styles.color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+          if (m) {
+            expect(Number(m[1])).toBeGreaterThan(200);
+            expect(Number(m[2])).toBeGreaterThan(200);
+            expect(Number(m[3])).toBeGreaterThan(200);
+          }
+        }
+      }
+    });
+
+    test("tonic note ring uses orange identity in both themes", async ({ page }) => {
+      for (const theme of ["light", "dark"] as const) {
+        await loadVisualState(page, { theme });
+        await expect(page.getByTestId("fretboard-svg")).toBeVisible();
+
+        const tonicNote = page.locator('g[data-note-role="key-tonic"] circle').first();
+        await expect(tonicNote).toBeVisible();
+
+        const stroke = await tonicNote.evaluate((el) => getComputedStyle(el).stroke);
+        // --note-ring-tonic = --neon-orange
+        // light: #ea580c → rgb(234, 88, 12); dark: #FF9A4D → rgb(255, 154, 77)
+        const m = stroke.replace(/\s/g, "").match(/rgb\((\d+),(\d+),(\d+)\)/);
+        expect(m).not.toBeNull();
+        if (m) {
+          // Orange: high R, low-mid G, low B
+          expect(Number(m[1])).toBeGreaterThan(200); // R high
+          expect(Number(m[2])).toBeLessThan(180);     // G mid
+          expect(Number(m[3])).toBeLessThan(100);     // B low
+        }
+      }
+    });
+
+    test("theory-mode-browser and theory-chord-section use distinct surface tokens in light mode", async ({ page }) => {
+      await loadVisualState(page, { theme: "light", chordType: "Major 7th" }, { width: 1280, height: 900 });
+      await expect(page.getByTestId("theory-controls")).toBeVisible();
+
+      // theory-mode-browser overrides to --surface-card-top = #fafbfd → rgb(250, 251, 253)
+      const modeBrowser = page.locator('[class*="theory-mode-browser"]');
+      await expect(modeBrowser).toBeVisible();
+      const modeBg = await modeBrowser.evaluate((el) => getComputedStyle(el).backgroundColor);
+      expect(modeBg.replace(/\s/g, "")).toBe("rgb(250,251,253)");
+
+      // theory-chord-section uses --surface-card-nested = #ebf0f7 → rgb(235, 240, 247)
+      const chordSection = page.locator('[class*="theory-chord-section"]');
+      await expect(chordSection).toBeVisible();
+      const chordBg = await chordSection.evaluate((el) => getComputedStyle(el).backgroundColor);
+      expect(chordBg.replace(/\s/g, "")).toBe("rgb(235,240,247)");
+
+      // Outer panel (card-top) must be brighter than nested panel (card-nested)
+      expect(modeBg).not.toBe(chordBg);
+    });
+  });
+
+  test.describe("Role Token Contract", () => {
+    test("fretboard a11y hover token is dark in light mode and white in dark mode", async ({ page }) => {
+      await loadVisualState(page, { theme: "light" });
+      const lightVal = await page.evaluate(() =>
+        getComputedStyle(document.documentElement).getPropertyValue("--fretboard-a11y-hover-bg").trim()
+      );
+      // Light: rgb(0 0 0 / 0.05) — dark translucent overlay. Production builds
+      // minify this to `#0000000d`, so canonicalize before asserting.
+      expect(colorToHex(lightVal).slice(0, 7)).toBe("#000000");
+
+      await loadVisualState(page, { theme: "dark" });
+      const darkVal = await page.evaluate(() =>
+        getComputedStyle(document.documentElement).getPropertyValue("--fretboard-a11y-hover-bg").trim()
+      );
+      // Dark: rgb(255 255 255 / 0.15) — light translucent overlay. Same minification caveat.
+      expect(colorToHex(darkVal).slice(0, 7)).toBe("#ffffff");
+      expect(colorToHex(lightVal)).not.toBe(colorToHex(darkVal));
+    });
+
+    test("practice pills render with role-scale-border for in-scale notes in light mode", async ({ page }) => {
+      await loadVisualState(page, { theme: "light", chordType: "Major 7th" });
+      const practiceBar = page.locator('section[aria-label^="Practice cues:"]');
+      await expect(practiceBar).toBeVisible();
+
+      // Exclude chord-root/guide-tone pills (they override to orange); target a pure scale note
+      const inScalePill = practiceBar.locator(
+        '[data-in-scale="true"]:not([data-chord-root="true"]):not([data-guide-tone="true"])'
+      ).first();
+      await expect(inScalePill).toBeVisible();
+      const border = await inScalePill.evaluate((el) => getComputedStyle(el).borderColor);
+      // --role-scale-border = --neon-cyan = #0891b2 → rgb(8, 145, 178)
+      expect(border.replace(/\s/g, "")).toBe("rgb(8,145,178)");
+    });
+
+    test("practice pills render with role-chord-border for guide-tone notes in light mode", async ({ page }) => {
+      await loadVisualState(page, { theme: "light", chordType: "Major 7th" });
+      const practiceBar = page.locator('section[aria-label^="Practice cues:"]');
+      await expect(practiceBar).toBeVisible();
+
+      const guidePill = practiceBar.locator('[data-guide-tone="true"], [data-chord-root="true"]').first();
+      await expect(guidePill).toBeVisible();
+      const border = await guidePill.evaluate((el) => getComputedStyle(el).borderColor);
+      // --role-chord-border = --neon-orange = #ea580c → rgb(234, 88, 12)
+      expect(border.replace(/\s/g, "")).toBe("rgb(234,88,12)");
+    });
+
+    test("degree chips use role-scale-border for in-scale notes in light mode", async ({ page }) => {
+      await loadVisualState(page, { theme: "light" });
+
+      const degreeStrip = page.locator('[class*="degree-chip-strip"]').first();
+      await expect(degreeStrip).toBeVisible();
+
+      // Exclude tonic chips — their CSS rule is declared after in-scale and overrides to orange
+      const inScaleItem = degreeStrip.locator('[data-in-scale="true"]:not([data-is-tonic="true"])').first();
+      await expect(inScaleItem).toBeVisible();
+
+      const chip = inScaleItem.locator('button').first();
+      await expect(chip).toBeVisible();
+      const border = await chip.evaluate((el) => getComputedStyle(el).borderColor);
+      // --role-scale-border = --neon-cyan = #0891b2 → rgb(8, 145, 178)
+      expect(border.replace(/\s/g, "")).toBe("rgb(8,145,178)");
+    });
+
+    test("degree chips use role-chord-border for tonic note in light mode", async ({ page }) => {
+      await loadVisualState(page, { theme: "light" });
+
+      const degreeStrip = page.locator('[class*="degree-chip-strip"]').first();
+      await expect(degreeStrip).toBeVisible();
+
+      const tonicItem = degreeStrip.locator('[data-is-tonic="true"]').first();
+      await expect(tonicItem).toBeVisible();
+
+      const chip = tonicItem.locator('button').first();
+      await expect(chip).toBeVisible();
+      const border = await chip.evaluate((el) => getComputedStyle(el).borderColor);
+      // --role-chord-border = --neon-orange = #ea580c → rgb(234, 88, 12)
+      expect(border.replace(/\s/g, "")).toBe("rgb(234,88,12)");
+    });
   });
 });

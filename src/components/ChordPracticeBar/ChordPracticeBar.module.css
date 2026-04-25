@@ -1,28 +1,23 @@
 /* Chord practice bar — two-group coaching surface (Chord + Land on). */
 
 .chord-practice-bar {
+  composes: strip-surface from "../shared/shared.module.css";
+
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
   width: 100%;
   padding: 0.38rem 0.85rem 0.42rem;
   border-radius: 0.85rem;
-  background: var(--practice-bar-fill);
-  border: 1px solid var(--chrome-border);
-  box-shadow: var(--elevation-card);
+  background: var(--strip-fill);
+  border: var(--strip-border);
+  box-shadow: var(--strip-shadow);
 
-  /* Role language tokens — aligned across summary surfaces */
-  --role-cyan-bg: color-mix(in srgb, var(--neon-cyan) 8%, transparent);
-  --role-cyan-border: var(--neon-cyan);
-  --role-orange-bg: color-mix(in srgb, var(--neon-orange) 10%, transparent);
-  --role-orange-bg-strong: color-mix(in srgb, var(--neon-orange) 22%, transparent);
-  --role-orange-border: var(--neon-orange);
-  --role-violet-text: var(--neon-violet);
 }
 
 :global([data-theme="modern-dark"]) .chord-practice-bar {
-  border: 1px solid rgb(255 255 255 / 0.07);
-  box-shadow: 0 4px 14px rgb(0 0 0 / 0.2);
+  --strip-border: 1px solid rgb(255 255 255 / 0.07);
+  --strip-shadow: 0 4px 14px rgb(0 0 0 / 0.2);
 }
 
 .chord-practice-bar-header {
@@ -45,39 +40,29 @@
   font-family: var(--font-sans);
   font-size: 0.78rem;
   font-weight: var(--font-weight-medium);
-  color: var(--text-muted);
+  color: var(--chip-text-inactive);
   line-height: 1;
   letter-spacing: 0.03em;
-  background: var(--surface-muted);
-  border: 1px solid var(--token-border-subtle);
+  background: var(--chip-surface-inactive);
+  border: 1px solid var(--chip-border-inactive);
   border-radius: 0.3rem;
   padding: 0.15rem 0.35rem;
   white-space: nowrap;
-}
-
-:global([data-theme="modern-dark"]) .chord-practice-bar-lens-label {
-  background: rgb(255 255 255 / 0.06);
-  border-color: rgb(255 255 255 / 0.1);
 }
 
 .chord-practice-bar-badge {
   font-family: var(--font-sans);
   font-size: 0.7rem;
   font-weight: var(--font-weight-medium);
-  color: var(--text-muted);
+  color: var(--chip-text-inactive);
   line-height: 1;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  background: var(--surface-muted);
-  border: 1px solid var(--token-border-subtle);
+  background: var(--chip-surface-inactive);
+  border: 1px solid var(--chip-border-inactive);
   border-radius: 0.3rem;
   padding: 0.15rem 0.35rem;
   white-space: nowrap;
-}
-
-:global([data-theme="modern-dark"]) .chord-practice-bar-badge {
-  background: rgb(255 255 255 / 0.07);
-  border-color: rgb(255 255 255 / 0.1);
 }
 
 .chord-practice-bar-groups {
@@ -139,49 +124,44 @@
   height: var(--practice-pill-h);
   padding: 0 var(--practice-pill-px);
   border-radius: var(--radius-pill);
-  background: var(--surface-muted);
-  border: 1.5px solid var(--token-border-subtle);
+  background: var(--chip-surface-inactive);
+  border: 1.5px solid var(--chip-border-inactive);
   cursor: default;
   transition: var(--transition-surface);
 }
 
-:global([data-theme="modern-dark"]) .practice-bar-pill {
-  background: rgb(255 255 255 / 0.05);
-  border: 1.5px solid rgb(255 255 255 / 0.18);
-}
-
 /* Role: In-scale (Cyan) */
 .practice-bar-pill[data-in-scale="true"] {
-  background: var(--role-cyan-bg);
-  border-color: var(--role-cyan-border);
+  background: var(--role-scale-bg);
+  border-color: var(--role-scale-border);
 }
 
 /* Role: Guide tones / Chord members (Orange) */
 .practice-bar-pill[data-guide-tone="true"] {
-  background: var(--role-orange-bg);
-  border-color: var(--role-orange-border);
+  background: var(--role-chord-bg);
+  border-color: var(--role-chord-border);
 }
 
 /* Role: Chord Root / Tonic (Strong Orange) */
 .practice-bar-pill[data-chord-root="true"] {
-  background: var(--role-orange-bg-strong);
-  border-color: var(--role-orange-border);
+  background: var(--role-chord-bg-strong);
+  border-color: var(--role-chord-border);
   border-style: solid;
-  box-shadow: 0 0 6px color-mix(in srgb, var(--role-orange-border) 40%, transparent);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--role-chord-border) 40%, transparent);
 }
 
 /* Role: Tension (Dashed Orange) */
 .practice-bar-pill[data-tension="true"] {
-  border-color: var(--role-orange-border);
+  border-color: var(--role-chord-border);
   border-style: dashed;
 }
 
 /* Outside chord root case: overlapping root + tension semantics. */
 .practice-bar-pill[data-chord-root="true"][data-tension="true"] {
-  background: var(--role-orange-bg-strong);
-  border-color: var(--role-orange-border);
+  background: var(--role-chord-bg-strong);
+  border-color: var(--role-chord-border);
   border-style: dashed;
-  box-shadow: 0 0 6px color-mix(in srgb, var(--role-orange-border) 40%, transparent);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--role-chord-border) 40%, transparent);
 }
 
 .practice-bar-pill-note {
@@ -206,7 +186,7 @@
   font-family: var(--font-sans);
   font-size: calc(var(--practice-pill-font) - 0.06rem);
   font-weight: var(--font-weight-medium);
-  color: var(--role-violet-text);
+  color: var(--role-color-tone-text);
   line-height: 1;
   letter-spacing: 0.01em;
 }

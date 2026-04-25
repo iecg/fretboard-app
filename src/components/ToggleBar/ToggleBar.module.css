@@ -18,7 +18,7 @@
   background: none;
   border: none;
   border-radius: 0.78rem;
-  color: var(--chrome-fg-muted);
+  color: var(--surface-control-fg-muted);
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
@@ -34,7 +34,7 @@
 }
 
 .mobile-tab-bar .mobile-tab:hover:not([aria-selected="true"]) {
-  color: var(--chrome-fg);
+  color: var(--surface-control-hover-fg);
 }
 
 .mobile-tab-bar .mobile-tab:focus-visible {
