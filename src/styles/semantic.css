@@ -41,6 +41,12 @@
   --surface-card-border: rgb(255 255 255 / 0.1);
   --surface-card-header-border: var(--token-border-subtler);
 
+  /* Nested Card Contract — reusable aliases for inset panels */
+  --nested-card-bg: var(--surface-card-nested);
+  --nested-card-border: var(--surface-card-border);
+  --nested-card-radius: var(--radius-lg);
+  --nested-card-shadow: none;
+
   --surface-muted: var(--token-surface-dim);
   --surface-hover: var(--chrome-hover-bg);
   --surface-hover-border: var(--chrome-hover-border);

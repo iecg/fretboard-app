@@ -9,8 +9,10 @@
 
 /* Inset / nested card surface — apply to content panels nested inside a top-level card. */
 .nested-surface {
-  background: var(--surface-card-nested);
-  border-radius: var(--radius-md);
+  background: var(--nested-card-bg);
+  border: 1px solid var(--nested-card-border);
+  border-radius: var(--nested-card-radius);
+  box-shadow: var(--nested-card-shadow);
 }
 
 /* ===== Shared Control Button Chrome ===== */

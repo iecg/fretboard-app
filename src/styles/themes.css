@@ -30,9 +30,9 @@
   /* Surface Ladder — intentional light-mode values (deepest → highest) */
   --surface-shell:       #eef2f7; /* = shell/bg, cool blue-gray */
   --surface-card-top:    #fafbfd; /* top-level card: near-white, brighter than shell */
-  --surface-card-nested: #ebf0f7; /* inset card: visibly recessed from card-top */
+  --surface-card-nested: #f2f6fb; /* inset card: visibly recessed from card-top without reading like a control well */
   --surface-well:        #e5ecf5; /* control well: distinctly sunken */
-  --surface-strip:       #eaeff6; /* practice/chord strip: shell-adjacent */
+  --surface-strip:       #f6f9fc; /* practice/chord strip: card-adjacent */
   --surface-float:       #ffffff; /* floating overlay (dropdown, modal): highest elevation */
 
   /* Strip tokens — routed through ladder */
@@ -195,4 +195,3 @@
      --note-blue, --note-blue-glow, --shadow-note-root, --shadow-note-active,
      --shadow-ping-start, --shadow-ping-end */
 }
-
