@@ -167,6 +167,9 @@
   --selected-chord-border: #c2410c;
   --selected-highlight: rgb(255 255 255 / 0.15); /* Backward compatibility alias */
 
+  /* Fretboard accessibility chrome — light-mode override */
+  --fretboard-a11y-hover-bg: rgb(0 0 0 / 0.05);
+
   /* Fretboard SVG — light-mode rings, fills, and number color */
   --fretboard-board-shadow: rgb(0 0 0 / 0.15);
   --fretboard-note-text-fill: #ffffff;

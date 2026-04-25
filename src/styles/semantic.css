@@ -145,6 +145,21 @@
 
   --card-padding-y: var(--space-card-y);
   --card-padding-x: var(--space-card-x);
+
+  /* Musical Role Tokens — shared fills, borders, and glows for strip/chip surfaces.
+     Use these in component modules instead of local --role-* recipes. */
+  --role-scale-bg:        color-mix(in srgb, var(--neon-cyan) 8%, transparent);
+  --role-scale-border:    var(--neon-cyan);
+
+  --role-chord-bg:        color-mix(in srgb, var(--neon-orange) 10%, transparent);
+  --role-chord-bg-strong: color-mix(in srgb, var(--neon-orange) 22%, transparent);
+  --role-chord-border:    var(--neon-orange);
+
+  --role-color-tone-ring: var(--neon-violet);
+  --role-color-tone-text: var(--neon-violet);
+
+  /* Fretboard accessibility chrome — interactive UI layer, not SVG artwork */
+  --fretboard-a11y-hover-bg: rgb(255 255 255 / 0.15);
 }
 
 [data-theme="modern-dark"] {
