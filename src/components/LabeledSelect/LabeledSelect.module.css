@@ -11,7 +11,7 @@
 .labeled-select-label-text {
   font-size: 0.72rem;
   font-weight: var(--font-weight-medium);
-  color: var(--chrome-fg-muted);
+  color: var(--surface-control-fg-muted);
   line-height: var(--leading-normal);
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -35,7 +35,7 @@
   font-family: var(--font-sans);
   font-size: 0.98rem;
   font-weight: var(--font-weight-medium);
-  color: var(--chrome-fg);
+  color: var(--surface-control-fg);
   line-height: var(--leading-normal);
   cursor: pointer;
   transition:
@@ -54,6 +54,7 @@
   background-color: var(--surface-control-hover-bg);
   background-image: var(--surface-control-hover-bg-image);
   border-color: var(--surface-control-hover-border);
+  color: var(--surface-control-hover-fg);
 }
 
 .labeled-select-native:disabled {
@@ -70,7 +71,7 @@
   right: 0.95rem;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--chrome-fg-muted);
+  color: var(--surface-control-fg-muted);
   pointer-events: none;
   flex-shrink: 0;
   font-size: 1.15rem;

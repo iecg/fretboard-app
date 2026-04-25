@@ -44,21 +44,12 @@
 }
 
 .bottom-tab-bar-btn.is-active {
-  color: var(--neon-cyan);
-}
-
-:global([data-theme="modern-light"]) .bottom-tab-bar-btn.is-active {
-  color: var(--accent-primary);
+  color: var(--nav-active-fg);
 }
 
 .bottom-tab-bar-btn.is-active::before {
-  background: var(--neon-cyan);
-  box-shadow: var(--glow-cyan-sm);
-}
-
-:global([data-theme="modern-light"]) .bottom-tab-bar-btn.is-active::before {
-  background: var(--accent-primary);
-  box-shadow: none;
+  background: var(--nav-active-indicator);
+  box-shadow: var(--nav-active-glow);
 }
 
 .bottom-tab-bar-btn:focus-visible {

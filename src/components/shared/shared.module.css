@@ -125,8 +125,8 @@
 }
 
 :global([data-theme="modern-dark"]) .toggle-btn:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--neon-cyan) 25%, transparent);
+  outline: var(--control-focus-ring);
+  box-shadow: var(--control-focus-glow);
 }
 
 .toggle-btn.active {
@@ -156,9 +156,9 @@
 }
 
 .accidental-toggle:hover {
-  color: var(--surface-control-fg);
-  border-color: var(--surface-hover-border);
-  background: var(--surface-hover);
+  color: var(--surface-control-hover-fg);
+  border-color: var(--surface-control-hover-border);
+  background: var(--surface-control-hover-bg);
 }
 
 :global([data-theme="modern-dark"]) .accidental-toggle:hover {
@@ -168,11 +168,11 @@
 }
 
 .accidental-toggle:focus-visible {
-  outline: var(--focus-ring);
+  outline: var(--control-focus-ring);
   outline-offset: var(--focus-ring-offset);
   color: var(--surface-control-fg);
-  border-color: var(--surface-hover-border);
-  box-shadow: var(--focus-ring-glow);
+  border-color: var(--surface-control-hover-border);
+  box-shadow: var(--control-focus-glow);
 }
 
 :global([data-theme="modern-dark"]) .accidental-toggle:focus-visible {
@@ -240,10 +240,10 @@
 }
 
 :global([data-theme="modern-dark"]) .note-btn:focus-visible {
-  outline: none;
+  outline: var(--control-focus-ring);
   color: white;
   border-color: var(--neon-cyan);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--neon-cyan) 25%, transparent);
+  box-shadow: var(--control-focus-glow);
 }
 
 .note-btn.active {
@@ -331,8 +331,8 @@
 }
 
 :global([data-theme="modern-dark"]) .icon-button:focus-visible {
-  outline: none;
-  box-shadow: inset 0 0 0 2px var(--neon-cyan);
+  outline: var(--control-focus-ring);
+  box-shadow: var(--control-focus-inset);
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
