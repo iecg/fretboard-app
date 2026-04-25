@@ -18,7 +18,7 @@
   composes: control-value from '../shared/shared.module.css';
   font-size: 0.85rem;
   font-weight: 700;
-  color: var(--chrome-fg);
+  color: var(--surface-control-fg);
 }
 
 .stepper-control.mobile .stepper-btn {

@@ -64,7 +64,7 @@
   min-height: unset !important;
   padding-left: 0.85rem !important;
   padding-right: 2.4rem !important;
-  color: var(--chrome-fg) !important;
+  color: var(--surface-control-fg) !important;
 }
 
 .theory-browser-selector select:hover {
@@ -87,7 +87,7 @@
   border-right: 1px solid var(--surface-card-header-border);
   border-radius: 0;
   background: transparent;
-  color: var(--chrome-fg);
+  color: var(--surface-control-fg);
   cursor: pointer;
   transition: var(--transition-surface);
   flex-shrink: 0;
@@ -101,6 +101,7 @@
 .theory-nav-btn:hover:not(:disabled) {
   background-color: var(--surface-control-hover-bg);
   background-image: var(--surface-control-hover-bg-image);
+  color: var(--surface-control-hover-fg);
 }
 
 .theory-nav-btn:active:not(:disabled) {
@@ -165,17 +166,13 @@
 }
 
 .theory-disclosure-btn:hover {
-  background: var(--surface-hover);
+  background: var(--surface-control-hover-bg);
 }
 
 .theory-disclosure-btn:focus-visible {
-  outline: none;
-  background: var(--surface-hover);
-  box-shadow: 0 0 0 2px var(--interactive-focus);
-}
-
-:global([data-theme="modern-dark"]) .theory-disclosure-btn:focus-visible {
-  box-shadow: 0 0 0 2px var(--neon-cyan);
+  outline: var(--control-focus-ring);
+  background: var(--surface-control-hover-bg);
+  box-shadow: var(--control-focus-glow);
 }
 
 .theory-disclosure-title {

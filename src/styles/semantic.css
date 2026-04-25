@@ -74,6 +74,11 @@
   --focus-ring-offset: 2px;
   --focus-ring-glow: 0 0 8px rgb(77 228 255 / 0.6), 0 0 16px rgb(77 228 255 / 0.35);
 
+  /* Control focus aliases — dark cyan parity via theme override */
+  --control-focus-ring: var(--focus-ring);
+  --control-focus-glow: var(--focus-ring-glow);
+  --control-focus-inset: var(--focus-ring);
+
   /* Z-index layers */
   --z-note: var(--token-z-note);
   --z-dropdown: var(--token-z-dropdown);
@@ -91,6 +96,19 @@
   --chrome-hover-bg-tint: color-mix(in srgb, var(--neon-cyan) 12%, transparent);
 
   --disabled-opacity: var(--token-disabled-opacity);
+
+  /* Nav active tokens — theme-aware active/selected state for navigation */
+  --nav-active-fg: var(--neon-cyan);
+  --nav-active-indicator: var(--neon-cyan);
+  --nav-active-glow: var(--glow-cyan-sm);
+
+  /* Destructive control tokens */
+  --destructive-control-fg: var(--accent-secondary, var(--neon-orange));
+  --destructive-control-bg: color-mix(in srgb, var(--destructive-control-fg) 8%, transparent);
+  --destructive-control-hover-bg: color-mix(in srgb, var(--destructive-control-fg) 16%, transparent);
+  --destructive-control-border: var(--accent-secondary, var(--neon-orange));
+  --destructive-control-confirmed-bg: var(--accent-secondary, var(--neon-orange));
+  --destructive-control-confirmed-fg: #ffffff;
 
   --transition-surface: background-color var(--transition-fast) ease, color var(--transition-fast) ease, border-color var(--transition-fast) ease;
   --transition-accent: box-shadow var(--transition-fast) ease, fill var(--transition-fast) ease;
@@ -148,6 +166,10 @@
   --surface-control-hover-bg-image: linear-gradient(180deg, color-mix(in srgb, var(--neon-cyan) 18%, transparent), color-mix(in srgb, var(--neon-cyan) 8%, transparent));
   --surface-control-hover-fg: white;
   --elevation-card: 0 1px 0 rgb(255 255 255 / 0.05) inset, 0 6px 20px rgb(0 0 0 / 0.28);
+
+  --control-focus-ring: none;
+  --control-focus-glow: 0 0 0 3px color-mix(in srgb, var(--neon-cyan) 25%, transparent);
+  --control-focus-inset: inset 0 0 0 2px var(--neon-cyan);
 }
 
 .panel-surface {

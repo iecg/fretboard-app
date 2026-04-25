@@ -146,6 +146,16 @@
   --shadow-ping-start: rgba(8, 145, 178, 0.2);
   --shadow-ping-end: rgba(8, 145, 178, 0);
 
+  /* Nav active tokens — light mode routes to accent-primary */
+  --nav-active-fg: var(--accent-primary);
+  --nav-active-indicator: var(--accent-primary);
+  --nav-active-glow: none;
+
+  /* Destructive control tokens — light mode orange */
+  --destructive-control-fg: var(--neon-orange);
+  --destructive-control-border: var(--neon-orange);
+  --destructive-control-confirmed-bg: var(--neon-orange);
+
   /* Interaction — Selection & Persistent States */
   --selected-bg: #0891b2;
   --selected-fg: #ffffff;
