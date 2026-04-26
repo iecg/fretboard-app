@@ -12,6 +12,7 @@ import {
   getKeySignature,
   getKeySignatureForDisplay,
   resolveAccidentalMode,
+  getDiatonicChord,
 } from "./theory";
 
 describe("getNoteIndex", () => {
@@ -333,5 +334,57 @@ describe("SCALES constant", () => {
   it("Major scale has 7 intervals starting from 0", () => {
     expect(SCALES["Major"]).toHaveLength(7);
     expect(SCALES["Major"][0]).toBe(0);
+  });
+});
+
+describe("getDiatonicChord", () => {
+  describe("Major scale", () => {
+    it("I in C Major → { root: C, quality: Major Triad }", () => {
+      expect(getDiatonicChord("I", "Major", "C")).toEqual({ root: "C", quality: "Major Triad" });
+    });
+
+    it("ii in C Major → { root: D, quality: Minor Triad }", () => {
+      expect(getDiatonicChord("ii", "Major", "C")).toEqual({ root: "D", quality: "Minor Triad" });
+    });
+
+    it("vii° in C Major → { root: B, quality: Diminished Triad }", () => {
+      expect(getDiatonicChord("vii°", "Major", "C")).toEqual({ root: "B", quality: "Diminished Triad" });
+    });
+
+    it("V in G Major → { root: D, quality: Major Triad } (non-C tonic)", () => {
+      expect(getDiatonicChord("V", "Major", "G")).toEqual({ root: "D", quality: "Major Triad" });
+    });
+  });
+
+  describe("Natural Minor scale", () => {
+    it("i in A Natural Minor → { root: A, quality: Minor Triad }", () => {
+      expect(getDiatonicChord("i", "Natural Minor", "A")).toEqual({ root: "A", quality: "Minor Triad" });
+    });
+
+    it("ii° in A Natural Minor → { root: B, quality: Diminished Triad }", () => {
+      expect(getDiatonicChord("ii°", "Natural Minor", "A")).toEqual({ root: "B", quality: "Diminished Triad" });
+    });
+  });
+
+  describe("Harmonic Minor — critical edge case", () => {
+    it("V in A Harmonic Minor → { root: E, quality: Major Triad } (raised 7th makes dominant major)", () => {
+      expect(getDiatonicChord("V", "Harmonic Minor", "A")).toEqual({ root: "E", quality: "Major Triad" });
+    });
+  });
+
+  describe("Unknown degree guard", () => {
+    it("i is not a degree in Major scale — returns undefined", () => {
+      expect(getDiatonicChord("i", "Major", "C#")).toBeUndefined();
+    });
+  });
+
+  describe("Invalid inputs → undefined", () => {
+    it("returns undefined for an unknown scale", () => {
+      expect(getDiatonicChord("I", "Unknown Scale", "C")).toBeUndefined();
+    });
+
+    it("returns undefined for an invalid tonic note", () => {
+      expect(getDiatonicChord("I", "Major", "X")).toBeUndefined();
+    });
   });
 });

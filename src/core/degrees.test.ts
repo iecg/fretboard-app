@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getDegreesForScale, DEGREE_COLORS } from '../core/degrees';
+import { getDegreesForScale, DEGREE_COLORS, getQualityForDegree } from '../core/degrees';
 
 describe('getDegreesForScale', () => {
   describe('Major modes', () => {
@@ -174,5 +174,107 @@ describe('DEGREE_COLORS', () => {
     // All I/i variants should be same color
     expect(DEGREE_COLORS['I']).toBe(DEGREE_COLORS['i']);
     expect(DEGREE_COLORS['i']).toBe(DEGREE_COLORS['i°']);
+  });
+});
+
+describe('getQualityForDegree', () => {
+  describe('Major scale — all 7 degrees', () => {
+    it('I → Major Triad', () => {
+      expect(getQualityForDegree('I', 'Major')).toBe('Major Triad');
+    });
+
+    it('ii → Minor Triad', () => {
+      expect(getQualityForDegree('ii', 'Major')).toBe('Minor Triad');
+    });
+
+    it('iii → Minor Triad', () => {
+      expect(getQualityForDegree('iii', 'Major')).toBe('Minor Triad');
+    });
+
+    it('IV → Major Triad', () => {
+      expect(getQualityForDegree('IV', 'Major')).toBe('Major Triad');
+    });
+
+    it('V → Major Triad', () => {
+      expect(getQualityForDegree('V', 'Major')).toBe('Major Triad');
+    });
+
+    it('vi → Minor Triad', () => {
+      expect(getQualityForDegree('vi', 'Major')).toBe('Minor Triad');
+    });
+
+    it('vii° → Diminished Triad', () => {
+      expect(getQualityForDegree('vii°', 'Major')).toBe('Diminished Triad');
+    });
+  });
+
+  describe('Natural Minor scale — all 7 degrees', () => {
+    it('i → Minor Triad', () => {
+      expect(getQualityForDegree('i', 'Natural Minor')).toBe('Minor Triad');
+    });
+
+    it('ii° → Diminished Triad', () => {
+      expect(getQualityForDegree('ii°', 'Natural Minor')).toBe('Diminished Triad');
+    });
+
+    it('III → Major Triad', () => {
+      expect(getQualityForDegree('III', 'Natural Minor')).toBe('Major Triad');
+    });
+
+    it('iv → Minor Triad', () => {
+      expect(getQualityForDegree('iv', 'Natural Minor')).toBe('Minor Triad');
+    });
+
+    it('v → Minor Triad', () => {
+      expect(getQualityForDegree('v', 'Natural Minor')).toBe('Minor Triad');
+    });
+
+    it('VI → Major Triad', () => {
+      expect(getQualityForDegree('VI', 'Natural Minor')).toBe('Major Triad');
+    });
+
+    it('VII → Major Triad', () => {
+      expect(getQualityForDegree('VII', 'Natural Minor')).toBe('Major Triad');
+    });
+  });
+
+  describe('Dorian — spot checks', () => {
+    it('i → Minor Triad', () => {
+      expect(getQualityForDegree('i', 'Dorian')).toBe('Minor Triad');
+    });
+
+    it('IV → Major Triad', () => {
+      expect(getQualityForDegree('IV', 'Dorian')).toBe('Major Triad');
+    });
+
+    it('vi° → Diminished Triad', () => {
+      expect(getQualityForDegree('vi°', 'Dorian')).toBe('Diminished Triad');
+    });
+  });
+
+  describe('Harmonic Minor — edge cases', () => {
+    it('V at semitone 7 → Major Triad (raised 7th makes dominant major)', () => {
+      expect(getQualityForDegree('V', 'Harmonic Minor')).toBe('Major Triad');
+    });
+
+    it('III+ at semitone 3 → Major Triad (pragmatic fallback: CHORD_DEFINITIONS has no Augmented Triad)', () => {
+      expect(getQualityForDegree('III+', 'Harmonic Minor')).toBe('Major Triad');
+    });
+  });
+
+  describe('Lydian — raised 4th edge case', () => {
+    it('iv° at semitone 6 → Diminished Triad (F#-A-C: minor 3rd + diminished 5th)', () => {
+      expect(getQualityForDegree('iv°', 'Lydian')).toBe('Diminished Triad');
+    });
+  });
+
+  describe('Unknown inputs', () => {
+    it('returns undefined for an unknown scale', () => {
+      expect(getQualityForDegree('I', 'Unknown Scale')).toBeUndefined();
+    });
+
+    it('returns undefined for an unknown degree in a known scale', () => {
+      expect(getQualityForDegree('XI', 'Major')).toBeUndefined();
+    });
   });
 });
