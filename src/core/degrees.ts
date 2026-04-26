@@ -40,6 +40,66 @@ export const DEGREE_COLORS: Record<string, string> = {
 const MAJOR_BASE_DEGREES = ["I", "ii", "iii", "IV", "V", "vi", "vii°"] as const;
 const MINOR_BASE_DEGREES = ["i", "ii°", "III", "iv", "v", "VI", "VII"] as const;
 
+// Diatonic triad quality for each scale degree (semitone offset → chord-name key).
+// Covers the 8 scales explicitly listed in MODE_DEGREES.
+const DEGREE_DIATONIC_QUALITY: Record<string, Record<number, string>> = {
+  'Major':          { 0: "Major Triad", 2: "Minor Triad", 4: "Minor Triad", 5: "Major Triad", 7: "Major Triad", 9: "Minor Triad", 11: "Diminished Triad" },
+  'Natural Minor':  { 0: "Minor Triad", 2: "Diminished Triad", 3: "Major Triad", 5: "Minor Triad", 7: "Minor Triad", 8: "Major Triad", 10: "Major Triad" },
+  'Dorian':         { 0: "Minor Triad", 2: "Minor Triad", 3: "Major Triad", 5: "Major Triad", 7: "Minor Triad", 9: "Diminished Triad", 10: "Major Triad" },
+  'Phrygian':       { 0: "Minor Triad", 1: "Major Triad", 3: "Major Triad", 5: "Minor Triad", 7: "Diminished Triad", 8: "Major Triad", 10: "Minor Triad" },
+  'Lydian':         { 0: "Major Triad", 2: "Major Triad", 4: "Minor Triad", 6: "Diminished Triad", 7: "Major Triad", 9: "Minor Triad", 11: "Minor Triad" },
+  'Mixolydian':     { 0: "Major Triad", 2: "Minor Triad", 4: "Diminished Triad", 5: "Major Triad", 7: "Minor Triad", 9: "Minor Triad", 10: "Major Triad" },
+  'Locrian':        { 0: "Diminished Triad", 1: "Major Triad", 3: "Minor Triad", 5: "Minor Triad", 6: "Major Triad", 8: "Major Triad", 10: "Minor Triad" },
+  'Harmonic Minor': { 0: "Minor Triad", 2: "Diminished Triad", 3: "Major Triad", 5: "Minor Triad", 7: "Major Triad", 8: "Major Triad", 11: "Diminished Triad" },
+};
+
+/**
+ * Returns the diatonic triad quality (chord-name key) for a given scale degree.
+ *
+ * @param degreeId - Roman numeral string (e.g., "I", "ii", "vii°")
+ * @param scaleName - Scale name (e.g., "Major", "Natural Minor", "Harmonic Minor")
+ * @returns The chord-name key (e.g., "Major Triad", "Minor Triad", "Diminished Triad"),
+ *          or undefined if the scale or degree is not recognised.
+ */
+export function getQualityForDegree(
+  degreeId: string,
+  scaleName: string,
+): string | undefined {
+  const degreesMap = getDegreesForScale(scaleName);
+
+  // Find the semitone offset whose Roman numeral value matches degreeId
+  const semitoneEntry = Object.entries(degreesMap).find(
+    ([, roman]) => roman === degreeId,
+  );
+  if (!semitoneEntry) return undefined;
+  const semitone = Number(semitoneEntry[0]);
+
+  // Table-backed scales
+  if (DEGREE_DIATONIC_QUALITY[scaleName]) {
+    return DEGREE_DIATONIC_QUALITY[scaleName][semitone];
+  }
+
+  // Algorithmic fallback for 7-note scales not in DEGREE_DIATONIC_QUALITY
+  // (e.g. Melodic Minor and its derived modes)
+  const intervals = SCALES[scaleName];
+  if (!intervals || intervals.length < 7) return undefined;
+
+  const degreeIdx = intervals.indexOf(semitone);
+  if (degreeIdx === -1) return undefined;
+
+  // Interval from this degree to the note two scale steps above it
+  const thirdInterval =
+    ((intervals[(degreeIdx + 2) % 7] - semitone + 12) % 12);
+  // Interval from this degree to the note four scale steps above it (the 5th)
+  const fifthInterval =
+    ((intervals[(degreeIdx + 4) % 7] - semitone + 12) % 12);
+
+  if (thirdInterval === 3 && fifthInterval === 6) return "Diminished Triad";
+  if (thirdInterval === 3) return "Minor Triad";
+  if (thirdInterval === 4) return "Major Triad";
+  return undefined;
+}
+
 // Fallback: Major quality scales use Major degrees, minor quality use Natural Minor
 export function getDegreesForScale(scaleName: string): Record<number, string> {
   if (MODE_DEGREES[scaleName]) return MODE_DEGREES[scaleName];
