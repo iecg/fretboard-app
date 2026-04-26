@@ -1,4 +1,4 @@
-import { SCALES } from "./theory";
+import { SCALES } from "./theoryCatalog";
 
 // Scale degrees by semitone interval from root
 const MODE_DEGREES: Record<string, Record<number, string>> = {
