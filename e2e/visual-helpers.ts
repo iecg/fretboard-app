@@ -12,9 +12,20 @@ export interface VisualState {
   scaleName?: string;
   displayFormat?: "notes" | "degrees" | "none";
   scaleVisible?: boolean;
+  /** @deprecated Use chordRootOverride + chordQualityOverride + chordOverlayMode for Phase 02 atoms. */
   chordRoot?: string;
+  /** @deprecated Use chordRootOverride + chordQualityOverride + chordOverlayMode for Phase 02 atoms. */
   chordType?: string;
+  /** @deprecated Use chordOverlayMode instead. */
   linkChordRoot?: boolean;
+  /** Phase 02: root note for manual-mode chord overlay */
+  chordRootOverride?: string;
+  /** Phase 02: chord quality for manual-mode chord overlay (e.g. "Dominant 7th") */
+  chordQualityOverride?: string;
+  /** Phase 02: "degree" | "manual" */
+  chordOverlayMode?: string;
+  /** Phase 02: Roman numeral degree (e.g. "I", "V") */
+  chordDegree?: string;
   chordFretSpread?: number;
   practiceLens?: string;
   theme?: "light" | "dark" | "system";
