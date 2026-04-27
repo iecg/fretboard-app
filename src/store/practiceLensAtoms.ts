@@ -2,11 +2,12 @@ import { atom } from "jotai";
 import {
   NOTES,
   ENHARMONICS,
-  
+
   LENS_REGISTRY,
   getScaleNotes,
   getNoteDisplay,
   formatAccidental,
+  getDiatonicChord,
 } from "../core/theory";
 import type {
   ChordMemberName,
@@ -15,10 +16,14 @@ import type {
   PracticeCue,
   PracticeCueNote,
   ChordRowEntry,
-  
+
   PracticeBarNote,
   PracticeBarGroup,
 } from "../core/theory";
+import {
+  getDegreesForScale,
+  type DegreeId,
+} from "../core/degrees";
 import {
   rootNoteAtom,
   scaleNameAtom,
@@ -36,6 +41,8 @@ import {
   practiceLensAtom,
   hasOutsideChordMembersAtom,
   allChordMembersAtom,
+  chordDegreeAtom,
+  chordOverlayModeAtom,
 } from "./chordOverlayAtoms";
 import { shapeHighlightedNoteSetAtom } from "./shapeAtoms";
 
@@ -92,6 +99,19 @@ export const noteSemanticMapAtom = atom((get) => {
   for (const m of chordMembers) memberByNote.set(m.note, m);
   const activeChordToneSet = new Set(chordMembers.map((m) => m.note));
 
+  // Phase 04: diatonic chord check (computed once per evaluation)
+  const degreesMap = getDegreesForScale(scaleName);
+  const chordDegree = get(chordDegreeAtom);
+  const chordOverlayMode = get(chordOverlayModeAtom);
+
+  let diatonicChordRoot: string | undefined;
+  let diatonicChordQuality: string | undefined;
+  if (chordDegree !== null && chordOverlayMode === "degree") {
+    const diatonicResult = getDiatonicChord(chordDegree, scaleName, rootNote);
+    diatonicChordRoot = diatonicResult?.root;
+    diatonicChordQuality = diatonicResult?.quality;
+  }
+
   const map = new Map<string, NoteSemantics>();
   for (const note of NOTES) {
     const isInScale = scaleNoteSet.has(note);
@@ -108,6 +128,8 @@ export const noteSemanticMapAtom = atom((get) => {
       ENHARMONICS[rootNote] === note;
 
     if (isInScale || isChordTone || isColorTone) {
+      const tonicIdx = NOTES.indexOf(rootNote);
+      const noteIdx = NOTES.indexOf(note);
       map.set(note, {
         isScaleRoot: !!isScaleRoot,
         isChordRoot,
@@ -117,6 +139,13 @@ export const noteSemanticMapAtom = atom((get) => {
         isGuideTone,
         isTension,
         memberName: member?.name as ChordMemberName | undefined,
+        scaleDegree: isInScale && tonicIdx !== -1 && noteIdx !== -1
+          ? degreesMap[(noteIdx - tonicIdx + 12) % 12] as DegreeId | undefined
+          : undefined,
+        isDiatonicChord: isChordTone && isInScale
+          && diatonicChordRoot !== undefined
+          && diatonicChordRoot === chordRoot
+          && diatonicChordQuality === chordType,
       });
     }
   }
