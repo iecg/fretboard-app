@@ -3,7 +3,7 @@ import { describe, it, expect } from "vitest";
 import { screen, within, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
-import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
+import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
 import {
   chordDegreeAtom,
   chordOverlayModeAtom,
@@ -194,6 +194,27 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
       expect(screen.getByRole("button", { name: "Previous chord degree" })).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Next chord degree" })).toBeInTheDocument();
+    });
+  });
+
+  describe("progression next/prev control", () => {
+    it("renders Prev and Next buttons in degree mode with overlay open", () => {
+      renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
+      expect(screen.getByRole("button", { name: "Previous chord" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Next chord" })).toBeInTheDocument();
+    });
+
+    it("does not render progression buttons in manual mode", () => {
+      renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
+      expect(screen.queryByRole("button", { name: "Next chord" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Previous chord" })).not.toBeInTheDocument();
+    });
+
+    it("clicking Next chord advances chordDegreeAtom", async () => {
+      const store = makeAtomStore([...DEGREE_MODE_SEEDS]);
+      renderWithStore(<ChordOverlayControls />, store);
+      await userEvent.click(screen.getByRole("button", { name: "Next chord" }));
+      expect(store.get(chordDegreeAtom)).not.toBeNull();
     });
   });
 
