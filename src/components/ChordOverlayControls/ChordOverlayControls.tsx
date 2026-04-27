@@ -1,10 +1,10 @@
 import { startTransition, useEffect, useState } from "react";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import clsx from "clsx";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { NOTES } from "../../core/theory";
 import { getAdjacentDegree, getDegreesForScale } from "../../core/degrees";
-import { lensAvailabilityAtom } from "../../store/atoms";
+import { lensAvailabilityAtom, advanceProgression, regressProgression } from "../../store/atoms";
 import { LabeledSelect, type LabeledSelectOption } from "../LabeledSelect/LabeledSelect";
 import { NoteGrid } from "../NoteGrid/NoteGrid";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
@@ -45,6 +45,9 @@ export function ChordOverlayControls() {
   } = useChordState();
 
   const lensAvailability = useAtomValue(lensAvailabilityAtom);
+
+  const advanceProgressionAtom = useSetAtom(advanceProgression);
+  const regressProgressionAtom = useSetAtom(regressProgression);
 
   const [isChordOverlayOpen, setChordOverlayOpen] = useState(Boolean(chordType));
 
@@ -184,6 +187,39 @@ export function ChordOverlayControls() {
                   className={styles["theory-nav-btn"]}
                   aria-label="Next chord degree"
                   onClick={() => handleStepDegree(1)}
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Progression stepper — visible in degree mode only */}
+          {chordOverlayMode === "degree" && (
+            <div
+              role="group"
+              aria-label="Step through progression"
+              className={clsx(
+                styles["theory-mode-browser"],
+                "panel-surface",
+                "panel-surface--compact",
+              )}
+            >
+              <div className={styles["theory-browser-main"]}>
+                <button
+                  type="button"
+                  className={styles["theory-nav-btn"]}
+                  aria-label="Previous chord"
+                  onClick={() => startTransition(() => { regressProgressionAtom(); })}
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                <span className={styles["theory-browser-selector"]}>Progression</span>
+                <button
+                  type="button"
+                  className={styles["theory-nav-btn"]}
+                  aria-label="Next chord"
+                  onClick={() => startTransition(() => { advanceProgressionAtom(); })}
                 >
                   <ChevronRight size={16} />
                 </button>
