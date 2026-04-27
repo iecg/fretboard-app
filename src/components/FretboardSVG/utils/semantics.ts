@@ -32,7 +32,7 @@ export function getLensEmphasis(
       if (isGuideTone) {
         return { glowColor: "cyan", radiusBoost: 1.15, opacityBoost: 1 };
       }
-      if (noteClass.includes("chord-") || noteClass.includes("color-")) {
+      if (noteClass.includes("chord-") || noteClass.includes("color-") || noteClass === "note-diatonic-chord") {
         return { radiusBoost: 0.85, opacityBoost: 0.7 };
       }
       return defaultEmphasis;
@@ -41,7 +41,7 @@ export function getLensEmphasis(
       if (isTension) {
         return { glowColor: "orange", radiusBoost: 1.15, opacityBoost: 1 };
       }
-      if (noteClass.includes("chord-")) {
+      if (noteClass.includes("chord-") || noteClass === "note-diatonic-chord") {
         return { radiusBoost: 0.85, opacityBoost: 0.7 };
       }
       return defaultEmphasis;

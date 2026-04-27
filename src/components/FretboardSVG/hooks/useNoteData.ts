@@ -257,6 +257,7 @@ export function useNoteData({
             (noteClass === "note-blue" ||
               noteClass === "chord-tone-outside-scale" ||
               noteClass === "chord-tone-in-scale" ||
+              noteClass === "note-diatonic-chord" ||
               noteClass === "chord-root" ||
               noteClass === "key-tonic")) ||
           (isWrapped && isHighlighted);
