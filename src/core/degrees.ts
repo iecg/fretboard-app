@@ -134,6 +134,20 @@ export function getAdjacentDegree(
   return degreeList[nextIndex];
 }
 
+/**
+ * Returns an ordered array of DegreeIds for the given scale, sorted ascending by semitone.
+ * Safer than Object.values(getDegreesForScale(...)) which relies on JS integer-key ordering.
+ *
+ * @param scaleName - Scale name (e.g., "Major", "Natural Minor").
+ * @returns Ordered array of DegreeIds from lowest semitone to highest (e.g. ["I","ii","iii","IV","V","vi","vii°"]).
+ */
+export function getDegreeSequence(scaleName: string): DegreeId[] {
+  const map = getDegreesForScale(scaleName);
+  return Object.entries(map)
+    .sort(([a], [b]) => Number(a) - Number(b))
+    .map(([, degree]) => degree as DegreeId);
+}
+
 // Fallback: Major quality scales use Major degrees, minor quality use Natural Minor
 export function getDegreesForScale(scaleName: string): Record<number, string> {
   if (MODE_DEGREES[scaleName]) return MODE_DEGREES[scaleName];
