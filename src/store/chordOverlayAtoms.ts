@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { atomWithStorage } from "jotai/utils";
+import { atomWithStorage, RESET } from "jotai/utils";
 import {
   NOTES,
   CHORD_DEFINITIONS,
@@ -8,6 +8,7 @@ import {
   getScaleNotes,
   getNoteDisplay,
   formatAccidental,
+  getDiatonicChord,
 } from "../core/theory";
 import type {
   ChordMemberFact,
@@ -37,7 +38,8 @@ import {
 /** Opaque type alias for Roman-numeral degree IDs like "I", "ii", "vii°". */
 type DegreeId = string;
 
-const chordTypeStorage = createStorage<string | null>({
+// Shared serialize/deserialize for nullable string chord-quality values.
+const nullableStringStorage = createStorage<string | null>({
   serialize: (v) => v ?? "",
   deserialize: (v) => (v === "" ? null : v),
 });
@@ -179,8 +181,7 @@ export const chordRootOverrideAtom = atomWithStorage<string>(
 );
 
 const chordQualityOverrideStorage = createStorage<string | null>({
-  serialize: (v) => v ?? "",
-  deserialize: (v) => (v === "" ? null : v),
+  ...nullableStringStorage,
   migrate: (): string | null | undefined => {
     const chordType = readLocalStorage(k("chordType"));
     // Preserve the chord type for manual-mode users.
@@ -198,22 +199,59 @@ export const chordQualityOverrideAtom = atomWithStorage<string | null>(
 );
 
 // ---------------------------------------------------------------------------
-// Public read/write atoms — chordRootAtom and chordTypeAtom are converted to
-// writable derived atoms in T2. They are kept as atomWithStorage here for T1.
+// Public writable derived atoms — chordRootAtom and chordTypeAtom
+//
+// Read path: composes the four backing atoms via getDiatonicChord.
+// Write path: persists the value into override atoms and flips mode to "manual".
+// RESET path: cascades RESET to all four backing atoms.
 // ---------------------------------------------------------------------------
 
-export const chordRootAtom = atomWithStorage(
-  k("chordRoot"),
-  "C",
-  rawStringStorage(),
-  GET_ON_INIT,
+export const chordRootAtom = atom(
+  (get): string => {
+    const mode = get(chordOverlayModeAtom);
+    if (mode === "manual") return get(chordRootOverrideAtom);
+    const degree = get(chordDegreeAtom);
+    if (!degree) return get(chordRootOverrideAtom); // overlay off: return last-known root
+    const rootNote = get(rootNoteAtom);
+    const scaleName = get(scaleNameAtom);
+    const result = getDiatonicChord(degree, scaleName, rootNote);
+    return result?.root ?? get(chordRootOverrideAtom);
+  },
+  (_get, set, value: string | typeof RESET) => {
+    if (value === RESET) {
+      set(chordDegreeAtom, RESET);
+      set(chordOverlayModeAtom, RESET);
+      set(chordRootOverrideAtom, RESET);
+      set(chordQualityOverrideAtom, RESET);
+      return;
+    }
+    set(chordRootOverrideAtom, value);
+    set(chordOverlayModeAtom, "manual");
+  },
 );
 
-export const chordTypeAtom = atomWithStorage<string | null>(
-  k("chordType"),
-  null,
-  chordTypeStorage,
-  GET_ON_INIT,
+export const chordTypeAtom = atom(
+  (get): string | null => {
+    const mode = get(chordOverlayModeAtom);
+    if (mode === "manual") return get(chordQualityOverrideAtom);
+    const degree = get(chordDegreeAtom);
+    if (!degree) return null; // overlay off
+    const rootNote = get(rootNoteAtom);
+    const scaleName = get(scaleNameAtom);
+    const result = getDiatonicChord(degree, scaleName, rootNote);
+    return result?.quality ?? null;
+  },
+  (_get, set, value: string | null | typeof RESET) => {
+    if (value === RESET) {
+      set(chordDegreeAtom, RESET);
+      set(chordOverlayModeAtom, RESET);
+      set(chordRootOverrideAtom, RESET);
+      set(chordQualityOverrideAtom, RESET);
+      return;
+    }
+    set(chordQualityOverrideAtom, value);
+    set(chordOverlayModeAtom, "manual");
+  },
 );
 
 export const linkChordRootAtom = atomWithStorage(
