@@ -100,6 +100,34 @@ export function getQualityForDegree(
   return undefined;
 }
 
+/**
+ * Returns the adjacent degree in the given scale, wrapping around at boundaries.
+ *
+ * Step semantics: vii° + direction(+1) wraps to I; I + direction(-1) wraps to vii°.
+ * Null input: returns the first degree of the scale (activates overlay at sensible default).
+ *
+ * @param degreeId  Current Roman numeral (e.g. "I", "ii", "vii°") or null when overlay is off.
+ * @param scaleName Scale name (e.g. "Major", "Natural Minor").
+ * @param direction +1 for next, -1 for previous.
+ * @returns Adjacent DegreeId string, wrapping at boundaries.
+ */
+export function getAdjacentDegree(
+  degreeId: string | null,
+  scaleName: string,
+  direction: -1 | 1,
+): string {
+  const degreesMap = getDegreesForScale(scaleName);
+  const degreeList = Object.values(degreesMap);
+
+  if (!degreeId || !degreeList.includes(degreeId)) {
+    return degreeList[0];
+  }
+
+  const currentIndex = degreeList.indexOf(degreeId);
+  const nextIndex = (currentIndex + direction + degreeList.length) % degreeList.length;
+  return degreeList[nextIndex];
+}
+
 // Fallback: Major quality scales use Major degrees, minor quality use Natural Minor
 export function getDegreesForScale(scaleName: string): Record<number, string> {
   if (MODE_DEGREES[scaleName]) return MODE_DEGREES[scaleName];
