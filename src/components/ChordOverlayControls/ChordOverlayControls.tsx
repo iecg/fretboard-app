@@ -1,10 +1,10 @@
 import { startTransition, useEffect, useState } from "react";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useAtomValue } from "jotai";
 import clsx from "clsx";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { NOTES } from "../../core/theory";
 import { getAdjacentDegree, getDegreesForScale } from "../../core/degrees";
-import { lensAvailabilityAtom, advanceProgression, regressProgression } from "../../store/atoms";
+import { lensAvailabilityAtom } from "../../store/atoms";
 import { LabeledSelect, type LabeledSelectOption } from "../LabeledSelect/LabeledSelect";
 import { NoteGrid } from "../NoteGrid/NoteGrid";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
@@ -45,9 +45,6 @@ export function ChordOverlayControls() {
   } = useChordState();
 
   const lensAvailability = useAtomValue(lensAvailabilityAtom);
-
-  const advanceProgressionAtom = useSetAtom(advanceProgression);
-  const regressProgressionAtom = useSetAtom(regressProgression);
 
   const [isChordOverlayOpen, setChordOverlayOpen] = useState(Boolean(chordType));
 
@@ -194,61 +191,16 @@ export function ChordOverlayControls() {
             </div>
           )}
 
-          {/* Progression stepper — visible in degree mode only */}
-          {chordOverlayMode === "degree" && (
-            <div
-              role="group"
-              aria-label="Step through progression"
-              className={clsx(
-                styles["theory-mode-browser"],
-                "panel-surface",
-                "panel-surface--compact",
-              )}
-            >
-              <div className={styles["theory-browser-main"]}>
-                <button
-                  type="button"
-                  className={styles["theory-nav-btn"]}
-                  aria-label="Previous chord"
-                  onClick={() => startTransition(() => { regressProgressionAtom(); })}
-                >
-                  <ChevronLeft size={16} />
-                </button>
-                <span className={styles["theory-browser-selector"]}>Progression</span>
-                <button
-                  type="button"
-                  className={styles["theory-nav-btn"]}
-                  aria-label="Next chord"
-                  onClick={() => startTransition(() => { advanceProgressionAtom(); })}
-                >
-                  <ChevronRight size={16} />
-                </button>
-              </div>
-            </div>
-          )}
-
           {/* Manual mode: chord-type selector + root picker */}
           {chordOverlayMode === "manual" && (
-            <div
-              role="group"
-              aria-label="Browse chord types"
-              className={clsx(
-                styles["theory-mode-browser"],
-                "panel-surface",
-                "panel-surface--compact",
-              )}
-            >
-              <div className={styles["theory-browser-main"]}>
-                <div className={styles["theory-browser-selector"]}>
-                  <LabeledSelect
-                    label="Chord Type"
-                    value={chordQualityOverride ?? CHORD_NONE_VALUE}
-                    options={chordSelectOptions}
-                    onChange={handleQualityOverrideChange}
-                    hideLabel
-                  />
-                </div>
-              </div>
+            <>
+              <LabeledSelect
+                label="Chord Type"
+                value={chordQualityOverride ?? CHORD_NONE_VALUE}
+                options={chordSelectOptions}
+                onChange={handleQualityOverrideChange}
+                hideLabel
+              />
               <div className={shared["control-section"]}>
                 <span className={shared["section-label"]}>Root</span>
                 <NoteGrid
@@ -262,7 +214,7 @@ export function ChordOverlayControls() {
                   useFlats={useFlats}
                 />
               </div>
-            </div>
+            </>
           )}
 
           {/* Lens picker — shown when a chord is active */}
