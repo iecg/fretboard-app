@@ -10,6 +10,7 @@ import {
   chordRootOverrideAtom,
   chordTypeAtom,
   chordQualityOverrideAtom,
+  allChordMembersAtom,
 } from "./chordOverlayAtoms";
 import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
@@ -210,5 +211,58 @@ describe("chordOverlayAtoms — storage migration", () => {
     const unsubB = mount(storeB, chordDegreeAtom);
     expect(storeB.get(chordDegreeAtom)).toBe("I");
     unsubB();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Group E — allChordMembersAtom.scaleDegree population
+// ---------------------------------------------------------------------------
+
+describe("allChordMembersAtom — scaleDegree population", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("in-scale note E gets scaleDegree 'iii' in C Major I chord", () => {
+    const store = makeAtomStore([
+      [chordDegreeAtom, "I"],
+      [chordOverlayModeAtom, "degree"],
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+    ]);
+    const members = store.get(allChordMembersAtom);
+    const eEntry = members.find((m) => m.internalNote === "E");
+    expect(eEntry).toBeDefined();
+    expect(eEntry!.scaleDegree).toBe("iii");
+  });
+
+  it("in-scale root note C gets scaleDegree 'I' in C Major I chord", () => {
+    const store = makeAtomStore([
+      [chordDegreeAtom, "I"],
+      [chordOverlayModeAtom, "degree"],
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+    ]);
+    const members = store.get(allChordMembersAtom);
+    const cEntry = members.find((m) => m.internalNote === "C");
+    expect(cEntry).toBeDefined();
+    expect(cEntry!.scaleDegree).toBe("I");
+  });
+
+  it("out-of-scale chord tone has scaleDegree undefined", () => {
+    // D Major = D, F#, A. F# is not in C Major scale.
+    const store2 = makeAtomStore([
+      [chordOverlayModeAtom, "manual"],
+      [chordRootAtom, "D"],
+      [chordTypeAtom, "Major Triad"],
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+    ]);
+    const members = store2.get(allChordMembersAtom);
+    // D Major = D, F#, A. F# is not in C Major scale.
+    const fSharpEntry = members.find((m) => m.internalNote === "F#");
+    expect(fSharpEntry).toBeDefined();
+    expect(fSharpEntry!.inScale).toBe(false);
+    expect(fSharpEntry!.scaleDegree).toBeUndefined();
   });
 });

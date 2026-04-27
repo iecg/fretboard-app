@@ -371,12 +371,22 @@ export const allChordMembersAtom = atom((get) => {
     } else {
       role = "chord-tone-outside-scale";
     }
+    let scaleDegree: DegreeId | undefined;
+    if (inScale) {
+      const noteIdx = NOTES.indexOf(m.note);
+      const tonicIdx = NOTES.indexOf(rootNote);
+      if (noteIdx !== -1 && tonicIdx !== -1) {
+        const semitone = (noteIdx - tonicIdx + 12) % 12;
+        scaleDegree = getDegreesForScale(scaleName)[semitone] as DegreeId | undefined;
+      }
+    }
     return {
       internalNote: m.note,
       displayNote: formatAccidental(getNoteDisplay(m.note, chordRoot, useFlats)),
       memberName: m.name === "root" ? "1" : formatAccidental(m.name),
       role,
       inScale,
+      scaleDegree,
     };
   });
 });
