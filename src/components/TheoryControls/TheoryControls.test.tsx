@@ -60,7 +60,10 @@ describe("TheoryControls/TheoryControls", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /Chord Overlay/i }));
 
-    expect(screen.getByText("Chord Type")).toBeInTheDocument();
+    // New UI: Degree|Manual toggle appears when chord overlay section is expanded
+    expect(screen.getByRole("group", { name: "Chord overlay mode" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Degree" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Manual" })).toBeInTheDocument();
   });
 
   it("shows the inline key explorer only after disclosure is opened", () => {

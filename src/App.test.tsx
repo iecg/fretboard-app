@@ -589,19 +589,23 @@ describe("App", () => {
   });
 
   describe("Chord overlay", () => {
-    it("can set chord type", async () => {
+    it("can set chord type via manual mode", async () => {
       render(<App />);
       // ExpandedControlsPanel is lazy loaded, wait for it to be ready
       const chordOverlayBtn = await screen.findByRole("button", { name: /Chord Overlay/i });
       fireEvent.click(chordOverlayBtn);
-      
+
+      // New UI: switch to Manual mode first, then set chord type
+      const manualBtn = await screen.findByRole("button", { name: "Manual" });
+      fireEvent.click(manualBtn);
+
       const chordTypeSelect = await screen.findByRole("combobox", { name: "Chord Type" });
       fireEvent.change(chordTypeSelect, {
         target: { value: "Major Triad" },
       });
 
       await waitFor(() => {
-        // Phase 02: chordTypeAtom writes go to chordQualityOverride (manual mode override key).
+        // Phase 02: chordQualityOverride is set to the selected chord type in manual mode.
         expect(localStorage.getItem(k("chordQualityOverride"))).toBe("Major Triad");
       });
     });
