@@ -55,6 +55,13 @@ export {
 } from "./chordOverlayAtoms";
 
 export {
+  progressionIndexAtom,
+  clampedProgressionIndexAtom,
+  advanceProgression,
+  regressProgression,
+} from "./progressionAtoms";
+
+export {
   practiceBarColorNotesFilteredAtom,
   noteSemanticMapAtom,
   practiceCuesAtom,
