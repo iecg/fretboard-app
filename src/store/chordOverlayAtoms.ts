@@ -16,6 +16,10 @@ import type {
   ChordRowEntry,
 } from "../core/theory";
 import {
+  getDegreesForScale,
+  getQualityForDegree,
+} from "../core/degrees";
+import {
   k,
   createStorage,
   rawStringStorage,
@@ -29,6 +33,9 @@ import {
   rootNoteAtom,
   scaleNameAtom,
 } from "./scaleAtoms";
+
+/** Opaque type alias for Roman-numeral degree IDs like "I", "ii", "vii°". */
+type DegreeId = string;
 
 const chordTypeStorage = createStorage<string | null>({
   serialize: (v) => v ?? "",
@@ -63,6 +70,137 @@ const practiceLensStorage = createStorage<PracticeLens>({
     return undefined;
   },
 });
+
+// ---------------------------------------------------------------------------
+// Backing atoms for degree-based chord overlay (Phase 02)
+// ---------------------------------------------------------------------------
+
+/**
+ * Helper: read a raw localStorage JSON value without subscribing to atoms.
+ * Used inside migrate() callbacks where atom subscriptions are not allowed.
+ */
+function readLocalStorage(key: string): string | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw === null) return null;
+    // Values are stored as JSON strings (e.g., `"C"` or `"Major Triad"`)
+    return JSON.parse(raw) as string;
+  } catch {
+    return null;
+  }
+}
+
+/** Diatonic triad quality names — the only types that can be inferred from degree. */
+const DIATONIC_TRIAD_QUALITIES = new Set([
+  "Major Triad",
+  "Minor Triad",
+  "Diminished Triad",
+]);
+
+const chordDegreeStorage = createStorage<DegreeId | null>({
+  serialize: (v) => v ?? "",
+  deserialize: (v) => (v === "" ? null : (v as DegreeId)),
+  validate: (v) => v === null || typeof v === "string",
+  migrate: (): DegreeId | null | undefined => {
+    // NOTE: Seventh chords ("Major 7th", "Minor 7th", "Dominant 7th") and "Power Chord (5)"
+    // are NOT in the DEGREE_DIATONIC_QUALITY table and always fall back to manual mode here.
+    // This is intentional — not a bug. Diatonic inference is triad-only.
+    const chordType = readLocalStorage(k("chordType"));
+
+    // (a) Overlay was off — no migration needed; default null is correct.
+    if (!chordType) return undefined;
+
+    // (b) Only triads can be inferred diatonically.
+    if (!DIATONIC_TRIAD_QUALITIES.has(chordType)) return undefined;
+
+    // Read legacy state from localStorage (no atom subscriptions inside migrate).
+    const chordRoot = readLocalStorage(k("chordRoot")) ?? "C";
+    const tonicNote = readLocalStorage(k("rootNote")) ?? "C";
+    const scaleName = readLocalStorage(k("scaleName")) ?? "Major";
+
+    const tonicIdx = NOTES.indexOf(tonicNote);
+    const rootIdx = NOTES.indexOf(chordRoot);
+    if (tonicIdx === -1 || rootIdx === -1) return undefined;
+
+    const semitone = (rootIdx - tonicIdx + 12) % 12;
+    const degreesMap = getDegreesForScale(scaleName);
+    const degreeId = degreesMap[semitone] as DegreeId | undefined;
+    if (!degreeId) return undefined;
+
+    // Validate: the diatonic quality must match the stored chord type exactly.
+    const expectedQuality = getQualityForDegree(degreeId, scaleName);
+    if (expectedQuality !== chordType) return undefined;
+
+    return degreeId;
+  },
+});
+
+/** The user's chosen scale degree for the chord overlay. null = overlay off. */
+export const chordDegreeAtom = atomWithStorage<DegreeId | null>(
+  k("chordDegree"),
+  null,
+  chordDegreeStorage,
+  GET_ON_INIT,
+);
+
+const chordOverlayModeStorage = createStorage<"degree" | "manual">({
+  validate: (v) => v === "degree" || v === "manual",
+  migrate: (): "degree" | "manual" | undefined => {
+    // NOTE: Seventh chords ("Major 7th", "Minor 7th", "Dominant 7th") and "Power Chord (5)"
+    // are NOT in the DEGREE_DIATONIC_QUALITY table and always fall back to manual mode here.
+    // This is intentional — not a bug. Diatonic inference is triad-only.
+    const chordType = readLocalStorage(k("chordType"));
+
+    // No legacy chord type stored → default degree mode.
+    if (!chordType) return "degree";
+
+    // Diatonic triads → degree mode.
+    if (DIATONIC_TRIAD_QUALITIES.has(chordType)) return "degree";
+
+    // Seventh chords, Power Chord, or any other non-diatonic type → manual mode.
+    return "manual";
+  },
+});
+
+/** Explicit user intent: "degree" = chord follows the active scale degree; "manual" = pinned. */
+export const chordOverlayModeAtom = atomWithStorage<"degree" | "manual">(
+  k("chordOverlayMode"),
+  "degree",
+  chordOverlayModeStorage,
+  GET_ON_INIT,
+);
+
+/** Populated only when chordOverlayMode is 'manual'. Ignored in degree mode. */
+export const chordRootOverrideAtom = atomWithStorage<string>(
+  k("chordRootOverride"),
+  "C",
+  rawStringStorage(),
+  GET_ON_INIT,
+);
+
+const chordQualityOverrideStorage = createStorage<string | null>({
+  serialize: (v) => v ?? "",
+  deserialize: (v) => (v === "" ? null : v),
+  migrate: (): string | null | undefined => {
+    const chordType = readLocalStorage(k("chordType"));
+    // Preserve the chord type for manual-mode users.
+    if (chordType) return chordType;
+    return undefined;
+  },
+});
+
+/** Populated only when chordOverlayMode is 'manual'. Ignored in degree mode. */
+export const chordQualityOverrideAtom = atomWithStorage<string | null>(
+  k("chordQualityOverride"),
+  null,
+  chordQualityOverrideStorage,
+  GET_ON_INIT,
+);
+
+// ---------------------------------------------------------------------------
+// Public read/write atoms — chordRootAtom and chordTypeAtom are converted to
+// writable derived atoms in T2. They are kept as atomWithStorage here for T1.
+// ---------------------------------------------------------------------------
 
 export const chordRootAtom = atomWithStorage(
   k("chordRoot"),
