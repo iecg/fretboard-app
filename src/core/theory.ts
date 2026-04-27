@@ -3,7 +3,7 @@ import {
   SCALES,
   SCALE_TO_PARENT_MAJOR_OFFSET,
 } from "./theoryCatalog";
-import { getDegreesForScale, getQualityForDegree } from "./degrees";
+import { getDegreesForScale, getQualityForDegree, type DegreeId } from "./degrees";
 
 export const NOTES = [
   "C",
@@ -85,6 +85,7 @@ export interface ResolvedChordMember extends ChordMember {
 export type NoteRole =
   | "key-tonic"
   | "chord-root"
+  | "note-diatonic-chord"
   | "chord-tone-in-scale"
   | "chord-tone-outside-scale"
   | "color-tone"
@@ -105,6 +106,7 @@ export interface ChordRowEntry {
   memberName: string;
   role: "chord-root" | "chord-tone-in-scale" | "chord-tone-outside-scale";
   inScale: boolean;
+  scaleDegree?: DegreeId;
 }
 
 export interface LegendItem {
@@ -128,6 +130,10 @@ export interface NoteSemantics {
   isGuideTone: boolean; // 3rd or 7th of the chord
   isTension: boolean;   // chord tone that is outside the scale
   memberName?: ChordMemberName;
+  /** Scale degree of this note (e.g. "I", "iii", "V"). Defined only when the note is in the active scale. */
+  scaleDegree?: DegreeId;
+  /** True when the active chord (chordRoot + chordType) exactly matches the diatonic chord for the active scale degree. False in manual mode or when qualityOverride diverges. */
+  isDiatonicChord?: boolean;
 }
 
 // Pure chord member fact (no scale context)
