@@ -263,7 +263,8 @@ describe("App", () => {
       fireEvent.click(cofButton);
 
       await waitFor(() => {
-        expect(localStorage.getItem(k("chordRoot"))).toBe("G");
+        // Phase 02: chordRootAtom writes go to chordRootOverride (manual mode override key).
+        expect(localStorage.getItem(k("chordRootOverride"))).toBe("G");
       });
     });
 
@@ -600,7 +601,8 @@ describe("App", () => {
       });
 
       await waitFor(() => {
-        expect(localStorage.getItem(k("chordType"))).toBe("Major Triad");
+        // Phase 02: chordTypeAtom writes go to chordQualityOverride (manual mode override key).
+        expect(localStorage.getItem(k("chordQualityOverride"))).toBe("Major Triad");
       });
     });
 
@@ -612,6 +614,7 @@ describe("App", () => {
       localStorage.setItem(k("chordType"), "");
       rerender(<App />);
 
+      // Legacy key retains the manually-set value (Phase 02 leaves legacy keys in place).
       expect(localStorage.getItem(k("chordType"))).toBe("");
     });
   });

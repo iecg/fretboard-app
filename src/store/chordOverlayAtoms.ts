@@ -38,11 +38,6 @@ import {
 /** Opaque type alias for Roman-numeral degree IDs like "I", "ii", "vii°". */
 type DegreeId = string;
 
-// Shared serialize/deserialize for nullable string chord-quality values.
-const nullableStringStorage = createStorage<string | null>({
-  serialize: (v) => v ?? "",
-  deserialize: (v) => (v === "" ? null : v),
-});
 
 const chordFretSpreadStorage = constrainedNumberStorage({
   min: 0,
@@ -78,15 +73,17 @@ const practiceLensStorage = createStorage<PracticeLens>({
 // ---------------------------------------------------------------------------
 
 /**
- * Helper: read a raw localStorage JSON value without subscribing to atoms.
+ * Helper: read a raw localStorage string value without subscribing to atoms.
  * Used inside migrate() callbacks where atom subscriptions are not allowed.
+ * Note: legacy atom values (chordRoot, chordType, rootNote, scaleName) are stored as
+ * plain strings — not JSON-encoded — by rawStringStorage/chordTypeStorage serializers.
  */
 function readLocalStorage(key: string): string | null {
   try {
     const raw = localStorage.getItem(key);
     if (raw === null) return null;
-    // Values are stored as JSON strings (e.g., `"C"` or `"Major Triad"`)
-    return JSON.parse(raw) as string;
+    // Return empty string as null (chordTypeStorage serializes null → "")
+    return raw === "" ? null : raw;
   } catch {
     return null;
   }
@@ -181,7 +178,8 @@ export const chordRootOverrideAtom = atomWithStorage<string>(
 );
 
 const chordQualityOverrideStorage = createStorage<string | null>({
-  ...nullableStringStorage,
+  serialize: (v) => v ?? "",
+  deserialize: (v) => (v === "" ? null : v),
   migrate: (): string | null | undefined => {
     const chordType = readLocalStorage(k("chordType"));
     // Preserve the chord type for manual-mode users.
