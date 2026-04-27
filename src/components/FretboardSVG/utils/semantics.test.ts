@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { getLensEmphasis, classifyNote, classifyNoteFromSemantics, getNoteVisuals } from "./semantics";
 import type { NoteSemantics } from "../../../core/theory";
+import { RADIUS_SCALE_CHORD_TONE } from "../../../core/constants";
 
 describe("semantics utils", () => {
   describe("getLensEmphasis", () => {
@@ -54,6 +55,67 @@ describe("semantics utils", () => {
       const res = classifyNoteFromSemantics(sem, true, true, true, true, [], [], 0);
       expect(res).toBe("chord-root");
     });
+
+    // Phase 04: note-diatonic-chord branch
+    it("returns note-diatonic-chord for chord tone when isDiatonicChord is true", () => {
+      const sem: NoteSemantics = {
+        isScaleRoot: false,
+        isChordRoot: false,
+        isChordTone: true,
+        isInScale: true,
+        isColorTone: false,
+        isTension: false,
+        isGuideTone: false,
+        isDiatonicChord: true,
+      };
+      const res = classifyNoteFromSemantics(sem, true, true, true, false, [], [], 0);
+      expect(res).toBe("note-diatonic-chord");
+    });
+
+    it("chord-root wins over note-diatonic-chord even when isDiatonicChord is true", () => {
+      const sem: NoteSemantics = {
+        isScaleRoot: false,
+        isChordRoot: true,
+        isChordTone: true,
+        isInScale: true,
+        isColorTone: false,
+        isTension: false,
+        isGuideTone: false,
+        isDiatonicChord: true,
+      };
+      const res = classifyNoteFromSemantics(sem, true, true, true, false, [], [], 0);
+      expect(res).toBe("chord-root");
+    });
+
+    it("falls through to chord-tone-in-scale when isDiatonicChord is false", () => {
+      const sem: NoteSemantics = {
+        isScaleRoot: false,
+        isChordRoot: false,
+        isChordTone: true,
+        isInScale: true,
+        isColorTone: false,
+        isTension: false,
+        isGuideTone: false,
+        isDiatonicChord: false,
+      };
+      const res = classifyNoteFromSemantics(sem, true, true, true, false, [], [], 0);
+      expect(res).toBe("chord-tone-in-scale");
+    });
+
+    it("falls through to chord-tone-in-scale when isDiatonicChord is undefined (manual mode)", () => {
+      const sem: NoteSemantics = {
+        isScaleRoot: false,
+        isChordRoot: false,
+        isChordTone: true,
+        isInScale: true,
+        isColorTone: false,
+        isTension: false,
+        isGuideTone: false,
+        // isDiatonicChord omitted (undefined)
+      };
+      const res = classifyNoteFromSemantics(sem, true, true, true, false, [], [], 0);
+      expect(res).toBe("chord-tone-in-scale");
+    });
   });
 
   describe("getNoteVisuals", () => {
@@ -65,6 +127,13 @@ describe("semantics utils", () => {
     it("returns circle for active notes", () => {
       const res = getNoteVisuals("note-active");
       expect(res.noteShape).toBe("circle");
+    });
+
+    // Phase 04: note-diatonic-chord visuals
+    it("returns squircle + RADIUS_SCALE_CHORD_TONE for note-diatonic-chord", () => {
+      const res = getNoteVisuals("note-diatonic-chord");
+      expect(res.noteShape).toBe("squircle");
+      expect(res.radiusScale).toBe(RADIUS_SCALE_CHORD_TONE);
     });
   });
 });
