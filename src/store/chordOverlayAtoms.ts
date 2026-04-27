@@ -19,6 +19,7 @@ import type {
 import {
   getDegreesForScale,
   getQualityForDegree,
+  type DegreeId,
 } from "../core/degrees";
 import {
   k,
@@ -34,10 +35,6 @@ import {
   rootNoteAtom,
   scaleNameAtom,
 } from "./scaleAtoms";
-
-/** Opaque type alias for Roman-numeral degree IDs like "I", "ii", "vii°". */
-type DegreeId = string;
-
 
 const chordFretSpreadStorage = constrainedNumberStorage({
   min: 0,

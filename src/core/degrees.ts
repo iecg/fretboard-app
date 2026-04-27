@@ -1,5 +1,11 @@
 import { SCALES } from "./theoryCatalog";
 
+/**
+ * Opaque type alias for Roman-numeral scale degree identifiers.
+ * Examples: "I", "ii", "iii", "IV", "V", "vi", "vii°"
+ */
+export type DegreeId = string;
+
 // Scale degrees by semitone interval from root
 const MODE_DEGREES: Record<string, Record<number, string>> = {
   'Major':           { 0: "I", 2: "ii", 4: "iii", 5: "IV", 7: "V", 9: "vi", 11: "vii°" },
