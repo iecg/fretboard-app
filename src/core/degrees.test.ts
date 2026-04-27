@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getDegreesForScale, DEGREE_COLORS, getQualityForDegree } from '../core/degrees';
+import { getDegreesForScale, DEGREE_COLORS, getQualityForDegree, getAdjacentDegree } from '../core/degrees';
 
 describe('getDegreesForScale', () => {
   describe('Major modes', () => {
@@ -275,6 +275,58 @@ describe('getQualityForDegree', () => {
 
     it('returns undefined for an unknown degree in a known scale', () => {
       expect(getQualityForDegree('XI', 'Major')).toBeUndefined();
+    });
+  });
+});
+
+describe('getAdjacentDegree', () => {
+  describe('Major scale — forward step', () => {
+    it('I + direction(+1) → ii', () => {
+      expect(getAdjacentDegree('I', 'Major', 1)).toBe('ii');
+    });
+
+    it('vi + direction(+1) → vii°', () => {
+      expect(getAdjacentDegree('vi', 'Major', 1)).toBe('vii°');
+    });
+
+    it('vii° + direction(+1) wraps to I', () => {
+      expect(getAdjacentDegree('vii°', 'Major', 1)).toBe('I');
+    });
+  });
+
+  describe('Major scale — backward step', () => {
+    it('ii + direction(-1) → I', () => {
+      expect(getAdjacentDegree('ii', 'Major', -1)).toBe('I');
+    });
+
+    it('I + direction(-1) wraps to vii°', () => {
+      expect(getAdjacentDegree('I', 'Major', -1)).toBe('vii°');
+    });
+  });
+
+  describe('Natural Minor scale — forward step', () => {
+    it('i + direction(+1) → ii°', () => {
+      expect(getAdjacentDegree('i', 'Natural Minor', 1)).toBe('ii°');
+    });
+
+    it('VII (last degree) + direction(+1) wraps to i', () => {
+      expect(getAdjacentDegree('VII', 'Natural Minor', 1)).toBe('i');
+    });
+  });
+
+  describe('Null input — returns first degree regardless of direction', () => {
+    it('null + direction(+1) → first degree of Major ("I")', () => {
+      expect(getAdjacentDegree(null, 'Major', 1)).toBe('I');
+    });
+
+    it('null + direction(-1) → first degree of Major ("I")', () => {
+      expect(getAdjacentDegree(null, 'Major', -1)).toBe('I');
+    });
+  });
+
+  describe('Unknown degree falls back gracefully', () => {
+    it('"IX" (nonexistent) + direction(+1) on Major → returns "I" (first degree)', () => {
+      expect(getAdjacentDegree('IX', 'Major', 1)).toBe('I');
     });
   });
 });
