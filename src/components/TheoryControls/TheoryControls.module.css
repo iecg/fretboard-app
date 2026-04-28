@@ -33,24 +33,25 @@
   isolation: isolate;
   display: flex;
   flex-direction: column;
-  /* Closed state is intentionally tight so collapsed disclosures
-     sit close together as a list of mini-cards inside the parent
-     dashboard card. Padding grows to match the horizontal pocket
-     bleed when the section is opened so interior breathing room is
-     symmetric on every side. */
+  /* Constant padding across closed and open states so the disclosure
+     button never shifts when toggling. Closed sections stay compact
+     (only the button + this padding contribute to the pocket
+     height); open sections grow downward via the motion content
+     wrapper, which carries its own padding-top + padding-bottom for
+     interior breathing room. */
   padding: 0.15rem 0;
-  transition: padding var(--transition-base) ease;
-}
-
-.theory-section[data-open="true"] {
-  padding: 0.55rem 0;
 }
 
 .theory-section-content {
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
+  /* Padding-top opens the gap below the disclosure button; padding-
+     bottom keeps the hint paragraph from sitting flush with the
+     pocket's bottom edge. Both are part of the motion height
+     animation so they slide in/out smoothly. */
   padding-top: 0.75rem;
+  padding-bottom: 0.5rem;
 }
 
 /* Section frame: always rendered, always filled with the nested-card
@@ -267,24 +268,18 @@
   padding: 0.12rem 0;
 }
 
-:global(.app-container[data-layout-tier="desktop"]) .theory-section[data-open="true"] {
-  padding: 0.45rem 0;
-}
-
 :global(.app-container[data-layout-tier="desktop"]) .theory-section-content {
   padding-top: 0.62rem;
+  padding-bottom: 0.42rem;
 }
 
 :global(.app-container[data-layout-tier="tablet"]) .theory-section {
   padding: 0.14rem 0;
 }
 
-:global(.app-container[data-layout-tier="tablet"]) .theory-section[data-open="true"] {
-  padding: 0.5rem 0;
-}
-
 :global(.app-container[data-layout-tier="tablet"]) .theory-section-content {
   padding-top: 0.68rem;
+  padding-bottom: 0.46rem;
 }
 
 :global(.app-container[data-layout-tier="mobile"]) .theory-disclosure-btn {

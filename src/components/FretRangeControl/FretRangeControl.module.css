@@ -81,19 +81,24 @@
   min-width: var(--size-touch-target);
 }
 
-/* Hide labels on tablet dashboard to prevent overflow. */
-:global(.app-container[data-layout-tier="tablet"]) .fret-range-control.dashboard .fret-label {
-  display: none;
-}
-
+/* Dashboard layout: two equal columns, each stacking its label
+   above its stepper — same shape as the mobile / settings drawer
+   layout, so the visual feels consistent across the app. */
 .fret-range-control.dashboard {
-  flex-wrap: nowrap;
-  gap: 0.55rem;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  align-items: stretch;
 }
 
 .fret-range-control.dashboard .fret-group {
-  gap: 0.3rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.35rem;
+}
+
+.fret-range-control.dashboard .fret-stepper {
+  flex: 1;
 }
 
 .fret-range-control.dashboard .fret-btn {
@@ -106,4 +111,8 @@
 .fret-range-control.dashboard .fret-label {
   min-width: auto;
   font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--surface-control-fg-muted);
 }

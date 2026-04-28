@@ -176,9 +176,9 @@ describe("FretRangeControl/FretRangeControl", () => {
       expect(screen.getByText("End")).toBeTruthy();
     });
 
-    it('shows "—" separator', () => {
+    it("does not show separator (labels stack above steppers)", () => {
       render(<FretRangeControl {...defaultProps} layout="dashboard" />);
-      expect(screen.getByText("—")).toBeTruthy();
+      expect(screen.queryByText("—")).toBeNull();
     });
 
     it("renders four stepper buttons", () => {
