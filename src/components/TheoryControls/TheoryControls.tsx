@@ -69,7 +69,7 @@ function TheorySection({
               duration: ANIMATION_DURATION_FAST,
               ease: ANIMATION_EASE,
             }}
-            style={{ overflow: "hidden" }}
+            style={{ clipPath: "inset(0 -1rem)" }}
           >
             {children}
           </motion.div>

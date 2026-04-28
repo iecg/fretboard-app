@@ -165,7 +165,7 @@ export function ScaleSelector() {
                 onChange={(value) => setScaleBrowseMode(value as ScaleBrowseMode)}
                 label="Scale relationship"
               />
-              <p className={shared["shape-hint"]}>
+              <p className={shared["field-hint"]}>
                 {effectiveBrowseMode === "parallel"
                   ? "Cycle modes that share the current root note."
                   : "Cycle modes that share the current key signature."}

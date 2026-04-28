@@ -280,7 +280,7 @@
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
-.shape-hint {
+.field-hint {
   font-size: 0.68rem;
   color: var(--text-muted);
   text-align: center;
@@ -289,7 +289,7 @@
   user-select: none;
 }
 
-.control-section:has(> .shape-hint:last-child) + .control-section {
+.control-section:has(> .field-hint:last-child) + .control-section {
   margin-top: -0.45rem;
 }
 

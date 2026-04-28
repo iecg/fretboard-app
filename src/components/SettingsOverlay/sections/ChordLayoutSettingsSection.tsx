@@ -53,7 +53,7 @@ export function ChordLayoutSettingsSection({
           />
         </div>
         {config.help ? (
-          <p className={shared["shape-hint"]}>{config.help.content}</p>
+          <p className={shared["field-hint"]}>{config.help.content}</p>
         ) : null}
       </div>
     </OverlaySection>

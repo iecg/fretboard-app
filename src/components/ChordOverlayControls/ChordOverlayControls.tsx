@@ -143,7 +143,7 @@ export function ChordOverlayControls() {
           onChange={setChordOverlayMode}
           label="Chord overlay mode"
         />
-        <p className={shared["shape-hint"]}>
+        <p className={shared["field-hint"]}>
           {chordOverlayMode === "degree"
             ? "Picks a chord by scale degree — diatonic to the key."
             : "Sets any chord type and root — independent of the key."}
@@ -209,7 +209,7 @@ export function ChordOverlayControls() {
             label="Practice lens"
           />
           {activeLensDescription ? (
-            <p className={shared["shape-hint"]}>{activeLensDescription}</p>
+            <p className={shared["field-hint"]}>{activeLensDescription}</p>
           ) : null}
         </div>
       ) : null}
