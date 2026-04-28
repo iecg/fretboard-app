@@ -16,6 +16,7 @@ import {
 } from "../../core/constants";
 import { OverlaySection } from "./shared";
 import { useHelpPopover } from "./useHelpPopover";
+import { type HelpFieldId } from "./types";
 import { ViewSettingsSection } from "./sections/ViewSettingsSection";
 import { InstrumentSettingsSection } from "./sections/InstrumentSettingsSection";
 import { AppearanceSettingsSection } from "./sections/AppearanceSettingsSection";
@@ -54,7 +55,7 @@ function SettingsOverlaySurface({
     registerHelpContainer,
     setActiveHelpField,
     handleHelpToggle,
-  } = useHelpPopover();
+  } = useHelpPopover<HelpFieldId>();
 
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
