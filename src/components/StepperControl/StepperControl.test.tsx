@@ -51,7 +51,7 @@ describe("StepperControl/StepperControl", () => {
         step={2}
       />,
     );
-    fireEvent.click(screen.getByText("−"));
+    fireEvent.click(screen.getByRole("button", { name: /decrease/i }));
     expect(onChange).toHaveBeenCalledWith(3);
   });
 
@@ -66,7 +66,7 @@ describe("StepperControl/StepperControl", () => {
         step={5}
       />,
     );
-    fireEvent.click(screen.getByText("−"));
+    fireEvent.click(screen.getByRole("button", { name: /decrease/i }));
     expect(onChange).toHaveBeenCalledWith(0);
   });
 
@@ -81,7 +81,7 @@ describe("StepperControl/StepperControl", () => {
         step={2}
       />,
     );
-    fireEvent.click(screen.getByText("+"));
+    fireEvent.click(screen.getByRole("button", { name: /increase/i }));
     expect(onChange).toHaveBeenCalledWith(7);
   });
 
@@ -96,7 +96,7 @@ describe("StepperControl/StepperControl", () => {
         step={5}
       />,
     );
-    fireEvent.click(screen.getByText("+"));
+    fireEvent.click(screen.getByRole("button", { name: /increase/i }));
     expect(onChange).toHaveBeenCalledWith(10);
   });
 
@@ -130,7 +130,7 @@ describe("StepperControl/StepperControl", () => {
   it("default step is 1 when not provided", () => {
     const onChange = vi.fn();
     render(<StepperControl value={5} onChange={onChange} min={0} max={10} />);
-    fireEvent.click(screen.getByText("+"));
+    fireEvent.click(screen.getByRole("button", { name: /increase/i }));
     expect(onChange).toHaveBeenCalledWith(6);
   });
 });

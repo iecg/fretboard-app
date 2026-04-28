@@ -326,7 +326,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     it("renders a short mode hint", () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
       expect(
-        screen.getByText("Builds a chord on a scale degree — diatonic to the key."),
+        screen.getByText("Picks a chord by scale degree — diatonic to the key."),
       ).toBeInTheDocument();
     });
 

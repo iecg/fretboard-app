@@ -1,4 +1,6 @@
 import { cva, type VariantProps } from "class-variance-authority";
+import { Minus, Plus } from "lucide-react";
+import { StepperShell } from "../StepperShell/StepperShell";
 import styles from "./StepperControl.module.css";
 import shared from "../shared/shared.module.css";
 
@@ -40,31 +42,31 @@ export function StepperControl({
   return (
     <div className={stepperControlVariants({ variant: buttonVariant })}>
       {label && <span className={shared["section-label"]}>{label}</span>}
-      <div
+      <StepperShell
         className={styles["stepper-group"]}
         role="group"
-        aria-label={label ?? 'Stepper control'}
+        aria-label={label ?? "Stepper control"}
       >
         <button
           type="button"
           className={styles["stepper-btn"]}
-          aria-label={`Decrease ${label ?? 'value'} (current: ${value})`}
+          aria-label={`Decrease ${label ?? "value"} (current: ${value})`}
           onClick={() => onChange(Math.max(min, value - step))}
           disabled={value <= min}
         >
-          −
+          <Minus className={styles["stepper-icon"]} aria-hidden="true" />
         </button>
         <span className={styles["stepper-value"]}>{formatValue(value)}</span>
         <button
           type="button"
           className={styles["stepper-btn"]}
-          aria-label={`Increase ${label ?? 'value'} (current: ${value})`}
+          aria-label={`Increase ${label ?? "value"} (current: ${value})`}
           onClick={() => onChange(Math.min(max, value + step))}
           disabled={value >= max}
         >
-          +
+          <Plus className={styles["stepper-icon"]} aria-hidden="true" />
         </button>
-      </div>
+      </StepperShell>
     </div>
   );
 }

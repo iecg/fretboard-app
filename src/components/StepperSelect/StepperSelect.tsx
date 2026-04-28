@@ -1,8 +1,9 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   LabeledSelect,
   type LabeledSelectOption,
 } from "../LabeledSelect/LabeledSelect";
+import { StepperShell } from "../StepperShell/StepperShell";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import styles from "./StepperSelect.module.css";
 
 export type StepperSelectOption = LabeledSelectOption;
@@ -37,7 +38,7 @@ export function StepperSelect({
   nextDisabled = false,
 }: StepperSelectProps) {
   return (
-    <div
+    <StepperShell
       className={styles["stepper-select"]}
       role="group"
       aria-label={groupLabel}
@@ -70,6 +71,6 @@ export function StepperSelect({
       >
         <ChevronRight className="icon" size={16} />
       </button>
-    </div>
+    </StepperShell>
   );
 }

@@ -599,7 +599,7 @@ describe("Integration Tests - User Workflows", () => {
 
       render(<App />);
 
-      expect(screen.getByText("B♭ Major (Ionian)")).toBeInTheDocument();
+      expect(screen.getAllByText("B♭ Major (Ionian)").length).toBeGreaterThan(0);
       expect(localStorage.getItem("useFlats")).toBeNull();
       expect(localStorage.getItem("accidentalMode")).toBeNull();
 
@@ -612,10 +612,10 @@ describe("Integration Tests - User Workflows", () => {
       fireEvent.click(screen.getByRole("button", { name: "♯" }));
 
       await waitFor(() => {
-        expect(screen.getByText("A♯ Major (Ionian)")).toBeInTheDocument();
+        expect(screen.getAllByText("A♯ Major (Ionian)").length).toBeGreaterThan(0);
       });
 
-      expect(screen.queryByText("B♭ Major (Ionian)")).toBeNull();
+      expect(screen.queryAllByText("B♭ Major (Ionian)")).toHaveLength(0);
       expect(localStorage.getItem("useFlats")).toBeNull();
       expect(localStorage.getItem("accidentalMode")).toBeNull();
     });

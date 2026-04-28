@@ -145,7 +145,7 @@ export function ChordOverlayControls() {
         />
         <p className={shared["shape-hint"]}>
           {chordOverlayMode === "degree"
-            ? "Builds a chord on a scale degree — diatonic to the key."
+            ? "Picks a chord by scale degree — diatonic to the key."
             : "Sets any chord type and root — independent of the key."}
         </p>
       </div>

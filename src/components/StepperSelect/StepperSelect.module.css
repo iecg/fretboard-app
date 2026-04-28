@@ -1,37 +1,15 @@
 .stepper-select {
   min-width: 0;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  display: flex;
   align-items: stretch;
-  gap: 0;
-  border: 1px solid var(--surface-control-border);
-  border-radius: 0.95rem;
-  background-color: var(--surface-control);
-  background-image: var(--surface-control-bg-image);
-  overflow: hidden;
-  transition:
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast),
-    background-color var(--transition-fast);
-}
-
-.stepper-select:hover {
-  background-color: var(--surface-control-hover-bg);
-  background-image: var(--surface-control-hover-bg-image);
-  border-color: var(--surface-control-hover-border);
-}
-
-.stepper-select:focus-within {
-  border-color: var(--surface-control-hover-border);
-  outline: var(--focus-ring);
-  outline-offset: var(--focus-ring-offset);
-  box-shadow: var(--focus-ring-glow);
 }
 
 .select-slot {
   display: flex;
   align-items: stretch;
   min-width: 0;
+  flex: 1;
+  border-radius: 0.78rem;
   transition: var(--transition-surface);
 }
 
@@ -69,45 +47,11 @@
 }
 
 .nav-button {
+  composes: button from '../StepperShell/StepperShell.module.css';
   width: 2.75rem;
-  height: 3rem;
+  min-height: 2.65rem;
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  border-right: 1px solid var(--surface-card-header-border);
-  border-radius: 0;
-  background: transparent;
   color: var(--surface-control-fg);
-  cursor: pointer;
-  transition: var(--transition-surface);
-  flex-shrink: 0;
-}
-
-.stepper-select > .nav-button:last-child {
-  border-right: none;
-  border-left: 1px solid var(--surface-card-header-border);
-}
-
-.nav-button:hover:not(:disabled) {
-  background-color: var(--surface-control-hover-bg);
-  background-image: var(--surface-control-hover-bg-image);
-  color: var(--surface-control-hover-fg);
-}
-
-.nav-button:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.nav-button:disabled {
-  opacity: 0.3;
-  cursor: default;
-}
-
-.nav-button:focus-visible {
-  outline: var(--focus-ring);
-  outline-offset: calc(-1 * var(--focus-ring-offset));
-  box-shadow: var(--focus-ring-glow);
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
@@ -118,12 +62,12 @@
 
 :global(.app-container[data-layout-tier="desktop"]) .nav-button {
   width: 2.5rem;
-  height: 2.65rem;
+  min-height: 2.45rem;
 }
 
 :global(.app-container[data-layout-tier="tablet"]) .nav-button {
   width: 2.75rem;
-  height: 2.82rem;
+  min-height: 2.62rem;
 }
 
 :global(.app-container[data-layout-tier="mobile"]) .nav-button {

@@ -166,6 +166,12 @@
   height: 16px;
 }
 
+.settings-overlay-close.settings-overlay-close {
+  width: 2.25rem;
+  height: 2.25rem;
+  box-shadow: none;
+}
+
 .overlay-help-popover {
   position: absolute;
   top: calc(100% + 8px);

@@ -403,7 +403,7 @@ test.describe("Theme Contract", () => {
           const locators = {
             "Note Button": page.getByRole("group", { name: "Note selector" }).getByRole("button", { pressed: false }).first(),
             "Toggle Group": page.locator('[class*="toggle-group"]').first(),
-            "Labeled Select": page.getByLabel("Scale Family"),
+            "Stepper Select": page.getByRole("group", { name: "Browse scale families" }),
             "Settings Trigger": page.getByLabel("Open settings")
           };
 
@@ -482,7 +482,7 @@ test.describe("Theme Contract", () => {
 
           const disclosures = [
             page.getByRole("button", { name: /Circle of Fifths/i }),
-            page.getByRole("button", { name: /Chord Overlay/i })
+            page.getByRole("button", { name: /Chords/i })
           ];
 
           for (const btn of disclosures) {
@@ -580,11 +580,13 @@ test.describe("Theme Contract", () => {
 
         test("labeled select should have correct hover and focus behavior", async ({ page }) => {
           const theoryControls = page.getByTestId("theory-controls");
-          const select = theoryControls.getByLabel("Scale Family");
+          const shell = theoryControls.getByRole("group", { name: "Browse scale families" });
+          const select = theoryControls.getByRole("combobox", { name: "Scale Family" });
+          await expect(shell).toBeVisible();
           await expect(select).toBeVisible();
 
-          await select.hover();
-          const hoverBorder = await select.evaluate((el) => getComputedStyle(el).borderColor);
+          await shell.hover();
+          const hoverBorder = await shell.evaluate((el) => getComputedStyle(el).borderColor);
           if (theme === "light") {
             expect(hoverBorder.replace(/\s/g, "")).toBe("rgb(8,145,178)");
           } else {
@@ -624,11 +626,11 @@ test.describe("Theme Contract", () => {
           expect(normalize(iconColor)).not.toBe(normalize(accentColors.interactive));
         });
 
-        test("theory browser main should use shared control hover treatment", async ({ page }) => {
-          const browserMain = page.locator('[class*="theory-browser-main"]').first();
-          await expect(browserMain).toBeVisible();
+        test("theory stepper shell should use shared control hover treatment", async ({ page }) => {
+          const stepperShell = page.getByRole("group", { name: "Browse scale families" });
+          await expect(stepperShell).toBeVisible();
 
-          const beforeStyles = await browserMain.evaluate((el) => {
+          const beforeStyles = await stepperShell.evaluate((el) => {
             const cs = getComputedStyle(el);
             return {
               bg: cs.backgroundColor,
@@ -637,9 +639,9 @@ test.describe("Theme Contract", () => {
             };
           });
 
-          await browserMain.hover();
+          await stepperShell.hover();
 
-          const afterStyles = await browserMain.evaluate((el) => {
+          const afterStyles = await stepperShell.evaluate((el) => {
             const cs = getComputedStyle(el);
             return {
               bg: cs.backgroundColor,
@@ -668,7 +670,7 @@ test.describe("Theme Contract", () => {
           // Mobile viewport: disclosure buttons are visible there
           await loadVisualState(page, { theme }, { width: 390, height: 844 });
 
-          const disclosureBtn = page.getByRole("button", { name: /Chord Overlay/i });
+          const disclosureBtn = page.getByRole("button", { name: /Chords/i });
           await expect(disclosureBtn).toBeVisible();
           // Ensure it is collapsed before focusing
           if (await disclosureBtn.getAttribute("aria-expanded") === "true") {
@@ -800,26 +802,15 @@ test.describe("Theme Contract", () => {
       expect(bg.replace(/\s/g, "")).not.toBe("rgb(255,255,255)");
     });
 
-    test("theory nested panels use surface-card-nested token in light mode", async ({ page }) => {
-      // chordType activates the chord overlay section which renders .theory-chord-section.panel-surface
+    test("theory sections stay flat inside the top-level card in light mode", async ({ page }) => {
       await loadVisualState(page, { theme: "light", chordType: "Major 7th" }, { width: 1280, height: 900 });
       await expect(page.getByTestId("theory-controls")).toBeVisible();
 
-      // Multiple .panel-surface elements exist; at least one must resolve to surface-card-nested.
-      // The .theory-chord-section.panel-surface and .theory-inline-key.panel-surface use --surface-card-nested.
       const panelSurfaces = page.getByTestId("theory-controls").locator(".panel-surface");
-      const count = await panelSurfaces.count();
-      expect(count).toBeGreaterThan(0);
+      await expect(panelSurfaces).toHaveCount(0);
 
-      const backgrounds = await Promise.all(
-        Array.from({ length: count }, (_, i) =>
-          panelSurfaces.nth(i).evaluate((el) => getComputedStyle(el).backgroundColor)
-        )
-      );
-
-      // surface-card-nested = #f2f6fb → rgb(242, 246, 251)
-      const hasNested = backgrounds.some((bg) => bg.replace(/\s/g, "") === "rgb(242,246,251)");
-      expect(hasNested, `Expected at least one panel-surface with surface-card-nested. Got: ${JSON.stringify(backgrounds)}`).toBe(true);
+      const sections = page.getByTestId("theory-controls").locator('[class*="theory-section"]');
+      await expect(sections).toHaveCount(2);
     });
 
     test("chord practice strip aligns with card surface in light mode", async ({ page }) => {
@@ -981,58 +972,50 @@ test.describe("Theme Contract", () => {
       }
     });
 
-    test("theory-mode-browser and theory-chord-section use aligned nested surface tokens in light mode", async ({ page }) => {
+    test("theory scale and chord sections share the same flat section treatment in light mode", async ({ page }) => {
       await loadVisualState(page, { theme: "light", chordType: "Major 7th" }, { width: 1280, height: 900 });
       await expect(page.getByTestId("theory-controls")).toBeVisible();
 
-      // theory-mode-browser now uses --nested-card-bg = --surface-card-nested = #f2f6fb → rgb(242, 246, 251)
-      const modeBrowser = page.locator('[class*="theory-mode-browser"]');
-      await expect(modeBrowser).toBeVisible();
-      const modeBg = await modeBrowser.evaluate((el) => getComputedStyle(el).backgroundColor);
-      expect(modeBg.replace(/\s/g, "")).toBe("rgb(242,246,251)");
+      const sections = page.getByTestId("theory-controls").locator('[class*="theory-section"]');
+      await expect(sections).toHaveCount(2);
 
-      // theory-chord-section also uses --surface-card-nested = #f2f6fb → rgb(242, 246, 251)
-      const chordSection = page.locator('[class*="theory-chord-section"]');
-      await expect(chordSection).toBeVisible();
-      const chordBg = await chordSection.evaluate((el) => getComputedStyle(el).backgroundColor);
-      expect(chordBg.replace(/\s/g, "")).toBe("rgb(242,246,251)");
+      const scaleBg = await sections.nth(0).evaluate((el) => getComputedStyle(el).backgroundColor);
+      const chordBg = await sections.nth(1).evaluate((el) => getComputedStyle(el).backgroundColor);
 
-      // Both should now be aligned to the same nested surface level
-      expect(modeBg).toBe(chordBg);
+      expect(scaleBg.replace(/\s/g, "")).toBe("rgba(0,0,0,0)");
+      expect(chordBg).toBe(scaleBg);
     });
 
-    test("rendered controls are visually sunken from nested cards in both themes", async ({ page }) => {
+    test("rendered controls remain visually distinct inside flat theory sections", async ({ page }) => {
       for (const theme of ["light", "dark"] as const) {
         await loadVisualState(page, { theme, chordType: "Major 7th" }, { width: 1280, height: 900 });
         await expect(page.getByTestId("theory-controls")).toBeVisible();
 
-        const modeBrowser = page.locator('[class*="theory-mode-browser"]').first();
-        const browserMain = page.locator('[class*="theory-browser-main"]').first();
-        const scaleFamilySelect = page.getByLabel("Scale Family").first();
+        const theorySection = page.locator('[class*="theory-section"]').first();
+        const scaleFamilyStepper = page.getByRole("group", { name: "Browse scale families" });
+        const scaleFamilySelect = page.getByRole("combobox", { name: "Scale Family" }).first();
         const toggleGroup = page.locator('[class*="toggle-group"]').first();
 
-        await expect(modeBrowser).toBeVisible();
-        await expect(browserMain).toBeVisible();
+        await expect(theorySection).toBeVisible();
+        await expect(scaleFamilyStepper).toBeVisible();
         await expect(scaleFamilySelect).toBeVisible();
         await expect(toggleGroup).toBeVisible();
 
-        const nestedBg = await modeBrowser.evaluate((el) => getComputedStyle(el).backgroundColor);
-        const browserBg = await browserMain.evaluate((el) => getComputedStyle(el).backgroundColor);
+        const sectionBg = await theorySection.evaluate((el) => getComputedStyle(el).backgroundColor);
+        const stepperBg = await scaleFamilyStepper.evaluate((el) => getComputedStyle(el).backgroundColor);
         const selectBg = await scaleFamilySelect.evaluate((el) => getComputedStyle(el).backgroundColor);
         const toggleBg = await toggleGroup.evaluate((el) => getComputedStyle(el).backgroundColor);
 
-        expect(browserBg).not.toBe(nestedBg);
-        expect(selectBg).not.toBe(nestedBg);
-        expect(toggleBg).not.toBe(nestedBg);
-        expect(brightness(nestedBg)).toBeGreaterThan(brightness(browserBg));
-        expect(brightness(nestedBg)).toBeGreaterThan(brightness(selectBg));
-        expect(brightness(nestedBg)).toBeGreaterThan(brightness(toggleBg));
+        expect(sectionBg.replace(/\s/g, "")).toBe("rgba(0,0,0,0)");
+        expect(stepperBg).not.toBe(sectionBg);
+        expect(toggleBg).not.toBe(sectionBg);
+        expect(selectBg.replace(/\s/g, "")).toBe("rgba(0,0,0,0)");
 
         await page.getByLabel("Open settings").click();
         const sectionCard = page.getByTestId("settings-drawer").locator('[class*="overlay-section-card"]').first();
         await expect(sectionCard).toBeVisible();
         const settingsNestedBg = await sectionCard.evaluate((el) => getComputedStyle(el).backgroundColor);
-        expect(settingsNestedBg).toBe(nestedBg);
+        expect(settingsNestedBg).not.toBe(sectionBg);
       }
     });
   });
