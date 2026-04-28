@@ -4,7 +4,9 @@
   left: 0;
   right: 0;
   z-index: var(--z-bottom-nav);
-  background: color-mix(in srgb, var(--header-surface) 95%, transparent);
+  background: color-mix(in srgb, var(--header-surface) 85%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-top: 1px solid var(--header-border);
   padding-bottom: env(safe-area-inset-bottom);
 }
@@ -12,7 +14,7 @@
 .bottom-tab-bar-list {
   display: flex;
   align-items: stretch;
-  height: var(--size-touch-target);
+  height: 3.5rem;
 }
 
 .bottom-tab-bar-btn {

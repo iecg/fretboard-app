@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from "vitest";
-import { screen, fireEvent } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { MobileTabPanel } from "../MobileTabPanel/MobileTabPanel";
 import {
   mobileTabAtom,
@@ -9,11 +9,7 @@ import {
   chordTypeAtom,
   chordRootAtom,
 } from "../../store/atoms";
-import {
-  renderWithAtoms,
-  makeAtomStore,
-  renderWithStore,
-} from "../../test-utils/renderWithAtoms";
+import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
 
 /** Minimal valid seeds to prevent rendering errors in inlined child components. */
 const BASE_SEEDS = [
@@ -24,10 +20,9 @@ const BASE_SEEDS = [
 ] as const;
 
 describe("MobileTabPanel/MobileTabPanel", () => {
-  it("renders ToggleBar with 2 tabs", () => {
+  it("renders the tab content container", () => {
     renderWithAtoms(<MobileTabPanel />, [...BASE_SEEDS]);
-    expect(screen.getByText("Theory")).toBeInTheDocument();
-    expect(screen.getByText("View")).toBeInTheDocument();
+    expect(screen.getByTestId("mobile-tab-content")).toBeInTheDocument();
   });
 
   it("shows theory tab content when mobileTab atom is 'theory'", () => {
@@ -57,19 +52,4 @@ describe("MobileTabPanel/MobileTabPanel", () => {
     ]);
     expect(screen.queryByText("Scale Family")).not.toBeInTheDocument();
   });
-
-  it("switching to View tab updates mobileTabAtom", () => {
-    const store = makeAtomStore([...BASE_SEEDS, [mobileTabAtom, "theory"]]);
-    renderWithStore(<MobileTabPanel />, store);
-    fireEvent.click(screen.getByText("View"));
-    expect(store.get(mobileTabAtom)).toBe("view");
-  });
-
-  it("switching to Theory tab updates mobileTabAtom", () => {
-    const store = makeAtomStore([...BASE_SEEDS, [mobileTabAtom, "view"]]);
-    renderWithStore(<MobileTabPanel />, store);
-    fireEvent.click(screen.getByText("Theory"));
-    expect(store.get(mobileTabAtom)).toBe("theory");
-  });
-
 });

@@ -1,4 +1,4 @@
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import clsx from "clsx";
 import {
   mobileTabAtom,
@@ -11,13 +11,7 @@ import {
 import { CircleOfFifths } from "../CircleOfFifths/CircleOfFifths";
 import { TheoryControls } from "../TheoryControls/TheoryControls";
 import { FingeringPatternControls } from "../FingeringPatternControls/FingeringPatternControls";
-import { ToggleBar } from "../ToggleBar/ToggleBar";
 import styles from "./MobileTabPanel.module.css";
-
-const MOBILE_TAB_OPTIONS = [
-  { value: "theory", label: "Theory" },
-  { value: "view", label: "View" },
-] as const;
 
 function MobileKeyExplorer() {
   const rootNote = useAtomValue(rootNoteAtom);
@@ -40,28 +34,20 @@ function MobileKeyExplorer() {
 }
 
 export function MobileTabPanel() {
-  const [mobileTab, setMobileTab] = useAtom(mobileTabAtom);
+  const mobileTab = useAtomValue(mobileTabAtom);
 
   return (
-    <>
-      <ToggleBar
-        options={MOBILE_TAB_OPTIONS}
-        value={mobileTab}
-        onChange={setMobileTab}
-        variant="tabs"
-      />
-      <div className={styles["mobile-tab-content"]} data-layout-scope="mobile-tabs" data-testid="mobile-tab-content">
-        {mobileTab === "theory" && (
-          <div className={clsx(styles["mobile-tab-panel"], styles["mobile-theory-tab"])}>
-            <TheoryControls keyExplorer={<MobileKeyExplorer />} />
-          </div>
-        )}
-        {mobileTab === "view" && (
-          <div className={clsx(styles["mobile-tab-panel"], styles["mobile-view-tab"])}>
-            <FingeringPatternControls />
-          </div>
-        )}
-      </div>
-    </>
+    <div className={styles["mobile-tab-content"]} data-layout-scope="mobile-tabs" data-testid="mobile-tab-content">
+      {mobileTab === "theory" && (
+        <div className={clsx(styles["mobile-tab-panel"], styles["mobile-theory-tab"])}>
+          <TheoryControls keyExplorer={<MobileKeyExplorer />} />
+        </div>
+      )}
+      {mobileTab === "view" && (
+        <div className={clsx(styles["mobile-tab-panel"], styles["mobile-view-tab"])}>
+          <FingeringPatternControls />
+        </div>
+      )}
+    </div>
   );
 }

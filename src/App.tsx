@@ -1,8 +1,8 @@
 import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from "react";
-import { useSetAtom, useAtomValue, createStore, Provider } from "jotai";
+import { useSetAtom, useAtomValue, useAtom, createStore, Provider } from "jotai";
 import clsx from "clsx";
 import { Fretboard } from "./components/Fretboard/Fretboard";
-import { HelpCircle, Settings2, Volume2, VolumeX } from "lucide-react";
+import { HelpCircle, Library, Layout, Settings2, Volume2, VolumeX } from "lucide-react";
 import { synth } from "./core/audio";
 import {
   isMutedAtom,
@@ -12,6 +12,7 @@ import {
   mobileTabAtom,
   showChordPracticeBarAtom,
 } from "./store/atoms";
+import { BottomTabBar, type BottomTabItem } from "./components/BottomTabBar/BottomTabBar";
 import useLayoutMode from "./hooks/useLayoutMode";
 import { useResolvedTheme } from "./hooks/useResolvedTheme";
 import { AppHeader } from "./components/AppHeader/AppHeader";
@@ -19,7 +20,6 @@ import { BrandMark } from "./components/BrandMark/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark";
 import { SummaryRibbon } from "./components/SummaryRibbon/SummaryRibbon";
 import { ChordOverlayDock } from "./components/ChordOverlayDock/ChordOverlayDock";
-import { VersionBadge } from "./components/VersionBadge/VersionBadge";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
 import sharedStyles from "./components/shared/shared.module.css";
 import "./styles/App.css";
@@ -39,12 +39,16 @@ const MobileTabPanel = lazy(() =>
   }))
 );
 
+const MOBILE_TAB_ITEMS: BottomTabItem[] = [
+  { id: "theory", label: "Theory", icon: <Library size={18} /> },
+  { id: "view", label: "View", icon: <Layout size={18} /> },
+];
+
 function AppContent() {
   const chordType = useAtomValue(chordTypeAtom);
   const isMuted = useAtomValue(isMutedAtom);
   const showChordPracticeBar = useAtomValue(showChordPracticeBarAtom);
-  // Mount mobileTabAtom to ensure atomWithStorage persists default state on first render.
-  useAtomValue(mobileTabAtom);
+  const [mobileTab, setMobileTab] = useAtom(mobileTabAtom);
   const setSettingsOverlayOpen = useSetAtom(settingsOverlayOpenAtom);
   const toggleMute = useSetAtom(toggleMuteAtom);
 
@@ -75,8 +79,6 @@ function AppContent() {
       window.removeEventListener("touchstart", handleGesture);
     };
   }, []);
-
-  const versionBadge = <VersionBadge />;
 
   return (
     <MainLayoutWrapper
@@ -148,11 +150,18 @@ function AppContent() {
         </Suspense>
       }
       mobileTabs={
-        <Suspense fallback={<div className="loading-spinner" />}>
-          <MobileTabPanel />
-        </Suspense>
+        <>
+          <Suspense fallback={<div className="loading-spinner" />}>
+            <MobileTabPanel />
+          </Suspense>
+          <BottomTabBar
+            items={MOBILE_TAB_ITEMS}
+            activeId={mobileTab}
+            onSelect={(id) => setMobileTab(id as "theory" | "view")}
+            aria-label="Mobile navigation"
+          />
+        </>
       }
-      versionBadge={versionBadge}
       settingsOverlay={
         <Suspense fallback={<div className="loading-spinner" />}>
           <SettingsOverlay />

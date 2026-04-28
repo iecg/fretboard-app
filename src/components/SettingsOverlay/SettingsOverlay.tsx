@@ -21,6 +21,7 @@ import AppearanceSettingsSection from "./sections/AppearanceSettingsSection";
 import NotationSettingsSection from "./sections/NotationSettingsSection";
 import ChordLayoutSettingsSection from "./sections/ChordLayoutSettingsSection";
 import ResetSettingsSection from "./sections/ResetSettingsSection";
+import { VersionBadge } from "../VersionBadge/VersionBadge";
 import styles from "./SettingsOverlay.module.css";
 import sharedStyles from "../shared/shared.module.css";
 
@@ -123,6 +124,7 @@ function SettingsOverlaySurface({
           <OverlaySection id="reset" title="Reset" tone="danger">
             <ResetSettingsSection onClose={close} />
           </OverlaySection>
+          <VersionBadge />
         </div>
       </motion.div>
     </>

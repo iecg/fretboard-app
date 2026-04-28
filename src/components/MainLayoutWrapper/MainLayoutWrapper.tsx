@@ -10,7 +10,6 @@ interface MainLayoutWrapperProps {
   mobileTabs?: ReactNode;
   helpModal?: ReactNode;
   settingsOverlay?: ReactNode;
-  versionBadge?: ReactNode;
   layoutTier: string;
   layoutVariant: string;
   isChordActive: boolean;
@@ -29,7 +28,6 @@ export function MainLayoutWrapper({
   mobileTabs,
   helpModal,
   settingsOverlay,
-  versionBadge,
   layoutTier,
   layoutVariant,
   isChordActive,
@@ -83,8 +81,6 @@ export function MainLayoutWrapper({
       {showControlsPanel && controlsPanel}
 
       {showMobileTabs && mobileTabs}
-
-      {versionBadge}
 
       {settingsOverlay}
     </div>

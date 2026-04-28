@@ -249,11 +249,10 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     renderOpenOverlay();
 
     const closeButton = screen.getByLabelText("Close settings");
-    const resetButton = screen.getByRole("button", {
-      name: "Reset all settings",
-    });
+    // Ko-fi link is now the last focusable element (after VersionBadge moved into the overlay)
+    const kofiLink = screen.getByTitle("Support FretFlow on Ko-fi");
 
-    resetButton.focus();
+    kofiLink.focus();
     fireEvent.keyDown(window, { key: "Tab" });
 
     expect(document.activeElement).toBe(closeButton);
@@ -264,11 +263,10 @@ describe("SettingsOverlay/SettingsOverlay", () => {
 
     // Inline hint text is non-focusable, so trapping should behave the same.
     const closeButton = screen.getByLabelText("Close settings");
-    const resetButton = screen.getByRole("button", {
-      name: "Reset all settings",
-    });
+    // Ko-fi link is now the last focusable element (after VersionBadge moved into the overlay)
+    const kofiLink = screen.getByTitle("Support FretFlow on Ko-fi");
 
-    resetButton.focus();
+    kofiLink.focus();
     fireEvent.keyDown(window, { key: "Tab" });
 
     expect(document.activeElement).toBe(closeButton);
@@ -278,14 +276,13 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     renderOpenOverlay();
 
     const closeButton = screen.getByLabelText("Close settings");
-    const resetButton = screen.getByRole("button", {
-      name: "Reset all settings",
-    });
+    // Ko-fi link is now the last focusable element (after VersionBadge moved into the overlay)
+    const kofiLink = screen.getByTitle("Support FretFlow on Ko-fi");
 
     closeButton.focus();
     fireEvent.keyDown(window, { key: "Tab", shiftKey: true });
 
-    expect(document.activeElement).toBe(resetButton);
+    expect(document.activeElement).toBe(kofiLink);
   });
 
   it("restores focus to the trigger when the overlay closes", () => {
