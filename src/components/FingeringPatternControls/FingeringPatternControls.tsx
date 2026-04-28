@@ -196,17 +196,19 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
       <div className={shared["control-section"]}>
         <span className={shared["section-label"]}>Note Labels</span>
         <ToggleBar
-          options={(["notes", "degrees", "none"] as const).map((fmt) => ({
+          options={(["notes", "degrees", "color", "none"] as const).map((fmt) => ({
             value: fmt,
             label:
               fmt === "notes"
                 ? "Notes"
                 : fmt === "degrees"
                   ? "Intervals"
-                  : "None",
+                  : fmt === "color"
+                    ? "Color"
+                    : "None",
           }))}
           value={displayFormat}
-          onChange={(v) => setDisplayFormat(v as "notes" | "degrees" | "none")}
+          onChange={(v) => setDisplayFormat(v as "notes" | "degrees" | "color" | "none")}
           compact={compact}
         />
       </div>

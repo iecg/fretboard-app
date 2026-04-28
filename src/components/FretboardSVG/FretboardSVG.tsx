@@ -39,7 +39,7 @@ interface FretboardSVGProps {
   maxFret?: number;
   highlightNotes: string[];
   rootNote: string;
-  displayFormat?: "notes" | "degrees" | "none";
+  displayFormat?: "notes" | "degrees" | "color" | "none";
   boxBounds?: BoxBound[];
   chordTones?: string[];
   chordRoot?: string;

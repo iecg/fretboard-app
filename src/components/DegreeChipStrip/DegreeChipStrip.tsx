@@ -8,6 +8,8 @@ export interface DegreeChip {
   interval: string;
   inScale: boolean;
   isTonic?: boolean;
+  scaleDegree?: string;
+  degreeColor?: string;
 }
 
 export interface DegreeChipStripProps {
@@ -72,6 +74,8 @@ export function DegreeChipStrip({
                 data-is-tonic={chip.isTonic ? 'true' : undefined}
                 data-hidden={isHidden ? 'true' : undefined}
                 data-is-color-note={isColorNote ? 'true' : undefined}
+                data-scale-degree={chip.scaleDegree}
+                style={chip.degreeColor ? { "--degree-color": chip.degreeColor } as React.CSSProperties : undefined}
               >
                 <button
                   type="button"

@@ -8,6 +8,7 @@ import {
   type PracticeLens,
   type NoteSemantics,
 } from "../../../core/theory";
+import { DEGREE_COLORS, getDegreesForScale } from "../../../core/degrees";
 import type { ShapePolygon, CagedShape } from "../../../shapes";
 import type { ActiveShapeType } from "../../../hooks/useFretboardState";
 import {
@@ -29,6 +30,8 @@ export interface NoteData {
   isHidden: boolean;
   isTension: boolean;
   isGuideTone: boolean;
+  scaleDegree?: string;
+  degreeColor?: string;
 }
 
 export interface UseNoteDataProps {
@@ -52,7 +55,7 @@ export interface UseNoteDataProps {
   activeShape?: ActiveShapeType;
   scaleName: string;
   useFlats: boolean;
-  displayFormat?: "notes" | "degrees" | "none";
+  displayFormat?: "notes" | "degrees" | "color" | "none";
   wrappedNotes: Set<string>;
   practiceLens?: PracticeLens;
   tuning: string[];
@@ -274,7 +277,22 @@ export function useNoteData({
         // Visual hiddenness: inactive notes are not rendered in the note layer.
         const isHidden = noteClass === "note-inactive";
 
-        notes.push({
+        // Calculate scale degree color for "color" display mode
+        let scaleDegree: string | undefined;
+        let degreeColor: string | undefined;
+        if (displayFormat === "color" && rootIdx !== -1) {
+          const noteIdx = NOTES.indexOf(noteName);
+          if (noteIdx !== -1) {
+            const chromaticInterval = (noteIdx - rootIdx + 12) % 12;
+            const degreesMap = getDegreesForScale(scaleName);
+            scaleDegree = degreesMap[chromaticInterval];
+            if (scaleDegree) {
+              degreeColor = DEGREE_COLORS[scaleDegree];
+            }
+          }
+        }
+
+        const objectToBePushed = {
           stringIndex,
           fretIndex,
           noteName,
@@ -285,7 +303,10 @@ export function useNoteData({
           isHidden,
           isTension: semantics?.isTension ?? false,
           isGuideTone: semantics?.isGuideTone ?? false,
-        });
+          scaleDegree,
+          degreeColor,
+        };
+        notes.push(objectToBePushed);
         }
         }
         return notes;

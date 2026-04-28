@@ -142,6 +142,12 @@
   will-change: filter;
 }
 
+/* Degree color mode — apply degree color to in-scale chips */
+.degree-chip-item[data-scale-degree][data-in-scale='true'] .degree-chip {
+  background: color-mix(in srgb, var(--degree-color) 30%, var(--chip-surface));
+  border-color: var(--degree-color);
+}
+
 .degree-chip-item[data-is-color-note='true'] .degree-chip {
   clip-path: var(--chip-hexagon-clip);
   border-color: transparent;

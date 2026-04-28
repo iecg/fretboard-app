@@ -15,10 +15,10 @@ const mobileTabStorage = createStorage<MobileTab>({
   },
 });
 
-export const displayFormatAtom = atomWithStorage<"notes" | "degrees" | "none">(
+export const displayFormatAtom = atomWithStorage<"notes" | "degrees" | "color" | "none">(
   k("displayFormat"),
   "notes",
-  rawStringStorage<"notes" | "degrees" | "none">(),
+  rawStringStorage<"notes" | "degrees" | "color" | "none">(),
   GET_ON_INIT,
 );
 

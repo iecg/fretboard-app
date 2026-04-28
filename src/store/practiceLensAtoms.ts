@@ -22,6 +22,7 @@ import type {
 } from "../core/theory";
 import {
   getDegreesForScale,
+  DEGREE_COLORS,
   type DegreeId,
 } from "../core/degrees";
 import {
@@ -260,6 +261,8 @@ const entryToBarNote = (e: ChordRowEntry): PracticeBarNote => ({
   isGuideTone: GUIDE_TONE_FORMATTED.has(e.memberName),
   isTension: !e.inScale,
   isInScale: e.inScale,
+  scaleDegree: e.scaleDegree,
+  degreeColor: e.scaleDegree ? DEGREE_COLORS[e.scaleDegree] : undefined,
 });
 
 /**

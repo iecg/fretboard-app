@@ -141,6 +141,15 @@
   fill: var(--note-ring);
 }
 
+.fretboard-note[data-display-format="color"] :is(circle, rect, polygon) {
+  stroke: var(--degree-color, var(--note-ring));
+  fill: color-mix(in srgb, var(--degree-color, #141c28) 35%, var(--note-fill));
+}
+
+:global([data-theme="modern-light"]) .fretboard-note[data-display-format="color"] :is(circle, rect, polygon) {
+  fill: color-mix(in srgb, var(--degree-color, #dde4ec) 40%, var(--note-ring));
+}
+
 .fretboard-note.color-tone :is(circle, rect, polygon) {
   stroke: var(--note-ring-color-tone);
   fill: rgb(20 30 40 / 0.92);

@@ -45,7 +45,9 @@ function Pill({ note, noteHidden, onToggleNote }: PillProps) {
         data-guide-tone={note.isGuideTone ? "true" : undefined}
         data-tension={note.isTension ? "true" : undefined}
         data-in-scale={note.isInScale ? "true" : undefined}
+        data-scale-degree={note.scaleDegree !== undefined ? note.scaleDegree : undefined}
         data-hidden-note={noteHidden ? "true" : undefined}
+        style={note.degreeColor ? { "--degree-color": note.degreeColor } as React.CSSProperties : undefined}
         aria-label={`Toggle visibility of ${aria}`}
         aria-pressed={!noteHidden}
         onClick={() => onToggleNote(note.internalNote)}

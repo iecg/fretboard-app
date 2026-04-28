@@ -26,7 +26,7 @@ interface FretboardProps {
   maxFret?: number;
   highlightNotes?: string[];
   rootNote?: string;
-  displayFormat?: "notes" | "degrees" | "none";
+  displayFormat?: "notes" | "degrees" | "color" | "none";
   boxBounds?: { minFret: number; maxFret: number }[];
   chordTones?: string[];
   chordRoot?: string;

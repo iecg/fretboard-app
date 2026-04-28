@@ -180,18 +180,10 @@
   border-color: var(--role-scale-border);
 }
 
-/* Role: Guide tones / Chord members (Orange) */
-.practice-bar-pill[data-guide-tone="true"] {
-  background: var(--role-chord-bg);
-  border-color: var(--role-chord-border);
-}
-
-/* Role: Chord Root / Tonic (Strong Orange) */
-.practice-bar-pill[data-chord-root="true"] {
-  background: var(--role-chord-bg-strong);
-  border-color: var(--role-chord-border);
-  border-style: solid;
-  box-shadow: 0 0 6px color-mix(in srgb, var(--role-chord-border) 40%, transparent);
+/* Degree color mode — in-scale pills get degree colors, but chord-root/guide-tone take priority */
+.practice-bar-pill[data-in-scale="true"][data-scale-degree]:not([data-chord-root="true"]):not([data-guide-tone="true"]) {
+  background: color-mix(in srgb, var(--degree-color) 35%, var(--chip-surface-inactive));
+  border-color: var(--degree-color);
 }
 
 /* Role: Tension (Dashed Orange) */
