@@ -34,7 +34,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  padding: 0.55rem 0;
+  padding: 0.85rem 0;
 }
 
 .theory-section-content {
@@ -80,7 +80,9 @@
   align-items: center;
   gap: 0.65rem;
   min-height: 2.35rem;
-  padding: 0.24rem 0;
+  /* Right-padding pulls the chevron and summary in from the pocket
+     edge (left stays flush so the title aligns with content below). */
+  padding: 0.24rem 0.55rem 0.24rem 0;
   border: none;
   background: transparent;
   color: inherit;
@@ -110,9 +112,17 @@
 .theory-disclosure-btn:hover::before {
   background-color: var(--surface-control-hover-bg);
   background-image: var(--surface-control-hover-bg-image);
+  /* Subtle lit-from-top highlight gives the hovered chip dimensionality. */
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
 }
 
 .theory-disclosure-btn:hover {
+  color: var(--surface-control-hover-fg);
+}
+
+/* Brighten the uppercase title on hover so it tracks with the
+   summary, which already shifts to the foreground color. */
+.theory-disclosure-btn:hover .theory-disclosure-title {
   color: var(--surface-control-hover-fg);
 }
 
@@ -124,6 +134,32 @@
   background-color: var(--surface-control-hover-bg);
   background-image: var(--surface-control-hover-bg-image);
   box-shadow: var(--control-focus-glow);
+}
+
+/* Inside an open section's nested-card pocket, the hover surface is
+   tighter (sits as an inner chip rather than filling the pocket
+   horizontally) and lighter (the pocket already grounds the row, so
+   a softer cyan reads as polish rather than competition). */
+.theory-section[data-open="true"] .theory-disclosure-btn::before {
+  inset: -0.12rem -0.25rem;
+}
+
+.theory-section[data-open="true"] .theory-disclosure-btn:hover::before {
+  background-color: color-mix(in srgb, var(--neon-cyan) 8%, transparent);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--neon-cyan) 12%, transparent),
+    color-mix(in srgb, var(--neon-cyan) 4%, transparent)
+  );
+}
+
+:global([data-theme="modern-light"]) .theory-section[data-open="true"] .theory-disclosure-btn:hover::before {
+  background-color: color-mix(in srgb, var(--interactive-primary) 9%, transparent);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--interactive-primary) 13%, transparent),
+    color-mix(in srgb, var(--interactive-primary) 5%, transparent)
+  );
 }
 
 .theory-disclosure-title {
@@ -206,12 +242,12 @@
 
 :global(.app-container[data-layout-tier="desktop"]) .theory-section {
   gap: 0.62rem;
-  padding: 0.45rem 0;
+  padding: 0.7rem 0;
 }
 
 :global(.app-container[data-layout-tier="tablet"]) .theory-section {
   gap: 0.68rem;
-  padding: 0.5rem 0;
+  padding: 0.78rem 0;
 }
 
 :global(.app-container[data-layout-tier="mobile"]) .theory-disclosure-btn {
