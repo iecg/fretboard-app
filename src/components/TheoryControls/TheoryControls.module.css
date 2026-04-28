@@ -1,7 +1,7 @@
 .theory-controls {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 0.6rem;
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
@@ -34,39 +34,29 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  padding: 0.1rem 0 0.95rem;
-  border-bottom: 1px solid var(--surface-card-header-border);
-}
-
-.theory-section:last-child {
-  padding-bottom: 0;
-  border-bottom: none;
+  padding: 0.25rem 0;
 }
 
 .theory-section-content {
-  position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
 }
 
-/* Open-state binding: soft cyan-tinted pocket that bleeds past the
-   card body's horizontal padding so the button + content read as one
-   container. */
-.theory-section[data-open="true"] .theory-section-content::before {
+/* Open-state binding: when expanded, the section becomes a nested card
+   that wraps both the disclosure button and its content. The pseudo
+   bleeds past the card body's horizontal padding so the pocket reaches
+   the visual edges of the parent dashboard card. */
+.theory-section[data-open="true"]::before {
   content: "";
   position: absolute;
-  inset: -0.55rem -0.55rem -0.2rem;
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--neon-cyan) 4.5%, transparent);
-  border: 1px solid color-mix(in srgb, var(--neon-cyan) 9%, transparent);
+  inset: -0.05rem -0.55rem;
+  border-radius: var(--nested-card-radius);
+  background: var(--nested-card-bg);
+  border: 1px solid var(--nested-card-border);
+  box-shadow: var(--nested-card-shadow);
   pointer-events: none;
   z-index: -1;
-}
-
-:global([data-theme="modern-light"]) .theory-section[data-open="true"] .theory-section-content::before {
-  background: color-mix(in srgb, var(--interactive-primary) 5%, transparent);
-  border-color: color-mix(in srgb, var(--interactive-primary) 11%, transparent);
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
@@ -197,7 +187,7 @@
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
 :global(.app-container[data-layout-tier="desktop"]) .theory-controls {
-  gap: 0;
+  gap: 0.5rem;
 }
 
 :global(.app-container[data-layout-tier="desktop"]) .theory-inline-key {
@@ -206,7 +196,7 @@
 }
 
 :global(.app-container[data-layout-tier="tablet"]) .theory-controls {
-  gap: 0;
+  gap: 0.55rem;
 }
 
 :global(.app-container[data-layout-tier="tablet"]) .theory-inline-key {
@@ -216,17 +206,12 @@
 
 :global(.app-container[data-layout-tier="desktop"]) .theory-section {
   gap: 0.62rem;
-  padding-bottom: 0.72rem;
+  padding: 0.2rem 0;
 }
 
 :global(.app-container[data-layout-tier="tablet"]) .theory-section {
   gap: 0.68rem;
-  padding-bottom: 0.82rem;
-}
-
-:global(.app-container[data-layout-tier="desktop"]) .theory-section:last-child,
-:global(.app-container[data-layout-tier="tablet"]) .theory-section:last-child {
-  padding-bottom: 0;
+  padding: 0.22rem 0;
 }
 
 :global(.app-container[data-layout-tier="mobile"]) .theory-disclosure-btn {
