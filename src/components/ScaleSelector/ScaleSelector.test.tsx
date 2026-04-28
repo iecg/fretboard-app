@@ -109,22 +109,18 @@ describe("ScaleSelector/ScaleSelector", () => {
       expect(screen.getByRole("button", { name: "Relative" })).toBeInTheDocument();
     });
 
-    it("help-button opens popover with parallel/relative explanation", async () => {
+    it("shows a short hint for Parallel/Relative behavior", () => {
       renderWithAtoms(<ScaleSelector />, [...BASE_SEEDS]);
-      const helpBtn = screen.getByRole("button", { name: "Show help for Mode" });
-      await userEvent.click(helpBtn);
-      expect(screen.getByText(/Parallel.*same root/i)).toBeInTheDocument();
+      expect(
+        screen.getByText("Cycle modes that share the current root note."),
+      ).toBeInTheDocument();
     });
 
-    it("help-button aria-expanded toggles on click", async () => {
+    it("does not render a help button for Parallel/Relative", () => {
       renderWithAtoms(<ScaleSelector />, [...BASE_SEEDS]);
-      const helpBtn = screen.getByRole("button", { name: "Show help for Mode" });
-      expect(helpBtn).toHaveAttribute("aria-expanded", "false");
-      await userEvent.click(helpBtn);
-      expect(screen.getByRole("button", { name: "Hide help for Mode" })).toHaveAttribute(
-        "aria-expanded",
-        "true",
-      );
+      expect(
+        screen.queryByRole("button", { name: /show help for mode/i }),
+      ).not.toBeInTheDocument();
     });
   });
 

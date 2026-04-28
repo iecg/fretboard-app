@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from "vitest";
-import { screen, within, act } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
@@ -243,7 +243,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(pressedButton).toBeInTheDocument();
     });
 
-    it("lens ToggleBar is absent when no chord is active (overlay off)", async () => {
+    it("lens ToggleBar is absent when no chord is active (overlay off)", () => {
       renderWithAtoms(<ChordOverlayControls />, [
         [scaleNameAtom, "Major"],
         [rootNoteAtom, "C"],
@@ -251,13 +251,6 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
         [chordDegreeAtom, null],
       ]);
 
-      // Click the disclosure button to open the panel
-      const disclosureBtn = screen.getByRole("button", { name: /chord overlay/i });
-      await act(async () => {
-        await userEvent.click(disclosureBtn);
-      });
-
-      // No lens ToggleBar when chord is off
       expect(screen.queryByRole("group", { name: "Practice lens" })).not.toBeInTheDocument();
     });
   });
@@ -324,31 +317,24 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
   });
 
-  describe("10. Mode label and help-button (Degree/Manual toggle)", () => {
+  describe("10. Mode label and hint (Degree/Manual toggle)", () => {
     it("renders visible 'Chord Mode' label adjacent to the toggle", () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
       expect(screen.getByText("Chord Mode")).toBeInTheDocument();
     });
 
-    it("renders help-button for mode toggle", () => {
+    it("renders a short mode hint", () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
-      expect(screen.getByRole("button", { name: /show help for chord mode/i })).toBeInTheDocument();
+      expect(
+        screen.getByText("Pick a scale degree; chord builds from the key."),
+      ).toBeInTheDocument();
     });
 
-    it("clicking mode help-button opens popover with degree/manual explanation", async () => {
+    it("does not render a chord mode help button", () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
-      const helpBtn = screen.getByRole("button", { name: /show help for chord mode/i });
-      await userEvent.click(helpBtn);
-      expect(screen.getByText(/diatonic chord that follows the active scale/i)).toBeInTheDocument();
-      expect(screen.getByText(/free chord root and quality/i)).toBeInTheDocument();
-    });
-
-    it("clicking mode help-button again closes popover", async () => {
-      renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
-      const helpBtn = screen.getByRole("button", { name: /show help for chord mode/i });
-      await userEvent.click(helpBtn);
-      await userEvent.click(helpBtn);
-      expect(screen.queryByText(/diatonic chord that follows the active scale/i)).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: /show help for chord mode/i }),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -361,13 +347,15 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
   });
 
-  describe("12. lens help-button uses LENS_REGISTRY description", () => {
-    it("renders lens help-button when chord is active", () => {
+  describe("12. lens hint uses LENS_REGISTRY description", () => {
+    it("does not render a lens help-button when chord is active", () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
-      expect(screen.getByRole("button", { name: /show help for lens/i })).toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: /show help for lens/i }),
+      ).not.toBeInTheDocument();
     });
 
-    it("clicking lens help-button shows LENS_REGISTRY description for active lens", async () => {
+    it("shows LENS_REGISTRY description for active lens", () => {
       renderWithAtoms(<ChordOverlayControls />, [
         ...DEGREE_MODE_SEEDS,
         [practiceLensAtom, "targets"],
@@ -375,23 +363,19 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       const targetsDescription = LENS_REGISTRY.find((r) => r.id === "targets")?.description ?? "";
       expect(targetsDescription).not.toBe("");
 
-      const helpBtn = screen.getByRole("button", { name: /show help for lens/i });
-      await userEvent.click(helpBtn);
       expect(screen.getByText(targetsDescription)).toBeInTheDocument();
     });
 
-    it("lens help popover text updates when active lens changes", async () => {
+    it("lens hint text updates when active lens changes", () => {
       renderWithAtoms(<ChordOverlayControls />, [
         ...DEGREE_MODE_SEEDS,
         [practiceLensAtom, "targets"],
       ]);
-      const helpBtn = screen.getByRole("button", { name: /show help for lens/i });
-      await userEvent.click(helpBtn);
       const targetsDesc = LENS_REGISTRY.find((r) => r.id === "targets")?.description ?? "";
       expect(screen.getByText(targetsDesc)).toBeInTheDocument();
     });
 
-    it("no inline lens-hint paragraph (replaced by help-button)", () => {
+    it("no legacy lens-hint paragraph remains", () => {
       const { container } = renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
       expect(container.querySelector(".lens-hint")).not.toBeInTheDocument();
     });

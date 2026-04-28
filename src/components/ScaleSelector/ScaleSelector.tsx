@@ -15,17 +15,9 @@ import {
 import { NoteGrid } from "../NoteGrid/NoteGrid";
 import { StepperSelect } from "../StepperSelect/StepperSelect";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
-import { FieldHelpHeader } from "../shared/FieldHelpHeader";
 import { useScaleState } from "../../hooks/useScaleState";
-import { useHelpPopover } from "../shared/useHelpPopover";
 import shared from "../shared/shared.module.css";
 import styles from "../TheoryControls/TheoryControls.module.css";
-
-const PARALLEL_RELATIVE_HELP = {
-  id: "parallel-relative",
-  content:
-    "Parallel: same root, different mode (e.g. C major ↔ C Dorian). Relative: same key signature, different root (e.g. C major ↔ A minor).",
-};
 
 export function ScaleSelector() {
   const {
@@ -37,9 +29,6 @@ export function ScaleSelector() {
     setScaleBrowseMode,
     useFlats,
   } = useScaleState();
-
-  const { activeHelpField, handleHelpToggle, registerHelpContainer } =
-    useHelpPopover<"parallel-relative">();
 
   const scaleEntry = resolveScaleCatalogEntry(scaleName);
   const familyOptions = getScaleFamilyOptions();
@@ -167,15 +156,6 @@ export function ScaleSelector() {
           />
           {supportsRelativeBrowse ? (
             <div className={styles["theory-mode-toggle-row"]}>
-              <FieldHelpHeader
-                label="Mode"
-                help={PARALLEL_RELATIVE_HELP}
-                isHelpOpen={activeHelpField === "parallel-relative"}
-                onToggleHelp={() => handleHelpToggle("parallel-relative")}
-                helpContainerRef={(node) =>
-                  registerHelpContainer("parallel-relative", node)
-                }
-              />
               <ToggleBar
                 options={[
                   { value: "parallel", label: "Parallel" },
@@ -183,7 +163,13 @@ export function ScaleSelector() {
                 ]}
                 value={effectiveBrowseMode}
                 onChange={(value) => setScaleBrowseMode(value as ScaleBrowseMode)}
+                label="Scale relationship"
               />
+              <p className={shared["shape-hint"]}>
+                {effectiveBrowseMode === "parallel"
+                  ? "Cycle modes that share the current root note."
+                  : "Cycle modes that share the current key signature."}
+              </p>
             </div>
           ) : null}
         </div>

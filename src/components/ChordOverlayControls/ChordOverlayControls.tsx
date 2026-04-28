@@ -1,6 +1,5 @@
-import { startTransition, useEffect, useState } from "react";
+import { startTransition, useEffect } from "react";
 import { useAtomValue } from "jotai";
-import clsx from "clsx";
 import { NOTES, LENS_REGISTRY } from "../../core/theory";
 import { getAdjacentDegree, getDegreesForScale } from "../../core/degrees";
 import { lensAvailabilityAtom } from "../../store/atoms";
@@ -10,14 +9,10 @@ import {
   type StepperSelectOption,
 } from "../StepperSelect/StepperSelect";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
-import { FieldHelpHeader } from "../shared/FieldHelpHeader";
-import { useHelpPopover } from "../shared/useHelpPopover";
 import { useChordState } from "../../hooks/useChordState";
 import { useScaleState } from "../../hooks/useScaleState";
 import styles from "../TheoryControls/TheoryControls.module.css";
 import shared from "../shared/shared.module.css";
-
-type ChordHelpId = "chord-mode" | "lens";
 
 const CHORD_OPTIONS: string[] = [
   "Major Triad",
@@ -39,12 +34,6 @@ const CHORD_SELECT_OPTIONS: StepperSelectOption[] = [
   })),
 ];
 
-const CHORD_MODE_HELP = {
-  id: "chord-mode",
-  content:
-    "Degree: diatonic chord that follows the active scale. Manual: free chord root and quality that escapes the scale.",
-};
-
 export function ChordOverlayControls() {
   const { scaleName, useFlats } = useScaleState();
   const {
@@ -61,12 +50,7 @@ export function ChordOverlayControls() {
     setChordQualityOverride,
   } = useChordState();
 
-  const { activeHelpField, handleHelpToggle, registerHelpContainer } =
-    useHelpPopover<ChordHelpId>();
-
   const lensAvailability = useAtomValue(lensAvailabilityAtom);
-
-  const [isChordOverlayOpen, setChordOverlayOpen] = useState(Boolean(chordType));
 
   const degreeSelectOptions: StepperSelectOption[] = [
     { value: CHORD_NONE_VALUE, label: "Off" },
@@ -146,113 +130,86 @@ export function ChordOverlayControls() {
     });
   };
 
-  const chordSummary = chordType ?? "Off";
-  const chordOverlayOpen = isChordOverlayOpen || Boolean(chordType);
-
   return (
-    <div className={styles["theory-chord-section"]}>
-      <button
-        type="button"
-        className={clsx(styles["theory-disclosure-btn"], {
-          [styles["theory-disclosure-btn--open"]]: chordOverlayOpen,
-        })}
-        aria-expanded={chordOverlayOpen}
-        onClick={() => setChordOverlayOpen((v) => !v)}
-      >
-        <span className={styles["theory-disclosure-title"]}>Chord Overlay</span>
-        <span className={styles["theory-disclosure-summary"]}>{chordSummary}</span>
-      </button>
+    <div className={styles["theory-chord-content"]}>
+      <div className={shared["control-section"]}>
+        <span className={shared["section-label"]}>Chord Mode</span>
+        <ToggleBar
+          options={[
+            { value: "degree", label: "Degree" },
+            { value: "manual", label: "Manual" },
+          ]}
+          value={chordOverlayMode}
+          onChange={setChordOverlayMode}
+          label="Chord overlay mode"
+        />
+        <p className={shared["shape-hint"]}>
+          {chordOverlayMode === "degree"
+            ? "Pick a scale degree; chord builds from the key."
+            : "Choose any chord type and root, independent of the key."}
+        </p>
+      </div>
 
-      {chordOverlayOpen ? (
-        <div className={styles["theory-chord-content"]}>
+      {chordOverlayMode === "degree" && (
+        <div className={shared["control-section"]}>
+          <span className={shared["section-label"]}>Degree</span>
+          <StepperSelect
+            selectLabel="Chord Degree"
+            groupLabel="Browse chord degrees"
+            previousLabel="Previous chord degree"
+            nextLabel="Next chord degree"
+            value={chordDegree ?? CHORD_NONE_VALUE}
+            options={degreeSelectOptions}
+            onChange={handleDegreeChange}
+            onPrevious={() => handleStepDegree(-1)}
+            onNext={() => handleStepDegree(1)}
+          />
+        </div>
+      )}
+
+      {chordOverlayMode === "manual" && (
+        <>
           <div className={shared["control-section"]}>
-            <FieldHelpHeader
-              label="Chord Mode"
-              help={CHORD_MODE_HELP}
-              isHelpOpen={activeHelpField === "chord-mode"}
-              onToggleHelp={() => handleHelpToggle("chord-mode")}
-              helpContainerRef={(node) => registerHelpContainer("chord-mode", node)}
-            />
-            <ToggleBar
-              options={[
-                { value: "degree", label: "Degree" },
-                { value: "manual", label: "Manual" },
-              ]}
-              value={chordOverlayMode}
-              onChange={setChordOverlayMode}
-              label="Chord overlay mode"
+            <span className={shared["section-label"]}>Chord Type</span>
+            <StepperSelect
+              selectLabel="Chord Type"
+              groupLabel="Browse chord types"
+              previousLabel="Previous chord type"
+              nextLabel="Next chord type"
+              value={chordQualityOverride ?? CHORD_NONE_VALUE}
+              options={CHORD_SELECT_OPTIONS}
+              onChange={handleChordTypeChange}
+              onPrevious={() => handleStepChordType(-1)}
+              onNext={() => handleStepChordType(1)}
             />
           </div>
+          <div className={shared["control-section"]}>
+            <span className={shared["section-label"]}>Root</span>
+            <NoteGrid
+              notes={NOTES}
+              selected={chordRootOverride}
+              onSelect={(note) => {
+                startTransition(() => {
+                  setChordRootOverride(note);
+                });
+              }}
+              useFlats={useFlats}
+            />
+          </div>
+        </>
+      )}
 
-          {chordOverlayMode === "degree" && (
-            <div className={shared["control-section"]}>
-              <span className={shared["section-label"]}>Degree</span>
-              <StepperSelect
-                selectLabel="Chord Degree"
-                groupLabel="Browse chord degrees"
-                previousLabel="Previous chord degree"
-                nextLabel="Next chord degree"
-                value={chordDegree ?? CHORD_NONE_VALUE}
-                options={degreeSelectOptions}
-                onChange={handleDegreeChange}
-                onPrevious={() => handleStepDegree(-1)}
-                onNext={() => handleStepDegree(1)}
-              />
-            </div>
-          )}
-
-          {chordOverlayMode === "manual" && (
-            <>
-              <div className={shared["control-section"]}>
-                <span className={shared["section-label"]}>Chord Type</span>
-                <StepperSelect
-                  selectLabel="Chord Type"
-                  groupLabel="Browse chord types"
-                  previousLabel="Previous chord type"
-                  nextLabel="Next chord type"
-                  value={chordQualityOverride ?? CHORD_NONE_VALUE}
-                  options={CHORD_SELECT_OPTIONS}
-                  onChange={handleChordTypeChange}
-                  onPrevious={() => handleStepChordType(-1)}
-                  onNext={() => handleStepChordType(1)}
-                />
-              </div>
-              <div className={shared["control-section"]}>
-                <span className={shared["section-label"]}>Root</span>
-                <NoteGrid
-                  notes={NOTES}
-                  selected={chordRootOverride}
-                  onSelect={(note) => {
-                    startTransition(() => {
-                      setChordRootOverride(note);
-                    });
-                  }}
-                  useFlats={useFlats}
-                />
-              </div>
-            </>
-          )}
-
-          {chordType ? (
-            <div className={shared["control-section"]}>
-              <FieldHelpHeader
-                label="Lens"
-                help={
-                  activeLensDescription
-                    ? { id: "lens", content: activeLensDescription }
-                    : undefined
-                }
-                isHelpOpen={activeHelpField === "lens"}
-                onToggleHelp={() => handleHelpToggle("lens")}
-                helpContainerRef={(node) => registerHelpContainer("lens", node)}
-              />
-              <ToggleBar
-                options={lensOptions}
-                value={practiceLens}
-                onChange={setPracticeLens}
-                label="Practice lens"
-              />
-            </div>
+      {chordType ? (
+        <div className={shared["control-section"]}>
+          <span className={shared["section-label"]}>Lens</span>
+          <ToggleBar
+            options={lensOptions}
+            value={practiceLens}
+            onChange={setPracticeLens}
+            label="Practice lens"
+          />
+          {activeLensDescription ? (
+            <p className={shared["shape-hint"]}>{activeLensDescription}</p>
           ) : null}
         </div>
       ) : null}

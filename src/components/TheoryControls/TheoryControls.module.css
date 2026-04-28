@@ -1,7 +1,7 @@
 .theory-controls {
   display: flex;
   flex-direction: column;
-  gap: 0.95rem;
+  gap: 0;
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
@@ -16,28 +16,60 @@
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
-/* Flat (no panel-surface) mode browser — column layout without inset card chrome */
 .theory-mode-browser {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
 }
 
-/* Row containing the Mode label + help-button + parallel/relative toggle */
 .theory-mode-toggle-row {
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
 }
 
-.theory-chord-section {
+.theory-section {
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: 0.75rem;
+  padding: 0.1rem 0 0.95rem;
+  border-bottom: 1px solid var(--surface-card-header-border);
+}
+
+.theory-section:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.theory-section-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+/* Open-state binding: soft cyan-tinted pocket that bleeds past the
+   card body's horizontal padding so the button + content read as one
+   container. */
+.theory-section[data-open="true"] .theory-section-content::before {
+  content: "";
+  position: absolute;
+  inset: -0.55rem -0.55rem -0.2rem;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--neon-cyan) 4.5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--neon-cyan) 9%, transparent);
+  pointer-events: none;
+  z-index: -1;
+}
+
+:global([data-theme="modern-light"]) .theory-section[data-open="true"] .theory-section-content::before {
+  background: color-mix(in srgb, var(--interactive-primary) 5%, transparent);
+  border-color: color-mix(in srgb, var(--interactive-primary) 11%, transparent);
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
-.theory-chord-section:global(.panel-surface),
 .theory-inline-key:global(.panel-surface) {
   display: flex;
   flex-direction: column;
@@ -50,19 +82,44 @@
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
 .theory-disclosure-btn {
+  position: relative;
+  isolation: isolate;
   width: 100%;
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding: 0.2rem 0;
+  gap: 0.65rem;
+  min-height: 2.35rem;
+  padding: 0.24rem 0;
   border: none;
   background: transparent;
   color: inherit;
   text-align: left;
   cursor: pointer;
   border-radius: var(--radius-lg);
-  transition: background-color var(--transition-fast) ease, color var(--transition-fast) ease;
+  transition: color var(--transition-fast) ease;
+}
+
+/* Hover/focus surface bleeds past the button's content box so the
+   tint has breathing room against text without padding the labels
+   (which would break vertical alignment with the rest of the card). */
+.theory-disclosure-btn::before {
+  content: "";
+  position: absolute;
+  inset: -0.18rem -0.55rem;
+  border-radius: var(--radius-lg);
+  background-color: transparent;
+  background-image: none;
+  transition: background-color var(--transition-fast) ease,
+              background-image var(--transition-fast) ease,
+              box-shadow var(--transition-fast) ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.theory-disclosure-btn:hover::before {
+  background-color: var(--surface-control-hover-bg);
+  background-image: var(--surface-control-hover-bg-image);
 }
 
 .theory-disclosure-btn:hover {
@@ -71,7 +128,11 @@
 
 .theory-disclosure-btn:focus-visible {
   outline: var(--control-focus-ring);
-  background: var(--surface-control-hover-bg);
+}
+
+.theory-disclosure-btn:focus-visible::before {
+  background-color: var(--surface-control-hover-bg);
+  background-image: var(--surface-control-hover-bg-image);
   box-shadow: var(--control-focus-glow);
 }
 
@@ -84,16 +145,20 @@
 }
 
 .theory-disclosure-summary {
-  font-size: 0.72rem;
-  color: var(--surface-control-fg-muted);
-  font-weight: 500;
+  min-width: 0;
+  justify-self: end;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.84rem;
+  color: var(--surface-control-fg);
+  font-weight: 600;
   white-space: nowrap;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-align: right;
 }
 
 :global([data-theme="modern-dark"]) .theory-disclosure-summary {
-  color: var(--text-muted);
+  color: var(--surface-control-fg);
 }
 
 .theory-disclosure-btn--open .theory-disclosure-summary {
@@ -102,6 +167,20 @@
 
 :global([data-theme="modern-light"]) .theory-disclosure-btn--open .theory-disclosure-summary {
   color: var(--interactive-primary);
+}
+
+.theory-disclosure-icon {
+  color: var(--surface-control-fg-muted);
+  transition: transform var(--transition-fast), color var(--transition-fast);
+}
+
+.theory-disclosure-btn:hover .theory-disclosure-icon,
+.theory-disclosure-btn--open .theory-disclosure-icon {
+  color: var(--surface-control-hover-fg);
+}
+
+.theory-disclosure-btn--open .theory-disclosure-icon {
+  transform: rotate(180deg);
 }
 
 .theory-chord-content {
@@ -118,23 +197,36 @@
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
 :global(.app-container[data-layout-tier="desktop"]) .theory-controls {
-  gap: 0.72rem;
+  gap: 0;
 }
 
-:global(.app-container[data-layout-tier="desktop"]) .theory-chord-section,
 :global(.app-container[data-layout-tier="desktop"]) .theory-inline-key {
   padding: 0.6rem 0.85rem;
   gap: 0.58rem;
 }
 
 :global(.app-container[data-layout-tier="tablet"]) .theory-controls {
-  gap: 0.82rem;
+  gap: 0;
 }
 
-:global(.app-container[data-layout-tier="tablet"]) .theory-chord-section,
 :global(.app-container[data-layout-tier="tablet"]) .theory-inline-key {
   padding: 0.72rem 0.92rem;
   gap: 0.66rem;
+}
+
+:global(.app-container[data-layout-tier="desktop"]) .theory-section {
+  gap: 0.62rem;
+  padding-bottom: 0.72rem;
+}
+
+:global(.app-container[data-layout-tier="tablet"]) .theory-section {
+  gap: 0.68rem;
+  padding-bottom: 0.82rem;
+}
+
+:global(.app-container[data-layout-tier="desktop"]) .theory-section:last-child,
+:global(.app-container[data-layout-tier="tablet"]) .theory-section:last-child {
+  padding-bottom: 0;
 }
 
 :global(.app-container[data-layout-tier="mobile"]) .theory-disclosure-btn {
