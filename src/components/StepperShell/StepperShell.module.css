@@ -24,7 +24,10 @@
   border-color: var(--surface-control-hover-border);
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
-  box-shadow: var(--focus-ring-glow);
+  /* No box-shadow halo here — the 16px --focus-ring-glow gets
+     clipped by ancestor overflow:hidden (the disclosure motion
+     wrapper). The 2px outline + 2px offset is enough to mark the
+     focused control without escaping the motion bounds. */
 }
 
 .button {
