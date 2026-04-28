@@ -33,30 +33,44 @@
   isolation: isolate;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding: 0.85rem 0;
+  /* Asymmetric padding: less on top (the chevron + summary already
+     read as a "header" cap), more on bottom so the hint paragraph
+     has breathing room against the pocket edge. The motion content
+     wrapper carries its own top padding so the section's own gap is
+     intentionally not used here. */
+  padding: 0.4rem 0 0.6rem;
 }
 
 .theory-section-content {
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
+  padding-top: 0.75rem;
 }
 
-/* Open-state binding: when expanded, the section becomes a nested card
-   that wraps both the disclosure button and its content. The pseudo
-   bleeds past the card body's horizontal padding so the pocket reaches
-   the visual edges of the parent dashboard card. */
-.theory-section[data-open="true"]::before {
+/* Section frame: always rendered so its background, border, and
+   shadow can transition smoothly between closed and open states. The
+   pseudo bleeds past the card body's horizontal padding so the
+   pocket reaches the visual edges of the parent dashboard card. */
+.theory-section::before {
   content: "";
   position: absolute;
   inset: 0 -0.55rem;
   border-radius: var(--nested-card-radius);
-  background: var(--nested-card-bg);
-  border: 1px solid var(--nested-card-border);
-  box-shadow: var(--nested-card-shadow);
+  background-color: transparent;
+  border: 1px solid transparent;
+  box-shadow: none;
   pointer-events: none;
   z-index: -1;
+  transition: background-color var(--transition-base) ease,
+              border-color var(--transition-base) ease,
+              box-shadow var(--transition-base) ease;
+}
+
+.theory-section[data-open="true"]::before {
+  background-color: var(--nested-card-bg);
+  border-color: var(--nested-card-border);
+  box-shadow: var(--nested-card-shadow);
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
@@ -94,7 +108,10 @@
 
 /* Hover/focus surface bleeds past the button's content box so the
    tint has breathing room against text without padding the labels
-   (which would break vertical alignment with the rest of the card). */
+   (which would break vertical alignment with the rest of the card).
+   When the section is closed, this pseudo also carries a faint
+   nested-card backdrop so the row has visual presence as a list item
+   in the parent card (see [data-open="false"] rule below). */
 .theory-disclosure-btn::before {
   content: "";
   position: absolute;
@@ -107,6 +124,14 @@
               box-shadow var(--transition-fast) ease;
   pointer-events: none;
   z-index: -1;
+}
+
+/* Closed-section idle row: faint nested-card-tinted backdrop so the
+   button reads as a substantial list row inside the Music Theory
+   card, not as floating text. Hover overrides this with the cyan
+   chip below. */
+.theory-section[data-open="false"] .theory-disclosure-btn::before {
+  background-color: color-mix(in srgb, var(--nested-card-bg) 42%, transparent);
 }
 
 .theory-disclosure-btn:hover::before {
@@ -241,13 +266,19 @@
 }
 
 :global(.app-container[data-layout-tier="desktop"]) .theory-section {
-  gap: 0.62rem;
-  padding: 0.7rem 0;
+  padding: 0.32rem 0 0.5rem;
+}
+
+:global(.app-container[data-layout-tier="desktop"]) .theory-section-content {
+  padding-top: 0.62rem;
 }
 
 :global(.app-container[data-layout-tier="tablet"]) .theory-section {
-  gap: 0.68rem;
-  padding: 0.78rem 0;
+  padding: 0.36rem 0 0.55rem;
+}
+
+:global(.app-container[data-layout-tier="tablet"]) .theory-section-content {
+  padding-top: 0.68rem;
 }
 
 :global(.app-container[data-layout-tier="mobile"]) .theory-disclosure-btn {

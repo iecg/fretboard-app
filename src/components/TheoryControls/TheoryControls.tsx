@@ -1,11 +1,16 @@
 import { useId, useState, type ReactNode } from "react";
 import { useAtomValue } from "jotai";
+import { AnimatePresence, motion } from "motion/react";
 import clsx from "clsx";
 import { ChevronDown } from "lucide-react";
 import { ScaleSelector } from "../ScaleSelector/ScaleSelector";
 import { ChordOverlayControls } from "../ChordOverlayControls/ChordOverlayControls";
 import { KeyExplorer } from "../KeyExplorer/KeyExplorer";
 import { NOTES } from "../../core/theory";
+import {
+  ANIMATION_DURATION_FAST,
+  ANIMATION_EASE,
+} from "../../core/constants";
 import { getDegreesForScale } from "../../core/degrees";
 import { useChordState } from "../../hooks/useChordState";
 import { useScaleState } from "../../hooks/useScaleState";
@@ -51,11 +56,25 @@ function TheorySection({
           size={16}
         />
       </button>
-      {isOpen ? (
-        <div id={contentId} className={styles["theory-section-content"]}>
-          {children}
-        </div>
-      ) : null}
+      <AnimatePresence initial={false}>
+        {isOpen ? (
+          <motion.div
+            key="content"
+            id={contentId}
+            className={styles["theory-section-content"]}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{
+              duration: ANIMATION_DURATION_FAST,
+              ease: ANIMATION_EASE,
+            }}
+            style={{ overflow: "hidden" }}
+          >
+            {children}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </section>
   );
 }
