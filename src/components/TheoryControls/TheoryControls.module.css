@@ -16,6 +16,20 @@
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
+/* Flat (no panel-surface) mode browser — column layout without inset card chrome */
+.theory-mode-browser {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+/* Row containing the Mode label + help-button + parallel/relative toggle */
+.theory-mode-toggle-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
 .theory-browser-main {
   min-width: 0;
   display: grid;

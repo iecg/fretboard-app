@@ -1,5 +1,4 @@
 import { startTransition } from "react";
-import clsx from "clsx";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { NOTES } from "../../core/theory";
 import {
@@ -14,12 +13,20 @@ import {
   supportsRelativeScaleBrowsing,
   type ScaleBrowseMode,
 } from "../../core/theoryCatalog";
-import { LabeledSelect, type LabeledSelectOption } from "../LabeledSelect/LabeledSelect";
+import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
 import { NoteGrid } from "../NoteGrid/NoteGrid";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
+import { FieldHelpHeader } from "../shared/FieldHelpHeader";
 import { useScaleState } from "../../hooks/useScaleState";
+import { useHelpPopover } from "../shared/useHelpPopover";
 import shared from "../shared/shared.module.css";
 import theoryStyles from "../TheoryControls/TheoryControls.module.css";
+
+const PARALLEL_RELATIVE_HELP = {
+  id: "parallel-relative",
+  content:
+    "Parallel: same root, different mode (e.g. C major ↔ C Dorian). Relative: same key signature, different root (e.g. C major ↔ A minor).",
+};
 
 export function ScaleSelector() {
   const {
@@ -31,6 +38,9 @@ export function ScaleSelector() {
     setScaleBrowseMode,
     useFlats,
   } = useScaleState();
+
+  const { activeHelpField, handleHelpToggle, registerHelpContainer } =
+    useHelpPopover<"parallel-relative">();
 
   const scaleEntry = resolveScaleCatalogEntry(scaleName);
   const familyOptions = getScaleFamilyOptions();
@@ -55,18 +65,11 @@ export function ScaleSelector() {
     effectiveBrowseMode,
     useFlats,
   );
-  const familySelectOptions: LabeledSelectOption[] = familyOptions.map(
-    (option) => ({
-      value: option,
-      label: option,
-    }),
-  );
-  const browseSelectOptions: LabeledSelectOption[] = browseOptions.map(
-    (option) => ({
-      value: option.label,
-      label: option.label,
-    }),
-  );
+
+  const browseSelectOptions = browseOptions.map((option) => ({
+    value: option.label,
+    label: option.label,
+  }));
 
   const applyRootNote = (note: string) => {
     startTransition(() => {
@@ -81,12 +84,13 @@ export function ScaleSelector() {
     });
   };
 
-  const handleFamilySelect = (selectorLabel: string) => {
-    if (selectorLabel === currentFamily.selectorLabel) return;
-    applyTheorySelection(
-      rootNote,
-      getScaleNameForFamilySelector(selectorLabel),
-    );
+  const handleStepFamily = (direction: -1 | 1) => {
+    const currentIndex = familyOptions.indexOf(currentFamily.selectorLabel);
+    const nextIndex =
+      (currentIndex + direction + familyOptions.length) % familyOptions.length;
+    const nextLabel = familyOptions[nextIndex];
+    if (nextLabel === currentFamily.selectorLabel) return;
+    applyTheorySelection(rootNote, getScaleNameForFamilySelector(nextLabel));
   };
 
   const handleBrowseSelect = (selectedLabel: string) => {
@@ -123,23 +127,41 @@ export function ScaleSelector() {
         />
       </div>
 
+      {/* Scale Family — theory-nav-btn browser */}
       <div className={shared["control-section"]}>
-        <LabeledSelect
-          label="Scale Family"
-          value={currentFamily.selectorLabel}
-          options={familySelectOptions}
-          onChange={handleFamilySelect}
-        />
+        <span className={shared["section-label"]}>Scale Family</span>
+        <div
+          className={theoryStyles["theory-browser-main"]}
+          role="group"
+          aria-label="Browse scale families"
+        >
+          <button
+            type="button"
+            className={theoryStyles["theory-nav-btn"]}
+            onClick={() => handleStepFamily(-1)}
+            aria-label="Previous scale family"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <div className={theoryStyles["theory-browser-selector"]}>
+            <span>{currentFamily.selectorLabel}</span>
+          </div>
+          <button
+            type="button"
+            className={theoryStyles["theory-nav-btn"]}
+            onClick={() => handleStepFamily(1)}
+            aria-label="Next scale family"
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
       </div>
 
+      {/* Mode browser (browse by scale within family) */}
       <div className={shared["control-section"]}>
-        <div className={clsx(theoryStyles["theory-mode-browser"], "panel-surface panel-surface--compact")}>
+        <div className={theoryStyles["theory-mode-browser"]} role="group" aria-label={`Browse ${memberTerm}`}>
           <span className={shared["section-label"]}>{memberTerm}</span>
-          <div
-            className={theoryStyles["theory-browser-main"]}
-            role="group"
-            aria-label={`Browse ${memberTerm}`}
-          >
+          <div className={theoryStyles["theory-browser-main"]}>
             <button
               type="button"
               className={theoryStyles["theory-nav-btn"]}
@@ -167,14 +189,25 @@ export function ScaleSelector() {
             </button>
           </div>
           {supportsRelativeBrowse ? (
-            <ToggleBar
-              options={[
-                { value: "parallel", label: "Parallel" },
-                { value: "relative", label: "Relative" },
-              ]}
-              value={effectiveBrowseMode}
-              onChange={(value) => setScaleBrowseMode(value as ScaleBrowseMode)}
-            />
+            <div className={theoryStyles["theory-mode-toggle-row"]}>
+              <FieldHelpHeader
+                label="Mode"
+                help={PARALLEL_RELATIVE_HELP}
+                isHelpOpen={activeHelpField === "parallel-relative"}
+                onToggleHelp={() => handleHelpToggle("parallel-relative")}
+                helpContainerRef={(node) =>
+                  registerHelpContainer("parallel-relative", node)
+                }
+              />
+              <ToggleBar
+                options={[
+                  { value: "parallel", label: "Parallel" },
+                  { value: "relative", label: "Relative" },
+                ]}
+                value={effectiveBrowseMode}
+                onChange={(value) => setScaleBrowseMode(value as ScaleBrowseMode)}
+              />
+            </div>
           ) : null}
         </div>
       </div>
