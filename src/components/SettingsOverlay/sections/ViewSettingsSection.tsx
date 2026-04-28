@@ -7,7 +7,7 @@ import { OverlayFieldHeader } from "../shared";
 import { useSettingsForm } from "../useSettingsForm";
 import styles from "../SettingsOverlay.module.css";
 
-export function ViewSettingsSection() {
+export default function ViewSettingsSection() {
   const { fretZoom, setFretZoom, fretStart, setFretStart, fretEnd, setFretEnd } =
     useSettingsForm();
 
@@ -16,11 +16,7 @@ export function ViewSettingsSection() {
       <div
         className={clsx(styles["overlay-field"], styles["overlay-field--divided"])}
       >
-        <OverlayFieldHeader
-          label={SETTING_FIELDS.zoom.label}
-          isHelpOpen={false}
-          onToggleHelp={() => {}}
-        />
+        <OverlayFieldHeader label={SETTING_FIELDS.zoom.label} />
         <div className={styles["overlay-field-control"]}>
           <StepperControl
             value={fretZoom}
@@ -34,11 +30,7 @@ export function ViewSettingsSection() {
         </div>
       </div>
       <div className={styles["overlay-field"]}>
-        <OverlayFieldHeader
-          label={SETTING_FIELDS.fretRange.label}
-          isHelpOpen={false}
-          onToggleHelp={() => {}}
-        />
+        <OverlayFieldHeader label={SETTING_FIELDS.fretRange.label} />
         <div className={styles["overlay-field-control"]}>
           <FretRangeControl
             startFret={fretStart}

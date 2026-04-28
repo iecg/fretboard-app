@@ -1,6 +1,5 @@
-import { type ReactNode, type Ref } from "react";
+import { type ReactNode } from "react";
 import clsx from "clsx";
-import { FieldHelpHeader, type FieldHelpContent } from "../shared/FieldHelpHeader";
 import styles from "./SettingsOverlay.module.css";
 
 export function OverlaySection({
@@ -32,26 +31,10 @@ export function OverlaySection({
   );
 }
 
-export function OverlayFieldHeader({
-  label,
-  help,
-  isHelpOpen,
-  onToggleHelp,
-  helpContainerRef,
-}: {
-  label: string;
-  help?: FieldHelpContent;
-  isHelpOpen: boolean;
-  onToggleHelp: () => void;
-  helpContainerRef?: Ref<HTMLDivElement>;
-}) {
+export function OverlayFieldHeader({ label }: { label: string }) {
   return (
-    <FieldHelpHeader
-      label={label}
-      help={help}
-      isHelpOpen={isHelpOpen}
-      onToggleHelp={onToggleHelp}
-      helpContainerRef={helpContainerRef}
-    />
+    <div className={styles["overlay-field-header"]}>
+      <span className={styles["overlay-field-label"]}>{label}</span>
+    </div>
   );
 }

@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { useResetConfirmation } from "../useResetConfirmation";
 import styles from "../SettingsOverlay.module.css";
 
-export function ResetSettingsSection({ onClose }: { onClose: () => void }) {
+export default function ResetSettingsSection({ onClose }: { onClose: () => void }) {
   const { resetConfirming, handleResetClick } = useResetConfirmation(onClose);
 
   return (

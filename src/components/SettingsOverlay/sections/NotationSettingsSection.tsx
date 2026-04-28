@@ -4,21 +4,10 @@ import { accidentalModeAtom, enharmonicDisplayAtom } from "../../../store/atoms"
 import { ToggleBar } from "../../ToggleBar/ToggleBar";
 import { OverlaySection, OverlayFieldHeader } from "../shared";
 import { ACCIDENTAL_OPTIONS, ENHARMONIC_DISPLAY_OPTIONS, SETTING_FIELDS } from "../constants";
-import { type HelpFieldId } from "../types";
 import styles from "../SettingsOverlay.module.css";
 import shared from "../../shared/shared.module.css";
 
-interface NotationSettingsSectionProps {
-  activeHelpField: HelpFieldId | null;
-  handleHelpToggle: (id: HelpFieldId) => void;
-  registerHelpContainer: (id: HelpFieldId, node: HTMLDivElement | null) => void;
-}
-
-export function NotationSettingsSection({
-  activeHelpField,
-  handleHelpToggle,
-  registerHelpContainer,
-}: NotationSettingsSectionProps) {
+export default function NotationSettingsSection() {
   const [accidentalMode, setAccidentalMode] = useAtom(accidentalModeAtom);
   const [enharmonicDisplay, setEnharmonicDisplay] = useAtom(enharmonicDisplayAtom);
 
@@ -48,32 +37,21 @@ export function NotationSettingsSection({
   return (
     <OverlaySection id="notation" title="Notation">
       {fields.map(({ config, control }, index) => {
-        const isHelpOpen = config.help?.id === activeHelpField;
-        const helpId = config.help?.id;
-        const helpContainerRef = helpId
-          ? (node: HTMLDivElement | null) => registerHelpContainer(helpId, node)
-          : undefined;
-
         return (
           <div
             key={config.key}
             className={clsx(
               styles["overlay-field"],
               config.className,
-              isHelpOpen && styles["overlay-field--help-open"],
               index < fields.length - 1 && styles["overlay-field--divided"],
             )}
           >
-            <OverlayFieldHeader
-              label={config.label}
-              help={config.help}
-              isHelpOpen={Boolean(isHelpOpen)}
-              onToggleHelp={() => config.help && handleHelpToggle(config.help.id)}
-              helpContainerRef={helpContainerRef}
-            />
+            <OverlayFieldHeader label={config.label} />
             <div className={styles["overlay-field-control"]}>{control}</div>
-            {config.help ? (
-              <p className={shared["field-hint"]}>{config.help.content}</p>
+            {config.hint ? (
+              <p className={clsx(shared["field-hint"], styles["overlay-field-hint"])}>
+                {config.hint}
+              </p>
             ) : null}
           </div>
         );

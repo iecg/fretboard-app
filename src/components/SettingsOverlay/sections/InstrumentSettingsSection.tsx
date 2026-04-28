@@ -5,16 +5,12 @@ import { OverlayFieldHeader } from "../shared";
 import { useSettingsForm } from "../useSettingsForm";
 import styles from "../SettingsOverlay.module.css";
 
-export function InstrumentSettingsSection() {
+export default function InstrumentSettingsSection() {
   const { tuningName, setTuningName } = useSettingsForm();
 
   return (
     <div className={styles["overlay-field"]}>
-      <OverlayFieldHeader
-        label={SETTING_FIELDS.tuning.label}
-        isHelpOpen={false}
-        onToggleHelp={() => {}}
-      />
+      <OverlayFieldHeader label={SETTING_FIELDS.tuning.label} />
       <div className={styles["overlay-field-control"]}>
         <LabeledSelect
           label={SETTING_FIELDS.tuning.label}

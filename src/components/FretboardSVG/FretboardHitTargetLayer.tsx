@@ -1,7 +1,6 @@
 import { memo } from "react";
 import { clsx } from "clsx";
 import { formatAccidental } from "../../core/theory";
-import { NECK_BORDER } from "../../core/constants";
 import styles from "./FretboardSVG.module.css";
 import type { NoteData } from "./hooks/useNoteData";
 
@@ -31,8 +30,6 @@ export const FretboardHitTargetLayer = memo(({
       className={styles["fretboard-a11y-layer"]}
       style={{
         position: "absolute",
-        top: NECK_BORDER,
-        left: NECK_BORDER,
         width: neckWidthPx,
         height: neckHeight,
       }}
