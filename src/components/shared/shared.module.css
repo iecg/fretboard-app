@@ -289,9 +289,6 @@
   user-select: none;
 }
 
-/* When a control-section ends in a hint paragraph, the next sibling
-   pulls up so the hint sits closer to the next label rather than
-   inheriting the parent's full inter-section gap. */
 .control-section:has(> .shape-hint:last-child) + .control-section {
   margin-top: -0.45rem;
 }

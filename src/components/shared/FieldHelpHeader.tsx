@@ -6,12 +6,6 @@ export type FieldHelpContent = {
   content: string;
 };
 
-/**
- * Renders the field's label. The popover help button has been retired —
- * help text now lives inline below the field control as a hint paragraph
- * (see each settings section). The remaining props are accepted for
- * API back-compat but are not used.
- */
 export function FieldHelpHeader({
   label,
 }: {

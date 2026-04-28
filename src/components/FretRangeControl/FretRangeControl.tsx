@@ -25,10 +25,6 @@ export function FretRangeControl({
   showLabels,
 }: FretRangeControlProps) {
   const isToolbar = layout === "toolbar" || layout === undefined;
-  // Only the inline toolbar variant draws the "—" separator between
-  // the start and end groups by default. Mobile and dashboard stack
-  // each group with a label above its stepper, so the separator is
-  // redundant in those layouts.
   const sep = showSeparator ?? isToolbar;
   const labels = showLabels ?? !isToolbar;
 

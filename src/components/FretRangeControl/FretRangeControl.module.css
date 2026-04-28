@@ -81,9 +81,6 @@
   min-width: var(--size-touch-target);
 }
 
-/* Dashboard layout: two equal columns, each stacking its label
-   above its stepper — same shape as the mobile / settings drawer
-   layout, so the visual feels consistent across the app. */
 .fret-range-control.dashboard {
   display: grid;
   grid-template-columns: 1fr 1fr;

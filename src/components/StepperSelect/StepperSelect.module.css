@@ -38,11 +38,6 @@
   padding-left: 0.85rem !important;
   padding-right: 2.4rem !important;
   color: var(--surface-control-fg) !important;
-  /* The parent StepperShell paints its outer focus outline via
-     :focus-within whenever any child (including this select) is
-     focused. Suppressing the select's own focus ring prevents a
-     second concentric ring inside the shell (which made the select
-     look like an independent element). */
   outline: none !important;
   box-shadow: none !important;
 }
