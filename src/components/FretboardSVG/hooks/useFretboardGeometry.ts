@@ -63,7 +63,7 @@ export function useFretboardGeometry({
 
   const fretCenterX = fretToX;
 
-  const { taperYLeft, taperPath } = useMemo(() => {
+  const { taperYLeft, taperPath, cornerR } = useMemo(() => {
     return getTaperGeometry(
       startFret,
       endFret,
@@ -89,6 +89,7 @@ export function useFretboardGeometry({
     fretColumnWidth,
     taperYLeft,
     taperPath,
+    cornerR,
     stringYAt,
   };
 }

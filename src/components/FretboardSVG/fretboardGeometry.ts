@@ -100,7 +100,7 @@ export function getTaperGeometry(
   maxFret: number,
   neckWidthPx: number,
   neckHeight: number
-): { taperYLeft: number; taperPath: string } {
+): { taperYLeft: number; taperPath: string; cornerR: number } {
   const fretDistRatio = (wireIdx: number) => 1 - Math.pow(2, -wireIdx / 12);
   const pLeft = startFret === 0 ? 0 : fretDistRatio(startFret - 1);
   const pRight = fretDistRatio(endFret);
@@ -122,7 +122,7 @@ export function getTaperGeometry(
       `L ${neckWidthPx} ${neckHeight} ` +
       `L 0 ${neckHeight - yLeft} Z`;
 
-  return { taperYLeft: yLeft, taperPath };
+  return { taperYLeft: yLeft, taperPath, cornerR };
 }
 
 export function getStringY(
