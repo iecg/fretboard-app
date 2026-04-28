@@ -1,7 +1,7 @@
 .theory-controls {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.4rem;
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
@@ -160,32 +160,6 @@
   box-shadow: var(--control-focus-glow);
 }
 
-/* Inside an open section's nested-card pocket, the hover surface is
-   tighter (sits as an inner chip rather than filling the pocket
-   horizontally) and lighter (the pocket already grounds the row, so
-   a softer cyan reads as polish rather than competition). */
-.theory-section[data-open="true"] .theory-disclosure-btn::before {
-  inset: -0.12rem -0.25rem;
-}
-
-.theory-section[data-open="true"] .theory-disclosure-btn:hover::before {
-  background-color: color-mix(in srgb, var(--neon-cyan) 8%, transparent);
-  background-image: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--neon-cyan) 12%, transparent),
-    color-mix(in srgb, var(--neon-cyan) 4%, transparent)
-  );
-}
-
-:global([data-theme="modern-light"]) .theory-section[data-open="true"] .theory-disclosure-btn:hover::before {
-  background-color: color-mix(in srgb, var(--interactive-primary) 9%, transparent);
-  background-image: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--interactive-primary) 13%, transparent),
-    color-mix(in srgb, var(--interactive-primary) 5%, transparent)
-  );
-}
-
 .theory-disclosure-title {
   font-size: 0.72rem;
   color: var(--surface-control-fg-muted);
@@ -247,7 +221,7 @@
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
 :global(.app-container[data-layout-tier="desktop"]) .theory-controls {
-  gap: 0.2rem;
+  gap: 0.32rem;
 }
 
 :global(.app-container[data-layout-tier="desktop"]) .theory-inline-key {
@@ -256,7 +230,7 @@
 }
 
 :global(.app-container[data-layout-tier="tablet"]) .theory-controls {
-  gap: 0.22rem;
+  gap: 0.36rem;
 }
 
 :global(.app-container[data-layout-tier="tablet"]) .theory-inline-key {
