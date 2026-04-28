@@ -74,11 +74,49 @@ describe('getDegreesForScale', () => {
       expect(degrees[11]).toBe('vii°'); // Diminished 7th
     });
 
-    it("covers all seven degrees for Melodic Minor via the generic 7-note fallback", () => {
+    it("computes Melodic Minor degrees from diatonic-triad intervals", () => {
+      // Melodic Minor [0,2,3,5,7,9,11]:
+      //   i (minor) — ii (minor) — III+ (aug) — IV (major) — V (major) — vi° (dim) — vii° (dim)
       const degrees = getDegreesForScale("Melodic Minor");
-      expect(degrees[0]).toBe("i");
-      expect(degrees[9]).toBe("VI");
-      expect(degrees[11]).toBe("VII");
+      expect(degrees).toEqual({
+        0: "i",
+        2: "ii",
+        3: "III+",
+        5: "IV",
+        7: "V",
+        9: "vi°",
+        11: "vii°",
+      });
+    });
+
+    it("computes Phrygian Dominant (Harmonic Minor 5th mode) degrees correctly", () => {
+      // Phrygian Dominant [0,1,4,5,7,8,10] — flamenco / Spanish Phrygian:
+      //   I (major) — II (major) — iii° (dim) — iv (minor) — v° (dim) — VI+ (aug) — vii (minor)
+      const degrees = getDegreesForScale("Phrygian Dominant");
+      expect(degrees).toEqual({
+        0: "I",
+        1: "II",
+        4: "iii°",
+        5: "iv",
+        7: "v°",
+        8: "VI+",
+        10: "vii",
+      });
+    });
+
+    it("computes Lydian Augmented (Melodic Minor 3rd mode) degrees correctly", () => {
+      // Lydian Augmented [0,2,4,6,8,9,11]:
+      //   I+ (aug) — II (major) — III (major) — #iv° (dim) — v° (dim) — vi (minor) — vii (minor)
+      const degrees = getDegreesForScale("Lydian Augmented");
+      expect(degrees).toEqual({
+        0: "I+",
+        2: "II",
+        4: "III",
+        6: "iv°",
+        8: "v°",
+        9: "vi",
+        11: "vii",
+      });
     });
   });
 
