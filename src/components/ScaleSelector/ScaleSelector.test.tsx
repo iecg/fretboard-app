@@ -20,14 +20,30 @@ const BASE_SEEDS = [
 describe("ScaleSelector/ScaleSelector", () => {
   describe("Scale Family browser", () => {
     it("renders Scale Family label", () => {
-      renderWithAtoms(<ScaleSelector />, [...BASE_SEEDS]);
-      expect(screen.getByText("Scale Family")).toBeInTheDocument();
+      const { container } = renderWithAtoms(<ScaleSelector />, [...BASE_SEEDS]);
+      const labels = container.querySelectorAll(".section-label");
+      const scaleFamilyLabel = Array.from(labels).find(
+        (el) => el.textContent === "Scale Family",
+      );
+      expect(scaleFamilyLabel).toBeInTheDocument();
     });
 
     it("renders Prev and Next scale family buttons", () => {
       renderWithAtoms(<ScaleSelector />, [...BASE_SEEDS]);
       expect(screen.getByRole("button", { name: "Previous scale family" })).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Next scale family" })).toBeInTheDocument();
+    });
+
+    it("renders Scale Family as a selectable dropdown", async () => {
+      renderWithAtoms(<ScaleSelector />, [...BASE_SEEDS]);
+      const familySelect = screen.getByRole("combobox", { name: "Scale Family" });
+
+      expect((familySelect as HTMLSelectElement).value).toBe("Major Modes");
+
+      await userEvent.selectOptions(familySelect, "Pentatonic");
+
+      expect((familySelect as HTMLSelectElement).value).toBe("Pentatonic");
+      expect(screen.getByRole("combobox", { name: "Variant" })).toBeInTheDocument();
     });
 
     it("clicking Next advances to the next family", async () => {

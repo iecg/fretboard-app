@@ -110,8 +110,26 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
 
     it("chord-type browser displays current value (Major Triad)", () => {
       renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
-      const browser = screen.getByRole("group", { name: "Browse chord types" });
-      expect(within(browser).getByText("Major Triad")).toBeInTheDocument();
+      const chordTypeSelect = screen.getByRole("combobox", { name: "Chord Type" });
+      expect((chordTypeSelect as HTMLSelectElement).value).toBe("Major Triad");
+    });
+
+    it("selecting a chord type from the dropdown updates manual mode", async () => {
+      renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
+      const chordTypeSelect = screen.getByRole("combobox", { name: "Chord Type" });
+
+      await userEvent.selectOptions(chordTypeSelect, "Minor 7th");
+
+      expect((chordTypeSelect as HTMLSelectElement).value).toBe("Minor 7th");
+    });
+
+    it("selecting Off from the chord type dropdown clears manual overlay quality", async () => {
+      renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
+      const chordTypeSelect = screen.getByRole("combobox", { name: "Chord Type" });
+
+      await userEvent.selectOptions(chordTypeSelect, "__none__");
+
+      expect((chordTypeSelect as HTMLSelectElement).value).toBe("__none__");
     });
   });
 
@@ -137,8 +155,8 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
         [chordRootOverrideAtom, "G"],
       ]);
 
-      const browser = screen.getByRole("group", { name: "Browse chord types" });
-      expect(within(browser).getByText("Major 7th")).toBeInTheDocument();
+      const chordTypeSelect = screen.getByRole("combobox", { name: "Chord Type" });
+      expect((chordTypeSelect as HTMLSelectElement).value).toBe("Major 7th");
     });
   });
 

@@ -287,7 +287,7 @@ describe("App", () => {
     it("renders the shared theory controls", async () => {
       render(<App />);
       expect(
-        await screen.findByText("Scale Family"),
+        await screen.findByRole("combobox", { name: "Scale Family" }),
       ).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Parallel" })).toBeInTheDocument();
       expect(
@@ -599,12 +599,10 @@ describe("App", () => {
       const manualBtn = await screen.findByRole("button", { name: "Manual" });
       fireEvent.click(manualBtn);
 
-      // Chord Type is now a theory-nav browser — click Next to set a chord type
-      const nextChordTypeBtn = await screen.findByRole("button", { name: "Next chord type" });
-      fireEvent.click(nextChordTypeBtn);
+      const chordTypeSelect = await screen.findByRole("combobox", { name: "Chord Type" });
+      fireEvent.change(chordTypeSelect, { target: { value: "Minor Triad" } });
 
       await waitFor(() => {
-        // chordQualityOverride is set to the next chord option (Minor Triad)
         expect(localStorage.getItem(k("chordQualityOverride"))).toBe("Minor Triad");
       });
     });

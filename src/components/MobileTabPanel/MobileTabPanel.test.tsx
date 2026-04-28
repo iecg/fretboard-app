@@ -37,7 +37,7 @@ describe("MobileTabPanel/MobileTabPanel", () => {
     ]);
     // TheoryControls renders a Root note grid and Scale Family browser
     expect(screen.getByText("Root")).toBeInTheDocument();
-    expect(screen.getByText("Scale Family")).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Scale Family" })).toBeInTheDocument();
   });
 
   it("shows view tab content when mobileTab atom is 'view'", () => {

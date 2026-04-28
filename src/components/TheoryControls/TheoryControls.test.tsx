@@ -27,7 +27,7 @@ describe("TheoryControls/TheoryControls", () => {
     renderWithStore(<TheoryControls />);
 
     expect(screen.getByText("Root")).toBeInTheDocument();
-    expect(screen.getByText("Scale Family")).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Scale Family" })).toBeInTheDocument();
     expect(
       screen.getByRole("group", { name: "Browse scale families" }),
     ).toBeInTheDocument();

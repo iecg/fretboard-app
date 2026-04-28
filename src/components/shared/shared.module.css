@@ -390,13 +390,15 @@
 .field-help-header {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 0.35rem;
 }
 
 .field-help-label {
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: var(--chrome-fg);
+  font-size: 0.72rem;
+  color: var(--surface-control-fg-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
 }
 
 .field-help-wrapper {
@@ -408,11 +410,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.875rem;
-  height: 1.875rem;
+  width: 1.45rem;
+  height: 1.45rem;
   border-radius: 999px;
-  border: 1px solid var(--surface-control-border);
-  background: var(--surface-control);
+  border: 1px solid transparent;
+  background: transparent;
   color: var(--surface-control-fg-muted);
   cursor: help;
   transition: var(--transition-surface);
@@ -422,7 +424,8 @@
 .field-help-trigger[aria-expanded="true"] {
   color: var(--surface-control-hover-fg);
   border-color: var(--surface-control-hover-border);
-  background: var(--surface-control-hover-bg);
+  background-color: var(--surface-control-hover-bg);
+  background-image: var(--surface-control-hover-bg-image);
 }
 
 .field-help-trigger:focus-visible {
@@ -433,8 +436,8 @@
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
 .field-help-trigger :global(.icon) {
-  width: 16px;
-  height: 16px;
+  width: 0.92rem;
+  height: 0.92rem;
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
