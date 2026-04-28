@@ -27,8 +27,9 @@ describe("TheoryControls/TheoryControls", () => {
     renderWithStore(<TheoryControls />);
 
     expect(screen.getByText("Root")).toBeInTheDocument();
+    expect(screen.getByText("Scale Family")).toBeInTheDocument();
     expect(
-      screen.getByRole("combobox", { name: "Scale Family" }),
+      screen.getByRole("group", { name: "Browse scale families" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Parallel" })).toHaveAttribute(
       "aria-pressed",

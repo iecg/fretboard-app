@@ -3,9 +3,9 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
-import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
-import { rootNoteAtom, scaleNameAtom, baseScaleNameAtom } from "../../store/atoms";
-import { getScaleFamilyOptions, resolveScaleCatalogEntry } from "../../core/theoryCatalog";
+import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
+import { rootNoteAtom, scaleNameAtom } from "../../store/atoms";
+import { getScaleFamilyOptions } from "../../core/theoryCatalog";
 import { ScaleSelector } from "./ScaleSelector";
 
 beforeEach(() => {
@@ -42,36 +42,33 @@ describe("ScaleSelector/ScaleSelector", () => {
       expect(screen.getByText(secondFamily)).toBeInTheDocument();
     });
 
-    it("clicking Prev from first family wraps to last (Blues) — atom check", async () => {
+    it("clicking Prev from first family wraps to last (Blues)", async () => {
+      renderWithAtoms(<ScaleSelector />, [...BASE_SEEDS]);
       const familyOptions = getScaleFamilyOptions();
-      const store = makeAtomStore([
-        [rootNoteAtom, "C"],
-        [scaleNameAtom, "Major"],
-      ]);
-      renderWithStore(<ScaleSelector />, store);
+      const lastFamily = familyOptions[familyOptions.length - 1]; // "Blues"
 
-      await userEvent.click(screen.getByRole("button", { name: "Previous scale family" }));
+      await act(async () => {
+        await userEvent.click(screen.getByRole("button", { name: "Previous scale family" }));
+      });
 
-      const newScale = store.get(baseScaleNameAtom);
-      const newFamilyLabel = resolveScaleCatalogEntry(newScale).family.selectorLabel;
-      // From index 0 (Major Modes), Prev should wrap to last (Blues)
-      expect(newFamilyLabel).toBe(familyOptions[familyOptions.length - 1]);
+      // From index 0 (Major Modes), Prev wraps to index 4 (Blues)
+      expect(screen.getByText(lastFamily)).toBeInTheDocument();
     });
 
-    it("clicking Next from last family wraps to first — atom check", async () => {
-      const familyOptions = getScaleFamilyOptions();
-      const store = makeAtomStore([
+    it("clicking Next from last family wraps to first (Major Modes)", async () => {
+      renderWithAtoms(<ScaleSelector />, [
         [rootNoteAtom, "C"],
         [scaleNameAtom, "Minor Blues"],
       ]);
-      renderWithStore(<ScaleSelector />, store);
+      const familyOptions = getScaleFamilyOptions();
+      const firstFamily = familyOptions[0]; // "Major Modes"
 
-      await userEvent.click(screen.getByRole("button", { name: "Next scale family" }));
+      await act(async () => {
+        await userEvent.click(screen.getByRole("button", { name: "Next scale family" }));
+      });
 
-      const newScale = store.get(baseScaleNameAtom);
-      const newFamilyLabel = resolveScaleCatalogEntry(newScale).family.selectorLabel;
-      // From last (Blues), Next should wrap to first (Major Modes)
-      expect(newFamilyLabel).toBe(familyOptions[0]);
+      // From last (Blues), Next wraps to first (Major Modes)
+      expect(screen.getByText(firstFamily)).toBeInTheDocument();
     });
   });
 

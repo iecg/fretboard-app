@@ -35,9 +35,9 @@ describe("MobileTabPanel/MobileTabPanel", () => {
       ...BASE_SEEDS,
       [mobileTabAtom, "theory"],
     ]);
-    // TheoryControls renders a Root note grid and Scale Family selector
+    // TheoryControls renders a Root note grid and Scale Family browser
     expect(screen.getByText("Root")).toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: "Scale Family" })).toBeInTheDocument();
+    expect(screen.getByText("Scale Family")).toBeInTheDocument();
   });
 
   it("shows view tab content when mobileTab atom is 'view'", () => {
@@ -55,7 +55,7 @@ describe("MobileTabPanel/MobileTabPanel", () => {
       ...BASE_SEEDS,
       [mobileTabAtom, "view"],
     ]);
-    expect(screen.queryByRole("combobox", { name: "Scale Family" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Scale Family")).not.toBeInTheDocument();
   });
 
   it("switching to View tab updates mobileTabAtom", () => {
