@@ -40,7 +40,7 @@ npm run preview               # preview build locally
 - **Orchestration:** `src/App.tsx` is a thin orchestrator (~158 lines) that wires atoms to `MainLayoutWrapper`.
 - **Rendering:** `components/Fretboard/Fretboard.tsx` wraps `components/FretboardSVG/FretboardSVG.tsx` (the primary SVG renderer — large, direct atom subscriptions). `components/CircleOfFifths/` handles root/degree selection.
 - **Layout:** `useLayoutMode` (in `src/hooks/`) measures viewport via `src/layout/responsive.ts` → returns `{ tier, variant, … }`. `MainLayoutWrapper` emits `data-layout-tier` (mobile/tablet/desktop) and `data-layout-variant` (mobile/landscape-mobile/tablet-split/tablet-stacked/desktop-split/desktop-stacked/desktop-3col) attributes. **Both gate responsive CSS — always consider both.**
-- **Primitives:** `DrawerSelector` (canonical accordion dropdown), `NoteGrid`, `ToggleBar`, `StepperControl`, `LabeledSelect`, `Card`.
+- **Primitives:** `NoteGrid`, `ToggleBar`, `StepperControl`, `LabeledSelect`, `Card`.
 
 ## File Layout
 
