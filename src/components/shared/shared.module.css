@@ -384,6 +384,84 @@
   }
 }
 
+/* ===== FieldHelpHeader ===== */
+/* Label + inline help-button (label-adjacent, not floated to row trailing edge). */
+
+.field-help-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.field-help-label {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--chrome-fg);
+}
+
+.field-help-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.field-help-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: 999px;
+  border: 1px solid var(--surface-control-border);
+  background: var(--surface-control);
+  color: var(--surface-control-fg-muted);
+  cursor: help;
+  transition: var(--transition-surface);
+}
+
+.field-help-trigger:hover,
+.field-help-trigger[aria-expanded="true"] {
+  color: var(--surface-control-hover-fg);
+  border-color: var(--surface-control-hover-border);
+  background: var(--surface-control-hover-bg);
+}
+
+.field-help-trigger:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  box-shadow: var(--focus-ring-glow);
+}
+
+/* stylelint-disable selector-pseudo-class-no-unknown */
+.field-help-trigger :global(.icon) {
+  width: 16px;
+  height: 16px;
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
+
+.field-help-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 1;
+  width: min(17rem, calc(100vw - 64px));
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--surface-overlay-border);
+  background: var(--surface-float);
+  color: var(--chrome-fg);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  box-shadow: var(--elevation-float);
+}
+
+@media (max-width: 480px) {
+  .field-help-popover {
+    position: static;
+    width: 100%;
+    margin-top: 10px;
+  }
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

@@ -1,7 +1,6 @@
 import { type ReactNode, type Ref } from "react";
 import clsx from "clsx";
-import { HelpCircle } from "lucide-react";
-import { type FieldHelp } from "./types";
+import { FieldHelpHeader, type FieldHelpContent } from "../shared/FieldHelpHeader";
 import styles from "./SettingsOverlay.module.css";
 
 export function OverlaySection({
@@ -41,38 +40,18 @@ export function OverlayFieldHeader({
   helpContainerRef,
 }: {
   label: string;
-  help?: FieldHelp;
+  help?: FieldHelpContent;
   isHelpOpen: boolean;
   onToggleHelp: () => void;
   helpContainerRef?: Ref<HTMLDivElement>;
 }) {
   return (
-    <div className={styles["overlay-field-header"]}>
-      <span className={styles["overlay-field-label"]}>{label}</span>
-      {help ? (
-        <div className={styles["overlay-field-help"]} ref={helpContainerRef}>
-          <button
-            type="button"
-            className={styles["overlay-help-trigger"]}
-            aria-label={
-              isHelpOpen ? `Hide help for ${label}` : `Show help for ${label}`
-            }
-            aria-expanded={isHelpOpen}
-            aria-controls={`settings-help-${help.id}`}
-            onClick={onToggleHelp}
-          >
-            <HelpCircle className="icon" />
-          </button>
-          {isHelpOpen ? (
-            <div
-              id={`settings-help-${help.id}`}
-              className={styles["overlay-help-popover"]}
-            >
-              {help.content}
-            </div>
-          ) : null}
-        </div>
-      ) : null}
-    </div>
+    <FieldHelpHeader
+      label={label}
+      help={help}
+      isHelpOpen={isHelpOpen}
+      onToggleHelp={onToggleHelp}
+      helpContainerRef={helpContainerRef}
+    />
   );
 }
