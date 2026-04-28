@@ -81,6 +81,7 @@ function AppContent() {
   }, []);
 
   return (
+  <>
     <MainLayoutWrapper
       layoutTier={layout.tier}
       layoutVariant={layout.variant}
@@ -150,17 +151,9 @@ function AppContent() {
         </Suspense>
       }
       mobileTabs={
-        <>
-          <Suspense fallback={<div className="loading-spinner" />}>
-            <MobileTabPanel />
-          </Suspense>
-          <BottomTabBar
-            items={MOBILE_TAB_ITEMS}
-            activeId={mobileTab}
-            onSelect={(id) => setMobileTab(id as "theory" | "view")}
-            aria-label="Mobile navigation"
-          />
-        </>
+        <Suspense fallback={<div className="loading-spinner" />}>
+          <MobileTabPanel />
+        </Suspense>
       }
       settingsOverlay={
         <Suspense fallback={<div className="loading-spinner" />}>
@@ -172,6 +165,15 @@ function AppContent() {
         stringRowPx={layout.stringRowPx}
       />
     </MainLayoutWrapper>
+    {layout.showMobileTabs && (
+      <BottomTabBar
+        items={MOBILE_TAB_ITEMS}
+        activeId={mobileTab}
+        onSelect={(id) => setMobileTab(id as "theory" | "view")}
+        aria-label="Mobile navigation"
+      />
+    )}
+  </>
   );
 }
 
