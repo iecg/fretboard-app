@@ -9,6 +9,10 @@ import {
   hasOutsideChordMembersAtom,
   chordLabelAtom,
   chordFretSpreadAtom,
+  chordDegreeAtom,
+  chordOverlayModeAtom,
+  chordRootOverrideAtom,
+  chordQualityOverrideAtom,
 } from "../store/atoms";
 
 export function useChordState() {
@@ -22,6 +26,11 @@ export function useChordState() {
   const chordMembers = useAtomValue(chordMembersAtom);
   const hasOutsideChordMembers = useAtomValue(hasOutsideChordMembersAtom);
   const chordLabel = useAtomValue(chordLabelAtom);
+
+  const [chordDegree, setChordDegree] = useAtom(chordDegreeAtom);
+  const [chordOverlayMode, setChordOverlayMode] = useAtom(chordOverlayModeAtom);
+  const [chordRootOverride, setChordRootOverride] = useAtom(chordRootOverrideAtom);
+  const [chordQualityOverride, setChordQualityOverride] = useAtom(chordQualityOverrideAtom);
 
   return {
     chordRoot,
@@ -37,5 +46,13 @@ export function useChordState() {
     chordMembers,
     hasOutsideChordMembers,
     chordLabel,
+    chordDegree,
+    setChordDegree,
+    chordOverlayMode,
+    setChordOverlayMode,
+    chordRootOverride,
+    setChordRootOverride,
+    chordQualityOverride,
+    setChordQualityOverride,
   };
 }

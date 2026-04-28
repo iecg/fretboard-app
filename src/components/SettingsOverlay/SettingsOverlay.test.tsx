@@ -5,6 +5,7 @@ import { Provider, createStore } from "jotai";
 import SettingsOverlay from "./SettingsOverlay";
 import { synth } from "../../core/audio";
 import { settingsOverlayOpenAtom, fretZoomAtom, themeAtom } from "../../store/atoms";
+import styles from "./SettingsOverlay.module.css";
 
 // Mock the audio synth singleton — we only care that setMute is called on reset.
 vi.mock("../../core/audio", () => ({
@@ -121,85 +122,37 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(store.get(themeAtom)).toBe("system");
   });
 
-  it("shows help buttons only for the less-obvious settings", () => {
+  it("renders inline hint text for the less-obvious settings and omits it for the rest", () => {
     renderOpenOverlay();
 
-    expect(screen.getByLabelText("Show help for Chord Spread")).toBeTruthy();
-    expect(screen.getByLabelText("Show help for Accidentals")).toBeTruthy();
-    expect(screen.getByLabelText("Show help for Enharmonic Display")).toBeTruthy();
-    expect(screen.queryByLabelText("Show help for Zoom")).toBeNull();
-    expect(screen.queryByLabelText("Show help for Fret Range")).toBeNull();
-    expect(screen.queryByLabelText("Show help for Tuning")).toBeNull();
-  });
-
-  it("toggles help popovers on click and keeps only one open at a time", () => {
-    renderOpenOverlay();
-
-    fireEvent.click(screen.getByLabelText("Show help for Chord Spread"));
+    // Fields with hint copy show their help text inline (no toggle button).
     expect(
       screen.getByText(
         "Limits how far the visible chord tones can span across frets on the fretboard.",
       ),
     ).toBeTruthy();
-
-    fireEvent.click(screen.getByLabelText("Show help for Accidentals"));
-    expect(
-      screen.queryByText(
-        "Limits how far the visible chord tones can span across frets on the fretboard.",
-      ),
-    ).toBeNull();
     expect(
       screen.getByText(
         "Auto chooses sharps or flats based on the current musical context.",
       ),
     ).toBeTruthy();
-
-    fireEvent.click(screen.getByLabelText("Hide help for Accidentals"));
     expect(
-      screen.queryByText(
-        "Auto chooses sharps or flats based on the current musical context.",
+      screen.getByText(
+        "Controls whether equivalent note spellings appear when they clarify the theory view.",
       ),
-    ).toBeNull();
+    ).toBeTruthy();
+
+    // Fields without help copy stay quiet, and no field renders a help-toggle button.
+    expect(screen.queryByLabelText(/Show help for /)).toBeNull();
+    expect(screen.queryByLabelText(/Hide help for /)).toBeNull();
   });
 
-  it("closes a help popover on escape before closing the drawer", () => {
+  it("escape closes the drawer when no popover is open", () => {
     const { store } = renderOpenOverlay();
 
-    fireEvent.click(screen.getByLabelText("Show help for Enharmonic Display"));
-    expect(
-      screen.getByText(
-        "Controls whether equivalent note spellings appear when they clarify the theory view.",
-      ),
-    ).toBeTruthy();
-
-    fireEvent.keyDown(window, { key: "Escape" });
-    expect(
-      screen.queryByText(
-        "Controls whether equivalent note spellings appear when they clarify the theory view.",
-      ),
-    ).toBeNull();
     expect(store.get(settingsOverlayOpenAtom)).toBe(true);
-
     fireEvent.keyDown(window, { key: "Escape" });
     expect(store.get(settingsOverlayOpenAtom)).toBe(false);
-  });
-
-  it("closes an open help popover when clicking outside it", () => {
-    renderOpenOverlay();
-
-    fireEvent.click(screen.getByLabelText("Show help for Chord Spread"));
-    expect(
-      screen.getByText(
-        "Limits how far the visible chord tones can span across frets on the fretboard.",
-      ),
-    ).toBeTruthy();
-
-    fireEvent.mouseDown(screen.getByText("Notation"));
-    expect(
-      screen.queryByText(
-        "Limits how far the visible chord tones can span across frets on the fretboard.",
-      ),
-    ).toBeNull();
   });
 
   it("marks the drawer with the correct layout-tier on mobile", () => {
@@ -210,13 +163,6 @@ describe("SettingsOverlay/SettingsOverlay", () => {
 
     const drawer = document.querySelector(".settings-overlay-drawer");
     expect(drawer?.getAttribute("data-layout-tier")).toBe("mobile");
-  });
-
-  it("closes overlay when ESC is pressed with no help popover open", () => {
-    const { store } = renderOpenOverlay();
-    expect(store.get(settingsOverlayOpenAtom)).toBe(true);
-    fireEvent.keyDown(window, { key: "Escape" });
-    expect(store.get(settingsOverlayOpenAtom)).toBe(false);
   });
 
   it("closes overlay when backdrop is clicked", () => {
@@ -230,6 +176,7 @@ describe("SettingsOverlay/SettingsOverlay", () => {
   it("closes overlay when X button is clicked", () => {
     const { store } = renderOpenOverlay();
     const closeBtn = screen.getByLabelText("Close settings");
+    expect(closeBtn).toHaveClass(styles["settings-overlay-close"]);
     fireEvent.click(closeBtn);
     expect(store.get(settingsOverlayOpenAtom)).toBe(false);
   });
@@ -312,10 +259,10 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(document.activeElement).toBe(closeButton);
   });
 
-  it("keeps focus trapping intact when a help popover is open", () => {
+  it("keeps focus trapping intact when inline help text is rendered", () => {
     renderOpenOverlay();
 
-    fireEvent.click(screen.getByLabelText("Show help for Chord Spread"));
+    // Inline hint text is non-focusable, so trapping should behave the same.
     const closeButton = screen.getByLabelText("Close settings");
     const resetButton = screen.getByRole("button", {
       name: "Reset all settings",

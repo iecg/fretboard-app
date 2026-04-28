@@ -45,9 +45,10 @@ test.describe("Fretboard SVG Visual Tests", () => {
     await loadVisualState(page, {
       rootNote: "C",
       scaleName: "Major",
-      chordRoot: "G",
-      chordType: "Dominant 7th",
-      linkChordRoot: false
+      // Phase 02 storage keys: manual mode with G Dominant 7th
+      chordOverlayMode: "manual",
+      chordRootOverride: "G",
+      chordQualityOverride: "Dominant 7th",
     });
     
     const locator = page.getByTestId("fretboard-svg");

@@ -1,6 +1,4 @@
 import { startTransition } from "react";
-import clsx from "clsx";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { NOTES } from "../../core/theory";
 import {
   getActiveScaleBrowseOption,
@@ -14,12 +12,12 @@ import {
   supportsRelativeScaleBrowsing,
   type ScaleBrowseMode,
 } from "../../core/theoryCatalog";
-import { LabeledSelect, type LabeledSelectOption } from "../LabeledSelect/LabeledSelect";
 import { NoteGrid } from "../NoteGrid/NoteGrid";
+import { StepperSelect } from "../StepperSelect/StepperSelect";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { useScaleState } from "../../hooks/useScaleState";
 import shared from "../shared/shared.module.css";
-import theoryStyles from "../TheoryControls/TheoryControls.module.css";
+import styles from "../TheoryControls/TheoryControls.module.css";
 
 export function ScaleSelector() {
   const {
@@ -55,18 +53,16 @@ export function ScaleSelector() {
     effectiveBrowseMode,
     useFlats,
   );
-  const familySelectOptions: LabeledSelectOption[] = familyOptions.map(
-    (option) => ({
-      value: option,
-      label: option,
-    }),
-  );
-  const browseSelectOptions: LabeledSelectOption[] = browseOptions.map(
-    (option) => ({
-      value: option.label,
-      label: option.label,
-    }),
-  );
+
+  const familySelectOptions = familyOptions.map((option) => ({
+    value: option,
+    label: option,
+  }));
+
+  const browseSelectOptions = browseOptions.map((option) => ({
+    value: option.label,
+    label: option.label,
+  }));
 
   const applyRootNote = (note: string) => {
     startTransition(() => {
@@ -83,10 +79,16 @@ export function ScaleSelector() {
 
   const handleFamilySelect = (selectorLabel: string) => {
     if (selectorLabel === currentFamily.selectorLabel) return;
-    applyTheorySelection(
-      rootNote,
-      getScaleNameForFamilySelector(selectorLabel),
-    );
+    startTransition(() => {
+      setScaleName(getScaleNameForFamilySelector(selectorLabel));
+    });
+  };
+
+  const handleStepFamily = (direction: -1 | 1) => {
+    const currentIndex = familyOptions.indexOf(currentFamily.selectorLabel);
+    const nextIndex =
+      (currentIndex + direction + familyOptions.length) % familyOptions.length;
+    handleFamilySelect(familyOptions[nextIndex]);
   };
 
   const handleBrowseSelect = (selectedLabel: string) => {
@@ -124,57 +126,51 @@ export function ScaleSelector() {
       </div>
 
       <div className={shared["control-section"]}>
-        <LabeledSelect
-          label="Scale Family"
+        <span className={shared["section-label"]}>Scale Family</span>
+        <StepperSelect
+          selectLabel="Scale Family"
+          groupLabel="Browse scale families"
+          previousLabel="Previous scale family"
+          nextLabel="Next scale family"
           value={currentFamily.selectorLabel}
           options={familySelectOptions}
           onChange={handleFamilySelect}
+          onPrevious={() => handleStepFamily(-1)}
+          onNext={() => handleStepFamily(1)}
         />
       </div>
 
       <div className={shared["control-section"]}>
-        <div className={clsx(theoryStyles["theory-mode-browser"], "panel-surface panel-surface--compact")}>
+        <div className={styles["theory-mode-browser"]}>
           <span className={shared["section-label"]}>{memberTerm}</span>
-          <div
-            className={theoryStyles["theory-browser-main"]}
-            role="group"
-            aria-label={`Browse ${memberTerm}`}
-          >
-            <button
-              type="button"
-              className={theoryStyles["theory-nav-btn"]}
-              onClick={() => handleStepBrowse(-1)}
-              aria-label={`Previous ${memberTerm}`}
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <div className={theoryStyles["theory-browser-selector"]}>
-              <LabeledSelect
-                label={memberTerm}
-                hideLabel
-                value={activeBrowseOption.label}
-                options={browseSelectOptions}
-                onChange={handleBrowseSelect}
-              />
-            </div>
-            <button
-              type="button"
-              className={theoryStyles["theory-nav-btn"]}
-              onClick={() => handleStepBrowse(1)}
-              aria-label={`Next ${memberTerm}`}
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
+          <StepperSelect
+            selectLabel={memberTerm}
+            groupLabel={`Browse ${memberTerm}`}
+            previousLabel={`Previous ${memberTerm}`}
+            nextLabel={`Next ${memberTerm}`}
+            value={activeBrowseOption.label}
+            options={browseSelectOptions}
+            onChange={handleBrowseSelect}
+            onPrevious={() => handleStepBrowse(-1)}
+            onNext={() => handleStepBrowse(1)}
+          />
           {supportsRelativeBrowse ? (
-            <ToggleBar
-              options={[
-                { value: "parallel", label: "Parallel" },
-                { value: "relative", label: "Relative" },
-              ]}
-              value={effectiveBrowseMode}
-              onChange={(value) => setScaleBrowseMode(value as ScaleBrowseMode)}
-            />
+            <div className={styles["theory-mode-toggle-row"]}>
+              <ToggleBar
+                options={[
+                  { value: "parallel", label: "Parallel" },
+                  { value: "relative", label: "Relative" },
+                ]}
+                value={effectiveBrowseMode}
+                onChange={(value) => setScaleBrowseMode(value as ScaleBrowseMode)}
+                label="Scale relationship"
+              />
+              <p className={shared["field-hint"]}>
+                {effectiveBrowseMode === "parallel"
+                  ? "Cycle modes that share the current root note."
+                  : "Cycle modes that share the current key signature."}
+              </p>
+            </div>
           ) : null}
         </div>
       </div>

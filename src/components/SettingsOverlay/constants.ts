@@ -51,38 +51,22 @@ export const SETTING_FIELDS: Record<SettingFieldKey, SettingFieldConfig> = {
     key: "accidentals",
     label: "Accidentals",
     className: "overlay-field--accidentals",
-    help: {
-      id: "accidentals",
-      content:
-        "Auto chooses sharps or flats based on the current musical context.",
-    },
+    hint: "Auto chooses sharps or flats based on the current musical context.",
   },
   enharmonicDisplay: {
     key: "enharmonicDisplay",
     label: "Enharmonic Display",
-    help: {
-      id: "enharmonicDisplay",
-      content:
-        "Controls whether equivalent note spellings appear when they clarify the theory view.",
-    },
+    hint: "Controls whether equivalent note spellings appear when they clarify the theory view.",
   },
   chordSpread: {
     key: "chordSpread",
     label: "Chord Spread",
-    help: {
-      id: "chordSpread",
-      content:
-        "Limits how far the visible chord tones can span across frets on the fretboard.",
-    },
+    hint: "Limits how far the visible chord tones can span across frets on the fretboard.",
   },
   theme: {
     key: "theme",
     label: "Theme",
-    help: {
-      id: "theme",
-      content:
-        "Choose your preferred color theme. System matches your device settings.",
-    },
+    hint: "Choose your preferred color theme. System matches your device settings.",
   },
 };
 

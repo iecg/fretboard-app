@@ -23,12 +23,16 @@ describe("TheoryControls/TheoryControls", () => {
     localStorage.clear();
   });
 
-  it("renders root, family, and browse controls with chord overlay collapsed", () => {
+  it("renders scale controls with chords collapsed", () => {
     renderWithStore(<TheoryControls />);
 
-    expect(screen.getByText("Root")).toBeInTheDocument();
     expect(
-      screen.getByRole("combobox", { name: "Scale Family" }),
+      screen.getByRole("button", { name: /Scale.*C Major/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Root")).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Scale Family" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("group", { name: "Browse scale families" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Parallel" })).toHaveAttribute(
       "aria-pressed",
@@ -42,7 +46,7 @@ describe("TheoryControls/TheoryControls", () => {
     ).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Mode" })).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Chord Overlay/i }),
+      screen.getByRole("button", { name: /Chords.*Off/i }),
     ).toBeInTheDocument();
     expect(screen.queryByText("Chord Type")).not.toBeInTheDocument();
   });
@@ -55,12 +59,14 @@ describe("TheoryControls/TheoryControls", () => {
     expect(store.get(scaleBrowseModeAtom)).toBe("parallel");
   });
 
-  it("expands the chord overlay controls on demand", () => {
+  it("expands the chord controls on demand", () => {
     renderWithStore(<TheoryControls />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Chord Overlay/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Chords/i }));
 
-    expect(screen.getByText("Chord Type")).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Chord overlay mode" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Degree" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Manual" })).toBeInTheDocument();
   });
 
   it("shows the inline key explorer only after disclosure is opened", () => {

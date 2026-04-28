@@ -1,0 +1,90 @@
+.shell {
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
+  gap: 0.22rem;
+  padding: 0.25rem;
+  border: 1px solid var(--surface-control-border);
+  border-radius: 1rem;
+  background-color: var(--surface-control);
+  background-image: var(--surface-control-bg-image);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.shell:hover {
+  background-color: var(--surface-control-hover-bg);
+  background-image: var(--surface-control-hover-bg-image);
+  border-color: var(--surface-control-hover-border);
+}
+
+.shell:focus-within {
+  border-color: var(--surface-control-hover-border);
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.button {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--surface-control-fg-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 1;
+  border-radius: 0.78rem;
+  transition: var(--transition-surface);
+}
+
+.button:hover:not(:disabled) {
+  background-color: var(--surface-control-hover-bg);
+  background-image: var(--surface-control-hover-bg-image);
+  color: var(--surface-control-hover-fg);
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.button:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: calc(-1 * var(--focus-ring-offset));
+  box-shadow: var(--focus-ring-glow);
+}
+
+.button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.slot {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+}
+
+.value {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--surface-control-fg);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}

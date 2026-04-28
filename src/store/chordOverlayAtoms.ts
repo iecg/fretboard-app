@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { atomWithStorage } from "jotai/utils";
+import { atomWithStorage, RESET } from "jotai/utils";
 import {
   NOTES,
   CHORD_DEFINITIONS,
@@ -8,6 +8,7 @@ import {
   getScaleNotes,
   getNoteDisplay,
   formatAccidental,
+  getDiatonicChord,
 } from "../core/theory";
 import type {
   ChordMemberFact,
@@ -15,6 +16,11 @@ import type {
   PracticeLens,
   ChordRowEntry,
 } from "../core/theory";
+import {
+  getDegreesForScale,
+  getQualityForDegree,
+  type DegreeId,
+} from "../core/degrees";
 import {
   k,
   createStorage,
@@ -29,11 +35,6 @@ import {
   rootNoteAtom,
   scaleNameAtom,
 } from "./scaleAtoms";
-
-const chordTypeStorage = createStorage<string | null>({
-  serialize: (v) => v ?? "",
-  deserialize: (v) => (v === "" ? null : v),
-});
 
 const chordFretSpreadStorage = constrainedNumberStorage({
   min: 0,
@@ -64,18 +65,188 @@ const practiceLensStorage = createStorage<PracticeLens>({
   },
 });
 
-export const chordRootAtom = atomWithStorage(
-  k("chordRoot"),
+// ---------------------------------------------------------------------------
+// Backing atoms for degree-based chord overlay (Phase 02)
+// ---------------------------------------------------------------------------
+
+/**
+ * Helper: read a raw localStorage string value without subscribing to atoms.
+ * Used inside migrate() callbacks where atom subscriptions are not allowed.
+ * Note: legacy atom values (chordRoot, chordType, rootNote, scaleName) are stored as
+ * plain strings — not JSON-encoded — by rawStringStorage/chordTypeStorage serializers.
+ */
+function readLocalStorage(key: string): string | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw === null) return null;
+    // Return empty string as null (chordTypeStorage serializes null → "")
+    return raw === "" ? null : raw;
+  } catch {
+    return null;
+  }
+}
+
+/** Diatonic triad quality names — the only types that can be inferred from degree. */
+const DIATONIC_TRIAD_QUALITIES = new Set([
+  "Major Triad",
+  "Minor Triad",
+  "Diminished Triad",
+]);
+
+const chordDegreeStorage = createStorage<DegreeId | null>({
+  serialize: (v) => v ?? "",
+  deserialize: (v) => (v === "" ? null : (v as DegreeId)),
+  validate: (v) => v === null || typeof v === "string",
+  migrate: (): DegreeId | null | undefined => {
+    // NOTE: Seventh chords ("Major 7th", "Minor 7th", "Dominant 7th") and "Power Chord (5)"
+    // are NOT in the DEGREE_DIATONIC_QUALITY table and always fall back to manual mode here.
+    // This is intentional — not a bug. Diatonic inference is triad-only.
+    const chordType = readLocalStorage(k("chordType"));
+
+    // (a) Overlay was off — no migration needed; default null is correct.
+    if (!chordType) return undefined;
+
+    // (b) Only triads can be inferred diatonically.
+    if (!DIATONIC_TRIAD_QUALITIES.has(chordType)) return undefined;
+
+    // Read legacy state from localStorage (no atom subscriptions inside migrate).
+    const chordRoot = readLocalStorage(k("chordRoot")) ?? "C";
+    const tonicNote = readLocalStorage(k("rootNote")) ?? "C";
+    const scaleName = readLocalStorage(k("scaleName")) ?? "Major";
+
+    const tonicIdx = NOTES.indexOf(tonicNote);
+    const rootIdx = NOTES.indexOf(chordRoot);
+    if (tonicIdx === -1 || rootIdx === -1) return undefined;
+
+    const semitone = (rootIdx - tonicIdx + 12) % 12;
+    const degreesMap = getDegreesForScale(scaleName);
+    const degreeId = degreesMap[semitone] as DegreeId | undefined;
+    if (!degreeId) return undefined;
+
+    // Validate: the diatonic quality must match the stored chord type exactly.
+    const expectedQuality = getQualityForDegree(degreeId, scaleName);
+    if (expectedQuality !== chordType) return undefined;
+
+    return degreeId;
+  },
+});
+
+/** The user's chosen scale degree for the chord overlay. null = overlay off. */
+export const chordDegreeAtom = atomWithStorage<DegreeId | null>(
+  k("chordDegree"),
+  null,
+  chordDegreeStorage,
+  GET_ON_INIT,
+);
+
+const chordOverlayModeStorage = createStorage<"degree" | "manual">({
+  validate: (v) => v === "degree" || v === "manual",
+  migrate: (): "degree" | "manual" | undefined => {
+    // NOTE: Seventh chords ("Major 7th", "Minor 7th", "Dominant 7th") and "Power Chord (5)"
+    // are NOT in the DEGREE_DIATONIC_QUALITY table and always fall back to manual mode here.
+    // This is intentional — not a bug. Diatonic inference is triad-only.
+    const chordType = readLocalStorage(k("chordType"));
+
+    // No legacy chord type stored → default degree mode.
+    if (!chordType) return "degree";
+
+    // Diatonic triads → degree mode.
+    if (DIATONIC_TRIAD_QUALITIES.has(chordType)) return "degree";
+
+    // Seventh chords, Power Chord, or any other non-diatonic type → manual mode.
+    return "manual";
+  },
+});
+
+/** Explicit user intent: "degree" = chord follows the active scale degree; "manual" = pinned. */
+export const chordOverlayModeAtom = atomWithStorage<"degree" | "manual">(
+  k("chordOverlayMode"),
+  "degree",
+  chordOverlayModeStorage,
+  GET_ON_INIT,
+);
+
+/** Populated only when chordOverlayMode is 'manual'. Ignored in degree mode. */
+export const chordRootOverrideAtom = atomWithStorage<string>(
+  k("chordRootOverride"),
   "C",
   rawStringStorage(),
   GET_ON_INIT,
 );
 
-export const chordTypeAtom = atomWithStorage<string | null>(
-  k("chordType"),
+const chordQualityOverrideStorage = createStorage<string | null>({
+  serialize: (v) => v ?? "",
+  deserialize: (v) => (v === "" ? null : v),
+  migrate: (): string | null | undefined => {
+    const chordType = readLocalStorage(k("chordType"));
+    // Preserve the chord type for manual-mode users.
+    if (chordType) return chordType;
+    return undefined;
+  },
+});
+
+/** Populated only when chordOverlayMode is 'manual'. Ignored in degree mode. */
+export const chordQualityOverrideAtom = atomWithStorage<string | null>(
+  k("chordQualityOverride"),
   null,
-  chordTypeStorage,
+  chordQualityOverrideStorage,
   GET_ON_INIT,
+);
+
+// ---------------------------------------------------------------------------
+// Public writable derived atoms — chordRootAtom and chordTypeAtom
+//
+// Read path: composes the four backing atoms via getDiatonicChord.
+// Write path: persists the value into override atoms and flips mode to "manual".
+// RESET path: cascades RESET to all four backing atoms.
+// ---------------------------------------------------------------------------
+
+export const chordRootAtom = atom(
+  (get): string => {
+    const mode = get(chordOverlayModeAtom);
+    if (mode === "manual") return get(chordRootOverrideAtom);
+    const degree = get(chordDegreeAtom);
+    if (!degree) return get(chordRootOverrideAtom); // overlay off: return last-known root
+    const rootNote = get(rootNoteAtom);
+    const scaleName = get(scaleNameAtom);
+    const result = getDiatonicChord(degree, scaleName, rootNote);
+    return result?.root ?? get(chordRootOverrideAtom);
+  },
+  (_get, set, value: string | typeof RESET) => {
+    if (value === RESET) {
+      set(chordDegreeAtom, RESET);
+      set(chordOverlayModeAtom, RESET);
+      set(chordRootOverrideAtom, RESET);
+      set(chordQualityOverrideAtom, RESET);
+      return;
+    }
+    set(chordRootOverrideAtom, value);
+    set(chordOverlayModeAtom, "manual");
+  },
+);
+
+export const chordTypeAtom = atom(
+  (get): string | null => {
+    const mode = get(chordOverlayModeAtom);
+    if (mode === "manual") return get(chordQualityOverrideAtom);
+    const degree = get(chordDegreeAtom);
+    if (!degree) return null; // overlay off
+    const rootNote = get(rootNoteAtom);
+    const scaleName = get(scaleNameAtom);
+    const result = getDiatonicChord(degree, scaleName, rootNote);
+    return result?.quality ?? null;
+  },
+  (_get, set, value: string | null | typeof RESET) => {
+    if (value === RESET) {
+      set(chordDegreeAtom, RESET);
+      set(chordOverlayModeAtom, RESET);
+      set(chordRootOverrideAtom, RESET);
+      set(chordQualityOverrideAtom, RESET);
+      return;
+    }
+    set(chordQualityOverrideAtom, value);
+    set(chordOverlayModeAtom, "manual");
+  },
 );
 
 export const linkChordRootAtom = atomWithStorage(
@@ -200,12 +371,22 @@ export const allChordMembersAtom = atom((get) => {
     } else {
       role = "chord-tone-outside-scale";
     }
+    let scaleDegree: DegreeId | undefined;
+    if (inScale) {
+      const noteIdx = NOTES.indexOf(m.note);
+      const tonicIdx = NOTES.indexOf(rootNote);
+      if (noteIdx !== -1 && tonicIdx !== -1) {
+        const semitone = (noteIdx - tonicIdx + 12) % 12;
+        scaleDegree = getDegreesForScale(scaleName)[semitone] as DegreeId | undefined;
+      }
+    }
     return {
       internalNote: m.note,
       displayNote: formatAccidental(getNoteDisplay(m.note, chordRoot, useFlats)),
       memberName: m.name === "root" ? "1" : formatAccidental(m.name),
       role,
       inScale,
+      scaleDegree,
     };
   });
 });

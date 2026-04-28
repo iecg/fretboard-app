@@ -155,7 +155,7 @@ export function FingeringPatternControls() {
                 </button>
               ))}
             </div>
-            <p className={shared["shape-hint"]}>
+            <p className={shared["field-hint"]}>
               {isTouchPrimary ? "Long press to add shapes" : "Shift+click to add shapes"}
             </p>
           </div>

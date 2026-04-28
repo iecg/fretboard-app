@@ -167,16 +167,15 @@ test.describe("production css module scoping", () => {
     await page.setViewportSize({ width: 768, height: 1024 });
     await gotoApp(page);
 
-    const chordDisclosure = page.getByRole("button", { name: /Chord Overlay/i });
+    const chordDisclosure = page.getByRole("button", { name: /Chords/i });
     if ((await chordDisclosure.getAttribute("aria-expanded")) !== "true") {
       await chordDisclosure.click();
     }
-    await expect(page.locator('[data-testid="chord-type-select"]')).toBeVisible();
+    await page.getByRole("button", { name: "Manual" }).click();
+    const chordTypeSelect = page.getByRole("combobox", { name: "Chord Type" });
+    await expect(chordTypeSelect).toBeVisible();
 
-    const styles = await page.evaluate(() => {
-      const el = document.querySelector('[data-testid="chord-type-select"]');
-      if (!el) return null;
-
+    const styles = await chordTypeSelect.evaluate((el) => {
       const computed = getComputedStyle(el);
       return {
         backgroundColor: computed.backgroundColor,

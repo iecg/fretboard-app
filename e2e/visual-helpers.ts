@@ -12,9 +12,20 @@ export interface VisualState {
   scaleName?: string;
   displayFormat?: "notes" | "degrees" | "none";
   scaleVisible?: boolean;
+  /** @deprecated Use chordRootOverride + chordQualityOverride + chordOverlayMode for Phase 02 atoms. */
   chordRoot?: string;
+  /** @deprecated Use chordRootOverride + chordQualityOverride + chordOverlayMode for Phase 02 atoms. */
   chordType?: string;
+  /** @deprecated Use chordOverlayMode instead. */
   linkChordRoot?: boolean;
+  /** Phase 02: root note for manual-mode chord overlay */
+  chordRootOverride?: string;
+  /** Phase 02: chord quality for manual-mode chord overlay (e.g. "Dominant 7th") */
+  chordQualityOverride?: string;
+  /** Phase 02: "degree" | "manual" */
+  chordOverlayMode?: string;
+  /** Phase 02: Roman numeral degree (e.g. "I", "V") */
+  chordDegree?: string;
   chordFretSpread?: number;
   practiceLens?: string;
   theme?: "light" | "dark" | "system";
@@ -253,4 +264,24 @@ export async function openHelp(page: Page) {
   await page.evaluate(() => document.fonts.ready);
   await waitForStable(modal);
   await waitForStableLayout(page);
+}
+
+/**
+ * Reads a single computed-style property from a pseudo-element of the matched
+ * locator. The host element is sometimes intentionally transparent while the
+ * visual treatment lives on `::before` / `::after`, so plain
+ * `getComputedStyle(el)[prop]` returns the wrong value.
+ */
+export function getPseudoStyle(
+  locator: Locator,
+  pseudo: "::before" | "::after",
+  property: string,
+): Promise<string> {
+  return locator.evaluate(
+    (el, [p, prop]) => {
+      const styles = getComputedStyle(el, p) as unknown as Record<string, string>;
+      return styles[prop] ?? "";
+    },
+    [pseudo, property] as const,
+  );
 }

@@ -1,0 +1,78 @@
+.stepper-select {
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
+}
+
+.select-slot {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  flex: 1;
+  border-radius: 0.78rem;
+  transition: var(--transition-surface);
+}
+
+.select-slot > div,
+.select-slot label {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.select-slot label {
+  flex-direction: row;
+  gap: 0;
+  align-items: stretch;
+}
+
+.select-slot label > div {
+  flex: 1;
+}
+
+.select-slot select {
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  min-height: unset !important;
+  padding-left: 0.85rem !important;
+  padding-right: 2.4rem !important;
+  color: var(--surface-control-fg) !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.nav-button {
+  composes: button from '../StepperShell/StepperShell.module.css';
+  width: 2.75rem;
+  min-height: 2.65rem;
+  display: inline-flex;
+  color: var(--surface-control-fg);
+}
+
+/* stylelint-disable selector-pseudo-class-no-unknown */
+.nav-button :global(.icon) {
+  width: 1.18rem;
+  height: 1.18rem;
+}
+
+:global(.app-container[data-layout-tier="desktop"]) .nav-button {
+  width: 2.5rem;
+  min-height: 2.45rem;
+}
+
+:global(.app-container[data-layout-tier="tablet"]) .nav-button {
+  width: 2.75rem;
+  min-height: 2.62rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .nav-button {
+  min-height: 36px;
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
+
+@media (max-width: 767px) {
+  .nav-button {
+    width: 2.7rem;
+  }
+}

@@ -263,7 +263,8 @@ describe("App", () => {
       fireEvent.click(cofButton);
 
       await waitFor(() => {
-        expect(localStorage.getItem(k("chordRoot"))).toBe("G");
+        // Phase 02: chordRootAtom writes go to chordRootOverride (manual mode override key).
+        expect(localStorage.getItem(k("chordRootOverride"))).toBe("G");
       });
     });
 
@@ -588,19 +589,21 @@ describe("App", () => {
   });
 
   describe("Chord overlay", () => {
-    it("can set chord type", async () => {
+    it("can set chord type via manual mode", async () => {
       render(<App />);
       // ExpandedControlsPanel is lazy loaded, wait for it to be ready
-      const chordOverlayBtn = await screen.findByRole("button", { name: /Chord Overlay/i });
+      const chordOverlayBtn = await screen.findByRole("button", { name: /Chords/i });
       fireEvent.click(chordOverlayBtn);
-      
+
+      // New UI: switch to Manual mode first, then set chord type
+      const manualBtn = await screen.findByRole("button", { name: "Manual" });
+      fireEvent.click(manualBtn);
+
       const chordTypeSelect = await screen.findByRole("combobox", { name: "Chord Type" });
-      fireEvent.change(chordTypeSelect, {
-        target: { value: "Major Triad" },
-      });
+      fireEvent.change(chordTypeSelect, { target: { value: "Minor Triad" } });
 
       await waitFor(() => {
-        expect(localStorage.getItem(k("chordType"))).toBe("Major Triad");
+        expect(localStorage.getItem(k("chordQualityOverride"))).toBe("Minor Triad");
       });
     });
 
@@ -612,6 +615,7 @@ describe("App", () => {
       localStorage.setItem(k("chordType"), "");
       rerender(<App />);
 
+      // Legacy key retains the manually-set value (Phase 02 leaves legacy keys in place).
       expect(localStorage.getItem(k("chordType"))).toBe("");
     });
   });
@@ -1119,27 +1123,31 @@ describe("App", () => {
     });
 
     it("adjusts fret range via buttons", async () => {
-      // Set fretStart=5 so the minus button is enabled, fretEnd=20 so end minus is enabled
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 1280,
+      });
+      Object.defineProperty(window, "innerHeight", {
+        writable: true,
+        configurable: true,
+        value: 900,
+      });
       localStorage.setItem(k("fretStart"), "5");
       localStorage.setItem(k("fretEnd"), "20");
       render(<App />);
       fireEvent(window, new Event("resize"));
 
       await waitFor(() => {
-        expect(
-          document.querySelector('[data-layout-variant="mobile"]'),
-        ).toBeTruthy();
+        const decrementButtons = screen.queryAllByLabelText(/Decrease (start|end) fret/);
+        expect(decrementButtons.length).toBeGreaterThan(0);
       });
 
-      const viewTab = screen.queryByText("View");
-      if (viewTab) fireEvent.click(viewTab);
+      const decrementButtons = screen.getAllByLabelText(/Decrease (start|end) fret/);
+      const incrementButtons = screen.getAllByLabelText(/Increase (start|end) fret/);
 
-      // Fret range has Start −/+ and End −/+ buttons
-      const minusButtons = screen.queryAllByText("−");
-      const plusButtons = screen.queryAllByText("+");
-
-      for (const btn of minusButtons) fireEvent.click(btn);
-      for (const btn of plusButtons) fireEvent.click(btn);
+      for (const btn of decrementButtons) fireEvent.click(btn);
+      for (const btn of incrementButtons) fireEvent.click(btn);
     });
   });
 });

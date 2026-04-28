@@ -66,14 +66,14 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
               <h2 id="help-modal-title">FretFlow Help</h2>
               <button
                 type="button"
-                className={clsx(sharedStyles["icon-button"])}
+                className={clsx(sharedStyles["icon-button"], styles["help-modal-close"])}
                 onClick={onClose}
                 aria-label="Close help"
               >
                 <X className="icon" />
               </button>
-              </div>
-              <div className={styles["help-modal-content"]} data-testid="help-modal-content">
+            </div>
+            <div className={styles["help-modal-content"]} data-testid="help-modal-content">
               <h3>Getting Started</h3>
 
               <p>
@@ -116,11 +116,13 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
                 </li>
               </ul>
 
-              <h3>Chord Overlay</h3>
+              <h3>Chords</h3>
               <ul>
                 <li>
-                  Expand <strong>Chord Overlay</strong> and pick a chord type to
-                  highlight chord tones on the fretboard in a distinct color.
+                  Expand <strong>Chords</strong>, choose <em>Degree</em> to pick
+                  a diatonic chord by Roman numeral or <em>Manual</em> to set
+                  any root and chord type, then watch the matching chord tones
+                  highlight on the fretboard in a distinct color.
                 </li>
                 <li>
                   <strong>Link chord root to scale</strong> keeps the chord root

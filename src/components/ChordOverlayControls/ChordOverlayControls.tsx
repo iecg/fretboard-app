@@ -1,57 +1,62 @@
-import { startTransition, useEffect, useId, useState } from "react";
+import { startTransition, useEffect } from "react";
 import { useAtomValue } from "jotai";
-import clsx from "clsx";
-import { NOTES } from "../../core/theory";
+import { NOTES, LENS_REGISTRY } from "../../core/theory";
+import { getAdjacentDegree, getDegreesForScale } from "../../core/degrees";
 import { lensAvailabilityAtom } from "../../store/atoms";
-import { LabeledSelect, type LabeledSelectOption } from "../LabeledSelect/LabeledSelect";
 import { NoteGrid } from "../NoteGrid/NoteGrid";
+import {
+  StepperSelect,
+  type StepperSelectOption,
+} from "../StepperSelect/StepperSelect";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { useChordState } from "../../hooks/useChordState";
 import { useScaleState } from "../../hooks/useScaleState";
 import styles from "../TheoryControls/TheoryControls.module.css";
 import shared from "../shared/shared.module.css";
 
-const CHORD_OPTIONS: (string | { divider: string })[] = [
-  { divider: "Triads" },
+const CHORD_OPTIONS: string[] = [
   "Major Triad",
   "Minor Triad",
   "Diminished Triad",
-  { divider: "Seventh Chords" },
   "Major 7th",
   "Minor 7th",
   "Dominant 7th",
-  { divider: "Other" },
   "Power Chord (5)",
 ];
 
 const CHORD_NONE_VALUE = "__none__";
 
+const CHORD_SELECT_OPTIONS: StepperSelectOption[] = [
+  { value: CHORD_NONE_VALUE, label: "Off" },
+  ...CHORD_OPTIONS.map((option) => ({
+    value: option,
+    label: option,
+  })),
+];
+
 export function ChordOverlayControls() {
-  const { rootNote } = useScaleState();
+  const { scaleName, useFlats } = useScaleState();
   const {
-    chordRoot,
-    setChordRoot,
     chordType,
-    setChordType,
-    linkChordRoot,
-    setLinkChordRoot,
     practiceLens,
     setPracticeLens,
+    chordDegree,
+    setChordDegree,
+    chordOverlayMode,
+    setChordOverlayMode,
+    chordRootOverride,
+    setChordRootOverride,
+    chordQualityOverride,
+    setChordQualityOverride,
   } = useChordState();
 
-  const { useFlats } = useScaleState();
   const lensAvailability = useAtomValue(lensAvailabilityAtom);
 
-  const [isChordOverlayOpen, setChordOverlayOpen] = useState(Boolean(chordType));
-  const linkChordRootId = useId();
-
-  const chordSelectOptions: LabeledSelectOption[] = [
+  const degreeSelectOptions: StepperSelectOption[] = [
     { value: CHORD_NONE_VALUE, label: "Off" },
-    ...CHORD_OPTIONS.filter(
-      (option): option is string => typeof option === "string",
-    ).map((option) => ({
-      value: option,
-      label: option,
+    ...Object.values(getDegreesForScale(scaleName)).map((deg) => ({
+      value: deg,
+      label: deg,
     })),
   ];
 
@@ -76,6 +81,8 @@ export function ChordOverlayControls() {
   });
 
   const currentLensEntry = lensAvailability.find((l) => l.id === practiceLens);
+  const activeLensDescription =
+    LENS_REGISTRY.find((l) => l.id === practiceLens)?.description ?? undefined;
 
   // Auto-exit unavailable lenses (except "targets").
   useEffect(() => {
@@ -91,89 +98,116 @@ export function ChordOverlayControls() {
     }
   }, [currentLensEntry, lensAvailability, setPracticeLens]);
 
-  const handleChordTypeChange = (nextChordType: string | null) => {
+  const handleDegreeChange = (value: string) => {
     startTransition(() => {
-      setChordType(nextChordType);
-      if (nextChordType && linkChordRoot) {
-        setChordRoot(rootNote);
-      }
+      setChordDegree(value === CHORD_NONE_VALUE ? null : value);
     });
   };
 
-  const chordSummary = chordType ?? "Off";
-  const chordOverlayOpen = isChordOverlayOpen || Boolean(chordType);
+  const handleStepDegree = (direction: -1 | 1) => {
+    startTransition(() => {
+      setChordDegree(getAdjacentDegree(chordDegree, scaleName, direction));
+    });
+  };
+
+  const handleChordTypeChange = (value: string) => {
+    startTransition(() => {
+      setChordQualityOverride(value === CHORD_NONE_VALUE ? null : value);
+    });
+  };
+
+  const handleStepChordType = (direction: -1 | 1) => {
+    const currentIndex =
+      chordQualityOverride === null ? -1 : CHORD_OPTIONS.indexOf(chordQualityOverride);
+    const totalSlots = CHORD_OPTIONS.length + 1;
+    const currentSlot = currentIndex + 1;
+    const nextSlot = (currentSlot + direction + totalSlots) % totalSlots;
+    const nextValue = nextSlot === 0 ? null : CHORD_OPTIONS[nextSlot - 1];
+    startTransition(() => {
+      setChordQualityOverride(nextValue);
+    });
+  };
 
   return (
-    <div className={clsx(styles["theory-chord-section"], "panel-surface panel-surface--compact")}>
-      <button
-        type="button"
-        className={clsx(styles["theory-disclosure-btn"], {
-          [styles["theory-disclosure-btn--open"]]: chordOverlayOpen,
-        })}
-        aria-expanded={chordOverlayOpen}
-        onClick={() => setChordOverlayOpen((value) => !value)}
-      >
-        <span className={styles["theory-disclosure-title"]}>Chord Overlay</span>
-        <span className={styles["theory-disclosure-summary"]}>{chordSummary}</span>
-      </button>
+    <div className={styles["theory-chord-content"]}>
+      <div className={shared["control-section"]}>
+        <span className={shared["section-label"]}>Chord Mode</span>
+        <ToggleBar
+          options={[
+            { value: "degree", label: "Degree" },
+            { value: "manual", label: "Manual" },
+          ]}
+          value={chordOverlayMode}
+          onChange={setChordOverlayMode}
+          label="Chord overlay mode"
+        />
+        <p className={shared["field-hint"]}>
+          {chordOverlayMode === "degree"
+            ? "Picks a chord by scale degree — diatonic to the key."
+            : "Sets any chord type and root — independent of the key."}
+        </p>
+      </div>
 
-      {chordOverlayOpen ? (
-        <div className={styles["theory-chord-content"]}>
-          <LabeledSelect
-            label="Chord Type"
-            data-testid="chord-type-select"
-            value={chordType ?? CHORD_NONE_VALUE}
-            options={chordSelectOptions}
-            onChange={(value) =>
-              handleChordTypeChange(value === CHORD_NONE_VALUE ? null : value)
-            }
+      {chordOverlayMode === "degree" && (
+        <div className={shared["control-section"]}>
+          <span className={shared["section-label"]}>Degree</span>
+          <StepperSelect
+            selectLabel="Chord Degree"
+            groupLabel="Browse chord degrees"
+            previousLabel="Previous chord degree"
+            nextLabel="Next chord degree"
+            value={chordDegree ?? CHORD_NONE_VALUE}
+            options={degreeSelectOptions}
+            onChange={handleDegreeChange}
+            onPrevious={() => handleStepDegree(-1)}
+            onNext={() => handleStepDegree(1)}
           />
+        </div>
+      )}
 
-          {chordType ? (
-            <>
-              <label className={shared["link-toggle"]} htmlFor={linkChordRootId}>
-                <input
-                  id={linkChordRootId}
-                  type="checkbox"
-                  checked={linkChordRoot}
-                  onChange={(event) => {
-                    const nextValue = event.target.checked;
-                    setLinkChordRoot(nextValue);
-                    if (nextValue) {
-                      startTransition(() => {
-                        setChordRoot(rootNote);
-                      });
-                    }
-                  }}
-                />
-                <span>Link chord root to scale</span>
-              </label>
+      {chordOverlayMode === "manual" && (
+        <>
+          <div className={shared["control-section"]}>
+            <span className={shared["section-label"]}>Chord Type</span>
+            <StepperSelect
+              selectLabel="Chord Type"
+              groupLabel="Browse chord types"
+              previousLabel="Previous chord type"
+              nextLabel="Next chord type"
+              value={chordQualityOverride ?? CHORD_NONE_VALUE}
+              options={CHORD_SELECT_OPTIONS}
+              onChange={handleChordTypeChange}
+              onPrevious={() => handleStepChordType(-1)}
+              onNext={() => handleStepChordType(1)}
+            />
+          </div>
+          <div className={shared["control-section"]}>
+            <span className={shared["section-label"]}>Root</span>
+            <NoteGrid
+              notes={NOTES}
+              selected={chordRootOverride}
+              onSelect={(note) => {
+                startTransition(() => {
+                  setChordRootOverride(note);
+                });
+              }}
+              useFlats={useFlats}
+            />
+          </div>
+        </>
+      )}
 
-              {!linkChordRoot ? (
-                <div className={shared["control-section"]}>
-                  <span className={shared["section-label"]}>Chord Root</span>
-                  <NoteGrid
-                    notes={NOTES}
-                    selected={chordRoot}
-                    onSelect={setChordRoot}
-                    useFlats={useFlats}
-                  />
-                </div>
-              ) : null}
-
-              <div className={shared["control-section"]}>
-                <span className={shared["section-label"]}>Lens</span>
-                <ToggleBar
-                  options={lensOptions}
-                  value={practiceLens}
-                  onChange={setPracticeLens}
-                  label="Practice lens"
-                />
-                {currentLensEntry?.description ? (
-                  <p className={shared["lens-hint"]}>{currentLensEntry.description}</p>
-                ) : null}
-              </div>
-            </>
+      {chordType ? (
+        <div className={shared["control-section"]}>
+          <span className={shared["section-label"]}>Lens</span>
+          <ToggleBar
+            options={lensOptions}
+            value={practiceLens}
+            onChange={setPracticeLens}
+            label="Practice lens"
+          />
+          {activeLensDescription ? (
+            <p className={shared["field-hint"]}>{activeLensDescription}</p>
           ) : null}
         </div>
       ) : null}

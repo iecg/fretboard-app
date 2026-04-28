@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
 import { useRef } from "react";
 import { HelpModal } from "../HelpModal/HelpModal";
+import styles from "./HelpModal.module.css";
 
 // Wrapper component that renders a trigger button + HelpModal together
 // so that the triggerRef can be attached to a real DOM button.
@@ -38,6 +39,9 @@ describe("HelpModal/HelpModal", () => {
   it("calls onClose when Close help button is clicked", () => {
     const onClose = vi.fn();
     render(<HelpModal isOpen={true} onClose={onClose} />);
+    expect(screen.getByLabelText("Close help")).toHaveClass(
+      styles["help-modal-close"],
+    );
     fireEvent.click(screen.getByLabelText("Close help"));
     expect(onClose).toHaveBeenCalledTimes(1);
   });

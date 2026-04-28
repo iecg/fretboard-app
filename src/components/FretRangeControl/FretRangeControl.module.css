@@ -5,20 +5,29 @@
   gap: var(--space-1);
 }
 
+.fret-stepper {
+  min-width: 0;
+}
+
 .fret-btn {
-  composes: control-button from '../shared/shared.module.css';
+  composes: button from '../StepperShell/StepperShell.module.css';
   min-width: 2.35rem;
   min-height: 2.35rem;
-  padding: 0.4rem 0.55rem;
+  padding: 0.45rem 0.6rem;
   font-size: 0.88rem;
-  border-radius: 0.8rem;
 }
 
 .fret-value {
-  composes: control-value from '../shared/shared.module.css';
+  composes: value from '../StepperShell/StepperShell.module.css';
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--surface-control-fg);
+}
+
+.fret-icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
 }
 
 .range-separator {
@@ -61,36 +70,37 @@
   padding-bottom: var(--space-1);
 }
 
+:global(.app-container[data-layout-tier="mobile"]) .fret-range-control.mobile .fret-stepper,
+.fret-range-control.mobile .fret-stepper {
+  flex: 1;
+}
+
 :global(.app-container[data-layout-tier="mobile"]) .fret-range-control.mobile .fret-btn,
 .fret-range-control.mobile .fret-btn {
   min-height: var(--size-touch-target);
   min-width: var(--size-touch-target);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Hide labels on tablet dashboard to prevent overflow. */
-:global(.app-container[data-layout-tier="tablet"]) .fret-range-control.dashboard .fret-label {
-  display: none;
 }
 
 .fret-range-control.dashboard {
-  flex-wrap: nowrap;
-  gap: 0.55rem;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  align-items: stretch;
 }
 
 .fret-range-control.dashboard .fret-group {
-  gap: 0.3rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.35rem;
+}
+
+.fret-range-control.dashboard .fret-stepper {
+  flex: 1;
 }
 
 .fret-range-control.dashboard .fret-btn {
   min-width: 2.15rem;
   min-height: 2.15rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 0.3rem 0.45rem;
   font-size: 0.84rem;
 }
@@ -98,4 +108,8 @@
 .fret-range-control.dashboard .fret-label {
   min-width: auto;
   font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--surface-control-fg-muted);
 }

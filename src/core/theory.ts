@@ -3,6 +3,7 @@ import {
   SCALES,
   SCALE_TO_PARENT_MAJOR_OFFSET,
 } from "./theoryCatalog";
+import { getDegreesForScale, getQualityForDegree, type DegreeId } from "./degrees";
 
 export const NOTES = [
   "C",
@@ -84,6 +85,7 @@ export interface ResolvedChordMember extends ChordMember {
 export type NoteRole =
   | "key-tonic"
   | "chord-root"
+  | "note-diatonic-chord"
   | "chord-tone-in-scale"
   | "chord-tone-outside-scale"
   | "color-tone"
@@ -104,6 +106,7 @@ export interface ChordRowEntry {
   memberName: string;
   role: "chord-root" | "chord-tone-in-scale" | "chord-tone-outside-scale";
   inScale: boolean;
+  scaleDegree?: DegreeId;
 }
 
 export interface LegendItem {
@@ -127,6 +130,10 @@ export interface NoteSemantics {
   isGuideTone: boolean; // 3rd or 7th of the chord
   isTension: boolean;   // chord tone that is outside the scale
   memberName?: ChordMemberName;
+  /** Scale degree of this note (e.g. "I", "iii", "V"). Defined only when the note is in the active scale. */
+  scaleDegree?: DegreeId;
+  /** True when the active chord (chordRoot + chordType) exactly matches the diatonic chord for the active scale degree. False in manual mode or when qualityOverride diverges. */
+  isDiatonicChord?: boolean;
 }
 
 // Pure chord member fact (no scale context)
@@ -609,3 +616,38 @@ export const CIRCLE_DISPLAY_LABELS: Record<string, string> = {
   "A#": "Bb",
   F: "F",
 };
+
+/**
+ * Returns the absolute root note and diatonic triad quality for a given scale degree.
+ *
+ * @param degreeId   - Roman numeral string (e.g., "I", "ii", "vii°")
+ * @param scaleName  - Scale name (e.g., "Major", "Harmonic Minor")
+ * @param tonicNote  - The tonic note of the scale in sharps-form (e.g., "C", "A", "C#")
+ * @returns `{ root, quality }` where root is always a sharps-form note and quality is a
+ *          chord-name key (e.g., "Major Triad"), or undefined for any unrecognised input.
+ */
+export function getDiatonicChord(
+  degreeId: string,
+  scaleName: string,
+  tonicNote: string,
+): { root: string; quality: string } | undefined {
+  const degreesMap = getDegreesForScale(scaleName);
+
+  // Find the semitone offset for this degree
+  const semitoneEntry = Object.entries(degreesMap).find(
+    ([, roman]) => roman === degreeId,
+  );
+  if (!semitoneEntry) return undefined;
+  const semitone = Number(semitoneEntry[0]);
+
+  // Compute the absolute root note (sharps-only via NOTES)
+  const rootIndex = getNoteIndex(tonicNote);
+  if (rootIndex === -1) return undefined;
+  const root = NOTES[(rootIndex + semitone) % 12];
+
+  // Resolve chord quality via the degree quality table
+  const quality = getQualityForDegree(degreeId, scaleName);
+  if (quality === undefined) return undefined;
+
+  return { root, quality };
+}

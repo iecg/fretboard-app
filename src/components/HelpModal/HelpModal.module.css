@@ -53,6 +53,11 @@
   min-width: 0;
 }
 
+.help-modal-close.help-modal-close {
+  width: 2.25rem;
+  height: 2.25rem;
+  box-shadow: none;
+}
 
 .help-modal-content {
   padding: clamp(1rem, 2.5vw, 1.25rem);

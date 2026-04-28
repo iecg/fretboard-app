@@ -15,13 +15,12 @@ import {
   ANIMATION_EASE,
 } from "../../core/constants";
 import { OverlaySection } from "./shared";
-import { useHelpPopover } from "./useHelpPopover";
-import { ViewSettingsSection } from "./sections/ViewSettingsSection";
-import { InstrumentSettingsSection } from "./sections/InstrumentSettingsSection";
-import { AppearanceSettingsSection } from "./sections/AppearanceSettingsSection";
-import { NotationSettingsSection } from "./sections/NotationSettingsSection";
-import { ChordLayoutSettingsSection } from "./sections/ChordLayoutSettingsSection";
-import { ResetSettingsSection } from "./sections/ResetSettingsSection";
+import ViewSettingsSection from "./sections/ViewSettingsSection";
+import InstrumentSettingsSection from "./sections/InstrumentSettingsSection";
+import AppearanceSettingsSection from "./sections/AppearanceSettingsSection";
+import NotationSettingsSection from "./sections/NotationSettingsSection";
+import ChordLayoutSettingsSection from "./sections/ChordLayoutSettingsSection";
+import ResetSettingsSection from "./sections/ResetSettingsSection";
 import styles from "./SettingsOverlay.module.css";
 import sharedStyles from "../shared/shared.module.css";
 
@@ -48,14 +47,6 @@ function SettingsOverlaySurface({
   layout: ReturnType<typeof getResponsiveLayout>;
   setIsOpen: (value: boolean) => void;
 }) {
-  const {
-    activeHelpField,
-    activeHelpFieldRef,
-    registerHelpContainer,
-    setActiveHelpField,
-    handleHelpToggle,
-  } = useHelpPopover();
-
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
@@ -76,11 +67,7 @@ function SettingsOverlaySurface({
     containerRef: drawerRef,
     active: true,
     onEscape: () => {
-      if (activeHelpFieldRef.current) {
-        setActiveHelpField(null);
-      } else {
-        setIsOpen(false);
-      }
+      setIsOpen(false);
     },
     restoreFocusRef: triggerRef,
   });
@@ -130,21 +117,9 @@ function SettingsOverlaySurface({
           <OverlaySection id="instrument" title="Instrument">
             <InstrumentSettingsSection />
           </OverlaySection>
-          <AppearanceSettingsSection
-            activeHelpField={activeHelpField}
-            handleHelpToggle={handleHelpToggle}
-            registerHelpContainer={registerHelpContainer}
-          />
-          <NotationSettingsSection
-            activeHelpField={activeHelpField}
-            handleHelpToggle={handleHelpToggle}
-            registerHelpContainer={registerHelpContainer}
-          />
-          <ChordLayoutSettingsSection
-            activeHelpField={activeHelpField}
-            handleHelpToggle={handleHelpToggle}
-            registerHelpContainer={registerHelpContainer}
-          />
+          <AppearanceSettingsSection />
+          <NotationSettingsSection />
+          <ChordLayoutSettingsSection />
           <OverlaySection id="reset" title="Reset" tone="danger">
             <ResetSettingsSection onClose={close} />
           </OverlaySection>

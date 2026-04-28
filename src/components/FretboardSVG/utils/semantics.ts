@@ -32,7 +32,7 @@ export function getLensEmphasis(
       if (isGuideTone) {
         return { glowColor: "cyan", radiusBoost: 1.15, opacityBoost: 1 };
       }
-      if (noteClass.includes("chord-") || noteClass.includes("color-")) {
+      if (noteClass.includes("chord-") || noteClass.includes("color-") || noteClass === "note-diatonic-chord") {
         return { radiusBoost: 0.85, opacityBoost: 0.7 };
       }
       return defaultEmphasis;
@@ -41,7 +41,7 @@ export function getLensEmphasis(
       if (isTension) {
         return { glowColor: "orange", radiusBoost: 1.15, opacityBoost: 1 };
       }
-      if (noteClass.includes("chord-")) {
+      if (noteClass.includes("chord-") || noteClass === "note-diatonic-chord") {
         return { radiusBoost: 0.85, opacityBoost: 0.7 };
       }
       return defaultEmphasis;
@@ -107,6 +107,7 @@ export function classifyNoteFromSemantics(
   }
 
   if (sem.isChordRoot && sem.isChordTone && isChordInRange && isInActiveShape) return "chord-root";
+  if (sem.isDiatonicChord && sem.isChordTone && isChordInRange && isInActiveShape) return "note-diatonic-chord";
   if (sem.isInScale && sem.isChordTone && isChordInRange && isInActiveShape) return "chord-tone-in-scale";
   if (sem.isInScale && sem.isColorTone && isInActiveShape && isHighlighted) return "color-tone";
   if (sem.isInScale && isInActiveShape && isHighlighted) return "scale-only";
@@ -164,6 +165,12 @@ export function getNoteVisuals(
       return {
         radiusScale: RADIUS_SCALE_CHORD_TONE,
         noteShape: "diamond",
+      };
+    case "note-diatonic-chord":
+      // Phase 04: use chord-tone-in-scale visuals as fallback; Phase 05+ adds distinct styling
+      return {
+        radiusScale: RADIUS_SCALE_CHORD_TONE,
+        noteShape: "squircle",
       };
     default:
       return {

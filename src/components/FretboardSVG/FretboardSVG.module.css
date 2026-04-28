@@ -91,13 +91,15 @@
   stroke-width: 2.3;
 }
 
-.fretboard-note.chord-tone-in-scale :is(circle, rect, polygon) {
+.fretboard-note.chord-tone-in-scale :is(circle, rect, polygon),
+.fretboard-note.note-diatonic-chord :is(circle, rect, polygon) {
   stroke: var(--note-ring-tonic);
   fill: rgb(20 30 40 / 0.92);
   stroke-width: 2.3;
 }
 
-:global([data-theme="modern-light"]) .fretboard-note.chord-tone-in-scale :is(circle, rect, polygon) {
+:global([data-theme="modern-light"]) .fretboard-note.chord-tone-in-scale :is(circle, rect, polygon),
+:global([data-theme="modern-light"]) .fretboard-note.note-diatonic-chord :is(circle, rect, polygon) {
   fill: var(--note-ring);
 }
 
@@ -174,6 +176,7 @@
 .fretboard-note[data-note-role="key-tonic"],
 .fretboard-note[data-note-role="chord-root"],
 .fretboard-note[data-note-role="chord-tone-in-scale"],
+.fretboard-note[data-note-role="note-diatonic-chord"],
 .fretboard-note[data-note-role="chord-tone-outside-scale"] {
   filter: var(--fretboard-svg-glow-orange-url);
 }
@@ -214,19 +217,22 @@
 }
 
 [data-practice-lens="guide-tones"] .fretboard-note.chord-root:not([data-note-guide-tone]) rect:last-of-type,
-[data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]) :is(circle, rect, polygon) {
+[data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]) :is(circle, rect, polygon),
+[data-practice-lens="guide-tones"] .fretboard-note.note-diatonic-chord:not([data-note-guide-tone]) :is(circle, rect, polygon) {
   stroke-width: 1.4;
   fill: rgb(20 30 40 / 0.52);
   stroke: rgb(200 110 40 / 0.62);
 }
 
 :global([data-theme="modern-light"]) [data-practice-lens="guide-tones"] .fretboard-note.chord-root:not([data-note-guide-tone]) rect:last-of-type,
-:global([data-theme="modern-light"]) [data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]) :is(circle, rect, polygon) {
+:global([data-theme="modern-light"]) [data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]) :is(circle, rect, polygon),
+:global([data-theme="modern-light"]) [data-practice-lens="guide-tones"] .fretboard-note.note-diatonic-chord:not([data-note-guide-tone]) :is(circle, rect, polygon) {
   fill: var(--fretboard-guide-tones-deemphasis-fill);
   stroke: var(--fretboard-guide-tones-deemphasis-stroke);
 }
 [data-practice-lens="guide-tones"] .fretboard-note.chord-root:not([data-note-guide-tone]),
-[data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]) {
+[data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]),
+[data-practice-lens="guide-tones"] .fretboard-note.note-diatonic-chord:not([data-note-guide-tone]) {
   filter: none;
 }
 
@@ -282,17 +288,20 @@
   filter: none;
 }
 
-[data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale :is(circle, rect, polygon) {
+[data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale :is(circle, rect, polygon),
+[data-practice-lens="tension"] .fretboard-note.note-diatonic-chord :is(circle, rect, polygon) {
   stroke-width: 1.4;
   fill: rgb(20 30 40 / 0.52);
   stroke: rgb(200 110 40 / 0.62);
 }
 
-:global([data-theme="modern-light"]) [data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale :is(circle, rect, polygon) {
+:global([data-theme="modern-light"]) [data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale :is(circle, rect, polygon),
+:global([data-theme="modern-light"]) [data-practice-lens="tension"] .fretboard-note.note-diatonic-chord :is(circle, rect, polygon) {
   fill: var(--fretboard-tension-chord-tone-fill);
   stroke: var(--fretboard-tension-chord-tone-stroke);
 }
-[data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale {
+[data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale,
+[data-practice-lens="tension"] .fretboard-note.note-diatonic-chord {
   filter: none;
 }
 

@@ -324,6 +324,9 @@ describe("atoms", () => {
     });
   });
 
+  // Phase 02: chordTypeAtom is now a writable derived atom backed by chordQualityOverrideAtom.
+  // Read path: composes from backing atoms (degree mode) or chordQualityOverrideAtom (manual mode).
+  // Write path: stores value in k("chordQualityOverride") and flips mode to "manual".
   describe("chordTypeStorage", () => {
     it("reads empty string as null", () => {
       localStorage.setItem(k("chordType"), "");
@@ -333,7 +336,7 @@ describe("atoms", () => {
       unsub();
     });
 
-    it("reads non-empty string as chord type", () => {
+    it("reads non-empty string as chord type via migration", () => {
       localStorage.setItem(k("chordType"), "Major Triad");
       const store = makeStore();
       const unsub = mount(store, chordTypeAtom);
@@ -341,23 +344,20 @@ describe("atoms", () => {
       unsub();
     });
 
-    it("writes default empty string to localStorage when key absent on mount", () => {
-      const store = makeStore();
-      const unsub = mount(store, chordTypeAtom);
-      expect(localStorage.getItem(k("chordType"))).toBe("");
-      unsub();
-    });
-
-    it("writes null as empty string via setItem", () => {
+    it("writes null as empty string to chordQualityOverride key", () => {
       const store = makeStore();
       store.set(chordTypeAtom, null);
-      expect(localStorage.getItem(k("chordType"))).toBe("");
+      // Phase 02: writes go to chordQualityOverride, not the legacy chordType key.
+      expect(localStorage.getItem(k("chordQualityOverride"))).toBe("");
+      expect(localStorage.getItem(k("chordOverlayMode"))).toBe("manual");
     });
 
-    it("writes chord type string via setItem", () => {
+    it("writes chord type string to chordQualityOverride key", () => {
       const store = makeStore();
       store.set(chordTypeAtom, "Minor 7th");
-      expect(localStorage.getItem(k("chordType"))).toBe("Minor 7th");
+      // Phase 02: writes go to chordQualityOverride, not the legacy chordType key.
+      expect(localStorage.getItem(k("chordQualityOverride"))).toBe("Minor 7th");
+      expect(localStorage.getItem(k("chordOverlayMode"))).toBe("manual");
     });
   });
 

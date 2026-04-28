@@ -19,6 +19,8 @@ import {
   chordRootAtom,
   chordTypeAtom,
   fingeringPatternAtom,
+  chordDegreeAtom,
+  chordOverlayModeAtom,
 } from "./atoms";
 
 function makeStore() {
@@ -698,5 +700,116 @@ describe("color notes are scale-owned — independent of chord overlay", () => {
     store.set(toggleScaleVisibleAtom);
 
     expect(store.get(effectiveColorNotesAtom)).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 04 — noteSemanticMapAtom scaleDegree + isDiatonicChord
+// ---------------------------------------------------------------------------
+
+describe("noteSemanticMapAtom — Phase 04 scaleDegree and isDiatonicChord", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("every in-scale note in C Major has a non-undefined scaleDegree", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    store.set(chordRootAtom, "C");
+    store.set(chordTypeAtom, "Major Triad");
+
+    const semanticMap = store.get(noteSemanticMapAtom);
+    // C Major scale: C D E F G A B
+    for (const note of ["C", "D", "E", "F", "G", "A", "B"]) {
+      const sem = semanticMap.get(note);
+      expect(sem, `expected semantics for ${note}`).toBeDefined();
+      expect(sem!.scaleDegree, `expected scaleDegree for ${note}`).toBeDefined();
+    }
+  });
+
+  it("out-of-scale notes have scaleDegree undefined", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    // C# Minor Triad has C#, E, G# — C# and G# are not in C Major
+    store.set(chordRootAtom, "C#");
+    store.set(chordTypeAtom, "Minor Triad");
+
+    const semanticMap = store.get(noteSemanticMapAtom);
+    const cSharpSem = semanticMap.get("C#");
+    expect(cSharpSem).toBeDefined();
+    expect(cSharpSem!.isInScale).toBe(false);
+    expect(cSharpSem!.scaleDegree).toBeUndefined();
+  });
+
+  it("isDiatonicChord is true for chord tone when degree mode matches diatonic chord", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    store.set(chordDegreeAtom, "I");
+    store.set(chordOverlayModeAtom, "degree");
+
+    const semanticMap = store.get(noteSemanticMapAtom);
+    // C Major I chord: C, E, G — all in scale, chord is diatonic
+    for (const note of ["E", "G"]) {
+      const sem = semanticMap.get(note);
+      expect(sem, `expected semantics for ${note}`).toBeDefined();
+      expect(sem!.isChordTone).toBe(true);
+      expect(sem!.isDiatonicChord, `isDiatonicChord should be true for ${note}`).toBe(true);
+    }
+  });
+
+  it("isDiatonicChord is false when chordOverlayMode is manual", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    store.set(chordOverlayModeAtom, "manual");
+    store.set(chordRootAtom, "C");
+    store.set(chordTypeAtom, "Major Triad");
+
+    const semanticMap = store.get(noteSemanticMapAtom);
+    for (const note of ["C", "E", "G"]) {
+      const sem = semanticMap.get(note);
+      if (sem?.isChordTone) {
+        expect(sem.isDiatonicChord).toBeFalsy();
+      }
+    }
+  });
+
+  it("isDiatonicChord is false when chordDegree is null (overlay off)", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    store.set(chordDegreeAtom, null);
+    store.set(chordOverlayModeAtom, "degree");
+    store.set(chordRootAtom, "C");
+    store.set(chordTypeAtom, "Major Triad");
+
+    const semanticMap = store.get(noteSemanticMapAtom);
+    for (const note of ["C", "E", "G"]) {
+      const sem = semanticMap.get(note);
+      if (sem?.isChordTone) {
+        expect(sem.isDiatonicChord).toBeFalsy();
+      }
+    }
+  });
+
+  it("isDiatonicChord is false when a manual chord override pulls the overlay out of degree mode", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    store.set(chordDegreeAtom, "I");
+    store.set(chordOverlayModeAtom, "degree");
+    store.set(chordTypeAtom, "Minor Triad");
+
+    expect(store.get(chordOverlayModeAtom)).toBe("manual");
+
+    const semanticMap = store.get(noteSemanticMapAtom);
+    expect(semanticMap.size).toBeGreaterThan(0);
+
+    const gSem = semanticMap.get("G");
+    expect(gSem?.isChordTone).toBe(true);
+    expect(gSem?.isDiatonicChord).toBeFalsy();
   });
 });

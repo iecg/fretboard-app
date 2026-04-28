@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getDegreesForScale, DEGREE_COLORS } from '../core/degrees';
+import { getDegreesForScale, DEGREE_COLORS, getQualityForDegree, getAdjacentDegree } from '../core/degrees';
 
 describe('getDegreesForScale', () => {
   describe('Major modes', () => {
@@ -74,11 +74,49 @@ describe('getDegreesForScale', () => {
       expect(degrees[11]).toBe('vii°'); // Diminished 7th
     });
 
-    it("covers all seven degrees for Melodic Minor via the generic 7-note fallback", () => {
+    it("computes Melodic Minor degrees from diatonic-triad intervals", () => {
+      // Melodic Minor [0,2,3,5,7,9,11]:
+      //   i (minor) — ii (minor) — III+ (aug) — IV (major) — V (major) — vi° (dim) — vii° (dim)
       const degrees = getDegreesForScale("Melodic Minor");
-      expect(degrees[0]).toBe("i");
-      expect(degrees[9]).toBe("VI");
-      expect(degrees[11]).toBe("VII");
+      expect(degrees).toEqual({
+        0: "i",
+        2: "ii",
+        3: "III+",
+        5: "IV",
+        7: "V",
+        9: "vi°",
+        11: "vii°",
+      });
+    });
+
+    it("computes Phrygian Dominant (Harmonic Minor 5th mode) degrees correctly", () => {
+      // Phrygian Dominant [0,1,4,5,7,8,10] — flamenco / Spanish Phrygian:
+      //   I (major) — II (major) — iii° (dim) — iv (minor) — v° (dim) — VI+ (aug) — vii (minor)
+      const degrees = getDegreesForScale("Phrygian Dominant");
+      expect(degrees).toEqual({
+        0: "I",
+        1: "II",
+        4: "iii°",
+        5: "iv",
+        7: "v°",
+        8: "VI+",
+        10: "vii",
+      });
+    });
+
+    it("computes Lydian Augmented (Melodic Minor 3rd mode) degrees correctly", () => {
+      // Lydian Augmented [0,2,4,6,8,9,11]:
+      //   I+ (aug) — II (major) — III (major) — #iv° (dim) — v° (dim) — vi (minor) — vii (minor)
+      const degrees = getDegreesForScale("Lydian Augmented");
+      expect(degrees).toEqual({
+        0: "I+",
+        2: "II",
+        4: "III",
+        6: "iv°",
+        8: "v°",
+        9: "vi",
+        11: "vii",
+      });
     });
   });
 
@@ -174,5 +212,159 @@ describe('DEGREE_COLORS', () => {
     // All I/i variants should be same color
     expect(DEGREE_COLORS['I']).toBe(DEGREE_COLORS['i']);
     expect(DEGREE_COLORS['i']).toBe(DEGREE_COLORS['i°']);
+  });
+});
+
+describe('getQualityForDegree', () => {
+  describe('Major scale — all 7 degrees', () => {
+    it('I → Major Triad', () => {
+      expect(getQualityForDegree('I', 'Major')).toBe('Major Triad');
+    });
+
+    it('ii → Minor Triad', () => {
+      expect(getQualityForDegree('ii', 'Major')).toBe('Minor Triad');
+    });
+
+    it('iii → Minor Triad', () => {
+      expect(getQualityForDegree('iii', 'Major')).toBe('Minor Triad');
+    });
+
+    it('IV → Major Triad', () => {
+      expect(getQualityForDegree('IV', 'Major')).toBe('Major Triad');
+    });
+
+    it('V → Major Triad', () => {
+      expect(getQualityForDegree('V', 'Major')).toBe('Major Triad');
+    });
+
+    it('vi → Minor Triad', () => {
+      expect(getQualityForDegree('vi', 'Major')).toBe('Minor Triad');
+    });
+
+    it('vii° → Diminished Triad', () => {
+      expect(getQualityForDegree('vii°', 'Major')).toBe('Diminished Triad');
+    });
+  });
+
+  describe('Natural Minor scale — all 7 degrees', () => {
+    it('i → Minor Triad', () => {
+      expect(getQualityForDegree('i', 'Natural Minor')).toBe('Minor Triad');
+    });
+
+    it('ii° → Diminished Triad', () => {
+      expect(getQualityForDegree('ii°', 'Natural Minor')).toBe('Diminished Triad');
+    });
+
+    it('III → Major Triad', () => {
+      expect(getQualityForDegree('III', 'Natural Minor')).toBe('Major Triad');
+    });
+
+    it('iv → Minor Triad', () => {
+      expect(getQualityForDegree('iv', 'Natural Minor')).toBe('Minor Triad');
+    });
+
+    it('v → Minor Triad', () => {
+      expect(getQualityForDegree('v', 'Natural Minor')).toBe('Minor Triad');
+    });
+
+    it('VI → Major Triad', () => {
+      expect(getQualityForDegree('VI', 'Natural Minor')).toBe('Major Triad');
+    });
+
+    it('VII → Major Triad', () => {
+      expect(getQualityForDegree('VII', 'Natural Minor')).toBe('Major Triad');
+    });
+  });
+
+  describe('Dorian — spot checks', () => {
+    it('i → Minor Triad', () => {
+      expect(getQualityForDegree('i', 'Dorian')).toBe('Minor Triad');
+    });
+
+    it('IV → Major Triad', () => {
+      expect(getQualityForDegree('IV', 'Dorian')).toBe('Major Triad');
+    });
+
+    it('vi° → Diminished Triad', () => {
+      expect(getQualityForDegree('vi°', 'Dorian')).toBe('Diminished Triad');
+    });
+  });
+
+  describe('Harmonic Minor — edge cases', () => {
+    it('V at semitone 7 → Major Triad (raised 7th makes dominant major)', () => {
+      expect(getQualityForDegree('V', 'Harmonic Minor')).toBe('Major Triad');
+    });
+
+    it('III+ at semitone 3 → Major Triad (pragmatic fallback: CHORD_DEFINITIONS has no Augmented Triad)', () => {
+      expect(getQualityForDegree('III+', 'Harmonic Minor')).toBe('Major Triad');
+    });
+  });
+
+  describe('Lydian — raised 4th edge case', () => {
+    it('iv° at semitone 6 → Diminished Triad (F#-A-C: minor 3rd + diminished 5th)', () => {
+      expect(getQualityForDegree('iv°', 'Lydian')).toBe('Diminished Triad');
+    });
+  });
+
+  describe('Unknown inputs', () => {
+    it('returns undefined for an unknown scale', () => {
+      expect(getQualityForDegree('I', 'Unknown Scale')).toBeUndefined();
+    });
+
+    it('returns undefined for an unknown degree in a known scale', () => {
+      expect(getQualityForDegree('XI', 'Major')).toBeUndefined();
+    });
+  });
+});
+
+describe('getAdjacentDegree', () => {
+  describe('Major scale — forward step', () => {
+    it('I + direction(+1) → ii', () => {
+      expect(getAdjacentDegree('I', 'Major', 1)).toBe('ii');
+    });
+
+    it('vi + direction(+1) → vii°', () => {
+      expect(getAdjacentDegree('vi', 'Major', 1)).toBe('vii°');
+    });
+
+    it('vii° + direction(+1) wraps to I', () => {
+      expect(getAdjacentDegree('vii°', 'Major', 1)).toBe('I');
+    });
+  });
+
+  describe('Major scale — backward step', () => {
+    it('ii + direction(-1) → I', () => {
+      expect(getAdjacentDegree('ii', 'Major', -1)).toBe('I');
+    });
+
+    it('I + direction(-1) wraps to vii°', () => {
+      expect(getAdjacentDegree('I', 'Major', -1)).toBe('vii°');
+    });
+  });
+
+  describe('Natural Minor scale — forward step', () => {
+    it('i + direction(+1) → ii°', () => {
+      expect(getAdjacentDegree('i', 'Natural Minor', 1)).toBe('ii°');
+    });
+
+    it('VII (last degree) + direction(+1) wraps to i', () => {
+      expect(getAdjacentDegree('VII', 'Natural Minor', 1)).toBe('i');
+    });
+  });
+
+  describe('Null input — returns first degree regardless of direction', () => {
+    it('null + direction(+1) → first degree of Major ("I")', () => {
+      expect(getAdjacentDegree(null, 'Major', 1)).toBe('I');
+    });
+
+    it('null + direction(-1) → first degree of Major ("I")', () => {
+      expect(getAdjacentDegree(null, 'Major', -1)).toBe('I');
+    });
+  });
+
+  describe('Unknown degree falls back gracefully', () => {
+    it('"IX" (nonexistent) + direction(+1) on Major → returns "I" (first degree)', () => {
+      expect(getAdjacentDegree('IX', 'Major', 1)).toBe('I');
+    });
   });
 });

@@ -11,6 +11,20 @@ const defaultProps = {
   maxFret: 24,
 };
 
+function getStartButtons() {
+  return {
+    decrement: screen.getByLabelText(/Decrease start fret/),
+    increment: screen.getByLabelText(/Increase start fret/),
+  };
+}
+
+function getEndButtons() {
+  return {
+    decrement: screen.getByLabelText(/Decrease end fret/),
+    increment: screen.getByLabelText(/Increase end fret/),
+  };
+}
+
 describe("FretRangeControl/FretRangeControl", () => {
   describe("Toolbar layout", () => {
     it("renders inline without Start/End labels", () => {
@@ -24,12 +38,12 @@ describe("FretRangeControl/FretRangeControl", () => {
       expect(screen.getByText("—")).toBeTruthy();
     });
 
-    it("uses ◀/▶ symbols by default", () => {
+    it("renders four stepper buttons (start ±, end ±)", () => {
       render(<FretRangeControl {...defaultProps} layout="toolbar" />);
-      const buttons = screen.getAllByRole("button");
-      const symbols = buttons.map((b) => b.textContent);
-      expect(symbols.filter((s) => s === "◀").length).toBe(2);
-      expect(symbols.filter((s) => s === "▶").length).toBe(2);
+      expect(getStartButtons().decrement).toBeInTheDocument();
+      expect(getStartButtons().increment).toBeInTheDocument();
+      expect(getEndButtons().decrement).toBeInTheDocument();
+      expect(getEndButtons().increment).toBeInTheDocument();
     });
   });
 
@@ -44,14 +58,6 @@ describe("FretRangeControl/FretRangeControl", () => {
       render(<FretRangeControl {...defaultProps} layout="mobile" />);
       expect(screen.queryByText("—")).toBeNull();
     });
-
-    it("uses −/+ symbols by default", () => {
-      render(<FretRangeControl {...defaultProps} layout="mobile" />);
-      const buttons = screen.getAllByRole("button");
-      const symbols = buttons.map((b) => b.textContent);
-      expect(symbols.filter((s) => s === "−").length).toBe(2);
-      expect(symbols.filter((s) => s === "+").length).toBe(2);
-    });
   });
 
   describe("Start fret callbacks", () => {
@@ -65,8 +71,7 @@ describe("FretRangeControl/FretRangeControl", () => {
           layout="toolbar"
         />,
       );
-      const decrementBtns = screen.getAllByText("◀");
-      fireEvent.click(decrementBtns[0]);
+      fireEvent.click(getStartButtons().decrement);
       expect(onStartChange).toHaveBeenCalledWith(2);
     });
 
@@ -81,8 +86,7 @@ describe("FretRangeControl/FretRangeControl", () => {
           layout="toolbar"
         />,
       );
-      const incrementBtns = screen.getAllByText("▶");
-      fireEvent.click(incrementBtns[0]);
+      fireEvent.click(getStartButtons().increment);
       expect(onStartChange).toHaveBeenCalledWith(4);
     });
   });
@@ -99,8 +103,7 @@ describe("FretRangeControl/FretRangeControl", () => {
           layout="toolbar"
         />,
       );
-      const decrementBtns = screen.getAllByText("◀");
-      fireEvent.click(decrementBtns[1]);
+      fireEvent.click(getEndButtons().decrement);
       expect(onEndChange).toHaveBeenCalledWith(11);
     });
 
@@ -116,8 +119,7 @@ describe("FretRangeControl/FretRangeControl", () => {
           layout="toolbar"
         />,
       );
-      const incrementBtns = screen.getAllByText("▶");
-      fireEvent.click(incrementBtns[1]);
+      fireEvent.click(getEndButtons().increment);
       expect(onEndChange).toHaveBeenCalledWith(13);
     });
   });
@@ -127,8 +129,7 @@ describe("FretRangeControl/FretRangeControl", () => {
       render(
         <FretRangeControl {...defaultProps} startFret={0} layout="toolbar" />,
       );
-      const decrementBtns = screen.getAllByText("◀");
-      expect(decrementBtns[0]).toBeDisabled();
+      expect(getStartButtons().decrement).toBeDisabled();
     });
 
     it("start increment disabled when startFret === endFret - 1", () => {
@@ -140,8 +141,7 @@ describe("FretRangeControl/FretRangeControl", () => {
           layout="toolbar"
         />,
       );
-      const incrementBtns = screen.getAllByText("▶");
-      expect(incrementBtns[0]).toBeDisabled();
+      expect(getStartButtons().increment).toBeDisabled();
     });
 
     it("end decrement disabled when endFret === startFret + 1", () => {
@@ -153,8 +153,7 @@ describe("FretRangeControl/FretRangeControl", () => {
           layout="toolbar"
         />,
       );
-      const decrementBtns = screen.getAllByText("◀");
-      expect(decrementBtns[1]).toBeDisabled();
+      expect(getEndButtons().decrement).toBeDisabled();
     });
 
     it("end increment disabled when endFret === maxFret", () => {
@@ -166,8 +165,7 @@ describe("FretRangeControl/FretRangeControl", () => {
           layout="toolbar"
         />,
       );
-      const incrementBtns = screen.getAllByText("▶");
-      expect(incrementBtns[1]).toBeDisabled();
+      expect(getEndButtons().increment).toBeDisabled();
     });
   });
 
@@ -178,32 +176,17 @@ describe("FretRangeControl/FretRangeControl", () => {
       expect(screen.getByText("End")).toBeTruthy();
     });
 
-    it('shows "—" separator', () => {
+    it("does not show separator (labels stack above steppers)", () => {
       render(<FretRangeControl {...defaultProps} layout="dashboard" />);
-      expect(screen.getByText("—")).toBeTruthy();
+      expect(screen.queryByText("—")).toBeNull();
     });
 
-    it("uses −/+ symbols by default", () => {
+    it("renders four stepper buttons", () => {
       render(<FretRangeControl {...defaultProps} layout="dashboard" />);
-      const buttons = screen.getAllByRole("button");
-      const symbols = buttons.map((b) => b.textContent);
-      expect(symbols.filter((s) => s === "−").length).toBe(2);
-      expect(symbols.filter((s) => s === "+").length).toBe(2);
-    });
-  });
-
-  describe("Custom symbols", () => {
-    it("overrides decrement and increment symbols via props", () => {
-      render(
-        <FretRangeControl
-          {...defaultProps}
-          layout="toolbar"
-          decrementSymbol="<"
-          incrementSymbol=">"
-        />,
-      );
-      expect(screen.getAllByText("<").length).toBe(2);
-      expect(screen.getAllByText(">").length).toBe(2);
+      expect(getStartButtons().decrement).toBeInTheDocument();
+      expect(getStartButtons().increment).toBeInTheDocument();
+      expect(getEndButtons().decrement).toBeInTheDocument();
+      expect(getEndButtons().increment).toBeInTheDocument();
     });
   });
 });

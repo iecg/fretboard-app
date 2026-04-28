@@ -142,6 +142,7 @@ export const FretboardSVG = memo(function FretboardSVG({
     fretColumnWidth,
     taperYLeft,
     taperPath,
+    cornerR,
     stringYAt,
   } = useFretboardGeometry({
     startFret,
@@ -363,6 +364,7 @@ export const FretboardSVG = memo(function FretboardSVG({
             wireXRel={wireXRel}
             svgDefUrl={svgDefUrl}
             taperYLeft={taperYLeft}
+            cornerR={cornerR}
             inlays={inlays}
           />
 

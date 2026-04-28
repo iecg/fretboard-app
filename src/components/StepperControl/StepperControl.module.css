@@ -1,30 +1,47 @@
-.stepper-control,
-.stepper-group {
+.stepper-control {
   display: flex;
-  align-items: center;
-  gap: var(--space-1);
+  flex-direction: column;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.toolbar {
+  /* Marker class for the default variant. */
+}
+
+.mobile {
+  /* Marker class for the compact variant. */
+}
+
+.stepper-group {
+  min-width: 0;
 }
 
 .stepper-btn {
-  composes: control-button from '../shared/shared.module.css';
+  composes: button from '../StepperShell/StepperShell.module.css';
   min-width: 2.35rem;
   min-height: 2.35rem;
-  padding: 0.4rem 0.55rem;
+  padding: 0.45rem 0.6rem;
   font-size: 0.88rem;
-  border-radius: 0.8rem;
 }
 
 .stepper-value {
-  composes: control-value from '../shared/shared.module.css';
+  composes: value from '../StepperShell/StepperShell.module.css';
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--surface-control-fg);
 }
 
+.stepper-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
 .stepper-control.mobile .stepper-btn {
   min-height: var(--size-touch-target);
   min-width: var(--size-touch-target);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+}
+
+.stepper-control.mobile .stepper-value {
+  padding-inline: 1rem;
 }
