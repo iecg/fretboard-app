@@ -4,6 +4,7 @@ import { screen, within, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
+import { LENS_REGISTRY } from "../../core/theory";
 import {
   chordDegreeAtom,
   chordOverlayModeAtom,
@@ -14,6 +15,16 @@ import {
   practiceLensAtom,
 } from "../../store/atoms";
 import { ChordOverlayControls } from "./ChordOverlayControls";
+
+const CHORD_OPTION_VALUES = [
+  "Major Triad",
+  "Minor Triad",
+  "Diminished Triad",
+  "Major 7th",
+  "Minor 7th",
+  "Dominant 7th",
+  "Power Chord (5)",
+];
 
 /**
  * Base seeds: C Major scale with degree overlay in degree mode.
@@ -233,6 +244,141 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
 
       // No lens ToggleBar when chord is off
       expect(screen.queryByRole("group", { name: "Practice lens" })).not.toBeInTheDocument();
+    });
+  });
+
+  describe("8. chord-type theory-nav browser (manual mode)", () => {
+    it("renders 'Chord Type' label in manual mode", () => {
+      const { container } = renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
+      const labels = container.querySelectorAll(".section-label");
+      const chordTypeLabel = Array.from(labels).find((el) => el.textContent === "Chord Type");
+      expect(chordTypeLabel).toBeInTheDocument();
+    });
+
+    it("renders Prev and Next chord type buttons", () => {
+      renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
+      expect(screen.getByRole("button", { name: "Previous chord type" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Next chord type" })).toBeInTheDocument();
+    });
+
+    it("clicking Next advances to the next chord type", async () => {
+      renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
+      const nextBtn = screen.getByRole("button", { name: "Next chord type" });
+      await userEvent.click(nextBtn);
+      const select = screen.getByRole("combobox", { name: "Chord Type" });
+      expect((select as HTMLSelectElement).value).toBe(CHORD_OPTION_VALUES[1]);
+    });
+
+    it("clicking Prev from first chord type wraps to last (Power Chord (5))", async () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        [scaleNameAtom, "Major"],
+        [rootNoteAtom, "C"],
+        [chordOverlayModeAtom, "manual"],
+        [chordQualityOverrideAtom, CHORD_OPTION_VALUES[0]],
+        [chordRootOverrideAtom, "C"],
+      ]);
+      const prevBtn = screen.getByRole("button", { name: "Previous chord type" });
+      await userEvent.click(prevBtn);
+      const select = screen.getByRole("combobox", { name: "Chord Type" });
+      expect((select as HTMLSelectElement).value).toBe(
+        CHORD_OPTION_VALUES[CHORD_OPTION_VALUES.length - 1],
+      );
+    });
+
+    it("clicking Next from last chord type wraps to first (Major Triad)", async () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        [scaleNameAtom, "Major"],
+        [rootNoteAtom, "C"],
+        [chordOverlayModeAtom, "manual"],
+        [chordQualityOverrideAtom, CHORD_OPTION_VALUES[CHORD_OPTION_VALUES.length - 1]],
+        [chordRootOverrideAtom, "C"],
+      ]);
+      const nextBtn = screen.getByRole("button", { name: "Next chord type" });
+      await userEvent.click(nextBtn);
+      const select = screen.getByRole("combobox", { name: "Chord Type" });
+      expect((select as HTMLSelectElement).value).toBe(CHORD_OPTION_VALUES[0]);
+    });
+  });
+
+  describe("9. card flatten: no redundant outer wrapper", () => {
+    it("outer wrapper does not have panel-surface class (card flatten)", () => {
+      const { container } = renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
+      const outerDiv = container.firstChild as HTMLElement;
+      expect(outerDiv).not.toHaveClass("panel-surface");
+      expect(outerDiv).not.toHaveClass("panel-surface--compact");
+    });
+  });
+
+  describe("10. Mode label and help-button (Degree/Manual toggle)", () => {
+    it("renders visible 'Mode' label adjacent to the toggle", () => {
+      renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
+      expect(screen.getByText("Mode")).toBeInTheDocument();
+    });
+
+    it("renders help-button for mode toggle", () => {
+      renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
+      expect(screen.getByRole("button", { name: /show help for mode/i })).toBeInTheDocument();
+    });
+
+    it("clicking mode help-button opens popover with degree/manual explanation", async () => {
+      renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
+      const helpBtn = screen.getByRole("button", { name: /show help for mode/i });
+      await userEvent.click(helpBtn);
+      expect(screen.getByText(/diatonic chord that follows the active scale/i)).toBeInTheDocument();
+      expect(screen.getByText(/free chord root and quality/i)).toBeInTheDocument();
+    });
+
+    it("clicking mode help-button again closes popover", async () => {
+      renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
+      const helpBtn = screen.getByRole("button", { name: /show help for mode/i });
+      await userEvent.click(helpBtn);
+      await userEvent.click(helpBtn);
+      expect(screen.queryByText(/diatonic chord that follows the active scale/i)).not.toBeInTheDocument();
+    });
+  });
+
+  describe("11. 'Degree' label on degree browser", () => {
+    it("renders visible 'Degree' label above the degree browser", () => {
+      const { container } = renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
+      const labels = container.querySelectorAll(".section-label");
+      const degreeLabel = Array.from(labels).find((el) => el.textContent === "Degree");
+      expect(degreeLabel).toBeInTheDocument();
+    });
+  });
+
+  describe("12. lens help-button uses LENS_REGISTRY description", () => {
+    it("renders lens help-button when chord is active", () => {
+      renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
+      expect(screen.getByRole("button", { name: /show help for lens/i })).toBeInTheDocument();
+    });
+
+    it("clicking lens help-button shows LENS_REGISTRY description for active lens", async () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        ...DEGREE_MODE_SEEDS,
+        [practiceLensAtom, "targets"],
+      ]);
+      const targetsDescription = LENS_REGISTRY.find((r) => r.id === "targets")?.description ?? "";
+      expect(targetsDescription).not.toBe("");
+
+      const helpBtn = screen.getByRole("button", { name: /show help for lens/i });
+      await userEvent.click(helpBtn);
+      expect(screen.getByText(targetsDescription)).toBeInTheDocument();
+    });
+
+    it("lens help popover text updates when active lens changes", async () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        ...DEGREE_MODE_SEEDS,
+        [practiceLensAtom, "targets"],
+      ]);
+      const helpBtn = screen.getByRole("button", { name: /show help for lens/i });
+      await userEvent.click(helpBtn);
+      const targetsDesc = LENS_REGISTRY.find((r) => r.id === "targets")?.description ?? "";
+      expect(screen.getByText(targetsDesc)).toBeInTheDocument();
+    });
+
+    it("no inline lens-hint paragraph (replaced by help-button)", () => {
+      const { container } = renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
+      expect(container.querySelector(".lens-hint")).not.toBeInTheDocument();
     });
   });
 });
