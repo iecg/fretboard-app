@@ -63,12 +63,17 @@
 .app-container[data-layout-variant="landscape-mobile"] {
   padding: 0.5rem;
   gap: 0.5rem;
+  height: auto;
+  min-height: 100dvh;
+  overflow: visible;
 }
 
 @media (max-width: 767px) {
   .app-container {
     padding: 0.65rem;
-    padding-bottom: calc(3.5rem + env(safe-area-inset-bottom, 0px));
     gap: 0.8rem;
+    height: 100dvh;
+    min-height: unset;
+    overflow: hidden;
   }
 }
