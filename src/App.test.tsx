@@ -1146,9 +1146,6 @@ describe("App", () => {
       const decrementButtons = screen.getAllByLabelText(/Decrease (start|end) fret/);
       const incrementButtons = screen.getAllByLabelText(/Increase (start|end) fret/);
 
-      expect(decrementButtons.length).toBeGreaterThan(0);
-      expect(incrementButtons.length).toBeGreaterThan(0);
-
       for (const btn of decrementButtons) fireEvent.click(btn);
       for (const btn of incrementButtons) fireEvent.click(btn);
     });

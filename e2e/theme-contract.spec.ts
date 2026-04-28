@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { loadVisualState } from "./visual-helpers";
+import { loadVisualState, getPseudoStyle } from "./visual-helpers";
 
 function colorToHex(color: string): string {
   const c = color.replace(/\s*,\s*/g, ",").replace(/\s+/g, " ").trim().toLowerCase();
@@ -493,23 +493,20 @@ test.describe("Theme Contract", () => {
             }
 
             // Hover paint lives on `::before` — host is transparent.
-            const beforeBg = await btn.evaluate(
-              (el) => getComputedStyle(el, "::before").backgroundColor,
-            );
+            const beforeBg = await getPseudoStyle(btn, "::before", "backgroundColor");
             await btn.hover();
-            const afterBg = await btn.evaluate(
-              (el) => getComputedStyle(el, "::before").backgroundColor,
-            );
+            const afterStyles = await btn.evaluate((el) => {
+              const cs = getComputedStyle(el, "::before");
+              return { bg: cs.backgroundColor, bgImg: cs.backgroundImage };
+            });
 
-            expect(afterBg).not.toBe(beforeBg);
+            expect(afterStyles.bg).not.toBe(beforeBg);
             if (theme === "dark") {
-              const afterBgImg = await btn.evaluate(
-                (el) => getComputedStyle(el, "::before").backgroundImage,
-              );
-              expect(isCyanLike(afterBg) || afterBgImg.includes("gradient")).toBe(true);
+              expect(
+                isCyanLike(afterStyles.bg) || afterStyles.bgImg.includes("gradient"),
+              ).toBe(true);
             } else {
-              // light surface hover: --surface-control-hover-bg → rgb(221, 228, 239)
-              expect(afterBg.replace(/\s/g, "")).toBe("rgb(221,228,239)");
+              expect(afterStyles.bg.replace(/\s/g, "")).toBe("rgb(221,228,239)");
             }
           }
         });
@@ -689,11 +686,11 @@ test.describe("Theme Contract", () => {
 
           await disclosureBtn.focus();
           // Glow box-shadow lives on `::before`; outline lives on the host.
-          const focusStyles = await disclosureBtn.evaluate((el) => {
-            const host = getComputedStyle(el);
-            const before = getComputedStyle(el, "::before");
-            return { outlineStyle: host.outlineStyle, boxShadow: before.boxShadow };
-          });
+          const [outlineStyle, boxShadow] = await Promise.all([
+            disclosureBtn.evaluate((el) => getComputedStyle(el).outlineStyle),
+            getPseudoStyle(disclosureBtn, "::before", "boxShadow"),
+          ]);
+          const focusStyles = { outlineStyle, boxShadow };
 
           if (theme === "dark") {
             // Dark mode: --control-focus-ring = none; glow via --control-focus-glow (cyan)

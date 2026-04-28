@@ -265,3 +265,23 @@ export async function openHelp(page: Page) {
   await waitForStable(modal);
   await waitForStableLayout(page);
 }
+
+/**
+ * Reads a single computed-style property from a pseudo-element of the matched
+ * locator. The host element is sometimes intentionally transparent while the
+ * visual treatment lives on `::before` / `::after`, so plain
+ * `getComputedStyle(el)[prop]` returns the wrong value.
+ */
+export function getPseudoStyle(
+  locator: Locator,
+  pseudo: "::before" | "::after",
+  property: string,
+): Promise<string> {
+  return locator.evaluate(
+    (el, [p, prop]) => {
+      const styles = getComputedStyle(el, p) as unknown as Record<string, string>;
+      return styles[prop] ?? "";
+    },
+    [pseudo, property] as const,
+  );
+}

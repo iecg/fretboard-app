@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createStore, type Atom } from "jotai";
 import { k } from "../test-utils/storage";
 import {
@@ -110,6 +110,23 @@ describe("progressionAtoms — advanceProgression", () => {
     expect(store.get(chordOverlayModeAtom)).toBe("degree");
     const expected = getDegreeSequence("Major")[1] as DegreeId;
     expect(store.get(chordDegreeAtom)).toBe(expected);
+  });
+
+  it("does not rewrite the chord-overlay-mode storage key when mode is already 'degree'", () => {
+    const modeKey = k("chordOverlayMode");
+    const store = makeAtomStore([
+      [baseScaleNameAtom, "Major"],
+      [progressionIndexAtom, 0],
+      [chordOverlayModeAtom, "degree"],
+    ]);
+    const setItemSpy = vi.spyOn(Storage.prototype, "setItem");
+    try {
+      store.set(advanceProgression);
+      const modeWrites = setItemSpy.mock.calls.filter(([key]) => key === modeKey);
+      expect(modeWrites).toHaveLength(0);
+    } finally {
+      setItemSpy.mockRestore();
+    }
   });
 });
 

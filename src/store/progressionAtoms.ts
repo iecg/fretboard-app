@@ -65,7 +65,9 @@ export const advanceProgression = atom(null, (get, set) => {
   const clamped = get(clampedProgressionIndexAtom);
   const next = (clamped + 1) % sequence.length;
   set(progressionIndexAtom, next);
-  set(chordOverlayModeAtom, "degree");
+  if (get(chordOverlayModeAtom) !== "degree") {
+    set(chordOverlayModeAtom, "degree");
+  }
   set(chordDegreeAtom, sequence[next] as DegreeId);
 });
 
@@ -80,6 +82,8 @@ export const regressProgression = atom(null, (get, set) => {
   const clamped = get(clampedProgressionIndexAtom);
   const prev = (clamped - 1 + sequence.length) % sequence.length;
   set(progressionIndexAtom, prev);
-  set(chordOverlayModeAtom, "degree");
+  if (get(chordOverlayModeAtom) !== "degree") {
+    set(chordOverlayModeAtom, "degree");
+  }
   set(chordDegreeAtom, sequence[prev] as DegreeId);
 });
