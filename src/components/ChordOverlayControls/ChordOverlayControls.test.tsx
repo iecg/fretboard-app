@@ -85,36 +85,33 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     it("clicking Degree from manual mode brings degree browser back", async () => {
       renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
 
-      // Manual mode initially: chord-type select and root note grid visible
-      expect(screen.getByRole("combobox", { name: "Chord Type" })).toBeInTheDocument();
+      // Manual mode initially: chord-type nav browser and root note grid visible
+      expect(screen.getByRole("group", { name: "Browse chord types" })).toBeInTheDocument();
 
       // Click "Degree" toggle
       await userEvent.click(screen.getByRole("button", { name: "Degree" }));
 
       // Degree browser visible
       expect(screen.getByRole("group", { name: "Browse chord degrees" })).toBeInTheDocument();
-      // Chord type select gone
-      expect(screen.queryByRole("combobox", { name: "Chord Type" })).not.toBeInTheDocument();
+      // Chord type browser gone
+      expect(screen.queryByRole("group", { name: "Browse chord types" })).not.toBeInTheDocument();
     });
   });
 
-  describe("3. manual mode renders NoteGrid and chord-type LabeledSelect", () => {
-    it("renders chord-type select and root note grid in manual mode", () => {
+  describe("3. manual mode renders NoteGrid and chord-type nav browser", () => {
+    it("renders chord-type nav browser and root note grid in manual mode", () => {
       renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
 
-      // Chord-type select
-      expect(screen.getByRole("combobox", { name: "Chord Type" })).toBeInTheDocument();
+      // Chord-type nav browser
+      expect(screen.getByRole("group", { name: "Browse chord types" })).toBeInTheDocument();
       // NoteGrid for root
       expect(screen.getByRole("group", { name: "Note selector" })).toBeInTheDocument();
     });
 
-    it("chord-type select contains expected options (Major Triad, Minor Triad)", () => {
+    it("chord-type browser displays current value (Major Triad)", () => {
       renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
-      const chordTypeSelect = screen.getByRole("combobox", { name: "Chord Type" });
-      const options = within(chordTypeSelect).getAllByRole("option");
-      const optionValues = options.map((o) => o.textContent);
-      expect(optionValues).toContain("Major Triad");
-      expect(optionValues).toContain("Minor Triad");
+      const browser = screen.getByRole("group", { name: "Browse chord types" });
+      expect(within(browser).getByText("Major Triad")).toBeInTheDocument();
     });
   });
 
@@ -131,7 +128,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect((degreeSelect as HTMLSelectElement).value).toBe("V");
     });
 
-    it("seeded manual mode with chordQualityOverride='Major 7th' shows correct value", () => {
+    it("seeded manual mode with chordQualityOverride='Major 7th' shows correct value in browser", () => {
       renderWithAtoms(<ChordOverlayControls />, [
         [scaleNameAtom, "Major"],
         [rootNoteAtom, "C"],
@@ -140,8 +137,8 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
         [chordRootOverrideAtom, "G"],
       ]);
 
-      const chordTypeSelect = screen.getByRole("combobox", { name: "Chord Type" });
-      expect((chordTypeSelect as HTMLSelectElement).value).toBe("Major 7th");
+      const browser = screen.getByRole("group", { name: "Browse chord types" });
+      expect(within(browser).getByText("Major 7th")).toBeInTheDocument();
     });
   });
 
@@ -265,8 +262,8 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
       const nextBtn = screen.getByRole("button", { name: "Next chord type" });
       await userEvent.click(nextBtn);
-      const select = screen.getByRole("combobox", { name: "Chord Type" });
-      expect((select as HTMLSelectElement).value).toBe(CHORD_OPTION_VALUES[1]);
+      const browser = screen.getByRole("group", { name: "Browse chord types" });
+      expect(within(browser).getByText(CHORD_OPTION_VALUES[1])).toBeInTheDocument();
     });
 
     it("clicking Prev from first chord type wraps to last (Power Chord (5))", async () => {
@@ -279,10 +276,10 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       ]);
       const prevBtn = screen.getByRole("button", { name: "Previous chord type" });
       await userEvent.click(prevBtn);
-      const select = screen.getByRole("combobox", { name: "Chord Type" });
-      expect((select as HTMLSelectElement).value).toBe(
-        CHORD_OPTION_VALUES[CHORD_OPTION_VALUES.length - 1],
-      );
+      const browser = screen.getByRole("group", { name: "Browse chord types" });
+      expect(
+        within(browser).getByText(CHORD_OPTION_VALUES[CHORD_OPTION_VALUES.length - 1]),
+      ).toBeInTheDocument();
     });
 
     it("clicking Next from last chord type wraps to first (Major Triad)", async () => {
@@ -295,8 +292,8 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       ]);
       const nextBtn = screen.getByRole("button", { name: "Next chord type" });
       await userEvent.click(nextBtn);
-      const select = screen.getByRole("combobox", { name: "Chord Type" });
-      expect((select as HTMLSelectElement).value).toBe(CHORD_OPTION_VALUES[0]);
+      const browser = screen.getByRole("group", { name: "Browse chord types" });
+      expect(within(browser).getByText(CHORD_OPTION_VALUES[0])).toBeInTheDocument();
     });
   });
 
@@ -310,19 +307,19 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
   });
 
   describe("10. Mode label and help-button (Degree/Manual toggle)", () => {
-    it("renders visible 'Mode' label adjacent to the toggle", () => {
+    it("renders visible 'Chord Mode' label adjacent to the toggle", () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
-      expect(screen.getByText("Mode")).toBeInTheDocument();
+      expect(screen.getByText("Chord Mode")).toBeInTheDocument();
     });
 
     it("renders help-button for mode toggle", () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
-      expect(screen.getByRole("button", { name: /show help for mode/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /show help for chord mode/i })).toBeInTheDocument();
     });
 
     it("clicking mode help-button opens popover with degree/manual explanation", async () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
-      const helpBtn = screen.getByRole("button", { name: /show help for mode/i });
+      const helpBtn = screen.getByRole("button", { name: /show help for chord mode/i });
       await userEvent.click(helpBtn);
       expect(screen.getByText(/diatonic chord that follows the active scale/i)).toBeInTheDocument();
       expect(screen.getByText(/free chord root and quality/i)).toBeInTheDocument();
@@ -330,7 +327,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
 
     it("clicking mode help-button again closes popover", async () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
-      const helpBtn = screen.getByRole("button", { name: /show help for mode/i });
+      const helpBtn = screen.getByRole("button", { name: /show help for chord mode/i });
       await userEvent.click(helpBtn);
       await userEvent.click(helpBtn);
       expect(screen.queryByText(/diatonic chord that follows the active scale/i)).not.toBeInTheDocument();

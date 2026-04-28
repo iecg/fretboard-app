@@ -1,4 +1,4 @@
-import { startTransition, useCallback, useEffect, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 import { useAtomValue } from "jotai";
 import clsx from "clsx";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -15,26 +15,25 @@ import { useScaleState } from "../../hooks/useScaleState";
 import styles from "../TheoryControls/TheoryControls.module.css";
 import shared from "../shared/shared.module.css";
 
-const CHORD_OPTIONS: (string | { divider: string })[] = [
-  { divider: "Triads" },
+type ChordHelpId = "chord-mode" | "lens";
+
+const CHORD_OPTIONS: string[] = [
   "Major Triad",
   "Minor Triad",
   "Diminished Triad",
-  { divider: "Seventh Chords" },
   "Major 7th",
   "Minor 7th",
   "Dominant 7th",
-  { divider: "Other" },
   "Power Chord (5)",
 ];
 
-const CHORD_OPTION_VALUES = CHORD_OPTIONS.filter(
-  (o): o is string => typeof o === "string",
-);
-
 const CHORD_NONE_VALUE = "__none__";
 
-type ChordOverlayHelpId = "mode" | "lens";
+const CHORD_MODE_HELP = {
+  id: "chord-mode",
+  content:
+    "Degree: diatonic chord that follows the active scale. Manual: free chord root and quality that escapes the scale.",
+};
 
 export function ChordOverlayControls() {
   const { scaleName, useFlats } = useScaleState();
@@ -52,12 +51,12 @@ export function ChordOverlayControls() {
     setChordQualityOverride,
   } = useChordState();
 
+  const { activeHelpField, handleHelpToggle, registerHelpContainer } =
+    useHelpPopover<ChordHelpId>();
+
   const lensAvailability = useAtomValue(lensAvailabilityAtom);
 
   const [isChordOverlayOpen, setChordOverlayOpen] = useState(Boolean(chordType));
-
-  const { activeHelpField, handleHelpToggle, registerHelpContainer } =
-    useHelpPopover<ChordOverlayHelpId>();
 
   const degreeSelectOptions: LabeledSelectOption[] = [
     { value: CHORD_NONE_VALUE, label: "Off" },
@@ -88,11 +87,8 @@ export function ChordOverlayControls() {
   });
 
   const currentLensEntry = lensAvailability.find((l) => l.id === practiceLens);
-
-  // LENS_REGISTRY description for the active lens (verbatim from src/core/theory.ts).
-  const activeLensRegistryDescription = LENS_REGISTRY.find(
-    (r) => r.id === practiceLens,
-  )?.description;
+  const activeLensDescription =
+    LENS_REGISTRY.find((l) => l.id === practiceLens)?.description ?? undefined;
 
   // Auto-exit unavailable lenses (except "targets").
   useEffect(() => {
@@ -120,20 +116,16 @@ export function ChordOverlayControls() {
     });
   };
 
-  const handleStepChordType = useCallback(
-    (direction: -1 | 1) => {
-      startTransition(() => {
-        const currentIndex = chordQualityOverride
-          ? CHORD_OPTION_VALUES.indexOf(chordQualityOverride)
-          : -1;
-        const baseIndex = currentIndex < 0 ? 0 : currentIndex;
-        const nextIndex =
-          (baseIndex + direction + CHORD_OPTION_VALUES.length) % CHORD_OPTION_VALUES.length;
-        setChordQualityOverride(CHORD_OPTION_VALUES[nextIndex]);
-      });
-    },
-    [chordQualityOverride, setChordQualityOverride],
-  );
+  const handleStepChordType = (direction: -1 | 1) => {
+    const currentIndex = chordQualityOverride
+      ? CHORD_OPTIONS.indexOf(chordQualityOverride)
+      : -1;
+    const baseIndex = currentIndex < 0 ? 0 : currentIndex;
+    const nextIndex = (baseIndex + direction + CHORD_OPTIONS.length) % CHORD_OPTIONS.length;
+    startTransition(() => {
+      setChordQualityOverride(CHORD_OPTIONS[nextIndex]);
+    });
+  };
 
   const chordSummary = chordType ?? "Off";
   const chordOverlayOpen = isChordOverlayOpen || Boolean(chordType);
@@ -146,7 +138,7 @@ export function ChordOverlayControls() {
           [styles["theory-disclosure-btn--open"]]: chordOverlayOpen,
         })}
         aria-expanded={chordOverlayOpen}
-        onClick={() => setChordOverlayOpen((value) => !value)}
+        onClick={() => setChordOverlayOpen((v) => !v)}
       >
         <span className={styles["theory-disclosure-title"]}>Chord Overlay</span>
         <span className={styles["theory-disclosure-summary"]}>{chordSummary}</span>
@@ -154,18 +146,14 @@ export function ChordOverlayControls() {
 
       {chordOverlayOpen ? (
         <div className={styles["theory-chord-content"]}>
-          {/* Mode toggle: Degree | Manual */}
-          <div className={styles["theory-mode-toggle-row"]}>
+          {/* Chord Mode toggle: Degree | Manual */}
+          <div className={shared["control-section"]}>
             <FieldHelpHeader
-              label="Mode"
-              help={{
-                id: "chord-mode",
-                content:
-                  "Degree: diatonic chord that follows the active scale. Manual: free chord root and quality that escapes the scale.",
-              }}
-              isHelpOpen={activeHelpField === "mode"}
-              onToggleHelp={() => handleHelpToggle("mode")}
-              helpContainerRef={(node) => registerHelpContainer("mode", node)}
+              label="Chord Mode"
+              help={CHORD_MODE_HELP}
+              isHelpOpen={activeHelpField === "chord-mode"}
+              onToggleHelp={() => handleHelpToggle("chord-mode")}
+              helpContainerRef={(node) => registerHelpContainer("chord-mode", node)}
             />
             <ToggleBar
               options={[
@@ -185,40 +173,38 @@ export function ChordOverlayControls() {
               <div
                 role="group"
                 aria-label="Browse chord degrees"
-                className={styles["theory-mode-browser"]}
+                className={styles["theory-browser-main"]}
               >
-                <div className={styles["theory-browser-main"]}>
-                  <button
-                    type="button"
-                    className={styles["theory-nav-btn"]}
-                    aria-label="Previous chord degree"
-                    onClick={() => handleStepDegree(-1)}
-                  >
-                    <ChevronLeft size={16} />
-                  </button>
-                  <div className={styles["theory-browser-selector"]}>
-                    <LabeledSelect
-                      label="Chord Degree"
-                      value={chordDegree ?? CHORD_NONE_VALUE}
-                      options={degreeSelectOptions}
-                      onChange={handleDegreeChange}
-                      hideLabel
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    className={styles["theory-nav-btn"]}
-                    aria-label="Next chord degree"
-                    onClick={() => handleStepDegree(1)}
-                  >
-                    <ChevronRight size={16} />
-                  </button>
+                <button
+                  type="button"
+                  className={styles["theory-nav-btn"]}
+                  aria-label="Previous chord degree"
+                  onClick={() => handleStepDegree(-1)}
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                <div className={styles["theory-browser-selector"]}>
+                  <LabeledSelect
+                    label="Chord Degree"
+                    value={chordDegree ?? CHORD_NONE_VALUE}
+                    options={degreeSelectOptions}
+                    onChange={handleDegreeChange}
+                    hideLabel
+                  />
                 </div>
+                <button
+                  type="button"
+                  className={styles["theory-nav-btn"]}
+                  aria-label="Next chord degree"
+                  onClick={() => handleStepDegree(1)}
+                >
+                  <ChevronRight size={16} />
+                </button>
               </div>
             </div>
           )}
 
-          {/* Manual mode: chord-type browser + root picker */}
+          {/* Manual mode: chord-type nav browser + root picker */}
           {chordOverlayMode === "manual" && (
             <>
               <div className={shared["control-section"]}>
@@ -226,35 +212,27 @@ export function ChordOverlayControls() {
                 <div
                   role="group"
                   aria-label="Browse chord types"
-                  className={styles["theory-mode-browser"]}
+                  className={styles["theory-browser-main"]}
                 >
-                  <div className={styles["theory-browser-main"]}>
-                    <button
-                      type="button"
-                      className={styles["theory-nav-btn"]}
-                      aria-label="Previous chord type"
-                      onClick={() => handleStepChordType(-1)}
-                    >
-                      <ChevronLeft size={16} />
-                    </button>
-                    <div className={styles["theory-browser-selector"]}>
-                      <LabeledSelect
-                        label="Chord Type"
-                        value={chordQualityOverride ?? CHORD_OPTION_VALUES[0]}
-                        options={CHORD_OPTION_VALUES.map((o) => ({ value: o, label: o }))}
-                        onChange={(v) => setChordQualityOverride(v)}
-                        hideLabel
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      className={styles["theory-nav-btn"]}
-                      aria-label="Next chord type"
-                      onClick={() => handleStepChordType(1)}
-                    >
-                      <ChevronRight size={16} />
-                    </button>
+                  <button
+                    type="button"
+                    className={styles["theory-nav-btn"]}
+                    aria-label="Previous chord type"
+                    onClick={() => handleStepChordType(-1)}
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <div className={styles["theory-browser-selector"]}>
+                    <span>{chordQualityOverride ?? CHORD_OPTIONS[0]}</span>
                   </div>
+                  <button
+                    type="button"
+                    className={styles["theory-nav-btn"]}
+                    aria-label="Next chord type"
+                    onClick={() => handleStepChordType(1)}
+                  >
+                    <ChevronRight size={16} />
+                  </button>
                 </div>
               </div>
               <div className={shared["control-section"]}>
@@ -279,11 +257,8 @@ export function ChordOverlayControls() {
               <FieldHelpHeader
                 label="Lens"
                 help={
-                  activeLensRegistryDescription
-                    ? {
-                        id: "chord-lens",
-                        content: activeLensRegistryDescription,
-                      }
+                  activeLensDescription
+                    ? { id: "lens", content: activeLensDescription }
                     : undefined
                 }
                 isHelpOpen={activeHelpField === "lens"}
