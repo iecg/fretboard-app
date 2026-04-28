@@ -20,7 +20,6 @@
 .mobile-theory-tab,
 .mobile-view-tab {
   padding: 1rem;
-  padding-bottom: calc(1rem + 3.5rem + env(safe-area-inset-bottom, 0px));
   gap: 1.25rem;
   background: var(--surface-float);
   border: 1px solid var(--surface-card-border);
