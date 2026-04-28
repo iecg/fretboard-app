@@ -592,7 +592,7 @@ describe("App", () => {
     it("can set chord type via manual mode", async () => {
       render(<App />);
       // ExpandedControlsPanel is lazy loaded, wait for it to be ready
-      const chordOverlayBtn = await screen.findByRole("button", { name: /Chord Overlay/i });
+      const chordOverlayBtn = await screen.findByRole("button", { name: /Chords/i });
       fireEvent.click(chordOverlayBtn);
 
       // New UI: switch to Manual mode first, then set chord type
@@ -1138,12 +1138,12 @@ describe("App", () => {
       const viewTab = screen.queryByText("View");
       if (viewTab) fireEvent.click(viewTab);
 
-      // Fret range has Start −/+ and End −/+ buttons
-      const minusButtons = screen.queryAllByText("−");
-      const plusButtons = screen.queryAllByText("+");
+      // Fret range exposes Start/End ± steppers via aria-label.
+      const decrementButtons = screen.queryAllByLabelText(/Decrease (start|end) fret/);
+      const incrementButtons = screen.queryAllByLabelText(/Increase (start|end) fret/);
 
-      for (const btn of minusButtons) fireEvent.click(btn);
-      for (const btn of plusButtons) fireEvent.click(btn);
+      for (const btn of decrementButtons) fireEvent.click(btn);
+      for (const btn of incrementButtons) fireEvent.click(btn);
     });
   });
 });

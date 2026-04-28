@@ -6,6 +6,7 @@ import { OverlaySection, OverlayFieldHeader } from "../shared";
 import { ACCIDENTAL_OPTIONS, ENHARMONIC_DISPLAY_OPTIONS, SETTING_FIELDS } from "../constants";
 import { type HelpFieldId } from "../types";
 import styles from "../SettingsOverlay.module.css";
+import shared from "../../shared/shared.module.css";
 
 interface NotationSettingsSectionProps {
   activeHelpField: HelpFieldId | null;
@@ -71,6 +72,9 @@ export function NotationSettingsSection({
               helpContainerRef={helpContainerRef}
             />
             <div className={styles["overlay-field-control"]}>{control}</div>
+            {config.help ? (
+              <p className={shared["shape-hint"]}>{config.help.content}</p>
+            ) : null}
           </div>
         );
       })}

@@ -6,6 +6,7 @@ import { OverlaySection, OverlayFieldHeader } from "../shared";
 import { THEME_OPTIONS, SETTING_FIELDS } from "../constants";
 import { type HelpFieldId } from "../types";
 import styles from "../SettingsOverlay.module.css";
+import shared from "../../shared/shared.module.css";
 
 interface AppearanceSettingsSectionProps {
   activeHelpField: HelpFieldId | null;
@@ -49,6 +50,9 @@ export function AppearanceSettingsSection({
             onChange={(v) => setTheme(v as typeof theme)}
           />
         </div>
+        {config.help ? (
+          <p className={shared["shape-hint"]}>{config.help.content}</p>
+        ) : null}
       </div>
     </OverlaySection>
   );

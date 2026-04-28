@@ -1,5 +1,4 @@
 import { type Ref } from "react";
-import { HelpCircle } from "lucide-react";
 import styles from "./shared.module.css";
 
 export type FieldHelpContent = {
@@ -7,44 +6,24 @@ export type FieldHelpContent = {
   content: string;
 };
 
+/**
+ * Renders the field's label. The popover help button has been retired —
+ * help text now lives inline below the field control as a hint paragraph
+ * (see each settings section). The remaining props are accepted for
+ * API back-compat but are not used.
+ */
 export function FieldHelpHeader({
   label,
-  help,
-  isHelpOpen,
-  onToggleHelp,
-  helpContainerRef,
 }: {
   label: string;
   help?: FieldHelpContent;
-  isHelpOpen: boolean;
-  onToggleHelp: () => void;
+  isHelpOpen?: boolean;
+  onToggleHelp?: () => void;
   helpContainerRef?: Ref<HTMLDivElement>;
 }) {
   return (
     <div className={styles["field-help-header"]}>
       <span className={styles["field-help-label"]}>{label}</span>
-      {help ? (
-        <div className={styles["field-help-wrapper"]} ref={helpContainerRef}>
-          <button
-            type="button"
-            className={styles["field-help-trigger"]}
-            aria-label={isHelpOpen ? `Hide help for ${label}` : `Show help for ${label}`}
-            aria-expanded={isHelpOpen}
-            aria-controls={`field-help-${help.id}`}
-            onClick={onToggleHelp}
-          >
-            <HelpCircle className="icon" />
-          </button>
-          {isHelpOpen ? (
-            <div
-              id={`field-help-${help.id}`}
-              className={styles["field-help-popover"]}
-            >
-              {help.content}
-            </div>
-          ) : null}
-        </div>
-      ) : null}
     </div>
   );
 }

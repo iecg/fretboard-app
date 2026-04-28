@@ -1,101 +1,45 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen } from "@testing-library/react";
 import { axe } from "../../test-utils/a11y";
 import { FieldHelpHeader } from "./FieldHelpHeader";
 
 const help = { id: "test-field", content: "This is some help text." };
 
-function Wrapper({ defaultOpen = false }: { defaultOpen?: boolean }) {
-  const [open, setOpen] = React.useState(defaultOpen);
-  return (
-    <FieldHelpHeader
-      label="Test Label"
-      help={help}
-      isHelpOpen={open}
-      onToggleHelp={() => setOpen((v) => !v)}
-    />
-  );
-}
-
-import React from "react";
-
 describe("FieldHelpHeader", () => {
-  it("renders with no accessibility violations when collapsed", async () => {
-    const { container } = render(<Wrapper />);
-    const results = await axe(container);
-    expect(results).toHaveNoViolations();
-  });
-
-  it("renders with no accessibility violations when expanded", async () => {
-    const { container } = render(<Wrapper defaultOpen />);
-    const results = await axe(container);
-    expect(results).toHaveNoViolations();
-  });
-
   it("renders the label text", () => {
-    render(<Wrapper />);
+    render(<FieldHelpHeader label="Test Label" />);
     expect(screen.getByText("Test Label")).toBeTruthy();
   });
 
-  it("icon button has accessible name via aria-label", () => {
-    render(<Wrapper />);
-    expect(screen.getByLabelText("Show help for Test Label")).toBeTruthy();
+  it("renders no help button (help text is rendered inline below the field)", () => {
+    render(<FieldHelpHeader label="Test Label" help={help} />);
+    expect(screen.queryByRole("button")).toBeNull();
   });
 
-  it("aria-expanded is false when closed", () => {
-    render(<Wrapper />);
-    const btn = screen.getByLabelText("Show help for Test Label");
-    expect(btn).toHaveAttribute("aria-expanded", "false");
+  it("does not render the help content (the surrounding section renders it)", () => {
+    render(<FieldHelpHeader label="Test Label" help={help} />);
+    expect(screen.queryByText(help.content)).toBeNull();
   });
 
-  it("aria-expanded toggles to true on click", () => {
-    render(<Wrapper />);
-    const btn = screen.getByLabelText("Show help for Test Label");
-    fireEvent.click(btn);
-    expect(screen.getByLabelText("Hide help for Test Label")).toHaveAttribute(
-      "aria-expanded",
-      "true",
-    );
-  });
-
-  it("popover content is visible when open", () => {
-    render(<Wrapper defaultOpen />);
-    expect(screen.getByText("This is some help text.")).toBeTruthy();
-  });
-
-  it("popover content is hidden when closed", () => {
-    render(<Wrapper />);
-    expect(screen.queryByText("This is some help text.")).toBeNull();
-  });
-
-  it("popover has the id that aria-controls references", () => {
-    render(<Wrapper defaultOpen />);
-    const btn = screen.getByLabelText("Hide help for Test Label");
-    const controlsId = btn.getAttribute("aria-controls");
-    expect(controlsId).toBeTruthy();
-    expect(document.getElementById(controlsId!)).toBeTruthy();
-  });
-
-  it("renders without help when no help prop is given", async () => {
-    const { container } = render(
+  it("ignores legacy popover-state props without crashing", () => {
+    render(
       <FieldHelpHeader
-        label="No Help"
-        isHelpOpen={false}
+        label="Test Label"
+        help={help}
+        isHelpOpen={true}
         onToggleHelp={() => {}}
       />,
     );
+    expect(screen.getByText("Test Label")).toBeTruthy();
     expect(screen.queryByRole("button")).toBeNull();
-    const results = await axe(container);
-    expect(results).toHaveNoViolations();
   });
 
-  it("button is focusable via keyboard tab", async () => {
-    const user = userEvent.setup();
-    render(<Wrapper />);
-    await user.tab();
-    const btn = screen.getByLabelText("Show help for Test Label");
-    expect(document.activeElement).toBe(btn);
+  it("renders with no accessibility violations", async () => {
+    const { container } = render(
+      <FieldHelpHeader label="Test Label" help={help} />,
+    );
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
   });
 });

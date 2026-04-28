@@ -289,6 +289,13 @@
   user-select: none;
 }
 
+/* When a control-section ends in a hint paragraph, the next sibling
+   pulls up so the hint sits closer to the next label rather than
+   inheriting the parent's full inter-section gap. */
+.control-section:has(> .shape-hint:last-child) + .control-section {
+  margin-top: -0.45rem;
+}
+
 .lens-hint {
   font-size: 0.75rem;
   color: var(--text-muted);
@@ -390,15 +397,13 @@
 .field-help-header {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 6px;
 }
 
 .field-help-label {
-  font-size: 0.72rem;
-  color: var(--surface-control-fg-muted);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--chrome-fg);
 }
 
 .field-help-wrapper {
@@ -410,11 +415,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.45rem;
-  height: 1.45rem;
+  width: 1.875rem;
+  height: 1.875rem;
   border-radius: 999px;
-  border: 1px solid transparent;
-  background: transparent;
+  border: 1px solid var(--surface-control-border);
+  background: var(--surface-control);
   color: var(--surface-control-fg-muted);
   cursor: help;
   transition: var(--transition-surface);
@@ -424,8 +429,7 @@
 .field-help-trigger[aria-expanded="true"] {
   color: var(--surface-control-hover-fg);
   border-color: var(--surface-control-hover-border);
-  background-color: var(--surface-control-hover-bg);
-  background-image: var(--surface-control-hover-bg-image);
+  background: var(--surface-control-hover-bg);
 }
 
 .field-help-trigger:focus-visible {
@@ -436,8 +440,8 @@
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
 .field-help-trigger :global(.icon) {
-  width: 0.92rem;
-  height: 0.92rem;
+  width: 16px;
+  height: 16px;
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 

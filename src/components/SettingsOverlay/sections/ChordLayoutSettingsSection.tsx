@@ -6,6 +6,7 @@ import { OverlaySection, OverlayFieldHeader } from "../shared";
 import { SETTING_FIELDS } from "../constants";
 import { type HelpFieldId } from "../types";
 import styles from "../SettingsOverlay.module.css";
+import shared from "../../shared/shared.module.css";
 
 interface ChordLayoutSettingsSectionProps {
   activeHelpField: HelpFieldId | null;
@@ -51,6 +52,9 @@ export function ChordLayoutSettingsSection({
             buttonVariant="mobile"
           />
         </div>
+        {config.help ? (
+          <p className={shared["shape-hint"]}>{config.help.content}</p>
+        ) : null}
       </div>
     </OverlaySection>
   );
