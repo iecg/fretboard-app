@@ -109,7 +109,16 @@ export function getTaperGeometry(
   const yLeft = Math.round((neckHeight * (1 - leftHeightRatio)) / 2);
 
   const cornerR =
-    endFret === maxFret ? Math.min(Math.round(neckHeight * 0.08), 22) : 0;
+    endFret === maxFret
+      ? Math.max(
+          0,
+          Math.min(
+            Math.round(neckHeight * 0.08),
+            22,
+            Math.floor(neckWidthPx * 0.5),
+          ),
+        )
+      : 0;
   const taperPath = cornerR > 0
     ? `M 0 ${yLeft} ` +
       `L ${neckWidthPx - cornerR} 0 ` +

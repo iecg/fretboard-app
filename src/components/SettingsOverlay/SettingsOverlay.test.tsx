@@ -147,7 +147,7 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(screen.queryByLabelText(/Hide help for /)).toBeNull();
   });
 
-  it("escape closes the drawer (no popover state to dismiss first)", () => {
+  it("escape closes the drawer when no popover is open", () => {
     const { store } = renderOpenOverlay();
 
     expect(store.get(settingsOverlayOpenAtom)).toBe(true);
@@ -163,13 +163,6 @@ describe("SettingsOverlay/SettingsOverlay", () => {
 
     const drawer = document.querySelector(".settings-overlay-drawer");
     expect(drawer?.getAttribute("data-layout-tier")).toBe("mobile");
-  });
-
-  it("closes overlay when ESC is pressed with no help popover open", () => {
-    const { store } = renderOpenOverlay();
-    expect(store.get(settingsOverlayOpenAtom)).toBe(true);
-    fireEvent.keyDown(window, { key: "Escape" });
-    expect(store.get(settingsOverlayOpenAtom)).toBe(false);
   });
 
   it("closes overlay when backdrop is clicked", () => {

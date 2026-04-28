@@ -1123,24 +1123,31 @@ describe("App", () => {
     });
 
     it("adjusts fret range via buttons", async () => {
-      // Set fretStart=5 so the minus button is enabled, fretEnd=20 so end minus is enabled
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 1280,
+      });
+      Object.defineProperty(window, "innerHeight", {
+        writable: true,
+        configurable: true,
+        value: 900,
+      });
       localStorage.setItem(k("fretStart"), "5");
       localStorage.setItem(k("fretEnd"), "20");
       render(<App />);
       fireEvent(window, new Event("resize"));
 
       await waitFor(() => {
-        expect(
-          document.querySelector('[data-layout-variant="mobile"]'),
-        ).toBeTruthy();
+        const decrementButtons = screen.queryAllByLabelText(/Decrease (start|end) fret/);
+        expect(decrementButtons.length).toBeGreaterThan(0);
       });
 
-      const viewTab = screen.queryByText("View");
-      if (viewTab) fireEvent.click(viewTab);
+      const decrementButtons = screen.getAllByLabelText(/Decrease (start|end) fret/);
+      const incrementButtons = screen.getAllByLabelText(/Increase (start|end) fret/);
 
-      // Fret range exposes Start/End ± steppers via aria-label.
-      const decrementButtons = screen.queryAllByLabelText(/Decrease (start|end) fret/);
-      const incrementButtons = screen.queryAllByLabelText(/Increase (start|end) fret/);
+      expect(decrementButtons.length).toBeGreaterThan(0);
+      expect(incrementButtons.length).toBeGreaterThan(0);
 
       for (const btn of decrementButtons) fireEvent.click(btn);
       for (const btn of incrementButtons) fireEvent.click(btn);

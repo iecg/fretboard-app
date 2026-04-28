@@ -119,14 +119,12 @@ export function ChordOverlayControls() {
   const handleStepChordType = (direction: -1 | 1) => {
     const currentIndex =
       chordQualityOverride === null ? -1 : CHORD_OPTIONS.indexOf(chordQualityOverride);
-    const nextIndex =
-      currentIndex < 0
-        ? direction === 1
-          ? 0
-          : CHORD_OPTIONS.length - 1
-        : (currentIndex + direction + CHORD_OPTIONS.length) % CHORD_OPTIONS.length;
+    const totalSlots = CHORD_OPTIONS.length + 1;
+    const currentSlot = currentIndex + 1;
+    const nextSlot = (currentSlot + direction + totalSlots) % totalSlots;
+    const nextValue = nextSlot === 0 ? null : CHORD_OPTIONS[nextSlot - 1];
     startTransition(() => {
-      setChordQualityOverride(CHORD_OPTIONS[nextIndex]);
+      setChordQualityOverride(nextValue);
     });
   };
 

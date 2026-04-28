@@ -492,15 +492,23 @@ test.describe("Theme Contract", () => {
               await btn.click();
             }
 
-            const beforeBg = await btn.evaluate((el) => getComputedStyle(el).backgroundColor);
+            // Hover paint lives on `::before` — host is transparent.
+            const beforeBg = await btn.evaluate(
+              (el) => getComputedStyle(el, "::before").backgroundColor,
+            );
             await btn.hover();
-            const afterBg = await btn.evaluate((el) => getComputedStyle(el).backgroundColor);
-            
+            const afterBg = await btn.evaluate(
+              (el) => getComputedStyle(el, "::before").backgroundColor,
+            );
+
             expect(afterBg).not.toBe(beforeBg);
             if (theme === "dark") {
-              expect(isCyanLike(afterBg)).toBe(true);
+              const afterBgImg = await btn.evaluate(
+                (el) => getComputedStyle(el, "::before").backgroundImage,
+              );
+              expect(isCyanLike(afterBg) || afterBgImg.includes("gradient")).toBe(true);
             } else {
-              // light surface hover: --surface-highlight = #dde4ef -> rgb(221, 228, 239)
+              // light surface hover: --surface-control-hover-bg → rgb(221, 228, 239)
               expect(afterBg.replace(/\s/g, "")).toBe("rgb(221,228,239)");
             }
           }
@@ -593,9 +601,10 @@ test.describe("Theme Contract", () => {
             expect(isCyanLike(hoverBorder)).toBe(true);
           }
 
+          // Focus ring is on the StepperShell via :focus-within.
           await select.focus();
-          const focusOutline = await select.evaluate((el) => getComputedStyle(el).outlineStyle);
-          expect(focusOutline).toBe("solid");
+          const shellOutline = await shell.evaluate((el) => getComputedStyle(el).outlineStyle);
+          expect(shellOutline).toBe("solid");
         });
 
         test("audio icon should not use accent color when unmuted", async ({ page }) => {
@@ -679,9 +688,11 @@ test.describe("Theme Contract", () => {
           }
 
           await disclosureBtn.focus();
+          // Glow box-shadow lives on `::before`; outline lives on the host.
           const focusStyles = await disclosureBtn.evaluate((el) => {
-            const cs = getComputedStyle(el);
-            return { outlineStyle: cs.outlineStyle, boxShadow: cs.boxShadow };
+            const host = getComputedStyle(el);
+            const before = getComputedStyle(el, "::before");
+            return { outlineStyle: host.outlineStyle, boxShadow: before.boxShadow };
           });
 
           if (theme === "dark") {
@@ -809,7 +820,7 @@ test.describe("Theme Contract", () => {
       const panelSurfaces = page.getByTestId("theory-controls").locator(".panel-surface");
       await expect(panelSurfaces).toHaveCount(0);
 
-      const sections = page.getByTestId("theory-controls").locator('[class*="theory-section"]');
+      const sections = page.getByTestId("theory-controls").locator("section[data-open]");
       await expect(sections).toHaveCount(2);
     });
 
@@ -976,7 +987,7 @@ test.describe("Theme Contract", () => {
       await loadVisualState(page, { theme: "light", chordType: "Major 7th" }, { width: 1280, height: 900 });
       await expect(page.getByTestId("theory-controls")).toBeVisible();
 
-      const sections = page.getByTestId("theory-controls").locator('[class*="theory-section"]');
+      const sections = page.getByTestId("theory-controls").locator("section[data-open]");
       await expect(sections).toHaveCount(2);
 
       const scaleBg = await sections.nth(0).evaluate((el) => getComputedStyle(el).backgroundColor);
@@ -991,7 +1002,7 @@ test.describe("Theme Contract", () => {
         await loadVisualState(page, { theme, chordType: "Major 7th" }, { width: 1280, height: 900 });
         await expect(page.getByTestId("theory-controls")).toBeVisible();
 
-        const theorySection = page.locator('[class*="theory-section"]').first();
+        const theorySection = page.locator("section[data-open]").first();
         const scaleFamilyStepper = page.getByRole("group", { name: "Browse scale families" });
         const scaleFamilySelect = page.getByRole("combobox", { name: "Scale Family" }).first();
         const toggleGroup = page.locator('[class*="toggle-group"]').first();

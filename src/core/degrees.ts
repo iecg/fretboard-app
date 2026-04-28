@@ -138,7 +138,7 @@ export function getQualityForDegree(
   // CHORD_DEFINITIONS has no Augmented Triad, so augmented degrees collapse to
   // Major Triad here (pragmatic — the visible chord overlay drops the #5).
   const intervals = SCALES[scaleName];
-  if (!intervals || intervals.length < 7) return undefined;
+  if (!intervals || intervals.length !== 7) return undefined;
 
   const degreeIdx = intervals.indexOf(semitone);
   if (degreeIdx === -1) return undefined;

@@ -3,7 +3,8 @@ import { describe, it, expect } from "vitest";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
-import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
+import { renderWithAtoms, renderWithStore, makeAtomStore } from "../../test-utils/renderWithAtoms";
+import { act } from "react";
 import { LENS_REGISTRY } from "../../core/theory";
 import {
   chordDegreeAtom,
@@ -340,9 +341,8 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
 
   describe("11. 'Degree' label on degree browser", () => {
     it("renders visible 'Degree' label above the degree browser", () => {
-      const { container } = renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
-      const labels = container.querySelectorAll(".section-label");
-      const degreeLabel = Array.from(labels).find((el) => el.textContent === "Degree");
+      renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
+      const degreeLabel = screen.getByText("Degree", { selector: "span" });
       expect(degreeLabel).toBeInTheDocument();
     });
   });
@@ -367,12 +367,26 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
 
     it("lens hint text updates when active lens changes", () => {
-      renderWithAtoms(<ChordOverlayControls />, [
+      const store = makeAtomStore([
         ...DEGREE_MODE_SEEDS,
         [practiceLensAtom, "targets"],
       ]);
+      renderWithStore(<ChordOverlayControls />, store);
+
       const targetsDesc = LENS_REGISTRY.find((r) => r.id === "targets")?.description ?? "";
+      const guideDesc = LENS_REGISTRY.find((r) => r.id === "guide-tones")?.description ?? "";
+      expect(targetsDesc).not.toBe("");
+      expect(guideDesc).not.toBe("");
+      expect(guideDesc).not.toBe(targetsDesc);
+
       expect(screen.getByText(targetsDesc)).toBeInTheDocument();
+
+      act(() => {
+        store.set(practiceLensAtom, "guide-tones");
+      });
+
+      expect(screen.getByText(guideDesc)).toBeInTheDocument();
+      expect(screen.queryByText(targetsDesc)).not.toBeInTheDocument();
     });
 
     it("no legacy lens-hint paragraph remains", () => {

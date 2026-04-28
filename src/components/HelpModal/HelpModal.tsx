@@ -119,8 +119,10 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
               <h3>Chords</h3>
               <ul>
                 <li>
-                  Expand <strong>Chords</strong> and pick a chord type to
-                  highlight chord tones on the fretboard in a distinct color.
+                  Expand <strong>Chords</strong>, choose <em>Degree</em> to pick
+                  a diatonic chord by Roman numeral or <em>Manual</em> to set
+                  any root and chord type, then watch the matching chord tones
+                  highlight on the fretboard in a distinct color.
                 </li>
                 <li>
                   <strong>Link chord root to scale</strong> keeps the chord root

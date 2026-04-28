@@ -4,7 +4,7 @@ import { getDegreeSequence } from "../core/degrees";
 import type { DegreeId } from "../core/degrees";
 import { k, createStorage, GET_ON_INIT } from "../utils/storage";
 import { baseScaleNameAtom } from "./scaleAtoms";
-import { chordDegreeAtom } from "./chordOverlayAtoms";
+import { chordDegreeAtom, chordOverlayModeAtom } from "./chordOverlayAtoms";
 
 // ---------------------------------------------------------------------------
 // Storage adapter — unbounded integer index; clamping handled at action time
@@ -65,6 +65,7 @@ export const advanceProgression = atom(null, (get, set) => {
   const clamped = get(clampedProgressionIndexAtom);
   const next = (clamped + 1) % sequence.length;
   set(progressionIndexAtom, next);
+  set(chordOverlayModeAtom, "degree");
   set(chordDegreeAtom, sequence[next] as DegreeId);
 });
 
@@ -79,5 +80,6 @@ export const regressProgression = atom(null, (get, set) => {
   const clamped = get(clampedProgressionIndexAtom);
   const prev = (clamped - 1 + sequence.length) % sequence.length;
   set(progressionIndexAtom, prev);
+  set(chordOverlayModeAtom, "degree");
   set(chordDegreeAtom, sequence[prev] as DegreeId);
 });

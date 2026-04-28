@@ -49,26 +49,27 @@ describe("ScaleSelector/ScaleSelector", () => {
     it("clicking Next advances to the next family", async () => {
       renderWithAtoms(<ScaleSelector />, [...BASE_SEEDS]);
       const familyOptions = getScaleFamilyOptions();
-      const secondFamily = familyOptions[1]; // "Harmonic Minor"
+      const secondFamily = familyOptions[1];
 
       await act(async () => {
         await userEvent.click(screen.getByRole("button", { name: "Next scale family" }));
       });
 
-      expect(screen.getByText(secondFamily)).toBeInTheDocument();
+      const familySelect = screen.getByRole("combobox", { name: "Scale Family" }) as HTMLSelectElement;
+      expect(familySelect.value).toBe(secondFamily);
     });
 
     it("clicking Prev from first family wraps to last (Blues)", async () => {
       renderWithAtoms(<ScaleSelector />, [...BASE_SEEDS]);
       const familyOptions = getScaleFamilyOptions();
-      const lastFamily = familyOptions[familyOptions.length - 1]; // "Blues"
+      const lastFamily = familyOptions[familyOptions.length - 1];
 
       await act(async () => {
         await userEvent.click(screen.getByRole("button", { name: "Previous scale family" }));
       });
 
-      // From index 0 (Major Modes), Prev wraps to index 4 (Blues)
-      expect(screen.getByText(lastFamily)).toBeInTheDocument();
+      const familySelect = screen.getByRole("combobox", { name: "Scale Family" }) as HTMLSelectElement;
+      expect(familySelect.value).toBe(lastFamily);
     });
 
     it("clicking Next from last family wraps to first (Major Modes)", async () => {
@@ -77,14 +78,14 @@ describe("ScaleSelector/ScaleSelector", () => {
         [scaleNameAtom, "Minor Blues"],
       ]);
       const familyOptions = getScaleFamilyOptions();
-      const firstFamily = familyOptions[0]; // "Major Modes"
+      const firstFamily = familyOptions[0];
 
       await act(async () => {
         await userEvent.click(screen.getByRole("button", { name: "Next scale family" }));
       });
 
-      // From last (Blues), Next wraps to first (Major Modes)
-      expect(screen.getByText(firstFamily)).toBeInTheDocument();
+      const familySelect = screen.getByRole("combobox", { name: "Scale Family" }) as HTMLSelectElement;
+      expect(familySelect.value).toBe(firstFamily);
     });
   });
 

@@ -8,9 +8,10 @@ import {
   advanceProgression,
   regressProgression,
 } from "./progressionAtoms";
-import { chordDegreeAtom } from "./chordOverlayAtoms";
+import { chordDegreeAtom, chordOverlayModeAtom } from "./chordOverlayAtoms";
 import { baseScaleNameAtom } from "./scaleAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
+import { getDegreeSequence, type DegreeId } from "../core/degrees";
 
 // Trigger onMount for an atom so atomWithStorage reads from localStorage.
 // Returns cleanup (unsubscribe) function.
@@ -98,6 +99,18 @@ describe("progressionAtoms — advanceProgression", () => {
     store.set(advanceProgression);
     expect(store.get(chordDegreeAtom)).toBe("I");
   });
+
+  it("forces overlay mode to 'degree' so manual overrides do not mask the progression", () => {
+    const store = makeAtomStore([
+      [baseScaleNameAtom, "Major"],
+      [progressionIndexAtom, 0],
+      [chordOverlayModeAtom, "manual"],
+    ]);
+    store.set(advanceProgression);
+    expect(store.get(chordOverlayModeAtom)).toBe("degree");
+    const expected = getDegreeSequence("Major")[1] as DegreeId;
+    expect(store.get(chordDegreeAtom)).toBe(expected);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -162,14 +175,14 @@ describe("progressionAtoms — clampedProgressionIndexAtom", () => {
     expect(store.get(clampedProgressionIndexAtom)).toBe(6);
   });
 
-  it("scale change safety: index 3 on Major → pentatonic (5 degrees) clamps to ≤ 4", () => {
+  it("scale change safety: out-of-range index on Major Pentatonic clamps to last degree", () => {
     const store = makeAtomStore([
       [baseScaleNameAtom, "Major"],
-      [progressionIndexAtom, 3],
+      [progressionIndexAtom, 99],
     ]);
-    // Switch to a pentatonic scale (5 degrees); clamped index must be <= 4
     store.set(baseScaleNameAtom, "Major Pentatonic");
+    const sequence = getDegreeSequence("Major Pentatonic");
     const clamped = store.get(clampedProgressionIndexAtom);
-    expect(clamped).toBeLessThanOrEqual(4);
+    expect(clamped).toBe(sequence.length - 1);
   });
 });

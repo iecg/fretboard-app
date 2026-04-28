@@ -615,8 +615,10 @@ describe("Integration Tests - User Workflows", () => {
         expect(screen.getAllByText("A♯ Major (Ionian)").length).toBeGreaterThan(0);
       });
 
-      expect(screen.queryAllByText("B♭ Major (Ionian)")).toHaveLength(0);
-      expect(localStorage.getItem("useFlats")).toBeNull();
+      await waitFor(() => {
+        expect(screen.queryAllByText("B♭ Major (Ionian)")).toHaveLength(0);
+        expect(localStorage.getItem("useFlats")).toBeNull();
+      });
       expect(localStorage.getItem("accidentalMode")).toBeNull();
     });
 
