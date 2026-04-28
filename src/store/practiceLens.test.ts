@@ -795,23 +795,21 @@ describe("noteSemanticMapAtom — Phase 04 scaleDegree and isDiatonicChord", () 
     }
   });
 
-  it("isDiatonicChord is false when qualityOverride causes chordType to diverge from diatonic quality", () => {
-    // Degree I in C Major is a Major Triad, but if chordType is Minor Triad (diverged by qualityOverride)
-    // then isDiatonicChord must be false
+  it("isDiatonicChord is false when a manual chord override pulls the overlay out of degree mode", () => {
     const store = makeStore();
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Major");
     store.set(chordDegreeAtom, "I");
     store.set(chordOverlayModeAtom, "degree");
-    // Force chordTypeAtom to a diverged quality (simulating qualityOverride)
     store.set(chordTypeAtom, "Minor Triad");
 
+    expect(store.get(chordOverlayModeAtom)).toBe("manual");
+
     const semanticMap = store.get(noteSemanticMapAtom);
-    // C Minor Triad: C, D#, G — G is in C Major scale but isDiatonicChord should be false
-    // because chordType (Minor Triad) !== diatonic quality for I (Major Triad)
+    expect(semanticMap.size).toBeGreaterThan(0);
+
     const gSem = semanticMap.get("G");
-    if (gSem?.isChordTone) {
-      expect(gSem.isDiatonicChord).toBeFalsy();
-    }
+    expect(gSem?.isChordTone).toBe(true);
+    expect(gSem?.isDiatonicChord).toBeFalsy();
   });
 });
