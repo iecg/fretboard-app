@@ -89,8 +89,9 @@ export function ScaleSelector() {
     const nextIndex =
       (currentIndex + direction + familyOptions.length) % familyOptions.length;
     const nextLabel = familyOptions[nextIndex];
-    if (nextLabel === currentFamily.selectorLabel) return;
-    applyTheorySelection(rootNote, getScaleNameForFamilySelector(nextLabel));
+    if (nextLabel !== currentFamily.selectorLabel) {
+      setScaleName(getScaleNameForFamilySelector(nextLabel));
+    }
   };
 
   const handleBrowseSelect = (selectedLabel: string) => {
