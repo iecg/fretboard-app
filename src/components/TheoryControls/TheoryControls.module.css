@@ -1,7 +1,7 @@
 .theory-controls {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.25rem;
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
@@ -33,12 +33,17 @@
   isolation: isolate;
   display: flex;
   flex-direction: column;
-  /* Asymmetric padding: less on top (the chevron + summary already
-     read as a "header" cap), more on bottom so the hint paragraph
-     has breathing room against the pocket edge. The motion content
-     wrapper carries its own top padding so the section's own gap is
-     intentionally not used here. */
-  padding: 0.4rem 0 0.6rem;
+  /* Closed state is intentionally tight so collapsed disclosures
+     sit close together as a list of mini-cards inside the parent
+     dashboard card. Padding grows to match the horizontal pocket
+     bleed when the section is opened so interior breathing room is
+     symmetric on every side. */
+  padding: 0.15rem 0;
+  transition: padding var(--transition-base) ease;
+}
+
+.theory-section[data-open="true"] {
+  padding: 0.55rem 0;
 }
 
 .theory-section-content {
@@ -48,8 +53,11 @@
   padding-top: 0.75rem;
 }
 
-/* Section frame: always rendered so its background, border, and
-   shadow can transition smoothly between closed and open states. The
+/* Section frame: always rendered, always filled with the nested-card
+   background, so closed disclosures read as substantial mini-cards
+   in the Music Theory card. The border crossfades between a faint
+   closed state and the full nested-card border when opened, in
+   lockstep with the content slide and the padding transition. The
    pseudo bleeds past the card body's horizontal padding so the
    pocket reaches the visual edges of the parent dashboard card. */
 .theory-section::before {
@@ -57,8 +65,8 @@
   position: absolute;
   inset: 0 -0.55rem;
   border-radius: var(--nested-card-radius);
-  background-color: transparent;
-  border: 1px solid transparent;
+  background-color: var(--nested-card-bg);
+  border: 1px solid color-mix(in srgb, var(--nested-card-border) 55%, transparent);
   box-shadow: none;
   pointer-events: none;
   z-index: -1;
@@ -68,7 +76,6 @@
 }
 
 .theory-section[data-open="true"]::before {
-  background-color: var(--nested-card-bg);
   border-color: var(--nested-card-border);
   box-shadow: var(--nested-card-shadow);
 }
@@ -109,13 +116,12 @@
 /* Hover/focus surface bleeds past the button's content box so the
    tint has breathing room against text without padding the labels
    (which would break vertical alignment with the rest of the card).
-   When the section is closed, this pseudo also carries a faint
-   nested-card backdrop so the row has visual presence as a list item
-   in the parent card (see [data-open="false"] rule below). */
+   The section frame (.theory-section::before) carries the row's
+   resting backdrop; this pseudo only handles hover/focus tint. */
 .theory-disclosure-btn::before {
   content: "";
   position: absolute;
-  inset: -0.18rem -0.55rem;
+  inset: -0.05rem -0.55rem;
   border-radius: var(--radius-lg);
   background-color: transparent;
   background-image: none;
@@ -124,14 +130,6 @@
               box-shadow var(--transition-fast) ease;
   pointer-events: none;
   z-index: -1;
-}
-
-/* Closed-section idle row: faint nested-card-tinted backdrop so the
-   button reads as a substantial list row inside the Music Theory
-   card, not as floating text. Hover overrides this with the cyan
-   chip below. */
-.theory-section[data-open="false"] .theory-disclosure-btn::before {
-  background-color: color-mix(in srgb, var(--nested-card-bg) 42%, transparent);
 }
 
 .theory-disclosure-btn:hover::before {
@@ -248,7 +246,7 @@
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
 :global(.app-container[data-layout-tier="desktop"]) .theory-controls {
-  gap: 0.5rem;
+  gap: 0.2rem;
 }
 
 :global(.app-container[data-layout-tier="desktop"]) .theory-inline-key {
@@ -257,7 +255,7 @@
 }
 
 :global(.app-container[data-layout-tier="tablet"]) .theory-controls {
-  gap: 0.55rem;
+  gap: 0.22rem;
 }
 
 :global(.app-container[data-layout-tier="tablet"]) .theory-inline-key {
@@ -266,7 +264,11 @@
 }
 
 :global(.app-container[data-layout-tier="desktop"]) .theory-section {
-  padding: 0.32rem 0 0.5rem;
+  padding: 0.12rem 0;
+}
+
+:global(.app-container[data-layout-tier="desktop"]) .theory-section[data-open="true"] {
+  padding: 0.45rem 0;
 }
 
 :global(.app-container[data-layout-tier="desktop"]) .theory-section-content {
@@ -274,7 +276,11 @@
 }
 
 :global(.app-container[data-layout-tier="tablet"]) .theory-section {
-  padding: 0.36rem 0 0.55rem;
+  padding: 0.14rem 0;
+}
+
+:global(.app-container[data-layout-tier="tablet"]) .theory-section[data-open="true"] {
+  padding: 0.5rem 0;
 }
 
 :global(.app-container[data-layout-tier="tablet"]) .theory-section-content {
