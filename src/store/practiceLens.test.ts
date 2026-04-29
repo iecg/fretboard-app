@@ -21,6 +21,7 @@ import {
   fingeringPatternAtom,
   chordDegreeAtom,
   chordOverlayModeAtom,
+  chordHiddenNotesAtom,
 } from "./atoms";
 
 function makeStore() {
@@ -331,6 +332,29 @@ describe("noteSemanticMapAtom", () => {
     const store = makeStore();
     store.set(chordTypeAtom, null);
     expect(store.get(noteSemanticMapAtom).size).toBe(0);
+  });
+
+  it("hidden chord root no longer carries chord-root semantics", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    store.set(chordRootAtom, "C");
+    store.set(chordTypeAtom, "Major Triad");
+
+    // Sanity: before hiding, C is the chord root and is a chord tone.
+    const before = store.get(noteSemanticMapAtom).get("C");
+    expect(before?.isChordRoot).toBe(true);
+    expect(before?.isChordTone).toBe(true);
+
+    // Hide the chord root via per-note hide toggle.
+    store.set(chordHiddenNotesAtom, new Set(["C"]));
+
+    const after = store.get(noteSemanticMapAtom).get("C");
+    // C is still in the C Major scale, so it remains in the semantic map…
+    expect(after).toBeDefined();
+    // …but it is no longer a chord tone or chord root.
+    expect(after!.isChordTone).toBe(false);
+    expect(after!.isChordRoot).toBe(false);
   });
 });
 

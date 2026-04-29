@@ -11,7 +11,7 @@ import styles from "./ChordPracticeBar.module.css";
 
 function EyeOpenIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg data-icon="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
       <circle cx="12" cy="12" r="3"/>
     </svg>
@@ -20,7 +20,7 @@ function EyeOpenIcon() {
 
 function EyeClosedIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg data-icon="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
       <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
       <path d="m1 1 22 22"/>
@@ -46,8 +46,8 @@ function Pill({ note, noteHidden, onToggleNote }: PillProps) {
         data-tension={note.isTension ? "true" : undefined}
         data-in-scale={note.isInScale ? "true" : undefined}
         data-hidden-note={noteHidden ? "true" : undefined}
-        aria-label={`${noteHidden ? "Show" : "Hide"} ${aria}`}
-        aria-pressed={noteHidden}
+        aria-label={`Toggle visibility of ${aria}`}
+        aria-pressed={!noteHidden}
         onClick={() => onToggleNote(note.internalNote)}
       >
         <span className={styles["practice-bar-pill-note"]}>{note.displayNote}</span>
@@ -155,8 +155,8 @@ export function ChordPracticeBar({
         <button
           type="button"
           className={styles["practice-bar-eye-toggle"]}
-          aria-label={collapsed ? "Show chord overlay" : "Hide chord overlay"}
-          aria-pressed={collapsed}
+          aria-label="Toggle visibility of chord overlay"
+          aria-pressed={!collapsed}
           onClick={() => toggleCollapsed()}
         >
           {collapsed ? <EyeClosedIcon /> : <EyeOpenIcon />}

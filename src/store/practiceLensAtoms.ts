@@ -127,7 +127,9 @@ export const noteSemanticMapAtom = atom((get) => {
   const map = new Map<string, NoteSemantics>();
   for (const note of NOTES) {
     const isInScale = scaleNoteSet.has(note);
-    const isChordRoot = note === chordRoot;
+    // A hidden chord root must not retain chord-root semantics — gate on the
+    // visibility-filtered active set so per-note hides drop the role too.
+    const isChordRoot = note === chordRoot && activeChordToneSet.has(chordRoot);
     const isChordTone = activeChordToneSet.has(note);
     const enh = ENHARMONICS[note];
     const isColorTone = colorNoteSet.has(note) || (!!enh && colorNoteSet.has(enh));
