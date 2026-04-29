@@ -3,6 +3,8 @@
   flex-direction: column;
   gap: 0.45rem;
   min-width: 0;
+  width: fit-content;
+  align-self: flex-start;
 }
 
 .toolbar {
@@ -37,6 +39,23 @@
   height: 1rem;
 }
 
+.stepper-control[data-compact="true"] .stepper-btn {
+  min-width: 1.8rem;
+  min-height: 1.8rem;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.78rem;
+}
+
+.stepper-control[data-compact="true"] .stepper-value {
+  font-size: 0.78rem;
+  padding-inline: 0.6rem;
+}
+
+.stepper-control[data-compact="true"] .stepper-icon {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
 .stepper-control.mobile .stepper-btn {
   min-height: var(--size-touch-target);
   min-width: var(--size-touch-target);
@@ -44,4 +63,13 @@
 
 .stepper-control.mobile .stepper-value {
   padding-inline: 1rem;
+}
+
+.stepper-control.mobile[data-compact="true"] .stepper-btn {
+  min-width: 1.8rem;
+  min-height: 1.8rem;
+}
+
+.stepper-control.mobile[data-compact="true"] .stepper-value {
+  padding-inline: 0.6rem;
 }

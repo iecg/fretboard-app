@@ -127,6 +127,14 @@ describe("StepperControl/StepperControl", () => {
     expect(wrapper.className).toContain("mobile");
   });
 
+  it("applies data-compact=true when compact prop is true", () => {
+    const { container } = render(
+      <StepperControl value={5} onChange={vi.fn()} min={0} max={10} compact={true} />,
+    );
+    const wrapper = container.firstChild as HTMLElement;
+    expect(wrapper.getAttribute("data-compact")).toBe("true");
+  });
+
   it("default step is 1 when not provided", () => {
     const onChange = vi.fn();
     render(<StepperControl value={5} onChange={onChange} min={0} max={10} />);

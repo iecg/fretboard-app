@@ -110,3 +110,11 @@
   padding: 0.62rem 2.7rem 0.62rem 0.9rem;
   font-size: 0.95rem;
 }
+
+/* Compact variant — tighter padding and height for space-constrained layouts */
+.labeled-select[data-compact="true"] .labeled-select-native {
+  min-height: 2rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  font-size: 0.88rem;
+}

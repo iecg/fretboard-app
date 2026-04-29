@@ -256,6 +256,60 @@ export const linkChordRootAtom = atomWithStorage(
   GET_ON_INIT,
 );
 
+export const chordOverlayHiddenAtom = atomWithStorage<boolean>(
+  k("chordOverlayHidden"),
+  false,
+  booleanStorage,
+  GET_ON_INIT,
+);
+
+// Transient per-note hides — keyed by chord identity so it auto-resets when chord changes.
+const internalChordHiddenNotesAtom = atom<{
+  chordRoot: string;
+  chordType: string | null;
+  notes: Set<string>;
+} | null>(null);
+
+export const chordHiddenNotesAtom = atom(
+  (get) => {
+    const state = get(internalChordHiddenNotesAtom);
+    const chordRoot = get(chordRootAtom);
+    const chordType = get(chordTypeAtom);
+    if (state && state.chordRoot === chordRoot && state.chordType === chordType) {
+      return state.notes;
+    }
+    return new Set<string>();
+  },
+  (get, set, update: Set<string> | ((prev: Set<string>) => Set<string>)) => {
+    const chordRoot = get(chordRootAtom);
+    const chordType = get(chordTypeAtom);
+    const currentNotes = get(chordHiddenNotesAtom);
+    const nextNotes =
+      typeof update === "function" ? update(currentNotes) : update;
+    set(internalChordHiddenNotesAtom, { chordRoot, chordType, notes: nextNotes });
+  },
+);
+
+export const toggleChordHiddenNoteAtom = atom(null, (_get, set, note: string) => {
+  set(chordHiddenNotesAtom, (prev) => {
+    const next = new Set(prev);
+    if (next.has(note)) next.delete(note);
+    else next.add(note);
+    return next;
+  });
+});
+
+// Mirrors toggleScaleVisibleAtom — collapsing clears per-note hides for a clean re-expand.
+export const toggleChordOverlayHiddenAtom = atom(null, (get, set) => {
+  const hidden = get(chordOverlayHiddenAtom);
+  if (!hidden) {
+    set(chordHiddenNotesAtom, new Set<string>());
+    set(chordOverlayHiddenAtom, true);
+  } else {
+    set(chordOverlayHiddenAtom, false);
+  }
+});
+
 export const chordFretSpreadAtom = atomWithStorage(
   k("chordFretSpread"),
   0,
@@ -272,10 +326,14 @@ export const practiceLensAtom = atomWithStorage<PracticeLens>(
 );
 
 export const chordTonesAtom = atom((get) => {
+  if (get(chordOverlayHiddenAtom)) return [];
   const chordRoot = get(chordRootAtom);
   const chordType = get(chordTypeAtom);
   if (!chordType) return [];
-  return getChordNotes(chordRoot, chordType);
+  const tones = getChordNotes(chordRoot, chordType);
+  const hidden = get(chordHiddenNotesAtom);
+  if (hidden.size === 0) return tones;
+  return tones.filter((n) => !hidden.has(n));
 });
 
 export const chordMembersAtom = atom((get) => {
@@ -294,11 +352,16 @@ export const chordMembersAtom = atom((get) => {
 
 export const hasOutsideChordMembersAtom = atom((get) => {
   const chordType = get(chordTypeAtom);
-  const chordTones = get(chordTonesAtom);
-  if (!chordType || chordTones.length === 0) return false;
+  if (!chordType) return false;
+  const chordRoot = get(chordRootAtom);
+  const def = CHORD_DEFINITIONS[chordType];
+  if (!def) return false;
+  const rootIndex = NOTES.indexOf(chordRoot);
+  if (rootIndex === -1) return false;
+  const tones = def.members.map((m) => NOTES[(rootIndex + m.semitone) % 12]);
   const scaleNotes = get(scaleNotesAtom);
   const scaleNoteSet = new Set(scaleNotes);
-  return chordTones.some((note) => !scaleNoteSet.has(note));
+  return tones.some((note) => !scaleNoteSet.has(note));
 });
 
 export const chordLabelAtom = atom((get) => {

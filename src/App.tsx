@@ -1,17 +1,23 @@
 import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from "react";
-import { useSetAtom, useAtomValue, createStore, Provider } from "jotai";
+import { useSetAtom, useAtomValue, useAtom, createStore, Provider } from "jotai";
 import clsx from "clsx";
 import { Fretboard } from "./components/Fretboard/Fretboard";
-import { HelpCircle, Settings2, Volume2, VolumeX } from "lucide-react";
+import { HelpCircle, Music2, Layers, Layout, Compass, Settings2, Volume2, VolumeX } from "lucide-react";
 import { synth } from "./core/audio";
 import {
   isMutedAtom,
   settingsOverlayOpenAtom,
   toggleMuteAtom,
+  chordRootAtom,
   chordTypeAtom,
+  rootNoteAtom,
+  scaleNameAtom,
+  chordOverlayHiddenAtom,
   mobileTabAtom,
   showChordPracticeBarAtom,
 } from "./store/atoms";
+import { BottomTabBar, type BottomTabItem } from "./components/BottomTabBar/BottomTabBar";
+import { TAB_LABELS } from "./constants/tabLabels";
 import useLayoutMode from "./hooks/useLayoutMode";
 import { useResolvedTheme } from "./hooks/useResolvedTheme";
 import { AppHeader } from "./components/AppHeader/AppHeader";
@@ -19,7 +25,6 @@ import { BrandMark } from "./components/BrandMark/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark";
 import { SummaryRibbon } from "./components/SummaryRibbon/SummaryRibbon";
 import { ChordOverlayDock } from "./components/ChordOverlayDock/ChordOverlayDock";
-import { VersionBadge } from "./components/VersionBadge/VersionBadge";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
 import sharedStyles from "./components/shared/shared.module.css";
 import "./styles/App.css";
@@ -39,14 +44,24 @@ const MobileTabPanel = lazy(() =>
   }))
 );
 
+const MOBILE_TAB_ITEMS: BottomTabItem[] = [
+  { id: "scales", label: TAB_LABELS.scales, icon: <Music2 size={18} /> },
+  { id: "chords", label: TAB_LABELS.chords, icon: <Layers size={18} /> },
+  { id: "cof", label: TAB_LABELS.cof, icon: <Compass size={18} /> },
+  { id: "view", label: TAB_LABELS.view, icon: <Layout size={18} /> },
+];
+
 function AppContent() {
   const chordType = useAtomValue(chordTypeAtom);
   const isMuted = useAtomValue(isMutedAtom);
   const showChordPracticeBar = useAtomValue(showChordPracticeBarAtom);
-  // Mount mobileTabAtom to ensure atomWithStorage persists default state on first render.
-  useAtomValue(mobileTabAtom);
-  const setSettingsOverlayOpen = useSetAtom(settingsOverlayOpenAtom);
+  const [mobileTab, setMobileTab] = useAtom(mobileTabAtom);
+  const [settingsOverlayOpen, setSettingsOverlayOpen] = useAtom(settingsOverlayOpenAtom);
   const toggleMute = useSetAtom(toggleMuteAtom);
+  const chordRoot = useAtomValue(chordRootAtom);
+  const rootNote = useAtomValue(rootNoteAtom);
+  const scaleName = useAtomValue(scaleNameAtom);
+  const setChordOverlayHidden = useSetAtom(chordOverlayHiddenAtom);
 
   const [showHelp, setShowHelp] = useState(false);
   const helpTriggerRef = useRef<HTMLButtonElement>(null);
@@ -76,9 +91,25 @@ function AppContent() {
     };
   }, []);
 
-  const versionBadge = <VersionBadge />;
+  // Reset chord overlay visibility whenever chord or scale identity changes.
+  // Skip resets that fire during the initial mount + atom hydration cycle so
+  // that persisted hidden=true is honoured on reload. A one-tick defer via
+  // setTimeout(0) lets all atomWithStorage onMount callbacks settle first;
+  // only after that does the dep-change effect actually call setChordOverlayHidden.
+  const overlayResetReadyRef = useRef(false);
+  useEffect(() => {
+    const id = setTimeout(() => {
+      overlayResetReadyRef.current = true;
+    }, 0);
+    return () => clearTimeout(id);
+  }, []);
+  useEffect(() => {
+    if (!overlayResetReadyRef.current) return;
+    setChordOverlayHidden(false);
+  }, [chordRoot, chordType, rootNote, scaleName, setChordOverlayHidden]);
 
   return (
+  <>
     <MainLayoutWrapper
       layoutTier={layout.tier}
       layoutVariant={layout.variant}
@@ -152,7 +183,6 @@ function AppContent() {
           <MobileTabPanel />
         </Suspense>
       }
-      versionBadge={versionBadge}
       settingsOverlay={
         <Suspense fallback={<div className="loading-spinner" />}>
           <SettingsOverlay />
@@ -163,6 +193,15 @@ function AppContent() {
         stringRowPx={layout.stringRowPx}
       />
     </MainLayoutWrapper>
+    {layout.showMobileTabs && !settingsOverlayOpen && (
+      <BottomTabBar
+        items={MOBILE_TAB_ITEMS}
+        activeId={mobileTab}
+        onSelect={(id) => setMobileTab(id as "scales" | "chords" | "cof" | "view")}
+        aria-label="Mobile navigation"
+      />
+    )}
+  </>
   );
 }
 

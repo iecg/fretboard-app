@@ -76,3 +76,43 @@
     width: 2.7rem;
   }
 }
+
+/* ===== Compact variant — tighter hit-areas for space-constrained layouts ===== */
+/* stylelint-disable selector-pseudo-class-no-unknown */
+.stepper-select[data-compact="true"] {
+  padding: 0.12rem;
+  gap: 0.12rem;
+}
+
+.stepper-select[data-compact="true"] .nav-button {
+  width: 2rem;
+  min-height: 1.8rem;
+}
+
+.stepper-select[data-compact="true"] .nav-button :global(.icon) {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.stepper-select[data-compact="true"] .select-slot select {
+  padding-left: 0.55rem !important;
+  padding-right: 1.7rem !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  font-size: 0.82rem;
+  line-height: 1.1 !important;
+  min-height: 1.8rem !important;
+}
+
+/* Override mobile-tier defaults so compact wins on mobile */
+:global(.app-container[data-layout-tier="mobile"]) .stepper-select[data-compact="true"] .nav-button {
+  width: 2rem;
+  min-height: 1.8rem;
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
+
+@media (max-width: 767px) {
+  .stepper-select[data-compact="true"] .nav-button {
+    width: 1.95rem;
+  }
+}

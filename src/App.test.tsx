@@ -6,6 +6,7 @@ import {
   fireEvent,
   waitFor,
   within,
+  act,
 } from "@testing-library/react";
 import App from "./App";
 import { synth } from "./core/audio";
@@ -662,7 +663,7 @@ describe("App", () => {
       // mobile-layout tests.
       setViewport(390, 844);
       render(<App />);
-      expect(localStorage.getItem(k("mobileTab"))).toBe("theory");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("scales");
     });
 
     it("uses compact mobile header attributes and full-width help modal", async () => {
@@ -857,7 +858,7 @@ describe("App", () => {
       localStorage.clear();
     });
 
-    it("renders the shared controls panel and hides mobile tabs", async () => {
+    it("renders mobile tabs and hides the shared controls panel", async () => {
       render(<App />);
       fireEvent(window, new Event("resize"));
 
@@ -867,8 +868,8 @@ describe("App", () => {
         ).toBeTruthy();
       });
 
-      expect(document.querySelector(".controls-panel")).toBeTruthy();
-      expect(document.querySelector(".mobile-tab-content")).toBeNull();
+      expect(document.querySelector(".mobile-tab-content")).toBeTruthy();
+      expect(document.querySelector(".controls-panel")).toBeNull();
     });
 
     it("keeps accidental mode session-only in tablet split layout", async () => {
@@ -1156,6 +1157,71 @@ describe("Hook composition smoke test", () => {
     // count both come from useDisplayState's highlightNotes derivation.
     expect(screen.getByTestId("fretboard")).toHaveTextContent("Fretboard: C");
     expect(screen.getByTestId("fretboard")).toHaveTextContent("notes");
+  });
+});
+
+describe("Chord overlay hidden reset on identity change", () => {
+  // These tests use localStorage to pre-seed persisted atom state, then interact
+  // via DOM to trigger changes, and assert via DOM attributes.
+
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    Object.defineProperty(window, "innerWidth", { writable: true, configurable: true, value: 1920 });
+    Object.defineProperty(window, "innerHeight", { writable: true, configurable: true, value: 1200 });
+  });
+
+  afterEach(() => {
+    localStorage.clear();
+  });
+
+  /** Sets up state where the chord practice bar is visible and then hidden. */
+  function setupHiddenPracticeBar() {
+    // Use Dominant 7th over C Major (has Bb outside scale) so the practice bar renders
+    localStorage.setItem(k("rootNote"), "C");
+    localStorage.setItem(k("scaleName"), "Major");
+    localStorage.setItem(k("chordOverlayMode"), "manual");
+    localStorage.setItem(k("chordRootOverride"), "C");
+    localStorage.setItem(k("chordQualityOverride"), "Dominant 7th");
+    localStorage.setItem(k("practiceLens"), "targets");
+    localStorage.setItem(k("chordOverlayHidden"), "true");
+  }
+
+  it("resets overlay visibility when rootNote changes via Circle of Fifths", async () => {
+    setupHiddenPracticeBar();
+    render(<App />);
+
+    // When chordOverlayHidden=true, the practice bar still renders (header
+    // only — pill section collapses) and carries data-collapsed="true" so the
+    // user can toggle back.
+    await waitFor(() => {
+      expect(document.querySelector(".chord-practice-bar[data-collapsed=\"true\"]")).toBeTruthy();
+    });
+
+    // Trigger root note change via CoF mock — effect resets hidden to false
+    const cofButton = await screen.findByTestId("circle-of-fifths");
+    fireEvent.click(cofButton);
+
+    // After reset, collapsed=false → bar still present but data-collapsed is gone
+    await waitFor(() => {
+      expect(document.querySelector(".chord-practice-bar")).toBeTruthy();
+      expect(document.querySelector(".chord-practice-bar[data-collapsed]")).toBeNull();
+    });
+  });
+
+  it("does NOT reset overlay visibility on initial mount when persisted hidden=true", async () => {
+    setupHiddenPracticeBar();
+    render(<App />);
+
+    // Give time for any erroneous initial-mount reset to fire
+    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+
+    // The bar renders with data-collapsed="true" — first-run guard prevents
+    // the effect from clobbering the persisted hidden state.
+    expect(document.querySelector(".chord-practice-bar[data-collapsed=\"true\"]")).toBeTruthy();
+
+    // Confirm the atom value is still true in localStorage (not reset)
+    expect(localStorage.getItem(k("chordOverlayHidden"))).toBe("true");
   });
 });
 

@@ -1,5 +1,4 @@
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import clsx from "clsx";
+import { useAtomValue, useSetAtom } from "jotai";
 import {
   mobileTabAtom,
   rootNoteAtom,
@@ -9,15 +8,13 @@ import {
   enharmonicDisplayAtom,
 } from "../../store/atoms";
 import { CircleOfFifths } from "../CircleOfFifths/CircleOfFifths";
-import { TheoryControls } from "../TheoryControls/TheoryControls";
+import { ScaleSelector } from "../ScaleSelector/ScaleSelector";
+import { ChordOverlayControls } from "../ChordOverlayControls/ChordOverlayControls";
 import { FingeringPatternControls } from "../FingeringPatternControls/FingeringPatternControls";
-import { ToggleBar } from "../ToggleBar/ToggleBar";
+import { Card } from "../Card/Card";
+import { TAB_LABELS } from "../../constants/tabLabels";
+import { useCompactDensity } from "../../hooks/useCompactDensity";
 import styles from "./MobileTabPanel.module.css";
-
-const MOBILE_TAB_OPTIONS = [
-  { value: "theory", label: "Theory" },
-  { value: "view", label: "View" },
-] as const;
 
 function MobileKeyExplorer() {
   const rootNote = useAtomValue(rootNoteAtom);
@@ -40,28 +37,31 @@ function MobileKeyExplorer() {
 }
 
 export function MobileTabPanel() {
-  const [mobileTab, setMobileTab] = useAtom(mobileTabAtom);
+  const mobileTab = useAtomValue(mobileTabAtom);
+  const compact = useCompactDensity();
 
   return (
-    <>
-      <ToggleBar
-        options={MOBILE_TAB_OPTIONS}
-        value={mobileTab}
-        onChange={setMobileTab}
-        variant="tabs"
-      />
-      <div className={styles["mobile-tab-content"]} data-layout-scope="mobile-tabs" data-testid="mobile-tab-content">
-        {mobileTab === "theory" && (
-          <div className={clsx(styles["mobile-tab-panel"], styles["mobile-theory-tab"])}>
-            <TheoryControls keyExplorer={<MobileKeyExplorer />} />
-          </div>
-        )}
-        {mobileTab === "view" && (
-          <div className={clsx(styles["mobile-tab-panel"], styles["mobile-view-tab"])}>
-            <FingeringPatternControls />
-          </div>
-        )}
-      </div>
-    </>
+    <div className={styles["mobile-tab-content"]} data-layout-scope="mobile-tabs" data-testid="mobile-tab-content">
+      {mobileTab === "scales" && (
+        <Card title={TAB_LABELS.scales} className={styles["mobile-tab-card"]} data-mobile-tab="scales">
+          <ScaleSelector compact={compact} />
+        </Card>
+      )}
+      {mobileTab === "chords" && (
+        <Card title={TAB_LABELS.chords} className={styles["mobile-tab-card"]} data-mobile-tab="chords">
+          <ChordOverlayControls compact={compact} />
+        </Card>
+      )}
+      {mobileTab === "cof" && (
+        <Card title={TAB_LABELS.cof} className={styles["mobile-tab-card"]} data-mobile-tab="cof">
+          <MobileKeyExplorer />
+        </Card>
+      )}
+      {mobileTab === "view" && (
+        <Card title={TAB_LABELS.view} className={styles["mobile-tab-card"]} data-mobile-tab="view">
+          <FingeringPatternControls compact={compact} />
+        </Card>
+      )}
+    </div>
   );
 }

@@ -7,7 +7,7 @@ import { SETTING_FIELDS } from "../constants";
 import styles from "../SettingsOverlay.module.css";
 import shared from "../../shared/shared.module.css";
 
-export default function ChordLayoutSettingsSection() {
+export default function ChordLayoutSettingsSection({ compact }: { compact?: boolean }) {
   const [chordFretSpread, setChordFretSpread] = useAtom(chordFretSpreadAtom);
   const config = SETTING_FIELDS.chordSpread;
 
@@ -23,6 +23,7 @@ export default function ChordLayoutSettingsSection() {
             max={4}
             step={1}
             buttonVariant="mobile"
+            compact={compact}
           />
         </div>
         {config.hint ? (

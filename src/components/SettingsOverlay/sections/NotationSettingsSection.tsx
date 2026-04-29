@@ -7,7 +7,7 @@ import { ACCIDENTAL_OPTIONS, ENHARMONIC_DISPLAY_OPTIONS, SETTING_FIELDS } from "
 import styles from "../SettingsOverlay.module.css";
 import shared from "../../shared/shared.module.css";
 
-export default function NotationSettingsSection() {
+export default function NotationSettingsSection({ compact }: { compact?: boolean }) {
   const [accidentalMode, setAccidentalMode] = useAtom(accidentalModeAtom);
   const [enharmonicDisplay, setEnharmonicDisplay] = useAtom(enharmonicDisplayAtom);
 
@@ -19,6 +19,7 @@ export default function NotationSettingsSection() {
           options={ACCIDENTAL_OPTIONS}
           value={accidentalMode}
           onChange={(v) => setAccidentalMode(v as typeof accidentalMode)}
+          compact={compact}
         />
       ),
     },
@@ -29,6 +30,7 @@ export default function NotationSettingsSection() {
           options={ENHARMONIC_DISPLAY_OPTIONS}
           value={enharmonicDisplay}
           onChange={(v) => setEnharmonicDisplay(v as typeof enharmonicDisplay)}
+          compact={compact}
         />
       ),
     },

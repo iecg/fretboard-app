@@ -35,3 +35,20 @@
 .main-fretboard[data-layout-variant="landscape-mobile"] {
   margin-bottom: 0;
 }
+
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global(.app-container[data-layout-tier="mobile"]) .main-fretboard,
+:global(.app-container[data-layout-variant="tablet-split"]) .main-fretboard {
+  order: 1;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .chord-dock-shell,
+:global(.app-container[data-layout-variant="tablet-split"]) .chord-dock-shell {
+  order: 2;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .mobile-tabs-shell,
+:global(.app-container[data-layout-variant="tablet-split"]) .mobile-tabs-shell {
+  order: 3;
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */

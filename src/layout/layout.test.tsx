@@ -108,14 +108,18 @@ describe("responsive layout helper", () => {
     },
   );
 
-  it("shows mobile tabs only in portrait mobile", () => {
+  it("shows mobile tabs in portrait mobile and portrait tablet (tablet-split)", () => {
     expect(getResponsiveLayout(390, 844).showMobileTabs).toBe(true);
     expect(getResponsiveLayout(667, 375).showMobileTabs).toBe(false);
+    expect(getResponsiveLayout(768, 1024).showMobileTabs).toBe(true);   // tablet-split
+    expect(getResponsiveLayout(768, 400).showMobileTabs).toBe(false);   // tablet-stacked
+    expect(getResponsiveLayout(1440, 900).showMobileTabs).toBe(false);
   });
 
-  it("shows the shared controls panel only outside mobile", () => {
+  it("shows the shared controls panel only when not using the tab bar", () => {
     expect(getResponsiveLayout(390, 844).showControlsPanel).toBe(false);
-    expect(getResponsiveLayout(768, 1024).showControlsPanel).toBe(true);
+    expect(getResponsiveLayout(768, 1024).showControlsPanel).toBe(false); // tablet-split → tabs
+    expect(getResponsiveLayout(768, 400).showControlsPanel).toBe(true);   // tablet-stacked
     expect(getResponsiveLayout(1440, 900).showControlsPanel).toBe(true);
   });
 

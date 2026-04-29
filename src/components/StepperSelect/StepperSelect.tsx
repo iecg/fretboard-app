@@ -21,6 +21,8 @@ export interface StepperSelectProps {
   disabled?: boolean;
   previousDisabled?: boolean;
   nextDisabled?: boolean;
+  /** Compact mode — tighter padding and smaller hit-areas for space-constrained layouts. */
+  compact?: boolean;
 }
 
 export function StepperSelect({
@@ -36,12 +38,14 @@ export function StepperSelect({
   disabled = false,
   previousDisabled = false,
   nextDisabled = false,
+  compact = false,
 }: StepperSelectProps) {
   return (
     <StepperShell
       className={styles["stepper-select"]}
       role="group"
       aria-label={groupLabel}
+      data-compact={compact ? "true" : undefined}
     >
       <button
         type="button"

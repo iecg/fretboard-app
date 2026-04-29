@@ -233,3 +233,28 @@
   min-height: 36px;
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
+
+/* ===== Compact variant — tighter disclosure rows for space-constrained layouts ===== */
+.theory-section[data-compact="true"] {
+  padding: 0.08rem 0;
+}
+
+.theory-section[data-compact="true"] .theory-disclosure-btn {
+  min-height: 2rem;
+  padding: 0.15rem 0.55rem 0.15rem 0;
+  gap: 0.5rem;
+}
+
+.theory-section[data-compact="true"] .theory-disclosure-title {
+  font-size: 0.68rem;
+}
+
+.theory-section[data-compact="true"] .theory-disclosure-summary {
+  font-size: 0.78rem;
+}
+
+.theory-section[data-compact="true"] .theory-section-content {
+  gap: 0.75rem;
+  padding-top: 0.6rem;
+  padding-bottom: 0.4rem;
+}

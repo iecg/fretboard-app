@@ -19,26 +19,35 @@ import styles from "../TheoryControls/TheoryControls.module.css";
 
 interface TheoryControlsProps {
   keyExplorer?: ReactNode;
+  /** Reduces vertical padding and font size on disclosure rows for tight layouts. */
+  compact?: boolean;
 }
 
-interface TheorySectionProps {
+export interface TheorySectionProps {
   title: string;
   summary: string;
   defaultOpen?: boolean;
   children: ReactNode;
+  /** Reduces vertical padding and font size on disclosure rows for tight layouts. */
+  compact?: boolean;
 }
 
-function TheorySection({
+export function TheorySection({
   title,
   summary,
   defaultOpen = false,
   children,
+  compact = false,
 }: TheorySectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const contentId = useId();
 
   return (
-    <section className={styles["theory-section"]} data-open={isOpen}>
+    <section
+      className={styles["theory-section"]}
+      data-open={isOpen}
+      data-compact={compact ? "true" : undefined}
+    >
       <button
         type="button"
         className={clsx(styles["theory-disclosure-btn"], {
@@ -115,23 +124,24 @@ function useChordSectionSummary() {
   }`;
 }
 
-export function TheoryControls({ keyExplorer }: TheoryControlsProps) {
+export function TheoryControls({ keyExplorer, compact = false }: TheoryControlsProps) {
   const scaleSummary = useAtomValue(scaleLabelAtom);
   const chordSummary = useChordSectionSummary();
   const { chordType } = useChordState();
 
   return (
     <div className={styles["theory-controls"]} data-testid="theory-controls">
-      <TheorySection title="Scale" summary={scaleSummary} defaultOpen>
-        <ScaleSelector />
+      <TheorySection title="Scale" summary={scaleSummary} defaultOpen compact={compact}>
+        <ScaleSelector compact={compact} />
         {keyExplorer ? <KeyExplorer>{keyExplorer}</KeyExplorer> : null}
       </TheorySection>
       <TheorySection
         title="Chords"
         summary={chordSummary}
         defaultOpen={Boolean(chordType)}
+        compact={compact}
       >
-        <ChordOverlayControls />
+        <ChordOverlayControls compact={compact} />
       </TheorySection>
     </div>
   );

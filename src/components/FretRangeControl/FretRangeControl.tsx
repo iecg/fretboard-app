@@ -12,6 +12,7 @@ export interface FretRangeControlProps {
   layout?: "toolbar" | "mobile" | "dashboard";
   showSeparator?: boolean;
   showLabels?: boolean;
+  compact?: boolean;
 }
 
 export function FretRangeControl({
@@ -23,13 +24,14 @@ export function FretRangeControl({
   layout,
   showSeparator,
   showLabels,
+  compact,
 }: FretRangeControlProps) {
   const isToolbar = layout === "toolbar" || layout === undefined;
   const sep = showSeparator ?? isToolbar;
   const labels = showLabels ?? !isToolbar;
 
   return (
-    <div className={clsx(styles["fret-range-control"], styles[layout ?? "toolbar"])}>
+    <div className={clsx(styles["fret-range-control"], styles[layout ?? "toolbar"])} data-compact={compact ? "true" : undefined}>
       <div className={clsx(styles["fret-group"], styles["fret-start"])}>
         {labels && <span className={styles["fret-label"]}>Start</span>}
         <StepperShell

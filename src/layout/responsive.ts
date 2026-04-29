@@ -95,14 +95,15 @@ export function getResponsiveLayout(
         ? "split"
         : "stacked";
   const showMobileTabs =
-    tier === "mobile" && variant !== "landscape-mobile";
+    (tier === "mobile" && variant !== "landscape-mobile") ||
+    variant === "tablet-split";
 
   return {
     tier,
     variant,
     compactHeight,
     stringRowPx: getStringRowPx(tier),
-    showControlsPanel: tier !== "mobile",
+    showControlsPanel: tier !== "mobile" && variant !== "tablet-split",
     showMobileTabs,
     showSummary: variant !== "landscape-mobile",
     isSplitPanel,

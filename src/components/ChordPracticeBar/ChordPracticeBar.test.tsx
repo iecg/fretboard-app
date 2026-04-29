@@ -1,8 +1,16 @@
 import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { ChordPracticeBar } from "./ChordPracticeBar";
 import type { PracticeBarGroup, PracticeBarNote } from "../../core/theory";
 import { axe } from "../../test-utils/a11y";
+import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
+import {
+  chordOverlayHiddenAtom,
+  chordHiddenNotesAtom,
+  chordRootOverrideAtom,
+  chordQualityOverrideAtom,
+  chordOverlayModeAtom,
+} from "../../store/atoms";
 
 // ── Fixture notes ────────────────────────────────────────────────────────────
 
@@ -377,6 +385,305 @@ describe("ChordPracticeBar/ChordPracticeBar", () => {
           chordGroup={cSharpMinorChordGroup}
           landOnGroup={cSharpMinorTensionLandOn}
         />,
+      );
+      expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
+  describe("visibility toggle (eye button + pill clicks)", () => {
+    it("renders an eye button with stable aria-label when visible", () => {
+      renderWithAtoms(
+        <ChordPracticeBar
+          title="D Minor 7"
+          chordGroup={dmin7ChordGroup}
+          landOnGroup={dmin7LandOnGroup}
+        />,
+        [[chordOverlayHiddenAtom, false]],
+      );
+      expect(
+        screen.getByRole("button", { name: "Toggle visibility of chord overlay" }),
+      ).toBeTruthy();
+    });
+
+    it("renders the same stable aria-label when hidden", () => {
+      renderWithAtoms(
+        <ChordPracticeBar
+          title="D Minor 7"
+          chordGroup={dmin7ChordGroup}
+          landOnGroup={dmin7LandOnGroup}
+        />,
+        [[chordOverlayHiddenAtom, true]],
+      );
+      expect(
+        screen.getByRole("button", { name: "Toggle visibility of chord overlay" }),
+      ).toBeTruthy();
+    });
+
+    it("eye button has aria-pressed=true when overlay is visible", () => {
+      const { container } = renderWithAtoms(
+        <ChordPracticeBar
+          title="D Minor 7"
+          chordGroup={dmin7ChordGroup}
+          landOnGroup={dmin7LandOnGroup}
+        />,
+        [[chordOverlayHiddenAtom, false]],
+      );
+      const eyeBtn = container.querySelector(".practice-bar-eye-toggle");
+      expect(eyeBtn?.getAttribute("aria-pressed")).toBe("true");
+    });
+
+    it("eye button has aria-pressed=false when overlay is hidden", () => {
+      const { container } = renderWithAtoms(
+        <ChordPracticeBar
+          title="D Minor 7"
+          chordGroup={dmin7ChordGroup}
+          landOnGroup={dmin7LandOnGroup}
+        />,
+        [[chordOverlayHiddenAtom, true]],
+      );
+      const eyeBtn = container.querySelector(".practice-bar-eye-toggle");
+      expect(eyeBtn?.getAttribute("aria-pressed")).toBe("false");
+    });
+
+    it("renders eye-open icon (data-icon) when overlay is visible", () => {
+      const { container } = renderWithAtoms(
+        <ChordPracticeBar
+          title="D Minor 7"
+          chordGroup={dmin7ChordGroup}
+          landOnGroup={dmin7LandOnGroup}
+        />,
+        [[chordOverlayHiddenAtom, false]],
+      );
+      const eyeBtn = container.querySelector(".practice-bar-eye-toggle");
+      expect(eyeBtn?.getAttribute("aria-pressed")).toBe("true");
+      expect(eyeBtn?.querySelector('[data-icon="eye-open"]')).toBeTruthy();
+      expect(eyeBtn?.querySelector('[data-icon="eye-closed"]')).toBeNull();
+    });
+
+    it("renders eye-closed icon (data-icon) when overlay is hidden", () => {
+      const { container } = renderWithAtoms(
+        <ChordPracticeBar
+          title="D Minor 7"
+          chordGroup={dmin7ChordGroup}
+          landOnGroup={dmin7LandOnGroup}
+        />,
+        [[chordOverlayHiddenAtom, true]],
+      );
+      const eyeBtn = container.querySelector(".practice-bar-eye-toggle");
+      expect(eyeBtn?.getAttribute("aria-pressed")).toBe("false");
+      expect(eyeBtn?.querySelector('[data-icon="eye-closed"]')).toBeTruthy();
+      expect(eyeBtn?.querySelector('[data-icon="eye-open"]')).toBeNull();
+    });
+
+    it("sets data-collapsed='true' on the section when hidden", () => {
+      const { container } = renderWithAtoms(
+        <ChordPracticeBar
+          title="D Minor 7"
+          chordGroup={dmin7ChordGroup}
+          landOnGroup={dmin7LandOnGroup}
+        />,
+        [[chordOverlayHiddenAtom, true]],
+      );
+      const section = container.querySelector("section");
+      expect(section?.getAttribute("data-collapsed")).toBe("true");
+    });
+
+    it("does not set data-collapsed when visible", () => {
+      const { container } = renderWithAtoms(
+        <ChordPracticeBar
+          title="D Minor 7"
+          chordGroup={dmin7ChordGroup}
+          landOnGroup={dmin7LandOnGroup}
+        />,
+        [[chordOverlayHiddenAtom, false]],
+      );
+      const section = container.querySelector("section");
+      expect(section?.getAttribute("data-collapsed")).toBeNull();
+    });
+
+    it("collapsing hides the chord-practice-bar-groups section (DegreeChipStrip-style collapse)", () => {
+      const { container } = renderWithAtoms(
+        <ChordPracticeBar
+          title="D Minor 7"
+          chordGroup={dmin7ChordGroup}
+          landOnGroup={dmin7LandOnGroup}
+        />,
+        [[chordOverlayHiddenAtom, true]],
+      );
+      expect(container.querySelector(".chord-practice-bar-groups")).toBeNull();
+    });
+
+    it("clicking the eye button toggles chordOverlayHiddenAtom from false to true", () => {
+      const store = makeAtomStore([
+        [chordOverlayHiddenAtom, false],
+        [chordOverlayModeAtom, "manual"],
+        [chordRootOverrideAtom, "D"],
+        [chordQualityOverrideAtom, "Minor 7th"],
+      ]);
+      renderWithStore(
+        <ChordPracticeBar
+          title="D Minor 7"
+          chordGroup={dmin7ChordGroup}
+          landOnGroup={dmin7LandOnGroup}
+        />,
+        store,
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Toggle visibility of chord overlay" }));
+      expect(store.get(chordOverlayHiddenAtom)).toBe(true);
+    });
+
+    it("clicking the eye button toggles chordOverlayHiddenAtom from true to false", () => {
+      const store = makeAtomStore([[chordOverlayHiddenAtom, true]]);
+      renderWithStore(
+        <ChordPracticeBar
+          title="D Minor 7"
+          chordGroup={dmin7ChordGroup}
+          landOnGroup={dmin7LandOnGroup}
+        />,
+        store,
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Toggle visibility of chord overlay" }));
+      expect(store.get(chordOverlayHiddenAtom)).toBe(false);
+    });
+
+    it("clicking a pill toggles only that note in chordHiddenNotesAtom", () => {
+      const store = makeAtomStore([[chordOverlayHiddenAtom, false]]);
+      const { container } = renderWithStore(
+        <ChordPracticeBar
+          title="D Minor 7"
+          chordGroup={dmin7ChordGroup}
+          landOnGroup={dmin7LandOnGroup}
+        />,
+        store,
+      );
+      // Click the D pill (chord-root pill in the chord/land-on group)
+      const dPill = container.querySelector<HTMLButtonElement>(
+        '.practice-bar-pill[data-chord-root="true"]',
+      );
+      expect(dPill).toBeTruthy();
+      fireEvent.click(dPill!);
+      expect(store.get(chordHiddenNotesAtom).has("D")).toBe(true);
+      // Eye state untouched
+      expect(store.get(chordOverlayHiddenAtom)).toBe(false);
+    });
+
+    it("clicking a pill again restores that note (toggle off)", () => {
+      const store = makeAtomStore([[chordOverlayHiddenAtom, false]]);
+      const { container } = renderWithStore(
+        <ChordPracticeBar
+          title="D Minor 7"
+          chordGroup={dmin7ChordGroup}
+          landOnGroup={dmin7LandOnGroup}
+        />,
+        store,
+      );
+      const dPill = container.querySelector<HTMLButtonElement>(
+        '.practice-bar-pill[data-chord-root="true"]',
+      );
+      expect(dPill).toBeTruthy();
+      // First click → hide
+      fireEvent.click(dPill!);
+      expect(store.get(chordHiddenNotesAtom).has("D")).toBe(true);
+      // Aria-label is stable, so click again to toggle off
+      fireEvent.click(dPill!);
+      expect(store.get(chordHiddenNotesAtom).has("D")).toBe(false);
+    });
+
+    it("pill buttons default to aria-pressed=true (note visible) when chord is visible", () => {
+      const { container } = renderWithAtoms(
+        <ChordPracticeBar
+          title="D Minor 7"
+          chordGroup={dmin7ChordGroup}
+          landOnGroup={dmin7LandOnGroup}
+        />,
+        [[chordOverlayHiddenAtom, false]],
+      );
+      const pillButtons = container.querySelectorAll(".practice-bar-pill");
+      expect(pillButtons.length).toBeGreaterThan(0);
+      for (const pill of pillButtons) {
+        expect(pill.getAttribute("aria-pressed")).toBe("true");
+      }
+    });
+
+    it("pills are not rendered when overlay is collapsed", () => {
+      const { container } = renderWithAtoms(
+        <ChordPracticeBar
+          title="D Minor 7"
+          chordGroup={dmin7ChordGroup}
+          landOnGroup={dmin7LandOnGroup}
+        />,
+        [[chordOverlayHiddenAtom, true]],
+      );
+      expect(container.querySelectorAll(".practice-bar-pill").length).toBe(0);
+    });
+
+    it("after clicking, the pill carries aria-pressed=false (hidden) and data-hidden-note='true'", () => {
+      const store = makeAtomStore([[chordOverlayHiddenAtom, false]]);
+      const { container } = renderWithStore(
+        <ChordPracticeBar
+          title="D Minor 7"
+          chordGroup={dmin7ChordGroup}
+          landOnGroup={dmin7LandOnGroup}
+        />,
+        store,
+      );
+      const dPill = container.querySelector<HTMLButtonElement>(
+        '.practice-bar-pill[data-chord-root="true"]',
+      );
+      expect(dPill).toBeTruthy();
+      fireEvent.click(dPill!);
+      const dPillAfter = container.querySelector(
+        '.practice-bar-pill[data-chord-root="true"]',
+      );
+      expect(dPillAfter?.getAttribute("aria-pressed")).toBe("false");
+      expect(dPillAfter?.getAttribute("data-hidden-note")).toBe("true");
+    });
+
+    it("pills sharing an internalNote across chord and land-on groups toggle together", () => {
+      const store = makeAtomStore([[chordOverlayHiddenAtom, false]]);
+      const { container } = renderWithStore(
+        <ChordPracticeBar
+          title="C# Minor"
+          chordGroup={cSharpMinorChordGroup}
+          landOnGroup={cSharpMinorTensionLandOn}
+        />,
+        store,
+      );
+      // Click the C# pill in the chord group; both C# pills (chord + land-on) share internalNote.
+      const allPills = container.querySelectorAll<HTMLButtonElement>(
+        '.practice-bar-pill[data-chord-root="true"]',
+      );
+      // C# is chord root in both groups → two pills with data-chord-root="true"
+      expect(allPills.length).toBe(2);
+      fireEvent.click(allPills[0]!);
+      // Both pills should now reflect hidden state
+      expect(allPills[0]!.getAttribute("data-hidden-note")).toBe("true");
+      expect(allPills[1]!.getAttribute("data-hidden-note")).toBe("true");
+      expect(store.get(chordHiddenNotesAtom).has("C#")).toBe(true);
+    });
+
+    it("has no a11y violations when visible", async () => {
+      const { container } = renderWithAtoms(
+        <ChordPracticeBar
+          title="D Minor 7"
+          lensLabel="Chord Tones"
+          chordGroup={dmin7ChordGroup}
+          landOnGroup={dmin7LandOnGroup}
+        />,
+        [[chordOverlayHiddenAtom, false]],
+      );
+      expect(await axe(container)).toHaveNoViolations();
+    });
+
+    it("has no a11y violations when hidden", async () => {
+      const { container } = renderWithAtoms(
+        <ChordPracticeBar
+          title="D Minor 7"
+          lensLabel="Chord Tones"
+          chordGroup={dmin7ChordGroup}
+          landOnGroup={dmin7LandOnGroup}
+        />,
+        [[chordOverlayHiddenAtom, true]],
       );
       expect(await axe(container)).toHaveNoViolations();
     });

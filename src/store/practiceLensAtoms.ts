@@ -43,6 +43,8 @@ import {
   allChordMembersAtom,
   chordDegreeAtom,
   chordOverlayModeAtom,
+  chordOverlayHiddenAtom,
+  chordHiddenNotesAtom,
 } from "./chordOverlayAtoms";
 import { shapeHighlightedNoteSetAtom } from "./shapeAtoms";
 
@@ -85,19 +87,29 @@ export const practiceBarColorNotesFilteredAtom = atom((get) => {
 export const noteSemanticMapAtom = atom((get) => {
   const chordType = get(chordTypeAtom);
   if (!chordType) return new Map<string, NoteSemantics>();
+  // Eye toggle collapsed → no chord semantics (note colors revert to scale-only).
+  if (get(chordOverlayHiddenAtom)) return new Map<string, NoteSemantics>();
 
   const rootNote = get(rootNoteAtom);
   const scaleName = get(scaleNameAtom);
   const chordRoot = get(chordRootAtom);
   const chordMembers = get(chordMembersAtom);
   const colorNotes = get(colorNotesAtom);
+  const hiddenNotes = get(chordHiddenNotesAtom);
 
   const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
   const colorNoteSet = new Set(colorNotes);
 
-  const memberByNote = new Map<string, (typeof chordMembers)[number]>();
-  for (const m of chordMembers) memberByNote.set(m.note, m);
-  const activeChordToneSet = new Set(chordMembers.map((m) => m.note));
+  // Per-note hides: drop hidden notes from chord-tone classification so the
+  // fretboard renders them as scale-only / color-tone / inactive instead of
+  // chord-tone-orange.
+  const visibleMembers = hiddenNotes.size === 0
+    ? chordMembers
+    : chordMembers.filter((m) => !hiddenNotes.has(m.note));
+
+  const memberByNote = new Map<string, (typeof visibleMembers)[number]>();
+  for (const m of visibleMembers) memberByNote.set(m.note, m);
+  const activeChordToneSet = new Set(visibleMembers.map((m) => m.note));
 
   // Phase 04: diatonic chord check (computed once per evaluation)
   const degreesMap = getDegreesForScale(scaleName);
@@ -115,7 +127,9 @@ export const noteSemanticMapAtom = atom((get) => {
   const map = new Map<string, NoteSemantics>();
   for (const note of NOTES) {
     const isInScale = scaleNoteSet.has(note);
-    const isChordRoot = note === chordRoot;
+    // A hidden chord root must not retain chord-root semantics — gate on the
+    // visibility-filtered active set so per-note hides drop the role too.
+    const isChordRoot = note === chordRoot && activeChordToneSet.has(chordRoot);
     const isChordTone = activeChordToneSet.has(note);
     const enh = ENHARMONICS[note];
     const isColorTone = colorNoteSet.has(note) || (!!enh && colorNoteSet.has(enh));

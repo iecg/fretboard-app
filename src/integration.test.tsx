@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import App from "./App";
 import { k } from "./test-utils/storage";
+import { TAB_LABELS } from "./constants/tabLabels";
 // Pre-import lazy-loaded components so React.lazy() resolves from the module
 // cache synchronously, allowing Suspense to mount them without async delay.
 import "./components/MobileTabPanel/MobileTabPanel";
@@ -398,33 +399,31 @@ describe("Integration Tests - User Workflows", () => {
       });
     });
 
-    it("switching between Theory and View tabs", async () => {
+    it("switching between Scales and View tabs", async () => {
       const { rerender } = render(<App />);
 
-      expect(localStorage.getItem(k("mobileTab"))).toBe("theory");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("scales");
 
       localStorage.setItem(k("mobileTab"), "view");
       rerender(<App />);
       expect(localStorage.getItem(k("mobileTab"))).toBe("view");
 
-      localStorage.setItem(k("mobileTab"), "theory");
+      localStorage.setItem(k("mobileTab"), "scales");
       rerender(<App />);
-      expect(localStorage.getItem(k("mobileTab"))).toBe("theory");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("scales");
     });
 
-    it("theory tab exposes the circle of fifths behind a disclosure", async () => {
-      localStorage.setItem(k("mobileTab"), "theory");
+    it("key tab shows the circle of fifths", async () => {
+      localStorage.setItem(k("mobileTab"), "cof");
 
       // Mobile viewport is set by beforeEach (390×844 portrait).
       render(<App />);
 
-      // Wait for the lazy-loaded MobileTabPanel + TheoryControls Suspense
-      // boundaries to resolve before querying. Lazy imports resolve
-      // asynchronously via polling rather than a single act flush.
+      // Wait for the lazy-loaded MobileTabPanel Suspense boundary to resolve.
       // Timeout raised to 6000ms: under full-suite parallel load the Suspense
       // resolution takes longer than the previous 3000ms budget allowed.
       await waitFor(
-        () => expect(screen.getByRole("button", { name: /Circle of Fifths/i })).toBeInTheDocument(),
+        () => expect(screen.getAllByText(TAB_LABELS.cof).length).toBeGreaterThan(0),
         { timeout: 6000 },
       );
     }, 10000);

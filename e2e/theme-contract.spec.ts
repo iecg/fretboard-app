@@ -135,31 +135,33 @@ test.describe("Theme Contract", () => {
   });
 
   test("BottomTabBar should use theme-appropriate active indicators", async ({ page }) => {
-    // Mobile layout uses ToggleBar as tabs
+    // Mobile layout renders the BottomTabBar; the default active tab is "Scales".
     await loadVisualState(page, { theme: "dark" }, { width: 390, height: 844 });
-    const darkTab = page.getByRole("tab", { name: /Theory/i });
+    const darkTab = page.getByRole("tab", { name: /Scales/i });
     await expect(darkTab).toBeVisible();
-    
+
     const darkStyles = await darkTab.evaluate((el) => {
-      const cs = getComputedStyle(el);
-      return {
-        color: cs.color,
-        bgImg: cs.backgroundImage
-      };
+      const buttonColor = getComputedStyle(el).color;
+      const indicator = getComputedStyle(el, "::before").backgroundColor;
+      return { color: buttonColor, indicator };
     });
-    // modern-dark: --selected-fg: rgb(243, 251, 255)
-    expect(darkStyles.color.replace(/\s/g, "")).toBe("rgb(243,251,255)");
-    // Should use neon-cyan in the gradient: rgb(77, 228, 255)
-    // Handle both rgb(77, 228, 255) and color(srgb 0.301961 0.894118 1) formats
-    expect(darkStyles.bgImg).toMatch(/77,\s*228,\s*255|0\.301961\s+0\.894118\s+1/);
+    // modern-dark: --nav-active-fg = --neon-cyan -> rgb(77, 228, 255)
+    expect(darkStyles.color.replace(/\s/g, "")).toBe("rgb(77,228,255)");
+    // ::before indicator background: --nav-active-indicator = --neon-cyan
+    expect(darkStyles.indicator).toMatch(/77,\s*228,\s*255|0\.301961\s+0\.894118\s+1/);
 
     // Light mode
     await loadVisualState(page, { theme: "light" }, { width: 390, height: 844 });
-    const lightTab = page.getByRole("tab", { name: /Theory/i });
+    const lightTab = page.getByRole("tab", { name: /Scales/i });
     await expect(lightTab).toBeVisible();
-    const lightColor = await lightTab.evaluate((el) => getComputedStyle(el).color);
-    // modern-light: --selected-fg: #ffffff -> rgb(255, 255, 255)
-    expect(lightColor.replace(/\s/g, "")).toBe("rgb(255,255,255)");
+    const lightStyles = await lightTab.evaluate((el) => {
+      const buttonColor = getComputedStyle(el).color;
+      const indicator = getComputedStyle(el, "::before").backgroundColor;
+      return { color: buttonColor, indicator };
+    });
+    // modern-light: --nav-active-fg = --accent-primary = #0891b2 -> rgb(8, 145, 178)
+    expect(lightStyles.color.replace(/\s/g, "")).toBe("rgb(8,145,178)");
+    expect(lightStyles.indicator.replace(/\s/g, "")).toBe("rgb(8,145,178)");
   });
 
   test("fretboard notes and summary chips have coherent role colors in light mode", async ({ page }) => {
@@ -477,37 +479,36 @@ test.describe("Theme Contract", () => {
         });
 
         test("collapsed disclosure hover should use theme-appropriate hover surface", async ({ page }) => {
-          // Use mobile viewport to ensure Circle of Fifths disclosure is rendered
-          await loadVisualState(page, { theme }, { width: 390, height: 844 });
+          // Disclosure rows only exist in TheoryControls (rendered at tablet
+          // tier and above). The desktop viewport is already configured by the
+          // surrounding beforeEach.
+          const theoryControls = page.getByTestId("theory-controls");
+          await expect(theoryControls).toBeVisible();
 
-          const disclosures = [
-            page.getByRole("button", { name: /Circle of Fifths/i }),
-            page.getByRole("button", { name: /Chords/i })
-          ];
+          const chordsDisclosure = theoryControls.getByRole("button", { name: /^Chords/i });
+          await expect(chordsDisclosure).toBeVisible();
 
-          for (const btn of disclosures) {
-            await expect(btn).toBeVisible();
-            // Ensure it's collapsed
-            if (await btn.getAttribute("aria-expanded") === "true") {
-              await btn.click();
-            }
+          // Ensure it is collapsed before measuring hover paint.
+          if ((await chordsDisclosure.getAttribute("aria-expanded")) === "true") {
+            await chordsDisclosure.click();
+            await expect(chordsDisclosure).toHaveAttribute("aria-expanded", "false");
+          }
 
-            // Hover paint lives on `::before` — host is transparent.
-            const beforeBg = await getPseudoStyle(btn, "::before", "backgroundColor");
-            await btn.hover();
-            const afterStyles = await btn.evaluate((el) => {
-              const cs = getComputedStyle(el, "::before");
-              return { bg: cs.backgroundColor, bgImg: cs.backgroundImage };
-            });
+          // Hover paint lives on `::before` — host is transparent.
+          const beforeBg = await getPseudoStyle(chordsDisclosure, "::before", "backgroundColor");
+          await chordsDisclosure.hover();
+          const afterStyles = await chordsDisclosure.evaluate((el) => {
+            const cs = getComputedStyle(el, "::before");
+            return { bg: cs.backgroundColor, bgImg: cs.backgroundImage };
+          });
 
-            expect(afterStyles.bg).not.toBe(beforeBg);
-            if (theme === "dark") {
-              expect(
-                isCyanLike(afterStyles.bg) || afterStyles.bgImg.includes("gradient"),
-              ).toBe(true);
-            } else {
-              expect(afterStyles.bg.replace(/\s/g, "")).toBe("rgb(221,228,239)");
-            }
+          expect(afterStyles.bg).not.toBe(beforeBg);
+          if (theme === "dark") {
+            expect(
+              isCyanLike(afterStyles.bg) || afterStyles.bgImg.includes("gradient"),
+            ).toBe(true);
+          } else {
+            expect(afterStyles.bg.replace(/\s/g, "")).toBe("rgb(221,228,239)");
           }
         });
 
@@ -673,10 +674,12 @@ test.describe("Theme Contract", () => {
         });
 
         test("theory disclosure focus uses tokenized focus glow", async ({ page }) => {
-          // Mobile viewport: disclosure buttons are visible there
-          await loadVisualState(page, { theme }, { width: 390, height: 844 });
+          // Disclosure rows live in TheoryControls — rendered at desktop tier
+          // (already configured by the surrounding beforeEach).
+          const theoryControls = page.getByTestId("theory-controls");
+          await expect(theoryControls).toBeVisible();
 
-          const disclosureBtn = page.getByRole("button", { name: /Chords/i });
+          const disclosureBtn = theoryControls.getByRole("button", { name: /^Chords/i });
           await expect(disclosureBtn).toBeVisible();
           // Ensure it is collapsed before focusing
           if (await disclosureBtn.getAttribute("aria-expanded") === "true") {

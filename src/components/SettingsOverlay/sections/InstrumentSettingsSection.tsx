@@ -5,7 +5,7 @@ import { OverlayFieldHeader } from "../shared";
 import { useSettingsForm } from "../useSettingsForm";
 import styles from "../SettingsOverlay.module.css";
 
-export default function InstrumentSettingsSection() {
+export default function InstrumentSettingsSection({ compact }: { compact?: boolean }) {
   const { tuningName, setTuningName } = useSettingsForm();
 
   return (
@@ -18,6 +18,7 @@ export default function InstrumentSettingsSection() {
           options={Object.keys(TUNINGS).map((name) => ({ value: name, label: name }))}
           onChange={setTuningName}
           hideLabel
+          compact={compact}
         />
       </div>
     </div>

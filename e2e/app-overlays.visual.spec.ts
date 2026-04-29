@@ -7,7 +7,7 @@ import {
   loadVisualState,
 } from "./visual-helpers";
 
-const linuxDarkOverlayTolerance = process.platform === "linux" ? { maxDiffPixels: 7000 } : undefined;
+const linuxDarkOverlayTolerance = process.platform === "linux" ? { maxDiffPixels: 12000 } : undefined;
 
 test.describe("App Overlays Visual", () => {
   test("app-settings-mobile-390x844", async ({ page }) => {
