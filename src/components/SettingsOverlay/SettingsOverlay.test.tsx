@@ -5,6 +5,7 @@ import { Provider, createStore } from "jotai";
 import SettingsOverlay from "./SettingsOverlay";
 import { synth } from "../../core/audio";
 import { settingsOverlayOpenAtom, fretZoomAtom, themeAtom, compactDensityAtom } from "../../store/atoms";
+import { axe } from "../../test-utils/a11y";
 import styles from "./SettingsOverlay.module.css";
 
 // Mock the audio synth singleton — we only care that setMute is called on reset.
@@ -245,37 +246,40 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(store.get(settingsOverlayOpenAtom)).toBe(true);
   });
 
-  it("renders compact toggle on desktop viewport", () => {
+  it("renders compact toggle on desktop viewport", async () => {
     setViewport(1440, 900);
-    renderOpenOverlay();
+    const { container } = renderOpenOverlay();
     expect(screen.getByText("Compact Controls")).toBeTruthy();
     const compactGroup = screen.getByRole("group", { name: "Compact controls" });
     expect(compactGroup).toBeTruthy();
     expect(compactGroup.querySelector('[aria-pressed]')).toBeTruthy();
+    expect(await axe(container)).toHaveNoViolations();
   });
 
-  it("renders compact toggle on mobile viewport", () => {
+  it("renders compact toggle on mobile viewport", async () => {
     setViewport(390, 844);
     const store = createStore();
     store.set(settingsOverlayOpenAtom, true);
-    renderOverlay(store);
+    const { container } = renderOverlay(store);
     expect(screen.getByText("Compact Controls")).toBeTruthy();
     const compactGroup = screen.getByRole("group", { name: "Compact controls" });
     expect(compactGroup).toBeTruthy();
+    expect(await axe(container)).toHaveNoViolations();
   });
 
-  it("clicking On sets compactDensityAtom to 'on'", () => {
+  it("clicking On sets compactDensityAtom to 'on'", async () => {
     setViewport(1440, 900);
-    const { store } = renderOpenOverlay();
+    const { store, container } = renderOpenOverlay();
     const compactGroup = screen.getByRole("group", { name: "Compact controls" });
     const onBtn = within(compactGroup).getByRole("button", { name: "On" });
     fireEvent.click(onBtn);
     expect(store.get(compactDensityAtom)).toBe("on");
+    expect(await axe(container)).toHaveNoViolations();
   });
 
-  it("clicking Off sets compactDensityAtom to 'off'", () => {
+  it("clicking Off sets compactDensityAtom to 'off'", async () => {
     setViewport(1440, 900);
-    const { store } = renderOpenOverlay();
+    const { store, container } = renderOpenOverlay();
     act(() => {
       store.set(compactDensityAtom, "on");
     });
@@ -283,11 +287,12 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     const offBtn = within(compactGroup).getByRole("button", { name: "Off" });
     fireEvent.click(offBtn);
     expect(store.get(compactDensityAtom)).toBe("off");
+    expect(await axe(container)).toHaveNoViolations();
   });
 
-  it("clicking Auto sets compactDensityAtom to 'auto'", () => {
+  it("clicking Auto sets compactDensityAtom to 'auto'", async () => {
     setViewport(1440, 900);
-    const { store } = renderOpenOverlay();
+    const { store, container } = renderOpenOverlay();
     act(() => {
       store.set(compactDensityAtom, "on");
     });
@@ -295,6 +300,7 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     const autoBtn = within(compactGroup).getByRole("button", { name: "Auto" });
     fireEvent.click(autoBtn);
     expect(store.get(compactDensityAtom)).toBe("auto");
+    expect(await axe(container)).toHaveNoViolations();
   });
 
   it("traps focus when tabbing forward from the last control", () => {

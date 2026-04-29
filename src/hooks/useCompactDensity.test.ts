@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { Provider, createStore } from "jotai";
 import { createElement } from "react";
@@ -25,6 +25,27 @@ function makeWrapper(store: ReturnType<typeof createStore>) {
 }
 
 describe("useCompactDensity", () => {
+  // Capture original viewport so per-test setViewport() calls cannot leak
+  // into other tests sharing this vitest worker.
+  const originalInnerWidth = window.innerWidth;
+  const originalInnerHeight = window.innerHeight;
+
+  afterEach(() => {
+    Object.defineProperty(window, "innerWidth", {
+      writable: true,
+      configurable: true,
+      value: originalInnerWidth,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      writable: true,
+      configurable: true,
+      value: originalInnerHeight,
+    });
+    // useLayoutMode (consumed by useCompactDensity) listens for resize, so
+    // dispatch one to flush any cached viewport state in subsequent tests.
+    window.dispatchEvent(new Event("resize"));
+  });
+
   it("returns true on mobile viewport when atom is 'auto'", () => {
     setViewport(390, 844);
     const store = createStore();

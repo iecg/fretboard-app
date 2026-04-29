@@ -25,10 +25,8 @@
   padding-bottom: 0.4rem;
 }
 
-@media (max-width: 767px) {
-  .mobile-tab-card {
-    border-radius: 1rem;
-  }
+:global(.app-container[data-layout-tier="mobile"]) .mobile-tab-card {
+  border-radius: 1rem;
 }
 
 :global(.app-container[data-layout-variant="landscape-mobile"]) .mobile-tab-content {

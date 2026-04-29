@@ -10,6 +10,7 @@ import {
   chordTypeAtom,
   practiceLensAtom,
 } from "../../store/atoms";
+import { axe } from "../../test-utils/a11y";
 
 function renderWithStore(ui: React.ReactElement, store = createStore()) {
   return {
@@ -148,7 +149,7 @@ describe("TheoryControls/TheoryControls", () => {
 });
 
 describe("TheoryControls/TheorySection", () => {
-  it("does not render data-compact attribute by default", () => {
+  it("does not render data-compact attribute by default", async () => {
     const { container } = render(
       <TheorySection title="Scale" summary="C Major">
         <div>content</div>
@@ -156,9 +157,10 @@ describe("TheoryControls/TheorySection", () => {
     );
     const section = container.querySelector("section");
     expect(section).not.toHaveAttribute("data-compact");
+    expect(await axe(container)).toHaveNoViolations();
   });
 
-  it("renders data-compact='true' when compact prop is set", () => {
+  it("renders data-compact='true' when compact prop is set", async () => {
     const { container } = render(
       <TheorySection title="Scale" summary="C Major" compact>
         <div>content</div>
@@ -166,5 +168,6 @@ describe("TheoryControls/TheorySection", () => {
     );
     const section = container.querySelector("section");
     expect(section).toHaveAttribute("data-compact", "true");
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

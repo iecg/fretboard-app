@@ -10,6 +10,7 @@ import {
   chordRootAtom,
 } from "../../store/atoms";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
+import { axe } from "../../test-utils/a11y";
 
 /** Minimal valid seeds to prevent rendering errors in inlined child components. */
 const BASE_SEEDS = [
@@ -75,4 +76,20 @@ describe("MobileTabPanel/MobileTabPanel", () => {
     ]);
     expect(screen.queryByText("Scale Family")).not.toBeInTheDocument();
   });
+
+  it.each([
+    ["scales"],
+    ["chords"],
+    ["cof"],
+    ["view"],
+  ] as const)(
+    "has no accessibility violations on %s tab",
+    async (tab) => {
+      const { container } = renderWithAtoms(<MobileTabPanel />, [
+        ...BASE_SEEDS,
+        [mobileTabAtom, tab],
+      ]);
+      expect(await axe(container)).toHaveNoViolations();
+    },
+  );
 });
