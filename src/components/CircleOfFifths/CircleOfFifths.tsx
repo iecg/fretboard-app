@@ -227,7 +227,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
             16,
             isActive ? SIZE * 0.062 : SIZE * 0.054,
           );
-          const degreeFontSize = Math.max(11, SIZE * 0.043);
+          const degreeFontSize = Math.max(10, SIZE * 0.038);
 
           return (
             <g key={`text-group-${note}`} style={{ pointerEvents: "none" }}>
@@ -322,11 +322,11 @@ export const CircleOfFifths = memo(function CircleOfFifths({
         {/* Root note and key signature in center */}
         <text
           x={CX}
-          y={CY - SIZE * 0.04}
+          y={CY - SIZE * 0.035}
           textAnchor="middle"
           dominantBaseline="middle"
           fill="var(--cof-center-note)"
-          fontSize={Math.max(16, SIZE * 0.058)}
+          fontSize={Math.max(18, SIZE * 0.062)}
           fontWeight="bold"
           fontFamily="var(--font-display)"
           stroke="var(--cof-text-stroke)"
@@ -338,12 +338,12 @@ export const CircleOfFifths = memo(function CircleOfFifths({
         </text>
         <text
           x={CX}
-          y={CY + SIZE * 0.04}
+          y={CY + SIZE * 0.055}
           textAnchor="middle"
           dominantBaseline="middle"
           fill="var(--cof-center-signature)"
-          fontSize={Math.max(16, SIZE * 0.064)}
-          fontWeight="bold"
+          fontSize={Math.max(14, SIZE * 0.052)}
+          fontWeight="600"
           fontFamily="var(--font-display)"
           stroke="var(--cof-text-stroke)"
           strokeWidth="2"

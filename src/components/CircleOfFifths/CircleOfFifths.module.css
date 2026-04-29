@@ -4,15 +4,15 @@
   --cof-inner-stroke: var(--token-border-subtle);
   --cof-text-stroke: transparent;
   --cof-text-muted: var(--text-muted);
-  --cof-enharmonic-muted: color-mix(in srgb, var(--text-muted) 80%, transparent);
-  --cof-degree-muted: color-mix(in srgb, var(--text-muted) 70%, transparent);
+  --cof-enharmonic-muted: color-mix(in srgb, var(--text-muted) 65%, transparent);
+  --cof-degree-muted: color-mix(in srgb, var(--text-muted) 55%, transparent);
 
   /* Note tones — default/dark defaults */
   --cof-note-active: var(--neon-orange-bright);
   --cof-note-scale: var(--neon-cyan-bright);
   --cof-note-muted: var(--text-muted);
-  --cof-enharmonic-active: color-mix(in srgb, var(--neon-orange-bright), white 30%);
-  --cof-enharmonic-scale: color-mix(in srgb, var(--neon-cyan-bright), white 30%);
+  --cof-enharmonic-active: color-mix(in srgb, var(--neon-orange-bright), white 25%);
+  --cof-enharmonic-scale: color-mix(in srgb, var(--neon-cyan-bright), white 25%);
   --cof-degree-active: var(--neon-orange);
   --cof-degree-scale: var(--neon-cyan);
 
@@ -37,11 +37,11 @@
 :global([data-theme="modern-dark"]) .circle-fifths-container {
   --cof-center-start: rgb(34 40 54 / 0.98);
   --cof-center-end: rgb(16 20 29 / 1);
-  --cof-inner-stroke: rgb(255 255 255 / 0.1);
+  --cof-inner-stroke: rgb(255 255 255 / 0.14);
   --cof-text-stroke: rgba(0, 0, 0, 0.4);
-  --cof-text-muted: rgb(184 197 212 / 0.74);
-  --cof-enharmonic-muted: rgb(171 183 197 / 0.74);
-  --cof-degree-muted: rgb(165 176 188 / 0.56);
+  --cof-text-muted: rgb(184 197 212 / 0.62);
+  --cof-enharmonic-muted: rgb(171 183 197 / 0.58);
+  --cof-degree-muted: rgb(165 176 188 / 0.44);
 }
 
 :global([data-theme="modern-light"]) .circle-fifths-container {
@@ -54,8 +54,8 @@
   --cof-note-active: var(--neon-orange-dim);
   --cof-note-scale: var(--neon-cyan-dim);
   --cof-note-muted: var(--text-muted);
-  --cof-enharmonic-active: color-mix(in srgb, var(--neon-orange-dim) 75%, transparent);
-  --cof-enharmonic-scale: color-mix(in srgb, var(--neon-cyan-dim) 75%, transparent);
+  --cof-enharmonic-active: color-mix(in srgb, var(--neon-orange-dim) 65%, transparent);
+  --cof-enharmonic-scale: color-mix(in srgb, var(--neon-cyan-dim) 65%, transparent);
   --cof-degree-active: var(--neon-orange-dim);
   --cof-degree-scale: var(--neon-cyan-dim);
 
@@ -84,7 +84,7 @@
 }
 
 :global([data-theme="modern-dark"]) .circle-slice {
-  fill: rgb(28 33 45 / 0.9);
+  fill: rgb(28 33 45 / 0.92);
   stroke: rgb(255 255 255 / 0.08) !important;
 }
 
@@ -108,7 +108,7 @@
 
 .circle-slice.circle-slice--muted {
   fill: var(--surface-raised);
-  opacity: 0.8;
+  opacity: 0.88;
 }
 
 :global([data-theme="modern-dark"]) .circle-slice.circle-slice--muted {
@@ -118,7 +118,7 @@
 
 :global([data-theme="modern-light"]) .circle-slice.circle-slice--muted {
   fill: var(--surface-raised);
-  opacity: 0.6;
+  opacity: 0.72;
 }
 
 .circle-slice.circle-slice--scale:not(.active):hover {
@@ -152,29 +152,29 @@
 }
 
 .circle-slice.active {
-  fill: color-mix(in srgb, var(--neon-orange) 22%, var(--surface-base));
+  fill: color-mix(in srgb, var(--neon-orange) 16%, var(--surface-base));
   stroke: var(--neon-orange) !important;
-  stroke-width: 2.3 !important;
+  stroke-width: 1.8 !important;
   filter: var(--glow-filter-orange);
 }
 
 :global([data-theme="modern-dark"]) .circle-slice.active {
-  fill: color-mix(in srgb, var(--neon-orange) 18%, rgb(32 32 40 / 1));
-  filter: drop-shadow(0 0 8px rgb(255 154 77 / 0.42));
+  fill: color-mix(in srgb, var(--neon-orange) 14%, rgb(32 32 40 / 1));
+  filter: drop-shadow(0 0 6px rgb(255 154 77 / 0.34));
 }
 
 :global([data-theme="modern-light"]) .circle-slice.active {
-  fill: color-mix(in srgb, var(--neon-orange) 18%, var(--surface-base));
+  fill: color-mix(in srgb, var(--neon-orange) 14%, var(--surface-base));
   stroke: var(--neon-orange) !important;
   filter: none;
 }
 
 .circle-slice.active:hover {
-  fill: color-mix(in srgb, var(--neon-orange) 24%, var(--surface-base));
+  fill: color-mix(in srgb, var(--neon-orange) 20%, var(--surface-base));
 }
 
 :global([data-theme="modern-dark"]) .circle-slice.active:hover {
-  fill: color-mix(in srgb, var(--neon-orange) 24%, rgb(36 36 44 / 1));
+  fill: color-mix(in srgb, var(--neon-orange) 18%, rgb(36 36 44 / 1));
 }
 
 :global([data-theme="modern-light"]) .circle-slice.active:hover {
