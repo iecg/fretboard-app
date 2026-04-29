@@ -39,7 +39,8 @@ interface FretboardSVGProps {
   maxFret?: number;
   highlightNotes: string[];
   rootNote: string;
-  displayFormat?: "notes" | "degrees" | "color" | "none";
+  displayFormat?: "notes" | "degrees" | "none";
+  degreeColorsEnabled?: boolean;
   boxBounds?: BoxBound[];
   chordTones?: string[];
   chordRoot?: string;
@@ -96,6 +97,7 @@ export const FretboardSVG = memo(function FretboardSVG({
   highlightNotes,
   rootNote,
   displayFormat = "notes",
+  degreeColorsEnabled,
   boxBounds = [],
   chordTones = [],
   chordRoot,
@@ -306,6 +308,7 @@ export const FretboardSVG = memo(function FretboardSVG({
     scaleName: scaleName || "",
     useFlats,
     displayFormat,
+    degreeColorsEnabled,
     wrappedNotes,
     practiceLens,
     tuning,
@@ -318,6 +321,7 @@ export const FretboardSVG = memo(function FretboardSVG({
       aria-label={ariaLabel}
       className={styles["fretboard-board"]}
       data-practice-lens={hasChordOverlay ? practiceLens : undefined}
+      data-degree-colors={degreeColorsEnabled ? "true" : undefined}
       data-testid="fretboard-svg"
     >
       <div
@@ -376,6 +380,7 @@ export const FretboardSVG = memo(function FretboardSVG({
               stringYAt={stringYAt}
               noteBubblePx={noteBubblePx}
               displayFormat={displayFormat}
+              degreeColorsEnabled={degreeColorsEnabled}
             />
           </g>
         </svg>

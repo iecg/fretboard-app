@@ -180,9 +180,9 @@
   border-color: var(--role-scale-border);
 }
 
-/* Degree color mode — in-scale pills get degree colors, but chord-root/guide-tone take priority */
-.practice-bar-pill[data-in-scale="true"][data-scale-degree]:not([data-chord-root="true"]):not([data-guide-tone="true"]) {
-  background: color-mix(in srgb, var(--degree-color) 35%, var(--chip-surface-inactive));
+/* Degree color mode — every in-scale scale-degree pill gets degree colors. */
+.chord-practice-bar[data-degree-colors="true"] .practice-bar-pill[data-in-scale="true"][data-scale-degree] {
+  background: color-mix(in srgb, var(--degree-color) 62%, var(--chip-surface-inactive));
   border-color: var(--degree-color);
 }
 

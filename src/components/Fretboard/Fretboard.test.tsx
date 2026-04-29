@@ -170,6 +170,20 @@ describe("Fretboard/Fretboard", () => {
       expect(document.body).toBeTruthy();
     });
 
+    it("keeps note labels visible when scale degree colors are enabled", () => {
+      const { container } = render(
+        <Fretboard
+          {...defaultProps}
+          degreeColorsEnabled
+          displayFormat="notes"
+          rootNote="C"
+          scaleName="Major"
+        />,
+      );
+
+      expect(container.querySelector('[data-degree-colors="true"] text')).toBeTruthy();
+    });
+
     it("updates display when displayFormat changes", () => {
       const { rerender } = render(
         <Fretboard {...defaultProps} displayFormat="notes" />,

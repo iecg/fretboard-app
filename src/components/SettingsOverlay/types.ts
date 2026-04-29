@@ -5,6 +5,7 @@ export type { ThemePreference as ThemeOptionValue } from "../../store/uiAtoms";
 export type SettingFieldKey =
   | "zoom"
   | "fretRange"
+  | "scaleDegreeColors"
   | "tuning"
   | "accidentals"
   | "enharmonicDisplay"

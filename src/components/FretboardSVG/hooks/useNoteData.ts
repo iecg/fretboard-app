@@ -55,7 +55,8 @@ export interface UseNoteDataProps {
   activeShape?: ActiveShapeType;
   scaleName: string;
   useFlats: boolean;
-  displayFormat?: "notes" | "degrees" | "color" | "none";
+  displayFormat?: "notes" | "degrees" | "none";
+  degreeColorsEnabled?: boolean;
   wrappedNotes: Set<string>;
   practiceLens?: PracticeLens;
   tuning: string[];
@@ -84,6 +85,7 @@ export function useNoteData({
   scaleName,
   useFlats,
   displayFormat,
+  degreeColorsEnabled,
   wrappedNotes,
   practiceLens,
   noteSemantics,
@@ -277,15 +279,17 @@ export function useNoteData({
         // Visual hiddenness: inactive notes are not rendered in the note layer.
         const isHidden = noteClass === "note-inactive";
 
-        // Calculate scale degree color for "color" display mode
+        // Calculate scale degree color when degree colors are enabled
         let scaleDegree: string | undefined;
         let degreeColor: string | undefined;
-        if (displayFormat === "color" && rootIdx !== -1) {
+        if (degreeColorsEnabled && rootIdx !== -1) {
           const noteIdx = NOTES.indexOf(noteName);
           if (noteIdx !== -1) {
             const chromaticInterval = (noteIdx - rootIdx + 12) % 12;
             const degreesMap = getDegreesForScale(scaleName);
-            scaleDegree = degreesMap[chromaticInterval];
+            scaleDegree = scale.includes(chromaticInterval)
+              ? degreesMap[chromaticInterval] ?? INTERVAL_NAMES[chromaticInterval]
+              : undefined;
             if (scaleDegree) {
               degreeColor = DEGREE_COLORS[scaleDegree];
             }
@@ -310,5 +314,5 @@ export function useNoteData({
         }
         }
         return notes;
-        }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, wrappedNotes, practiceLens, noteSemantics, activePattern, activeShape, shapeScope]);
+        }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, degreeColorsEnabled, wrappedNotes, practiceLens, noteSemantics, activePattern, activeShape, shapeScope]);
         }

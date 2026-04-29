@@ -2,6 +2,7 @@ import { atom } from "jotai";
 import {
   NOTES,
   ENHARMONICS,
+  INTERVAL_NAMES,
 
   LENS_REGISTRY,
   getScaleNotes,
@@ -155,7 +156,10 @@ export const noteSemanticMapAtom = atom((get) => {
         isTension,
         memberName: member?.name as ChordMemberName | undefined,
         scaleDegree: isInScale && tonicIdx !== -1 && noteIdx !== -1
-          ? degreesMap[(noteIdx - tonicIdx + 12) % 12] as DegreeId | undefined
+          ? (
+              degreesMap[(noteIdx - tonicIdx + 12) % 12] ??
+              INTERVAL_NAMES[(noteIdx - tonicIdx + 12) % 12]
+            ) as DegreeId | undefined
           : undefined,
         isDiatonicChord: isChordTone && isInScale
           && diatonicChordRoot !== undefined

@@ -15,10 +15,17 @@ const mobileTabStorage = createStorage<MobileTab>({
   },
 });
 
-export const displayFormatAtom = atomWithStorage<"notes" | "degrees" | "color" | "none">(
+export const displayFormatAtom = atomWithStorage<"notes" | "degrees" | "none">(
   k("displayFormat"),
   "notes",
-  rawStringStorage<"notes" | "degrees" | "color" | "none">(),
+  rawStringStorage<"notes" | "degrees" | "none">(),
+  GET_ON_INIT,
+);
+
+export const scaleDegreeColorsEnabledAtom = atomWithStorage<boolean>(
+  k("scaleDegreeColorsEnabled"),
+  false,
+  undefined,
   GET_ON_INIT,
 );
 

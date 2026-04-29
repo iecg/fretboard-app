@@ -28,6 +28,8 @@ export interface DegreeChipStripProps {
   headerAction?: ReactNode;
   /** Compact mode — smaller chips and tighter padding for secondary surfaces. */
   compact?: boolean;
+  /** When true, enables degree color styling on in-scale chips. */
+  degreeColorsEnabled?: boolean;
 }
 
 export function DegreeChipStrip({
@@ -42,6 +44,7 @@ export function DegreeChipStrip({
   visible = true,
   headerAction,
   compact,
+  degreeColorsEnabled,
 }: DegreeChipStripProps) {
   const label = ariaLabel ?? `Scale degrees for ${scaleName}`;
 
@@ -51,6 +54,7 @@ export function DegreeChipStrip({
       aria-label={label}
       className={clsx(styles['degree-chip-strip'], compact && styles['degree-chip-strip--compact'], className)}
       data-scale-visible={visible ? 'true' : 'false'}
+      data-degree-colors={degreeColorsEnabled ? 'true' : undefined}
     >
       {(!hideHeader || headerAction) && (
         <header

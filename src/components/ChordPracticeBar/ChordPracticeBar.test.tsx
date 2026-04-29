@@ -338,6 +338,49 @@ describe("ChordPracticeBar/ChordPracticeBar", () => {
       expect(gSharpPill?.getAttribute("data-chord-root")).toBeNull();
     });
 
+    it("degree colors remain available on chord-root and guide-tone pills", () => {
+      const coloredChordGroup: PracticeBarGroup = {
+        label: "Chord",
+        notes: [
+          mkNote({
+            internalNote: "C",
+            displayNote: "C",
+            intervalName: "1",
+            isChordRoot: true,
+            scaleDegree: "I",
+            degreeColor: "#ff7f00",
+          }),
+          mkNote({
+            internalNote: "E",
+            displayNote: "E",
+            intervalName: "3",
+            isGuideTone: true,
+            scaleDegree: "III",
+            degreeColor: "#4daf4a",
+          }),
+        ],
+      };
+      const { container } = render(
+        <ChordPracticeBar
+          title="C Major"
+          chordGroup={coloredChordGroup}
+          landOnGroup={coloredChordGroup}
+          degreeColorsEnabled
+        />,
+      );
+
+      const rootPill = container.querySelector(
+        '[data-chord-root="true"][data-scale-degree="I"]',
+      ) as HTMLElement | null;
+      const guideTonePill = container.querySelector(
+        '[data-guide-tone="true"][data-scale-degree="III"]',
+      ) as HTMLElement | null;
+
+      expect(rootPill?.style.getPropertyValue("--degree-color")).toBe("#ff7f00");
+      expect(guideTonePill?.style.getPropertyValue("--degree-color")).toBe("#4daf4a");
+      expect(container.querySelector(".chord-practice-bar")?.getAttribute("data-degree-colors")).toBe("true");
+    });
+
     it("renders resolution arrows for tension land-on notes", () => {
       render(
         <ChordPracticeBar

@@ -40,4 +40,34 @@ describe("useNoteData", () => {
     expect(e2Note).toBeDefined();
     expect(e2Note?.noteClass).toBe("key-tonic");
   });
+
+  it("assigns the blue-note color to blues-scale color notes", () => {
+    const { result } = renderHook(() =>
+      useNoteData({
+        numStrings: 1,
+        fretboardLayout: [["C", "C#", "D", "D#", "E", "F", "F#"]],
+        totalColumns: 6,
+        startFret: 0,
+        maxFret: 22,
+        hiddenNotes: new Set(),
+        highlightNotes: ["C", "D#", "F", "F#", "G", "A#"],
+        hasChordOverlay: false,
+        chordTones: [],
+        rootNote: "C",
+        colorNotes: ["F#"],
+        shapePolygons: [],
+        boxBounds: [],
+        chordFretSpread: 0,
+        scaleName: "Minor Blues",
+        useFlats: false,
+        degreeColorsEnabled: true,
+        wrappedNotes: new Set(),
+        tuning: ["E2"]
+      })
+    );
+
+    const blueNote = result.current.find((n) => n.noteName === "F#");
+    expect(blueNote?.scaleDegree).toBe("b5");
+    expect(blueNote?.degreeColor).toBe("#0047ff");
+  });
 });

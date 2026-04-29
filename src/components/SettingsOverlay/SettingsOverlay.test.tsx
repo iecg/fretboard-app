@@ -73,6 +73,23 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(screen.getByText("Settings")).toBeTruthy();
   });
 
+  it("renders scale degree colors as a divided View setting with hint styling", () => {
+    renderOpenOverlay();
+
+    const scaleDegreeLabel = screen.getByText("Scale Degree Colors");
+    const scaleDegreeField = scaleDegreeLabel.closest(`.${styles["overlay-field"]}`);
+    const fretRangeField = screen
+      .getByText("Fret Range")
+      .closest(`.${styles["overlay-field"]}`);
+    const hint = screen.getByText("Colors each scale note by its degree.");
+
+    expect(scaleDegreeField).toBeTruthy();
+    expect(scaleDegreeField).not.toHaveClass(styles["overlay-field--divided"]);
+    expect(fretRangeField).toHaveClass(styles["overlay-field--divided"]);
+    expect(hint).toHaveClass("field-hint");
+    expect(hint).toHaveClass(styles["overlay-field-hint"]);
+  });
+
   it("renders sections in the expected order", () => {
     renderOpenOverlay();
 
@@ -95,6 +112,7 @@ describe("SettingsOverlay/SettingsOverlay", () => {
 
     expect(screen.getByText("Zoom")).toBeTruthy();
     expect(screen.getByText("Fret Range")).toBeTruthy();
+    expect(screen.getByText("Scale Degree Colors")).toBeTruthy();
     expect(screen.getAllByText("Tuning")).toHaveLength(2);
     expect(screen.getByRole("combobox", { name: "Tuning" })).toBeTruthy();
     expect(screen.getByText("Accidentals")).toBeTruthy();

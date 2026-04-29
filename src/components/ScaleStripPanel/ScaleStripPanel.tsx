@@ -1,4 +1,6 @@
+import { useAtom } from "jotai";
 import { useScaleState } from "../../hooks/useScaleState";
+import { scaleDegreeColorsEnabledAtom } from "../../store/atoms";
 import { DegreeChipStrip } from "../DegreeChipStrip/DegreeChipStrip";
 import styles from "../DegreeChipStrip/DegreeChipStrip.module.css";
 
@@ -33,6 +35,8 @@ export function ScaleStripPanel() {
     toggleScaleVisible,
   } = useScaleState();
 
+  const [degreeColorsEnabled] = useAtom(scaleDegreeColorsEnabledAtom);
+
   const colorNoteSet = colorNotes.length > 0 ? new Set(colorNotes) : undefined;
 
   return (
@@ -43,6 +47,7 @@ export function ScaleStripPanel() {
       onChipToggle={scaleVisible ? toggleHiddenNote : undefined}
       colorNotes={colorNoteSet}
       visible={scaleVisible}
+      degreeColorsEnabled={degreeColorsEnabled}
       aria-label="Scale degrees"
       headerAction={
         <button

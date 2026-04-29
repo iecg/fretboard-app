@@ -109,6 +109,8 @@ export interface ChordPracticeBarProps {
   /** Lens-driven coaching subset. */
   landOnGroup: PracticeBarGroup;
   className?: string;
+  /** When true, enables degree color styling on in-scale pills. */
+  degreeColorsEnabled?: boolean;
 }
 
 /** Collapse groups when notes match and no coaching data (resolutions) is present. */
@@ -134,6 +136,7 @@ export function ChordPracticeBar({
   chordGroup,
   landOnGroup,
   className,
+  degreeColorsEnabled,
 }: ChordPracticeBarProps) {
   const collapsed = useAtomValue(chordOverlayHiddenAtom);
   const hiddenNotes = useAtomValue(chordHiddenNotesAtom);
@@ -152,6 +155,7 @@ export function ChordPracticeBar({
       aria-label={`Practice cues: ${title}`}
       className={clsx(styles["chord-practice-bar"], className)}
       data-collapsed={collapsed ? "true" : undefined}
+      data-degree-colors={degreeColorsEnabled ? "true" : undefined}
     >
       <div className={styles["chord-practice-bar-header"]}>
         <button

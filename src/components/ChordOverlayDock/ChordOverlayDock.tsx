@@ -1,4 +1,6 @@
+import { useAtom } from "jotai";
 import { usePracticeBarState } from "../../hooks/usePracticeBarState";
+import { scaleDegreeColorsEnabledAtom } from "../../store/atoms";
 import { ChordPracticeBar } from "../ChordPracticeBar/ChordPracticeBar";
 import styles from "./ChordOverlayDock.module.css";
 
@@ -13,6 +15,8 @@ export function ChordOverlayDock() {
     landOnGroup,
   } = usePracticeBarState();
 
+  const [degreeColorsEnabled] = useAtom(scaleDegreeColorsEnabledAtom);
+
   if (!showChordPracticeBar) return null;
 
   return (
@@ -23,6 +27,7 @@ export function ChordOverlayDock() {
         lensLabel={practiceBarLensLabel}
         chordGroup={chordGroup}
         landOnGroup={landOnGroup}
+        degreeColorsEnabled={degreeColorsEnabled}
       />
     </div>
   );

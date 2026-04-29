@@ -43,6 +43,11 @@ export const SETTING_FIELDS: Record<SettingFieldKey, SettingFieldConfig> = {
     key: "fretRange",
     label: "Fret Range",
   },
+  scaleDegreeColors: {
+    key: "scaleDegreeColors",
+    label: "Scale Degree Colors",
+    hint: "Colors each scale note by its degree.",
+  },
   tuning: {
     key: "tuning",
     label: "Tuning",
@@ -74,7 +79,7 @@ export const SETTINGS_SECTIONS: readonly SettingsSectionConfig[] = [
   {
     id: "view",
     title: "View",
-    fields: ["zoom", "fretRange"],
+    fields: ["zoom", "fretRange", "scaleDegreeColors"],
   },
   {
     id: "instrument",
