@@ -1,9 +1,11 @@
 import { useId, useMemo, useCallback, memo, type CSSProperties } from "react";
+import { useAtomValue } from "jotai";
 import {
   getNoteDisplay,
   type PracticeLens,
   type NoteSemantics,
 } from "../../core/theory";
+import { scaleDegreeColorsEnabledAtom } from "../../store/atoms";
 import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
 import styles from "./FretboardSVG.module.css";
 import { useFretboardGeometry } from "./hooks/useFretboardGeometry";
@@ -40,7 +42,6 @@ interface FretboardSVGProps {
   highlightNotes: string[];
   rootNote: string;
   displayFormat?: "notes" | "degrees" | "none";
-  degreeColorsEnabled?: boolean;
   boxBounds?: BoxBound[];
   chordTones?: string[];
   chordRoot?: string;
@@ -97,7 +98,6 @@ export const FretboardSVG = memo(function FretboardSVG({
   highlightNotes,
   rootNote,
   displayFormat = "notes",
-  degreeColorsEnabled,
   boxBounds = [],
   chordTones = [],
   chordRoot,
@@ -120,6 +120,7 @@ export const FretboardSVG = memo(function FretboardSVG({
   // around it) but non-uniform spacing inside this component is derived from
   // neckWidthPx + scale math, so the value isn't read here.
   void effectiveZoom;
+  const degreeColorsEnabled = useAtomValue(scaleDegreeColorsEnabledAtom);
   const internalId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const defsPrefix = `fretboard-${id ?? internalId}`;
   const svgDefId = useCallback((id: string) => `${defsPrefix}-${id}`, [defsPrefix]);

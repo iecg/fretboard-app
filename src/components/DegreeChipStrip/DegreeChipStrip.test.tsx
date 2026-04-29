@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { Provider, createStore } from 'jotai';
+import { scaleDegreeColorsEnabledAtom } from '../../store/atoms';
 import { DegreeChipStrip, type DegreeChip } from './DegreeChipStrip';
 import { axe } from '../../test-utils/a11y';
 
@@ -65,18 +67,28 @@ describe('DegreeChipStrip/DegreeChipStrip', () => {
       scaleDegree: ["I", "II", "III", "IV", "V", "VI", "VII"][index],
       degreeColor: "#f59e0b",
     }));
+
+    const store = createStore();
+    store.set(scaleDegreeColorsEnabledAtom, false);
+
     const { container, rerender } = render(
-      <DegreeChipStrip scaleName="A Natural Minor" chips={chipsWithColors} />
+      <Provider store={store}>
+        <DegreeChipStrip scaleName="A Natural Minor" chips={chipsWithColors} />
+      </Provider>
     );
 
     expect(container.querySelector(".degree-chip-strip")?.getAttribute("data-degree-colors")).toBeNull();
 
+    const enabledStore = createStore();
+    enabledStore.set(scaleDegreeColorsEnabledAtom, true);
+
     rerender(
-      <DegreeChipStrip
-        scaleName="A Natural Minor"
-        chips={chipsWithColors}
-        degreeColorsEnabled
-      />
+      <Provider store={enabledStore}>
+        <DegreeChipStrip
+          scaleName="A Natural Minor"
+          chips={chipsWithColors}
+        />
+      </Provider>
     );
 
     expect(container.querySelector(".degree-chip-strip")?.getAttribute("data-degree-colors")).toBe("true");
@@ -339,14 +351,19 @@ describe('DegreeChipStrip/DegreeChipStrip', () => {
           ? { ...chip, scaleDegree: "b5", degreeColor: "#0047ff" }
           : chip,
       );
+
+      const store = createStore();
+      store.set(scaleDegreeColorsEnabledAtom, true);
+
       const { container } = render(
-        <DegreeChipStrip
-          scaleName="C Minor Blues"
-          chips={chipsWithBlueNote}
-          colorNotes={new Set(["E"])}
-          visible={true}
-          degreeColorsEnabled
-        />
+        <Provider store={store}>
+          <DegreeChipStrip
+            scaleName="C Minor Blues"
+            chips={chipsWithBlueNote}
+            colorNotes={new Set(["E"])}
+            visible={true}
+          />
+        </Provider>
       );
 
       const colorNoteItem = container.querySelector(

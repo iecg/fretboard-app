@@ -2,10 +2,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, fireEvent, act, within } from "@testing-library/react";
 import { Provider, createStore } from "jotai";
+import { axe } from "../../test-utils/a11y";
 import SettingsOverlay from "./SettingsOverlay";
 import { synth } from "../../core/audio";
 import { settingsOverlayOpenAtom, fretZoomAtom, themeAtom, compactDensityAtom } from "../../store/atoms";
-import { axe } from "../../test-utils/a11y";
 import styles from "./SettingsOverlay.module.css";
 
 // Mock the audio synth singleton — we only care that setMute is called on reset.
@@ -66,11 +66,12 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(drawer).toBeNull();
   });
 
-  it("renders drawer with Settings heading when open", () => {
-    renderOpenOverlay();
+  it("renders drawer with Settings heading when open", async () => {
+    const { container } = renderOpenOverlay();
     const drawer = document.querySelector(".settings-overlay-drawer");
     expect(drawer).toBeTruthy();
     expect(screen.getByText("Settings")).toBeTruthy();
+    expect(await axe(container)).toHaveNoViolations();
   });
 
   it("renders scale degree colors as a divided View setting with hint styling", () => {

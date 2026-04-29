@@ -58,25 +58,6 @@ export default function ViewSettingsSection({ compact }: { compact?: boolean }) 
         </div>
       </div>
       <div className={clsx(styles["overlay-field"], styles["overlay-field--divided"])}>
-        <OverlayFieldHeader label={SETTING_FIELDS.scaleDegreeColors.label} />
-        <div className={styles["overlay-field-control"]}>
-          <ToggleBar
-            options={[
-              { value: "false", label: "Off" },
-              { value: "true", label: "On" },
-            ]}
-            value={String(scaleDegreeColorsEnabled)}
-            onChange={(v) => setScaleDegreeColorsEnabled(v === "true")}
-            compact={compact}
-          />
-        </div>
-        {SETTING_FIELDS.scaleDegreeColors.hint && (
-          <p className={clsx(shared["field-hint"], styles["overlay-field-hint"])}>
-            {SETTING_FIELDS.scaleDegreeColors.hint}
-          </p>
-        )}
-      </div>
-      <div className={styles["overlay-field"]}>
         <OverlayFieldHeader label="Compact Controls" />
         <div className={styles["overlay-field-control"]}>
           <ToggleBar
@@ -94,6 +75,25 @@ export default function ViewSettingsSection({ compact }: { compact?: boolean }) 
         <p className={clsx(shared["field-hint"], styles["overlay-field-hint"])}>
           Auto: compact on mobile and portrait tablet.
         </p>
+      </div>
+      <div className={styles["overlay-field"]}>
+        <OverlayFieldHeader label={SETTING_FIELDS.scaleDegreeColors.label} />
+        <div className={styles["overlay-field-control"]}>
+          <ToggleBar
+            options={[
+              { value: "false", label: "Off" },
+              { value: "true", label: "On" },
+            ]}
+            value={String(scaleDegreeColorsEnabled)}
+            onChange={(v) => setScaleDegreeColorsEnabled(v === "true")}
+            compact={compact}
+          />
+        </div>
+        {SETTING_FIELDS.scaleDegreeColors.hint && (
+          <p className={clsx(shared["field-hint"], styles["overlay-field-hint"])}>
+            {SETTING_FIELDS.scaleDegreeColors.hint}
+          </p>
+        )}
       </div>
     </>
   );

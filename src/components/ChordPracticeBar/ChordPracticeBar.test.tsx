@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { Provider, createStore } from "jotai";
+import { scaleDegreeColorsEnabledAtom } from "../../store/atoms";
 import { ChordPracticeBar } from "./ChordPracticeBar";
 import type { PracticeBarGroup, PracticeBarNote } from "../../core/theory";
 import { axe } from "../../test-utils/a11y";
@@ -360,13 +362,18 @@ describe("ChordPracticeBar/ChordPracticeBar", () => {
           }),
         ],
       };
+
+      const store = createStore();
+      store.set(scaleDegreeColorsEnabledAtom, true);
+
       const { container } = render(
-        <ChordPracticeBar
-          title="C Major"
-          chordGroup={coloredChordGroup}
-          landOnGroup={coloredChordGroup}
-          degreeColorsEnabled
-        />,
+        <Provider store={store}>
+          <ChordPracticeBar
+            title="C Major"
+            chordGroup={coloredChordGroup}
+            landOnGroup={coloredChordGroup}
+          />
+        </Provider>
       );
 
       const rootPill = container.querySelector(

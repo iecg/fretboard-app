@@ -8,7 +8,7 @@ import {
   getNoteFrequency,
 } from "../../core/guitar";
 import { synth } from "../../core/audio";
-import { fretZoomAtom, scaleDegreeColorsEnabledAtom, type AutoCenterTarget } from "../../store/atoms";
+import { fretZoomAtom, type AutoCenterTarget } from "../../store/atoms";
 import { FretboardSVG } from "../FretboardSVG/FretboardSVG";
 import { getFretboardScale, getWireX } from "../FretboardSVG/fretboardGeometry";
 import { useFretboardState, type ShapeScope, type ActiveShapeType } from "../../hooks/useFretboardState";
@@ -27,7 +27,6 @@ interface FretboardProps {
   highlightNotes?: string[];
   rootNote?: string;
   displayFormat?: "notes" | "degrees" | "none";
-  degreeColorsEnabled?: boolean;
   boxBounds?: { minFret: number; maxFret: number }[];
   chordTones?: string[];
   chordRoot?: string;
@@ -55,7 +54,6 @@ interface FretboardProps {
 export function Fretboard(props: FretboardProps) {
   const state = useFretboardState();
   const fretZoom = useAtomValue(fretZoomAtom);
-  const degreeColorsEnabled = useAtomValue(scaleDegreeColorsEnabledAtom);
 
   // Fallback to props for testability; default to atom-driven state.
   const tuning = props.tuning ?? state.currentTuning;
@@ -84,7 +82,6 @@ export function Fretboard(props: FretboardProps) {
   const stringRowPx = props.stringRowPx ?? STRING_ROW_PX_DEFAULT;
   const onFretClickProp = props.onFretClick;
   const id = props.id;
-  const useDegreeColors = props.degreeColorsEnabled ?? degreeColorsEnabled;
 
   const fretboardLayout = getFretboardNotes(tuning, Math.max(endFret, maxFret));
 
@@ -257,7 +254,6 @@ export function Fretboard(props: FretboardProps) {
           highlightNotes={highlightNotes}
           rootNote={rootNote}
           displayFormat={displayFormat}
-          degreeColorsEnabled={useDegreeColors}
           boxBounds={boxBounds}
           chordTones={chordTones}
           chordRoot={chordRoot}

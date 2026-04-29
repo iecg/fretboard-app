@@ -161,7 +161,8 @@
 .degree-chip-item[data-is-color-note='true'] .degree-chip::before {
   content: '';
   position: absolute;
-  inset: var(--chip-border-width);
+  /* inset:0 — border-box already insets ::before by --chip-border-width; raising this thickens the hexagon ring. */
+  inset: 0;
   background: var(--color-note-inner-fill);
   clip-path: var(--chip-hexagon-clip);
 }

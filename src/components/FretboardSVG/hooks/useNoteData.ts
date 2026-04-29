@@ -118,6 +118,8 @@ export function useNoteData({
     // Pre-calculate color notes set
     const colorNoteSet = new Set(colorNotes);
 
+    const degreesMap = getDegreesForScale(scaleName);
+
     for (let stringIndex = 0; stringIndex < numStrings; stringIndex++) {
       const layoutRow = fretboardLayout[stringIndex];
 
@@ -286,7 +288,6 @@ export function useNoteData({
           const noteIdx = NOTES.indexOf(noteName);
           if (noteIdx !== -1) {
             const chromaticInterval = (noteIdx - rootIdx + 12) % 12;
-            const degreesMap = getDegreesForScale(scaleName);
             scaleDegree = scale.includes(chromaticInterval)
               ? degreesMap[chromaticInterval] ?? INTERVAL_NAMES[chromaticInterval]
               : undefined;
@@ -311,8 +312,8 @@ export function useNoteData({
           degreeColor,
         };
         notes.push(objectToBePushed);
-        }
-        }
-        return notes;
-        }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, degreeColorsEnabled, wrappedNotes, practiceLens, noteSemantics, activePattern, activeShape, shapeScope]);
-        }
+      }
+    }
+    return notes;
+  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, degreeColorsEnabled, wrappedNotes, practiceLens, noteSemantics, activePattern, activeShape, shapeScope]);
+}

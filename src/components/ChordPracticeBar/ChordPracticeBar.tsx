@@ -4,6 +4,7 @@ import type { PracticeBarGroup, PracticeBarNote } from "../../core/theory";
 import {
   chordOverlayHiddenAtom,
   chordHiddenNotesAtom,
+  scaleDegreeColorsEnabledAtom,
   toggleChordHiddenNoteAtom,
   toggleChordOverlayHiddenAtom,
 } from "../../store/atoms";
@@ -109,8 +110,6 @@ export interface ChordPracticeBarProps {
   /** Lens-driven coaching subset. */
   landOnGroup: PracticeBarGroup;
   className?: string;
-  /** When true, enables degree color styling on in-scale pills. */
-  degreeColorsEnabled?: boolean;
 }
 
 /** Collapse groups when notes match and no coaching data (resolutions) is present. */
@@ -136,12 +135,12 @@ export function ChordPracticeBar({
   chordGroup,
   landOnGroup,
   className,
-  degreeColorsEnabled,
 }: ChordPracticeBarProps) {
   const collapsed = useAtomValue(chordOverlayHiddenAtom);
   const hiddenNotes = useAtomValue(chordHiddenNotesAtom);
   const toggleNote = useSetAtom(toggleChordHiddenNoteAtom);
   const toggleCollapsed = useSetAtom(toggleChordOverlayHiddenAtom);
+  const degreeColorsEnabled = useAtomValue(scaleDegreeColorsEnabledAtom);
 
   if (chordGroup.notes.length === 0 && landOnGroup.notes.length === 0) {
     return null;

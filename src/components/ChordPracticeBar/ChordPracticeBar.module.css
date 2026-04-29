@@ -180,6 +180,18 @@
   border-color: var(--role-scale-border);
 }
 
+/* Role: Chord Root (Orange) */
+.practice-bar-pill[data-chord-root="true"] {
+  background: var(--role-chord-bg-strong);
+  border-color: var(--role-chord-border);
+}
+
+/* Role: Guide Tone (Orange) */
+.practice-bar-pill[data-guide-tone="true"] {
+  background: var(--role-chord-bg);
+  border-color: var(--role-chord-border);
+}
+
 /* Degree color mode — every in-scale scale-degree pill gets degree colors. */
 .chord-practice-bar[data-degree-colors="true"] .practice-bar-pill[data-in-scale="true"][data-scale-degree] {
   background: color-mix(in srgb, var(--degree-color) 62%, var(--chip-surface-inactive));
