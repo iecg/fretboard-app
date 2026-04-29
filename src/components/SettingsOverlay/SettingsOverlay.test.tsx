@@ -2,10 +2,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, fireEvent, act, within } from "@testing-library/react";
 import { Provider, createStore } from "jotai";
+import { axe } from "../../test-utils/a11y";
 import SettingsOverlay from "./SettingsOverlay";
 import { synth } from "../../core/audio";
 import { settingsOverlayOpenAtom, fretZoomAtom, themeAtom, compactDensityAtom } from "../../store/atoms";
-import { axe } from "../../test-utils/a11y";
 import styles from "./SettingsOverlay.module.css";
 
 // Mock the audio synth singleton — we only care that setMute is called on reset.
@@ -66,11 +66,29 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(drawer).toBeNull();
   });
 
-  it("renders drawer with Settings heading when open", () => {
-    renderOpenOverlay();
+  it("renders drawer with Settings heading when open", async () => {
+    const { container } = renderOpenOverlay();
     const drawer = document.querySelector(".settings-overlay-drawer");
     expect(drawer).toBeTruthy();
     expect(screen.getByText("Settings")).toBeTruthy();
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("renders scale degree colors as a divided View setting with hint styling", () => {
+    renderOpenOverlay();
+
+    const scaleDegreeLabel = screen.getByText("Scale Degree Colors");
+    const scaleDegreeField = scaleDegreeLabel.closest(`.${styles["overlay-field"]}`);
+    const fretRangeField = screen
+      .getByText("Fret Range")
+      .closest(`.${styles["overlay-field"]}`);
+    const hint = screen.getByText("Colors each scale note by its degree.");
+
+    expect(scaleDegreeField).toBeTruthy();
+    expect(scaleDegreeField).not.toHaveClass(styles["overlay-field--divided"]);
+    expect(fretRangeField).toHaveClass(styles["overlay-field--divided"]);
+    expect(hint).toHaveClass("field-hint");
+    expect(hint).toHaveClass(styles["overlay-field-hint"]);
   });
 
   it("renders sections in the expected order", () => {
@@ -95,6 +113,7 @@ describe("SettingsOverlay/SettingsOverlay", () => {
 
     expect(screen.getByText("Zoom")).toBeTruthy();
     expect(screen.getByText("Fret Range")).toBeTruthy();
+    expect(screen.getByText("Scale Degree Colors")).toBeTruthy();
     expect(screen.getAllByText("Tuning")).toHaveLength(2);
     expect(screen.getByRole("combobox", { name: "Tuning" })).toBeTruthy();
     expect(screen.getByText("Accidentals")).toBeTruthy();

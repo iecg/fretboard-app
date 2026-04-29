@@ -15,6 +15,7 @@ import {
   getDivergentNotes,
   formatAccidental,
 } from "../core/theory";
+import { DEGREE_COLORS, getDegreesForScale } from "../core/degrees";
 import { k, createStorage, rawStringStorage, booleanStorage, GET_ON_INIT } from "../utils/storage";
 import { fingeringPatternAtom, cagedShapesAtom } from "./fingeringAtoms";
 import type { CagedShape } from "../shapes";
@@ -134,6 +135,7 @@ export const degreeChipsAtom = atom((get) => {
   const scaleNotes = get(scaleNotesAtom);
   const useFlats = get(useFlatsAtom);
   const intervals = SCALES[scaleName] || [];
+  const degreesMap = getDegreesForScale(scaleName);
 
   const rootIdx = NOTES.indexOf(rootNote);
   return scaleNotes.map((note) => {
@@ -141,12 +143,16 @@ export const degreeChipsAtom = atom((get) => {
     const chromaticInterval =
       rootIdx !== -1 && noteIdx !== -1 ? (noteIdx - rootIdx + 12) % 12 : 0;
     const interval = INTERVAL_NAMES[chromaticInterval] ?? "1";
+    const scaleDegree = degreesMap[chromaticInterval] ?? interval;
+    const degreeColor = DEGREE_COLORS[scaleDegree] ?? undefined;
     return {
       internalNote: note,
       note: formatAccidental(
         getNoteDisplayInScale(note, rootNote, intervals, useFlats),
       ),
       interval: formatAccidental(interval),
+      scaleDegree,
+      degreeColor,
       inScale: true,
       isTonic: note === rootNote,
     };

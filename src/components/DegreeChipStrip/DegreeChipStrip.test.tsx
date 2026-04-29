@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { Provider, createStore } from 'jotai';
+import { scaleDegreeColorsEnabledAtom } from '../../store/atoms';
 import { DegreeChipStrip, type DegreeChip } from './DegreeChipStrip';
 import { axe } from '../../test-utils/a11y';
 
@@ -57,6 +59,40 @@ describe('DegreeChipStrip/DegreeChipStrip', () => {
     );
     const inScaleChips = container.querySelectorAll('[data-in-scale="true"]');
     expect(inScaleChips.length).toBe(7);
+  });
+
+  it("gates degree color styling with the strip attribute", () => {
+    const chipsWithColors: DegreeChip[] = aMinorChips.map((chip, index) => ({
+      ...chip,
+      scaleDegree: ["I", "II", "III", "IV", "V", "VI", "VII"][index],
+      degreeColor: "#f59e0b",
+    }));
+
+    const store = createStore();
+    store.set(scaleDegreeColorsEnabledAtom, false);
+
+    const { container, rerender } = render(
+      <Provider store={store}>
+        <DegreeChipStrip scaleName="A Natural Minor" chips={chipsWithColors} />
+      </Provider>
+    );
+
+    expect(container.querySelector(".degree-chip-strip")?.getAttribute("data-degree-colors")).toBeNull();
+
+    const enabledStore = createStore();
+    enabledStore.set(scaleDegreeColorsEnabledAtom, true);
+
+    rerender(
+      <Provider store={enabledStore}>
+        <DegreeChipStrip
+          scaleName="A Natural Minor"
+          chips={chipsWithColors}
+        />
+      </Provider>
+    );
+
+    expect(container.querySelector(".degree-chip-strip")?.getAttribute("data-degree-colors")).toBe("true");
+    expect(container.querySelector('[data-scale-degree="I"]')).toBeTruthy();
   });
 
   it('out-of-scale chips do not have data-in-scale attribute', () => {
@@ -307,6 +343,34 @@ describe('DegreeChipStrip/DegreeChipStrip', () => {
       // Tonic chip must NOT also have data-is-color-note (distinct roles)
       const tonicItem = container.querySelector('[data-is-tonic="true"]');
       expect(tonicItem?.getAttribute('data-is-color-note')).toBeNull();
+    });
+
+    it("color note chips can carry degree-color styling hooks", () => {
+      const chipsWithBlueNote: DegreeChip[] = aMinorChips.map((chip) =>
+        chip.internalNote === "E"
+          ? { ...chip, scaleDegree: "b5", degreeColor: "#0047ff" }
+          : chip,
+      );
+
+      const store = createStore();
+      store.set(scaleDegreeColorsEnabledAtom, true);
+
+      const { container } = render(
+        <Provider store={store}>
+          <DegreeChipStrip
+            scaleName="C Minor Blues"
+            chips={chipsWithBlueNote}
+            colorNotes={new Set(["E"])}
+            visible={true}
+          />
+        </Provider>
+      );
+
+      const colorNoteItem = container.querySelector(
+        '[data-is-color-note="true"][data-scale-degree="b5"]',
+      ) as HTMLElement | null;
+      expect(colorNoteItem).toBeTruthy();
+      expect(colorNoteItem?.style.getPropertyValue("--degree-color")).toBe("#0047ff");
     });
 
     it("color note chips are distinct from tonic and regular in-scale chips", () => {

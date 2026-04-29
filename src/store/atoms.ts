@@ -92,6 +92,7 @@ export {
 
 export {
   displayFormatAtom,
+  scaleDegreeColorsEnabledAtom,
   mobileTabAtom,
   tabletTabAtom,
   landscapeNarrowTabAtom,

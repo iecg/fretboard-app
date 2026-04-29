@@ -2,6 +2,7 @@ import { atom } from "jotai";
 import {
   NOTES,
   ENHARMONICS,
+  INTERVAL_NAMES,
 
   LENS_REGISTRY,
   getScaleNotes,
@@ -22,6 +23,7 @@ import type {
 } from "../core/theory";
 import {
   getDegreesForScale,
+  DEGREE_COLORS,
   type DegreeId,
 } from "../core/degrees";
 import {
@@ -154,7 +156,10 @@ export const noteSemanticMapAtom = atom((get) => {
         isTension,
         memberName: member?.name as ChordMemberName | undefined,
         scaleDegree: isInScale && tonicIdx !== -1 && noteIdx !== -1
-          ? degreesMap[(noteIdx - tonicIdx + 12) % 12] as DegreeId | undefined
+          ? (
+              degreesMap[(noteIdx - tonicIdx + 12) % 12] ??
+              INTERVAL_NAMES[(noteIdx - tonicIdx + 12) % 12]
+            ) as DegreeId | undefined
           : undefined,
         isDiatonicChord: isChordTone && isInScale
           && diatonicChordRoot !== undefined
@@ -260,6 +265,8 @@ const entryToBarNote = (e: ChordRowEntry): PracticeBarNote => ({
   isGuideTone: GUIDE_TONE_FORMATTED.has(e.memberName),
   isTension: !e.inScale,
   isInScale: e.inScale,
+  scaleDegree: e.scaleDegree,
+  degreeColor: e.scaleDegree ? DEGREE_COLORS[e.scaleDegree] : undefined,
 });
 
 /**

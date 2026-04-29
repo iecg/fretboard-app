@@ -234,6 +234,8 @@ export interface PracticeBarNote {
   isTension: boolean;
   isInScale: boolean;
   resolvesTo?: { internalNote: string; displayNote: string };
+  scaleDegree?: DegreeId;
+  degreeColor?: string;
 }
 
 export interface PracticeBarGroup {

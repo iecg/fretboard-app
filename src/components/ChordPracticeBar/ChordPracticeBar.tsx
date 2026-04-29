@@ -4,6 +4,7 @@ import type { PracticeBarGroup, PracticeBarNote } from "../../core/theory";
 import {
   chordOverlayHiddenAtom,
   chordHiddenNotesAtom,
+  scaleDegreeColorsEnabledAtom,
   toggleChordHiddenNoteAtom,
   toggleChordOverlayHiddenAtom,
 } from "../../store/atoms";
@@ -45,7 +46,9 @@ function Pill({ note, noteHidden, onToggleNote }: PillProps) {
         data-guide-tone={note.isGuideTone ? "true" : undefined}
         data-tension={note.isTension ? "true" : undefined}
         data-in-scale={note.isInScale ? "true" : undefined}
+        data-scale-degree={note.scaleDegree !== undefined ? note.scaleDegree : undefined}
         data-hidden-note={noteHidden ? "true" : undefined}
+        style={note.degreeColor ? { "--degree-color": note.degreeColor } as React.CSSProperties : undefined}
         aria-label={`Toggle visibility of ${aria}`}
         aria-pressed={!noteHidden}
         onClick={() => onToggleNote(note.internalNote)}
@@ -137,6 +140,7 @@ export function ChordPracticeBar({
   const hiddenNotes = useAtomValue(chordHiddenNotesAtom);
   const toggleNote = useSetAtom(toggleChordHiddenNoteAtom);
   const toggleCollapsed = useSetAtom(toggleChordOverlayHiddenAtom);
+  const degreeColorsEnabled = useAtomValue(scaleDegreeColorsEnabledAtom);
 
   if (chordGroup.notes.length === 0 && landOnGroup.notes.length === 0) {
     return null;
@@ -150,6 +154,7 @@ export function ChordPracticeBar({
       aria-label={`Practice cues: ${title}`}
       className={clsx(styles["chord-practice-bar"], className)}
       data-collapsed={collapsed ? "true" : undefined}
+      data-degree-colors={degreeColorsEnabled ? "true" : undefined}
     >
       <div className={styles["chord-practice-bar-header"]}>
         <button
