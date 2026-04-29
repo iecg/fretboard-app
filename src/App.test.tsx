@@ -52,33 +52,6 @@ vi.mock("./components/CircleOfFifths/CircleOfFifths", async () => {
   };
 });
 
-vi.mock("./components/DrawerSelector/DrawerSelector", () => ({
-  DrawerSelector: ({
-    label,
-    value,
-    onSelect,
-    options,
-  }: {
-    label: string;
-    value: string;
-    onSelect: (v: string) => void;
-    options: (string | { divider: string })[];
-  }) => (
-    <div data-testid={`drawer-${label.toLowerCase()}`}>
-      <button
-        onClick={() => {
-          const firstOption = options.find(
-            (option): option is string => typeof option === "string",
-          );
-          if (firstOption) onSelect(firstOption);
-        }}
-      >
-        {label}: {value}
-      </button>
-    </div>
-  ),
-}));
-
 vi.mock("./core/audio", () => ({
   synth: {
     setMute: vi.fn(),
@@ -1091,8 +1064,7 @@ describe("App", () => {
       localStorage.clear();
     });
 
-    it("changes tuning via drawer selector", async () => {
-      localStorage.setItem(k("tuningName"), "Drop D");
+    it("changes tuning via settings selector", async () => {
       render(<App />);
       fireEvent(window, new Event("resize"));
 
@@ -1109,18 +1081,15 @@ describe("App", () => {
         expect(screen.getByText("Settings")).toBeTruthy();
       });
 
-      const tuningDrawers = screen.queryAllByTestId("drawer-tuning");
-      if (tuningDrawers.length > 0) {
-        const btn = tuningDrawers[0].querySelector("button");
-        if (btn) {
-          fireEvent.click(btn);
+      const tuningSelect = await screen.findByRole("combobox", { name: /Tuning/i });
+      expect(tuningSelect).toHaveValue("Standard");
+      
+      fireEvent.change(tuningSelect, { target: { value: "Drop D" } });
 
-          await waitFor(() => {
-            expect(localStorage.getItem(k("tuningName"))).toBe("Standard");
-            expect(btn).toHaveTextContent("Tuning: Standard");
-          });
-        }
-      }
+      await waitFor(() => {
+        expect(localStorage.getItem(k("tuningName"))).toBe("Drop D");
+        expect(tuningSelect).toHaveValue("Drop D");
+      });
     });
 
     it("adjusts fret range via buttons", async () => {

@@ -70,7 +70,6 @@ Single-page React app. All UI state lives in Jotai atoms (`src/store/atoms.ts`).
 | `audio.ts` | Web Audio API synth singleton |
 | `Fretboard.tsx` | Pure rendering — receives data as props, handles drag/zoom/click |
 | `CircleOfFifths.tsx` | SVG ring for root note selection |
-| `DrawerSelector.tsx` | Dropdown component with upward-flip detection |
 | `App.tsx` | Layout, controls panel, derived computations via `useMemo` |
 | `App.css` | Layout styles with responsive breakpoints |
 | `index.css` | CSS variables and design tokens |
