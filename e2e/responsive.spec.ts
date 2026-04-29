@@ -8,9 +8,21 @@ async function gotoApp(page: Page, width: number, height: number) {
   await page.goto("/", { waitUntil: "networkidle" });
   await expect(page.locator('[data-testid="app-container"]')).toBeVisible();
 
-  const tier = await page.locator('[data-testid="app-container"]').getAttribute("data-layout-tier");
-  if (tier && tier !== "mobile") {
-    // Wait for lazy-loaded controls panel if not on mobile
+  const container = page.locator('[data-testid="app-container"]');
+  const tier = await container.getAttribute("data-layout-tier");
+  const variant = await container.getAttribute("data-layout-variant");
+
+  // Layouts that use the mobile tab panel: mobile + tablet-split.
+  const usesMobileTabs =
+    tier === "mobile" || variant === "tablet-split";
+
+  if (usesMobileTabs) {
+    // Wait for the lazy-loaded mobile tab content to mount before continuing.
+    if (variant !== "landscape-mobile") {
+      await expect(page.locator('[data-testid="mobile-tab-content"]')).toBeVisible();
+    }
+  } else {
+    // Wait for lazy-loaded controls panel cards to mount on tablet/desktop layouts.
     await expect(page.locator(".dashboard-card")).toHaveCount(3);
   }
 }
@@ -99,15 +111,15 @@ test.describe("responsive layout regressions", () => {
       expect(before.variant, viewport.name).toBe("mobile");
       expect(before.summaryCount, viewport.name).toBe(1);
 
+      // Version badge now lives inside the settings overlay; open it before
+      // verifying the footer is reachable.
+      await page.getByRole("button", { name: "Open settings" }).click();
       await page.locator('[data-testid="version-badge"]').scrollIntoViewIfNeeded();
 
       const after = await getMetrics(page);
       expect(after.badgeBottom, viewport.name).not.toBeNull();
       expect(after.badgeBottom!, viewport.name).toBeLessThanOrEqual(
         viewport.height,
-      );
-      expect(after.scrollHeight, viewport.name).toBeGreaterThanOrEqual(
-        after.innerHeight,
       );
       expect(after.titleRect).not.toBeNull();
       expect(after.actionsRect).not.toBeNull();
@@ -164,6 +176,9 @@ test.describe("responsive layout regressions", () => {
       expect(before.summaryCount).toBe(1);
       expect(before.toolbarDisplay).toBe("flex");
 
+      // Version badge moved into the settings overlay — open it before
+      // verifying the footer remains reachable inside the viewport.
+      await page.getByRole("button", { name: "Open settings" }).click();
       await page.locator('[data-testid="version-badge"]').scrollIntoViewIfNeeded();
 
       const after = await getMetrics(page);
@@ -182,14 +197,13 @@ test.describe("responsive layout regressions", () => {
     expect(initial.variant).toBe("tablet-split");
     expect(initial.headerActionsMode).toBe("compact");
     expect(initial.headerSubtitle).toBe("hidden");
-    expect(initial.controlsColumnRect).not.toBeNull();
-    expect(initial.keyColumnRect).not.toBeNull();
 
-    const panelIsSplit =
-      initial.controlsColumnRect!.right < initial.keyColumnRect!.left &&
-      Math.abs(initial.controlsColumnRect!.top - initial.keyColumnRect!.top) <
-        24;
-    expect(panelIsSplit).toBe(true);
+    // Tablet-split now renders the mobile tab panel rather than a side-by-side
+    // controls/key split. Verify the fretboard and tab content are visible
+    // without horizontal overflow.
+    await expect(page.locator('[data-testid="fretboard-outer"]')).toBeVisible();
+    await expect(page.locator('[data-testid="mobile-tab-content"]')).toBeVisible();
+    expect(initial.scrollWidth).toBeLessThanOrEqual(initial.innerWidth);
 
     await page.getByRole("button", { name: "Open settings" }).click();
     const withSettings = await getMetrics(page);
