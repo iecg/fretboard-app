@@ -20,7 +20,6 @@ import { FretNumbersRow } from "./FretNumbersRow";
 import type { ShapePolygon } from "../../shapes";
 import type { ActiveShapeType } from "../../hooks/useFretboardState";
 import {
-  NECK_BORDER,
   INLAY_FRETS,
   INLAY_DOUBLE_FRETS,
   MAX_FRET,
@@ -329,8 +328,8 @@ export const FretboardSVG = memo(function FretboardSVG({
         className={styles["fretboard-neck"]}
         style={
           {
-            height: `${neckHeight + NECK_BORDER * 2}px`,
-            width: `${neckWidthPx + NECK_BORDER * 2}px`,
+            height: `${neckHeight}px`,
+            width: `${neckWidthPx}px`,
             willChange: "transform",
             "--string-row-px": `${stringRowPx}px`,
             "--fretboard-svg-glow-cyan-url": glowFilterUrls.cyan,
@@ -347,8 +346,8 @@ export const FretboardSVG = memo(function FretboardSVG({
           style={{
             display: "block",
             position: "absolute",
-            top: NECK_BORDER,
-            left: NECK_BORDER,
+            top: 0,
+            left: 0,
           }}
           aria-hidden="true"
         >

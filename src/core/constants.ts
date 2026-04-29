@@ -11,7 +11,6 @@ export const STRING_ROW_PX_MAX = 72;
 
 // Fretboard geometry
 export const NUT_WIDTH = 8;
-export const NECK_BORDER = 2;
 export const NOTE_BUBBLE_RATIO = 0.8;
 export const MIN_FRET_WIDTH_BASE = 49;
 export const MIN_FRET_WIDTH_OVERFLOW_BUFFER = 17;
