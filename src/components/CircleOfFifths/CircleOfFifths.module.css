@@ -93,8 +93,13 @@
   stroke: var(--surface-highlight) !important;
 }
 
-.circle-slice.circle-slice--scale {
-  fill: color-mix(in srgb, var(--neon-cyan) 12%, var(--surface-base));
+:global(.app-container[data-layout-tier="mobile"]) .circle-slice.circle-slice--scale {
+  fill: color-mix(in srgb, var(--neon-cyan) 18%, var(--surface-base));
+}
+
+:global([data-theme="modern-dark"].app-container[data-layout-tier="mobile"]) .circle-slice.circle-slice--scale {
+  fill: color-mix(in srgb, var(--neon-cyan) 14%, rgb(27 33 44 / 1));
+  filter: drop-shadow(0 0 6px rgb(77 228 255 / 0.2));
 }
 
 :global([data-theme="modern-dark"]) .circle-slice.circle-slice--scale {
@@ -151,11 +156,16 @@
   fill: var(--surface-highlight);
 }
 
-.circle-slice.active {
-  fill: color-mix(in srgb, var(--neon-orange) 16%, var(--surface-base));
+:global(.app-container[data-layout-tier="mobile"]) .circle-slice.active {
+  fill: color-mix(in srgb, var(--neon-orange) 22%, var(--surface-base));
   stroke: var(--neon-orange) !important;
-  stroke-width: 1.8 !important;
+  stroke-width: 2.4 !important;
   filter: var(--glow-filter-orange);
+}
+
+:global([data-theme="modern-dark"].app-container[data-layout-tier="mobile"]) .circle-slice.active {
+  fill: color-mix(in srgb, var(--neon-orange) 18%, rgb(32 32 40 / 1));
+  filter: drop-shadow(0 0 10px rgb(255 154 77 / 0.45));
 }
 
 :global([data-theme="modern-dark"]) .circle-slice.active {
@@ -254,4 +264,14 @@
 .circle-fifths-container[data-variant="inline"] {
   width: 100%;
   max-width: min(100%, 20rem);
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .circle-fifths-container[data-variant="inline"] {
+  max-width: min(100%, 18rem);
+  width: 100%;
+  margin: 0 auto;
+}
+
+:global([data-layout-scope="mobile-tabs"]) .circle-fifths-container[data-variant="inline"] {
+  max-width: min(100%, 19rem);
 }
