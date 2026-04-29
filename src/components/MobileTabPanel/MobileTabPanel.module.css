@@ -7,47 +7,26 @@
   gap: 0.9rem;
 }
 
-.mobile-tab-panel {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 0.15rem 0;
-}
-
-.mobile-theory-tab,
-.mobile-view-tab {
-  padding: 1rem;
-  gap: 1.25rem;
-  background: var(--surface-float);
-  border: 1px solid var(--surface-card-border);
+.mobile-tab-card {
   border-radius: 1.15rem;
-  box-shadow: var(--elevation-overlay);
+  margin-bottom: 0.75rem;
 }
 
 .cof-container {
   width: 100%;
   display: flex;
   justify-content: center;
-  padding: 0.5rem 0;
-  padding-top: 0.25rem;
+  padding: 0.15rem 0;
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
-@media (max-height: 700px) {
-  .mobile-theory-tab,
-  .mobile-view-tab {
-    padding: 0.75rem;
-    gap: 1rem;
-  }
+:global([data-layout-scope="mobile-tabs"]) :global([data-mobile-tab="cof"]) [data-card-body] {
+  padding-top: 0.3rem;
+  padding-bottom: 0.4rem;
 }
 
 @media (max-width: 767px) {
-  .mobile-theory-tab,
-  .mobile-view-tab {
-    padding: 0.9rem;
+  .mobile-tab-card {
     border-radius: 1rem;
   }
 }

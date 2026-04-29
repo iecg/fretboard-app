@@ -49,6 +49,8 @@ interface ToggleBarProps<Value extends string | number> extends VariantProps<
   onChange: (value: Value) => void;
   variant?: "default" | "tabs";
   label?: string;
+  /** Compact mode — tighter padding, smaller hit-areas, smaller font. */
+  compact?: boolean;
 }
 
 export function ToggleBar<Value extends string | number>({
@@ -57,6 +59,7 @@ export function ToggleBar<Value extends string | number>({
   onChange,
   variant = "default",
   label,
+  compact = false,
 }: ToggleBarProps<Value>) {
   const isTabs = variant === "tabs";
   const descPrefix = useId();
@@ -65,6 +68,7 @@ export function ToggleBar<Value extends string | number>({
       className={toggleBarVariants({ variant })}
       role={isTabs ? "tablist" : "group"}
       aria-label={label}
+      data-compact={compact ? "true" : undefined}
     >
       {options.map((option) => {
         const isActive = value === option.value;

@@ -15,7 +15,7 @@ const isTouchPrimary =
   typeof window !== "undefined" &&
   window.matchMedia("(pointer: coarse)").matches;
 
-export function FingeringPatternControls() {
+export function FingeringPatternControls({ compact = false }: { compact?: boolean }) {
   const {
     fingeringPattern,
     setFingeringPattern,
@@ -63,6 +63,7 @@ export function FingeringPatternControls() {
           ]}
           value={fingeringPattern}
           onChange={(v) => setFingeringPattern(v as "all" | "caged" | "3nps")}
+          compact={compact}
         />
       </div>
 
@@ -80,6 +81,7 @@ export function FingeringPatternControls() {
               role="group"
               aria-labelledby={shapeLabelId}
               aria-describedby={shapeHelpId}
+              data-compact={compact ? "true" : undefined}
             >
               <button
                 type="button"
@@ -173,6 +175,7 @@ export function FingeringPatternControls() {
               }))}
               value={npsPosition}
               onChange={(v) => setNpsPosition(v as number)}
+              compact={compact}
             />
           </div>
           <div className={shared["control-section"]}>
@@ -184,6 +187,7 @@ export function FingeringPatternControls() {
               ]}
               value={npsOctave}
               onChange={(v) => setNpsOctave(v as number)}
+              compact={compact}
             />
           </div>
         </>
@@ -203,6 +207,7 @@ export function FingeringPatternControls() {
           }))}
           value={displayFormat}
           onChange={(v) => setDisplayFormat(v as "notes" | "degrees" | "none")}
+          compact={compact}
         />
       </div>
     </>

@@ -80,7 +80,11 @@ export function MainLayoutWrapper({
 
       {showControlsPanel && controlsPanel}
 
-      {showMobileTabs && mobileTabs}
+      {showMobileTabs && (
+        <div className={styles["mobile-tabs-shell"]}>
+          {mobileTabs}
+        </div>
+      )}
 
       {settingsOverlay}
     </div>

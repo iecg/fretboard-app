@@ -49,41 +49,44 @@ const MANUAL_MODE_SEEDS = [
 
 describe("ChordOverlayControls/ChordOverlayControls", () => {
   describe("1. degree selection writes chordDegreeAtom", () => {
-    it("selecting a degree via LabeledSelect updates the displayed value", async () => {
+    it("clicking a degree button writes the value", async () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
 
-      const degreeSelect = screen.getByRole("combobox", { name: "Chord Degree" });
-      expect(degreeSelect).toBeInTheDocument();
-
-      await userEvent.selectOptions(degreeSelect, "V");
-      expect((degreeSelect as HTMLSelectElement).value).toBe("V");
+      const degreeGroup = screen.getByRole("group", { name: "Chord degree" });
+      const vButton = within(degreeGroup).getByRole("button", { name: "V" });
+      await userEvent.click(vButton);
+      expect(vButton.getAttribute("aria-pressed")).toBe("true");
     });
 
-    it("Off option sets displayed value to the Off sentinel", async () => {
-      renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
-      const degreeSelect = screen.getByRole("combobox", { name: "Chord Degree" });
-      await userEvent.selectOptions(degreeSelect, "__none__");
-      expect((degreeSelect as HTMLSelectElement).value).toBe("__none__");
+    it("clicking Off sets the value to the Off sentinel", async () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        ...DEGREE_MODE_SEEDS,
+        [chordDegreeAtom, "V"],
+      ]);
+      const degreeGroup = screen.getByRole("group", { name: "Chord degree" });
+      const offButton = within(degreeGroup).getByRole("button", { name: "Off" });
+      await userEvent.click(offButton);
+      expect(offButton.getAttribute("aria-pressed")).toBe("true");
     });
   });
 
   describe("2. mode toggle switches chordOverlayModeAtom", () => {
-    it("clicking Manual shows NoteGrid and hides degree browser", async () => {
+    it("clicking Manual shows NoteGrid and hides degree picker", async () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
 
-      // Degree browser visible initially
-      expect(screen.getByRole("group", { name: "Browse chord degrees" })).toBeInTheDocument();
+      // Degree picker visible initially
+      expect(screen.getByRole("group", { name: "Chord degree" })).toBeInTheDocument();
 
       // Click "Manual" toggle button
       await userEvent.click(screen.getByRole("button", { name: "Manual" }));
 
       // Manual mode: NoteGrid for root picker appears
       expect(screen.getByRole("group", { name: "Note selector" })).toBeInTheDocument();
-      // Degree browser gone
-      expect(screen.queryByRole("group", { name: "Browse chord degrees" })).not.toBeInTheDocument();
+      // Degree picker gone
+      expect(screen.queryByRole("group", { name: "Chord degree" })).not.toBeInTheDocument();
     });
 
-    it("clicking Degree from manual mode brings degree browser back", async () => {
+    it("clicking Degree from manual mode brings degree picker back", async () => {
       renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
 
       // Manual mode initially: chord-type nav browser and root note grid visible
@@ -92,8 +95,8 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       // Click "Degree" toggle
       await userEvent.click(screen.getByRole("button", { name: "Degree" }));
 
-      // Degree browser visible
-      expect(screen.getByRole("group", { name: "Browse chord degrees" })).toBeInTheDocument();
+      // Degree picker visible
+      expect(screen.getByRole("group", { name: "Chord degree" })).toBeInTheDocument();
       // Chord type browser gone
       expect(screen.queryByRole("group", { name: "Browse chord types" })).not.toBeInTheDocument();
     });
@@ -135,7 +138,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
   });
 
   describe("4. persistence: seeded atom values are reflected in the UI", () => {
-    it("seeded chordDegreeAtom='V' shows V in degree select", () => {
+    it("seeded chordDegreeAtom='V' marks V button as pressed", () => {
       renderWithAtoms(<ChordOverlayControls />, [
         [scaleNameAtom, "Major"],
         [rootNoteAtom, "C"],
@@ -143,8 +146,9 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
         [chordDegreeAtom, "V"],
       ]);
 
-      const degreeSelect = screen.getByRole("combobox", { name: "Chord Degree" });
-      expect((degreeSelect as HTMLSelectElement).value).toBe("V");
+      const degreeGroup = screen.getByRole("group", { name: "Chord degree" });
+      const vButton = within(degreeGroup).getByRole("button", { name: "V" });
+      expect(vButton.getAttribute("aria-pressed")).toBe("true");
     });
 
     it("seeded manual mode with chordQualityOverride='Major 7th' shows correct value in browser", () => {
@@ -161,38 +165,27 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
   });
 
-  describe("5. step buttons advance and wrap chordDegreeAtom", () => {
-    it("clicking Next advances from I to ii", async () => {
+  describe("5. degree ToggleBar reflects active selection", () => {
+    it("clicking ii selects ii (aria-pressed)", async () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
-
-      const nextBtn = screen.getByRole("button", { name: "Next chord degree" });
-      await userEvent.click(nextBtn);
-
-      const degreeSelect = screen.getByRole("combobox", { name: "Chord Degree" });
-      expect((degreeSelect as HTMLSelectElement).value).toBe("ii");
+      const degreeGroup = screen.getByRole("group", { name: "Chord degree" });
+      const iiButton = within(degreeGroup).getByRole("button", { name: "ii" });
+      await userEvent.click(iiButton);
+      expect(iiButton.getAttribute("aria-pressed")).toBe("true");
     });
 
-    it("clicking Previous from I wraps to vii°", async () => {
-      renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
-
-      const prevBtn = screen.getByRole("button", { name: "Previous chord degree" });
-      await userEvent.click(prevBtn);
-
-      const degreeSelect = screen.getByRole("combobox", { name: "Chord Degree" });
-      expect((degreeSelect as HTMLSelectElement).value).toBe("vii°");
-    });
-
-    it("stepping forward from I then back returns to I", async () => {
-      renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
-
-      const nextBtn = screen.getByRole("button", { name: "Next chord degree" });
-      const prevBtn = screen.getByRole("button", { name: "Previous chord degree" });
-
-      await userEvent.click(nextBtn); // I -> ii
-      await userEvent.click(prevBtn); // ii -> I
-
-      const degreeSelect = screen.getByRole("combobox", { name: "Chord Degree" });
-      expect((degreeSelect as HTMLSelectElement).value).toBe("I");
+    it("clicking I deselects ii (toggle behavior reflects current value)", async () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        ...DEGREE_MODE_SEEDS,
+        [chordDegreeAtom, "ii"],
+      ]);
+      const degreeGroup = screen.getByRole("group", { name: "Chord degree" });
+      const iButton = within(degreeGroup).getByRole("button", { name: "I" });
+      const iiButton = within(degreeGroup).getByRole("button", { name: "ii" });
+      expect(iiButton.getAttribute("aria-pressed")).toBe("true");
+      await userEvent.click(iButton);
+      expect(iButton.getAttribute("aria-pressed")).toBe("true");
+      expect(iiButton.getAttribute("aria-pressed")).toBe("false");
     });
   });
 
@@ -207,9 +200,9 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(await axe(container)).toHaveNoViolations();
     });
 
-    it("degree mode has Browse chord degrees group with correct aria-label", () => {
+    it("degree mode has Chord degree group with correct aria-label", () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
-      expect(screen.getByRole("group", { name: "Browse chord degrees" })).toBeInTheDocument();
+      expect(screen.getByRole("group", { name: "Chord degree" })).toBeInTheDocument();
     });
 
     it("Chord overlay mode ToggleBar has correct aria-label", () => {
@@ -217,10 +210,13 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(screen.getByRole("group", { name: "Chord overlay mode" })).toBeInTheDocument();
     });
 
-    it("chevron buttons have expected aria-labels", () => {
+    it("degree ToggleBar exposes Off + 7 diatonic degrees", () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
-      expect(screen.getByRole("button", { name: "Previous chord degree" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Next chord degree" })).toBeInTheDocument();
+      const degreeGroup = screen.getByRole("group", { name: "Chord degree" });
+      // Off + I, ii, iii, IV, V, vi, vii° = 8 buttons
+      expect(within(degreeGroup).getByRole("button", { name: "Off" })).toBeInTheDocument();
+      expect(within(degreeGroup).getByRole("button", { name: "I" })).toBeInTheDocument();
+      expect(within(degreeGroup).getByRole("button", { name: "vii°" })).toBeInTheDocument();
     });
   });
 
@@ -344,6 +340,26 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
       const degreeLabel = screen.getByText("Degree", { selector: "span" });
       expect(degreeLabel).toBeInTheDocument();
+    });
+  });
+
+  describe("13. compact prop forwarding", () => {
+    it("forwards compact=true to StepperSelect instances in degree mode (data-compact present)", () => {
+      const { container } = renderWithAtoms(<ChordOverlayControls compact />, [...DEGREE_MODE_SEEDS]);
+      const compactGroups = container.querySelectorAll('[data-compact="true"]');
+      expect(compactGroups.length).toBeGreaterThan(0);
+    });
+
+    it("forwards compact=true to StepperSelect instances in manual mode (data-compact present)", () => {
+      const { container } = renderWithAtoms(<ChordOverlayControls compact />, [...MANUAL_MODE_SEEDS]);
+      const compactGroups = container.querySelectorAll('[data-compact="true"]');
+      expect(compactGroups.length).toBeGreaterThan(0);
+    });
+
+    it("does not set data-compact when compact prop is omitted", () => {
+      const { container } = renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
+      const compactGroups = container.querySelectorAll('[data-compact="true"]');
+      expect(compactGroups.length).toBe(0);
     });
   });
 

@@ -125,6 +125,20 @@ describe("ScaleSelector/ScaleSelector", () => {
     });
   });
 
+  describe("compact prop forwarding", () => {
+    it("forwards compact=true to StepperSelect instances (data-compact attribute present)", () => {
+      const { container } = renderWithAtoms(<ScaleSelector compact />, [...BASE_SEEDS]);
+      const compactGroups = container.querySelectorAll('[data-compact="true"]');
+      expect(compactGroups.length).toBeGreaterThan(0);
+    });
+
+    it("does not set data-compact when compact prop is omitted", () => {
+      const { container } = renderWithAtoms(<ScaleSelector />, [...BASE_SEEDS]);
+      const compactGroups = container.querySelectorAll('[data-compact="true"]');
+      expect(compactGroups.length).toBe(0);
+    });
+  });
+
   describe("a11y", () => {
     it("has no accessibility violations", async () => {
       const { container } = renderWithAtoms(<ScaleSelector />, [...BASE_SEEDS]);

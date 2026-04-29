@@ -1,7 +1,7 @@
 import { startTransition, useEffect } from "react";
 import { useAtomValue } from "jotai";
 import { NOTES, LENS_REGISTRY } from "../../core/theory";
-import { getAdjacentDegree, getDegreesForScale } from "../../core/degrees";
+import { getDegreesForScale } from "../../core/degrees";
 import { lensAvailabilityAtom } from "../../store/atoms";
 import { NoteGrid } from "../NoteGrid/NoteGrid";
 import {
@@ -34,7 +34,11 @@ const CHORD_SELECT_OPTIONS: StepperSelectOption[] = [
   })),
 ];
 
-export function ChordOverlayControls() {
+export interface ChordOverlayControlsProps {
+  compact?: boolean;
+}
+
+export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
   const { scaleName, useFlats } = useScaleState();
   const {
     chordType,
@@ -104,12 +108,6 @@ export function ChordOverlayControls() {
     });
   };
 
-  const handleStepDegree = (direction: -1 | 1) => {
-    startTransition(() => {
-      setChordDegree(getAdjacentDegree(chordDegree, scaleName, direction));
-    });
-  };
-
   const handleChordTypeChange = (value: string) => {
     startTransition(() => {
       setChordQualityOverride(value === CHORD_NONE_VALUE ? null : value);
@@ -140,6 +138,7 @@ export function ChordOverlayControls() {
           value={chordOverlayMode}
           onChange={setChordOverlayMode}
           label="Chord overlay mode"
+          compact={compact}
         />
         <p className={shared["field-hint"]}>
           {chordOverlayMode === "degree"
@@ -151,16 +150,12 @@ export function ChordOverlayControls() {
       {chordOverlayMode === "degree" && (
         <div className={shared["control-section"]}>
           <span className={shared["section-label"]}>Degree</span>
-          <StepperSelect
-            selectLabel="Chord Degree"
-            groupLabel="Browse chord degrees"
-            previousLabel="Previous chord degree"
-            nextLabel="Next chord degree"
-            value={chordDegree ?? CHORD_NONE_VALUE}
+          <ToggleBar
             options={degreeSelectOptions}
+            value={chordDegree ?? CHORD_NONE_VALUE}
             onChange={handleDegreeChange}
-            onPrevious={() => handleStepDegree(-1)}
-            onNext={() => handleStepDegree(1)}
+            label="Chord degree"
+            compact={compact}
           />
         </div>
       )}
@@ -179,6 +174,7 @@ export function ChordOverlayControls() {
               onChange={handleChordTypeChange}
               onPrevious={() => handleStepChordType(-1)}
               onNext={() => handleStepChordType(1)}
+              compact={compact}
             />
           </div>
           <div className={shared["control-section"]}>
@@ -192,6 +188,7 @@ export function ChordOverlayControls() {
                 });
               }}
               useFlats={useFlats}
+              compact={compact}
             />
           </div>
         </>
@@ -205,6 +202,7 @@ export function ChordOverlayControls() {
             value={practiceLens}
             onChange={setPracticeLens}
             label="Practice lens"
+            compact={compact}
           />
           {activeLensDescription ? (
             <p className={shared["field-hint"]}>{activeLensDescription}</p>

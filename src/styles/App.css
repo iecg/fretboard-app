@@ -69,6 +69,6 @@
   .app-container {
     padding: 0.65rem;
     padding-bottom: calc(3.5rem + env(safe-area-inset-bottom, 0px));
-    gap: 0.8rem;
+    gap: 0.5rem;
   }
 }

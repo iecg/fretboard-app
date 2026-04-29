@@ -25,14 +25,35 @@ describe("MobileTabPanel/MobileTabPanel", () => {
     expect(screen.getByTestId("mobile-tab-content")).toBeInTheDocument();
   });
 
-  it("shows theory tab content when mobileTab atom is 'theory'", () => {
+  it("shows scales tab content when mobileTab atom is 'scales'", () => {
     renderWithAtoms(<MobileTabPanel />, [
       ...BASE_SEEDS,
-      [mobileTabAtom, "theory"],
+      [mobileTabAtom, "scales"],
     ]);
-    // TheoryControls renders a Root note grid and Scale Family browser
+    // Card renders the section heading
+    expect(screen.getByRole("heading", { level: 2, name: /^Scales$/i })).toBeInTheDocument();
+    // ScaleSelector renders a Root note grid and Scale Family browser
     expect(screen.getByText("Root")).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Scale Family" })).toBeInTheDocument();
+  });
+
+  it("shows chords tab content when mobileTab atom is 'chords'", () => {
+    renderWithAtoms(<MobileTabPanel />, [
+      ...BASE_SEEDS,
+      [mobileTabAtom, "chords"],
+    ]);
+    // Card renders the section heading
+    expect(screen.getByRole("heading", { level: 2, name: /^Chords$/i })).toBeInTheDocument();
+    // ChordOverlayControls renders Chord Mode section
+    expect(screen.getByText("Chord Mode")).toBeInTheDocument();
+  });
+
+  it("shows cof tab content when mobileTab atom is 'cof'", () => {
+    renderWithAtoms(<MobileTabPanel />, [
+      ...BASE_SEEDS,
+      [mobileTabAtom, "cof"],
+    ]);
+    expect(screen.getByRole("heading", { level: 2, name: /^Key$/i })).toBeInTheDocument();
   });
 
   it("shows view tab content when mobileTab atom is 'view'", () => {
@@ -40,12 +61,14 @@ describe("MobileTabPanel/MobileTabPanel", () => {
       ...BASE_SEEDS,
       [mobileTabAtom, "view"],
     ]);
+    // Card renders the section heading
+    expect(screen.getByRole("heading", { level: 2, name: /View/i })).toBeInTheDocument();
     // FingeringPatternControls renders a Fingering Pattern section
     expect(screen.getByText("Fingering Pattern")).toBeInTheDocument();
     expect(screen.queryByText("Root")).not.toBeInTheDocument();
   });
 
-  it("does not show theory content when on view tab", () => {
+  it("does not show scales content when on view tab", () => {
     renderWithAtoms(<MobileTabPanel />, [
       ...BASE_SEEDS,
       [mobileTabAtom, "view"],

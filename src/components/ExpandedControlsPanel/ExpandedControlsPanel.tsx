@@ -18,7 +18,9 @@ import {
 import { FretRangeControl } from "../FretRangeControl/FretRangeControl";
 import { TheoryControls } from "../TheoryControls/TheoryControls";
 import { Card } from "../Card/Card";
+import { TAB_LABELS } from "../../constants/tabLabels";
 import { MAX_FRET } from "../../core/constants";
+import { useCompactDensity } from "../../hooks/useCompactDensity";
 
 // Lazy-loaded component
 const CircleOfFifths = lazy(() =>
@@ -29,17 +31,18 @@ const CircleOfFifths = lazy(() =>
  * Renders the Configuration card: FingeringPatternControls + fret range.
  */
 export function BaseControlsSection() {
+  const compact = useCompactDensity();
   const [fretStart, setFretStart] = useAtom(fretStartAtom);
   const [fretEnd, setFretEnd] = useAtom(fretEndAtom);
 
   return (
     <Card
-      title="Configuration"
+      title={TAB_LABELS.view}
       className={clsx("dashboard-card--configuration")}
       data-testid="dashboard-card-configuration"
     >
       <div className={styles["control-group"]}>
-        <FingeringPatternControls />
+        <FingeringPatternControls compact={compact} />
         <div className={shared["control-section"]}>
           <span className={shared["section-label"]}>Fret Range</span>
           <FretRangeControl
@@ -49,6 +52,7 @@ export function BaseControlsSection() {
             onEndChange={setFretEnd}
             maxFret={MAX_FRET}
             layout="dashboard"
+            compact={compact}
           />
         </div>
       </div>
@@ -60,13 +64,14 @@ export function BaseControlsSection() {
  * Renders the Music Theory card.
  */
 export function ScaleChordSection() {
+  const compact = useCompactDensity();
   return (
     <Card
-      title="Music Theory"
+      title="Theory"
       className={clsx("dashboard-card--theory")}
       data-testid="dashboard-card-theory"
     >
-      <TheoryControls />
+      <TheoryControls compact={compact} />
     </Card>
   );
 }
@@ -83,7 +88,7 @@ export function KeyColumn() {
   const enharmonicDisplay = useAtomValue(enharmonicDisplayAtom);
 
   return (
-    <Card title="Key Explorer" data-layout-column="key" data-testid="key-column">
+    <Card title={TAB_LABELS.cof} data-layout-column="key" data-testid="key-column">
       <Suspense fallback={null}>
         <CircleOfFifths
           rootNote={rootNote}

@@ -25,6 +25,8 @@ import { VersionBadge } from "../VersionBadge/VersionBadge";
 import styles from "./SettingsOverlay.module.css";
 import sharedStyles from "../shared/shared.module.css";
 
+import { useCompactDensity } from "../../hooks/useCompactDensity";
+
 const getLayoutTier = (): ResponsiveTier => {
   if (typeof window === "undefined") return "desktop";
   return getResponsiveTier(window.innerWidth);
@@ -51,6 +53,7 @@ function SettingsOverlaySurface({
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
+  const compact = useCompactDensity();
 
   const close = () => {
     setIsOpen(false);
@@ -113,14 +116,14 @@ function SettingsOverlaySurface({
         </div>
         <div className={clsx(styles["settings-overlay-content"], "custom-scrollbar")}>
           <OverlaySection id="view" title="View">
-            <ViewSettingsSection />
+            <ViewSettingsSection compact={compact} />
           </OverlaySection>
           <OverlaySection id="instrument" title="Instrument">
-            <InstrumentSettingsSection />
+            <InstrumentSettingsSection compact={compact} />
           </OverlaySection>
-          <AppearanceSettingsSection />
-          <NotationSettingsSection />
-          <ChordLayoutSettingsSection />
+          <AppearanceSettingsSection compact={compact} />
+          <NotationSettingsSection compact={compact} />
+          <ChordLayoutSettingsSection compact={compact} />
           <OverlaySection id="reset" title="Reset" tone="danger">
             <ResetSettingsSection onClose={close} />
           </OverlaySection>

@@ -386,7 +386,7 @@ describe("Component Snapshots", () => {
       localStorage.clear();
       const { container } = render(<App />);
       await screen.findByTestId("fretboard-outer", {}, { timeout: 5000 });
-      await screen.findByTestId("theory-controls", {}, { timeout: 5000 });
+      await screen.findByTestId("mobile-tab-content", {}, { timeout: 5000 });
       expect(container).toMatchSnapshot("app-mobile-default");
     });
 
@@ -450,7 +450,7 @@ describe("Component Snapshots", () => {
       localStorage.clear();
       const { container } = render(<App />);
       await screen.findByTestId("fretboard-outer", {}, { timeout: 5000 });
-      await screen.findByTestId("theory-controls", {}, { timeout: 5000 });
+      await screen.findByTestId("mobile-tab-content", {}, { timeout: 5000 });
       expect(container).toMatchSnapshot("app-iphone-se-portrait");
     });
 
@@ -468,8 +468,8 @@ describe("Component Snapshots", () => {
 
       localStorage.clear();
       const { container } = render(<App />);
-      await screen.findByTestId("circle-of-fifths", {}, { timeout: 5000 });
-      await screen.findByTestId("theory-controls", {}, { timeout: 5000 });
+      // Tablet-split now uses the mobile tab bar layout.
+      await screen.findByTestId("mobile-tab-content", {}, { timeout: 5000 });
       expect(container).toMatchSnapshot("app-tablet-split");
     });
 
@@ -507,7 +507,7 @@ describe("Component Snapshots", () => {
       localStorage.clear();
       const { container } = render(<App />);
       await screen.findByTestId("fretboard-outer", {}, { timeout: 5000 });
-      await screen.findByTestId("theory-controls", {}, { timeout: 5000 });
+      await screen.findByTestId("mobile-tab-content", {}, { timeout: 5000 });
       expect(container).toMatchSnapshot("app-iphone-12-pro-portrait");
     });
 

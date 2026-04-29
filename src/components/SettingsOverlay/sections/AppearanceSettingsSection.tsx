@@ -7,7 +7,7 @@ import { THEME_OPTIONS, SETTING_FIELDS } from "../constants";
 import styles from "../SettingsOverlay.module.css";
 import shared from "../../shared/shared.module.css";
 
-export default function AppearanceSettingsSection() {
+export default function AppearanceSettingsSection({ compact }: { compact?: boolean }) {
   const [theme, setTheme] = useAtom(themeAtom);
 
   const config = SETTING_FIELDS.theme;
@@ -21,6 +21,7 @@ export default function AppearanceSettingsSection() {
             options={THEME_OPTIONS}
             value={theme}
             onChange={(v) => setTheme(v as typeof theme)}
+            compact={compact}
           />
         </div>
         {config.hint ? (

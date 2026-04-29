@@ -52,6 +52,10 @@ export {
   chordOverlayModeAtom,
   chordRootOverrideAtom,
   chordQualityOverrideAtom,
+  chordOverlayHiddenAtom,
+  chordHiddenNotesAtom,
+  toggleChordHiddenNoteAtom,
+  toggleChordOverlayHiddenAtom,
 } from "./chordOverlayAtoms";
 
 export {
@@ -92,6 +96,7 @@ export {
   tabletTabAtom,
   landscapeNarrowTabAtom,
   settingsOverlayOpenAtom,
+  compactDensityAtom,
   themeAtom,
   type LandscapeNarrowTab,
 } from "./uiAtoms";

@@ -231,24 +231,35 @@ describe("atoms", () => {
   });
 
   describe("mobileTabStorage", () => {
-    it("migrates legacy key tab values to theory", () => {
+    it("migrates legacy key tab values to scales", () => {
       localStorage.setItem(k("mobileTab"), "key");
       const store = makeStore();
       const unsub = mount(store, mobileTabAtom);
 
-      expect(store.get(mobileTabAtom)).toBe("theory");
-      expect(localStorage.getItem(k("mobileTab"))).toBe("theory");
+      expect(store.get(mobileTabAtom)).toBe("scales");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("scales");
 
       unsub();
     });
 
-    it("migrates legacy scale tab values to theory", () => {
+    it("migrates legacy scale tab values to scales", () => {
       localStorage.setItem(k("mobileTab"), "scale");
       const store = makeStore();
       const unsub = mount(store, mobileTabAtom);
 
-      expect(store.get(mobileTabAtom)).toBe("theory");
-      expect(localStorage.getItem(k("mobileTab"))).toBe("theory");
+      expect(store.get(mobileTabAtom)).toBe("scales");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("scales");
+
+      unsub();
+    });
+
+    it("migrates legacy theory tab values to scales", () => {
+      localStorage.setItem(k("mobileTab"), "theory");
+      const store = makeStore();
+      const unsub = mount(store, mobileTabAtom);
+
+      expect(store.get(mobileTabAtom)).toBe("scales");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("scales");
 
       unsub();
     });
@@ -275,13 +286,13 @@ describe("atoms", () => {
       unsub();
     });
 
-    it("falls back to theory for invalid stored tab values", () => {
+    it("falls back to scales for invalid stored tab values", () => {
       localStorage.setItem(k("mobileTab"), "invalid-tab");
       const store = makeStore();
       const unsub = mount(store, mobileTabAtom);
 
-      expect(store.get(mobileTabAtom)).toBe("theory");
-      expect(localStorage.getItem(k("mobileTab"))).toBe("theory");
+      expect(store.get(mobileTabAtom)).toBe("scales");
+      expect(localStorage.getItem(k("mobileTab"))).toBe("scales");
 
       unsub();
     });
@@ -495,7 +506,7 @@ describe("atoms", () => {
       expect(store.get(fretStartAtom)).toBe(0);
       expect(store.get(fretEndAtom)).toBe(25);
       expect(store.get(accidentalModeAtom)).toBe("auto");
-      expect(store.get(mobileTabAtom)).toBe("theory");
+      expect(store.get(mobileTabAtom)).toBe("scales");
       expect(store.get(landscapeNarrowTabAtom)).toBe("fretboard");
     });
 

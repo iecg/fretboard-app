@@ -19,6 +19,7 @@ export interface LabeledSelectProps {
   'aria-describedby'?: string;
   disabled?: boolean;
   hideLabel?: boolean;
+  compact?: boolean;
 }
 
 export function LabeledSelect({
@@ -32,6 +33,7 @@ export function LabeledSelect({
   'aria-describedby': ariaDescribedBy,
   disabled,
   hideLabel,
+  compact,
 }: LabeledSelectProps) {
   const generatedId = useId();
   const selectId = id ?? generatedId;
@@ -46,6 +48,7 @@ export function LabeledSelect({
         },
         className,
       )}
+      data-compact={compact ? "true" : undefined}
     >
       <label className={styles['labeled-select-label']} htmlFor={selectId}>
         <span className={styles['labeled-select-label-text']}>{label}</span>

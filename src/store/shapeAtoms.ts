@@ -32,6 +32,8 @@ import {
   chordTypeAtom,
   allChordMembersAtom,
   chordTonesAtom,
+  chordOverlayHiddenAtom,
+  chordHiddenNotesAtom,
 } from "./chordOverlayAtoms";
 
 export const shapeDataAtom = atom((get) => {
@@ -199,22 +201,26 @@ export const shapeHighlightedNoteSetAtom = atom((get) => {
 });
 
 export const shapeLocalTargetMembersAtom = atom((get) => {
+  if (get(chordOverlayHiddenAtom)) return [] as ChordRowEntry[];
   const shapeHighlightedNoteSet = get(shapeHighlightedNoteSetAtom);
   const chordType = get(chordTypeAtom);
   const allChordMembers = get(allChordMembersAtom);
   if (!shapeHighlightedNoteSet || !chordType) return [] as ChordRowEntry[];
+  const hidden = get(chordHiddenNotesAtom);
   return allChordMembers.filter((m) =>
-    shapeHighlightedNoteSet.has(m.internalNote),
+    shapeHighlightedNoteSet.has(m.internalNote) && !hidden.has(m.internalNote),
   );
 });
 
 export const shapeLocalOutsideMembersAtom = atom((get) => {
+  if (get(chordOverlayHiddenAtom)) return [] as ChordRowEntry[];
   const shapeHighlightedNoteSet = get(shapeHighlightedNoteSetAtom);
   const chordType = get(chordTypeAtom);
   const allChordMembers = get(allChordMembersAtom);
   if (!shapeHighlightedNoteSet || !chordType) return [] as ChordRowEntry[];
+  const hidden = get(chordHiddenNotesAtom);
   return allChordMembers.filter((m) =>
-    !m.inScale && shapeHighlightedNoteSet.has(m.internalNote),
+    !m.inScale && shapeHighlightedNoteSet.has(m.internalNote) && !hidden.has(m.internalNote),
   );
 });
 

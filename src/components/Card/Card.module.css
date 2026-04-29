@@ -79,4 +79,20 @@
 :global(.app-container[data-layout-tier="tablet"]) .card-header-title {
   font-size: 1.1rem;
 }
+
+/* Mobile tabs context: compact card chrome scoped to the mobile tab panel. */
+:global([data-layout-scope="mobile-tabs"]) .card-header {
+  padding: 0.6rem 0.95rem 0.5rem;
+}
+
+:global([data-layout-scope="mobile-tabs"]) .card-body {
+  padding: 0.55rem 0.95rem 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+:global([data-layout-scope="mobile-tabs"]) .card-header-title {
+  font-size: 1.05rem;
+}
 /* stylelint-enable selector-pseudo-class-no-unknown */

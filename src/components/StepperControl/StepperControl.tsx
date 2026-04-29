@@ -27,6 +27,7 @@ export interface StepperControlProps {
   label?: string;
   formatValue?: (val: number) => string;
   buttonVariant?: StepperControlVariant;
+  compact?: boolean;
 }
 
 export function StepperControl({
@@ -38,9 +39,10 @@ export function StepperControl({
   label,
   formatValue = String,
   buttonVariant = "toolbar",
+  compact,
 }: StepperControlProps) {
   return (
-    <div className={stepperControlVariants({ variant: buttonVariant })}>
+    <div className={stepperControlVariants({ variant: buttonVariant })} data-compact={compact ? "true" : undefined}>
       {label && <span className={shared["section-label"]}>{label}</span>}
       <StepperShell
         className={styles["stepper-group"]}

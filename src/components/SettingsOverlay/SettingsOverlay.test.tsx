@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { render, screen, fireEvent, act } from "@testing-library/react";
+import { render, screen, fireEvent, act, within } from "@testing-library/react";
 import { Provider, createStore } from "jotai";
 import SettingsOverlay from "./SettingsOverlay";
 import { synth } from "../../core/audio";
-import { settingsOverlayOpenAtom, fretZoomAtom, themeAtom } from "../../store/atoms";
+import { settingsOverlayOpenAtom, fretZoomAtom, themeAtom, compactDensityAtom } from "../../store/atoms";
 import styles from "./SettingsOverlay.module.css";
 
 // Mock the audio synth singleton — we only care that setMute is called on reset.
@@ -243,6 +243,58 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(screen.getByText("Reset all settings")).toBeTruthy();
     expect(store.get(fretZoomAtom)).toBe(200);
     expect(store.get(settingsOverlayOpenAtom)).toBe(true);
+  });
+
+  it("renders compact toggle on desktop viewport", () => {
+    setViewport(1440, 900);
+    renderOpenOverlay();
+    expect(screen.getByText("Compact Controls")).toBeTruthy();
+    const compactGroup = screen.getByRole("group", { name: "Compact controls" });
+    expect(compactGroup).toBeTruthy();
+    expect(compactGroup.querySelector('[aria-pressed]')).toBeTruthy();
+  });
+
+  it("renders compact toggle on mobile viewport", () => {
+    setViewport(390, 844);
+    const store = createStore();
+    store.set(settingsOverlayOpenAtom, true);
+    renderOverlay(store);
+    expect(screen.getByText("Compact Controls")).toBeTruthy();
+    const compactGroup = screen.getByRole("group", { name: "Compact controls" });
+    expect(compactGroup).toBeTruthy();
+  });
+
+  it("clicking On sets compactDensityAtom to 'on'", () => {
+    setViewport(1440, 900);
+    const { store } = renderOpenOverlay();
+    const compactGroup = screen.getByRole("group", { name: "Compact controls" });
+    const onBtn = within(compactGroup).getByRole("button", { name: "On" });
+    fireEvent.click(onBtn);
+    expect(store.get(compactDensityAtom)).toBe("on");
+  });
+
+  it("clicking Off sets compactDensityAtom to 'off'", () => {
+    setViewport(1440, 900);
+    const { store } = renderOpenOverlay();
+    act(() => {
+      store.set(compactDensityAtom, "on");
+    });
+    const compactGroup = screen.getByRole("group", { name: "Compact controls" });
+    const offBtn = within(compactGroup).getByRole("button", { name: "Off" });
+    fireEvent.click(offBtn);
+    expect(store.get(compactDensityAtom)).toBe("off");
+  });
+
+  it("clicking Auto sets compactDensityAtom to 'auto'", () => {
+    setViewport(1440, 900);
+    const { store } = renderOpenOverlay();
+    act(() => {
+      store.set(compactDensityAtom, "on");
+    });
+    const compactGroup = screen.getByRole("group", { name: "Compact controls" });
+    const autoBtn = within(compactGroup).getByRole("button", { name: "Auto" });
+    fireEvent.click(autoBtn);
+    expect(store.get(compactDensityAtom)).toBe("auto");
   });
 
   it("traps focus when tabbing forward from the last control", () => {
