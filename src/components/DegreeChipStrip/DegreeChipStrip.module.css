@@ -110,7 +110,6 @@
   border-radius: 50%;
   background: var(--strip-fill);
   border: var(--chip-border-width) solid var(--chip-border-muted);
-  opacity: 0.55;
   cursor: pointer;
   padding: 0;
   transition:
@@ -265,7 +264,7 @@
 :global([data-theme="modern-dark"]) .degree-chip-strip {
   --chip-border-muted: rgb(255 255 255 / 0.22);
   --chip-line-muted:   rgb(255 255 255 / 0.18);
-  --color-note-inner-fill: rgb(20 30 40 / 0.92);
+  --color-note-inner-fill: var(--fretboard-note-fill-chord-tone);
 }
 
 :global([data-theme="modern-light"]) .degree-chip-strip {

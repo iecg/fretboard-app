@@ -190,6 +190,18 @@
   --fretboard-tension-color-tone-stroke: color-mix(in srgb, var(--note-ring-color-tone) 40%, transparent);
   --fretboard-fret-number-color: #475569;
 
+  /* Fretboard note fill token overrides — light mode uses ring-color fills (matches strokes). */
+  --fretboard-note-fill-tonic:          var(--note-ring-tonic);
+  --fretboard-note-fill-chord-root:     var(--note-ring-tonic);
+  --fretboard-note-fill-chord-tone:     var(--note-ring);
+  --fretboard-note-fill-scale-only:     var(--note-ring);
+  --fretboard-note-fill-chord-outside:  var(--fretboard-note-chord-tone-outside-fill);
+  --fretboard-note-fill-tension-emph:   var(--fretboard-tension-emphasis-fill);
+  --fretboard-note-fill-tension-strong: var(--fretboard-tension-emphasis-fill);
+  --fretboard-note-fill-guide-emph:     var(--fretboard-guide-tones-emphasis-fill);
+  --fretboard-note-fill-deemph-chord:   var(--fretboard-guide-tones-deemphasis-fill);
+  --fretboard-note-fill-deemph-violet:  var(--fretboard-guide-tones-color-tone-fill);
+
   /* Dead-token candidates — no var() consumers found via rg across src/components.
      Safe to remove in a future cleanup pass after confirming unused:
      --text-on-highlight, --text-soft-white, --accent-glow,
