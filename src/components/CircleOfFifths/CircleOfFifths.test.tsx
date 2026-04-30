@@ -178,33 +178,26 @@ describe("CircleOfFifths/CircleOfFifths", () => {
   });
 
   describe("Relative Scale Logic", () => {
+    const findFooterValue = (container: HTMLElement, labelText: string) => {
+      const items = Array.from(container.querySelectorAll<HTMLElement>('[class*="circle-footer-item"]'));
+      const item = items.find(
+        (el) => el.querySelector('[class*="circle-footer-label"]')?.textContent === labelText,
+      );
+      return item?.querySelector('[class*="circle-footer-value"]')?.textContent ?? null;
+    };
+
     it("Major mode shows Relative Minor", () => {
       const { container } = render(
         <CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} scaleName="Major" />
       );
-      const labels = container.querySelectorAll(".circle-footer-label");
-      const values = container.querySelectorAll(".circle-footer-value");
-      
-      const relLabel = Array.from(labels).find(el => el.textContent === "Relative Minor");
-      expect(relLabel).toBeTruthy();
-      
-      // Values are next to labels
-      const index = Array.from(labels).indexOf(relLabel as Element);
-      expect(values[index].textContent).toBe("Am");
+      expect(findFooterValue(container, "Relative Minor")).toBe("Am");
     });
 
     it("Natural Minor mode shows Relative Major", () => {
       const { container } = render(
         <CircleOfFifths rootNote="A" setRootNote={mockSetRootNote} scaleName="Natural Minor" />
       );
-      const labels = container.querySelectorAll(".circle-footer-label");
-      const values = container.querySelectorAll(".circle-footer-value");
-      
-      const relLabel = Array.from(labels).find(el => el.textContent === "Relative Major");
-      expect(relLabel).toBeTruthy();
-      
-      const index = Array.from(labels).indexOf(relLabel as Element);
-      expect(values[index].textContent).toBe("C");
+      expect(findFooterValue(container, "Relative Major")).toBe("C");
     });
 
     it("Dorian mode shows Parent Scale and computes modal parent correctly", () => {
@@ -212,14 +205,7 @@ describe("CircleOfFifths/CircleOfFifths", () => {
       const { container } = render(
         <CircleOfFifths rootNote="D" setRootNote={mockSetRootNote} scaleName="Dorian" />
       );
-      const labels = container.querySelectorAll(".circle-footer-label");
-      const values = container.querySelectorAll(".circle-footer-value");
-      
-      const relLabel = Array.from(labels).find(el => el.textContent === "Parent Scale");
-      expect(relLabel).toBeTruthy();
-      
-      const index = Array.from(labels).indexOf(relLabel as Element);
-      expect(values[index].textContent).toBe("C");
+      expect(findFooterValue(container, "Parent Scale")).toBe("C");
     });
   });
 

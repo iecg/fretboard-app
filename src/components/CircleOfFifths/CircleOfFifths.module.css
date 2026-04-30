@@ -314,6 +314,8 @@
   margin: 0 auto;
 }
 
-:global([data-layout-scope="mobile-tabs"]) .circle-fifths-container[data-variant="inline"] {
+:global(.app-container[data-layout-tier="mobile"][data-layout-variant])
+  :global([data-layout-scope="mobile-tabs"])
+  .circle-fifths-container[data-variant="inline"] {
   max-width: min(100%, 19rem);
 }
