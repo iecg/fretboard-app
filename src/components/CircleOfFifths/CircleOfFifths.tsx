@@ -15,9 +15,9 @@ const SIZE = 320;
 const CX = SIZE / 2;
 const CY = SIZE / 2;
 const OUTER_RADIUS = SIZE * 0.48;
-const INNER_RADIUS = SIZE * 0.26;
-const LABEL_RADIUS = SIZE * 0.39;
-const DEGREE_RADIUS = SIZE * 0.31;
+const INNER_RADIUS = SIZE * 0.16;
+const LABEL_RADIUS = SIZE * 0.38;
+const DEGREE_RADIUS = SIZE * 0.26;
 
 function slicePath(index: number): string {
   const startAngle = ((index * 30 - 105) * Math.PI) / 180;
@@ -66,6 +66,17 @@ export const CircleOfFifths = memo(function CircleOfFifths({
     keySig === 0 ? "♮" : keySig > 0 ? `${keySig}♯` : `${Math.abs(keySig)}♭`;
   const degreeMap = getDegreesForScale(scaleName);
 
+  const isMinor = scaleName.toLowerCase().includes("minor");
+  const relIndex = isMinor ? (rootIndex + 9) % 12 : (rootIndex + 3) % 12;
+  const relNote = CIRCLE_OF_FIFTHS[relIndex];
+  const relScaleName = isMinor ? "Major" : "Minor";
+  const relDisplay = getNoteDisplayInScale(
+    relNote,
+    relNote,
+    SCALES[relScaleName] || [],
+    useFlats,
+  );
+
   const [focusedIndex, setFocusedIndex] = React.useState<number>(0);
   const [keyboardFocused, setKeyboardFocused] = React.useState<boolean>(false);
   const segmentRefs = React.useRef<(SVGPathElement | null)[]>([]);
@@ -99,260 +110,243 @@ export const CircleOfFifths = memo(function CircleOfFifths({
 
   return (
     <div className={styles["circle-fifths-container"]} data-testid="circle-of-fifths" data-variant={variant}>
-      <svg
-        viewBox={`-10 -10 ${SIZE + 20} ${SIZE + 20}`}
-        className={styles["circle-fifths-svg"]}
-        role="group"
-        aria-labelledby="cof-title"
-        aria-describedby="cof-desc"
-        data-testid="circle-of-fifths-svg"
-      >
-        <title id="cof-title">Circle of Fifths</title>
-        <desc id="cof-desc">Interactive diagram to select the root note of the scale. Each segment represents a key, arranged in intervals of perfect fifths.</desc>
-        <defs>
-          <radialGradient id="circle-center-fill" cx="50%" cy="38%" r="74%">
-            <stop offset="0%" stopColor="var(--cof-center-start)" />
-            <stop offset="100%" stopColor="var(--cof-center-end)" />
-          </radialGradient>
-        </defs>
-        {CIRCLE_OF_FIFTHS.map((note, index) => {
-          const isActive = rootNote === note;
-          const intervalIndex = (index - rootIndex + 12) % 12;
-          const chromaticInterval = (intervalIndex * 7) % 12;
-          const degreeStr = degreeMap[chromaticInterval] ?? "";
+      <div className={styles["circle-svg-wrapper"]}>
+        <svg
+          viewBox={`-10 -10 ${SIZE + 20} ${SIZE + 20}`}
+          className={styles["circle-fifths-svg"]}
+          role="group"
+          aria-labelledby="cof-title"
+          aria-describedby="cof-desc"
+          data-testid="circle-of-fifths-svg"
+        >
+          <title id="cof-title">Circle of Fifths</title>
+          <desc id="cof-desc">Interactive diagram to select the root note of the scale. Each segment represents a key, arranged in intervals of perfect fifths.</desc>
+          <defs>
+            <radialGradient id="circle-center-fill" cx="50%" cy="38%" r="74%">
+              <stop offset="0%" stopColor="var(--cof-center-start)" />
+              <stop offset="100%" stopColor="var(--cof-center-end)" />
+            </radialGradient>
+          </defs>
+          {CIRCLE_OF_FIFTHS.map((note, index) => {
+            const isActive = rootNote === note;
+            const intervalIndex = (index - rootIndex + 12) % 12;
+            const chromaticInterval = (intervalIndex * 7) % 12;
+            const degreeStr = degreeMap[chromaticInterval] ?? "";
 
-          const { primary } = getCircleNoteLabels(
-            note,
-            rootNote,
-            useFlats,
-            scaleIntervals,
-            enharmonicDisplay,
-          );
+            const { primary } = getCircleNoteLabels(
+              note,
+              rootNote,
+              useFlats,
+              scaleIntervals,
+              enharmonicDisplay,
+            );
 
-          return (
-            <path
-              key={note}
-              ref={(el) => { segmentRefs.current[index] = el; }}
-              d={slicePath(index)}
-              className={clsx(styles["circle-slice"], {
-                [styles.active]: isActive,
-                [styles["circle-slice--scale"]]: degreeStr,
-                [styles["circle-slice--muted"]]: !isActive && !degreeStr,
-              })}
-              stroke="var(--surface-highlight)"
-              strokeWidth={1}
-              style={{ outline: 'none' }}
-              onClick={() => {
-                setRootNote(note);
-                setFocusedIndex(index);
-                setKeyboardFocused(false);
-              }}
-              onPointerDown={() => {
-                setKeyboardFocused(false);
-              }}
-              onFocus={(e) => {
-                try {
-                  if (e.currentTarget.matches(':focus-visible')) {
+            return (
+              <path
+                key={note}
+                ref={(el) => { segmentRefs.current[index] = el; }}
+                d={slicePath(index)}
+                className={clsx(styles["circle-slice"], {
+                  [styles.active]: isActive,
+                  [styles["circle-slice--scale"]]: degreeStr,
+                  [styles["circle-slice--muted"]]: !isActive && !degreeStr,
+                })}
+                stroke="var(--surface-highlight)"
+                strokeWidth={1}
+                style={{ outline: 'none' }}
+                onClick={() => {
+                  setRootNote(note);
+                  setFocusedIndex(index);
+                  setKeyboardFocused(false);
+                }}
+                onPointerDown={() => {
+                  setKeyboardFocused(false);
+                }}
+                onFocus={(e) => {
+                  try {
+                    if (e.currentTarget.matches(':focus-visible')) {
+                      setKeyboardFocused(true);
+                      setFocusedIndex(index);
+                    }
+                  } catch {
                     setKeyboardFocused(true);
                     setFocusedIndex(index);
                   }
-                } catch {
-                  setKeyboardFocused(true);
-                  setFocusedIndex(index);
-                }
-              }}
-              onBlur={() => {
-                setKeyboardFocused(false);
-              }}
-              role="button"
-              aria-label={`${primary} — ${isActive ? "selected" : "not selected"}`}
-              aria-pressed={isActive}
-              tabIndex={index === focusedIndex ? 0 : -1}
-              onKeyDown={(e) => handleKeyDown(e, index)}
+                }}
+                onBlur={() => {
+                  setKeyboardFocused(false);
+                }}
+                role="button"
+                aria-label={`${primary} — ${isActive ? "selected" : "not selected"}`}
+                aria-pressed={isActive}
+                tabIndex={index === focusedIndex ? 0 : -1}
+                onKeyDown={(e) => handleKeyDown(e, index)}
+              />
+            );
+          })}
+
+          {/* Focus ring for keyboard nav (WCAG 2.4.7) */}
+          {keyboardFocused && focusedIndex >= 0 && focusedIndex < CIRCLE_OF_FIFTHS.length && (
+            <path
+              key={`focus-ring-${CIRCLE_OF_FIFTHS[focusedIndex]}`}
+              d={slicePath(focusedIndex)}
+              fill="none"
+              stroke="var(--accent-primary)"
+              strokeWidth={3}
+              strokeLinejoin="round"
+              pointerEvents="none"
+              aria-hidden="true"
+              className={styles["circle-slice-focus-ring"]}
             />
-          );
-        })}
+          )}
 
-        {/* Focus ring for keyboard nav (WCAG 2.4.7) */}
-        {keyboardFocused && focusedIndex >= 0 && focusedIndex < CIRCLE_OF_FIFTHS.length && (
-          <path
-            key={`focus-ring-${CIRCLE_OF_FIFTHS[focusedIndex]}`}
-            d={slicePath(focusedIndex)}
-            fill="none"
-            stroke="var(--accent-primary)"
-            strokeWidth={3}
-            strokeLinejoin="round"
-            pointerEvents="none"
-            aria-hidden="true"
-            className={styles["circle-slice-focus-ring"]}
+          {CIRCLE_OF_FIFTHS.map((note, index) => {
+            const angle = ((index * 30 - 90) * Math.PI) / 180;
+            const lx = CX + LABEL_RADIUS * Math.cos(angle);
+            const ly = CY + LABEL_RADIUS * Math.sin(angle);
+            const dx = CX + DEGREE_RADIUS * Math.cos(angle);
+            const dy = CY + DEGREE_RADIUS * Math.sin(angle);
+            const isActive = rootNote === note;
+
+            const intervalIndex = (index - rootIndex + 12) % 12;
+            const chromaticInterval = (intervalIndex * 7) % 12;
+            const degreeStr = degreeMap[chromaticInterval] ?? "";
+
+            const noteTone = isActive
+              ? "var(--cof-note-active)"
+              : degreeStr
+                ? "var(--cof-note-scale)"
+                : "var(--cof-note-muted)";
+            const enharmonicTone = isActive
+              ? "var(--cof-enharmonic-active)"
+              : degreeStr
+                ? "var(--cof-enharmonic-scale)"
+                : "var(--cof-enharmonic-muted)";
+            const degreeTone = isActive
+              ? "var(--cof-degree-active)"
+              : degreeStr
+                ? "var(--cof-degree-scale)"
+                : "var(--cof-degree-muted)";
+
+            const { primary, enharmonic } = getCircleNoteLabels(
+              note,
+              rootNote,
+              useFlats,
+              scaleIntervals,
+              enharmonicDisplay,
+            );
+            const noteFontSize = Math.max(
+              16,
+              isActive ? SIZE * 0.062 : SIZE * 0.054,
+            );
+            const degreeFontSize = Math.max(10, SIZE * 0.038);
+
+            return (
+              <g key={`text-group-${note}`} style={{ pointerEvents: "none" }}>
+                {enharmonic !== null ? (
+                  <text
+                    x={lx}
+                    y={ly}
+                    dominantBaseline="middle"
+                    textAnchor="middle"
+                    fontSize={noteFontSize}
+                    fontWeight="bold"
+                    fill={noteTone}
+                    className={styles["circle-note-label"]}
+                  >
+                    <tspan
+                      x={lx}
+                      dy="-0.3em"
+                      stroke="var(--cof-text-stroke)"
+                      strokeWidth="2"
+                      paintOrder="stroke"
+                    >
+                      {primary}
+                    </tspan>
+                    <tspan
+                      x={lx}
+                      dy="0.9em"
+                      fontSize={Math.max(11, noteFontSize * 0.65)}
+                      fontWeight="500"
+                      fill={enharmonicTone}
+                      stroke="var(--cof-text-stroke)"
+                      strokeWidth="2"
+                      paintOrder="stroke"
+                    >
+                      {enharmonic}
+                    </tspan>
+                  </text>
+                ) : (
+                  <text
+                    x={lx}
+                    y={ly}
+                    dominantBaseline="middle"
+                    textAnchor="middle"
+                    fontSize={noteFontSize}
+                    fontWeight="bold"
+                    fill={noteTone}
+                    className={styles["circle-note-label"]}
+                  >
+                    <tspan
+                      x={lx}
+                      dy="0"
+                      stroke="var(--cof-text-stroke)"
+                      strokeWidth="2"
+                      paintOrder="stroke"
+                    >
+                      {primary}
+                    </tspan>
+                  </text>
+                )}
+
+                {degreeStr && (
+                  <text
+                    x={dx}
+                    y={dy}
+                    dominantBaseline="middle"
+                    textAnchor="middle"
+                    fill={degreeTone}
+                    fontSize={degreeFontSize}
+                    fontWeight="bold"
+                    opacity={isActive ? 1 : 0.92}
+                    stroke="var(--cof-text-stroke)"
+                    strokeWidth="1.5"
+                    paintOrder="stroke"
+                    className={styles["circle-degree-label"]}
+                  >
+                    {degreeStr}
+                  </text>
+                )}
+              </g>
+            );
+          })}
+
+          {/* Inner donut hole */}
+          <circle
+            cx={CX}
+            cy={CY}
+            r={INNER_RADIUS}
+            fill="url(#circle-center-fill)"
+            stroke="var(--cof-inner-stroke)"
+            strokeWidth={1.4}
           />
-        )}
+        </svg>
+      </div>
 
-        {CIRCLE_OF_FIFTHS.map((note, index) => {
-          const angle = ((index * 30 - 90) * Math.PI) / 180;
-          const lx = CX + LABEL_RADIUS * Math.cos(angle);
-          const ly = CY + LABEL_RADIUS * Math.sin(angle);
-          const dx = CX + DEGREE_RADIUS * Math.cos(angle);
-          const dy = CY + DEGREE_RADIUS * Math.sin(angle);
-          const isActive = rootNote === note;
-
-          const intervalIndex = (index - rootIndex + 12) % 12;
-          const chromaticInterval = (intervalIndex * 7) % 12;
-          const degreeStr = degreeMap[chromaticInterval] ?? "";
-
-          const noteTone = isActive
-            ? "var(--cof-note-active)"
-            : degreeStr
-              ? "var(--cof-note-scale)"
-              : "var(--cof-note-muted)";
-          const enharmonicTone = isActive
-            ? "var(--cof-enharmonic-active)"
-            : degreeStr
-              ? "var(--cof-enharmonic-scale)"
-              : "var(--cof-enharmonic-muted)";
-          const degreeTone = isActive
-            ? "var(--cof-degree-active)"
-            : degreeStr
-              ? "var(--cof-degree-scale)"
-              : "var(--cof-degree-muted)";
-
-          const { primary, enharmonic } = getCircleNoteLabels(
-            note,
-            rootNote,
-            useFlats,
-            scaleIntervals,
-            enharmonicDisplay,
-          );
-          const noteFontSize = Math.max(
-            16,
-            isActive ? SIZE * 0.062 : SIZE * 0.054,
-          );
-          const degreeFontSize = Math.max(10, SIZE * 0.038);
-
-          return (
-            <g key={`text-group-${note}`} style={{ pointerEvents: "none" }}>
-              {enharmonic !== null ? (
-                <text
-                  x={lx}
-                  y={ly}
-                  dominantBaseline="middle"
-                  textAnchor="middle"
-                  fontSize={noteFontSize}
-                  fontWeight="bold"
-                  fill={noteTone}
-                  className={styles["circle-note-label"]}
-                >
-                  <tspan
-                    x={lx}
-                    dy="-0.3em"
-                    stroke="var(--cof-text-stroke)"
-                    strokeWidth="2"
-                    paintOrder="stroke"
-                  >
-                    {primary}
-                  </tspan>
-                  <tspan
-                    x={lx}
-                    dy="0.9em"
-                    fontSize={Math.max(11, noteFontSize * 0.65)}
-                    fontWeight="500"
-                    fill={enharmonicTone}
-                    stroke="var(--cof-text-stroke)"
-                    strokeWidth="2"
-                    paintOrder="stroke"
-                  >
-                    {enharmonic}
-                  </tspan>
-                </text>
-              ) : (
-                <text
-                  x={lx}
-                  y={ly}
-                  dominantBaseline="middle"
-                  textAnchor="middle"
-                  fontSize={noteFontSize}
-                  fontWeight="bold"
-                  fill={noteTone}
-                  className={styles["circle-note-label"]}
-                >
-                  <tspan
-                    x={lx}
-                    dy="0"
-                    stroke="var(--cof-text-stroke)"
-                    strokeWidth="2"
-                    paintOrder="stroke"
-                  >
-                    {primary}
-                  </tspan>
-                </text>
-              )}
-
-              {degreeStr && (
-                <text
-                  x={dx}
-                  y={dy}
-                  dominantBaseline="middle"
-                  textAnchor="middle"
-                  fill={degreeTone}
-                  fontSize={degreeFontSize}
-                  fontWeight="bold"
-                  opacity={isActive ? 1 : 0.92}
-                  stroke="var(--cof-text-stroke)"
-                  strokeWidth="1.5"
-                  paintOrder="stroke"
-                  className={styles["circle-degree-label"]}
-                >
-                  {degreeStr}
-                </text>
-              )}
-            </g>
-          );
-        })}
-
-        {/* Inner donut hole */}
-        <circle
-          cx={CX}
-          cy={CY}
-          r={INNER_RADIUS}
-          fill="url(#circle-center-fill)"
-          stroke="var(--cof-inner-stroke)"
-          strokeWidth={1.4}
-        />
-
-        {/* Root note and key signature in center */}
-        <text
-          x={CX}
-          y={CY - SIZE * 0.035}
-          textAnchor="middle"
-          dominantBaseline="middle"
-          fill="var(--cof-center-note)"
-          fontSize={Math.max(18, SIZE * 0.062)}
-          fontWeight="bold"
-          fontFamily="var(--font-display)"
-          stroke="var(--cof-text-stroke)"
-          strokeWidth="2"
-          paintOrder="stroke"
-          className={styles["circle-center-note"]}
-        >
-          {formatAccidental(rootDisplayLabel)}
-        </text>
-        <text
-          x={CX}
-          y={CY + SIZE * 0.055}
-          textAnchor="middle"
-          dominantBaseline="middle"
-          fill="var(--cof-center-signature)"
-          fontSize={Math.max(14, SIZE * 0.052)}
-          fontWeight="600"
-          fontFamily="var(--font-display)"
-          stroke="var(--cof-text-stroke)"
-          strokeWidth="2"
-          paintOrder="stroke"
-          className={styles["circle-center-signature"]}
-        >
-          {keySigText}
-        </text>
-      </svg>
+      <div className={styles["circle-footer"]}>
+        <div className={styles["circle-footer-item"]}>
+          <span className={styles["circle-footer-label"]}>Key Signature</span>
+          <span className={styles["circle-footer-value"]}>{keySigText}</span>
+        </div>
+        <div className={styles["circle-footer-item"]}>
+          <span className={styles["circle-footer-label"]}>
+            {isMinor ? "Relative Major" : "Relative Minor"}
+          </span>
+          <span className={styles["circle-footer-value"]}>
+            {formatAccidental(relDisplay)}{isMinor ? "" : "m"}
+          </span>
+        </div>
+      </div>
     </div>
   );
 });
