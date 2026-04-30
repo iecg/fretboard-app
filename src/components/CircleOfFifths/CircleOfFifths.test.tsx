@@ -177,6 +177,52 @@ describe("CircleOfFifths/CircleOfFifths", () => {
     });
   });
 
+  describe("Relative Scale Logic", () => {
+    it("Major mode shows Relative Minor", () => {
+      const { container } = render(
+        <CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} scaleName="Major" />
+      );
+      const labels = container.querySelectorAll(".circle-footer-label");
+      const values = container.querySelectorAll(".circle-footer-value");
+      
+      const relLabel = Array.from(labels).find(el => el.textContent === "Relative Minor");
+      expect(relLabel).toBeTruthy();
+      
+      // Values are next to labels
+      const index = Array.from(labels).indexOf(relLabel as Element);
+      expect(values[index].textContent).toBe("Am");
+    });
+
+    it("Natural Minor mode shows Relative Major", () => {
+      const { container } = render(
+        <CircleOfFifths rootNote="A" setRootNote={mockSetRootNote} scaleName="Natural Minor" />
+      );
+      const labels = container.querySelectorAll(".circle-footer-label");
+      const values = container.querySelectorAll(".circle-footer-value");
+      
+      const relLabel = Array.from(labels).find(el => el.textContent === "Relative Major");
+      expect(relLabel).toBeTruthy();
+      
+      const index = Array.from(labels).indexOf(relLabel as Element);
+      expect(values[index].textContent).toBe("C");
+    });
+
+    it("Dorian mode shows Parent Scale and computes modal parent correctly", () => {
+      // D Dorian -> C Major
+      const { container } = render(
+        <CircleOfFifths rootNote="D" setRootNote={mockSetRootNote} scaleName="Dorian" />
+      );
+      const labels = container.querySelectorAll(".circle-footer-label");
+      const values = container.querySelectorAll(".circle-footer-value");
+      
+      const relLabel = Array.from(labels).find(el => el.textContent === "Parent Scale");
+      expect(relLabel).toBeTruthy();
+      
+      const index = Array.from(labels).indexOf(relLabel as Element);
+      expect(values[index].textContent).toBe("C");
+    });
+  });
+
   describe("Accidentals", () => {
     it("displays sharps by default", () => {
       render(

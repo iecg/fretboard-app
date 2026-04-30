@@ -8,6 +8,7 @@ import {
   SCALES,
 } from "../../core/theory";
 import { getDegreesForScale } from "../../core/degrees";
+import { getScaleCatalogEntry } from "../../core/theoryCatalog";
 import { getCircleNoteLabels } from "../../core/circleOfFifthsUtils";
 import styles from "./CircleOfFifths.module.css";
 
@@ -66,10 +67,30 @@ export const CircleOfFifths = memo(function CircleOfFifths({
     keySig === 0 ? "♮" : keySig > 0 ? `${keySig}♯` : `${Math.abs(keySig)}♭`;
   const degreeMap = getDegreesForScale(scaleName);
 
-  const isMinor = scaleName.toLowerCase().includes("minor");
-  const relIndex = isMinor ? (rootIndex + 9) % 12 : (rootIndex + 3) % 12;
+  const scaleEntry = getScaleCatalogEntry(scaleName);
+  const parentMajorOffset = scaleEntry?.member.parentMajorOffset ?? 0;
+  
+  const SEMITONES_TO_CIRCLE_STEPS = [0, 7, 2, 9, 4, 11, 6, 1, 8, 3, 10, 5];
+
+  let relLabel = "Relative Minor";
+  let relScaleName = "Natural Minor";
+  let relIndex = (rootIndex + 3) % 12;
+  let relSuffix = "m";
+  
+  if (scaleName === "Natural Minor" || scaleName === "Minor") {
+    relLabel = "Relative Major";
+    relScaleName = "Major";
+    relIndex = (rootIndex + 9) % 12;
+    relSuffix = "";
+  } else if (scaleName !== "Major") {
+    relLabel = "Parent Scale";
+    relScaleName = "Major";
+    const circleSteps = SEMITONES_TO_CIRCLE_STEPS[parentMajorOffset] ?? 0;
+    relIndex = (rootIndex + circleSteps) % 12;
+    relSuffix = "";
+  }
+
   const relNote = CIRCLE_OF_FIFTHS[relIndex];
-  const relScaleName = isMinor ? "Major" : "Minor";
   const relDisplay = getNoteDisplayInScale(
     relNote,
     relNote,
@@ -330,6 +351,19 @@ export const CircleOfFifths = memo(function CircleOfFifths({
             stroke="var(--cof-inner-stroke)"
             strokeWidth={1.4}
           />
+          
+          <text
+            x={CX}
+            y={CY}
+            dominantBaseline="middle"
+            textAnchor="middle"
+            fill="var(--cof-note-active)"
+            fontSize={SIZE * 0.07}
+            fontWeight="bold"
+            style={{ pointerEvents: "none" }}
+          >
+            {formatAccidental(rootDisplayLabel)}
+          </text>
         </svg>
       </div>
 
@@ -339,11 +373,9 @@ export const CircleOfFifths = memo(function CircleOfFifths({
           <span className={styles["circle-footer-value"]}>{keySigText}</span>
         </div>
         <div className={styles["circle-footer-item"]}>
-          <span className={styles["circle-footer-label"]}>
-            {isMinor ? "Relative Major" : "Relative Minor"}
-          </span>
+          <span className={styles["circle-footer-label"]}>{relLabel}</span>
           <span className={styles["circle-footer-value"]}>
-            {formatAccidental(relDisplay)}{isMinor ? "" : "m"}
+            {formatAccidental(relDisplay)}{relSuffix}
           </span>
         </div>
       </div>
