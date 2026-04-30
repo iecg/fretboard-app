@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 import clsx from 'clsx';
+import { useAtomValue } from 'jotai';
+import { scaleDegreeColorsEnabledAtom } from '../../store/atoms';
 import styles from './DegreeChipStrip.module.css';
 
 export interface DegreeChip {
@@ -8,6 +10,8 @@ export interface DegreeChip {
   interval: string;
   inScale: boolean;
   isTonic?: boolean;
+  scaleDegree?: string;
+  degreeColor?: string;
 }
 
 export interface DegreeChipStripProps {
@@ -41,6 +45,7 @@ export function DegreeChipStrip({
   headerAction,
   compact,
 }: DegreeChipStripProps) {
+  const degreeColorsEnabled = useAtomValue(scaleDegreeColorsEnabledAtom);
   const label = ariaLabel ?? `Scale degrees for ${scaleName}`;
 
   return (
@@ -49,6 +54,7 @@ export function DegreeChipStrip({
       aria-label={label}
       className={clsx(styles['degree-chip-strip'], compact && styles['degree-chip-strip--compact'], className)}
       data-scale-visible={visible ? 'true' : 'false'}
+      data-degree-colors={degreeColorsEnabled ? 'true' : undefined}
     >
       {(!hideHeader || headerAction) && (
         <header
@@ -72,6 +78,8 @@ export function DegreeChipStrip({
                 data-is-tonic={chip.isTonic ? 'true' : undefined}
                 data-hidden={isHidden ? 'true' : undefined}
                 data-is-color-note={isColorNote ? 'true' : undefined}
+                data-scale-degree={degreeColorsEnabled ? chip.scaleDegree : undefined}
+                style={degreeColorsEnabled && chip.degreeColor ? { "--degree-color": chip.degreeColor } as React.CSSProperties : undefined}
               >
                 <button
                   type="button"

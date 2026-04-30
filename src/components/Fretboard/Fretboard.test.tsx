@@ -5,7 +5,7 @@ import userEvent from "@testing-library/user-event";
 import { Provider, createStore } from "jotai";
 import { Fretboard } from "../Fretboard/Fretboard";
 import { STANDARD_TUNING } from "../../core/guitar";
-import { fretEndAtom, fretStartAtom, fretZoomAtom } from "../../store/atoms";
+import { fretEndAtom, fretStartAtom, fretZoomAtom, scaleDegreeColorsEnabledAtom } from "../../store/atoms";
 
 // Mock audio synth
 vi.mock("../../core/audio", () => ({
@@ -168,6 +168,23 @@ describe("Fretboard/Fretboard", () => {
     it('displays nothing when displayFormat is "none"', () => {
       render(<Fretboard {...defaultProps} displayFormat="none" />);
       expect(document.body).toBeTruthy();
+    });
+
+    it("keeps note labels visible when scale degree colors are enabled", () => {
+      const store = createStore();
+      store.set(scaleDegreeColorsEnabledAtom, true);
+      const { container } = render(
+        <Provider store={store}>
+          <Fretboard
+            {...defaultProps}
+            displayFormat="notes"
+            rootNote="C"
+            scaleName="Major"
+          />
+        </Provider>
+      );
+
+      expect(container.querySelector('[data-degree-colors="true"] text')).toBeTruthy();
     });
 
     it("updates display when displayFormat changes", () => {

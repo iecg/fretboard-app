@@ -3,6 +3,7 @@ import { atomWithStorage, RESET } from "jotai/utils";
 import {
   NOTES,
   CHORD_DEFINITIONS,
+  INTERVAL_NAMES,
   LENS_REGISTRY,
   getChordNotes,
   getScaleNotes,
@@ -440,7 +441,9 @@ export const allChordMembersAtom = atom((get) => {
       const tonicIdx = NOTES.indexOf(rootNote);
       if (noteIdx !== -1 && tonicIdx !== -1) {
         const semitone = (noteIdx - tonicIdx + 12) % 12;
-        scaleDegree = getDegreesForScale(scaleName)[semitone] as DegreeId | undefined;
+        scaleDegree = (
+          getDegreesForScale(scaleName)[semitone] ?? INTERVAL_NAMES[semitone]
+        ) as DegreeId | undefined;
       }
     }
     return {

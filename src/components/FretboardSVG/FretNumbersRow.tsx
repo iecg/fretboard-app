@@ -1,5 +1,4 @@
 import { memo } from "react";
-import { NECK_BORDER } from "../../core/constants";
 import styles from "./FretboardSVG.module.css";
 
 interface FretNumbersRowProps {
@@ -22,8 +21,7 @@ export const FretNumbersRow = memo(({
       className={styles["fret-numbers-row"]}
       aria-hidden="true"
       style={{
-        width: `${neckWidthPx + NECK_BORDER * 2}px`,
-        paddingLeft: `${NECK_BORDER}px`,
+        width: `${neckWidthPx}px`,
       }}
     >
       {Array.from({ length: totalColumns + 1 }).map((_, idx) => {

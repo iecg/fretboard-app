@@ -11,6 +11,7 @@ interface FretboardNoteLayerProps {
   stringYAt: (stringIndex: number, x: number) => number;
   noteBubblePx: number;
   displayFormat: "notes" | "degrees" | "none";
+  degreeColorsEnabled?: boolean;
 }
 
 export const FretboardNoteLayer = memo(({
@@ -19,6 +20,7 @@ export const FretboardNoteLayer = memo(({
   stringYAt,
   noteBubblePx,
   displayFormat,
+  degreeColorsEnabled,
 }: FretboardNoteLayerProps) => {
   return (
     <>
@@ -32,6 +34,8 @@ export const FretboardNoteLayer = memo(({
         isHidden,
         isTension,
         isGuideTone,
+        scaleDegree,
+        degreeColor,
       }) => {
         const cx = fretCenterX(fretIndex);
         const cy = stringYAt(stringIndex, cx);
@@ -103,8 +107,13 @@ export const FretboardNoteLayer = memo(({
             data-note-tension={isTension || undefined}
             data-note-guide-tone={isGuideTone || undefined}
             data-lens-emphasis={applyLensEmphasis.glowColor ?? undefined}
+            data-scale-degree={degreeColorsEnabled ? scaleDegree : undefined}
+            data-degree-colors={degreeColorsEnabled ? "true" : undefined}
             style={{
               opacity: finalOpacity,
+              ...(degreeColor && degreeColorsEnabled
+                ? { "--degree-color": degreeColor }
+                : undefined),
             }}
           >
             {shapeEl}

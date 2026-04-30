@@ -8,6 +8,7 @@ import {
   type PracticeLens,
   type NoteSemantics,
 } from "../../../core/theory";
+import { DEGREE_COLORS, getDegreesForScale } from "../../../core/degrees";
 import type { ShapePolygon, CagedShape } from "../../../shapes";
 import type { ActiveShapeType } from "../../../hooks/useFretboardState";
 import {
@@ -29,6 +30,8 @@ export interface NoteData {
   isHidden: boolean;
   isTension: boolean;
   isGuideTone: boolean;
+  scaleDegree?: string;
+  degreeColor?: string;
 }
 
 export interface UseNoteDataProps {
@@ -53,6 +56,7 @@ export interface UseNoteDataProps {
   scaleName: string;
   useFlats: boolean;
   displayFormat?: "notes" | "degrees" | "none";
+  degreeColorsEnabled?: boolean;
   wrappedNotes: Set<string>;
   practiceLens?: PracticeLens;
   tuning: string[];
@@ -81,6 +85,7 @@ export function useNoteData({
   scaleName,
   useFlats,
   displayFormat,
+  degreeColorsEnabled,
   wrappedNotes,
   practiceLens,
   noteSemantics,
@@ -112,6 +117,8 @@ export function useNoteData({
 
     // Pre-calculate color notes set
     const colorNoteSet = new Set(colorNotes);
+
+    const degreesMap = getDegreesForScale(scaleName);
 
     for (let stringIndex = 0; stringIndex < numStrings; stringIndex++) {
       const layoutRow = fretboardLayout[stringIndex];
@@ -274,7 +281,23 @@ export function useNoteData({
         // Visual hiddenness: inactive notes are not rendered in the note layer.
         const isHidden = noteClass === "note-inactive";
 
-        notes.push({
+        // Calculate scale degree color when degree colors are enabled
+        let scaleDegree: string | undefined;
+        let degreeColor: string | undefined;
+        if (degreeColorsEnabled && rootIdx !== -1) {
+          const noteIdx = NOTES.indexOf(noteName);
+          if (noteIdx !== -1) {
+            const chromaticInterval = (noteIdx - rootIdx + 12) % 12;
+            scaleDegree = scale.includes(chromaticInterval)
+              ? degreesMap[chromaticInterval] ?? INTERVAL_NAMES[chromaticInterval]
+              : undefined;
+            if (scaleDegree) {
+              degreeColor = DEGREE_COLORS[scaleDegree];
+            }
+          }
+        }
+
+        const objectToBePushed = {
           stringIndex,
           fretIndex,
           noteName,
@@ -285,9 +308,12 @@ export function useNoteData({
           isHidden,
           isTension: semantics?.isTension ?? false,
           isGuideTone: semantics?.isGuideTone ?? false,
-        });
-        }
-        }
-        return notes;
-        }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, wrappedNotes, practiceLens, noteSemantics, activePattern, activeShape, shapeScope]);
-        }
+          scaleDegree,
+          degreeColor,
+        };
+        notes.push(objectToBePushed);
+      }
+    }
+    return notes;
+  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, degreeColorsEnabled, wrappedNotes, practiceLens, noteSemantics, activePattern, activeShape, shapeScope]);
+}

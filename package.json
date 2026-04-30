@@ -1,7 +1,7 @@
 {
   "name": "fretboard-app",
   "private": true,
-  "version": "1.13.0",
+  "version": "1.14.0",
   "type": "module",
   "engines": {
     "node": ">=24.0.0"
@@ -34,7 +34,7 @@
     "react-dom": "^19.2.5"
   },
   "devDependencies": {
-    "@commitlint/cli": "^20.5.0",
+    "@commitlint/cli": "^20.5.2",
     "@commitlint/config-conventional": "^20.5.0",
     "@eslint/js": "^9.39.4",
     "@playwright/test": "^1.59.1",
@@ -56,12 +56,12 @@
     "jsdom": "^29.0.2",
     "lint-staged": "^16.4.0",
     "playwright": "^1.59.1",
-    "stylelint": "^17.8.0",
+    "stylelint": "^17.9.1",
     "stylelint-config-recommended": "^18.0.0",
     "stylelint-config-standard": "^40.0.0",
     "typescript": "~6.0.3",
-    "typescript-eslint": "^8.59.0",
-    "vite": "^8.0.9",
+    "typescript-eslint": "^8.59.1",
+    "vite": "^8.0.10",
     "vitest": "^4.1.5",
     "vitest-axe": "^0.1.0"
   },

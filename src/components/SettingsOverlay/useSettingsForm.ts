@@ -7,6 +7,7 @@ import {
   accidentalModeAtom,
   enharmonicDisplayAtom,
   chordFretSpreadAtom,
+  scaleDegreeColorsEnabledAtom,
 } from "../../store/atoms";
 
 export function useSettingsForm() {
@@ -17,6 +18,7 @@ export function useSettingsForm() {
   const [accidentalMode, setAccidentalMode] = useAtom(accidentalModeAtom);
   const [enharmonicDisplay, setEnharmonicDisplay] = useAtom(enharmonicDisplayAtom);
   const [chordFretSpread, setChordFretSpread] = useAtom(chordFretSpreadAtom);
+  const [scaleDegreeColorsEnabled, setScaleDegreeColorsEnabled] = useAtom(scaleDegreeColorsEnabledAtom);
 
   return {
     fretZoom,
@@ -33,5 +35,7 @@ export function useSettingsForm() {
     setEnharmonicDisplay,
     chordFretSpread,
     setChordFretSpread,
+    scaleDegreeColorsEnabled,
+    setScaleDegreeColorsEnabled,
   };
 }

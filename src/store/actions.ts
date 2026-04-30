@@ -23,6 +23,7 @@ import {
 } from "./fingeringAtoms";
 import {
   displayFormatAtom,
+  scaleDegreeColorsEnabledAtom,
   mobileTabAtom,
   tabletTabAtom,
   landscapeNarrowTabAtom,
@@ -69,6 +70,7 @@ export const resetAtom = atom(null, (_get, set) => {
   set(npsPositionAtom, RESET);
   set(npsOctaveAtom, RESET);
   set(displayFormatAtom, RESET);
+  set(scaleDegreeColorsEnabledAtom, RESET);
   set(tuningNameAtom, RESET);
   set(fretZoomAtom, RESET);
   set(fretStartAtom, RESET);
