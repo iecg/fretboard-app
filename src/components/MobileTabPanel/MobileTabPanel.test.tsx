@@ -57,6 +57,15 @@ describe("MobileTabPanel/MobileTabPanel", () => {
     expect(screen.getByRole("heading", { level: 2, name: /^Key$/i })).toBeInTheDocument();
   });
 
+  it("renders CircleOfFifths SVG directly when on cof tab", () => {
+    renderWithAtoms(<MobileTabPanel />, [
+      ...BASE_SEEDS,
+      [mobileTabAtom, "cof"],
+    ]);
+    expect(screen.getByTestId("circle-of-fifths-svg")).toBeInTheDocument();
+    expect(screen.getByTestId("circle-of-fifths")).toBeInTheDocument();
+  });
+
   it("shows view tab content when mobileTab atom is 'view'", () => {
     renderWithAtoms(<MobileTabPanel />, [
       ...BASE_SEEDS,

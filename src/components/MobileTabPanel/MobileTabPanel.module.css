@@ -16,13 +16,28 @@
   width: 100%;
   display: flex;
   justify-content: center;
-  padding: 0.15rem 0;
+  padding: 0.25rem 0.15rem 0.35rem;
+  margin: 0 auto;
+  min-height: 0;
+}
+
+/* Mobile Key tab: give the circle more framing */
+:global(.app-container[data-layout-tier="mobile"][data-layout-variant])
+  :global([data-layout-scope="mobile-tabs"])
+  :global([data-mobile-tab="cof"]) .cof-container {
+  padding: 0.3rem 0.2rem 0.4rem;
+  width: 100%;
+  max-width: 100%;
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
-:global([data-layout-scope="mobile-tabs"]) :global([data-mobile-tab="cof"]) [data-card-body] {
-  padding-top: 0.3rem;
-  padding-bottom: 0.4rem;
+:global(.app-container[data-layout-tier="mobile"][data-layout-variant])
+  :global([data-layout-scope="mobile-tabs"])
+  :global([data-mobile-tab="cof"]) [data-card-body] {
+  padding-top: 0.2rem;
+  padding-bottom: 0.25rem;
+  padding-left: 0.15rem;
+  padding-right: 0.15rem;
 }
 
 :global(.app-container[data-layout-tier="mobile"]) .mobile-tab-card {
