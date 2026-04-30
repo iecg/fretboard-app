@@ -324,13 +324,10 @@
 }
 
 /* Degree color mode — keep this after role/lens selectors so degree colors win. */
+/* Fill is the raw degree color (solid). Dimming is handled via opacity on the group element. */
 .fretboard-board[data-degree-colors="true"] .fretboard-note[data-scale-degree] :is(circle, rect, polygon) {
   stroke: var(--degree-color, var(--note-ring));
-  fill: color-mix(in srgb, var(--degree-color, #141e28) 70%, var(--note-fill));
-}
-
-:global([data-theme="modern-light"]) .fretboard-board[data-degree-colors="true"] .fretboard-note[data-scale-degree] :is(circle, rect, polygon) {
-  fill: color-mix(in srgb, var(--degree-color, #dde4ec) 74%, var(--note-ring));
+  fill: var(--degree-color, #141e28);
 }
 
 /* Accessibility layer */
