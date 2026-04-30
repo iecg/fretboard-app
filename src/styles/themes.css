@@ -8,10 +8,10 @@
   color-scheme: light;
 
   /* Primitive Colors — Cool blue-gray spectrum with intentional steps */
-  --bg-color: #eef2f7;        /* distinctly cool-neutral shell (was #f8fafc — too close to white) */
-  --surface-base: #f3f7fc;    /* near-white panel base (was #fafbfd — barely distinct from shell) */
-  --surface-raised: #ebf0f7;  /* inset/nested context (was #f1f5f9) */
-  --surface-highlight: #dde4ef; /* borders, dividers (was #e2e8f0) */
+  --bg-color: #fcfaf8;        /* distinctly cool-neutral shell (was #f8fafc — too close to white) */
+  --surface-base: #fdfdfc;    /* near-white panel base (was #fafbfd — barely distinct from shell) */
+  --surface-raised: #f5f2ef;  /* inset/nested context (was #f1f5f9) */
+  --surface-highlight: #e8e4df; /* borders, dividers (was #e2e8f0) */
   --text-main: #0f172a;
   --text-muted: #475569;
   --text-on-highlight: #0f172a;
@@ -19,19 +19,19 @@
   --text-soft-white: #1e293b;
 
   /* App Shell — Modern Light */
-  --bg-app-gradient-start: #eef2f7; /* matches new --bg-color shell */
-  --bg-app-gradient-mid: #eef2f7;
-  --bg-app-gradient-end: #eef2f7;
-  --bg-app-accent-glow: radial-gradient(ellipse at 50% 0%, rgb(8 145 178 / 0.05), transparent 60%);
-  --bg-app-accent-glow-1: rgb(8 145 178 / 0.03);
-  --bg-app-accent-glow-2: rgb(8 145 178 / 0.04);
-  --bg-app-accent-glow-3: rgb(8 145 178 / 0.04);
+  --bg-app-gradient-start: #fdfcfb; /* matches new --bg-color shell */
+  --bg-app-gradient-mid: #fcfaf8;
+  --bg-app-gradient-end: #f6f4f0;
+  --bg-app-accent-glow: radial-gradient(ellipse at 50% 0%, rgb(180 83 9 / 0.05), transparent 60%);
+  --bg-app-accent-glow-1: rgb(180 83 9 / 0.03);
+  --bg-app-accent-glow-2: rgb(180 83 9 / 0.04);
+  --bg-app-accent-glow-3: rgb(180 83 9 / 0.04);
 
   /* Surface Ladder — intentional light-mode values (deepest → highest) */
-  --surface-shell:       #eef2f7; /* = shell/bg, cool blue-gray */
-  --surface-card-top:    #fafbfd; /* top-level card: near-white, brighter than shell */
-  --surface-card-nested: #f2f6fb; /* inset card: visibly recessed from card-top without reading like a control well */
-  --surface-well:        #e5ecf5; /* control well: distinctly sunken */
+  --surface-shell:       #fcfaf8; /* = shell/bg, cool blue-gray */
+  --surface-card-top:    #ffffff; /* top-level card: near-white, brighter than shell */
+  --surface-card-nested: #f8f6f4; /* inset card: visibly recessed from card-top without reading like a control well */
+  --surface-well:        #f0ece7; /* control well: distinctly sunken */
   --surface-strip:       var(--surface-card-top); /* practice/chord strip: card-aligned */
   --surface-float:       #ffffff; /* floating overlay (dropdown, modal): highest elevation */
   --surface-control:     var(--surface-well); /* controls sit lower than nested content cards */
@@ -49,32 +49,32 @@
   --surface-overlay:            var(--surface-card-top);  /* was #ffffff → card-level near-white */
 
   /* Focus ring — restrained for light backgrounds */
-  --focus-ring-glow: 0 0 0 3px rgba(8, 145, 178, 0.15);
+  --focus-ring-glow: 0 0 0 3px rgba(180, 83, 9, 0.15);
 
   /* Interaction — Primary theme accent */
-  --accent-primary: #0891b2;
-  --accent-glow: rgba(8, 145, 178, 0.04);
+  --accent-primary: #b45309;
+  --accent-glow: rgba(180, 83, 9, 0.04);
   
   --interactive-hover: color-mix(in srgb, var(--accent-primary) 90%, black);
   --interactive-active: color-mix(in srgb, var(--accent-primary) 80%, black);
-  --interactive-focus: #0891b2;
+  --interactive-focus: #b45309;
 
   /* Neon colors — significantly restrained for a professional look */
-  --neon-cyan: #0891b2;
-  --neon-cyan-bright: #0e7490;
-  --neon-cyan-dim: #155e75;
-  --neon-orange: #ea580c;
-  --neon-orange-bright: #c2410c;
-  --neon-orange-dim: #9a3412;
-  --neon-violet: #7c3aed;
-  --neon-violet-dim: #6d28d9;
-  --neon-brand-gradient: linear-gradient(90deg, #0891b2 0%, #0e7490 100%);
+  --neon-cyan: #b45309;
+  --neon-cyan-bright: #d97706;
+  --neon-cyan-dim: #78350f;
+  --neon-orange: #be123c;
+  --neon-orange-bright: #e11d48;
+  --neon-orange-dim: #881337;
+  --neon-violet: #86198f;
+  --neon-violet-dim: #4c0519;
+  --neon-brand-gradient: linear-gradient(90deg, #d97706 0%, #be123c 100%);
 
   /* Glow effects — minimal to none in modern-light */
-  --glow-cyan-sm: 0 1px 2px rgba(8, 145, 178, 0.1);
+  --glow-cyan-sm: 0 1px 2px rgba(180, 83, 9, 0.1);
   --glow-cyan-md: none;
   --glow-cyan-lg: none;
-  --glow-orange-sm: 0 1px 2px rgba(234, 88, 12, 0.1);
+  --glow-orange-sm: 0 1px 2px rgba(190, 18, 60, 0.1);
   --glow-orange-md: none;
   --glow-orange-lg: none;
   --glow-violet-sm: none;
@@ -91,8 +91,8 @@
   --token-surface-dim:    var(--surface-shell);     /* was #f8fafc */
 
   /* Chip backgrounds — using solid accents for active states */
-  --token-chip-active-bg: #0891b2;
-  --token-chip-tonic-bg: #ea580c;
+  --token-chip-active-bg: #b45309;
+  --token-chip-tonic-bg: #be123c;
 
   /* Elevation shadows — softer, smaller, professional */
   --elevation-card: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
@@ -103,32 +103,32 @@
   --disabled-opacity: 0.4;
 
   /* Fretboard wood — warm maple */
-  --fretboard-wood-top: #f5e6c8;
-  --fretboard-wood-mid: #ebd5b0;
-  --fretboard-wood-bottom: #dec395;
-  --fretboard-wood-grain: rgba(90, 60, 40, 0.08);
-  --fret-wire-dark: #1e293b;
-  --fret-wire-medium: #475569;
-  --fret-wire-bright: #94a3b8;
+  --fretboard-wood-top: #fde8c4;
+  --fretboard-wood-mid: #f5d4a0;
+  --fretboard-wood-bottom: #e8c082;
+  --fretboard-wood-grain: rgba(120, 70, 30, 0.12);
+  --fret-wire-dark: #43302b;
+  --fret-wire-medium: #7a5c53;
+  --fret-wire-bright: #b5988e;
   --fret-wire-highlight: rgba(255, 255, 255, 0.2);
-  --fret-marker: rgba(0, 0, 0, 0.08);
+  --fret-marker: rgba(60, 30, 10, 0.15);
   --fret-nut-bg: #f8f4e8;
   --fret-nut-wire: #475569;
-  --fretboard-border: #8b5e3c;
+  --fretboard-border: #9e633e;
 
   /* String colors — charcoal slate */
-  --string-wire: #475569;
-  --string-wire-bass: #334155;
+  --string-wire: #5c4d47;
+  --string-wire-bass: #382c28;
 
   /* Inlays */
   --inlay-dot: rgba(0, 0, 0, 0.1);
   --inlay-dot-12: rgba(0, 0, 0, 0.15);
-  --inlay-pearl-stop1: #475569;
-  --inlay-pearl-stop2: #334155;
-  --inlay-pearl-stop3: #1e293b;
-  --inlay-pearl-opacity1: 0.25;
-  --inlay-pearl-opacity2: 0.2;
-  --inlay-pearl-opacity3: 0.15;
+  --inlay-pearl-stop1: #2e1d18;
+  --inlay-pearl-stop2: #1f120e;
+  --inlay-pearl-stop3: #0a0503;
+  --inlay-pearl-opacity1: 0.45;
+  --inlay-pearl-opacity2: 0.35;
+  --inlay-pearl-opacity3: 0.25;
   --nut: #f8f4e8;
   --fretboard-edge-shadow: inset 0 0 15px rgba(0, 0, 0, 0.1);
   --fretboard-top-edge-color: rgba(255, 255, 255, 0.4);
@@ -144,8 +144,8 @@
   /* Shadows for notes — removed glow */
   --shadow-note-root: none;
   --shadow-note-active: none;
-  --shadow-ping-start: rgba(8, 145, 178, 0.2);
-  --shadow-ping-end: rgba(8, 145, 178, 0);
+  --shadow-ping-start: rgba(180, 83, 9, 0.2);
+  --shadow-ping-end: rgba(180, 83, 9, 0);
 
   /* Nav active tokens — light mode routes to accent-primary */
   --nav-active-fg: var(--accent-primary);
@@ -158,14 +158,14 @@
   --destructive-control-confirmed-bg: var(--neon-orange);
 
   /* Interaction — Selection & Persistent States */
-  --selected-bg: #0891b2;
+  --selected-bg: #b45309;
   --selected-fg: #ffffff;
-  --selected-border: #0e7490;
+  --selected-border: #d97706;
   --selected-bg-image: none;
   --selected-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  --selected-chord-bg: #ea580c;
+  --selected-chord-bg: #be123c;
   --selected-chord-fg: #ffffff;
-  --selected-chord-border: #c2410c;
+  --selected-chord-border: #e11d48;
   --selected-highlight: rgb(255 255 255 / 0.15); /* Backward compatibility alias */
 
   /* Fretboard accessibility chrome — light-mode override */
@@ -173,8 +173,8 @@
 
   /* Fretboard SVG — light-mode rings, fills, and number color */
   --fretboard-board-shadow: rgb(0 0 0 / 0.15);
-  --fretboard-note-text-fill: #ffffff;
-  --fretboard-note-text-stroke: rgba(0, 0, 0, 0.25);
+  --fretboard-note-text-fill: #0f172a;
+  --fretboard-note-text-stroke: transparent;
   --fretboard-note-chord-tone-outside-fill: var(--neon-orange-dim);
   --fretboard-guide-tones-emphasis-fill: var(--note-ring-tonic);
   --fretboard-guide-tones-deemphasis-fill: color-mix(in srgb, var(--note-ring-tonic) 15%, #ffffff);
@@ -191,10 +191,10 @@
   --fretboard-fret-number-color: #475569;
 
   /* Fretboard note fill token overrides — light mode uses ring-color fills (matches strokes). */
-  --fretboard-note-fill-tonic:          var(--note-ring-tonic);
-  --fretboard-note-fill-chord-root:     var(--note-ring-tonic);
-  --fretboard-note-fill-chord-tone:     var(--note-ring);
-  --fretboard-note-fill-scale-only:     var(--note-ring);
+  --fretboard-note-fill-tonic: #fde8c4;
+  --fretboard-note-fill-chord-root: #fde8c4;
+  --fretboard-note-fill-chord-tone: #fcfaf8;
+  --fretboard-note-fill-scale-only: #fcfaf8;
   --fretboard-note-fill-chord-outside:  var(--fretboard-note-chord-tone-outside-fill);
   --fretboard-note-fill-tension-emph:   var(--fretboard-tension-emphasis-fill);
   --fretboard-note-fill-tension-strong: var(--fretboard-tension-emphasis-fill);

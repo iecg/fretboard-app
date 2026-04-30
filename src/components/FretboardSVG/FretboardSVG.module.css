@@ -71,9 +71,6 @@
   stroke-width: 2.3;
 }
 
-:global([data-theme="modern-light"]) .fretboard-note.key-tonic :is(circle, rect, polygon) {
-  fill: var(--note-ring-tonic);
-}
 .fretboard-note.key-tonic text {
   stroke-width: 2.3;
 }
@@ -84,9 +81,6 @@
   stroke-width: 2.5;
 }
 
-:global([data-theme="modern-light"]) .fretboard-note.chord-root :is(circle, rect, polygon) {
-  fill: var(--note-ring-tonic);
-}
 .fretboard-note.chord-root text {
   stroke-width: 2.3;
 }
@@ -99,18 +93,10 @@
 }
 
 :global([data-theme="modern-light"]) .fretboard-note.chord-tone-in-scale :is(circle, rect, polygon),
-:global([data-theme="modern-light"]) .fretboard-note.note-diatonic-chord :is(circle, rect, polygon) {
-  fill: var(--note-ring);
-}
-
 .fretboard-note.note-active :is(circle, rect, polygon) {
   stroke: var(--note-ring);
   fill: var(--fretboard-note-fill-chord-tone);
   stroke-width: 1.9;
-}
-
-:global([data-theme="modern-light"]) .fretboard-note.note-active :is(circle, rect, polygon) {
-  fill: var(--note-ring);
 }
 
 .fretboard-note.note-blue :is(circle, rect, polygon) {
@@ -119,9 +105,6 @@
   stroke-width: 1.9;
 }
 
-:global([data-theme="modern-light"]) .fretboard-note.note-blue :is(circle, rect, polygon) {
-  fill: var(--note-ring-color-tone);
-}
 .fretboard-note.note-blue text {
   fill: #e8d8ff;
 }
@@ -137,19 +120,12 @@
   stroke-width: 1.7;
 }
 
-:global([data-theme="modern-light"]) .fretboard-note.scale-only :is(circle, rect, polygon) {
-  fill: var(--note-ring);
-}
-
 .fretboard-note.color-tone :is(circle, rect, polygon) {
   stroke: var(--note-ring-color-tone);
   fill: var(--fretboard-note-fill-chord-tone);
   stroke-width: 1.9;
 }
 
-:global([data-theme="modern-light"]) .fretboard-note.color-tone :is(circle, rect, polygon) {
-  fill: var(--note-ring-color-tone);
-}
 .fretboard-note.color-tone text {
   fill: #e8d8ff;
 }
@@ -166,9 +142,6 @@
   stroke-dasharray: 5 3;
 }
 
-:global([data-theme="modern-light"]) .fretboard-note.chord-tone-outside-scale :is(circle, rect, polygon) {
-  fill: var(--fretboard-note-chord-tone-outside-fill);
-}
 .fretboard-note.chord-tone-outside-scale text {
   opacity: 0.9;
 }
@@ -198,10 +171,6 @@
   stroke-width: 2.8;
 }
 
-:global([data-theme="modern-light"]) .fretboard-note.chord-root[data-note-tension] rect:last-of-type {
-  fill: var(--note-ring-tonic);
-}
-
 /* Lens emphasis selectors */
 [data-practice-lens="guide-tones"] .fretboard-note[data-note-guide-tone] :is(circle, rect, polygon) {
   stroke-width: 3.8;
@@ -209,9 +178,6 @@
   stroke: var(--neon-orange);
 }
 
-:global([data-theme="modern-light"]) [data-practice-lens="guide-tones"] .fretboard-note[data-note-guide-tone] :is(circle, rect, polygon) {
-  fill: var(--fretboard-guide-tones-emphasis-fill);
-}
 [data-practice-lens="guide-tones"] .fretboard-note[data-note-guide-tone] {
   filter: var(--fretboard-svg-glow-orange-url);
 }
@@ -224,12 +190,6 @@
   stroke: rgb(200 110 40);
 }
 
-:global([data-theme="modern-light"]) [data-practice-lens="guide-tones"] .fretboard-note.chord-root:not([data-note-guide-tone]) rect:last-of-type,
-:global([data-theme="modern-light"]) [data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]) :is(circle, rect, polygon),
-:global([data-theme="modern-light"]) [data-practice-lens="guide-tones"] .fretboard-note.note-diatonic-chord:not([data-note-guide-tone]) :is(circle, rect, polygon) {
-  fill: var(--fretboard-guide-tones-deemphasis-fill);
-  stroke: var(--fretboard-guide-tones-deemphasis-stroke);
-}
 [data-practice-lens="guide-tones"] .fretboard-note.chord-root:not([data-note-guide-tone]),
 [data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]),
 [data-practice-lens="guide-tones"] .fretboard-note.note-diatonic-chord:not([data-note-guide-tone]) {
@@ -242,10 +202,6 @@
   fill: var(--fretboard-note-fill-deemphasis-violet);
 }
 
-:global([data-theme="modern-light"]) [data-practice-lens="guide-tones"] .fretboard-note.color-tone :is(circle, rect, polygon) {
-  stroke: var(--fretboard-guide-tones-color-tone-stroke);
-  fill: var(--fretboard-guide-tones-color-tone-fill);
-}
 [data-practice-lens="guide-tones"] .fretboard-note.color-tone {
   filter: none;
   opacity: 0.55;
@@ -258,9 +214,6 @@
   stroke-width: 3.8;
 }
 
-:global([data-theme="modern-light"]) [data-practice-lens="tension"] .fretboard-note.chord-tone-outside-scale :is(circle, rect, polygon) {
-  fill: var(--fretboard-tension-emphasis-fill);
-}
 [data-practice-lens="tension"] .fretboard-note.chord-tone-outside-scale {
   filter: var(--fretboard-svg-glow-orange-url);
 }
@@ -272,20 +225,12 @@
   stroke-width: 3.8;
 }
 
-:global([data-theme="modern-light"]) [data-practice-lens="tension"] .fretboard-note.chord-root[data-note-tension] rect:last-of-type {
-  fill: var(--fretboard-tension-emphasis-fill);
-}
-
 [data-practice-lens="tension"] .fretboard-note.chord-root:not([data-note-tension]) rect:last-of-type {
   stroke-width: 1.8;
   fill: var(--fretboard-note-fill-chord-root);
   stroke: rgb(255 154 77);
 }
 
-:global([data-theme="modern-light"]) [data-practice-lens="tension"] .fretboard-note.chord-root:not([data-note-tension]) rect:last-of-type {
-  fill: var(--fretboard-tension-deemphasis-fill);
-  stroke: var(--fretboard-tension-deemphasis-stroke);
-}
 [data-practice-lens="tension"] .fretboard-note.chord-root:not([data-note-tension]) {
   filter: none;
   opacity: 0.65;
@@ -298,11 +243,6 @@
   stroke: rgb(200 110 40);
 }
 
-:global([data-theme="modern-light"]) [data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale :is(circle, rect, polygon),
-:global([data-theme="modern-light"]) [data-practice-lens="tension"] .fretboard-note.note-diatonic-chord :is(circle, rect, polygon) {
-  fill: var(--fretboard-tension-chord-tone-fill);
-  stroke: var(--fretboard-tension-chord-tone-stroke);
-}
 [data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale,
 [data-practice-lens="tension"] .fretboard-note.note-diatonic-chord {
   filter: none;
@@ -314,10 +254,6 @@
   fill: var(--fretboard-note-fill-deemphasis-violet);
 }
 
-:global([data-theme="modern-light"]) [data-practice-lens="tension"] .fretboard-note.color-tone :is(circle, rect, polygon) {
-  stroke: var(--fretboard-tension-color-tone-stroke);
-  fill: var(--fretboard-tension-color-tone-fill);
-}
 [data-practice-lens="tension"] .fretboard-note.color-tone {
   filter: none;
   opacity: 0.55;

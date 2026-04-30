@@ -1,0 +1,250 @@
+{
+  "requirement": "Improve light mode colors only, keeping the layout and component structure intact. Goals: warmer accents including logo/brandmark, restore hollow fretboard note bubbles in light mode, add a restrained warm background gradient, improve inlay visibility, and push the fretboard toward a more believable maple look without regressing dark mode.",
+  "repo": {
+    "name": "fretboard-app",
+    "original_repo": "/Users/isaaccocar/repos/fretboard-app",
+    "base_branch": "main",
+    "work_ref": "light-mode-warm-pass",
+    "package_manager": "npm"
+  },
+  "intake": {
+    "user_preferences_captured_early": {
+      "base_branch_preference": "main",
+      "worktrees_preference": false,
+      "dispatch_tool_preference": "gemini",
+      "sequential_preference": true,
+      "single_pr_preference": true,
+      "high_risk_model_preference": "gemini-3.1-pro-preview"
+    }
+  },
+  "r1": {
+    "repo_shape": "React 19 + TypeScript + Vite app with theme tokens in src/styles, SVG-heavy fretboard rendering in src/components/FretboardSVG, branding split across CSS and SVG components, and Playwright visual regression coverage for full app, components, mobile, overlays, and fretboard-only renders.",
+    "relevant_modules": [
+      "src/styles/themes.css",
+      "src/styles/semantic.css",
+      "src/styles/App.css",
+      "src/components/FretboardSVG/FretboardSVG.module.css",
+      "src/components/FretboardSVG/FretboardDefs.tsx",
+      "src/components/FretboardSVG/FretboardBackground.tsx",
+      "src/components/FretboardSVG/hooks/useWoodGrainTexture.ts",
+      "src/components/AppHeader/AppHeader.module.css",
+      "src/components/BrandMark/BrandMark.tsx",
+      "src/components/FretFlowWordmark/FretFlowWordmark.tsx",
+      "src/core/degrees.ts",
+      "public/favicon.svg",
+      "docs/light-mode-audit-2026-04-30.md",
+      "docs/light-mode-next-step-prompt-2026-04-30.md"
+    ],
+    "tests_scripts": [
+      "Package manager: npm via package-lock.json",
+      "npm run lint",
+      "npm run test",
+      "npm run test:e2e",
+      "npm run test:visual",
+      "e2e/theme-contract.spec.ts",
+      "e2e/fretboard-svg.visual.spec.ts",
+      "e2e/app-components.visual.spec.ts",
+      "e2e/app-layout.visual.spec.ts",
+      "e2e/app-mobile.visual.spec.ts",
+      "e2e/app-overlays.visual.spec.ts"
+    ],
+    "local_instructions": [
+      "Use conventional commits and conventional PR titles.",
+      "R1 must stay in the original checkout and remain read-only.",
+      "The current branch is main tracking origin/main.",
+      "The working tree is not clean because docs/ is currently untracked."
+    ],
+    "likely_write_scopes": [
+      "Theme token spine in src/styles/themes.css and src/styles/semantic.css",
+      "App background consumer in src/styles/App.css",
+      "Light-mode fretboard note styling in src/components/FretboardSVG/FretboardSVG.module.css",
+      "Fretboard material and filter tuning in src/components/FretboardSVG/FretboardDefs.tsx, src/components/FretboardSVG/FretboardBackground.tsx, and src/components/FretboardSVG/hooks/useWoodGrainTexture.ts",
+      "Brand assets in src/components/BrandMark/BrandMark.tsx, src/components/FretFlowWordmark/FretFlowWordmark.tsx, src/components/AppHeader/AppHeader.module.css, and public/favicon.svg",
+      "Light-mode contract and visual expectations in e2e/theme-contract.spec.ts and light-mode snapshot files"
+    ],
+    "conflict_risks": [
+      "src/styles/themes.css and src/styles/semantic.css are shared accent fan-out points for chips, controls, circle of fifths, and fretboard notes.",
+      "Light-mode fretboard notes are solid by design through both token values and explicit CSS selectors; changing only one layer will not restore hollow notes.",
+      "Branding is split between token-driven header text and hardcoded SVG fills, so partial token changes will produce mismatched brand surfaces.",
+      "Degree-color mode is a separate hardcoded path in src/core/degrees.ts and special fretboard selectors, making it easy to accidentally change theory-color behavior while fixing standard light mode.",
+      "Wood-grain turbulence and texture settings are duplicated across SVG defs and the raster texture hook, so one-sided tuning can create inconsistent maple rendering."
+    ],
+    "worktree_signals": [
+      "The implementation appears to have 3-4 tightly coupled write areas but they overlap heavily through shared theme tokens and fretboard styling.",
+      "Parallelism potential is low because theme token changes, fretboard note styling, and brand updates all depend on the same light-mode palette decisions.",
+      "A sequential plan is a better fit than parallel worktrees for this requirement.",
+      "The current working tree already contains untracked docs/, which slightly increases coordination overhead if additional checkouts were introduced."
+    ],
+    "unknowns": [
+      "Whether degree-color mode should stay completely independent from the warmer light-mode pass.",
+      "Whether brand SVG assets should become token-driven/adaptive or simply be retuned with new light-specific hardcoded values.",
+      "Whether warmer light-mode accents should intentionally propagate to shared controls/chips/circle surfaces or stay as localized as possible."
+    ]
+  },
+  "alignment": {
+    "assumptions": [
+      "Dark mode should remain behaviorally unchanged and any shared-token refactor should preserve its current output.",
+      "This work should stay color-only and should not change layout, component structure, sizing, or interaction patterns.",
+      "The existing audit document is the primary source of grounded scope for the light-mode pass.",
+      "Because write scopes overlap heavily, the likely execution shape is sequential rather than parallel."
+    ],
+    "answers": {
+      "degree_mode_scope": "Warm degree-color mode too",
+      "brand_asset_strategy": "Make SVG branding light-aware",
+      "shared_accent_scope": "Propagate through shared light tokens"
+    },
+    "questions": [
+      {
+        "id": "degree_mode_scope",
+        "header": "Degree Mode",
+        "question": "Should the warmer light-mode pass include degree-color mode, or should that path stay independent?",
+        "why": "Degree-color mode is hardcoded separately and broadening into it increases both scope and regression risk.",
+        "blocking": "Yes",
+        "options": [
+          {
+            "label": "Leave degree-color mode unchanged",
+            "description": "Warm standard light mode only and preserve the current theory-color palette path.",
+            "recommended": true
+          },
+          {
+            "label": "Warm degree-color mode too",
+            "description": "Harmonize the degree-color path with the new light-mode direction, accepting broader design and test churn."
+          }
+        ]
+      },
+      {
+        "id": "brand_asset_strategy",
+        "header": "Branding",
+        "question": "How should the logo and wordmark be updated for light mode?",
+        "why": "The header text already uses theme tokens, but the SVG brand assets still hardcode neon colors.",
+        "blocking": "Yes",
+        "options": [
+          {
+            "label": "Make SVG branding light-aware",
+            "description": "Route the brandmark and wordmark through theme-aware colors so light and dark stay coordinated long term.",
+            "recommended": true
+          },
+          {
+            "label": "Retune SVG hardcodes only",
+            "description": "Keep the current SVG structure and just replace the hardcoded light-facing colors with warmer values."
+          }
+        ]
+      },
+      {
+        "id": "shared_accent_scope",
+        "header": "Accent Scope",
+        "question": "Should the warmer palette propagate through shared light-mode accent surfaces, or stay as localized as possible?",
+        "why": "The current accent tokens feed chips, selected controls, circle highlights, and fretboard note roles from a shared semantic layer.",
+        "blocking": "Yes",
+        "options": [
+          {
+            "label": "Propagate through shared light tokens",
+            "description": "Use the token spine so light-mode controls and shared accents warm up together with the shell and fretboard.",
+            "recommended": true
+          },
+          {
+            "label": "Localize the warm pass",
+            "description": "Keep shared control accents closer to their current palette and focus the warmer shift on shell, brand, and fretboard surfaces."
+          },
+          {
+            "label": "Propagate selectively",
+            "description": "Warm the shell, fretboard, and brand system globally, but preserve a few shared accent surfaces if they become muddy or too low-contrast."
+          }
+        ]
+      }
+    ]
+  },
+  "acceptance_criteria": [
+    "Light mode uses a warmer overall shell, surface, and accent palette without changing layout or component structure.",
+    "The logo, wordmark, and related branding surfaces align with the warmer light-mode palette and remain coherent with dark mode.",
+    "Standard light-mode fretboard notes return to ring-style or hollow bubbles instead of solid fills.",
+    "Degree-color mode is intentionally warmed as part of this pass rather than left as an untouched theory-color exception.",
+    "Light mode shows a visible but restrained warm app background gradient.",
+    "The fretboard reads more like maple in light mode, with more visible inlays and tuned grain, vignette, and texture treatment.",
+    "Dark mode behavior remains unchanged unless a shared-token refactor forces a no-op structural update.",
+    "Relevant light-mode contract tests and visual snapshots are updated intentionally."
+  ],
+  "execution_strategy": {
+    "shape": "single sequential chunk",
+    "single_pr": true,
+    "rationale": "Theme tokens, branding, fretboard note styling, degree-color mode, and maple-material tuning all overlap through shared files and semantic color contracts, so a one-branch sequential implementation is safer than splitting ownership."
+  },
+  "decisions": {
+    "dispatch_tool": "gemini",
+    "worktrees": false,
+    "sequential": true,
+    "single_pr": true,
+    "preferred_base_checkout": "main",
+    "gemini_model_policy": "use gemini-3.1-pro-preview for high-risk work; use Gemini auto only when the task risk is lower",
+    "cr_review": true,
+    "gemini_yolo": true,
+    "claude_skip_permissions": false
+  },
+  "chunks": [
+    {
+      "id": "T1",
+      "name": "Warm light mode palette pass",
+      "goal": "Implement the warmer light-mode pass across shared tokens, branding, fretboard note styling, degree-color mode, maple fretboard materials, and the affected tests and light-mode snapshots in one sequential branch and PR.",
+      "risk": "high",
+      "model": "gemini-3.1-pro-preview",
+      "effort": "high",
+      "branch": "light-mode-warm-pass/feat-light-mode-palette",
+      "pr_base": "main",
+      "write_scope": [
+        "src/styles/themes.css",
+        "src/styles/semantic.css",
+        "src/styles/App.css",
+        "src/components/AppHeader/AppHeader.module.css",
+        "src/components/BrandMark/BrandMark.tsx",
+        "src/components/FretFlowWordmark/FretFlowWordmark.tsx",
+        "src/components/FretboardSVG/FretboardSVG.module.css",
+        "src/components/FretboardSVG/FretboardDefs.tsx",
+        "src/components/FretboardSVG/FretboardBackground.tsx",
+        "src/components/FretboardSVG/hooks/useWoodGrainTexture.ts",
+        "src/core/degrees.ts",
+        "public/favicon.svg",
+        "e2e/theme-contract.spec.ts",
+        "e2e/fretboard-svg.visual.spec.ts-snapshots",
+        "e2e/app-components.visual.spec.ts-snapshots",
+        "e2e/app-layout.visual.spec.ts-snapshots",
+        "e2e/app-mobile.visual.spec.ts-snapshots",
+        "e2e/app-overlays.visual.spec.ts-snapshots"
+      ],
+      "read_context": [
+        "docs/light-mode-audit-2026-04-30.md",
+        "docs/light-mode-next-step-prompt-2026-04-30.md",
+        "src/styles/themes.css",
+        "src/styles/semantic.css",
+        "src/components/FretboardSVG/FretboardSVG.module.css",
+        "src/components/FretboardSVG/FretboardDefs.tsx",
+        "src/components/FretboardSVG/FretboardBackground.tsx",
+        "src/components/FretboardSVG/hooks/useWoodGrainTexture.ts",
+        "src/components/BrandMark/BrandMark.tsx",
+        "src/components/FretFlowWordmark/FretFlowWordmark.tsx",
+        "src/core/degrees.ts",
+        "e2e/theme-contract.spec.ts",
+        "e2e/fretboard-svg.visual.spec.ts",
+        "e2e/app-components.visual.spec.ts",
+        "e2e/app-layout.visual.spec.ts",
+        "e2e/app-mobile.visual.spec.ts",
+        "e2e/app-overlays.visual.spec.ts"
+      ],
+      "implementation": [
+        "Retune the light-mode shell, surface, and accent token spine toward a warmer palette while preserving dark mode behavior.",
+        "Make the light-mode brandmark and wordmark theme-aware so they consume the warmer palette instead of hardcoded neon colors.",
+        "Restore hollow ring-style note bubbles for standard light mode and warm the degree-color mode path intentionally rather than leaving it untouched.",
+        "Tune the light-mode fretboard wood, grain, vignette, and inlay treatment toward a clearer maple read without changing geometry or structure.",
+        "Update the light-mode contract expectations and refresh only the affected light-mode visual snapshots."
+      ],
+      "verification": [
+        "npm run lint",
+        "npm run test",
+        "npm run test:e2e -- e2e/theme-contract.spec.ts",
+        "npm run test:visual"
+      ],
+      "commit": "feat: warm light mode palette and fretboard materials",
+      "pr_title": "feat: warm light mode palette and fretboard materials",
+      "pr_body": "Summary:\\n- warm the light-mode token spine and app gradient\\n- make branding light-aware and restore hollow fretboard notes\\n- tune maple fretboard materials and update affected light-mode tests/snapshots\\n\\nVerification:\\n- npm run lint\\n- npm run test\\n- npm run test:e2e -- e2e/theme-contract.spec.ts\\n- npm run test:visual\\n\\nRisks:\\n- shared semantic accent tokens also affect chips, controls, and the circle of fifths\\n- degree-color mode is intentionally included in this pass\\n- visual snapshot churn is expected in light mode only"
+    }
+  ]
+}
