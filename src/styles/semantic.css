@@ -176,8 +176,8 @@
   --fretboard-note-fill-tension-emph:   #5a1c00;
   --fretboard-note-fill-tension-strong: #731e00;
   --fretboard-note-fill-guide-emph:     #5f3408;
-  --fretboard-note-fill-deemph-chord:   #141e28;
-  --fretboard-note-fill-deemph-violet:  #1e1237;
+  --fretboard-note-fill-deemphasis-chord:  #141e28;
+  --fretboard-note-fill-deemphasis-violet: #1e1237;
 
   /* Fretboard accessibility chrome — interactive UI layer, not SVG artwork */
   --fretboard-a11y-hover-bg: rgb(255 255 255 / 0.15);
