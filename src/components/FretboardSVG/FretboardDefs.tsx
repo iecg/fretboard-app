@@ -59,6 +59,36 @@ export const FretboardDefs = memo(({
         />
         <feComposite in="grainTinted" in2="SourceGraphic" operator="in" />
       </filter>
+      {/* Light-mode wood-grain filter — structurally different from dark:
+          baseFrequency 0.018 0.72 (coarser horizontal, flatter vertical = broader lighter-wood grain)
+          numOctaves 3 (fewer fine details, avoids muslin look on warm light gradient)
+          seed 7 (distinct noise realization from dark seed=3)
+          feColorMatrix: rgba(0.28,0.15,0.06,0.35) — subtler alpha to let light gradient show through */}
+      <filter
+        id={svgDefId("wood-grain-filter-light")}
+        x="0%"
+        y="0%"
+        width="100%"
+        height="100%"
+      >
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.018 0.72"
+          numOctaves="3"
+          seed="7"
+          result="noise"
+        />
+        <feColorMatrix
+          in="noise"
+          type="matrix"
+          values="0 0 0 0 0.28
+                  0 0 0 0 0.15
+                  0 0 0 0 0.06
+                  0 0 0 0.35 0"
+          result="grainTinted"
+        />
+        <feComposite in="grainTinted" in2="SourceGraphic" operator="in" />
+      </filter>
       <filter
         id={svgDefId("wood-highlights-filter")}
         x="0%"
