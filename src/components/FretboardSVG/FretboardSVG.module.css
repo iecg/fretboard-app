@@ -266,6 +266,11 @@
   fill: var(--degree-color, #141e28);
 }
 
+:global([data-theme="modern-light"]) .fretboard-board[data-degree-colors="true"] .fretboard-note[data-scale-degree] text {
+  fill: #ffffff;
+  stroke: rgb(0 0 0 / 0.45);
+}
+
 /* Accessibility layer */
 .fretboard-a11y-layer {
   /* Positioned via inline styles in TSX */

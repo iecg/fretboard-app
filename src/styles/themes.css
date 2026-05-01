@@ -103,39 +103,45 @@
   --disabled-opacity: 0.4;
 
   /* Fretboard wood — warm maple */
-  --fretboard-wood-top: #fde8c4;
-  --fretboard-wood-mid: #f5d4a0;
-  --fretboard-wood-bottom: #e8c082;
-  --fretboard-wood-grain: rgba(120, 70, 30, 0.12);
-  --fret-wire-dark: #43302b;
-  --fret-wire-medium: #7a5c53;
-  --fret-wire-bright: #b5988e;
-  --fret-wire-highlight: rgba(255, 255, 255, 0.2);
+  --fretboard-wood-top: #fbe6c6;
+  --fretboard-wood-mid: #f1c38e;
+  --fretboard-wood-bottom: #e0ab68;
+  --fretboard-wood-grain: rgba(120, 70, 30, 0.15);
+  --fret-wire-dark: #4a5058;
+  --fret-wire-medium: #a6afbc;
+  --fret-wire-bright: #ebeff5;
+  --fret-wire-highlight: rgb(255 255 255 / 0.25);
+  --fret-wire-shadow: rgb(0 0 0 / 0.15);
   --fret-marker: rgba(60, 30, 10, 0.15);
   --fret-nut-bg: #f8f4e8;
   --fret-nut-wire: #475569;
   --fretboard-border: #9e633e;
 
-  /* String colors — charcoal slate */
-  --string-wire: #5c4d47;
-  --string-wire-bass: #382c28;
+  /* String colors — silver/white like dark mode */
+  --string-wire: #e4e8ee;
+  --string-wire-bass: #c6ccd2;
 
-  /* Inlays */
-  --inlay-dot: rgba(0, 0, 0, 0.1);
-  --inlay-dot-12: rgba(0, 0, 0, 0.15);
-  --inlay-pearl-stop1: #2e1d18;
-  --inlay-pearl-stop2: #1f120e;
-  --inlay-pearl-stop3: #0a0503;
-  --inlay-pearl-opacity1: 0.45;
-  --inlay-pearl-opacity2: 0.35;
-  --inlay-pearl-opacity3: 0.25;
+  /* Nut gradient — bone white */
+  --nut-stop-1: #ffffff;
+  --nut-stop-2: #fcfbf8;
+  --nut-stop-3: #f8f4e8;
+  --nut-stop-4: #f3ecd8;
+
+  /* Inlays — inherit pearl defaults from tokens.css by not redefining them */
   --nut: #f8f4e8;
   --fretboard-edge-shadow: inset 0 0 15px rgba(0, 0, 0, 0.1);
   --fretboard-top-edge-color: rgba(255, 255, 255, 0.4);
   --fretboard-bottom-edge-color: rgba(0, 0, 0, 0.15);
   --fretboard-nut-slot-color: rgba(0, 0, 0, 0.2);
-  --fretboard-headstock-bg: var(--bg-color);
+  --fretboard-headstock-bg: var(--fretboard-wood-mid);
   --fretboard-glow-opacity: 0;
+
+  /* CAGED shapes — boost visibility for light mode */
+  --caged-e-bg: rgba(239, 68, 68, 0.35);
+  --caged-d-bg: rgba(234, 179, 8, 0.35);
+  --caged-c-bg: rgba(34, 197, 94, 0.35);
+  --caged-a-bg: rgba(59, 130, 246, 0.35);
+  --caged-g-bg: rgba(168, 85, 247, 0.35);
 
   /* Note colors — primary and secondary note emphasis */
   --note-blue: #0891b2;
@@ -169,7 +175,7 @@
   --selected-highlight: rgb(255 255 255 / 0.15); /* Backward compatibility alias */
 
   /* Fretboard accessibility chrome — light-mode override */
-  --fretboard-a11y-hover-bg: rgb(0 0 0 / 0.05);
+  --fretboard-a11y-hover-bg: rgb(0 0 0 / 0.1);
 
   /* Fretboard SVG — light-mode rings, fills, and number color */
   --fretboard-board-shadow: rgb(0 0 0 / 0.15);
@@ -208,3 +214,4 @@
      --note-blue, --note-blue-glow, --shadow-note-root, --shadow-note-active,
      --shadow-ping-start, --shadow-ping-end */
 }
+

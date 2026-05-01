@@ -116,10 +116,10 @@ export const FretboardDefs = memo(({
         <feGaussianBlur stdDeviation="0.75" />
       </filter>
       <linearGradient id={svgDefId("nut-material")} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#ffffff" />
-        <stop offset="35%" stopColor="#f4f4f1" />
-        <stop offset="75%" stopColor="#d8d4cb" />
-        <stop offset="100%" stopColor="#a9a59b" />
+        <stop offset="0%" stopColor="var(--nut-stop-1, #ffffff)" />
+        <stop offset="35%" stopColor="var(--nut-stop-2, #f4f4f1)" />
+        <stop offset="75%" stopColor="var(--nut-stop-3, #d8d4cb)" />
+        <stop offset="100%" stopColor="var(--nut-stop-4, #a9a59b)" />
       </linearGradient>
       <linearGradient
         id={svgDefId("fret-wire-cylinder")}

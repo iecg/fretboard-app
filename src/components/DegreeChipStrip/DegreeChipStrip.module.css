@@ -271,6 +271,18 @@
   --color-note-inner-fill: #ffffff;
 }
 
+:global([data-theme="modern-light"]) .degree-chip-item[data-in-scale='true'] .degree-chip,
+:global([data-theme="modern-light"]) .degree-chip-item[data-is-tonic='true'] .degree-chip,
+:global([data-theme="modern-light"]) .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true'] .degree-chip,
+:global([data-theme="modern-light"]) .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true'][data-is-color-note='true'] .degree-chip {
+  box-shadow: none;
+}
+
+:global([data-theme="modern-light"]) .degree-chip-item[data-is-color-note='true'],
+:global([data-theme="modern-light"]) .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true'][data-is-color-note='true'] {
+  filter: none;
+}
+
 
 /* Compact variant for secondary surfaces. Out-specifies layout-tier rules. */
 .degree-chip-strip.degree-chip-strip--compact {
