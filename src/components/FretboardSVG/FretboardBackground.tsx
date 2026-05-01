@@ -1,6 +1,7 @@
 import { memo, type ReactNode } from "react";
 import { clsx } from "clsx";
 import { NUT_WIDTH } from "../../core/constants";
+import { useResolvedTheme } from "../../hooks/useResolvedTheme";
 import { useWoodGrainTexture } from "./hooks/useWoodGrainTexture";
 import styles from "./FretboardSVG.module.css";
 
@@ -32,7 +33,10 @@ export const FretboardBackground = memo(
     cornerR,
     inlays,
   }: FretboardBackgroundProps) => {
-    const woodGrainDataUrl = useWoodGrainTexture(neckWidthPx, neckHeight);
+    const theme = useResolvedTheme();
+    const woodGrainFilterId =
+      theme === "modern-light" ? "wood-grain-filter-light" : "wood-grain-filter";
+    const woodGrainDataUrl = useWoodGrainTexture(neckWidthPx, neckHeight, theme);
 
     const woodStack = (
       <>
@@ -60,7 +64,7 @@ export const FretboardBackground = memo(
               width={neckWidthPx}
               height={neckHeight}
               fill="#000"
-              filter={svgDefUrl("wood-grain-filter")}
+              filter={svgDefUrl(woodGrainFilterId)}
               opacity={0.92}
             />
             <rect
