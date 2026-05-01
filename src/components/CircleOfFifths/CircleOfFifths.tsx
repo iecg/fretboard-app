@@ -208,21 +208,18 @@ export const CircleOfFifths = memo(function CircleOfFifths({
             );
           })}
 
-          {/* Duplicate active slice on top to prevent adjacent strokes from overlapping its border */}
-          {(() => {
-            const activeIndex = CIRCLE_OF_FIFTHS.indexOf(rootNote);
-            if (activeIndex >= 0) {
-              return (
-                <use
-                  key="active-slice-overlay"
-                  href={`#slice-${svgId}-${activeIndex}`}
-                  style={{ pointerEvents: "none" }}
-                  aria-hidden="true"
-                />
-              );
-            }
-            return null;
-          })()}
+          {/* Active-slice outline — standalone path rendered last so all four edges
+              are unobscured. Uses same slicePath(activeIndex) as the base slice so
+              geometry is identical. Carries .circle-slice.active classes so the
+              existing CSS stroke-width rule fires on a real element (not a shadow tree). */}
+          {CIRCLE_OF_FIFTHS.indexOf(rootNote) >= 0 && (
+            <path
+              d={slicePath(CIRCLE_OF_FIFTHS.indexOf(rootNote))}
+              className={clsx(styles["circle-slice"], styles["active"])}
+              pointerEvents="none"
+              aria-hidden="true"
+            />
+          )}
 
           {/* Focus ring for keyboard nav (WCAG 2.4.7) */}
           {keyboardFocused && focusedIndex >= 0 && focusedIndex < CIRCLE_OF_FIFTHS.length && (
