@@ -139,26 +139,12 @@
   --nut-stop-3: #f8f4e8;
   --nut-stop-4: #f3ecd8;
 
-  /* Inlays — warm mother-of-pearl on light wood
-   * dot/dot-12: walnut rim stroke; alpha raised from 0.18/0.28 so the ring
-   *   actually reads as inlaid (anchors pearl into the wood surface).
-   * stop2-offset: tightened 55%→38% so the bright warm-white sheen occupies
-   *   a smaller spot (specular highlight) rather than a flat fill.
-   * opacity1/2/3: raised from 0.98/0.88/0.75 to 1.0/0.96/0.88 so the pearl
-   *   gradient reads as distinct opaque material against the bright maple.
-   * shadow-flood: warm dark-brown replaces pure black; opacity halved so the
-   *   drop shadow reads as inset recess, not a punched-in crater. */
-  --inlay-dot: rgba(60, 30, 10, 0.35);
-  --inlay-dot-12: rgba(60, 30, 10, 0.50);
-  --inlay-pearl-stop1: rgb(255, 250, 238);
-  --inlay-pearl-stop2: rgb(222, 202, 168);
-  --inlay-pearl-stop2-offset: 38%;
-  --inlay-pearl-stop3: rgb(148, 125, 88);
-  --inlay-pearl-opacity1: 1.0;
-  --inlay-pearl-opacity2: 0.96;
-  --inlay-pearl-opacity3: 0.88;
-  --inlay-shadow-flood: rgb(40, 18, 5);
-  --inlay-shadow-opacity: 0.30;
+  /* Inlays — warm mother-of-pearl on light wood */
+  --inlay-dot: rgba(60, 30, 10, 0.18);
+  --inlay-dot-12: rgba(60, 30, 10, 0.28);
+  --inlay-pearl-stop1: rgb(250, 245, 230);
+  --inlay-pearl-stop2: rgb(220, 200, 165);
+  --inlay-pearl-stop3: rgb(150, 130, 95);
 
   --nut: #f8f4e8;
   --fretboard-edge-shadow: inset 0 0 15px rgba(0, 0, 0, 0.1);

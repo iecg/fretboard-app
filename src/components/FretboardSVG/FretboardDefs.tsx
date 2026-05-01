@@ -169,7 +169,7 @@ export const FretboardDefs = memo(({
           stopOpacity="var(--inlay-pearl-opacity1)"
         />
         <stop
-          offset="var(--inlay-pearl-stop2-offset)"
+          offset="55%"
           stopColor="var(--inlay-pearl-stop2)"
           stopOpacity="var(--inlay-pearl-opacity2)"
         />
@@ -190,8 +190,8 @@ export const FretboardDefs = memo(({
           dx="0"
           dy="0.6"
           stdDeviation="0.9"
-          floodColor="var(--inlay-shadow-flood)"
-          floodOpacity="var(--inlay-shadow-opacity)"
+          floodColor="#000"
+          floodOpacity="0.6"
         />
       </filter>
       <filter
