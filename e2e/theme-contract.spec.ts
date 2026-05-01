@@ -87,13 +87,13 @@ test.describe("Theme Contract", () => {
       getComputedStyle(document.documentElement).getPropertyValue("--token-chip-active-bg").trim()
     );
     // #0891b2
-    expect(activeBg.toLowerCase()).toBe("#b45309");
+    expect(activeBg.toLowerCase()).toBe("#0891b2");
 
     const tonicBg = await page.evaluate(() => 
       getComputedStyle(document.documentElement).getPropertyValue("--token-chip-tonic-bg").trim()
     );
     // #ea580c
-    expect(tonicBg.toLowerCase()).toBe("#be123c");
+    expect(tonicBg.toLowerCase()).toBe("#ea580c");
   });
 
   test("light shell vars do not resolve to dark navy defaults", async ({ page }) => {
@@ -129,7 +129,7 @@ test.describe("Theme Contract", () => {
     });
     
     // modern-light: --practice-bar-fill = --surface-strip = --surface-card-top -> rgb(250, 251, 253)
-    expect(styles.backgroundColor.replace(/\s/g, "")).toBe("rgb(255,255,255)");
+    expect(styles.backgroundColor.replace(/\s/g, "")).toBe("rgb(253,253,252)");
     // text-main: #0f172a -> rgb(15, 23, 42)
     expect(styles.color.replace(/\s/g, "")).toBe("rgb(15,23,42)");
   });
@@ -160,8 +160,8 @@ test.describe("Theme Contract", () => {
       return { color: buttonColor, indicator };
     });
     // modern-light: --nav-active-fg = --accent-primary = #0891b2 -> rgb(8, 145, 178)
-    expect(lightStyles.color.replace(/\s/g, "")).toBe("rgb(180,83,9)");
-    expect(lightStyles.indicator.replace(/\s/g, "")).toBe("rgb(180,83,9)");
+    expect(lightStyles.color.replace(/\s/g, "")).toBe("rgb(8,145,178)");
+    expect(lightStyles.indicator.replace(/\s/g, "")).toBe("rgb(8,145,178)");
   });
 
   test("fretboard notes and summary chips have coherent role colors in light mode", async ({ page }) => {
@@ -172,13 +172,13 @@ test.describe("Theme Contract", () => {
     await expect(activeChip).toBeVisible();
     const activeChipBorder = await activeChip.evaluate((el) => getComputedStyle(el).borderColor);
     // app-cyan: rgb(8, 145, 178)
-    expect(activeChipBorder.replace(/\s/g, "")).toBe("rgb(180,83,9)");
+    expect(activeChipBorder.replace(/\s/g, "")).toBe("rgb(8,145,178)");
 
     const tonicChip = page.locator('li[data-is-tonic="true"] button').first();
     await expect(tonicChip).toBeVisible();
     const tonicChipBorder = await tonicChip.evaluate((el) => getComputedStyle(el).borderColor);
     // neon-orange: #ea580c -> rgb(234, 88, 12)
-    expect(tonicChipBorder.replace(/\s/g, "")).toBe("rgb(190,18,60)");
+    expect(tonicChipBorder.replace(/\s/g, "")).toBe("rgb(234,88,12)");
 
     // Check fretboard notes - they use stroke for the ring. 
     // The role class is on the g element, so we look for circle inside.
@@ -186,7 +186,7 @@ test.describe("Theme Contract", () => {
     await expect(tonicNote).toBeVisible();
     const tonicNoteStroke = await tonicNote.evaluate((el) => getComputedStyle(el).stroke);
     // --note-ring-tonic: var(--neon-orange) -> rgb(234, 88, 12)
-    expect(tonicNoteStroke.replace(/\s/g, "")).toBe("rgb(190,18,60)");
+    expect(tonicNoteStroke.replace(/\s/g, "")).toBe("rgb(234,88,12)");
   });
 
   test("modern-dark should use dark wood tokens", async ({ page }) => {
@@ -285,7 +285,7 @@ test.describe("Theme Contract", () => {
     expect(styles.backgroundImage).toBe('none');
     
     // Should be the app cyan: #0891b2 -> rgb(8, 145, 178)
-    expect(styles.backgroundColor.replace(/\s/g, "")).toBe("rgb(180,83,9)");
+    expect(styles.backgroundColor.replace(/\s/g, "")).toBe("rgb(8,145,178)");
   });
 
   test("Circle of Fifths should use light colors in light mode", async ({ page }) => {
@@ -452,7 +452,7 @@ test.describe("Theme Contract", () => {
 
           if (theme === "light") {
             expect(hoverStyles.color.replace(/\s/g, "")).toBe("rgb(15,23,42)");
-            expect(hoverStyles.borderColor.replace(/\s/g, "")).toBe("rgb(180,83,9)");
+            expect(hoverStyles.borderColor.replace(/\s/g, "")).toBe("rgb(8,145,178)");
           } else {
             expect(hoverStyles.color.replace(/\s/g, "")).toBe("rgb(255,255,255)");
             expect(isCyanLike(hoverStyles.borderColor)).toBe(true);
@@ -508,7 +508,7 @@ test.describe("Theme Contract", () => {
               isCyanLike(afterStyles.bg) || afterStyles.bgImg.includes("gradient"),
             ).toBe(true);
           } else {
-            expect(afterStyles.bg.replace(/\s/g, "")).toBe("rgb(232,228,223)");
+            expect(afterStyles.bg.replace(/\s/g, "")).toBe("rgb(227,222,215)");
           }
         });
 
@@ -594,7 +594,7 @@ test.describe("Theme Contract", () => {
           await shell.hover();
           const hoverBorder = await shell.evaluate((el) => getComputedStyle(el).borderColor);
           if (theme === "light") {
-            expect(hoverBorder.replace(/\s/g, "")).toBe("rgb(180,83,9)");
+            expect(hoverBorder.replace(/\s/g, "")).toBe("rgb(8,145,178)");
           } else {
             expect(isCyanLike(hoverBorder)).toBe(true);
           }
@@ -667,9 +667,9 @@ test.describe("Theme Contract", () => {
           } else {
             // In light mode, it should be a solid color change
             // light surface hover: --surface-highlight = #dde4ef -> rgb(221, 228, 239)
-            expect(afterStyles.bg.replace(/\s/g, "")).toBe("rgb(232,228,223)");
+            expect(afterStyles.bg.replace(/\s/g, "")).toBe("rgb(227,222,215)");
             // hover border: --surface-control-hover-border = app cyan = #0891b2 -> rgb(8, 145, 178)
-            expect(afterStyles.border.replace(/\s/g, "")).toBe("rgb(180,83,9)");
+            expect(afterStyles.border.replace(/\s/g, "")).toBe("rgb(8,145,178)");
           }
         });
 
@@ -732,7 +732,7 @@ test.describe("Theme Contract", () => {
       // Vite/lightning-css minifies `#ffffff` → `#fff` in production builds, so
       // canonicalize via colorToHex before comparing.
       expect(colorToHex(tokens.shell)).toBe("#fcfaf8");
-      expect(colorToHex(tokens.cardTop)).toBe("#ffffff");
+      expect(colorToHex(tokens.cardTop)).toBe("#fdfdfc");
       expect(colorToHex(tokens.nested)).toBe("#f8f6f4");
       expect(colorToHex(tokens.well)).toBe("#f0ece7");
       expect(colorToHex(tokens.float)).toBe("#ffffff");
@@ -809,7 +809,7 @@ test.describe("Theme Contract", () => {
 
       const bg = await card.evaluate((el) => getComputedStyle(el).backgroundColor);
       // surface-card-top = #fafbfd → rgb(250, 251, 253)
-      expect(bg.replace(/\s/g, "")).toBe("rgb(255,255,255)");
+      expect(bg.replace(/\s/g, "")).toBe("rgb(253,253,252)");
       // Verify it is NOT pure white — the card-top is intentionally near-white
       // expect(bg.replace(/\s/g, "")).not.toBe("rgb(255,255,255)"); // Removed because card-top is now white
     });
@@ -833,7 +833,7 @@ test.describe("Theme Contract", () => {
 
       const bg = await practiceBar.evaluate((el) => getComputedStyle(el).backgroundColor);
       // surface-strip = --surface-card-top → rgb(250, 251, 253)
-      expect(bg.replace(/\s/g, "")).toBe("rgb(255,255,255)");
+      expect(bg.replace(/\s/g, "")).toBe("rgb(253,253,252)");
       // Must not be pure white or the old f1f5f9 value
       // expect(bg.replace(/\s/g, "")).not.toBe("rgb(255,255,255)"); // Removed because card-top is now white
       expect(bg.replace(/\s/g, "")).not.toBe("rgb(241,245,249)");
@@ -850,7 +850,7 @@ test.describe("Theme Contract", () => {
       const practiceBg = await practiceBar.evaluate((el) => getComputedStyle(el).backgroundColor);
       const degreeBg = await degreeStrip.evaluate((el) => getComputedStyle(el).backgroundColor);
 
-      expect(practiceBg.replace(/\s/g, "")).toBe("rgb(255,255,255)");
+      expect(practiceBg.replace(/\s/g, "")).toBe("rgb(253,253,252)");
       expect(degreeBg.replace(/\s/g, "")).toBe(practiceBg.replace(/\s/g, ""));
     });
 
@@ -863,7 +863,7 @@ test.describe("Theme Contract", () => {
 
       const bg = await degreeStrip.evaluate((el) => getComputedStyle(el).backgroundColor);
       // strip-surface sets background via --strip-fill = --surface-strip = --surface-card-top
-      expect(bg.replace(/\s/g, "")).toBe("rgb(255,255,255)");
+      expect(bg.replace(/\s/g, "")).toBe("rgb(253,253,252)");
     });
 
     test("settings overlay uses surface-float (highest elevation) in light mode", async ({ page }) => {
@@ -921,7 +921,7 @@ test.describe("Theme Contract", () => {
 
       // Modal body uses --surface-panel = --surface-card-top = #fafbfd → rgb(250, 251, 253)
       const bodyBg = await modal.evaluate((el) => getComputedStyle(el).backgroundColor);
-      expect(bodyBg.replace(/\s/g, "")).toBe("rgb(255,255,255)");
+      expect(bodyBg.replace(/\s/g, "")).toBe("rgb(253,253,252)");
 
       // Modal header uses --surface-float (highest elevation) = #ffffff → rgb(255, 255, 255)
       const header = modal.locator('[class*="help-modal-header"]');
@@ -946,7 +946,7 @@ test.describe("Theme Contract", () => {
 
         if (theme === "light") {
           // light: --selected-bg = #0891b2 → rgb(8, 145, 178) — cyan solid
-          expect(styles.bg.replace(/\s/g, "")).toBe("rgb(180,83,9)");
+          expect(styles.bg.replace(/\s/g, "")).toBe("rgb(8,145,178)");
           // text on accent: white
           expect(styles.color.replace(/\s/g, "")).toBe("rgb(255,255,255)");
         } else {
@@ -1063,7 +1063,7 @@ test.describe("Theme Contract", () => {
       await expect(inScalePill).toBeVisible();
       const border = await inScalePill.evaluate((el) => getComputedStyle(el).borderColor);
       // --role-scale-border = --neon-cyan = #0891b2 → rgb(8, 145, 178)
-      expect(border.replace(/\s/g, "")).toBe("rgb(180,83,9)");
+      expect(border.replace(/\s/g, "")).toBe("rgb(8,145,178)");
     });
 
     test("practice pills render with role-chord-border for guide-tone notes in light mode", async ({ page }) => {
@@ -1075,7 +1075,7 @@ test.describe("Theme Contract", () => {
       await expect(guidePill).toBeVisible();
       const border = await guidePill.evaluate((el) => getComputedStyle(el).borderColor);
       // --role-chord-border = --neon-orange = #ea580c → rgb(234, 88, 12)
-      expect(border.replace(/\s/g, "")).toBe("rgb(190,18,60)");
+      expect(border.replace(/\s/g, "")).toBe("rgb(234,88,12)");
     });
 
     test("degree chips use role-scale-border for in-scale notes in light mode", async ({ page }) => {
@@ -1092,7 +1092,7 @@ test.describe("Theme Contract", () => {
       await expect(chip).toBeVisible();
       const border = await chip.evaluate((el) => getComputedStyle(el).borderColor);
       // --role-scale-border = --neon-cyan = #0891b2 → rgb(8, 145, 178)
-      expect(border.replace(/\s/g, "")).toBe("rgb(180,83,9)");
+      expect(border.replace(/\s/g, "")).toBe("rgb(8,145,178)");
     });
 
     test("degree chips use role-chord-border for tonic note in light mode", async ({ page }) => {
@@ -1108,7 +1108,7 @@ test.describe("Theme Contract", () => {
       await expect(chip).toBeVisible();
       const border = await chip.evaluate((el) => getComputedStyle(el).borderColor);
       // --role-chord-border = --neon-orange = #ea580c → rgb(234, 88, 12)
-      expect(border.replace(/\s/g, "")).toBe("rgb(190,18,60)");
+      expect(border.replace(/\s/g, "")).toBe("rgb(234,88,12)");
     });
   });
 });

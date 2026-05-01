@@ -29,7 +29,7 @@
 
   /* Surface Ladder — intentional light-mode values (deepest → highest) */
   --surface-shell:       #fcfaf8; /* = shell/bg, cool blue-gray */
-  --surface-card-top:    #ffffff; /* top-level card: near-white, brighter than shell */
+  --surface-card-top:    #fdfdfc; /* top-level card: near-white, brighter than shell */
   --surface-card-nested: #f8f6f4; /* inset card: visibly recessed from card-top without reading like a control well */
   --surface-well:        #f0ece7; /* control well: distinctly sunken */
   --surface-strip:       var(--surface-card-top); /* practice/chord strip: card-aligned */
@@ -49,32 +49,36 @@
   --surface-overlay:            var(--surface-card-top);  /* was #ffffff → card-level near-white */
 
   /* Focus ring — restrained for light backgrounds */
-  --focus-ring-glow: 0 0 0 3px rgba(180, 83, 9, 0.15);
+  --focus-ring-glow: 0 0 0 3px rgba(8, 145, 178, 0.15);
 
   /* Interaction — Primary theme accent */
-  --accent-primary: #b45309;
-  --accent-glow: rgba(180, 83, 9, 0.04);
+  --accent-primary: #0891b2;
+  --accent-glow: rgba(8, 145, 178, 0.04);
   
   --interactive-hover: color-mix(in srgb, var(--accent-primary) 90%, black);
   --interactive-active: color-mix(in srgb, var(--accent-primary) 80%, black);
-  --interactive-focus: #b45309;
+  --interactive-focus: #0891b2;
+  
+  /* Interaction — Hover */
+  --chrome-hover-bg: #e3ded7;
+  --chrome-hover-bg-tint: color-mix(in srgb, var(--accent-primary) 10%, transparent);
 
   /* Neon colors — significantly restrained for a professional look */
-  --neon-cyan: #b45309;
-  --neon-cyan-bright: #d97706;
-  --neon-cyan-dim: #78350f;
-  --neon-orange: #be123c;
-  --neon-orange-bright: #e11d48;
-  --neon-orange-dim: #881337;
-  --neon-violet: #86198f;
-  --neon-violet-dim: #4c0519;
-  --neon-brand-gradient: linear-gradient(90deg, #d97706 0%, #be123c 100%);
+  --neon-cyan: #0891b2;
+  --neon-cyan-bright: #06b6d4;
+  --neon-cyan-dim: #164e63;
+  --neon-orange: #ea580c;
+  --neon-orange-bright: #f97316;
+  --neon-orange-dim: #7c2d12;
+  --neon-violet: #7e22ce;
+  --neon-violet-dim: #4c1d95;
+  --neon-brand-gradient: linear-gradient(90deg, #0891b2 0%, #ea580c 100%);
 
   /* Glow effects — minimal to none in modern-light */
-  --glow-cyan-sm: 0 1px 2px rgba(180, 83, 9, 0.1);
+  --glow-cyan-sm: 0 1px 2px rgba(8, 145, 178, 0.1);
   --glow-cyan-md: none;
   --glow-cyan-lg: none;
-  --glow-orange-sm: 0 1px 2px rgba(190, 18, 60, 0.1);
+  --glow-orange-sm: 0 1px 2px rgba(234, 88, 12, 0.1);
   --glow-orange-md: none;
   --glow-orange-lg: none;
   --glow-violet-sm: none;
@@ -91,8 +95,8 @@
   --token-surface-dim:    var(--surface-shell);     /* was #f8fafc */
 
   /* Chip backgrounds — using solid accents for active states */
-  --token-chip-active-bg: #b45309;
-  --token-chip-tonic-bg: #be123c;
+  --token-chip-active-bg: #0891b2;
+  --token-chip-tonic-bg: #ea580c;
 
   /* Elevation shadows — softer, smaller, professional */
   --elevation-card: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
@@ -107,9 +111,9 @@
   --fretboard-wood-mid: #f1c38e;
   --fretboard-wood-bottom: #e0ab68;
   --fretboard-wood-grain: rgba(120, 70, 30, 0.15);
-  --fret-wire-dark: #4a5058;
-  --fret-wire-medium: #a6afbc;
-  --fret-wire-bright: #ebeff5;
+  --fret-wire-dark: #5c5854;
+  --fret-wire-medium: #b4b0ac;
+  --fret-wire-bright: #f0edea;
   --fret-wire-highlight: rgb(255 255 255 / 0.25);
   --fret-wire-shadow: rgb(0 0 0 / 0.15);
   --fret-marker: rgba(60, 30, 10, 0.15);
@@ -164,14 +168,14 @@
   --destructive-control-confirmed-bg: var(--neon-orange);
 
   /* Interaction — Selection & Persistent States */
-  --selected-bg: #b45309;
+  --selected-bg: #0891b2;
   --selected-fg: #ffffff;
-  --selected-border: #d97706;
+  --selected-border: #06b6d4;
   --selected-bg-image: none;
   --selected-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  --selected-chord-bg: #be123c;
+  --selected-chord-bg: #ea580c;
   --selected-chord-fg: #ffffff;
-  --selected-chord-border: #e11d48;
+  --selected-chord-border: #f97316;
   --selected-highlight: rgb(255 255 255 / 0.15); /* Backward compatibility alias */
 
   /* Fretboard accessibility chrome — light-mode override */

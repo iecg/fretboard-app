@@ -272,10 +272,19 @@
 }
 
 :global([data-theme="modern-light"]) .degree-chip-item[data-in-scale='true'] .degree-chip,
-:global([data-theme="modern-light"]) .degree-chip-item[data-is-tonic='true'] .degree-chip,
+:global([data-theme="modern-light"]) .degree-chip-item[data-is-tonic='true'] .degree-chip {
+  box-shadow: none;
+}
+
 :global([data-theme="modern-light"]) .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true'] .degree-chip,
 :global([data-theme="modern-light"]) .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true'][data-is-color-note='true'] .degree-chip {
+  background: var(--degree-color);
+  border-color: transparent;
   box-shadow: none;
+}
+
+:global([data-theme="modern-light"]) .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true'] .degree-chip-note {
+  color: #ffffff;
 }
 
 :global([data-theme="modern-light"]) .degree-chip-item[data-is-color-note='true'],

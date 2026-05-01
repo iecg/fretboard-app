@@ -101,6 +101,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
   const [focusedIndex, setFocusedIndex] = React.useState<number>(0);
   const [keyboardFocused, setKeyboardFocused] = React.useState<boolean>(false);
   const segmentRefs = React.useRef<(SVGPathElement | null)[]>([]);
+  const svgId = React.useId().replace(/:/g, "");
 
   React.useEffect(() => {
     segmentRefs.current[focusedIndex]?.focus();
@@ -165,6 +166,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
             return (
               <path
                 key={note}
+                id={`slice-${svgId}-${index}`}
                 ref={(el) => { segmentRefs.current[index] = el; }}
                 d={slicePath(index)}
                 className={clsx(styles["circle-slice"], {
@@ -205,6 +207,22 @@ export const CircleOfFifths = memo(function CircleOfFifths({
               />
             );
           })}
+
+          {/* Duplicate active slice on top to prevent adjacent strokes from overlapping its border */}
+          {(() => {
+            const activeIndex = CIRCLE_OF_FIFTHS.indexOf(rootNote);
+            if (activeIndex >= 0) {
+              return (
+                <use
+                  key="active-slice-overlay"
+                  href={`#slice-${svgId}-${activeIndex}`}
+                  style={{ pointerEvents: "none" }}
+                  aria-hidden="true"
+                />
+              );
+            }
+            return null;
+          })()}
 
           {/* Focus ring for keyboard nav (WCAG 2.4.7) */}
           {keyboardFocused && focusedIndex >= 0 && focusedIndex < CIRCLE_OF_FIFTHS.length && (
