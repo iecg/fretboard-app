@@ -134,12 +134,16 @@
   --string-taper-6: 3px;
   --inlay-dot: rgb(210 210 210 / 0.18);
   --inlay-dot-12: rgb(210 210 210 / 0.28);
+  --inlay-dot-stroke-width: 1.5;
   --inlay-pearl-stop1: rgb(250 247 232);
   --inlay-pearl-stop2: rgb(218 209 182);
+  --inlay-pearl-stop2-offset: 55%;
   --inlay-pearl-stop3: rgb(156 144 118);
   --inlay-pearl-opacity1: 0.98;
   --inlay-pearl-opacity2: 0.88;
   --inlay-pearl-opacity3: 0.75;
+  --inlay-shadow-flood: #000000;
+  --inlay-shadow-opacity: 0.6;
   --nut: #e0d4a8;
   --fretboard-edge-shadow: 0 0 16px rgb(0 0 0 / 0.45) inset;
   --fretboard-top-edge-color: rgb(218 182 138 / 0.22);

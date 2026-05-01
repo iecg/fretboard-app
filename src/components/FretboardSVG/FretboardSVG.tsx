@@ -253,6 +253,8 @@ export const FretboardSVG = memo(function FretboardSVG({
             cy={inlayYAt()}
             r={inlayR}
             fill={svgDefUrl("inlay-pearl")}
+            stroke="var(--inlay-dot)"
+            strokeWidth="var(--inlay-dot-stroke-width)"
             filter={svgDefUrl("inlay-shadow")}
           />
         );
@@ -270,6 +272,8 @@ export const FretboardSVG = memo(function FretboardSVG({
               cy={inlayYTopAt(x)}
               r={inlayR}
               fill={svgDefUrl("inlay-pearl")}
+              stroke="var(--inlay-dot-12)"
+              strokeWidth="var(--inlay-dot-stroke-width)"
               filter={svgDefUrl("inlay-shadow")}
             />
             <circle
@@ -277,6 +281,8 @@ export const FretboardSVG = memo(function FretboardSVG({
               cy={inlayYBottomAt(x)}
               r={inlayR}
               fill={svgDefUrl("inlay-pearl")}
+              stroke="var(--inlay-dot-12)"
+              strokeWidth="var(--inlay-dot-stroke-width)"
               filter={svgDefUrl("inlay-shadow")}
             />
           </g>
