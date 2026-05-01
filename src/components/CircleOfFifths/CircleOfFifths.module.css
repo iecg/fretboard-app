@@ -216,8 +216,8 @@
 }
 
 :global([data-theme="modern-light"]) .circle-slice.active {
-  fill: color-mix(in srgb, var(--neon-orange) 14%, var(--surface-base));
-  stroke: var(--neon-orange) !important;
+  fill: color-mix(in srgb, var(--neon-cyan) 18%, var(--surface-base));
+  stroke: var(--neon-cyan) !important;
   stroke-width: 2.4 !important;
   filter: none;
 }
@@ -231,7 +231,7 @@
 }
 
 :global([data-theme="modern-light"]) .circle-slice.active:hover {
-  fill: color-mix(in srgb, var(--neon-orange) 22%, var(--surface-base));
+  fill: color-mix(in srgb, var(--neon-cyan) 22%, var(--surface-base));
 }
 
 .circle-slice:focus,
