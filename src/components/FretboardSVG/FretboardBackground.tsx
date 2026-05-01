@@ -176,15 +176,7 @@ export const FretboardBackground = memo(
       <>
         <g clipPath={svgDefUrl("fretboard-taper")}>
           {woodStack}
-          {startFret === 0 && (
-            <rect
-              x={0}
-              y={0}
-              width={Math.max(0, nutRightX - NUT_WIDTH)}
-              height={neckHeight}
-              fill="var(--fretboard-headstock-bg)"
-            />
-          )}
+          {/* Headstock area inherits woodStack (gradient + grain + vignette) — no separate fill needed */}
           {startFret === 0 && (
             <g>
               <rect

@@ -47,13 +47,14 @@ export const FretboardDefs = memo(({
           seed="3"
           result="grain"
         />
+        {/* Warm-shadow brown tint (~rgba(120,70,30,0.45)) — alpha 0.45, R=0.31 G=0.18 B=0.08 */}
         <feColorMatrix
           in="grain"
           type="matrix"
-          values="0 0 0 0 0.09
-                  0 0 0 0 0.05
-                  0 0 0 0 0.03
-                  0 0 0 0.72 0"
+          values="0 0 0 0 0.31
+                  0 0 0 0 0.18
+                  0 0 0 0 0.08
+                  0 0 0 0.45 0"
           result="grainTinted"
         />
         <feComposite in="grainTinted" in2="SourceGraphic" operator="in" />
