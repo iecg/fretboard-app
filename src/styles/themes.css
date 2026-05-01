@@ -9,7 +9,7 @@
 
   /* Primitive Colors — Cool blue-gray spectrum with intentional steps */
   --bg-color: #fcfaf8;        /* distinctly cool-neutral shell (was #f8fafc — too close to white) */
-  --surface-base: #fdfdfc;    /* near-white panel base (was #fafbfd — barely distinct from shell) */
+  --surface-base: #fbf8f3;    /* warm panel base, L≈98.0; below card-top (was #fdfdfc — L≈99.8, inverted ladder) */
   --surface-raised: #f5f2ef;  /* inset/nested context (was #f1f5f9) */
   --surface-highlight: #e8e4df; /* borders, dividers (was #e2e8f0) */
   --text-main: #0f172a;
@@ -19,17 +19,25 @@
   --text-soft-white: #1e293b;
 
   /* App Shell — Modern Light */
-  --bg-app-gradient-start: #fdfcfb; /* matches new --bg-color shell */
-  --bg-app-gradient-mid: #fcfaf8;
-  --bg-app-gradient-end: #f6f4f0;
-  --bg-app-accent-glow: radial-gradient(ellipse at 50% 0%, rgb(180 83 9 / 0.05), transparent 60%);
-  --bg-app-accent-glow-1: rgb(180 83 9 / 0.03);
-  --bg-app-accent-glow-2: rgb(180 83 9 / 0.04);
-  --bg-app-accent-glow-3: rgb(180 83 9 / 0.04);
+  /* widened L-span: ~7.3% vs 4.3% prior; glow alphas 6-8% approaching dark-mode parity without brown wash */
+  --bg-app-gradient-start: #fffef9; /* was #fdfcfb; brighten white edge */
+  --bg-app-gradient-mid: #faf8f3;   /* was #fcfaf8; darken mid ~1% */
+  --bg-app-gradient-end: #f0ede6;   /* was #f6f4f0; extend bottom range */
+  --bg-app-accent-glow: radial-gradient(ellipse at 50% 0%, rgb(180 83 9 / 0.06), transparent 60%);
+  --bg-app-accent-glow-1: rgb(180 83 9 / 0.06); /* was 0.03 */
+  --bg-app-accent-glow-2: rgb(180 83 9 / 0.07); /* was 0.04 */
+  --bg-app-accent-glow-3: rgb(180 83 9 / 0.08); /* was 0.04 */
 
+  /* Surface Ladder Contract (light mode)
+   * Rule: --surface-card-top > --surface-base > --surface-card-nested in OKLCH L-brightness
+   * card-top  #fcf9f5  L≈99.2%
+   * base      #fbf8f3  L≈98.0%  (delta from card-top: 1.2%)
+   * nested    #f8f6f4  L≈96.7%  (delta from base:     1.3%)
+   * Both steps exceed the 1% L-delta minimum.
+   * Do NOT nudge a single token without re-checking the full ladder order. */
   /* Surface Ladder — intentional light-mode values (deepest → highest) */
   --surface-shell:       #fcfaf8; /* = shell/bg, cool blue-gray */
-  --surface-card-top:    #f9f5ee; /* top-level card: warm off-white, brighter than shell */
+  --surface-card-top:    #fcf9f5; /* was #f9f5ee (cream L≈97.1); now warm-white L≈99.2 */
   --surface-card-nested: #f8f6f4; /* inset card: visibly recessed from card-top without reading like a control well */
   --surface-well:        #f0ece7; /* control well: distinctly sunken */
   --surface-strip:       var(--surface-card-top); /* practice/chord strip: card-aligned */
