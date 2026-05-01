@@ -105,7 +105,7 @@ export const FretboardBackground = memo(
             y={0}
             width={wireThickness}
             height={neckHeight}
-            fill="rgb(0 0 0 / 0.45)"
+            fill="var(--fret-wire-shadow, rgb(0 0 0 / 0.45))"
           />
           <rect
             x={x - wireThickness / 2}

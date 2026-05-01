@@ -42,8 +42,8 @@
 }
 
 .button:hover:not(:disabled) {
-  background-color: var(--surface-control-hover-bg);
-  background-image: var(--surface-control-hover-bg-image);
+  background-color: var(--chrome-hover-bg-tint);
+  background-image: none;
   color: var(--surface-control-hover-fg);
 }
 

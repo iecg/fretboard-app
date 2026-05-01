@@ -35,6 +35,7 @@
 
 .mobile-tab-bar .mobile-tab:hover:not([aria-selected="true"]) {
   color: var(--surface-control-hover-fg);
+  background-color: var(--chrome-hover-bg-tint);
 }
 
 .mobile-tab-bar .mobile-tab:focus-visible {
