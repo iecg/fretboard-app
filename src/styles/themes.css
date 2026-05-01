@@ -29,7 +29,7 @@
 
   /* Surface Ladder — intentional light-mode values (deepest → highest) */
   --surface-shell:       #fcfaf8; /* = shell/bg, cool blue-gray */
-  --surface-card-top:    #fdfdfc; /* top-level card: near-white, brighter than shell */
+  --surface-card-top:    #f9f5ee; /* top-level card: warm off-white, brighter than shell */
   --surface-card-nested: #f8f6f4; /* inset card: visibly recessed from card-top without reading like a control well */
   --surface-well:        #f0ece7; /* control well: distinctly sunken */
   --surface-strip:       var(--surface-card-top); /* practice/chord strip: card-aligned */
