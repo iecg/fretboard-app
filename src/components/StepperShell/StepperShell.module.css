@@ -42,7 +42,7 @@
 }
 
 .button:hover:not(:disabled) {
-  background-color: var(--chrome-hover-bg-tint);
+  background-color: var(--chrome-hover-bg);
   background-image: none;
   color: var(--surface-control-hover-fg);
 }
