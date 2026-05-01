@@ -147,6 +147,12 @@
   --caged-a-bg: rgba(59, 130, 246, 0.35);
   --caged-g-bg: rgba(168, 85, 247, 0.35);
 
+  /* Note ring tokens — light mode: distinct hues against warm maple wood */
+  --note-ring: #0369a1;
+  --note-ring-tonic: #b45309;
+  --note-ring-dim: #0c4a6e;
+  --note-ring-color-tone: #7c3aed;
+
   /* Note colors — primary and secondary note emphasis */
   --note-blue: #0891b2;
   --note-blue-glow: transparent;
