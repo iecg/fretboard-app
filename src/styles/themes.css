@@ -139,7 +139,13 @@
   --nut-stop-3: #f8f4e8;
   --nut-stop-4: #f3ecd8;
 
-  /* Inlays — inherit pearl defaults from tokens.css by not redefining them */
+  /* Inlays — warm mother-of-pearl on light wood */
+  --inlay-dot: rgba(60, 30, 10, 0.18);
+  --inlay-dot-12: rgba(60, 30, 10, 0.28);
+  --inlay-pearl-stop1: rgb(250, 245, 230);
+  --inlay-pearl-stop2: rgb(220, 200, 165);
+  --inlay-pearl-stop3: rgb(150, 130, 95);
+
   --nut: #f8f4e8;
   --fretboard-edge-shadow: inset 0 0 15px rgba(0, 0, 0, 0.1);
   --fretboard-top-edge-color: rgba(255, 255, 255, 0.4);
