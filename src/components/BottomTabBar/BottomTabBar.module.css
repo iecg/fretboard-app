@@ -33,6 +33,11 @@
   transition: color var(--transition-fast);
 }
 
+.bottom-tab-bar-btn:hover:not(:disabled):not(.is-active) {
+  background-color: var(--chrome-hover-bg);
+  border-radius: var(--radius-sm);
+}
+
 .bottom-tab-bar-btn::before {
   content: '';
   position: absolute;
