@@ -139,12 +139,15 @@
   --nut-stop-3: #f8f4e8;
   --nut-stop-4: #f3ecd8;
 
-  /* Inlays — warm mother-of-pearl on light wood */
+  /* Inlays — cool-white pearl on light wood (matches real WP/white-pearl inlay reference)
+     Reference: real guitar fretboard photos show pale cool-white with subtle cyan/seafoam tint.
+     Color family: hsl(175°, ~15%, ~85-92%) — cool-neutral, NOT warm amber.
+     No walnut rim; dots sit flush against the wood with no hard stroke. */
   --inlay-dot: rgba(60, 30, 10, 0.18);
   --inlay-dot-12: rgba(60, 30, 10, 0.28);
-  --inlay-pearl-stop1: rgb(250, 245, 230);
-  --inlay-pearl-stop2: rgb(220, 200, 165);
-  --inlay-pearl-stop3: rgb(150, 130, 95);
+  --inlay-pearl-stop1: rgb(228, 238, 235);
+  --inlay-pearl-stop2: rgb(198, 218, 214);
+  --inlay-pearl-stop3: rgb(168, 190, 188);
 
   --nut: #f8f4e8;
   --fretboard-edge-shadow: inset 0 0 15px rgba(0, 0, 0, 0.1);
