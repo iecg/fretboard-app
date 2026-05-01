@@ -211,6 +211,9 @@
   --control-focus-ring: none;
   --control-focus-glow: 0 0 0 3px color-mix(in srgb, var(--neon-cyan) 25%, transparent);
   --control-focus-inset: inset 0 0 0 2px var(--neon-cyan);
+
+  /* Fretboard accessibility chrome — alpha parity with light-mode (0.1), white channel for dark surfaces */
+  --fretboard-a11y-hover-bg: rgb(255 255 255 / 0.1);
 }
 
 .panel-surface {
