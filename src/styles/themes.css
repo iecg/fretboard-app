@@ -111,9 +111,9 @@
   --fretboard-wood-mid: #f1c38e;
   --fretboard-wood-bottom: #e0ab68;
   --fretboard-wood-grain: rgba(120, 70, 30, 0.15);
-  --fret-wire-dark: #5c5854;
-  --fret-wire-medium: #b4b0ac;
-  --fret-wire-bright: #f0edea;
+  --fret-wire-dark: #5c4a3a;
+  --fret-wire-medium: #bbaa97;
+  --fret-wire-bright: #f3eee2;
   --fret-wire-highlight: rgb(255 255 255 / 0.25);
   --fret-wire-shadow: rgb(0 0 0 / 0.15);
   --fret-marker: rgba(60, 30, 10, 0.15);
