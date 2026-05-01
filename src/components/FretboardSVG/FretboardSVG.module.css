@@ -65,6 +65,31 @@
   fill: var(--fretboard-note-text-fill);
 }
 
+/* Light-mode stroke-width bump: ~1.25x dark values so rings read
+   immediately against the warm maple wood (#F1C38E). */
+:global([data-theme="modern-light"]) .fretboard-note.key-tonic :is(circle, rect, polygon) {
+  stroke-width: 2.9; /* dark: 2.3 */
+}
+
+:global([data-theme="modern-light"]) .fretboard-note.chord-root :is(circle, rect, polygon) {
+  stroke-width: 3.1; /* dark: 2.5 */
+}
+
+:global([data-theme="modern-light"]) .fretboard-note.chord-tone-in-scale :is(circle, rect, polygon),
+:global([data-theme="modern-light"]) .fretboard-note.note-diatonic-chord :is(circle, rect, polygon),
+:global([data-theme="modern-light"]) .fretboard-note.note-active :is(circle, rect, polygon) {
+  stroke-width: 2.4; /* dark: 1.9 */
+}
+
+:global([data-theme="modern-light"]) .fretboard-note.note-blue :is(circle, rect, polygon),
+:global([data-theme="modern-light"]) .fretboard-note.color-tone :is(circle, rect, polygon) {
+  stroke-width: 2.4; /* dark: 1.9 */
+}
+
+:global([data-theme="modern-light"]) .fretboard-note.scale-only :is(circle, rect, polygon) {
+  stroke-width: 2.1; /* dark: 1.7 */
+}
+
 .fretboard-note.key-tonic :is(circle, rect, polygon) {
   stroke: var(--note-ring-tonic);
   fill: var(--fretboard-note-fill-tonic);
