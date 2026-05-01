@@ -129,9 +129,9 @@
   --fret-nut-wire: #475569;
   --fretboard-border: #9e633e;
 
-  /* String colors — silver/white like dark mode */
-  --string-wire: #e4e8ee;
-  --string-wire-bass: #c6ccd2;
+  /* String colors — warm metal on light maple (retoned from cool blue-gray) */
+  --string-wire: #d8cdb8;
+  --string-wire-bass: #b8a585;
 
   /* Nut gradient — bone white */
   --nut-stop-1: #ffffff;
