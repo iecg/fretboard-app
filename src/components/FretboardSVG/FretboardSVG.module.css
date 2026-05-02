@@ -147,19 +147,27 @@
 
 /* Light-mode stroke-width bump — must sit AFTER role base rules.
    Equal specificity; source order determines winner.
-   ~1.25x dark values so rings read against warm maple (#F1C38E). */
+   Calibrated so each role resolves to a distinct value with ≥0.2px separation.
+   Anchor: scale-only thinnest, chord-root widest. */
 :global([data-theme="modern-light"]) .fretboard-note.key-tonic :is(circle, rect, polygon) {
-  stroke-width: 2.9; /* dark: 2.3 */
+  stroke-width: 3.6; /* dark: 2.3; gap to chord-root: +0.4 */
 }
 
 :global([data-theme="modern-light"]) .fretboard-note.chord-root :is(circle, rect, polygon) {
-  stroke-width: 3.1; /* dark: 2.5 */
+  stroke-width: 4.0; /* dark: 2.5; widest role */
 }
 
 :global([data-theme="modern-light"]) .fretboard-note.chord-tone-in-scale :is(circle, rect, polygon),
-:global([data-theme="modern-light"]) .fretboard-note.note-diatonic-chord :is(circle, rect, polygon),
+:global([data-theme="modern-light"]) .fretboard-note.note-diatonic-chord :is(circle, rect, polygon) {
+  stroke-width: 3.2; /* dark: 2.3; gap to key-tonic: +0.4 */
+}
+
 :global([data-theme="modern-light"]) .fretboard-note.note-active :is(circle, rect, polygon) {
-  stroke-width: 2.4; /* dark: 1.9 */
+  stroke-width: 2.8; /* dark: 1.9; gap to chord-tone-in-scale: +0.4 */
+}
+
+:global([data-theme="modern-light"]) .fretboard-note.chord-tone-outside-scale :is(circle, rect, polygon) {
+  stroke-width: 2.6; /* dark: 2.0; dasharray remains primary differentiator */
 }
 
 :global([data-theme="modern-light"]) .fretboard-note.note-blue :is(circle, rect, polygon),
@@ -168,11 +176,7 @@
 }
 
 :global([data-theme="modern-light"]) .fretboard-note.scale-only :is(circle, rect, polygon) {
-  stroke-width: 2.1; /* dark: 1.7 */
-}
-
-:global([data-theme="modern-light"]) .fretboard-note.chord-tone-outside-scale :is(circle, rect, polygon) {
-  stroke-width: 2.4; /* dark: 2.0; keep stroke-dasharray from base rule */
+  stroke-width: 2.0; /* dark: 1.7; thinnest role */
 }
 
 .fretboard-note[data-note-role="key-tonic"],
