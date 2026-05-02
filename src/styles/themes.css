@@ -139,15 +139,20 @@
   --nut-stop-3: #f8f4e8;
   --nut-stop-4: #f3ecd8;
 
-  /* Inlays — cool-white pearl on light wood (matches real WP/white-pearl inlay reference)
-     Reference: real guitar fretboard photos show pale cool-white with subtle cyan/seafoam tint.
-     Color family: hsl(175°, ~15%, ~85-92%) — cool-neutral, NOT warm amber.
+  /* Inlays — neutral cool-white pearl tuned for maple fretboard (#fbe6c6 → #f1c38e → #e0ab68).
+     Reference: real WP inlays on maple read as near-white pearl — luminance high, chroma < 3%.
+     Against warm maple (brighter/warmer than rosewood), pure cool-seafoam reads as chromatic
+     clash. Solution: collapse green-cyan delta, stay essentially achromatic with faint cool lean.
+     Color family: neutral gray-white, saturation < 3%. NOT teal, NOT seafoam.
+     stop1 rgb(240,242,242): highlight near-white, Δ(G-B)=0, Δ(R-G)=2 — virtually achromatic.
+     stop2 rgb(216,218,218): mid neutral gray, achromatic.
+     stop3 rgb(188,192,192): slightly cool anchor, Δ(G-B)=0, Δ(R-G)=4 — minimal chroma.
      No walnut rim; dots sit flush against the wood with no hard stroke. */
   --inlay-dot: rgba(60, 30, 10, 0.18);
   --inlay-dot-12: rgba(60, 30, 10, 0.28);
-  --inlay-pearl-stop1: rgb(228, 238, 235);
-  --inlay-pearl-stop2: rgb(198, 218, 214);
-  --inlay-pearl-stop3: rgb(168, 190, 188);
+  --inlay-pearl-stop1: rgb(240, 242, 242);
+  --inlay-pearl-stop2: rgb(216, 218, 218);
+  --inlay-pearl-stop3: rgb(188, 192, 192);
 
   --nut: #f8f4e8;
   --fretboard-edge-shadow: inset 0 0 15px rgba(0, 0, 0, 0.1);
