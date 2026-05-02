@@ -183,6 +183,18 @@
   --fretboard-a11y-hover-bg: rgb(255 255 255 / 0.15);
 }
 
+[data-theme="modern-light"] {
+  /* Child-tier hover contract:
+   * --surface-control-hover-bg MUST be visually distinct from --chrome-hover-bg (parent-tier hover).
+   * Parent tier (--chrome-hover-bg) = recessed warm-grey (#e3ded7, L≈87.5%).
+   * Child tier (--surface-control-hover-bg) = tonally lifted toward warm-white.
+   * All inner control surfaces (stepper buttons, select controls, toggle tabs) consume
+   * --surface-control-hover-bg. Parent shells consume --chrome-hover-bg directly.
+   * Future surfaces: child controls → --surface-control-hover-bg; shell/bar → --chrome-hover-bg.
+   */
+  --surface-control-hover-bg: #f0ede9;
+}
+
 [data-theme="modern-dark"] {
   --selected-bg: rgb(18 31 43 / 0.95);
   --selected-bg-image: radial-gradient(circle at 50% 20%, rgb(77 228 255 / 0.24), transparent 65%),
