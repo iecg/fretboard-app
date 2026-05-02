@@ -145,38 +145,17 @@
   opacity: 0.9;
 }
 
-/* Light-mode stroke-width bump — must sit AFTER role base rules.
-   Equal specificity; source order determines winner.
-   Calibrated so each role resolves to a distinct value with ≥0.2px separation.
-   Anchor: scale-only thinnest, chord-root widest. */
-:global([data-theme="modern-light"]) .fretboard-note.key-tonic :is(circle, rect, polygon) {
-  stroke-width: 3.6; /* dark: 2.3; gap to chord-root: +0.4 */
+/* Light-mode stroke-width — uniform across all roles, matching the tonic value (3.6).
+   Must sit AFTER role base rules; equal specificity, source order wins.
+   Circle radius is compensated via the CSS r property (using --note-r set in JS)
+   to preserve the outer edge of the majority of note bubbles: baseline chosen as
+   note-active (previous light value 2.8), delta = 3.6 - 2.8 = 0.8, shrink = 0.4px. */
+:global([data-theme="modern-light"]) .fretboard-note :is(circle, rect, polygon) {
+  stroke-width: 3.6;
 }
 
-:global([data-theme="modern-light"]) .fretboard-note.chord-root :is(circle, rect, polygon) {
-  stroke-width: 4.0; /* dark: 2.5; widest role */
-}
-
-:global([data-theme="modern-light"]) .fretboard-note.chord-tone-in-scale :is(circle, rect, polygon),
-:global([data-theme="modern-light"]) .fretboard-note.note-diatonic-chord :is(circle, rect, polygon) {
-  stroke-width: 3.2; /* dark: 2.3; gap to key-tonic: +0.4 */
-}
-
-:global([data-theme="modern-light"]) .fretboard-note.note-active :is(circle, rect, polygon) {
-  stroke-width: 2.8; /* dark: 1.9; gap to chord-tone-in-scale: +0.4 */
-}
-
-:global([data-theme="modern-light"]) .fretboard-note.chord-tone-outside-scale :is(circle, rect, polygon) {
-  stroke-width: 2.6; /* dark: 2.0; dasharray remains primary differentiator */
-}
-
-:global([data-theme="modern-light"]) .fretboard-note.note-blue :is(circle, rect, polygon),
-:global([data-theme="modern-light"]) .fretboard-note.color-tone :is(circle, rect, polygon) {
-  stroke-width: 2.4; /* dark: 1.9 */
-}
-
-:global([data-theme="modern-light"]) .fretboard-note.scale-only :is(circle, rect, polygon) {
-  stroke-width: 2.0; /* dark: 1.7; thinnest role */
+:global([data-theme="modern-light"]) .fretboard-note circle {
+  r: calc(var(--note-r) * 1px - 0.4px);
 }
 
 .fretboard-note[data-note-role="key-tonic"],
