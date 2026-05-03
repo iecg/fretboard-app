@@ -229,13 +229,13 @@
   --fretboard-fret-number-color: #475569;
 
   /* Fretboard note fill token overrides — light mode amber hierarchy against maple wood.
-     Hierarchy: tonic (#fb923c, orange) > chord-root (#fdba74, amber) > chord-tone (#fef3e2, cream) > scale-only (#fcfaf8, bone).
+     Hierarchy: tonic (#fb923c, orange) > chord-root (#fdba74, amber) > chord-tone (#fef3e2, cream) > scale-only (#f5efe4, warm cream).
      Chord-outside (#fde68a, yellow) is visually distinct via yellow hue vs orange-amber wood; role conveys outside-scale via diamond shape + dashed border.
      Wood mid-tone is #f1c38e; fills must read distinctly against it with #b45309 amber stroke. */
   --fretboard-note-fill-tonic: #fb923c;      /* amber-400: rich orange-amber, strong tonic signal */
   --fretboard-note-fill-chord-root: #fdba74; /* amber-300: lighter than tonic, same family */
   --fretboard-note-fill-chord-tone: #fef3e2; /* amber-50 warm: cream-white with amber tint */
-  --fretboard-note-fill-scale-only: #fcfaf8; /* unchanged: neutral bone-white for non-chord scale notes */
+  --fretboard-note-fill-scale-only: #f5efe4; /* warm cream, ~94% L: RGB delta 45 vs maple-wood-top #fbe6c6; darker than chord-tone #fef3e2 (97% L) — surface ladder preserved */
   --fretboard-note-fill-chord-outside:  var(--fretboard-note-chord-tone-outside-fill);
   --fretboard-note-fill-tension-emph:   var(--fretboard-tension-emphasis-fill);
   --fretboard-note-fill-tension-strong: var(--fretboard-tension-emphasis-fill);
