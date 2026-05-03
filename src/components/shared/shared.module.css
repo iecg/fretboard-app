@@ -134,6 +134,15 @@
   box-shadow: var(--control-focus-glow);
 }
 
+/* Dark mode: hover = border-highlight only, no background fill (matches light-mode separation model).
+   Active state remains the filled cyan-tinted bg. This rule intentionally strips the
+   --surface-control-hover-bg and --surface-control-hover-bg-image fills so hover and active
+   are clearly chromatically separable on dark surfaces. */
+:global([data-theme="modern-dark"]) .toggle-btn:hover:not(.active) {
+  background-color: transparent;
+  background-image: none;
+}
+
 .toggle-btn.active {
   background: var(--selected-bg);
   background-image: var(--selected-bg-image);
@@ -249,6 +258,13 @@
   color: white;
   border-color: var(--neon-cyan);
   box-shadow: var(--control-focus-glow);
+}
+
+/* Dark mode: hover = border-highlight only, no background fill.
+   Mirrors the toggle-btn dark-mode hover treatment for visual consistency. */
+:global([data-theme="modern-dark"]) .note-btn:hover:not(.active) {
+  background-color: var(--surface-control);
+  background-image: var(--surface-control-bg-image);
 }
 
 .note-btn.active {
