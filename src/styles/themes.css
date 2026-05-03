@@ -213,7 +213,7 @@
   --fretboard-board-shadow: rgb(0 0 0 / 0.15);
   --fretboard-note-text-fill: #0f172a;
   --fretboard-note-text-stroke: transparent;
-  --fretboard-note-chord-tone-outside-fill: var(--neon-orange-dim);
+  --fretboard-note-chord-tone-outside-fill: #fde3c0; /* light-mode: warm pale amber (was dark-mode neon-orange-dim #7c2d12) */
   --fretboard-guide-tones-emphasis-fill: var(--note-ring-tonic);
   --fretboard-guide-tones-deemphasis-fill: color-mix(in srgb, var(--note-ring-tonic) 15%, #ffffff);
   --fretboard-guide-tones-deemphasis-stroke: color-mix(in srgb, var(--note-ring-tonic) 40%, transparent);
@@ -228,11 +228,13 @@
   --fretboard-tension-color-tone-stroke: color-mix(in srgb, var(--note-ring-color-tone) 40%, transparent);
   --fretboard-fret-number-color: #475569;
 
-  /* Fretboard note fill token overrides — light mode uses ring-color fills (matches strokes). */
-  --fretboard-note-fill-tonic: #fde8c4;
-  --fretboard-note-fill-chord-root: #fde8c4;
-  --fretboard-note-fill-chord-tone: #fcfaf8;
-  --fretboard-note-fill-scale-only: #fcfaf8;
+  /* Fretboard note fill token overrides — light mode amber hierarchy against maple wood.
+     Hierarchy: tonic (#fb923c) > chord-root (#fdba74) > chord-tone (#fef3e2) > chord-outside (pale amber via outside-fill).
+     Wood mid-tone is #f1c38e; fills must read distinctly against it with #b45309 amber stroke. */
+  --fretboard-note-fill-tonic: #fb923c;      /* amber-400: rich orange-amber, strong tonic signal */
+  --fretboard-note-fill-chord-root: #fdba74; /* amber-300: lighter than tonic, same family */
+  --fretboard-note-fill-chord-tone: #fef3e2; /* amber-50 warm: cream-white with amber tint */
+  --fretboard-note-fill-scale-only: #fcfaf8; /* unchanged: neutral bone-white for non-chord scale notes */
   --fretboard-note-fill-chord-outside:  var(--fretboard-note-chord-tone-outside-fill);
   --fretboard-note-fill-tension-emph:   var(--fretboard-tension-emphasis-fill);
   --fretboard-note-fill-tension-strong: var(--fretboard-tension-emphasis-fill);
