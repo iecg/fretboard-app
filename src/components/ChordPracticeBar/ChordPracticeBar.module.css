@@ -240,6 +240,57 @@
 }
 
 
+/* ===== Light-mode warm palette overrides ===== */
+
+/* Strip surface: lift above shell with visible warm border */
+:global([data-theme="modern-light"]) .chord-practice-bar {
+  --strip-border: 1px solid #e8e4df;
+  --strip-shadow: 0 1px 3px rgb(0 0 0 / 0.06);
+}
+
+/* Lens label + badge: sunken warm fill so they read as tags, not ghosts */
+:global([data-theme="modern-light"]) .chord-practice-bar-lens-label,
+:global([data-theme="modern-light"]) .chord-practice-bar-badge {
+  background: #f0ede6;
+  border-color: #e0dbd3;
+}
+
+/* Inactive pill: warm sunken fill with visible border (mirrors hidden-chip pattern) */
+:global([data-theme="modern-light"]) .practice-bar-pill {
+  background: #f3efe8;
+  border-color: #e0dbd3;
+}
+
+/* In-scale pill (cyan): solid warm-cyan tint, visible on light surface */
+:global([data-theme="modern-light"]) .practice-bar-pill[data-in-scale="true"] {
+  background: color-mix(in srgb, #0891b2 12%, #f8f6f2);
+  border-color: #0891b2;
+}
+
+/* Chord-root pill (orange-strong): warm amber fill */
+:global([data-theme="modern-light"]) .practice-bar-pill[data-chord-root="true"] {
+  background: color-mix(in srgb, #ea580c 16%, #fdf7f0);
+  border-color: #ea580c;
+}
+
+/* Guide-tone pill (orange): lighter amber fill */
+:global([data-theme="modern-light"]) .practice-bar-pill[data-guide-tone="true"] {
+  background: color-mix(in srgb, #ea580c 10%, #fdf7f0);
+  border-color: color-mix(in srgb, #ea580c 75%, transparent);
+}
+
+/* Tension dashed border stays orange, no fill change needed (overridden by role above) */
+
+/* Root + tension overlap: keep amber-strong fill, remove glow */
+:global([data-theme="modern-light"]) .practice-bar-pill[data-chord-root="true"][data-tension="true"] {
+  box-shadow: none;
+}
+
+/* Degree-color mode: mix degree color against warm white base instead of chip-surface-inactive */
+:global([data-theme="modern-light"]) .chord-practice-bar[data-degree-colors="true"] .practice-bar-pill[data-in-scale="true"][data-scale-degree] {
+  background: color-mix(in srgb, var(--degree-color) 55%, #f8f6f2);
+}
+
 :global(.app-container[data-layout-variant="tablet-stacked"]) .chord-practice-bar-groups {
   flex-direction: column;
   align-items: flex-start;
