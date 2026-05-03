@@ -261,10 +261,11 @@
   border-color: #e0dbd3;
 }
 
-/* In-scale pill (cyan): solid warm-cyan tint, visible on light surface */
+/* In-scale pill: amber-cream alignment with chord-overlay family — practice bar is a chord-overlay surface,
+   so all pills share the amber palette; scale-tone signal is carried by fretboard ring tokens, not pill color. */
 :global([data-theme="modern-light"]) .practice-bar-pill[data-in-scale="true"] {
-  background: color-mix(in srgb, #0891b2 12%, #f8f6f2);
-  border-color: #0891b2;
+  background: color-mix(in srgb, #ea580c 10%, #fdf7f0);
+  border-color: color-mix(in srgb, #ea580c 65%, transparent);
 }
 
 /* Chord-root pill (orange-strong): warm amber fill */

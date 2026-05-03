@@ -192,17 +192,17 @@
               0 0 0 3px color-mix(in srgb, #ea580c 10%, transparent);
 }
 
-/* In-scale chord tone: warm amber fill (lighter) */
+/* In-scale chord tone: warm amber fill (lighter); border solid for crisp definition */
 :global([data-theme="modern-light"]) .chord-row-item[data-role="chord-tone-in-scale"] .chord-row-chip {
   background: color-mix(in srgb, #ea580c 12%, #fdf7f0);
-  border-color: color-mix(in srgb, #ea580c 80%, transparent);
+  border-color: #ea580c;
   box-shadow: 0 0 5px color-mix(in srgb, #ea580c 25%, transparent);
 }
 
-/* Outside-scale chord tone: warms the dashed ghost chip */
+/* Outside-scale chord tone: yellow-amber fill matches fretboard --fretboard-note-chord-tone-outside-fill (#fde68a); solid orange border */
 :global([data-theme="modern-light"]) .chord-row-item[data-role="chord-tone-outside-scale"] .chord-row-chip {
-  background: color-mix(in srgb, #ea580c 8%, #fdf7f0);
-  border-color: color-mix(in srgb, #ea580c 55%, transparent);
+  background: #fde68a;
+  border-color: var(--neon-orange);
   box-shadow: 0 0 5px color-mix(in srgb, #ea580c 20%, transparent);
 }
 
