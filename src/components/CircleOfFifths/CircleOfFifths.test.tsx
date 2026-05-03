@@ -400,10 +400,12 @@ describe("CircleOfFifths/CircleOfFifths", () => {
     it("renders clickable paths", () => {
       render(<CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} />);
 
-      const paths = document.querySelectorAll('path[class*="circle-slice"]');
-      expect(paths.length).toBe(12);
+      // 12 interactive base slices + 1 non-interactive active-outline overlay = 13 total
+      // Only the 12 interactive slices carry role="button"
+      const interactivePaths = document.querySelectorAll('path[class*="circle-slice"][role="button"]');
+      expect(interactivePaths.length).toBe(12);
 
-      paths.forEach((path) => {
+      interactivePaths.forEach((path) => {
         expect(path.getAttribute("class")).toContain("circle-slice");
       });
     });

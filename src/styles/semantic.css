@@ -183,6 +183,32 @@
   --fretboard-a11y-hover-bg: rgb(255 255 255 / 0.15);
 }
 
+[data-theme="modern-light"] {
+  /* Child-tier hover contract:
+   * --surface-control-hover-bg MUST be visually distinct from --chrome-hover-bg (parent-tier hover).
+   * Parent tier (--chrome-hover-bg) = recessed warm-grey (#e3ded7, L≈87.5%).
+   * Child tier (--surface-control-hover-bg) = tonally lifted toward warm-white.
+   * All inner control surfaces (stepper buttons, select controls, toggle tabs) consume
+   * --surface-control-hover-bg. Parent shells consume --chrome-hover-bg directly.
+   * Future surfaces: child controls → --surface-control-hover-bg; shell/bar → --chrome-hover-bg.
+   */
+  --surface-control-hover-bg: #f0ede9;
+
+  /* Auxiliary hover-set overrides for light mode.
+   * Dark mode overrides --surface-control-hover-bg-image (cyan gradient) and
+   * --surface-control-hover-fg (white) in the modern-dark block. Light mode does not
+   * use a tinted gradient overlay (warm-white surfaces have sufficient elevation contrast
+   * without it), so --surface-control-hover-bg-image stays none. The fg override is
+   * explicit here so the hover foreground is clearly the darkest available text tone
+   * (#0f172a) rather than the aliased --surface-control-fg, which resolves identically
+   * but without documenting the intentional light-mode hover-fg role.
+   * --surface-control-hover-border resolves correctly via the alias chain
+   * (--chrome-hover-border → --interactive-primary → #0891b2 cyan) and needs no override.
+   */
+  --surface-control-hover-bg-image: none; /* intentional: no gradient overlay in light mode */
+  --surface-control-hover-fg: var(--text-main); /* #0f172a — maximum-contrast dark on hover */
+}
+
 [data-theme="modern-dark"] {
   --selected-bg: rgb(18 31 43 / 0.95);
   --selected-bg-image: radial-gradient(circle at 50% 20%, rgb(77 228 255 / 0.24), transparent 65%),
@@ -211,6 +237,9 @@
   --control-focus-ring: none;
   --control-focus-glow: 0 0 0 3px color-mix(in srgb, var(--neon-cyan) 25%, transparent);
   --control-focus-inset: inset 0 0 0 2px var(--neon-cyan);
+
+  /* Fretboard accessibility chrome — alpha parity with light-mode (0.1), white channel for dark surfaces */
+  --fretboard-a11y-hover-bg: rgb(255 255 255 / 0.1);
 }
 
 .panel-surface {

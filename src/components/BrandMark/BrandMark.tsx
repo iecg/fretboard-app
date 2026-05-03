@@ -38,14 +38,14 @@ export function BrandMark({ className }: BrandMarkProps) {
             dx="0"
             dy="0"
             stdDeviation="3"
-            floodColor="#4DE4FF"
+            floodColor="var(--neon-cyan, #4DE4FF)"
             floodOpacity="0.9"
           />
           <feDropShadow
             dx="0"
             dy="0"
             stdDeviation="9"
-            floodColor="#4DE4FF"
+            floodColor="var(--neon-cyan, #4DE4FF)"
             floodOpacity="0.4"
           />
         </filter>
@@ -60,14 +60,14 @@ export function BrandMark({ className }: BrandMarkProps) {
             dx="0"
             dy="0"
             stdDeviation="3"
-            floodColor="#FF9A4D"
+            floodColor="var(--neon-orange, #FF9A4D)"
             floodOpacity="0.9"
           />
           <feDropShadow
             dx="0"
             dy="0"
             stdDeviation="9"
-            floodColor="#FF9A4D"
+            floodColor="var(--neon-orange, #FF9A4D)"
             floodOpacity="0.4"
           />
         </filter>
@@ -78,7 +78,7 @@ export function BrandMark({ className }: BrandMarkProps) {
         {/* Body — cyan fill + cyan edge glow. */}
         <path
           d={GUITAR_BODY_PATH_D}
-          fill="#4DE4FF"
+          fill="var(--neon-cyan, #4DE4FF)"
           filter="url(#brand-mark-glow-cyan)"
         />
 
@@ -87,7 +87,7 @@ export function BrandMark({ className }: BrandMarkProps) {
         <path
           d={GUITAR_NECK_PATH_D}
           transform="translate(-495.0688,102.20105)"
-          fill="#FF9A4D"
+          fill="var(--neon-orange, #FF9A4D)"
           filter="url(#brand-mark-glow-orange)"
         />
       </g>

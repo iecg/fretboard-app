@@ -124,13 +124,13 @@
 }
 
 .theory-disclosure-btn:focus-visible {
-  outline: var(--control-focus-ring);
+  outline: none;
 }
 
 .theory-disclosure-btn:focus-visible::before {
   background-color: var(--surface-control-hover-bg);
   background-image: var(--surface-control-hover-bg-image);
-  box-shadow: var(--control-focus-glow);
+  box-shadow: var(--control-focus-glow), 0 0 0 2px var(--interactive-focus);
 }
 
 .theory-disclosure-title {

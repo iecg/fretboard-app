@@ -1,4 +1,4 @@
-import { memo } from "react";
+import React, { memo } from "react";
 import { clsx } from "clsx";
 import { formatAccidental } from "../../core/theory";
 import { getNoteVisuals } from "./utils/semantics";
@@ -111,10 +111,11 @@ export const FretboardNoteLayer = memo(({
             data-degree-colors={degreeColorsEnabled ? "true" : undefined}
             style={{
               opacity: finalOpacity,
+              "--note-r": r,
               ...(degreeColor && degreeColorsEnabled
                 ? { "--degree-color": degreeColor }
                 : undefined),
-            }}
+            } as React.CSSProperties}
           >
             {shapeEl}
             {displayFormat !== "none" && (

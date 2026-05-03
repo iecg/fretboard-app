@@ -101,6 +101,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
   const [focusedIndex, setFocusedIndex] = React.useState<number>(0);
   const [keyboardFocused, setKeyboardFocused] = React.useState<boolean>(false);
   const segmentRefs = React.useRef<(SVGPathElement | null)[]>([]);
+  const svgId = React.useId().replace(/:/g, "");
 
   React.useEffect(() => {
     segmentRefs.current[focusedIndex]?.focus();
@@ -165,6 +166,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
             return (
               <path
                 key={note}
+                id={`slice-${svgId}-${index}`}
                 ref={(el) => { segmentRefs.current[index] = el; }}
                 d={slicePath(index)}
                 className={clsx(styles["circle-slice"], {
@@ -205,6 +207,19 @@ export const CircleOfFifths = memo(function CircleOfFifths({
               />
             );
           })}
+
+          {/* Active-slice outline — standalone path rendered last so all four edges
+              are unobscured. Uses same slicePath(activeIndex) as the base slice so
+              geometry is identical. Carries .circle-slice.active classes so the
+              existing CSS stroke-width rule fires on a real element (not a shadow tree). */}
+          {CIRCLE_OF_FIFTHS.indexOf(rootNote) >= 0 && (
+            <path
+              d={slicePath(CIRCLE_OF_FIFTHS.indexOf(rootNote))}
+              className={clsx(styles["circle-slice"], styles["active"])}
+              pointerEvents="none"
+              aria-hidden="true"
+            />
+          )}
 
           {/* Focus ring for keyboard nav (WCAG 2.4.7) */}
           {keyboardFocused && focusedIndex >= 0 && focusedIndex < CIRCLE_OF_FIFTHS.length && (

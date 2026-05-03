@@ -47,13 +47,44 @@ export const FretboardDefs = memo(({
           seed="3"
           result="grain"
         />
+        {/* Warm-shadow brown tint (~rgba(120,70,30,0.45)) — alpha 0.45, R=0.31 G=0.18 B=0.08 */}
         <feColorMatrix
           in="grain"
           type="matrix"
-          values="0 0 0 0 0.09
-                  0 0 0 0 0.05
-                  0 0 0 0 0.03
-                  0 0 0 0.72 0"
+          values="0 0 0 0 0.31
+                  0 0 0 0 0.18
+                  0 0 0 0 0.08
+                  0 0 0 0.45 0"
+          result="grainTinted"
+        />
+        <feComposite in="grainTinted" in2="SourceGraphic" operator="in" />
+      </filter>
+      {/* Light-mode wood-grain filter — structurally different from dark:
+          baseFrequency 0.018 0.72 (coarser horizontal, flatter vertical = broader lighter-wood grain)
+          numOctaves 3 (fewer fine details, avoids muslin look on warm light gradient)
+          seed 7 (distinct noise realization from dark seed=3)
+          feColorMatrix: rgba(0.28,0.15,0.06,0.35) — subtler alpha to let light gradient show through */}
+      <filter
+        id={svgDefId("wood-grain-filter-light")}
+        x="0%"
+        y="0%"
+        width="100%"
+        height="100%"
+      >
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.018 0.72"
+          numOctaves="3"
+          seed="7"
+          result="noise"
+        />
+        <feColorMatrix
+          in="noise"
+          type="matrix"
+          values="0 0 0 0 0.28
+                  0 0 0 0 0.15
+                  0 0 0 0 0.06
+                  0 0 0 0.35 0"
           result="grainTinted"
         />
         <feComposite in="grainTinted" in2="SourceGraphic" operator="in" />
@@ -116,10 +147,10 @@ export const FretboardDefs = memo(({
         <feGaussianBlur stdDeviation="0.75" />
       </filter>
       <linearGradient id={svgDefId("nut-material")} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#ffffff" />
-        <stop offset="35%" stopColor="#f4f4f1" />
-        <stop offset="75%" stopColor="#d8d4cb" />
-        <stop offset="100%" stopColor="#a9a59b" />
+        <stop offset="0%" stopColor="var(--nut-stop-1, #ffffff)" />
+        <stop offset="35%" stopColor="var(--nut-stop-2, #f4f4f1)" />
+        <stop offset="75%" stopColor="var(--nut-stop-3, #d8d4cb)" />
+        <stop offset="100%" stopColor="var(--nut-stop-4, #a9a59b)" />
       </linearGradient>
       <linearGradient
         id={svgDefId("fret-wire-cylinder")}

@@ -1,0 +1,258 @@
+{
+  "requirement": "Plan a follow-up light-mode and shared-UI refinement pass covering these 16 issues only: 1) light-mode stepper-control stepper-btn hover is too subtle, 2) improve toggle-group toggle-btn hover in both dark/light mode, 3) adjust --surface-card-top so it is not pure white, 4) light-mode CAGED shapes are too subtle, 5) light-mode fret wire shadow is too noticeable and fret wire color could match dark mode, 6) light-mode strings are too dark, 7) light-mode inlay dots are too subtle and should read white/pearl, 8) light-mode fretboard background should move toward maple with #F1C38E, 9) circle of fifths in light mode can lose visible borders on the active/root slice depending on which segment is selected, 10) degree-chip-strip chips have glow in light mode, 11) light-mode nut gradient is too noticeable and should be bone white, 12) theory-card disclosure button focus ring should be wider to match the hover-state radius in both modes, 13) fretboard hover state is too subtle in both modes, 14) light-mode headstock should use wood color instead of white/page background, 15) light-mode fretboard note ring colors are too hard to differentiate and ring thickness is too thin, 16) light-mode scale degree colors should use white labels like dark mode.",
+  "repo": {
+    "name": "fretboard-app",
+    "original_repo": "/Users/isaaccocar/repos/fretboard-app",
+    "base_branch": "main",
+    "current_branch": "light-mode-warm-pass/feat-light-mode-palette",
+    "work_ref": "light-mode-followup",
+    "package_manager": "npm"
+  },
+  "r1": {
+    "repo_shape": "React 19 + TypeScript + Vite app, with styling split across src/styles/{tokens,semantic,themes,App}.css and CSS Modules in src/components/**. The original checkout is currently clean on light-mode-warm-pass/feat-light-mode-palette.",
+    "relevant_modules": [
+      "src/styles/tokens.css",
+      "src/styles/semantic.css",
+      "src/styles/themes.css",
+      "src/styles/App.css",
+      "src/components/shared/shared.module.css",
+      "src/components/StepperControl/StepperControl.module.css",
+      "src/components/ToggleBar/ToggleBar.module.css",
+      "src/components/TheoryControls/TheoryControls.module.css",
+      "src/components/DegreeChipStrip/DegreeChipStrip.module.css",
+      "src/components/CircleOfFifths/CircleOfFifths.module.css",
+      "src/components/FretboardSVG/FretboardSVG.module.css",
+      "src/components/FretboardSVG/FretboardBackground.tsx",
+      "src/components/FretboardSVG/FretboardDefs.tsx",
+      "src/components/FretboardSVG/FretboardNoteLayer.tsx",
+      "src/components/FretboardSVG/FretboardShapeLayer.tsx",
+      "src/components/FretboardSVG/utils/semantics.ts",
+      "src/components/Card/Card.module.css",
+      "src/shapes",
+      "src/core/degrees.ts"
+    ],
+    "tests_scripts": [
+      "Node requirement: >=24.0.0",
+      "npm run build",
+      "npm run lint",
+      "npm run test",
+      "npm run test:e2e",
+      "npm run test:visual",
+      "playwright.config.ts",
+      "playwright.config.production.ts",
+      "playwright.config.visual.ts",
+      "e2e/theme-contract.spec.ts",
+      "e2e/fretboard-svg.visual.spec.ts",
+      "e2e/app-components.visual.spec.ts",
+      "e2e/app-layout.visual.spec.ts",
+      "e2e/app-mobile.visual.spec.ts",
+      "e2e/app-overlays.visual.spec.ts"
+    ],
+    "local_instructions": [
+      "Use conventional commits and conventional PR titles.",
+      "R1 must stay in the original checkout and remain read-only.",
+      "The repo lint path uses eslint plus stylelint via npm run lint.",
+      "The repo already has CSS-module selector tests, so shared CSS refactors may need to preserve selector assumptions."
+    ],
+    "likely_write_scopes": [
+      "Shared theme/token scope: src/styles/tokens.css, src/styles/semantic.css, src/styles/themes.css",
+      "Shared control hover/focus scope: src/components/shared/shared.module.css, src/components/StepperControl/StepperControl.module.css, src/components/ToggleBar/ToggleBar.module.css, src/components/TheoryControls/TheoryControls.module.css",
+      "Fretboard SVG scope: src/components/FretboardSVG/FretboardSVG.module.css, src/components/FretboardSVG/FretboardBackground.tsx, src/components/FretboardSVG/FretboardDefs.tsx, src/components/FretboardSVG/FretboardNoteLayer.tsx",
+      "Circle of fifths scope: src/components/CircleOfFifths/CircleOfFifths.module.css",
+      "Degree chip strip scope: src/components/DegreeChipStrip/DegreeChipStrip.module.css",
+      "CAGED shape contrast scope: src/components/FretboardSVG/FretboardShapeLayer.tsx, src/shapes, and shared light-mode tokens"
+    ],
+    "conflict_risks": [
+      "--surface-card-top is reused by cards, strips, and overlays through semantic aliases, so changing it will move more than one surface.",
+      "shared.module.css is a high-coupling file because ToggleBar, Stepper, NoteGrid, and other controls compose from it.",
+      "Fretboard wood, strings, fret wire, nut, inlay, headstock, and note-ring styling are split between theme tokens and hardcoded SVG defs/background rendering, so one-sided changes can leave inconsistent output.",
+      "Degree-color and note-ring tokens affect multiple surfaces, including fretboard notes, degree chips, and chord-practice strip states.",
+      "Circle-of-fifths stroke visibility and fretboard note-ring contrast both depend on light-mode stroke/readability against near-white surfaces, so small token shifts can create slice-specific or note-role-specific regressions.",
+      "The existing branch name indicates prior light-mode palette work, which raises merge-overlap risk if this plan assumes a separate workstream."
+    ],
+    "worktree_signals": [
+      "Parallelism is only medium because several surfaces are partially independent, but they converge on the same shared token files.",
+      "The original checkout is clean, which lowers the need for worktrees from a safety standpoint.",
+      "The requirement is a broad visual sweep across 16 issues, so sequential execution is likely safer unless the user explicitly wants isolated token vs component work.",
+      "The current checkout is already on a light-mode feature branch, which increases overlap risk between any follow-up workstream and existing light-mode changes."
+    ],
+    "unknowns": [
+      "Whether this follow-up should extend the current light-mode workstream/branch or be planned as a separate follow-up workstream.",
+      "Whether white note labels should apply only to scale-degree color mode or to all light-mode fretboard note labels.",
+      "Whether note-ring differentiation and thicker strokes should apply across all light-mode note roles and lens states or only the standard non-lens note states."
+    ]
+  },
+  "alignment": {
+    "assumptions": [
+      "This pass is limited to the 16 enumerated issues and any required test, snapshot, or token-routing updates directly needed to support them.",
+      "No layout or structural redesign is intended; minimal CSS or SVG rule changes are allowed where required to fix visibility, stroke, or token routing issues.",
+      "Dark-mode changes are intentional only for the explicitly cross-theme items (toggle hover, theory disclosure focus ring, fretboard hover) and any unavoidable shared-token fallout they require.",
+      "Visual regression and theme-contract updates are expected because several items target shared tokens and highly visible fretboard/circle surfaces."
+    ],
+    "answers": {
+      "workstream_continuity": "Extend the current light-mode workstream",
+      "degree_label_scope": "Degree-color mode only",
+      "note_ring_scope": "Cover all light-mode note roles"
+    },
+    "questions": [
+      {
+        "id": "workstream_continuity",
+        "header": "Workstream",
+        "question": "Should this follow-up be planned as an extension of the current light-mode workstream, or as a separate follow-up workstream?",
+        "why": "R1 found the original checkout is already clean on light-mode-warm-pass/feat-light-mode-palette, and the requested files overlap heavily with the same shared token and fretboard files touched by the existing light-mode area.",
+        "blocking": "Yes",
+        "options": [
+          {
+            "label": "Extend the current light-mode workstream",
+            "description": "Plan this as additional work on the existing light-mode branch/PR path so overlapping theme and fretboard files stay in one sequence.",
+            "recommended": true
+          },
+          {
+            "label": "Create a separate follow-up workstream",
+            "description": "Plan a new branch/PR after or beside the current branch, accepting extra branch and merge coordination to keep this scope isolated."
+          }
+        ]
+      },
+      {
+        "id": "degree_label_scope",
+        "header": "Degree Labels",
+        "question": "When you say light-mode scale degree colors should use white labels like dark mode, should that apply only to degree-color mode, or to all light-mode fretboard note labels?",
+        "why": "R1 found degree-color mode currently combines bright note fills with dark text by default, while ordinary light-mode fretboard notes also use dark labels for readability on the maple board. Broadening this choice changes more than just scale-degree color mode.",
+        "blocking": "Yes",
+        "options": [
+          {
+            "label": "Degree-color mode only",
+            "description": "Use white labels only when scale-degree colors are active, while keeping standard light-mode fretboard note labels dark for general board readability.",
+            "recommended": true
+          },
+          {
+            "label": "All light-mode fretboard note labels",
+            "description": "Switch the full light-mode fretboard to white note labels, accepting a broader readability and contrast change beyond scale-degree color mode."
+          }
+        ]
+      },
+      {
+        "id": "note_ring_scope",
+        "header": "Note Rings",
+        "question": "Should the note-ring differentiation pass cover all light-mode note roles and practice-lens states, or just the standard non-lens note states you see most often?",
+        "why": "R1 found ring colors and stroke widths are shared across tonic, active, scale-only, color-tone, degree-color, and lens-specific states. Limiting the scope could leave inconsistent thickness or contrast in guide-tone and tension views.",
+        "blocking": "Yes",
+        "options": [
+          {
+            "label": "Cover all light-mode note roles",
+            "description": "Make ring color separation and stroke weight consistent across standard and lens-specific light-mode note states, accepting broader selector and snapshot churn.",
+            "recommended": true
+          },
+          {
+            "label": "Limit to standard note states",
+            "description": "Tune the common tonic, active, scale-only, and color-tone states first, leaving guide-tone and tension-specific sub-states unchanged unless they obviously regress."
+          }
+        ]
+      }
+    ]
+  },
+  "acceptance_criteria": [
+    "The 16 enumerated issues are addressed without redesigning layout or component structure.",
+    "Shared control hover and focus polish improves the light-mode stepper, both-theme toggle hover, both-theme theory disclosure focus ring, and both-theme fretboard hover affordance.",
+    "Light-mode top-level card surfaces no longer read as pure white where --surface-card-top currently fans out.",
+    "Light-mode fretboard materials move closer to the requested maple direction, including wood tone, strings, fret wire/shadow balance, nut, headstock, and inlay visibility.",
+    "Light-mode CAGED shapes are visibly clearer on the fretboard.",
+    "Light-mode circle-of-fifths active/root slice borders remain visually complete across slice selections.",
+    "Light-mode degree-chip-strip styling removes the current glow mismatch relative to the fretboard style.",
+    "Light-mode fretboard note rings are more distinguishable and thicker across all light-mode note roles and practice-lens states.",
+    "White note labels apply in degree-color mode only, while standard light-mode fretboard note labels remain dark unless required by another accepted issue.",
+    "Relevant theme-contract expectations and visual snapshots are updated intentionally."
+  ],
+  "execution_strategy": {
+    "shape": "single sequential chunk on the current light-mode workstream",
+    "single_pr": true,
+    "rationale": "The aligned scope extends the existing light-mode branch and touches the same high-coupling theme, fretboard, and snapshot surfaces. Splitting this into parallel chunks would create overlapping writes in shared token files and stacked verification churn without strong isolation benefits."
+  },
+  "decisions": {
+    "dispatch_tool": "gemini",
+    "worktrees": false,
+    "cr_review": true,
+    "gemini_yolo": true,
+    "claude_skip_permissions": false
+  },
+  "chunks": [
+    {
+      "id": "T1",
+      "name": "Light-mode follow-up refinement pass",
+      "goal": "Implement the 16 confirmed light-mode and shared-UI follow-up refinements on the existing light-mode workstream, including the required contract-test and visual-snapshot updates.",
+      "risk": "high",
+      "model": "gemini-3.1-pro-preview",
+      "effort": "high",
+      "branch": "light-mode-warm-pass/feat-light-mode-palette",
+      "pr_base": "main",
+      "write_scope": [
+        "src/styles/tokens.css",
+        "src/styles/semantic.css",
+        "src/styles/themes.css",
+        "src/styles/App.css",
+        "src/components/shared/shared.module.css",
+        "src/components/StepperControl/StepperControl.module.css",
+        "src/components/ToggleBar/ToggleBar.module.css",
+        "src/components/TheoryControls/TheoryControls.module.css",
+        "src/components/DegreeChipStrip/DegreeChipStrip.module.css",
+        "src/components/CircleOfFifths/CircleOfFifths.module.css",
+        "src/components/FretboardSVG/FretboardSVG.module.css",
+        "src/components/FretboardSVG/FretboardBackground.tsx",
+        "src/components/FretboardSVG/FretboardDefs.tsx",
+        "src/components/FretboardSVG/FretboardNoteLayer.tsx",
+        "src/components/FretboardSVG/FretboardShapeLayer.tsx",
+        "src/components/FretboardSVG/utils/semantics.ts",
+        "src/components/Card/Card.module.css",
+        "src/core/degrees.ts",
+        "src/shapes",
+        "e2e/theme-contract.spec.ts",
+        "e2e/fretboard-svg.visual.spec.ts-snapshots",
+        "e2e/app-components.visual.spec.ts-snapshots",
+        "e2e/app-layout.visual.spec.ts-snapshots",
+        "e2e/app-mobile.visual.spec.ts-snapshots",
+        "e2e/app-overlays.visual.spec.ts-snapshots"
+      ],
+      "read_context": [
+        "src/styles/tokens.css",
+        "src/styles/semantic.css",
+        "src/styles/themes.css",
+        "src/components/shared/shared.module.css",
+        "src/components/TheoryControls/TheoryControls.module.css",
+        "src/components/DegreeChipStrip/DegreeChipStrip.module.css",
+        "src/components/CircleOfFifths/CircleOfFifths.module.css",
+        "src/components/FretboardSVG/FretboardSVG.module.css",
+        "src/components/FretboardSVG/FretboardBackground.tsx",
+        "src/components/FretboardSVG/FretboardDefs.tsx",
+        "src/core/degrees.ts",
+        "e2e/theme-contract.spec.ts",
+        "e2e/fretboard-svg.visual.spec.ts",
+        "e2e/app-components.visual.spec.ts",
+        "e2e/app-layout.visual.spec.ts",
+        "e2e/app-mobile.visual.spec.ts",
+        "e2e/app-overlays.visual.spec.ts"
+      ],
+      "context": [
+        "Extend the existing light-mode workstream instead of creating a separate branch/PR chain.",
+        "Apply white labels only to degree-color mode, not to all standard light-mode fretboard note labels.",
+        "Cover all light-mode note roles and practice-lens states when improving note-ring differentiation and ring thickness."
+      ],
+      "implementation": [
+        "Retune shared control hover and focus styling for the stepper, toggle groups, theory disclosure button, and fretboard hover affordance where requested.",
+        "Adjust light-mode shared surface tokens such as --surface-card-top and any directly dependent chrome needed to satisfy the confirmed visibility issues.",
+        "Refine the light-mode fretboard materials and overlays, including maple wood tone, strings, fret wire/shadow balance, nut, headstock, inlays, and CAGED shape visibility.",
+        "Fix the light-mode circle-of-fifths active/root border visibility and remove light-mode degree-chip glow mismatches.",
+        "Improve light-mode fretboard note-ring differentiation and stroke weight across all light-mode note roles and lens states, while limiting white note labels to degree-color mode only.",
+        "Update the relevant theme-contract assertions and refresh the affected visual snapshots."
+      ],
+      "verification": [
+        "npm run lint",
+        "npm run test",
+        "npm run test:e2e -- e2e/theme-contract.spec.ts",
+        "npm run test:visual"
+      ],
+      "commit": "feat: refine light mode follow-up surfaces and fretboard contrast",
+      "pr_title": "feat: refine light mode follow-up surfaces and fretboard contrast",
+      "pr_body": "Summary:\\n- refine shared hover/focus chrome and light-mode card surfaces\\n- improve light-mode fretboard materials, note rings, caged shapes, and degree-color readability\\n- fix light-mode circle/degrees styling inconsistencies and update affected tests/snapshots\\n\\nVerification:\\n- npm run lint\\n- npm run test\\n- npm run test:e2e -- e2e/theme-contract.spec.ts\\n- npm run test:visual\\n\\nRisks:\\n- shared token changes fan out into cards, strips, and control surfaces\\n- fretboard rendering is split across tokens, CSS, and hardcoded SVG defs\\n- visual snapshot churn is expected for light-mode fretboard and circle surfaces"
+    }
+  ]
+}

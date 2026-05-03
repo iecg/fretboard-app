@@ -1,5 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
   <rect width="100" height="100" rx="18" fill="#121212"/>
+  
+  <style>
+    @media (prefers-color-scheme: light) {
+      rect { fill: #fcfaf8 !important; }
+      path { fill: #b45309 !important; }
+      feDropShadow { flood-color: #b45309 !important; }
+    }
+  </style>
   <defs>
     <filter id="glow" x="-25%" y="-25%" width="150%" height="150%">
       <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="#4DE4FF" flood-opacity="0.9"/>

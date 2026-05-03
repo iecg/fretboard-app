@@ -1,0 +1,285 @@
+{
+  "requirement": "Plan a focused follow-up implementation pass for the confirmed post-T1 misses and partial fixes only on the existing light-mode workstream. Scope candidates from the current audit: 1) light-mode --surface-card-top is still pure white, 2) circle of fifths slice borders remain uneven or visually incomplete, 3) stepper, shared toggle, and nav hover states are still too subtle, 4) degree-chip-strip light-mode degree-color labels are still black, 5) degree-chip-strip and fretboard degree-color contrast remain too indistinct, 6) light-mode fret wire still reads too blue, 7) light-mode shared accent colors remain too similar.",
+  "repo": {
+    "name": "fretboard-app",
+    "original_repo": "/Users/isaaccocar/repos/fretboard-app",
+    "base_branch": "main",
+    "current_branch": "light-mode-warm-pass/feat-light-mode-palette",
+    "work_ref": "light-mode-followup-round2",
+    "package_manager": "npm"
+  },
+  "r1": {
+    "repo_shape": "React 19 + TypeScript + Vite app. Theme/state styling is centralized through src/styles/{tokens,semantic,themes,App}.css, then composed through CSS Modules in src/components/**, with fretboard materials split between CSS tokens and SVG defs/background rendering. HEAD is commit 4d0ba6c on light-mode-warm-pass/feat-light-mode-palette.",
+    "relevant_modules": [
+      "src/styles/themes.css",
+      "src/styles/semantic.css",
+      "src/styles/tokens.css",
+      "src/styles/App.css",
+      "src/components/shared/shared.module.css",
+      "src/components/StepperShell/StepperShell.module.css",
+      "src/components/StepperControl/StepperControl.module.css",
+      "src/components/ToggleBar/ToggleBar.module.css",
+      "src/components/TheoryControls/TheoryControls.module.css",
+      "src/components/Card/Card.module.css",
+      "src/components/CircleOfFifths/CircleOfFifths.tsx",
+      "src/components/CircleOfFifths/CircleOfFifths.module.css",
+      "src/components/CircleOfFifths/CircleOfFifths.test.tsx",
+      "src/components/DegreeChipStrip/DegreeChipStrip.tsx",
+      "src/components/DegreeChipStrip/DegreeChipStrip.module.css",
+      "src/components/DegreeChipStrip/DegreeChipStrip.test.tsx",
+      "src/components/FretboardSVG/FretboardSVG.module.css",
+      "src/components/FretboardSVG/FretboardDefs.tsx",
+      "src/components/FretboardSVG/FretboardBackground.tsx",
+      "src/components/FretboardSVG/FretboardNoteLayer.tsx",
+      "src/components/FretboardSVG/utils/semantics.ts",
+      "src/core/degrees.ts",
+      "e2e/theme-contract.spec.ts",
+      "e2e/app-components.visual.spec.ts",
+      "e2e/fretboard-svg.visual.spec.ts",
+      "e2e/app-layout.visual.spec.ts",
+      "e2e/app-mobile.visual.spec.ts",
+      "e2e/app-overlays.visual.spec.ts"
+    ],
+    "tests_scripts": [
+      "Node requirement: >=24.0.0",
+      "npm run build",
+      "npm run lint",
+      "npm run test",
+      "npm run test:e2e",
+      "npm run test:visual",
+      "playwright.config.ts",
+      "playwright.config.production.ts",
+      "playwright.config.visual.ts"
+    ],
+    "local_instructions": [
+      "Use conventional commits and conventional PR titles.",
+      "R1 stays read-only in the original checkout.",
+      "The repo lint path uses eslint plus stylelint via npm run lint.",
+      "Shared CSS refactors may affect selector-based tests and visual baselines."
+    ],
+    "likely_write_scopes": [
+      "Shared surface/accent token scope: src/styles/themes.css, src/styles/semantic.css, src/styles/tokens.css, src/styles/App.css",
+      "Shared hover/focus chrome scope: src/components/shared/shared.module.css, src/components/StepperShell/StepperShell.module.css, src/components/StepperControl/StepperControl.module.css, src/components/ToggleBar/ToggleBar.module.css, src/components/TheoryControls/TheoryControls.module.css",
+      "Circle of fifths scope: src/components/CircleOfFifths/CircleOfFifths.tsx, src/components/CircleOfFifths/CircleOfFifths.module.css",
+      "Degree-color contrast scope: src/components/DegreeChipStrip/DegreeChipStrip.module.css, src/components/DegreeChipStrip/DegreeChipStrip.tsx, src/components/FretboardSVG/FretboardSVG.module.css, src/components/FretboardSVG/FretboardNoteLayer.tsx, src/components/FretboardSVG/utils/semantics.ts, src/core/degrees.ts",
+      "Fret wire/material scope: src/styles/themes.css, src/components/FretboardSVG/FretboardDefs.tsx, src/components/FretboardSVG/FretboardBackground.tsx",
+      "Contract and snapshot scope: e2e/theme-contract.spec.ts and affected Playwright visual snapshots"
+    ],
+    "conflict_risks": [
+      "--surface-card-top fans into cards, strips, overlays, and panels through semantic aliases, so changing it can legitimately move multiple non-fretboard surfaces at once.",
+      "shared.module.css is a high-coupling file because the toggle, note-grid, accidental-toggle, and other control surfaces compose from it.",
+      "Circle-of-fifths slice visibility depends on both CSS stroke rules and SVG draw order, so a CSS-only border-width change may not fully solve the visual gap.",
+      "Degree-color contrast spans both chip and fretboard paths and is split between shared accent tokens, local degree-color selectors, and core degree color data.",
+      "Fret wire appearance is split between light-mode theme tokens and SVG gradient/shadow rendering, so changing only the token values or only the defs can leave inconsistent output.",
+      "Retuning the shared light-mode accent family will fan out into branding, control chrome, circle states, note rings, and any contract tests that still assert the current warm palette."
+    ],
+    "worktree_signals": [
+      "The current checkout is already on the existing light-mode feature branch and has only untracked planning docs, not overlapping code edits.",
+      "The narrowed follow-up scope still overlaps heavily in shared token files, shared chrome CSS, and fretboard/circle visual baselines.",
+      "Parallelism is limited because several confirmed misses depend on the same accent and surface tokens.",
+      "No clear isolated code-only or test-only branch exists yet; sequential execution remains the safer default unless the user explicitly wants a separate follow-up workstream."
+    ],
+    "unknowns": [
+      "Whether this follow-up should continue on the existing light-mode branch/PR or be planned as a separate follow-up branch/PR.",
+      "Whether the surface-card-top correction should intentionally propagate to every surface that inherits that token, or be localized to only the most problematic light-mode surfaces.",
+      "Whether the accent-separation fix should retune the shared light-mode accent family globally, or stay limited to degree-color and fretboard-facing surfaces to reduce broader UI churn."
+    ]
+  },
+  "alignment": {
+    "assumptions": [
+      "This follow-up is limited to the confirmed post-T1 misses and partial fixes from the current audit, not a re-scope of the original 16-item implementation pass.",
+      "No layout or structural redesign is intended; the work remains token, CSS-module, SVG-def, and targeted selector refinement only.",
+      "Dark-mode behavior should change only where the confirmed miss explicitly applies in both themes, such as shared hover/focus chrome.",
+      "Theme-contract and light-mode visual snapshot updates are expected because the remaining issues still touch shared surface and accent tokens."
+    ],
+    "answers": {
+      "workstream_continuity": "Continue the existing workstream",
+      "surface_token_scope": "Propagate through the shared token",
+      "accent_retune_scope": "Retune the shared light-mode accent family"
+    },
+    "questions": [
+      {
+        "id": "workstream_continuity",
+        "header": "Workstream",
+        "question": "Should this follow-up be planned as a continuation of the existing light-mode workstream, or as a separate follow-up workstream?",
+        "why": "R1 found the checkout is already on light-mode-warm-pass/feat-light-mode-palette at HEAD 4d0ba6c, and the remaining misses still overlap the same theme, fretboard, and circle files touched by T1.",
+        "blocking": "Yes",
+        "options": [
+          {
+            "label": "Continue the existing workstream",
+            "description": "Keep the remaining fixes on the current branch and PR path so overlapping token and fretboard files stay in one sequence.",
+            "recommended": true
+          },
+          {
+            "label": "Create a separate follow-up workstream",
+            "description": "Plan a new branch and PR for the remaining fixes, accepting extra merge coordination to isolate the second pass."
+          }
+        ]
+      },
+      {
+        "id": "surface_token_scope",
+        "header": "Surface Scope",
+        "question": "When correcting light-mode --surface-card-top, should the follow-up intentionally propagate that token change to all surfaces that inherit it, or narrow the fix to only the visibly problematic card-like surfaces?",
+        "why": "R1 confirmed --surface-card-top currently fans out through cards, strips, overlays, and panels via semantic aliases, so a token change can either create cohesive light-mode elevation or trigger broader-than-expected snapshot churn.",
+        "blocking": "Yes",
+        "options": [
+          {
+            "label": "Propagate through the shared token",
+            "description": "Retune the shared light-mode card-top token and let all inheriting surfaces move together for a consistent surface ladder.",
+            "recommended": true
+          },
+          {
+            "label": "Localize the surface fix",
+            "description": "Keep the global token mostly stable and patch only the specific light-mode surfaces that currently read too white, reducing fan-out at the cost of more exceptions."
+          }
+        ]
+      },
+      {
+        "id": "accent_retune_scope",
+        "header": "Accent Scope",
+        "question": "Should the accent-separation follow-up retune the shared light-mode accent family globally, or stay mostly localized to degree-color and fretboard-facing surfaces?",
+        "why": "R1 confirmed the remaining contrast issues span both global accent tokens and local degree-color selectors, and the same amber/crimson family now drives branding, control chrome, circle states, note rings, and degree-color surfaces.",
+        "blocking": "Yes",
+        "options": [
+          {
+            "label": "Retune the shared light-mode accent family",
+            "description": "Widen the contrast at the token level so controls, circle slices, degree chips, and fretboard note roles all inherit clearer separation.",
+            "recommended": true
+          },
+          {
+            "label": "Localize accent changes to degree and fretboard surfaces",
+            "description": "Keep the broader light-mode accent family mostly stable and fix the remaining contrast only where it is most visible, reducing broader UI churn."
+          }
+        ]
+      }
+    ]
+  },
+  "acceptance_criteria": [
+    "Fix only the confirmed post-T1 misses and partial fixes from the current audit.",
+    "Retune light-mode card-top surfaces away from pure white through the shared token path unless doing so creates a new explicit exception.",
+    "Improve shared hover visibility for the remaining weak stepper, toggle, and nav chrome without redesigning component structure.",
+    "Make circle-of-fifths slice borders visually complete and more uniform in light mode, including active/root slice visibility.",
+    "Correct degree-chip-strip degree-color labels in light mode and improve degree-color separation across both chip and fretboard surfaces.",
+    "Retune light-mode fret wire hue away from the current blue cast while keeping the existing material model coherent.",
+    "Widen the shared light-mode accent separation enough to improve note-ring, chip, and control-state differentiation.",
+    "Update any affected theme-contract expectations and intentional visual baselines."
+  ],
+  "execution_strategy": {
+    "shape": "single sequential chunk on the existing light-mode workstream",
+    "single_pr": true,
+    "rationale": "The remaining misses overlap the same shared light-mode token files, shared control chrome, fretboard rendering, and light-mode snapshots, so splitting them would create overlapping write scopes and churn without clear independence."
+  },
+  "decisions": {
+    "dispatch_tool": "gemini",
+    "worktrees": false,
+    "cr_review": true,
+    "gemini_yolo": true,
+    "claude_skip_permissions": false
+  },
+  "chunk_graph": [
+    {
+      "id": "T1",
+      "name": "Post-T1 light-mode follow-up refinements",
+      "status": "draft",
+      "depends_on": [],
+      "risk": "high",
+      "ownership_boundary": "Shared light-mode tokens, shared chrome, circle-of-fifths borders, degree-color contrast, fret wire/material tuning, and resulting test/snapshot updates"
+    }
+  ],
+  "chunks": [
+    {
+      "id": "T1",
+      "name": "Resolve remaining light-mode follow-up gaps",
+      "goal": "Implement the confirmed post-T1 misses and partial fixes on the existing light-mode workstream: non-white light-mode card-top surfaces, clearer shared hover chrome, more reliable circle-of-fifths slice borders, corrected degree-chip-strip degree-color labels, stronger degree-color contrast between chip and fretboard surfaces, warmer light-mode fret wire, and wider shared light-mode accent separation, including any required contract-test and visual-snapshot updates.",
+      "risk": "high",
+      "model": "gemini-3.1-pro-preview",
+      "effort": "high",
+      "branch": "light-mode-warm-pass/feat-light-mode-palette",
+      "pr_base": "main",
+      "depends_on": [],
+      "read_context": [
+        "src/styles/themes.css",
+        "src/styles/semantic.css",
+        "src/styles/tokens.css",
+        "src/styles/App.css",
+        "src/components/shared/shared.module.css",
+        "src/components/StepperShell/StepperShell.module.css",
+        "src/components/StepperControl/StepperControl.module.css",
+        "src/components/ToggleBar/ToggleBar.module.css",
+        "src/components/TheoryControls/TheoryControls.module.css",
+        "src/components/Card/Card.module.css",
+        "src/components/CircleOfFifths/CircleOfFifths.tsx",
+        "src/components/CircleOfFifths/CircleOfFifths.module.css",
+        "src/components/DegreeChipStrip/DegreeChipStrip.tsx",
+        "src/components/DegreeChipStrip/DegreeChipStrip.module.css",
+        "src/components/FretboardSVG/FretboardSVG.module.css",
+        "src/components/FretboardSVG/FretboardDefs.tsx",
+        "src/components/FretboardSVG/FretboardBackground.tsx",
+        "src/components/FretboardSVG/FretboardNoteLayer.tsx",
+        "src/components/FretboardSVG/utils/semantics.ts",
+        "src/core/degrees.ts",
+        "e2e/theme-contract.spec.ts",
+        "e2e/app-components.visual.spec.ts",
+        "e2e/fretboard-svg.visual.spec.ts",
+        "e2e/app-layout.visual.spec.ts",
+        "e2e/app-mobile.visual.spec.ts",
+        "e2e/app-overlays.visual.spec.ts"
+      ],
+      "write_scope": [
+        "src/styles/themes.css",
+        "src/styles/semantic.css",
+        "src/styles/tokens.css",
+        "src/styles/App.css",
+        "src/components/shared/shared.module.css",
+        "src/components/StepperShell/StepperShell.module.css",
+        "src/components/StepperControl/StepperControl.module.css",
+        "src/components/ToggleBar/ToggleBar.module.css",
+        "src/components/TheoryControls/TheoryControls.module.css",
+        "src/components/Card/Card.module.css",
+        "src/components/CircleOfFifths/CircleOfFifths.tsx",
+        "src/components/CircleOfFifths/CircleOfFifths.module.css",
+        "src/components/CircleOfFifths/CircleOfFifths.test.tsx",
+        "src/components/DegreeChipStrip/DegreeChipStrip.tsx",
+        "src/components/DegreeChipStrip/DegreeChipStrip.module.css",
+        "src/components/DegreeChipStrip/DegreeChipStrip.test.tsx",
+        "src/components/FretboardSVG/FretboardSVG.module.css",
+        "src/components/FretboardSVG/FretboardDefs.tsx",
+        "src/components/FretboardSVG/FretboardBackground.tsx",
+        "src/components/FretboardSVG/FretboardNoteLayer.tsx",
+        "src/components/FretboardSVG/utils/semantics.ts",
+        "src/core/degrees.ts",
+        "e2e/theme-contract.spec.ts",
+        "e2e/fretboard-svg.visual.spec.ts-snapshots",
+        "e2e/app-components.visual.spec.ts-snapshots",
+        "e2e/app-layout.visual.spec.ts-snapshots",
+        "e2e/app-mobile.visual.spec.ts-snapshots",
+        "e2e/app-overlays.visual.spec.ts-snapshots"
+      ],
+      "context": [
+        "Continue the existing light-mode workstream on branch light-mode-warm-pass/feat-light-mode-palette instead of creating a separate follow-up branch.",
+        "Propagate the light-mode --surface-card-top correction through the shared token path rather than patching only local surfaces.",
+        "Retune the shared light-mode accent family globally enough to improve control, circle, chip, and fretboard differentiation.",
+        "This follow-up is limited to the confirmed post-T1 misses and partial fixes from the audit, not a reimplementation of the original 16-item pass.",
+        "Dark mode should change only where the remaining miss explicitly applies in both themes, such as shared hover or focus chrome."
+      ],
+      "implementation": [
+        "Retune the shared light-mode card-top and dependent surface tokens so top-level card-like surfaces stop reading as pure white while keeping the surface ladder coherent.",
+        "Strengthen the remaining weak hover states across shared toggle, stepper, and nav-style controls so they are visually distinct from their background surfaces.",
+        "Fix circle-of-fifths slice border consistency and active/root edge visibility, including any SVG draw-order or selector adjustments needed beyond a simple stroke-width bump.",
+        "Correct light-mode degree-chip-strip degree-color label color and improve degree-color differentiation across both chip and fretboard surfaces.",
+        "Warm the light-mode fret wire hue away from the current blue-gray cast while keeping the existing fret-wire material rendering coherent with its shadow and highlight passes.",
+        "Retune the shared light-mode accent family enough to create clearer separation between note-ring, chord, scale, and control-accent states without redesigning the theme.",
+        "Update the affected contract assertions and refresh the intended light-mode visual snapshots."
+      ],
+      "verification": [
+        "npm run lint",
+        "npm run test",
+        "npm run test:e2e -- e2e/theme-contract.spec.ts",
+        "npm run test:visual"
+      ],
+      "commit": "fix: resolve remaining light mode contrast and chrome gaps",
+      "pr_title": "fix: resolve remaining light mode contrast and chrome gaps",
+      "pr_body": "Summary:\\n- finish the remaining light-mode card, accent, and hover refinements left after the first follow-up pass\\n- improve circle border consistency, degree-color readability, and fret wire warmth\\n- update affected contract expectations and light-mode visual baselines\\n\\nVerification:\\n- npm run lint\\n- npm run test\\n- npm run test:e2e -- e2e/theme-contract.spec.ts\\n- npm run test:visual\\n\\nRisks:\\n- shared token changes still fan out across cards, strips, controls, and note states\\n- circle border visibility depends on both CSS stroke rules and SVG draw order\\n- light-mode snapshot churn is expected across fretboard and circle surfaces"
+    }
+  ]
+}
