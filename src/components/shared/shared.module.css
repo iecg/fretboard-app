@@ -107,7 +107,7 @@
   transition: var(--transition-surface), transform var(--transition-fast);
   text-transform: none;
   background: transparent;
-  border: none;
+  border: 1px solid transparent;
   color: var(--surface-control-fg-muted);
   cursor: pointer;
 }
@@ -116,7 +116,7 @@
   background-color: var(--surface-control-hover-bg);
   background-image: var(--surface-control-hover-bg-image);
   color: var(--surface-control-hover-fg);
-  border: 1px solid var(--surface-control-hover-border);
+  border-color: var(--surface-control-hover-border);
 }
 
 .toggle-btn:active {
