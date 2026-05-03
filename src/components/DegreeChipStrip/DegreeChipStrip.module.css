@@ -292,6 +292,24 @@
   filter: none;
 }
 
+/* Light-mode: lift chip fill above card-top for clear visual hierarchy */
+:global([data-theme="modern-light"]) .degree-chip {
+  background: #ffffff;
+}
+
+/* Light-mode: inter-chip divider subtly above card-top (#fcf9f5) */
+:global([data-theme="modern-light"]) .degree-chip-strip {
+  --chip-line-muted: #f5f2ed;
+}
+
+/* Light-mode: hidden chips use sunken fill + outline (replaces opacity dimming) */
+:global([data-theme="modern-light"]) .degree-chip-item[data-hidden='true'] .degree-chip {
+  background: #f0ede6;
+  border-color: #e8e4df;
+  box-shadow: none;
+  opacity: 1;
+}
+
 
 /* Compact variant for secondary surfaces. Out-specifies layout-tier rules. */
 .degree-chip-strip.degree-chip-strip--compact {
