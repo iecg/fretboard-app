@@ -279,7 +279,13 @@
   border-color: color-mix(in srgb, #ea580c 75%, transparent);
 }
 
-/* Tension dashed border stays orange, no fill change needed (overridden by role above) */
+/* Pure tension pill (chord tone outside scale, not the root): warm yellow-amber tint
+   to mirror the fretboard chord-tone-outside-scale fill (#fde68a) and stand apart
+   from the inactive sunken fill (#f3efe8). Dashed border inherited from the role rule above. */
+:global([data-theme="modern-light"]) .practice-bar-pill[data-tension="true"]:not([data-chord-root="true"]) {
+  background: #fde68a;
+  border-color: var(--neon-orange);
+}
 
 /* Root + tension overlap: keep amber-strong fill, remove glow */
 :global([data-theme="modern-light"]) .practice-bar-pill[data-chord-root="true"][data-tension="true"] {
