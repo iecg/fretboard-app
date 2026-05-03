@@ -146,6 +146,22 @@
   fill: #ffffff;
 }
 
+/* Light-mode lens-emphasized labels — same white-on-amber treatment as tonic/chord-root. */
+:global([data-theme="modern-light"]) [data-practice-lens="guide-tones"] .fretboard-note[data-note-guide-tone] text {
+  stroke: rgb(0 0 0 / 0.45);
+  fill: #ffffff;
+}
+
+:global([data-theme="modern-light"]) [data-practice-lens="tension"] .fretboard-note.chord-tone-outside-scale text {
+  stroke: rgb(0 0 0 / 0.45);
+  fill: #ffffff;
+}
+
+:global([data-theme="modern-light"]) [data-practice-lens="tension"] .fretboard-note.chord-root[data-note-tension] text {
+  stroke: rgb(0 0 0 / 0.45);
+  fill: #ffffff;
+}
+
 .fretboard-note.chord-tone-outside-scale :is(circle, rect, polygon) {
   stroke: var(--neon-orange-dim);
   fill: var(--fretboard-note-fill-chord-outside);
