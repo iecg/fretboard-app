@@ -15,7 +15,9 @@
 }
 
 .shell:hover {
-  background-color: var(--surface-control-hover-bg);
+  /* Parent-tier hover: shell is the outer container; it consumes --chrome-hover-bg so that
+   * child buttons (which consume --surface-control-hover-bg) are visually raised above it. */
+  background-color: var(--chrome-hover-bg);
   background-image: var(--surface-control-hover-bg-image);
   border-color: var(--surface-control-hover-border);
 }
