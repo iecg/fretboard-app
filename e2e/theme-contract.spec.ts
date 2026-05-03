@@ -102,14 +102,14 @@ test.describe("Theme Contract", () => {
     const bgAppStart = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue("--bg-app-gradient-start").trim()
     );
-    // modern-light: #eef2f7 (matches --surface-shell; was #f1f5f9 before surface ladder refactor)
-    expect(bgAppStart.toLowerCase()).toBe("#fdfcfb");
+    // modern-light: --bg-app-gradient-start = #fffef9 (Phase 1 surface ladder recalibration; was #fdfcfb)
+    expect(bgAppStart.toLowerCase()).toBe("#fffef9");
 
     const bgAppMid = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue("--bg-app-gradient-mid").trim()
     );
-    // modern-light: #eef2f7 (was #f8fafc before refactor)
-    expect(bgAppMid.toLowerCase()).toBe("#fcfaf8");
+    // modern-light: --bg-app-gradient-mid = #faf8f3 (Phase 1 surface ladder recalibration; was #fcfaf8)
+    expect(bgAppMid.toLowerCase()).toBe("#faf8f3");
   });
 
   test("practice bar is light-readable in light mode", async ({ page }) => {
@@ -128,8 +128,8 @@ test.describe("Theme Contract", () => {
       };
     });
     
-    // modern-light: --practice-bar-fill = --surface-strip = --surface-card-top -> rgb(250, 251, 253)
-    expect(styles.backgroundColor.replace(/\s/g, "")).toBe("rgb(253,253,252)");
+    // modern-light: --practice-bar-fill = --surface-strip = --surface-card-top = #fcf9f5 -> rgb(252, 249, 245)
+    expect(styles.backgroundColor.replace(/\s/g, "")).toBe("rgb(252,249,245)");
     // text-main: #0f172a -> rgb(15, 23, 42)
     expect(styles.color.replace(/\s/g, "")).toBe("rgb(15,23,42)");
   });
@@ -185,8 +185,8 @@ test.describe("Theme Contract", () => {
     const tonicNote = page.locator('g[data-note-role="key-tonic"] circle').first();
     await expect(tonicNote).toBeVisible();
     const tonicNoteStroke = await tonicNote.evaluate((el) => getComputedStyle(el).stroke);
-    // --note-ring-tonic: var(--neon-orange) -> rgb(234, 88, 12)
-    expect(tonicNoteStroke.replace(/\s/g, "")).toBe("rgb(234,88,12)");
+    // light: --note-ring-tonic = #b45309 -> rgb(180, 83, 9) (Phase 3 light-mode override; was --neon-orange)
+    expect(tonicNoteStroke.replace(/\s/g, "")).toBe("rgb(180,83,9)");
   });
 
   test("modern-dark should use dark wood tokens", async ({ page }) => {
@@ -508,7 +508,8 @@ test.describe("Theme Contract", () => {
               isCyanLike(afterStyles.bg) || afterStyles.bgImg.includes("gradient"),
             ).toBe(true);
           } else {
-            expect(afterStyles.bg.replace(/\s/g, "")).toBe("rgb(227,222,215)");
+            // light: --surface-control-hover-bg = #f0ede9 -> rgb(240, 237, 233) (Phase 4 child-tier hover token; parent --chrome-hover-bg stays #e3ded7)
+            expect(afterStyles.bg.replace(/\s/g, "")).toBe("rgb(240,237,233)");
           }
         });
 
@@ -732,7 +733,7 @@ test.describe("Theme Contract", () => {
       // Vite/lightning-css minifies `#ffffff` → `#fff` in production builds, so
       // canonicalize via colorToHex before comparing.
       expect(colorToHex(tokens.shell)).toBe("#fcfaf8");
-      expect(colorToHex(tokens.cardTop)).toBe("#fdfdfc");
+      expect(colorToHex(tokens.cardTop)).toBe("#fcf9f5");
       expect(colorToHex(tokens.nested)).toBe("#f8f6f4");
       expect(colorToHex(tokens.well)).toBe("#f0ece7");
       expect(colorToHex(tokens.float)).toBe("#ffffff");
@@ -808,8 +809,8 @@ test.describe("Theme Contract", () => {
       await expect(card).toBeVisible();
 
       const bg = await card.evaluate((el) => getComputedStyle(el).backgroundColor);
-      // surface-card-top = #fafbfd → rgb(250, 251, 253)
-      expect(bg.replace(/\s/g, "")).toBe("rgb(253,253,252)");
+      // surface-card-top = #fcf9f5 → rgb(252, 249, 245) (Phase 1 surface ladder recalibration)
+      expect(bg.replace(/\s/g, "")).toBe("rgb(252,249,245)");
       // Verify it is NOT pure white — the card-top is intentionally near-white
       // expect(bg.replace(/\s/g, "")).not.toBe("rgb(255,255,255)"); // Removed because card-top is now white
     });
@@ -832,8 +833,8 @@ test.describe("Theme Contract", () => {
       await expect(practiceBar).toBeVisible();
 
       const bg = await practiceBar.evaluate((el) => getComputedStyle(el).backgroundColor);
-      // surface-strip = --surface-card-top → rgb(250, 251, 253)
-      expect(bg.replace(/\s/g, "")).toBe("rgb(253,253,252)");
+      // surface-strip = --surface-card-top = #fcf9f5 → rgb(252, 249, 245)
+      expect(bg.replace(/\s/g, "")).toBe("rgb(252,249,245)");
       // Must not be pure white or the old f1f5f9 value
       // expect(bg.replace(/\s/g, "")).not.toBe("rgb(255,255,255)"); // Removed because card-top is now white
       expect(bg.replace(/\s/g, "")).not.toBe("rgb(241,245,249)");
@@ -850,7 +851,8 @@ test.describe("Theme Contract", () => {
       const practiceBg = await practiceBar.evaluate((el) => getComputedStyle(el).backgroundColor);
       const degreeBg = await degreeStrip.evaluate((el) => getComputedStyle(el).backgroundColor);
 
-      expect(practiceBg.replace(/\s/g, "")).toBe("rgb(253,253,252)");
+      // Both strips share --surface-strip = --surface-card-top = #fcf9f5 → rgb(252, 249, 245)
+      expect(practiceBg.replace(/\s/g, "")).toBe("rgb(252,249,245)");
       expect(degreeBg.replace(/\s/g, "")).toBe(practiceBg.replace(/\s/g, ""));
     });
 
@@ -862,8 +864,9 @@ test.describe("Theme Contract", () => {
       await expect(degreeStrip).toBeVisible();
 
       const bg = await degreeStrip.evaluate((el) => getComputedStyle(el).backgroundColor);
-      // strip-surface sets background via --strip-fill = --surface-strip = --surface-card-top
-      expect(bg.replace(/\s/g, "")).toBe("rgb(253,253,252)");
+      // strip-surface sets background via --strip-fill = --surface-strip = --surface-card-top = #fcf9f5 → rgb(252, 249, 245)
+      // (Phase 5 changed individual `.degree-chip` fills to #ffffff in light mode, but the strip wrapper itself still reads --surface-card-top.)
+      expect(bg.replace(/\s/g, "")).toBe("rgb(252,249,245)");
     });
 
     test("settings overlay uses surface-float (highest elevation) in light mode", async ({ page }) => {
@@ -919,9 +922,9 @@ test.describe("Theme Contract", () => {
       const modal = page.getByTestId("help-modal");
       await expect(modal).toBeVisible();
 
-      // Modal body uses --surface-panel = --surface-card-top = #fafbfd → rgb(250, 251, 253)
+      // Modal body uses --surface-panel = --surface-card-top = #fcf9f5 → rgb(252, 249, 245)
       const bodyBg = await modal.evaluate((el) => getComputedStyle(el).backgroundColor);
-      expect(bodyBg.replace(/\s/g, "")).toBe("rgb(253,253,252)");
+      expect(bodyBg.replace(/\s/g, "")).toBe("rgb(252,249,245)");
 
       // Modal header uses --surface-float (highest elevation) = #ffffff → rgb(255, 255, 255)
       const header = modal.locator('[class*="help-modal-header"]');
@@ -971,15 +974,15 @@ test.describe("Theme Contract", () => {
         await expect(tonicNote).toBeVisible();
 
         const stroke = await tonicNote.evaluate((el) => getComputedStyle(el).stroke);
-        // --note-ring-tonic = --neon-orange
-        // light: #ea580c → rgb(234, 88, 12); dark: #FF9A4D → rgb(255, 154, 77)
+        // light: --note-ring-tonic = #b45309 → rgb(180, 83, 9) (Phase 3 light-mode override)
+        // dark:  --note-ring-tonic = #FF9A4D → rgb(255, 154, 77)
         const m = stroke.replace(/\s/g, "").match(/rgb\((\d+),(\d+),(\d+)\)/);
         expect(m).not.toBeNull();
         if (m) {
-          // Orange/Rose: high R, low-mid G, low B
-          expect(Number(m[1])).toBeGreaterThan(180); // R high
-          expect(Number(m[2])).toBeLessThan(180);     // G mid
-          expect(Number(m[3])).toBeLessThan(100);     // B low
+          // Orange/Rose: high R, low-mid G, low B (light hits R=180 exactly; dark hits R=255)
+          expect(Number(m[1])).toBeGreaterThanOrEqual(180); // R high
+          expect(Number(m[2])).toBeLessThan(180);            // G mid
+          expect(Number(m[3])).toBeLessThan(100);            // B low
         }
       }
     });
