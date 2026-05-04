@@ -3,6 +3,7 @@ import {
   centroid,
   polarSort,
   closedCatmullRomPath,
+  closedPolylinePath,
   inflatedCapsulePath,
   convexHull,
   offsetOutlinePath,
@@ -156,6 +157,94 @@ describe("closedCatmullRomPath", () => {
       const decimal = n.includes(".") ? n.split(".")[1] : "";
       expect((decimal ?? "").length).toBeLessThanOrEqual(2);
     }
+  });
+});
+
+describe("closedPolylinePath", () => {
+  it("returns empty string for zero-vertex input", () => {
+    expect(closedPolylinePath([])).toBe("");
+  });
+
+  it("single-point input returns 'M x y' degenerate dot", () => {
+    const d = closedPolylinePath([{ x: 5, y: 10 }]);
+    expect(d).toBe("M 5 10");
+  });
+
+  it("3-vertex triangle: output contains 2 L commands and ends with Z", () => {
+    // M v0 L v1 L v2 Z → M covers first vertex, L for the remaining 2, then Z.
+    const pts = [
+      { x: 0, y: 0 },
+      { x: 50, y: 0 },
+      { x: 25, y: 40 },
+    ];
+    const d = closedPolylinePath(pts);
+    expect(d).not.toBe("");
+    expect(d.startsWith("M")).toBe(true);
+    expect(d.endsWith("Z")).toBe(true);
+    const lCount = (d.match(/\bL\b/g) ?? []).length;
+    expect(lCount).toBe(2);
+  });
+
+  it("collinear input (same-fret-column): output is M+L+L without Z (open polyline)", () => {
+    // Three vertically collinear points — zero signed area.
+    const pts = [
+      { x: 50, y: 0 },
+      { x: 50, y: 20 },
+      { x: 50, y: 40 },
+    ];
+    const d = closedPolylinePath(pts);
+    expect(d).not.toBe("");
+    expect(d.startsWith("M")).toBe(true);
+    expect(d.endsWith("Z")).toBe(false);
+    const lCount = (d.match(/\bL\b/g) ?? []).length;
+    expect(lCount).toBe(2);
+  });
+
+  it("4-vertex quadrilateral: output contains 3 L commands and ends with Z", () => {
+    // M v0 L v1 L v2 L v3 Z → M covers first vertex, L for the remaining 3, then Z.
+    const pts = [
+      { x: 0, y: 0 },
+      { x: 60, y: 0 },
+      { x: 60, y: 40 },
+      { x: 0, y: 40 },
+    ];
+    const d = closedPolylinePath(pts);
+    expect(d).not.toBe("");
+    expect(d.startsWith("M")).toBe(true);
+    expect(d.endsWith("Z")).toBe(true);
+    const lCount = (d.match(/\bL\b/g) ?? []).length;
+    expect(lCount).toBe(3);
+  });
+
+  it("coordinates rounded to 2 decimal places", () => {
+    const pts = [
+      { x: 1.234567, y: 2.345678 },
+      { x: 3.456789, y: 0.123456 },
+      { x: 2.111111, y: 4.999999 },
+    ];
+    const d = closedPolylinePath(pts);
+    // No coordinate should have more than 2 decimal digits.
+    // Extract all numeric tokens (skip M, L, Z).
+    const tokens = d.split(/\s+/).filter((t) => /^-?\d/.test(t));
+    for (const token of tokens) {
+      const decimal = token.includes(".") ? (token.split(".")[1] ?? "") : "";
+      expect(decimal.length).toBeLessThanOrEqual(2);
+    }
+    // Verify specific rounded values appear.
+    expect(d).toContain("1.23");
+    expect(d).toContain("2.35");
+  });
+
+  it("2-vertex input: open line (no Z)", () => {
+    const pts = [{ x: 10, y: 20 }, { x: 30, y: 40 }];
+    const d = closedPolylinePath(pts);
+    expect(d).not.toBe("");
+    expect(d.startsWith("M")).toBe(true);
+    // 2 vertices → 1 L command.
+    const lCount = (d.match(/\bL\b/g) ?? []).length;
+    expect(lCount).toBe(1);
+    // 2-vertex input never has area → open (no Z).
+    expect(d.endsWith("Z")).toBe(false);
   });
 });
 

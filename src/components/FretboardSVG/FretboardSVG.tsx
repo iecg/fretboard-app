@@ -1,4 +1,4 @@
-import { useId, useMemo, useCallback, memo, type CSSProperties } from "react";
+import { useId, useMemo, useCallback, memo, Fragment, type CSSProperties } from "react";
 import { useAtomValue } from "jotai";
 import {
   getNoteDisplay,
@@ -390,11 +390,10 @@ export const FretboardSVG = memo(function FretboardSVG({
                 pointerEvents="none"
               >
                 {connectorPolylines.map((voicing, i) => (
-                  <path
-                    key={i}
-                    d={voicing.d}
-                    fill="none"
-                  />
+                  <Fragment key={i}>
+                    <path className={styles["chord-connector-envelope"]} d={voicing.envelope} fill="none" />
+                    <path className={styles["chord-connector-spine"]} d={voicing.spine} fill="none" />
+                  </Fragment>
                 ))}
               </g>
             )}

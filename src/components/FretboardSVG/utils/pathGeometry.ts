@@ -387,6 +387,55 @@ export function offsetOutlinePath(polygon: Array<{ x: number; y: number }>, r: n
 }
 
 // ---------------------------------------------------------------------------
+// closedPolylinePath
+// ---------------------------------------------------------------------------
+
+/**
+ * Emit a closed polyline path (M + L commands + Z) through the given vertices.
+ *
+ * For polygons with zero signed area (perfectly collinear N vertices), emit an
+ * OPEN polyline (no Z) so the dashed stroke doesn't retrace itself.
+ *
+ * Coordinates are rounded to 2 decimal places.
+ *
+ * @param vertices - Vertex sequence in traversal order (caller provides ordering).
+ * @returns SVG path-d string. Empty string for zero-vertex input. Single-point
+ *          input returns "M x,y" (a degenerate dot — caller should avoid this).
+ */
+export function closedPolylinePath(vertices: Array<{ x: number; y: number }>): string {
+  if (vertices.length === 0) return "";
+  if (vertices.length === 1) {
+    const v = vertices[0]!;
+    return `M ${r2(v.x)} ${r2(v.y)}`;
+  }
+
+  const parts: string[] = [];
+  const first = vertices[0]!;
+  parts.push(`M ${r2(first.x)} ${r2(first.y)}`);
+  for (let i = 1; i < vertices.length; i++) {
+    const v = vertices[i]!;
+    parts.push(`L ${r2(v.x)} ${r2(v.y)}`);
+  }
+
+  // Compute signed area (shoelace formula) to detect collinear input.
+  // In SVG screen coordinates (y-axis down): 2A ≠ 0 means non-degenerate polygon.
+  let twoA = 0;
+  const N = vertices.length;
+  for (let i = 0; i < N; i++) {
+    const a = vertices[i]!;
+    const b = vertices[(i + 1) % N]!;
+    twoA += a.x * b.y - b.x * a.y;
+  }
+
+  // Append Z only for non-collinear polygons (3+ vertices with non-zero area).
+  if (vertices.length >= 3 && Math.abs(twoA) > 1e-9) {
+    parts.push("Z");
+  }
+
+  return parts.join(" ");
+}
+
+// ---------------------------------------------------------------------------
 // inflatedCapsulePath
 // ---------------------------------------------------------------------------
 

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { NoteData } from "./useNoteData";
-import { polarSort, offsetOutlinePath } from "../utils/pathGeometry";
+import { convexHull, polarSort, offsetOutlinePath, closedPolylinePath } from "../utils/pathGeometry";
 import { NOTE_BUBBLE_RATIO, HALO_RATIO } from "../../../core/constants";
 
 export interface ChordConnectorVertex {
@@ -39,17 +39,18 @@ export const CHORD_TONE_CLASSES = new Set([
  *
  * **Return shape (per voicing):**
  * ```typescript
- * { d: string; vertices: ChordConnectorVertex[] }
+ * { envelope: string; spine: string; vertices: ChordConnectorVertex[] }
  * ```
- * - `d` — pre-computed SVG path `d` attribute string for the closed contour.
- *   Built via offset-outline geometry (Minkowski sum with a disk of radius
- *   `r = stringRowPx * (NOTE_BUBBLE_RATIO/2 + HALO_RATIO)`):
- *   1. Sort the raw voicing vertices by polar angle (polarSort) so the polygon
- *      visits every vertex without self-intersection.
- *   2. Dispatch on vertex count: 1 → circle, 2 → capsule, 3+ → rounded polygon.
- *   The offset ensures the contour visibly envelopes every note bubble.
- *   Near-collinear voicings (e.g. a diagonal triad) visit all vertices because
- *   polarSort retains interior/collinear points that convexHull would drop.
+ * - `envelope` — pre-computed SVG path `d` string for the convex-hull offset
+ *   outline (Minkowski sum with a disk of radius
+ *   `r = stringRowPx * (NOTE_BUBBLE_RATIO/2 + HALO_RATIO)`). Built from the
+ *   convex hull of the raw vertices so the outline is always non-self-intersecting,
+ *   even for thin or near-collinear voicings. Rendered as a thin solid stroke.
+ * - `spine` — pre-computed SVG path `d` string for the closed polyline that
+ *   visits every chord-tone vertex in polar order. Always passes through all N
+ *   note positions (unlike the convex hull, which may drop near-collinear interior
+ *   points). Rendered as the existing dashed dotted line. Open (no Z) when all
+ *   vertices are perfectly collinear (zero signed area) to avoid stroke retracing.
  * - `vertices` — original (unmodified) chord-tone pixel positions, retained for
  *   unit tests and future per-voicing color keying.
  *
@@ -74,11 +75,15 @@ export const CHORD_TONE_CLASSES = new Set([
  *           index (highest string first).
  *   4. Deduplicate emitted voicings by their canonical "(stringIndex,fretIndex)"
  *      tuple set so that overlapping cluster anchors don't re-emit the same shape.
- *   5. For each voicing vertex list: polar-sort the vertices, then produce offset
- *      outline path via `offsetOutlinePath`.
+ *   5. For each voicing vertex list:
+ *      - Compute convex hull → offset outline path (`envelope`). Clean, non-self-
+ *        intersecting shape boundary. For near-collinear input the hull collapses
+ *        to a 2-vertex capsule, which is still a valid clean envelope.
+ *      - Polar-sort ALL raw vertices → closed polyline path (`spine`). Visits
+ *        every chord-tone note. Open (no Z) when area is zero (perfectly collinear).
  *
- * Returns an array of `{ d, vertices }` objects, one per distinct playable voicing.
- * Returns [] when N < 2 or no valid voicing can be assembled.
+ * Returns an array of `{ envelope, spine, vertices }` objects, one per distinct
+ * playable voicing. Returns [] when N < 2 or no valid voicing can be assembled.
  *
  * @param noteData        Shape-aware note data from useNoteData (note-inactive already
  *                        marks positions outside the active CAGED/3NPS shape).
@@ -95,7 +100,7 @@ export function buildChordConnectorPolylines(
   fretCenterX: (fretIndex: number) => number,
   stringYAt: (stringIndex: number, x: number) => number,
   stringRowPx: number,
-): { d: string; vertices: ChordConnectorVertex[] }[] {
+): { envelope: string; spine: string; vertices: ChordConnectorVertex[] }[] {
   // Step 1: collect active chord-tone positions (skip note-inactive).
   const activeTones: NoteData[] = [];
   for (const nd of noteData) {
@@ -130,7 +135,7 @@ export function buildChordConnectorPolylines(
 
   // Track emitted voicings by canonical key to deduplicate.
   const emitted = new Set<string>();
-  const results: { d: string; vertices: ChordConnectorVertex[] }[] = [];
+  const results: { envelope: string; spine: string; vertices: ChordConnectorVertex[] }[] = [];
 
   // Step 3: slide an N-string window across the neck.
   for (let s = minString; s + N - 1 <= maxString; s++) {
@@ -240,18 +245,23 @@ export function buildChordConnectorPolylines(
         return { x, y };
       });
 
-      // Step 5: polar-sort the raw vertices and produce the offset outline.
-      // polarSort visits every vertex (retaining near-collinear interior notes),
-      // unlike convexHull which drops them. The winding-agnostic offsetOutlinePath
-      // handles both CW and CCW output from polarSort correctly.
+      // Step 5: two-layer path generation.
       // r = noteRadius + haloPx = stringRowPx * (NOTE_BUBBLE_RATIO/2 + HALO_RATIO)
-      const polygon = polarSort(rawVertices);
       const r = stringRowPx * (NOTE_BUBBLE_RATIO / 2 + HALO_RATIO);
-      const d = offsetOutlinePath(polygon, r);
+
+      // Envelope: convex hull → offset outline. Always a clean non-self-intersecting
+      // shape. For near-collinear input the hull collapses to 2 vertices (capsule).
+      const hull = convexHull(rawVertices);
+      const envelope = offsetOutlinePath(hull, r);
+
+      // Spine: polar-sort ALL raw vertices → closed polyline. Visits every note
+      // regardless of near-collinearity. Open (no Z) when area is zero.
+      const polygon = polarSort(rawVertices);
+      const spine = closedPolylinePath(polygon);
 
       // Keep original (unmodified) vertex positions in the result for debugging
       // and future per-voicing color keying.
-      results.push({ d, vertices: rawVertices });
+      results.push({ envelope, spine, vertices: rawVertices });
     }
   }
 
@@ -270,11 +280,13 @@ export interface UseChordConnectorPolylinesParams {
 /**
  * React hook that memoizes `buildChordConnectorPolylines` output.
  *
- * Returns `{ d: string; vertices: ChordConnectorVertex[] }[]` — one entry per
- * distinct playable voicing. Each entry carries:
- * - `d` — the SVG path `d` attribute for the closed offset-outline contour
- *   (circle, capsule, or rounded polygon that visibly envelopes all chord-tone
- *   bubbles in the voicing).
+ * Returns `{ envelope: string; spine: string; vertices: ChordConnectorVertex[] }[]`
+ * — one entry per distinct playable voicing. Each entry carries:
+ * - `envelope` — the SVG path `d` attribute for the convex-hull offset-outline
+ *   contour (circle, capsule, or rounded polygon that cleanly envelopes all
+ *   chord-tone bubbles in the voicing, without self-intersections).
+ * - `spine` — the SVG path `d` attribute for the polar-sorted closed polyline
+ *   that visits every chord-tone vertex (including near-collinear interior notes).
  * - `vertices` — the original chord-tone pixel positions for debugging and
  *   future per-voicing color keying.
  *
@@ -286,7 +298,7 @@ export function useChordConnectorPolylines({
   fretCenterX,
   stringYAt,
   stringRowPx,
-}: UseChordConnectorPolylinesParams): { d: string; vertices: ChordConnectorVertex[] }[] {
+}: UseChordConnectorPolylinesParams): { envelope: string; spine: string; vertices: ChordConnectorVertex[] }[] {
   return useMemo(
     () =>
       buildChordConnectorPolylines(

@@ -411,10 +411,21 @@
    Closed contour paths connecting active chord tones on the fretboard neck.
    Styled via token variables so light/dark themes propagate automatically.
    ----------------------------------------------------------------------- */
-.chord-connectors path {
+.chord-connector-envelope {
+  stroke: var(--chord-connector-stroke);
+  stroke-width: 1.5px;
+  fill: none;
+  opacity: var(--chord-connector-opacity);
+  /* solid thin envelope — no dasharray */
+}
+
+.chord-connector-spine {
   stroke: var(--chord-connector-stroke);
   stroke-width: 2.5px;
   stroke-dasharray: var(--chord-connector-dash);
   fill: none;
   opacity: var(--chord-connector-opacity);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  /* dashed spine through note centers */
 }
