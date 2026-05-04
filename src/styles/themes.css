@@ -258,10 +258,11 @@
      --shadow-ping-start, --shadow-ping-end */
 
   /* Chord-tone connector overrides for light mode.
-     Raised stroke alpha (55% → 70%) and opacity gate (0.6 → 0.85) so that
-     effective alpha ≥ 0.60 against warm maple wood (#fbe6c6 / #f1c38e). */
-  --chord-connector-stroke: color-mix(in srgb, #ea580c 70%, transparent);
-  --chord-connector-opacity: 0.85;
+     Fully opaque orange-800 (#9a3412) with opacity 1.0 ensures strong contrast
+     against warm maple wood (#fbe6c6 / #f1c38e) — effective alpha = 1.0 vs ~0.60
+     previously. Stroke-width bump to 2.5px adds density without muddying the fill. */
+  --chord-connector-stroke: #9a3412;
+  --chord-connector-opacity: 1.0;
 }
 
 /* ==========================================================================

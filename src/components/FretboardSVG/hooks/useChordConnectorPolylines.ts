@@ -7,9 +7,9 @@ export interface ChordConnectorVertex {
 }
 
 /**
- * Maximum fret distance between two MST-connected positions before the edge is
- * pruned. A span > 5 frets indicates two unrelated voicing regions; connecting
- * them with one line would cross the entire neck.
+ * Maximum fret span (inclusive) for a single playable voicing.
+ * Any voicing whose max-fret minus min-fret exceeds this is dropped as
+ * unplayable — the hand cannot comfortably stretch that far.
  */
 export const MAX_FRET_SPAN = 5;
 
@@ -27,100 +27,196 @@ export const CHORD_TONE_CLASSES = new Set([
   "key-tonic",
 ]);
 
-interface ConnectorNode {
-  x: number;
-  y: number;
-  fretIndex: number;
-}
-
 /**
  * Pure function — no React dependency required. Exported for direct unit testing.
  *
- * Accepts a filtered `NoteData[]` array (already shape-aware: notes outside the
- * active CAGED/3NPS shape have noteClass "note-inactive" and are excluded by the
- * caller).  Filters to chord-tone roles, maps each to an SVG vertex, then runs
- * Prim's Minimum Spanning Tree algorithm over Euclidean distance in pixel space.
- * After MST construction, any edge whose fret-distance exceeds MAX_FRET_SPAN is
- * pruned (avoids cross-neck lines on spread voicings).
+ * Implements **voicing-aware shape detection** instead of an MST over pixel
+ * distance. A guitar chord is played by fretting AT MOST ONE note per string at
+ * a time, so a valid voicing occupies exactly N consecutive strings where N is
+ * the number of distinct chord tones (e.g. 3 for a triad, 4 for a 7th chord).
  *
- * Returns an array of 2-vertex polylines, one per MST edge.
- * Returns [] when fewer than 2 eligible positions are found.
+ * Algorithm:
+ *   1. Collect all active chord-tone positions (note-inactive excluded).
+ *   2. Determine N = chordToneNames.length. If N < 2, return [].
+ *   3. For each window of N consecutive strings [s, s+N-1]:
+ *        a. For each unique anchor fret (every fret that appears on any string
+ *           in this window), define a candidate cluster as all positions on any
+ *           string in the window whose fretIndex is within MAX_FRET_SPAN of the
+ *           anchor.
+ *        b. Gather candidates per string: for each string in the window, the
+ *           subset of positions whose fretIndex falls in the cluster fret range.
+ *        c. If any string in the window has zero candidates, skip this cluster
+ *           (cannot form a complete voicing).
+ *        d. Generate all combinations — one position per string. Keep only
+ *           combinations where the union of distinct noteNames equals the full
+ *           chordToneNames set (every chord tone represented at least once,
+ *           no chord tone missing).
+ *        e. Among valid combinations, prefer the one with the smallest fret span
+ *           (tightest grip). Emit it as an N-vertex polyline ordered by string
+ *           index (highest string first).
+ *   4. Deduplicate emitted voicings by their canonical "(stringIndex,fretIndex)"
+ *      tuple set so that overlapping cluster anchors don't re-emit the same shape.
+ *
+ * Returns an array of N-vertex polylines, one per distinct playable voicing.
+ * Returns [] when N < 2 or no valid voicing can be assembled.
+ *
+ * @param noteData   Shape-aware note data from useNoteData (note-inactive already
+ *                   marks positions outside the active CAGED/3NPS shape).
+ * @param chordToneNames  The N distinct chord-tone note names expected in each voicing
+ *                        (e.g. ["C","E","G"] for C major). Order does not matter.
+ * @param fretCenterX     Maps fretIndex → SVG x coordinate.
+ * @param stringYAt       Maps (stringIndex, x) → SVG y coordinate.
  */
 export function buildChordConnectorPolylines(
   noteData: NoteData[],
+  chordToneNames: string[],
   fretCenterX: (fretIndex: number) => number,
   stringYAt: (stringIndex: number, x: number) => number,
 ): ChordConnectorVertex[][] {
-  // Step 1: Collect chord-tone nodes that are not filtered out by shape constraints.
-  // noteClass "note-inactive" means outside the active shape — skip them.
-  const nodes: ConnectorNode[] = [];
+  // Step 1: collect active chord-tone positions (skip note-inactive).
+  const activeTones: NoteData[] = [];
   for (const nd of noteData) {
     if (nd.noteClass === "note-inactive") continue;
     if (!CHORD_TONE_CLASSES.has(nd.noteClass)) continue;
-    const x = fretCenterX(nd.fretIndex);
-    const y = stringYAt(nd.stringIndex, x);
-    nodes.push({ x, y, fretIndex: nd.fretIndex });
+    activeTones.push(nd);
   }
 
-  if (nodes.length < 2) return [];
+  const N = chordToneNames.length;
+  if (N < 2 || activeTones.length < N) return [];
 
-  const n = nodes.length;
+  const requiredSet = new Set(chordToneNames);
 
-  // Step 2: Prim's MST over the complete graph using Euclidean distance.
-  // inMST[i] = true once node i is included in the growing tree.
-  // minDist[i] = minimum Euclidean distance from node i to any node already in the tree.
-  // nearest[i] = index of the tree node closest to node i.
-  const inMST = new Array<boolean>(n).fill(false);
-  const minDist = new Array<number>(n).fill(Infinity);
-  const nearest = new Array<number>(n).fill(-1);
-
-  // Start from node 0.
-  minDist[0] = 0;
-
-  const edges: Array<[number, number]> = [];
-
-  for (let step = 0; step < n; step++) {
-    // Pick the non-MST node with the smallest minDist.
-    let u = -1;
-    for (let i = 0; i < n; i++) {
-      if (!inMST[i] && (u === -1 || minDist[i] < minDist[u])) {
-        u = i;
-      }
-    }
-    inMST[u] = true;
-
-    // Record the MST edge (skip root node which has no parent).
-    if (nearest[u] !== -1) {
-      edges.push([u, nearest[u]]);
-    }
-
-    // Update distances for all remaining non-MST nodes.
-    const nu = nodes[u]!;
-    for (let v = 0; v < n; v++) {
-      if (inMST[v]) continue;
-      const nv = nodes[v]!;
-      const dx = nu.x - nv.x;
-      const dy = nu.y - nv.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < minDist[v]) {
-        minDist[v] = dist;
-        nearest[v] = u;
-      }
-    }
+  // Step 2: determine the range of string indices present.
+  let minString = Infinity;
+  let maxString = -Infinity;
+  for (const nd of activeTones) {
+    if (nd.stringIndex < minString) minString = nd.stringIndex;
+    if (nd.stringIndex > maxString) maxString = nd.stringIndex;
   }
 
-  // Step 3: Post-prune edges whose fret span exceeds MAX_FRET_SPAN.
-  // This removes connections across implausibly large neck regions (e.g., two
-  // separate chord positions separated by an open string).
+  // Build a lookup: stringIndex → positions on that string.
+  const byString = new Map<number, NoteData[]>();
+  for (const nd of activeTones) {
+    let arr = byString.get(nd.stringIndex);
+    if (!arr) {
+      arr = [];
+      byString.set(nd.stringIndex, arr);
+    }
+    arr.push(nd);
+  }
+
+  // Track emitted voicings by canonical key to deduplicate.
+  const emitted = new Set<string>();
   const polylines: ChordConnectorVertex[][] = [];
-  for (const [a, b] of edges) {
-    const na = nodes[a]!;
-    const nb = nodes[b]!;
-    if (Math.abs(na.fretIndex - nb.fretIndex) <= MAX_FRET_SPAN) {
-      polylines.push([
-        { x: na.x, y: na.y },
-        { x: nb.x, y: nb.y },
-      ]);
+
+  // Step 3: slide an N-string window across the neck.
+  for (let s = minString; s + N - 1 <= maxString; s++) {
+    // Collect all positions across the N strings in this window.
+    const windowPositions: NoteData[] = [];
+    let windowFullyCovered = true;
+    for (let si = s; si < s + N; si++) {
+      const onString = byString.get(si);
+      if (!onString || onString.length === 0) {
+        windowFullyCovered = false;
+        break;
+      }
+      for (const nd of onString) {
+        windowPositions.push(nd);
+      }
+    }
+    if (!windowFullyCovered) continue;
+
+    // Collect all unique fret anchors present in this window.
+    const fretAnchors = new Set<number>();
+    for (const nd of windowPositions) {
+      fretAnchors.add(nd.fretIndex);
+    }
+
+    for (const anchor of fretAnchors) {
+      const maxFretInCluster = anchor + MAX_FRET_SPAN;
+      const minFretInCluster = anchor;
+
+      // For each string in the window, collect candidates in [anchor, anchor+MAX_FRET_SPAN].
+      const candidatesPerString: NoteData[][] = [];
+      let clusterFullyCovered = true;
+      for (let si = s; si < s + N; si++) {
+        const onString = byString.get(si) ?? [];
+        const candidates = onString.filter(
+          (nd) => nd.fretIndex >= minFretInCluster && nd.fretIndex <= maxFretInCluster,
+        );
+        if (candidates.length === 0) {
+          clusterFullyCovered = false;
+          break;
+        }
+        candidatesPerString.push(candidates);
+      }
+      if (!clusterFullyCovered) continue;
+
+      // Generate all combinations (one per string) via iterative cartesian product.
+      // We stop early if we've already found a valid voicing for this cluster.
+      // For performance, limit explosion: if total combinations > 256, still proceed
+      // but we'll just emit the best-span one.
+      const totalCombinations = candidatesPerString.reduce((acc, arr) => acc * arr.length, 1);
+      if (totalCombinations === 0) continue;
+
+      // Enumerate combinations using index arithmetic.
+      let bestCombo: NoteData[] | null = null;
+      let bestSpan = Infinity;
+
+      for (let combo = 0; combo < totalCombinations; combo++) {
+        // Decode combination index to one pick per string.
+        const picks: NoteData[] = [];
+        let remainder = combo;
+        for (let si = 0; si < N; si++) {
+          const arr = candidatesPerString[si]!;
+          const idx = remainder % arr.length;
+          remainder = Math.floor(remainder / arr.length);
+          picks.push(arr[idx]!);
+        }
+
+        // Check: union of distinct noteNames must equal the full chord-tone set.
+        const coveredNotes = new Set(picks.map((p) => p.noteName));
+        if (coveredNotes.size !== requiredSet.size) continue;
+        let allCovered = true;
+        for (const tone of requiredSet) {
+          if (!coveredNotes.has(tone)) {
+            allCovered = false;
+            break;
+          }
+        }
+        if (!allCovered) continue;
+
+        // Compute fret span for this combo.
+        let minF = Infinity;
+        let maxF = -Infinity;
+        for (const p of picks) {
+          if (p.fretIndex < minF) minF = p.fretIndex;
+          if (p.fretIndex > maxF) maxF = p.fretIndex;
+        }
+        const span = maxF - minF;
+        if (span < bestSpan) {
+          bestSpan = span;
+          bestCombo = picks;
+        }
+      }
+
+      if (!bestCombo) continue;
+
+      // Canonical key: sorted "(stringIndex,fretIndex)" pairs.
+      const canonicalKey = bestCombo
+        .map((p) => `${p.stringIndex},${p.fretIndex}`)
+        .sort()
+        .join("|");
+      if (emitted.has(canonicalKey)) continue;
+      emitted.add(canonicalKey);
+
+      // Emit polyline: N vertices ordered by stringIndex (window order s → s+N-1).
+      const vertices: ChordConnectorVertex[] = bestCombo.map((p) => {
+        const x = fretCenterX(p.fretIndex);
+        const y = stringYAt(p.stringIndex, x);
+        return { x, y };
+      });
+      polylines.push(vertices);
     }
   }
 
@@ -129,22 +225,24 @@ export function buildChordConnectorPolylines(
 
 export interface UseChordConnectorPolylinesParams {
   noteData: NoteData[];
+  chordToneNames: string[];
   fretCenterX: (fretIndex: number) => number;
   stringYAt: (stringIndex: number, x: number) => number;
 }
 
 /**
  * React hook that memoizes `buildChordConnectorPolylines` output.
- * Re-runs only when noteData or geometry helpers change.
+ * Re-runs only when noteData, chordToneNames, or geometry helpers change.
  */
 export function useChordConnectorPolylines({
   noteData,
+  chordToneNames,
   fretCenterX,
   stringYAt,
 }: UseChordConnectorPolylinesParams): ChordConnectorVertex[][] {
   return useMemo(
-    () => buildChordConnectorPolylines(noteData, fretCenterX, stringYAt),
+    () => buildChordConnectorPolylines(noteData, chordToneNames, fretCenterX, stringYAt),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [noteData],
+    [noteData, chordToneNames],
   );
 }

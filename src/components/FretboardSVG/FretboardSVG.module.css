@@ -413,7 +413,7 @@
    ----------------------------------------------------------------------- */
 .chord-connectors polyline {
   stroke: var(--chord-connector-stroke);
-  stroke-width: 2px;
+  stroke-width: 2.5px;
   stroke-dasharray: var(--chord-connector-dash);
   fill: none;
   opacity: var(--chord-connector-opacity);
