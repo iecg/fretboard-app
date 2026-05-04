@@ -258,3 +258,19 @@
      --shadow-ping-start, --shadow-ping-end */
 }
 
+/* ==========================================================================
+   Theme Overrides — Modern Dark
+   Audit row 4: --fretboard-note-fill-scale-only dark-mode retune.
+   The :root default in semantic.css is #121a26 (cool blue-gray). The mirror-
+   warm-amber palette calls for a dark warm brown that contrasts the dark wood
+   (#160d07 top, #0d0805 mid) while staying in the same warm family as the
+   chord-tone fills (cream #fef3e2, yellow #fde68a).
+   ========================================================================== */
+[data-theme="modern-dark"] {
+  /* Scale-only fill: warm brown that reads distinctly against dark rosewood.
+     #3a2f28 sits ~2–3 L-steps above wood-mid #0d0805 — visible but subordinate
+     to the more vivid chord-tone fills. Replaces the cool blue-gray #121a26
+     which drifts away from the mirror-warm-amber palette anchor. */
+  --fretboard-note-fill-scale-only: #3a2f28;
+}
+
