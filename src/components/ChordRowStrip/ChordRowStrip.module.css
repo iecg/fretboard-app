@@ -117,11 +117,8 @@
   margin: 0;
   padding: 0.1rem 0 0;
   width: 100%;
+  /* Token resolves to rgb(255 255 255 / 0.06) in dark mode and warm-light surface in light mode. */
   border-top: 1px solid var(--token-border-subtle);
-}
-
-:global([data-theme="modern-dark"]) .chord-row-legend {
-  border-top: 1px solid rgb(255 255 255 / 0.06);
 }
 
 .chord-row-legend-item {
@@ -223,6 +220,11 @@
 
 :global([data-theme="modern-light"]) .chord-row-legend-item[data-role="chord-tone-outside-scale"] .chord-row-legend-swatch {
   box-shadow: none;
+}
+
+/* Scale-only swatch — explicit warm-neutral border so the role-scoped base rule's dark-tuned token doesn't bleed through. */
+:global([data-theme="modern-light"]) .chord-row-legend-item[data-role="scale-only"] .chord-row-legend-swatch {
+  border-color: #e0dbd3;
 }
 
 .chord-row-strip--compact {

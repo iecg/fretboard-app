@@ -286,6 +286,7 @@
 :global([data-theme="modern-light"]) .practice-bar-pill[data-tension="true"]:not([data-chord-root="true"]) {
   background: #fde68a;
   border-color: var(--neon-orange);
+  box-shadow: none;
 }
 
 /* Root + tension overlap: keep amber-strong fill, remove glow */
@@ -293,9 +294,11 @@
   box-shadow: none;
 }
 
-/* Degree-color mode: mix degree color against warm white base instead of chip-surface-inactive */
+/* Degree-color mode: mix degree color against warm white base instead of chip-surface-inactive.
+   Border desaturates to 80% degree-color over the same warm-cream so it stays one tier crisper than the 55% background mix. */
 :global([data-theme="modern-light"]) .chord-practice-bar[data-degree-colors="true"] .practice-bar-pill[data-in-scale="true"][data-scale-degree] {
   background: color-mix(in srgb, var(--degree-color) 55%, #f8f6f2);
+  border-color: color-mix(in srgb, var(--degree-color) 80%, #f8f6f2);
 }
 
 :global(.app-container[data-layout-variant="tablet-stacked"]) .chord-practice-bar-groups {
