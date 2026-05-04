@@ -460,13 +460,12 @@ describe("buildChordConnectorPolylines", () => {
   });
 
   // -------------------------------------------------------------------------
-  // Contour smoke tests (offset-outline geometry)
+  // Contour smoke tests (fat polyline geometry)
   // -------------------------------------------------------------------------
 
-  it("triad voicing (non-collinear): envelope has A arc commands, spine visits all 3 vertices", () => {
-    // C major triad on 3 different frets (non-collinear 3-vertex hull) →
-    // envelope: rounded offset polygon with 3 A arc commands.
-    // spine: closed polyline through all 3 polar-sorted vertices (3 L commands + Z).
+  it("triad voicing (3 different frets): d is M+L+L open polyline visiting all 3 vertices", () => {
+    // C major triad on 3 different frets in string-index order.
+    // d: open polyline through all 3 vertices — M v0 L v1 L v2 (no Z).
     const noteData = [
       makeNote(0, 3, "C", "chord-root"),
       makeNote(1, 5, "E", "chord-tone-in-scale"),
@@ -474,25 +473,18 @@ describe("buildChordConnectorPolylines", () => {
     ];
     const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
     expect(result).toHaveLength(1);
-    const { envelope, spine } = result[0]!;
-    // Envelope: non-empty closed path with arc commands.
-    expect(envelope).not.toBe("");
-    expect(envelope.startsWith("M")).toBe(true);
-    expect(envelope.endsWith("Z")).toBe(true);
-    expect(envelope).toContain("A");
-    expect(envelope).toContain("L");
-    // Spine: closed polyline — M v0 L v1 L v2 Z → 2 L commands for 3 vertices.
-    expect(spine).not.toBe("");
-    expect(spine.startsWith("M")).toBe(true);
-    expect(spine.endsWith("Z")).toBe(true);
-    const spineLCount = (spine.match(/\bL\b/g) ?? []).length;
-    expect(spineLCount).toBe(2);
+    const { d } = result[0]!;
+    expect(d).not.toBe("");
+    expect(d.startsWith("M")).toBe(true);
+    expect(d.endsWith("Z")).toBe(false);
+    // 3 vertices → 2 L commands (M + L + L)
+    const lCount = (d.match(/\bL\b/g) ?? []).length;
+    expect(lCount).toBe(2);
   });
 
-  it("7th chord voicing (4-vertex hull): envelope has 4 arc commands, spine visits all 4 vertices", () => {
-    // Cmaj7: C, E, G, B spread across 4 strings and different frets →
-    // envelope: 4-vertex convex hull → rounded offset polygon with 4 A arc commands.
-    // spine: closed polyline through all 4 polar-sorted vertices (4 L commands + Z).
+  it("7th chord voicing (4 vertices): d is M+L+L+L open polyline visiting all 4 vertices", () => {
+    // Cmaj7: C, E, G, B across 4 strings and different frets.
+    // d: open polyline through all 4 vertices — M v0 L v1 L v2 L v3 (no Z).
     const noteData = [
       makeNote(0, 3, "C", "chord-root"),
       makeNote(1, 5, "E", "chord-tone-in-scale"),
@@ -501,24 +493,19 @@ describe("buildChordConnectorPolylines", () => {
     ];
     const result = buildChordConnectorPolylines(noteData, ["C", "E", "G", "B"], fretCenterX, stringYAt, STRING_ROW_PX);
     expect(result).toHaveLength(1);
-    const { envelope, spine } = result[0]!;
-    // Envelope: non-empty closed path with arc commands.
-    expect(envelope).not.toBe("");
-    expect(envelope.startsWith("M")).toBe(true);
-    expect(envelope.endsWith("Z")).toBe(true);
-    expect(envelope).toContain("A");
-    // Spine: closed polyline — M v0 L v1 L v2 L v3 Z → 3 L commands for 4 vertices.
-    expect(spine).not.toBe("");
-    expect(spine.startsWith("M")).toBe(true);
-    expect(spine.endsWith("Z")).toBe(true);
-    const spineLCount = (spine.match(/\bL\b/g) ?? []).length;
-    expect(spineLCount).toBe(3);
+    const { d } = result[0]!;
+    expect(d).not.toBe("");
+    expect(d.startsWith("M")).toBe(true);
+    expect(d.endsWith("Z")).toBe(false);
+    // 4 vertices → 3 L commands (M + L + L + L)
+    const lCount = (d.match(/\bL\b/g) ?? []).length;
+    expect(lCount).toBe(3);
   });
 
-  it("collinear voicing (same fret, 3 adjacent strings): envelope is capsule, spine is open polyline", () => {
-    // All 3 notes at the exact same fret → same x coordinate → perfectly collinear.
-    // envelope: convexHull → 2-vertex hull → capsule (2 A arc commands, 2 L segments).
-    // spine: open polyline (no Z — zero signed area avoids stroke retracing).
+  it("collinear voicing (same fret, 3 adjacent strings): d is M+L+L open polyline, no Z", () => {
+    // All 3 notes at the exact same fret → same x coordinate → collinear.
+    // d: open polyline — M v0 L v1 L v2 (no Z).
+    // fretCenterX(5) = 50; all x values equal 50.
     const noteData = [
       makeNote(0, 5, "C", "chord-root"),
       makeNote(1, 5, "E", "chord-tone-in-scale"),
@@ -526,46 +513,34 @@ describe("buildChordConnectorPolylines", () => {
     ];
     const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
     expect(result).toHaveLength(1);
-    const { envelope, spine } = result[0]!;
-    // Envelope: capsule with exactly 2 A arc commands and 2 L segments.
-    expect(envelope).not.toBe("");
-    expect(envelope.startsWith("M")).toBe(true);
-    expect(envelope.endsWith("Z")).toBe(true);
-    const envACount = (envelope.match(/\bA\b/g) ?? []).length;
-    expect(envACount).toBe(2);
-    const envLCount = (envelope.match(/\bL\b/g) ?? []).length;
-    expect(envLCount).toBe(2);
-    // Regression: verify the capsule bbox-width is approximately 2 * r = 2 * (STRING_ROW_PX * 0.55).
-    // With STRING_ROW_PX=36: r=19.8, so width ≈ 39.6.
-    // fretCenterX(5) = 50. Capsule extends to x = 50 ± 19.8.
-    expect(envelope).toContain("30.2");
-    expect(envelope).toContain("69.8");
-    // Spine: open polyline (no Z) — 2 L commands through 3 polar-sorted vertices.
-    expect(spine).not.toBe("");
-    expect(spine.startsWith("M")).toBe(true);
-    expect(spine.endsWith("Z")).toBe(false);
-    const spineLCount = (spine.match(/\bL\b/g) ?? []).length;
-    expect(spineLCount).toBe(2);
+    const { d } = result[0]!;
+    expect(d).not.toBe("");
+    expect(d.startsWith("M")).toBe(true);
+    expect(d.endsWith("Z")).toBe(false);
+    // 3 vertices → 2 L commands
+    const lCount = (d.match(/\bL\b/g) ?? []).length;
+    expect(lCount).toBe(2);
+    // All x coordinates must be equal (same fret column x=50).
+    // Path tokens: "M 50,0 L 50,20 L 50,40" — verify all x values are 50.
+    expect(d).toMatch(/^M 50,[\d.]+ L 50,[\d.]+ L 50,[\d.]+$/);
   });
 
   // -------------------------------------------------------------------------
   // Regression: near-collinear diagonal triad G-E-C must visit all 3 vertices
   //
-  // Bug: convexHull dropped the middle vertex E when G→E→C were near-collinear
-  // (E within cross-product tolerance of the G-C line), collapsing the contour
-  // to a 2-vertex capsule spanning the long diagonal from G to C.
-  // Fix: polarSort retains every vertex; offsetOutlinePath visits all 3.
+  // Prior approach: convexHull dropped the middle vertex E when G→E→C were
+  // near-collinear, collapsing the envelope to a 2-vertex capsule.
+  // Fix: open polyline in string-index order literally visits every vertex —
+  // no hull computation, no vertex dropping.
   // -------------------------------------------------------------------------
 
-  it("(regression) near-collinear diagonal G-E-C: spine visits all 3 vertices, envelope is a clean capsule", () => {
+  it("(regression) near-collinear diagonal G-E-C: d visits all 3 vertices (no vertex drop)", () => {
     // Voicing: G(string 4, fret 5) → E(string 5, fret 7) → C(string 6, fret 8).
     // With fretCenterX(fi)=fi*10 and stringYAt(si)=si*20:
     //   G: x=50, y=80   E: x=70, y=100   C: x=80, y=120 (near-collinear diagonal).
     //
-    // envelope: convexHull collapses near-collinear to [G, C] → capsule (2 A arcs).
-    //           Clean, non-self-intersecting shape boundary around the chord region.
-    // spine:    polarSort retains all 3 vertices → 3 L commands + Z.
-    //           Visits every note so the dashed line reaches all chord tones.
+    // d: open polyline through all 3 vertices in string-index order (no Z).
+    //    The middle vertex E is always visited — no hull collapse possible.
     const noteData = [
       makeNote(4, 5, "G", "chord-tone-in-scale"),
       makeNote(5, 7, "E", "chord-tone-in-scale"),
@@ -573,17 +548,16 @@ describe("buildChordConnectorPolylines", () => {
     ];
     const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
     expect(result).toHaveLength(1);
-    const { envelope, spine } = result[0]!;
-    // Spine: visits all 3 vertices — M v0 L v1 L v2 Z → 2 L commands, closed with Z.
-    expect(spine).not.toBe("");
-    expect(spine.startsWith("M")).toBe(true);
-    expect(spine.endsWith("Z")).toBe(true);
-    const spineLCount = (spine.match(/\bL\b/g) ?? []).length;
-    expect(spineLCount).toBe(2);
-    // Envelope: non-empty clean path (capsule or polygon — don't pin exact shape
-    // since hull collapse behavior is convexHull implementation detail).
-    expect(envelope).not.toBe("");
-    expect(envelope.startsWith("M")).toBe(true);
-    expect(envelope.endsWith("Z")).toBe(true);
+    const { d } = result[0]!;
+    // d: open polyline — M v0 L v1 L v2 (no Z, 2 L commands visiting all 3 vertices).
+    expect(d).not.toBe("");
+    expect(d.startsWith("M")).toBe(true);
+    expect(d.endsWith("Z")).toBe(false);
+    const lCount = (d.match(/\bL\b/g) ?? []).length;
+    expect(lCount).toBe(2);
+    // Verify all 3 vertices appear: x=50 (fret 5), x=70 (fret 7), x=80 (fret 8).
+    expect(d).toContain("50,");
+    expect(d).toContain("70,");
+    expect(d).toContain("80,");
   });
 });

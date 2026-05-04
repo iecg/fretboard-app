@@ -436,6 +436,34 @@ export function closedPolylinePath(vertices: Array<{ x: number; y: number }>): s
 }
 
 // ---------------------------------------------------------------------------
+// openPolylinePath
+// ---------------------------------------------------------------------------
+
+/**
+ * Emit an OPEN polyline path (M + L commands, no Z) through the given vertices.
+ * Caller is responsible for vertex ordering — typical use passes vertices in
+ * string-index order so the polyline traverses the chord across strings.
+ *
+ * Coordinates rounded to 2 decimal places.
+ *
+ * @param vertices - vertex sequence in traversal order
+ * @returns SVG path-d string. Empty string for zero-vertex input.
+ */
+export function openPolylinePath(vertices: Array<{ x: number; y: number }>): string {
+  if (vertices.length === 0) return "";
+  const first = vertices[0]!;
+  if (vertices.length === 1) {
+    return `M ${r2(first.x)},${r2(first.y)}`;
+  }
+  const parts: string[] = [`M ${r2(first.x)},${r2(first.y)}`];
+  for (let i = 1; i < vertices.length; i++) {
+    const v = vertices[i]!;
+    parts.push(`L ${r2(v.x)},${r2(v.y)}`);
+  }
+  return parts.join(" ");
+}
+
+// ---------------------------------------------------------------------------
 // inflatedCapsulePath
 // ---------------------------------------------------------------------------
 

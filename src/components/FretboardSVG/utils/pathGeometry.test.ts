@@ -7,6 +7,7 @@ import {
   inflatedCapsulePath,
   convexHull,
   offsetOutlinePath,
+  openPolylinePath,
 } from "./pathGeometry";
 
 describe("centroid", () => {
@@ -408,6 +409,78 @@ describe("convexHull", () => {
     const original = pts.map((p) => ({ ...p }));
     convexHull(pts);
     expect(pts).toEqual(original);
+  });
+});
+
+describe("openPolylinePath", () => {
+  it("returns empty string for zero-vertex input", () => {
+    expect(openPolylinePath([])).toBe("");
+  });
+
+  it("single-vertex input returns 'M x,y'", () => {
+    const d = openPolylinePath([{ x: 5, y: 10 }]);
+    expect(d).toBe("M 5,10");
+  });
+
+  it("3-vertex collinear (same x, three different y): M+L+L no Z", () => {
+    const pts = [
+      { x: 50, y: 0 },
+      { x: 50, y: 20 },
+      { x: 50, y: 40 },
+    ];
+    const d = openPolylinePath(pts);
+    expect(d).not.toBe("");
+    expect(d.startsWith("M")).toBe(true);
+    expect(d.endsWith("Z")).toBe(false);
+    const lCount = (d.match(/\bL\b/g) ?? []).length;
+    expect(lCount).toBe(2);
+    // Coordinates rounded to 2 decimal places
+    expect(d).toBe("M 50,0 L 50,20 L 50,40");
+  });
+
+  it("3-vertex diagonal triangle: M+L+L no Z", () => {
+    const pts = [
+      { x: 0, y: 0 },
+      { x: 50, y: 0 },
+      { x: 25, y: 40 },
+    ];
+    const d = openPolylinePath(pts);
+    expect(d).not.toBe("");
+    expect(d.startsWith("M")).toBe(true);
+    expect(d.endsWith("Z")).toBe(false);
+    const lCount = (d.match(/\bL\b/g) ?? []).length;
+    expect(lCount).toBe(2);
+  });
+
+  it("4-vertex quadrilateral: M+L+L+L no Z", () => {
+    const pts = [
+      { x: 0, y: 0 },
+      { x: 60, y: 0 },
+      { x: 60, y: 40 },
+      { x: 0, y: 40 },
+    ];
+    const d = openPolylinePath(pts);
+    expect(d).not.toBe("");
+    expect(d.startsWith("M")).toBe(true);
+    expect(d.endsWith("Z")).toBe(false);
+    const lCount = (d.match(/\bL\b/g) ?? []).length;
+    expect(lCount).toBe(3);
+  });
+
+  it("coordinates rounded to 2 decimal places", () => {
+    const pts = [
+      { x: 1.234567, y: 2.345678 },
+      { x: 3.456789, y: 0.123456 },
+    ];
+    const d = openPolylinePath(pts);
+    // No coordinate should have more than 2 decimal digits.
+    const tokens = d.split(/[\s,]+/).filter((t) => /^-?\d/.test(t));
+    for (const token of tokens) {
+      const decimal = token.includes(".") ? (token.split(".")[1] ?? "") : "";
+      expect(decimal.length).toBeLessThanOrEqual(2);
+    }
+    expect(d).toContain("1.23");
+    expect(d).toContain("2.35");
   });
 });
 
