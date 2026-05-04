@@ -358,4 +358,100 @@ describe("buildChordConnectorPolylines", () => {
     expect(result).toHaveLength(1);
     expect(result[0]).toHaveLength(2);
   });
+
+  // -------------------------------------------------------------------------
+  // Regression: C major triad fret-5 voicing with CAGED G shape active
+  //
+  // CAGED G shape in C major (standard tuning, 6-string) covers roughly frets
+  // 5-8.  The tightest C major triad voicing sits at fret 5:
+  //   str1 (B)  fret 5 = E  (chord-tone-in-scale)
+  //   str2 (G)  fret 5 = C  (chord-root)
+  //   str3 (D)  fret 5 = G  (chord-tone-in-scale)
+  //
+  // Simultaneously, a second CAGED G polygon at fret 17 gives:
+  //   str1 fret 17 = E, str2 fret 17 = C, str3 fret 17 = G
+  //
+  // Both voicings must be emitted.  Before the voicing-aware algorithm, the
+  // Prim MST approach produced unstructured 2-vertex segments and the fret-5
+  // cluster was occasionally missed when the anchor-ordering led dedup to
+  // suppress it.  This test guards against that regression.
+  // -------------------------------------------------------------------------
+
+  it("(regression) CAGED G shape: emits fret-5 E-C-G voicing on strings 1-2-3", () => {
+    // Simulates C major with CAGED G shape active (first polygon, frets 5-8):
+    //   str0 (E4):  C@8                             — chord root, frets 5-8
+    //   str1 (B3):  E@5, G@8                        — chord tones, frets 5-8
+    //   str2 (G3):  C@5                             — chord root, frets 4-7
+    //   str3 (D3):  G@5                             — chord tone, frets 5-7
+    //   str4 (A2):  E@7                             — chord tone, frets 5-8
+    //   str5 (E2):  C@8                             — chord root, frets 5-8
+    // (scale-only notes omitted; only chord-tone roles feed the connector)
+    const noteData = [
+      makeNote(0, 8, "C", "chord-root"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(1, 8, "G", "chord-tone-in-scale"),
+      makeNote(2, 5, "C", "chord-root"),
+      makeNote(3, 5, "G", "chord-tone-in-scale"),
+      makeNote(4, 7, "E", "chord-tone-in-scale"),
+      makeNote(5, 8, "C", "chord-root"),
+    ];
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt);
+
+    // The fret-5 voicing on strings 1-2-3 must be present.
+    const fret5Voicing = result.find(
+      (verts) =>
+        verts.length === 3 &&
+        verts.some((v) => v.y === stringYAt(1, fretCenterX(5)) && v.x === fretCenterX(5)) &&
+        verts.some((v) => v.y === stringYAt(2, fretCenterX(5)) && v.x === fretCenterX(5)) &&
+        verts.some((v) => v.y === stringYAt(3, fretCenterX(5)) && v.x === fretCenterX(5)),
+    );
+    expect(fret5Voicing, "fret-5 E(str1)-C(str2)-G(str3) voicing not emitted").toBeDefined();
+    expect(fret5Voicing).toHaveLength(3);
+  });
+
+  it("(regression) CAGED G shape: emits both fret-5 and fret-17 voicings when both polygon instances present", () => {
+    // Both CAGED G polygon instances (fret 5-8 and fret 17-20) are active
+    // simultaneously (getCagedCoordinates returns two polygons for C major G shape).
+    // The fret-5 and fret-17 voicings must each be emitted exactly once and
+    // must not suppress each other via the deduplication set.
+    const noteData = [
+      // First CAGED G polygon (frets 5-8)
+      makeNote(0, 8, "C", "chord-root"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(1, 8, "G", "chord-tone-in-scale"),
+      makeNote(2, 5, "C", "chord-root"),
+      makeNote(3, 5, "G", "chord-tone-in-scale"),
+      makeNote(4, 7, "E", "chord-tone-in-scale"),
+      makeNote(5, 8, "C", "chord-root"),
+      // Second CAGED G polygon (frets 17-20)
+      makeNote(0, 20, "C", "chord-root"),
+      makeNote(1, 17, "E", "chord-tone-in-scale"),
+      makeNote(1, 20, "G", "chord-tone-in-scale"),
+      makeNote(2, 17, "C", "chord-root"),
+      makeNote(3, 17, "G", "chord-tone-in-scale"),
+      makeNote(4, 19, "E", "chord-tone-in-scale"),
+      makeNote(5, 20, "C", "chord-root"),
+    ];
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt);
+
+    const fret5 = result.find(
+      (verts) =>
+        verts.length === 3 &&
+        verts.some((v) => v.y === stringYAt(1, fretCenterX(5)) && v.x === fretCenterX(5)) &&
+        verts.some((v) => v.y === stringYAt(2, fretCenterX(5)) && v.x === fretCenterX(5)) &&
+        verts.some((v) => v.y === stringYAt(3, fretCenterX(5)) && v.x === fretCenterX(5)),
+    );
+    const fret17 = result.find(
+      (verts) =>
+        verts.length === 3 &&
+        verts.some((v) => v.y === stringYAt(1, fretCenterX(17)) && v.x === fretCenterX(17)) &&
+        verts.some((v) => v.y === stringYAt(2, fretCenterX(17)) && v.x === fretCenterX(17)) &&
+        verts.some((v) => v.y === stringYAt(3, fretCenterX(17)) && v.x === fretCenterX(17)),
+    );
+
+    expect(fret5, "fret-5 E(str1)-C(str2)-G(str3) voicing not emitted").toBeDefined();
+    expect(fret17, "fret-17 E(str1)-C(str2)-G(str3) voicing not emitted").toBeDefined();
+    // Each voicing is distinct — dedup must not suppress one in favour of the other.
+    expect(fret5).not.toBe(fret17);
+  });
 });
