@@ -418,7 +418,7 @@
   stroke-width: calc(var(--string-row-px) * 1.1);
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-opacity: 0.3;
+  stroke-opacity: var(--chord-connector-opacity, 0.3);
   fill: none;
   /* No stroke-dasharray — fat polyline + dashes look cluttered */
 }
