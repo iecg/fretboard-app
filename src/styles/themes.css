@@ -263,6 +263,19 @@
      previously. Stroke-width bump to 2.5px adds density without muddying the fill. */
   --chord-connector-stroke: #9a3412;
   --chord-connector-opacity: 1.0;
+  /* Per-voicing chord-connector palette — warm brown to orange spectrum for maple wood.
+     Palette tuned for stroke-opacity: 0.3 (light) against warm maple mid-tone (#f1c38e).
+     Each color reads distinctly while remaining subordinate to note-fill hierarchy.
+     Okabe-Ito–derived with warm-family anchor matching existing --fretboard-note-fill-*.
+  */
+  --chord-connector-color-1: #8b4513; /* warm brown — foundational anchor */
+  --chord-connector-color-2: #a0522d; /* sienna — earthy, mid-brown */
+  --chord-connector-color-3: #b8680c; /* burnt orange — midtone transition */
+  --chord-connector-color-4: #c97f1f; /* dark orange — warm and readable */
+  --chord-connector-color-5: #d97f14; /* orange-strong — peak contrast */
+  --chord-connector-color-6: #ea580c; /* neon-orange (existing UI accent) */
+  --chord-connector-color-7: #0891b2; /* neon-cyan (existing UI accent) */
+  --chord-connector-color-8: #7c3aed; /* neon-violet (existing color-tone role) */
 }
 
 /* ==========================================================================
@@ -288,5 +301,18 @@
      that makes connectors invisible against dark rosewood (#160d07). */
   --chord-connector-stroke: color-mix(in srgb, #FF9A4D 70%, transparent);
   --chord-connector-opacity: 0.85;
+  /* Per-voicing chord-connector palette — neon-adjusted Okabe-Ito for dark rosewood.
+     Palette tuned for stroke-opacity: 0.85 (dark) against dark rosewood (#160d07 to #0d0805).
+     Neon colors brightened to maintain visibility at high opacity.
+     References existing dark-theme UI accents while adding distinct voicing hues.
+  */
+  --chord-connector-color-1: #FF6B35; /* neon-orange-warm — primary, warm anchor */
+  --chord-connector-color-2: #FFB703; /* neon-gold — distinct warm midtone */
+  --chord-connector-color-3: #8ECAE6; /* neon-cyan-bright — cool contrast */
+  --chord-connector-color-4: #219EBC; /* neon-teal — slightly muted cyan */
+  --chord-connector-color-5: #023E8A; /* deep-blue — contrasts warm palette */
+  --chord-connector-color-6: #FB5607; /* neon-orange-hot — saturated secondary */
+  --chord-connector-color-7: #FFBE0B; /* bright-yellow — high-visibility */
+  --chord-connector-color-8: #D62828; /* neon-red — strong warm accent */
 }
 
