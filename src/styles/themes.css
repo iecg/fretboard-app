@@ -263,19 +263,20 @@
      previously. Stroke-width bump to 2.5px adds density without muddying the fill. */
   --chord-connector-stroke: #9a3412;
   --chord-connector-opacity: 1.0;
-  /* Per-voicing chord-connector palette — warm brown to orange spectrum for maple wood.
-     Palette tuned for stroke-opacity: 0.3 (light) against warm maple mid-tone (#f1c38e).
-     Each color reads distinctly while remaining subordinate to note-fill hierarchy.
-     Okabe-Ito–derived with warm-family anchor matching existing --fretboard-note-fill-*.
-  */
-  --chord-connector-color-1: #8b4513; /* warm brown — foundational anchor */
-  --chord-connector-color-2: #a0522d; /* sienna — earthy, mid-brown */
-  --chord-connector-color-3: #b8680c; /* burnt orange — midtone transition */
-  --chord-connector-color-4: #c97f1f; /* dark orange — warm and readable */
-  --chord-connector-color-5: #d97f14; /* orange-strong — peak contrast */
-  --chord-connector-color-6: #ea580c; /* neon-orange (existing UI accent) */
-  --chord-connector-color-7: #0891b2; /* neon-cyan (existing UI accent) */
-  --chord-connector-color-8: #7c3aed; /* neon-violet (existing color-tone role) */
+  /* Per-voicing chord-connector palette — 8 hues spread ~40°+ apart around
+     the wheel for maximum distinctness on warm maple wood (#f1c38e mid-tone).
+     All values sit at saturation 70-90% and lightness 30-50% so they remain
+     readable at the theme's connector opacity without merging into the wood
+     or each other. Yellow-green is skipped (collides with wood mid-tone);
+     amber-deep substitutes for pure yellow which would vanish on cream amber. */
+  --chord-connector-color-1: #dc2626; /* red — hue ~0°  */
+  --chord-connector-color-2: #ea580c; /* orange — hue ~25° (existing neon-orange accent) */
+  --chord-connector-color-3: #a16207; /* amber-deep — hue ~40° (substitutes for yellow on amber wood) */
+  --chord-connector-color-4: #15803d; /* green — hue ~140° */
+  --chord-connector-color-5: #0f766e; /* teal — hue ~175° */
+  --chord-connector-color-6: #1d4ed8; /* blue — hue ~225° */
+  --chord-connector-color-7: #7c3aed; /* violet — hue ~265° (existing UI accent) */
+  --chord-connector-color-8: #be185d; /* rose — hue ~330° */
 }
 
 /* ==========================================================================
@@ -301,18 +302,20 @@
      that makes connectors invisible against dark rosewood (#160d07). */
   --chord-connector-stroke: color-mix(in srgb, #FF9A4D 70%, transparent);
   --chord-connector-opacity: 0.85;
-  /* Per-voicing chord-connector palette — neon-adjusted Okabe-Ito for dark rosewood.
-     Palette tuned for stroke-opacity: 0.85 (dark) against dark rosewood (#160d07 to #0d0805).
-     Neon colors brightened to maintain visibility at high opacity.
-     References existing dark-theme UI accents while adding distinct voicing hues.
-  */
-  --chord-connector-color-1: #FF6B35; /* neon-orange-warm — primary, warm anchor */
-  --chord-connector-color-2: #FFB703; /* neon-gold — distinct warm midtone */
-  --chord-connector-color-3: #8ECAE6; /* neon-cyan-bright — cool contrast */
-  --chord-connector-color-4: #219EBC; /* neon-teal — slightly muted cyan */
-  --chord-connector-color-5: #023E8A; /* deep-blue — contrasts warm palette */
-  --chord-connector-color-6: #FB5607; /* neon-orange-hot — saturated secondary */
-  --chord-connector-color-7: #FFBE0B; /* bright-yellow — high-visibility */
-  --chord-connector-color-8: #D62828; /* neon-red — strong warm accent */
+  /* Per-voicing chord-connector palette — 8 bright hues spread ~40°+ apart
+     around the wheel for maximum distinctness on dark rosewood (#160d07).
+     All values sit at saturation 70-100% and lightness 55-75% so they pop
+     against near-black wood without washing into one another. Hue ordering
+     mirrors the light-theme palette so a given paletteIndex feels like the
+     "same voicing color" across themes (red→orange→yellow→green→teal→blue
+     →violet→pink). */
+  --chord-connector-color-1: #f87171; /* red — hue ~0°  */
+  --chord-connector-color-2: #fb923c; /* orange — hue ~25° */
+  --chord-connector-color-3: #facc15; /* yellow — hue ~48° */
+  --chord-connector-color-4: #4ade80; /* green — hue ~140° */
+  --chord-connector-color-5: #2dd4bf; /* teal — hue ~170° */
+  --chord-connector-color-6: #60a5fa; /* blue — hue ~213° */
+  --chord-connector-color-7: #a78bfa; /* violet — hue ~254° */
+  --chord-connector-color-8: #f472b6; /* pink — hue ~328° */
 }
 
