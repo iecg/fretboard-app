@@ -256,6 +256,10 @@
      --text-on-highlight, --text-soft-white, --accent-glow,
      --note-blue, --note-blue-glow, --shadow-note-root, --shadow-note-active,
      --shadow-ping-start, --shadow-ping-end */
+
+  /* Chord-tone connector overrides for light mode */
+  --chord-connector-stroke: color-mix(in srgb, #ea580c 55%, transparent);
+  --chord-connector-opacity: 0.6;
 }
 
 /* ==========================================================================

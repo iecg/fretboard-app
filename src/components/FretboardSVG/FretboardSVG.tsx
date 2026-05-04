@@ -10,6 +10,7 @@ import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
 import styles from "./FretboardSVG.module.css";
 import { useFretboardGeometry } from "./hooks/useFretboardGeometry";
 import { useNoteData } from "./hooks/useNoteData";
+import { useChordConnectorPolylines } from "./hooks/useChordConnectorPolylines";
 import { type BoxBound } from "./utils/semantics";
 import { FretboardBackground } from "./FretboardBackground";
 import { FretboardDefs } from "./FretboardDefs";
@@ -315,6 +316,15 @@ export const FretboardSVG = memo(function FretboardSVG({
     noteSemantics,
   });
 
+  const connectorPolylines = useChordConnectorPolylines({
+    chordTones,
+    fretboardLayout,
+    fretCenterX,
+    stringYAt,
+    startFret,
+    endFret,
+  });
+
   return (
     <div
       role="group"
@@ -374,6 +384,21 @@ export const FretboardSVG = memo(function FretboardSVG({
 
           <g clipPath={svgDefUrl("fretboard-taper")}>
             <FretboardShapeLayer svgPolygons={svgPolygons} />
+            {connectorPolylines.length > 0 && (
+              <g
+                className={styles["chord-connectors"]}
+                aria-hidden="true"
+                pointerEvents="none"
+              >
+                {connectorPolylines.map((vertices, i) => (
+                  <polyline
+                    key={i}
+                    points={vertices.map((v) => `${v.x},${v.y}`).join(" ")}
+                    fill="none"
+                  />
+                ))}
+              </g>
+            )}
             <FretboardNoteLayer
               noteData={noteData}
               fretCenterX={fretCenterX}
