@@ -1,5 +1,10 @@
 import { useMemo } from "react";
 import type { NoteData } from "./useNoteData";
+import {
+  polarSort,
+  closedCatmullRomPath,
+  inflatedCapsulePath,
+} from "../utils/pathGeometry";
 
 export interface ChordConnectorVertex {
   x: number;
@@ -35,6 +40,21 @@ export const CHORD_TONE_CLASSES = new Set([
  * a time, so a valid voicing occupies exactly N consecutive strings where N is
  * the number of distinct chord tones (e.g. 3 for a triad, 4 for a 7th chord).
  *
+ * **Return shape (per voicing):**
+ * ```typescript
+ * { d: string; vertices: ChordConnectorVertex[] }
+ * ```
+ * - `d` — pre-computed SVG path `d` attribute string for the closed contour.
+ *   Three branches:
+ *   1. **Spline:** N ≥ 3 and voicing has non-degenerate bbox → closed Catmull-Rom
+ *      cubic Bézier path (polar-sorted vertices, centripetal α = 0.5).
+ *   2. **Capsule:** degenerate bbox (area < `(stringRowPx × 0.5)²` OR aspect-ratio
+ *      > 8) → inflated capsule path with arc commands so a recognisable area is
+ *      always visible even for collinear voicings.
+ *   3. **Line fallback:** N = 2 → `M x1 y1 L x2 y2 Z` (two-note connector).
+ * - `vertices` — polar-sorted vertex list retained for unit tests and future
+ *   per-voicing color keying.
+ *
  * Algorithm:
  *   1. Collect all active chord-tone positions (note-inactive excluded).
  *   2. Determine N = chordToneNames.length. If N < 2, return [].
@@ -56,23 +76,28 @@ export const CHORD_TONE_CLASSES = new Set([
  *           index (highest string first).
  *   4. Deduplicate emitted voicings by their canonical "(stringIndex,fretIndex)"
  *      tuple set so that overlapping cluster anchors don't re-emit the same shape.
+ *   5. For each voicing vertex list: apply polar sort, compute degenerate
+ *      detection thresholds, and select the appropriate path branch.
  *
- * Returns an array of N-vertex polylines, one per distinct playable voicing.
+ * Returns an array of `{ d, vertices }` objects, one per distinct playable voicing.
  * Returns [] when N < 2 or no valid voicing can be assembled.
  *
- * @param noteData   Shape-aware note data from useNoteData (note-inactive already
- *                   marks positions outside the active CAGED/3NPS shape).
+ * @param noteData        Shape-aware note data from useNoteData (note-inactive already
+ *                        marks positions outside the active CAGED/3NPS shape).
  * @param chordToneNames  The N distinct chord-tone note names expected in each voicing
  *                        (e.g. ["C","E","G"] for C major). Order does not matter.
  * @param fretCenterX     Maps fretIndex → SVG x coordinate.
  * @param stringYAt       Maps (stringIndex, x) → SVG y coordinate.
+ * @param stringRowPx     Row height in pixels; used to scale degenerate-capsule
+ *                        inflation (`stringRowPx × 0.4`).
  */
 export function buildChordConnectorPolylines(
   noteData: NoteData[],
   chordToneNames: string[],
   fretCenterX: (fretIndex: number) => number,
   stringYAt: (stringIndex: number, x: number) => number,
-): ChordConnectorVertex[][] {
+  stringRowPx: number,
+): { d: string; vertices: ChordConnectorVertex[] }[] {
   // Step 1: collect active chord-tone positions (skip note-inactive).
   const activeTones: NoteData[] = [];
   for (const nd of noteData) {
@@ -107,7 +132,7 @@ export function buildChordConnectorPolylines(
 
   // Track emitted voicings by canonical key to deduplicate.
   const emitted = new Set<string>();
-  const polylines: ChordConnectorVertex[][] = [];
+  const results: { d: string; vertices: ChordConnectorVertex[] }[] = [];
 
   // Step 3: slide an N-string window across the neck.
   for (let s = minString; s + N - 1 <= maxString; s++) {
@@ -210,17 +235,51 @@ export function buildChordConnectorPolylines(
       if (emitted.has(canonicalKey)) continue;
       emitted.add(canonicalKey);
 
-      // Emit polyline: N vertices ordered by stringIndex (window order s → s+N-1).
-      const vertices: ChordConnectorVertex[] = bestCombo.map((p) => {
+      // Build raw vertices ordered by string index (window order s → s+N-1).
+      const rawVertices: ChordConnectorVertex[] = bestCombo.map((p) => {
         const x = fretCenterX(p.fretIndex);
         const y = stringYAt(p.stringIndex, x);
         return { x, y };
       });
-      polylines.push(vertices);
+
+      // Step 5: apply polar sort and select path branch.
+      const sortedVertices = polarSort(rawVertices);
+
+      let d: string;
+
+      if (sortedVertices.length === 2) {
+        // Two-note connector: simple line-like closed path.
+        const [a, b] = sortedVertices as [ChordConnectorVertex, ChordConnectorVertex];
+        d = `M ${a.x} ${a.y} L ${b.x} ${b.y} Z`;
+      } else {
+        // Degenerate detection: bbox area and aspect ratio.
+        const xs = sortedVertices.map((v) => v.x);
+        const ys = sortedVertices.map((v) => v.y);
+        const minX = Math.min(...xs);
+        const maxX = Math.max(...xs);
+        const minY = Math.min(...ys);
+        const maxY = Math.max(...ys);
+        const bboxW = maxX - minX;
+        const bboxH = maxY - minY;
+        const area = bboxW * bboxH;
+        const aspectRatio =
+          Math.max(bboxW, bboxH) / Math.max(Math.min(bboxW, bboxH), 1);
+
+        const degenerateAreaThreshold = (stringRowPx * 0.5) ** 2;
+        const isDegenerate = area < degenerateAreaThreshold || aspectRatio > 8;
+
+        if (isDegenerate) {
+          d = inflatedCapsulePath(sortedVertices, stringRowPx * 0.4);
+        } else {
+          d = closedCatmullRomPath(sortedVertices);
+        }
+      }
+
+      results.push({ d, vertices: sortedVertices });
     }
   }
 
-  return polylines;
+  return results;
 }
 
 export interface UseChordConnectorPolylinesParams {
@@ -228,10 +287,20 @@ export interface UseChordConnectorPolylinesParams {
   chordToneNames: string[];
   fretCenterX: (fretIndex: number) => number;
   stringYAt: (stringIndex: number, x: number) => number;
+  /** Row height in pixels — used to scale degenerate-capsule inflation. */
+  stringRowPx: number;
 }
 
 /**
  * React hook that memoizes `buildChordConnectorPolylines` output.
+ *
+ * Returns `{ d: string; vertices: ChordConnectorVertex[] }[]` — one entry per
+ * distinct playable voicing. Each entry carries:
+ * - `d` — the SVG path `d` attribute for the closed contour (spline, capsule,
+ *   or two-note line depending on the voicing geometry).
+ * - `vertices` — the polar-sorted vertex list for debugging and future color
+ *   keying.
+ *
  * Re-runs only when noteData, chordToneNames, or geometry helpers change.
  */
 export function useChordConnectorPolylines({
@@ -239,10 +308,18 @@ export function useChordConnectorPolylines({
   chordToneNames,
   fretCenterX,
   stringYAt,
-}: UseChordConnectorPolylinesParams): ChordConnectorVertex[][] {
+  stringRowPx,
+}: UseChordConnectorPolylinesParams): { d: string; vertices: ChordConnectorVertex[] }[] {
   return useMemo(
-    () => buildChordConnectorPolylines(noteData, chordToneNames, fretCenterX, stringYAt),
+    () =>
+      buildChordConnectorPolylines(
+        noteData,
+        chordToneNames,
+        fretCenterX,
+        stringYAt,
+        stringRowPx,
+      ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [noteData, chordToneNames],
+    [noteData, chordToneNames, stringRowPx],
   );
 }

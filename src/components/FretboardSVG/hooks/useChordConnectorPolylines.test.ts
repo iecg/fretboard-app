@@ -13,6 +13,9 @@ const fretCenterX = (fi: number) => fi * 10;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const stringYAt = (si: number, _x: number) => si * 20;
 
+// Mock stringRowPx value (tablet default) used in all test calls.
+const STRING_ROW_PX = 36;
+
 /**
  * Build a minimal NoteData entry for testing.
  * Defaults noteClass to "chord-tone-in-scale" (an active chord-tone role).
@@ -43,13 +46,13 @@ describe("buildChordConnectorPolylines", () => {
   // -------------------------------------------------------------------------
 
   it("returns [] for empty noteData", () => {
-    const result = buildChordConnectorPolylines([], ["C", "E", "G"], fretCenterX, stringYAt);
+    const result = buildChordConnectorPolylines([], ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
     expect(result).toEqual([]);
   });
 
   it("returns [] when chordToneNames has fewer than 2 entries", () => {
     const noteData = [makeNote(0, 5, "C"), makeNote(1, 5, "E")];
-    const result = buildChordConnectorPolylines(noteData, ["C"], fretCenterX, stringYAt);
+    const result = buildChordConnectorPolylines(noteData, ["C"], fretCenterX, stringYAt, STRING_ROW_PX);
     expect(result).toEqual([]);
   });
 
@@ -58,7 +61,7 @@ describe("buildChordConnectorPolylines", () => {
       makeNote(0, 3, "C", "note-active"),
       makeNote(1, 5, "E", "note-active"),
     ];
-    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt);
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
     expect(result).toEqual([]);
   });
 
@@ -68,7 +71,7 @@ describe("buildChordConnectorPolylines", () => {
       makeNote(1, 5, "E", "note-inactive"),
       makeNote(2, 3, "G", "note-inactive"),
     ];
-    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt);
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
     expect(result).toEqual([]);
   });
 
@@ -83,11 +86,12 @@ describe("buildChordConnectorPolylines", () => {
       makeNote(1, 5, "E", "chord-tone-in-scale"),
       makeNote(2, 5, "G", "chord-tone-in-scale"),
     ];
-    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt);
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
     expect(result).toHaveLength(1);
-    expect(result[0]).toHaveLength(3);
-    // Vertices are ordered by string index: y = 0, 20, 40.
-    expect(result[0]!.map((v) => v.y)).toEqual([0, 20, 40]);
+    expect(result[0]!.vertices).toHaveLength(3);
+    // Vertices are polar-sorted; all should have y values from strings 0, 1, 2: 0, 20, 40.
+    const yValues = result[0]!.vertices.map((v) => v.y).sort((a, b) => a - b);
+    expect(yValues).toEqual([0, 20, 40]);
   });
 
   // -------------------------------------------------------------------------
@@ -105,14 +109,14 @@ describe("buildChordConnectorPolylines", () => {
       makeNote(1, 5, "E", "chord-tone-in-scale"),
       makeNote(2, 3, "G", "chord-tone-in-scale"),
     ];
-    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt);
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
     // At least one voicing should be emitted covering all three chord tones.
     expect(result.length).toBeGreaterThanOrEqual(1);
-    // Every emitted polyline should be 3 vertices long (one per string).
-    result.forEach((vertices) => expect(vertices).toHaveLength(3));
+    // Every emitted voicing should be 3 vertices long (one per string).
+    result.forEach((voicing) => expect(voicing.vertices).toHaveLength(3));
     // All emitted voicings contain each chord tone.
     // Check that each voicing spans 3 strings.
-    const yValues = result[0]!.map((v) => v.y);
+    const yValues = result[0]!.vertices.map((v) => v.y);
     expect(yValues).toContain(stringYAt(0, fretCenterX(3)));  // string 0
     expect(yValues).toContain(stringYAt(2, fretCenterX(3)));  // string 2
   });
@@ -134,7 +138,7 @@ describe("buildChordConnectorPolylines", () => {
     ];
     // Triad C-E-G: G is inactive → no complete voicing possible on strings 0-2.
     // Even if we extend to strings 1-3 (E, G-inactive, B), still missing G.
-    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt);
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
     expect(result).toHaveLength(0);
   });
 
@@ -146,10 +150,10 @@ describe("buildChordConnectorPolylines", () => {
       makeNote(2, 5, "G", "chord-tone-in-scale"),
       makeNote(2, 7, "A", "note-inactive"),  // inactive — should not appear
     ];
-    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt);
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
     expect(result).toHaveLength(1);
-    // Verify y=40 (string 2, fret 5) is in the voicing, not y=40 at fret 7 (inactive).
-    expect(result[0]!.some((v) => v.x === fretCenterX(7))).toBe(false);
+    // Verify x=70 (fret 7) is NOT in the voicing (only fret-5 is active).
+    expect(result[0]!.vertices.some((v) => v.x === fretCenterX(7))).toBe(false);
   });
 
   // -------------------------------------------------------------------------
@@ -163,7 +167,7 @@ describe("buildChordConnectorPolylines", () => {
       makeNote(1, 2, "E", "chord-tone-in-scale"),
       makeNote(2, 2 + MAX_FRET_SPAN, "G", "chord-tone-in-scale"),
     ];
-    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt);
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
     expect(result).toHaveLength(1);
   });
 
@@ -174,7 +178,7 @@ describe("buildChordConnectorPolylines", () => {
       makeNote(1, 2, "E", "chord-tone-in-scale"),
       makeNote(2, 2 + MAX_FRET_SPAN + 1, "G", "chord-tone-in-scale"),
     ];
-    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt);
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
     expect(result).toHaveLength(0);
   });
 
@@ -199,10 +203,10 @@ describe("buildChordConnectorPolylines", () => {
       makeNote(4, 5, "E", "chord-tone-in-scale"),
       makeNote(5, 5, "G", "chord-tone-in-scale"),
     ];
-    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt);
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
     // 4 valid consecutive-string windows each covering all 3 chord tones.
     expect(result).toHaveLength(4);
-    result.forEach((vertices) => expect(vertices).toHaveLength(3));
+    result.forEach((voicing) => expect(voicing.vertices).toHaveLength(3));
   });
 
   it("(e) two isolated chord positions on non-overlapping string sets emit 2 voicings", () => {
@@ -218,10 +222,10 @@ describe("buildChordConnectorPolylines", () => {
       makeNote(5, 5, "E", "chord-tone-in-scale"),
       makeNote(6, 5, "G", "chord-tone-in-scale"),
     ];
-    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt);
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
     // Two isolated string windows → 2 separate voicings.
     expect(result).toHaveLength(2);
-    result.forEach((vertices) => expect(vertices).toHaveLength(3));
+    result.forEach((voicing) => expect(voicing.vertices).toHaveLength(3));
   });
 
   // -------------------------------------------------------------------------
@@ -236,9 +240,9 @@ describe("buildChordConnectorPolylines", () => {
       makeNote(2, 3, "G", "chord-tone-in-scale"),
       makeNote(3, 4, "B", "chord-tone-in-scale"),
     ];
-    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G", "B"], fretCenterX, stringYAt);
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G", "B"], fretCenterX, stringYAt, STRING_ROW_PX);
     expect(result).toHaveLength(1);
-    expect(result[0]).toHaveLength(4);
+    expect(result[0]!.vertices).toHaveLength(4);
   });
 
   // -------------------------------------------------------------------------
@@ -251,7 +255,7 @@ describe("buildChordConnectorPolylines", () => {
       makeNote(0, 5, "C", "chord-root"),
       makeNote(1, 5, "E", "chord-tone-in-scale"),
     ];
-    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt);
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
     expect(result).toHaveLength(0);
   });
 
@@ -262,7 +266,7 @@ describe("buildChordConnectorPolylines", () => {
       makeNote(0, 5, "G", "chord-tone-in-scale"),
       makeNote(1, 4, "E", "chord-tone-in-scale"),
     ];
-    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt);
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
     expect(result).toHaveLength(0);
   });
 
@@ -280,9 +284,9 @@ describe("buildChordConnectorPolylines", () => {
       makeNote(1, 3, "E", "chord-tone-in-scale"),
       makeNote(2, 4, "G", "chord-tone-in-scale"),
     ];
-    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt);
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
     expect(result).toHaveLength(1);
-    expect(result[0]).toHaveLength(3);
+    expect(result[0]!.vertices).toHaveLength(3);
   });
 
   // -------------------------------------------------------------------------
@@ -299,7 +303,7 @@ describe("buildChordConnectorPolylines", () => {
     ];
     // Window [0,1,2]: string 1 has no candidates → invalid.
     // Window [1,2,3]: string 1 has no candidates → invalid.
-    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt);
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
     expect(result).toHaveLength(0);
   });
 
@@ -328,7 +332,7 @@ describe("buildChordConnectorPolylines", () => {
       makeNote(1, 4, "D", "note-active"),
       makeNote(2, 6, "E", "chord-tone-in-scale"),
     ];
-    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt);
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
     // G is missing → no complete voicing.
     expect(result).toHaveLength(0);
   });
@@ -345,7 +349,7 @@ describe("buildChordConnectorPolylines", () => {
     // Window [0,2] — not consecutive.
     // Actually with N=2, window is [0,1] and [1,2] and [2,3]... string 1 never has chord tone.
     // So expect 0.
-    const result = buildChordConnectorPolylines(noteData, ["C", "E"], fretCenterX, stringYAt);
+    const result = buildChordConnectorPolylines(noteData, ["C", "E"], fretCenterX, stringYAt, STRING_ROW_PX);
     expect(result).toHaveLength(0);
   });
 
@@ -354,9 +358,9 @@ describe("buildChordConnectorPolylines", () => {
       makeNote(0, 2, "C", "chord-root"),
       makeNote(1, 4, "E", "chord-tone-in-scale"),
     ];
-    const result = buildChordConnectorPolylines(noteData, ["C", "E"], fretCenterX, stringYAt);
+    const result = buildChordConnectorPolylines(noteData, ["C", "E"], fretCenterX, stringYAt, STRING_ROW_PX);
     expect(result).toHaveLength(1);
-    expect(result[0]).toHaveLength(2);
+    expect(result[0]!.vertices).toHaveLength(2);
   });
 
   // -------------------------------------------------------------------------
@@ -395,18 +399,18 @@ describe("buildChordConnectorPolylines", () => {
       makeNote(4, 7, "E", "chord-tone-in-scale"),
       makeNote(5, 8, "C", "chord-root"),
     ];
-    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt);
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
 
     // The fret-5 voicing on strings 1-2-3 must be present.
     const fret5Voicing = result.find(
-      (verts) =>
-        verts.length === 3 &&
-        verts.some((v) => v.y === stringYAt(1, fretCenterX(5)) && v.x === fretCenterX(5)) &&
-        verts.some((v) => v.y === stringYAt(2, fretCenterX(5)) && v.x === fretCenterX(5)) &&
-        verts.some((v) => v.y === stringYAt(3, fretCenterX(5)) && v.x === fretCenterX(5)),
+      (voicing) =>
+        voicing.vertices.length === 3 &&
+        voicing.vertices.some((v) => v.y === stringYAt(1, fretCenterX(5)) && v.x === fretCenterX(5)) &&
+        voicing.vertices.some((v) => v.y === stringYAt(2, fretCenterX(5)) && v.x === fretCenterX(5)) &&
+        voicing.vertices.some((v) => v.y === stringYAt(3, fretCenterX(5)) && v.x === fretCenterX(5)),
     );
     expect(fret5Voicing, "fret-5 E(str1)-C(str2)-G(str3) voicing not emitted").toBeDefined();
-    expect(fret5Voicing).toHaveLength(3);
+    expect(fret5Voicing!.vertices).toHaveLength(3);
   });
 
   it("(regression) CAGED G shape: emits both fret-5 and fret-17 voicings when both polygon instances present", () => {
@@ -432,26 +436,75 @@ describe("buildChordConnectorPolylines", () => {
       makeNote(4, 19, "E", "chord-tone-in-scale"),
       makeNote(5, 20, "C", "chord-root"),
     ];
-    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt);
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
 
     const fret5 = result.find(
-      (verts) =>
-        verts.length === 3 &&
-        verts.some((v) => v.y === stringYAt(1, fretCenterX(5)) && v.x === fretCenterX(5)) &&
-        verts.some((v) => v.y === stringYAt(2, fretCenterX(5)) && v.x === fretCenterX(5)) &&
-        verts.some((v) => v.y === stringYAt(3, fretCenterX(5)) && v.x === fretCenterX(5)),
+      (voicing) =>
+        voicing.vertices.length === 3 &&
+        voicing.vertices.some((v) => v.y === stringYAt(1, fretCenterX(5)) && v.x === fretCenterX(5)) &&
+        voicing.vertices.some((v) => v.y === stringYAt(2, fretCenterX(5)) && v.x === fretCenterX(5)) &&
+        voicing.vertices.some((v) => v.y === stringYAt(3, fretCenterX(5)) && v.x === fretCenterX(5)),
     );
     const fret17 = result.find(
-      (verts) =>
-        verts.length === 3 &&
-        verts.some((v) => v.y === stringYAt(1, fretCenterX(17)) && v.x === fretCenterX(17)) &&
-        verts.some((v) => v.y === stringYAt(2, fretCenterX(17)) && v.x === fretCenterX(17)) &&
-        verts.some((v) => v.y === stringYAt(3, fretCenterX(17)) && v.x === fretCenterX(17)),
+      (voicing) =>
+        voicing.vertices.length === 3 &&
+        voicing.vertices.some((v) => v.y === stringYAt(1, fretCenterX(17)) && v.x === fretCenterX(17)) &&
+        voicing.vertices.some((v) => v.y === stringYAt(2, fretCenterX(17)) && v.x === fretCenterX(17)) &&
+        voicing.vertices.some((v) => v.y === stringYAt(3, fretCenterX(17)) && v.x === fretCenterX(17)),
     );
 
     expect(fret5, "fret-5 E(str1)-C(str2)-G(str3) voicing not emitted").toBeDefined();
     expect(fret17, "fret-17 E(str1)-C(str2)-G(str3) voicing not emitted").toBeDefined();
     // Each voicing is distinct — dedup must not suppress one in favour of the other.
     expect(fret5).not.toBe(fret17);
+  });
+
+  // -------------------------------------------------------------------------
+  // New contour smoke tests
+  // -------------------------------------------------------------------------
+
+  it("triad voicing emits non-empty path d string starting with M", () => {
+    // C major triad on 3 different frets (non-collinear) → spline path expected.
+    const noteData = [
+      makeNote(0, 3, "C", "chord-root"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(2, 4, "G", "chord-tone-in-scale"),
+    ];
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
+    expect(result).toHaveLength(1);
+    const { d } = result[0]!;
+    expect(d).not.toBe("");
+    expect(d.startsWith("M")).toBe(true);
+  });
+
+  it("7th chord voicing emits non-empty path d string starting with M", () => {
+    // Cmaj7: C, E, G, B spread across 4 strings and different frets → spline path.
+    const noteData = [
+      makeNote(0, 3, "C", "chord-root"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(2, 4, "G", "chord-tone-in-scale"),
+      makeNote(3, 6, "B", "chord-tone-in-scale"),
+    ];
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G", "B"], fretCenterX, stringYAt, STRING_ROW_PX);
+    expect(result).toHaveLength(1);
+    const { d } = result[0]!;
+    expect(d).not.toBe("");
+    expect(d.startsWith("M")).toBe(true);
+  });
+
+  it("degenerate collinear voicing emits capsule path d containing A arc command", () => {
+    // All 3 notes at the exact same fret → same x coordinate → bbox height ≈ 0
+    // (degenerate: area < (STRING_ROW_PX * 0.5)^2). Capsule path expected.
+    const noteData = [
+      makeNote(0, 5, "C", "chord-root"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(2, 5, "G", "chord-tone-in-scale"),
+    ];
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
+    expect(result).toHaveLength(1);
+    const { d } = result[0]!;
+    expect(d).not.toBe("");
+    // Capsule paths contain arc (A) commands.
+    expect(d).toContain("A");
   });
 });
