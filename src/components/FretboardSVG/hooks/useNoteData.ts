@@ -176,12 +176,28 @@ export function useNoteData({
         const isInPlayableContext: boolean = (() => {
           if (!hasChordOverlay) return false;
           // 3NPS has no polygon shapes; gate chord overlay by aggregate fret bounds
+          // AND by per-coordinate shape membership.
           if (activePattern === "3nps" && shapeScope !== "global" && boxBounds.length > 0) {
-            return boxBounds.some(
+            const inFretRange = boxBounds.some(
               (b) =>
                 fretIndex >= b.minFret - chordFretSpread &&
                 fretIndex <= b.maxFret + chordFretSpread,
             );
+            if (!inFretRange) return false;
+            // Require the specific (stringIndex, fretIndex) to be a member of the
+            // active 3NPS position. The aggregate fret range spans all strings, so a
+            // chord tone that happens to fall in-band on a string but at a fret not
+            // part of the position would otherwise get a chord-tone class. Including
+            // those out-of-position notes in activeTones causes the connector algorithm
+            // to prefer a tighter-span voicing using them over the expected in-position
+            // voicing (e.g., C@str4-fret15 and G@str5-fret15 beating C@str3-fret10 /
+            // G@str4-fret10 / E@str5-fret12 on the bottom three strings).
+            // When scale is hidden, highlightNotes is cleared to [] — fall back to
+            // fret-range-only so the chord overlay remains visible.
+            if (highlightNotes.length > 0) {
+              return highlightSet.has(`${stringIndex}-${fretIndex}`);
+            }
+            return true;
           }
           if (shapePolygons.length === 0 || !activePattern) return true;
           if (shapeScope === "global") return true;

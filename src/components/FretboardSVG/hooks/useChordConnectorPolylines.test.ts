@@ -562,6 +562,99 @@ describe("buildChordConnectorPolylines", () => {
   });
 });
 
+// -------------------------------------------------------------------------
+// Regression: 3NPS Position 2 — bottom-string voicing (strings 3-4-5)
+//
+// C major scale, 3NPS Position 2, C major triad (C, E, G).
+// The in-position chord-tone notes on the bottom three strings are:
+//   str3 (D3)  fret 10 = C  (chord-root)
+//   str4 (A2)  fret 10 = G  (chord-tone-in-scale)
+//   str5 (E2)  fret 12 = E  (chord-tone-in-scale)
+//
+// Prior to the fix, two out-of-position chord tones also appeared in
+// activeTones because isInPlayableContext for 3NPS only checked aggregate
+// fret range (not per-coordinate shape membership):
+//   str4 fret 15 = C  ("chord-root"   — in fret band but NOT in Position 2)
+//   str5 fret 15 = G  ("chord-tone-in-scale" — same)
+//
+// The connector algorithm prefers the tightest span. For window [3,4,5]:
+//   (str3-E@14, str4-C@15, str5-G@15)  span = 15-14 = 1  ← wrong winner
+//   (str3-C@10, str4-G@10, str5-E@12)  span = 12-10 = 2  ← expected
+//
+// The fix: isInPlayableContext for 3NPS with a specific position also gates
+// on per-coordinate shape membership (highlightSet.has("si-fi")) so those
+// out-of-position notes become note-inactive and leave activeTones.
+//
+// The test models the fixed noteData (out-of-position notes marked inactive)
+// and asserts the expected bottom-string voicing is emitted.
+// -------------------------------------------------------------------------
+
+describe("regression: 3NPS Position 2 bottom-string voicing", () => {
+  it("emits C@str3-fret10 / G@str4-fret10 / E@str5-fret12 voicing when out-of-position notes are inactive", () => {
+    // Fixed noteData: out-of-position chord tones are note-inactive.
+    // In-position chord tones for 3NPS Position 2 (C major, frets 10–15):
+    //   str3: C@10 (chord-root), E@14 (chord-tone-in-scale)
+    //   str4: G@10 (chord-tone-in-scale)
+    //   str5: E@12 (chord-tone-in-scale)
+    // Out-of-position (now note-inactive after the fix):
+    //   str4: C@15 (would be chord-root in-band but out of position → inactive)
+    //   str5: G@15 (would be chord-tone-in-scale in-band but out of position → inactive)
+    const noteData = [
+      // Upper strings (in-position chord tones — upper voicings still work)
+      makeNote(0, 12, "E", "chord-tone-in-scale"),
+      makeNote(0, 15, "G", "chord-tone-in-scale"),
+      makeNote(1, 13, "C", "chord-root"),
+      makeNote(2, 12, "G", "chord-tone-in-scale"),
+      // Bottom strings — in-position
+      makeNote(3, 10, "C", "chord-root"),
+      makeNote(3, 14, "E", "chord-tone-in-scale"),
+      makeNote(4, 10, "G", "chord-tone-in-scale"),
+      makeNote(4, 15, "C", "note-inactive"),   // out-of-position, now inactive
+      makeNote(5, 12, "E", "chord-tone-in-scale"),
+      makeNote(5, 15, "G", "note-inactive"),   // out-of-position, now inactive
+    ];
+
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
+
+    // The bottom-string voicing must be present.
+    const bottomVoicing = result.find(
+      (voicing) =>
+        voicing.vertices.length === 3 &&
+        voicing.vertices.some((v) => v.y === stringYAt(3, fretCenterX(10)) && v.x === fretCenterX(10)) &&
+        voicing.vertices.some((v) => v.y === stringYAt(4, fretCenterX(10)) && v.x === fretCenterX(10)) &&
+        voicing.vertices.some((v) => v.y === stringYAt(5, fretCenterX(12)) && v.x === fretCenterX(12)),
+    );
+    expect(bottomVoicing, "bottom-string voicing C@str3-f10 / G@str4-f10 / E@str5-f12 not emitted").toBeDefined();
+    expect(bottomVoicing!.vertices).toHaveLength(3);
+  });
+
+  it("does NOT emit the tighter out-of-position voicing E@str3-f14 / C@str4-f15 / G@str5-f15 when those notes are inactive", () => {
+    // Same fixed noteData as above.
+    const noteData = [
+      makeNote(0, 12, "E", "chord-tone-in-scale"),
+      makeNote(0, 15, "G", "chord-tone-in-scale"),
+      makeNote(1, 13, "C", "chord-root"),
+      makeNote(2, 12, "G", "chord-tone-in-scale"),
+      makeNote(3, 10, "C", "chord-root"),
+      makeNote(3, 14, "E", "chord-tone-in-scale"),
+      makeNote(4, 10, "G", "chord-tone-in-scale"),
+      makeNote(4, 15, "C", "note-inactive"),
+      makeNote(5, 12, "E", "chord-tone-in-scale"),
+      makeNote(5, 15, "G", "note-inactive"),
+    ];
+
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
+
+    // The out-of-position voicing must NOT be present.
+    const outOfPositionVoicing = result.find(
+      (voicing) =>
+        voicing.vertices.some((v) => v.y === stringYAt(4, fretCenterX(15)) && v.x === fretCenterX(15)) ||
+        voicing.vertices.some((v) => v.y === stringYAt(5, fretCenterX(15)) && v.x === fretCenterX(15)),
+    );
+    expect(outOfPositionVoicing, "out-of-position voicing using fret-15 notes must not be emitted").toBeUndefined();
+  });
+});
+
 describe("paletteIndex field", () => {
   it("includes paletteIndex in returned voicing objects", () => {
     const noteData = [
