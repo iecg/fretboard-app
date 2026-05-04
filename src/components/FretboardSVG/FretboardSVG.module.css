@@ -104,6 +104,7 @@
   stroke-width: 1.9;
 }
 
+/* dark-mode: note-blue and color-tone retain light-purple label text; white-label override deferred to follow-up milestone */
 .fretboard-note.note-blue text {
   fill: #e8d8ff;
 }

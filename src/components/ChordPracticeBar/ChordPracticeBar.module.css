@@ -301,6 +301,30 @@
   border-color: color-mix(in srgb, var(--degree-color) 80%, #f8f6f2);
 }
 
+/* ===== Dark-mode pill overrides (audit rows 6, 7, 9-10) ===== */
+
+/* Audit row 6 — in-scale pill (cyan → warm amber):
+   Base dark default uses --role-scale-bg = color-mix(#0891b2 12%, transparent) (cyan).
+   Light-mode round-3 unified all chord-overlay surfaces to warm amber family, removing the
+   cyan in-scale hue signal (scale-tone distinction now carried by solid vs dashed border).
+   Mirror that unification into dark mode by replacing cyan with warm amber mix. */
+:global([data-theme="modern-dark"]) .practice-bar-pill[data-in-scale="true"] {
+  background: color-mix(in srgb, #FF9A4D 12%, transparent);
+  border-color: color-mix(in srgb, #FF9A4D 65%, transparent);
+}
+
+/* Audit row 7 — tension-only pill (yellow-amber for dark):
+   Adds an explicit dark-mode override with yellow-amber fill to match the fretboard
+   chord-tone-outside-scale fill family (#fde68a) and distinguish tension notes clearly
+   on the dark practice-bar surface. Dashed border from the base role rule is retained. */
+:global([data-theme="modern-dark"]) .practice-bar-pill[data-tension="true"]:not([data-chord-root="true"]) {
+  background: color-mix(in srgb, #fde68a 40%, transparent);
+  border-color: #FF9A4D;
+  box-shadow: none;
+}
+
+/* Audit rows 9-10 (note-blue, color-tone label overrides for dark) — deferred per Phase 2 02-CONTEXT.md design call. */
+
 :global(.app-container[data-layout-variant="tablet-stacked"]) .chord-practice-bar-groups {
   flex-direction: column;
   align-items: flex-start;
