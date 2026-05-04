@@ -227,6 +227,21 @@
   border-color: #e0dbd3;
 }
 
+/* ===== Dark-mode chord chip overrides (audit rows 5, 8) ===== */
+
+/* Audit row 5 — outside-scale chip: the base alpha-mix (#FF9A4D 30%, transparent) renders
+   as a very faint tint on a dark surface and the dashed border nearly disappears.
+   Override with a perceptibly warm yellow-amber fill and solid orange border so the
+   dashed outside-scale semantic reads clearly — mirrors the light-mode #fde68a treatment. */
+:global([data-theme="modern-dark"]) .chord-row-item[data-role="chord-tone-outside-scale"] .chord-row-chip {
+  background: color-mix(in srgb, #fde68a 40%, transparent);
+  border-color: #FF9A4D;
+  box-shadow: 0 0 6px color-mix(in srgb, #FF9A4D 55%, transparent);
+}
+
+/* Audit row 8 — scale-only legend swatch (intentional no-change):
+   dark-mode: scale-only legend swatch uses neon-cyan border (intentional — matches dark surface accent tokens). */
+
 .chord-row-strip--compact {
   --chord-chip-size: clamp(1.6rem, 2.2vw, 1.82rem);
 }

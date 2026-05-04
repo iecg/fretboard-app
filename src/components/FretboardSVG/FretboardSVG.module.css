@@ -104,6 +104,14 @@
   stroke-width: 1.9;
 }
 
+/* Dark-mode: note-blue and color-tone white-label override (deferred from Phase 2, now landed).
+   Light-purple label (#e8d8ff) on cream fill (#fef3e2) against dark wood is too low-contrast;
+   white + dark stroke matches the chord-tone role treatment. */
+:global([data-theme="modern-dark"]) .fretboard-note.note-blue text {
+  fill: #ffffff;
+  stroke: rgb(0 0 0 / 0.45);
+}
+
 .fretboard-note.note-blue text {
   fill: #e8d8ff;
 }
@@ -123,6 +131,11 @@
   stroke: var(--note-ring-color-tone);
   fill: var(--fretboard-note-fill-chord-tone);
   stroke-width: 1.9;
+}
+
+:global([data-theme="modern-dark"]) .fretboard-note.color-tone text {
+  fill: #ffffff;
+  stroke: rgb(0 0 0 / 0.45);
 }
 
 .fretboard-note.color-tone text {
@@ -146,6 +159,17 @@
   fill: #ffffff;
 }
 
+/* Light-mode chord-tone-in-scale and note-diatonic-chord white-label override (Fix B-1).
+   These roles use cream #fef3e2 fill that nearly vanishes against warm maple wood
+   (#fbe6c6 / #f1c38e — only ~20 RGB delta). The note circle becomes faint, making
+   a dark label appear to float on the wood background. White labels + dark stroke
+   match the key-tonic / chord-root treatment and provide consistent legibility. */
+:global([data-theme="modern-light"]) .fretboard-note.chord-tone-in-scale text,
+:global([data-theme="modern-light"]) .fretboard-note.note-diatonic-chord text {
+  stroke: rgb(0 0 0 / 0.45);
+  fill: #ffffff;
+}
+
 /* Light-mode lens-emphasized labels — same white-on-amber treatment as tonic/chord-root. */
 :global([data-theme="modern-light"]) [data-practice-lens="guide-tones"] .fretboard-note[data-note-guide-tone] text {
   stroke: rgb(0 0 0 / 0.45);
@@ -160,6 +184,26 @@
 :global([data-theme="modern-light"]) [data-practice-lens="tension"] .fretboard-note.chord-root[data-note-tension] text {
   stroke: rgb(0 0 0 / 0.45);
   fill: #ffffff;
+}
+
+/* Dark-mode per-role label-fill overrides (audit rows 1, 2, 3).
+   Chord-tone roles have light fills (cream #fef3e2, yellow #fde68a) that pair
+   with the dark-wood backdrop to produce near-invisible dark labels. Override
+   with white fill + dark stroke so labels pop against these light fills on dark
+   wood — mirrors the round-3 light-mode pattern above. */
+:global([data-theme="modern-dark"]) .fretboard-note.chord-tone-in-scale text {
+  fill: #ffffff;
+  stroke: rgb(0 0 0 / 0.45);
+}
+
+:global([data-theme="modern-dark"]) .fretboard-note.note-diatonic-chord text {
+  fill: #ffffff;
+  stroke: rgb(0 0 0 / 0.45);
+}
+
+:global([data-theme="modern-dark"]) .fretboard-note.chord-tone-outside-scale text {
+  fill: #ffffff;
+  stroke: rgb(0 0 0 / 0.45);
 }
 
 .fretboard-note.chord-tone-outside-scale :is(circle, rect, polygon) {
@@ -360,4 +404,21 @@
 
 :global([data-theme="modern-light"]) .fret-number {
   color: var(--fretboard-fret-number-color);
+}
+
+/* -----------------------------------------------------------------------
+   Chord-tone connector layer
+   Single fat open polyline through every chord-tone vertex in string-index
+   order. The browser's stroke renderer with rounded caps/joins envelopes
+   every note bubble automatically. No geometry helpers needed — CSS handles
+   all visual sizing via --string-row-px (set on .fretboard-neck in TSX).
+   ----------------------------------------------------------------------- */
+.chord-connectors path {
+  stroke: var(--chord-connector-stroke);
+  stroke-width: calc(var(--string-row-px) * 1.1);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-opacity: var(--chord-connector-opacity, 0.3);
+  fill: none;
+  /* No stroke-dasharray — fat polyline + dashes look cluttered */
 }

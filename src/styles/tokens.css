@@ -180,3 +180,10 @@
   --practice-pill-tension-border: rgb(255 122 61);
   --practice-pill-guide-blue-bg: rgb(30 60 120 / 0.25);
 }
+
+:root {
+  /* Chord-tone connector layer */
+  --chord-connector-stroke: var(--chord-connector-color-1);
+  --chord-connector-dash: 4 6;
+  --chord-connector-opacity: 0.55;
+}
