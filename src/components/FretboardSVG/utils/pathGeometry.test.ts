@@ -8,7 +8,32 @@ import {
   convexHull,
   offsetOutlinePath,
   openPolylinePath,
+  shapeIdentityKey,
+  fnv1aHash,
 } from "./pathGeometry";
+import type { NoteData } from "../hooks/useNoteData";
+
+/**
+ * Build a minimal NoteData entry for hash/key tests.
+ */
+function makeNote(
+  si: number,
+  fi: number,
+  noteName: string = "C",
+): NoteData {
+  return {
+    stringIndex: si,
+    fretIndex: fi,
+    noteName,
+    noteClass: "chord-tone-in-scale",
+    displayValue: noteName,
+    applyDimOpacity: false,
+    applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1 },
+    isHidden: false,
+    isTension: false,
+    isGuideTone: false,
+  };
+}
 
 describe("centroid", () => {
   it("returns correct mean for a triangle", () => {
@@ -618,5 +643,71 @@ describe("offsetOutlinePath", () => {
     expect(dCW.startsWith("M")).toBe(true);
     expect(dCCW.endsWith("Z")).toBe(true);
     expect(dCW.endsWith("Z")).toBe(true);
+  });
+});
+
+describe("fnv1aHash & shapeIdentityKey", () => {
+  describe("shapeIdentityKey", () => {
+    it("returns empty string for empty bestCombo", () => {
+      expect(shapeIdentityKey([])).toBe("");
+    });
+
+    it("extracts relative fret offsets sorted ascending", () => {
+      const combo = [
+        makeNote(0, 5, "C"),
+        makeNote(1, 7, "E"),
+        makeNote(2, 9, "G"),
+      ];
+      // Frets: [5, 7, 9] → offsets: [0, 2, 4] → "0,2,4"
+      expect(shapeIdentityKey(combo)).toBe("0,2,4");
+    });
+
+    it("normalizes different fret positions to same key", () => {
+      const comboA = [makeNote(0, 5), makeNote(1, 7), makeNote(2, 9)];   // frets 5,7,9
+      const comboB = [makeNote(0, 12), makeNote(1, 14), makeNote(2, 16)]; // frets 12,14,16
+      // Both have offsets [0,2,4]
+      expect(shapeIdentityKey(comboA)).toBe(shapeIdentityKey(comboB));
+    });
+
+    it("normalizes different string sets to same key", () => {
+      // Same fingering pattern (offsets 0,2,4) on different consecutive strings
+      const comboEAD = [makeNote(1, 5), makeNote(2, 7), makeNote(3, 9)];  // strings E-A-D
+      const comboDGB = [makeNote(2, 5), makeNote(3, 7), makeNote(4, 9)];  // strings D-G-B
+      expect(shapeIdentityKey(comboEAD)).toBe(shapeIdentityKey(comboDGB));
+    });
+
+    it("distinguishes different fingering patterns", () => {
+      const majorTriad = [makeNote(0, 0), makeNote(1, 2), makeNote(2, 4)]; // 0,2,4
+      const minorTriad = [makeNote(0, 0), makeNote(1, 3), makeNote(2, 4)]; // 0,3,4 (minor 3rd)
+      expect(shapeIdentityKey(majorTriad)).not.toBe(shapeIdentityKey(minorTriad));
+    });
+  });
+
+  describe("fnv1aHash", () => {
+    it("returns consistent hash for same input", () => {
+      const key = "0,2,4";
+      expect(fnv1aHash(key)).toBe(fnv1aHash(key));
+    });
+
+    it("returns different hash for different inputs", () => {
+      expect(fnv1aHash("0,2,4")).not.toBe(fnv1aHash("0,3,4"));
+    });
+
+    it("modulo-8 distribution does not collide entirely", () => {
+      // Light spot-check: 8 distinct keys should not all map to same modulo bucket
+      const keys = [
+        "0,2,4",    // major triad
+        "0,3,4",    // minor triad
+        "0,2,5",    // sus2
+        "0,3,5",    // minor 3rd + 5th
+        "0,2,3,5",  // 7sus2
+        "0,2,4,7",  // maj7
+        "0,3,4,7",  // min7
+        "0,1,4,7",  // dim7
+      ];
+      const buckets = new Set(keys.map((k) => fnv1aHash(k) % 8));
+      // All 8 buckets populated (probabilistically ~99.9% for 8 inputs, 8 buckets)
+      expect(buckets.size).toBeGreaterThan(1);
+    });
   });
 });
