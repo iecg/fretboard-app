@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import type { NoteData } from "./useNoteData";
 import {
   polarSort,
-  enforceMinimumExtent,
   closedCatmullRomPath,
   inflatedCapsulePath,
 } from "../utils/pathGeometry";
@@ -243,28 +242,19 @@ export function buildChordConnectorPolylines(
         return { x, y };
       });
 
-      // Step 5: apply polar sort, enforce minimum readable width, and select path branch.
+      // Step 5: apply polar sort and select path branch.
       const sortedVertices = polarSort(rawVertices);
-
-      // Enforce minimum perpendicular extent so that even all-on-same-fret
-      // triads and near-collinear voicings produce a contour with at least
-      // half a string-row of spread on their short axis.  This pre-pass is
-      // path-builder-agnostic: both Catmull-Rom and capsule branches benefit.
-      const expandedVertices = enforceMinimumExtent(
-        sortedVertices,
-        stringRowPx * 0.5,
-      );
 
       let d: string;
 
-      if (expandedVertices.length === 2) {
+      if (sortedVertices.length === 2) {
         // Two-note connector: simple line-like closed path.
-        const [a, b] = expandedVertices as [ChordConnectorVertex, ChordConnectorVertex];
+        const [a, b] = sortedVertices as [ChordConnectorVertex, ChordConnectorVertex];
         d = `M ${a.x} ${a.y} L ${b.x} ${b.y} Z`;
       } else {
         // Degenerate detection: bbox area and aspect ratio.
-        const xs = expandedVertices.map((v) => v.x);
-        const ys = expandedVertices.map((v) => v.y);
+        const xs = sortedVertices.map((v) => v.x);
+        const ys = sortedVertices.map((v) => v.y);
         const minX = Math.min(...xs);
         const maxX = Math.max(...xs);
         const minY = Math.min(...ys);
@@ -279,14 +269,12 @@ export function buildChordConnectorPolylines(
         const isDegenerate = area < degenerateAreaThreshold || aspectRatio > 8;
 
         if (isDegenerate) {
-          d = inflatedCapsulePath(expandedVertices, stringRowPx * 0.4);
+          d = inflatedCapsulePath(sortedVertices, stringRowPx * 0.4);
         } else {
-          d = closedCatmullRomPath(expandedVertices);
+          d = closedCatmullRomPath(sortedVertices);
         }
       }
 
-      // Keep original sorted vertices in the result for debugging and future
-      // per-voicing color keying; expandedVertices are only for path building.
       results.push({ d, vertices: sortedVertices });
     }
   }

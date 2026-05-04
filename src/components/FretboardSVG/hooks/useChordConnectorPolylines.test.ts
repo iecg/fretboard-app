@@ -492,11 +492,9 @@ describe("buildChordConnectorPolylines", () => {
     expect(d.startsWith("M")).toBe(true);
   });
 
-  it("degenerate collinear voicing (all on same fret) emits a path with visible perpendicular width", () => {
-    // All 3 notes at the exact same fret → same x coordinate → zero x-span.
-    // After enforceMinimumExtent, the x-axis is expanded to at least stringRowPx*0.5
-    // before the path branch fires, so the contour has visible width regardless
-    // of whether it resolves to a capsule or a spline.
+  it("degenerate collinear voicing emits capsule path d containing A arc command", () => {
+    // All 3 notes at the exact same fret → same x coordinate → bbox height ≈ 0
+    // (degenerate: area < (STRING_ROW_PX * 0.5)^2). Capsule path expected.
     const noteData = [
       makeNote(0, 5, "C", "chord-root"),
       makeNote(1, 5, "E", "chord-tone-in-scale"),
@@ -506,11 +504,7 @@ describe("buildChordConnectorPolylines", () => {
     expect(result).toHaveLength(1);
     const { d } = result[0]!;
     expect(d).not.toBe("");
-    expect(d.startsWith("M")).toBe(true);
-    expect(d.endsWith("Z")).toBe(true);
-    // Path must produce a contour with non-zero width and height.
-    // Parse all numeric tokens and verify both x and y ranges > 0.
-    const nums = d.replace(/[MLACZV]/gi, " ").trim().split(/\s+/).map(Number).filter(Number.isFinite);
-    expect(nums.length).toBeGreaterThan(4);
+    // Capsule paths contain arc (A) commands.
+    expect(d).toContain("A");
   });
 });
