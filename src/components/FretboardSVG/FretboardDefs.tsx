@@ -148,9 +148,9 @@ export const FretboardDefs = memo(({
       </filter>
       <linearGradient id={svgDefId("nut-material")} x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%" stopColor="var(--nut-stop-1, #ffffff)" />
-        <stop offset="35%" stopColor="var(--nut-stop-2, #f4f4f1)" />
-        <stop offset="75%" stopColor="var(--nut-stop-3, #d8d4cb)" />
-        <stop offset="100%" stopColor="var(--nut-stop-4, #a9a59b)" />
+        <stop offset="35%" stopColor="var(--nut-stop-2, #fcfbf8)" />
+        <stop offset="75%" stopColor="var(--nut-stop-3, #f8f4e8)" />
+        <stop offset="100%" stopColor="var(--nut-stop-4, #f3ecd8)" />
       </linearGradient>
       <linearGradient
         id={svgDefId("fret-wire-cylinder")}

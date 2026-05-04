@@ -117,11 +117,8 @@
   margin: 0;
   padding: 0.1rem 0 0;
   width: 100%;
+  /* Token resolves to rgb(255 255 255 / 0.06) in dark mode and warm-light surface in light mode. */
   border-top: 1px solid var(--token-border-subtle);
-}
-
-:global([data-theme="modern-dark"]) .chord-row-legend {
-  border-top: 1px solid rgb(255 255 255 / 0.06);
 }
 
 .chord-row-legend-item {
@@ -168,6 +165,66 @@
   opacity: 0.65;
   letter-spacing: 0.02em;
   white-space: nowrap;
+}
+
+/* ===== Light-mode warm palette overrides ===== */
+
+/* Strip surface: visible warm border + subtle lift shadow */
+:global([data-theme="modern-light"]) .chord-row-strip {
+  --strip-border: 1px solid #e8e4df;
+  --strip-shadow: 0 1px 3px rgb(0 0 0 / 0.06);
+}
+
+/* Inactive chip: warm sunken fill so out-of-chord notes read distinctly */
+:global([data-theme="modern-light"]) .chord-row-chip {
+  background: #f0ede6;
+  border-color: #e0dbd3;
+}
+
+/* Chord-root chip: warm amber fill (strong) */
+:global([data-theme="modern-light"]) .chord-row-item[data-role="chord-root"] .chord-row-chip {
+  background: color-mix(in srgb, #ea580c 18%, #fdf7f0);
+  border-color: #ea580c;
+  box-shadow: 0 0 5px color-mix(in srgb, #ea580c 35%, transparent),
+              0 0 0 3px color-mix(in srgb, #ea580c 10%, transparent);
+}
+
+/* In-scale chord tone: warm amber fill (lighter); border solid for crisp definition */
+:global([data-theme="modern-light"]) .chord-row-item[data-role="chord-tone-in-scale"] .chord-row-chip {
+  background: color-mix(in srgb, #ea580c 12%, #fdf7f0);
+  border-color: #ea580c;
+  box-shadow: 0 0 5px color-mix(in srgb, #ea580c 25%, transparent);
+}
+
+/* Outside-scale chord tone: yellow-amber fill matches fretboard --fretboard-note-chord-tone-outside-fill (#fde68a); solid orange border */
+:global([data-theme="modern-light"]) .chord-row-item[data-role="chord-tone-outside-scale"] .chord-row-chip {
+  background: #fde68a;
+  border-color: var(--neon-orange);
+  box-shadow: 0 0 5px color-mix(in srgb, #ea580c 20%, transparent);
+}
+
+/* Legend divider: warm-aligned */
+:global([data-theme="modern-light"]) .chord-row-legend {
+  border-top: 1px solid #e8e4df;
+}
+
+/* Legend swatches: remove dark-mode glow, keep border readability */
+:global([data-theme="modern-light"]) .chord-row-legend-swatch {
+  border-color: #e0dbd3;
+}
+
+:global([data-theme="modern-light"]) .chord-row-legend-item[data-role="chord-root"] .chord-row-legend-swatch,
+:global([data-theme="modern-light"]) .chord-row-legend-item[data-role="chord-tone-in-scale"] .chord-row-legend-swatch {
+  box-shadow: none;
+}
+
+:global([data-theme="modern-light"]) .chord-row-legend-item[data-role="chord-tone-outside-scale"] .chord-row-legend-swatch {
+  box-shadow: none;
+}
+
+/* Scale-only swatch — explicit warm-neutral border so the role-scoped base rule's dark-tuned token doesn't bleed through. */
+:global([data-theme="modern-light"]) .chord-row-legend-item[data-role="scale-only"] .chord-row-legend-swatch {
+  border-color: #e0dbd3;
 }
 
 .chord-row-strip--compact {

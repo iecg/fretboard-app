@@ -173,6 +173,7 @@
   --note-ring: #0369a1;
   --note-ring-tonic: #b45309;
   --note-ring-dim: #0c4a6e;
+  /* Intentionally cool/violet in BOTH themes — color-tone is a semantic "outside-key chromatic accent" role and the cool hue reinforces the role boundary against warm chord-overlay amber. */
   --note-ring-color-tone: #7c3aed;
 
   /* Note colors — primary and secondary note emphasis */
@@ -213,7 +214,14 @@
   --fretboard-board-shadow: rgb(0 0 0 / 0.15);
   --fretboard-note-text-fill: #0f172a;
   --fretboard-note-text-stroke: transparent;
-  --fretboard-note-chord-tone-outside-fill: var(--neon-orange-dim);
+  --fretboard-note-chord-tone-outside-fill: #fde68a; /* light-mode: yellow-amber — hue-contrast against orange maple wood; visually distinct across all wood shades; diamond+dashed border conveys outside-scale role (was #fde3c0 which was invisible against #fbe6c6 lightest wood) */
+  /* Lens-emphasis token namespaces.
+     Guide-tones (5 tokens) treats all deemphasized notes uniformly — the lens emphasis is a binary
+     (guide-tone vs everything else), so a single deemphasis tier covers both chord-tones and scale-only.
+     Tension (7 tokens) adds chord-tone-{fill,stroke} because the tension lens distinguishes in-scale
+     chord-tones (consumed at FretboardSVG.module.css:280-289) from outside-scale tension notes;
+     the deemphasis tier is finer-grained.
+     The asymmetry is intentional — do not unify without first unifying the lens emphasis logic itself. */
   --fretboard-guide-tones-emphasis-fill: var(--note-ring-tonic);
   --fretboard-guide-tones-deemphasis-fill: color-mix(in srgb, var(--note-ring-tonic) 15%, #ffffff);
   --fretboard-guide-tones-deemphasis-stroke: color-mix(in srgb, var(--note-ring-tonic) 40%, transparent);
@@ -228,11 +236,14 @@
   --fretboard-tension-color-tone-stroke: color-mix(in srgb, var(--note-ring-color-tone) 40%, transparent);
   --fretboard-fret-number-color: #475569;
 
-  /* Fretboard note fill token overrides — light mode uses ring-color fills (matches strokes). */
-  --fretboard-note-fill-tonic: #fde8c4;
-  --fretboard-note-fill-chord-root: #fde8c4;
-  --fretboard-note-fill-chord-tone: #fcfaf8;
-  --fretboard-note-fill-scale-only: #fcfaf8;
+  /* Fretboard note fill token overrides — light mode amber hierarchy against maple wood.
+     Hierarchy: tonic (#fb923c, orange) > chord-root (#fdba74, amber) > chord-tone (#fef3e2, cream) > scale-only (#f5efe4, warm cream).
+     Chord-outside (#fde68a, yellow) is visually distinct via yellow hue vs orange-amber wood; role conveys outside-scale via diamond shape + dashed border.
+     Wood mid-tone is #f1c38e; fills must read distinctly against it with #b45309 amber stroke. */
+  --fretboard-note-fill-tonic: #fb923c;      /* amber-400: rich orange-amber, strong tonic signal */
+  --fretboard-note-fill-chord-root: #fdba74; /* amber-300: lighter than tonic, same family */
+  --fretboard-note-fill-chord-tone: #fef3e2; /* amber-50 warm: cream-white with amber tint */
+  --fretboard-note-fill-scale-only: #f5efe4; /* warm cream, ~94% L: RGB delta 45 vs maple-wood-top #fbe6c6; darker than chord-tone #fef3e2 (97% L) — surface ladder preserved */
   --fretboard-note-fill-chord-outside:  var(--fretboard-note-chord-tone-outside-fill);
   --fretboard-note-fill-tension-emph:   var(--fretboard-tension-emphasis-fill);
   --fretboard-note-fill-tension-strong: var(--fretboard-tension-emphasis-fill);

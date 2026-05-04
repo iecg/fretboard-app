@@ -240,6 +240,67 @@
 }
 
 
+/* ===== Light-mode warm palette overrides ===== */
+
+/* Strip surface: lift above shell with visible warm border */
+:global([data-theme="modern-light"]) .chord-practice-bar {
+  --strip-border: 1px solid #e8e4df;
+  --strip-shadow: 0 1px 3px rgb(0 0 0 / 0.06);
+}
+
+/* Lens label + badge: sunken warm fill so they read as tags, not ghosts */
+:global([data-theme="modern-light"]) .chord-practice-bar-lens-label,
+:global([data-theme="modern-light"]) .chord-practice-bar-badge {
+  background: #f0ede6;
+  border-color: #e0dbd3;
+}
+
+/* Inactive pill: warm sunken fill with visible border (mirrors hidden-chip pattern) */
+:global([data-theme="modern-light"]) .practice-bar-pill {
+  background: #f3efe8;
+  border-color: #e0dbd3;
+}
+
+/* In-scale pill: amber-cream alignment with chord-overlay family — practice bar is a chord-overlay surface,
+   so all pills share the amber palette; scale-tone signal is carried by fretboard ring tokens, not pill color. */
+:global([data-theme="modern-light"]) .practice-bar-pill[data-in-scale="true"] {
+  background: color-mix(in srgb, #ea580c 10%, #fdf7f0);
+  border-color: color-mix(in srgb, #ea580c 65%, transparent);
+}
+
+/* Chord-root pill (orange-strong): warm amber fill */
+:global([data-theme="modern-light"]) .practice-bar-pill[data-chord-root="true"] {
+  background: color-mix(in srgb, #ea580c 16%, #fdf7f0);
+  border-color: #ea580c;
+}
+
+/* Guide-tone pill (orange): lighter amber fill */
+:global([data-theme="modern-light"]) .practice-bar-pill[data-guide-tone="true"] {
+  background: color-mix(in srgb, #ea580c 10%, #fdf7f0);
+  border-color: color-mix(in srgb, #ea580c 75%, transparent);
+}
+
+/* Pure tension pill (chord tone outside scale, not the root): warm yellow-amber tint
+   to mirror the fretboard chord-tone-outside-scale fill (#fde68a) and stand apart
+   from the inactive sunken fill (#f3efe8). Dashed border inherited from the role rule above. */
+:global([data-theme="modern-light"]) .practice-bar-pill[data-tension="true"]:not([data-chord-root="true"]) {
+  background: #fde68a;
+  border-color: var(--neon-orange);
+  box-shadow: none;
+}
+
+/* Root + tension overlap: keep amber-strong fill, remove glow */
+:global([data-theme="modern-light"]) .practice-bar-pill[data-chord-root="true"][data-tension="true"] {
+  box-shadow: none;
+}
+
+/* Degree-color mode: mix degree color against warm white base instead of chip-surface-inactive.
+   Border desaturates to 80% degree-color over the same warm-cream so it stays one tier crisper than the 55% background mix. */
+:global([data-theme="modern-light"]) .chord-practice-bar[data-degree-colors="true"] .practice-bar-pill[data-in-scale="true"][data-scale-degree] {
+  background: color-mix(in srgb, var(--degree-color) 55%, #f8f6f2);
+  border-color: color-mix(in srgb, var(--degree-color) 80%, #f8f6f2);
+}
+
 :global(.app-container[data-layout-variant="tablet-stacked"]) .chord-practice-bar-groups {
   flex-direction: column;
   align-items: flex-start;
