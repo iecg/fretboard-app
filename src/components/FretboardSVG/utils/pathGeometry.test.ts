@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   centroid,
   polarSort,
+  enforceMinimumExtent,
   closedCatmullRomPath,
   inflatedCapsulePath,
 } from "./pathGeometry";
@@ -71,6 +72,118 @@ describe("polarSort", () => {
     const pts = [{ x: 0, y: 0 }, { x: 1, y: 1 }, { x: 2, y: 0 }];
     const sorted = polarSort(pts);
     expect(sorted).not.toBe(pts);
+  });
+});
+
+describe("enforceMinimumExtent", () => {
+  it("returns original array reference unchanged when short axis already meets minExtent", () => {
+    const pts = [
+      { x: 0, y: 0 },
+      { x: 60, y: 0 },
+      { x: 30, y: 60 },
+    ];
+    // bboxW=60, bboxH=60 — both exceed minExtent=18
+    const result = enforceMinimumExtent(pts, 18);
+    expect(result).toBe(pts); // same reference — no allocation
+  });
+
+  // Fixture A: all-on-same-fret triad (the user-reported bug case).
+  // Three notes on the SAME fret column (x=100) on three adjacent strings
+  // spaced 30px apart.  bboxW = 0 → short axis needs expansion to minExtent.
+  it("Fixture A: all-on-same-fret triad — x-axis expanded to minExtent", () => {
+    const pts = [
+      { x: 100, y: 30 },
+      { x: 100, y: 60 },
+      { x: 100, y: 90 },
+    ];
+    const stringRowPx = 30;
+    const minExtent = stringRowPx * 0.5; // 15px
+    const result = enforceMinimumExtent(pts, minExtent);
+
+    // Result must be a NEW array (not the same reference).
+    expect(result).not.toBe(pts);
+    expect(result).toHaveLength(3);
+
+    // After expansion, x-axis span must be at least minExtent.
+    const xs = result.map((v) => v.x);
+    const xSpan = Math.max(...xs) - Math.min(...xs);
+    expect(xSpan).toBeGreaterThanOrEqual(minExtent);
+
+    // y-axis must remain unchanged (bboxH=60 already >= minExtent=15).
+    const ys = result.map((v) => v.y);
+    expect(Math.min(...ys)).toBeCloseTo(30, 1);
+    expect(Math.max(...ys)).toBeCloseTo(90, 1);
+  });
+
+  // Fixture B: near-collinear non-degenerate triad — thin triangle that barely
+  // passes the area threshold but whose short axis is still below minExtent.
+  // Example: notes span 1 fret (x: 100→130, 30px) on 3 strings (y: 0→60, 60px).
+  // bboxW=30, bboxH=60 — both axes already exceed a typical minExtent of 15px,
+  // but suppose minExtent is set to 35px > bboxW=30 → x needs expansion.
+  it("Fixture B: near-collinear non-degenerate thin triangle — short axis expanded", () => {
+    const pts = [
+      { x: 100, y: 0 },
+      { x: 130, y: 30 },
+      { x: 100, y: 60 },
+    ];
+    // minExtent > bboxW (30px) so x axis should be expanded.
+    const minExtent = 36;
+    const result = enforceMinimumExtent(pts, minExtent);
+
+    expect(result).not.toBe(pts);
+    const xs = result.map((v) => v.x);
+    const xSpan = Math.max(...xs) - Math.min(...xs);
+    expect(xSpan).toBeGreaterThanOrEqual(minExtent);
+
+    // y-axis span (60px) already exceeds minExtent (36px) — unchanged.
+    const ys = result.map((v) => v.y);
+    expect(Math.max(...ys) - Math.min(...ys)).toBeCloseTo(60, 1);
+  });
+
+  it("expands BOTH axes when both are below minExtent (single-point degenerate)", () => {
+    const pts = [{ x: 50, y: 50 }];
+    const result = enforceMinimumExtent(pts, 20);
+    // Single point: centroid = (50,50); dy=0 → pushed to +halfTarget on y; dx=0 → pushed to +halfTarget on x.
+    expect(result[0]!.x).toBeCloseTo(50 + 10, 1); // halfTarget = 10
+    expect(result[0]!.y).toBeCloseTo(50 + 10, 1);
+  });
+
+  it("returns empty array for empty input", () => {
+    expect(enforceMinimumExtent([], 20)).toEqual([]);
+  });
+
+  it("returns original array unchanged when minExtent <= 0", () => {
+    const pts = [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }];
+    expect(enforceMinimumExtent(pts, 0)).toBe(pts);
+    expect(enforceMinimumExtent(pts, -5)).toBe(pts);
+  });
+
+  it("does not mutate the input array", () => {
+    const pts = [
+      { x: 100, y: 30 },
+      { x: 100, y: 60 },
+      { x: 100, y: 90 },
+    ];
+    const original = pts.map((p) => ({ ...p }));
+    enforceMinimumExtent(pts, 30);
+    expect(pts).toEqual(original);
+  });
+
+  it("Fixture A expanded result produces a non-degenerate contour via inflatedCapsulePath", () => {
+    // Regression: the all-on-same-fret triad must ultimately produce a path
+    // that has both x-extent and y-extent > 0 after enforceMinimumExtent.
+    const pts = [
+      { x: 100, y: 30 },
+      { x: 100, y: 60 },
+      { x: 100, y: 90 },
+    ];
+    const stringRowPx = 36; // tablet row height
+    const expanded = enforceMinimumExtent(pts, stringRowPx * 0.5);
+    const d = inflatedCapsulePath(expanded, stringRowPx * 0.4);
+    expect(d).toContain("A");
+    // Confirm both axes span > 0 by checking the x range in expanded points.
+    const xs = expanded.map((v) => v.x);
+    expect(Math.max(...xs) - Math.min(...xs)).toBeGreaterThanOrEqual(stringRowPx * 0.5);
   });
 });
 
