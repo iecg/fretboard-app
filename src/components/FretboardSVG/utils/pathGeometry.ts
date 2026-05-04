@@ -5,8 +5,6 @@
  * imported and tested directly without a DOM environment.
  */
 
-import type { NoteData } from "../hooks/useNoteData";
-
 /** A 2-D point in SVG pixel space. */
 export interface Point {
   x: number;
@@ -535,40 +533,3 @@ export function inflatedCapsulePath(vertices: Point[], perpOffset: number): stri
   }
 }
 
-// ---------------------------------------------------------------------------
-// shapeIdentityKey
-// ---------------------------------------------------------------------------
-
-/**
- * Compute a shape-identity key by extracting fret offsets relative to min-fret.
- * Two voicings with identical relative fingering (same fret intervals) on any
- * consecutive N strings hash identically, regardless of absolute position or
- * string set.
- *
- * @param bestCombo - Array of NoteData positions from a picked voicing (any order).
- * @returns Comma-joined string of offset frets, e.g. "0,2,4" for a major triad.
- */
-export function shapeIdentityKey(bestCombo: NoteData[]): string {
-  if (bestCombo.length === 0) return "";
-  const frets = bestCombo.map((nd) => nd.fretIndex);
-  const minFret = Math.min(...frets);
-  const offsets = frets.map((f) => f - minFret).sort((a, b) => a - b);
-  return offsets.join(",");
-}
-
-// ---------------------------------------------------------------------------
-// fnv1aHash
-// ---------------------------------------------------------------------------
-
-/**
- * FNV-1a string hash (fast, non-cryptographic, deterministic, no deps).
- * Maps arbitrary strings to 32-bit unsigned integer.
- */
-export function fnv1aHash(s: string): number {
-  let hash = 0x811c9dc5; // FNV offset basis
-  for (let i = 0; i < s.length; i++) {
-    hash ^= s.charCodeAt(i);
-    hash = (hash + (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24)) >>> 0;
-  }
-  return hash;
-}

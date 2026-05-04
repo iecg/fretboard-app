@@ -322,6 +322,7 @@ export const FretboardSVG = memo(function FretboardSVG({
     fretCenterX,
     stringYAt,
     stringRowPx,
+    chordRoot: chordRoot ?? "",
   });
 
   return (
