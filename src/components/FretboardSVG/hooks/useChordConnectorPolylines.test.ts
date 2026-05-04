@@ -521,8 +521,8 @@ describe("buildChordConnectorPolylines", () => {
     const lCount = (d.match(/\bL\b/g) ?? []).length;
     expect(lCount).toBe(2);
     // All x coordinates must be equal (same fret column x=50).
-    // Path tokens: "M 50,0 L 50,20 L 50,40" — verify all x values are 50.
-    expect(d).toMatch(/^M 50,[\d.]+ L 50,[\d.]+ L 50,[\d.]+$/);
+    // Path tokens: "M 50 0 L 50 20 L 50 40" — verify all x values are 50.
+    expect(d).toMatch(/^M 50 [\d.]+ L 50 [\d.]+ L 50 [\d.]+$/);
   });
 
   // -------------------------------------------------------------------------
@@ -556,9 +556,9 @@ describe("buildChordConnectorPolylines", () => {
     const lCount = (d.match(/\bL\b/g) ?? []).length;
     expect(lCount).toBe(2);
     // Verify all 3 vertices appear: x=50 (fret 5), x=70 (fret 7), x=80 (fret 8).
-    expect(d).toContain("50,");
-    expect(d).toContain("70,");
-    expect(d).toContain("80,");
+    expect(d).toContain("50 ");
+    expect(d).toContain("70 ");
+    expect(d).toContain("80 ");
   });
 });
 

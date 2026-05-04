@@ -402,7 +402,7 @@ export function offsetOutlinePath(polygon: Array<{ x: number; y: number }>, r: n
  *
  * @param vertices - Vertex sequence in traversal order (caller provides ordering).
  * @returns SVG path-d string. Empty string for zero-vertex input. Single-point
- *          input returns "M x,y" (a degenerate dot — caller should avoid this).
+ *          input returns "M x y" (a degenerate dot — caller should avoid this).
  */
 export function closedPolylinePath(vertices: Array<{ x: number; y: number }>): string {
   if (vertices.length === 0) return "";
@@ -455,12 +455,12 @@ export function openPolylinePath(vertices: Array<{ x: number; y: number }>): str
   if (vertices.length === 0) return "";
   const first = vertices[0]!;
   if (vertices.length === 1) {
-    return `M ${r2(first.x)},${r2(first.y)}`;
+    return `M ${r2(first.x)} ${r2(first.y)}`;
   }
-  const parts: string[] = [`M ${r2(first.x)},${r2(first.y)}`];
+  const parts: string[] = [`M ${r2(first.x)} ${r2(first.y)}`];
   for (let i = 1; i < vertices.length; i++) {
     const v = vertices[i]!;
-    parts.push(`L ${r2(v.x)},${r2(v.y)}`);
+    parts.push(`L ${r2(v.x)} ${r2(v.y)}`);
   }
   return parts.join(" ");
 }

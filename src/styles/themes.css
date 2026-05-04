@@ -258,11 +258,13 @@
      --shadow-ping-start, --shadow-ping-end */
 
   /* Chord-tone connector overrides for light mode.
-     Fully opaque orange-800 (#9a3412) with opacity 1.0 ensures strong contrast
-     against warm maple wood (#fbe6c6 / #f1c38e) — effective alpha = 1.0 vs ~0.60
-     previously. Stroke-width bump to 2.5px adds density without muddying the fill. */
+     Per-voicing palette (--chord-connector-color-1..8) is highly saturated and
+     would dominate the note-bubble hierarchy at full alpha. 0.3 keeps the
+     envelopes legible against warm maple wood (#fbe6c6 / #f1c38e) without
+     overpowering the chord tones. The legacy --chord-connector-stroke fallback
+     (used only when paletteIndex resolves to none) stays at #9a3412. */
   --chord-connector-stroke: #9a3412;
-  --chord-connector-opacity: 1.0;
+  --chord-connector-opacity: 0.3;
   /* Per-voicing chord-connector palette — 8 hues spread ~40°+ apart around
      the wheel for maximum distinctness on warm maple wood (#f1c38e mid-tone).
      All values sit at saturation 70-90% and lightness 30-50% so they remain
@@ -295,13 +297,12 @@
   --fretboard-note-fill-scale-only: #3a2f28;
 
   /* Chord-tone connector overrides for dark mode.
-     The :root default uses color-mix(var(--note-ring-tonic) 60%, transparent) which
-     can fail to resolve in some browsers when the custom-property chain is indirect.
-     Explicit hardcoded values ensure visibility: #FF9A4D (neon-orange) at 70% alpha,
-     single-gate opacity (0.85) to prevent the multiplicative near-zero (~0.33)
-     that makes connectors invisible against dark rosewood (#160d07). */
+     Per-voicing palette (--chord-connector-color-1..8) at 0.3 alpha lets the
+     bright neon hues read against dark rosewood (#160d07) without fighting the
+     note-bubble fills. The legacy --chord-connector-stroke fallback (used only
+     when paletteIndex resolves to none) stays as the neon-orange color-mix. */
   --chord-connector-stroke: color-mix(in srgb, #FF9A4D 70%, transparent);
-  --chord-connector-opacity: 0.85;
+  --chord-connector-opacity: 0.3;
   /* Per-voicing chord-connector palette — 8 bright hues spread ~40°+ apart
      around the wheel for maximum distinctness on dark rosewood (#160d07).
      All values sit at saturation 70-100% and lightness 55-75% so they pop

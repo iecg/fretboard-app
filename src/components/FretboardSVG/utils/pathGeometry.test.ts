@@ -442,9 +442,9 @@ describe("openPolylinePath", () => {
     expect(openPolylinePath([])).toBe("");
   });
 
-  it("single-vertex input returns 'M x,y'", () => {
+  it("single-vertex input returns 'M x y'", () => {
     const d = openPolylinePath([{ x: 5, y: 10 }]);
-    expect(d).toBe("M 5,10");
+    expect(d).toBe("M 5 10");
   });
 
   it("3-vertex collinear (same x, three different y): M+L+L no Z", () => {
@@ -460,7 +460,7 @@ describe("openPolylinePath", () => {
     const lCount = (d.match(/\bL\b/g) ?? []).length;
     expect(lCount).toBe(2);
     // Coordinates rounded to 2 decimal places
-    expect(d).toBe("M 50,0 L 50,20 L 50,40");
+    expect(d).toBe("M 50 0 L 50 20 L 50 40");
   });
 
   it("3-vertex diagonal triangle: M+L+L no Z", () => {
