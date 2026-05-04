@@ -74,6 +74,23 @@ describe("polarSort", () => {
     const sorted = polarSort(pts);
     expect(sorted).not.toBe(pts);
   });
+
+  it("near-collinear diagonal (G-E-C triad): retains all 3 vertices — no interior drops", () => {
+    // Simulates G(string 4 fret 5) → E(string 5 fret 7) → C(string 6 fret 8) in pixel space.
+    // With fretCenterX(fi)=fi*10 and stringYAt(si)=si*20:
+    //   G: x=50, y=80  (string 4, fret 5)
+    //   E: x=70, y=100 (string 5, fret 7)
+    //   C: x=80, y=120 (string 6, fret 8)
+    // These are near-collinear; convexHull collapses them to 2 vertices.
+    // polarSort must return all 3.
+    const pts = [
+      { x: 50, y: 80 },
+      { x: 70, y: 100 },
+      { x: 80, y: 120 },
+    ];
+    const sorted = polarSort(pts);
+    expect(sorted).toHaveLength(3);
+  });
 });
 
 describe("closedCatmullRomPath", () => {
@@ -396,5 +413,48 @@ describe("offsetOutlinePath", () => {
     expect(d).not.toBe("");
     expect(d.startsWith("M")).toBe(true);
     expect(d.endsWith("Z")).toBe(true);
+  });
+
+  it("thin near-collinear triangle: all 3 corners produce 3 A arc commands", () => {
+    // Feed a polar-sorted near-collinear triangle — the kind that polarSort
+    // produces for the G-E-C diagonal triad.  The offset path must include
+    // one arc per vertex (3 total), confirming the middle vertex is not dropped.
+    const triangle = polarSort([
+      { x: 0, y: 0 },
+      { x: 50, y: 5 },
+      { x: 100, y: 0 },
+    ]);
+    const d = offsetOutlinePath(triangle, 20);
+    expect(d).not.toBe("");
+    expect(d.startsWith("M")).toBe(true);
+    expect(d.endsWith("Z")).toBe(true);
+    // One A arc command per vertex → 3 total.
+    const aCount = (d.match(/\bA\b/g) ?? []).length;
+    expect(aCount).toBe(3);
+  });
+
+  it("winding-agnostic: CW and CCW polygon produce outward (not inward) contours", () => {
+    // A right triangle fed in CCW order should produce the same-shape path as
+    // the same triangle reversed (CW order) — both contours must be outside the
+    // triangle (offset points further from centroid than original vertices).
+    const ccw = [
+      { x: 0, y: 0 },
+      { x: 100, y: 0 },
+      { x: 50, y: -86.6 }, // apex upward (negative y in SVG)
+    ];
+    const cw = [...ccw].reverse();
+
+    const r = 20;
+    const dCCW = offsetOutlinePath(ccw, r);
+    const dCW = offsetOutlinePath(cw, r);
+
+    // Both must produce 3 A arc commands.
+    expect((dCCW.match(/\bA\b/g) ?? []).length).toBe(3);
+    expect((dCW.match(/\bA\b/g) ?? []).length).toBe(3);
+    // Both must be non-empty closed paths.
+    expect(dCCW.startsWith("M")).toBe(true);
+    expect(dCW.startsWith("M")).toBe(true);
+    expect(dCCW.endsWith("Z")).toBe(true);
+    expect(dCW.endsWith("Z")).toBe(true);
   });
 });

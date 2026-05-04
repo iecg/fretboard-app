@@ -201,35 +201,37 @@ export function convexHull(vertices: Array<{ x: number; y: number }>): Array<{ x
 
 /**
  * Build an SVG path string for the offset outline (Minkowski sum with a disk of
- * radius `r`) of a convex hull.
+ * radius `r`) of a polygon.
  *
- * Dispatches on `hull.length`:
+ * Dispatches on `polygon.length`:
  * - **0** → empty string.
- * - **1** → circle of radius `r` centred at the single hull point (two-arc pattern).
- * - **2** → capsule connecting the two hull points with semicircular end-caps of radius `r`.
- * - **3+** → rounded convex polygon: each corner is a circular arc of radius `r`
+ * - **1** → circle of radius `r` centred at the single point (two-arc pattern).
+ * - **2** → capsule connecting the two points with semicircular end-caps of radius `r`.
+ * - **3+** → rounded polygon: each corner is a circular arc of radius `r`
  *   connecting the outward-offset endpoints of the two adjacent edges; straight
  *   line segments connect adjacent arcs along the offset edges.
  *
- * For the 3+ case, the hull must be in CCW winding order (as returned by
- * `convexHull`). The outward normal of edge `(a→b)` in a CCW polygon is the
- * right-hand perpendicular `((b.y - a.y), -(b.x - a.x))` normalized.
+ * For the 3+ case the function is **winding-agnostic**: it computes the signed
+ * area via the shoelace formula to determine whether the polygon is CW or CCW
+ * in SVG screen coordinates (y-axis down), then selects the correct outward
+ * normal direction automatically. Input may be CCW or CW; outward normal
+ * direction is computed from the signed area.
  *
  * All coordinates are rounded to 2 decimal places.
  *
- * @param hull - Convex hull vertices in CCW order (from `convexHull`).
- * @param r    - Offset radius in pixels (≥ 0).
- * @returns SVG path `d` attribute string closed with `Z`, or `''` for empty hull.
+ * @param polygon - Polygon vertices in any consistent winding order.
+ * @param r       - Offset radius in pixels (≥ 0).
+ * @returns SVG path `d` attribute string closed with `Z`, or `''` for empty input.
  */
-export function offsetOutlinePath(hull: Array<{ x: number; y: number }>, r: number): string {
-  if (hull.length === 0) return "";
+export function offsetOutlinePath(polygon: Array<{ x: number; y: number }>, r: number): string {
+  if (polygon.length === 0) return "";
 
   const rr = Math.max(r, 0);
 
   // --- 1-point: circle ---
-  if (hull.length === 1) {
-    const cx = r2(hull[0]!.x);
-    const cy = r2(hull[0]!.y);
+  if (polygon.length === 1) {
+    const cx = r2(polygon[0]!.x);
+    const cy = r2(polygon[0]!.y);
     const ri = r2(rr);
     const diam = r2(2 * rr);
     // Standard two-arc circle pattern.
@@ -237,8 +239,8 @@ export function offsetOutlinePath(hull: Array<{ x: number; y: number }>, r: numb
   }
 
   // --- 2-point: capsule ---
-  if (hull.length === 2) {
-    const [p0, p1] = [hull[0]!, hull[1]!];
+  if (polygon.length === 2) {
+    const [p0, p1] = [polygon[0]!, polygon[1]!];
     const dx = p1.x - p0.x;
     const dy = p1.y - p0.y;
     const len = Math.sqrt(dx * dx + dy * dy);
@@ -279,38 +281,79 @@ export function offsetOutlinePath(hull: Array<{ x: number; y: number }>, r: numb
   }
 
   // --- 3+ point: rounded offset polygon ---
-  const N = hull.length;
+  const N = polygon.length;
+
+  // Determine winding via the shoelace signed-area formula.
+  // In SVG screen coords (y-axis down): 2A > 0 means CW traversal, 2A < 0 means CCW.
+  // We need CCW winding for the right-hand perpendicular to point outward.
+  // If the polygon is CW (2A > 0), negate the normals (use left-hand perpendicular).
+  let twoA = 0;
+  for (let i = 0; i < N; i++) {
+    const a = polygon[i]!;
+    const b = polygon[(i + 1) % N]!;
+    twoA += (a.x * b.y) - (b.x * a.y);
+  }
+
+  // Degenerate: all points collinear (zero area). Fall back to a capsule
+  // spanning the two extreme points so the contour still envelopes all notes.
+  if (Math.abs(twoA) < 1e-9) {
+    // Find the two points that are farthest apart (extreme endpoints of the line).
+    let maxDist = 0;
+    let ep0 = polygon[0]!;
+    let ep1 = polygon[N - 1]!;
+    for (let i = 0; i < N; i++) {
+      for (let j = i + 1; j < N; j++) {
+        const dx = polygon[j]!.x - polygon[i]!.x;
+        const dy = polygon[j]!.y - polygon[i]!.y;
+        const d = dx * dx + dy * dy;
+        if (d > maxDist) {
+          maxDist = d;
+          ep0 = polygon[i]!;
+          ep1 = polygon[j]!;
+        }
+      }
+    }
+    return offsetOutlinePath([ep0, ep1], rr);
+  }
+
+  // normalSign = +1 when polygon is CCW (right-hand perp is outward),
+  //              -1 when polygon is CW  (left-hand perp is outward).
+  const normalSign = twoA < 0 ? 1 : -1;
 
   // Compute outward unit normals for each edge i → (i+1).
   const normals: Array<{ nx: number; ny: number }> = [];
   for (let i = 0; i < N; i++) {
-    const a = hull[i]!;
-    const b = hull[(i + 1) % N]!;
+    const a = polygon[i]!;
+    const b = polygon[(i + 1) % N]!;
     const dx = b.x - a.x;
     const dy = b.y - a.y;
     const len = Math.sqrt(dx * dx + dy * dy);
     if (len < 1e-9) {
       normals.push({ nx: 0, ny: 0 });
     } else {
-      // Outward normal for CCW polygon: right-hand perpendicular of (a→b).
-      normals.push({ nx: dy / len, ny: -dx / len });
+      // Right-hand perpendicular of (a→b), flipped according to winding.
+      normals.push({ nx: normalSign * (dy / len), ny: normalSign * (-dx / len) });
     }
   }
 
-  // For each hull vertex i:
+  // For each polygon vertex i:
   //   - incoming edge is (i-1) → i, with normal normals[(i-1+N)%N]
   //   - outgoing edge is i → (i+1), with normal normals[i]
   //
   // A_i = V[i] + r * incomingNormal  (arc start on incoming edge)
   // B_i = V[i] + r * outgoingNormal  (arc end / start of outgoing line)
   //
-  // The arc sweeps from A_i to B_i around V[i] with radius r (sweep-flag=1 for CW arc in SVG, which is the outward curve for CCW hulls).
+  // The arc sweeps from A_i to B_i around V[i] with radius r.
+  // sweep-flag=1 produces a CW arc in SVG, which is the outward convex corner
+  // when the polygon is CCW (normalSign=+1). When the polygon is CW
+  // (normalSign=-1) the normals are already flipped, so sweep-flag=1 still
+  // traces the correct outward arc.
 
   const parts: string[] = [];
   let first = true;
 
   for (let i = 0; i < N; i++) {
-    const v = hull[i]!;
+    const v = polygon[i]!;
     const inNorm = normals[(i - 1 + N) % N]!;
     const outNorm = normals[i]!;
 
@@ -328,11 +371,11 @@ export function offsetOutlinePath(hull: Array<{ x: number; y: number }>, r: numb
       parts.push(`L ${ai_x} ${ai_y}`);
     }
 
-    // Arc from A_i to B_i around V[i], sweep-flag=1 (clockwise in SVG = convex outward corner for CCW hull).
+    // Arc from A_i to B_i around V[i], sweep-flag=1.
     parts.push(`A ${ri} ${ri} 0 0 1 ${bi_x} ${bi_y}`);
 
     // Line from B_i to A_{i+1} (start of next arc).
-    const nextV = hull[(i + 1) % N]!;
+    const nextV = polygon[(i + 1) % N]!;
     const nextInNorm = normals[i]!; // incoming normal of next vertex = outgoing normal of current edge
     const nextAi_x = r2(nextV.x + rr * nextInNorm.nx);
     const nextAi_y = r2(nextV.y + rr * nextInNorm.ny);

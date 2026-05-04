@@ -500,10 +500,11 @@ describe("buildChordConnectorPolylines", () => {
     expect(d).toContain("A");
   });
 
-  it("collinear voicing (same fret, 3 adjacent strings): emits capsule with 2 A arc commands", () => {
-    // All 3 notes at the exact same fret → same x coordinate → 2-vertex convex hull →
-    // capsule path with exactly 2 A arc commands (the two end-caps).
-    // This is the user's reported regression case.
+  it("collinear voicing (same fret, 3 adjacent strings): emits capsule-like shape enveloping all 3 notes", () => {
+    // All 3 notes at the exact same fret → same x coordinate → perfectly collinear.
+    // polarSort returns 3 vertices; offsetOutlinePath detects zero signed area and
+    // falls back to a capsule from the two extreme endpoints.
+    // The capsule must visually envelope all 3 notes (same as before the polar-sort change).
     const noteData = [
       makeNote(0, 5, "C", "chord-root"),
       makeNote(1, 5, "E", "chord-tone-in-scale"),
@@ -527,5 +528,36 @@ describe("buildChordConnectorPolylines", () => {
     // Verify that 30.2 (50 - 19.8) and 69.8 (50 + 19.8) appear in the path.
     expect(d).toContain("30.2");
     expect(d).toContain("69.8");
+  });
+
+  // -------------------------------------------------------------------------
+  // Regression: near-collinear diagonal triad G-E-C must visit all 3 vertices
+  //
+  // Bug: convexHull dropped the middle vertex E when G→E→C were near-collinear
+  // (E within cross-product tolerance of the G-C line), collapsing the contour
+  // to a 2-vertex capsule spanning the long diagonal from G to C.
+  // Fix: polarSort retains every vertex; offsetOutlinePath visits all 3.
+  // -------------------------------------------------------------------------
+
+  it("(regression) near-collinear diagonal G-E-C: path visits all 3 vertices (3 A arc commands)", () => {
+    // Voicing: G(string 4, fret 5) → E(string 5, fret 7) → C(string 6, fret 8).
+    // With fretCenterX(fi)=fi*10 and stringYAt(si)=si*20:
+    //   G: x=50, y=80   E: x=70, y=100   C: x=80, y=120 (near-collinear diagonal).
+    // Before fix: convexHull collapses to [G, C], offsetOutlinePath emits capsule (2 A arcs).
+    // After fix:  polarSort retains all 3, offsetOutlinePath emits rounded polygon (3 A arcs).
+    const noteData = [
+      makeNote(4, 5, "G", "chord-tone-in-scale"),
+      makeNote(5, 7, "E", "chord-tone-in-scale"),
+      makeNote(6, 8, "C", "chord-root"),
+    ];
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
+    expect(result).toHaveLength(1);
+    const { d } = result[0]!;
+    expect(d).not.toBe("");
+    expect(d.startsWith("M")).toBe(true);
+    expect(d.endsWith("Z")).toBe(true);
+    // Must have 3 A arc commands — one per vertex — confirming E is not skipped.
+    const aCount = (d.match(/\bA\b/g) ?? []).length;
+    expect(aCount).toBe(3);
   });
 });

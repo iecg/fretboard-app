@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { NoteData } from "./useNoteData";
-import { convexHull, offsetOutlinePath } from "../utils/pathGeometry";
+import { polarSort, offsetOutlinePath } from "../utils/pathGeometry";
 import { NOTE_BUBBLE_RATIO, HALO_RATIO } from "../../../core/constants";
 
 export interface ChordConnectorVertex {
@@ -44,11 +44,12 @@ export const CHORD_TONE_CLASSES = new Set([
  * - `d` — pre-computed SVG path `d` attribute string for the closed contour.
  *   Built via offset-outline geometry (Minkowski sum with a disk of radius
  *   `r = stringRowPx * (NOTE_BUBBLE_RATIO/2 + HALO_RATIO)`):
- *   1. Compute the convex hull of the raw voicing vertices.
- *   2. Dispatch on hull cardinality: 1 → circle, 2 → capsule, 3+ → rounded polygon.
- *   The offset ensures the contour visibly envelopes every note bubble,
- *   and collinear voicings (e.g. same-fret-column) always render as a capsule
- *   with guaranteed minimum width of `2r`.
+ *   1. Sort the raw voicing vertices by polar angle (polarSort) so the polygon
+ *      visits every vertex without self-intersection.
+ *   2. Dispatch on vertex count: 1 → circle, 2 → capsule, 3+ → rounded polygon.
+ *   The offset ensures the contour visibly envelopes every note bubble.
+ *   Near-collinear voicings (e.g. a diagonal triad) visit all vertices because
+ *   polarSort retains interior/collinear points that convexHull would drop.
  * - `vertices` — original (unmodified) chord-tone pixel positions, retained for
  *   unit tests and future per-voicing color keying.
  *
@@ -73,7 +74,7 @@ export const CHORD_TONE_CLASSES = new Set([
  *           index (highest string first).
  *   4. Deduplicate emitted voicings by their canonical "(stringIndex,fretIndex)"
  *      tuple set so that overlapping cluster anchors don't re-emit the same shape.
- *   5. For each voicing vertex list: compute convex hull, then produce offset
+ *   5. For each voicing vertex list: polar-sort the vertices, then produce offset
  *      outline path via `offsetOutlinePath`.
  *
  * Returns an array of `{ d, vertices }` objects, one per distinct playable voicing.
@@ -239,11 +240,14 @@ export function buildChordConnectorPolylines(
         return { x, y };
       });
 
-      // Step 5: compute convex hull of raw vertices and produce the offset outline.
+      // Step 5: polar-sort the raw vertices and produce the offset outline.
+      // polarSort visits every vertex (retaining near-collinear interior notes),
+      // unlike convexHull which drops them. The winding-agnostic offsetOutlinePath
+      // handles both CW and CCW output from polarSort correctly.
       // r = noteRadius + haloPx = stringRowPx * (NOTE_BUBBLE_RATIO/2 + HALO_RATIO)
-      const hull = convexHull(rawVertices);
+      const polygon = polarSort(rawVertices);
       const r = stringRowPx * (NOTE_BUBBLE_RATIO / 2 + HALO_RATIO);
-      const d = offsetOutlinePath(hull, r);
+      const d = offsetOutlinePath(polygon, r);
 
       // Keep original (unmodified) vertex positions in the result for debugging
       // and future per-voicing color keying.
