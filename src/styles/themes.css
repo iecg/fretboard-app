@@ -173,6 +173,7 @@
   --note-ring: #0369a1;
   --note-ring-tonic: #b45309;
   --note-ring-dim: #0c4a6e;
+  /* Intentionally cool/violet in BOTH themes — color-tone is a semantic "outside-key chromatic accent" role and the cool hue reinforces the role boundary against warm chord-overlay amber. */
   --note-ring-color-tone: #7c3aed;
 
   /* Note colors — primary and secondary note emphasis */
@@ -214,6 +215,13 @@
   --fretboard-note-text-fill: #0f172a;
   --fretboard-note-text-stroke: transparent;
   --fretboard-note-chord-tone-outside-fill: #fde68a; /* light-mode: yellow-amber — hue-contrast against orange maple wood; visually distinct across all wood shades; diamond+dashed border conveys outside-scale role (was #fde3c0 which was invisible against #fbe6c6 lightest wood) */
+  /* Lens-emphasis token namespaces.
+     Guide-tones (5 tokens) treats all deemphasized notes uniformly — the lens emphasis is a binary
+     (guide-tone vs everything else), so a single deemphasis tier covers both chord-tones and scale-only.
+     Tension (7 tokens) adds chord-tone-{fill,stroke} because the tension lens distinguishes in-scale
+     chord-tones (consumed at FretboardSVG.module.css:280-289) from outside-scale tension notes;
+     the deemphasis tier is finer-grained.
+     The asymmetry is intentional — do not unify without first unifying the lens emphasis logic itself. */
   --fretboard-guide-tones-emphasis-fill: var(--note-ring-tonic);
   --fretboard-guide-tones-deemphasis-fill: color-mix(in srgb, var(--note-ring-tonic) 15%, #ffffff);
   --fretboard-guide-tones-deemphasis-stroke: color-mix(in srgb, var(--note-ring-tonic) 40%, transparent);
