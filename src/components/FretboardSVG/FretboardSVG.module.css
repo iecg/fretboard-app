@@ -206,6 +206,11 @@
   stroke: rgb(0 0 0 / 0.45);
 }
 
+:global([data-theme="modern-light"]) .fretboard-note.chord-tone-outside-scale text {
+  stroke: rgb(0 0 0 / 0.45);
+  fill: #ffffff;
+}
+
 .fretboard-note.chord-tone-outside-scale :is(circle, rect, polygon) {
   stroke: var(--neon-orange-dim);
   fill: var(--fretboard-note-fill-chord-outside);
@@ -278,7 +283,7 @@
 [data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]),
 [data-practice-lens="guide-tones"] .fretboard-note.note-diatonic-chord:not([data-note-guide-tone]) {
   filter: none;
-  opacity: 0.55;
+  opacity: 0.68;
 }
 
 [data-practice-lens="guide-tones"] .fretboard-note.color-tone :is(circle, rect, polygon) {
@@ -288,13 +293,13 @@
 
 [data-practice-lens="guide-tones"] .fretboard-note.color-tone {
   filter: none;
-  opacity: 0.55;
+  opacity: 0.68;
 }
 
 [data-practice-lens="tension"] .fretboard-note.chord-tone-outside-scale :is(circle, rect, polygon) {
   stroke: var(--neon-orange);
   fill: var(--fretboard-note-fill-tension-strong);
-  stroke-dasharray: none;
+  stroke-dasharray: 6 3;
   stroke-width: 3.8;
 }
 
@@ -317,7 +322,7 @@
 
 [data-practice-lens="tension"] .fretboard-note.chord-root:not([data-note-tension]) {
   filter: none;
-  opacity: 0.65;
+  opacity: 0.72;
 }
 
 [data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale :is(circle, rect, polygon),
@@ -330,7 +335,7 @@
 [data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale,
 [data-practice-lens="tension"] .fretboard-note.note-diatonic-chord {
   filter: none;
-  opacity: 0.55;
+  opacity: 0.68;
 }
 
 [data-practice-lens="tension"] .fretboard-note.color-tone :is(circle, rect, polygon) {
@@ -340,19 +345,21 @@
 
 [data-practice-lens="tension"] .fretboard-note.color-tone {
   filter: none;
-  opacity: 0.55;
+  opacity: 0.68;
 }
 
-/* Degree color mode — keep this after role/lens selectors so degree colors win. */
-/* Fill is the raw degree color (solid). Dimming is handled via opacity on the group element. */
+/* Degree color mode — keep this after role/lens selectors so degree fills win while role/lens rings remain visible. */
 .fretboard-board[data-degree-colors="true"] .fretboard-note[data-scale-degree] :is(circle, rect, polygon) {
-  stroke: var(--degree-color, var(--note-ring));
   fill: var(--degree-color, #141e28);
 }
 
 :global([data-theme="modern-light"]) .fretboard-board[data-degree-colors="true"] .fretboard-note[data-scale-degree] text {
   fill: #ffffff;
   stroke: rgb(0 0 0 / 0.45);
+}
+
+:global([data-theme="modern-light"]) .fretboard-board[data-degree-colors="true"] .fretboard-note[data-scale-degree] :is(circle, rect, polygon) {
+  fill: color-mix(in srgb, var(--degree-color) 52%, #0f172a);
 }
 
 /* Accessibility layer */

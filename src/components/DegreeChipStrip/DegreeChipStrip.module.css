@@ -141,11 +141,9 @@
   will-change: filter;
 }
 
-/* Degree color mode — apply degree color to in-scale chips (gated by data-degree-colors) */
+/* Degree color mode — degree colors own fill only; semantic borders/rings stay role-coded. */
 .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true'] .degree-chip {
   background: color-mix(in srgb, var(--degree-color) 60%, var(--strip-fill));
-  border-color: var(--degree-color);
-  box-shadow: 0 0 7px color-mix(in srgb, var(--degree-color) 65%, transparent);
 }
 
 .degree-chip-item[data-is-color-note='true'] .degree-chip {
@@ -190,7 +188,7 @@
   border-color: var(--chip-border-muted);
   box-shadow: 0 0 6px var(--chip-line-muted);
   filter: none;
-  opacity: 0.38;
+  opacity: var(--note-hidden-opacity);
 }
 
 .degree-chip-item[data-hidden='true'][data-is-color-note='true'] {
@@ -203,13 +201,13 @@
 }
 
 .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true'][data-is-color-note='true'] {
-  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--degree-color) 70%, transparent));
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--role-color-tone-ring) 75%, transparent));
 }
 
 .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true'][data-is-color-note='true'] .degree-chip {
-  background: var(--degree-color);
+  background: var(--role-color-tone-ring);
   border-color: transparent;
-  box-shadow: 0 0 8px color-mix(in srgb, var(--degree-color) 68%, transparent);
+  box-shadow: none;
 }
 
 .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true'][data-is-color-note='true'] .degree-chip::before {
@@ -276,15 +274,24 @@
   box-shadow: none;
 }
 
-:global([data-theme="modern-light"]) .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true']:not([data-hidden='true']) .degree-chip,
-:global([data-theme="modern-light"]) .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true'][data-is-color-note='true']:not([data-hidden='true']) .degree-chip {
-  background: var(--degree-color);
-  border-color: transparent;
+:global([data-theme="modern-light"]) .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true']:not([data-hidden='true']):not([data-is-color-note='true']) .degree-chip {
+  background: color-mix(in srgb, var(--degree-color) 52%, #0f172a);
   box-shadow: none;
 }
 
 :global([data-theme="modern-light"]) .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true']:not([data-hidden='true']) .degree-chip-note {
   color: #ffffff;
+  text-shadow: 0 1px 1px rgb(0 0 0 / 0.55);
+}
+
+:global([data-theme="modern-light"]) .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true'][data-is-color-note='true']:not([data-hidden='true']) .degree-chip {
+  background: var(--role-color-tone-ring);
+  border-color: transparent;
+  box-shadow: none;
+}
+
+:global([data-theme="modern-light"]) .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true'][data-is-color-note='true']:not([data-hidden='true']) .degree-chip::before {
+  background: color-mix(in srgb, var(--degree-color) 52%, #0f172a);
 }
 
 :global([data-theme="modern-light"]) .degree-chip-item[data-is-color-note='true'],
@@ -302,12 +309,26 @@
   --chip-line-muted: #f5f2ed;
 }
 
-/* Light-mode: hidden chips use sunken fill + outline (replaces opacity dimming) */
+/* Light-mode: hidden chips keep the sunken fill, but still dim so hidden reads consistently across themes. */
 :global([data-theme="modern-light"]) .degree-chip-item[data-hidden='true'] .degree-chip {
   background: #f0ede6;
   border-color: #e8e4df;
   box-shadow: none;
-  opacity: 1;
+  opacity: var(--note-hidden-opacity);
+}
+
+:global([data-theme="modern-light"]) .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true'][data-hidden='true'] .degree-chip {
+  background: #f0ede6;
+  border-color: #e8e4df;
+  box-shadow: none;
+  opacity: var(--note-hidden-opacity);
+}
+
+:global([data-theme="modern-light"]) .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true'][data-hidden='true'][data-is-color-note='true'] .degree-chip {
+  background: #e8e4df;
+  border-color: transparent;
+  box-shadow: none;
+  opacity: var(--note-hidden-opacity);
 }
 
 

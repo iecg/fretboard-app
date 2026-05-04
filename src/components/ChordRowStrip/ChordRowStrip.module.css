@@ -183,24 +183,30 @@
 
 /* Chord-root chip: warm amber fill (strong) */
 :global([data-theme="modern-light"]) .chord-row-item[data-role="chord-root"] .chord-row-chip {
-  background: color-mix(in srgb, #ea580c 18%, #fdf7f0);
+  background: #c2410c;
   border-color: #ea580c;
   box-shadow: 0 0 5px color-mix(in srgb, #ea580c 35%, transparent),
               0 0 0 3px color-mix(in srgb, #ea580c 10%, transparent);
 }
 
-/* In-scale chord tone: warm amber fill (lighter); border solid for crisp definition */
+/* In-scale chord tone: warm amber fill; border solid for crisp definition. */
 :global([data-theme="modern-light"]) .chord-row-item[data-role="chord-tone-in-scale"] .chord-row-chip {
-  background: color-mix(in srgb, #ea580c 12%, #fdf7f0);
+  background: #d97706;
   border-color: #ea580c;
   box-shadow: 0 0 5px color-mix(in srgb, #ea580c 25%, transparent);
 }
 
-/* Outside-scale chord tone: yellow-amber fill matches fretboard --fretboard-note-chord-tone-outside-fill (#fde68a); solid orange border */
+/* Outside-scale chord tone: yellow-amber fill matches fretboard tension fill; dashed border is inherited from the role rule. */
 :global([data-theme="modern-light"]) .chord-row-item[data-role="chord-tone-outside-scale"] .chord-row-chip {
-  background: #fde68a;
+  background: #d97706;
   border-color: var(--neon-orange);
   box-shadow: 0 0 5px color-mix(in srgb, #ea580c 20%, transparent);
+}
+
+:global([data-theme="modern-light"]) .chord-row-item:is([data-role="chord-root"], [data-role="chord-tone-in-scale"], [data-role="chord-tone-outside-scale"]) .chord-row-note,
+:global([data-theme="modern-light"]) .chord-row-item:is([data-role="chord-root"], [data-role="chord-tone-in-scale"], [data-role="chord-tone-outside-scale"]) .chord-row-interval {
+  color: #ffffff;
+  text-shadow: 0 1px 1px rgb(0 0 0 / 0.55);
 }
 
 /* Legend divider: warm-aligned */
@@ -222,9 +228,9 @@
   box-shadow: none;
 }
 
-/* Scale-only swatch — explicit warm-neutral border so the role-scoped base rule's dark-tuned token doesn't bleed through. */
+/* Scale-only swatch — neutral fill with cyan border, matching other scale-only surfaces. */
 :global([data-theme="modern-light"]) .chord-row-legend-item[data-role="scale-only"] .chord-row-legend-swatch {
-  border-color: #e0dbd3;
+  border-color: var(--role-scale-border);
 }
 
 /* ===== Dark-mode chord chip overrides (audit rows 5, 8) ===== */

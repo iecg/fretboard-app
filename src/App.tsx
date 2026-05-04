@@ -26,6 +26,7 @@ import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark
 import { SummaryRibbon } from "./components/SummaryRibbon/SummaryRibbon";
 import { ChordOverlayDock } from "./components/ChordOverlayDock/ChordOverlayDock";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
+import { NoteColorAudit } from "./components/NoteColorAudit/NoteColorAudit";
 import sharedStyles from "./components/shared/shared.module.css";
 import "./styles/App.css";
 
@@ -67,10 +68,21 @@ function AppContent() {
   const helpTriggerRef = useRef<HTMLButtonElement>(null);
   const layout = useLayoutMode();
   const theme = useResolvedTheme();
+  const showNoteColorAudit =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("audit") === "note-colors";
 
   useLayoutEffect(() => {
+    if (showNoteColorAudit) {
+      const previousTheme = document.documentElement.getAttribute("data-theme");
+      document.documentElement.removeAttribute("data-theme");
+      return () => {
+        if (previousTheme) document.documentElement.setAttribute("data-theme", previousTheme);
+        else document.documentElement.removeAttribute("data-theme");
+      };
+    }
     document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
+  }, [showNoteColorAudit, theme]);
 
   useEffect(() => {
     synth.setMute(isMuted);
@@ -104,9 +116,14 @@ function AppContent() {
     return () => clearTimeout(id);
   }, []);
   useEffect(() => {
+    if (showNoteColorAudit) return;
     if (!overlayResetReadyRef.current) return;
     setChordOverlayHidden(false);
-  }, [chordRoot, chordType, rootNote, scaleName, setChordOverlayHidden]);
+  }, [chordRoot, chordType, rootNote, scaleName, setChordOverlayHidden, showNoteColorAudit]);
+
+  if (showNoteColorAudit) {
+    return <NoteColorAudit />;
+  }
 
   return (
   <>

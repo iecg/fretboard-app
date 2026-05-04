@@ -102,6 +102,7 @@
   --chrome-hover-bg-tint: color-mix(in srgb, var(--neon-cyan) 12%, transparent);
 
   --disabled-opacity: var(--token-disabled-opacity);
+  --note-hidden-opacity: 0.4;
 
   /* Nav active tokens — theme-aware active/selected state for navigation */
   --nav-active-fg: var(--neon-cyan);
@@ -184,6 +185,8 @@
 }
 
 [data-theme="modern-light"] {
+  --note-hidden-opacity: 0.55;
+
   /* Child-tier hover contract:
    * --surface-control-hover-bg MUST be visually distinct from --chrome-hover-bg (parent-tier hover).
    * Parent tier (--chrome-hover-bg) = recessed warm-grey (#e3ded7, L≈87.5%).
