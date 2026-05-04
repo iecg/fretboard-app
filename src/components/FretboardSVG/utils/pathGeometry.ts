@@ -122,6 +122,228 @@ export function closedCatmullRomPath(vertices: Point[]): string {
 }
 
 // ---------------------------------------------------------------------------
+// convexHull
+// ---------------------------------------------------------------------------
+
+/**
+ * Compute the convex hull of a set of 2-D points using Andrew's monotone-chain
+ * algorithm.
+ *
+ * Returns the hull vertices in **counter-clockwise order**.
+ *
+ * Degenerate cases:
+ * - Coincident points (all same coordinate) → 1-vertex hull (the single point).
+ * - Collinear points → 2-vertex hull (the two extremes, i.e. the segment endpoints).
+ * - Fewer than 1 point → empty array.
+ *
+ * **Does not mutate the input array.**
+ *
+ * @param vertices - The input points. Order does not matter.
+ * @returns Hull vertices in CCW winding order.
+ */
+export function convexHull(vertices: Array<{ x: number; y: number }>): Array<{ x: number; y: number }> {
+  const n = vertices.length;
+  if (n === 0) return [];
+  if (n === 1) return [{ ...vertices[0]! }];
+
+  // Deduplicate coincident points (within floating-point equality).
+  const seen = new Set<string>();
+  const unique: Array<{ x: number; y: number }> = [];
+  for (const v of vertices) {
+    const key = `${v.x},${v.y}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      unique.push(v);
+    }
+  }
+  if (unique.length === 1) return [{ ...unique[0]! }];
+
+  // Sort by x, then by y as tiebreaker.
+  const pts = [...unique].sort((a, b) => a.x !== b.x ? a.x - b.x : a.y - b.y);
+
+  // Cross product of vectors OA and OB.
+  const cross = (o: { x: number; y: number }, a: { x: number; y: number }, b: { x: number; y: number }) =>
+    (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+
+  // Build lower hull.
+  const lower: Array<{ x: number; y: number }> = [];
+  for (const p of pts) {
+    while (lower.length >= 2 && cross(lower[lower.length - 2]!, lower[lower.length - 1]!, p) <= 0) {
+      lower.pop();
+    }
+    lower.push(p);
+  }
+
+  // Build upper hull.
+  const upper: Array<{ x: number; y: number }> = [];
+  for (let i = pts.length - 1; i >= 0; i--) {
+    const p = pts[i]!;
+    while (upper.length >= 2 && cross(upper[upper.length - 2]!, upper[upper.length - 1]!, p) <= 0) {
+      upper.pop();
+    }
+    upper.push(p);
+  }
+
+  // Remove last point of each half because it's repeated at the start of the other.
+  lower.pop();
+  upper.pop();
+
+  const hull = [...lower, ...upper];
+
+  // Degenerate: all points collinear → hull has ≤ 2 points. Return them as-is.
+  // Degenerate: all points coincident → hull has 1 point.
+  return hull;
+}
+
+// ---------------------------------------------------------------------------
+// offsetOutlinePath
+// ---------------------------------------------------------------------------
+
+/**
+ * Build an SVG path string for the offset outline (Minkowski sum with a disk of
+ * radius `r`) of a convex hull.
+ *
+ * Dispatches on `hull.length`:
+ * - **0** → empty string.
+ * - **1** → circle of radius `r` centred at the single hull point (two-arc pattern).
+ * - **2** → capsule connecting the two hull points with semicircular end-caps of radius `r`.
+ * - **3+** → rounded convex polygon: each corner is a circular arc of radius `r`
+ *   connecting the outward-offset endpoints of the two adjacent edges; straight
+ *   line segments connect adjacent arcs along the offset edges.
+ *
+ * For the 3+ case, the hull must be in CCW winding order (as returned by
+ * `convexHull`). The outward normal of edge `(a→b)` in a CCW polygon is the
+ * right-hand perpendicular `((b.y - a.y), -(b.x - a.x))` normalized.
+ *
+ * All coordinates are rounded to 2 decimal places.
+ *
+ * @param hull - Convex hull vertices in CCW order (from `convexHull`).
+ * @param r    - Offset radius in pixels (≥ 0).
+ * @returns SVG path `d` attribute string closed with `Z`, or `''` for empty hull.
+ */
+export function offsetOutlinePath(hull: Array<{ x: number; y: number }>, r: number): string {
+  if (hull.length === 0) return "";
+
+  const rr = Math.max(r, 0);
+
+  // --- 1-point: circle ---
+  if (hull.length === 1) {
+    const cx = r2(hull[0]!.x);
+    const cy = r2(hull[0]!.y);
+    const ri = r2(rr);
+    const diam = r2(2 * rr);
+    // Standard two-arc circle pattern.
+    return `M ${cx} ${cy} m ${r2(-rr)} 0 a ${ri} ${ri} 0 1,0 ${diam},0 a ${ri} ${ri} 0 1,0 ${r2(-diam)},0 Z`;
+  }
+
+  // --- 2-point: capsule ---
+  if (hull.length === 2) {
+    const [p0, p1] = [hull[0]!, hull[1]!];
+    const dx = p1.x - p0.x;
+    const dy = p1.y - p0.y;
+    const len = Math.sqrt(dx * dx + dy * dy);
+
+    if (len < 1e-9) {
+      // Coincident — treat as single point.
+      const cx = r2(p0.x);
+      const cy = r2(p0.y);
+      const ri = r2(rr);
+      const diam = r2(2 * rr);
+      return `M ${cx} ${cy} m ${r2(-rr)} 0 a ${ri} ${ri} 0 1,0 ${diam},0 a ${ri} ${ri} 0 1,0 ${r2(-diam)},0 Z`;
+    }
+
+    // Perpendicular unit vector (right-hand of p0→p1, which is the outward
+    // normal for the bottom edge of a CCW capsule).
+    const nx = dy / len;
+    const ny = -dx / len;
+
+    // Four corners of the capsule rectangle.
+    const ax = r2(p0.x + rr * nx);
+    const ay = r2(p0.y + rr * ny);
+    const bx = r2(p1.x + rr * nx);
+    const by = r2(p1.y + rr * ny);
+    const cx = r2(p1.x - rr * nx);
+    const cy = r2(p1.y - rr * ny);
+    const ex = r2(p0.x - rr * nx);
+    const ey = r2(p0.y - rr * ny);
+    const ri = r2(rr);
+
+    return [
+      `M ${ax} ${ay}`,
+      `L ${bx} ${by}`,
+      `A ${ri} ${ri} 0 0 1 ${cx} ${cy}`,
+      `L ${ex} ${ey}`,
+      `A ${ri} ${ri} 0 0 1 ${ax} ${ay}`,
+      "Z",
+    ].join(" ");
+  }
+
+  // --- 3+ point: rounded offset polygon ---
+  const N = hull.length;
+
+  // Compute outward unit normals for each edge i → (i+1).
+  const normals: Array<{ nx: number; ny: number }> = [];
+  for (let i = 0; i < N; i++) {
+    const a = hull[i]!;
+    const b = hull[(i + 1) % N]!;
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const len = Math.sqrt(dx * dx + dy * dy);
+    if (len < 1e-9) {
+      normals.push({ nx: 0, ny: 0 });
+    } else {
+      // Outward normal for CCW polygon: right-hand perpendicular of (a→b).
+      normals.push({ nx: dy / len, ny: -dx / len });
+    }
+  }
+
+  // For each hull vertex i:
+  //   - incoming edge is (i-1) → i, with normal normals[(i-1+N)%N]
+  //   - outgoing edge is i → (i+1), with normal normals[i]
+  //
+  // A_i = V[i] + r * incomingNormal  (arc start on incoming edge)
+  // B_i = V[i] + r * outgoingNormal  (arc end / start of outgoing line)
+  //
+  // The arc sweeps from A_i to B_i around V[i] with radius r (sweep-flag=1 for CW arc in SVG, which is the outward curve for CCW hulls).
+
+  const parts: string[] = [];
+  let first = true;
+
+  for (let i = 0; i < N; i++) {
+    const v = hull[i]!;
+    const inNorm = normals[(i - 1 + N) % N]!;
+    const outNorm = normals[i]!;
+
+    const ai_x = r2(v.x + rr * inNorm.nx);
+    const ai_y = r2(v.y + rr * inNorm.ny);
+    const bi_x = r2(v.x + rr * outNorm.nx);
+    const bi_y = r2(v.y + rr * outNorm.ny);
+
+    const ri = r2(rr);
+
+    if (first) {
+      parts.push(`M ${ai_x} ${ai_y}`);
+      first = false;
+    } else {
+      parts.push(`L ${ai_x} ${ai_y}`);
+    }
+
+    // Arc from A_i to B_i around V[i], sweep-flag=1 (clockwise in SVG = convex outward corner for CCW hull).
+    parts.push(`A ${ri} ${ri} 0 0 1 ${bi_x} ${bi_y}`);
+
+    // Line from B_i to A_{i+1} (start of next arc).
+    const nextV = hull[(i + 1) % N]!;
+    const nextInNorm = normals[i]!; // incoming normal of next vertex = outgoing normal of current edge
+    const nextAi_x = r2(nextV.x + rr * nextInNorm.nx);
+    const nextAi_y = r2(nextV.y + rr * nextInNorm.ny);
+    parts.push(`L ${nextAi_x} ${nextAi_y}`);
+  }
+
+  parts.push("Z");
+  return parts.join(" ");
+}
+
+// ---------------------------------------------------------------------------
 // inflatedCapsulePath
 // ---------------------------------------------------------------------------
 
