@@ -257,9 +257,11 @@
      --note-blue, --note-blue-glow, --shadow-note-root, --shadow-note-active,
      --shadow-ping-start, --shadow-ping-end */
 
-  /* Chord-tone connector overrides for light mode */
-  --chord-connector-stroke: color-mix(in srgb, #ea580c 55%, transparent);
-  --chord-connector-opacity: 0.6;
+  /* Chord-tone connector overrides for light mode.
+     Raised stroke alpha (55% → 70%) and opacity gate (0.6 → 0.85) so that
+     effective alpha ≥ 0.60 against warm maple wood (#fbe6c6 / #f1c38e). */
+  --chord-connector-stroke: color-mix(in srgb, #ea580c 70%, transparent);
+  --chord-connector-opacity: 0.85;
 }
 
 /* ==========================================================================
@@ -276,5 +278,14 @@
      to the more vivid chord-tone fills. Replaces the cool blue-gray #121a26
      which drifts away from the mirror-warm-amber palette anchor. */
   --fretboard-note-fill-scale-only: #3a2f28;
+
+  /* Chord-tone connector overrides for dark mode.
+     The :root default uses color-mix(var(--note-ring-tonic) 60%, transparent) which
+     can fail to resolve in some browsers when the custom-property chain is indirect.
+     Explicit hardcoded values ensure visibility: #FF9A4D (neon-orange) at 70% alpha,
+     single-gate opacity (0.85) to prevent the multiplicative near-zero (~0.33)
+     that makes connectors invisible against dark rosewood (#160d07). */
+  --chord-connector-stroke: color-mix(in srgb, #FF9A4D 70%, transparent);
+  --chord-connector-opacity: 0.85;
 }
 

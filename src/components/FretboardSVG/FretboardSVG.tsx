@@ -317,12 +317,9 @@ export const FretboardSVG = memo(function FretboardSVG({
   });
 
   const connectorPolylines = useChordConnectorPolylines({
-    chordTones,
-    fretboardLayout,
+    noteData,
     fretCenterX,
     stringYAt,
-    startFret,
-    endFret,
   });
 
   return (

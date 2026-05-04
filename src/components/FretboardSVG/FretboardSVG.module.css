@@ -104,7 +104,14 @@
   stroke-width: 1.9;
 }
 
-/* dark-mode: note-blue and color-tone retain light-purple label text; white-label override deferred to follow-up milestone */
+/* Dark-mode: note-blue and color-tone white-label override (deferred from Phase 2, now landed).
+   Light-purple label (#e8d8ff) on cream fill (#fef3e2) against dark wood is too low-contrast;
+   white + dark stroke matches the chord-tone role treatment. */
+:global([data-theme="modern-dark"]) .fretboard-note.note-blue text {
+  fill: #ffffff;
+  stroke: rgb(0 0 0 / 0.45);
+}
+
 .fretboard-note.note-blue text {
   fill: #e8d8ff;
 }
@@ -126,6 +133,11 @@
   stroke-width: 1.9;
 }
 
+:global([data-theme="modern-dark"]) .fretboard-note.color-tone text {
+  fill: #ffffff;
+  stroke: rgb(0 0 0 / 0.45);
+}
+
 .fretboard-note.color-tone text {
   fill: #e8d8ff;
 }
@@ -143,6 +155,17 @@
 }
 
 :global([data-theme="modern-light"]) .fretboard-note.chord-root text {
+  stroke: rgb(0 0 0 / 0.45);
+  fill: #ffffff;
+}
+
+/* Light-mode chord-tone-in-scale and note-diatonic-chord white-label override (Fix B-1).
+   These roles use cream #fef3e2 fill that nearly vanishes against warm maple wood
+   (#fbe6c6 / #f1c38e — only ~20 RGB delta). The note circle becomes faint, making
+   a dark label appear to float on the wood background. White labels + dark stroke
+   match the key-tonic / chord-root treatment and provide consistent legibility. */
+:global([data-theme="modern-light"]) .fretboard-note.chord-tone-in-scale text,
+:global([data-theme="modern-light"]) .fretboard-note.note-diatonic-chord text {
   stroke: rgb(0 0 0 / 0.45);
   fill: #ffffff;
 }
