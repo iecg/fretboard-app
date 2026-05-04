@@ -561,3 +561,44 @@ describe("buildChordConnectorPolylines", () => {
     expect(d).toContain("80,");
   });
 });
+
+describe("paletteIndex field", () => {
+  it("includes paletteIndex in returned voicing objects", () => {
+    const noteData = [
+      makeNote(0, 0, "C"),
+      makeNote(1, 2, "E"),
+      makeNote(2, 4, "G"),
+    ];
+    const result = buildChordConnectorPolylines(
+      noteData,
+      ["C", "E", "G"],
+      fretCenterX,
+      stringYAt,
+      STRING_ROW_PX,
+    );
+    expect(result.length).toBeGreaterThan(0);
+    expect(result[0]).toHaveProperty("paletteIndex");
+    expect(typeof result[0]!.paletteIndex).toBe("number");
+    expect(result[0]!.paletteIndex).toBeGreaterThanOrEqual(0);
+    expect(result[0]!.paletteIndex).toBeLessThan(8);
+  });
+
+  it("assigns same paletteIndex to identical shape at different fret positions", () => {
+    // Same fingering pattern at two different positions on neck
+    const noteDataPos1 = [
+      makeNote(0, 0, "C"), makeNote(1, 2, "E"), makeNote(2, 4, "G"),
+    ];
+    const noteDataPos2 = [
+      makeNote(0, 12, "C"), makeNote(1, 14, "E"), makeNote(2, 16, "G"),
+    ];
+
+    const result1 = buildChordConnectorPolylines(
+      noteDataPos1, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX,
+    );
+    const result2 = buildChordConnectorPolylines(
+      noteDataPos2, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX,
+    );
+
+    expect(result1[0]!.paletteIndex).toBe(result2[0]!.paletteIndex);
+  });
+});

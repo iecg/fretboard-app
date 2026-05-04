@@ -1,10 +1,25 @@
 import { useMemo } from "react";
 import type { NoteData } from "./useNoteData";
-import { openPolylinePath } from "../utils/pathGeometry";
+import { openPolylinePath, shapeIdentityKey, fnv1aHash } from "../utils/pathGeometry";
 
 export interface ChordConnectorVertex {
   x: number;
   y: number;
+}
+
+/**
+ * A single playable voicing returned by the chord-connector hook.
+ */
+export interface ChordConnectorVoicing {
+  /** Pre-computed SVG path `d` string for the open polyline through every chord-tone vertex. */
+  d: string;
+  /** Original chord-tone pixel positions in string-index order. */
+  vertices: ChordConnectorVertex[];
+  /**
+   * 0–7, deterministic per shape identity; same fingering at any neck position
+   * yields same index. Used to index into --chord-connector-color-N CSS tokens.
+   */
+  paletteIndex: number;
 }
 
 /**
@@ -91,7 +106,7 @@ export function buildChordConnectorPolylines(
   fretCenterX: (fretIndex: number) => number,
   stringYAt: (stringIndex: number, x: number) => number,
   stringRowPx: number,
-): { d: string; vertices: ChordConnectorVertex[] }[] {
+): ChordConnectorVoicing[] {
   // stringRowPx is kept in the signature for API compatibility; CSS now handles
   // stroke-width scaling via the --string-row-px custom property.
   void stringRowPx;
@@ -130,7 +145,7 @@ export function buildChordConnectorPolylines(
 
   // Track emitted voicings by canonical key to deduplicate.
   const emitted = new Set<string>();
-  const results: { d: string; vertices: ChordConnectorVertex[] }[] = [];
+  const results: ChordConnectorVoicing[] = [];
 
   // Step 3: slide an N-string window across the neck.
   for (let s = minString; s + N - 1 <= maxString; s++) {
@@ -245,9 +260,12 @@ export function buildChordConnectorPolylines(
       // CSS stroke-width + stroke-linecap/linejoin handle enveloping of every note bubble.
       const d = openPolylinePath(rawVertices);
 
-      // Keep original (unmodified) vertex positions in the result for debugging
-      // and future per-voicing color keying.
-      results.push({ d, vertices: rawVertices });
+      // Compute palette index from shape-identity key.
+      const shapeKey = shapeIdentityKey(bestCombo);
+      const paletteIndex = fnv1aHash(shapeKey) % 8;
+
+      // Keep original (unmodified) vertex positions in the result.
+      results.push({ d, vertices: rawVertices, paletteIndex });
     }
   }
 
@@ -266,13 +284,14 @@ export interface UseChordConnectorPolylinesParams {
 /**
  * React hook that memoizes `buildChordConnectorPolylines` output.
  *
- * Returns `{ d: string; vertices: ChordConnectorVertex[] }[]`
- * — one entry per distinct playable voicing. Each entry carries:
+ * Returns `ChordConnectorVoicing[]` — one entry per distinct playable voicing.
+ * Each entry carries:
  * - `d` — the SVG path `d` attribute for an open polyline through every chord-tone
  *   vertex in string-index order (M + L commands, no Z). Rendered as a fat stroked
  *   path; CSS stroke-width + stroke-linecap/linejoin handle enveloping.
- * - `vertices` — the original chord-tone pixel positions for debugging and
- *   future per-voicing color keying.
+ * - `vertices` — the original chord-tone pixel positions for debugging.
+ * - `paletteIndex` — 0–7, deterministic per shape identity; indexes into
+ *   --chord-connector-color-N CSS tokens for per-voicing color differentiation.
  *
  * Re-runs only when noteData, chordToneNames, or geometry helpers change.
  */
@@ -282,7 +301,7 @@ export function useChordConnectorPolylines({
   fretCenterX,
   stringYAt,
   stringRowPx,
-}: UseChordConnectorPolylinesParams): { d: string; vertices: ChordConnectorVertex[] }[] {
+}: UseChordConnectorPolylinesParams): ChordConnectorVoicing[] {
   return useMemo(
     () =>
       buildChordConnectorPolylines(
