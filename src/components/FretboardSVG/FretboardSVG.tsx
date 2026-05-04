@@ -390,7 +390,12 @@ export const FretboardSVG = memo(function FretboardSVG({
                 pointerEvents="none"
               >
                 {connectorPolylines.map((voicing, i) => (
-                  <path key={i} d={voicing.d} fill="none" />
+                  <path
+                    key={i}
+                    d={voicing.d}
+                    fill="none"
+                    style={{ stroke: `var(--chord-connector-color-${voicing.paletteIndex + 1})` }}
+                  />
                 ))}
               </g>
             )}
