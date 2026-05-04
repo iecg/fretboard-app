@@ -321,6 +321,7 @@ export const FretboardSVG = memo(function FretboardSVG({
     chordToneNames: chordTones,
     fretCenterX,
     stringYAt,
+    stringRowPx,
   });
 
   return (
@@ -388,10 +389,10 @@ export const FretboardSVG = memo(function FretboardSVG({
                 aria-hidden="true"
                 pointerEvents="none"
               >
-                {connectorPolylines.map((vertices, i) => (
-                  <polyline
+                {connectorPolylines.map((voicing, i) => (
+                  <path
                     key={i}
-                    points={vertices.map((v) => `${v.x},${v.y}`).join(" ")}
+                    d={voicing.d}
                     fill="none"
                   />
                 ))}

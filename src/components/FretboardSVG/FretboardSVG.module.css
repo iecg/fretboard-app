@@ -408,10 +408,10 @@
 
 /* -----------------------------------------------------------------------
    Chord-tone connector layer
-   Dotted polylines connecting active chord tones on the fretboard neck.
+   Closed contour paths connecting active chord tones on the fretboard neck.
    Styled via token variables so light/dark themes propagate automatically.
    ----------------------------------------------------------------------- */
-.chord-connectors polyline {
+.chord-connectors path {
   stroke: var(--chord-connector-stroke);
   stroke-width: 2.5px;
   stroke-dasharray: var(--chord-connector-dash);
