@@ -12,6 +12,8 @@ export const STRING_ROW_PX_MAX = 72;
 // Fretboard geometry
 export const NUT_WIDTH = 8;
 export const NOTE_BUBBLE_RATIO = 0.8;
+/** Halo gap around each note bubble for the chord-connector offset outline. */
+export const HALO_RATIO = 0.15;
 export const MIN_FRET_WIDTH_BASE = 49;
 export const MIN_FRET_WIDTH_OVERFLOW_BUFFER = 17;
 

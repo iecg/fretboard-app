@@ -460,11 +460,12 @@ describe("buildChordConnectorPolylines", () => {
   });
 
   // -------------------------------------------------------------------------
-  // New contour smoke tests
+  // Contour smoke tests (offset-outline geometry)
   // -------------------------------------------------------------------------
 
-  it("triad voicing emits non-empty path d string starting with M", () => {
-    // C major triad on 3 different frets (non-collinear) → spline path expected.
+  it("triad voicing (non-collinear): emits non-empty path with M start, Z end, and A arc commands", () => {
+    // C major triad on 3 different frets (non-collinear 3-vertex hull) →
+    // rounded offset polygon with 3 A arc commands.
     const noteData = [
       makeNote(0, 3, "C", "chord-root"),
       makeNote(1, 5, "E", "chord-tone-in-scale"),
@@ -475,10 +476,15 @@ describe("buildChordConnectorPolylines", () => {
     const { d } = result[0]!;
     expect(d).not.toBe("");
     expect(d.startsWith("M")).toBe(true);
+    expect(d.endsWith("Z")).toBe(true);
+    // Offset polygon has A arc commands (one per hull vertex) and L line segments.
+    expect(d).toContain("A");
+    expect(d).toContain("L");
   });
 
-  it("7th chord voicing emits non-empty path d string starting with M", () => {
-    // Cmaj7: C, E, G, B spread across 4 strings and different frets → spline path.
+  it("7th chord voicing (4-vertex hull): emits non-empty path with A arc commands and L segments", () => {
+    // Cmaj7: C, E, G, B spread across 4 strings and different frets →
+    // 4-vertex convex hull → rounded offset polygon with 4 A arc commands.
     const noteData = [
       makeNote(0, 3, "C", "chord-root"),
       makeNote(1, 5, "E", "chord-tone-in-scale"),
@@ -490,11 +496,14 @@ describe("buildChordConnectorPolylines", () => {
     const { d } = result[0]!;
     expect(d).not.toBe("");
     expect(d.startsWith("M")).toBe(true);
+    expect(d.endsWith("Z")).toBe(true);
+    expect(d).toContain("A");
   });
 
-  it("degenerate collinear voicing emits capsule path d containing A arc command", () => {
-    // All 3 notes at the exact same fret → same x coordinate → bbox height ≈ 0
-    // (degenerate: area < (STRING_ROW_PX * 0.5)^2). Capsule path expected.
+  it("collinear voicing (same fret, 3 adjacent strings): emits capsule with 2 A arc commands", () => {
+    // All 3 notes at the exact same fret → same x coordinate → 2-vertex convex hull →
+    // capsule path with exactly 2 A arc commands (the two end-caps).
+    // This is the user's reported regression case.
     const noteData = [
       makeNote(0, 5, "C", "chord-root"),
       makeNote(1, 5, "E", "chord-tone-in-scale"),
@@ -504,7 +513,19 @@ describe("buildChordConnectorPolylines", () => {
     expect(result).toHaveLength(1);
     const { d } = result[0]!;
     expect(d).not.toBe("");
-    // Capsule paths contain arc (A) commands.
-    expect(d).toContain("A");
+    expect(d.startsWith("M")).toBe(true);
+    expect(d.endsWith("Z")).toBe(true);
+    // Capsule path must have exactly 2 A arc commands (end-caps).
+    const aCount = (d.match(/\bA\b/g) ?? []).length;
+    expect(aCount).toBe(2);
+    // And 2 L segments (the straight sides).
+    const lCount = (d.match(/\bL\b/g) ?? []).length;
+    expect(lCount).toBe(2);
+    // Regression: verify the capsule bbox-width is approximately 2 * r = 2 * (STRING_ROW_PX * 0.55).
+    // With STRING_ROW_PX=36: r=19.8, so width ≈ 39.6.
+    // fretCenterX(5) = 50. Capsule extends to x = 50 ± 19.8.
+    // Verify that 30.2 (50 - 19.8) and 69.8 (50 + 19.8) appear in the path.
+    expect(d).toContain("30.2");
+    expect(d).toContain("69.8");
   });
 });

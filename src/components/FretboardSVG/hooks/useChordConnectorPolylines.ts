@@ -1,10 +1,7 @@
 import { useMemo } from "react";
 import type { NoteData } from "./useNoteData";
-import {
-  polarSort,
-  closedCatmullRomPath,
-  inflatedCapsulePath,
-} from "../utils/pathGeometry";
+import { convexHull, offsetOutlinePath } from "../utils/pathGeometry";
+import { NOTE_BUBBLE_RATIO, HALO_RATIO } from "../../../core/constants";
 
 export interface ChordConnectorVertex {
   x: number;
@@ -45,15 +42,15 @@ export const CHORD_TONE_CLASSES = new Set([
  * { d: string; vertices: ChordConnectorVertex[] }
  * ```
  * - `d` — pre-computed SVG path `d` attribute string for the closed contour.
- *   Three branches:
- *   1. **Spline:** N ≥ 3 and voicing has non-degenerate bbox → closed Catmull-Rom
- *      cubic Bézier path (polar-sorted vertices, centripetal α = 0.5).
- *   2. **Capsule:** degenerate bbox (area < `(stringRowPx × 0.5)²` OR aspect-ratio
- *      > 8) → inflated capsule path with arc commands so a recognisable area is
- *      always visible even for collinear voicings.
- *   3. **Line fallback:** N = 2 → `M x1 y1 L x2 y2 Z` (two-note connector).
- * - `vertices` — polar-sorted vertex list retained for unit tests and future
- *   per-voicing color keying.
+ *   Built via offset-outline geometry (Minkowski sum with a disk of radius
+ *   `r = stringRowPx * (NOTE_BUBBLE_RATIO/2 + HALO_RATIO)`):
+ *   1. Compute the convex hull of the raw voicing vertices.
+ *   2. Dispatch on hull cardinality: 1 → circle, 2 → capsule, 3+ → rounded polygon.
+ *   The offset ensures the contour visibly envelopes every note bubble,
+ *   and collinear voicings (e.g. same-fret-column) always render as a capsule
+ *   with guaranteed minimum width of `2r`.
+ * - `vertices` — original (unmodified) chord-tone pixel positions, retained for
+ *   unit tests and future per-voicing color keying.
  *
  * Algorithm:
  *   1. Collect all active chord-tone positions (note-inactive excluded).
@@ -76,8 +73,8 @@ export const CHORD_TONE_CLASSES = new Set([
  *           index (highest string first).
  *   4. Deduplicate emitted voicings by their canonical "(stringIndex,fretIndex)"
  *      tuple set so that overlapping cluster anchors don't re-emit the same shape.
- *   5. For each voicing vertex list: apply polar sort, compute degenerate
- *      detection thresholds, and select the appropriate path branch.
+ *   5. For each voicing vertex list: compute convex hull, then produce offset
+ *      outline path via `offsetOutlinePath`.
  *
  * Returns an array of `{ d, vertices }` objects, one per distinct playable voicing.
  * Returns [] when N < 2 or no valid voicing can be assembled.
@@ -88,8 +85,8 @@ export const CHORD_TONE_CLASSES = new Set([
  *                        (e.g. ["C","E","G"] for C major). Order does not matter.
  * @param fretCenterX     Maps fretIndex → SVG x coordinate.
  * @param stringYAt       Maps (stringIndex, x) → SVG y coordinate.
- * @param stringRowPx     Row height in pixels; used to scale degenerate-capsule
- *                        inflation (`stringRowPx × 0.4`).
+ * @param stringRowPx     Row height in pixels; used to scale the offset radius
+ *                        (`stringRowPx * (NOTE_BUBBLE_RATIO/2 + HALO_RATIO)`).
  */
 export function buildChordConnectorPolylines(
   noteData: NoteData[],
@@ -242,40 +239,15 @@ export function buildChordConnectorPolylines(
         return { x, y };
       });
 
-      // Step 5: apply polar sort and select path branch.
-      const sortedVertices = polarSort(rawVertices);
+      // Step 5: compute convex hull of raw vertices and produce the offset outline.
+      // r = noteRadius + haloPx = stringRowPx * (NOTE_BUBBLE_RATIO/2 + HALO_RATIO)
+      const hull = convexHull(rawVertices);
+      const r = stringRowPx * (NOTE_BUBBLE_RATIO / 2 + HALO_RATIO);
+      const d = offsetOutlinePath(hull, r);
 
-      let d: string;
-
-      if (sortedVertices.length === 2) {
-        // Two-note connector: simple line-like closed path.
-        const [a, b] = sortedVertices as [ChordConnectorVertex, ChordConnectorVertex];
-        d = `M ${a.x} ${a.y} L ${b.x} ${b.y} Z`;
-      } else {
-        // Degenerate detection: bbox area and aspect ratio.
-        const xs = sortedVertices.map((v) => v.x);
-        const ys = sortedVertices.map((v) => v.y);
-        const minX = Math.min(...xs);
-        const maxX = Math.max(...xs);
-        const minY = Math.min(...ys);
-        const maxY = Math.max(...ys);
-        const bboxW = maxX - minX;
-        const bboxH = maxY - minY;
-        const area = bboxW * bboxH;
-        const aspectRatio =
-          Math.max(bboxW, bboxH) / Math.max(Math.min(bboxW, bboxH), 1);
-
-        const degenerateAreaThreshold = (stringRowPx * 0.5) ** 2;
-        const isDegenerate = area < degenerateAreaThreshold || aspectRatio > 8;
-
-        if (isDegenerate) {
-          d = inflatedCapsulePath(sortedVertices, stringRowPx * 0.4);
-        } else {
-          d = closedCatmullRomPath(sortedVertices);
-        }
-      }
-
-      results.push({ d, vertices: sortedVertices });
+      // Keep original (unmodified) vertex positions in the result for debugging
+      // and future per-voicing color keying.
+      results.push({ d, vertices: rawVertices });
     }
   }
 
@@ -287,7 +259,7 @@ export interface UseChordConnectorPolylinesParams {
   chordToneNames: string[];
   fretCenterX: (fretIndex: number) => number;
   stringYAt: (stringIndex: number, x: number) => number;
-  /** Row height in pixels — used to scale degenerate-capsule inflation. */
+  /** Row height in pixels; used to derive the offset radius for the contour. */
   stringRowPx: number;
 }
 
@@ -296,10 +268,11 @@ export interface UseChordConnectorPolylinesParams {
  *
  * Returns `{ d: string; vertices: ChordConnectorVertex[] }[]` — one entry per
  * distinct playable voicing. Each entry carries:
- * - `d` — the SVG path `d` attribute for the closed contour (spline, capsule,
- *   or two-note line depending on the voicing geometry).
- * - `vertices` — the polar-sorted vertex list for debugging and future color
- *   keying.
+ * - `d` — the SVG path `d` attribute for the closed offset-outline contour
+ *   (circle, capsule, or rounded polygon that visibly envelopes all chord-tone
+ *   bubbles in the voicing).
+ * - `vertices` — the original chord-tone pixel positions for debugging and
+ *   future per-voicing color keying.
  *
  * Re-runs only when noteData, chordToneNames, or geometry helpers change.
  */
