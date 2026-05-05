@@ -183,7 +183,5 @@
 
 :root {
   /* Chord-tone connector layer */
-  --chord-connector-stroke: var(--chord-connector-color-1);
   --chord-connector-dash: 4 6;
-  --chord-connector-opacity: 0.55;
 }

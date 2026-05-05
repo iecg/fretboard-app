@@ -282,8 +282,9 @@
      envelopes legible against warm maple wood (#fbe6c6 / #f1c38e) without
      overpowering the chord tones. The legacy --chord-connector-stroke fallback
      (used only when paletteIndex resolves to none) stays at #9a3412. */
-  --chord-connector-stroke: #9a3412;
-  --chord-connector-opacity: 0.3;
+  --chord-connector-fill-opacity: 0.15;
+  --chord-connector-outline-width: 1.25px;
+  --chord-connector-outline-opacity: 0.85;
   /* Per-voicing chord-connector palette — 8 hues spread ~40°+ apart around
      the wheel for maximum distinctness on warm maple wood (#f1c38e mid-tone).
      All values sit at saturation 70-90% and lightness 30-50% so they remain
@@ -320,8 +321,9 @@
      bright neon hues read against dark rosewood (#160d07) without fighting the
      note-bubble fills. The legacy --chord-connector-stroke fallback (used only
      when paletteIndex resolves to none) stays as the neon-orange color-mix. */
-  --chord-connector-stroke: color-mix(in srgb, #FF9A4D 70%, transparent);
-  --chord-connector-opacity: 0.3;
+  --chord-connector-fill-opacity: 0.15;
+  --chord-connector-outline-width: 1.25px;
+  --chord-connector-outline-opacity: 0.85;
   /* Per-voicing chord-connector palette — 8 bright hues spread ~40°+ apart
      around the wheel for maximum distinctness on dark rosewood (#160d07).
      All values sit at saturation 70-100% and lightness 55-75% so they pop
