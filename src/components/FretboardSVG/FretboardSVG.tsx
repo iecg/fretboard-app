@@ -426,6 +426,7 @@ export const FretboardSVG = memo(function FretboardSVG({
           neckWidthPx={neckWidthPx}
           neckHeight={neckHeight}
           onNoteClick={onNoteClick}
+          connectorVoicings={connectorPolylines}
         />
       </div>
 
