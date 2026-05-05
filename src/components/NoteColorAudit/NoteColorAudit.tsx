@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import clsx from "clsx";
+import useLayoutMode from "../../hooks/useLayoutMode";
 import { getNoteVisuals } from "../FretboardSVG/utils/semantics";
 import fretboardStyles from "../FretboardSVG/FretboardSVG.module.css";
 import practiceStyles from "../ChordPracticeBar/ChordPracticeBar.module.css";
@@ -394,7 +395,11 @@ function StyleReadout({
       {fields.map((field) => (
         <div key={field}>
           <dt>{labels[field]}</dt>
-          <dd>{computed?.[field] || "pending"}</dd>
+          <dd>
+            {computed == null || !(field in computed)
+              ? "pending"
+              : computed[field]}
+          </dd>
         </div>
       ))}
     </dl>
@@ -619,12 +624,13 @@ function PracticePillCard({
       <section
         className={clsx(practiceStyles["chord-practice-bar"], styles["practice-scope"])}
         data-degree-colors={degreeMode.enabled ? "true" : undefined}
-        aria-label={`${swatch.label} practice pill audit`}
+        aria-label={`${theme.label} ${degreeMode.label} ${swatch.label} practice pill audit`}
       >
         <button
           ref={targetRef}
           type="button"
           className={practiceStyles["practice-bar-pill"]}
+          tabIndex={-1}
           data-chord-root={swatch.isChordRoot ? "true" : undefined}
           data-guide-tone={swatch.isGuideTone ? "true" : undefined}
           data-tension={swatch.isTension ? "true" : undefined}
@@ -694,7 +700,7 @@ function DegreeChipCard({
       <section
         className={clsx(degreeStyles["degree-chip-strip"], styles["degree-scope"])}
         data-degree-colors={degreeMode.enabled ? "true" : undefined}
-        aria-label={`${swatch.label} degree chip audit`}
+        aria-label={`${theme.label} ${swatch.label} degree chip audit`}
       >
         <ul className={clsx(degreeStyles["degree-chip-strip-list"], styles["degree-list-single"])}>
           <li
@@ -706,7 +712,12 @@ function DegreeChipCard({
             data-scale-degree={usesDegreeColor ? AUDIT_DEGREE_ID : undefined}
             style={{ "--degree-color": AUDIT_DEGREE_COLOR } as CSSProperties}
           >
-            <button ref={targetRef} type="button" className={degreeStyles["degree-chip"]}>
+            <button
+              ref={targetRef}
+              type="button"
+              className={degreeStyles["degree-chip"]}
+              tabIndex={-1}
+            >
               <span ref={labelRef} className={degreeStyles["degree-chip-note"]}>
                 {swatch.display}
               </span>
@@ -754,7 +765,7 @@ function ChordRowCard({ swatch, theme }: { swatch: ChordRowAuditSwatch; theme: A
     >
       <section
         className={clsx(chordRowStyles["chord-row-strip"], styles["chord-row-scope"])}
-        aria-label={`${swatch.label} chord row audit`}
+        aria-label={`${theme.label} ${swatch.label} chord row audit`}
       >
         {swatch.kind === "chip" ? (
           <ul className={clsx(chordRowStyles["chord-row-list"], styles["chord-row-list-single"])}>
@@ -829,7 +840,7 @@ function DegreeRampCard({
       <section
         className={clsx(degreeStyles["degree-chip-strip"], styles["degree-scope"])}
         data-degree-colors="true"
-        aria-label={`${swatch.label} degree ramp audit`}
+        aria-label={`${theme.label} ${swatch.label} degree ramp audit`}
       >
         <ul className={clsx(degreeStyles["degree-chip-strip-list"], styles["degree-list-single"])}>
           <li
@@ -840,7 +851,12 @@ function DegreeRampCard({
             data-scale-degree={swatch.degreeId}
             style={{ "--degree-color": swatch.degreeColor } as CSSProperties}
           >
-            <button ref={targetRef} type="button" className={degreeStyles["degree-chip"]}>
+            <button
+              ref={targetRef}
+              type="button"
+              className={degreeStyles["degree-chip"]}
+              tabIndex={-1}
+            >
               <span ref={labelRef} className={degreeStyles["degree-chip-note"]}>
                 {swatch.display}
               </span>
@@ -976,8 +992,15 @@ function DegreeRampAuditMatrix({ theme }: { theme: AuditTheme }) {
 }
 
 export function NoteColorAudit() {
+  const layout = useLayoutMode();
+
   return (
-    <main className={styles["note-color-audit"]} data-testid="note-color-audit">
+    <main
+      className={styles["note-color-audit"]}
+      data-testid="note-color-audit"
+      data-layout-tier={layout.tier}
+      data-layout-variant={layout.variant}
+    >
       <header className={styles["audit-header"]}>
         <h1 className={styles["audit-title"]}>Note Color Audit Matrix</h1>
         <p className={styles["audit-subtitle"]}>

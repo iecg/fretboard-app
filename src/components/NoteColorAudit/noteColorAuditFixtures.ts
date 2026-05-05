@@ -138,8 +138,8 @@ export const AUDIT_DEGREE_MODES = [
 const AUDIT_DEGREE_OFF = AUDIT_DEGREE_MODES[0];
 const AUDIT_DEGREE_ON = AUDIT_DEGREE_MODES[1];
 
-export const AUDIT_DEGREE_COLOR = "#4daf4a";
 export const AUDIT_DEGREE_ID = "III";
+export const AUDIT_DEGREE_COLOR = DEGREE_COLORS[AUDIT_DEGREE_ID as keyof typeof DEGREE_COLORS];
 
 export const FRETBOARD_NOTE_SWATCHES = [
   {

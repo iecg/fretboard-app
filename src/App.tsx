@@ -26,7 +26,6 @@ import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark
 import { SummaryRibbon } from "./components/SummaryRibbon/SummaryRibbon";
 import { ChordOverlayDock } from "./components/ChordOverlayDock/ChordOverlayDock";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
-import { NoteColorAudit } from "./components/NoteColorAudit/NoteColorAudit";
 import sharedStyles from "./components/shared/shared.module.css";
 import "./styles/App.css";
 
@@ -42,6 +41,11 @@ const HelpModal = lazy(() =>
 const MobileTabPanel = lazy(() =>
   import("./components/MobileTabPanel/MobileTabPanel").then((m) => ({
     default: m.MobileTabPanel,
+  }))
+);
+const NoteColorAudit = lazy(() =>
+  import("./components/NoteColorAudit/NoteColorAudit").then((m) => ({
+    default: m.NoteColorAudit,
   }))
 );
 
@@ -122,7 +126,11 @@ function AppContent() {
   }, [chordRoot, chordType, rootNote, scaleName, setChordOverlayHidden, showNoteColorAudit]);
 
   if (showNoteColorAudit) {
-    return <NoteColorAudit />;
+    return (
+      <Suspense fallback={null}>
+        <NoteColorAudit />
+      </Suspense>
+    );
   }
 
   return (

@@ -206,11 +206,6 @@
   border-style: dashed;
 }
 
-:global([data-theme="modern-dark"]) .practice-bar-pill[data-tension="true"]:not([data-chord-root="true"]) {
-  background: var(--note-role-tension-fill, color-mix(in srgb, var(--role-chord-border) 16%, var(--chip-surface-inactive)));
-  box-shadow: 0 0 6px color-mix(in srgb, var(--note-role-border, var(--role-chord-border)) 30%, transparent);
-}
-
 /* Outside chord root case: overlapping root + tension semantics. */
 .practice-bar-pill[data-chord-root="true"][data-tension="true"] {
   background: var(--note-role-root-fill, var(--role-chord-bg-strong));

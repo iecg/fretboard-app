@@ -91,6 +91,17 @@ test.describe("Note Color Audit Visual", () => {
         { id: auditId, metric: label },
       );
 
+    const waitForSettledReadout = async (auditId: string, label: string) => {
+      const timeout = 5000;
+      const start = Date.now();
+      while (Date.now() - start < timeout) {
+        const value = await readoutValue(auditId, label);
+        if (!value.startsWith("pending")) return value;
+        await page.waitForTimeout(50);
+      }
+      throw new Error(`Timeout waiting for settled readout ${label} on ${auditId}`);
+    };
+
     const expectLabels = async (auditId: string, color: string, selector?: string) => {
       const labels = await labelStyles(auditId, selector);
       expect(labels.length, `expected labels for ${auditId}`).toBeGreaterThan(0);
@@ -266,17 +277,20 @@ test.describe("Note Color Audit Visual", () => {
     );
     expect(darkGuideFretboard.fill).not.toBe(darkTensionFretboard.fill);
 
-    const darkFretboardDegreeCtr = await readoutValue(
+    const darkFretboardDegreeCtr = await waitForSettledReadout(
       "dark:fretboard:none:degree-on:key-tonic",
       "label ctr",
     );
     expect(darkFretboardDegreeCtr.startsWith("fail")).toBe(false);
 
-    const darkDegreeRampVICtr = await readoutValue("dark:degree-ramp:none:degree-on:VI", "label ctr");
+    const darkDegreeRampVICtr = await waitForSettledReadout(
+      "dark:degree-ramp:none:degree-on:VI",
+      "label ctr",
+    );
     expect(darkDegreeRampVICtr.startsWith("warn")).toBe(false);
     expect(darkDegreeRampVICtr.startsWith("fail")).toBe(false);
 
-    const darkInactivePillCtr = await readoutValue(
+    const darkInactivePillCtr = await waitForSettledReadout(
       "dark:practice-pill:none:degree-off:inactive",
       "label ctr",
     );

@@ -1,5 +1,6 @@
 import { act, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { axe } from "../../test-utils/a11y";
 import { NoteColorAudit } from "./NoteColorAudit";
 
 function makeComputedStyle(values: Record<string, string>): CSSStyleDeclaration {
@@ -69,6 +70,8 @@ describe("note color audit render readouts", () => {
     await flushAnimationFrame();
     await flushAnimationFrame();
 
+    expect(await axe(container)).toHaveNoViolations();
+
     const lightCard = container.querySelector(
       '[data-audit-id="light:fretboard:none:degree-off:key-tonic"]',
     );
@@ -90,6 +93,8 @@ describe("note color audit render readouts", () => {
     document.documentElement.removeAttribute("data-theme");
     await flushAnimationFrame();
     await flushAnimationFrame();
+
+    expect(await axe(container)).toHaveNoViolations();
 
     const fretboardCard = container.querySelector(
       '[data-audit-id="light:fretboard:none:degree-off:key-tonic"]',
