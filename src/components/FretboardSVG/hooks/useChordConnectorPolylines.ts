@@ -4,6 +4,24 @@ import { openPolylinePath } from "../utils/pathGeometry";
 import { NOTES } from "../../../core/theory";
 
 /**
+ * Compute the fret span of the **fretted** notes in a voicing (open strings
+ * excluded). Returns 0 when there are fewer than 2 fretted notes — a voicing
+ * with 0 or 1 fretted note has no meaningful span and must not be filtered out.
+ */
+function voicingFrettedSpan(combo: NoteData[]): number {
+  let minF = Infinity;
+  let maxF = -Infinity;
+  let frettedCount = 0;
+  for (const p of combo) {
+    if (p.fretIndex === 0) continue; // open string — excluded from span
+    if (p.fretIndex < minF) minF = p.fretIndex;
+    if (p.fretIndex > maxF) maxF = p.fretIndex;
+    frettedCount++;
+  }
+  return frettedCount < 2 ? 0 : maxF - minF;
+}
+
+/**
  * Compute the bass-note interval (in semitones, 0-11) from the chord root to
  * the lowest physical note in a voicing.
  *
@@ -47,11 +65,20 @@ export interface ChordConnectorVoicing {
 }
 
 /**
- * Maximum fret span (inclusive) for a single playable voicing.
- * Any voicing whose max-fret minus min-fret exceeds this is dropped as
- * unplayable — the hand cannot comfortably stretch that far.
+ * Maximum fret span (inclusive) for the cluster candidate-gathering window.
+ * Notes further than this from the cluster anchor are excluded from candidates.
  */
 export const MAX_FRET_SPAN = 5;
+
+/**
+ * Maximum fret span (inclusive) allowed across the **fretted** notes of a
+ * selected voicing. Open strings (fretIndex === 0) are excluded from this
+ * calculation — they are reachable from any hand position.
+ *
+ * Voicings where max(fretted) − min(fretted) > MAX_PLAYABLE_FRET_SPAN are
+ * dropped as unplayable; a standard hand cannot comfortably stretch that far.
+ */
+export const MAX_PLAYABLE_FRET_SPAN = 3;
 
 /**
  * Note classes treated as chord-tone roles for the connector layer.
@@ -267,6 +294,11 @@ export function buildChordConnectorPolylines(
       }
 
       if (!bestCombo) continue;
+
+      // Drop voicings whose fretted-note span exceeds the playability threshold.
+      // Open strings (fretIndex === 0) are excluded from the span calculation —
+      // they are reachable from any hand position.
+      if (voicingFrettedSpan(bestCombo) > MAX_PLAYABLE_FRET_SPAN) continue;
 
       // Canonical key: sorted "(stringIndex,fretIndex)" pairs.
       const canonicalKey = bestCombo
