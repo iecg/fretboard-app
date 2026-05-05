@@ -284,15 +284,17 @@
   --chord-connector-fill-opacity: 0.15;
   --chord-connector-outline-width: 1.25px;
   --chord-connector-outline-opacity: 0.85;
-  /* Per-voicing chord-connector palette — 8 hues spread ~40°+ apart around
-     the wheel for maximum distinctness on warm maple wood (#f1c38e mid-tone).
-     All values sit at saturation 70-90% and lightness 30-50% so they remain
-     readable at the theme's connector opacity without merging into the wood
-     or each other. Yellow-green is skipped (collides with wood mid-tone);
-     amber-deep substitutes for pure yellow which would vanish on cream amber. */
-  --chord-connector-color-1: #D55E00; /* Okabe-Ito: vermillion — hue ~17° */
-  --chord-connector-color-2: #EA8A00; /* orange — hue ~35° */
-  --chord-connector-color-3: #D4A600; /* amber — hue ~43° */
+  /* Per-voicing chord-connector palette — 8 hues spread ~50°+ apart (Okabe-Ito
+     derived) for CVD-safe distinctness on warm maple wood (#f1c38e mid-tone).
+     Warm slots 1-3 (vermillion/orange/amber) are darkened to L 28-33% and
+     saturated to S 85%+ so the 0.15 fill and 1.25px outline read cleanly over
+     #f1c38e without blending. Cool slots 4-8 hold their original L 37-60%
+     range — cool hues already read distinctly against the warm wood palette.
+     Yellow-green is skipped (collides with wood mid-tone); amber-deep replaces
+     pure yellow which would vanish on the cream surface (#fcf9f5). */
+  --chord-connector-color-1: #B85700; /* Okabe-Ito: vermillion — hue ~17°, darkened L~31% */
+  --chord-connector-color-2: #C66800; /* orange — hue ~35°, darkened L~32% */
+  --chord-connector-color-3: #B58B00; /* amber — hue ~43°, darkened L~33%, S~80% */
   --chord-connector-color-4: #009E73; /* Okabe-Ito: bluish-green — hue ~164° */
   --chord-connector-color-5: #00A896; /* cyan-teal — hue ~174° */
   --chord-connector-color-6: #0072B2; /* Okabe-Ito: blue — hue ~206° */
