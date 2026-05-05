@@ -544,9 +544,9 @@ describe("buildChordConnectorPolylines", () => {
   // Contour smoke tests (fat polyline geometry)
   // -------------------------------------------------------------------------
 
-  it("triad voicing (3 different frets): d is M+L+L open polyline visiting all 3 vertices", () => {
-    // C major triad on 3 different frets in string-index order.
-    // d: open polyline through all 3 vertices — M v0 L v1 L v2 (no Z).
+  it("triad voicing (3 different frets): paths.fill is closed polygon visiting all 3 vertices", () => {
+    // C major triad on 3 different frets — non-collinear, so polarSort produces
+    // a closed polygon (ends with Z). fill === outline (byte-identical).
     const noteData = [
       makeNote(0, 3, "C", "chord-root"),
       makeNote(1, 5, "E", "chord-tone-in-scale"),
@@ -554,19 +554,22 @@ describe("buildChordConnectorPolylines", () => {
     ];
     const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
     expect(result).toHaveLength(1);
-    const { d } = result[0]!;
-    expect(d).not.toBe("");
-    expect(d.startsWith("M")).toBe(true);
-    expect(d.endsWith("Z")).toBe(false);
-    // 3 vertices → 2 L commands (M + L + L)
-    const lCount = (d.match(/\bL\b/g) ?? []).length;
+    const { paths } = result[0]!;
+    expect(paths.fill).not.toBe("");
+    expect(paths.fill.startsWith("M")).toBe(true);
+    // Non-collinear → closed polygon → ends with Z.
+    expect(paths.fill.endsWith("Z")).toBe(true);
+    // 3 vertices → 2 L commands (M + L + L + Z)
+    const lCount = (paths.fill.match(/\bL\b/g) ?? []).length;
     expect(lCount).toBe(2);
+    // fill and outline are byte-identical for non-collinear voicings.
+    expect(paths.fill).toBe(paths.outline);
   });
 
-  it("7th chord voicing (4 vertices): d is M+L+L+L open polyline visiting all 4 vertices", () => {
+  it("7th chord voicing (4 vertices): paths.fill is closed polygon visiting all 4 vertices", () => {
     // Cmaj7: C, E, G, B across 4 strings within 3 fret positions.
     // Frets [3,4,4,5]: positions {3,4,5} → count 3 ≤ MAX_PLAYABLE_FRET_POSITIONS → kept.
-    // d: open polyline through all 4 vertices — M v0 L v1 L v2 L v3 (no Z).
+    // Non-collinear 4-vertex polygon (fill === outline).
     const noteData = [
       makeNote(0, 3, "C", "chord-root"),
       makeNote(1, 4, "E", "chord-tone-in-scale"),
@@ -575,18 +578,21 @@ describe("buildChordConnectorPolylines", () => {
     ];
     const result = buildChordConnectorPolylines(noteData, ["C", "E", "G", "B"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
     expect(result).toHaveLength(1);
-    const { d } = result[0]!;
-    expect(d).not.toBe("");
-    expect(d.startsWith("M")).toBe(true);
-    expect(d.endsWith("Z")).toBe(false);
-    // 4 vertices → 3 L commands (M + L + L + L)
-    const lCount = (d.match(/\bL\b/g) ?? []).length;
+    const { paths } = result[0]!;
+    expect(paths.fill).not.toBe("");
+    expect(paths.fill.startsWith("M")).toBe(true);
+    // Non-collinear → closed polygon → ends with Z.
+    expect(paths.fill.endsWith("Z")).toBe(true);
+    // 4 vertices → 3 L commands (M + L + L + L + Z)
+    const lCount = (paths.fill.match(/\bL\b/g) ?? []).length;
     expect(lCount).toBe(3);
+    // fill and outline are byte-identical.
+    expect(paths.fill).toBe(paths.outline);
   });
 
-  it("collinear voicing (same fret, 3 adjacent strings): d is M+L+L open polyline, no Z", () => {
+  it("collinear voicing (same fret, 3 adjacent strings): paths are inflated capsule with arc commands", () => {
     // All 3 notes at the exact same fret → same x coordinate → collinear.
-    // d: open polyline — M v0 L v1 L v2 (no Z).
+    // Collinear dispatch → inflatedCapsulePath → contains arc 'A' commands.
     // fretCenterX(5) = 50; all x values equal 50.
     const noteData = [
       makeNote(0, 5, "C", "chord-root"),
@@ -595,35 +601,30 @@ describe("buildChordConnectorPolylines", () => {
     ];
     const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
     expect(result).toHaveLength(1);
-    const { d } = result[0]!;
-    expect(d).not.toBe("");
-    expect(d.startsWith("M")).toBe(true);
-    expect(d.endsWith("Z")).toBe(false);
-    // 3 vertices → 2 L commands
-    const lCount = (d.match(/\bL\b/g) ?? []).length;
-    expect(lCount).toBe(2);
-    // All x coordinates must be equal (same fret column x=50).
-    // Path tokens: "M 50 0 L 50 20 L 50 40" — verify all x values are 50.
-    expect(d).toMatch(/^M 50 [\d.]+ L 50 [\d.]+ L 50 [\d.]+$/);
+    const { paths } = result[0]!;
+    expect(paths.fill).not.toBe("");
+    // Capsule path contains arc commands.
+    expect(paths.fill).toContain("A");
+    expect(paths.outline).toContain("A");
+    // fill and outline are byte-identical for collinear voicings too.
+    expect(paths.fill).toBe(paths.outline);
   });
 
   // -------------------------------------------------------------------------
-  // Regression: near-collinear diagonal triad G-E-C must visit all 3 vertices
+  // Regression: near-collinear diagonal triad G-E-C
   //
-  // Prior approach: convexHull dropped the middle vertex E when G→E→C were
-  // near-collinear, collapsing the envelope to a 2-vertex capsule.
-  // Fix: open polyline in string-index order literally visits every vertex —
-  // no hull computation, no vertex dropping.
+  // G(string 4, fret 5) → E(string 5, fret 6) → C(string 6, fret 7):
+  // x=50,y=80; x=60,y=100; x=70,y=120 — exactly collinear (shoelace area = 0).
+  // Dispatch → inflatedCapsulePath → capsule with arc 'A' commands.
+  // The capsule envelops all 3 vertices without dropping any.
   // -------------------------------------------------------------------------
 
-  it("(regression) near-collinear diagonal G-E-C: d visits all 3 vertices (no vertex drop)", () => {
+  it("(regression) near-collinear diagonal G-E-C: paths are capsule (all 3 vertices enveloped)", () => {
     // Voicing: G(string 4, fret 5) → E(string 5, fret 6) → C(string 6, fret 7).
     // Frets [5,6,7]: positions {5,6,7} → count 3 ≤ MAX_PLAYABLE_FRET_POSITIONS → kept.
     // With fretCenterX(fi)=fi*10 and stringYAt(si)=si*20:
-    //   G: x=50, y=80   E: x=60, y=100   C: x=70, y=120 (near-collinear diagonal).
-    //
-    // d: open polyline through all 3 vertices in string-index order (no Z).
-    //    The middle vertex E is always visited — no hull collapse possible.
+    //   G: x=50, y=80   E: x=60, y=100   C: x=70, y=120 — exactly collinear.
+    // Capsule path envelops all vertices; arc 'A' commands confirm capsule dispatch.
     const noteData = [
       makeNote(4, 5, "G", "chord-tone-in-scale"),
       makeNote(5, 6, "E", "chord-tone-in-scale"),
@@ -631,17 +632,50 @@ describe("buildChordConnectorPolylines", () => {
     ];
     const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
     expect(result).toHaveLength(1);
-    const { d } = result[0]!;
-    // d: open polyline — M v0 L v1 L v2 (no Z, 2 L commands visiting all 3 vertices).
-    expect(d).not.toBe("");
-    expect(d.startsWith("M")).toBe(true);
-    expect(d.endsWith("Z")).toBe(false);
-    const lCount = (d.match(/\bL\b/g) ?? []).length;
-    expect(lCount).toBe(2);
-    // Verify all 3 vertices appear: x=50 (fret 5), x=60 (fret 6), x=70 (fret 7).
-    expect(d).toContain("50 ");
-    expect(d).toContain("60 ");
-    expect(d).toContain("70 ");
+    const { paths } = result[0]!;
+    expect(paths.fill).not.toBe("");
+    // Collinear diagonal → capsule dispatch → arc commands present.
+    expect(paths.fill).toContain("A");
+    expect(paths.fill).toBe(paths.outline);
+  });
+
+  // -------------------------------------------------------------------------
+  // New: non-collinear fill === outline (byte-identical)
+  // -------------------------------------------------------------------------
+
+  it("non-collinear voicing: fill and outline paths are byte-identical", () => {
+    // Use 3 notes at different frets to guarantee non-collinear polygon.
+    const noteData = [
+      makeNote(0, 3, "C", "chord-root"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(2, 4, "G", "chord-tone-in-scale"),
+    ];
+    const result = buildChordConnectorPolylines(
+      noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C",
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0]!.paths.fill).toBe(result[0]!.paths.outline);
+    expect(result[0]!.paths.fill).toContain("Z"); // closed polygon
+  });
+
+  // -------------------------------------------------------------------------
+  // New: collinear voicing capsule arcs
+  // -------------------------------------------------------------------------
+
+  it("collinear voicing: both fill and outline are inflated capsule paths", () => {
+    // Use 3 notes at same fret to guarantee collinear input.
+    const noteData = [
+      makeNote(0, 5, "C", "chord-root"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(2, 5, "G", "chord-tone-in-scale"),
+    ];
+    const result = buildChordConnectorPolylines(
+      noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C",
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0]!.paths.fill).toContain("A");    // arc command from capsule
+    expect(result[0]!.paths.outline).toContain("A");
+    expect(result[0]!.paths.fill).toBe(result[0]!.paths.outline);
   });
 });
 
