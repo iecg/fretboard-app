@@ -1144,3 +1144,80 @@ describe("adjacency-aware offset assignment", () => {
     expect(uniqueFills.size).toBe(6);
   });
 });
+
+// -------------------------------------------------------------------------
+// voicingKey: stability, uniqueness, and order-independence
+// -------------------------------------------------------------------------
+
+describe("voicingKey field", () => {
+  it("voicingKey stability: same vertex set on two separate calls produces identical voicingKey values", () => {
+    const noteData = [
+      makeNote(0, 5, "C", "chord-root"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(2, 5, "G", "chord-tone-in-scale"),
+    ];
+    const result1 = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    const result2 = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    expect(result1).toHaveLength(1);
+    expect(result2).toHaveLength(1);
+    expect(result1[0]!.voicingKey).toBe(result2[0]!.voicingKey);
+  });
+
+  it("voicingKey uniqueness: two voicings with distinct vertex sets produce different keys", () => {
+    // Two distinct positions: strings 0-1-2 at fret 5, and strings 0-1-2 at fret 7.
+    // Both are separate calls so each emits 1 voicing with a different key.
+    const noteDataA = [
+      makeNote(0, 5, "C", "chord-root"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(2, 5, "G", "chord-tone-in-scale"),
+    ];
+    const noteDataB = [
+      makeNote(0, 7, "C", "chord-root"),
+      makeNote(1, 7, "E", "chord-tone-in-scale"),
+      makeNote(2, 7, "G", "chord-tone-in-scale"),
+    ];
+    const rA = buildChordConnectorPolylines(noteDataA, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    const rB = buildChordConnectorPolylines(noteDataB, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    expect(rA).toHaveLength(1);
+    expect(rB).toHaveLength(1);
+    expect(rA[0]!.voicingKey).not.toBe(rB[0]!.voicingKey);
+  });
+
+  it("canonicalKey order-independence: supplying the same vertices in a different order yields the same key", () => {
+    // Forward order: string 0, 1, 2.
+    const noteDataForward = [
+      makeNote(0, 3, "C", "chord-root"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(2, 4, "G", "chord-tone-in-scale"),
+    ];
+    // Reverse order: string 2, 1, 0 — NoteData ordering should not affect the key.
+    const noteDataReverse = [
+      makeNote(2, 4, "G", "chord-tone-in-scale"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(0, 3, "C", "chord-root"),
+    ];
+    const rFwd = buildChordConnectorPolylines(noteDataForward, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    const rRev = buildChordConnectorPolylines(noteDataReverse, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    expect(rFwd).toHaveLength(1);
+    expect(rRev).toHaveLength(1);
+    expect(rFwd[0]!.voicingKey).toBe(rRev[0]!.voicingKey);
+  });
+
+  it("voicingKey is a non-empty string containing the expected coordinate pairs", () => {
+    const noteData = [
+      makeNote(0, 5, "C", "chord-root"),
+      makeNote(1, 7, "E", "chord-tone-in-scale"),
+      makeNote(2, 6, "G", "chord-tone-in-scale"),
+    ];
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    expect(result).toHaveLength(1);
+    const key = result[0]!.voicingKey;
+    expect(typeof key).toBe("string");
+    expect(key.length).toBeGreaterThan(0);
+    // Key must contain each (stringIndex,fretIndex) pair in sorted order joined by "|".
+    // Sorted: "0,5" < "1,7" < "2,6" → sorted: "0,5", "1,7", "2,6".
+    expect(key).toContain("0,5");
+    expect(key).toContain("1,7");
+    expect(key).toContain("2,6");
+  });
+});

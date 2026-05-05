@@ -73,6 +73,13 @@ export interface ChordConnectorVoicing {
    * yields same index. Used to index into --chord-connector-color-N CSS tokens.
    */
   paletteIndex: number;
+  /**
+   * Stable identity key derived from the canonical sorted "(stringIndex,fretIndex)"
+   * pairs joined by "|" (e.g. "0,7|1,8|2,9"). Same vertex set → same key across
+   * renders. Used by FretboardHitTargetLayer to identify which voicing is active
+   * and by FretboardSVG to write the data-active-voicing attribute.
+   */
+  voicingKey: string;
 }
 
 /**
@@ -533,7 +540,7 @@ export function buildChordConnectorPolylines(
       baseRadius + offsetPx,
     );
     const paths = { fill: pathStr, outline: pathStr };
-    return { paths, vertices: pv.rawVertices, paletteIndex: pv.paletteIndex };
+    return { paths, vertices: pv.rawVertices, paletteIndex: pv.paletteIndex, voicingKey: pv.canonicalKey };
   });
 
   return results;
