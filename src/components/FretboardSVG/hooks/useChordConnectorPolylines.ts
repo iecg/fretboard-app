@@ -1,6 +1,30 @@
 import { useMemo } from "react";
 import type { NoteData } from "./useNoteData";
-import { openPolylinePath, shapeIdentityKey, fnv1aHash } from "../utils/pathGeometry";
+import { openPolylinePath } from "../utils/pathGeometry";
+import { NOTES } from "../../../core/theory";
+
+/**
+ * Compute the bass-note interval (in semitones, 0-11) from the chord root to
+ * the lowest physical note in a voicing.
+ *
+ * Convention: stringIndex 0 = highest string (high E), stringIndex 5 = lowest
+ * string (low E). Within a 5-fret voicing window in standard tuning, the
+ * pick on the highest stringIndex is essentially always the lowest pitch.
+ *
+ * Returns 0 if either chordRoot or the bass-note name is not in the NOTES table
+ * — defensive default keeps paletteIndex stable at 0 rather than throwing.
+ */
+function bassIntervalSemitones(bestCombo: NoteData[], chordRoot: string): number {
+  if (bestCombo.length === 0) return 0;
+  let bass = bestCombo[0]!;
+  for (let i = 1; i < bestCombo.length; i++) {
+    if (bestCombo[i]!.stringIndex > bass.stringIndex) bass = bestCombo[i]!;
+  }
+  const rootIdx = NOTES.indexOf(chordRoot);
+  const bassIdx = NOTES.indexOf(bass.noteName);
+  if (rootIdx < 0 || bassIdx < 0) return 0;
+  return (bassIdx - rootIdx + 12) % 12;
+}
 
 export interface ChordConnectorVertex {
   x: number;
@@ -99,6 +123,9 @@ export const CHORD_TONE_CLASSES = new Set([
  * @param stringYAt       Maps (stringIndex, x) → SVG y coordinate.
  * @param stringRowPx     Row height in pixels; kept for API compatibility (no longer
  *                        used in geometry — CSS handles stroke-width scaling).
+ * @param chordRoot       Sharps-only chord-root name (e.g. "C", "F#"). Used to
+ *                        compute the bass-note interval that drives paletteIndex.
+ *                        Empty string = paletteIndex defaults to 0.
  */
 export function buildChordConnectorPolylines(
   noteData: NoteData[],
@@ -106,6 +133,7 @@ export function buildChordConnectorPolylines(
   fretCenterX: (fretIndex: number) => number,
   stringYAt: (stringIndex: number, x: number) => number,
   stringRowPx: number,
+  chordRoot: string,
 ): ChordConnectorVoicing[] {
   // stringRowPx is kept in the signature for API compatibility; CSS now handles
   // stroke-width scaling via the --string-row-px custom property.
@@ -260,9 +288,11 @@ export function buildChordConnectorPolylines(
       // CSS stroke-width + stroke-linecap/linejoin handle enveloping of every note bubble.
       const d = openPolylinePath(rawVertices);
 
-      // Compute palette index from shape-identity key.
-      const shapeKey = shapeIdentityKey(bestCombo);
-      const paletteIndex = fnv1aHash(shapeKey) % 8;
+      // Compute palette index from the bass-note interval (semitones from
+      // chord root). Same inversion → same color across positions and chord
+      // qualities. Root in bass = 0 → palette[0]; major 3rd in bass = 4 →
+      // palette[4]; perfect 5th in bass = 7 → palette[7]; etc.
+      const paletteIndex = bassIntervalSemitones(bestCombo, chordRoot) % 8;
 
       // Keep original (unmodified) vertex positions in the result.
       results.push({ d, vertices: rawVertices, paletteIndex });
@@ -279,6 +309,9 @@ export interface UseChordConnectorPolylinesParams {
   stringYAt: (stringIndex: number, x: number) => number;
   /** Row height in pixels; passed through for API compatibility (CSS handles scaling). */
   stringRowPx: number;
+  /** Sharps-only chord-root name (e.g. "C", "F#"). Drives bass-interval-based
+   *  paletteIndex assignment. Empty string = paletteIndex defaults to 0. */
+  chordRoot: string;
 }
 
 /**
@@ -301,6 +334,7 @@ export function useChordConnectorPolylines({
   fretCenterX,
   stringYAt,
   stringRowPx,
+  chordRoot,
 }: UseChordConnectorPolylinesParams): ChordConnectorVoicing[] {
   return useMemo(
     () =>
@@ -310,8 +344,9 @@ export function useChordConnectorPolylines({
         fretCenterX,
         stringYAt,
         stringRowPx,
+        chordRoot,
       ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [noteData, chordToneNames, stringRowPx],
+    [noteData, chordToneNames, stringRowPx, chordRoot],
   );
 }
