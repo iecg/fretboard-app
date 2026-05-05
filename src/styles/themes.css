@@ -82,6 +82,25 @@
   --neon-violet-dim: #4c1d95;
   --neon-brand-gradient: linear-gradient(90deg, #0891b2 0%, #ea580c 100%);
 
+  /* Shared note-role contract (light values). */
+  --note-label-on-color: #ffffff;
+  --note-label-on-color-stroke: rgb(0 0 0 / 0.45);
+  --note-label-on-color-shadow: 0 1px 1px rgb(0 0 0 / 0.55);
+  --note-role-tonic-fill: #ea580c;
+  --note-role-root-fill: #c2410c;
+  --note-role-chord-fill: #d97706;
+  --note-role-tension-fill: #9a6a00;
+  --note-role-border: #ea580c;
+  --degree-light-fill-default: color-mix(in srgb, var(--degree-color) 52%, #0f172a);
+  --degree-light-fill-I: #b45d00;
+  --degree-light-fill-II: #1f5f95;
+  --degree-light-fill-III: #2f8a3d;
+  --degree-light-fill-IV: #b5161b;
+  --degree-light-fill-V: #5f22ab;
+  --degree-light-fill-VI: #8f6e00;
+  --degree-light-fill-VII: #ad4b80;
+  --degree-light-fill-blue: #0a40bb;
+
   /* Glow effects — minimal to none in modern-light */
   --glow-cyan-sm: 0 1px 2px rgba(8, 145, 178, 0.1);
   --glow-cyan-md: none;
@@ -214,7 +233,7 @@
   --fretboard-board-shadow: rgb(0 0 0 / 0.15);
   --fretboard-note-text-fill: #0f172a;
   --fretboard-note-text-stroke: transparent;
-  --fretboard-note-chord-tone-outside-fill: #fde68a; /* light-mode: yellow-amber — hue-contrast against orange maple wood; visually distinct across all wood shades; diamond+dashed border conveys outside-scale role (was #fde3c0 which was invisible against #fbe6c6 lightest wood) */
+  --fretboard-note-chord-tone-outside-fill: var(--note-role-tension-fill); /* light-mode tension fill keeps semantic separation from guide/chord tones while supporting white labels */
   /* Lens-emphasis token namespaces.
      Guide-tones (5 tokens) treats all deemphasized notes uniformly — the lens emphasis is a binary
      (guide-tone vs everything else), so a single deemphasis tier covers both chord-tones and scale-only.
@@ -227,7 +246,7 @@
   --fretboard-guide-tones-deemphasis-stroke: color-mix(in srgb, var(--note-ring-tonic) 40%, transparent);
   --fretboard-guide-tones-color-tone-fill: color-mix(in srgb, var(--note-ring-color-tone) 15%, #ffffff);
   --fretboard-guide-tones-color-tone-stroke: color-mix(in srgb, var(--note-ring-color-tone) 40%, transparent);
-  --fretboard-tension-emphasis-fill: var(--note-ring-tonic);
+  --fretboard-tension-emphasis-fill: var(--fretboard-note-chord-tone-outside-fill);
   --fretboard-tension-deemphasis-fill: color-mix(in srgb, var(--note-ring-tonic) 15%, #ffffff);
   --fretboard-tension-deemphasis-stroke: color-mix(in srgb, var(--note-ring-tonic) 40%, transparent);
   --fretboard-tension-chord-tone-fill: color-mix(in srgb, var(--note-ring-tonic) 15%, #ffffff);
@@ -237,11 +256,11 @@
   --fretboard-fret-number-color: #475569;
 
   /* Fretboard note fill token overrides — light mode amber hierarchy against maple wood.
-     Hierarchy: tonic (#fb923c, orange) > chord-root (#fdba74, amber) > chord-tone (#fef3e2, cream) > scale-only (#f5efe4, warm cream).
-     Chord-outside (#fde68a, yellow) is visually distinct via yellow hue vs orange-amber wood; role conveys outside-scale via diamond shape + dashed border.
+     Hierarchy: tonic (#ea580c, orange) > chord-root (#c2410c, deep orange) > chord-tone (#fef3e2, cream) > scale-only (#f5efe4, warm cream).
+     Chord-outside (#9a6a00, amber-yellow) stays in the tension family; role conveys outside-scale via diamond shape + dashed border.
      Wood mid-tone is #f1c38e; fills must read distinctly against it with #b45309 amber stroke. */
-  --fretboard-note-fill-tonic: #fb923c;      /* amber-400: rich orange-amber, strong tonic signal */
-  --fretboard-note-fill-chord-root: #fdba74; /* amber-300: lighter than tonic, same family */
+  --fretboard-note-fill-tonic: var(--note-role-tonic-fill);
+  --fretboard-note-fill-chord-root: var(--note-role-root-fill);
   --fretboard-note-fill-chord-tone: #fef3e2; /* amber-50 warm: cream-white with amber tint */
   --fretboard-note-fill-scale-only: #f5efe4; /* warm cream, ~94% L: RGB delta 45 vs maple-wood-top #fbe6c6; darker than chord-tone #fef3e2 (97% L) — surface ladder preserved */
   --fretboard-note-fill-chord-outside:  var(--fretboard-note-chord-tone-outside-fill);
@@ -320,3 +339,50 @@
   --chord-connector-color-8: #f472b6; /* pink — hue ~328° */
 }
 
+[data-theme="modern-light"] [data-scale-degree] {
+  --note-degree-fill: var(--degree-light-fill-default);
+}
+
+[data-theme="modern-light"] :is([data-scale-degree="I"], [data-scale-degree="i"], [data-scale-degree="i°"], [data-scale-degree="I+"]) {
+  --note-degree-fill: var(--degree-light-fill-I);
+}
+
+[data-theme="modern-light"] :is([data-scale-degree="II"], [data-scale-degree="ii"], [data-scale-degree="ii°"], [data-scale-degree="II+"]) {
+  --note-degree-fill: var(--degree-light-fill-II);
+}
+
+[data-theme="modern-light"] :is([data-scale-degree="III"], [data-scale-degree="iii"], [data-scale-degree="iii°"], [data-scale-degree="III+"]) {
+  --note-degree-fill: var(--degree-light-fill-III);
+}
+
+[data-theme="modern-light"] :is([data-scale-degree="IV"], [data-scale-degree="iv"], [data-scale-degree="iv°"], [data-scale-degree="IV+"]) {
+  --note-degree-fill: var(--degree-light-fill-IV);
+}
+
+[data-theme="modern-light"] :is([data-scale-degree="V"], [data-scale-degree="v"], [data-scale-degree="v°"], [data-scale-degree="V+"]) {
+  --note-degree-fill: var(--degree-light-fill-V);
+}
+
+[data-theme="modern-light"] :is([data-scale-degree="VI"], [data-scale-degree="vi"], [data-scale-degree="vi°"], [data-scale-degree="VI+"]) {
+  --note-degree-fill: var(--degree-light-fill-VI);
+}
+
+[data-theme="modern-light"] :is([data-scale-degree="VII"], [data-scale-degree="vii"], [data-scale-degree="vii°"], [data-scale-degree="VII+"]) {
+  --note-degree-fill: var(--degree-light-fill-VII);
+}
+
+[data-theme="modern-light"] :is([data-scale-degree="b3"], [data-scale-degree="b5"]) {
+  --note-degree-fill: var(--degree-light-fill-blue);
+}
+
+[data-theme="modern-dark"] [data-scale-degree] {
+  --note-degree-fill: color-mix(in srgb, var(--degree-color, #4daf4a) 62%, #0f172a);
+}
+
+[data-theme="modern-dark"] :is([data-scale-degree="III"], [data-scale-degree="iii"], [data-scale-degree="iii°"], [data-scale-degree="III+"]) {
+  --note-degree-fill: color-mix(in srgb, var(--degree-color, #4daf4a) 54%, #0f172a);
+}
+
+[data-theme="modern-dark"] :is([data-scale-degree="VI"], [data-scale-degree="vi"], [data-scale-degree="vi°"], [data-scale-degree="VI+"]) {
+  --note-degree-fill: color-mix(in srgb, var(--degree-color, #fdd835) 42%, #0f172a);
+}
