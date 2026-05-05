@@ -4,12 +4,14 @@ import { expectLocatorVisual, prepareVisualPage } from "./visual-helpers";
 test.describe("Note Color Audit Visual", () => {
   test("note color audit matrix", async ({ page }) => {
     await page.goto("./?audit=note-colors");
-    await prepareVisualPage(page, { width: 1280, height: 900 });
+    // Keep viewport comfortably above compact-height threshold (899px) so
+    // Linux scrollbar/layout jitter can't flip to desktop-stacked mid-capture.
+    await prepareVisualPage(page, { width: 1280, height: 920 });
 
     const boxStyle = async (auditId: string) =>
       page.evaluate((id) => {
         const card = document.querySelector(`[data-audit-id="${id}"]`);
-        const target = card?.querySelector("button, li > span:first-child");
+        const target = card?.querySelector("button");
         if (!target) throw new Error(`Missing audit target: ${id}`);
         const computed = getComputedStyle(target);
         const before = getComputedStyle(target, "::before");
@@ -38,7 +40,7 @@ test.describe("Note Color Audit Visual", () => {
 
     const labelStyles = async (
       auditId: string,
-      selector = "button span, svg text, ul li span span, ul li > span:last-child",
+      selector = "button span, svg text, li > span",
     ) =>
       page.evaluate(({ id, labelSelector }) => {
         const card = document.querySelector(`[data-audit-id="${id}"]`);
@@ -174,12 +176,10 @@ test.describe("Note Color Audit Visual", () => {
       "light:fretboard:none:degree-off:key-tonic",
       "light:practice-pill:none:degree-off:chord-root",
       "light:degree-chip:none:degree-on:degree-colored",
-      "light:chord-row:none:degree-off:row-chip-chord-root",
       "light:degree-ramp:none:degree-on:I",
       "dark:fretboard:none:degree-off:key-tonic",
       "dark:practice-pill:none:degree-off:chord-root",
       "dark:degree-chip:none:degree-on:degree-colored",
-      "dark:chord-row:none:degree-off:row-chip-chord-root",
       "dark:degree-ramp:none:degree-on:I",
     ]) {
       await expect(page.locator(`[data-audit-id="${auditId}"]`)).toContainText("label ctr");
@@ -216,14 +216,6 @@ test.describe("Note Color Audit Visual", () => {
     }
 
     for (const auditId of [
-      "light:chord-row:none:degree-off:row-chip-chord-root",
-      "light:chord-row:none:degree-off:row-chip-chord-tone-in-scale",
-      "light:chord-row:none:degree-off:row-chip-outside-chord",
-    ]) {
-      await expectLabels(auditId, white, "ul li span span, ul li > span:last-child");
-    }
-
-    for (const auditId of [
       "light:practice-pill:none:degree-off:inactive",
       "light:practice-pill:none:degree-off:in-scale",
       "light:degree-chip:none:degree-off:inactive",
@@ -235,10 +227,6 @@ test.describe("Note Color Audit Visual", () => {
     const lightGuidePill = await boxStyle("light:practice-pill:none:degree-off:guide-tone");
     const lightTensionPill = await boxStyle("light:practice-pill:none:degree-off:tension");
     expect(lightGuidePill.backgroundColor).not.toBe(lightTensionPill.backgroundColor);
-
-    const lightChordToneChip = await boxStyle("light:chord-row:none:degree-off:row-chip-chord-tone-in-scale");
-    const lightOutsideToneChip = await boxStyle("light:chord-row:none:degree-off:row-chip-outside-chord");
-    expect(lightChordToneChip.backgroundColor).not.toBe(lightOutsideToneChip.backgroundColor);
 
     const lightInScaleFretboard = await fretboardShapeStyle(
       "light:fretboard:none:degree-off:chord-tone-in-scale",
@@ -264,10 +252,6 @@ test.describe("Note Color Audit Visual", () => {
     const darkRootPill = await boxStyle("dark:practice-pill:none:degree-off:chord-root");
     expect(darkGuidePill.backgroundColor).not.toBe(darkTensionPill.backgroundColor);
     expect(darkTensionPill.backgroundColor).not.toBe(darkRootPill.backgroundColor);
-
-    const darkChordToneChip = await boxStyle("dark:chord-row:none:degree-off:row-chip-chord-tone-in-scale");
-    const darkOutsideToneChip = await boxStyle("dark:chord-row:none:degree-off:row-chip-outside-chord");
-    expect(darkChordToneChip.backgroundColor).not.toBe(darkOutsideToneChip.backgroundColor);
 
     const darkGuideFretboard = await fretboardShapeStyle(
       "dark:fretboard:guide-tones:degree-off:guide-tone-emphasis",

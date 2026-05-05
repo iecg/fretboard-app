@@ -10,8 +10,6 @@ import {
   recenterKeyAtom,
   shapeDataAtom,
   autoCenterTargetAtom,
-  isShapeLocalContextAtom,
-  shapeContextLabelAtom,
 } from "../store/atoms";
 import { type CagedShape } from "../shapes";
 
@@ -28,8 +26,6 @@ export function useShapeState() {
   const { highlightNotes, boxBounds, shapePolygons, wrappedNotes } =
     useAtomValue(shapeDataAtom);
   const autoCenterTarget = useAtomValue(autoCenterTargetAtom);
-  const isShapeLocalContext = useAtomValue(isShapeLocalContextAtom);
-  const shapeContextLabel = useAtomValue(shapeContextLabelAtom);
 
   const onShapeClick = (shape: CagedShape | null) => {
     setClickedShape(shape);
@@ -58,8 +54,6 @@ export function useShapeState() {
     shapePolygons,
     wrappedNotes,
     autoCenterTarget,
-    isShapeLocalContext,
-    shapeContextLabel,
     onShapeClick,
     onRecenter,
   };

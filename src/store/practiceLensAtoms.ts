@@ -345,22 +345,6 @@ export const practiceBarLandOnGroupAtom = atom((get) => {
   return { ...base, notes: filtered };
 });
 
-export const shapeLocalPracticeCuesAtom = atom((get) => {
-  const shapeHighlightedNoteSet = get(shapeHighlightedNoteSetAtom);
-  const cues = get(practiceCuesAtom);
-  if (!shapeHighlightedNoteSet) return [] as typeof cues;
-  return cues
-    .map((cue) => ({
-      ...cue,
-      // Tension cues are never filtered by shape — tension notes and their
-      // resolve targets must always be visible regardless of position context.
-      notes: cue.kind === "tension"
-        ? cue.notes
-        : cue.notes.filter((n) => shapeHighlightedNoteSet.has(n.internalNote)),
-    }))
-    .filter((cue) => cue.notes.length > 0);
-});
-
 export const showChordPracticeBarAtom = atom((get) => {
   return !!get(chordTypeAtom);
 });
@@ -384,14 +368,6 @@ export const practiceBarLensLabelAtom = atom((get): string | null => {
   const entry = LENS_REGISTRY.find((e) => e.id === lens);
   return entry?.label ?? null;
 });
-
-export const practiceBarSharedMembersAtom = atom((get) =>
-  get(allChordMembersAtom).filter((e) => e.inScale),
-);
-
-export const practiceBarOutsideMembersAtom = atom((get) =>
-  get(allChordMembersAtom).filter((e) => !e.inScale),
-);
 
 /**
  * Context inputs for LENS_REGISTRY predicates.

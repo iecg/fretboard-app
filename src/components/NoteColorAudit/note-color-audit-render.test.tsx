@@ -103,10 +103,7 @@ describe("note color audit render readouts", () => {
       '[data-audit-id="light:practice-pill:none:degree-off:chord-root"]',
     );
     const degreeCard = container.querySelector(
-      '[data-audit-id="light:degree-chip:none:degree-on:degree-colored"]',
-    );
-    const chordRowCard = container.querySelector(
-      '[data-audit-id="light:chord-row:none:degree-off:row-chip-chord-root"]',
+      '[data-audit-id="light:degree-chip:none:degree-off:inactive"]',
     );
     const degreeRampCard = container.querySelector(
       '[data-audit-id="light:degree-ramp:none:degree-on:I"]',
@@ -117,7 +114,7 @@ describe("note color audit render readouts", () => {
     expect(fretboardCard).toHaveTextContent("text s-w");
     expect(fretboardCard).toHaveTextContent("label ctr");
     expect(fretboardCard).toHaveTextContent("ring ctr");
-    for (const card of [practiceCard, degreeCard, chordRowCard, degreeRampCard]) {
+    for (const card of [practiceCard, degreeCard, degreeRampCard]) {
       expect(card).toHaveTextContent("label");
       expect(card).toHaveTextContent("rgb(15, 23, 42)");
       expect(card).toHaveTextContent("label shadow");

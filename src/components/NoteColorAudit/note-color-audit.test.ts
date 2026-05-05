@@ -3,7 +3,6 @@ import {
   AUDIT_DEGREE_MODES,
   AUDIT_LENSES,
   AUDIT_THEMES,
-  CHORD_ROW_SWATCHES,
   DEGREE_CHIP_SWATCHES,
   DEGREE_RAMP_SWATCHES,
   FRETBOARD_AUDIT_GROUPS,
@@ -37,7 +36,7 @@ describe("note color audit fixtures", () => {
     const nonFretboardContexts = renderedCases
       .filter((auditCase) => auditCase.surface !== "fretboard")
       .map((auditCase) => auditCase.contextId);
-    const nonLensSurfaces = ["practice-pill", "degree-chip", "chord-row", "degree-ramp"];
+    const nonLensSurfaces = ["practice-pill", "degree-chip", "degree-ramp"];
 
     expect(new Set(nonFretboardContexts)).toEqual(new Set(["none"]));
     for (const surface of nonLensSurfaces) {
@@ -125,42 +124,6 @@ describe("note color audit fixtures", () => {
       "degree-colored",
       "degree-colored-color-note",
       "hidden-degree-colored",
-    ]);
-  });
-
-  it("covers chord row strip audit states", () => {
-    expect(CHORD_ROW_SWATCHES.map((swatch) => swatch.id)).toEqual([
-      "row-chip-inactive",
-      "row-chip-chord-root",
-      "row-chip-chord-tone-in-scale",
-      "row-chip-outside-chord",
-      "legend-chord-root",
-      "legend-chord-tone-in-scale",
-      "legend-outside-chord",
-      "legend-scale-only",
-    ]);
-
-    expect(
-      getRenderedAuditCases()
-        .filter((auditCase) => auditCase.surface === "chord-row")
-        .map((auditCase) => auditCase.swatchId),
-    ).toEqual([
-      "row-chip-inactive",
-      "row-chip-chord-root",
-      "row-chip-chord-tone-in-scale",
-      "row-chip-outside-chord",
-      "legend-chord-root",
-      "legend-chord-tone-in-scale",
-      "legend-outside-chord",
-      "legend-scale-only",
-      "row-chip-inactive",
-      "row-chip-chord-root",
-      "row-chip-chord-tone-in-scale",
-      "row-chip-outside-chord",
-      "legend-chord-root",
-      "legend-chord-tone-in-scale",
-      "legend-outside-chord",
-      "legend-scale-only",
     ]);
   });
 

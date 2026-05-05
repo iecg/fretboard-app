@@ -8,7 +8,7 @@ export type AuditTheme = {
 };
 
 export type AuditLens = {
-  id: "none" | Exclude<PracticeLens, "targets">;
+  id: Exclude<PracticeLens, "targets"> | "none";
   label: string;
   dataPracticeLens?: Exclude<PracticeLens, "targets">;
 };
@@ -19,40 +19,7 @@ export type AuditDegreeMode = {
   enabled: boolean;
 };
 
-export type FretboardAuditSwatch = {
-  id: string;
-  label: string;
-  noteClass:
-    | "key-tonic"
-    | "note-active"
-    | "scale-only"
-    | "note-blue"
-    | "color-tone"
-    | "chord-root"
-    | "chord-tone-in-scale"
-    | "note-diatonic-chord"
-    | "chord-tone-outside-scale";
-  display: string;
-  isGuideTone?: boolean;
-  isTension?: boolean;
-  degreeColorEligible?: boolean;
-};
-
-export type PracticePillAuditSwatch = {
-  id: string;
-  label: string;
-  display: string;
-  interval?: string;
-  isChordRoot?: boolean;
-  isGuideTone?: boolean;
-  isTension?: boolean;
-  isInScale?: boolean;
-  isHidden?: boolean;
-  degreeColorEligible?: boolean;
-  auditDegreeModes?: readonly AuditDegreeMode["id"][];
-};
-
-export type DegreeChipAuditSwatch = {
+export interface DegreeChipAuditSwatch {
   id: string;
   label: string;
   display: string;
@@ -63,32 +30,48 @@ export type DegreeChipAuditSwatch = {
   isHidden?: boolean;
   degreeColorEligible?: boolean;
   auditDegreeModes?: readonly AuditDegreeMode["id"][];
-};
-
-export type ChordRowAuditSwatch = {
-  id: string;
-  label: string;
-  kind: "chip" | "legend";
-  role?: "chord-root" | "chord-tone-in-scale" | "chord-tone-outside-scale" | "scale-only";
-  display?: string;
-  interval?: string;
-};
+}
 
 export type DegreeRampAuditSwatch = {
   id: string;
   label: string;
   display: string;
   interval: string;
-  degreeColor: string;
   degreeId: string;
+  degreeColor: string;
   isTonic?: boolean;
   isColorNote?: boolean;
 };
 
+export type FretboardAuditSwatch = {
+  id: string;
+  label: string;
+  noteClass: string;
+  display: string;
+  isGuideTone?: boolean;
+  isTension?: boolean;
+  degreeColorEligible?: boolean;
+};
+
+export interface PracticePillAuditSwatch {
+  id: string;
+  label: string;
+  noteClass?: string;
+  display?: string;
+  interval?: string;
+  isChordRoot?: boolean;
+  isInScale?: boolean;
+  isGuideTone?: boolean;
+  isTension?: boolean;
+  isHidden?: boolean;
+  degreeColorEligible?: boolean;
+  auditDegreeModes?: readonly AuditDegreeMode["id"][];
+}
+
 export type FretboardAuditCase = {
   id: string;
   label?: string;
-  swatchId: string;
+  swatchId: FretboardAuditSwatch["id"];
   display?: string;
   isGuideTone?: boolean;
   isTension?: boolean;
@@ -99,24 +82,8 @@ export type FretboardAuditCase = {
 export type FretboardAuditGroup = {
   id: AuditLens["id"];
   label: string;
-  dataPracticeLens?: AuditLens["dataPracticeLens"];
+  dataPracticeLens?: PracticeLens;
   cases: readonly FretboardAuditCase[];
-};
-
-export type AuditSurface =
-  | "fretboard"
-  | "practice-pill"
-  | "degree-chip"
-  | "chord-row"
-  | "degree-ramp";
-
-export type RenderedAuditCase = {
-  auditId: string;
-  contextId: AuditLens["id"];
-  degreeMode: AuditDegreeMode;
-  surface: AuditSurface;
-  swatchId: string;
-  theme: AuditTheme;
 };
 
 export const AUDIT_THEMES = [
@@ -135,13 +102,10 @@ export const AUDIT_DEGREE_MODES = [
   { id: "degree-on", label: "Degrees on", enabled: true },
 ] as const satisfies readonly AuditDegreeMode[];
 
-const AUDIT_DEGREE_OFF = AUDIT_DEGREE_MODES[0];
-const AUDIT_DEGREE_ON = AUDIT_DEGREE_MODES[1];
-
 export const AUDIT_DEGREE_ID = "III";
 export const AUDIT_DEGREE_COLOR = DEGREE_COLORS[AUDIT_DEGREE_ID as keyof typeof DEGREE_COLORS];
 
-export const FRETBOARD_NOTE_SWATCHES = [
+export const FRETBOARD_NOTE_SWATCHES: FretboardAuditSwatch[] = [
   {
     id: "key-tonic",
     label: "Key tonic",
@@ -160,7 +124,7 @@ export const FRETBOARD_NOTE_SWATCHES = [
     id: "scale-only",
     label: "Scale only",
     noteClass: "scale-only",
-    display: "6",
+    display: "3",
     degreeColorEligible: true,
   },
   {
@@ -174,67 +138,65 @@ export const FRETBOARD_NOTE_SWATCHES = [
     id: "color-tone",
     label: "Color tone",
     noteClass: "color-tone",
-    display: "#4",
-    degreeColorEligible: true,
+    display: "6",
+    degreeColorEligible: false,
   },
   {
     id: "chord-root",
     label: "Chord root",
     noteClass: "chord-root",
-    display: "R",
-    degreeColorEligible: true,
+    display: "1",
+    degreeColorEligible: false,
   },
   {
     id: "chord-root-tension",
-    label: "Root + tension",
+    label: "Chord root + tension",
     noteClass: "chord-root",
-    display: "R",
+    display: "1",
     isTension: true,
+    degreeColorEligible: false,
   },
   {
     id: "chord-tone-in-scale",
-    label: "Chord in scale",
+    label: "Chord tone",
     noteClass: "chord-tone-in-scale",
     display: "3",
-    isGuideTone: true,
-    degreeColorEligible: true,
+    degreeColorEligible: false,
   },
   {
     id: "note-diatonic-chord",
     label: "Diatonic chord",
     noteClass: "note-diatonic-chord",
     display: "5",
-    isGuideTone: true,
-    degreeColorEligible: true,
+    degreeColorEligible: false,
   },
   {
     id: "chord-tone-outside-scale",
     label: "Outside chord",
     noteClass: "chord-tone-outside-scale",
     display: "b7",
-    isTension: true,
+    degreeColorEligible: false,
   },
-] as const satisfies readonly FretboardAuditSwatch[];
+];
 
-export const PRACTICE_PILL_SWATCHES = [
+export const PRACTICE_PILL_SWATCHES: PracticePillAuditSwatch[] = [
   {
     id: "inactive",
     label: "Inactive",
     display: "C",
-    interval: "1",
   },
   {
     id: "in-scale",
-    label: "In scale",
-    display: "E",
-    interval: "3",
+    label: "In-scale",
+    noteClass: "in-scale",
+    display: "D",
     isInScale: true,
     degreeColorEligible: true,
-    auditDegreeModes: ["degree-off"],
   },
   {
     id: "chord-root",
     label: "Chord root",
+    noteClass: "chord-root",
     display: "G",
     interval: "1",
     isChordRoot: true,
@@ -244,53 +206,55 @@ export const PRACTICE_PILL_SWATCHES = [
   {
     id: "guide-tone",
     label: "Guide tone",
-    display: "B",
-    interval: "7",
+    noteClass: "guide-tone",
     isGuideTone: true,
+    display: "B",
+    interval: "3",
   },
   {
     id: "in-scale-guide-tone",
     label: "In-scale guide",
-    display: "F",
-    interval: "b7",
+    noteClass: "in-scale",
     isGuideTone: true,
+    display: "F",
+    interval: "4",
     isInScale: true,
     degreeColorEligible: true,
   },
   {
     id: "tension",
     label: "Tension",
+    noteClass: "tension",
+    isTension: true,
     display: "Bb",
     interval: "b7",
-    isTension: true,
   },
   {
     id: "root-tension",
     label: "Root + tension",
-    display: "F#",
-    interval: "1",
-    isChordRoot: true,
+    noteClass: "chord-root",
     isTension: true,
+    display: "Eb",
+    interval: "1",
   },
   {
     id: "hidden",
     label: "Hidden",
-    display: "A",
-    interval: "6",
     isHidden: true,
+    display: "A",
   },
   {
     id: "degree-colored-in-scale",
-    label: "Degree in scale",
+    label: "Degree colored",
+    noteClass: "in-scale",
     display: "E",
-    interval: "3",
     isInScale: true,
     degreeColorEligible: true,
     auditDegreeModes: ["degree-on"],
   },
-] as const satisfies readonly PracticePillAuditSwatch[];
+];
 
-export const DEGREE_CHIP_SWATCHES = [
+export const DEGREE_CHIP_SWATCHES: DegreeChipAuditSwatch[] = [
   {
     id: "inactive",
     label: "Inactive",
@@ -299,7 +263,7 @@ export const DEGREE_CHIP_SWATCHES = [
   },
   {
     id: "in-scale",
-    label: "In scale",
+    label: "In-scale",
     display: "D",
     interval: "2",
     inScale: true,
@@ -307,7 +271,7 @@ export const DEGREE_CHIP_SWATCHES = [
   {
     id: "tonic",
     label: "Tonic",
-    display: "C",
+    display: "G",
     interval: "1",
     inScale: true,
     isTonic: true,
@@ -338,9 +302,9 @@ export const DEGREE_CHIP_SWATCHES = [
   },
   {
     id: "degree-colored-color-note",
-    label: "Degree color note",
-    display: "F#",
-    interval: "b5",
+    label: "Colored color note",
+    display: "Bb",
+    interval: "b7",
     inScale: true,
     isColorNote: true,
     degreeColorEligible: true,
@@ -348,73 +312,15 @@ export const DEGREE_CHIP_SWATCHES = [
   },
   {
     id: "hidden-degree-colored",
-    label: "Hidden degree",
-    display: "B",
-    interval: "7",
+    label: "Hidden colored",
+    display: "F",
+    interval: "4",
     inScale: true,
     isHidden: true,
     degreeColorEligible: true,
     auditDegreeModes: ["degree-on"],
   },
-] as const satisfies readonly DegreeChipAuditSwatch[];
-
-export const CHORD_ROW_SWATCHES = [
-  {
-    id: "row-chip-inactive",
-    label: "Inactive chip",
-    kind: "chip",
-    display: "C",
-    interval: "1",
-  },
-  {
-    id: "row-chip-chord-root",
-    label: "Chord root chip",
-    kind: "chip",
-    role: "chord-root",
-    display: "G",
-    interval: "1",
-  },
-  {
-    id: "row-chip-chord-tone-in-scale",
-    label: "Chord tone chip",
-    kind: "chip",
-    role: "chord-tone-in-scale",
-    display: "B",
-    interval: "3",
-  },
-  {
-    id: "row-chip-outside-chord",
-    label: "Outside chord chip",
-    kind: "chip",
-    role: "chord-tone-outside-scale",
-    display: "Bb",
-    interval: "b7",
-  },
-  {
-    id: "legend-chord-root",
-    label: "Chord root legend",
-    kind: "legend",
-    role: "chord-root",
-  },
-  {
-    id: "legend-chord-tone-in-scale",
-    label: "Chord tone legend",
-    kind: "legend",
-    role: "chord-tone-in-scale",
-  },
-  {
-    id: "legend-outside-chord",
-    label: "Outside chord legend",
-    kind: "legend",
-    role: "chord-tone-outside-scale",
-  },
-  {
-    id: "legend-scale-only",
-    label: "Scale-only legend",
-    kind: "legend",
-    role: "scale-only",
-  },
-] as const satisfies readonly ChordRowAuditSwatch[];
+];
 
 export const DEGREE_RAMP_SWATCHES = [
   {
@@ -580,66 +486,20 @@ export const FRETBOARD_AUDIT_GROUPS = [
   },
 ] as const satisfies readonly FretboardAuditGroup[];
 
-function isAuditSwatchRenderedForDegreeMode(
-  swatch: {
-    id: string;
-    auditDegreeModes?: readonly AuditDegreeMode["id"][];
-    degreeColorEligible?: boolean;
-  },
-  degreeMode: AuditDegreeMode,
-) {
-  if (swatch.auditDegreeModes) {
-    return swatch.auditDegreeModes.includes(degreeMode.id);
-  }
+export type AuditSurface =
+  | "fretboard"
+  | "practice-pill"
+  | "degree-chip"
+  | "degree-ramp";
 
-  return degreeMode.enabled ? swatch.degreeColorEligible === true : true;
-}
-
-export function getFretboardAuditSwatch(auditCase: FretboardAuditCase): FretboardAuditSwatch {
-  const base: FretboardAuditSwatch | undefined = FRETBOARD_NOTE_SWATCHES.find(
-    (swatch) => swatch.id === auditCase.swatchId,
-  );
-  if (!base) {
-    throw new Error(`Unknown fretboard audit swatch: ${auditCase.swatchId}`);
-  }
-
-  return {
-    id: auditCase.id,
-    label: auditCase.label ?? base.label,
-    noteClass: base.noteClass,
-    display: auditCase.display ?? base.display,
-    isGuideTone: auditCase.isGuideTone ?? base.isGuideTone,
-    isTension: auditCase.isTension ?? base.isTension,
-    degreeColorEligible: auditCase.degreeColorEligible ?? base.degreeColorEligible,
-  };
-}
-
-export function getFretboardAuditSwatchesForDegreeMode(
-  group: FretboardAuditGroup,
-  degreeMode: AuditDegreeMode,
-) {
-  return group.cases
-    .filter((auditCase) => {
-      const swatch = getFretboardAuditSwatch(auditCase);
-      return isAuditSwatchRenderedForDegreeMode(
-        { ...swatch, auditDegreeModes: auditCase.auditDegreeModes },
-        degreeMode,
-      );
-    })
-    .map(getFretboardAuditSwatch);
-}
-
-export function getPracticePillSwatchesForDegreeMode(degreeMode: AuditDegreeMode) {
-  return PRACTICE_PILL_SWATCHES.filter((swatch) =>
-    isAuditSwatchRenderedForDegreeMode(swatch, degreeMode),
-  );
-}
-
-export function getDegreeChipSwatchesForDegreeMode(degreeMode: AuditDegreeMode) {
-  return DEGREE_CHIP_SWATCHES.filter((swatch) =>
-    isAuditSwatchRenderedForDegreeMode(swatch, degreeMode),
-  );
-}
+export type RenderedAuditCase = {
+  auditId: string;
+  contextId: AuditLens["id"];
+  degreeMode: AuditDegreeMode;
+  surface: AuditSurface;
+  swatchId: string;
+  theme: AuditTheme;
+};
 
 export function getRenderedAuditCases(): RenderedAuditCase[] {
   return AUDIT_THEMES.flatMap((theme) => [
@@ -675,18 +535,10 @@ export function getRenderedAuditCases(): RenderedAuditCase[] {
         theme,
       })),
     ),
-    ...CHORD_ROW_SWATCHES.map((swatch) => ({
-      auditId: getAuditId(theme, "chord-row", "none", AUDIT_DEGREE_OFF, swatch.id),
-      contextId: "none" as const,
-      degreeMode: AUDIT_DEGREE_OFF,
-      surface: "chord-row" as const,
-      swatchId: swatch.id,
-      theme,
-    })),
     ...DEGREE_RAMP_SWATCHES.map((swatch) => ({
-      auditId: getAuditId(theme, "degree-ramp", "none", AUDIT_DEGREE_ON, swatch.id),
+      auditId: getAuditId(theme, "degree-ramp", "none", AUDIT_DEGREE_MODES[1], swatch.id),
       contextId: "none" as const,
-      degreeMode: AUDIT_DEGREE_ON,
+      degreeMode: AUDIT_DEGREE_MODES[1],
       surface: "degree-ramp" as const,
       swatchId: swatch.id,
       theme,
@@ -702,4 +554,66 @@ export function getAuditId(
   swatchId: string,
 ) {
   return `${theme.id}:${surface}:${contextId}:${degreeMode.id}:${swatchId}`;
+}
+
+function isAuditSwatchRenderedForDegreeMode(
+  swatch: {
+    auditDegreeModes?: readonly AuditDegreeMode["id"][];
+    degreeColorEligible?: boolean;
+  },
+  degreeMode: AuditDegreeMode,
+) {
+  if (swatch.auditDegreeModes) {
+    return swatch.auditDegreeModes.includes(degreeMode.id);
+  }
+
+  return degreeMode.enabled ? swatch.degreeColorEligible === true : true;
+}
+
+export function getFretboardAuditSwatch(auditCase: FretboardAuditCase): FretboardAuditSwatch {
+  const base: FretboardAuditSwatch | undefined = FRETBOARD_NOTE_SWATCHES.find(
+    (swatch) => swatch.id === auditCase.swatchId,
+  );
+  if (!base) {
+    throw new Error(`Unknown fretboard audit swatch: ${auditCase.swatchId}`);
+  }
+
+  return {
+    id: auditCase.id,
+    label: auditCase.label ?? base.label,
+    noteClass: base.noteClass,
+    display: auditCase.display ?? base.display,
+    isGuideTone: auditCase.isGuideTone ?? base.isGuideTone,
+    isTension: auditCase.isTension ?? base.isTension,
+    degreeColorEligible: auditCase.degreeColorEligible ?? base.degreeColorEligible,
+  };
+}
+
+export function getDegreeChipSwatchesForDegreeMode(degreeMode: AuditDegreeMode) {
+  return DEGREE_CHIP_SWATCHES.filter(
+    (swatch) =>
+      !swatch.auditDegreeModes || swatch.auditDegreeModes.includes(degreeMode.id),
+  );
+}
+
+export function getPracticePillSwatchesForDegreeMode(degreeMode: AuditDegreeMode) {
+  return PRACTICE_PILL_SWATCHES.filter(
+    (swatch) =>
+      !swatch.auditDegreeModes || swatch.auditDegreeModes.includes(degreeMode.id),
+  );
+}
+
+export function getFretboardAuditSwatchesForDegreeMode(
+  group: FretboardAuditGroup,
+  degreeMode: AuditDegreeMode,
+) {
+  return group.cases
+    .filter((auditCase) => {
+      const swatch = getFretboardAuditSwatch(auditCase);
+      return isAuditSwatchRenderedForDegreeMode(
+        { ...swatch, auditDegreeModes: auditCase.auditDegreeModes },
+        degreeMode,
+      );
+    })
+    .map(getFretboardAuditSwatch);
 }

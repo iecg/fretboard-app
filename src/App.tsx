@@ -23,7 +23,7 @@ import { useResolvedTheme } from "./hooks/useResolvedTheme";
 import { AppHeader } from "./components/AppHeader/AppHeader";
 import { BrandMark } from "./components/BrandMark/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark";
-import { SummaryRibbon } from "./components/SummaryRibbon/SummaryRibbon";
+import { ScaleStripPanel } from "./components/ScaleStripPanel/ScaleStripPanel";
 import { ChordOverlayDock } from "./components/ChordOverlayDock/ChordOverlayDock";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
 import sharedStyles from "./components/shared/shared.module.css";
@@ -187,7 +187,7 @@ function AppContent() {
           }
         />
       }
-      summary={<SummaryRibbon />}
+      summary={<ScaleStripPanel />}
       chordDock={<ChordOverlayDock />}
       helpModal={
         <Suspense fallback={<div className="loading-spinner" />}>

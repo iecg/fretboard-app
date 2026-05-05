@@ -36,22 +36,6 @@ export const mobileTabAtom = atomWithStorage<"scales" | "chords" | "cof" | "view
   GET_ON_INIT,
 );
 
-export const tabletTabAtom = atomWithStorage<"settings" | "scales">(
-  k("tabletTab"),
-  "settings",
-  rawStringStorage<"settings" | "scales">(),
-  GET_ON_INIT,
-);
-
-export type LandscapeNarrowTab = "fretboard" | "scaleChord" | "key";
-
-export const landscapeNarrowTabAtom = atomWithStorage<LandscapeNarrowTab>(
-  k("landscapeNarrowTab"),
-  "fretboard",
-  rawStringStorage<LandscapeNarrowTab>(),
-  GET_ON_INIT,
-);
-
 export const settingsOverlayOpenAtom = atom<boolean>(false);
 
 export type CompactDensityMode = "auto" | "on" | "off";

@@ -235,7 +235,29 @@ export async function expectFullPageVisual(page: Page, name: string, options: Fu
  * Captures a screenshot of a specific locator.
  */
 export async function expectLocatorVisual(locator: Locator, name: string) {
+  const page = locator.page();
   await waitForStable(locator);
+
+  const viewport = page.viewportSize();
+  const bounds = await locator.boundingBox();
+
+  // Linux Chromium can defer final layout for very tall elements until the
+  // first rasterized capture. Prime those locators once so the assertion runs
+  // against the post-layout geometry instead of oscillating between heights.
+  if (
+    viewport &&
+    bounds &&
+    bounds.height > viewport.height * 1.5
+  ) {
+    await locator.screenshot({
+      animations: "disabled",
+      scale: "css",
+    });
+    await page.evaluate(() => document.fonts.ready);
+    await waitForStableLayout(page);
+    await waitForStable(locator);
+  }
+
   await expect(locator).toHaveScreenshot(`${name}.png`, {
     animations: "disabled",
     scale: "css",

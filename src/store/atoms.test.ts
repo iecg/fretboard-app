@@ -25,7 +25,6 @@ import {
   practiceLensAtom,
   setRootNoteAtom,
   resetAtom,
-  landscapeNarrowTabAtom,
   useFlatsAtom,
   currentTuningAtom,
   chordTonesAtom,
@@ -492,7 +491,6 @@ describe("atoms", () => {
       store.set(fretEndAtom, 12);
       store.set(accidentalModeAtom, "flats");
       store.set(mobileTabAtom, "view");
-      store.set(landscapeNarrowTabAtom, "key");
 
       store.set(resetAtom);
 
@@ -507,7 +505,6 @@ describe("atoms", () => {
       expect(store.get(fretEndAtom)).toBe(25);
       expect(store.get(accidentalModeAtom)).toBe("auto");
       expect(store.get(mobileTabAtom)).toBe("scales");
-      expect(store.get(landscapeNarrowTabAtom)).toBe("fretboard");
     });
 
     it("migrates legacy unprefixed keys to prefixed keys", async () => {
