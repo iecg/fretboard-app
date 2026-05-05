@@ -544,9 +544,10 @@ describe("buildChordConnectorPolylines", () => {
   // Contour smoke tests (fat polyline geometry)
   // -------------------------------------------------------------------------
 
-  it("triad voicing (3 different frets): paths.fill is closed polygon visiting all 3 vertices", () => {
-    // C major triad on 3 different frets — non-collinear, so polarSort produces
-    // a closed polygon (ends with Z). fill === outline (byte-identical).
+  it("triad voicing (3 different frets): paths.fill is rounded offset polygon visiting all 3 vertices", () => {
+    // C major triad on 3 different frets — non-collinear, so offsetOutlinePath
+    // emits a rounded offset polygon: arc at each corner, line between arcs,
+    // closed with Z. fill === outline (byte-identical).
     const noteData = [
       makeNote(0, 3, "C", "chord-root"),
       makeNote(1, 5, "E", "chord-tone-in-scale"),
@@ -557,19 +558,19 @@ describe("buildChordConnectorPolylines", () => {
     const { paths } = result[0]!;
     expect(paths.fill).not.toBe("");
     expect(paths.fill.startsWith("M")).toBe(true);
-    // Non-collinear → closed polygon → ends with Z.
+    // Rounded offset polygon → ends with Z.
     expect(paths.fill.endsWith("Z")).toBe(true);
-    // 3 vertices → 2 L commands (M + L + L + Z)
-    const lCount = (paths.fill.match(/\bL\b/g) ?? []).length;
-    expect(lCount).toBe(2);
-    // fill and outline are byte-identical for non-collinear voicings.
+    // Non-collinear → corner arcs present (one per vertex).
+    const aCount = (paths.fill.match(/\bA\b/g) ?? []).length;
+    expect(aCount).toBe(3);
+    // fill and outline are byte-identical for every voicing.
     expect(paths.fill).toBe(paths.outline);
   });
 
-  it("7th chord voicing (4 vertices): paths.fill is closed polygon visiting all 4 vertices", () => {
+  it("7th chord voicing (4 vertices): paths.fill is rounded offset polygon visiting all 4 vertices", () => {
     // Cmaj7: C, E, G, B across 4 strings within 3 fret positions.
     // Frets [3,4,4,5]: positions {3,4,5} → count 3 ≤ MAX_PLAYABLE_FRET_POSITIONS → kept.
-    // Non-collinear 4-vertex polygon (fill === outline).
+    // Non-collinear 4-vertex offset polygon (fill === outline).
     const noteData = [
       makeNote(0, 3, "C", "chord-root"),
       makeNote(1, 4, "E", "chord-tone-in-scale"),
@@ -581,11 +582,11 @@ describe("buildChordConnectorPolylines", () => {
     const { paths } = result[0]!;
     expect(paths.fill).not.toBe("");
     expect(paths.fill.startsWith("M")).toBe(true);
-    // Non-collinear → closed polygon → ends with Z.
+    // Rounded offset polygon → ends with Z.
     expect(paths.fill.endsWith("Z")).toBe(true);
-    // 4 vertices → 3 L commands (M + L + L + L + Z)
-    const lCount = (paths.fill.match(/\bL\b/g) ?? []).length;
-    expect(lCount).toBe(3);
+    // 4 vertices → 4 corner arcs.
+    const aCount = (paths.fill.match(/\bA\b/g) ?? []).length;
+    expect(aCount).toBe(4);
     // fill and outline are byte-identical.
     expect(paths.fill).toBe(paths.outline);
   });

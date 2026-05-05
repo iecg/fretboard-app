@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { NoteData } from "./useNoteData";
-import { polarSort, closedPolylinePath, inflatedCapsulePath } from "../utils/pathGeometry";
+import { polarSort, offsetOutlinePath } from "../utils/pathGeometry";
 import { NOTES } from "../../../core/theory";
 
 /**
@@ -125,9 +125,11 @@ export const CHORD_TONE_CLASSES = new Set([
  * { paths: { fill: string; outline: string }; vertices: ChordConnectorVertex[] }
  * ```
  * - `paths.fill` / `paths.outline` — pre-computed SVG path strings for the two
- *   render layers. For non-collinear voicings both strings are byte-identical
- *   (closed polygon from polarSort). For collinear voicings both are inflated
- *   capsule paths containing arc commands.
+ *   render layers. Both strings are byte-identical for every voicing — the
+ *   path is built by `offsetOutlinePath(polarSort(vertices), stringRowPx * 0.55)`,
+ *   which Minkowski-sums the polygon with a disk to produce a rounded contour:
+ *   smooth blob for non-collinear triads (eliminates thin-sliver artifacts on
+ *   cross-fret voicings), capsule fallback for exactly-collinear inputs.
  * - `vertices` — original (unmodified) chord-tone pixel positions in string-index
  *   order, retained for unit tests and future per-voicing color keying.
  *
@@ -152,10 +154,13 @@ export const CHORD_TONE_CLASSES = new Set([
  *           index (highest string first).
  *   4. Deduplicate emitted voicings by their canonical "(stringIndex,fretIndex)"
  *      tuple set so that overlapping cluster anchors don't re-emit the same shape.
- *   5. For each voicing vertex list: emit an open polyline path (`d`) in
- *      string-index order — no polar sort, no convex hull, no offset geometry.
- *      The browser's stroke renderer with rounded caps/joins handles all visual
- *      enveloping via CSS stroke-width.
+ *   5. For each voicing vertex list: emit a rounded offset-outline path via
+ *      `offsetOutlinePath(polarSort(rawVertices), stringRowPx * 0.55)`. The
+ *      offset radius matches the legacy capsule perpOffset so collinear
+ *      voicings (which fall back to a capsule inside `offsetOutlinePath`) keep
+ *      their previous visual envelope. Non-collinear voicings get a smooth
+ *      rounded contour instead of the raw thin polygon — fixes the cross-fret
+ *      triad sliver artifact.
  *
  * Returns an array of `{ d, vertices }` objects, one per distinct playable voicing.
  * Returns [] when N < 2 or no valid voicing can be assembled.
@@ -331,14 +336,18 @@ export function buildChordConnectorPolylines(
         return { x, y };
       });
 
-      // Step 5: two-layer path dispatch.
-      // Non-collinear: closed polygon from polar-sorted vertices (fill === outline).
-      // Collinear (zero signed area): inflated capsule path (fill === outline).
-      const sortedVertices = polarSort(rawVertices);
-      const closedPath = closedPolylinePath(sortedVertices);
-      const pathStr = closedPath.endsWith(" Z")
-        ? closedPath                                              // non-collinear: closed polygon
-        : inflatedCapsulePath(rawVertices, stringRowPx * 0.55); // collinear: capsule
+      // Step 5: inflated outline geometry.
+      // `offsetOutlinePath` Minkowski-sums the polar-sorted polygon with a disk
+      // of radius `stringRowPx * 0.55` and dispatches internally:
+      //   - 3+ non-collinear vertices → rounded offset polygon (smooth blob,
+      //     fixes thin-sliver triangles for cross-fret triads).
+      //   - 3+ collinear vertices → falls back to a capsule spanning the
+      //     two extreme points (matches the old `inflatedCapsulePath` look).
+      //   - 2 vertices → capsule.
+      //   - 1 vertex → circle.
+      // fill === outline (byte-identical) for every voicing — both layers use
+      // the same path string; the renderer only differentiates fill/stroke.
+      const pathStr = offsetOutlinePath(polarSort(rawVertices), stringRowPx * 0.55);
       const paths = { fill: pathStr, outline: pathStr };
 
       // Compute palette index from the bass-note interval (semitones from
