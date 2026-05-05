@@ -29,7 +29,7 @@ export interface DegreeChipAuditSwatch {
   isColorNote?: boolean;
   isHidden?: boolean;
   degreeColorEligible?: boolean;
-  auditDegreeModes?: readonly string[];
+  auditDegreeModes?: readonly AuditDegreeMode["id"][];
 }
 
 export type DegreeRampAuditSwatch = {
@@ -65,15 +65,18 @@ export interface PracticePillAuditSwatch {
   isTension?: boolean;
   isHidden?: boolean;
   degreeColorEligible?: boolean;
-  auditDegreeModes?: readonly string[];
+  auditDegreeModes?: readonly AuditDegreeMode["id"][];
 }
 
 export type FretboardAuditCase = {
   id: string;
   label?: string;
   swatchId: FretboardAuditSwatch["id"];
+  display?: string;
   isGuideTone?: boolean;
   isTension?: boolean;
+  degreeColorEligible?: boolean;
+  auditDegreeModes?: readonly AuditDegreeMode["id"][];
 };
 
 export type FretboardAuditGroup = {
@@ -197,6 +200,8 @@ export const PRACTICE_PILL_SWATCHES: PracticePillAuditSwatch[] = [
     display: "G",
     interval: "1",
     isChordRoot: true,
+    isInScale: true,
+    degreeColorEligible: true,
   },
   {
     id: "guide-tone",
@@ -497,63 +502,48 @@ export type RenderedAuditCase = {
 };
 
 export function getRenderedAuditCases(): RenderedAuditCase[] {
-  const cases: RenderedAuditCase[] = [];
-
-  for (const theme of AUDIT_THEMES) {
-    for (const group of FRETBOARD_AUDIT_GROUPS) {
-      for (const mode of AUDIT_DEGREE_MODES) {
-        for (const auditCase of group.cases) {
-          cases.push({
-            auditId: getAuditId(theme, "fretboard", group.id, mode, auditCase.id),
-            contextId: group.id,
-            degreeMode: mode,
-            surface: "fretboard",
-            swatchId: auditCase.swatchId,
-            theme,
-          });
-        }
-      }
-    }
-
-    for (const mode of AUDIT_DEGREE_MODES) {
-      for (const swatch of PRACTICE_PILL_SWATCHES) {
-        cases.push({
-          auditId: getAuditId(theme, "practice-pill", "none", mode, swatch.id),
-          contextId: "none",
-          degreeMode: mode,
-          surface: "practice-pill",
+  return AUDIT_THEMES.flatMap((theme) => [
+    ...FRETBOARD_AUDIT_GROUPS.flatMap((group) =>
+      AUDIT_DEGREE_MODES.flatMap((degreeMode) =>
+        getFretboardAuditSwatchesForDegreeMode(group, degreeMode).map((swatch) => ({
+          auditId: getAuditId(theme, "fretboard", group.id, degreeMode, swatch.id),
+          contextId: group.id,
+          degreeMode,
+          surface: "fretboard" as const,
           swatchId: swatch.id,
           theme,
-        });
-      }
-    }
-
-    for (const mode of AUDIT_DEGREE_MODES) {
-      for (const swatch of DEGREE_CHIP_SWATCHES) {
-        cases.push({
-          auditId: getAuditId(theme, "degree-chip", "none", mode, swatch.id),
-          contextId: "none",
-          degreeMode: mode,
-          surface: "degree-chip",
-          swatchId: swatch.id,
-          theme,
-        });
-      }
-    }
-
-    for (const swatch of DEGREE_RAMP_SWATCHES) {
-      cases.push({
-        auditId: getAuditId(theme, "degree-ramp", "none", AUDIT_DEGREE_MODES[1], swatch.id),
-        contextId: "none",
-        degreeMode: AUDIT_DEGREE_MODES[1],
-        surface: "degree-ramp",
+        })),
+      ),
+    ),
+    ...AUDIT_DEGREE_MODES.flatMap((degreeMode) =>
+      getPracticePillSwatchesForDegreeMode(degreeMode).map((swatch) => ({
+        auditId: getAuditId(theme, "practice-pill", "none", degreeMode, swatch.id),
+        contextId: "none" as const,
+        degreeMode,
+        surface: "practice-pill" as const,
         swatchId: swatch.id,
         theme,
-      });
-    }
-  }
-
-  return cases;
+      })),
+    ),
+    ...AUDIT_DEGREE_MODES.flatMap((degreeMode) =>
+      getDegreeChipSwatchesForDegreeMode(degreeMode).map((swatch) => ({
+        auditId: getAuditId(theme, "degree-chip", "none", degreeMode, swatch.id),
+        contextId: "none" as const,
+        degreeMode,
+        surface: "degree-chip" as const,
+        swatchId: swatch.id,
+        theme,
+      })),
+    ),
+    ...DEGREE_RAMP_SWATCHES.map((swatch) => ({
+      auditId: getAuditId(theme, "degree-ramp", "none", AUDIT_DEGREE_MODES[1], swatch.id),
+      contextId: "none" as const,
+      degreeMode: AUDIT_DEGREE_MODES[1],
+      surface: "degree-ramp" as const,
+      swatchId: swatch.id,
+      theme,
+    })),
+  ]);
 }
 
 export function getAuditId(
@@ -564,6 +554,39 @@ export function getAuditId(
   swatchId: string,
 ) {
   return `${theme.id}:${surface}:${contextId}:${degreeMode.id}:${swatchId}`;
+}
+
+function isAuditSwatchRenderedForDegreeMode(
+  swatch: {
+    auditDegreeModes?: readonly AuditDegreeMode["id"][];
+    degreeColorEligible?: boolean;
+  },
+  degreeMode: AuditDegreeMode,
+) {
+  if (swatch.auditDegreeModes) {
+    return swatch.auditDegreeModes.includes(degreeMode.id);
+  }
+
+  return degreeMode.enabled ? swatch.degreeColorEligible === true : true;
+}
+
+export function getFretboardAuditSwatch(auditCase: FretboardAuditCase): FretboardAuditSwatch {
+  const base: FretboardAuditSwatch | undefined = FRETBOARD_NOTE_SWATCHES.find(
+    (swatch) => swatch.id === auditCase.swatchId,
+  );
+  if (!base) {
+    throw new Error(`Unknown fretboard audit swatch: ${auditCase.swatchId}`);
+  }
+
+  return {
+    id: auditCase.id,
+    label: auditCase.label ?? base.label,
+    noteClass: base.noteClass,
+    display: auditCase.display ?? base.display,
+    isGuideTone: auditCase.isGuideTone ?? base.isGuideTone,
+    isTension: auditCase.isTension ?? base.isTension,
+    degreeColorEligible: auditCase.degreeColorEligible ?? base.degreeColorEligible,
+  };
 }
 
 export function getDegreeChipSwatchesForDegreeMode(degreeMode: AuditDegreeMode) {
@@ -581,16 +604,16 @@ export function getPracticePillSwatchesForDegreeMode(degreeMode: AuditDegreeMode
 }
 
 export function getFretboardAuditSwatchesForDegreeMode(
-  context: AuditLens,
+  group: FretboardAuditGroup,
+  degreeMode: AuditDegreeMode,
 ) {
-  return FRETBOARD_NOTE_SWATCHES.filter((swatch) => {
-    // If context specifies a lens (e.g. guide-tones), only show relevant swatches
-    if (context.dataPracticeLens) {
-      const group = FRETBOARD_AUDIT_GROUPS.find((g) => g.id === context.id);
-      if (!group?.cases.some((c) => c.swatchId === swatch.id)) return false;
-    }
-
-    // Filter by degree mode eligibility
-    return true;
-  });
+  return group.cases
+    .filter((auditCase) => {
+      const swatch = getFretboardAuditSwatch(auditCase);
+      return isAuditSwatchRenderedForDegreeMode(
+        { ...swatch, auditDegreeModes: auditCase.auditDegreeModes },
+        degreeMode,
+      );
+    })
+    .map(getFretboardAuditSwatch);
 }

@@ -809,7 +809,7 @@ function FretboardAuditMatrix({ theme }: { theme: AuditTheme }) {
           <h4 className={styles["group-title"]}>{context.label}</h4>
           <div className={styles["degree-grid"]}>
             {AUDIT_DEGREE_MODES.map((degreeMode) => {
-              const swatches = getFretboardAuditSwatchesForDegreeMode(context);
+              const swatches = getFretboardAuditSwatchesForDegreeMode(context, degreeMode);
               if (swatches.length === 0) return null;
 
               return (
