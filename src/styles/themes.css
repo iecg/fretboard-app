@@ -290,14 +290,14 @@
      readable at the theme's connector opacity without merging into the wood
      or each other. Yellow-green is skipped (collides with wood mid-tone);
      amber-deep substitutes for pure yellow which would vanish on cream amber. */
-  --chord-connector-color-1: #dc2626; /* red — hue ~0°  */
-  --chord-connector-color-2: #ea580c; /* orange — hue ~25° (existing neon-orange accent) */
-  --chord-connector-color-3: #a16207; /* amber-deep — hue ~40° (substitutes for yellow on amber wood) */
-  --chord-connector-color-4: #15803d; /* green — hue ~140° */
-  --chord-connector-color-5: #0f766e; /* teal — hue ~175° */
-  --chord-connector-color-6: #1d4ed8; /* blue — hue ~225° */
-  --chord-connector-color-7: #7c3aed; /* violet — hue ~265° (existing UI accent) */
-  --chord-connector-color-8: #be185d; /* rose — hue ~330° */
+  --chord-connector-color-1: #D55E00; /* Okabe-Ito: vermillion — hue ~17° */
+  --chord-connector-color-2: #EA8A00; /* orange — hue ~35° */
+  --chord-connector-color-3: #D4A600; /* amber — hue ~43° */
+  --chord-connector-color-4: #009E73; /* Okabe-Ito: bluish-green — hue ~164° */
+  --chord-connector-color-5: #00A896; /* cyan-teal — hue ~174° */
+  --chord-connector-color-6: #0072B2; /* Okabe-Ito: blue — hue ~206° */
+  --chord-connector-color-7: #8B5CA6; /* purple-violet — hue ~278° */
+  --chord-connector-color-8: #CC79A7; /* Okabe-Ito: reddish-purple — hue ~329° */
 }
 
 /* ==========================================================================
@@ -329,14 +329,14 @@
      mirrors the light-theme palette so a given paletteIndex feels like the
      "same voicing color" across themes (red→orange→yellow→green→teal→blue
      →violet→pink). */
-  --chord-connector-color-1: #f87171; /* red — hue ~0°  */
-  --chord-connector-color-2: #fb923c; /* orange — hue ~25° */
-  --chord-connector-color-3: #facc15; /* yellow — hue ~48° */
-  --chord-connector-color-4: #4ade80; /* green — hue ~140° */
-  --chord-connector-color-5: #2dd4bf; /* teal — hue ~170° */
-  --chord-connector-color-6: #60a5fa; /* blue — hue ~213° */
-  --chord-connector-color-7: #a78bfa; /* violet — hue ~254° */
-  --chord-connector-color-8: #f472b6; /* pink — hue ~328° */
+  --chord-connector-color-1: #FF7F4F; /* Okabe-Ito: vermillion (bright) — hue ~17° */
+  --chord-connector-color-2: #FF9D33; /* orange (bright) — hue ~35° */
+  --chord-connector-color-3: #FFB833; /* amber-gold (bright) — hue ~43° */
+  --chord-connector-color-4: #00D9A3; /* Okabe-Ito: bluish-green (bright) — hue ~164° */
+  --chord-connector-color-5: #2DD4BF; /* cyan-teal (bright) — hue ~174° */
+  --chord-connector-color-6: #3B82F6; /* Okabe-Ito: blue (bright) — hue ~217° */
+  --chord-connector-color-7: #A78BFA; /* purple-violet (bright) — hue ~278° */
+  --chord-connector-color-8: #E879B9; /* Okabe-Ito: reddish-purple (bright) — hue ~329° */
 }
 
 [data-theme="modern-light"] [data-scale-degree] {
