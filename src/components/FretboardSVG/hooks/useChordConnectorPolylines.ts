@@ -107,24 +107,143 @@ export const CHORD_CONNECTOR_BASE_RADIUS_FACTOR = 0.47;
 
 /**
  * Per-voicing pixel offset deltas added to the base radius.
- * Keyed by `canonicalKeyHash(canonicalKey) % OFFSET_BUCKET.length` so
- * same-inversion voicings that share `paletteIndex` but differ in neck
- * position receive different offsets, preventing coincident outline strokes.
- * Non-negative bucket: smallest envelope equals base radius (no clipping risk).
+ * Assigned by adjacency-aware cluster detection so that voicings whose
+ * envelopes overlap receive distinct offsets with 2 px spacing between
+ * adjacent values. Non-negative: smallest envelope equals base radius
+ * (no bubble-clipping risk). Six entries cap the cluster size; clusters
+ * larger than 6 wrap with modulo (documented, accepted trade-off).
  */
-const OFFSET_BUCKET = [0, 1, 2, 3] as const;
+const OFFSET_BUCKET = [0, 2, 4, 6, 8, 10] as const;
 
 /**
- * Stable hash of a canonical voicing key string.
- * Returns a non-negative integer suitable for modulo bucketing.
- * Uses a djb2-style accumulator; `canonicalKey` is short (≤ 30 chars).
+ * Compute the axis-aligned bounding box of a set of vertices, inflated
+ * outward by `inflateBy` pixels on every side. Used to approximate
+ * envelope-vs-envelope overlap before full geometry is computed.
  */
-function canonicalKeyHash(key: string): number {
-  let h = 0;
-  for (let i = 0; i < key.length; i++) {
-    h = (h * 31 + key.charCodeAt(i)) >>> 0;
+function inflatedAABB(
+  vertices: ChordConnectorVertex[],
+  inflateBy: number,
+): { minX: number; maxX: number; minY: number; maxY: number } {
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  for (const v of vertices) {
+    if (v.x < minX) minX = v.x;
+    if (v.x > maxX) maxX = v.x;
+    if (v.y < minY) minY = v.y;
+    if (v.y > maxY) maxY = v.y;
   }
-  return h;
+  return {
+    minX: minX - inflateBy,
+    maxX: maxX + inflateBy,
+    minY: minY - inflateBy,
+    maxY: maxY + inflateBy,
+  };
+}
+
+/**
+ * Test whether two axis-aligned bounding boxes intersect.
+ */
+function aabbIntersects(
+  a: { minX: number; maxX: number; minY: number; maxY: number },
+  b: { minX: number; maxX: number; minY: number; maxY: number },
+): boolean {
+  return a.minX <= b.maxX && a.maxX >= b.minX && a.minY <= b.maxY && a.maxY >= b.minY;
+}
+
+/**
+ * Cluster pending voicings by inflated-AABB pairwise overlap using union-find.
+ * Returns an array of clusters; each cluster is an array of indices into
+ * `pendingVoicings`. Singletons (no overlap) appear as single-element arrays.
+ */
+function detectOverlapClusters(
+  pendingVoicings: { rawVertices: ChordConnectorVertex[]; canonicalKey: string }[],
+  baseRadius: number,
+  maxBucketOffset: number,
+): number[][] {
+  const n = pendingVoicings.length;
+  const inflate = baseRadius + maxBucketOffset;
+
+  // Precompute inflated AABBs.
+  const boxes = pendingVoicings.map((pv) => inflatedAABB(pv.rawVertices, inflate));
+
+  // Union-find arrays.
+  const parent = Array.from({ length: n }, (_, i) => i);
+  const rank = new Array<number>(n).fill(0);
+
+  function find(x: number): number {
+    while (parent[x] !== x) {
+      parent[x] = parent[parent[x]!]!; // path compression (halving)
+      x = parent[x]!;
+    }
+    return x;
+  }
+
+  function union(x: number, y: number): void {
+    const rx = find(x);
+    const ry = find(y);
+    if (rx === ry) return;
+    if (rank[rx]! < rank[ry]!) {
+      parent[rx] = ry;
+    } else if (rank[rx]! > rank[ry]!) {
+      parent[ry] = rx;
+    } else {
+      parent[ry] = rx;
+      rank[rx] = rank[rx]! + 1;
+    }
+  }
+
+  // Union all overlapping pairs.
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      if (aabbIntersects(boxes[i]!, boxes[j]!)) {
+        union(i, j);
+      }
+    }
+  }
+
+  // Collect clusters by root.
+  const clusterMap = new Map<number, number[]>();
+  for (let i = 0; i < n; i++) {
+    const root = find(i);
+    let cluster = clusterMap.get(root);
+    if (!cluster) {
+      cluster = [];
+      clusterMap.set(root, cluster);
+    }
+    cluster.push(i);
+  }
+
+  return Array.from(clusterMap.values());
+}
+
+/**
+ * Assign offsets from OFFSET_BUCKET to each voicing based on its cluster.
+ * Within each cluster, members are sorted by canonicalKey (lexicographic) for
+ * determinism, then assigned OFFSET_BUCKET[i % OFFSET_BUCKET.length].
+ * Singleton clusters (no overlap) receive offset 0.
+ * Returns a Map<canonicalKey, offsetPx>.
+ */
+function assignClusterOffsets(
+  clusters: number[][],
+  pendingVoicings: { canonicalKey: string }[],
+): Map<string, number> {
+  const result = new Map<string, number>();
+  for (const cluster of clusters) {
+    if (cluster.length === 1) {
+      result.set(pendingVoicings[cluster[0]!]!.canonicalKey, 0);
+    } else {
+      // Sort by canonicalKey for determinism.
+      const sorted = [...cluster].sort((a, b) =>
+        pendingVoicings[a]!.canonicalKey.localeCompare(pendingVoicings[b]!.canonicalKey),
+      );
+      sorted.forEach((idx, i) => {
+        result.set(pendingVoicings[idx]!.canonicalKey, OFFSET_BUCKET[i % OFFSET_BUCKET.length]!);
+      });
+    }
+  }
+  return result;
 }
 
 /**
@@ -184,14 +303,16 @@ export const CHORD_TONE_CLASSES = new Set([
  *           index (highest string first).
  *   4. Deduplicate emitted voicings by their canonical "(stringIndex,fretIndex)"
  *      tuple set so that overlapping cluster anchors don't re-emit the same shape.
- *   5. For each voicing vertex list: emit a rounded offset-outline path via
- *      `offsetOutlinePath(polarSort(rawVertices), r)` where
- *      `r = stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR + offsetPx`.
- *      `offsetPx` is a per-voicing pixel delta from OFFSET_BUCKET, keyed by a
- *      stable hash of `canonicalKey`, so coincident same-inversion voicings at
- *      different neck positions receive distinct radii. Non-collinear voicings
- *      get a smooth rounded contour; collinear inputs fall back to a capsule —
- *      fixes the cross-fret triad sliver artifact.
+ *   5. Two-pass path generation:
+ *      a. **Collect pass** — the main loop pushes `{rawVertices, paletteIndex,
+ *         canonicalKey}` to a `pendingVoicings` list (no path strings yet).
+ *      b. **Cluster + assign pass** — after the loop, `detectOverlapClusters`
+ *         computes adjacency-aware voicing groups via inflated-AABB union-find;
+ *         `assignClusterOffsets` maps each `canonicalKey` to a distinct
+ *         `offsetPx` from OFFSET_BUCKET (2 px spacing). Voicings that do not
+ *         overlap any other voicing receive offset 0. Finally the pending list
+ *         is iterated once more to emit final paths via
+ *         `offsetOutlinePath(polarSort(rawVertices), baseRadius + offsetPx)`.
  *
  * Returns an array of `{ d, vertices }` objects, one per distinct playable voicing.
  * Returns [] when N < 2 or no valid voicing can be assembled.
@@ -252,7 +373,13 @@ export function buildChordConnectorPolylines(
 
   // Track emitted voicings by canonical key to deduplicate.
   const emitted = new Set<string>();
-  const results: ChordConnectorVoicing[] = [];
+
+  // Pass 1: collect raw voicings (defer path generation until offsets are known).
+  const pendingVoicings: {
+    rawVertices: ChordConnectorVertex[];
+    paletteIndex: number;
+    canonicalKey: string;
+  }[] = [];
 
   // Step 3: slide an N-string window across the neck.
   for (let s = minString; s + N - 1 <= maxString; s++) {
@@ -367,41 +494,47 @@ export function buildChordConnectorPolylines(
         return { x, y };
       });
 
-      // Step 5: inflated outline geometry.
-      // `offsetOutlinePath` Minkowski-sums the polar-sorted polygon with a disk
-      // of radius `stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR + offsetPx`
-      // and dispatches internally:
-      //   - 3+ non-collinear vertices → rounded offset polygon (smooth blob,
-      //     fixes thin-sliver triangles for cross-fret triads).
-      //   - 3+ collinear vertices → falls back to a capsule spanning the
-      //     two extreme points (matches the old `inflatedCapsulePath` look).
-      //   - 2 vertices → capsule.
-      //   - 1 vertex → circle.
-      // fill === outline (byte-identical) for every voicing — both layers use
-      // the same path string; the renderer only differentiates fill/stroke.
-      //
-      // Per-voicing offset: hash canonicalKey to a stable bucket index so that
-      // same-inversion voicings (identical paletteIndex) at different neck
-      // positions receive different disk radii, preventing coincident outlines.
-      // Non-negative bucket → no bubble-clipping risk (min envelope = base radius).
-      const bucketIndex = canonicalKeyHash(canonicalKey) % OFFSET_BUCKET.length;
-      const offsetPx = OFFSET_BUCKET[bucketIndex];
-      const pathStr = offsetOutlinePath(
-        polarSort(rawVertices),
-        stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR + offsetPx,
-      );
-      const paths = { fill: pathStr, outline: pathStr };
-
       // Compute palette index from the bass-note interval (semitones from
       // chord root). Same inversion → same color across positions and chord
       // qualities. Root in bass = 0 → palette[0]; major 3rd in bass = 4 →
       // palette[4]; perfect 5th in bass = 7 → palette[7]; etc.
       const paletteIndex = bassIntervalSemitones(bestCombo, chordRoot) % 8;
 
-      // Keep original (unmodified) vertex positions in the result.
-      results.push({ paths, vertices: rawVertices, paletteIndex });
+      // Collect — path generation deferred to pass 2 after cluster assignment.
+      pendingVoicings.push({ rawVertices, paletteIndex, canonicalKey });
     }
   }
+
+  // Pass 2: cluster + assign offsets, then emit final voicings with paths.
+  //
+  // `detectOverlapClusters` groups voicings whose inflated AABBs intersect
+  // via union-find (AABB inflated by baseRadius + maxBucketOffset so the test
+  // approximates envelope-vs-envelope overlap, not just vertex proximity).
+  // `assignClusterOffsets` sorts each cluster by canonicalKey and assigns
+  // OFFSET_BUCKET[i % OFFSET_BUCKET.length] to member i — singletons get 0.
+  //
+  // `offsetOutlinePath` Minkowski-sums the polar-sorted polygon with a disk of
+  // radius `baseRadius + offsetPx` and dispatches internally:
+  //   - 3+ non-collinear vertices → rounded offset polygon (smooth blob,
+  //     fixes thin-sliver triangles for cross-fret triads).
+  //   - 3+ collinear vertices → falls back to a capsule (matches old look).
+  //   - 2 vertices → capsule.
+  //   - 1 vertex → circle.
+  // fill === outline (byte-identical) — renderer differentiates via fill/stroke.
+  const baseRadius = stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR;
+  const maxBucketOffset = OFFSET_BUCKET[OFFSET_BUCKET.length - 1]!; // 10
+  const clusters = detectOverlapClusters(pendingVoicings, baseRadius, maxBucketOffset);
+  const clusterOffsetMap = assignClusterOffsets(clusters, pendingVoicings);
+
+  const results: ChordConnectorVoicing[] = pendingVoicings.map((pv) => {
+    const offsetPx = clusterOffsetMap.get(pv.canonicalKey) ?? 0;
+    const pathStr = offsetOutlinePath(
+      polarSort(pv.rawVertices),
+      baseRadius + offsetPx,
+    );
+    const paths = { fill: pathStr, outline: pathStr };
+    return { paths, vertices: pv.rawVertices, paletteIndex: pv.paletteIndex };
+  });
 
   return results;
 }
