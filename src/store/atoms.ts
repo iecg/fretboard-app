@@ -1,5 +1,4 @@
 
-
 // Domain module re-exports: all public atoms flow through atoms.ts to maintain stable import paths.
 
 export type { FingeringPattern } from "./fingeringAtoms";
@@ -59,13 +58,6 @@ export {
 } from "./chordOverlayAtoms";
 
 export {
-  progressionIndexAtom,
-  clampedProgressionIndexAtom,
-  advanceProgression,
-  regressProgression,
-} from "./progressionAtoms";
-
-export {
   practiceBarColorNotesFilteredAtom,
   noteSemanticMapAtom,
   practiceCuesAtom,
@@ -74,12 +66,9 @@ export {
   practiceBarTitleAtom,
   practiceBarBadgeAtom,
   practiceBarLensLabelAtom,
-  practiceBarSharedMembersAtom,
-  practiceBarOutsideMembersAtom,
   lensAvailabilityContextAtom,
   lensAvailabilityAtom,
   practiceBarLandOnGroupAtom,
-  shapeLocalPracticeCuesAtom,
 } from "./practiceLensAtoms";
 
 export {
@@ -94,12 +83,9 @@ export {
   displayFormatAtom,
   scaleDegreeColorsEnabledAtom,
   mobileTabAtom,
-  tabletTabAtom,
-  landscapeNarrowTabAtom,
   settingsOverlayOpenAtom,
   compactDensityAtom,
   themeAtom,
-  type LandscapeNarrowTab,
 } from "./uiAtoms";
 
 export {
@@ -112,28 +98,9 @@ export {
   shapeDataAtom,
   effectiveShapeDataAtom,
   autoCenterTargetAtom,
-  isShapeLocalContextAtom,
-  shapeContextLabelAtom,
   shapeHighlightedNoteSetAtom,
-  shapeLocalTargetMembersAtom,
-  shapeLocalOutsideMembersAtom,
-  shapeLocalColorNotesFilteredAtom,
-  shapeLocalColorNotesAtom,
   type AutoCenterTarget,
 } from "./shapeAtoms";
-
-export {
-  noteRoleMapAtom,
-  summaryChordRowAtom,
-  summaryLegendItemsAtom,
-  summaryNotesAtom,
-  chordMemberLabelsAtom,
-  summaryHeaderLeftAtom,
-  summaryHeaderRightAtom,
-  summaryPrimaryModeAtom,
-  sharedChordMembersAtom,
-  outsideChordMembersAtom,
-} from "./summaryAtoms";
 
 export {
   setRootNoteAtom,

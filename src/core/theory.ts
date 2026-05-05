@@ -109,11 +109,6 @@ export interface ChordRowEntry {
   scaleDegree?: DegreeId;
 }
 
-export interface LegendItem {
-  role: NoteRole;
-  label: string;
-}
-
 // Practice lenses replace raw viewMode
 export type PracticeLens =
   | "targets"       // chord root + active chord tones

@@ -12,14 +12,12 @@ import { getNoteVisuals } from "../FretboardSVG/utils/semantics";
 import fretboardStyles from "../FretboardSVG/FretboardSVG.module.css";
 import practiceStyles from "../ChordPracticeBar/ChordPracticeBar.module.css";
 import degreeStyles from "../DegreeChipStrip/DegreeChipStrip.module.css";
-import chordRowStyles from "../ChordRowStrip/ChordRowStrip.module.css";
 import styles from "./NoteColorAudit.module.css";
 import {
   AUDIT_DEGREE_COLOR,
   AUDIT_DEGREE_ID,
   AUDIT_DEGREE_MODES,
   AUDIT_THEMES,
-  CHORD_ROW_SWATCHES,
   DEGREE_RAMP_SWATCHES,
   FRETBOARD_AUDIT_GROUPS,
   getAuditId,
@@ -29,7 +27,6 @@ import {
   type AuditDegreeMode,
   type AuditLens,
   type AuditTheme,
-  type ChordRowAuditSwatch,
   type DegreeChipAuditSwatch,
   type DegreeRampAuditSwatch,
   type FretboardAuditSwatch,
@@ -621,7 +618,7 @@ function PracticePillCard({
         />
       }
     >
-      <section
+      <div
         className={clsx(practiceStyles["chord-practice-bar"], styles["practice-scope"])}
         data-degree-colors={degreeMode.enabled ? "true" : undefined}
         aria-label={`${theme.label} ${degreeMode.label} ${swatch.label} practice pill audit`}
@@ -648,7 +645,7 @@ function PracticePillCard({
             </span>
           )}
         </button>
-      </section>
+      </div>
     </SwatchCard>
   );
 }
@@ -697,7 +694,7 @@ function DegreeChipCard({
         />
       }
     >
-      <section
+      <div
         className={clsx(degreeStyles["degree-chip-strip"], styles["degree-scope"])}
         data-degree-colors={degreeMode.enabled ? "true" : undefined}
         aria-label={`${theme.label} ${swatch.label} degree chip audit`}
@@ -725,73 +722,7 @@ function DegreeChipCard({
             <span className={degreeStyles["degree-chip-interval"]}>{swatch.interval}</span>
           </li>
         </ul>
-      </section>
-    </SwatchCard>
-  );
-}
-
-function ChordRowCard({ swatch, theme }: { swatch: ChordRowAuditSwatch; theme: AuditTheme }) {
-  const targetRef = useRef<HTMLSpanElement | null>(null);
-  const labelRef = useRef<HTMLSpanElement | null>(null);
-  const auditId = getAuditId(theme, "chord-row", "none", AUDIT_DEGREE_MODES[0], swatch.id);
-  const computed = useComputedAuditStyle(
-    auditId,
-    "box",
-    targetRef,
-    undefined,
-    labelRef,
-  );
-
-  return (
-    <SwatchCard
-      label={swatch.label}
-      auditId={auditId}
-      readout={
-        <StyleReadout
-          computed={computed}
-          fields={[
-            "backgroundColor",
-            "borderColor",
-            "borderWidth",
-            "borderStyle",
-            "opacity",
-            "ringContrast",
-            ...(swatch.kind === "chip"
-              ? (["labelColor", "labelShadow", "labelContrast"] as const)
-              : []),
-          ]}
-        />
-      }
-    >
-      <section
-        className={clsx(chordRowStyles["chord-row-strip"], styles["chord-row-scope"])}
-        aria-label={`${theme.label} ${swatch.label} chord row audit`}
-      >
-        {swatch.kind === "chip" ? (
-          <ul className={clsx(chordRowStyles["chord-row-list"], styles["chord-row-list-single"])}>
-            <li className={chordRowStyles["chord-row-item"]} data-role={swatch.role}>
-              <span ref={targetRef} className={chordRowStyles["chord-row-chip"]}>
-                <span ref={labelRef} className={chordRowStyles["chord-row-note"]}>
-                  {swatch.display}
-                </span>
-              </span>
-              {swatch.interval && (
-                <span className={chordRowStyles["chord-row-interval"]}>{swatch.interval}</span>
-              )}
-            </li>
-          </ul>
-        ) : (
-          <ul className={clsx(chordRowStyles["chord-row-legend"], styles["chord-row-legend-single"])}>
-            <li className={chordRowStyles["chord-row-legend-item"]} data-role={swatch.role}>
-              <span
-                ref={targetRef}
-                className={chordRowStyles["chord-row-legend-swatch"]}
-                aria-hidden="true"
-              />
-            </li>
-          </ul>
-        )}
-      </section>
+      </div>
     </SwatchCard>
   );
 }
@@ -837,7 +768,7 @@ function DegreeRampCard({
         />
       }
     >
-      <section
+      <div
         className={clsx(degreeStyles["degree-chip-strip"], styles["degree-scope"])}
         data-degree-colors="true"
         aria-label={`${theme.label} ${swatch.label} degree ramp audit`}
@@ -864,7 +795,7 @@ function DegreeRampCard({
             <span className={degreeStyles["degree-chip-interval"]}>{swatch.interval}</span>
           </li>
         </ul>
-      </section>
+      </div>
     </SwatchCard>
   );
 }
@@ -878,7 +809,7 @@ function FretboardAuditMatrix({ theme }: { theme: AuditTheme }) {
           <h4 className={styles["group-title"]}>{context.label}</h4>
           <div className={styles["degree-grid"]}>
             {AUDIT_DEGREE_MODES.map((degreeMode) => {
-              const swatches = getFretboardAuditSwatchesForDegreeMode(context, degreeMode);
+              const swatches = getFretboardAuditSwatchesForDegreeMode(context);
               if (swatches.length === 0) return null;
 
               return (
@@ -965,19 +896,6 @@ function DegreeChipAuditMatrix({ theme }: { theme: AuditTheme }) {
   );
 }
 
-function ChordRowAuditMatrix({ theme }: { theme: AuditTheme }) {
-  return (
-    <section className={styles["audit-section"]}>
-      <h3 className={styles["section-title"]}>Chord Row Strip</h3>
-      <div className={styles["swatch-grid"]}>
-        {CHORD_ROW_SWATCHES.map((swatch) => (
-          <ChordRowCard key={swatch.id} swatch={swatch} theme={theme} />
-        ))}
-      </div>
-    </section>
-  );
-}
-
 function DegreeRampAuditMatrix({ theme }: { theme: AuditTheme }) {
   return (
     <section className={styles["audit-section"]}>
@@ -1020,7 +938,6 @@ export function NoteColorAudit() {
             <FretboardAuditMatrix theme={theme} />
             <PracticePillAuditMatrix theme={theme} />
             <DegreeChipAuditMatrix theme={theme} />
-            <ChordRowAuditMatrix theme={theme} />
             <DegreeRampAuditMatrix theme={theme} />
           </section>
         ))}

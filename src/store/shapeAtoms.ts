@@ -9,7 +9,6 @@ import {
 } from "../shapes";
 import { getFretNote } from "../core/guitar";
 import { getScaleNotes } from "../core/theory";
-import type { ChordRowEntry } from "../core/theory";
 import {
   fingeringPatternAtom,
   cagedShapesAtom,
@@ -21,20 +20,12 @@ import {
   rootNoteAtom,
   scaleNameAtom,
   scaleVisibleAtom,
-  practiceBarColorNotesAtom,
 } from "./scaleAtoms";
 import {
   currentTuningAtom,
   fretStartAtom,
   fretEndAtom,
 } from "./layoutAtoms";
-import {
-  chordTypeAtom,
-  allChordMembersAtom,
-  chordTonesAtom,
-  chordOverlayHiddenAtom,
-  chordHiddenNotesAtom,
-} from "./chordOverlayAtoms";
 
 export const shapeDataAtom = atom((get) => {
   const fingeringPattern = get(fingeringPatternAtom);
@@ -158,30 +149,6 @@ export const autoCenterTargetAtom = atom((get) => {
   return target;
 });
 
-export const isShapeLocalContextAtom = atom((get) => {
-  const fingeringPattern = get(fingeringPatternAtom);
-  const cagedShapes = get(cagedShapesAtom);
-  if (fingeringPattern === "3nps") return true;
-  if (fingeringPattern === "caged" && cagedShapes.size === 1) return true;
-  return false;
-});
-
-export const shapeContextLabelAtom = atom((get) => {
-  const isShapeLocalContext = get(isShapeLocalContextAtom);
-  if (!isShapeLocalContext) return null;
-
-  const fingeringPattern = get(fingeringPatternAtom);
-  if (fingeringPattern === "3nps") {
-    const oct = get(npsOctaveAtom) === 0 ? "Low" : "High";
-    return `In 3NPS position ${get(npsPositionAtom)} (${oct})`;
-  }
-  if (fingeringPattern === "caged") {
-    const shape = Array.from(get(cagedShapesAtom))[0];
-    return shape ? `In ${shape} shape` : null;
-  }
-  return null;
-});
-
 export const shapeHighlightedNoteSetAtom = atom((get) => {
   const fingeringPattern = get(fingeringPatternAtom);
   const { highlightNotes } = get(shapeDataAtom);
@@ -198,52 +165,4 @@ export const shapeHighlightedNoteSetAtom = atom((get) => {
     if (openNote) noteSet.add(getFretNote(openNote, fretIdx));
   }
   return noteSet;
-});
-
-export const shapeLocalTargetMembersAtom = atom((get) => {
-  if (get(chordOverlayHiddenAtom)) return [] as ChordRowEntry[];
-  const shapeHighlightedNoteSet = get(shapeHighlightedNoteSetAtom);
-  const chordType = get(chordTypeAtom);
-  const allChordMembers = get(allChordMembersAtom);
-  if (!shapeHighlightedNoteSet || !chordType) return [] as ChordRowEntry[];
-  const hidden = get(chordHiddenNotesAtom);
-  return allChordMembers.filter((m) =>
-    shapeHighlightedNoteSet.has(m.internalNote) && !hidden.has(m.internalNote),
-  );
-});
-
-export const shapeLocalOutsideMembersAtom = atom((get) => {
-  if (get(chordOverlayHiddenAtom)) return [] as ChordRowEntry[];
-  const shapeHighlightedNoteSet = get(shapeHighlightedNoteSetAtom);
-  const chordType = get(chordTypeAtom);
-  const allChordMembers = get(allChordMembersAtom);
-  if (!shapeHighlightedNoteSet || !chordType) return [] as ChordRowEntry[];
-  const hidden = get(chordHiddenNotesAtom);
-  return allChordMembers.filter((m) =>
-    !m.inScale && shapeHighlightedNoteSet.has(m.internalNote) && !hidden.has(m.internalNote),
-  );
-});
-
-export const shapeLocalColorNotesFilteredAtom = atom((get) => {
-  const shapeHighlightedNoteSet = get(shapeHighlightedNoteSetAtom);
-  const chordTones = get(chordTonesAtom);
-  const practiceBarColorNotes = get(practiceBarColorNotesAtom);
-
-  if (!shapeHighlightedNoteSet) return [] as typeof practiceBarColorNotes;
-
-  const chordToneSet = new Set(chordTones);
-  return practiceBarColorNotes.filter(
-    (n) =>
-      shapeHighlightedNoteSet.has(n.internalNote) &&
-      !chordToneSet.has(n.internalNote),
-  );
-});
-
-export const shapeLocalColorNotesAtom = atom((get) => {
-  const shapeHighlightedNoteSet = get(shapeHighlightedNoteSetAtom);
-  const practiceBarColorNotes = get(practiceBarColorNotesAtom);
-  if (!shapeHighlightedNoteSet) return [] as typeof practiceBarColorNotes;
-  return practiceBarColorNotes.filter((n) =>
-    shapeHighlightedNoteSet.has(n.internalNote),
-  );
 });

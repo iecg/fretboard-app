@@ -6,7 +6,6 @@ import { k } from "../utils/storage";
 import {
   practiceLensAtom,
   practiceCuesAtom,
-  shapeLocalPracticeCuesAtom,
   showChordPracticeBarAtom,
   practiceBarLensLabelAtom,
   practiceBarChordGroupAtom,
@@ -18,7 +17,6 @@ import {
   scaleVisibleAtom,
   chordRootAtom,
   chordTypeAtom,
-  fingeringPatternAtom,
   chordDegreeAtom,
   chordOverlayModeAtom,
   chordHiddenNotesAtom,
@@ -523,19 +521,6 @@ describe("practiceBarLandOnGroupAtom", () => {
 
     store.set(practiceLensAtom, "tension");
     expect(store.get(practiceBarLandOnGroupAtom).label).toBe("Land on");
-  });
-});
-
-describe("shapeLocalPracticeCuesAtom", () => {
-  it("returns empty when fingeringPattern is all (no shape context)", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordRootAtom, "C");
-    store.set(chordTypeAtom, "Major Triad");
-    store.set(practiceLensAtom, "targets");
-    store.set(fingeringPatternAtom, "all");
-    expect(store.get(shapeLocalPracticeCuesAtom)).toHaveLength(0);
   });
 });
 

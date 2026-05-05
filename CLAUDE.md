@@ -30,7 +30,7 @@ npm run preview               # preview build locally
 
 ### State & Logic
 
-- **State:** Jotai atoms under `src/store/`, domain-split across `scaleAtoms`, `chordOverlayAtoms`, `practiceLensAtoms`, `fingeringAtoms`, `shapeAtoms`, `summaryAtoms`, `layoutAtoms`, `audioAtoms`, `uiAtoms`, `actions`. All re-exported through `src/store/atoms.ts` (a lean ~123-line barrel) so imports stay stable. Components subscribe directly to the atoms they consume (atomic reactivity — no prop drilling).
+- **State:** Jotai atoms under `src/store/`, domain-split across `scaleAtoms`, `chordOverlayAtoms`, `practiceLensAtoms`, `fingeringAtoms`, `shapeAtoms`, `layoutAtoms`, `audioAtoms`, `uiAtoms`, `actions`. All re-exported through `src/store/atoms.ts` (a lean ~115-line barrel) so imports stay stable. Components subscribe directly to the atoms they consume (atomic reactivity — no prop drilling).
 - **Domain (pure):** `src/core/` — `theory.ts`, `theoryCatalog.ts`, `guitar.ts`, `degrees.ts`, `circleOfFifthsUtils.ts`, `constants.ts`. Plus the `src/shapes/` package (`templates`, `helpers`, `polygons`, `threeNPS`, `analytics`).
 - **Audio:** `GuitarSynth` singleton in `src/core/audio.ts` (Web Audio API).
 - **Persistence:** `atomWithStorage` with keys prefixed via `src/utils/storage.ts`.
