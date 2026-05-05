@@ -456,3 +456,11 @@ export const allChordMembersAtom = atom((get) => {
     };
   });
 });
+
+/**
+ * Transient atom (non-persisted) tracking the active voicing key when a
+ * chord-tone note is hovered or focused. Set by FretboardHitTargetLayer,
+ * read by FretboardSVG to drive the data-active-voicing attribute on
+ * connector <path> elements. Null when no voicing is active.
+ */
+export const activeVoicingKeyAtom = atom<string | null>(null);

@@ -55,6 +55,7 @@ export {
   chordHiddenNotesAtom,
   toggleChordHiddenNoteAtom,
   toggleChordOverlayHiddenAtom,
+  activeVoicingKeyAtom,
 } from "./chordOverlayAtoms";
 
 export {
