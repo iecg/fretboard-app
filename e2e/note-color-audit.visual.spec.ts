@@ -4,7 +4,9 @@ import { expectLocatorVisual, prepareVisualPage } from "./visual-helpers";
 test.describe("Note Color Audit Visual", () => {
   test("note color audit matrix", async ({ page }) => {
     await page.goto("./?audit=note-colors");
-    await prepareVisualPage(page, { width: 1280, height: 900 });
+    // Keep viewport comfortably above compact-height threshold (899px) so
+    // Linux scrollbar/layout jitter can't flip to desktop-stacked mid-capture.
+    await prepareVisualPage(page, { width: 1280, height: 920 });
 
     const boxStyle = async (auditId: string) =>
       page.evaluate((id) => {

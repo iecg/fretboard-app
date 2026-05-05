@@ -8,9 +8,9 @@ export type AuditTheme = {
 };
 
 export type AuditLens = {
-  id: PracticeLens | "none";
+  id: Exclude<PracticeLens, "targets"> | "none";
   label: string;
-  dataPracticeLens?: PracticeLens;
+  dataPracticeLens?: Exclude<PracticeLens, "targets">;
 };
 
 export type AuditDegreeMode = {
