@@ -101,7 +101,7 @@ export const MAX_PLAYABLE_FRET_POSITIONS = 3;
 /**
  * Minkowski-sum disk radius factor for the chord-connector outline envelope.
  * Applied as `stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR + offsetPx`.
- * Reduced from 0.55 → 0.47 to sit the outline closer to the note bubbles.
+ * Reduced from the legacy value to sit the outline closer to the note bubbles.
  */
 export const CHORD_CONNECTOR_BASE_RADIUS_FACTOR = 0.47;
 
@@ -112,7 +112,6 @@ export const CHORD_CONNECTOR_BASE_RADIUS_FACTOR = 0.47;
  * position receive different offsets, preventing coincident outline strokes.
  * Non-negative bucket: smallest envelope equals base radius (no clipping risk).
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- used in P02
 const OFFSET_BUCKET = [0, 1, 2, 3] as const;
 
 /**
@@ -120,7 +119,6 @@ const OFFSET_BUCKET = [0, 1, 2, 3] as const;
  * Returns a non-negative integer suitable for modulo bucketing.
  * Uses a djb2-style accumulator; `canonicalKey` is short (≤ 30 chars).
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- used in P02
 function canonicalKeyHash(key: string): number {
   let h = 0;
   for (let i = 0; i < key.length; i++) {
@@ -157,7 +155,8 @@ export const CHORD_TONE_CLASSES = new Set([
  * ```
  * - `paths.fill` / `paths.outline` — pre-computed SVG path strings for the two
  *   render layers. Both strings are byte-identical for every voicing — the
- *   path is built by `offsetOutlinePath(polarSort(vertices), stringRowPx * 0.55)`,
+ *   path is built by `offsetOutlinePath(polarSort(vertices), r)` where
+ *   `r = stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR + offsetPx`,
  *   which Minkowski-sums the polygon with a disk to produce a rounded contour:
  *   smooth blob for non-collinear triads (eliminates thin-sliver artifacts on
  *   cross-fret voicings), capsule fallback for exactly-collinear inputs.
@@ -186,12 +185,13 @@ export const CHORD_TONE_CLASSES = new Set([
  *   4. Deduplicate emitted voicings by their canonical "(stringIndex,fretIndex)"
  *      tuple set so that overlapping cluster anchors don't re-emit the same shape.
  *   5. For each voicing vertex list: emit a rounded offset-outline path via
- *      `offsetOutlinePath(polarSort(rawVertices), stringRowPx * 0.55)`. The
- *      offset radius matches the legacy capsule perpOffset so collinear
- *      voicings (which fall back to a capsule inside `offsetOutlinePath`) keep
- *      their previous visual envelope. Non-collinear voicings get a smooth
- *      rounded contour instead of the raw thin polygon — fixes the cross-fret
- *      triad sliver artifact.
+ *      `offsetOutlinePath(polarSort(rawVertices), r)` where
+ *      `r = stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR + offsetPx`.
+ *      `offsetPx` is a per-voicing pixel delta from OFFSET_BUCKET, keyed by a
+ *      stable hash of `canonicalKey`, so coincident same-inversion voicings at
+ *      different neck positions receive distinct radii. Non-collinear voicings
+ *      get a smooth rounded contour; collinear inputs fall back to a capsule —
+ *      fixes the cross-fret triad sliver artifact.
  *
  * Returns an array of `{ d, vertices }` objects, one per distinct playable voicing.
  * Returns [] when N < 2 or no valid voicing can be assembled.
@@ -202,8 +202,8 @@ export const CHORD_TONE_CLASSES = new Set([
  *                        (e.g. ["C","E","G"] for C major). Order does not matter.
  * @param fretCenterX     Maps fretIndex → SVG x coordinate.
  * @param stringYAt       Maps (stringIndex, x) → SVG y coordinate.
- * @param stringRowPx     Row height in pixels; used as the capsule perpOffset base
- *                        for collinear voicings (perpOffset = stringRowPx * 0.55).
+ * @param stringRowPx     Row height in pixels; scales the base Minkowski-sum disk
+ *                        radius (`stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR`).
  * @param chordRoot       Sharps-only chord-root name (e.g. "C", "F#"). Used to
  *                        compute the bass-note interval that drives paletteIndex.
  *                        Empty string = paletteIndex defaults to 0.
@@ -369,7 +369,8 @@ export function buildChordConnectorPolylines(
 
       // Step 5: inflated outline geometry.
       // `offsetOutlinePath` Minkowski-sums the polar-sorted polygon with a disk
-      // of radius `stringRowPx * 0.55` and dispatches internally:
+      // of radius `stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR + offsetPx`
+      // and dispatches internally:
       //   - 3+ non-collinear vertices → rounded offset polygon (smooth blob,
       //     fixes thin-sliver triangles for cross-fret triads).
       //   - 3+ collinear vertices → falls back to a capsule spanning the
@@ -378,7 +379,17 @@ export function buildChordConnectorPolylines(
       //   - 1 vertex → circle.
       // fill === outline (byte-identical) for every voicing — both layers use
       // the same path string; the renderer only differentiates fill/stroke.
-      const pathStr = offsetOutlinePath(polarSort(rawVertices), stringRowPx * 0.55);
+      //
+      // Per-voicing offset: hash canonicalKey to a stable bucket index so that
+      // same-inversion voicings (identical paletteIndex) at different neck
+      // positions receive different disk radii, preventing coincident outlines.
+      // Non-negative bucket → no bubble-clipping risk (min envelope = base radius).
+      const bucketIndex = canonicalKeyHash(canonicalKey) % OFFSET_BUCKET.length;
+      const offsetPx = OFFSET_BUCKET[bucketIndex];
+      const pathStr = offsetOutlinePath(
+        polarSort(rawVertices),
+        stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR + offsetPx,
+      );
       const paths = { fill: pathStr, outline: pathStr };
 
       // Compute palette index from the bass-note interval (semitones from
