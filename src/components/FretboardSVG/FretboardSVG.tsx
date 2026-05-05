@@ -5,7 +5,7 @@ import {
   type PracticeLens,
   type NoteSemantics,
 } from "../../core/theory";
-import { scaleDegreeColorsEnabledAtom } from "../../store/atoms";
+import { scaleDegreeColorsEnabledAtom, activeVoicingKeyAtom } from "../../store/atoms";
 import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
 import styles from "./FretboardSVG.module.css";
 import { useFretboardGeometry } from "./hooks/useFretboardGeometry";
@@ -121,6 +121,7 @@ export const FretboardSVG = memo(function FretboardSVG({
   // neckWidthPx + scale math, so the value isn't read here.
   void effectiveZoom;
   const degreeColorsEnabled = useAtomValue(scaleDegreeColorsEnabledAtom);
+  const activeVoicingKey = useAtomValue(activeVoicingKeyAtom);
   const internalId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const defsPrefix = `fretboard-${id ?? internalId}`;
   const svgDefId = useCallback((id: string) => `${defsPrefix}-${id}`, [defsPrefix]);
@@ -385,13 +386,19 @@ export const FretboardSVG = memo(function FretboardSVG({
           <g clipPath={svgDefUrl("fretboard-taper")}>
             <FretboardShapeLayer svgPolygons={svgPolygons} />
             {connectorPolylines.length > 0 && (
-              <g className={styles["chord-connectors"]} aria-hidden="true" pointerEvents="none">
+              <g
+                className={styles["chord-connectors"]}
+                aria-hidden="true"
+                pointerEvents="none"
+                data-has-active-voicing={activeVoicingKey ? "true" : undefined}
+              >
                 {/* Fill pass: all voicings rendered first (below outlines) */}
                 {connectorPolylines.map((voicing, i) => (
                   <path
                     key={`fill-${i}`}
                     d={voicing.paths.fill}
                     data-layer="fill"
+                    data-active-voicing={voicing.voicingKey === activeVoicingKey ? voicing.voicingKey : undefined}
                     style={{ fill: `var(--chord-connector-color-${voicing.paletteIndex + 1})` }}
                   />
                 ))}
@@ -401,6 +408,7 @@ export const FretboardSVG = memo(function FretboardSVG({
                     key={`outline-${i}`}
                     d={voicing.paths.outline}
                     data-layer="outline"
+                    data-active-voicing={voicing.voicingKey === activeVoicingKey ? voicing.voicingKey : undefined}
                     style={{ stroke: `var(--chord-connector-color-${voicing.paletteIndex + 1})` }}
                   />
                 ))}
