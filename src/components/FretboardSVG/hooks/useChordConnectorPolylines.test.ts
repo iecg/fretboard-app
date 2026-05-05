@@ -941,3 +941,206 @@ describe("per-voicing offset: determinism and paletteIndex independence", () => 
     expect(minEnvelope).toBeGreaterThan(bubbleRadius);
   });
 });
+
+// -------------------------------------------------------------------------
+// Adjacency-aware offset assignment (plan 03-02)
+//
+// detectOverlapClusters uses inflated AABB union-find to cluster voicings
+// whose envelopes overlap. assignClusterOffsets sorts each cluster by
+// canonicalKey and assigns OFFSET_BUCKET[i % OFFSET_BUCKET.length].
+//
+// Geometry parameters (used to derive overlap expectations):
+//   fretCenterX(fi) = fi * 10  → 10 px per fret
+//   stringYAt(si) = si * 20    → 20 px per string
+//   STRING_ROW_PX = 36
+//   baseRadius = 36 * 0.47 ≈ 16.92 px
+//   maxBucketOffset = 10 px (OFFSET_BUCKET last element)
+//   inflateBy = baseRadius + maxBucketOffset ≈ 26.92 px
+//
+// Two voicings on the same strings overlap in y automatically. In x they
+// overlap if their fret positions are within 2 * 26.92 / 10 ≈ 5.4 frets.
+//
+// "Far apart" = fret distance > 5.4 (e.g. frets 1-3 vs 9-11 → gap ≥ 6 frets).
+// -------------------------------------------------------------------------
+
+describe("adjacency-aware offset assignment", () => {
+  // -------------------------------------------------------------------------
+  // (1) Two AABB-overlapping voicings get different offsets.
+  //
+  // Two voicings from adjacent string windows at the same fret — V1 on
+  // strings 0-1-2 and V2 on strings 1-2-3, both at fret 5.
+  // Same x (fret 5 = x 50); y ranges [0,40] and [20,60] share strings 1-2.
+  // inflateBy ≈ 27 px → inflated y ranges [-26.92,66.92] and [-6.92,86.92]
+  // → pairwise AABB-overlap ✓.
+  // Cluster of size 2: sorted by canonicalKey → member 0 gets OFFSET_BUCKET[0]=0,
+  // member 1 gets OFFSET_BUCKET[1]=2 → different radii → different path strings.
+  // -------------------------------------------------------------------------
+  it("(1) two AABB-overlapping voicings receive distinct offsets", () => {
+    // Adjacent string windows at fret 5:
+    //   str0=C, str1=E, str2=G, str3=C  → windows [0,1,2] and [1,2,3]
+    const noteData = [
+      makeNote(0, 5, "C", "chord-root"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(2, 5, "G", "chord-tone-in-scale"),
+      makeNote(3, 5, "C", "chord-root"),
+    ];
+
+    const result = buildChordConnectorPolylines(
+      noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C",
+    );
+
+    expect(result).toHaveLength(2);
+    // Both voicings are emitted; their overlapping AABBs → cluster of size 2.
+    // Different OFFSET_BUCKET entries → different path strings.
+    expect(result[0]!.paths.fill).not.toBe(result[1]!.paths.fill);
+  });
+
+  // -------------------------------------------------------------------------
+  // (2) Three overlapping voicings get three distinct offsets.
+  //
+  // Three voicings from adjacent string windows at fret 5 — windows
+  // [0,1,2], [1,2,3], [2,3,4]. All pairwise AABB-overlap:
+  //   [0-2] inflated y max = 40+27 = 67 > [2-4] inflated y min = 40-27 = 13 ✓
+  // Cluster of size 3 → three distinct OFFSET_BUCKET entries → pairwise distinct paths.
+  // -------------------------------------------------------------------------
+  it("(2) three AABB-overlapping voicings receive three distinct offsets", () => {
+    // str0=C, str1=E, str2=G, str3=C, str4=E → windows [0,1,2],[1,2,3],[2,3,4]
+    const noteData = [
+      makeNote(0, 5, "C", "chord-root"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(2, 5, "G", "chord-tone-in-scale"),
+      makeNote(3, 5, "C", "chord-root"),
+      makeNote(4, 5, "E", "chord-tone-in-scale"),
+    ];
+
+    const result = buildChordConnectorPolylines(
+      noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C",
+    );
+
+    expect(result).toHaveLength(3);
+    const fillPaths = result.map((v) => v.paths.fill);
+    // All three paths must be pairwise distinct.
+    const uniquePaths = new Set(fillPaths);
+    expect(uniquePaths.size).toBe(3);
+  });
+
+  // -------------------------------------------------------------------------
+  // (3) Non-overlapping voicings both get offset 0.
+  //
+  // Two voicings on strings 0-1-2 at frets 1-2-3 and frets 9-10-11.
+  // Fret gap ≈ 8 frets > 5.4 fret overlap threshold → separate singleton
+  // clusters → both receive OFFSET_BUCKET[0] = 0.
+  //
+  // Baseline: a single voicing at frets 1-2-3 also receives offset 0 (singleton).
+  // The two-voicing call should produce paths byte-identical to their
+  // respective single-voicing baselines.
+  // -------------------------------------------------------------------------
+  it("(3) non-overlapping voicings both receive offset 0 (same as singleton baseline)", () => {
+    // Baseline: single voicing at frets 1-2-3 → offset 0.
+    const baseline1 = buildChordConnectorPolylines(
+      [makeNote(0, 1, "C", "chord-root"), makeNote(1, 2, "E", "chord-tone-in-scale"), makeNote(2, 3, "G", "chord-tone-in-scale")],
+      ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C",
+    );
+    // Baseline: single voicing at frets 9-10-11 → offset 0.
+    const baseline2 = buildChordConnectorPolylines(
+      [makeNote(0, 9, "C", "chord-root"), makeNote(1, 10, "E", "chord-tone-in-scale"), makeNote(2, 11, "G", "chord-tone-in-scale")],
+      ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C",
+    );
+
+    expect(baseline1).toHaveLength(1);
+    expect(baseline2).toHaveLength(1);
+
+    // Combined: two far-apart voicings in one call.
+    const combined = buildChordConnectorPolylines(
+      [
+        makeNote(0, 1, "C", "chord-root"),
+        makeNote(1, 2, "E", "chord-tone-in-scale"),
+        makeNote(2, 3, "G", "chord-tone-in-scale"),
+        makeNote(0, 9, "C", "chord-root"),
+        makeNote(1, 10, "E", "chord-tone-in-scale"),
+        makeNote(2, 11, "G", "chord-tone-in-scale"),
+      ],
+      ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C",
+    );
+
+    expect(combined.length).toBeGreaterThanOrEqual(2);
+
+    const voicing1 = combined.find((v) => v.vertices.some((p) => p.x === fretCenterX(1)));
+    const voicing2 = combined.find((v) => v.vertices.some((p) => p.x === fretCenterX(9)));
+    expect(voicing1).toBeDefined();
+    expect(voicing2).toBeDefined();
+
+    // Both non-overlapping voicings should have the same path as their singleton baselines.
+    expect(voicing1!.paths.fill).toBe(baseline1[0]!.paths.fill);
+    expect(voicing2!.paths.fill).toBe(baseline2[0]!.paths.fill);
+  });
+
+  // -------------------------------------------------------------------------
+  // (4) Determinism: identical inputs always produce identical per-voicing offsets.
+  //
+  // Run buildChordConnectorPolylines twice with the same noteData. Assert that
+  // per-index paths.fill strings match exactly.
+  // -------------------------------------------------------------------------
+  it("(4) determinism: same inputs produce identical per-voicing offsets across re-runs", () => {
+    // Three adjacent string windows at fret 5 (same data as test 2).
+    const noteData = [
+      makeNote(0, 5, "C", "chord-root"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(2, 5, "G", "chord-tone-in-scale"),
+      makeNote(3, 5, "C", "chord-root"),
+      makeNote(4, 5, "E", "chord-tone-in-scale"),
+    ];
+
+    const run1 = buildChordConnectorPolylines(
+      noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C",
+    );
+    const run2 = buildChordConnectorPolylines(
+      noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C",
+    );
+
+    expect(run1.length).toBe(run2.length);
+    run1.forEach((v, i) => {
+      expect(v.paths.fill).toBe(run2[i]!.paths.fill);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // (5) Cluster size 6 stress: six overlapping voicings all get distinct paths.
+  //
+  // Six voicings from adjacent 4-string windows on strings 0-8, all at fret 5.
+  // chord ["C","E","G","B"] with repeating pattern C,E,G,B,C,E,G,B,C on str0-8.
+  // Windows [0-3],[1-4],[2-5],[3-6],[4-7],[5-8] → 6 voicings.
+  //
+  // All-pairwise AABB-overlap proof (most distant pair: window 0-3 vs 5-8):
+  //   [0-3]: y=[0,60], inflated y max = 60 + 26.92 = 86.92
+  //   [5-8]: y=[100,160], inflated y min = 100 - 26.92 = 73.08
+  //   73.08 < 86.92 → overlap ✓
+  // x is identical for all (fret 5 = x 50) → x AABB always overlaps.
+  //
+  // Single cluster of size 6 → 6 distinct OFFSET_BUCKET entries → pairwise distinct paths.
+  // -------------------------------------------------------------------------
+  it("(5) cluster of 6 voicings: all six paths.fill strings are pairwise distinct", () => {
+    // Cmaj7 pattern C,E,G,B across strings 0-8 at fret 5.
+    // Each 4-string window [s, s+3] covers one rotation of {C,E,G,B}.
+    const pattern = ["C", "E", "G", "B", "C", "E", "G", "B", "C"] as const;
+    const roleMap: Record<string, string> = {
+      C: "chord-root",
+      E: "chord-tone-in-scale",
+      G: "chord-tone-in-scale",
+      B: "chord-tone-in-scale",
+    };
+    const noteData = pattern.map((name, si) => makeNote(si, 5, name, roleMap[name]!));
+
+    const result = buildChordConnectorPolylines(
+      noteData, ["C", "E", "G", "B"], fretCenterX, stringYAt, STRING_ROW_PX, "C",
+    );
+
+    // Should emit exactly 6 voicings (one per 4-string window 0-3 through 5-8).
+    expect(result).toHaveLength(6);
+
+    // All 6 path strings must be pairwise distinct (cluster-based offset assignment).
+    const fills = result.map((v) => v.paths.fill);
+    const uniqueFills = new Set(fills);
+    expect(uniqueFills.size).toBe(6);
+  });
+});
