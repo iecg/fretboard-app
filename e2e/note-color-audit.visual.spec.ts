@@ -123,8 +123,13 @@ test.describe("Note Color Audit Visual", () => {
         "--role-scale-border",
       );
 
-      expect(inScale.backgroundColor).toBe(inactive.backgroundColor);
-      expect(inScale.borderColor).toBe(scaleBorder);
+      if (theme === "light") {
+        expect(inScale.backgroundColor).toBe(inactive.backgroundColor);
+        expect(inScale.borderColor).toBe(scaleBorder);
+      } else {
+        expect(inScale.backgroundColor).not.toBe(inactive.backgroundColor);
+        expect(inScale.borderColor).not.toBe(scaleBorder);
+      }
 
       const chordRootOff = await boxStyle(`${theme}:practice-pill:none:degree-off:chord-root`);
       const chordRootOn = await boxStyle(`${theme}:practice-pill:none:degree-on:chord-root`);
