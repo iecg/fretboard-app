@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { NoteData } from "./useNoteData";
-import { openPolylinePath } from "../utils/pathGeometry";
+import { polarSort, closedPolylinePath, inflatedCapsulePath } from "../utils/pathGeometry";
 import { NOTES } from "../../../core/theory";
 
 /**
@@ -60,8 +60,12 @@ export interface ChordConnectorVertex {
  * A single playable voicing returned by the chord-connector hook.
  */
 export interface ChordConnectorVoicing {
-  /** Pre-computed SVG path `d` string for the open polyline through every chord-tone vertex. */
-  d: string;
+  /**
+   * Pre-computed SVG path strings for the two render layers.
+   * For non-collinear voicings: fill === outline (same closed polygon from polarSort).
+   * For collinear voicings: both are inflatedCapsulePath strings (contain arc `A` commands).
+   */
+  paths: { fill: string; outline: string };
   /** Original chord-tone pixel positions in string-index order. */
   vertices: ChordConnectorVertex[];
   /**
@@ -118,12 +122,12 @@ export const CHORD_TONE_CLASSES = new Set([
  *
  * **Return shape (per voicing):**
  * ```typescript
- * { d: string; vertices: ChordConnectorVertex[] }
+ * { paths: { fill: string; outline: string }; vertices: ChordConnectorVertex[] }
  * ```
- * - `d` — pre-computed SVG path `d` string for an open polyline through every
- *   chord-tone vertex in string-index order (M + L commands, no Z). Rendered
- *   as a fat stroked path; the browser's stroke renderer produces rounded caps
- *   and joins so every note bubble is enveloped regardless of topology.
+ * - `paths.fill` / `paths.outline` — pre-computed SVG path strings for the two
+ *   render layers. For non-collinear voicings both strings are byte-identical
+ *   (closed polygon from polarSort). For collinear voicings both are inflated
+ *   capsule paths containing arc commands.
  * - `vertices` — original (unmodified) chord-tone pixel positions in string-index
  *   order, retained for unit tests and future per-voicing color keying.
  *
@@ -162,8 +166,8 @@ export const CHORD_TONE_CLASSES = new Set([
  *                        (e.g. ["C","E","G"] for C major). Order does not matter.
  * @param fretCenterX     Maps fretIndex → SVG x coordinate.
  * @param stringYAt       Maps (stringIndex, x) → SVG y coordinate.
- * @param stringRowPx     Row height in pixels; kept for API compatibility (no longer
- *                        used in geometry — CSS handles stroke-width scaling).
+ * @param stringRowPx     Row height in pixels; used as the capsule perpOffset base
+ *                        for collinear voicings (perpOffset = stringRowPx * 0.55).
  * @param chordRoot       Sharps-only chord-root name (e.g. "C", "F#"). Used to
  *                        compute the bass-note interval that drives paletteIndex.
  *                        Empty string = paletteIndex defaults to 0.
@@ -176,9 +180,7 @@ export function buildChordConnectorPolylines(
   stringRowPx: number,
   chordRoot: string,
 ): ChordConnectorVoicing[] {
-  // stringRowPx is kept in the signature for API compatibility; CSS now handles
-  // stroke-width scaling via the --string-row-px custom property.
-  void stringRowPx;
+  // stringRowPx drives the capsule perpOffset for collinear voicings.
 
   // Step 1: collect active chord-tone positions (skip note-inactive).
   const activeTones: NoteData[] = [];
@@ -329,10 +331,15 @@ export function buildChordConnectorPolylines(
         return { x, y };
       });
 
-      // Step 5: single-layer fat polyline path.
-      // Vertices stay in string-index order — natural musical traversal across strings.
-      // CSS stroke-width + stroke-linecap/linejoin handle enveloping of every note bubble.
-      const d = openPolylinePath(rawVertices);
+      // Step 5: two-layer path dispatch.
+      // Non-collinear: closed polygon from polar-sorted vertices (fill === outline).
+      // Collinear (zero signed area): inflated capsule path (fill === outline).
+      const sortedVertices = polarSort(rawVertices);
+      const closedPath = closedPolylinePath(sortedVertices);
+      const pathStr = closedPath.endsWith(" Z")
+        ? closedPath                                              // non-collinear: closed polygon
+        : inflatedCapsulePath(rawVertices, stringRowPx * 0.55); // collinear: capsule
+      const paths = { fill: pathStr, outline: pathStr };
 
       // Compute palette index from the bass-note interval (semitones from
       // chord root). Same inversion → same color across positions and chord
@@ -341,7 +348,7 @@ export function buildChordConnectorPolylines(
       const paletteIndex = bassIntervalSemitones(bestCombo, chordRoot) % 8;
 
       // Keep original (unmodified) vertex positions in the result.
-      results.push({ d, vertices: rawVertices, paletteIndex });
+      results.push({ paths, vertices: rawVertices, paletteIndex });
     }
   }
 
@@ -353,7 +360,7 @@ export interface UseChordConnectorPolylinesParams {
   chordToneNames: string[];
   fretCenterX: (fretIndex: number) => number;
   stringYAt: (stringIndex: number, x: number) => number;
-  /** Row height in pixels; passed through for API compatibility (CSS handles scaling). */
+  /** Row height in pixels; used as capsule perpOffset base for collinear voicings. */
   stringRowPx: number;
   /** Sharps-only chord-root name (e.g. "C", "F#"). Drives bass-interval-based
    *  paletteIndex assignment. Empty string = paletteIndex defaults to 0. */
@@ -365,9 +372,9 @@ export interface UseChordConnectorPolylinesParams {
  *
  * Returns `ChordConnectorVoicing[]` — one entry per distinct playable voicing.
  * Each entry carries:
- * - `d` — the SVG path `d` attribute for an open polyline through every chord-tone
- *   vertex in string-index order (M + L commands, no Z). Rendered as a fat stroked
- *   path; CSS stroke-width + stroke-linecap/linejoin handle enveloping.
+ * - `paths.fill` / `paths.outline` — pre-computed SVG path strings for the two
+ *   render layers. Byte-identical for non-collinear voicings (closed polygon);
+ *   both are capsule paths for collinear voicings.
  * - `vertices` — the original chord-tone pixel positions for debugging.
  * - `paletteIndex` — 0–7, deterministic per shape identity; indexes into
  *   --chord-connector-color-N CSS tokens for per-voicing color differentiation.
