@@ -1054,7 +1054,7 @@ test.describe("Theme Contract", () => {
       expect(colorToHex(lightVal)).not.toBe(colorToHex(darkVal));
     });
 
-    test("practice pills render with amber-cream border for in-scale notes in light mode", async ({ page }) => {
+    test("practice pills render with cyan border for in-scale notes in light mode", async ({ page }) => {
       await loadVisualState(page, { theme: "light", chordType: "Major 7th" });
       const practiceBar = page.locator('section[aria-label^="Practice cues:"]');
       await expect(practiceBar).toBeVisible();
@@ -1065,10 +1065,9 @@ test.describe("Theme Contract", () => {
       ).first();
       await expect(inScalePill).toBeVisible();
       const border = await inScalePill.evaluate((el) => getComputedStyle(el).borderColor);
-      // Phase 2 chord-overlay alignment: in-scale pill border = color-mix(#ea580c 65%, transparent)
-      // → rgba(234, 88, 12, 0.65). Practice bar is a chord-overlay surface; every pill in the amber
-      // family reads as one role family. Scale-tone signal carried by fretboard ring tokens.
-      expect(border.replace(/\s/g, "")).toBe("rgba(234,88,12,0.65)");
+      // In-scale pill border uses --role-scale-border (cyan) in light mode.
+      // --role-scale-border = --neon-cyan = #0891b2 → rgb(8, 145, 178)
+      expect(border.replace(/\s/g, "")).toBe("rgb(8,145,178)");
     });
 
     test("practice pills render with role-chord-border for guide-tone notes in light mode", async ({ page }) => {
