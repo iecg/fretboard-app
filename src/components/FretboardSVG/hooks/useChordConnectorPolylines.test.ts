@@ -3,6 +3,7 @@ import {
   buildChordConnectorPolylines,
   MAX_PLAYABLE_FRET_POSITIONS,
   CHORD_TONE_CLASSES,
+  CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
 } from "./useChordConnectorPolylines";
 import type { NoteData } from "./useNoteData";
 
@@ -862,5 +863,78 @@ describe("paletteIndex field", () => {
 
     expect(r1[0]!.paletteIndex).toBe(r2[0]!.paletteIndex);
     expect(r1[0]!.paletteIndex).toBe(7);
+  });
+});
+
+// -------------------------------------------------------------------------
+// Per-voicing offset: determinism and paletteIndex independence
+//
+// Phase 3 added a per-voicing pixel offset derived from a hash of canonicalKey.
+// Same-inversion voicings (identical paletteIndex) at different neck positions
+// share paletteIndex but differ in canonicalKey → different offsets → different
+// path strings. The offset is deterministic: same canonicalKey → same path.
+//
+// Test geometry is calibrated so the two chosen canonicalKey strings hash to
+// different OFFSET_BUCKET indices:
+//   canonicalKey "0,1|1,2|2,3" → bucket 1 (offsetPx = 1)
+//   canonicalKey "0,2|1,3|2,4" → bucket 0 (offsetPx = 0)
+// Both voicings have G on the highest-stringIndex string (string 2) → same
+// paletteIndex (7) regardless of fret position.
+// -------------------------------------------------------------------------
+
+describe("per-voicing offset: determinism and paletteIndex independence", () => {
+  // Voicing A: C major, G in bass, frets 1-2-3 on strings 0-1-2.
+  // canonicalKey "0,1|1,2|2,3" → offsetPx = 1 (bucket 1 in OFFSET_BUCKET=[0,1,2,3])
+  const voicingANotes = [
+    makeNote(0, 1, "C", "chord-root"),
+    makeNote(1, 2, "E", "chord-tone-in-scale"),
+    makeNote(2, 3, "G", "chord-tone-in-scale"),
+  ];
+
+  // Voicing B: same note names, same bass (G on str2) → same paletteIndex.
+  // Frets 2-3-4 on strings 0-1-2.
+  // canonicalKey "0,2|1,3|2,4" → offsetPx = 0 (bucket 0 in OFFSET_BUCKET=[0,1,2,3])
+  const voicingBNotes = [
+    makeNote(0, 2, "C", "chord-root"),
+    makeNote(1, 3, "E", "chord-tone-in-scale"),
+    makeNote(2, 4, "G", "chord-tone-in-scale"),
+  ];
+
+  it("(a) same paletteIndex but different canonicalKey → different paths.fill strings", () => {
+    const rA = buildChordConnectorPolylines(voicingANotes, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    const rB = buildChordConnectorPolylines(voicingBNotes, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+
+    expect(rA).toHaveLength(1);
+    expect(rB).toHaveLength(1);
+
+    // Confirm same paletteIndex (same inversion — G in bass for both).
+    expect(rA[0]!.paletteIndex).toBe(rB[0]!.paletteIndex);
+
+    // Different canonicalKey → different hash bucket → different radius → different path.
+    expect(rA[0]!.paths.fill).not.toBe(rB[0]!.paths.fill);
+  });
+
+  it("(b) same canonicalKey always produces the same paths.fill string (deterministic)", () => {
+    const result1 = buildChordConnectorPolylines(voicingANotes, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    const result2 = buildChordConnectorPolylines(voicingANotes, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+
+    expect(result1).toHaveLength(1);
+    expect(result2).toHaveLength(1);
+    expect(result1[0]!.paths.fill).toBe(result2[0]!.paths.fill);
+  });
+
+  it("(c) base radius factor (CHORD_CONNECTOR_BASE_RADIUS_FACTOR) is 0.47", () => {
+    // Guards the single-source-of-truth constant.
+    expect(CHORD_CONNECTOR_BASE_RADIUS_FACTOR).toBe(0.47);
+  });
+
+  it("(c) minimum envelope (base radius, offsetPx = 0) encloses the note-bubble radius", () => {
+    // The note-bubble radius is ~stringRowPx * 0.45.
+    // The minimum possible envelope is stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR + 0
+    // (OFFSET_BUCKET is non-negative so 0 is the smallest offsetPx).
+    // Guard: 0.47 * stringRowPx must exceed 0.45 * stringRowPx.
+    const minEnvelope = STRING_ROW_PX * CHORD_CONNECTOR_BASE_RADIUS_FACTOR;
+    const bubbleRadius = STRING_ROW_PX * 0.45;
+    expect(minEnvelope).toBeGreaterThan(bubbleRadius);
   });
 });
