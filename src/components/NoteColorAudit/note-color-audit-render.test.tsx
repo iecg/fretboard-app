@@ -32,16 +32,17 @@ describe("note color audit render readouts", () => {
       const isDark = effectiveTheme === "modern-dark";
 
       return makeComputedStyle({
-        fill: isDark ? "dark-fill" : "light-fill",
-        stroke: isDark ? "dark-stroke" : "light-stroke",
+        fill: isDark ? "rgb(20, 30, 40)" : "rgb(234, 88, 12)",
+        stroke: isDark ? "rgb(255, 154, 77)" : "rgb(180, 83, 9)",
         "stroke-width": isDark ? "2.3px" : "3.6px",
         "stroke-dasharray": "none",
         opacity: "1",
-        "background-color": isDark ? "dark-bg" : "light-bg",
-        "border-color": isDark ? "dark-border" : "light-border",
+        "background-color": isDark ? "rgb(20, 30, 40)" : "rgb(243, 239, 232)",
+        "border-color": isDark ? "rgb(255, 154, 77)" : "rgb(234, 88, 12)",
         "border-width": "1px",
         "border-style": "solid",
-        color: isDark ? "dark-label" : "light-label",
+        color: isDark ? "rgb(245, 245, 247)" : "rgb(15, 23, 42)",
+        "text-shadow": isDark ? "none" : "rgba(0, 0, 0, 0.55) 0px 1px 1px",
       });
     });
   });
@@ -75,11 +76,11 @@ describe("note color audit render readouts", () => {
       '[data-audit-id="dark:fretboard:none:degree-off:key-tonic"]',
     );
 
-    expect(lightCard).toHaveTextContent("light-fill");
+    expect(lightCard).toHaveTextContent("rgb(234, 88, 12)");
     expect(lightCard).toHaveTextContent("3.6px");
-    expect(darkCard).toHaveTextContent("dark-fill");
+    expect(darkCard).toHaveTextContent("rgb(20, 30, 40)");
     expect(darkCard).toHaveTextContent("2.3px");
-    expect(darkCard).not.toHaveTextContent("light-fill");
+    expect(darkCard).not.toHaveTextContent("rgb(234, 88, 12)");
     expect(darkCard).not.toHaveTextContent("3.6px");
   });
 
@@ -108,9 +109,15 @@ describe("note color audit render readouts", () => {
 
     expect(fretboardCard).toHaveTextContent("text fill");
     expect(fretboardCard).toHaveTextContent("text stroke");
+    expect(fretboardCard).toHaveTextContent("text s-w");
+    expect(fretboardCard).toHaveTextContent("label ctr");
+    expect(fretboardCard).toHaveTextContent("ring ctr");
     for (const card of [practiceCard, degreeCard, chordRowCard, degreeRampCard]) {
       expect(card).toHaveTextContent("label");
-      expect(card).toHaveTextContent("light-label");
+      expect(card).toHaveTextContent("rgb(15, 23, 42)");
+      expect(card).toHaveTextContent("label shadow");
+      expect(card).toHaveTextContent("label ctr");
+      expect(card).toHaveTextContent("ring ctr");
     }
   });
 });

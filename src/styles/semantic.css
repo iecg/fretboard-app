@@ -165,17 +165,28 @@
   --role-color-tone-ring: var(--neon-violet);
   --role-color-tone-text: var(--neon-violet);
 
+  /* Theme-agnostic note-role contract consumed by audit-tuned fretboard/strip surfaces. */
+  --note-label-on-color: #f5f5f7;
+  --note-label-on-color-stroke: rgb(0 0 0 / 0.45);
+  --note-label-on-color-shadow: none;
+  --note-role-tonic-fill: #302016;
+  --note-role-root-fill: color-mix(in srgb, var(--role-chord-border) 22%, transparent);
+  --note-role-chord-fill: color-mix(in srgb, var(--role-chord-border) 10%, transparent);
+  --note-role-tension-fill: color-mix(in srgb, var(--role-chord-border) 34%, transparent);
+  --note-role-border: var(--role-chord-border);
+  --note-degree-fill: color-mix(in srgb, var(--degree-color, #4daf4a) 62%, #0f172a);
+
   /* Fretboard note fills — solid token-based fills for the dark theme.
      Alpha encoding is intentionally removed from these fills; visual dimming
      is handled exclusively via the CSS opacity property on the note group.
      Light-mode overrides live in themes.css alongside the other fretboard tokens. */
-  --fretboard-note-fill-tonic:          #302016;
+  --fretboard-note-fill-tonic:          var(--note-role-tonic-fill);
   --fretboard-note-fill-chord-root:     #372312;
   --fretboard-note-fill-chord-tone:     #141e28;
   --fretboard-note-fill-scale-only:     #121a26;
   --fretboard-note-fill-chord-outside:  #28160a;
-  --fretboard-note-fill-tension-emph:   #5a1c00;
-  --fretboard-note-fill-tension-strong: #731e00;
+  --fretboard-note-fill-tension-emph:   #6c2800;
+  --fretboard-note-fill-tension-strong: #8a3300;
   --fretboard-note-fill-guide-emph:     #5f3408;
   --fretboard-note-fill-deemphasis-chord:  #141e28;
   --fretboard-note-fill-deemphasis-violet: #1e1237;

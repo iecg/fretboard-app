@@ -47,11 +47,216 @@ type ComputedAuditStyle = {
   borderStyle?: string;
   beforeBackgroundColor?: string;
   labelColor?: string;
+  labelShadow?: string;
   textFill?: string;
   textStroke?: string;
+  textStrokeWidth?: string;
+  labelContrast?: string;
+  ringContrast?: string;
 };
 
 type MeasurementKind = "svg-note" | "box";
+
+type ParsedColor = {
+  r: number;
+  g: number;
+  b: number;
+  a: number;
+};
+
+const OPAQUE_WHITE: ParsedColor = { r: 255, g: 255, b: 255, a: 1 };
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function parseAlpha(token: string): number | null {
+  const raw = token.trim();
+  if (!raw) return null;
+  if (raw.endsWith("%")) {
+    const value = Number.parseFloat(raw.slice(0, -1));
+    if (!Number.isFinite(value)) return null;
+    return clamp(value / 100, 0, 1);
+  }
+  const value = Number.parseFloat(raw);
+  if (!Number.isFinite(value)) return null;
+  return clamp(value, 0, 1);
+}
+
+function parseRgbChannel(token: string): number | null {
+  const raw = token.trim();
+  if (!raw) return null;
+  if (raw.endsWith("%")) {
+    const value = Number.parseFloat(raw.slice(0, -1));
+    if (!Number.isFinite(value)) return null;
+    return clamp((value / 100) * 255, 0, 255);
+  }
+  const value = Number.parseFloat(raw);
+  if (!Number.isFinite(value)) return null;
+  return clamp(value, 0, 255);
+}
+
+function parseSrgbChannel(token: string): number | null {
+  const raw = token.trim();
+  if (!raw) return null;
+  if (raw.endsWith("%")) {
+    const value = Number.parseFloat(raw.slice(0, -1));
+    if (!Number.isFinite(value)) return null;
+    return clamp((value / 100) * 255, 0, 255);
+  }
+  const value = Number.parseFloat(raw);
+  if (!Number.isFinite(value)) return null;
+  const normalized = value > 1 ? value / 255 : value;
+  return clamp(normalized * 255, 0, 255);
+}
+
+function parseHexColor(value: string): ParsedColor | null {
+  const hex = value.slice(1);
+  if (![3, 4, 6, 8].includes(hex.length)) return null;
+  const expanded = hex.length <= 4
+    ? hex
+        .split("")
+        .map((char) => `${char}${char}`)
+        .join("")
+    : hex;
+  const bytes = expanded.match(/../g);
+  if (!bytes) return null;
+  const numbers = bytes.map((part) => Number.parseInt(part, 16));
+  if (numbers.some((number) => Number.isNaN(number))) return null;
+
+  const [r, g, b, alpha = 255] = numbers;
+  return { r, g, b, a: clamp(alpha / 255, 0, 1) };
+}
+
+function parseColor(value: string | undefined): ParsedColor | null {
+  if (!value) return null;
+  const raw = value.trim().toLowerCase();
+  if (!raw || raw === "none") return null;
+  if (raw === "transparent") return { r: 0, g: 0, b: 0, a: 0 };
+  if (raw.startsWith("#")) return parseHexColor(raw);
+
+  const rgbMatch = raw.match(/^rgba?\((.+)\)$/i);
+  if (rgbMatch) {
+    const [colorPart, alphaPart] = rgbMatch[1].split("/");
+    const tokens = colorPart.includes(",")
+      ? colorPart.split(",").map((token) => token.trim()).filter(Boolean)
+      : colorPart.trim().split(/\s+/);
+    if (tokens.length < 3) return null;
+    const channels = tokens.slice(0, 3).map(parseRgbChannel);
+    if (channels.some((channel) => channel === null)) return null;
+    const alphaToken = alphaPart
+      ? alphaPart.trim()
+      : tokens[3];
+    const alpha = alphaToken ? parseAlpha(alphaToken) : 1;
+    if (alpha === null) return null;
+    return { r: channels[0]!, g: channels[1]!, b: channels[2]!, a: alpha };
+  }
+
+  const srgbMatch = raw.match(/^color\(srgb\s+(.+)\)$/i);
+  if (srgbMatch) {
+    const [colorPart, alphaPart] = srgbMatch[1].split("/");
+    const tokens = colorPart.trim().split(/\s+/).filter(Boolean);
+    if (tokens.length < 3) return null;
+    const channels = tokens.slice(0, 3).map(parseSrgbChannel);
+    if (channels.some((channel) => channel === null)) return null;
+    const alpha = alphaPart ? parseAlpha(alphaPart.trim()) : 1;
+    if (alpha === null) return null;
+    return { r: channels[0]!, g: channels[1]!, b: channels[2]!, a: alpha };
+  }
+
+  return null;
+}
+
+function blendOver(foreground: ParsedColor, background: ParsedColor): ParsedColor {
+  const alpha = clamp(foreground.a, 0, 1);
+  return {
+    r: foreground.r * alpha + background.r * (1 - alpha),
+    g: foreground.g * alpha + background.g * (1 - alpha),
+    b: foreground.b * alpha + background.b * (1 - alpha),
+    a: 1,
+  };
+}
+
+function toOpaque(color: ParsedColor): ParsedColor {
+  if (color.a >= 1) return { ...color, a: 1 };
+  return blendOver(color, OPAQUE_WHITE);
+}
+
+function toLinear(channel: number) {
+  const normalized = channel / 255;
+  if (normalized <= 0.04045) return normalized / 12.92;
+  return ((normalized + 0.055) / 1.055) ** 2.4;
+}
+
+function getRelativeLuminance(color: ParsedColor) {
+  return (
+    0.2126 * toLinear(color.r) +
+    0.7152 * toLinear(color.g) +
+    0.0722 * toLinear(color.b)
+  );
+}
+
+function resolveThemeBaseColor(element: Element): ParsedColor {
+  const themedScope = element.closest("[data-theme]") ?? document.documentElement;
+  const token = getComputedStyle(themedScope).getPropertyValue("--bg-color").trim();
+  const tokenColor = parseColor(token);
+  if (tokenColor) return toOpaque(tokenColor);
+  return OPAQUE_WHITE;
+}
+
+function resolveBackdropColor(element: Element): ParsedColor {
+  const stack: Element[] = [];
+  let current: Element | null = element.parentElement;
+  while (current) {
+    stack.push(current);
+    current = current.parentElement;
+  }
+  stack.reverse();
+
+  let backdrop = resolveThemeBaseColor(element);
+  for (const layer of stack) {
+    const layerColor = parseColor(getComputedStyle(layer).getPropertyValue("background-color"));
+    if (!layerColor || layerColor.a === 0) continue;
+    backdrop = blendOver(layerColor, backdrop);
+  }
+
+  return backdrop;
+}
+
+function resolveLayerColor(layerRaw: string | undefined, backdrop: ParsedColor): ParsedColor | null {
+  const layer = parseColor(layerRaw);
+  if (!layer) return null;
+  return toOpaque(layer.a < 1 ? blendOver(layer, backdrop) : { ...layer, a: 1 });
+}
+
+function calculateContrastRatioFromColors(
+  foregroundRaw: string | undefined,
+  background: ParsedColor | null,
+) {
+  if (!background) return null;
+  const foreground = parseColor(foregroundRaw);
+  if (!foreground) return null;
+
+  const opaqueBackground = toOpaque(background);
+  const opaqueForeground = toOpaque(
+    foreground.a < 1 ? blendOver(foreground, opaqueBackground) : { ...foreground, a: 1 },
+  );
+
+  const luminanceA = getRelativeLuminance(opaqueForeground);
+  const luminanceB = getRelativeLuminance(opaqueBackground);
+  const lighter = Math.max(luminanceA, luminanceB);
+  const darker = Math.min(luminanceA, luminanceB);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+function formatContrast(
+  ratio: number | null,
+  thresholds: { pass: number; warn: number },
+) {
+  if (ratio === null) return undefined;
+  const status = ratio >= thresholds.pass ? "pass" : ratio >= thresholds.warn ? "warn" : "fail";
+  return `${status} ${ratio.toFixed(2)}:1`;
+}
 
 function readStyle(
   element: Element,
@@ -63,8 +268,19 @@ function readStyle(
   const computed = getComputedStyle(element);
   const opacityComputed = opacityElement ? getComputedStyle(opacityElement) : computed;
   const labelComputed = labelElement ? getComputedStyle(labelElement) : undefined;
+  const backdrop = resolveBackdropColor(element);
 
   if (kind === "svg-note") {
+    const fillLayer = resolveLayerColor(computed.getPropertyValue("fill"), backdrop);
+    const labelContrast = formatContrast(
+      calculateContrastRatioFromColors(labelComputed?.getPropertyValue("fill"), fillLayer),
+      { pass: 4.5, warn: 3 },
+    );
+    const ringContrast = formatContrast(
+      calculateContrastRatioFromColors(computed.getPropertyValue("stroke"), fillLayer),
+      { pass: 3, warn: 2 },
+    );
+
     return {
       fill: computed.getPropertyValue("fill"),
       stroke: computed.getPropertyValue("stroke"),
@@ -73,12 +289,27 @@ function readStyle(
       opacity: opacityComputed.getPropertyValue("opacity"),
       textFill: labelComputed?.getPropertyValue("fill"),
       textStroke: labelComputed?.getPropertyValue("stroke"),
+      textStrokeWidth: labelComputed?.getPropertyValue("stroke-width"),
+      labelContrast,
+      ringContrast,
     };
   }
 
   const before = includeBefore
     ? getComputedStyle(element, "::before").getPropertyValue("background-color")
     : undefined;
+  const elementSurface = resolveLayerColor(computed.getPropertyValue("background-color"), backdrop);
+  const labelBackground = includeBefore
+    ? resolveLayerColor(before, elementSurface ?? backdrop)
+    : elementSurface;
+  const labelContrast = formatContrast(
+    calculateContrastRatioFromColors(labelComputed?.getPropertyValue("color"), labelBackground),
+    { pass: 4.5, warn: 3 },
+  );
+  const ringContrast = formatContrast(
+    calculateContrastRatioFromColors(computed.getPropertyValue("border-color"), elementSurface),
+    { pass: 3, warn: 2 },
+  );
 
   return {
     backgroundColor: computed.getPropertyValue("background-color"),
@@ -88,6 +319,9 @@ function readStyle(
     opacity: opacityComputed.getPropertyValue("opacity"),
     beforeBackgroundColor: before,
     labelColor: labelComputed?.getPropertyValue("color"),
+    labelShadow: labelComputed?.getPropertyValue("text-shadow"),
+    labelContrast,
+    ringContrast,
   };
 }
 
@@ -147,8 +381,12 @@ function StyleReadout({
     borderStyle: "b-style",
     beforeBackgroundColor: "::before bg",
     labelColor: "label",
+    labelShadow: "label shadow",
     textFill: "text fill",
     textStroke: "text stroke",
+    textStrokeWidth: "text s-w",
+    labelContrast: "label ctr",
+    ringContrast: "ring ctr",
   };
 
   return (
@@ -292,6 +530,9 @@ function FretboardNoteCard({
             "opacity",
             "textFill",
             "textStroke",
+            "textStrokeWidth",
+            "labelContrast",
+            "ringContrast",
           ]}
         />
       }
@@ -368,6 +609,9 @@ function PracticePillCard({
             "borderStyle",
             "opacity",
             "labelColor",
+            "labelShadow",
+            "labelContrast",
+            "ringContrast",
           ]}
         />
       }
@@ -439,6 +683,9 @@ function DegreeChipCard({
             "borderStyle",
             "opacity",
             "labelColor",
+            "labelShadow",
+            "labelContrast",
+            "ringContrast",
             ...(swatch.isColorNote ? (["beforeBackgroundColor"] as const) : []),
           ]}
         />
@@ -497,7 +744,10 @@ function ChordRowCard({ swatch, theme }: { swatch: ChordRowAuditSwatch; theme: A
             "borderWidth",
             "borderStyle",
             "opacity",
-            ...(swatch.kind === "chip" ? (["labelColor"] as const) : []),
+            "ringContrast",
+            ...(swatch.kind === "chip"
+              ? (["labelColor", "labelShadow", "labelContrast"] as const)
+              : []),
           ]}
         />
       }
@@ -568,6 +818,9 @@ function DegreeRampCard({
             "borderStyle",
             "opacity",
             "labelColor",
+            "labelShadow",
+            "labelContrast",
+            "ringContrast",
             ...(swatch.isColorNote ? (["beforeBackgroundColor"] as const) : []),
           ]}
         />
@@ -728,8 +981,8 @@ export function NoteColorAudit() {
       <header className={styles["audit-header"]}>
         <h1 className={styles["audit-title"]}>Note Color Audit Matrix</h1>
         <p className={styles["audit-subtitle"]}>
-          Fill, ring, stroke width, stroke style, and opacity are read from computed
-          browser styles for each rendered state.
+          Fill, ring, stroke width, stroke style, label styling, and contrast metrics are
+          read from computed browser styles for each rendered state.
         </p>
       </header>
       <div className={styles["theme-grid"]}>

@@ -143,7 +143,10 @@
 
 /* Degree color mode — degree colors own fill only; semantic borders/rings stay role-coded. */
 .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true'] .degree-chip {
-  background: color-mix(in srgb, var(--degree-color) 60%, var(--strip-fill));
+  background: var(
+    --note-degree-fill,
+    color-mix(in srgb, var(--degree-color) 60%, var(--strip-fill))
+  );
 }
 
 .degree-chip-item[data-is-color-note='true'] .degree-chip {
@@ -211,7 +214,10 @@
 }
 
 .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true'][data-is-color-note='true'] .degree-chip::before {
-  background: color-mix(in srgb, var(--degree-color) 62%, var(--strip-fill));
+  background: var(
+    --note-degree-fill,
+    color-mix(in srgb, var(--degree-color) 62%, var(--strip-fill))
+  );
 }
 
 .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true'][data-is-color-note='true'] .degree-chip-note {
@@ -275,13 +281,13 @@
 }
 
 :global([data-theme="modern-light"]) .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true']:not([data-hidden='true']):not([data-is-color-note='true']) .degree-chip {
-  background: color-mix(in srgb, var(--degree-color) 52%, #0f172a);
+  background: var(--note-degree-fill, var(--degree-light-fill-default));
   box-shadow: none;
 }
 
 :global([data-theme="modern-light"]) .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true']:not([data-hidden='true']) .degree-chip-note {
-  color: #ffffff;
-  text-shadow: 0 1px 1px rgb(0 0 0 / 0.55);
+  color: var(--note-label-on-color);
+  text-shadow: var(--note-label-on-color-shadow);
 }
 
 :global([data-theme="modern-light"]) .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true'][data-is-color-note='true']:not([data-hidden='true']) .degree-chip {
@@ -291,7 +297,7 @@
 }
 
 :global([data-theme="modern-light"]) .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true'][data-is-color-note='true']:not([data-hidden='true']) .degree-chip::before {
-  background: color-mix(in srgb, var(--degree-color) 52%, #0f172a);
+  background: var(--note-degree-fill, var(--degree-light-fill-default));
 }
 
 :global([data-theme="modern-light"]) .degree-chip-item[data-is-color-note='true'],

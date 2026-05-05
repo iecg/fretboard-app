@@ -182,19 +182,22 @@
 
 /* Role: Chord Root (Orange) */
 .practice-bar-pill[data-chord-root="true"] {
-  background: var(--role-chord-bg-strong);
-  border-color: var(--role-chord-border);
+  background: var(--note-role-root-fill, var(--role-chord-bg-strong));
+  border-color: var(--note-role-border, var(--role-chord-border));
 }
 
 /* Role: Guide Tone (Orange) */
 .practice-bar-pill[data-guide-tone="true"] {
-  background: var(--role-chord-bg);
-  border-color: var(--role-chord-border);
+  background: var(--note-role-chord-fill, var(--role-chord-bg));
+  border-color: var(--note-role-border, var(--role-chord-border));
 }
 
 /* Degree color mode — degree colors own fill only; semantic borders stay role-coded. */
 .chord-practice-bar[data-degree-colors="true"] .practice-bar-pill[data-in-scale="true"][data-scale-degree] {
-  background: color-mix(in srgb, var(--degree-color) 62%, var(--chip-surface-inactive));
+  background: var(
+    --note-degree-fill,
+    color-mix(in srgb, var(--degree-color) 62%, var(--chip-surface-inactive))
+  );
 }
 
 /* Role: Tension (Dashed Orange) */
@@ -204,16 +207,16 @@
 }
 
 :global([data-theme="modern-dark"]) .practice-bar-pill[data-tension="true"]:not([data-chord-root="true"]) {
-  background: color-mix(in srgb, var(--role-chord-border) 16%, var(--chip-surface-inactive));
-  box-shadow: 0 0 6px color-mix(in srgb, var(--role-chord-border) 30%, transparent);
+  background: var(--note-role-tension-fill, color-mix(in srgb, var(--role-chord-border) 16%, var(--chip-surface-inactive)));
+  box-shadow: 0 0 6px color-mix(in srgb, var(--note-role-border, var(--role-chord-border)) 30%, transparent);
 }
 
 /* Outside chord root case: overlapping root + tension semantics. */
 .practice-bar-pill[data-chord-root="true"][data-tension="true"] {
-  background: var(--role-chord-bg-strong);
-  border-color: var(--role-chord-border);
+  background: var(--note-role-root-fill, var(--role-chord-bg-strong));
+  border-color: var(--note-role-border, var(--role-chord-border));
   border-style: dashed;
-  box-shadow: 0 0 6px color-mix(in srgb, var(--role-chord-border) 40%, transparent);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--note-role-border, var(--role-chord-border)) 40%, transparent);
 }
 
 .practice-bar-pill-note {
@@ -273,33 +276,34 @@
 
 /* Chord-root pill (orange-strong): warm amber fill */
 :global([data-theme="modern-light"]) .practice-bar-pill[data-chord-root="true"] {
-  background: #c2410c;
-  border-color: #ea580c;
+  background: var(--note-role-root-fill);
+  border-color: var(--note-role-border);
 }
 
 /* Guide-tone pill (orange): slightly lighter than root, but still white-label capable. */
 :global([data-theme="modern-light"]) .practice-bar-pill[data-guide-tone="true"] {
-  background: #d97706;
-  border-color: color-mix(in srgb, #ea580c 75%, transparent);
+  background: var(--note-role-chord-fill);
+  border-color: color-mix(in srgb, var(--note-role-border) 75%, transparent);
 }
 
-/* Pure tension pill (chord tone outside scale, not the root): warm yellow-amber tint
-   to mirror the fretboard chord-tone-outside-scale fill (#fde68a) and stand apart
+/* Pure tension pill (chord tone outside scale, not the root): warm amber-yellow tint
+   to separate tension from in-scale chord/guide fills while staying in the same hue family
    from the inactive sunken fill (#f3efe8). Dashed border inherited from the role rule above. */
 :global([data-theme="modern-light"]) .practice-bar-pill[data-tension="true"]:not([data-chord-root="true"]) {
-  background: #d97706;
+  background: var(--note-role-tension-fill);
   border-color: var(--neon-orange);
   box-shadow: none;
 }
 
 /* Root + tension overlap: keep amber-strong fill, remove glow */
 :global([data-theme="modern-light"]) .practice-bar-pill[data-chord-root="true"][data-tension="true"] {
+  background: var(--note-role-root-fill);
   box-shadow: none;
 }
 
 /* Degree-color mode: fill only, mixed darker so white labels read across the degree palette. */
 :global([data-theme="modern-light"]) .chord-practice-bar[data-degree-colors="true"] .practice-bar-pill[data-in-scale="true"][data-scale-degree] {
-  background: color-mix(in srgb, var(--degree-color) 52%, #0f172a);
+  background: var(--note-degree-fill, var(--degree-light-fill-default));
 }
 
 :global([data-theme="modern-light"]) .practice-bar-pill:is([data-chord-root="true"], [data-guide-tone="true"], [data-tension="true"]) .practice-bar-pill-note,
@@ -308,8 +312,8 @@
 :global([data-theme="modern-light"]) .chord-practice-bar[data-degree-colors="true"] .practice-bar-pill[data-in-scale="true"][data-scale-degree] .practice-bar-pill-note,
 :global([data-theme="modern-light"]) .chord-practice-bar[data-degree-colors="true"] .practice-bar-pill[data-in-scale="true"][data-scale-degree] .practice-bar-pill-interval,
 :global([data-theme="modern-light"]) .chord-practice-bar[data-degree-colors="true"] .practice-bar-pill[data-in-scale="true"][data-scale-degree] .practice-bar-pill-resolve {
-  color: #ffffff;
-  text-shadow: 0 1px 1px rgb(0 0 0 / 0.55);
+  color: var(--note-label-on-color);
+  text-shadow: var(--note-label-on-color-shadow);
 }
 
 /* ===== Dark-mode pill overrides (audit rows 6, 7, 9-10) ===== */

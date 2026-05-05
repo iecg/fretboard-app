@@ -9,7 +9,7 @@ test.describe("Note Color Audit Visual", () => {
     const boxStyle = async (auditId: string) =>
       page.evaluate((id) => {
         const card = document.querySelector(`[data-audit-id="${id}"]`);
-        const target = card?.querySelector("button, .chord-row-chip, .chord-row-legend-swatch");
+        const target = card?.querySelector("button, li > span:first-child");
         if (!target) throw new Error(`Missing audit target: ${id}`);
         const computed = getComputedStyle(target);
         const before = getComputedStyle(target, "::before");
@@ -18,6 +18,21 @@ test.describe("Note Color Audit Visual", () => {
           borderColor: computed.borderColor,
           opacity: computed.opacity,
           beforeBackgroundColor: before.backgroundColor,
+        };
+      }, auditId);
+
+    const fretboardShapeStyle = async (auditId: string) =>
+      page.evaluate((id) => {
+        const card = document.querySelector(`[data-audit-id="${id}"]`);
+        if (!card) throw new Error(`Missing audit card: ${id}`);
+        const target =
+          card.querySelector("svg g :is(circle, rect, polygon):not([style])") ??
+          card.querySelector("svg g :is(circle, rect, polygon)");
+        if (!target) throw new Error(`Missing fretboard shape for: ${id}`);
+        const computed = getComputedStyle(target);
+        return {
+          fill: computed.fill,
+          stroke: computed.stroke,
         };
       }, auditId);
 
@@ -57,6 +72,23 @@ test.describe("Note Color Audit Visual", () => {
           return normalized;
         },
         { id: auditId, tokenName: token },
+      );
+
+    const readoutValue = async (auditId: string, label: string) =>
+      page.evaluate(
+        ({ id, metric }) => {
+          const card = document.querySelector(`[data-audit-id="${id}"]`);
+          if (!card) throw new Error(`Missing audit card: ${id}`);
+          const rows = Array.from(card.querySelectorAll("dl div"));
+          for (const row of rows) {
+            const dt = row.querySelector("dt")?.textContent?.trim();
+            if (dt === metric) {
+              return row.querySelector("dd")?.textContent?.trim() ?? "";
+            }
+          }
+          throw new Error(`Missing readout metric ${metric} for ${id}`);
+        },
+        { id: auditId, metric: label },
       );
 
     const expectLabels = async (auditId: string, color: string, selector?: string) => {
@@ -122,6 +154,22 @@ test.describe("Note Color Audit Visual", () => {
     );
     expect((await boxStyle("dark:degree-chip:none:degree-off:hidden")).opacity).toBe("0.4");
 
+    for (const auditId of [
+      "light:fretboard:none:degree-off:key-tonic",
+      "light:practice-pill:none:degree-off:chord-root",
+      "light:degree-chip:none:degree-on:degree-colored",
+      "light:chord-row:none:degree-off:row-chip-chord-root",
+      "light:degree-ramp:none:degree-on:I",
+      "dark:fretboard:none:degree-off:key-tonic",
+      "dark:practice-pill:none:degree-off:chord-root",
+      "dark:degree-chip:none:degree-on:degree-colored",
+      "dark:chord-row:none:degree-off:row-chip-chord-root",
+      "dark:degree-ramp:none:degree-on:I",
+    ]) {
+      await expect(page.locator(`[data-audit-id="${auditId}"]`)).toContainText("label ctr");
+      await expect(page.locator(`[data-audit-id="${auditId}"]`)).toContainText("ring ctr");
+    }
+
     await expectSvgText("light:fretboard:none:degree-off:key-tonic", white);
     await expectSvgText("light:fretboard:none:degree-off:chord-root", white);
     await expectSvgText("light:fretboard:guide-tones:degree-off:guide-tone-emphasis", white);
@@ -167,6 +215,67 @@ test.describe("Note Color Audit Visual", () => {
     ]) {
       await expectLabelsNot(auditId, white, "button span");
     }
+
+    const lightGuidePill = await boxStyle("light:practice-pill:none:degree-off:guide-tone");
+    const lightTensionPill = await boxStyle("light:practice-pill:none:degree-off:tension");
+    expect(lightGuidePill.backgroundColor).not.toBe(lightTensionPill.backgroundColor);
+
+    const lightChordToneChip = await boxStyle("light:chord-row:none:degree-off:row-chip-chord-tone-in-scale");
+    const lightOutsideToneChip = await boxStyle("light:chord-row:none:degree-off:row-chip-outside-chord");
+    expect(lightChordToneChip.backgroundColor).not.toBe(lightOutsideToneChip.backgroundColor);
+
+    const lightInScaleFretboard = await fretboardShapeStyle(
+      "light:fretboard:none:degree-off:chord-tone-in-scale",
+    );
+    const lightOutsideFretboard = await fretboardShapeStyle(
+      "light:fretboard:none:degree-off:chord-tone-outside-scale",
+    );
+    expect(lightInScaleFretboard.fill).not.toBe(lightOutsideFretboard.fill);
+
+    const degreeRampIds = ["I", "II", "III", "IV", "V", "VI", "VII"] as const;
+    const degreeRampFills = await Promise.all(
+      degreeRampIds.map(async (id) => {
+        const state = await boxStyle(`light:degree-ramp:none:degree-on:${id}`);
+        return state.backgroundColor;
+      }),
+    );
+    expect(new Set(degreeRampFills).size).toBe(degreeRampIds.length);
+    const blueNoteRamp = await boxStyle("light:degree-ramp:none:degree-on:b5");
+    expect(blueNoteRamp.beforeBackgroundColor).not.toBe("rgba(0, 0, 0, 0)");
+
+    const darkGuidePill = await boxStyle("dark:practice-pill:none:degree-off:guide-tone");
+    const darkTensionPill = await boxStyle("dark:practice-pill:none:degree-off:tension");
+    const darkRootPill = await boxStyle("dark:practice-pill:none:degree-off:chord-root");
+    expect(darkGuidePill.backgroundColor).not.toBe(darkTensionPill.backgroundColor);
+    expect(darkTensionPill.backgroundColor).not.toBe(darkRootPill.backgroundColor);
+
+    const darkChordToneChip = await boxStyle("dark:chord-row:none:degree-off:row-chip-chord-tone-in-scale");
+    const darkOutsideToneChip = await boxStyle("dark:chord-row:none:degree-off:row-chip-outside-chord");
+    expect(darkChordToneChip.backgroundColor).not.toBe(darkOutsideToneChip.backgroundColor);
+
+    const darkGuideFretboard = await fretboardShapeStyle(
+      "dark:fretboard:guide-tones:degree-off:guide-tone-emphasis",
+    );
+    const darkTensionFretboard = await fretboardShapeStyle(
+      "dark:fretboard:tension:degree-off:outside-tension-emphasis",
+    );
+    expect(darkGuideFretboard.fill).not.toBe(darkTensionFretboard.fill);
+
+    const darkFretboardDegreeCtr = await readoutValue(
+      "dark:fretboard:none:degree-on:key-tonic",
+      "label ctr",
+    );
+    expect(darkFretboardDegreeCtr.startsWith("fail")).toBe(false);
+
+    const darkDegreeRampVICtr = await readoutValue("dark:degree-ramp:none:degree-on:VI", "label ctr");
+    expect(darkDegreeRampVICtr.startsWith("warn")).toBe(false);
+    expect(darkDegreeRampVICtr.startsWith("fail")).toBe(false);
+
+    const darkInactivePillCtr = await readoutValue(
+      "dark:practice-pill:none:degree-off:inactive",
+      "label ctr",
+    );
+    expect(darkInactivePillCtr.startsWith("fail")).toBe(false);
 
     const locator = page.getByTestId("note-color-audit");
     await locator.scrollIntoViewIfNeeded();

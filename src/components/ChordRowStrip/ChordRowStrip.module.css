@@ -63,25 +63,25 @@
 }
 
 .chord-row-item[data-role="chord-root"] .chord-row-chip {
-  background: var(--role-chord-bg-strong);
-  border-color: var(--role-chord-border);
+  background: var(--note-role-root-fill, var(--role-chord-bg-strong));
+  border-color: var(--note-role-border, var(--role-chord-border));
   border-width: calc(var(--chord-chip-border-width) + 1px);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--role-chord-border) 65%, transparent), 
-              0 0 0 3px color-mix(in srgb, var(--role-chord-border) 14%, transparent);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--note-role-border, var(--role-chord-border)) 65%, transparent), 
+              0 0 0 3px color-mix(in srgb, var(--note-role-border, var(--role-chord-border)) 14%, transparent);
   opacity: 1;
 }
 
 .chord-row-item[data-role="chord-tone-in-scale"] .chord-row-chip {
-  background: var(--role-chord-bg);
-  border-color: var(--role-chord-border);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--role-chord-border) 65%, transparent);
+  background: var(--note-role-chord-fill, var(--role-chord-bg));
+  border-color: var(--note-role-border, var(--role-chord-border));
+  box-shadow: 0 0 6px color-mix(in srgb, var(--note-role-border, var(--role-chord-border)) 65%, transparent);
   opacity: 1;
 }
 
 .chord-row-item[data-role="chord-tone-outside-scale"] .chord-row-chip {
-  background: color-mix(in srgb, var(--role-chord-border) 30%, transparent);
-  border-color: color-mix(in srgb, var(--role-chord-border) 85%, transparent);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--role-chord-border) 65%, transparent);
+  background: var(--note-role-tension-fill, color-mix(in srgb, var(--role-chord-border) 30%, transparent));
+  border-color: color-mix(in srgb, var(--note-role-border, var(--role-chord-border)) 85%, transparent);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--note-role-border, var(--role-chord-border)) 65%, transparent);
   border-style: dashed;
   opacity: 1;
 }
@@ -183,30 +183,30 @@
 
 /* Chord-root chip: warm amber fill (strong) */
 :global([data-theme="modern-light"]) .chord-row-item[data-role="chord-root"] .chord-row-chip {
-  background: #c2410c;
-  border-color: #ea580c;
-  box-shadow: 0 0 5px color-mix(in srgb, #ea580c 35%, transparent),
-              0 0 0 3px color-mix(in srgb, #ea580c 10%, transparent);
+  background: var(--note-role-root-fill);
+  border-color: var(--note-role-border);
+  box-shadow: 0 0 5px color-mix(in srgb, var(--note-role-border) 35%, transparent),
+              0 0 0 3px color-mix(in srgb, var(--note-role-border) 10%, transparent);
 }
 
 /* In-scale chord tone: warm amber fill; border solid for crisp definition. */
 :global([data-theme="modern-light"]) .chord-row-item[data-role="chord-tone-in-scale"] .chord-row-chip {
-  background: #d97706;
-  border-color: #ea580c;
-  box-shadow: 0 0 5px color-mix(in srgb, #ea580c 25%, transparent);
+  background: var(--note-role-chord-fill);
+  border-color: var(--note-role-border);
+  box-shadow: 0 0 5px color-mix(in srgb, var(--note-role-border) 25%, transparent);
 }
 
-/* Outside-scale chord tone: yellow-amber fill matches fretboard tension fill; dashed border is inherited from the role rule. */
+/* Outside-scale chord tone: amber-yellow fill keeps tension distinct from in-scale chord tones. */
 :global([data-theme="modern-light"]) .chord-row-item[data-role="chord-tone-outside-scale"] .chord-row-chip {
-  background: #d97706;
+  background: var(--note-role-tension-fill);
   border-color: var(--neon-orange);
-  box-shadow: 0 0 5px color-mix(in srgb, #ea580c 20%, transparent);
+  box-shadow: 0 0 5px color-mix(in srgb, var(--note-role-border) 20%, transparent);
 }
 
 :global([data-theme="modern-light"]) .chord-row-item:is([data-role="chord-root"], [data-role="chord-tone-in-scale"], [data-role="chord-tone-outside-scale"]) .chord-row-note,
 :global([data-theme="modern-light"]) .chord-row-item:is([data-role="chord-root"], [data-role="chord-tone-in-scale"], [data-role="chord-tone-outside-scale"]) .chord-row-interval {
-  color: #ffffff;
-  text-shadow: 0 1px 1px rgb(0 0 0 / 0.55);
+  color: var(--note-label-on-color);
+  text-shadow: var(--note-label-on-color-shadow);
 }
 
 /* Legend divider: warm-aligned */
