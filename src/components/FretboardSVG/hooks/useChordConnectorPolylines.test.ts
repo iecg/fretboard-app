@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   buildChordConnectorPolylines,
-  MAX_PLAYABLE_FRET_SPAN,
+  MAX_PLAYABLE_FRET_POSITIONS,
   CHORD_TONE_CLASSES,
 } from "./useChordConnectorPolylines";
 import type { NoteData } from "./useNoteData";
@@ -157,33 +157,59 @@ describe("buildChordConnectorPolylines", () => {
   });
 
   // -------------------------------------------------------------------------
-  // (d) MAX_PLAYABLE_FRET_SPAN boundary (fretted-note span filter)
+  // (d) MAX_PLAYABLE_FRET_POSITIONS boundary (fret-positions-inclusive filter)
   // -------------------------------------------------------------------------
 
-  it(`(d) voicing with fretted span exactly MAX_PLAYABLE_FRET_SPAN (${MAX_PLAYABLE_FRET_SPAN}) is emitted`, () => {
-    // C at fret 2, E at fret 2, G at fret 2 + MAX_PLAYABLE_FRET_SPAN.
-    // Fretted span = MAX_PLAYABLE_FRET_SPAN → kept.
+  it(`(d) voicing with exactly MAX_PLAYABLE_FRET_POSITIONS (${MAX_PLAYABLE_FRET_POSITIONS}) fret positions inclusive is emitted`, () => {
+    // C at fret 2, E at fret 3, G at fret 4.
+    // Fretted positions {2,3,4} → count = 3 = MAX_PLAYABLE_FRET_POSITIONS → kept.
     const noteData = [
       makeNote(0, 2, "C", "chord-root"),
-      makeNote(1, 2, "E", "chord-tone-in-scale"),
-      makeNote(2, 2 + MAX_PLAYABLE_FRET_SPAN, "G", "chord-tone-in-scale"),
+      makeNote(1, 3, "E", "chord-tone-in-scale"),
+      makeNote(2, 4, "G", "chord-tone-in-scale"),
     ];
     const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
     expect(result).toHaveLength(1);
   });
 
-  it(`(d) voicing with fretted span MAX_PLAYABLE_FRET_SPAN + 1 (${MAX_PLAYABLE_FRET_SPAN + 1}) is NOT emitted`, () => {
-    // G is at fret 2 + MAX_PLAYABLE_FRET_SPAN + 1: fretted span exceeds limit → dropped.
-    // Note: all three notes must still be within MAX_FRET_SPAN (${MAX_FRET_SPAN}) of
-    // the anchor so the candidate-gathering window can find them; the voicing is
-    // dropped only by the playability filter, not the cluster window.
+  it(`(d) voicing with MAX_PLAYABLE_FRET_POSITIONS + 1 (${MAX_PLAYABLE_FRET_POSITIONS + 1}) fret positions inclusive is NOT emitted`, () => {
+    // Fretted notes at frets {2,3,4,5}: position count = 4 > MAX_PLAYABLE_FRET_POSITIONS → dropped.
+    // Note: all notes must still be within MAX_FRET_SPAN of the anchor so the
+    // candidate-gathering window can find them; the voicing is dropped only by
+    // the playability filter, not the cluster window.
     const noteData = [
       makeNote(0, 2, "C", "chord-root"),
-      makeNote(1, 2, "E", "chord-tone-in-scale"),
-      makeNote(2, 2 + MAX_PLAYABLE_FRET_SPAN + 1, "G", "chord-tone-in-scale"),
+      makeNote(1, 3, "E", "chord-tone-in-scale"),
+      makeNote(2, 5, "G", "chord-tone-in-scale"),
     ];
     const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
     expect(result).toHaveLength(0);
+  });
+
+  it("(d) UAT-ISSUE-1: Cm7 voicing frets [5,6,8,8] (4 positions inclusive) is NOT emitted", () => {
+    // Real-world UAT case: D#@str4-fret6, A#@str3-fret8, C@str2-fret5, G@str1-fret8
+    // Fretted positions {5,6,7,8} → count = 4 > MAX_PLAYABLE_FRET_POSITIONS → dropped.
+    const noteData = [
+      makeNote(0, 8, "G", "chord-tone-in-scale"),  // G (str1 in guitar numbering)
+      makeNote(1, 5, "C", "chord-root"),            // C (str2)
+      makeNote(2, 8, "A#", "chord-tone-in-scale"),  // A# (str3)
+      makeNote(3, 6, "D#", "chord-tone-in-scale"),  // D# (str4)
+    ];
+    const result = buildChordConnectorPolylines(noteData, ["C", "D#", "G", "A#"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    expect(result).toHaveLength(0);
+  });
+
+  it("(d) UAT-ISSUE-2: Cm7 voicing frets [4,5,5,6] (3 positions inclusive) is emitted", () => {
+    // Real-world UAT case: A#@str0-fret6, D#@str1-fret4, C@str2-fret5, G@str3-fret5
+    // Fretted positions {4,5,6} → count = 3 = MAX_PLAYABLE_FRET_POSITIONS → kept.
+    const noteData = [
+      makeNote(0, 6, "A#", "chord-tone-in-scale"),  // A# (str1 in guitar numbering)
+      makeNote(1, 4, "D#", "chord-tone-in-scale"),  // D# (str2)
+      makeNote(2, 5, "C", "chord-root"),             // C (str3)
+      makeNote(3, 5, "G", "chord-tone-in-scale"),   // G (str4)
+    ];
+    const result = buildChordConnectorPolylines(noteData, ["C", "D#", "G", "A#"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    expect(result).toHaveLength(1);
   });
 
   // -------------------------------------------------------------------------
@@ -214,9 +240,9 @@ describe("buildChordConnectorPolylines", () => {
     expect(result).toHaveLength(1);
   });
 
-  it("(d) voicing with fretted span 3 (e.g. frets [0,2,3,3]) → kept", () => {
-    // Open C + E@fret2 + G@fret3. Fretted: [2,3] → span=1 → kept.
-    // (The example [0,2,3,3] per the spec maps to fretted notes at 2,3,3 → span=1.)
+  it("(d) voicing with open string + frets [2,3]: 2 fret positions inclusive → kept", () => {
+    // Open C (excluded from span) + E@fret2 + G@fret3.
+    // Fretted positions {2,3} → count = 2 ≤ MAX_PLAYABLE_FRET_POSITIONS → kept.
     const noteData = [
       makeNote(0, 0, "C", "chord-root"),
       makeNote(1, 2, "E", "chord-tone-in-scale"),
@@ -226,8 +252,8 @@ describe("buildChordConnectorPolylines", () => {
     expect(result).toHaveLength(1);
   });
 
-  it("(d) voicing with fretted span 4 (e.g. frets [1,5,5,5]) → dropped", () => {
-    // Fretted notes: [1,5,5,5] → fretted span = 5-1 = 4 > MAX_PLAYABLE_FRET_SPAN → dropped.
+  it("(d) voicing with frets [1,5,5,5]: 5 fret positions inclusive → dropped", () => {
+    // Fretted notes: {1,5} → positions {1,2,3,4,5} → count = 5 > MAX_PLAYABLE_FRET_POSITIONS → dropped.
     const noteData = [
       makeNote(0, 1, "C", "chord-root"),
       makeNote(1, 5, "E", "chord-tone-in-scale"),
@@ -538,13 +564,14 @@ describe("buildChordConnectorPolylines", () => {
   });
 
   it("7th chord voicing (4 vertices): d is M+L+L+L open polyline visiting all 4 vertices", () => {
-    // Cmaj7: C, E, G, B across 4 strings and different frets.
+    // Cmaj7: C, E, G, B across 4 strings within 3 fret positions.
+    // Frets [3,4,4,5]: positions {3,4,5} → count 3 ≤ MAX_PLAYABLE_FRET_POSITIONS → kept.
     // d: open polyline through all 4 vertices — M v0 L v1 L v2 L v3 (no Z).
     const noteData = [
       makeNote(0, 3, "C", "chord-root"),
-      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(1, 4, "E", "chord-tone-in-scale"),
       makeNote(2, 4, "G", "chord-tone-in-scale"),
-      makeNote(3, 6, "B", "chord-tone-in-scale"),
+      makeNote(3, 5, "B", "chord-tone-in-scale"),
     ];
     const result = buildChordConnectorPolylines(noteData, ["C", "E", "G", "B"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
     expect(result).toHaveLength(1);
@@ -590,16 +617,17 @@ describe("buildChordConnectorPolylines", () => {
   // -------------------------------------------------------------------------
 
   it("(regression) near-collinear diagonal G-E-C: d visits all 3 vertices (no vertex drop)", () => {
-    // Voicing: G(string 4, fret 5) → E(string 5, fret 7) → C(string 6, fret 8).
+    // Voicing: G(string 4, fret 5) → E(string 5, fret 6) → C(string 6, fret 7).
+    // Frets [5,6,7]: positions {5,6,7} → count 3 ≤ MAX_PLAYABLE_FRET_POSITIONS → kept.
     // With fretCenterX(fi)=fi*10 and stringYAt(si)=si*20:
-    //   G: x=50, y=80   E: x=70, y=100   C: x=80, y=120 (near-collinear diagonal).
+    //   G: x=50, y=80   E: x=60, y=100   C: x=70, y=120 (near-collinear diagonal).
     //
     // d: open polyline through all 3 vertices in string-index order (no Z).
     //    The middle vertex E is always visited — no hull collapse possible.
     const noteData = [
       makeNote(4, 5, "G", "chord-tone-in-scale"),
-      makeNote(5, 7, "E", "chord-tone-in-scale"),
-      makeNote(6, 8, "C", "chord-root"),
+      makeNote(5, 6, "E", "chord-tone-in-scale"),
+      makeNote(6, 7, "C", "chord-root"),
     ];
     const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
     expect(result).toHaveLength(1);
@@ -610,10 +638,10 @@ describe("buildChordConnectorPolylines", () => {
     expect(d.endsWith("Z")).toBe(false);
     const lCount = (d.match(/\bL\b/g) ?? []).length;
     expect(lCount).toBe(2);
-    // Verify all 3 vertices appear: x=50 (fret 5), x=70 (fret 7), x=80 (fret 8).
+    // Verify all 3 vertices appear: x=50 (fret 5), x=60 (fret 6), x=70 (fret 7).
     expect(d).toContain("50 ");
+    expect(d).toContain("60 ");
     expect(d).toContain("70 ");
-    expect(d).toContain("80 ");
   });
 });
 
@@ -738,9 +766,9 @@ describe("paletteIndex field", () => {
     const noteDataPos1 = [
       makeNote(0, 0, "C"), makeNote(1, 2, "E"), makeNote(2, 4, "G"),
     ];
-    // Position 2: frets 12, 13, 15 → fretted span = 15-12 = 3 (within limit).
+    // Position 2: frets 12, 13, 14 → fret positions {12,13,14} → count 3 (within limit).
     const noteDataPos2 = [
-      makeNote(0, 12, "C"), makeNote(1, 13, "E"), makeNote(2, 15, "G"),
+      makeNote(0, 12, "C"), makeNote(1, 13, "E"), makeNote(2, 14, "G"),
     ];
 
     const result1 = buildChordConnectorPolylines(
@@ -752,6 +780,7 @@ describe("paletteIndex field", () => {
 
     expect(result1[0]!.paletteIndex).toBe(result2[0]!.paletteIndex);
     // G is a perfect 5th above C → 7 semitones → palette index 7.
+    // Verify G (stringIndex 2 = lowest string) is still the bass at position 2.
     expect(result1[0]!.paletteIndex).toBe(7);
   });
 

@@ -4,11 +4,18 @@ import { openPolylinePath } from "../utils/pathGeometry";
 import { NOTES } from "../../../core/theory";
 
 /**
- * Compute the fret span of the **fretted** notes in a voicing (open strings
- * excluded). Returns 0 when there are fewer than 2 fretted notes — a voicing
+ * Count the number of distinct fret positions spanned by the **fretted** notes
+ * in a voicing (open strings excluded), inclusive of both endpoints.
+ *
+ * Examples:
+ *   frets [5,6,8,8] → positions {5,6,7,8} → count 4  (max-min+1 = 8-5+1)
+ *   frets [4,5,5,6] → positions {4,5,6}   → count 3  (max-min+1 = 6-4+1)
+ *   frets [5,5,5]   → positions {5}        → count 1  (max-min+1 = 5-5+1)
+ *
+ * Returns 0 when there are fewer than 2 fretted notes — a voicing
  * with 0 or 1 fretted note has no meaningful span and must not be filtered out.
  */
-function voicingFrettedSpan(combo: NoteData[]): number {
+function voicingFrettedPositionCount(combo: NoteData[]): number {
   let minF = Infinity;
   let maxF = -Infinity;
   let frettedCount = 0;
@@ -18,7 +25,7 @@ function voicingFrettedSpan(combo: NoteData[]): number {
     if (p.fretIndex > maxF) maxF = p.fretIndex;
     frettedCount++;
   }
-  return frettedCount < 2 ? 0 : maxF - minF;
+  return frettedCount < 2 ? 0 : maxF - minF + 1;
 }
 
 /**
@@ -71,14 +78,21 @@ export interface ChordConnectorVoicing {
 export const MAX_FRET_SPAN = 5;
 
 /**
- * Maximum fret span (inclusive) allowed across the **fretted** notes of a
- * selected voicing. Open strings (fretIndex === 0) are excluded from this
- * calculation — they are reachable from any hand position.
+ * Maximum number of distinct fret positions (inclusive) allowed across the
+ * **fretted** notes of a selected voicing. Open strings (fretIndex === 0) are
+ * excluded — they are reachable from any hand position.
  *
- * Voicings where max(fretted) − min(fretted) > MAX_PLAYABLE_FRET_SPAN are
- * dropped as unplayable; a standard hand cannot comfortably stretch that far.
+ * "3 fret positions" means the fretted notes span at most frets N, N+1, N+2
+ * (i.e., max(fretted) − min(fretted) + 1 ≤ 3, equivalently max − min ≤ 2).
+ *
+ * Voicings where voicingFrettedPositionCount(combo) > MAX_PLAYABLE_FRET_POSITIONS
+ * are dropped as unplayable — a standard hand cannot comfortably cover more
+ * than 3 adjacent fret positions.
+ *
+ * Examples dropped (4 positions): frets [5,6,8,8] → positions 5,6,7,8 → count 4.
+ * Examples kept  (3 positions): frets [4,5,5,6] → positions 4,5,6   → count 3.
  */
-export const MAX_PLAYABLE_FRET_SPAN = 3;
+export const MAX_PLAYABLE_FRET_POSITIONS = 3;
 
 /**
  * Note classes treated as chord-tone roles for the connector layer.
@@ -295,10 +309,10 @@ export function buildChordConnectorPolylines(
 
       if (!bestCombo) continue;
 
-      // Drop voicings whose fretted-note span exceeds the playability threshold.
-      // Open strings (fretIndex === 0) are excluded from the span calculation —
-      // they are reachable from any hand position.
-      if (voicingFrettedSpan(bestCombo) > MAX_PLAYABLE_FRET_SPAN) continue;
+      // Drop voicings whose fretted-note position count exceeds the playability
+      // threshold. Open strings (fretIndex === 0) are excluded — they are
+      // reachable from any hand position.
+      if (voicingFrettedPositionCount(bestCombo) > MAX_PLAYABLE_FRET_POSITIONS) continue;
 
       // Canonical key: sorted "(stringIndex,fretIndex)" pairs.
       const canonicalKey = bestCombo
