@@ -869,22 +869,24 @@ describe("paletteIndex field", () => {
 // -------------------------------------------------------------------------
 // Per-voicing offset: determinism and paletteIndex independence
 //
-// Phase 3 added a per-voicing pixel offset derived from a hash of canonicalKey.
-// Same-inversion voicings (identical paletteIndex) at different neck positions
-// share paletteIndex but differ in canonicalKey → different offsets → different
-// path strings. The offset is deterministic: same canonicalKey → same path.
+// Phase 3 (plan 02) uses adjacency-aware cluster assignment instead of a
+// static canonicalKeyHash. Each call to buildChordConnectorPolylines is
+// independent — when a call contains only one voicing, it forms a singleton
+// cluster and receives offset 0. Two separate calls with different note
+// positions produce different path strings because the vertex coordinates
+// themselves differ (different fret positions → different x values).
 //
-// Test geometry is calibrated so the two chosen canonicalKey strings hash to
-// different OFFSET_BUCKET indices:
-//   canonicalKey "0,1|1,2|2,3" → bucket 1 (offsetPx = 1)
-//   canonicalKey "0,2|1,3|2,4" → bucket 0 (offsetPx = 0)
+// The key property tested here: same paletteIndex does NOT guarantee the same
+// path — different neck positions still produce different paths. Determinism:
+// the same inputs always produce the same output.
+//
 // Both voicings have G on the highest-stringIndex string (string 2) → same
 // paletteIndex (7) regardless of fret position.
 // -------------------------------------------------------------------------
 
 describe("per-voicing offset: determinism and paletteIndex independence", () => {
   // Voicing A: C major, G in bass, frets 1-2-3 on strings 0-1-2.
-  // canonicalKey "0,1|1,2|2,3" → offsetPx = 1 (bucket 1 in OFFSET_BUCKET=[0,1,2,3])
+  // Singleton cluster → offsetPx = 0.
   const voicingANotes = [
     makeNote(0, 1, "C", "chord-root"),
     makeNote(1, 2, "E", "chord-tone-in-scale"),
@@ -892,8 +894,8 @@ describe("per-voicing offset: determinism and paletteIndex independence", () => 
   ];
 
   // Voicing B: same note names, same bass (G on str2) → same paletteIndex.
-  // Frets 2-3-4 on strings 0-1-2.
-  // canonicalKey "0,2|1,3|2,4" → offsetPx = 0 (bucket 0 in OFFSET_BUCKET=[0,1,2,3])
+  // Frets 2-3-4 on strings 0-1-2. Singleton cluster → offsetPx = 0.
+  // Different fret positions → different vertex coordinates → different path.
   const voicingBNotes = [
     makeNote(0, 2, "C", "chord-root"),
     makeNote(1, 3, "E", "chord-tone-in-scale"),
@@ -910,7 +912,8 @@ describe("per-voicing offset: determinism and paletteIndex independence", () => 
     // Confirm same paletteIndex (same inversion — G in bass for both).
     expect(rA[0]!.paletteIndex).toBe(rB[0]!.paletteIndex);
 
-    // Different canonicalKey → different hash bucket → different radius → different path.
+    // Different fret positions → different vertex coordinates → different path strings,
+    // even though both receive offset 0 as singleton clusters.
     expect(rA[0]!.paths.fill).not.toBe(rB[0]!.paths.fill);
   });
 
