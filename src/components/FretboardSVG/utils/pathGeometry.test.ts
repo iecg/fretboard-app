@@ -619,5 +619,60 @@ describe("offsetOutlinePath", () => {
     expect(dCCW.endsWith("Z")).toBe(true);
     expect(dCW.endsWith("Z")).toBe(true);
   });
+
+  it("normals point OUTWARD: every coordinate in path is at least as far from centroid as the polygon vertices", () => {
+    // Regression for the screen-coords winding bug: math-RH-perp `(dy, -dx)`
+    // points inward for screen-CCW (math-CW) polygons unless the sign is
+    // flipped. We verify by parsing the absolute coordinates out of the path
+    // and checking each one is at least as far from the centroid as the
+    // closest original vertex.
+    //
+    // Use a polygon whose shortest edge is comfortably longer than 2r to
+    // guarantee no self-intersection — this isolates the winding bug from
+    // any radius-clamping concerns.
+    const triangle = [
+      { x: 0, y: 0 },
+      { x: 200, y: 0 },
+      { x: 100, y: 173.2 },   // ~equilateral, side 200
+    ];
+    const r = 10;             // r << minEdgeLen / 2 = 100
+    const cx = (0 + 200 + 100) / 3;
+    const cy = (0 + 0 + 173.2) / 3;
+
+    // Closest vertex distance from centroid (any one will do for this regular triangle).
+    const minVertexDist = Math.min(
+      ...triangle.map((v) => Math.hypot(v.x - cx, v.y - cy)),
+    );
+
+    for (const polygon of [triangle, [...triangle].reverse()]) {
+      const d = offsetOutlinePath(polygon, r);
+      // Extract every numeric pair from absolute commands (M/L/A endpoint).
+      // SVG arc command form: A rx ry rotation large sweep x y
+      const tokens = d.split(/\s+/);
+      const points: Array<{ x: number; y: number }> = [];
+      for (let i = 0; i < tokens.length; i++) {
+        const t = tokens[i];
+        if (t === "M" || t === "L") {
+          const x = Number(tokens[i + 1]);
+          const y = Number(tokens[i + 2]);
+          if (Number.isFinite(x) && Number.isFinite(y)) points.push({ x, y });
+        } else if (t === "A") {
+          // A rx ry rot large sweep x y → endpoint at offsets +5, +6
+          const x = Number(tokens[i + 6]);
+          const y = Number(tokens[i + 7]);
+          if (Number.isFinite(x) && Number.isFinite(y)) points.push({ x, y });
+        }
+      }
+      expect(points.length).toBeGreaterThan(0);
+
+      // Every offset point must be at least as far from centroid as the
+      // closest original vertex (within a small floating-point tolerance).
+      // If the normals were inward, offset points would be CLOSER to centroid.
+      for (const p of points) {
+        const dist = Math.hypot(p.x - cx, p.y - cy);
+        expect(dist).toBeGreaterThan(minVertexDist - 1e-6);
+      }
+    }
+  });
 });
 
