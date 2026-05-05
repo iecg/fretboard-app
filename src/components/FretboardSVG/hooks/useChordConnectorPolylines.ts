@@ -99,6 +99,37 @@ export const MAX_FRET_SPAN = 5;
 export const MAX_PLAYABLE_FRET_POSITIONS = 3;
 
 /**
+ * Minkowski-sum disk radius factor for the chord-connector outline envelope.
+ * Applied as `stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR + offsetPx`.
+ * Reduced from 0.55 → 0.47 to sit the outline closer to the note bubbles.
+ */
+export const CHORD_CONNECTOR_BASE_RADIUS_FACTOR = 0.47;
+
+/**
+ * Per-voicing pixel offset deltas added to the base radius.
+ * Keyed by `canonicalKeyHash(canonicalKey) % OFFSET_BUCKET.length` so
+ * same-inversion voicings that share `paletteIndex` but differ in neck
+ * position receive different offsets, preventing coincident outline strokes.
+ * Non-negative bucket: smallest envelope equals base radius (no clipping risk).
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- used in P02
+const OFFSET_BUCKET = [0, 1, 2, 3] as const;
+
+/**
+ * Stable hash of a canonical voicing key string.
+ * Returns a non-negative integer suitable for modulo bucketing.
+ * Uses a djb2-style accumulator; `canonicalKey` is short (≤ 30 chars).
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- used in P02
+function canonicalKeyHash(key: string): number {
+  let h = 0;
+  for (let i = 0; i < key.length; i++) {
+    h = (h * 31 + key.charCodeAt(i)) >>> 0;
+  }
+  return h;
+}
+
+/**
  * Note classes treated as chord-tone roles for the connector layer.
  * Mirrors the role set in useNoteData.ts (applyDimOpacity guard) so that
  * connector membership matches what the user sees on the fretboard.
