@@ -385,16 +385,22 @@ export const FretboardSVG = memo(function FretboardSVG({
           <g clipPath={svgDefUrl("fretboard-taper")}>
             <FretboardShapeLayer svgPolygons={svgPolygons} />
             {connectorPolylines.length > 0 && (
-              <g
-                className={styles["chord-connectors"]}
-                aria-hidden="true"
-                pointerEvents="none"
-              >
+              <g className={styles["chord-connectors"]} aria-hidden="true" pointerEvents="none">
+                {/* Fill pass: all voicings rendered first (below outlines) */}
                 {connectorPolylines.map((voicing, i) => (
                   <path
-                    key={i}
-                    d={voicing.d}
-                    fill="none"
+                    key={`fill-${i}`}
+                    d={voicing.paths.fill}
+                    data-layer="fill"
+                    style={{ fill: `var(--chord-connector-color-${voicing.paletteIndex + 1})` }}
+                  />
+                ))}
+                {/* Outline pass: all voicings rendered on top */}
+                {connectorPolylines.map((voicing, i) => (
+                  <path
+                    key={`outline-${i}`}
+                    d={voicing.paths.outline}
+                    data-layer="outline"
                     style={{ stroke: `var(--chord-connector-color-${voicing.paletteIndex + 1})` }}
                   />
                 ))}
