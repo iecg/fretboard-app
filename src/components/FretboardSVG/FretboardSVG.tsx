@@ -59,7 +59,7 @@ interface FretboardSVGProps {
    * When provided along with activeShape, the chord overlay will only highlight
    * chord tones that fall within the active shape/position boundaries.
    */
-  activePattern?: "caged" | "3nps" | "all";
+  activePattern?: "caged" | "3nps" | "none";
   /**
    * Active shape (CAGED letter or 3NPS position number) for shape-constrained
    * chord overlay rendering.

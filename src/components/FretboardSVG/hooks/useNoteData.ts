@@ -52,7 +52,7 @@ export interface UseNoteDataProps {
   shapePolygons: ShapePolygon[];
   boxBounds: BoxBound[];
   chordFretSpread: number;
-  activePattern?: "caged" | "3nps" | "all";
+  activePattern?: "caged" | "3nps" | "none";
   shapeScope?: "single" | "multi" | "global";
   activeShape?: ActiveShapeType;
   scaleName: string;

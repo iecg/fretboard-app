@@ -655,7 +655,7 @@ describe("FretboardSVG/FretboardSVG", () => {
           chordTones={["C", "E", "G"]}
           chordRoot="C"
           shapeScope="global"
-          activePattern="all"
+          activePattern="none"
         />,
       );
       const chordTonesInScale = container.querySelectorAll(".chord-tone-in-scale");
@@ -681,7 +681,7 @@ describe("FretboardSVG/FretboardSVG", () => {
           chordRoot="C"
           highlightNotes={["C", "E", "G"]}
           shapePolygons={multiPolygons}
-          activePattern="all"
+          activePattern="none"
           activeShape={["E", "A"]}
           shapeScope="multi"
         />,
@@ -759,7 +759,7 @@ describe("FretboardSVG/FretboardSVG", () => {
           chordRoot="C"
           highlightNotes={["C", "E", "G"]}
           shapePolygons={multiPolygons}
-          activePattern="all"
+          activePattern="none"
           activeShape="E"
           shapeScope="global"
         />,
