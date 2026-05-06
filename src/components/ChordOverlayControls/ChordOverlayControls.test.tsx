@@ -355,16 +355,21 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(chordTypeGroup).toHaveAttribute("data-overflow", "scroll");
     });
 
-    it("clicking Off clears chordQualityOverride to null (degree mode)", async () => {
+    it("degree mode: Off button is absent from chord-type toggle bar", () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
       const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
 
-      // First select a chord type so something is active
-      await userEvent.click(within(chordTypeGroup).getByRole("button", { name: "M7" }));
-      // Then click Off
-      await userEvent.click(within(chordTypeGroup).getByRole("button", { name: "Off" }));
+      // Off must not appear in the degree-mode chord-type toggle bar
+      expect(within(chordTypeGroup).queryByRole("button", { name: "Off" })).not.toBeInTheDocument();
+    });
 
-      expect(within(chordTypeGroup).getByRole("button", { name: "Off" }).getAttribute("aria-pressed")).toBe("true");
+    it("degree mode: resolved diatonic chord-type is highlighted without user interaction", () => {
+      // DEGREE_MODE_SEEDS uses degree=I in C Major → diatonic default = Major Triad → Maj button
+      renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
+      const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
+
+      // The Maj button should be aria-pressed=true because chordType resolves to "Major Triad"
+      expect(within(chordTypeGroup).getByRole("button", { name: "Maj" }).getAttribute("aria-pressed")).toBe("true");
     });
   });
 
