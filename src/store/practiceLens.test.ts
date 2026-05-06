@@ -129,7 +129,7 @@ describe("practiceCuesAtom", () => {
     it("uses scale degrees for in-scale note labels", () => {
       const store = makeChordStore("Major", "C", "Major Triad", "targets");
       const cues = store.get(practiceCuesAtom);
-      expect(cues[0]!.notes.map((n) => n.intervalName)).toEqual(["I", "iii", "V"]);
+      expect(cues[0]!.notes.map((n) => n.intervalName)).toEqual(["1", "3", "5"]);
     });
 
     it("returns empty cues when no chord is set", () => {
@@ -412,7 +412,7 @@ describe("practiceBarChordGroupAtom", () => {
     const chordGroup = store.get(practiceBarChordGroupAtom);
     expect(chordGroup.notes.map((n) => [n.internalNote, n.intervalName])).toEqual([
       ["C#", "1"],
-      ["E", "iii"],
+      ["E", "3"],
       ["G#", "5"],
     ]);
   });
