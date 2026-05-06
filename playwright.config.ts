@@ -9,6 +9,7 @@ export default defineConfig({
   },
   use: {
     baseURL: "http://127.0.0.1:4173/fretboard-app/",
+    colorScheme: "dark",
     trace: "on-first-retry",
   },
   webServer: {

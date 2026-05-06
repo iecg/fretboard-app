@@ -555,7 +555,7 @@ describe("App", () => {
   });
 
   describe("Theme behavior", () => {
-    it("applies modern-dark theme by default", () => {
+    it("applies system theme by default", () => {
       render(<App />);
       expect(document.documentElement.getAttribute("data-theme")).toBe(
         "modern-dark",
