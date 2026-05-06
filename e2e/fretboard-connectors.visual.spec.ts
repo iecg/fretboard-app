@@ -151,12 +151,13 @@ test.describe("Chord Connector Visual Tests", () => {
       scaleName: "Major",
       chordOverlayMode: "manual",
       chordRootOverride: "C",
-      chordQualityOverride: "Major",
+      chordQualityOverride: "Major Triad",
     });
     const fretboard = page.getByTestId("fretboard-svg");
     await fretboard.scrollIntoViewIfNeeded();
 
-    // Hover a chord-tone button to activate the first voicing via the real atom path.
+    // Hover a root-active button to activate the first voicing via the real atom path.
+    // root-active is a CHORD_TONE_ROLE that fires activeVoicingKeyAtom in FretboardHitTargetLayer.
     await page.locator('button[data-note-role="root-active"]').first().hover();
     await waitForStableLayout(page);
 
@@ -169,13 +170,13 @@ test.describe("Chord Connector Visual Tests", () => {
       scaleName: "Major",
       chordOverlayMode: "manual",
       chordRootOverride: "C",
-      chordQualityOverride: "Major",
+      chordQualityOverride: "Major Triad",
       theme: "light",
     });
     const fretboard = page.getByTestId("fretboard-svg");
     await fretboard.scrollIntoViewIfNeeded();
 
-    // Hover a chord-tone button to activate the first voicing via the real atom path.
+    // Hover a root-active button to activate the first voicing via the real atom path.
     await page.locator('button[data-note-role="root-active"]').first().hover();
     await waitForStableLayout(page);
 
@@ -190,12 +191,12 @@ test.describe("Chord Connector Visual Tests", () => {
       scaleName: "Major",
       chordOverlayMode: "manual",
       chordRootOverride: "C",
-      chordQualityOverride: "Major",
+      chordQualityOverride: "Major Triad",
     });
     const fretboard = page.getByTestId("fretboard-svg");
     await fretboard.scrollIntoViewIfNeeded();
 
-    // Focus a chord-tone button via keyboard to drive the activeVoicingKeyAtom
+    // Focus a root-active button via keyboard to drive the activeVoicingKeyAtom
     // through the real onFocus handler in FretboardHitTargetLayer.
     await page.locator('button[data-note-role="root-active"]').first().focus();
     await waitForStableLayout(page);
@@ -209,13 +210,13 @@ test.describe("Chord Connector Visual Tests", () => {
       scaleName: "Major",
       chordOverlayMode: "manual",
       chordRootOverride: "C",
-      chordQualityOverride: "Major",
+      chordQualityOverride: "Major Triad",
       theme: "light",
     });
     const fretboard = page.getByTestId("fretboard-svg");
     await fretboard.scrollIntoViewIfNeeded();
 
-    // Focus a chord-tone button via keyboard to drive the activeVoicingKeyAtom
+    // Focus a root-active button via keyboard to drive the activeVoicingKeyAtom
     // through the real onFocus handler in FretboardHitTargetLayer.
     await page.locator('button[data-note-role="root-active"]').first().focus();
     await waitForStableLayout(page);
