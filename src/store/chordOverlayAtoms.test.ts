@@ -11,6 +11,7 @@ import {
   chordTypeAtom,
   chordQualityOverrideAtom,
   allChordMembersAtom,
+  setChordDegreeAtom,
 } from "./chordOverlayAtoms";
 import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
@@ -108,6 +109,137 @@ describe("chordOverlayAtoms — manual mode (write path)", () => {
     // Direct atom injection via renderWithAtoms sets manual mode. This is correct: tests that
     // seed a specific chord type care about chord rendering, not degree alignment.
     expect(store.get(chordOverlayModeAtom)).toBe("manual");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Group B.5 — degree mode quality override (preserves degree on quality change)
+// ---------------------------------------------------------------------------
+
+describe("chordOverlayAtoms — degree mode quality override", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("read path: degree mode + override returns the override quality (V Dom7 in C Major)", () => {
+    const store = makeAtomStore([
+      [chordDegreeAtom, "V"],
+      [chordOverlayModeAtom, "degree"],
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [chordQualityOverrideAtom, "Dominant 7th"],
+    ]);
+    expect(store.get(chordRootAtom)).toBe("G"); // V root from degree
+    expect(store.get(chordTypeAtom)).toBe("Dominant 7th"); // user override
+    expect(store.get(chordOverlayModeAtom)).toBe("degree"); // mode preserved
+  });
+
+  it("read path: degree mode without override returns diatonic default (V Major Triad in C Major)", () => {
+    const store = makeAtomStore([
+      [chordDegreeAtom, "V"],
+      [chordOverlayModeAtom, "degree"],
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      // chordQualityOverrideAtom intentionally not seeded → null
+    ]);
+    expect(store.get(chordRootAtom)).toBe("G");
+    expect(store.get(chordTypeAtom)).toBe("Major Triad"); // diatonic default
+  });
+
+  it("write path: writing chordTypeAtom in degree mode with active degree keeps mode = degree", () => {
+    const store = makeAtomStore([
+      [chordDegreeAtom, "V"],
+      [chordOverlayModeAtom, "degree"],
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+    ]);
+    store.set(chordTypeAtom, "Dominant 7th");
+    expect(store.get(chordOverlayModeAtom)).toBe("degree"); // NOT flipped to manual
+    expect(store.get(chordQualityOverrideAtom)).toBe("Dominant 7th");
+    expect(store.get(chordTypeAtom)).toBe("Dominant 7th");
+    expect(store.get(chordRootAtom)).toBe("G"); // V root still derived from degree
+  });
+
+  it("write path: writing chordTypeAtom in degree mode WITHOUT active degree falls through to manual", () => {
+    // Without a degree set, there's nothing to "preserve" — degree mode with a
+    // null degree means overlay-off, so writing a chord type explicitly should
+    // engage manual mode (current contract).
+    const store = makeAtomStore([
+      [chordDegreeAtom, null],
+      [chordOverlayModeAtom, "degree"],
+    ]);
+    store.set(chordTypeAtom, "Dominant 7th");
+    expect(store.get(chordOverlayModeAtom)).toBe("manual");
+  });
+
+  it("write path: manual mode unchanged — writing chordTypeAtom keeps mode = manual", () => {
+    const store = makeAtomStore([
+      [chordOverlayModeAtom, "manual"],
+      [chordRootOverrideAtom, "C"],
+    ]);
+    store.set(chordTypeAtom, "Dominant 7th");
+    expect(store.get(chordOverlayModeAtom)).toBe("manual");
+    expect(store.get(chordTypeAtom)).toBe("Dominant 7th");
+  });
+
+  it("setChordDegreeAtom: changing degree clears the quality override", () => {
+    const store = makeAtomStore([
+      [chordDegreeAtom, "V"],
+      [chordOverlayModeAtom, "degree"],
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [chordQualityOverrideAtom, "Dominant 7th"],
+    ]);
+    expect(store.get(chordTypeAtom)).toBe("Dominant 7th");
+    store.set(setChordDegreeAtom, "ii");
+    expect(store.get(chordDegreeAtom)).toBe("ii");
+    expect(store.get(chordQualityOverrideAtom)).toBeNull();
+    expect(store.get(chordTypeAtom)).toBe("Minor Triad"); // ii diatonic default
+    expect(store.get(chordRootAtom)).toBe("D");
+  });
+
+  it("setChordDegreeAtom: re-selecting the same degree does NOT clear the override", () => {
+    const store = makeAtomStore([
+      [chordDegreeAtom, "V"],
+      [chordOverlayModeAtom, "degree"],
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [chordQualityOverrideAtom, "Dominant 7th"],
+    ]);
+    store.set(setChordDegreeAtom, "V"); // no-op
+    expect(store.get(chordQualityOverrideAtom)).toBe("Dominant 7th");
+    expect(store.get(chordTypeAtom)).toBe("Dominant 7th");
+  });
+
+  it("setChordDegreeAtom: turning overlay off (degree=null) clears override", () => {
+    const store = makeAtomStore([
+      [chordDegreeAtom, "V"],
+      [chordOverlayModeAtom, "degree"],
+      [chordQualityOverrideAtom, "Dominant 7th"],
+    ]);
+    store.set(setChordDegreeAtom, null);
+    expect(store.get(chordDegreeAtom)).toBeNull();
+    expect(store.get(chordQualityOverrideAtom)).toBeNull();
+  });
+
+  it("scale change in degree mode preserves both degree and override (sticky on scale change)", () => {
+    // Use Major → Lydian — both define "V" at semitone 7 (Major Triad), so the
+    // degree resolves consistently across the scale change. Dorian etc. would
+    // remap V → v (minor) which is a different code path (cross-scale degree
+    // remapping is outside this fix's scope).
+    const store = makeAtomStore([
+      [chordDegreeAtom, "V"],
+      [chordOverlayModeAtom, "degree"],
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [chordQualityOverrideAtom, "Dominant 7th"],
+    ]);
+    store.set(scaleNameAtom, "Lydian");
+    expect(store.get(chordOverlayModeAtom)).toBe("degree");
+    expect(store.get(chordQualityOverrideAtom)).toBe("Dominant 7th");
+    expect(store.get(chordTypeAtom)).toBe("Dominant 7th");
+    // V in C Lydian → G (degree-derived root re-resolves).
+    expect(store.get(chordRootAtom)).toBe("G");
   });
 });
 

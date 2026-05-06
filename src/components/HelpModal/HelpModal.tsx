@@ -141,8 +141,9 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
                 <li>
                   <strong>Chord Tones</strong> — the default lens. Highlights
                   every chord member (root, 3rd, 5th, 7th, etc.) and shows a{" "}
-                  <em>Land on</em> cue in the practice bar listing all of them.
-                  Use this to learn the shape of a chord across the neck and
+                  <em>Land on</em> cue in the practice bar using scale degrees
+                  for in-scale notes and chord intervals for outside tones. Use
+                  this to learn the shape of a chord across the neck and
                   practice landing phrases on strong harmonic tones.
                 </li>
                 <li>

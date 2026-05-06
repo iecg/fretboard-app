@@ -8,6 +8,7 @@ import {
   activeBrowseOptionAtom,
   scaleLabelAtom,
   setRootNoteAtom,
+  setScaleNameAtom,
   useFlatsAtom,
   hiddenNotesAtom,
   toggleHiddenNoteAtom,
@@ -18,7 +19,11 @@ import {
 
 export function useScaleState() {
   const rootNote = useAtomValue(rootNoteAtom);
-  const [scaleName, setScaleName] = useAtom(scaleNameAtom);
+  const scaleName = useAtomValue(scaleNameAtom);
+  // Use the action wrapper so that switching modes (e.g. Ionian → Dorian)
+  // remaps the active chord degree by semitone-equivalence instead of leaving
+  // the user with an invalid Roman numeral that doesn't exist in the new mode.
+  const setScaleName = useSetAtom(setScaleNameAtom);
   const [scaleBrowseMode, setScaleBrowseMode] = useAtom(scaleBrowseModeAtom);
   const setRootNote = useSetAtom(setRootNoteAtom);
 

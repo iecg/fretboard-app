@@ -64,8 +64,8 @@ export const FLAT_KEYS = [
 
 export { normalizeScaleName, SCALES, SCALE_TO_PARENT_MAJOR_OFFSET };
 
-export type ChordMemberName = "root" | "b3" | "3" | "b5" | "5" | "b7" | "7";
-export type ChordQuality = "triad" | "seventh" | "power";
+export type ChordMemberName = "root" | "b3" | "3" | "4" | "b5" | "5" | "6" | "b7" | "7";
+export type ChordQuality = "triad" | "seventh" | "power" | "sixth" | "suspended";
 
 export interface ChordMember {
   name: ChordMemberName;
@@ -263,6 +263,15 @@ export const CHORD_DEFINITIONS: Record<string, ChordDefinition> = {
       { name: "b5", semitone: 6 },
     ],
   },
+  "Major 6th": {
+    quality: "sixth",
+    members: [
+      { name: "root", semitone: 0 },
+      { name: "3", semitone: 4 },
+      { name: "5", semitone: 7 },
+      { name: "6", semitone: 9 },
+    ],
+  },
   "Major 7th": {
     quality: "seventh",
     members: [
@@ -288,6 +297,14 @@ export const CHORD_DEFINITIONS: Record<string, ChordDefinition> = {
       { name: "3", semitone: 4 },
       { name: "5", semitone: 7 },
       { name: "b7", semitone: 10 },
+    ],
+  },
+  "Sus4": {
+    quality: "suspended",
+    members: [
+      { name: "root", semitone: 0 },
+      { name: "4", semitone: 5 },
+      { name: "5", semitone: 7 },
     ],
   },
   "Power Chord (5)": {

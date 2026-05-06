@@ -56,6 +56,7 @@ export {
   toggleChordHiddenNoteAtom,
   toggleChordOverlayHiddenAtom,
   activeVoicingKeyAtom,
+  setChordDegreeAtom,
 } from "./chordOverlayAtoms";
 
 export {
@@ -105,5 +106,6 @@ export {
 
 export {
   setRootNoteAtom,
+  setScaleNameAtom,
   resetAtom,
 } from "./actions";

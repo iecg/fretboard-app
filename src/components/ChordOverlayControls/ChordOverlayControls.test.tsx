@@ -21,9 +21,11 @@ const CHORD_OPTION_VALUES = [
   "Major Triad",
   "Minor Triad",
   "Diminished Triad",
+  "Major 6th",
   "Major 7th",
   "Minor 7th",
   "Dominant 7th",
+  "Sus4",
   "Power Chord (5)",
 ];
 
@@ -86,8 +88,13 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(screen.queryByRole("group", { name: "Chord degree" })).not.toBeInTheDocument();
     });
 
-    it("clicking Degree from manual mode brings degree picker back", async () => {
-      renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
+    it("clicking Degree from manual mode brings degree picker back (no degree set hides chord-type stepper)", async () => {
+      // Seed chordDegreeAtom=null explicitly so the degree-mode chord-type
+      // stepper is gated off (it only renders when a degree is active).
+      renderWithAtoms(<ChordOverlayControls />, [
+        ...MANUAL_MODE_SEEDS,
+        [chordDegreeAtom, null],
+      ]);
 
       // Manual mode initially: chord-type nav browser and root note grid visible
       expect(screen.getByRole("group", { name: "Browse chord types" })).toBeInTheDocument();
@@ -97,8 +104,25 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
 
       // Degree picker visible
       expect(screen.getByRole("group", { name: "Chord degree" })).toBeInTheDocument();
-      // Chord type browser gone
+      // Without an active degree, the chord-type stepper is gated off
       expect(screen.queryByRole("group", { name: "Browse chord types" })).not.toBeInTheDocument();
+    });
+
+    it("clicking Degree from manual mode preserves chord-type stepper when a degree is active", async () => {
+      // With an active degree, the chord-type stepper appears in degree mode
+      // too — letting the user pick a quality (e.g. Dom7) without leaving degree.
+      renderWithAtoms(<ChordOverlayControls />, [
+        ...MANUAL_MODE_SEEDS,
+        [chordDegreeAtom, "V"],
+      ]);
+
+      expect(screen.getByRole("group", { name: "Browse chord types" })).toBeInTheDocument();
+
+      await userEvent.click(screen.getByRole("button", { name: "Degree" }));
+
+      // Both the degree picker AND the chord-type stepper are visible in degree mode.
+      expect(screen.getByRole("group", { name: "Chord degree" })).toBeInTheDocument();
+      expect(screen.getByRole("group", { name: "Browse chord types" })).toBeInTheDocument();
     });
   });
 

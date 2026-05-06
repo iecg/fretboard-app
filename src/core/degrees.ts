@@ -112,6 +112,38 @@ const DEGREE_DIATONIC_QUALITY: Record<string, Record<number, string>> = {
 };
 
 /**
+ * Remaps a Roman-numeral degree across scales by semitone-equivalence.
+ *
+ * Example: "I" in Major (semitone 0 = Major Triad) maps to "i" in Dorian
+ * (semitone 0 = Minor Triad). The same scale-step position can have a
+ * different case + suffix in a different mode because the diatonic triad
+ * quality differs.
+ *
+ * @param degreeId   Current Roman-numeral degree in `fromScale`.
+ * @param fromScale  The scale the degree currently belongs to.
+ * @param toScale    The new scale to remap into.
+ * @returns The equivalent degree in `toScale`, or `null` if the source
+ *          semitone has no diatonic degree in the target scale (e.g. a
+ *          chromatic-step degree that doesn't survive the mode change).
+ *          Returns the input unchanged when `fromScale === toScale`.
+ */
+export function remapDegreeForScale(
+  degreeId: string,
+  fromScale: string,
+  toScale: string,
+): string | null {
+  if (fromScale === toScale) return degreeId;
+  const fromMap = getDegreesForScale(fromScale);
+  const semitoneEntry = Object.entries(fromMap).find(
+    ([, roman]) => roman === degreeId,
+  );
+  if (!semitoneEntry) return null;
+  const semitone = Number(semitoneEntry[0]);
+  const toMap = getDegreesForScale(toScale);
+  return toMap[semitone] ?? null;
+}
+
+/**
  * Returns the diatonic triad quality (chord-name key) for a given scale degree.
  *
  * @param degreeId - Roman numeral string (e.g., "I", "ii", "vii°", "III+")

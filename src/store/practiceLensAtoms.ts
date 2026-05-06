@@ -82,6 +82,9 @@ export const practiceBarColorNotesFilteredAtom = atom((get) => {
   return practiceBarColorNotes.filter((n) => !chordToneSet.has(n.internalNote));
 });
 
+const getDisplayLabel = (e: ChordRowEntry): string =>
+  e.scaleDegree ?? e.memberName;
+
 /**
  * Maps note → NoteSemantics allowing multiple properties to coexist.
  * Accommodates notes with multiple roles (e.g., chord root outside scale).
@@ -190,7 +193,7 @@ export const practiceCuesAtom = atom((get) => {
   const toCueNote = (e: ChordRowEntry): PracticeCueNote => ({
     internalNote: e.internalNote,
     displayNote: e.displayNote,
-    intervalName: e.memberName,
+    intervalName: getDisplayLabel(e),
     role: e.role,
   });
 
@@ -260,7 +263,7 @@ export const practiceCuesAtom = atom((get) => {
 const entryToBarNote = (e: ChordRowEntry): PracticeBarNote => ({
   internalNote: e.internalNote,
   displayNote: e.displayNote,
-  intervalName: e.memberName,
+  intervalName: getDisplayLabel(e),
   isChordRoot: e.role === "chord-root",
   isGuideTone: GUIDE_TONE_FORMATTED.has(e.memberName),
   isTension: !e.inScale,

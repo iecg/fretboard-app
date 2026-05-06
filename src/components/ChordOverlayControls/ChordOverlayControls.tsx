@@ -1,6 +1,6 @@
 import { startTransition, useEffect } from "react";
 import { useAtomValue } from "jotai";
-import { NOTES, LENS_REGISTRY } from "../../core/theory";
+import { NOTES, LENS_REGISTRY, CHORD_DEFINITIONS } from "../../core/theory";
 import { getDegreesForScale } from "../../core/degrees";
 import { lensAvailabilityAtom } from "../../store/atoms";
 import { NoteGrid } from "../NoteGrid/NoteGrid";
@@ -14,15 +14,11 @@ import { useScaleState } from "../../hooks/useScaleState";
 import styles from "../TheoryControls/TheoryControls.module.css";
 import shared from "../shared/shared.module.css";
 
-const CHORD_OPTIONS: string[] = [
-  "Major Triad",
-  "Minor Triad",
-  "Diminished Triad",
-  "Major 7th",
-  "Minor 7th",
-  "Dominant 7th",
-  "Power Chord (5)",
-];
+// Derive the dropdown options from the canonical chord-definition catalogue so
+// the UI never drifts when new types are added. Object.keys preserves insertion
+// order on string keys (ES2015+), and CHORD_DEFINITIONS in src/core/theory.ts
+// is declared in family order (triads → 6 → 7ths → sus → power).
+const CHORD_OPTIONS: string[] = Object.keys(CHORD_DEFINITIONS);
 
 const CHORD_NONE_VALUE = "__none__";
 
@@ -148,16 +144,40 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
       </div>
 
       {chordOverlayMode === "degree" && (
-        <div className={shared["control-section"]}>
-          <span className={shared["section-label"]}>Degree</span>
-          <ToggleBar
-            options={degreeSelectOptions}
-            value={chordDegree ?? CHORD_NONE_VALUE}
-            onChange={handleDegreeChange}
-            label="Chord degree"
-            compact={compact}
-          />
-        </div>
+        <>
+          <div className={shared["control-section"]}>
+            <span className={shared["section-label"]}>Degree</span>
+            <ToggleBar
+              options={degreeSelectOptions}
+              value={chordDegree ?? CHORD_NONE_VALUE}
+              onChange={handleDegreeChange}
+              label="Chord degree"
+              compact={compact}
+            />
+          </div>
+          {chordDegree ? (
+            <div className={shared["control-section"]}>
+              <span className={shared["section-label"]}>Chord Type</span>
+              <StepperSelect
+                selectLabel="Chord Type"
+                groupLabel="Browse chord types"
+                previousLabel="Previous chord type"
+                nextLabel="Next chord type"
+                value={chordQualityOverride ?? CHORD_NONE_VALUE}
+                options={CHORD_SELECT_OPTIONS}
+                onChange={handleChordTypeChange}
+                onPrevious={() => handleStepChordType(-1)}
+                onNext={() => handleStepChordType(1)}
+                compact={compact}
+              />
+              <p className={shared["field-hint"]}>
+                Off uses the diatonic default for this degree. Picking a quality
+                pins it for the active degree only — switching degrees resets to
+                the new degree's diatonic default.
+              </p>
+            </div>
+          ) : null}
+        </>
       )}
 
       {chordOverlayMode === "manual" && (
