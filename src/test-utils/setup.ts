@@ -38,7 +38,7 @@ window.HTMLElement.prototype.scrollIntoView = () => {};
 
 // jsdom does not implement matchMedia
 window.matchMedia = vi.fn().mockImplementation((query: string) => ({
-  matches: false,
+  matches: query === '(prefers-color-scheme: dark)',
   media: query,
   onchange: null,
   addListener: vi.fn(),

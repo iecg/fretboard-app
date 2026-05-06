@@ -530,7 +530,7 @@ describe("App", () => {
     it("applies system theme by default", () => {
       render(<App />);
       expect(document.documentElement.getAttribute("data-theme")).toBe(
-        "modern-light",
+        "modern-dark",
       );
     });
 
