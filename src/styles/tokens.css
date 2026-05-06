@@ -181,7 +181,3 @@
   --practice-pill-guide-blue-bg: rgb(30 60 120 / 0.25);
 }
 
-:root {
-  /* Chord-tone connector layer */
-  --chord-connector-dash: 4 6;
-}
