@@ -232,12 +232,18 @@ export const chordTypeAtom = atom(
     if (mode === "manual") return get(chordQualityOverrideAtom);
     const degree = get(chordDegreeAtom);
     if (!degree) return null; // overlay off
+    // Degree mode: prefer the user's quality override when set so the user can
+    // pin a specific quality (e.g. Dominant 7th on V) while keeping the chord
+    // root bound to the active scale degree. Without an override, fall back to
+    // the diatonic default for this degree + scale.
+    const override = get(chordQualityOverrideAtom);
+    if (override) return override;
     const rootNote = get(rootNoteAtom);
     const scaleName = get(scaleNameAtom);
     const result = getDiatonicChord(degree, scaleName, rootNote);
     return result?.quality ?? null;
   },
-  (_get, set, value: string | null | typeof RESET) => {
+  (get, set, value: string | null | typeof RESET) => {
     if (value === RESET) {
       set(chordDegreeAtom, RESET);
       set(chordOverlayModeAtom, RESET);
@@ -246,7 +252,29 @@ export const chordTypeAtom = atom(
       return;
     }
     set(chordQualityOverrideAtom, value);
+    // In degree mode with a degree active, preserve the degree binding —
+    // the override applies on top of the derived chord root. Manual mode
+    // behavior is unchanged: a chord-type write flips the overlay to manual.
+    if (get(chordOverlayModeAtom) === "degree" && get(chordDegreeAtom)) {
+      return;
+    }
     set(chordOverlayModeAtom, "manual");
+  },
+);
+
+/**
+ * Action atom for changing the active scale degree in degree mode. Clears any
+ * `chordQualityOverride` so each new degree starts at its diatonic default
+ * (e.g. picking V resolves to Major Triad even if the previous degree had a
+ * Dominant 7th override). No-op writes (same degree) do NOT clear the override.
+ */
+export const setChordDegreeAtom = atom(
+  null,
+  (get, set, value: DegreeId | null) => {
+    const current = get(chordDegreeAtom);
+    if (current === value) return;
+    set(chordDegreeAtom, value);
+    set(chordQualityOverrideAtom, null);
   },
 );
 

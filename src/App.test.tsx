@@ -261,6 +261,12 @@ describe("App", () => {
       await waitFor(() => {
         expect(localStorage.getItem(k("rootNote"))).toBe("G");
         expect(localStorage.getItem(k("chordOverlayMode"))).toBe("degree");
+        // In degree mode, setRootNoteAtom must NOT propagate the new scale root
+        // ("G") into chordRootOverride. The override may be persisted at its
+        // default ("C") because atomWithStorage seeds defaults on mount, but it
+        // must never equal the new rootNote — that would mean the link-sync ran
+        // and a manual-mode override was silently set, which is the regression.
+        expect(localStorage.getItem(k("chordRootOverride"))).not.toBe("G");
       });
     });
 

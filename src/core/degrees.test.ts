@@ -5,6 +5,7 @@ import {
   getAdjacentDegree,
   getDegreesForScale,
   getQualityForDegree,
+  remapDegreeForScale,
 } from '../core/degrees';
 
 const BASE_DEGREE_COLOR_KEYS = ["I", "II", "III", "IV", "V", "VI", "VII"] as const;
@@ -425,5 +426,49 @@ describe('getAdjacentDegree', () => {
     it('"IX" (nonexistent) + direction(+1) on Major → returns "I" (first degree)', () => {
       expect(getAdjacentDegree('IX', 'Major', 1)).toBe('I');
     });
+  });
+});
+
+describe('remapDegreeForScale', () => {
+  it('same scale → returns input unchanged', () => {
+    expect(remapDegreeForScale('I', 'Major', 'Major')).toBe('I');
+    expect(remapDegreeForScale('vii°', 'Major', 'Major')).toBe('vii°');
+  });
+
+  it('Major → Dorian: I (semitone 0, Major Triad) → i (semitone 0, Minor Triad)', () => {
+    expect(remapDegreeForScale('I', 'Major', 'Dorian')).toBe('i');
+  });
+
+  it('Major → Mixolydian: V (semitone 7, Major Triad) → v (semitone 7, Minor Triad)', () => {
+    expect(remapDegreeForScale('V', 'Major', 'Mixolydian')).toBe('v');
+  });
+
+  it('Major → Lydian: V (semitone 7) → V (semitone 7) — both Major Triad', () => {
+    expect(remapDegreeForScale('V', 'Major', 'Lydian')).toBe('V');
+  });
+
+  it('Dorian → Major: i (semitone 0) → I (semitone 0)', () => {
+    expect(remapDegreeForScale('i', 'Dorian', 'Major')).toBe('I');
+  });
+
+  it('Major → Phrygian: ii (semitone 2) → null (Phrygian has no degree at semitone 2; II at semitone 1 instead)', () => {
+    // Major's ii is at semitone 2; Phrygian's degrees are at 0,1,3,5,7,8,10. No degree at semitone 2.
+    expect(remapDegreeForScale('ii', 'Major', 'Phrygian')).toBeNull();
+  });
+
+  it('unknown degree → null', () => {
+    expect(remapDegreeForScale('IX', 'Major', 'Dorian')).toBeNull();
+  });
+
+  it('Major → Natural Minor: vi (semitone 9) → null (Natural Minor has no degree at semitone 9)', () => {
+    // Major's vi sits on the 9th semitone above the tonic. Natural Minor's
+    // sixth-degree triad is rooted on semitone 8 instead, so semitone 9 has
+    // no diatonic degree to remap into.
+    expect(remapDegreeForScale('vi', 'Major', 'Natural Minor')).toBeNull();
+  });
+
+  it('Major → Harmonic Minor: V (semitone 7) → V (semitone 7) — both Major Triad', () => {
+    // Harmonic Minor's V is intentionally raised — semitone 7 stays Major.
+    expect(remapDegreeForScale('V', 'Major', 'Harmonic Minor')).toBe('V');
   });
 });

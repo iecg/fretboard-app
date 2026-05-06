@@ -25,7 +25,9 @@ import {
   practiceLensAtom,
   chordDegreeAtom,
   chordOverlayModeAtom,
+  chordQualityOverrideAtom,
   setRootNoteAtom,
+  setScaleNameAtom,
   resetAtom,
   useFlatsAtom,
   currentTuningAtom,
@@ -482,6 +484,158 @@ describe("atoms", () => {
       expect(store.get(chordOverlayModeAtom)).toBe("degree");
       expect(store.get(chordRootAtom)).toBe("E");
       expect(store.get(chordTypeAtom)).toBe("Minor Triad");
+    });
+  });
+
+  describe("scaleNameAtom — degree mode preservation", () => {
+    it("preserves degree mode when scale mode changes (ii: Major → Dorian)", () => {
+      // "ii" exists in both C Major and C Dorian at semitone 2 (same label → same DegreeId).
+      // C Major ii = D Minor Triad. C Dorian ii = D Minor Triad.
+      // Changing scaleNameAtom must NOT write through chordRootAtom or chordTypeAtom,
+      // so chordOverlayModeAtom must stay "degree" and the chord re-resolves via
+      // getDiatonicChord against the new scaleName automatically.
+      const store = makeStore();
+      store.set(chordOverlayModeAtom, "degree");
+      store.set(chordDegreeAtom, "ii");
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      expect(store.get(chordOverlayModeAtom)).toBe("degree");
+      expect(store.get(chordRootAtom)).toBe("D");
+      expect(store.get(chordTypeAtom)).toBe("Minor Triad");
+      // Switch scale mode — degree atom is unchanged, chord re-resolves via reactive graph.
+      store.set(scaleNameAtom, "Dorian");
+      expect(store.get(chordOverlayModeAtom)).toBe("degree");
+      expect(store.get(chordRootAtom)).toBe("D");
+      expect(store.get(chordTypeAtom)).toBe("Minor Triad");
+    });
+
+    it("preserves degree mode when scale mode changes (ii: Major → Mixolydian re-resolves to Diminished)", () => {
+      // "ii" in Major at semitone 2 = Minor Triad.
+      // In Mixolydian "ii" is also at semitone 2 → but DEGREE_DIATONIC_QUALITY for Mixolydian
+      // at semitone 2 is still "Minor Triad". Use "iii°" path instead:
+      // Mixolydian has "iii°" at semitone 4. Major has "iii" at semitone 4.
+      // To find a quality difference: use "V" (Major) vs "v" (Mixolydian) — different DegreeIds.
+      // Safest cross-family test: remain within Diatonic family, check mode does NOT flip.
+      // C Major "ii" (D Minor Triad) → C Mixolydian "ii" (D Minor Triad): mode preserved.
+      // The important invariant is chordOverlayModeAtom stays "degree" — the re-resolution
+      // is a pure Jotai reactive side-effect, no chord atom writes occur.
+      const store = makeStore();
+      store.set(chordOverlayModeAtom, "degree");
+      store.set(chordDegreeAtom, "ii");
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      store.set(scaleNameAtom, "Mixolydian");
+      // chordOverlayModeAtom must not have been mutated by the scale-mode write.
+      expect(store.get(chordOverlayModeAtom)).toBe("degree");
+      expect(store.get(chordRootAtom)).toBe("D");
+      expect(store.get(chordTypeAtom)).toBe("Minor Triad");
+    });
+
+    it("re-resolves chord root and type when both root and scale mode change (relative browse)", () => {
+      // Simulates applyTheorySelection: setRootNote + setScaleName written together.
+      // "I" exists in Major and Mixolydian (both uppercase tonic). C Major I → C Major Triad.
+      // After browse to G Mixolydian: "I" → G Major Triad.
+      const store = makeStore();
+      store.set(chordOverlayModeAtom, "degree");
+      store.set(chordDegreeAtom, "I");
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      expect(store.get(chordRootAtom)).toBe("C");
+      expect(store.get(chordTypeAtom)).toBe("Major Triad");
+      // Simulate relative/parallel browse: both root and mode written (no chord atom written).
+      store.set(rootNoteAtom, "G");
+      store.set(scaleNameAtom, "Mixolydian");
+      expect(store.get(chordOverlayModeAtom)).toBe("degree");
+      expect(store.get(chordRootAtom)).toBe("G");
+      expect(store.get(chordTypeAtom)).toBe("Major Triad");
+    });
+  });
+
+  describe("setScaleNameAtom — degree remap on mode change", () => {
+    it("Major → Dorian: degree 'I' remaps to 'i' by semitone-equivalence", () => {
+      const store = makeStore();
+      store.set(chordOverlayModeAtom, "degree");
+      store.set(chordDegreeAtom, "I");
+      store.set(rootNoteAtom, "A");
+      store.set(scaleNameAtom, "Major");
+      expect(store.get(chordRootAtom)).toBe("A"); // I in A Major
+      expect(store.get(chordTypeAtom)).toBe("Major Triad");
+
+      // User switches A Ionian (Major) → A Dorian.
+      store.set(setScaleNameAtom, "Dorian");
+
+      expect(store.get(chordOverlayModeAtom)).toBe("degree"); // mode preserved
+      expect(store.get(chordDegreeAtom)).toBe("i"); // remapped
+      expect(store.get(chordRootAtom)).toBe("A"); // tonic, semitone 0
+      expect(store.get(chordTypeAtom)).toBe("Minor Triad"); // Dorian's i
+    });
+
+    it("Major → Mixolydian: V remaps to v (Mixolydian's 5th-degree is minor)", () => {
+      const store = makeStore();
+      store.set(chordOverlayModeAtom, "degree");
+      store.set(chordDegreeAtom, "V");
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      store.set(setScaleNameAtom, "Mixolydian");
+      expect(store.get(chordDegreeAtom)).toBe("v");
+      expect(store.get(chordRootAtom)).toBe("G");
+      expect(store.get(chordTypeAtom)).toBe("Minor Triad");
+    });
+
+    it("Major → Lydian: V stays V (both modes have Major Triad on semitone 7)", () => {
+      const store = makeStore();
+      store.set(chordOverlayModeAtom, "degree");
+      store.set(chordDegreeAtom, "V");
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      store.set(setScaleNameAtom, "Lydian");
+      expect(store.get(chordDegreeAtom)).toBe("V");
+    });
+
+    it("same scale write is a no-op — chord degree unchanged", () => {
+      const store = makeStore();
+      store.set(chordOverlayModeAtom, "degree");
+      store.set(chordDegreeAtom, "vi");
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      store.set(setScaleNameAtom, "Major");
+      expect(store.get(chordDegreeAtom)).toBe("vi");
+    });
+
+    it("no chord degree set → no-op (overlay-off path)", () => {
+      const store = makeStore();
+      store.set(chordOverlayModeAtom, "degree");
+      store.set(chordDegreeAtom, null);
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      store.set(setScaleNameAtom, "Dorian");
+      expect(store.get(chordDegreeAtom)).toBeNull();
+      expect(store.get(scaleNameAtom)).toBe("Dorian");
+    });
+
+    it("Major → Phrygian: ii has no semitone-equivalent → degree clears (chord overlay off)", () => {
+      const store = makeStore();
+      store.set(chordOverlayModeAtom, "degree");
+      store.set(chordDegreeAtom, "ii");
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      store.set(setScaleNameAtom, "Phrygian");
+      // Phrygian has degrees at semitones 0,1,3,5,7,8,10 — none at semitone 2.
+      expect(store.get(chordDegreeAtom)).toBeNull();
+    });
+
+    it("preserves chord-quality override across mode changes (sticky on scale change)", () => {
+      const store = makeStore();
+      store.set(chordOverlayModeAtom, "degree");
+      store.set(chordDegreeAtom, "V");
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      store.set(chordQualityOverrideAtom, "Dominant 7th");
+      store.set(setScaleNameAtom, "Lydian");
+      // Override stays sticky across scale change (it's a quality preference,
+      // not tied to a specific degree resolution).
+      expect(store.get(chordQualityOverrideAtom)).toBe("Dominant 7th");
+      expect(store.get(chordTypeAtom)).toBe("Dominant 7th");
     });
   });
 

@@ -1,4 +1,4 @@
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
   chordRootAtom,
   chordTypeAtom,
@@ -13,6 +13,7 @@ import {
   chordOverlayModeAtom,
   chordRootOverrideAtom,
   chordQualityOverrideAtom,
+  setChordDegreeAtom,
 } from "../store/atoms";
 
 export function useChordState() {
@@ -27,7 +28,10 @@ export function useChordState() {
   const hasOutsideChordMembers = useAtomValue(hasOutsideChordMembersAtom);
   const chordLabel = useAtomValue(chordLabelAtom);
 
-  const [chordDegree, setChordDegree] = useAtom(chordDegreeAtom);
+  const chordDegree = useAtomValue(chordDegreeAtom);
+  // Use the action wrapper so that picking a new degree clears any chord-quality
+  // override — each degree starts at its diatonic default.
+  const setChordDegree = useSetAtom(setChordDegreeAtom);
   const [chordOverlayMode, setChordOverlayMode] = useAtom(chordOverlayModeAtom);
   const [chordRootOverride, setChordRootOverride] = useAtom(chordRootOverrideAtom);
   const [chordQualityOverride, setChordQualityOverride] = useAtom(chordQualityOverrideAtom);
