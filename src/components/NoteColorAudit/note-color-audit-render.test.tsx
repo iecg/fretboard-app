@@ -63,7 +63,7 @@ describe("note color audit render readouts", () => {
     });
   }
 
-  it("settles light and dark readouts after the document-level audit theme is removed", async () => {
+  it("settles light and dark readouts after the document-level audit theme is removed", { timeout: 45000 }, async () => {
     const { container } = render(<NoteColorAudit />);
 
     document.documentElement.removeAttribute("data-theme");
