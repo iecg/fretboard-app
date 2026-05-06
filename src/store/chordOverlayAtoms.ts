@@ -4,13 +4,16 @@ import {
   NOTES,
   CHORD_DEFINITIONS,
   LENS_REGISTRY,
+  INTERVAL_NAMES,
   getChordNotes,
   getNoteDisplay,
   formatAccidental,
   getDiatonicChord,
+  getScaleNotes,
 } from "../core/theory";
 import type {
   ChordMemberFact,
+  ChordRowEntry,
   ResolvedChordMember,
   PracticeLens,
 } from "../core/theory";
@@ -409,6 +412,57 @@ export const chordMemberFactsAtom = atom((get): ChordMemberFact[] => {
       memberName: m.name === "root" ? "1" : formatAccidental(m.name),
       semitone: m.semitone,
       isChordRoot: m.name === "root",
+    };
+  });
+});
+
+/**
+ * ChordRowEntry list with scale-membership and roles.
+ * Used by practiceLensAtoms and atoms.ts summary atoms.
+ */
+export const allChordMembersAtom = atom((get) => {
+  const chordType = get(chordTypeAtom);
+  if (!chordType) return [] as ChordRowEntry[];
+
+  const rootNote = get(rootNoteAtom);
+  const scaleName = get(scaleNameAtom);
+  const chordRoot = get(chordRootAtom);
+  const useFlats = get(useFlatsAtom);
+  const chordMembers = get(chordMembersAtom);
+  const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
+
+  return chordMembers.map((m): ChordRowEntry => {
+    const inScale = scaleNoteSet.has(m.note);
+    const isRoot = m.name === "root";
+    let role: ChordRowEntry["role"];
+    if (isRoot) {
+      role = "chord-root";
+    } else if (inScale) {
+      role = "chord-tone-in-scale";
+    } else {
+      role = "chord-tone-outside-scale";
+    }
+    let scaleDegree: DegreeId | undefined;
+    let scaleInterval: string | undefined;
+    const noteIdx = NOTES.indexOf(m.note);
+    const tonicIdx = NOTES.indexOf(rootNote);
+    if (noteIdx !== -1 && tonicIdx !== -1) {
+      const semitone = (noteIdx - tonicIdx + 12) % 12;
+      scaleInterval = formatAccidental(INTERVAL_NAMES[semitone] ?? "1");
+      if (inScale) {
+        scaleDegree = (
+          getDegreesForScale(scaleName)[semitone] ?? INTERVAL_NAMES[semitone]
+        ) as DegreeId | undefined;
+      }
+    }
+    return {
+      internalNote: m.note,
+      displayNote: formatAccidental(getNoteDisplay(m.note, chordRoot, useFlats)),
+      memberName: m.name === "root" ? "1" : formatAccidental(m.name),
+      role,
+      inScale,
+      scaleDegree,
+      scaleInterval,
     };
   });
 });
