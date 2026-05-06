@@ -60,7 +60,7 @@ export type ThemePreference = "light" | "dark" | "system";
 
 export const themeAtom = atomWithStorage<ThemePreference>(
   k("theme"),
-  "dark",
+  "system",
   rawStringStorage<ThemePreference>(),
   GET_ON_INIT,
 );
