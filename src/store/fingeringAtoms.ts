@@ -82,3 +82,65 @@ export const npsOctaveAtom = atomWithStorage(
 
 export const clickedShapeAtom = atom<CagedShape | null>(null);
 export const recenterKeyAtom = atom<number>(0);
+
+// one-string sub-controls
+export const oneStringIndexAtom = atomWithStorage(
+  k("oneString.index"),
+  0,
+  constrainedNumberStorage({ min: 0, max: 5, integer: true }),
+  GET_ON_INIT,
+);
+
+// two-strings sub-controls
+export const twoStringsPairAtom = atomWithStorage(
+  k("twoStrings.pair"),
+  0,
+  constrainedNumberStorage({ min: 0, max: 4, integer: true }),
+  GET_ON_INIT,
+);
+
+// double-stops sub-controls
+export const doubleStopsIntervalAtom = atomWithStorage(
+  k("doubleStops.interval"),
+  0,
+  constrainedNumberStorage({ min: 0, max: 3, integer: true }),
+  GET_ON_INIT,
+);
+
+// box-2x4 sub-controls
+export const box2x4StartFretAtom = atomWithStorage(
+  k("box2x4.startFret"),
+  0,
+  constrainedNumberStorage({ min: 0, max: 20, integer: true }),
+  GET_ON_INIT,
+);
+
+export const box2x4PairAtom = atomWithStorage(
+  k("box2x4.pair"),
+  0,
+  constrainedNumberStorage({ min: 0, max: 4, integer: true }),
+  GET_ON_INIT,
+);
+
+// box-3x3 sub-controls
+export const box3x3StartFretAtom = atomWithStorage(
+  k("box3x3.startFret"),
+  0,
+  constrainedNumberStorage({ min: 0, max: 20, integer: true }),
+  GET_ON_INIT,
+);
+
+export const box3x3TrioAtom = atomWithStorage(
+  k("box3x3.trio"),
+  0,
+  constrainedNumberStorage({ min: 0, max: 3, integer: true }),
+  GET_ON_INIT,
+);
+
+// stack sub-controls
+export const stackStartFretAtom = atomWithStorage(
+  k("stack.startFret"),
+  0,
+  constrainedNumberStorage({ min: 0, max: 20, integer: true }),
+  GET_ON_INIT,
+);
