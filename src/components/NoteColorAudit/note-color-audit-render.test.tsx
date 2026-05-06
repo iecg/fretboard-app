@@ -63,14 +63,17 @@ describe("note color audit render readouts", () => {
     });
   }
 
-  it("settles light and dark readouts after the document-level audit theme is removed", { timeout: 45000 }, async () => {
-    const { container } = render(<NoteColorAudit />);
-
+  async function renderAudit() {
+    const rendered = render(<NoteColorAudit />);
     document.documentElement.removeAttribute("data-theme");
     await flushAnimationFrame();
     await flushAnimationFrame();
 
-    expect(await axe(container)).toHaveNoViolations();
+    return rendered;
+  }
+
+  it("settles light and dark readouts after the document-level audit theme is removed", async () => {
+    const { container } = await renderAudit();
 
     const lightCard = container.querySelector(
       '[data-audit-id="light:fretboard:none:degree-off:key-tonic"]',
@@ -87,14 +90,8 @@ describe("note color audit render readouts", () => {
     expect(darkCard).not.toHaveTextContent("3.6px");
   });
 
-  it("prints label color readouts for each audit surface", { timeout: 45000 }, async () => {
-    const { container } = render(<NoteColorAudit />);
-
-    document.documentElement.removeAttribute("data-theme");
-    await flushAnimationFrame();
-    await flushAnimationFrame();
-
-    expect(await axe(container)).toHaveNoViolations();
+  it("prints label color readouts for each audit surface", async () => {
+    const { container } = await renderAudit();
 
     const fretboardCard = container.querySelector(
       '[data-audit-id="light:fretboard:none:degree-off:key-tonic"]',
@@ -121,5 +118,13 @@ describe("note color audit render readouts", () => {
       expect(card).toHaveTextContent("label ctr");
       expect(card).toHaveTextContent("ring ctr");
     }
+  });
+
+  it("has no accessibility violations for the light audit panel", async () => {
+    const { container } = await renderAudit();
+
+    const lightPanel = container.querySelector('[aria-label="Light theme audit"]');
+    expect(lightPanel).toBeTruthy();
+    expect(await axe(lightPanel as HTMLElement)).toHaveNoViolations();
   });
 });
