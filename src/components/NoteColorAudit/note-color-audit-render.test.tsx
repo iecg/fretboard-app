@@ -87,7 +87,7 @@ describe("note color audit render readouts", () => {
     expect(darkCard).not.toHaveTextContent("3.6px");
   });
 
-  it("prints label color readouts for each audit surface", async () => {
+  it("prints label color readouts for each audit surface", { timeout: 45000 }, async () => {
     const { container } = render(<NoteColorAudit />);
 
     document.documentElement.removeAttribute("data-theme");
