@@ -106,5 +106,6 @@ export {
 
 export {
   setRootNoteAtom,
+  setScaleNameAtom,
   resetAtom,
 } from "./actions";

@@ -25,7 +25,9 @@ import {
   practiceLensAtom,
   chordDegreeAtom,
   chordOverlayModeAtom,
+  chordQualityOverrideAtom,
   setRootNoteAtom,
+  setScaleNameAtom,
   resetAtom,
   useFlatsAtom,
   currentTuningAtom,
@@ -546,6 +548,94 @@ describe("atoms", () => {
       expect(store.get(chordOverlayModeAtom)).toBe("degree");
       expect(store.get(chordRootAtom)).toBe("G");
       expect(store.get(chordTypeAtom)).toBe("Major Triad");
+    });
+  });
+
+  describe("setScaleNameAtom — degree remap on mode change", () => {
+    it("Major → Dorian: degree 'I' remaps to 'i' by semitone-equivalence", () => {
+      const store = makeStore();
+      store.set(chordOverlayModeAtom, "degree");
+      store.set(chordDegreeAtom, "I");
+      store.set(rootNoteAtom, "A");
+      store.set(scaleNameAtom, "Major");
+      expect(store.get(chordRootAtom)).toBe("A"); // I in A Major
+      expect(store.get(chordTypeAtom)).toBe("Major Triad");
+
+      // User switches A Ionian (Major) → A Dorian.
+      store.set(setScaleNameAtom, "Dorian");
+
+      expect(store.get(chordOverlayModeAtom)).toBe("degree"); // mode preserved
+      expect(store.get(chordDegreeAtom)).toBe("i"); // remapped
+      expect(store.get(chordRootAtom)).toBe("A"); // tonic, semitone 0
+      expect(store.get(chordTypeAtom)).toBe("Minor Triad"); // Dorian's i
+    });
+
+    it("Major → Mixolydian: V remaps to v (Mixolydian's 5th-degree is minor)", () => {
+      const store = makeStore();
+      store.set(chordOverlayModeAtom, "degree");
+      store.set(chordDegreeAtom, "V");
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      store.set(setScaleNameAtom, "Mixolydian");
+      expect(store.get(chordDegreeAtom)).toBe("v");
+      expect(store.get(chordRootAtom)).toBe("G");
+      expect(store.get(chordTypeAtom)).toBe("Minor Triad");
+    });
+
+    it("Major → Lydian: V stays V (both modes have Major Triad on semitone 7)", () => {
+      const store = makeStore();
+      store.set(chordOverlayModeAtom, "degree");
+      store.set(chordDegreeAtom, "V");
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      store.set(setScaleNameAtom, "Lydian");
+      expect(store.get(chordDegreeAtom)).toBe("V");
+    });
+
+    it("same scale write is a no-op — chord degree unchanged", () => {
+      const store = makeStore();
+      store.set(chordOverlayModeAtom, "degree");
+      store.set(chordDegreeAtom, "vi");
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      store.set(setScaleNameAtom, "Major");
+      expect(store.get(chordDegreeAtom)).toBe("vi");
+    });
+
+    it("no chord degree set → no-op (overlay-off path)", () => {
+      const store = makeStore();
+      store.set(chordOverlayModeAtom, "degree");
+      store.set(chordDegreeAtom, null);
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      store.set(setScaleNameAtom, "Dorian");
+      expect(store.get(chordDegreeAtom)).toBeNull();
+      expect(store.get(scaleNameAtom)).toBe("Dorian");
+    });
+
+    it("Major → Phrygian: ii has no semitone-equivalent → degree clears (chord overlay off)", () => {
+      const store = makeStore();
+      store.set(chordOverlayModeAtom, "degree");
+      store.set(chordDegreeAtom, "ii");
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      store.set(setScaleNameAtom, "Phrygian");
+      // Phrygian has degrees at semitones 0,1,3,5,7,8,10 — none at semitone 2.
+      expect(store.get(chordDegreeAtom)).toBeNull();
+    });
+
+    it("preserves chord-quality override across mode changes (sticky on scale change)", () => {
+      const store = makeStore();
+      store.set(chordOverlayModeAtom, "degree");
+      store.set(chordDegreeAtom, "V");
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      store.set(chordQualityOverrideAtom, "Dominant 7th");
+      store.set(setScaleNameAtom, "Lydian");
+      // Override stays sticky across scale change (it's a quality preference,
+      // not tied to a specific degree resolution).
+      expect(store.get(chordQualityOverrideAtom)).toBe("Dominant 7th");
+      expect(store.get(chordTypeAtom)).toBe("Dominant 7th");
     });
   });
 
