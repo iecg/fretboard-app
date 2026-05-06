@@ -1,6 +1,6 @@
 import { startTransition, useEffect } from "react";
 import { useAtomValue } from "jotai";
-import { NOTES, LENS_REGISTRY } from "../../core/theory";
+import { NOTES, LENS_REGISTRY, CHORD_DEFINITIONS } from "../../core/theory";
 import { getDegreesForScale } from "../../core/degrees";
 import { lensAvailabilityAtom } from "../../store/atoms";
 import { NoteGrid } from "../NoteGrid/NoteGrid";
@@ -14,17 +14,11 @@ import { useScaleState } from "../../hooks/useScaleState";
 import styles from "../TheoryControls/TheoryControls.module.css";
 import shared from "../shared/shared.module.css";
 
-const CHORD_OPTIONS: string[] = [
-  "Major Triad",
-  "Minor Triad",
-  "Diminished Triad",
-  "Major 6th",
-  "Major 7th",
-  "Minor 7th",
-  "Dominant 7th",
-  "Sus4",
-  "Power Chord (5)",
-];
+// Derive the dropdown options from the canonical chord-definition catalogue so
+// the UI never drifts when new types are added. Object.keys preserves insertion
+// order on string keys (ES2015+), and CHORD_DEFINITIONS in src/core/theory.ts
+// is declared in family order (triads → 6 → 7ths → sus → power).
+const CHORD_OPTIONS: string[] = Object.keys(CHORD_DEFINITIONS);
 
 const CHORD_NONE_VALUE = "__none__";
 

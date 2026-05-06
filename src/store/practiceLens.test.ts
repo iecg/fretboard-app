@@ -283,27 +283,6 @@ describe("practiceCuesAtom", () => {
   });
 });
 
-describe("practiceBarChordGroupAtom", () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
-
-  it("falls back to chord-member labels only for outside-scale tones", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordRootAtom, "C#");
-    store.set(chordTypeAtom, "Minor Triad");
-
-    const chordGroup = store.get(practiceBarChordGroupAtom);
-    expect(chordGroup.notes.map((n) => [n.internalNote, n.intervalName])).toEqual([
-      ["C#", "1"],
-      ["E", "iii"],
-      ["G#", "5"],
-    ]);
-  });
-});
-
 describe("noteSemanticMapAtom", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -421,6 +400,21 @@ describe("showChordPracticeBarAtom", () => {
 describe("practiceBarChordGroupAtom", () => {
   beforeEach(() => {
     localStorage.clear();
+  });
+
+  it("falls back to chord-member labels only for outside-scale tones", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    store.set(chordRootAtom, "C#");
+    store.set(chordTypeAtom, "Minor Triad");
+
+    const chordGroup = store.get(practiceBarChordGroupAtom);
+    expect(chordGroup.notes.map((n) => [n.internalNote, n.intervalName])).toEqual([
+      ["C#", "1"],
+      ["E", "iii"],
+      ["G#", "5"],
+    ]);
   });
 
   it("is lens-independent — same chord regardless of active lens", () => {
