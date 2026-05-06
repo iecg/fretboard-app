@@ -414,7 +414,7 @@
    Fill layer: low-opacity closed polygon beneath note bubbles.
    Outline layer: thin contrasting stroke traced on top.
    Both layers use the same closed-path geometry (polygon or capsule).
-   Color driven by --chord-connector-color-N via inline style on each path.
+   Color driven by --chord-connector-color-N via data-palette-index attribute selectors.
    ----------------------------------------------------------------------- */
 .chord-connectors path[data-layer="fill"] {
   fill-opacity: var(--chord-connector-fill-opacity, 0.15);
@@ -428,6 +428,20 @@
   stroke-linejoin: round;
   stroke-linecap: round;
 }
+
+/* -----------------------------------------------------------------------
+   Palette-index color rules — one rule per voicing slot (N = 1..8).
+   Both fill and stroke are set so the active-voicing drop-shadow filter
+   can pick up the color via currentColor.
+   ----------------------------------------------------------------------- */
+.chord-connectors path[data-palette-index="1"] { fill: var(--chord-connector-color-1); stroke: var(--chord-connector-color-1); color: var(--chord-connector-color-1); }
+.chord-connectors path[data-palette-index="2"] { fill: var(--chord-connector-color-2); stroke: var(--chord-connector-color-2); color: var(--chord-connector-color-2); }
+.chord-connectors path[data-palette-index="3"] { fill: var(--chord-connector-color-3); stroke: var(--chord-connector-color-3); color: var(--chord-connector-color-3); }
+.chord-connectors path[data-palette-index="4"] { fill: var(--chord-connector-color-4); stroke: var(--chord-connector-color-4); color: var(--chord-connector-color-4); }
+.chord-connectors path[data-palette-index="5"] { fill: var(--chord-connector-color-5); stroke: var(--chord-connector-color-5); color: var(--chord-connector-color-5); }
+.chord-connectors path[data-palette-index="6"] { fill: var(--chord-connector-color-6); stroke: var(--chord-connector-color-6); color: var(--chord-connector-color-6); }
+.chord-connectors path[data-palette-index="7"] { fill: var(--chord-connector-color-7); stroke: var(--chord-connector-color-7); color: var(--chord-connector-color-7); }
+.chord-connectors path[data-palette-index="8"] { fill: var(--chord-connector-color-8); stroke: var(--chord-connector-color-8); color: var(--chord-connector-color-8); }
 
 /* -----------------------------------------------------------------------
    Active-voicing highlight ring.

@@ -398,8 +398,8 @@ export const FretboardSVG = memo(function FretboardSVG({
                     key={`fill-${i}`}
                     d={voicing.paths.fill}
                     data-layer="fill"
+                    data-palette-index={voicing.paletteIndex + 1}
                     data-active-voicing={voicing.voicingKey === activeVoicingKey ? voicing.voicingKey : undefined}
-                    style={{ fill: `var(--chord-connector-color-${voicing.paletteIndex + 1})` }}
                   />
                 ))}
                 {/* Outline pass: all voicings rendered on top */}
@@ -408,8 +408,8 @@ export const FretboardSVG = memo(function FretboardSVG({
                     key={`outline-${i}`}
                     d={voicing.paths.outline}
                     data-layer="outline"
+                    data-palette-index={voicing.paletteIndex + 1}
                     data-active-voicing={voicing.voicingKey === activeVoicingKey ? voicing.voicingKey : undefined}
-                    style={{ stroke: `var(--chord-connector-color-${voicing.paletteIndex + 1})` }}
                   />
                 ))}
               </g>
