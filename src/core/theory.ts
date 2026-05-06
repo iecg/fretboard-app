@@ -64,7 +64,7 @@ export const FLAT_KEYS = [
 
 export { normalizeScaleName, SCALES, SCALE_TO_PARENT_MAJOR_OFFSET };
 
-export type ChordMemberName = "root" | "b3" | "3" | "4" | "b5" | "5" | "6" | "b7" | "7";
+export type ChordMemberName = "root" | "2" | "b3" | "3" | "4" | "b5" | "#5" | "5" | "6" | "b7" | "7" | "bb7";
 export type ChordQuality = "triad" | "seventh" | "power" | "sixth" | "suspended";
 
 export interface ChordMember {
@@ -313,6 +313,58 @@ export const CHORD_DEFINITIONS: Record<string, ChordDefinition> = {
     members: [
       { name: "root", semitone: 0 },
       { name: "5", semitone: 7 },
+    ],
+  },
+  "Augmented Triad": {
+    quality: "triad",
+    members: [
+      { name: "root", semitone: 0 },
+      { name: "3", semitone: 4 },
+      { name: "#5", semitone: 8 },
+    ],
+  },
+  "Sus2": {
+    quality: "suspended",
+    members: [
+      { name: "root", semitone: 0 },
+      { name: "2", semitone: 2 },
+      { name: "5", semitone: 7 },
+    ],
+  },
+  "Minor 6th": {
+    quality: "sixth",
+    members: [
+      { name: "root", semitone: 0 },
+      { name: "b3", semitone: 3 },
+      { name: "5", semitone: 7 },
+      { name: "6", semitone: 9 },
+    ],
+  },
+  "Diminished 7th": {
+    quality: "seventh",
+    members: [
+      { name: "root", semitone: 0 },
+      { name: "b3", semitone: 3 },
+      { name: "b5", semitone: 6 },
+      { name: "bb7", semitone: 9 },
+    ],
+  },
+  "Half-Diminished 7th": {
+    quality: "seventh",
+    members: [
+      { name: "root", semitone: 0 },
+      { name: "b3", semitone: 3 },
+      { name: "b5", semitone: 6 },
+      { name: "b7", semitone: 10 },
+    ],
+  },
+  "Minor-Major 7th": {
+    quality: "seventh",
+    members: [
+      { name: "root", semitone: 0 },
+      { name: "b3", semitone: 3 },
+      { name: "5", semitone: 7 },
+      { name: "7", semitone: 11 },
     ],
   },
 };
