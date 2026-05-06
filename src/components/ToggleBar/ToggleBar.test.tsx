@@ -110,4 +110,22 @@ describe("ToggleBar/ToggleBar", () => {
     fireEvent.click(screen.getByText("1"));
     expect(onChange).toHaveBeenCalledWith(1);
   });
+
+  describe("overflow prop", () => {
+    it("sets data-overflow='scroll' on the group div when overflow='scroll'", () => {
+      const { container } = render(
+        <ToggleBar options={options} value="a" onChange={vi.fn()} overflow="scroll" />,
+      );
+      const wrapper = container.firstChild as HTMLElement;
+      expect(wrapper).toHaveAttribute("data-overflow", "scroll");
+    });
+
+    it("does not set data-overflow attribute when overflow prop is omitted", () => {
+      const { container } = render(
+        <ToggleBar options={options} value="a" onChange={vi.fn()} />,
+      );
+      const wrapper = container.firstChild as HTMLElement;
+      expect(wrapper).not.toHaveAttribute("data-overflow");
+    });
+  });
 });

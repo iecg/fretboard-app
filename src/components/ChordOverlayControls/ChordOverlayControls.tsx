@@ -1,6 +1,6 @@
 import { startTransition, useEffect } from "react";
 import { useAtomValue } from "jotai";
-import { NOTES, LENS_REGISTRY, CHORD_DEFINITIONS } from "../../core/theory";
+import { NOTES, LENS_REGISTRY } from "../../core/theory";
 import { getDegreesForScale } from "../../core/degrees";
 import { lensAvailabilityAtom } from "../../store/atoms";
 import { NoteGrid } from "../NoteGrid/NoteGrid";
@@ -10,25 +10,46 @@ import { useScaleState } from "../../hooks/useScaleState";
 import styles from "../TheoryControls/TheoryControls.module.css";
 import shared from "../shared/shared.module.css";
 
-// Derive the dropdown options from the canonical chord-definition catalogue so
-// the UI never drifts when new types are added. Object.keys preserves insertion
-// order on string keys (ES2015+), and CHORD_DEFINITIONS in src/core/theory.ts
-// is declared in family order (triads → 6 → 7ths → sus → power).
-const CHORD_OPTIONS: string[] = Object.keys(CHORD_DEFINITIONS);
-
 // UI-only shorthand label map — maps CHORD_DEFINITIONS keys to chord-symbol
 // shorthand for display in the toggle bar. Canonical keys are unchanged.
 const CHORD_TYPE_SHORT_LABELS: Record<string, string> = {
   "Major Triad": "Maj",
   "Minor Triad": "min",
   "Diminished Triad": "dim",
-  "Major 6th": "6",
+  "Augmented Triad": "aug",
+  "Sus2": "sus2",
+  "Sus4": "sus4",
+  "Power Chord (5)": "5",
+  "Major 6th": "M6",
+  "Minor 6th": "m6",
   "Major 7th": "M7",
   "Minor 7th": "m7",
   "Dominant 7th": "7",
-  "Sus4": "sus4",
-  "Power Chord (5)": "5",
+  "Diminished 7th": "dim7",
+  "Half-Diminished 7th": "m7♭5",
+  "Minor-Major 7th": "mM7",
 };
+
+// Display order for the chord-type toggle bar: triads → suspended → power → 6ths → 7ths.
+// This controls toggle-bar order exclusively; CHORD_DEFINITIONS key order in theory.ts
+// is never reordered to match this.
+const CHORD_TYPE_DISPLAY_ORDER: readonly string[] = [
+  "Major Triad",
+  "Minor Triad",
+  "Diminished Triad",
+  "Augmented Triad",
+  "Sus2",
+  "Sus4",
+  "Power Chord (5)",
+  "Major 6th",
+  "Minor 6th",
+  "Major 7th",
+  "Minor 7th",
+  "Dominant 7th",
+  "Diminished 7th",
+  "Half-Diminished 7th",
+  "Minor-Major 7th",
+];
 
 const CHORD_NONE_VALUE = "__none__";
 
@@ -152,7 +173,7 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
                 label="Chord Type"
                 options={[
                   { value: CHORD_NONE_VALUE, label: "Off" },
-                  ...CHORD_OPTIONS.map((key) => ({
+                  ...CHORD_TYPE_DISPLAY_ORDER.map((key) => ({
                     value: key,
                     label: CHORD_TYPE_SHORT_LABELS[key] ?? key,
                   })),
@@ -160,6 +181,7 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
                 value={chordQualityOverride ?? CHORD_NONE_VALUE}
                 onChange={handleChordTypeChange}
                 compact={compact}
+                overflow="scroll"
               />
               <p className={shared["field-hint"]}>
                 Off uses the diatonic default for this degree. Picking a quality
@@ -179,7 +201,7 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
               label="Chord Type"
               options={[
                 { value: CHORD_NONE_VALUE, label: "Off" },
-                ...CHORD_OPTIONS.map((key) => ({
+                ...CHORD_TYPE_DISPLAY_ORDER.map((key) => ({
                   value: key,
                   label: CHORD_TYPE_SHORT_LABELS[key] ?? key,
                 })),
@@ -187,6 +209,7 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
               value={chordQualityOverride ?? CHORD_NONE_VALUE}
               onChange={handleChordTypeChange}
               compact={compact}
+              overflow="scroll"
             />
           </div>
           <div className={shared["control-section"]}>

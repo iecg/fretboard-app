@@ -331,6 +331,26 @@
 [data-layout-scope="mobile-tabs"] .toggle-group[data-compact="true"] .toggle-btn {
   min-height: 1.6rem;
 }
+
+/* Horizontal scroll variant — opt-in via overflow="scroll" prop on ToggleBar.
+   Buttons keep their natural width (no flex:1 stretch) so labels are fully
+   readable when the row overflows. Scrollbar hidden cross-browser. */
+.toggle-group[data-overflow="scroll"] {
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.toggle-group[data-overflow="scroll"]::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.toggle-group[data-overflow="scroll"] .toggle-btn {
+  flex: 0 0 auto;
+  min-width: max-content;
+}
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
 .field-hint {

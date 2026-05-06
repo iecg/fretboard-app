@@ -17,6 +17,27 @@ import {
 } from "../../store/atoms";
 import { ChordOverlayControls } from "./ChordOverlayControls";
 
+// Expected toggle-bar label order — mirrors CHORD_TYPE_DISPLAY_ORDER mapped through CHORD_TYPE_SHORT_LABELS.
+// Kept inline here to avoid importing non-component values from the component file (react-refresh rule).
+const EXPECTED_CHORD_TYPE_LABELS = [
+  "Off",
+  "Maj",
+  "min",
+  "dim",
+  "aug",
+  "sus2",
+  "sus4",
+  "5",
+  "M6",
+  "m6",
+  "M7",
+  "m7",
+  "7",
+  "dim7",
+  "m7♭5",
+  "mM7",
+];
+
 /**
  * Base seeds: C Major scale with degree overlay in degree mode.
  * chordDegreeAtom = "I" causes chordTypeAtom to resolve to "Major Triad",
@@ -277,19 +298,39 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(chordTypeLabel).toBeInTheDocument();
     });
 
-    it("renders all 10 chord-type buttons (Off + 9 types) in manual mode", () => {
+    it("renders all 16 chord-type buttons (Off + 15 types) in manual mode", () => {
       renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
       const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
+      // Off sentinel
       expect(within(chordTypeGroup).getByRole("button", { name: "Off" })).toBeInTheDocument();
+      // Original types
       expect(within(chordTypeGroup).getByRole("button", { name: "Maj" })).toBeInTheDocument();
       expect(within(chordTypeGroup).getByRole("button", { name: "min" })).toBeInTheDocument();
       expect(within(chordTypeGroup).getByRole("button", { name: "dim" })).toBeInTheDocument();
-      expect(within(chordTypeGroup).getByRole("button", { name: "6" })).toBeInTheDocument();
       expect(within(chordTypeGroup).getByRole("button", { name: "M7" })).toBeInTheDocument();
       expect(within(chordTypeGroup).getByRole("button", { name: "m7" })).toBeInTheDocument();
       expect(within(chordTypeGroup).getByRole("button", { name: "7" })).toBeInTheDocument();
       expect(within(chordTypeGroup).getByRole("button", { name: "sus4" })).toBeInTheDocument();
       expect(within(chordTypeGroup).getByRole("button", { name: "5" })).toBeInTheDocument();
+      // M6 (renamed from "6") + 6 new types
+      expect(within(chordTypeGroup).getByRole("button", { name: "M6" })).toBeInTheDocument();
+      expect(within(chordTypeGroup).getByRole("button", { name: "aug" })).toBeInTheDocument();
+      expect(within(chordTypeGroup).getByRole("button", { name: "sus2" })).toBeInTheDocument();
+      expect(within(chordTypeGroup).getByRole("button", { name: "m6" })).toBeInTheDocument();
+      expect(within(chordTypeGroup).getByRole("button", { name: "dim7" })).toBeInTheDocument();
+      expect(within(chordTypeGroup).getByRole("button", { name: "m7♭5" })).toBeInTheDocument();
+      expect(within(chordTypeGroup).getByRole("button", { name: "mM7" })).toBeInTheDocument();
+      // Confirm total count: 16 (Off + 15)
+      expect(within(chordTypeGroup).getAllByRole("button")).toHaveLength(16);
+    });
+
+    it("chord-type buttons appear in CHORD_TYPE_DISPLAY_ORDER order (Off first)", () => {
+      renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
+      const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
+      const buttons = within(chordTypeGroup).getAllByRole("button");
+      EXPECTED_CHORD_TYPE_LABELS.forEach((label, i) => {
+        expect(buttons[i]).toHaveAccessibleName(label);
+      });
     });
 
     it("clicking a chord type button marks it as pressed", async () => {
@@ -306,6 +347,12 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       const buttons = within(chordTypeGroup).getAllByRole("button");
       expect(buttons[0]).toHaveAccessibleName("Off");
       expect(buttons[1]).toHaveAccessibleName("Maj");
+    });
+
+    it("chord-type toggle bar has data-overflow='scroll' attribute", () => {
+      renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
+      const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
+      expect(chordTypeGroup).toHaveAttribute("data-overflow", "scroll");
     });
 
     it("clicking Off clears chordQualityOverride to null (degree mode)", async () => {
