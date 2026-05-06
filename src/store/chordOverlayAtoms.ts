@@ -256,16 +256,15 @@ export const chordTypeAtom = atom(
 );
 
 /**
- * Action atom for changing the active scale degree in degree mode. Clears any
- * `chordQualityOverride` so each new degree starts at its diatonic default
- * (e.g. picking V resolves to Major Triad even if the previous degree had a
- * Dominant 7th override). No-op writes (same degree) do NOT clear the override.
+ * Action atom for changing the active scale degree in degree mode. Always
+ * clears any `chordQualityOverride` so each click on a degree button starts
+ * at its diatonic default (e.g. picking V resolves to Major Triad even if a
+ * Dominant 7th override was active, and re-clicking the same degree clears
+ * the override too).
  */
 export const setChordDegreeAtom = atom(
   null,
-  (get, set, value: DegreeId | null) => {
-    const current = get(chordDegreeAtom);
-    if (current === value) return;
+  (_get, set, value: DegreeId | null) => {
     set(chordDegreeAtom, value);
     set(chordQualityOverrideAtom, null);
   },

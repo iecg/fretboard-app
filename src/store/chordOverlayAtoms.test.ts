@@ -198,7 +198,7 @@ describe("chordOverlayAtoms — degree mode quality override", () => {
     expect(store.get(chordRootAtom)).toBe("D");
   });
 
-  it("setChordDegreeAtom: re-selecting the same degree does NOT clear the override", () => {
+  it("setChordDegreeAtom: re-selecting the same degree clears the override", () => {
     const store = makeAtomStore([
       [chordDegreeAtom, "V"],
       [chordOverlayModeAtom, "degree"],
@@ -206,9 +206,10 @@ describe("chordOverlayAtoms — degree mode quality override", () => {
       [scaleNameAtom, "Major"],
       [chordQualityOverrideAtom, "Dominant 7th"],
     ]);
-    store.set(setChordDegreeAtom, "V"); // no-op
-    expect(store.get(chordQualityOverrideAtom)).toBe("Dominant 7th");
-    expect(store.get(chordTypeAtom)).toBe("Dominant 7th");
+    store.set(setChordDegreeAtom, "V"); // re-click same degree clears the pin
+    expect(store.get(chordDegreeAtom)).toBe("V");
+    expect(store.get(chordQualityOverrideAtom)).toBeNull();
+    expect(store.get(chordTypeAtom)).toBe("Major Triad"); // V diatonic default in C major
   });
 
   it("setChordDegreeAtom: turning overlay off (degree=null) clears override", () => {
