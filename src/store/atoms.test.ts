@@ -701,7 +701,7 @@ describe("atoms", () => {
       expect(store.get(chordRootAtom)).toBe("C");
       expect(store.get(linkChordRootAtom)).toBe(true);
       expect(store.get(chordFretSpreadAtom)).toBe(0);
-      expect(store.get(fingeringPatternAtom)).toBe("all");
+      expect(store.get(fingeringPatternAtom)).toBe("none");
       expect(store.get(npsPositionAtom)).toBe(1);
       expect(store.get(scaleBrowseModeAtom)).toBe("parallel");
       expect(store.get(tuningNameAtom)).toBe("Standard");

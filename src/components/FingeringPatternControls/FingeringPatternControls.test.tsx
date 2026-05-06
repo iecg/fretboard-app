@@ -18,7 +18,7 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
         <FingeringPatternControls />
       </Provider>
     );
-    expect(screen.getByText("All")).toBeInTheDocument();
+    expect(screen.getAllByText("None").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("CAGED")).toBeInTheDocument();
     expect(screen.getByText("3NPS")).toBeInTheDocument();
   });
@@ -41,7 +41,7 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
         <FingeringPatternControls />
       </Provider>
     );
-    
+
     act(() => {
       store.set(fingeringPatternAtom, "caged");
     });
@@ -53,7 +53,7 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
     expect(screen.getAllByText("Shape").length).toBeGreaterThan(0);
 
     act(() => {
-      store.set(fingeringPatternAtom, "all");
+      store.set(fingeringPatternAtom, "none");
     });
     rerender(
       <Provider store={store}>
@@ -82,7 +82,7 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
     expect(screen.getByText("Position")).toBeInTheDocument();
 
     act(() => {
-      store.set(fingeringPatternAtom, "all");
+      store.set(fingeringPatternAtom, "none");
     });
     rerender(
       <Provider store={store}>
