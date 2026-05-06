@@ -156,9 +156,10 @@ test.describe("Chord Connector Visual Tests", () => {
     const fretboard = page.getByTestId("fretboard-svg");
     await fretboard.scrollIntoViewIfNeeded();
 
-    // Hover a root-active button to activate the first voicing via the real atom path.
-    // root-active is a CHORD_TONE_ROLE that fires activeVoicingKeyAtom in FretboardHitTargetLayer.
-    await page.locator('button[data-note-role="root-active"]').first().hover();
+    // Hover a chord-root button to activate the first voicing via the real atom path.
+    // chord-root is a CHORD_TONE_ROLE that fires activeVoicingKeyAtom in FretboardHitTargetLayer.
+    // force:true bypasses Playwright's actionability check since the a11y buttons are opacity:0.
+    await page.locator('button[data-note-role="chord-root"]').first().hover({ force: true });
     await waitForStableLayout(page);
 
     await expectLocatorVisual(fretboard, "connector-c-major-hover-dark");
@@ -176,8 +177,9 @@ test.describe("Chord Connector Visual Tests", () => {
     const fretboard = page.getByTestId("fretboard-svg");
     await fretboard.scrollIntoViewIfNeeded();
 
-    // Hover a root-active button to activate the first voicing via the real atom path.
-    await page.locator('button[data-note-role="root-active"]').first().hover();
+    // Hover a chord-root button to activate the first voicing via the real atom path.
+    // force:true bypasses Playwright's actionability check since the a11y buttons are opacity:0.
+    await page.locator('button[data-note-role="chord-root"]').first().hover({ force: true });
     await waitForStableLayout(page);
 
     await expectLocatorVisual(fretboard, "connector-c-major-hover-light");
@@ -196,9 +198,9 @@ test.describe("Chord Connector Visual Tests", () => {
     const fretboard = page.getByTestId("fretboard-svg");
     await fretboard.scrollIntoViewIfNeeded();
 
-    // Focus a root-active button via keyboard to drive the activeVoicingKeyAtom
+    // Focus a chord-root button via keyboard to drive the activeVoicingKeyAtom
     // through the real onFocus handler in FretboardHitTargetLayer.
-    await page.locator('button[data-note-role="root-active"]').first().focus();
+    await page.locator('button[data-note-role="chord-root"]').first().focus();
     await waitForStableLayout(page);
 
     await expectLocatorVisual(fretboard, "connector-c-major-focus-dark");
@@ -216,9 +218,9 @@ test.describe("Chord Connector Visual Tests", () => {
     const fretboard = page.getByTestId("fretboard-svg");
     await fretboard.scrollIntoViewIfNeeded();
 
-    // Focus a root-active button via keyboard to drive the activeVoicingKeyAtom
+    // Focus a chord-root button via keyboard to drive the activeVoicingKeyAtom
     // through the real onFocus handler in FretboardHitTargetLayer.
-    await page.locator('button[data-note-role="root-active"]').first().focus();
+    await page.locator('button[data-note-role="chord-root"]').first().focus();
     await waitForStableLayout(page);
 
     await expectLocatorVisual(fretboard, "connector-c-major-focus-light");
