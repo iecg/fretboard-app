@@ -181,12 +181,12 @@
   --fretboard-headstock-bg: var(--fretboard-wood-mid);
   --fretboard-glow-opacity: 0;
 
-  /* CAGED shapes — boost visibility for light mode */
-  --caged-e-bg: rgba(239, 68, 68, 0.35);
-  --caged-d-bg: rgba(234, 179, 8, 0.35);
-  --caged-c-bg: rgba(34, 197, 94, 0.35);
-  --caged-a-bg: rgba(59, 130, 246, 0.35);
-  --caged-g-bg: rgba(168, 85, 247, 0.35);
+  /* CAGED shapes — boost visibility for light mode (Okabe-Ito RGB, 0.35 alpha) */
+  --caged-e-bg: rgba(184, 87, 0, 0.35);    /* E #B85700 + 0.35 boost */
+  --caged-d-bg: rgba(181, 139, 0, 0.35);   /* D #B58B00 + 0.35 boost */
+  --caged-c-bg: rgba(0, 158, 115, 0.35);   /* C #009E73 + 0.35 boost */
+  --caged-a-bg: rgba(0, 114, 178, 0.35);   /* A #0072B2 + 0.35 boost */
+  --caged-g-bg: rgba(204, 121, 167, 0.35); /* G #CC79A7 + 0.35 boost */
 
   /* Note ring tokens — light mode: distinct hues against warm maple wood */
   --note-ring: #0369a1;
@@ -343,6 +343,18 @@
   --chord-connector-color-6: #3B82F6; /* Okabe-Ito: blue (bright) — hue ~217° */
   --chord-connector-color-7: #A78BFA; /* purple-violet (bright) — hue ~278° */
   --chord-connector-color-8: #E879B9; /* Okabe-Ito: reddish-purple (bright) — hue ~329° */
+
+  /* CAGED shapes — dark mode bright Okabe-Ito palette */
+  --caged-e: #FF7F4F;                        /* Okabe-Ito vermillion (bright), slot 1 */
+  --caged-d: #FFB833;                        /* Okabe-Ito amber-gold (bright), slot 3 */
+  --caged-c: #00D9A3;                        /* Okabe-Ito bluish-green (bright), slot 4 */
+  --caged-a: #3B82F6;                        /* Okabe-Ito blue (bright), slot 6 */
+  --caged-g: #E879B9;                        /* Okabe-Ito reddish-purple (bright), slot 8 */
+  --caged-e-bg: rgba(255, 127, 79, 0.18);    /* E #FF7F4F + 0.18 */
+  --caged-d-bg: rgba(255, 184, 51, 0.18);    /* D #FFB833 + 0.18 */
+  --caged-c-bg: rgba(0, 217, 163, 0.18);     /* C #00D9A3 + 0.18 */
+  --caged-a-bg: rgba(59, 130, 246, 0.18);    /* A #3B82F6 + 0.18 */
+  --caged-g-bg: rgba(232, 121, 185, 0.18);   /* G #E879B9 + 0.18 */
 }
 
 [data-theme="modern-light"] [data-scale-degree] {
