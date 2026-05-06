@@ -17,18 +17,6 @@ import {
 } from "../../store/atoms";
 import { ChordOverlayControls } from "./ChordOverlayControls";
 
-const CHORD_OPTION_VALUES = [
-  "Major Triad",
-  "Minor Triad",
-  "Diminished Triad",
-  "Major 6th",
-  "Major 7th",
-  "Minor 7th",
-  "Dominant 7th",
-  "Sus4",
-  "Power Chord (5)",
-];
-
 /**
  * Base seeds: C Major scale with degree overlay in degree mode.
  * chordDegreeAtom = "I" causes chordTypeAtom to resolve to "Major Triad",
@@ -88,76 +76,80 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(screen.queryByRole("group", { name: "Chord degree" })).not.toBeInTheDocument();
     });
 
-    it("clicking Degree from manual mode brings degree picker back (no degree set hides chord-type stepper)", async () => {
+    it("clicking Degree from manual mode brings degree picker back (no degree set hides chord-type toggle bar)", async () => {
       // Seed chordDegreeAtom=null explicitly so the degree-mode chord-type
-      // stepper is gated off (it only renders when a degree is active).
+      // toggle bar is gated off (it only renders when a degree is active).
       renderWithAtoms(<ChordOverlayControls />, [
         ...MANUAL_MODE_SEEDS,
         [chordDegreeAtom, null],
       ]);
 
-      // Manual mode initially: chord-type nav browser and root note grid visible
-      expect(screen.getByRole("group", { name: "Browse chord types" })).toBeInTheDocument();
+      // Manual mode initially: chord-type toggle bar visible (Maj button present)
+      expect(screen.getByRole("button", { name: "Maj" })).toBeInTheDocument();
 
       // Click "Degree" toggle
       await userEvent.click(screen.getByRole("button", { name: "Degree" }));
 
       // Degree picker visible
       expect(screen.getByRole("group", { name: "Chord degree" })).toBeInTheDocument();
-      // Without an active degree, the chord-type stepper is gated off
-      expect(screen.queryByRole("group", { name: "Browse chord types" })).not.toBeInTheDocument();
+      // Without an active degree, the chord-type toggle bar is gated off
+      expect(screen.queryByRole("group", { name: "Chord Type" })).not.toBeInTheDocument();
     });
 
-    it("clicking Degree from manual mode preserves chord-type stepper when a degree is active", async () => {
-      // With an active degree, the chord-type stepper appears in degree mode
+    it("clicking Degree from manual mode preserves chord-type toggle bar when a degree is active", async () => {
+      // With an active degree, the chord-type toggle bar appears in degree mode
       // too — letting the user pick a quality (e.g. Dom7) without leaving degree.
       renderWithAtoms(<ChordOverlayControls />, [
         ...MANUAL_MODE_SEEDS,
         [chordDegreeAtom, "V"],
       ]);
 
-      expect(screen.getByRole("group", { name: "Browse chord types" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Maj" })).toBeInTheDocument();
 
       await userEvent.click(screen.getByRole("button", { name: "Degree" }));
 
-      // Both the degree picker AND the chord-type stepper are visible in degree mode.
+      // Both the degree picker AND the chord-type toggle bar are visible in degree mode.
       expect(screen.getByRole("group", { name: "Chord degree" })).toBeInTheDocument();
-      expect(screen.getByRole("group", { name: "Browse chord types" })).toBeInTheDocument();
+      expect(screen.getByRole("group", { name: "Chord Type" })).toBeInTheDocument();
     });
   });
 
-  describe("3. manual mode renders NoteGrid and chord-type nav browser", () => {
-    it("renders chord-type nav browser and root note grid in manual mode", () => {
+  describe("3. manual mode renders NoteGrid and chord-type toggle bar", () => {
+    it("renders chord-type toggle bar and root note grid in manual mode", () => {
       renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
 
-      // Chord-type nav browser
-      expect(screen.getByRole("group", { name: "Browse chord types" })).toBeInTheDocument();
+      // Chord-type toggle bar present (Maj button visible)
+      expect(screen.getByRole("button", { name: "Maj" })).toBeInTheDocument();
       // NoteGrid for root
       expect(screen.getByRole("group", { name: "Note selector" })).toBeInTheDocument();
     });
 
-    it("chord-type browser displays current value (Major Triad)", () => {
+    it("chord-type toggle bar marks seeded value as pressed (Major Triad → Maj)", () => {
       renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
-      const chordTypeSelect = screen.getByRole("combobox", { name: "Chord Type" });
-      expect((chordTypeSelect as HTMLSelectElement).value).toBe("Major Triad");
+      const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
+      const majButton = within(chordTypeGroup).getByRole("button", { name: "Maj" });
+      expect(majButton.getAttribute("aria-pressed")).toBe("true");
     });
 
-    it("selecting a chord type from the dropdown updates manual mode", async () => {
+    it("selecting a chord type from the toggle bar updates manual mode", async () => {
       renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
-      const chordTypeSelect = screen.getByRole("combobox", { name: "Chord Type" });
+      const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
 
-      await userEvent.selectOptions(chordTypeSelect, "Minor 7th");
+      await userEvent.click(within(chordTypeGroup).getByRole("button", { name: "m7" }));
 
-      expect((chordTypeSelect as HTMLSelectElement).value).toBe("Minor 7th");
+      expect(
+        within(chordTypeGroup).getByRole("button", { name: "m7" }).getAttribute("aria-pressed"),
+      ).toBe("true");
     });
 
-    it("selecting Off from the chord type dropdown clears manual overlay quality", async () => {
-      renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
-      const chordTypeSelect = screen.getByRole("combobox", { name: "Chord Type" });
+    it("clicking Off clears chordQualityOverride to null", async () => {
+      const store = makeAtomStore([...MANUAL_MODE_SEEDS]);
+      renderWithStore(<ChordOverlayControls />, store);
+      const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
 
-      await userEvent.selectOptions(chordTypeSelect, "__none__");
+      await userEvent.click(within(chordTypeGroup).getByRole("button", { name: "Off" }));
 
-      expect((chordTypeSelect as HTMLSelectElement).value).toBe("__none__");
+      expect(store.get(chordQualityOverrideAtom)).toBeNull();
     });
   });
 
@@ -175,7 +167,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(vButton.getAttribute("aria-pressed")).toBe("true");
     });
 
-    it("seeded manual mode with chordQualityOverride='Major 7th' shows correct value in browser", () => {
+    it("seeded manual mode with chordQualityOverride='Major 7th' marks M7 button as pressed", () => {
       renderWithAtoms(<ChordOverlayControls />, [
         [scaleNameAtom, "Major"],
         [rootNoteAtom, "C"],
@@ -184,8 +176,9 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
         [chordRootOverrideAtom, "G"],
       ]);
 
-      const chordTypeSelect = screen.getByRole("combobox", { name: "Chord Type" });
-      expect((chordTypeSelect as HTMLSelectElement).value).toBe("Major 7th");
+      const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
+      const m7Button = within(chordTypeGroup).getByRole("button", { name: "M7" });
+      expect(m7Button.getAttribute("aria-pressed")).toBe("true");
     });
   });
 
@@ -276,7 +269,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
   });
 
-  describe("8. chord-type theory-nav browser (manual mode)", () => {
+  describe("8. chord-type toggle bar (manual mode)", () => {
     it("renders 'Chord Type' label in manual mode", () => {
       const { container } = renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
       const labels = container.querySelectorAll(".section-label");
@@ -284,48 +277,47 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(chordTypeLabel).toBeInTheDocument();
     });
 
-    it("renders Prev and Next chord type buttons", () => {
+    it("renders all 10 chord-type buttons (Off + 9 types) in manual mode", () => {
       renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
-      expect(screen.getByRole("button", { name: "Previous chord type" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Next chord type" })).toBeInTheDocument();
+      const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
+      expect(within(chordTypeGroup).getByRole("button", { name: "Off" })).toBeInTheDocument();
+      expect(within(chordTypeGroup).getByRole("button", { name: "Maj" })).toBeInTheDocument();
+      expect(within(chordTypeGroup).getByRole("button", { name: "min" })).toBeInTheDocument();
+      expect(within(chordTypeGroup).getByRole("button", { name: "dim" })).toBeInTheDocument();
+      expect(within(chordTypeGroup).getByRole("button", { name: "6" })).toBeInTheDocument();
+      expect(within(chordTypeGroup).getByRole("button", { name: "M7" })).toBeInTheDocument();
+      expect(within(chordTypeGroup).getByRole("button", { name: "m7" })).toBeInTheDocument();
+      expect(within(chordTypeGroup).getByRole("button", { name: "7" })).toBeInTheDocument();
+      expect(within(chordTypeGroup).getByRole("button", { name: "sus4" })).toBeInTheDocument();
+      expect(within(chordTypeGroup).getByRole("button", { name: "5" })).toBeInTheDocument();
     });
 
-    it("clicking Next advances to the next chord type", async () => {
+    it("clicking a chord type button marks it as pressed", async () => {
       renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
-      const nextBtn = screen.getByRole("button", { name: "Next chord type" });
-      await userEvent.click(nextBtn);
-      const browser = screen.getByRole("group", { name: "Browse chord types" });
-      expect(within(browser).getByText(CHORD_OPTION_VALUES[1])).toBeInTheDocument();
+      const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
+      const minBtn = within(chordTypeGroup).getByRole("button", { name: "min" });
+      await userEvent.click(minBtn);
+      expect(minBtn.getAttribute("aria-pressed")).toBe("true");
     });
 
-    it("clicking Prev from first chord type wraps to last (Power Chord (5))", async () => {
-      renderWithAtoms(<ChordOverlayControls />, [
-        [scaleNameAtom, "Major"],
-        [rootNoteAtom, "C"],
-        [chordOverlayModeAtom, "manual"],
-        [chordQualityOverrideAtom, CHORD_OPTION_VALUES[0]],
-        [chordRootOverrideAtom, "C"],
-      ]);
-      const prevBtn = screen.getByRole("button", { name: "Previous chord type" });
-      await userEvent.click(prevBtn);
-      const browser = screen.getByRole("group", { name: "Browse chord types" });
-      expect(
-        within(browser).getByText(CHORD_OPTION_VALUES[CHORD_OPTION_VALUES.length - 1]),
-      ).toBeInTheDocument();
+    it("Off is leftmost — Off button appears before Maj in DOM order", () => {
+      renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
+      const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
+      const buttons = within(chordTypeGroup).getAllByRole("button");
+      expect(buttons[0]).toHaveAccessibleName("Off");
+      expect(buttons[1]).toHaveAccessibleName("Maj");
     });
 
-    it("clicking Next from last chord type wraps to first (Major Triad)", async () => {
-      renderWithAtoms(<ChordOverlayControls />, [
-        [scaleNameAtom, "Major"],
-        [rootNoteAtom, "C"],
-        [chordOverlayModeAtom, "manual"],
-        [chordQualityOverrideAtom, CHORD_OPTION_VALUES[CHORD_OPTION_VALUES.length - 1]],
-        [chordRootOverrideAtom, "C"],
-      ]);
-      const nextBtn = screen.getByRole("button", { name: "Next chord type" });
-      await userEvent.click(nextBtn);
-      const browser = screen.getByRole("group", { name: "Browse chord types" });
-      expect(within(browser).getByText(CHORD_OPTION_VALUES[0])).toBeInTheDocument();
+    it("clicking Off clears chordQualityOverride to null (degree mode)", async () => {
+      renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
+      const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
+
+      // First select a chord type so something is active
+      await userEvent.click(within(chordTypeGroup).getByRole("button", { name: "M7" }));
+      // Then click Off
+      await userEvent.click(within(chordTypeGroup).getByRole("button", { name: "Off" }));
+
+      expect(within(chordTypeGroup).getByRole("button", { name: "Off" }).getAttribute("aria-pressed")).toBe("true");
     });
   });
 
