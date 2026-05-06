@@ -464,6 +464,7 @@ export const allChordMembersAtom = atom((get) => {
       role = "chord-tone-outside-scale";
     }
     let scaleDegree: DegreeId | undefined;
+    let scaleInterval: string | undefined;
     if (inScale) {
       const noteIdx = NOTES.indexOf(m.note);
       const tonicIdx = NOTES.indexOf(rootNote);
@@ -472,6 +473,7 @@ export const allChordMembersAtom = atom((get) => {
         scaleDegree = (
           getDegreesForScale(scaleName)[semitone] ?? INTERVAL_NAMES[semitone]
         ) as DegreeId | undefined;
+        scaleInterval = formatAccidental(INTERVAL_NAMES[semitone] ?? "1");
       }
     }
     return {
@@ -481,6 +483,7 @@ export const allChordMembersAtom = atom((get) => {
       role,
       inScale,
       scaleDegree,
+      scaleInterval,
     };
   });
 });

@@ -83,7 +83,7 @@ export const practiceBarColorNotesFilteredAtom = atom((get) => {
 });
 
 const getDisplayLabel = (e: ChordRowEntry): string =>
-  e.scaleDegree ?? e.memberName;
+  e.scaleInterval ?? e.memberName;
 
 /**
  * Maps note → NoteSemantics allowing multiple properties to coexist.

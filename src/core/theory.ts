@@ -107,6 +107,7 @@ export interface ChordRowEntry {
   role: "chord-root" | "chord-tone-in-scale" | "chord-tone-outside-scale";
   inScale: boolean;
   scaleDegree?: DegreeId;
+  scaleInterval?: string;
 }
 
 // Practice lenses replace raw viewMode
