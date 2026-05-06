@@ -831,7 +831,13 @@ describe("noteSemanticMapAtom — Phase 04 scaleDegree and isDiatonicChord", () 
     }
   });
 
-  it("isDiatonicChord is false when a manual chord override pulls the overlay out of degree mode", () => {
+  it("isDiatonicChord is false when a non-diatonic quality override is set in degree mode", () => {
+    // After the "preserve degree-mode on chord-quality change" fix, writing a
+    // chord type while in degree mode no longer flips to manual — instead the
+    // override is applied on top of the degree binding. The diatonic-chord
+    // check correctly identifies the override chord (C Minor Triad on degree I
+    // in C Major) as non-diatonic since it doesn't match the degree's diatonic
+    // default (C Major Triad).
     const store = makeStore();
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Major");
@@ -839,13 +845,17 @@ describe("noteSemanticMapAtom — Phase 04 scaleDegree and isDiatonicChord", () 
     store.set(chordOverlayModeAtom, "degree");
     store.set(chordTypeAtom, "Minor Triad");
 
-    expect(store.get(chordOverlayModeAtom)).toBe("manual");
+    // Mode stays "degree" — the quality override does NOT flip the overlay.
+    expect(store.get(chordOverlayModeAtom)).toBe("degree");
+    expect(store.get(chordTypeAtom)).toBe("Minor Triad");
 
     const semanticMap = store.get(noteSemanticMapAtom);
     expect(semanticMap.size).toBeGreaterThan(0);
 
     const gSem = semanticMap.get("G");
     expect(gSem?.isChordTone).toBe(true);
+    // The chord (C Minor Triad: C, Eb, G) is not the diatonic chord for I in
+    // C Major (which is C Major Triad: C, E, G). isDiatonicChord stays false.
     expect(gSem?.isDiatonicChord).toBeFalsy();
   });
 });

@@ -150,16 +150,40 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
       </div>
 
       {chordOverlayMode === "degree" && (
-        <div className={shared["control-section"]}>
-          <span className={shared["section-label"]}>Degree</span>
-          <ToggleBar
-            options={degreeSelectOptions}
-            value={chordDegree ?? CHORD_NONE_VALUE}
-            onChange={handleDegreeChange}
-            label="Chord degree"
-            compact={compact}
-          />
-        </div>
+        <>
+          <div className={shared["control-section"]}>
+            <span className={shared["section-label"]}>Degree</span>
+            <ToggleBar
+              options={degreeSelectOptions}
+              value={chordDegree ?? CHORD_NONE_VALUE}
+              onChange={handleDegreeChange}
+              label="Chord degree"
+              compact={compact}
+            />
+          </div>
+          {chordDegree ? (
+            <div className={shared["control-section"]}>
+              <span className={shared["section-label"]}>Chord Type</span>
+              <StepperSelect
+                selectLabel="Chord Type"
+                groupLabel="Browse chord types"
+                previousLabel="Previous chord type"
+                nextLabel="Next chord type"
+                value={chordQualityOverride ?? CHORD_NONE_VALUE}
+                options={CHORD_SELECT_OPTIONS}
+                onChange={handleChordTypeChange}
+                onPrevious={() => handleStepChordType(-1)}
+                onNext={() => handleStepChordType(1)}
+                compact={compact}
+              />
+              <p className={shared["field-hint"]}>
+                Off uses the diatonic default for this degree. Picking a quality
+                pins it for the active degree only — switching degrees resets to
+                the new degree's diatonic default.
+              </p>
+            </div>
+          ) : null}
+        </>
       )}
 
       {chordOverlayMode === "manual" && (
