@@ -4,10 +4,6 @@ import { NOTES, LENS_REGISTRY, CHORD_DEFINITIONS } from "../../core/theory";
 import { getDegreesForScale } from "../../core/degrees";
 import { lensAvailabilityAtom } from "../../store/atoms";
 import { NoteGrid } from "../NoteGrid/NoteGrid";
-import {
-  StepperSelect,
-  type StepperSelectOption,
-} from "../StepperSelect/StepperSelect";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { useChordState } from "../../hooks/useChordState";
 import { useScaleState } from "../../hooks/useScaleState";
@@ -20,15 +16,21 @@ import shared from "../shared/shared.module.css";
 // is declared in family order (triads → 6 → 7ths → sus → power).
 const CHORD_OPTIONS: string[] = Object.keys(CHORD_DEFINITIONS);
 
-const CHORD_NONE_VALUE = "__none__";
+// UI-only shorthand label map — maps CHORD_DEFINITIONS keys to chord-symbol
+// shorthand for display in the toggle bar. Canonical keys are unchanged.
+const CHORD_TYPE_SHORT_LABELS: Record<string, string> = {
+  "Major Triad": "Maj",
+  "Minor Triad": "min",
+  "Diminished Triad": "dim",
+  "Major 6th": "6",
+  "Major 7th": "M7",
+  "Minor 7th": "m7",
+  "Dominant 7th": "7",
+  "Sus4": "sus4",
+  "Power Chord (5)": "5",
+};
 
-const CHORD_SELECT_OPTIONS: StepperSelectOption[] = [
-  { value: CHORD_NONE_VALUE, label: "Off" },
-  ...CHORD_OPTIONS.map((option) => ({
-    value: option,
-    label: option,
-  })),
-];
+const CHORD_NONE_VALUE = "__none__";
 
 export interface ChordOverlayControlsProps {
   compact?: boolean;
@@ -52,7 +54,7 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
 
   const lensAvailability = useAtomValue(lensAvailabilityAtom);
 
-  const degreeSelectOptions: StepperSelectOption[] = [
+  const degreeSelectOptions = [
     { value: CHORD_NONE_VALUE, label: "Off" },
     ...Object.values(getDegreesForScale(scaleName)).map((deg) => ({
       value: deg,
@@ -110,18 +112,6 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
     });
   };
 
-  const handleStepChordType = (direction: -1 | 1) => {
-    const currentIndex =
-      chordQualityOverride === null ? -1 : CHORD_OPTIONS.indexOf(chordQualityOverride);
-    const totalSlots = CHORD_OPTIONS.length + 1;
-    const currentSlot = currentIndex + 1;
-    const nextSlot = (currentSlot + direction + totalSlots) % totalSlots;
-    const nextValue = nextSlot === 0 ? null : CHORD_OPTIONS[nextSlot - 1];
-    startTransition(() => {
-      setChordQualityOverride(nextValue);
-    });
-  };
-
   return (
     <div className={styles["theory-chord-content"]}>
       <div className={shared["control-section"]}>
@@ -158,16 +148,17 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
           {chordDegree ? (
             <div className={shared["control-section"]}>
               <span className={shared["section-label"]}>Chord Type</span>
-              <StepperSelect
-                selectLabel="Chord Type"
-                groupLabel="Browse chord types"
-                previousLabel="Previous chord type"
-                nextLabel="Next chord type"
+              <ToggleBar
+                label="Chord Type"
+                options={[
+                  { value: CHORD_NONE_VALUE, label: "Off" },
+                  ...CHORD_OPTIONS.map((key) => ({
+                    value: key,
+                    label: CHORD_TYPE_SHORT_LABELS[key] ?? key,
+                  })),
+                ]}
                 value={chordQualityOverride ?? CHORD_NONE_VALUE}
-                options={CHORD_SELECT_OPTIONS}
                 onChange={handleChordTypeChange}
-                onPrevious={() => handleStepChordType(-1)}
-                onNext={() => handleStepChordType(1)}
                 compact={compact}
               />
               <p className={shared["field-hint"]}>
@@ -184,16 +175,17 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
         <>
           <div className={shared["control-section"]}>
             <span className={shared["section-label"]}>Chord Type</span>
-            <StepperSelect
-              selectLabel="Chord Type"
-              groupLabel="Browse chord types"
-              previousLabel="Previous chord type"
-              nextLabel="Next chord type"
+            <ToggleBar
+              label="Chord Type"
+              options={[
+                { value: CHORD_NONE_VALUE, label: "Off" },
+                ...CHORD_OPTIONS.map((key) => ({
+                  value: key,
+                  label: CHORD_TYPE_SHORT_LABELS[key] ?? key,
+                })),
+              ]}
               value={chordQualityOverride ?? CHORD_NONE_VALUE}
-              options={CHORD_SELECT_OPTIONS}
               onChange={handleChordTypeChange}
-              onPrevious={() => handleStepChordType(-1)}
-              onNext={() => handleStepChordType(1)}
               compact={compact}
             />
           </div>
