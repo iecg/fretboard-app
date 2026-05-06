@@ -398,3 +398,120 @@ describe("allChordMembersAtom — scaleDegree population", () => {
     expect(fSharpEntry!.scaleDegree).toBeUndefined();
   });
 });
+
+// ---------------------------------------------------------------------------
+// Group F — allChordMembersAtom: scaleInterval for out-of-scale notes
+// ---------------------------------------------------------------------------
+
+describe("allChordMembersAtom — scaleInterval for out-of-scale notes", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("Case 1: C Major + Eb7 — all four chord tones get correct scale-relative scaleInterval", () => {
+    const store = makeAtomStore([
+      [chordOverlayModeAtom, "manual"],
+      [chordRootAtom, "D#"], // D# = Eb internally
+      [chordTypeAtom, "Dominant 7th"],
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+    ]);
+    const members = store.get(allChordMembersAtom);
+
+    // Eb = D# internally, interval from C = ♭3 (semitone 3)
+    const ebEntry = members.find((m) => m.internalNote === "D#");
+    expect(ebEntry).toBeDefined();
+    expect(ebEntry!.inScale).toBe(false);
+    expect(ebEntry!.scaleInterval).toBe("♭3");
+    expect(ebEntry!.scaleDegree).toBeUndefined();
+
+    // G is in C Major — scaleInterval should be set too (semitone 7 = "5")
+    const gEntry = members.find((m) => m.internalNote === "G");
+    expect(gEntry).toBeDefined();
+    expect(gEntry!.inScale).toBe(true);
+    expect(gEntry!.scaleInterval).toBe("5");
+    expect(gEntry!.scaleDegree).toBeDefined();
+
+    // Bb = A# internally, interval from C = ♭7 (semitone 10)
+    const bbEntry = members.find((m) => m.internalNote === "A#");
+    expect(bbEntry).toBeDefined();
+    expect(bbEntry!.inScale).toBe(false);
+    expect(bbEntry!.scaleInterval).toBe("♭7");
+    expect(bbEntry!.scaleDegree).toBeUndefined();
+
+    // Db = C# internally, interval from C = ♭2 (semitone 1)
+    const dbEntry = members.find((m) => m.internalNote === "C#");
+    expect(dbEntry).toBeDefined();
+    expect(dbEntry!.inScale).toBe(false);
+    expect(dbEntry!.scaleInterval).toBe("♭2");
+    expect(dbEntry!.scaleDegree).toBeUndefined();
+  });
+
+  it("Case 2: A Natural Minor + E7 — G# (only out-of-scale note) gets scaleInterval='b6'", () => {
+    const store = makeAtomStore([
+      [chordOverlayModeAtom, "manual"],
+      [chordRootAtom, "E"],
+      [chordTypeAtom, "Dominant 7th"],
+      [rootNoteAtom, "A"],
+      [scaleNameAtom, "Natural Minor"],
+    ]);
+    const members = store.get(allChordMembersAtom);
+
+    // G# is out of A Natural Minor (which has G natural).
+    // G# (index 8) from A tonic (index 9): semitone = (8-9+12)%12 = 11 = major 7th = "7"
+    const gsEntry = members.find((m) => m.internalNote === "G#");
+    expect(gsEntry).toBeDefined();
+    expect(gsEntry!.inScale).toBe(false);
+    expect(gsEntry!.scaleInterval).toBe("7");
+    expect(gsEntry!.scaleDegree).toBeUndefined();
+
+    // In-scale members also get scaleInterval
+    const eEntry = members.find((m) => m.internalNote === "E");
+    expect(eEntry).toBeDefined();
+    expect(eEntry!.inScale).toBe(true);
+    expect(eEntry!.scaleInterval).toBeDefined();
+
+    const bEntry = members.find((m) => m.internalNote === "B");
+    expect(bEntry).toBeDefined();
+    expect(bEntry!.inScale).toBe(true);
+    expect(bEntry!.scaleInterval).toBeDefined();
+
+    const dEntry = members.find((m) => m.internalNote === "D");
+    expect(dEntry).toBeDefined();
+    expect(dEntry!.inScale).toBe(true);
+    expect(dEntry!.scaleInterval).toBeDefined();
+  });
+
+  it("Case 3: C Major + Augmented Triad — G# is out-of-scale with scaleInterval='b6'", () => {
+    const store = makeAtomStore([
+      [chordOverlayModeAtom, "manual"],
+      [chordRootAtom, "C"],
+      [chordTypeAtom, "Augmented Triad"],
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+    ]);
+    const members = store.get(allChordMembersAtom);
+
+    // C: in scale, interval = "1"
+    const cEntry = members.find((m) => m.internalNote === "C");
+    expect(cEntry).toBeDefined();
+    expect(cEntry!.inScale).toBe(true);
+    expect(cEntry!.scaleInterval).toBe("1");
+    expect(cEntry!.scaleDegree).toBeDefined();
+
+    // E: in scale, interval = "3"
+    const eEntry = members.find((m) => m.internalNote === "E");
+    expect(eEntry).toBeDefined();
+    expect(eEntry!.inScale).toBe(true);
+    expect(eEntry!.scaleInterval).toBe("3");
+    expect(eEntry!.scaleDegree).toBeDefined();
+
+    // G# = out-of-scale tension tone. G# (index 8) from C tonic (index 0):
+    // semitone = 8 = INTERVAL_NAMES[8] = "b6" → formatAccidental → "♭6"
+    const gsEntry = members.find((m) => m.internalNote === "G#");
+    expect(gsEntry).toBeDefined();
+    expect(gsEntry!.inScale).toBe(false);
+    expect(gsEntry!.scaleInterval).toBe("♭6");
+    expect(gsEntry!.scaleDegree).toBeUndefined();
+  });
+});
