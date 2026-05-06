@@ -6,6 +6,7 @@ import { CAGED_SHAPES, type CagedShape } from "../../shapes";
 import { useShapeState } from "../../hooks/useShapeState";
 import { displayFormatAtom, type FingeringPattern } from "../../store/atoms";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
+import { StepperControl } from "../StepperControl/StepperControl";
 import shared from "../shared/shared.module.css";
 
 const LONG_PRESS_MS = 500;
@@ -30,6 +31,22 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
     setNpsOctave,
     onShapeClick,
     onRecenter,
+    oneStringIndex,
+    setOneStringIndex,
+    twoStringsPair,
+    setTwoStringsPair,
+    doubleStopsInterval,
+    setDoubleStopsInterval,
+    box2x4StartFret,
+    setBox2x4StartFret,
+    box2x4Pair,
+    setBox2x4Pair,
+    box3x3StartFret,
+    setBox3x3StartFret,
+    box3x3Trio,
+    setBox3x3Trio,
+    stackStartFret,
+    setStackStartFret,
   } = useShapeState();
 
   const [displayFormat, setDisplayFormat] = useAtom(displayFormatAtom);
@@ -61,6 +78,12 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
             { value: "none", label: "None" },
             { value: "caged", label: "CAGED" },
             { value: "3nps", label: "3NPS" },
+            { value: "one-string", label: "1-String" },
+            { value: "two-strings", label: "2-Strings" },
+            { value: "double-stops", label: "Dbl Stops" },
+            { value: "box-2x4", label: "2×4 Box" },
+            { value: "box-3x3", label: "3×3 Box" },
+            { value: "stack", label: "Stack" },
           ]}
           value={fingeringPattern}
           onChange={(v) => setFingeringPattern(v as FingeringPattern)}
@@ -198,6 +221,114 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
               ]}
               value={npsOctave}
               onChange={(v) => setNpsOctave(v as number)}
+              compact={compact}
+            />
+          </div>
+        </>
+      )}
+
+      {fingeringPattern === "one-string" && (
+        <>
+          <div className={shared["control-section"]}>
+            <span className={shared["section-label"]}>String</span>
+            <ToggleBar
+              options={[1, 2, 3, 4, 5, 6].map((n, i) => ({ value: i, label: String(n) }))}
+              value={oneStringIndex}
+              onChange={(v) => setOneStringIndex(v as number)}
+              compact={compact}
+            />
+          </div>
+        </>
+      )}
+
+      {fingeringPattern === "two-strings" && (
+        <>
+          <div className={shared["control-section"]}>
+            <span className={shared["section-label"]}>Strings</span>
+            <ToggleBar
+              options={["1-2", "2-3", "3-4", "4-5", "5-6"].map((label, i) => ({ value: i, label }))}
+              value={twoStringsPair}
+              onChange={(v) => setTwoStringsPair(v as number)}
+              compact={compact}
+            />
+          </div>
+        </>
+      )}
+
+      {fingeringPattern === "double-stops" && (
+        <>
+          <div className={shared["control-section"]}>
+            <span className={shared["section-label"]}>Interval</span>
+            <ToggleBar
+              options={["3rds", "4ths", "5ths", "6ths"].map((label, i) => ({ value: i, label }))}
+              value={doubleStopsInterval}
+              onChange={(v) => setDoubleStopsInterval(v as number)}
+              compact={compact}
+            />
+          </div>
+        </>
+      )}
+
+      {fingeringPattern === "box-2x4" && (
+        <>
+          <div className={shared["control-section"]}>
+            <span className={shared["section-label"]}>Start Fret</span>
+            <StepperControl
+              value={box2x4StartFret}
+              onChange={(v) => setBox2x4StartFret(v)}
+              min={0}
+              max={20}
+              label="Start Fret"
+              compact={compact}
+            />
+          </div>
+          <div className={shared["control-section"]}>
+            <span className={shared["section-label"]}>Strings</span>
+            <ToggleBar
+              options={["1-2", "2-3", "3-4", "4-5", "5-6"].map((label, i) => ({ value: i, label }))}
+              value={box2x4Pair}
+              onChange={(v) => setBox2x4Pair(v as number)}
+              compact={compact}
+            />
+          </div>
+        </>
+      )}
+
+      {fingeringPattern === "box-3x3" && (
+        <>
+          <div className={shared["control-section"]}>
+            <span className={shared["section-label"]}>Start Fret</span>
+            <StepperControl
+              value={box3x3StartFret}
+              onChange={(v) => setBox3x3StartFret(v)}
+              min={0}
+              max={20}
+              label="Start Fret"
+              compact={compact}
+            />
+          </div>
+          <div className={shared["control-section"]}>
+            <span className={shared["section-label"]}>Strings</span>
+            <ToggleBar
+              options={["1-3", "2-4", "3-5", "4-6"].map((label, i) => ({ value: i, label }))}
+              value={box3x3Trio}
+              onChange={(v) => setBox3x3Trio(v as number)}
+              compact={compact}
+            />
+          </div>
+        </>
+      )}
+
+      {fingeringPattern === "stack" && (
+        <>
+          <div className={shared["control-section"]}>
+            <span className={shared["section-label"]}>Start Fret</span>
+            <StepperControl
+              value={stackStartFret}
+              onChange={(v) => setStackStartFret(v)}
+              min={0}
+              max={20}
+              label="Start Fret"
               compact={compact}
             />
           </div>
