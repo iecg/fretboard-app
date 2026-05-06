@@ -126,6 +126,12 @@ describe("practiceCuesAtom", () => {
       expect(noteNames).toContain("G");
     });
 
+    it("uses scale degrees for in-scale note labels", () => {
+      const store = makeChordStore("Major", "C", "Major Triad", "targets");
+      const cues = store.get(practiceCuesAtom);
+      expect(cues[0]!.notes.map((n) => n.intervalName)).toEqual(["I", "iii", "V"]);
+    });
+
     it("returns empty cues when no chord is set", () => {
       const store = makeStore();
       store.set(chordTypeAtom, null);
@@ -274,6 +280,27 @@ describe("practiceCuesAtom", () => {
       expect(ids).toContain("tension");
       expect(ids).toHaveLength(3);
     });
+  });
+});
+
+describe("practiceBarChordGroupAtom", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("falls back to chord-member labels only for outside-scale tones", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    store.set(chordRootAtom, "C#");
+    store.set(chordTypeAtom, "Minor Triad");
+
+    const chordGroup = store.get(practiceBarChordGroupAtom);
+    expect(chordGroup.notes.map((n) => [n.internalNote, n.intervalName])).toEqual([
+      ["C#", "1"],
+      ["E", "iii"],
+      ["G#", "5"],
+    ]);
   });
 });
 
