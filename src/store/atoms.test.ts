@@ -23,6 +23,8 @@ import {
   npsPositionAtom,
   chordFretSpreadAtom,
   practiceLensAtom,
+  chordDegreeAtom,
+  chordOverlayModeAtom,
   setRootNoteAtom,
   resetAtom,
   useFlatsAtom,
@@ -427,11 +429,15 @@ describe("atoms", () => {
       expect(store.get(rootNoteAtom)).toBe("G");
     });
 
-    it("syncs chordRoot when linkChordRoot is true", () => {
+    it("syncs chordRoot when linkChordRoot is true (manual mode)", () => {
+      // Seed manual mode explicitly. In degree mode the link sync is intentionally
+      // skipped because the derived chord root auto-resolves via getDiatonicChord.
       const store = makeStore();
+      store.set(chordOverlayModeAtom, "manual");
       store.set(linkChordRootAtom, true);
       store.set(setRootNoteAtom, "G");
       expect(store.get(chordRootAtom)).toBe("G");
+      expect(store.get(chordOverlayModeAtom)).toBe("manual");
     });
 
     it("does not sync chordRoot when linkChordRoot is false", () => {
@@ -441,6 +447,41 @@ describe("atoms", () => {
       store.set(setRootNoteAtom, "G");
       expect(store.get(rootNoteAtom)).toBe("G");
       expect(store.get(chordRootAtom)).toBe("D");
+    });
+
+    it("preserves degree mode when scale root changes (I degree)", () => {
+      const store = makeStore();
+      store.set(chordOverlayModeAtom, "degree");
+      store.set(chordDegreeAtom, "I");
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      // Baseline: I in C Major resolves to C Major Triad.
+      expect(store.get(chordRootAtom)).toBe("C");
+      expect(store.get(chordTypeAtom)).toBe("Major Triad");
+      // Change the scale root.
+      store.set(setRootNoteAtom, "G");
+      // Mode stays degree; chord re-resolves to I in G Major.
+      expect(store.get(chordOverlayModeAtom)).toBe("degree");
+      expect(store.get(rootNoteAtom)).toBe("G");
+      expect(store.get(chordRootAtom)).toBe("G");
+      expect(store.get(chordTypeAtom)).toBe("Major Triad");
+    });
+
+    it("preserves degree mode when scale root changes (vi degree)", () => {
+      const store = makeStore();
+      store.set(chordOverlayModeAtom, "degree");
+      store.set(chordDegreeAtom, "vi");
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      // Baseline: vi in C Major resolves to A Minor Triad.
+      expect(store.get(chordRootAtom)).toBe("A");
+      expect(store.get(chordTypeAtom)).toBe("Minor Triad");
+      // Change the scale root.
+      store.set(setRootNoteAtom, "G");
+      // Mode stays degree; vi in G Major resolves to E Minor Triad.
+      expect(store.get(chordOverlayModeAtom)).toBe("degree");
+      expect(store.get(chordRootAtom)).toBe("E");
+      expect(store.get(chordTypeAtom)).toBe("Minor Triad");
     });
   });
 
