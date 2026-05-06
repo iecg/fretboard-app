@@ -154,7 +154,7 @@ export const shapeHighlightedNoteSetAtom = atom((get) => {
   const { highlightNotes } = get(shapeDataAtom);
   const currentTuning = get(currentTuningAtom);
 
-  if (fingeringPattern === "all") return null;
+  if (fingeringPattern === "none") return null;
   const noteSet = new Set<string>();
   for (const coord of highlightNotes) {
     const dashIdx = coord.indexOf("-");
