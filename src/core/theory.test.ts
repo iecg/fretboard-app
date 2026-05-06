@@ -98,6 +98,14 @@ describe("getChordNotes", () => {
   it("returns A Minor 7th", () => {
     expect(getChordNotes("A", "Minor 7th")).toEqual(["A", "C", "E", "G"]);
   });
+
+  it("returns C Major 6th", () => {
+    expect(getChordNotes("C", "Major 6th")).toEqual(["C", "E", "G", "A"]);
+  });
+
+  it("returns D Sus4", () => {
+    expect(getChordNotes("D", "Sus4")).toEqual(["D", "G", "A"]);
+  });
 });
 
 describe("getDivergentNotes", () => {
@@ -293,7 +301,7 @@ describe("resolver + key signature integration", () => {
 describe("CHORD_DEFINITIONS", () => {
   it("every chord in CHORD_DEFINITIONS has a quality and members", () => {
     for (const [name, def] of Object.entries(CHORD_DEFINITIONS)) {
-      expect(def.quality).toMatch(/^(triad|seventh|power)$/);
+      expect(def.quality).toMatch(/^(triad|seventh|power|sixth|suspended)$/);
       expect(def.members.length).toBeGreaterThan(0);
       expect(def.members[0].name).toBe("root");
       void name;
@@ -304,6 +312,8 @@ describe("CHORD_DEFINITIONS", () => {
     expect(CHORDS["Major Triad"]).toEqual([0, 4, 7]);
     expect(CHORDS["Minor 7th"]).toEqual([0, 3, 7, 10]);
     expect(CHORDS["Power Chord (5)"]).toEqual([0, 7]);
+    expect(CHORDS["Major 6th"]).toEqual([0, 4, 7, 9]);
+    expect(CHORDS["Sus4"]).toEqual([0, 5, 7]);
   });
 
   it("Major Triad has triad quality with root, 3, 5 members", () => {
@@ -322,6 +332,20 @@ describe("CHORD_DEFINITIONS", () => {
     const def = CHORD_DEFINITIONS["Power Chord (5)"];
     expect(def.quality).toBe("power");
     expect(def.members.map((m) => m.name)).toEqual(["root", "5"]);
+  });
+
+  it("Major 6th has sixth quality with root, 3, 5, 6 members", () => {
+    const def = CHORD_DEFINITIONS["Major 6th"];
+    expect(def.quality).toBe("sixth");
+    expect(def.members.map((m) => m.name)).toEqual(["root", "3", "5", "6"]);
+    expect(def.members.map((m) => m.semitone)).toEqual([0, 4, 7, 9]);
+  });
+
+  it("Sus4 has suspended quality with root, 4, 5 members", () => {
+    const def = CHORD_DEFINITIONS["Sus4"];
+    expect(def.quality).toBe("suspended");
+    expect(def.members.map((m) => m.name)).toEqual(["root", "4", "5"]);
+    expect(def.members.map((m) => m.semitone)).toEqual([0, 5, 7]);
   });
 });
 

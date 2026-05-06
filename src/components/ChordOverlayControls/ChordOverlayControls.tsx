@@ -18,9 +18,11 @@ const CHORD_OPTIONS: string[] = [
   "Major Triad",
   "Minor Triad",
   "Diminished Triad",
+  "Major 6th",
   "Major 7th",
   "Minor 7th",
   "Dominant 7th",
+  "Sus4",
   "Power Chord (5)",
 ];
 
