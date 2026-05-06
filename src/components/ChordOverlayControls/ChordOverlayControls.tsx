@@ -171,22 +171,17 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
               <span className={shared["section-label"]}>Chord Type</span>
               <ToggleBar
                 label="Chord Type"
-                options={[
-                  { value: CHORD_NONE_VALUE, label: "Off" },
-                  ...CHORD_TYPE_DISPLAY_ORDER.map((key) => ({
-                    value: key,
-                    label: CHORD_TYPE_SHORT_LABELS[key] ?? key,
-                  })),
-                ]}
-                value={chordQualityOverride ?? CHORD_NONE_VALUE}
+                options={CHORD_TYPE_DISPLAY_ORDER.map((key) => ({
+                  value: key,
+                  label: CHORD_TYPE_SHORT_LABELS[key] ?? key,
+                }))}
+                value={chordType ?? ""}
                 onChange={handleChordTypeChange}
                 compact={compact}
                 overflow="scroll"
               />
               <p className={shared["field-hint"]}>
-                Off uses the diatonic default for this degree. Picking a quality
-                pins it for the active degree only — switching degrees resets to
-                the new degree's diatonic default.
+                Switching degrees picks the diatonic default automatically.
               </p>
             </div>
           ) : null}
