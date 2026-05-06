@@ -7,12 +7,20 @@ import {
 import {
   k,
   createStorage,
-  rawStringStorage,
   constrainedNumberStorage,
   GET_ON_INIT,
 } from "../utils/storage";
 
-export type FingeringPattern = "all" | "caged" | "3nps";
+export type FingeringPattern =
+  | "none"
+  | "caged"
+  | "3nps"
+  | "one-string"
+  | "two-strings"
+  | "double-stops"
+  | "box-2x4"
+  | "box-3x3"
+  | "stack";
 
 const cagedShapesStorage = createStorage<Set<CagedShape>>({
   serialize: (s) => JSON.stringify(Array.from(s)),
@@ -22,10 +30,14 @@ const cagedShapesStorage = createStorage<Set<CagedShape>>({
 const npsPositionStorage = constrainedNumberStorage({ min: 1, max: 7, integer: true });
 const npsOctaveStorage = constrainedNumberStorage({ min: 0, max: 1, integer: true });
 
+const fingeringPatternStorage = createStorage<FingeringPattern>({
+  onRead: (v) => (v === ("all" as FingeringPattern) ? "none" : v),
+});
+
 export const fingeringPatternAtom = atomWithStorage<FingeringPattern>(
   k("fingeringPattern"),
-  "all",
-  rawStringStorage<FingeringPattern>(),
+  "none",
+  fingeringPatternStorage,
   GET_ON_INIT,
 );
 
