@@ -410,18 +410,62 @@
 }
 
 /* -----------------------------------------------------------------------
-   Chord-tone connector layer
-   Single fat open polyline through every chord-tone vertex in string-index
-   order. The browser's stroke renderer with rounded caps/joins envelopes
-   every note bubble automatically. No geometry helpers needed — CSS handles
-   all visual sizing via --string-row-px (set on .fretboard-neck in TSX).
+   Chord-tone connector layer — two-pass fill + outline render.
+   Fill layer: low-opacity closed polygon beneath note bubbles.
+   Outline layer: thin contrasting stroke traced on top.
+   Both layers use the same closed-path geometry (polygon or capsule).
+   Color driven by --chord-connector-color-N via data-palette-index attribute selectors.
    ----------------------------------------------------------------------- */
-.chord-connectors path {
-  stroke: var(--chord-connector-stroke);
-  stroke-width: calc(var(--string-row-px) * 1.1);
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-opacity: var(--chord-connector-opacity, 0.3);
+.chord-connectors path[data-layer="fill"] {
+  fill-opacity: var(--chord-connector-fill-opacity, 0.15);
+  stroke: none;
+}
+
+.chord-connectors path[data-layer="outline"] {
   fill: none;
-  /* No stroke-dasharray — fat polyline + dashes look cluttered */
+  stroke-width: var(--chord-connector-outline-width, 1.25px);
+  stroke-opacity: var(--chord-connector-outline-opacity, 0.85);
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* -----------------------------------------------------------------------
+   Palette-index color rules — one rule per voicing slot (N = 1..8).
+   Both fill and stroke are set so the active-voicing drop-shadow filter
+   can pick up the color via currentColor.
+   ----------------------------------------------------------------------- */
+.chord-connectors path[data-palette-index="1"] { fill: var(--chord-connector-color-1); stroke: var(--chord-connector-color-1); color: var(--chord-connector-color-1); }
+.chord-connectors path[data-palette-index="2"] { fill: var(--chord-connector-color-2); stroke: var(--chord-connector-color-2); color: var(--chord-connector-color-2); }
+.chord-connectors path[data-palette-index="3"] { fill: var(--chord-connector-color-3); stroke: var(--chord-connector-color-3); color: var(--chord-connector-color-3); }
+.chord-connectors path[data-palette-index="4"] { fill: var(--chord-connector-color-4); stroke: var(--chord-connector-color-4); color: var(--chord-connector-color-4); }
+.chord-connectors path[data-palette-index="5"] { fill: var(--chord-connector-color-5); stroke: var(--chord-connector-color-5); color: var(--chord-connector-color-5); }
+.chord-connectors path[data-palette-index="6"] { fill: var(--chord-connector-color-6); stroke: var(--chord-connector-color-6); color: var(--chord-connector-color-6); }
+.chord-connectors path[data-palette-index="7"] { fill: var(--chord-connector-color-7); stroke: var(--chord-connector-color-7); color: var(--chord-connector-color-7); }
+.chord-connectors path[data-palette-index="8"] { fill: var(--chord-connector-color-8); stroke: var(--chord-connector-color-8); color: var(--chord-connector-color-8); }
+
+/* -----------------------------------------------------------------------
+   Active-voicing highlight ring.
+   Named constants (comment-level):
+     ACTIVE_STROKE_BUMP    = 0.5px   (added to --chord-connector-outline-width)
+     ACTIVE_SHADOW_BLUR    = 2px     (drop-shadow radius)
+     NON_ACTIVE_DIM_FACTOR = 0.7     (multiplied against base opacity tokens)
+   No transition/animation — snap on state change (no motion).
+   ----------------------------------------------------------------------- */
+
+/* Rule 1 — Active outline emphasis: stroke-width bump + glow ring.
+   Applied when a voicing is active AND this outline path is the active one. */
+.chord-connectors[data-has-active-voicing="true"] path[data-layer="outline"][data-active-voicing] {
+  stroke-width: calc(var(--chord-connector-outline-width, 1.25px) + 0.5px);
+  stroke-opacity: 1;
+  filter: drop-shadow(0 0 2px currentColor);
+}
+
+/* Rule 2 — Non-active fill dim: reduce fill alpha ~30% when any voicing is active. */
+.chord-connectors[data-has-active-voicing="true"] path[data-layer="fill"]:not([data-active-voicing]) {
+  fill-opacity: calc(var(--chord-connector-fill-opacity, 0.15) * 0.7);
+}
+
+/* Rule 3 — Non-active outline dim: reduce stroke alpha ~30% when any voicing is active. */
+.chord-connectors[data-has-active-voicing="true"] path[data-layer="outline"]:not([data-active-voicing]) {
+  stroke-opacity: calc(var(--chord-connector-outline-opacity, 0.85) * 0.7);
 }

@@ -1,8 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
   buildChordConnectorPolylines,
-  MAX_FRET_SPAN,
+  MAX_PLAYABLE_FRET_POSITIONS,
   CHORD_TONE_CLASSES,
+  CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
 } from "./useChordConnectorPolylines";
 import type { NoteData } from "./useNoteData";
 
@@ -157,26 +158,107 @@ describe("buildChordConnectorPolylines", () => {
   });
 
   // -------------------------------------------------------------------------
-  // (d) MAX_FRET_SPAN boundary
+  // (d) MAX_PLAYABLE_FRET_POSITIONS boundary (fret-positions-inclusive filter)
   // -------------------------------------------------------------------------
 
-  it(`(d) voicing spanning exactly MAX_FRET_SPAN (${MAX_FRET_SPAN}) frets is emitted`, () => {
-    // C at fret 2, E at fret 2, G at fret 2 + MAX_FRET_SPAN: span = MAX_FRET_SPAN → kept.
+  it(`(d) voicing with exactly MAX_PLAYABLE_FRET_POSITIONS (${MAX_PLAYABLE_FRET_POSITIONS}) fret positions inclusive is emitted`, () => {
+    // C at fret 2, E at fret 3, G at fret 4.
+    // Fretted positions {2,3,4} → count = 3 = MAX_PLAYABLE_FRET_POSITIONS → kept.
     const noteData = [
       makeNote(0, 2, "C", "chord-root"),
-      makeNote(1, 2, "E", "chord-tone-in-scale"),
-      makeNote(2, 2 + MAX_FRET_SPAN, "G", "chord-tone-in-scale"),
+      makeNote(1, 3, "E", "chord-tone-in-scale"),
+      makeNote(2, 4, "G", "chord-tone-in-scale"),
     ];
     const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
     expect(result).toHaveLength(1);
   });
 
-  it(`(d) voicing spanning MAX_FRET_SPAN + 1 (${MAX_FRET_SPAN + 1}) frets is NOT emitted`, () => {
-    // G is at fret 2 + MAX_FRET_SPAN + 1: beyond the window — no anchor covers both ends.
+  it(`(d) voicing with MAX_PLAYABLE_FRET_POSITIONS + 1 (${MAX_PLAYABLE_FRET_POSITIONS + 1}) fret positions inclusive is NOT emitted`, () => {
+    // Fretted notes at frets {2,3,4,5}: position count = 4 > MAX_PLAYABLE_FRET_POSITIONS → dropped.
+    // Note: all notes must still be within MAX_FRET_SPAN of the anchor so the
+    // candidate-gathering window can find them; the voicing is dropped only by
+    // the playability filter, not the cluster window.
     const noteData = [
       makeNote(0, 2, "C", "chord-root"),
+      makeNote(1, 3, "E", "chord-tone-in-scale"),
+      makeNote(2, 5, "G", "chord-tone-in-scale"),
+    ];
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    expect(result).toHaveLength(0);
+  });
+
+  it("(d) UAT-ISSUE-1: Cm7 voicing frets [5,6,8,8] (4 positions inclusive) is NOT emitted", () => {
+    // Real-world UAT case: D#@str4-fret6, A#@str3-fret8, C@str2-fret5, G@str1-fret8
+    // Fretted positions {5,6,7,8} → count = 4 > MAX_PLAYABLE_FRET_POSITIONS → dropped.
+    const noteData = [
+      makeNote(0, 8, "G", "chord-tone-in-scale"),  // G (str1 in guitar numbering)
+      makeNote(1, 5, "C", "chord-root"),            // C (str2)
+      makeNote(2, 8, "A#", "chord-tone-in-scale"),  // A# (str3)
+      makeNote(3, 6, "D#", "chord-tone-in-scale"),  // D# (str4)
+    ];
+    const result = buildChordConnectorPolylines(noteData, ["C", "D#", "G", "A#"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    expect(result).toHaveLength(0);
+  });
+
+  it("(d) UAT-ISSUE-2: Cm7 voicing frets [4,5,5,6] (3 positions inclusive) is emitted", () => {
+    // Real-world UAT case: A#@str0-fret6, D#@str1-fret4, C@str2-fret5, G@str3-fret5
+    // Fretted positions {4,5,6} → count = 3 = MAX_PLAYABLE_FRET_POSITIONS → kept.
+    const noteData = [
+      makeNote(0, 6, "A#", "chord-tone-in-scale"),  // A# (str1 in guitar numbering)
+      makeNote(1, 4, "D#", "chord-tone-in-scale"),  // D# (str2)
+      makeNote(2, 5, "C", "chord-root"),             // C (str3)
+      makeNote(3, 5, "G", "chord-tone-in-scale"),   // G (str4)
+    ];
+    const result = buildChordConnectorPolylines(noteData, ["C", "D#", "G", "A#"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    expect(result).toHaveLength(1);
+  });
+
+  // -------------------------------------------------------------------------
+  // (d) Playability filter — open-string and single-fretted-note edge cases
+  // -------------------------------------------------------------------------
+
+  it("(d) voicing with all-open strings [0,0,0,0,0,0] → kept (fretted span undefined / no fretted notes)", () => {
+    // Six open strings: no fretted note → fretted span = 0 → not filtered.
+    // chordToneNames must match the open-string notes; use a 2-note chord to
+    // satisfy N>=2 without needing 6 distinct tones.
+    const noteData = [
+      makeNote(0, 0, "C", "chord-root"),
+      makeNote(1, 0, "E", "chord-tone-in-scale"),
+    ];
+    const result = buildChordConnectorPolylines(noteData, ["C", "E"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    expect(result).toHaveLength(1);
+  });
+
+  it("(d) voicing with one fretted note → kept (single fretted note, span 0)", () => {
+    // Open C on string 0 (fret 0) + E on string 1 at fret 3. Only one fretted
+    // note → frettedSpan = 0 → not filtered out. Both notes must fit within the
+    // same cluster window (anchor=0 covers frets 0..MAX_FRET_SPAN=5).
+    const noteData = [
+      makeNote(0, 0, "C", "chord-root"),
+      makeNote(1, 3, "E", "chord-tone-in-scale"),
+    ];
+    const result = buildChordConnectorPolylines(noteData, ["C", "E"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    expect(result).toHaveLength(1);
+  });
+
+  it("(d) voicing with open string + frets [2,3]: 2 fret positions inclusive → kept", () => {
+    // Open C (excluded from span) + E@fret2 + G@fret3.
+    // Fretted positions {2,3} → count = 2 ≤ MAX_PLAYABLE_FRET_POSITIONS → kept.
+    const noteData = [
+      makeNote(0, 0, "C", "chord-root"),
       makeNote(1, 2, "E", "chord-tone-in-scale"),
-      makeNote(2, 2 + MAX_FRET_SPAN + 1, "G", "chord-tone-in-scale"),
+      makeNote(2, 3, "G", "chord-tone-in-scale"),
+    ];
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    expect(result).toHaveLength(1);
+  });
+
+  it("(d) voicing with frets [1,5,5,5]: 5 fret positions inclusive → dropped", () => {
+    // Fretted notes: {1,5} → positions {1,2,3,4,5} → count = 5 > MAX_PLAYABLE_FRET_POSITIONS → dropped.
+    const noteData = [
+      makeNote(0, 1, "C", "chord-root"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(2, 5, "G", "chord-tone-in-scale"),
     ];
     const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
     expect(result).toHaveLength(0);
@@ -463,9 +545,10 @@ describe("buildChordConnectorPolylines", () => {
   // Contour smoke tests (fat polyline geometry)
   // -------------------------------------------------------------------------
 
-  it("triad voicing (3 different frets): d is M+L+L open polyline visiting all 3 vertices", () => {
-    // C major triad on 3 different frets in string-index order.
-    // d: open polyline through all 3 vertices — M v0 L v1 L v2 (no Z).
+  it("triad voicing (3 different frets): paths.fill is rounded offset polygon visiting all 3 vertices", () => {
+    // C major triad on 3 different frets — non-collinear, so offsetOutlinePath
+    // emits a rounded offset polygon: arc at each corner, line between arcs,
+    // closed with Z. fill === outline (byte-identical).
     const noteData = [
       makeNote(0, 3, "C", "chord-root"),
       makeNote(1, 5, "E", "chord-tone-in-scale"),
@@ -473,38 +556,45 @@ describe("buildChordConnectorPolylines", () => {
     ];
     const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
     expect(result).toHaveLength(1);
-    const { d } = result[0]!;
-    expect(d).not.toBe("");
-    expect(d.startsWith("M")).toBe(true);
-    expect(d.endsWith("Z")).toBe(false);
-    // 3 vertices → 2 L commands (M + L + L)
-    const lCount = (d.match(/\bL\b/g) ?? []).length;
-    expect(lCount).toBe(2);
+    const { paths } = result[0]!;
+    expect(paths.fill).not.toBe("");
+    expect(paths.fill.startsWith("M")).toBe(true);
+    // Rounded offset polygon → ends with Z.
+    expect(paths.fill.endsWith("Z")).toBe(true);
+    // Non-collinear → corner arcs present (one per vertex).
+    const aCount = (paths.fill.match(/\bA\b/g) ?? []).length;
+    expect(aCount).toBe(3);
+    // fill and outline are byte-identical for every voicing.
+    expect(paths.fill).toBe(paths.outline);
   });
 
-  it("7th chord voicing (4 vertices): d is M+L+L+L open polyline visiting all 4 vertices", () => {
-    // Cmaj7: C, E, G, B across 4 strings and different frets.
-    // d: open polyline through all 4 vertices — M v0 L v1 L v2 L v3 (no Z).
+  it("7th chord voicing (4 vertices): paths.fill is rounded offset polygon visiting all 4 vertices", () => {
+    // Cmaj7: C, E, G, B across 4 strings within 3 fret positions.
+    // Frets [3,4,4,5]: positions {3,4,5} → count 3 ≤ MAX_PLAYABLE_FRET_POSITIONS → kept.
+    // Non-collinear 4-vertex offset polygon (fill === outline).
     const noteData = [
       makeNote(0, 3, "C", "chord-root"),
-      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(1, 4, "E", "chord-tone-in-scale"),
       makeNote(2, 4, "G", "chord-tone-in-scale"),
-      makeNote(3, 6, "B", "chord-tone-in-scale"),
+      makeNote(3, 5, "B", "chord-tone-in-scale"),
     ];
     const result = buildChordConnectorPolylines(noteData, ["C", "E", "G", "B"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
     expect(result).toHaveLength(1);
-    const { d } = result[0]!;
-    expect(d).not.toBe("");
-    expect(d.startsWith("M")).toBe(true);
-    expect(d.endsWith("Z")).toBe(false);
-    // 4 vertices → 3 L commands (M + L + L + L)
-    const lCount = (d.match(/\bL\b/g) ?? []).length;
-    expect(lCount).toBe(3);
+    const { paths } = result[0]!;
+    expect(paths.fill).not.toBe("");
+    expect(paths.fill.startsWith("M")).toBe(true);
+    // Rounded offset polygon → ends with Z.
+    expect(paths.fill.endsWith("Z")).toBe(true);
+    // 4 vertices → 4 corner arcs.
+    const aCount = (paths.fill.match(/\bA\b/g) ?? []).length;
+    expect(aCount).toBe(4);
+    // fill and outline are byte-identical.
+    expect(paths.fill).toBe(paths.outline);
   });
 
-  it("collinear voicing (same fret, 3 adjacent strings): d is M+L+L open polyline, no Z", () => {
+  it("collinear voicing (same fret, 3 adjacent strings): paths are inflated capsule with arc commands", () => {
     // All 3 notes at the exact same fret → same x coordinate → collinear.
-    // d: open polyline — M v0 L v1 L v2 (no Z).
+    // Collinear dispatch → inflatedCapsulePath → contains arc 'A' commands.
     // fretCenterX(5) = 50; all x values equal 50.
     const noteData = [
       makeNote(0, 5, "C", "chord-root"),
@@ -513,52 +603,81 @@ describe("buildChordConnectorPolylines", () => {
     ];
     const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
     expect(result).toHaveLength(1);
-    const { d } = result[0]!;
-    expect(d).not.toBe("");
-    expect(d.startsWith("M")).toBe(true);
-    expect(d.endsWith("Z")).toBe(false);
-    // 3 vertices → 2 L commands
-    const lCount = (d.match(/\bL\b/g) ?? []).length;
-    expect(lCount).toBe(2);
-    // All x coordinates must be equal (same fret column x=50).
-    // Path tokens: "M 50 0 L 50 20 L 50 40" — verify all x values are 50.
-    expect(d).toMatch(/^M 50 [\d.]+ L 50 [\d.]+ L 50 [\d.]+$/);
+    const { paths } = result[0]!;
+    expect(paths.fill).not.toBe("");
+    // Capsule path contains arc commands.
+    expect(paths.fill).toContain("A");
+    expect(paths.outline).toContain("A");
+    // fill and outline are byte-identical for collinear voicings too.
+    expect(paths.fill).toBe(paths.outline);
   });
 
   // -------------------------------------------------------------------------
-  // Regression: near-collinear diagonal triad G-E-C must visit all 3 vertices
+  // Regression: near-collinear diagonal triad G-E-C
   //
-  // Prior approach: convexHull dropped the middle vertex E when G→E→C were
-  // near-collinear, collapsing the envelope to a 2-vertex capsule.
-  // Fix: open polyline in string-index order literally visits every vertex —
-  // no hull computation, no vertex dropping.
+  // G(string 4, fret 5) → E(string 5, fret 6) → C(string 6, fret 7):
+  // x=50,y=80; x=60,y=100; x=70,y=120 — exactly collinear (shoelace area = 0).
+  // Dispatch → inflatedCapsulePath → capsule with arc 'A' commands.
+  // The capsule envelops all 3 vertices without dropping any.
   // -------------------------------------------------------------------------
 
-  it("(regression) near-collinear diagonal G-E-C: d visits all 3 vertices (no vertex drop)", () => {
-    // Voicing: G(string 4, fret 5) → E(string 5, fret 7) → C(string 6, fret 8).
+  it("(regression) near-collinear diagonal G-E-C: paths are capsule (all 3 vertices enveloped)", () => {
+    // Voicing: G(string 4, fret 5) → E(string 5, fret 6) → C(string 6, fret 7).
+    // Frets [5,6,7]: positions {5,6,7} → count 3 ≤ MAX_PLAYABLE_FRET_POSITIONS → kept.
     // With fretCenterX(fi)=fi*10 and stringYAt(si)=si*20:
-    //   G: x=50, y=80   E: x=70, y=100   C: x=80, y=120 (near-collinear diagonal).
-    //
-    // d: open polyline through all 3 vertices in string-index order (no Z).
-    //    The middle vertex E is always visited — no hull collapse possible.
+    //   G: x=50, y=80   E: x=60, y=100   C: x=70, y=120 — exactly collinear.
+    // Capsule path envelops all vertices; arc 'A' commands confirm capsule dispatch.
     const noteData = [
       makeNote(4, 5, "G", "chord-tone-in-scale"),
-      makeNote(5, 7, "E", "chord-tone-in-scale"),
-      makeNote(6, 8, "C", "chord-root"),
+      makeNote(5, 6, "E", "chord-tone-in-scale"),
+      makeNote(6, 7, "C", "chord-root"),
     ];
     const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
     expect(result).toHaveLength(1);
-    const { d } = result[0]!;
-    // d: open polyline — M v0 L v1 L v2 (no Z, 2 L commands visiting all 3 vertices).
-    expect(d).not.toBe("");
-    expect(d.startsWith("M")).toBe(true);
-    expect(d.endsWith("Z")).toBe(false);
-    const lCount = (d.match(/\bL\b/g) ?? []).length;
-    expect(lCount).toBe(2);
-    // Verify all 3 vertices appear: x=50 (fret 5), x=70 (fret 7), x=80 (fret 8).
-    expect(d).toContain("50 ");
-    expect(d).toContain("70 ");
-    expect(d).toContain("80 ");
+    const { paths } = result[0]!;
+    expect(paths.fill).not.toBe("");
+    // Collinear diagonal → capsule dispatch → arc commands present.
+    expect(paths.fill).toContain("A");
+    expect(paths.fill).toBe(paths.outline);
+  });
+
+  // -------------------------------------------------------------------------
+  // New: non-collinear fill === outline (byte-identical)
+  // -------------------------------------------------------------------------
+
+  it("non-collinear voicing: fill and outline paths are byte-identical", () => {
+    // Use 3 notes at different frets to guarantee non-collinear polygon.
+    const noteData = [
+      makeNote(0, 3, "C", "chord-root"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(2, 4, "G", "chord-tone-in-scale"),
+    ];
+    const result = buildChordConnectorPolylines(
+      noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C",
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0]!.paths.fill).toBe(result[0]!.paths.outline);
+    expect(result[0]!.paths.fill).toContain("Z"); // closed polygon
+  });
+
+  // -------------------------------------------------------------------------
+  // New: collinear voicing capsule arcs
+  // -------------------------------------------------------------------------
+
+  it("collinear voicing: both fill and outline are inflated capsule paths", () => {
+    // Use 3 notes at same fret to guarantee collinear input.
+    const noteData = [
+      makeNote(0, 5, "C", "chord-root"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(2, 5, "G", "chord-tone-in-scale"),
+    ];
+    const result = buildChordConnectorPolylines(
+      noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C",
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0]!.paths.fill).toContain("A");    // arc command from capsule
+    expect(result[0]!.paths.outline).toContain("A");
+    expect(result[0]!.paths.fill).toBe(result[0]!.paths.outline);
   });
 });
 
@@ -683,8 +802,9 @@ describe("paletteIndex field", () => {
     const noteDataPos1 = [
       makeNote(0, 0, "C"), makeNote(1, 2, "E"), makeNote(2, 4, "G"),
     ];
+    // Position 2: frets 12, 13, 14 → fret positions {12,13,14} → count 3 (within limit).
     const noteDataPos2 = [
-      makeNote(0, 12, "C"), makeNote(1, 14, "E"), makeNote(2, 16, "G"),
+      makeNote(0, 12, "C"), makeNote(1, 13, "E"), makeNote(2, 14, "G"),
     ];
 
     const result1 = buildChordConnectorPolylines(
@@ -696,6 +816,7 @@ describe("paletteIndex field", () => {
 
     expect(result1[0]!.paletteIndex).toBe(result2[0]!.paletteIndex);
     // G is a perfect 5th above C → 7 semitones → palette index 7.
+    // Verify G (stringIndex 2 = lowest string) is still the bass at position 2.
     expect(result1[0]!.paletteIndex).toBe(7);
   });
 
@@ -742,5 +863,361 @@ describe("paletteIndex field", () => {
 
     expect(r1[0]!.paletteIndex).toBe(r2[0]!.paletteIndex);
     expect(r1[0]!.paletteIndex).toBe(7);
+  });
+});
+
+// -------------------------------------------------------------------------
+// Per-voicing offset: determinism and paletteIndex independence
+//
+// Phase 3 (plan 02) uses adjacency-aware cluster assignment instead of a
+// static canonicalKeyHash. Each call to buildChordConnectorPolylines is
+// independent — when a call contains only one voicing, it forms a singleton
+// cluster and receives offset 0. Two separate calls with different note
+// positions produce different path strings because the vertex coordinates
+// themselves differ (different fret positions → different x values).
+//
+// The key property tested here: same paletteIndex does NOT guarantee the same
+// path — different neck positions still produce different paths. Determinism:
+// the same inputs always produce the same output.
+//
+// Both voicings have G on the highest-stringIndex string (string 2) → same
+// paletteIndex (7) regardless of fret position.
+// -------------------------------------------------------------------------
+
+describe("per-voicing offset: determinism and paletteIndex independence", () => {
+  // Voicing A: C major, G in bass, frets 1-2-3 on strings 0-1-2.
+  // Singleton cluster → offsetPx = 0.
+  const voicingANotes = [
+    makeNote(0, 1, "C", "chord-root"),
+    makeNote(1, 2, "E", "chord-tone-in-scale"),
+    makeNote(2, 3, "G", "chord-tone-in-scale"),
+  ];
+
+  // Voicing B: same note names, same bass (G on str2) → same paletteIndex.
+  // Frets 2-3-4 on strings 0-1-2. Singleton cluster → offsetPx = 0.
+  // Different fret positions → different vertex coordinates → different path.
+  const voicingBNotes = [
+    makeNote(0, 2, "C", "chord-root"),
+    makeNote(1, 3, "E", "chord-tone-in-scale"),
+    makeNote(2, 4, "G", "chord-tone-in-scale"),
+  ];
+
+  it("(a) same paletteIndex but different canonicalKey → different paths.fill strings", () => {
+    const rA = buildChordConnectorPolylines(voicingANotes, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    const rB = buildChordConnectorPolylines(voicingBNotes, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+
+    expect(rA).toHaveLength(1);
+    expect(rB).toHaveLength(1);
+
+    // Confirm same paletteIndex (same inversion — G in bass for both).
+    expect(rA[0]!.paletteIndex).toBe(rB[0]!.paletteIndex);
+
+    // Different fret positions → different vertex coordinates → different path strings,
+    // even though both receive offset 0 as singleton clusters.
+    expect(rA[0]!.paths.fill).not.toBe(rB[0]!.paths.fill);
+  });
+
+  it("(b) same canonicalKey always produces the same paths.fill string (deterministic)", () => {
+    const result1 = buildChordConnectorPolylines(voicingANotes, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    const result2 = buildChordConnectorPolylines(voicingANotes, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+
+    expect(result1).toHaveLength(1);
+    expect(result2).toHaveLength(1);
+    expect(result1[0]!.paths.fill).toBe(result2[0]!.paths.fill);
+  });
+
+  it("(c) base radius factor (CHORD_CONNECTOR_BASE_RADIUS_FACTOR) is 0.47", () => {
+    // Guards the single-source-of-truth constant.
+    expect(CHORD_CONNECTOR_BASE_RADIUS_FACTOR).toBe(0.47);
+  });
+
+  it("(c) minimum envelope (base radius, offsetPx = 0) encloses the note-bubble radius", () => {
+    // The note-bubble radius is ~stringRowPx * 0.45.
+    // The minimum possible envelope is stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR + 0
+    // (OFFSET_BUCKET is non-negative so 0 is the smallest offsetPx).
+    // Guard: 0.47 * stringRowPx must exceed 0.45 * stringRowPx.
+    const minEnvelope = STRING_ROW_PX * CHORD_CONNECTOR_BASE_RADIUS_FACTOR;
+    const bubbleRadius = STRING_ROW_PX * 0.45;
+    expect(minEnvelope).toBeGreaterThan(bubbleRadius);
+  });
+});
+
+// -------------------------------------------------------------------------
+// Adjacency-aware offset assignment (plan 03-02)
+//
+// detectOverlapClusters uses inflated AABB union-find to cluster voicings
+// whose envelopes overlap. assignClusterOffsets sorts each cluster by
+// canonicalKey and assigns OFFSET_BUCKET[i % OFFSET_BUCKET.length].
+//
+// Geometry parameters (used to derive overlap expectations):
+//   fretCenterX(fi) = fi * 10  → 10 px per fret
+//   stringYAt(si) = si * 20    → 20 px per string
+//   STRING_ROW_PX = 36
+//   baseRadius = 36 * 0.47 ≈ 16.92 px
+//   maxBucketOffset = 10 px (OFFSET_BUCKET last element)
+//   inflateBy = baseRadius + maxBucketOffset ≈ 26.92 px
+//
+// Two voicings on the same strings overlap in y automatically. In x they
+// overlap if their fret positions are within 2 * 26.92 / 10 ≈ 5.4 frets.
+//
+// "Far apart" = fret distance > 5.4 (e.g. frets 1-3 vs 9-11 → gap ≥ 6 frets).
+// -------------------------------------------------------------------------
+
+describe("adjacency-aware offset assignment", () => {
+  // -------------------------------------------------------------------------
+  // (1) Two AABB-overlapping voicings get different offsets.
+  //
+  // Two voicings from adjacent string windows at the same fret — V1 on
+  // strings 0-1-2 and V2 on strings 1-2-3, both at fret 5.
+  // Same x (fret 5 = x 50); y ranges [0,40] and [20,60] share strings 1-2.
+  // inflateBy ≈ 27 px → inflated y ranges [-26.92,66.92] and [-6.92,86.92]
+  // → pairwise AABB-overlap ✓.
+  // Cluster of size 2: sorted by canonicalKey → member 0 gets OFFSET_BUCKET[0]=0,
+  // member 1 gets OFFSET_BUCKET[1]=2 → different radii → different path strings.
+  // -------------------------------------------------------------------------
+  it("(1) two AABB-overlapping voicings receive distinct offsets", () => {
+    // Adjacent string windows at fret 5:
+    //   str0=C, str1=E, str2=G, str3=C  → windows [0,1,2] and [1,2,3]
+    const noteData = [
+      makeNote(0, 5, "C", "chord-root"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(2, 5, "G", "chord-tone-in-scale"),
+      makeNote(3, 5, "C", "chord-root"),
+    ];
+
+    const result = buildChordConnectorPolylines(
+      noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C",
+    );
+
+    expect(result).toHaveLength(2);
+    // Both voicings are emitted; their overlapping AABBs → cluster of size 2.
+    // Different OFFSET_BUCKET entries → different path strings.
+    expect(result[0]!.paths.fill).not.toBe(result[1]!.paths.fill);
+  });
+
+  // -------------------------------------------------------------------------
+  // (2) Three overlapping voicings get three distinct offsets.
+  //
+  // Three voicings from adjacent string windows at fret 5 — windows
+  // [0,1,2], [1,2,3], [2,3,4]. All pairwise AABB-overlap:
+  //   [0-2] inflated y max = 40+27 = 67 > [2-4] inflated y min = 40-27 = 13 ✓
+  // Cluster of size 3 → three distinct OFFSET_BUCKET entries → pairwise distinct paths.
+  // -------------------------------------------------------------------------
+  it("(2) three AABB-overlapping voicings receive three distinct offsets", () => {
+    // str0=C, str1=E, str2=G, str3=C, str4=E → windows [0,1,2],[1,2,3],[2,3,4]
+    const noteData = [
+      makeNote(0, 5, "C", "chord-root"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(2, 5, "G", "chord-tone-in-scale"),
+      makeNote(3, 5, "C", "chord-root"),
+      makeNote(4, 5, "E", "chord-tone-in-scale"),
+    ];
+
+    const result = buildChordConnectorPolylines(
+      noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C",
+    );
+
+    expect(result).toHaveLength(3);
+    const fillPaths = result.map((v) => v.paths.fill);
+    // All three paths must be pairwise distinct.
+    const uniquePaths = new Set(fillPaths);
+    expect(uniquePaths.size).toBe(3);
+  });
+
+  // -------------------------------------------------------------------------
+  // (3) Non-overlapping voicings both get offset 0.
+  //
+  // Two voicings on strings 0-1-2 at frets 1-2-3 and frets 9-10-11.
+  // Fret gap ≈ 8 frets > 5.4 fret overlap threshold → separate singleton
+  // clusters → both receive OFFSET_BUCKET[0] = 0.
+  //
+  // Baseline: a single voicing at frets 1-2-3 also receives offset 0 (singleton).
+  // The two-voicing call should produce paths byte-identical to their
+  // respective single-voicing baselines.
+  // -------------------------------------------------------------------------
+  it("(3) non-overlapping voicings both receive offset 0 (same as singleton baseline)", () => {
+    // Baseline: single voicing at frets 1-2-3 → offset 0.
+    const baseline1 = buildChordConnectorPolylines(
+      [makeNote(0, 1, "C", "chord-root"), makeNote(1, 2, "E", "chord-tone-in-scale"), makeNote(2, 3, "G", "chord-tone-in-scale")],
+      ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C",
+    );
+    // Baseline: single voicing at frets 9-10-11 → offset 0.
+    const baseline2 = buildChordConnectorPolylines(
+      [makeNote(0, 9, "C", "chord-root"), makeNote(1, 10, "E", "chord-tone-in-scale"), makeNote(2, 11, "G", "chord-tone-in-scale")],
+      ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C",
+    );
+
+    expect(baseline1).toHaveLength(1);
+    expect(baseline2).toHaveLength(1);
+
+    // Combined: two far-apart voicings in one call.
+    const combined = buildChordConnectorPolylines(
+      [
+        makeNote(0, 1, "C", "chord-root"),
+        makeNote(1, 2, "E", "chord-tone-in-scale"),
+        makeNote(2, 3, "G", "chord-tone-in-scale"),
+        makeNote(0, 9, "C", "chord-root"),
+        makeNote(1, 10, "E", "chord-tone-in-scale"),
+        makeNote(2, 11, "G", "chord-tone-in-scale"),
+      ],
+      ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C",
+    );
+
+    expect(combined.length).toBeGreaterThanOrEqual(2);
+
+    const voicing1 = combined.find((v) => v.vertices.some((p) => p.x === fretCenterX(1)));
+    const voicing2 = combined.find((v) => v.vertices.some((p) => p.x === fretCenterX(9)));
+    expect(voicing1).toBeDefined();
+    expect(voicing2).toBeDefined();
+
+    // Both non-overlapping voicings should have the same path as their singleton baselines.
+    expect(voicing1!.paths.fill).toBe(baseline1[0]!.paths.fill);
+    expect(voicing2!.paths.fill).toBe(baseline2[0]!.paths.fill);
+  });
+
+  // -------------------------------------------------------------------------
+  // (4) Determinism: identical inputs always produce identical per-voicing offsets.
+  //
+  // Run buildChordConnectorPolylines twice with the same noteData. Assert that
+  // per-index paths.fill strings match exactly.
+  // -------------------------------------------------------------------------
+  it("(4) determinism: same inputs produce identical per-voicing offsets across re-runs", () => {
+    // Three adjacent string windows at fret 5 (same data as test 2).
+    const noteData = [
+      makeNote(0, 5, "C", "chord-root"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(2, 5, "G", "chord-tone-in-scale"),
+      makeNote(3, 5, "C", "chord-root"),
+      makeNote(4, 5, "E", "chord-tone-in-scale"),
+    ];
+
+    const run1 = buildChordConnectorPolylines(
+      noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C",
+    );
+    const run2 = buildChordConnectorPolylines(
+      noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C",
+    );
+
+    expect(run1.length).toBe(run2.length);
+    run1.forEach((v, i) => {
+      expect(v.paths.fill).toBe(run2[i]!.paths.fill);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // (5) Cluster size 6 stress: six overlapping voicings all get distinct paths.
+  //
+  // Six voicings from adjacent 4-string windows on strings 0-8, all at fret 5.
+  // chord ["C","E","G","B"] with repeating pattern C,E,G,B,C,E,G,B,C on str0-8.
+  // Windows [0-3],[1-4],[2-5],[3-6],[4-7],[5-8] → 6 voicings.
+  //
+  // All-pairwise AABB-overlap proof (most distant pair: window 0-3 vs 5-8):
+  //   [0-3]: y=[0,60], inflated y max = 60 + 26.92 = 86.92
+  //   [5-8]: y=[100,160], inflated y min = 100 - 26.92 = 73.08
+  //   73.08 < 86.92 → overlap ✓
+  // x is identical for all (fret 5 = x 50) → x AABB always overlaps.
+  //
+  // Single cluster of size 6 → 6 distinct OFFSET_BUCKET entries → pairwise distinct paths.
+  // -------------------------------------------------------------------------
+  it("(5) cluster of 6 voicings: all six paths.fill strings are pairwise distinct", () => {
+    // Cmaj7 pattern C,E,G,B across strings 0-8 at fret 5.
+    // Each 4-string window [s, s+3] covers one rotation of {C,E,G,B}.
+    const pattern = ["C", "E", "G", "B", "C", "E", "G", "B", "C"] as const;
+    const roleMap: Record<string, string> = {
+      C: "chord-root",
+      E: "chord-tone-in-scale",
+      G: "chord-tone-in-scale",
+      B: "chord-tone-in-scale",
+    };
+    const noteData = pattern.map((name, si) => makeNote(si, 5, name, roleMap[name]!));
+
+    const result = buildChordConnectorPolylines(
+      noteData, ["C", "E", "G", "B"], fretCenterX, stringYAt, STRING_ROW_PX, "C",
+    );
+
+    // Should emit exactly 6 voicings (one per 4-string window 0-3 through 5-8).
+    expect(result).toHaveLength(6);
+
+    // All 6 path strings must be pairwise distinct (cluster-based offset assignment).
+    const fills = result.map((v) => v.paths.fill);
+    const uniqueFills = new Set(fills);
+    expect(uniqueFills.size).toBe(6);
+  });
+});
+
+// -------------------------------------------------------------------------
+// voicingKey: stability, uniqueness, and order-independence
+// -------------------------------------------------------------------------
+
+describe("voicingKey field", () => {
+  it("voicingKey stability: same vertex set on two separate calls produces identical voicingKey values", () => {
+    const noteData = [
+      makeNote(0, 5, "C", "chord-root"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(2, 5, "G", "chord-tone-in-scale"),
+    ];
+    const result1 = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    const result2 = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    expect(result1).toHaveLength(1);
+    expect(result2).toHaveLength(1);
+    expect(result1[0]!.voicingKey).toBe(result2[0]!.voicingKey);
+  });
+
+  it("voicingKey uniqueness: two voicings with distinct vertex sets produce different keys", () => {
+    // Two distinct positions: strings 0-1-2 at fret 5, and strings 0-1-2 at fret 7.
+    // Both are separate calls so each emits 1 voicing with a different key.
+    const noteDataA = [
+      makeNote(0, 5, "C", "chord-root"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(2, 5, "G", "chord-tone-in-scale"),
+    ];
+    const noteDataB = [
+      makeNote(0, 7, "C", "chord-root"),
+      makeNote(1, 7, "E", "chord-tone-in-scale"),
+      makeNote(2, 7, "G", "chord-tone-in-scale"),
+    ];
+    const rA = buildChordConnectorPolylines(noteDataA, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    const rB = buildChordConnectorPolylines(noteDataB, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    expect(rA).toHaveLength(1);
+    expect(rB).toHaveLength(1);
+    expect(rA[0]!.voicingKey).not.toBe(rB[0]!.voicingKey);
+  });
+
+  it("canonicalKey order-independence: supplying the same vertices in a different order yields the same key", () => {
+    // Forward order: string 0, 1, 2.
+    const noteDataForward = [
+      makeNote(0, 3, "C", "chord-root"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(2, 4, "G", "chord-tone-in-scale"),
+    ];
+    // Reverse order: string 2, 1, 0 — NoteData ordering should not affect the key.
+    const noteDataReverse = [
+      makeNote(2, 4, "G", "chord-tone-in-scale"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(0, 3, "C", "chord-root"),
+    ];
+    const rFwd = buildChordConnectorPolylines(noteDataForward, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    const rRev = buildChordConnectorPolylines(noteDataReverse, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    expect(rFwd).toHaveLength(1);
+    expect(rRev).toHaveLength(1);
+    expect(rFwd[0]!.voicingKey).toBe(rRev[0]!.voicingKey);
+  });
+
+  it("voicingKey is a non-empty string containing the expected coordinate pairs", () => {
+    const noteData = [
+      makeNote(0, 5, "C", "chord-root"),
+      makeNote(1, 7, "E", "chord-tone-in-scale"),
+      makeNote(2, 6, "G", "chord-tone-in-scale"),
+    ];
+    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    expect(result).toHaveLength(1);
+    const key = result[0]!.voicingKey;
+    expect(typeof key).toBe("string");
+    expect(key.length).toBeGreaterThan(0);
+    // Key must contain each (stringIndex,fretIndex) pair in sorted order joined by "|".
+    // Sorted: "0,5" < "1,7" < "2,6" → sorted: "0,5", "1,7", "2,6".
+    expect(key).toContain("0,5");
+    expect(key).toContain("1,7");
+    expect(key).toContain("2,6");
   });
 });

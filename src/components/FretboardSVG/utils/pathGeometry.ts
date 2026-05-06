@@ -217,6 +217,13 @@ export function convexHull(vertices: Array<{ x: number; y: number }>): Array<{ x
  * normal direction automatically. Input may be CCW or CW; outward normal
  * direction is computed from the signed area.
  *
+ * **Note on screen-vs-math winding:** in screen coords (y-axis flipped) the
+ * shoelace formula's sign is inverted relative to math y-up convention. A
+ * polygon whose shoelace area is **positive** in screen coords is **CCW in
+ * math** terms — its math-right-hand perpendicular `(dy, -dx)` therefore
+ * points outward. A negative shoelace area is **CW in math**, so the same
+ * formula points inward and must be negated.
+ *
  * All coordinates are rounded to 2 decimal places.
  *
  * @param polygon - Polygon vertices in any consistent winding order.
@@ -284,9 +291,14 @@ export function offsetOutlinePath(polygon: Array<{ x: number; y: number }>, r: n
   const N = polygon.length;
 
   // Determine winding via the shoelace signed-area formula.
-  // In SVG screen coords (y-axis down): 2A > 0 means CW traversal, 2A < 0 means CCW.
-  // We need CCW winding for the right-hand perpendicular to point outward.
-  // If the polygon is CW (2A > 0), negate the normals (use left-hand perpendicular).
+  // In SVG screen coords (y-axis down): twoA > 0 means CW visual / CCW math
+  // (interior left of edge in math), twoA < 0 means CCW visual / CW math.
+  //
+  // The math-right-hand perpendicular (dy, -dx) of an edge points to the right
+  // of the walker in y-up convention. For CCW-math polygons (twoA > 0 in screen
+  // coords) the right-hand perpendicular points OUTWARD (interior on the left,
+  // outside on the right). For CW-math polygons (twoA < 0 in screen coords) the
+  // same formula points INWARD, so we negate it to get the outward direction.
   let twoA = 0;
   for (let i = 0; i < N; i++) {
     const a = polygon[i]!;
@@ -316,9 +328,9 @@ export function offsetOutlinePath(polygon: Array<{ x: number; y: number }>, r: n
     return offsetOutlinePath([ep0, ep1], rr);
   }
 
-  // normalSign = +1 when polygon is CCW (right-hand perp is outward),
-  //              -1 when polygon is CW  (left-hand perp is outward).
-  const normalSign = twoA < 0 ? 1 : -1;
+  // In screen coords: twoA > 0 → CCW math → math-RH-perp is outward (use as-is).
+  //                   twoA < 0 → CW math  → math-RH-perp is inward  (flip sign).
+  const normalSign = twoA > 0 ? 1 : -1;
 
   // Compute outward unit normals for each edge i → (i+1).
   const normals: Array<{ nx: number; ny: number }> = [];

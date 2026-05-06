@@ -5,7 +5,7 @@ import {
   type PracticeLens,
   type NoteSemantics,
 } from "../../core/theory";
-import { scaleDegreeColorsEnabledAtom } from "../../store/atoms";
+import { scaleDegreeColorsEnabledAtom, activeVoicingKeyAtom } from "../../store/atoms";
 import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
 import styles from "./FretboardSVG.module.css";
 import { useFretboardGeometry } from "./hooks/useFretboardGeometry";
@@ -121,6 +121,7 @@ export const FretboardSVG = memo(function FretboardSVG({
   // neckWidthPx + scale math, so the value isn't read here.
   void effectiveZoom;
   const degreeColorsEnabled = useAtomValue(scaleDegreeColorsEnabledAtom);
+  const activeVoicingKey = useAtomValue(activeVoicingKeyAtom);
   const internalId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const defsPrefix = `fretboard-${id ?? internalId}`;
   const svgDefId = useCallback((id: string) => `${defsPrefix}-${id}`, [defsPrefix]);
@@ -389,13 +390,26 @@ export const FretboardSVG = memo(function FretboardSVG({
                 className={styles["chord-connectors"]}
                 aria-hidden="true"
                 pointerEvents="none"
+                data-has-active-voicing={activeVoicingKey ? "true" : undefined}
               >
+                {/* Fill pass: all voicings rendered first (below outlines) */}
                 {connectorPolylines.map((voicing, i) => (
                   <path
-                    key={i}
-                    d={voicing.d}
-                    fill="none"
-                    style={{ stroke: `var(--chord-connector-color-${voicing.paletteIndex + 1})` }}
+                    key={`fill-${i}`}
+                    d={voicing.paths.fill}
+                    data-layer="fill"
+                    data-palette-index={voicing.paletteIndex + 1}
+                    data-active-voicing={voicing.voicingKey === activeVoicingKey ? voicing.voicingKey : undefined}
+                  />
+                ))}
+                {/* Outline pass: all voicings rendered on top */}
+                {connectorPolylines.map((voicing, i) => (
+                  <path
+                    key={`outline-${i}`}
+                    d={voicing.paths.outline}
+                    data-layer="outline"
+                    data-palette-index={voicing.paletteIndex + 1}
+                    data-active-voicing={voicing.voicingKey === activeVoicingKey ? voicing.voicingKey : undefined}
                   />
                 ))}
               </g>
@@ -420,6 +434,7 @@ export const FretboardSVG = memo(function FretboardSVG({
           neckWidthPx={neckWidthPx}
           neckHeight={neckHeight}
           onNoteClick={onNoteClick}
+          connectorVoicings={connectorPolylines}
         />
       </div>
 
