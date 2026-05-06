@@ -9,6 +9,7 @@ import {
   accidentalModeAtom,
 } from "./scaleAtoms";
 import {
+  chordOverlayModeAtom,
   chordRootAtom,
   chordTypeAtom,
   linkChordRootAtom,
@@ -40,6 +41,11 @@ import {
 
 export const setRootNoteAtom = atom(null, (get, set, note: string) => {
   set(rootNoteAtom, note);
+  // In degree mode the derived chordRootAtom/chordTypeAtom auto-resolve via
+  // getDiatonicChord against the new rootNote — no explicit sync needed.
+  // Writing through chordRootAtom would force mode→manual, collapsing the
+  // chord-follows-the-scale contract. Sync only matters in manual mode.
+  if (get(chordOverlayModeAtom) === "degree") return;
   if (get(linkChordRootAtom)) set(chordRootAtom, note);
 });
 

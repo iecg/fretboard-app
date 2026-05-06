@@ -347,7 +347,7 @@ describe("ChordPracticeBar/ChordPracticeBar", () => {
           mkNote({
             internalNote: "C",
             displayNote: "C",
-            intervalName: "1",
+            intervalName: "I",
             isChordRoot: true,
             scaleDegree: "I",
             degreeColor: "#ff7f00",
@@ -355,9 +355,9 @@ describe("ChordPracticeBar/ChordPracticeBar", () => {
           mkNote({
             internalNote: "E",
             displayNote: "E",
-            intervalName: "3",
+            intervalName: "iii",
             isGuideTone: true,
-            scaleDegree: "III",
+            scaleDegree: "iii",
             degreeColor: "#4daf4a",
           }),
         ],
@@ -380,11 +380,13 @@ describe("ChordPracticeBar/ChordPracticeBar", () => {
         '[data-chord-root="true"][data-scale-degree="I"]',
       ) as HTMLElement | null;
       const guideTonePill = container.querySelector(
-        '[data-guide-tone="true"][data-scale-degree="III"]',
+        '[data-guide-tone="true"][data-scale-degree="iii"]',
       ) as HTMLElement | null;
 
       expect(rootPill?.style.getPropertyValue("--degree-color")).toBe("#ff7f00");
       expect(guideTonePill?.style.getPropertyValue("--degree-color")).toBe("#4daf4a");
+      expect(screen.getByText("I")).toBeTruthy();
+      expect(screen.getByText("iii")).toBeTruthy();
       expect(container.querySelector(".chord-practice-bar")?.getAttribute("data-degree-colors")).toBe("true");
     });
 

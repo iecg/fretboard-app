@@ -229,8 +229,14 @@ describe("App", () => {
       });
     });
 
-    it("links chord root to scale root by default", async () => {
+    it("links chord root to scale root in manual mode by default", async () => {
+      // Seed manual mode explicitly. In degree mode the link sync is intentionally
+      // skipped — the derived chord root re-resolves via getDiatonicChord against
+      // the new scale root, so writing through chordRootAtom is unnecessary and
+      // would force mode→manual (the bug Phase 01 fixes).
+      localStorage.setItem(k("chordOverlayMode"), "manual");
       localStorage.setItem(k("chordType"), "Major Triad");
+      localStorage.setItem(k("chordRootOverride"), "C");
       render(<App />);
 
       const cofButton = await screen.findByTestId("circle-of-fifths");
@@ -239,6 +245,22 @@ describe("App", () => {
       await waitFor(() => {
         // Phase 02: chordRootAtom writes go to chordRootOverride (manual mode override key).
         expect(localStorage.getItem(k("chordRootOverride"))).toBe("G");
+      });
+    });
+
+    it("preserves degree mode when scale root changes (chord root re-resolves via degree)", async () => {
+      // Default after migration with a diatonic triad: degree mode, chordDegree="I".
+      // Changing the scale root must keep the user in degree mode (the chord root
+      // auto-resolves via getDiatonicChord) and must NOT write to chordRootOverride.
+      localStorage.setItem(k("chordType"), "Major Triad");
+      render(<App />);
+
+      const cofButton = await screen.findByTestId("circle-of-fifths");
+      fireEvent.click(cofButton);
+
+      await waitFor(() => {
+        expect(localStorage.getItem(k("rootNote"))).toBe("G");
+        expect(localStorage.getItem(k("chordOverlayMode"))).toBe("degree");
       });
     });
 
