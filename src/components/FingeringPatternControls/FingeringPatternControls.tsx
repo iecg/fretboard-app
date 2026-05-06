@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import clsx from "clsx";
 import { CAGED_SHAPES, type CagedShape } from "../../shapes";
 import { useShapeState } from "../../hooks/useShapeState";
-import { displayFormatAtom } from "../../store/atoms";
+import { displayFormatAtom, type FingeringPattern } from "../../store/atoms";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import shared from "../shared/shared.module.css";
 
@@ -58,13 +58,14 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
         <span className={shared["section-label"]}>Fingering Pattern</span>
         <ToggleBar
           options={[
-            { value: "all", label: "All" },
+            { value: "none", label: "None" },
             { value: "caged", label: "CAGED" },
             { value: "3nps", label: "3NPS" },
           ]}
           value={fingeringPattern}
-          onChange={(v) => setFingeringPattern(v as "all" | "caged" | "3nps")}
+          onChange={(v) => setFingeringPattern(v as FingeringPattern)}
           compact={compact}
+          overflow="scroll"
         />
       </div>
 
