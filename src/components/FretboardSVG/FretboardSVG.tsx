@@ -3,6 +3,8 @@ import { useAtomValue } from "jotai";
 import { motion, AnimatePresence } from "motion/react";
 import {
   getNoteDisplay,
+  getScaleNotes,
+  NOTES,
   type PracticeLens,
   type NoteSemantics,
 } from "../../core/theory";
@@ -10,7 +12,6 @@ import {
   scaleDegreeColorsEnabledAtom,
   activeVoicingKeyAtom,
   fingeringPatternAtom,
-  chordActiveStringSetAtom,
   effectiveShapeDataAtom,
 } from "../../store/atoms";
 import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
@@ -18,6 +19,7 @@ import styles from "./FretboardSVG.module.css";
 import { useFretboardGeometry } from "./hooks/useFretboardGeometry";
 import { useNoteData } from "./hooks/useNoteData";
 import { useChordConnectorPolylines } from "./hooks/useChordConnectorPolylines";
+import { useIntervalConnectorPolylines } from "./hooks/useIntervalConnectorPolylines";
 import { type BoxBound } from "./utils/semantics";
 import { FretboardBackground } from "./FretboardBackground";
 import { FretboardDefs } from "./FretboardDefs";
@@ -130,7 +132,6 @@ export const FretboardSVG = memo(function FretboardSVG({
   const degreeColorsEnabled = useAtomValue(scaleDegreeColorsEnabledAtom);
   const activeVoicingKey = useAtomValue(activeVoicingKeyAtom);
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
-  const chordActiveStringSet = useAtomValue(chordActiveStringSetAtom);
   const { intervalPairs } = useAtomValue(effectiveShapeDataAtom);
   const internalId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const defsPrefix = `fretboard-${id ?? internalId}`;
@@ -318,7 +319,25 @@ export const FretboardSVG = memo(function FretboardSVG({
     practiceLens,
     tuning,
     noteSemantics,
-    chordActiveStringSet,
+  });
+
+  // Compute scale semitone offsets (0-11, chromatic position in NOTES) for the
+  // interval connector polylines. These drive per-pair color via scale-degree position.
+  const scaleSemitones = useMemo(() => {
+    if (!scaleName || !rootNote) return [];
+    const scaleNoteNames = getScaleNotes(rootNote, scaleName);
+    return scaleNoteNames
+      .map((n) => NOTES.indexOf(n))
+      .filter((i) => i !== -1);
+  }, [scaleName, rootNote]);
+
+  const intervalConnectorPolylines = useIntervalConnectorPolylines({
+    intervalPairs,
+    tuning,
+    scaleSemitones,
+    fretCenterX,
+    stringYAt,
+    stringRowPx,
   });
 
   // Per-string chord filter (UAT-3): when fingering pattern restricts to 1 or 2 strings,
@@ -396,7 +415,7 @@ export const FretboardSVG = memo(function FretboardSVG({
 
           <g clipPath={svgDefUrl("fretboard-taper")}>
             <FretboardShapeLayer svgPolygons={svgPolygons} />
-            <AnimatePresence>
+<AnimatePresence>
               {connectorPolylines.length > 0 && (
                 <motion.g
                   key="chord-connectors"
@@ -442,34 +461,33 @@ export const FretboardSVG = memo(function FretboardSVG({
                 </motion.g>
               )}
             </AnimatePresence>
-            {/* 2-Strings interval pair connectors — separate from chord connectors.
-                Drawn between each {a, b} pair member using fret-coord keys "string-fret".
-                Not affected by the chord-connector hide rule above (UAT-8). */}
-            {intervalPairs.length > 0 && (
+            {/* 2-Strings interval connectors — polyline style matching chord connectors.
+                Per-pair color driven by lower-note scale-degree via --chord-connector-color-N.
+                Two render passes (fill + outline) mirror chord-connector convention. */}
+            {intervalConnectorPolylines.length > 0 && (
               <g
-                className={styles["interval-pair-connectors"]}
+                className={styles["interval-connectors"]}
                 aria-hidden="true"
                 pointerEvents="none"
               >
-                {intervalPairs.map((pair, i) => {
-                  const [aStr, aFret] = pair.a.split("-").map(Number);
-                  const [bStr, bFret] = pair.b.split("-").map(Number);
-                  if (aStr === undefined || aFret === undefined || bStr === undefined || bFret === undefined) return null;
-                  const x1 = fretCenterX(aFret);
-                  const y1 = stringYAt(aStr, x1);
-                  const x2 = fretCenterX(bFret);
-                  const y2 = stringYAt(bStr, x2);
-                  return (
-                    <line
-                      key={`interval-pair-${i}`}
-                      x1={x1}
-                      y1={y1}
-                      x2={x2}
-                      y2={y2}
-                      className={styles["interval-pair-line"]}
-                    />
-                  );
-                })}
+                {/* Fill pass */}
+                {intervalConnectorPolylines.map((line) => (
+                  <path
+                    key={`iv-fill-${line.key}`}
+                    d={line.paths.fill}
+                    data-layer="fill"
+                    data-palette-index={line.paletteIndex}
+                  />
+                ))}
+                {/* Outline pass */}
+                {intervalConnectorPolylines.map((line) => (
+                  <path
+                    key={`iv-outline-${line.key}`}
+                    d={line.paths.outline}
+                    data-layer="outline"
+                    data-palette-index={line.paletteIndex}
+                  />
+                ))}
               </g>
             )}
             <FretboardNoteLayer
