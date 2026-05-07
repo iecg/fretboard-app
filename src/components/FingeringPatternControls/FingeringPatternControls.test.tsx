@@ -220,7 +220,7 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
       expect(screen.getByText("Interval")).toBeInTheDocument();
     });
 
-    it("interval sub-control has 4 options: Off, 3rds, 4ths, 5ths (6ths dropped — UAT-13)", () => {
+    it("interval sub-control has 4 options: Off, 3rds, 4ths, 6ths (5ths dropped — UAT-14/R05)", () => {
       const store = createStore();
       act(() => { store.set(fingeringPatternAtom, "two-strings"); });
       render(
@@ -232,9 +232,9 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
       expect(screen.getByRole("button", { name: "Off" })).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "3rds" })).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "4ths" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "5ths" })).toBeInTheDocument();
-      // 6ths dropped — span is impractical
-      expect(screen.queryByRole("button", { name: "6ths" })).toBeNull();
+      expect(screen.getByRole("button", { name: "6ths" })).toBeInTheDocument();
+      // 5ths dropped; replaced by 6ths with skip-one topology
+      expect(screen.queryByRole("button", { name: "5ths" })).toBeNull();
     });
 
     it("does not show 'Pair members connected' hint when interval is Off (0)", () => {
@@ -273,8 +273,43 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
           <FingeringPatternControls />
         </Provider>
       );
-      fireEvent.click(screen.getByRole("button", { name: "5ths" }));
+      fireEvent.click(screen.getByRole("button", { name: "6ths" }));
       expect(store.get(twoStringsIntervalAtom)).toBe(3);
+    });
+
+    it("pair toggle bar shows 5 buttons (adjacent) when interval is Off/3rds/4ths", () => {
+      const store = createStore();
+      act(() => {
+        store.set(fingeringPatternAtom, "two-strings");
+        store.set(twoStringsIntervalAtom, 0); // Off
+      });
+      render(
+        <Provider store={store}>
+          <FingeringPatternControls />
+        </Provider>
+      );
+      // Adjacent pair buttons: 1-2, 2-3, 3-4, 4-5, 5-6
+      expect(screen.getByRole("button", { name: "1-2" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "5-6" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "1-3" })).toBeNull();
+    });
+
+    it("pair toggle bar shows 4 buttons (skip-one) when interval is 6ths", () => {
+      const store = createStore();
+      act(() => {
+        store.set(fingeringPatternAtom, "two-strings");
+        store.set(twoStringsIntervalAtom, 3); // 6ths
+      });
+      render(
+        <Provider store={store}>
+          <FingeringPatternControls />
+        </Provider>
+      );
+      // Skip-one pair buttons: 1-3, 2-4, 3-5, 4-6
+      expect(screen.getByRole("button", { name: "1-3" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "4-6" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "1-2" })).toBeNull();
+      expect(screen.queryByRole("button", { name: "5-6" })).toBeNull();
     });
 
     it("has no axe violations with one-string pattern active", async () => {

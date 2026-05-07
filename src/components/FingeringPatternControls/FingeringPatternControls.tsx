@@ -230,7 +230,22 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
           <div className={shared["control-section"]}>
             <span className={shared["section-label"]}>Strings</span>
             <ToggleBar
-              options={["1-2", "2-3", "3-4", "4-5", "5-6"].map((label, i) => ({ value: i, label }))}
+              options={
+                twoStringsInterval === 3
+                  ? [
+                      { value: 0, label: "1-3" },
+                      { value: 1, label: "2-4" },
+                      { value: 2, label: "3-5" },
+                      { value: 3, label: "4-6" },
+                    ]
+                  : [
+                      { value: 0, label: "1-2" },
+                      { value: 1, label: "2-3" },
+                      { value: 2, label: "3-4" },
+                      { value: 3, label: "4-5" },
+                      { value: 4, label: "5-6" },
+                    ]
+              }
               value={twoStringsPair}
               onChange={(v) => setTwoStringsPair(v as number)}
               compact={compact}
@@ -243,7 +258,7 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
                 { value: 0, label: "Off" },
                 { value: 1, label: "3rds" },
                 { value: 2, label: "4ths" },
-                { value: 3, label: "5ths" },
+                { value: 3, label: "6ths" },
               ]}
               value={twoStringsInterval}
               onChange={(v) => setTwoStringsInterval(v as number)}
