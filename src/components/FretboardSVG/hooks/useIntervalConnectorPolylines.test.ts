@@ -22,7 +22,7 @@ const SAMPLE_PAIRS = [
   { a: "5-10", b: "5-12" },
 ];
 
-describe("buildIntervalConnectorPolylines (UAT-21)", () => {
+describe("buildIntervalConnectorPolylines (UAT-24)", () => {
   it("returns empty array for empty intervalPairs", () => {
     const result = buildIntervalConnectorPolylines(
       [],
@@ -35,7 +35,7 @@ describe("buildIntervalConnectorPolylines (UAT-21)", () => {
     expect(result).toHaveLength(0);
   });
 
-  it("each result entry has a strokeWidth field", () => {
+  it("each result entry has fill and outline path strings", () => {
     const result = buildIntervalConnectorPolylines(
       SAMPLE_PAIRS,
       STANDARD_TUNING,
@@ -46,13 +46,14 @@ describe("buildIntervalConnectorPolylines (UAT-21)", () => {
     );
     expect(result.length).toBeGreaterThan(0);
     for (const entry of result) {
-      expect(typeof entry.strokeWidth).toBe("number");
-      expect(entry.strokeWidth).toBeGreaterThan(0);
+      expect(typeof entry.paths.fill).toBe("string");
+      expect(entry.paths.fill.length).toBeGreaterThan(0);
+      expect(typeof entry.paths.outline).toBe("string");
+      expect(entry.paths.outline.length).toBeGreaterThan(0);
     }
   });
 
-  it("strokeWidth values cycle through 4 distinct widths (1.5, 2, 2.5, 3)", () => {
-    // Use 4 pairs with different lower-note scale-degree positions.
+  it("fill and outline paths are byte-identical (same capsule path, two render passes)", () => {
     const result = buildIntervalConnectorPolylines(
       SAMPLE_PAIRS,
       STANDARD_TUNING,
@@ -61,30 +62,23 @@ describe("buildIntervalConnectorPolylines (UAT-21)", () => {
       stringYAt,
       STRING_ROW_PX,
     );
-    const widths = result.map((r) => r.strokeWidth);
-    const uniqueWidths = new Set(widths);
-    // With 4 pairs at different positions we expect at least 2 distinct widths
-    expect(uniqueWidths.size).toBeGreaterThanOrEqual(1);
-    // All widths must be in the allowed cycle values
-    const ALLOWED = new Set([1.5, 2, 2.5, 3]);
-    for (const w of widths) {
-      expect(ALLOWED.has(w)).toBe(true);
+    for (const entry of result) {
+      expect(entry.paths.fill).toBe(entry.paths.outline);
     }
   });
 
-  it("polylines at distinct scale-degree positions can have distinct strokeWidth values", () => {
-    // Build with multiple pairs covering positions 0, 1, 2, 3 of the cycle.
+  it("capsule path contains arc commands (A) — confirms rounded-cap shape primitive", () => {
     const result = buildIntervalConnectorPolylines(
-      SAMPLE_PAIRS,
+      [{ a: "5-5", b: "5-9" }],
       STANDARD_TUNING,
       C_MAJOR_SEMITONES,
       fretCenterX,
       stringYAt,
       STRING_ROW_PX,
     );
-    // strokeWidth for first entry vs second should differ if their scale-degree
-    // positions differ mod 4 — we just assert the field is populated correctly.
-    expect(result.every((r) => r.strokeWidth >= 1.5 && r.strokeWidth <= 3)).toBe(true);
+    expect(result).toHaveLength(1);
+    // offsetOutlinePath for 2 vertices produces a capsule with arc segments.
+    expect(result[0]!.paths.fill).toMatch(/A/);
   });
 
   it("each result entry has a paletteIndex between 1 and 8", () => {
@@ -102,7 +96,7 @@ describe("buildIntervalConnectorPolylines (UAT-21)", () => {
     }
   });
 
-  it("each result entry has fill and outline paths", () => {
+  it("result entries do not have a strokeWidth field (UAT-24: stroke-width cycle reverted)", () => {
     const result = buildIntervalConnectorPolylines(
       SAMPLE_PAIRS,
       STANDARD_TUNING,
@@ -111,10 +105,26 @@ describe("buildIntervalConnectorPolylines (UAT-21)", () => {
       stringYAt,
       STRING_ROW_PX,
     );
+    expect(result.length).toBeGreaterThan(0);
     for (const entry of result) {
-      expect(typeof entry.paths.fill).toBe("string");
-      expect(entry.paths.fill.length).toBeGreaterThan(0);
-      expect(typeof entry.paths.outline).toBe("string");
+      // strokeWidth field must not exist on the output object
+      expect("strokeWidth" in entry).toBe(false);
     }
+  });
+
+  it("each result entry has a stable string key derived from pair coords", () => {
+    const result = buildIntervalConnectorPolylines(
+      SAMPLE_PAIRS,
+      STANDARD_TUNING,
+      C_MAJOR_SEMITONES,
+      fretCenterX,
+      stringYAt,
+      STRING_ROW_PX,
+    );
+    const keys = result.map((r) => r.key);
+    // All keys are unique
+    expect(new Set(keys).size).toBe(keys.length);
+    // Key contains the coord strings joined by |
+    expect(result[0]!.key).toContain("|");
   });
 });

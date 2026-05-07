@@ -486,8 +486,7 @@
 .interval-connectors path[data-layer="outline"] {
   fill: none;
   stroke: currentColor;
-  /* UAT-21: --iv-stroke-width varies per scale-degree position for visual distinction. */
-  stroke-width: var(--iv-stroke-width, var(--chord-connector-outline-width, 1.25px));
+  stroke-width: var(--chord-connector-outline-width, 1.25px);
   stroke-opacity: var(--chord-connector-outline-opacity, 0.85);
   stroke-linejoin: round;
   stroke-linecap: round;
