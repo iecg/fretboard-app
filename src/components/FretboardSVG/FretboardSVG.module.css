@@ -454,24 +454,6 @@
    No transition/animation — snap on state change (no motion).
    ----------------------------------------------------------------------- */
 
-/* Rule 1 — Active outline emphasis: stroke-width bump + glow ring.
-   Applied when a voicing is active AND this outline path is the active one. */
-.chord-connectors[data-has-active-voicing="true"] path[data-layer="outline"][data-active-voicing] {
-  stroke-width: calc(var(--chord-connector-outline-width, 1.25px) + 0.5px);
-  stroke-opacity: 1;
-  filter: drop-shadow(0 0 2px currentColor);
-}
-
-/* Rule 2 — Non-active fill dim: reduce fill alpha ~30% when any voicing is active. */
-.chord-connectors[data-has-active-voicing="true"] path[data-layer="fill"]:not([data-active-voicing]) {
-  fill-opacity: calc(var(--chord-connector-fill-opacity, 0.15) * 0.7);
-}
-
-/* Rule 3 — Non-active outline dim: reduce stroke alpha ~30% when any voicing is active. */
-.chord-connectors[data-has-active-voicing="true"] path[data-layer="outline"]:not([data-active-voicing]) {
-  stroke-opacity: calc(var(--chord-connector-outline-opacity, 0.85) * 0.7);
-}
-
 /* -----------------------------------------------------------------------
    2-Strings interval connectors — polyline style matching chord connectors.
    Two-pass fill + outline render; per-pair color via --chord-connector-color-N.
