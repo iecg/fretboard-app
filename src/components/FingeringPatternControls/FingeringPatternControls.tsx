@@ -73,7 +73,6 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
           value={fingeringPattern}
           onChange={(v) => setFingeringPattern(v as FingeringPattern)}
           compact={compact}
-          overflow="scroll"
         />
       </div>
 
