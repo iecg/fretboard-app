@@ -36,6 +36,7 @@
   --z-overlay-drawer: 201;
   background-color: var(--bg-color);
   color: var(--text-main);
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -119,19 +120,22 @@ body {
 
 * {
   box-sizing: border-box;
+  scrollbar-width: thin;
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: auto;
 }
+
 ::-webkit-scrollbar-track {
-  background: var(--bg-color);
+  background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--surface-highlight);
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--accent-primary);
 }

@@ -1,5 +1,9 @@
+.custom-scrollbar {
+  scrollbar-width: thin;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: auto;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
