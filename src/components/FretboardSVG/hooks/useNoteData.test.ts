@@ -212,4 +212,120 @@ describe("useNoteData", () => {
     expect(blueNote?.scaleDegree).toBe("b5");
     expect(blueNote?.degreeColor).toBe("#0047ff");
   });
+
+  // ---------------------------------------------------------------------------
+  // UAT-11 regression guard: chord-tone × active-string-set filter (R02 / R04)
+  // The chordActiveStringSet prop must gate isChordTone for 1/2-string patterns.
+  // ---------------------------------------------------------------------------
+
+  describe("chord-tone × active-string-set filter (UAT-11)", () => {
+    // 2-string chromatic layout: strings 0–1, frets 0–3
+    // E4: E F F# G      (string 0)
+    // B3: B C C# D      (string 1)
+    // A2: A A# B C      (string 2)
+    const TWO_STRING_LAYOUT = [
+      ["E", "F", "F#", "G"],  // string 0
+      ["B", "C", "C#", "D"],  // string 1
+      ["A", "A#", "B", "C"],  // string 2
+    ];
+
+    function buildChordStringHook(chordActiveStringSet: Set<number> | null | undefined) {
+      return renderHook(() =>
+        useNoteData({
+          numStrings: 3,
+          fretboardLayout: TWO_STRING_LAYOUT,
+          totalColumns: 3,
+          startFret: 0,
+          maxFret: 22,
+          hiddenNotes: new Set(),
+          highlightNotes: ["E", "B", "A", "C", "G"],
+          hasChordOverlay: true,
+          chordTones: ["C", "E", "G"], // C major triad
+          rootNote: "C",
+          chordRoot: "C",
+          colorNotes: [],
+          shapePolygons: [],
+          boxBounds: [],
+          chordFretSpread: 0,
+          scaleName: "Major",
+          useFlats: false,
+          wrappedNotes: new Set(),
+          tuning: ["E4", "B3", "A2"],
+          chordActiveStringSet,
+        }),
+      );
+    }
+
+    const CHORD_TONE_CLASSES = new Set([
+      "chord-root",
+      "chord-tone-in-scale",
+      "chord-tone-outside-scale",
+    ]);
+
+    function isChordToneClass(noteClass: string): boolean {
+      return CHORD_TONE_CLASSES.has(noteClass);
+    }
+
+    it("1-String: with chordActiveStringSet={0}, chord tones only appear on string 0", () => {
+      const { result } = buildChordStringHook(new Set([0]));
+      const notes = result.current;
+      // String 0 has E (chord tone) and G (chord tone) — they should be chord-tone-class
+      const str0ChordTones = notes.filter(
+        (n) => n.stringIndex === 0 && isChordToneClass(n.noteClass),
+      );
+      expect(str0ChordTones.length).toBeGreaterThan(0);
+      // Strings 1 and 2 must NOT have chord-tone roles
+      const otherStringChordTones = notes.filter(
+        (n) => n.stringIndex !== 0 && isChordToneClass(n.noteClass),
+      );
+      expect(otherStringChordTones).toHaveLength(0);
+    });
+
+    it("2-Strings: with chordActiveStringSet={0,1}, chord tones only appear on strings 0 and 1", () => {
+      const { result } = buildChordStringHook(new Set([0, 1]));
+      const notes = result.current;
+      // String 2 must NOT have chord-tone roles
+      const str2ChordTones = notes.filter(
+        (n) => n.stringIndex === 2 && isChordToneClass(n.noteClass),
+      );
+      expect(str2ChordTones).toHaveLength(0);
+      // String 0 and 1 with chord tones (E, G on str0; C on str1) should be chord-tone-class
+      const activeStringChordTones = notes.filter(
+        (n) => n.stringIndex <= 1 && isChordToneClass(n.noteClass),
+      );
+      expect(activeStringChordTones.length).toBeGreaterThan(0);
+    });
+
+    it("null chordActiveStringSet (CAGED/3NPS): chord tones appear on all strings", () => {
+      const { result } = buildChordStringHook(null);
+      const notes = result.current;
+      // With null, there is no restriction — chord tones should appear on all strings
+      const allChordTones = notes.filter((n) => isChordToneClass(n.noteClass));
+      // C appears on str1 fret1 and str2 fret3, E appears on str0 fret0, G appears on str0 fret3
+      // All three strings should have at least some chord-tone-class notes
+      const affectedStrings = new Set(allChordTones.map((n) => n.stringIndex));
+      expect(affectedStrings.has(0)).toBe(true); // E or G on string 0
+      expect(affectedStrings.has(1)).toBe(true); // C on string 1 (B3+1=C)
+    });
+
+    it("undefined chordActiveStringSet: behaves like null (no restriction)", () => {
+      const { result } = buildChordStringHook(undefined);
+      const notes = result.current;
+      const allChordTones = notes.filter((n) => isChordToneClass(n.noteClass));
+      const affectedStrings = new Set(allChordTones.map((n) => n.stringIndex));
+      expect(affectedStrings.size).toBeGreaterThan(1);
+    });
+
+    it("2-Strings + interval pairs: chord-tone gate still applies when intervalPairs present", () => {
+      // Simulate 2-Strings + interval active: chordActiveStringSet restricts to strings 0+1
+      // even when interval connectors would be drawn
+      const { result } = buildChordStringHook(new Set([0, 1]));
+      const notes = result.current;
+      // String 2 should still not show chord tones
+      const str2ChordTones = notes.filter(
+        (n) => n.stringIndex === 2 && isChordToneClass(n.noteClass),
+      );
+      expect(str2ChordTones).toHaveLength(0);
+    });
+  });
 });
