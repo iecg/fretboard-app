@@ -235,6 +235,31 @@
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
+/* ===== Disabled disclosure button — grayed arrow, non-interactive (UAT-20) ===== */
+.theory-disclosure-btn--disabled {
+  cursor: default;
+  pointer-events: none;
+}
+
+.theory-disclosure-btn--disabled .theory-disclosure-icon {
+  opacity: 0.35;
+}
+
+.theory-disclosure-btn--disabled .theory-disclosure-title {
+  opacity: 0.6;
+}
+
+.theory-disclosure-btn--disabled .theory-disclosure-summary {
+  opacity: 0.45;
+}
+
+.theory-disclosure-disabled-badge {
+  font-size: 0.65rem;
+  font-style: italic;
+  opacity: 0.75;
+  letter-spacing: 0.04em;
+}
+
 /* ===== Compact variant — tighter disclosure rows for space-constrained layouts ===== */
 .theory-section[data-compact="true"] {
   padding: 0.08rem 0;

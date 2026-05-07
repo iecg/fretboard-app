@@ -14,7 +14,7 @@ import {
 import { getDegreesForScale } from "../../core/degrees";
 import { useChordState } from "../../hooks/useChordState";
 import { useScaleState } from "../../hooks/useScaleState";
-import { scaleLabelAtom } from "../../store/atoms";
+import { scaleLabelAtom, fingeringPatternAtom } from "../../store/atoms";
 import styles from "../TheoryControls/TheoryControls.module.css";
 
 interface TheoryControlsProps {
@@ -30,6 +30,11 @@ export interface TheorySectionProps {
   children: ReactNode;
   /** Reduces vertical padding and font size on disclosure rows for tight layouts. */
   compact?: boolean;
+  /**
+   * When true, the disclosure arrow is grayed out and non-interactive, and the
+   * panel auto-collapses. A "(Disabled)" badge is shown next to the title.
+   */
+  disabled?: boolean;
 }
 
 export function TheorySection({
@@ -38,26 +43,40 @@ export function TheorySection({
   defaultOpen = false,
   children,
   compact = false,
+  disabled = false,
 }: TheorySectionProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+  // Track the user-controlled open/close state. When disabled, the panel is
+  // always rendered as collapsed without needing side effects.
+  const [userOpen, setUserOpen] = useState(defaultOpen);
+
+  // Derive effective open state: disabled always collapses the panel.
+  const isOpen = !disabled && userOpen;
   const contentId = useId();
+
+  const handleToggle = () => {
+    if (disabled) return;
+    setUserOpen((value) => !value);
+  };
 
   return (
     <section
       className={styles["theory-section"]}
       data-open={isOpen}
       data-compact={compact ? "true" : undefined}
+      data-disabled={disabled ? "true" : undefined}
     >
       <button
         type="button"
         className={clsx(styles["theory-disclosure-btn"], {
           [styles["theory-disclosure-btn--open"]]: isOpen,
+          [styles["theory-disclosure-btn--disabled"]]: disabled,
         })}
         aria-expanded={isOpen}
         aria-controls={contentId}
-        onClick={() => setIsOpen((value) => !value)}
+        aria-disabled={disabled ? "true" : undefined}
+        onClick={handleToggle}
       >
-        <AnimatePresence mode="wait">
+<AnimatePresence mode="wait">
           <motion.span
             key={title}
             initial={{ opacity: 0, x: -12 }}
@@ -67,6 +86,11 @@ export function TheorySection({
             className={styles["theory-disclosure-title"]}
           >
             {title}
+            {disabled && (
+              <span className={styles["theory-disclosure-disabled-badge"]}>
+                {" "}(Disabled)
+              </span>
+            )}
           </motion.span>
         </AnimatePresence>
         <AnimatePresence mode="wait">
@@ -150,6 +174,9 @@ export function TheoryControls({ keyExplorer, compact = false }: TheoryControlsP
   const scaleSummary = useAtomValue(scaleLabelAtom);
   const chordSummary = useChordSectionSummary();
   const { chordType } = useChordState();
+  const fingeringPattern = useAtomValue(fingeringPatternAtom);
+  const isChordsDisabled =
+    fingeringPattern === "one-string" || fingeringPattern === "two-strings";
 
   return (
     <div className={styles["theory-controls"]} data-testid="theory-controls">
@@ -162,6 +189,7 @@ export function TheoryControls({ keyExplorer, compact = false }: TheoryControlsP
         summary={chordSummary}
         defaultOpen={Boolean(chordType)}
         compact={compact}
+        disabled={isChordsDisabled}
       >
         <ChordOverlayControls compact={compact} />
       </TheorySection>

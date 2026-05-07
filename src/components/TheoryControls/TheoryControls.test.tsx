@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { createStore, Provider } from "jotai";
 import { TheoryControls, TheorySection } from "../TheoryControls/TheoryControls";
 import {
@@ -9,6 +9,7 @@ import {
   scaleBrowseModeAtom,
   chordTypeAtom,
   practiceLensAtom,
+  fingeringPatternAtom,
 } from "../../store/atoms";
 import { axe } from "../../test-utils/a11y";
 
@@ -169,5 +170,116 @@ describe("TheoryControls/TheorySection", () => {
     const section = container.querySelector("section");
     expect(section).toHaveAttribute("data-compact", "true");
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("disabled: disclosure button has aria-disabled='true'", () => {
+    const { container } = render(
+      <TheorySection title="Chords" summary="Off" disabled defaultOpen>
+        <div>content</div>
+      </TheorySection>,
+    );
+    const btn = container.querySelector("button");
+    expect(btn).toHaveAttribute("aria-disabled", "true");
+  });
+
+  it("disabled: section is collapsed (content not rendered)", () => {
+    render(
+      <TheorySection title="Chords" summary="Off" disabled defaultOpen>
+        <div data-testid="inner-content">content</div>
+      </TheorySection>,
+    );
+    // defaultOpen=true but disabled forces collapse; content must not be in DOM
+    expect(screen.queryByTestId("inner-content")).not.toBeInTheDocument();
+  });
+
+  it("disabled: shows (Disabled) badge in the title area", () => {
+    render(
+      <TheorySection title="Chords" summary="Off" disabled>
+        <div>content</div>
+      </TheorySection>,
+    );
+    expect(screen.getByText("(Disabled)")).toBeInTheDocument();
+  });
+
+  it("disabled: clicking the button does not expand the section", () => {
+    const { container } = render(
+      <TheorySection title="Chords" summary="Off" disabled>
+        <div data-testid="inner-content">content</div>
+      </TheorySection>,
+    );
+    const btn = container.querySelector("button")!;
+    fireEvent.click(btn);
+    expect(screen.queryByTestId("inner-content")).not.toBeInTheDocument();
+  });
+
+  it("disabled: section has data-disabled='true'", () => {
+    const { container } = render(
+      <TheorySection title="Chords" summary="Off" disabled>
+        <div>content</div>
+      </TheorySection>,
+    );
+    const section = container.querySelector("section");
+    expect(section).toHaveAttribute("data-disabled", "true");
+  });
+});
+
+describe("TheoryControls UAT-20 — chord section disabled on 1/2-string", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("Chords disclosure has aria-disabled when fingeringPattern is one-string", () => {
+    const store = createStore();
+    act(() => {
+      store.set(fingeringPatternAtom, "one-string");
+    });
+    render(
+      <Provider store={store}>
+        <TheoryControls />
+      </Provider>,
+    );
+    const chordsBtn = screen.getByRole("button", { name: /Chords/i });
+    expect(chordsBtn).toHaveAttribute("aria-disabled", "true");
+  });
+
+  it("Chords disclosure has aria-disabled when fingeringPattern is two-strings", () => {
+    const store = createStore();
+    act(() => {
+      store.set(fingeringPatternAtom, "two-strings");
+    });
+    render(
+      <Provider store={store}>
+        <TheoryControls />
+      </Provider>,
+    );
+    const chordsBtn = screen.getByRole("button", { name: /Chords/i });
+    expect(chordsBtn).toHaveAttribute("aria-disabled", "true");
+  });
+
+  it("Chords disclosure is not aria-disabled when fingeringPattern is caged", () => {
+    const store = createStore();
+    act(() => {
+      store.set(fingeringPatternAtom, "caged");
+    });
+    render(
+      <Provider store={store}>
+        <TheoryControls />
+      </Provider>,
+    );
+    const chordsBtn = screen.getByRole("button", { name: /Chords/i });
+    expect(chordsBtn).not.toHaveAttribute("aria-disabled");
+  });
+
+  it("Chords panel shows (Disabled) badge on one-string", () => {
+    const store = createStore();
+    act(() => {
+      store.set(fingeringPatternAtom, "one-string");
+    });
+    render(
+      <Provider store={store}>
+        <TheoryControls />
+      </Provider>,
+    );
+    expect(screen.getByText("(Disabled)")).toBeInTheDocument();
   });
 });
