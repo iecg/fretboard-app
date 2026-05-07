@@ -17,9 +17,17 @@ export interface IntervalConnectorPolyline {
    * position. Maps to --chord-connector-color-N for per-pair color.
    */
   paletteIndex: number;
+  /**
+   * Stroke-width in pixels, cycled per scale-degree position so overlapping
+   * borders are visually distinguishable (UAT-21).
+   */
+  strokeWidth: number;
   /** Stable key for React rendering. */
   key: string;
 }
+
+/** Stroke-width cycle (px) — keyed by lower-note scale-degree position mod length. */
+const STROKE_CYCLE = [1.5, 2, 2.5, 3] as const;
 
 /**
  * Compute the scale-degree position (0-based) of a note semitone within the
@@ -119,6 +127,9 @@ export function buildIntervalConnectorPolylines(
     // If note not in scale (scale degree = -1), use 0 as fallback.
     const effectiveDegree = scaleDegree >= 0 ? scaleDegree : 0;
     const paletteIndex = (effectiveDegree % 8) + 1;
+    // UAT-21: vary stroke-width per scale-degree position so overlapping borders
+    // are visually distinguishable when multiple interval classes share a note.
+    const strokeWidth = STROKE_CYCLE[effectiveDegree % STROKE_CYCLE.length]!;
 
     // Build the path using offsetOutlinePath — for a 2-vertex "polyline" this
     // produces a capsule, matching the chord-connector visual style exactly.
@@ -129,6 +140,7 @@ export function buildIntervalConnectorPolylines(
     results.push({
       paths,
       paletteIndex,
+      strokeWidth,
       key: `${pair.a}|${pair.b}`,
     });
   }

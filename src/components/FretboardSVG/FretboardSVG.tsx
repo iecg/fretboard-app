@@ -463,6 +463,7 @@ export const FretboardSVG = memo(function FretboardSVG({
             </AnimatePresence>
             {/* 2-Strings interval connectors — polyline style matching chord connectors.
                 Per-pair color driven by lower-note scale-degree via --chord-connector-color-N.
+                Stroke-width varies per scale-degree position (UAT-21) for visual distinctness.
                 Two render passes (fill + outline) mirror chord-connector convention. */}
             {intervalConnectorPolylines.length > 0 && (
               <g
@@ -477,6 +478,7 @@ export const FretboardSVG = memo(function FretboardSVG({
                     d={line.paths.fill}
                     data-layer="fill"
                     data-palette-index={line.paletteIndex}
+                    style={{ "--iv-stroke-width": `${line.strokeWidth}px` } as React.CSSProperties}
                   />
                 ))}
                 {/* Outline pass */}
@@ -486,6 +488,7 @@ export const FretboardSVG = memo(function FretboardSVG({
                     d={line.paths.outline}
                     data-layer="outline"
                     data-palette-index={line.paletteIndex}
+                    style={{ "--iv-stroke-width": `${line.strokeWidth}px` } as React.CSSProperties}
                   />
                 ))}
               </g>
