@@ -134,17 +134,17 @@ describe("getTwoStringsCoordinates", () => {
 
 describe("getTwoStringsIntervalPairs", () => {
   it("returns [] for out-of-range pairIndex (negative)", () => {
-    const result = getTwoStringsIntervalPairs(-1, BOARD, C_MAJOR_NOTES, 4);
+    const result = getTwoStringsIntervalPairs(-1, BOARD, C_MAJOR_NOTES, 4, STANDARD_TUNING);
     expect(result).toEqual([]);
   });
 
   it("returns [] for out-of-range pairIndex (>= board.length - 1)", () => {
-    const result = getTwoStringsIntervalPairs(BOARD.length, BOARD, C_MAJOR_NOTES, 4);
+    const result = getTwoStringsIntervalPairs(BOARD.length, BOARD, C_MAJOR_NOTES, 4, STANDARD_TUNING);
     expect(result).toEqual([]);
   });
 
   it("returns pairs with { a, b } shape in string-fret format (3rds, pairIndex=0)", () => {
-    const result = getTwoStringsIntervalPairs(0, BOARD, C_MAJOR_NOTES, 4);
+    const result = getTwoStringsIntervalPairs(0, BOARD, C_MAJOR_NOTES, 4, STANDARD_TUNING);
     expect(result.length).toBeGreaterThan(0);
     result.forEach((pair) => {
       expect(pair.a).toMatch(/^\d+-\d+$/);
@@ -154,7 +154,7 @@ describe("getTwoStringsIntervalPairs", () => {
 
   it("pair.a is always on pairIndex string and pair.b is on pairIndex+1 string", () => {
     const pairIndex = 1;
-    const result = getTwoStringsIntervalPairs(pairIndex, BOARD, C_MAJOR_NOTES, 4);
+    const result = getTwoStringsIntervalPairs(pairIndex, BOARD, C_MAJOR_NOTES, 4, STANDARD_TUNING);
     expect(result.length).toBeGreaterThan(0);
     result.forEach((pair) => {
       expect(coordString(pair.a)).toBe(pairIndex);
@@ -163,21 +163,87 @@ describe("getTwoStringsIntervalPairs", () => {
   });
 
   it("returns non-empty result for 5ths (7 semitones) on pairIndex=0", () => {
-    const result = getTwoStringsIntervalPairs(0, BOARD, C_MAJOR_NOTES, 7);
+    const result = getTwoStringsIntervalPairs(0, BOARD, C_MAJOR_NOTES, 7, STANDARD_TUNING);
     expect(result.length).toBeGreaterThan(0);
   });
 
   it("returns [] when scale has no matching interval pairs (empty scale set)", () => {
     const emptyScale = new Set<string>();
-    const result = getTwoStringsIntervalPairs(0, BOARD, emptyScale, 4);
+    const result = getTwoStringsIntervalPairs(0, BOARD, emptyScale, 4, STANDARD_TUNING);
     expect(result).toEqual([]);
   });
 
   it("all pair members are in the scale", () => {
-    const result = getTwoStringsIntervalPairs(0, BOARD, C_MAJOR_NOTES, 4);
+    const result = getTwoStringsIntervalPairs(0, BOARD, C_MAJOR_NOTES, 4, STANDARD_TUNING);
     result.forEach((pair) => {
       expect(C_MAJOR_NOTES.has(noteAt(pair.a))).toBe(true);
       expect(C_MAJOR_NOTES.has(noteAt(pair.b))).toBe(true);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Regression: directional predicate — 4ths and 5ths must be disjoint
+  // ---------------------------------------------------------------------------
+
+  it("4ths (5 st) and 5ths (7 st) produce disjoint pair sets on pairIndex=2 (G+D strings)", () => {
+    // pairIndex=2 → G3 (string 2) + D3 (string 3); wide range of scale-tone pairs.
+    const fourths = getTwoStringsIntervalPairs(2, BOARD, C_MAJOR_NOTES, 5, STANDARD_TUNING);
+    const fifths  = getTwoStringsIntervalPairs(2, BOARD, C_MAJOR_NOTES, 7, STANDARD_TUNING);
+
+    expect(fourths.length).toBeGreaterThan(0);
+    expect(fifths.length).toBeGreaterThan(0);
+
+    // The two sets must differ in count or content — they cannot be equal.
+    const fourthKeys = fourths.map((p) => `${p.a}|${p.b}`).sort();
+    const fifthKeys  = fifths.map((p)  => `${p.a}|${p.b}`).sort();
+    expect(fourthKeys).not.toEqual(fifthKeys);
+  });
+
+  it("4ths and 5ths have no pair in common on pairIndex=2", () => {
+    const fourths = getTwoStringsIntervalPairs(2, BOARD, C_MAJOR_NOTES, 5, STANDARD_TUNING);
+    const fifths  = getTwoStringsIntervalPairs(2, BOARD, C_MAJOR_NOTES, 7, STANDARD_TUNING);
+    const fourthKeys = new Set(fourths.map((p) => `${p.a}|${p.b}`));
+    const fifthKeys  = new Set(fifths.map((p)  => `${p.a}|${p.b}`));
+    for (const key of fifthKeys) {
+      expect(fourthKeys.has(key)).toBe(false);
+    }
+  });
+
+  it("3rds (4 st) and 6ths (9 st) produce disjoint pair sets on pairIndex=2", () => {
+    const thirds = getTwoStringsIntervalPairs(2, BOARD, C_MAJOR_NOTES, 4, STANDARD_TUNING);
+    const sixths = getTwoStringsIntervalPairs(2, BOARD, C_MAJOR_NOTES, 9, STANDARD_TUNING);
+
+    expect(thirds.length).toBeGreaterThan(0);
+    expect(sixths.length).toBeGreaterThan(0);
+
+    const thirdKeys = thirds.map((p) => `${p.a}|${p.b}`).sort();
+    const sixthKeys = sixths.map((p) => `${p.a}|${p.b}`).sort();
+    expect(thirdKeys).not.toEqual(sixthKeys);
+  });
+
+  it("3rds and 6ths have no pair in common on pairIndex=2", () => {
+    const thirds = getTwoStringsIntervalPairs(2, BOARD, C_MAJOR_NOTES, 4, STANDARD_TUNING);
+    const sixths = getTwoStringsIntervalPairs(2, BOARD, C_MAJOR_NOTES, 9, STANDARD_TUNING);
+    const thirdKeys = new Set(thirds.map((p) => `${p.a}|${p.b}`));
+    const sixthKeys = new Set(sixths.map((p) => `${p.a}|${p.b}`));
+    for (const key of sixthKeys) {
+      expect(thirdKeys.has(key)).toBe(false);
+    }
+  });
+
+  it("directional: each accepted pair satisfies pitch(a) - pitch(b) === target exactly", () => {
+    // Verify using 5ths: higher string (pairIndex=2, G3) minus lower string (pairIndex+1=3, D3)
+    // Each accepted pair should have pitch difference exactly 7.
+    const fifths = getTwoStringsIntervalPairs(2, BOARD, C_MAJOR_NOTES, 7, STANDARD_TUNING);
+    expect(fifths.length).toBeGreaterThan(0);
+    fifths.forEach((pair) => {
+      const fA = coordFret(pair.a);
+      const fB = coordFret(pair.b);
+      // G3 open = G at octave 3: index 7, pitch = 3*12+7 = 43.
+      // D3 open = D at octave 3: index 2, pitch = 3*12+2 = 38.
+      const pitchA = 43 + fA; // G3-string
+      const pitchB = 38 + fB; // D3-string
+      expect(pitchA - pitchB).toBe(7);
     });
   });
 });

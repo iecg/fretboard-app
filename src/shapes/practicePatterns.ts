@@ -8,7 +8,8 @@
  * No Jotai, no atoms, no side effects — these are plain computation functions.
  */
 
-import { getFretboardNotes } from "../core/guitar";
+import { getFretboardNotes, parseNote } from "../core/guitar";
+import { NOTES } from "../core/theory";
 import { getScaleNotes } from "../core/theory";
 
 // ---------------------------------------------------------------------------
@@ -34,30 +35,21 @@ const TWO_STRINGS_INTERVAL_SEMITONES = [4, 5, 7, 9] as const;
 
 export { TWO_STRINGS_INTERVAL_SEMITONES };
 
-/** Chromatic note order used for semitone distance calculation. */
-const NOTE_ORDER = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-
 // ---------------------------------------------------------------------------
 // Private helpers
 // ---------------------------------------------------------------------------
 
-/** Maps a note name (e.g. "C#") to its 0-11 chromatic index. */
-function noteIndex(note: string): number {
-  return NOTE_ORDER.indexOf(note);
-}
-
 /**
- * Returns true if the two notes are separated by exactly targetSemitones in
- * either direction around the chromatic circle.
- * e.g. targetSemitones=7 (5th) matches both up-a-5th and down-a-5th.
+ * Returns the absolute semitone position of a note on a given string and fret.
+ * Uses the tuning string (e.g. "E4") to compute octave-aware pitch.
+ * Higher value = higher pitch.
  */
-function matchesSemitones(noteA: string, noteB: string, targetSemitones: number): boolean {
-  const iA = noteIndex(noteA);
-  const iB = noteIndex(noteB);
-  if (iA === -1 || iB === -1) return false;
-  const up = (iA - iB + 12) % 12;
-  const down = (iB - iA + 12) % 12;
-  return up === targetSemitones || down === targetSemitones;
+function absolutePitch(openStringNote: string, fret: number): number {
+  const parsed = parseNote(openStringNote);
+  if (!parsed) return -1;
+  const noteIdx = NOTES.indexOf(parsed.noteName);
+  if (noteIdx === -1) return -1;
+  return parsed.octave * 12 + noteIdx + fret;
 }
 
 /**
@@ -127,13 +119,23 @@ export function getTwoStringsCoordinates(
 }
 
 /**
- * Returns interval pairs on a single adjacent string pair where the two notes
- * are separated by targetSemitones (bidirectional chromatic distance).
+ * Returns interval pairs on a single adjacent string pair where the interval from
+ * the lower-pitched string to the higher-pitched string equals targetSemitones exactly.
+ *
+ * The interval is **directional**: 4ths (5 st) and 5ths (7 st) produce disjoint pair sets.
+ * Comparison uses absolute octave-aware pitch, not modular note-class arithmetic.
+ *
+ * Tuning is ordered high-string-first (index 0 = highest pitch). Therefore:
+ *   - string pairIndex     → higher-pitched string (rowA)
+ *   - string pairIndex + 1 → lower-pitched string  (rowB)
+ *   - accepted when: absolutePitch(rowA, fretA) - absolutePitch(rowB, fretB) === targetSemitones
  *
  * @param pairIndex       0 = strings 0+1, …, 4 = strings 4+5. Out-of-range → [].
  * @param board           Full fretboard note matrix from getFretboardNotes().
  * @param scaleNoteSet    Set of note names in the active scale.
- * @param targetSemitones Chromatic interval to match (e.g. 4 for 3rds, 7 for 5ths).
+ * @param targetSemitones Chromatic interval to match (e.g. 5 for 4ths, 7 for 5ths).
+ * @param tuning          Open-string notes with octave (e.g. ["E4","B3","G3","D3","A2","E2"]).
+ *                        Must align with board row indices.
  * @returns               Array of { a, b } pairs where a is on pairIndex and b is on pairIndex+1.
  *                        Each pair member is a "string-fret" coordinate string.
  */
@@ -142,19 +144,27 @@ export function getTwoStringsIntervalPairs(
   board: string[][],
   scaleNoteSet: Set<string>,
   targetSemitones: number,
+  tuning: string[],
 ): Array<{ a: string; b: string }> {
   if (pairIndex < 0 || pairIndex >= board.length - 1) return [];
   const rowA = board[pairIndex];
   const rowB = board[pairIndex + 1];
   if (!rowA || !rowB) return [];
+  // pairIndex is the higher-pitched string; pairIndex+1 is lower-pitched.
+  const openA = tuning[pairIndex];
+  const openB = tuning[pairIndex + 1];
+  if (!openA || !openB) return [];
   const pairs: Array<{ a: string; b: string }> = [];
   for (let fretA = 0; fretA < rowA.length; fretA++) {
     const noteA = rowA[fretA];
     if (!noteA || !scaleNoteSet.has(noteA)) continue;
+    const pitchA = absolutePitch(openA, fretA);
     for (let fretB = 0; fretB < rowB.length; fretB++) {
       const noteB = rowB[fretB];
       if (!noteB || !scaleNoteSet.has(noteB)) continue;
-      if (matchesSemitones(noteA, noteB, targetSemitones)) {
+      const pitchB = absolutePitch(openB, fretB);
+      // Accept only when the higher-pitched string is exactly targetSemitones above the lower.
+      if (pitchA - pitchB === targetSemitones) {
         pairs.push({ a: `${pairIndex}-${fretA}`, b: `${pairIndex + 1}-${fretB}` });
       }
     }

@@ -95,7 +95,7 @@ export const shapeDataAtom = atom((get) => {
       const board = getFretboardNotes(currentTuning, 24);
       const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
       const target = TWO_STRINGS_INTERVAL_SEMITONES[twoStringsInterval - 1] ?? 4;
-      intervalPairs = getTwoStringsIntervalPairs(twoStringsPair, board, scaleNoteSet, target);
+      intervalPairs = getTwoStringsIntervalPairs(twoStringsPair, board, scaleNoteSet, target, currentTuning);
       // When an interval filter is active, restrict coords to only the pair members
       const pairSet = new Set<string>();
       for (const p of intervalPairs) { pairSet.add(p.a); pairSet.add(p.b); }
