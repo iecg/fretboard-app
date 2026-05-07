@@ -16,11 +16,7 @@ export type FingeringPattern =
   | "caged"
   | "3nps"
   | "one-string"
-  | "two-strings"
-  | "double-stops"
-  | "box-2x4"
-  | "box-3x3"
-  | "stack";
+  | "two-strings";
 
 const cagedShapesStorage = createStorage<Set<CagedShape>>({
   serialize: (s) => JSON.stringify(Array.from(s)),
@@ -31,7 +27,10 @@ const npsPositionStorage = constrainedNumberStorage({ min: 1, max: 7, integer: t
 const npsOctaveStorage = constrainedNumberStorage({ min: 0, max: 1, integer: true });
 
 const fingeringPatternStorage = createStorage<FingeringPattern>({
-  onRead: (v) => (v === ("all" as FingeringPattern) ? "none" : v),
+  onRead: (v) => {
+    const LEGACY = new Set(["all", "double-stops", "box-2x4", "box-3x3", "stack"]);
+    return LEGACY.has(v as string) ? "none" : v;
+  },
 });
 
 export const fingeringPatternAtom = atomWithStorage<FingeringPattern>(
@@ -99,48 +98,3 @@ export const twoStringsPairAtom = atomWithStorage(
   GET_ON_INIT,
 );
 
-// double-stops sub-controls
-export const doubleStopsIntervalAtom = atomWithStorage(
-  k("doubleStops.interval"),
-  0,
-  constrainedNumberStorage({ min: 0, max: 3, integer: true }),
-  GET_ON_INIT,
-);
-
-// box-2x4 sub-controls
-export const box2x4StartFretAtom = atomWithStorage(
-  k("box2x4.startFret"),
-  0,
-  constrainedNumberStorage({ min: 0, max: 20, integer: true }),
-  GET_ON_INIT,
-);
-
-export const box2x4PairAtom = atomWithStorage(
-  k("box2x4.pair"),
-  0,
-  constrainedNumberStorage({ min: 0, max: 4, integer: true }),
-  GET_ON_INIT,
-);
-
-// box-3x3 sub-controls
-export const box3x3StartFretAtom = atomWithStorage(
-  k("box3x3.startFret"),
-  0,
-  constrainedNumberStorage({ min: 0, max: 20, integer: true }),
-  GET_ON_INIT,
-);
-
-export const box3x3TrioAtom = atomWithStorage(
-  k("box3x3.trio"),
-  0,
-  constrainedNumberStorage({ min: 0, max: 3, integer: true }),
-  GET_ON_INIT,
-);
-
-// stack sub-controls
-export const stackStartFretAtom = atomWithStorage(
-  k("stack.startFret"),
-  0,
-  constrainedNumberStorage({ min: 0, max: 20, integer: true }),
-  GET_ON_INIT,
-);

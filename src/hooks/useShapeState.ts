@@ -12,12 +12,6 @@ import {
   autoCenterTargetAtom,
   oneStringIndexAtom,
   twoStringsPairAtom,
-  doubleStopsIntervalAtom,
-  box2x4StartFretAtom,
-  box2x4PairAtom,
-  box3x3StartFretAtom,
-  box3x3TrioAtom,
-  stackStartFretAtom,
 } from "../store/atoms";
 import { type CagedShape } from "../shapes";
 
@@ -32,12 +26,6 @@ export function useShapeState() {
   const [recenterKey, setRecenterKey] = useAtom(recenterKeyAtom);
   const [oneStringIndex, setOneStringIndex] = useAtom(oneStringIndexAtom);
   const [twoStringsPair, setTwoStringsPair] = useAtom(twoStringsPairAtom);
-  const [doubleStopsInterval, setDoubleStopsInterval] = useAtom(doubleStopsIntervalAtom);
-  const [box2x4StartFret, setBox2x4StartFret] = useAtom(box2x4StartFretAtom);
-  const [box2x4Pair, setBox2x4Pair] = useAtom(box2x4PairAtom);
-  const [box3x3StartFret, setBox3x3StartFret] = useAtom(box3x3StartFretAtom);
-  const [box3x3Trio, setBox3x3Trio] = useAtom(box3x3TrioAtom);
-  const [stackStartFret, setStackStartFret] = useAtom(stackStartFretAtom);
 
   const { highlightNotes, boxBounds, shapePolygons, wrappedNotes } =
     useAtomValue(shapeDataAtom);
@@ -76,17 +64,5 @@ export function useShapeState() {
     setOneStringIndex,
     twoStringsPair,
     setTwoStringsPair,
-    doubleStopsInterval,
-    setDoubleStopsInterval,
-    box2x4StartFret,
-    setBox2x4StartFret,
-    box2x4Pair,
-    setBox2x4Pair,
-    box3x3StartFret,
-    setBox3x3StartFret,
-    box3x3Trio,
-    setBox3x3Trio,
-    stackStartFret,
-    setStackStartFret,
   };
 }

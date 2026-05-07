@@ -13,12 +13,6 @@ export {
   recenterKeyAtom,
   oneStringIndexAtom,
   twoStringsPairAtom,
-  doubleStopsIntervalAtom,
-  box2x4StartFretAtom,
-  box2x4PairAtom,
-  box3x3StartFretAtom,
-  box3x3TrioAtom,
-  stackStartFretAtom,
 } from "./fingeringAtoms";
 
 export {

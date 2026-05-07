@@ -12,10 +12,6 @@ import { getScaleNotes } from "../core/theory";
 import {
   getOneStringCoordinates,
   getTwoStringsCoordinates,
-  getDoubleStopsCoordinates,
-  getBox2x4Coordinates,
-  getBox3x3Coordinates,
-  getStackCoordinates,
 } from "../shapes/practicePatterns";
 import {
   fingeringPatternAtom,
@@ -25,12 +21,6 @@ import {
   clickedShapeAtom,
   oneStringIndexAtom,
   twoStringsPairAtom,
-  doubleStopsIntervalAtom,
-  box2x4StartFretAtom,
-  box2x4PairAtom,
-  box3x3StartFretAtom,
-  box3x3TrioAtom,
-  stackStartFretAtom,
 } from "./fingeringAtoms";
 import {
   rootNoteAtom,
@@ -53,12 +43,6 @@ export const shapeDataAtom = atom((get) => {
   const npsOctave = get(npsOctaveAtom);
   const oneStringIndex = get(oneStringIndexAtom);
   const twoStringsPair = get(twoStringsPairAtom);
-  const doubleStopsInterval = get(doubleStopsIntervalAtom);
-  const box2x4StartFret = get(box2x4StartFretAtom);
-  const box2x4Pair = get(box2x4PairAtom);
-  const box3x3StartFret = get(box3x3StartFretAtom);
-  const box3x3Trio = get(box3x3TrioAtom);
-  const stackStartFret = get(stackStartFretAtom);
 
   let coords: string[] = [];
   let bounds: { minFret: number; maxFret: number }[] = [];
@@ -102,14 +86,6 @@ export const shapeDataAtom = atom((get) => {
     coords = getOneStringCoordinates(rootNote, scaleName, currentTuning, 24, oneStringIndex);
   } else if (fingeringPattern === "two-strings") {
     coords = getTwoStringsCoordinates(rootNote, scaleName, currentTuning, 24, twoStringsPair);
-  } else if (fingeringPattern === "double-stops") {
-    coords = getDoubleStopsCoordinates(rootNote, scaleName, currentTuning, 24, doubleStopsInterval);
-  } else if (fingeringPattern === "box-2x4") {
-    coords = getBox2x4Coordinates(rootNote, scaleName, currentTuning, 24, box2x4StartFret, box2x4Pair);
-  } else if (fingeringPattern === "box-3x3") {
-    coords = getBox3x3Coordinates(rootNote, scaleName, currentTuning, 24, box3x3StartFret, box3x3Trio);
-  } else if (fingeringPattern === "stack") {
-    coords = getStackCoordinates(rootNote, scaleName, currentTuning, 24, stackStartFret);
   } else {
     coords = getScaleNotes(rootNote, scaleName);
   }
