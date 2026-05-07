@@ -8,6 +8,7 @@ import {
   cagedShapesAtom,
   displayFormatAtom,
   oneStringIndexAtom,
+  oneStringIntervalAtom,
   twoStringsPairAtom,
   twoStringsIntervalAtom,
 } from "../../store/atoms";
@@ -322,6 +323,73 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
       );
       const results = await axe(container);
       expect(results).toHaveNoViolations();
+    });
+
+    it("1-String pattern renders an Interval ToggleBar with 4 buttons (Off / 3rds / 4ths / 6ths)", () => {
+      const store = createStore();
+      act(() => { store.set(fingeringPatternAtom, "one-string"); });
+      render(
+        <Provider store={store}>
+          <FingeringPatternControls />
+        </Provider>
+      );
+      expect(screen.getByText("Interval")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Off" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "3rds" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "4ths" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "6ths" })).toBeInTheDocument();
+    });
+
+    it("clicking interval button in one-string sub-control updates oneStringIntervalAtom", () => {
+      const store = createStore();
+      act(() => { store.set(fingeringPatternAtom, "one-string"); });
+      render(
+        <Provider store={store}>
+          <FingeringPatternControls />
+        </Provider>
+      );
+      fireEvent.click(screen.getByRole("button", { name: "3rds" }));
+      expect(store.get(oneStringIntervalAtom)).toBe(1);
+    });
+
+    it("clicking 6ths in one-string interval sub-control sets oneStringIntervalAtom to 3", () => {
+      const store = createStore();
+      act(() => { store.set(fingeringPatternAtom, "one-string"); });
+      render(
+        <Provider store={store}>
+          <FingeringPatternControls />
+        </Provider>
+      );
+      fireEvent.click(screen.getByRole("button", { name: "6ths" }));
+      expect(store.get(oneStringIntervalAtom)).toBe(3);
+    });
+
+    it("shows 'Pair members connected' hint in one-string when interval is non-Off", () => {
+      const store = createStore();
+      act(() => {
+        store.set(fingeringPatternAtom, "one-string");
+        store.set(oneStringIntervalAtom, 1);
+      });
+      render(
+        <Provider store={store}>
+          <FingeringPatternControls />
+        </Provider>
+      );
+      expect(screen.getByText("Pair members connected")).toBeInTheDocument();
+    });
+
+    it("does not show 'Pair members connected' hint in one-string when interval is Off", () => {
+      const store = createStore();
+      act(() => {
+        store.set(fingeringPatternAtom, "one-string");
+        store.set(oneStringIntervalAtom, 0);
+      });
+      render(
+        <Provider store={store}>
+          <FingeringPatternControls />
+        </Provider>
+      );
+      expect(screen.queryByText("Pair members connected")).toBeNull();
     });
   });
 });

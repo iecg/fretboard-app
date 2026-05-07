@@ -3,6 +3,8 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { shapeDataAtom } from "./shapeAtoms";
 import {
   fingeringPatternAtom,
+  oneStringIndexAtom,
+  oneStringIntervalAtom,
   twoStringsPairAtom,
   twoStringsIntervalAtom,
 } from "./fingeringAtoms";
@@ -155,6 +157,83 @@ describe("shapeDataAtom — two-strings intervalPairs", () => {
     for (const pair of data.intervalPairs) {
       expect(highlightSet.has(pair.a)).toBe(true);
       expect(highlightSet.has(pair.b)).toBe(true);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// shapeDataAtom — one-string intervalPairs branch (UAT-18)
+// ---------------------------------------------------------------------------
+
+describe("shapeDataAtom — one-string intervalPairs", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("emits non-empty intervalPairs when one-string pattern is active and interval > 0", () => {
+    const store = makeAtomStore([
+      [fingeringPatternAtom, "one-string"],
+      [oneStringIndexAtom, 5], // low-E string
+      [oneStringIntervalAtom, 1], // 3rds
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+    ]);
+    const data = store.get(shapeDataAtom);
+    expect(data.intervalPairs.length).toBeGreaterThan(0);
+    for (const pair of data.intervalPairs) {
+      expect(pair.a).toMatch(/^\d+-\d+$/);
+      expect(pair.b).toMatch(/^\d+-\d+$/);
+    }
+  });
+
+  it("emits empty intervalPairs when one-string interval is 0 (Off)", () => {
+    const store = makeAtomStore([
+      [fingeringPatternAtom, "one-string"],
+      [oneStringIndexAtom, 5],
+      [oneStringIntervalAtom, 0], // Off
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+    ]);
+    const data = store.get(shapeDataAtom);
+    expect(data.intervalPairs).toHaveLength(0);
+  });
+
+  it("highlightNotes are the same regardless of interval setting (visibility independent)", () => {
+    const storeOff = makeAtomStore([
+      [fingeringPatternAtom, "one-string"],
+      [oneStringIndexAtom, 5],
+      [oneStringIntervalAtom, 0], // Off
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+    ]);
+    const storeOn = makeAtomStore([
+      [fingeringPatternAtom, "one-string"],
+      [oneStringIndexAtom, 5],
+      [oneStringIntervalAtom, 1], // 3rds
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+    ]);
+    const offData = storeOff.get(shapeDataAtom);
+    const onData = storeOn.get(shapeDataAtom);
+    expect(new Set(onData.highlightNotes)).toEqual(new Set(offData.highlightNotes));
+    expect(offData.intervalPairs).toHaveLength(0);
+    expect(onData.intervalPairs.length).toBeGreaterThan(0);
+  });
+
+  it("intervalPairs members are all on the correct string index", () => {
+    const stringIdx = 3;
+    const store = makeAtomStore([
+      [fingeringPatternAtom, "one-string"],
+      [oneStringIndexAtom, stringIdx],
+      [oneStringIntervalAtom, 2], // 4ths
+      [rootNoteAtom, "G"],
+      [scaleNameAtom, "Major"],
+    ]);
+    const data = store.get(shapeDataAtom);
+    expect(data.intervalPairs.length).toBeGreaterThan(0);
+    for (const pair of data.intervalPairs) {
+      expect(parseInt(pair.a.split("-")[0], 10)).toBe(stringIdx);
+      expect(parseInt(pair.b.split("-")[0], 10)).toBe(stringIdx);
     }
   });
 });

@@ -11,6 +11,7 @@ import {
   shapeDataAtom,
   autoCenterTargetAtom,
   oneStringIndexAtom,
+  oneStringIntervalAtom,
   twoStringsPairAtom,
   twoStringsIntervalAtom,
 } from "../store/atoms";
@@ -26,6 +27,7 @@ export function useShapeState() {
   const [clickedShape, setClickedShape] = useAtom(clickedShapeAtom);
   const [recenterKey, setRecenterKey] = useAtom(recenterKeyAtom);
   const [oneStringIndex, setOneStringIndex] = useAtom(oneStringIndexAtom);
+  const [oneStringInterval, setOneStringInterval] = useAtom(oneStringIntervalAtom);
   const [twoStringsPair, setTwoStringsPair] = useAtom(twoStringsPairAtom);
   const [twoStringsInterval, setTwoStringsInterval] = useAtom(twoStringsIntervalAtom);
 
@@ -64,6 +66,8 @@ export function useShapeState() {
     onRecenter,
     oneStringIndex,
     setOneStringIndex,
+    oneStringInterval,
+    setOneStringInterval,
     twoStringsPair,
     setTwoStringsPair,
     twoStringsInterval,

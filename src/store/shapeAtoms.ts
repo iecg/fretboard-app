@@ -14,6 +14,8 @@ import {
   getTwoStringsCoordinates,
   getTwoStringsIntervalPairs,
   TWO_STRINGS_INTERVAL_SD_DISTANCES,
+  getOneStringIntervalPairs,
+  ONE_STRING_INTERVAL_SD_DISTANCES,
 } from "../shapes/practicePatterns";
 import {
   fingeringPatternAtom,
@@ -22,6 +24,7 @@ import {
   npsOctaveAtom,
   clickedShapeAtom,
   oneStringIndexAtom,
+  oneStringIntervalAtom,
   twoStringsIntervalAtom,
   twoStringsActivePairTupleAtom,
 } from "./fingeringAtoms";
@@ -45,6 +48,7 @@ export const shapeDataAtom = atom((get) => {
   const npsPosition = get(npsPositionAtom);
   const npsOctave = get(npsOctaveAtom);
   const oneStringIndex = get(oneStringIndexAtom);
+  const oneStringInterval = get(oneStringIntervalAtom);
   const twoStringsInterval = get(twoStringsIntervalAtom);
   const activePairTuple = get(twoStringsActivePairTupleAtom);
 
@@ -88,7 +92,18 @@ export const shapeDataAtom = atom((get) => {
     coords = res.coordinates;
     bounds = res.bounds;
   } else if (fingeringPattern === "one-string") {
+    // Always emit full string coords (visibility independent of interval — UAT-10 model).
     coords = getOneStringCoordinates(rootNote, scaleName, currentTuning, 24, oneStringIndex);
+    if (oneStringInterval > 0) {
+      const board = getFretboardNotes(currentTuning, 24);
+      const scaleNoteNames = getScaleNotes(rootNote, scaleName);
+      const scaleNoteSet = new Set(scaleNoteNames);
+      const scaleNoteSemitones = scaleNoteNames
+        .map((n) => NOTES.indexOf(n))
+        .filter((i) => i !== -1);
+      const targetSdDist = ONE_STRING_INTERVAL_SD_DISTANCES[oneStringInterval - 1] ?? 2;
+      intervalPairs = getOneStringIntervalPairs(oneStringIndex, board, scaleNoteSet, scaleNoteSemitones, targetSdDist, currentTuning);
+    }
   } else if (fingeringPattern === "two-strings") {
     // Always emit the full pair note set regardless of interval setting (UAT-10).
     // Visibility is decoupled from interval — interval only affects connector lines.

@@ -45,6 +45,14 @@ const TWO_STRINGS_INTERVAL_SD_DISTANCES = [2, 3, 5] as const;
 
 export { TWO_STRINGS_INTERVAL_SD_DISTANCES };
 
+/**
+ * Same SD-distance targets as 2-Strings, reused for 1-String interval connectors.
+ * Index 0 = Off (unused), index 1..3 = 3rds/4ths/6ths.
+ */
+const ONE_STRING_INTERVAL_SD_DISTANCES = [2, 3, 5] as const;
+
+export { ONE_STRING_INTERVAL_SD_DISTANCES };
+
 // ---------------------------------------------------------------------------
 // Private helpers
 // ---------------------------------------------------------------------------
@@ -218,3 +226,71 @@ export function getTwoStringsIntervalPairs(
   return pairs;
 }
 
+/**
+ * Returns interval pairs on a single string where the scale-degree distance between
+ * the pair members equals `targetSdDistance`.
+ *
+ * Both pair members are on the same string (`stringIndex`). For each in-scale fret
+ * pair `(fLow, fHigh)` with `fLow < fHigh`, the non-wrapping ladder-step predicate
+ * (same as `getTwoStringsIntervalPairs`) is applied to their absolute pitches.
+ *
+ * The pair is directional: `a` = higher-fret (higher-pitched) member,
+ * `b` = lower-fret (lower-pitched) member.
+ *
+ * @param stringIndex       String index in [0, tuning.length - 1]. Out-of-range → [].
+ * @param board             Full fretboard note matrix from getFretboardNotes().
+ * @param scaleNoteSet      Set of note names in the active scale.
+ * @param scaleSemitones    Semitone offsets (0-11) of all scale tones relative to root.
+ * @param targetSdDistance  SD distance to match (e.g. 2 for 3rds, 3 for 4ths, 5 for 6ths).
+ * @param tuning            Open-string notes with octave (e.g. ["E4","B3","G3","D3","A2","E2"]).
+ * @returns                 Array of { a, b } pairs; both members are on `stringIndex`.
+ */
+export function getOneStringIntervalPairs(
+  stringIndex: number,
+  board: string[][],
+  scaleNoteSet: Set<string>,
+  scaleSemitones: ReadonlyArray<number>,
+  targetSdDistance: number,
+  tuning: string[],
+): Array<{ a: string; b: string }> {
+  if (stringIndex < 0 || stringIndex >= board.length) return [];
+  const row = board[stringIndex];
+  const openNote = tuning[stringIndex];
+  if (!row || !openNote) return [];
+
+  const scaleDegreesSorted = [...scaleSemitones].sort((a, b) => a - b);
+
+  /**
+   * Non-wrapping ladder-step count between two absolute pitches.
+   * Mirrors the private sdStepsBetween in getTwoStringsIntervalPairs.
+   */
+  function sdStepsBetween(loPitch: number, hiPitch: number, sds: number[]): number {
+    if (hiPitch <= loPitch) return -1;
+    let count = 0;
+    for (let p = loPitch + 1; p <= hiPitch; p++) {
+      const cls = ((p % 12) + 12) % 12;
+      if (sds.includes(cls)) count++;
+    }
+    return count;
+  }
+
+  const pairs: Array<{ a: string; b: string }> = [];
+
+  for (let fLow = 0; fLow < row.length; fLow++) {
+    const noteLow = row[fLow];
+    if (!noteLow || !scaleNoteSet.has(noteLow)) continue;
+    const pitchLow = absolutePitch(openNote, fLow);
+
+    for (let fHigh = fLow + 1; fHigh < row.length; fHigh++) {
+      const noteHigh = row[fHigh];
+      if (!noteHigh || !scaleNoteSet.has(noteHigh)) continue;
+      const pitchHigh = absolutePitch(openNote, fHigh);
+      const dist = sdStepsBetween(pitchLow, pitchHigh, scaleDegreesSorted);
+      if (dist === targetSdDistance) {
+        // a = higher-fret (higher-pitched), b = lower-fret (lower-pitched)
+        pairs.push({ a: `${stringIndex}-${fHigh}`, b: `${stringIndex}-${fLow}` });
+      }
+    }
+  }
+  return pairs;
+}

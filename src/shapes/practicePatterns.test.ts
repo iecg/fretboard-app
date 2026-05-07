@@ -3,6 +3,7 @@ import {
   getOneStringCoordinates,
   getTwoStringsCoordinates,
   getTwoStringsIntervalPairs,
+  getOneStringIntervalPairs,
 } from "./practicePatterns";
 import { getFretboardNotes } from "../core/guitar";
 import { getScaleNotes, SCALES, normalizeScaleName } from "../core/theory";
@@ -317,5 +318,98 @@ describe("getTwoStringsIntervalPairs", () => {
     }
     // And target=5 results must be non-empty (6ths exist on this string pair).
     expect(pairs5.length).toBeGreaterThan(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getOneStringIntervalPairs (UAT-18)
+// ---------------------------------------------------------------------------
+
+describe("getOneStringIntervalPairs", () => {
+  // String 5 = low-E (E2 in standard tuning, absolutePitch base = 2*12+4 = 28)
+  const STRING_IDX = 5;
+
+  it("returns [] for out-of-range stringIndex", () => {
+    expect(getOneStringIntervalPairs(6, BOARD, C_MAJOR_NOTES, C_MAJOR_SEMITONES, 2, STANDARD_TUNING)).toEqual([]);
+    expect(getOneStringIntervalPairs(-1, BOARD, C_MAJOR_NOTES, C_MAJOR_SEMITONES, 2, STANDARD_TUNING)).toEqual([]);
+  });
+
+  it("returns pairs with { a, b } shape in string-fret format for 3rds on string 5", () => {
+    const result = getOneStringIntervalPairs(STRING_IDX, BOARD, C_MAJOR_NOTES, C_MAJOR_SEMITONES, 2, STANDARD_TUNING);
+    expect(result.length).toBeGreaterThan(0);
+    result.forEach((pair) => {
+      expect(pair.a).toMatch(/^\d+-\d+$/);
+      expect(pair.b).toMatch(/^\d+-\d+$/);
+    });
+  });
+
+  it("both pair members are on the correct string index", () => {
+    const result = getOneStringIntervalPairs(STRING_IDX, BOARD, C_MAJOR_NOTES, C_MAJOR_SEMITONES, 2, STANDARD_TUNING);
+    expect(result.length).toBeGreaterThan(0);
+    result.forEach((pair) => {
+      expect(coordString(pair.a)).toBe(STRING_IDX);
+      expect(coordString(pair.b)).toBe(STRING_IDX);
+    });
+  });
+
+  it("pair.a fret is always > pair.b fret (a = higher-fret / higher-pitched member)", () => {
+    const result = getOneStringIntervalPairs(STRING_IDX, BOARD, C_MAJOR_NOTES, C_MAJOR_SEMITONES, 2, STANDARD_TUNING);
+    expect(result.length).toBeGreaterThan(0);
+    result.forEach((pair) => {
+      expect(coordFret(pair.a)).toBeGreaterThan(coordFret(pair.b));
+    });
+  });
+
+  it("all pair members are scale notes", () => {
+    const result = getOneStringIntervalPairs(STRING_IDX, BOARD, C_MAJOR_NOTES, C_MAJOR_SEMITONES, 2, STANDARD_TUNING);
+    result.forEach((pair) => {
+      expect(C_MAJOR_NOTES.has(noteAt(pair.a))).toBe(true);
+      expect(C_MAJOR_NOTES.has(noteAt(pair.b))).toBe(true);
+    });
+  });
+
+  it("3rds (SD=2) on string 5 returns non-empty results for C major", () => {
+    const result = getOneStringIntervalPairs(STRING_IDX, BOARD, C_MAJOR_NOTES, C_MAJOR_SEMITONES, 2, STANDARD_TUNING);
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it("4ths (SD=3) on string 5 returns non-empty results for C major", () => {
+    const result = getOneStringIntervalPairs(STRING_IDX, BOARD, C_MAJOR_NOTES, C_MAJOR_SEMITONES, 3, STANDARD_TUNING);
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it("6ths (SD=5) on string 5 returns non-empty results for C major", () => {
+    const result = getOneStringIntervalPairs(STRING_IDX, BOARD, C_MAJOR_NOTES, C_MAJOR_SEMITONES, 5, STANDARD_TUNING);
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it("3rds, 4ths, 6ths produce disjoint pair sets (different SD distances)", () => {
+    const thirds = getOneStringIntervalPairs(STRING_IDX, BOARD, C_MAJOR_NOTES, C_MAJOR_SEMITONES, 2, STANDARD_TUNING);
+    const fourths = getOneStringIntervalPairs(STRING_IDX, BOARD, C_MAJOR_NOTES, C_MAJOR_SEMITONES, 3, STANDARD_TUNING);
+    const sixths = getOneStringIntervalPairs(STRING_IDX, BOARD, C_MAJOR_NOTES, C_MAJOR_SEMITONES, 5, STANDARD_TUNING);
+    const thirdKeys = new Set(thirds.map((p) => `${p.a}|${p.b}`));
+    const fourthKeys = new Set(fourths.map((p) => `${p.a}|${p.b}`));
+    const sixthKeys = new Set(sixths.map((p) => `${p.a}|${p.b}`));
+    for (const k of fourthKeys) expect(thirdKeys.has(k)).toBe(false);
+    for (const k of sixthKeys) expect(thirdKeys.has(k)).toBe(false);
+    for (const k of sixthKeys) expect(fourthKeys.has(k)).toBe(false);
+  });
+
+  it("non-wrapping: C-E spanning a 10th on string 5 is NOT matched as a 3rd (SD=2)", () => {
+    // String 5 = E2 (absolutePitch base = 28).
+    // E2 fret 0 → pitch 28; C fret 8 → pitch 36 (C3); E fret 12 → pitch 40 (E3); E fret 24 → pitch 52 (E4)
+    // C at fret 8, E at fret 20 → pitches 36 and 48 → 12 semitones apart = octave, sdSteps = 7 (all scale degrees) → NOT a 3rd.
+    // We verify by checking that no pair spans more than a single octave (12 semitones) for SD=2.
+    const result = getOneStringIntervalPairs(STRING_IDX, BOARD, C_MAJOR_NOTES, C_MAJOR_SEMITONES, 2, STANDARD_TUNING);
+    // E2 open = pitch 28. Fret 12 = pitch 40 (E3). Fret 0+12 = 12 semitones = 1 octave.
+    // Any pair whose members are more than 6 semitones apart cannot be a diatonic 3rd (max M3 = 4 st).
+    // Use absolute pitch difference as a proxy: a genuine diatonic 3rd is at most 4 semitones apart.
+    result.forEach((pair) => {
+      const fA = coordFret(pair.a);
+      const fB = coordFret(pair.b);
+      const pitchDiff = fA - fB; // on same string, fret diff = semitone diff
+      // A diatonic 3rd spans at most 4 semitones (M3); pitchDiff must be <= 4
+      expect(pitchDiff).toBeLessThanOrEqual(4);
+    });
   });
 });

@@ -90,6 +90,14 @@ export const oneStringIndexAtom = atomWithStorage(
   GET_ON_INIT,
 );
 
+// one-string interval sub-control (0 = Off, 1 = 3rds, 2 = 4ths, 3 = 6ths)
+export const oneStringIntervalAtom = atomWithStorage<number>(
+  k("oneString.interval"),
+  0,
+  constrainedNumberStorage({ min: 0, max: 3, integer: true }),
+  GET_ON_INIT,
+);
+
 // two-strings sub-controls
 export const twoStringsPairAtom = atomWithStorage(
   k("twoStrings.pair"),

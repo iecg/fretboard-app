@@ -32,6 +32,8 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
     onRecenter,
     oneStringIndex,
     setOneStringIndex,
+    oneStringInterval,
+    setOneStringInterval,
     twoStringsPair,
     setTwoStringsPair,
     twoStringsInterval,
@@ -222,6 +224,23 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
               compact={compact}
             />
           </div>
+          <div className={shared["control-section"]}>
+            <span className={shared["section-label"]}>Interval</span>
+            <ToggleBar
+              options={[
+                { value: 0, label: "Off" },
+                { value: 1, label: "3rds" },
+                { value: 2, label: "4ths" },
+                { value: 3, label: "6ths" },
+              ]}
+              value={oneStringInterval}
+              onChange={(v) => setOneStringInterval(v as number)}
+              compact={compact}
+            />
+          </div>
+          {oneStringInterval > 0 && (
+            <p className={shared["field-hint"]}>Pair members connected</p>
+          )}
         </>
       )}
 

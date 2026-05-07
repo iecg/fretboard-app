@@ -12,6 +12,7 @@ export {
   clickedShapeAtom,
   recenterKeyAtom,
   oneStringIndexAtom,
+  oneStringIntervalAtom,
   twoStringsPairAtom,
   twoStringsIntervalAtom,
   twoStringsActivePairTupleAtom,
