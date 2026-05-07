@@ -325,7 +325,7 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
       expect(results).toHaveNoViolations();
     });
 
-    it("1-String pattern renders an Interval ToggleBar with 4 buttons (Off / 3rds / 4ths / 6ths)", () => {
+    it("1-String pattern renders a Connectors ToggleBar with 2 buttons (Off / On)", () => {
       const store = createStore();
       act(() => { store.set(fingeringPatternAtom, "one-string"); });
       render(
@@ -333,14 +333,16 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
           <FingeringPatternControls />
         </Provider>
       );
-      expect(screen.getByText("Interval")).toBeInTheDocument();
+      expect(screen.getByText("Connectors")).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Off" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "3rds" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "4ths" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "6ths" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "On" })).toBeInTheDocument();
+      // Old per-class buttons must be gone
+      expect(screen.queryByRole("button", { name: "3rds" })).toBeNull();
+      expect(screen.queryByRole("button", { name: "4ths" })).toBeNull();
+      expect(screen.queryByRole("button", { name: "6ths" })).toBeNull();
     });
 
-    it("clicking interval button in one-string sub-control updates oneStringIntervalAtom", () => {
+    it("clicking On in one-string Connectors toggle updates oneStringIntervalAtom to 1", () => {
       const store = createStore();
       act(() => { store.set(fingeringPatternAtom, "one-string"); });
       render(
@@ -348,23 +350,11 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
           <FingeringPatternControls />
         </Provider>
       );
-      fireEvent.click(screen.getByRole("button", { name: "3rds" }));
+      fireEvent.click(screen.getByRole("button", { name: "On" }));
       expect(store.get(oneStringIntervalAtom)).toBe(1);
     });
 
-    it("clicking 6ths in one-string interval sub-control sets oneStringIntervalAtom to 3", () => {
-      const store = createStore();
-      act(() => { store.set(fingeringPatternAtom, "one-string"); });
-      render(
-        <Provider store={store}>
-          <FingeringPatternControls />
-        </Provider>
-      );
-      fireEvent.click(screen.getByRole("button", { name: "6ths" }));
-      expect(store.get(oneStringIntervalAtom)).toBe(3);
-    });
-
-    it("shows 'Pair members connected' hint in one-string when interval is non-Off", () => {
+    it("clicking Off in one-string Connectors toggle updates oneStringIntervalAtom to 0", () => {
       const store = createStore();
       act(() => {
         store.set(fingeringPatternAtom, "one-string");
@@ -375,10 +365,25 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
           <FingeringPatternControls />
         </Provider>
       );
-      expect(screen.getByText("Pair members connected")).toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: "Off" }));
+      expect(store.get(oneStringIntervalAtom)).toBe(0);
     });
 
-    it("does not show 'Pair members connected' hint in one-string when interval is Off", () => {
+    it("shows connector hint in one-string when interval is On", () => {
+      const store = createStore();
+      act(() => {
+        store.set(fingeringPatternAtom, "one-string");
+        store.set(oneStringIntervalAtom, 1);
+      });
+      render(
+        <Provider store={store}>
+          <FingeringPatternControls />
+        </Provider>
+      );
+      expect(screen.getByText("Shows 3rds, 4ths & 6ths simultaneously")).toBeInTheDocument();
+    });
+
+    it("does not show connector hint in one-string when interval is Off", () => {
       const store = createStore();
       act(() => {
         store.set(fingeringPatternAtom, "one-string");
@@ -389,7 +394,7 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
           <FingeringPatternControls />
         </Provider>
       );
-      expect(screen.queryByText("Pair members connected")).toBeNull();
+      expect(screen.queryByText("Shows 3rds, 4ths & 6ths simultaneously")).toBeNull();
     });
   });
 });

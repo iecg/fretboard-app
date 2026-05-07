@@ -90,11 +90,12 @@ export const oneStringIndexAtom = atomWithStorage(
   GET_ON_INIT,
 );
 
-// one-string interval sub-control (0 = Off, 1 = 3rds, 2 = 4ths, 3 = 6ths)
+// one-string interval sub-control (0 = Off, 1 = On — shows all 3rds + 4ths + 6ths simultaneously)
+// Persisted values 2 or 3 from R06 clamp to 1 (On) automatically via constrainedNumberStorage.
 export const oneStringIntervalAtom = atomWithStorage<number>(
   k("oneString.interval"),
   0,
-  constrainedNumberStorage({ min: 0, max: 3, integer: true }),
+  constrainedNumberStorage({ min: 0, max: 1, integer: true }),
   GET_ON_INIT,
 );
 

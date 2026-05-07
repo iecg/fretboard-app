@@ -170,11 +170,11 @@ describe("shapeDataAtom — one-string intervalPairs", () => {
     localStorage.clear();
   });
 
-  it("emits non-empty intervalPairs when one-string pattern is active and interval > 0", () => {
+  it("emits non-empty intervalPairs when one-string pattern is active and interval > 0 (On mode)", () => {
     const store = makeAtomStore([
       [fingeringPatternAtom, "one-string"],
       [oneStringIndexAtom, 5], // low-E string
-      [oneStringIntervalAtom, 1], // 3rds
+      [oneStringIntervalAtom, 1], // On
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
     ]);
@@ -183,6 +183,35 @@ describe("shapeDataAtom — one-string intervalPairs", () => {
     for (const pair of data.intervalPairs) {
       expect(pair.a).toMatch(/^\d+-\d+$/);
       expect(pair.b).toMatch(/^\d+-\d+$/);
+    }
+  });
+
+  it("On mode dispatches all three SD targets (3rds + 4ths + 6ths) simultaneously", () => {
+    // Off mode: no pairs
+    const storeOff = makeAtomStore([
+      [fingeringPatternAtom, "one-string"],
+      [oneStringIndexAtom, 5],
+      [oneStringIntervalAtom, 0],
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+    ]);
+    // On mode: union of all three interval classes
+    const storeOn = makeAtomStore([
+      [fingeringPatternAtom, "one-string"],
+      [oneStringIndexAtom, 5],
+      [oneStringIntervalAtom, 1],
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+    ]);
+    const offPairs = storeOff.get(shapeDataAtom).intervalPairs;
+    const onPairs = storeOn.get(shapeDataAtom).intervalPairs;
+    expect(offPairs).toHaveLength(0);
+    // On mode should produce more pairs than any single interval class would
+    expect(onPairs.length).toBeGreaterThan(0);
+    // All pairs should be on the same string
+    for (const pair of onPairs) {
+      expect(parseInt(pair.a.split("-")[0], 10)).toBe(5);
+      expect(parseInt(pair.b.split("-")[0], 10)).toBe(5);
     }
   });
 
@@ -209,7 +238,7 @@ describe("shapeDataAtom — one-string intervalPairs", () => {
     const storeOn = makeAtomStore([
       [fingeringPatternAtom, "one-string"],
       [oneStringIndexAtom, 5],
-      [oneStringIntervalAtom, 1], // 3rds
+      [oneStringIntervalAtom, 1], // On
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
     ]);
@@ -225,7 +254,7 @@ describe("shapeDataAtom — one-string intervalPairs", () => {
     const store = makeAtomStore([
       [fingeringPatternAtom, "one-string"],
       [oneStringIndexAtom, stringIdx],
-      [oneStringIntervalAtom, 2], // 4ths
+      [oneStringIntervalAtom, 1], // On
       [rootNoteAtom, "G"],
       [scaleNameAtom, "Major"],
     ]);
