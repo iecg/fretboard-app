@@ -244,7 +244,6 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
                 { value: 1, label: "3rds" },
                 { value: 2, label: "4ths" },
                 { value: 3, label: "5ths" },
-                { value: 4, label: "6ths" },
               ]}
               value={twoStringsInterval}
               onChange={(v) => setTwoStringsInterval(v as number)}

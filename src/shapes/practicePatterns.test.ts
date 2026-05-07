@@ -209,28 +209,6 @@ describe("getTwoStringsIntervalPairs", () => {
     }
   });
 
-  it("3rds (4 st) and 6ths (9 st) produce disjoint pair sets on pairIndex=2", () => {
-    const thirds = getTwoStringsIntervalPairs(2, BOARD, C_MAJOR_NOTES, 4, STANDARD_TUNING);
-    const sixths = getTwoStringsIntervalPairs(2, BOARD, C_MAJOR_NOTES, 9, STANDARD_TUNING);
-
-    expect(thirds.length).toBeGreaterThan(0);
-    expect(sixths.length).toBeGreaterThan(0);
-
-    const thirdKeys = thirds.map((p) => `${p.a}|${p.b}`).sort();
-    const sixthKeys = sixths.map((p) => `${p.a}|${p.b}`).sort();
-    expect(thirdKeys).not.toEqual(sixthKeys);
-  });
-
-  it("3rds and 6ths have no pair in common on pairIndex=2", () => {
-    const thirds = getTwoStringsIntervalPairs(2, BOARD, C_MAJOR_NOTES, 4, STANDARD_TUNING);
-    const sixths = getTwoStringsIntervalPairs(2, BOARD, C_MAJOR_NOTES, 9, STANDARD_TUNING);
-    const thirdKeys = new Set(thirds.map((p) => `${p.a}|${p.b}`));
-    const sixthKeys = new Set(sixths.map((p) => `${p.a}|${p.b}`));
-    for (const key of sixthKeys) {
-      expect(thirdKeys.has(key)).toBe(false);
-    }
-  });
-
   it("directional: each accepted pair satisfies pitch(a) - pitch(b) === target exactly", () => {
     // Verify using 5ths: higher string (pairIndex=2, G3) minus lower string (pairIndex+1=3, D3)
     // Each accepted pair should have pitch difference exactly 7.

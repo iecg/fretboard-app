@@ -30,8 +30,8 @@ import { getScaleNotes } from "../core/theory";
 // Module-level constants
 // ---------------------------------------------------------------------------
 
-/** Semitone targets for the four 2-Strings interval types: 3rds (4 st), 4ths (5 st), 5ths (7 st), 6ths (9 st). */
-const TWO_STRINGS_INTERVAL_SEMITONES = [4, 5, 7, 9] as const;
+/** Semitone targets for the three 2-Strings interval types: 3rds (4 st), 4ths (5 st), 5ths (7 st). */
+const TWO_STRINGS_INTERVAL_SEMITONES = [4, 5, 7] as const;
 
 export { TWO_STRINGS_INTERVAL_SEMITONES };
 

@@ -98,11 +98,12 @@ export const twoStringsPairAtom = atomWithStorage(
   GET_ON_INIT,
 );
 
-// two-strings interval sub-control (0 = Off, 1-4 = 3rds/4ths/5ths/6ths)
+// two-strings interval sub-control (0 = Off, 1-3 = 3rds/4ths/5ths)
+// max was 4 (6ths) — UAT-13 drops 6ths; constrainedNumberStorage clamps persisted 4 → 3.
 export const twoStringsIntervalAtom = atomWithStorage(
   k("twoStrings.interval"),
   0,
-  constrainedNumberStorage({ min: 0, max: 4, integer: true }),
+  constrainedNumberStorage({ min: 0, max: 3, integer: true }),
   GET_ON_INIT,
 );
 

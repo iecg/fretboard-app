@@ -220,7 +220,7 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
       expect(screen.getByText("Interval")).toBeInTheDocument();
     });
 
-    it("interval sub-control has 5 options: Off, 3rds, 4ths, 5ths, 6ths", () => {
+    it("interval sub-control has 4 options: Off, 3rds, 4ths, 5ths (6ths dropped — UAT-13)", () => {
       const store = createStore();
       act(() => { store.set(fingeringPatternAtom, "two-strings"); });
       render(
@@ -233,7 +233,8 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
       expect(screen.getByRole("button", { name: "3rds" })).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "4ths" })).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "5ths" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "6ths" })).toBeInTheDocument();
+      // 6ths dropped — span is impractical
+      expect(screen.queryByRole("button", { name: "6ths" })).toBeNull();
     });
 
     it("does not show 'Pair members connected' hint when interval is Off (0)", () => {
