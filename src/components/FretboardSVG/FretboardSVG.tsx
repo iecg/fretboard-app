@@ -6,7 +6,11 @@ import {
   type PracticeLens,
   type NoteSemantics,
 } from "../../core/theory";
-import { scaleDegreeColorsEnabledAtom, activeVoicingKeyAtom } from "../../store/atoms";
+import {
+  scaleDegreeColorsEnabledAtom,
+  activeVoicingKeyAtom,
+  fingeringPatternAtom,
+} from "../../store/atoms";
 import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
 import styles from "./FretboardSVG.module.css";
 import { useFretboardGeometry } from "./hooks/useFretboardGeometry";
@@ -123,6 +127,7 @@ export const FretboardSVG = memo(function FretboardSVG({
   void effectiveZoom;
   const degreeColorsEnabled = useAtomValue(scaleDegreeColorsEnabledAtom);
   const activeVoicingKey = useAtomValue(activeVoicingKeyAtom);
+  const fingeringPattern = useAtomValue(fingeringPatternAtom);
   const internalId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const defsPrefix = `fretboard-${id ?? internalId}`;
   const svgDefId = useCallback((id: string) => `${defsPrefix}-${id}`, [defsPrefix]);
@@ -311,9 +316,16 @@ export const FretboardSVG = memo(function FretboardSVG({
     noteSemantics,
   });
 
+  // Per-string chord filter (UAT-3): when fingering pattern restricts to 1 or 2 strings,
+  // highlightNotes already contains only those string coords, so chord-tone role naturally
+  // applies only to in-pattern notes. Chord connectors are suppressed separately here
+  // because cross-string voicings do not make sense in a 1/2-string context.
   const connectorPolylines = useChordConnectorPolylines({
     noteData,
-    chordToneNames: chordTones,
+    chordToneNames:
+      fingeringPattern === "one-string" || fingeringPattern === "two-strings"
+        ? []
+        : chordTones,
     fretCenterX,
     stringYAt,
     stringRowPx,
