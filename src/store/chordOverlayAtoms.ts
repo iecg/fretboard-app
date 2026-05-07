@@ -36,11 +36,6 @@ import {
   rootNoteAtom,
   scaleNameAtom,
 } from "./scaleAtoms";
-import {
-  fingeringPatternAtom,
-  oneStringIndexAtom,
-  twoStringsPairAtom,
-} from "./fingeringAtoms";
 
 const chordFretSpreadStorage = constrainedNumberStorage({
   min: 0,
@@ -478,26 +473,3 @@ export const allChordMembersAtom = atom((get) => {
  * connector <path> elements. Null when no voicing is active.
  */
 export const activeVoicingKeyAtom = atom<string | null>(null);
-
-/**
- * Derives the set of string indices that should receive chord-tone role painting
- * based on the active fingering pattern:
- *
- * - "one-string"  → Set containing only oneStringIndexAtom
- * - "two-strings" → Set containing pairIndex and pairIndex+1
- * - all other patterns → null (no restriction; chord tones apply to all strings)
- *
- * This atom is the single source of truth for the chord-tone × string-set intersect
- * (UAT-5). Consumers (useNoteData) gate isChordTone by checking string membership here.
- */
-export const chordActiveStringSetAtom = atom((get): Set<number> | null => {
-  const pattern = get(fingeringPatternAtom);
-  if (pattern === "one-string") {
-    return new Set([get(oneStringIndexAtom)]);
-  }
-  if (pattern === "two-strings") {
-    const pair = get(twoStringsPairAtom);
-    return new Set([pair, pair + 1]);
-  }
-  return null;
-});

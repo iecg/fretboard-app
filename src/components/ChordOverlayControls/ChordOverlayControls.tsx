@@ -2,7 +2,7 @@ import { startTransition, useEffect } from "react";
 import { useAtomValue } from "jotai";
 import { NOTES, LENS_REGISTRY } from "../../core/theory";
 import { getDegreesForScale } from "../../core/degrees";
-import { lensAvailabilityAtom } from "../../store/atoms";
+import { lensAvailabilityAtom, fingeringPatternAtom } from "../../store/atoms";
 import { NoteGrid } from "../NoteGrid/NoteGrid";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { useChordState } from "../../hooks/useChordState";
@@ -74,6 +74,9 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
   } = useChordState();
 
   const lensAvailability = useAtomValue(lensAvailabilityAtom);
+  const fingeringPattern = useAtomValue(fingeringPatternAtom);
+  const isPatternDisabled =
+    fingeringPattern === "one-string" || fingeringPattern === "two-strings";
 
   const degreeSelectOptions = [
     { value: CHORD_NONE_VALUE, label: "Off" },
@@ -134,27 +137,37 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
   };
 
   return (
-    <div className={styles["theory-chord-content"]}>
+    <div
+      className={styles["theory-chord-content"]}
+      data-pattern-disabled={isPatternDisabled ? "true" : undefined}
+    >
+      {isPatternDisabled && (
+        <p className={shared["field-hint"]} aria-live="polite">
+          Chord overlay disabled for single/two-string patterns.
+        </p>
+      )}
       <div className={shared["control-section"]}>
         <span className={shared["section-label"]}>Chord Mode</span>
         <ToggleBar
           options={[
-            { value: "degree", label: "Degree" },
-            { value: "manual", label: "Manual" },
+            { value: "degree", label: "Degree", disabled: isPatternDisabled },
+            { value: "manual", label: "Manual", disabled: isPatternDisabled },
           ]}
           value={chordOverlayMode}
-          onChange={setChordOverlayMode}
+          onChange={isPatternDisabled ? () => undefined : setChordOverlayMode}
           label="Chord overlay mode"
           compact={compact}
         />
-        <p className={shared["field-hint"]}>
-          {chordOverlayMode === "degree"
-            ? "Picks a chord by scale degree — diatonic to the key."
-            : "Sets any chord type and root — independent of the key."}
-        </p>
+        {!isPatternDisabled && (
+          <p className={shared["field-hint"]}>
+            {chordOverlayMode === "degree"
+              ? "Picks a chord by scale degree — diatonic to the key."
+              : "Sets any chord type and root — independent of the key."}
+          </p>
+        )}
       </div>
 
-      {chordOverlayMode === "degree" && (
+      {!isPatternDisabled && chordOverlayMode === "degree" && (
         <>
           <div className={shared["control-section"]}>
             <span className={shared["section-label"]}>Degree</span>
@@ -188,7 +201,7 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
         </>
       )}
 
-      {chordOverlayMode === "manual" && (
+      {!isPatternDisabled && chordOverlayMode === "manual" && (
         <>
           <div className={shared["control-section"]}>
             <span className={shared["section-label"]}>Chord Type</span>
@@ -224,7 +237,7 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
         </>
       )}
 
-      {chordType ? (
+      {!isPatternDisabled && chordType ? (
         <div className={shared["control-section"]}>
           <span className={shared["section-label"]}>Lens</span>
           <ToggleBar

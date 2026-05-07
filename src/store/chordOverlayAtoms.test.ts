@@ -11,15 +11,9 @@ import {
   chordTypeAtom,
   chordQualityOverrideAtom,
   setChordDegreeAtom,
-  chordActiveStringSetAtom,
 } from "./chordOverlayAtoms";
 import { allChordMembersAtom } from "./composableSelectors";
 import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
-import {
-  fingeringPatternAtom,
-  oneStringIndexAtom,
-  twoStringsPairAtom,
-} from "./fingeringAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
 
 // Trigger onMount for an atom so atomWithStorage reads from localStorage.
@@ -523,84 +517,3 @@ describe("allChordMembersAtom — scaleInterval for out-of-scale notes", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// Group G — chordActiveStringSetAtom (UAT-5: chord-tone × pattern string-set)
-// ---------------------------------------------------------------------------
-
-describe("chordActiveStringSetAtom — active string set derivation", () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
-
-  it("returns null when fingeringPattern is 'none' (no restriction)", () => {
-    const store = makeAtomStore([
-      [fingeringPatternAtom, "none"],
-    ]);
-    expect(store.get(chordActiveStringSetAtom)).toBeNull();
-  });
-
-  it("returns null when fingeringPattern is 'caged' (no restriction)", () => {
-    const store = makeAtomStore([
-      [fingeringPatternAtom, "caged"],
-    ]);
-    expect(store.get(chordActiveStringSetAtom)).toBeNull();
-  });
-
-  it("returns null when fingeringPattern is '3nps' (no restriction)", () => {
-    const store = makeAtomStore([
-      [fingeringPatternAtom, "3nps"],
-    ]);
-    expect(store.get(chordActiveStringSetAtom)).toBeNull();
-  });
-
-  it("returns a Set with only the active string index when fingeringPattern is 'one-string'", () => {
-    const store = makeAtomStore([
-      [fingeringPatternAtom, "one-string"],
-      [oneStringIndexAtom, 2],
-    ]);
-    const result = store.get(chordActiveStringSetAtom);
-    expect(result).not.toBeNull();
-    expect(result!.size).toBe(1);
-    expect(result!.has(2)).toBe(true);
-    expect(result!.has(0)).toBe(false);
-    expect(result!.has(5)).toBe(false);
-  });
-
-  it("returns a Set with the pair and pair+1 string indices when fingeringPattern is 'two-strings'", () => {
-    const store = makeAtomStore([
-      [fingeringPatternAtom, "two-strings"],
-      [twoStringsPairAtom, 3],
-    ]);
-    const result = store.get(chordActiveStringSetAtom);
-    expect(result).not.toBeNull();
-    expect(result!.size).toBe(2);
-    expect(result!.has(3)).toBe(true);
-    expect(result!.has(4)).toBe(true);
-    expect(result!.has(2)).toBe(false);
-    expect(result!.has(5)).toBe(false);
-  });
-
-  it("reflects oneStringIndexAtom changes reactively", () => {
-    const store = makeAtomStore([
-      [fingeringPatternAtom, "one-string"],
-      [oneStringIndexAtom, 0],
-    ]);
-    expect(store.get(chordActiveStringSetAtom)!.has(0)).toBe(true);
-    store.set(oneStringIndexAtom, 5);
-    expect(store.get(chordActiveStringSetAtom)!.has(5)).toBe(true);
-    expect(store.get(chordActiveStringSetAtom)!.has(0)).toBe(false);
-  });
-
-  it("reflects twoStringsPairAtom changes reactively", () => {
-    const store = makeAtomStore([
-      [fingeringPatternAtom, "two-strings"],
-      [twoStringsPairAtom, 0],
-    ]);
-    expect(store.get(chordActiveStringSetAtom)!.has(0)).toBe(true);
-    expect(store.get(chordActiveStringSetAtom)!.has(1)).toBe(true);
-    store.set(twoStringsPairAtom, 4);
-    expect(store.get(chordActiveStringSetAtom)!.has(4)).toBe(true);
-    expect(store.get(chordActiveStringSetAtom)!.has(5)).toBe(true);
-    expect(store.get(chordActiveStringSetAtom)!.has(0)).toBe(false);
-  });
-});
