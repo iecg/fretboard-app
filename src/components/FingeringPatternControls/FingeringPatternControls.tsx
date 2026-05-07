@@ -34,6 +34,8 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
     setOneStringIndex,
     twoStringsPair,
     setTwoStringsPair,
+    twoStringsInterval,
+    setTwoStringsInterval,
   } = useShapeState();
 
   const [displayFormat, setDisplayFormat] = useAtom(displayFormatAtom);
@@ -235,6 +237,24 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
               compact={compact}
             />
           </div>
+          <div className={shared["control-section"]}>
+            <span className={shared["section-label"]}>Interval</span>
+            <ToggleBar
+              options={[
+                { value: 0, label: "Off" },
+                { value: 1, label: "3rds" },
+                { value: 2, label: "4ths" },
+                { value: 3, label: "5ths" },
+                { value: 4, label: "6ths" },
+              ]}
+              value={twoStringsInterval}
+              onChange={(v) => setTwoStringsInterval(v as number)}
+              compact={compact}
+            />
+          </div>
+          {twoStringsInterval > 0 && (
+            <p className={shared["field-hint"]}>Pair members connected</p>
+          )}
         </>
       )}
 

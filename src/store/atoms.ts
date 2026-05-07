@@ -13,6 +13,7 @@ export {
   recenterKeyAtom,
   oneStringIndexAtom,
   twoStringsPairAtom,
+  twoStringsIntervalAtom,
 } from "./fingeringAtoms";
 
 export {

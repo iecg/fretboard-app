@@ -12,6 +12,7 @@ import {
   autoCenterTargetAtom,
   oneStringIndexAtom,
   twoStringsPairAtom,
+  twoStringsIntervalAtom,
 } from "../store/atoms";
 import { type CagedShape } from "../shapes";
 
@@ -26,6 +27,7 @@ export function useShapeState() {
   const [recenterKey, setRecenterKey] = useAtom(recenterKeyAtom);
   const [oneStringIndex, setOneStringIndex] = useAtom(oneStringIndexAtom);
   const [twoStringsPair, setTwoStringsPair] = useAtom(twoStringsPairAtom);
+  const [twoStringsInterval, setTwoStringsInterval] = useAtom(twoStringsIntervalAtom);
 
   const { highlightNotes, boxBounds, shapePolygons, wrappedNotes } =
     useAtomValue(shapeDataAtom);
@@ -64,5 +66,7 @@ export function useShapeState() {
     setOneStringIndex,
     twoStringsPair,
     setTwoStringsPair,
+    twoStringsInterval,
+    setTwoStringsInterval,
   };
 }

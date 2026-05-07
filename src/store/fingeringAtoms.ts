@@ -98,3 +98,11 @@ export const twoStringsPairAtom = atomWithStorage(
   GET_ON_INIT,
 );
 
+// two-strings interval sub-control (0 = Off, 1-4 = 3rds/4ths/5ths/6ths)
+export const twoStringsIntervalAtom = atomWithStorage(
+  k("twoStrings.interval"),
+  0,
+  constrainedNumberStorage({ min: 0, max: 4, integer: true }),
+  GET_ON_INIT,
+);
+

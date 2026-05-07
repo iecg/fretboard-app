@@ -9,6 +9,7 @@ import {
   displayFormatAtom,
   oneStringIndexAtom,
   twoStringsPairAtom,
+  twoStringsIntervalAtom,
 } from "../../store/atoms";
 import { type CagedShape } from "../../shapes";
 import { axe } from "../../test-utils/a11y";
@@ -205,6 +206,74 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
       );
       fireEvent.click(screen.getByRole("button", { name: "3-4" }));
       expect(store.get(twoStringsPairAtom)).toBe(2);
+    });
+
+    it('shows both Strings and Interval sub-controls when fingeringPattern === "two-strings"', () => {
+      const store = createStore();
+      act(() => { store.set(fingeringPatternAtom, "two-strings"); });
+      render(
+        <Provider store={store}>
+          <FingeringPatternControls />
+        </Provider>
+      );
+      expect(screen.getByText("Strings")).toBeInTheDocument();
+      expect(screen.getByText("Interval")).toBeInTheDocument();
+    });
+
+    it("interval sub-control has 5 options: Off, 3rds, 4ths, 5ths, 6ths", () => {
+      const store = createStore();
+      act(() => { store.set(fingeringPatternAtom, "two-strings"); });
+      render(
+        <Provider store={store}>
+          <FingeringPatternControls />
+        </Provider>
+      );
+      // "Off" appears in the interval sub-control (also in "None" for pattern bar but that's ok)
+      expect(screen.getByRole("button", { name: "Off" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "3rds" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "4ths" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "5ths" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "6ths" })).toBeInTheDocument();
+    });
+
+    it("does not show 'Pair members connected' hint when interval is Off (0)", () => {
+      const store = createStore();
+      act(() => {
+        store.set(fingeringPatternAtom, "two-strings");
+        store.set(twoStringsIntervalAtom, 0);
+      });
+      render(
+        <Provider store={store}>
+          <FingeringPatternControls />
+        </Provider>
+      );
+      expect(screen.queryByText("Pair members connected")).toBeNull();
+    });
+
+    it("shows 'Pair members connected' hint when interval is non-Off", () => {
+      const store = createStore();
+      act(() => {
+        store.set(fingeringPatternAtom, "two-strings");
+        store.set(twoStringsIntervalAtom, 1);
+      });
+      render(
+        <Provider store={store}>
+          <FingeringPatternControls />
+        </Provider>
+      );
+      expect(screen.getByText("Pair members connected")).toBeInTheDocument();
+    });
+
+    it("clicking interval button updates twoStringsIntervalAtom", () => {
+      const store = createStore();
+      act(() => { store.set(fingeringPatternAtom, "two-strings"); });
+      render(
+        <Provider store={store}>
+          <FingeringPatternControls />
+        </Provider>
+      );
+      fireEvent.click(screen.getByRole("button", { name: "5ths" }));
+      expect(store.get(twoStringsIntervalAtom)).toBe(3);
     });
 
     it("has no axe violations with one-string pattern active", async () => {

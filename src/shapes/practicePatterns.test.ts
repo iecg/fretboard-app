@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   getOneStringCoordinates,
   getTwoStringsCoordinates,
+  getTwoStringsIntervalPairs,
 } from "./practicePatterns";
 import { getFretboardNotes } from "../core/guitar";
 import { getScaleNotes } from "../core/theory";
@@ -124,6 +125,60 @@ describe("getTwoStringsCoordinates", () => {
 
   it("returns [] for negative pairIndex (-1)", () => {
     expect(getTwoStringsCoordinates(ROOT, SCALE, STANDARD_TUNING, FRETS, -1)).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getTwoStringsIntervalPairs
+// ---------------------------------------------------------------------------
+
+describe("getTwoStringsIntervalPairs", () => {
+  it("returns [] for out-of-range pairIndex (negative)", () => {
+    const result = getTwoStringsIntervalPairs(-1, BOARD, C_MAJOR_NOTES, 4);
+    expect(result).toEqual([]);
+  });
+
+  it("returns [] for out-of-range pairIndex (>= board.length - 1)", () => {
+    const result = getTwoStringsIntervalPairs(BOARD.length, BOARD, C_MAJOR_NOTES, 4);
+    expect(result).toEqual([]);
+  });
+
+  it("returns pairs with { a, b } shape in string-fret format (3rds, pairIndex=0)", () => {
+    const result = getTwoStringsIntervalPairs(0, BOARD, C_MAJOR_NOTES, 4);
+    expect(result.length).toBeGreaterThan(0);
+    result.forEach((pair) => {
+      expect(pair.a).toMatch(/^\d+-\d+$/);
+      expect(pair.b).toMatch(/^\d+-\d+$/);
+    });
+  });
+
+  it("pair.a is always on pairIndex string and pair.b is on pairIndex+1 string", () => {
+    const pairIndex = 1;
+    const result = getTwoStringsIntervalPairs(pairIndex, BOARD, C_MAJOR_NOTES, 4);
+    expect(result.length).toBeGreaterThan(0);
+    result.forEach((pair) => {
+      expect(coordString(pair.a)).toBe(pairIndex);
+      expect(coordString(pair.b)).toBe(pairIndex + 1);
+    });
+  });
+
+  it("returns non-empty result for 5ths (7 semitones) on pairIndex=0", () => {
+    const result = getTwoStringsIntervalPairs(0, BOARD, C_MAJOR_NOTES, 7);
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it("returns [] when scale has no matching interval pairs (empty scale set)", () => {
+    const emptyScale = new Set<string>();
+    const result = getTwoStringsIntervalPairs(0, BOARD, emptyScale, 4);
+    expect(result).toEqual([]);
+  });
+
+  it("all pair members are in the scale", () => {
+    const result = getTwoStringsIntervalPairs(0, BOARD, C_MAJOR_NOTES, 4);
+    result.forEach((pair) => {
+      expect(C_MAJOR_NOTES.has(noteAt(pair.a))).toBe(true);
+      expect(C_MAJOR_NOTES.has(noteAt(pair.b))).toBe(true);
+    });
   });
 });
 
