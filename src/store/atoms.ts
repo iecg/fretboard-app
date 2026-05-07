@@ -14,6 +14,7 @@ export {
   oneStringIndexAtom,
   twoStringsPairAtom,
   twoStringsIntervalAtom,
+  twoStringsActivePairTupleAtom,
 } from "./fingeringAtoms";
 
 export {

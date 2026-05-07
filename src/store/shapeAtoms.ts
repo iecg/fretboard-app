@@ -8,12 +8,12 @@ import {
   type ShapePolygon,
 } from "../shapes";
 import { getFretNote, getFretboardNotes } from "../core/guitar";
-import { getScaleNotes } from "../core/theory";
+import { getScaleNotes, NOTES } from "../core/theory";
 import {
   getOneStringCoordinates,
   getTwoStringsCoordinates,
   getTwoStringsIntervalPairs,
-  TWO_STRINGS_INTERVAL_SEMITONES,
+  TWO_STRINGS_INTERVAL_SD_DISTANCES,
 } from "../shapes/practicePatterns";
 import {
   fingeringPatternAtom,
@@ -22,8 +22,8 @@ import {
   npsOctaveAtom,
   clickedShapeAtom,
   oneStringIndexAtom,
-  twoStringsPairAtom,
   twoStringsIntervalAtom,
+  twoStringsActivePairTupleAtom,
 } from "./fingeringAtoms";
 import {
   rootNoteAtom,
@@ -45,8 +45,8 @@ export const shapeDataAtom = atom((get) => {
   const npsPosition = get(npsPositionAtom);
   const npsOctave = get(npsOctaveAtom);
   const oneStringIndex = get(oneStringIndexAtom);
-  const twoStringsPair = get(twoStringsPairAtom);
   const twoStringsInterval = get(twoStringsIntervalAtom);
+  const activePairTuple = get(twoStringsActivePairTupleAtom);
 
   let coords: string[] = [];
   let bounds: { minFret: number; maxFret: number }[] = [];
@@ -92,12 +92,19 @@ export const shapeDataAtom = atom((get) => {
   } else if (fingeringPattern === "two-strings") {
     // Always emit the full pair note set regardless of interval setting (UAT-10).
     // Visibility is decoupled from interval — interval only affects connector lines.
-    coords = getTwoStringsCoordinates(rootNote, scaleName, currentTuning, 24, twoStringsPair);
+    // activePairTuple handles adjacent-vs-skip-one topology (Option X).
+    coords = getTwoStringsCoordinates(rootNote, scaleName, currentTuning, 24, activePairTuple);
     if (twoStringsInterval > 0) {
       const board = getFretboardNotes(currentTuning, 24);
-      const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
-      const target = TWO_STRINGS_INTERVAL_SEMITONES[twoStringsInterval - 1] ?? 4;
-      intervalPairs = getTwoStringsIntervalPairs(twoStringsPair, board, scaleNoteSet, target, currentTuning);
+      const scaleNoteNames = getScaleNotes(rootNote, scaleName);
+      const scaleNoteSet = new Set(scaleNoteNames);
+      // Build scale semitone offsets (0-11, chromatic position in NOTES array).
+      // These represent the scale's internal structure for SD-distance computation.
+      const scaleNoteSemitones = scaleNoteNames
+        .map((n) => NOTES.indexOf(n))
+        .filter((i) => i !== -1);
+      const targetSdDist = TWO_STRINGS_INTERVAL_SD_DISTANCES[twoStringsInterval - 1] ?? 2;
+      intervalPairs = getTwoStringsIntervalPairs(activePairTuple, board, scaleNoteSet, scaleNoteSemitones, targetSdDist, currentTuning);
     }
   } else {
     coords = getScaleNotes(rootNote, scaleName);

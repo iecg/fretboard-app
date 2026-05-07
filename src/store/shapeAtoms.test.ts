@@ -58,12 +58,12 @@ describe("shapeDataAtom — two-strings intervalPairs", () => {
     expect(data.intervalPairs).toHaveLength(0);
   });
 
-  it("pair members reference coordinates on the correct string pair", () => {
-    const pairIndex = 2; // strings 2 and 3
+  it("pair members reference coordinates on the correct string pair (4ths, adjacent)", () => {
+    const pairIndex = 2; // strings 2 and 3 (adjacent)
     const store = makeAtomStore([
       [fingeringPatternAtom, "two-strings"],
       [twoStringsPairAtom, pairIndex],
-      [twoStringsIntervalAtom, 3], // 3 = 5ths (7 semitones)
+      [twoStringsIntervalAtom, 2], // 2 = 4ths (SD distance 3, adjacent pairs)
       [rootNoteAtom, "G"],
       [scaleNameAtom, "Major"],
     ]);
@@ -72,9 +72,41 @@ describe("shapeDataAtom — two-strings intervalPairs", () => {
     for (const pair of data.intervalPairs) {
       const aStr = parseInt(pair.a.split("-")[0], 10);
       const bStr = parseInt(pair.b.split("-")[0], 10);
-      expect(aStr).toBe(pairIndex);
-      expect(bStr).toBe(pairIndex + 1);
+      expect(aStr).toBe(2);
+      expect(bStr).toBe(3);
     }
+  });
+
+  it("interval=6ths + pair=0: notes are on skip-one strings 0+2 (Option X)", () => {
+    const store = makeAtomStore([
+      [fingeringPatternAtom, "two-strings"],
+      [twoStringsPairAtom, 0],
+      [twoStringsIntervalAtom, 3], // 3 = 6ths (skip-one topology)
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+    ]);
+    const data = store.get(shapeDataAtom);
+    // With skip-one pair[0] = [0,2], highlightNotes should be on strings 0 and 2
+    const strings = new Set(data.highlightNotes.map((c) => parseInt(c.split("-")[0], 10)));
+    expect(strings.has(0)).toBe(true);
+    expect(strings.has(2)).toBe(true);
+    expect(strings.has(1)).toBe(false);
+  });
+
+  it("interval=6ths + pair=4: clamped to skip-one[3] = strings 3+5 (no throw)", () => {
+    const store = makeAtomStore([
+      [fingeringPatternAtom, "two-strings"],
+      [twoStringsPairAtom, 4], // out-of-range for skip-one, clamped to 3
+      [twoStringsIntervalAtom, 3], // 3 = 6ths
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+    ]);
+    // Must not throw; should produce notes on strings 3+5
+    expect(() => store.get(shapeDataAtom)).not.toThrow();
+    const data = store.get(shapeDataAtom);
+    const strings = new Set(data.highlightNotes.map((c) => parseInt(c.split("-")[0], 10)));
+    expect(strings.has(3)).toBe(true);
+    expect(strings.has(5)).toBe(true);
   });
 
   // ---------------------------------------------------------------------------
