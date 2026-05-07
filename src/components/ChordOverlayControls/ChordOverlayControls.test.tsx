@@ -474,26 +474,28 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
   });
 
   describe("14. auto-disable on 1/2-string fingering patterns (UAT-16)", () => {
-    it("Chord Mode buttons are disabled when fingeringPattern is one-string", () => {
+    it("Chord Mode buttons are disabled when fingeringPattern is one-string (label shows Disabled)", () => {
       renderWithAtoms(<ChordOverlayControls />, [
         ...DEGREE_MODE_SEEDS,
         [fingeringPatternAtom, "one-string"],
       ]);
       const modeGroup = screen.getByRole("group", { name: "Chord overlay mode" });
-      const degreeButton = within(modeGroup).getByRole("button", { name: "Degree" });
+      // When auto-disabled, the first button's label switches from "Degree" to "Disabled".
+      const disabledButton = within(modeGroup).getByRole("button", { name: "Disabled" });
       const manualButton = within(modeGroup).getByRole("button", { name: "Manual" });
-      expect(degreeButton).toBeDisabled();
+      expect(disabledButton).toBeDisabled();
       expect(manualButton).toBeDisabled();
     });
 
-    it("Chord Mode buttons are disabled when fingeringPattern is two-strings", () => {
+    it("Chord Mode buttons are disabled when fingeringPattern is two-strings (label shows Disabled)", () => {
       renderWithAtoms(<ChordOverlayControls />, [
         ...DEGREE_MODE_SEEDS,
         [fingeringPatternAtom, "two-strings"],
       ]);
       const modeGroup = screen.getByRole("group", { name: "Chord overlay mode" });
-      const degreeButton = within(modeGroup).getByRole("button", { name: "Degree" });
-      expect(degreeButton).toBeDisabled();
+      // When auto-disabled, the first button's label switches from "Degree" to "Disabled".
+      const disabledButton = within(modeGroup).getByRole("button", { name: "Disabled" });
+      expect(disabledButton).toBeDisabled();
     });
 
     it("Chord Mode buttons are enabled when fingeringPattern is caged", () => {
@@ -506,6 +508,26 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       const manualButton = within(modeGroup).getByRole("button", { name: "Manual" });
       expect(degreeButton).not.toBeDisabled();
       expect(manualButton).not.toBeDisabled();
+    });
+
+    it("UAT-23: first Chord Mode button shows 'Disabled' label on one-string pattern", () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        ...DEGREE_MODE_SEEDS,
+        [fingeringPatternAtom, "one-string"],
+      ]);
+      const modeGroup = screen.getByRole("group", { name: "Chord overlay mode" });
+      expect(within(modeGroup).getByRole("button", { name: "Disabled" })).toBeInTheDocument();
+      expect(within(modeGroup).queryByRole("button", { name: "Degree" })).not.toBeInTheDocument();
+    });
+
+    it("UAT-23: first Chord Mode button shows 'Degree' label on caged pattern", () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        ...DEGREE_MODE_SEEDS,
+        [fingeringPatternAtom, "caged"],
+      ]);
+      const modeGroup = screen.getByRole("group", { name: "Chord overlay mode" });
+      expect(within(modeGroup).getByRole("button", { name: "Degree" })).toBeInTheDocument();
+      expect(within(modeGroup).queryByRole("button", { name: "Disabled" })).not.toBeInTheDocument();
     });
 
     it("shows disabled hint when fingeringPattern is one-string", () => {

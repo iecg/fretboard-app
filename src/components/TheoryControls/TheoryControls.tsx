@@ -32,7 +32,7 @@ export interface TheorySectionProps {
   compact?: boolean;
   /**
    * When true, the disclosure arrow is grayed out and non-interactive, and the
-   * panel auto-collapses. A "(Disabled)" badge is shown next to the title.
+   * panel auto-collapses.
    */
   disabled?: boolean;
 }
@@ -86,11 +86,6 @@ export function TheorySection({
             className={styles["theory-disclosure-title"]}
           >
             {title}
-            {disabled && (
-              <span className={styles["theory-disclosure-disabled-badge"]}>
-                {" "}(Disabled)
-              </span>
-            )}
           </motion.span>
         </AnimatePresence>
         <AnimatePresence mode="wait">

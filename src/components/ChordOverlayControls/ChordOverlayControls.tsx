@@ -152,7 +152,7 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
         <span className={shared["section-label"]}>Chord Mode</span>
         <ToggleBar
           options={[
-            { value: "degree", label: "Degree", disabled: isPatternDisabled },
+            { value: "degree", label: isPatternDisabled ? "Disabled" : "Degree", disabled: isPatternDisabled },
             { value: "manual", label: "Manual", disabled: isPatternDisabled },
           ]}
           value={chordOverlayMode}

@@ -253,13 +253,6 @@
   opacity: 0.45;
 }
 
-.theory-disclosure-disabled-badge {
-  font-size: 0.65rem;
-  font-style: italic;
-  opacity: 0.75;
-  letter-spacing: 0.04em;
-}
-
 /* ===== Compact variant — tighter disclosure rows for space-constrained layouts ===== */
 .theory-section[data-compact="true"] {
   padding: 0.08rem 0;
