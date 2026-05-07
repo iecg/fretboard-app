@@ -120,22 +120,30 @@ body {
 
 * {
   box-sizing: border-box;
-  scrollbar-width: thin;
 }
 
-::-webkit-scrollbar {
-  width: auto;
+@supports (scrollbar-color: auto) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--surface-highlight) transparent;
+  }
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+@supports not (scrollbar-color: auto) {
+  ::-webkit-scrollbar {
+    width: auto;
+  }
 
-::-webkit-scrollbar-thumb {
-  background: var(--surface-highlight);
-  border-radius: 4px;
-}
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-primary);
+  ::-webkit-scrollbar-thumb {
+    background: var(--surface-highlight);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-primary);
+  }
 }
