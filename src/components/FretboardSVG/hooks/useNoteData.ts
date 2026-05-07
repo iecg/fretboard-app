@@ -63,6 +63,12 @@ export interface UseNoteDataProps {
   practiceLens?: PracticeLens;
   tuning: string[];
   noteSemantics?: Map<string, NoteSemantics>;
+  /**
+   * When set (by chordActiveStringSetAtom), chord-tone role painting is restricted
+   * to the string indices in this set. null = no restriction (applies to all strings).
+   * Derived from fingeringPatternAtom × oneStringIndexAtom / twoStringsPairAtom.
+   */
+  chordActiveStringSet?: Set<number> | null;
 }
 
 export function useNoteData({
@@ -92,6 +98,7 @@ export function useNoteData({
   practiceLens,
   tuning,
   noteSemantics,
+  chordActiveStringSet,
 }: UseNoteDataProps): NoteData[] {
   return useMemo(() => {
     const notes: NoteData[] = [];
@@ -140,7 +147,12 @@ export function useNoteData({
             highlightSet.has(`${stringIndex}-${fretIndex}`));
         
         const isChordTone =
-          !isNoteHidden && hasChordOverlay && chordToneSet.has(noteName);
+          !isNoteHidden &&
+          hasChordOverlay &&
+          chordToneSet.has(noteName) &&
+          // UAT-5: restrict chord-tone role to active string set when pattern
+          // limits to 1 or 2 strings. null = no restriction (all strings ok).
+          (chordActiveStringSet == null || chordActiveStringSet.has(stringIndex));
         
         const isScaleRoot =
           !isNoteHidden &&
@@ -232,11 +244,30 @@ export function useNoteData({
         // Keys are sharp-normalized (per project convention) so no enharmonic lookup needed.
         const semantics = noteSemantics?.get(noteName);
 
+        // UAT-5: When the active string set restricts chord tones to specific strings,
+        // suppress chord-tone semantics for notes on excluded strings so both
+        // classifyNoteFromSemantics and classifyNote treat them as non-chord-tones.
+        // isChordTone already encodes the string-set gate; we apply the same guard
+        // to the semantic map path so it also respects the active-string restriction.
+        const isChordStringAllowed =
+          chordActiveStringSet == null || chordActiveStringSet.has(stringIndex);
+        const effectiveSemantics: typeof semantics =
+          semantics && !isChordStringAllowed
+            ? {
+                ...semantics,
+                isChordTone: false,
+                isChordRoot: false,
+                isTension: false,
+                isGuideTone: false,
+                isDiatonicChord: false,
+              }
+            : semantics;
+
         const noteClass = isNoteHidden
           ? "note-inactive"
-          : semantics
+          : effectiveSemantics
             ? classifyNoteFromSemantics(
-                semantics,
+                effectiveSemantics,
                 isChordInRange,
                 isInActiveShape,
                 hasChordOverlay,
@@ -287,8 +318,8 @@ export function useNoteData({
         const lensEmphasis = getLensEmphasis(
           noteClass,
           hasChordOverlay ? practiceLens : undefined,
-          semantics?.isGuideTone ?? false,
-          semantics?.isTension ?? false,
+          effectiveSemantics?.isGuideTone ?? false,
+          effectiveSemantics?.isTension ?? false,
         );
 
         // Visual hiddenness: inactive notes are not rendered in the note layer.
@@ -326,8 +357,8 @@ export function useNoteData({
           applyDimOpacity,
           applyLensEmphasis: lensEmphasis,
           isHidden,
-          isTension: semantics?.isTension ?? false,
-          isGuideTone: semantics?.isGuideTone ?? false,
+          isTension: effectiveSemantics?.isTension ?? false,
+          isGuideTone: effectiveSemantics?.isGuideTone ?? false,
           scaleDegree,
           degreeColor,
         };
@@ -335,5 +366,5 @@ export function useNoteData({
       }
     }
     return notes;
-  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, degreeColorsEnabled, wrappedNotes, practiceLens, tuning, noteSemantics, activePattern, activeShape, shapeScope]);
+  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, degreeColorsEnabled, wrappedNotes, practiceLens, tuning, noteSemantics, activePattern, activeShape, shapeScope, chordActiveStringSet]);
 }

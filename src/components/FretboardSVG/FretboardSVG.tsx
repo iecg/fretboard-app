@@ -10,6 +10,7 @@ import {
   scaleDegreeColorsEnabledAtom,
   activeVoicingKeyAtom,
   fingeringPatternAtom,
+  chordActiveStringSetAtom,
 } from "../../store/atoms";
 import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
 import styles from "./FretboardSVG.module.css";
@@ -128,6 +129,7 @@ export const FretboardSVG = memo(function FretboardSVG({
   const degreeColorsEnabled = useAtomValue(scaleDegreeColorsEnabledAtom);
   const activeVoicingKey = useAtomValue(activeVoicingKeyAtom);
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
+  const chordActiveStringSet = useAtomValue(chordActiveStringSetAtom);
   const internalId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const defsPrefix = `fretboard-${id ?? internalId}`;
   const svgDefId = useCallback((id: string) => `${defsPrefix}-${id}`, [defsPrefix]);
@@ -314,6 +316,7 @@ export const FretboardSVG = memo(function FretboardSVG({
     practiceLens,
     tuning,
     noteSemantics,
+    chordActiveStringSet,
   });
 
   // Per-string chord filter (UAT-3): when fingering pattern restricts to 1 or 2 strings,
