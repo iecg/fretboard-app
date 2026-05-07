@@ -237,7 +237,7 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
             />
           </div>
           {oneStringInterval > 0 && (
-            <p className={shared["field-hint"]}>Shows 3rds, 4ths & 6ths simultaneously</p>
+            <p className={shared["field-hint"]}>Shows consecutive scale steps (2nds)</p>
           )}
         </>
       )}

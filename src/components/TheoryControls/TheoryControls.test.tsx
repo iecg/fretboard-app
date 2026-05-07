@@ -301,4 +301,34 @@ describe("TheoryControls UAT-20 — chord section disabled on 1/2-string", () =>
     // Verify no badge "(Disabled)" exists anywhere.
     expect(screen.queryByText("(Disabled)")).not.toBeInTheDocument();
   });
+
+  it("Chords disclosure summary shows 'Disabled' when pattern is one-string", () => {
+    const store = createStore();
+    act(() => {
+      store.set(fingeringPatternAtom, "one-string");
+    });
+    render(
+      <Provider store={store}>
+        <TheoryControls />
+      </Provider>,
+    );
+    // The summary span in the disclosure button should show "Disabled" to
+    // match the UX principle the toggle bar already follows (UAT-23 + UAT-T2 fix).
+    const chordsBtn = screen.getByRole("button", { name: /Chords.*Disabled/i });
+    expect(chordsBtn).toBeInTheDocument();
+  });
+
+  it("Chords disclosure summary shows 'Disabled' when pattern is two-strings", () => {
+    const store = createStore();
+    act(() => {
+      store.set(fingeringPatternAtom, "two-strings");
+    });
+    render(
+      <Provider store={store}>
+        <TheoryControls />
+      </Provider>,
+    );
+    const chordsBtn = screen.getByRole("button", { name: /Chords.*Disabled/i });
+    expect(chordsBtn).toBeInTheDocument();
+  });
 });

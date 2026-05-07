@@ -380,7 +380,7 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
           <FingeringPatternControls />
         </Provider>
       );
-      expect(screen.getByText("Shows 3rds, 4ths & 6ths simultaneously")).toBeInTheDocument();
+      expect(screen.getByText("Shows consecutive scale steps (2nds)")).toBeInTheDocument();
     });
 
     it("does not show connector hint in one-string when interval is Off", () => {
@@ -394,7 +394,7 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
           <FingeringPatternControls />
         </Provider>
       );
-      expect(screen.queryByText("Shows 3rds, 4ths & 6ths simultaneously")).toBeNull();
+      expect(screen.queryByText("Shows consecutive scale steps (2nds)")).toBeNull();
     });
   });
 });

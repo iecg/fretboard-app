@@ -1,6 +1,7 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
   fingeringPatternAtom,
+  setFingeringPatternAtom,
   cagedShapesAtom,
   toggleCagedShapeAtom,
   selectSingleCagedShapeAtom,
@@ -18,7 +19,8 @@ import {
 import { type CagedShape } from "../shapes";
 
 export function useShapeState() {
-  const [fingeringPattern, setFingeringPattern] = useAtom(fingeringPatternAtom);
+  const fingeringPattern = useAtomValue(fingeringPatternAtom);
+  const setFingeringPattern = useSetAtom(setFingeringPatternAtom);
   const [cagedShapes, setCagedShapes] = useAtom(cagedShapesAtom);
   const toggleCagedShape = useSetAtom(toggleCagedShapeAtom);
   const selectSingleCagedShape = useSetAtom(selectSingleCagedShapeAtom);

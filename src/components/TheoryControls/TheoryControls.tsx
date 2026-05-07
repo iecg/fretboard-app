@@ -181,7 +181,7 @@ export function TheoryControls({ keyExplorer, compact = false }: TheoryControlsP
       </TheorySection>
       <TheorySection
         title="Chords"
-        summary={chordSummary}
+        summary={isChordsDisabled ? "Disabled" : chordSummary}
         defaultOpen={Boolean(chordType)}
         compact={compact}
         disabled={isChordsDisabled}

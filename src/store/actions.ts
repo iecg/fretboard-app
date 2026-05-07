@@ -42,6 +42,23 @@ import {
   isMutedAtom,
 } from "./audioAtoms";
 
+/**
+ * Action wrapper around `fingeringPatternAtom` that auto-clears the active
+ * chord degree when the new pattern is `one-string` or `two-strings`.
+ * This prevents the degree overlay from remaining active on patterns where
+ * chord overlay is disabled. Use this instead of writing fingeringPatternAtom
+ * directly from UI code.
+ */
+export const setFingeringPatternAtom = atom(
+  null,
+  (_get, set, pattern: import("./fingeringAtoms").FingeringPattern) => {
+    set(fingeringPatternAtom, pattern);
+    if (pattern === "one-string" || pattern === "two-strings") {
+      set(chordDegreeAtom, null);
+    }
+  },
+);
+
 export const setRootNoteAtom = atom(null, (get, set, note: string) => {
   set(rootNoteAtom, note);
   // In degree mode the derived chordRootAtom/chordTypeAtom auto-resolve via

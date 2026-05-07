@@ -110,6 +110,7 @@ export {
 export {
   setRootNoteAtom,
   setScaleNameAtom,
+  setFingeringPatternAtom,
   resetAtom,
 } from "./actions";
 
