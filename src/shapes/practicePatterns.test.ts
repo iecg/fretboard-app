@@ -280,4 +280,42 @@ describe("getTwoStringsIntervalPairs", () => {
     const pairs = getTwoStringsIntervalPairs([0, 1], BOARD, pentNotes, pentSemitones, 2, STANDARD_TUNING);
     expect(pairs.length).toBeGreaterThan(0);
   });
+
+  // ---------------------------------------------------------------------------
+  // UAT-R05-wrap regression: non-wrapping ladder distance
+  // ---------------------------------------------------------------------------
+
+  it("getTwoStringsIntervalPairs uses non-wrapping ladder distance (regression UAT-R05-wrap)", () => {
+    // Tuple [3, 4] = D3 string (higher-pitched, index 3) + A2 string (lower-pitched, index 4).
+    // STANDARD_TUNING: ["E4","B3","G3","D3","A2","E2"]
+    //   D3 string: absolutePitch = 38 + fret
+    //   A2 string: absolutePitch = 33 + fret
+    //
+    // Case 1: C-E simple 3rd (2 ladder steps apart).
+    //   E on D3 at fret 2 → pitch 40 (E3)
+    //   C on A2 at fret 3 → pitch 36 (C3)
+    //   sdStepsBetween(36, 40) = D(38) + E(40) = 2 → SD=2. Must match target=2.
+    const pairs2 = getTwoStringsIntervalPairs([3, 4], BOARD, C_MAJOR_NOTES, C_MAJOR_SEMITONES, 2, STANDARD_TUNING);
+    const pair3rdKeys = new Set(pairs2.map((p) => `${p.a}|${p.b}`));
+    // "3-2|4-3" = E3 on D-string | C3 on A-string — simple 3rd, must be included.
+    expect(pair3rdKeys.has("3-2|4-3")).toBe(true);
+
+    // Case 2: C-E spanning a 10th (9 ladder steps, one octave + 3rd).
+    //   E on D3 at fret 14 → pitch 52 (E4)
+    //   C on A2 at fret 3  → pitch 36 (C3)
+    //   sdStepsBetween(36, 52) = D,E,F,G,A,B,C,D,E = 9 → SD=9. Must NOT match target=2.
+    const keyTenth = "3-14|4-3";
+    expect(pair3rdKeys.has(keyTenth)).toBe(false);
+
+    // Case 3: 6ths (target=5) — only pairs with exactly 5 ladder steps are matched.
+    //   Any pair with 9 ladder steps (an octave + 6th) must not appear in target=5 results.
+    const pairs5 = getTwoStringsIntervalPairs([3, 4], BOARD, C_MAJOR_NOTES, C_MAJOR_SEMITONES, 5, STANDARD_TUNING);
+    const pair6thKeys = new Set(pairs5.map((p) => `${p.a}|${p.b}`));
+    // Verify none of the 3rd pairs bleed into the 6ths result (disjoint sets).
+    for (const key of pair3rdKeys) {
+      expect(pair6thKeys.has(key)).toBe(false);
+    }
+    // And target=5 results must be non-empty (6ths exist on this string pair).
+    expect(pairs5.length).toBeGreaterThan(0);
+  });
 });

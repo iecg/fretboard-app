@@ -176,25 +176,24 @@ export function getTwoStringsIntervalPairs(
   const openB = tuning[sB];
   if (!openA || !openB) return [];
 
-  // Build sorted scale-degree lookup: index in the sorted array = scale-degree position (0-based).
+  // Build sorted scale-degree lookup: chromatic pitch classes present in the scale.
   const scaleDegreesSorted = [...scaleSemitones].sort((a, b) => a - b);
-  const scaleLen = scaleDegreesSorted.length;
-
-  function noteToSD(noteSemitone: number): number {
-    const norm = ((noteSemitone % 12) + 12) % 12;
-    return scaleDegreesSorted.indexOf(norm);
-  }
 
   /**
-   * Ascending SD distance from lower (sdB) to upper (sdA).
-   * This is the "interval number minus one": 3rd = 2, 4th = 3, 6th = 5.
-   * Since pitchA > pitchB we know noteA is above noteB; count scale steps going up
-   * from sdB to sdA (wrapping around the octave if needed).
+   * Non-wrapping ladder-step count between two absolute pitches.
+   * Counts scale-degree pitch classes encountered while walking up from
+   * loPitch+1 to hiPitch (inclusive). Does NOT wrap around the octave, so a
+   * C-E pair spanning a 10th (9 ladder steps) is never mistaken for a 3rd (2
+   * ladder steps). Returns -1 when hiPitch <= loPitch.
    */
-  function ascendingSdDist(sdLow: number, sdHigh: number): number {
-    if (sdLow === -1 || sdHigh === -1) return -1;
-    // Steps going up from sdLow to sdHigh (wrapping at scaleLen)
-    return (sdHigh - sdLow + scaleLen) % scaleLen;
+  function sdStepsBetween(loPitch: number, hiPitch: number, sds: number[]): number {
+    if (hiPitch <= loPitch) return -1;
+    let count = 0;
+    for (let p = loPitch + 1; p <= hiPitch; p++) {
+      const cls = ((p % 12) + 12) % 12;
+      if (sds.includes(cls)) count++;
+    }
+    return count;
   }
 
   const pairs: Array<{ a: string; b: string }> = [];
@@ -203,10 +202,6 @@ export function getTwoStringsIntervalPairs(
     const noteA = rowA[fretA];
     if (!noteA || !scaleNoteSet.has(noteA)) continue;
     const pitchA = absolutePitch(openA, fretA);
-    const noteAIdx = NOTES.indexOf(noteA);
-    if (noteAIdx === -1) continue;
-    const sdA = noteToSD(noteAIdx);
-    if (sdA === -1) continue;
 
     for (let fretB = 0; fretB < rowB.length; fretB++) {
       const noteB = rowB[fretB];
@@ -214,12 +209,8 @@ export function getTwoStringsIntervalPairs(
       const pitchB = absolutePitch(openB, fretB);
       // Directional: higher string (sA, lower index) must have higher absolute pitch.
       if (pitchA <= pitchB) continue;
-      const noteBIdx = NOTES.indexOf(noteB);
-      if (noteBIdx === -1) continue;
-      const sdB = noteToSD(noteBIdx);
-      if (sdB === -1) continue;
-      // Count ascending scale steps from sdB (lower pitch) to sdA (higher pitch).
-      if (ascendingSdDist(sdB, sdA) === targetSdDistance) {
+      const dist = sdStepsBetween(pitchB, pitchA, scaleDegreesSorted);
+      if (dist === targetSdDistance) {
         pairs.push({ a: `${sA}-${fretA}`, b: `${sB}-${fretB}` });
       }
     }
