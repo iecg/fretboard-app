@@ -36,6 +36,7 @@
   --z-overlay-drawer: 201;
   background-color: var(--bg-color);
   color: var(--text-main);
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -121,17 +122,28 @@ body {
   box-sizing: border-box;
 }
 
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+@supports (scrollbar-color: auto) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--surface-highlight) transparent;
+  }
 }
-::-webkit-scrollbar-track {
-  background: var(--bg-color);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--surface-highlight);
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-primary);
+
+@supports not (scrollbar-color: auto) {
+  ::-webkit-scrollbar {
+    width: auto;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--surface-highlight);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-primary);
+  }
 }
