@@ -1,5 +1,6 @@
 import { startTransition, useEffect } from "react";
 import { useAtomValue } from "jotai";
+import clsx from "clsx";
 import { NOTES, LENS_REGISTRY } from "../../core/theory";
 import { getDegreesForScale } from "../../core/degrees";
 import { lensAvailabilityAtom, fingeringPatternAtom } from "../../store/atoms";
@@ -7,7 +8,8 @@ import { NoteGrid } from "../NoteGrid/NoteGrid";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { useChordState } from "../../hooks/useChordState";
 import { useScaleState } from "../../hooks/useScaleState";
-import styles from "../TheoryControls/TheoryControls.module.css";
+import theoryStyles from "../TheoryControls/TheoryControls.module.css";
+import panelStyles from "./ChordOverlayControls.module.css";
 import shared from "../shared/shared.module.css";
 
 // UI-only shorthand label map — maps CHORD_DEFINITIONS keys to chord-symbol
@@ -138,8 +140,8 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
 
   return (
     <div
-      className={styles["theory-chord-content"]}
-      data-pattern-disabled={isPatternDisabled ? "true" : undefined}
+      className={clsx(theoryStyles["theory-chord-content"], isPatternDisabled && panelStyles["panel-disabled"])}
+      data-disabled={isPatternDisabled ? "true" : undefined}
     >
       {isPatternDisabled && (
         <p className={shared["field-hint"]} aria-live="polite">

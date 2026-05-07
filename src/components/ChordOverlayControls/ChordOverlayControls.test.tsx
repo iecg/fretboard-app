@@ -435,6 +435,44 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
   });
 
+  describe("15. panel-level disable on 1/2-string fingering patterns (UAT-17)", () => {
+    it("panel root has data-disabled='true' when fingeringPattern is one-string", () => {
+      const { container } = renderWithAtoms(<ChordOverlayControls />, [
+        ...DEGREE_MODE_SEEDS,
+        [fingeringPatternAtom, "one-string"],
+      ]);
+      const root = container.firstChild as HTMLElement;
+      expect(root).toHaveAttribute("data-disabled", "true");
+    });
+
+    it("panel root has data-disabled='true' when fingeringPattern is two-strings", () => {
+      const { container } = renderWithAtoms(<ChordOverlayControls />, [
+        ...DEGREE_MODE_SEEDS,
+        [fingeringPatternAtom, "two-strings"],
+      ]);
+      const root = container.firstChild as HTMLElement;
+      expect(root).toHaveAttribute("data-disabled", "true");
+    });
+
+    it("panel root does not have data-disabled when fingeringPattern is caged", () => {
+      const { container } = renderWithAtoms(<ChordOverlayControls />, [
+        ...DEGREE_MODE_SEEDS,
+        [fingeringPatternAtom, "caged"],
+      ]);
+      const root = container.firstChild as HTMLElement;
+      expect(root).not.toHaveAttribute("data-disabled");
+    });
+
+    it("panel root does not have data-disabled when fingeringPattern is none", () => {
+      const { container } = renderWithAtoms(<ChordOverlayControls />, [
+        ...DEGREE_MODE_SEEDS,
+        [fingeringPatternAtom, "none"],
+      ]);
+      const root = container.firstChild as HTMLElement;
+      expect(root).not.toHaveAttribute("data-disabled");
+    });
+  });
+
   describe("14. auto-disable on 1/2-string fingering patterns (UAT-16)", () => {
     it("Chord Mode buttons are disabled when fingeringPattern is one-string", () => {
       renderWithAtoms(<ChordOverlayControls />, [
