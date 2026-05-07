@@ -186,7 +186,7 @@ describe("shapeDataAtom — one-string intervalPairs", () => {
     }
   });
 
-  it("On mode dispatches all three SD targets (3rds + 4ths + 6ths) simultaneously", () => {
+  it("On mode dispatches scale-2nds only (SD distance = 1, consecutive scale tones)", () => {
     // Off mode: no pairs
     const storeOff = makeAtomStore([
       [fingeringPatternAtom, "one-string"],
@@ -195,7 +195,7 @@ describe("shapeDataAtom — one-string intervalPairs", () => {
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
     ]);
-    // On mode: union of all three interval classes
+    // On mode: consecutive scale-tone pairs (2nds)
     const storeOn = makeAtomStore([
       [fingeringPatternAtom, "one-string"],
       [oneStringIndexAtom, 5],
@@ -206,13 +206,28 @@ describe("shapeDataAtom — one-string intervalPairs", () => {
     const offPairs = storeOff.get(shapeDataAtom).intervalPairs;
     const onPairs = storeOn.get(shapeDataAtom).intervalPairs;
     expect(offPairs).toHaveLength(0);
-    // On mode should produce more pairs than any single interval class would
+    // On mode produces consecutive scale-tone pairs (exactly 7 per octave for major)
     expect(onPairs.length).toBeGreaterThan(0);
     // All pairs should be on the same string
     for (const pair of onPairs) {
       expect(parseInt(pair.a.split("-")[0], 10)).toBe(5);
       expect(parseInt(pair.b.split("-")[0], 10)).toBe(5);
     }
+  });
+
+  it("On mode produces exactly 7 pairs per octave in C Major (chain of consecutive scale tones)", () => {
+    // C Major has 7 notes per octave → 7 consecutive pairs: C-D, D-E, E-F, F-G, G-A, A-B, B-C
+    // String 5 (low E) spans frets 0–24, covering ~2 octaves → expect 14 pairs
+    const store = makeAtomStore([
+      [fingeringPatternAtom, "one-string"],
+      [oneStringIndexAtom, 5], // low-E string, E2 open
+      [oneStringIntervalAtom, 1], // On
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+    ]);
+    const data = store.get(shapeDataAtom);
+    // 2 full octaves on frets 0–24 → 14 pairs (7 per octave × 2)
+    expect(data.intervalPairs.length).toBe(14);
   });
 
   it("emits empty intervalPairs when one-string interval is 0 (Off)", () => {

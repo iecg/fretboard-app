@@ -94,16 +94,20 @@ export const shapeDataAtom = atom((get) => {
     // Always emit full string coords (visibility independent of interval — UAT-10 model).
     coords = getOneStringCoordinates(rootNote, scaleName, currentTuning, 24, oneStringIndex);
     if (oneStringInterval > 0) {
-      // UAT-19: On mode renders all three interval classes simultaneously (3rds + 4ths + 6ths).
+      // UAT-22: On mode connects consecutive scale tones (2nds) only — SD distance = 1.
       const board = getFretboardNotes(currentTuning, 24);
       const scaleNoteNames = getScaleNotes(rootNote, scaleName);
       const scaleNoteSet = new Set(scaleNoteNames);
       const scaleNoteSemitones = scaleNoteNames
         .map((n) => NOTES.indexOf(n))
         .filter((i) => i !== -1);
-      const allTargets = [2, 3, 5]; // 3rds (sd dist 2), 4ths (sd dist 3), 6ths (sd dist 5)
-      intervalPairs = allTargets.flatMap((target) =>
-        getOneStringIntervalPairs(oneStringIndex, board, scaleNoteSet, scaleNoteSemitones, target, currentTuning),
+      intervalPairs = getOneStringIntervalPairs(
+        oneStringIndex,
+        board,
+        scaleNoteSet,
+        scaleNoteSemitones,
+        1, // SD distance = 1 → scale 2nds (consecutive scale tones)
+        currentTuning,
       );
     }
   } else if (fingeringPattern === "two-strings") {
