@@ -11,6 +11,7 @@ import {
   activeVoicingKeyAtom,
   fingeringPatternAtom,
   chordActiveStringSetAtom,
+  effectiveShapeDataAtom,
 } from "../../store/atoms";
 import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
 import styles from "./FretboardSVG.module.css";
@@ -130,6 +131,7 @@ export const FretboardSVG = memo(function FretboardSVG({
   const activeVoicingKey = useAtomValue(activeVoicingKeyAtom);
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
   const chordActiveStringSet = useAtomValue(chordActiveStringSetAtom);
+  const { intervalPairs } = useAtomValue(effectiveShapeDataAtom);
   const internalId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const defsPrefix = `fretboard-${id ?? internalId}`;
   const svgDefId = useCallback((id: string) => `${defsPrefix}-${id}`, [defsPrefix]);
@@ -440,6 +442,36 @@ export const FretboardSVG = memo(function FretboardSVG({
                 </motion.g>
               )}
             </AnimatePresence>
+            {/* 2-Strings interval pair connectors — separate from chord connectors.
+                Drawn between each {a, b} pair member using fret-coord keys "string-fret".
+                Not affected by the chord-connector hide rule above (UAT-8). */}
+            {intervalPairs.length > 0 && (
+              <g
+                className={styles["interval-pair-connectors"]}
+                aria-hidden="true"
+                pointerEvents="none"
+              >
+                {intervalPairs.map((pair, i) => {
+                  const [aStr, aFret] = pair.a.split("-").map(Number);
+                  const [bStr, bFret] = pair.b.split("-").map(Number);
+                  if (aStr === undefined || aFret === undefined || bStr === undefined || bFret === undefined) return null;
+                  const x1 = fretCenterX(aFret);
+                  const y1 = stringYAt(aStr, x1);
+                  const x2 = fretCenterX(bFret);
+                  const y2 = stringYAt(bStr, x2);
+                  return (
+                    <line
+                      key={`interval-pair-${i}`}
+                      x1={x1}
+                      y1={y1}
+                      x2={x2}
+                      y2={y2}
+                      className={styles["interval-pair-line"]}
+                    />
+                  );
+                })}
+              </g>
+            )}
             <FretboardNoteLayer
               noteData={noteData}
               fretCenterX={fretCenterX}

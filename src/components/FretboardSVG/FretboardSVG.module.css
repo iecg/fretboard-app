@@ -471,3 +471,19 @@
 .chord-connectors[data-has-active-voicing="true"] path[data-layer="outline"]:not([data-active-voicing]) {
   stroke-opacity: calc(var(--chord-connector-outline-opacity, 0.85) * 0.7);
 }
+
+/* -----------------------------------------------------------------------
+   2-Strings interval pair connector lines — separate from chord connectors.
+   Simple straight lines between each pair member. Uses the same chord-connector
+   color token (color-1) for consistency. Not affected by chord-connector hide rule.
+   ----------------------------------------------------------------------- */
+.interval-pair-connectors {
+  --placeholder: 0;
+}
+
+.interval-pair-line {
+  stroke: var(--chord-connector-color-1, var(--accent-primary));
+  stroke-width: 1.5px;
+  stroke-opacity: 0.7;
+  stroke-linecap: round;
+}
