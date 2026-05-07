@@ -90,16 +90,14 @@ export const shapeDataAtom = atom((get) => {
   } else if (fingeringPattern === "one-string") {
     coords = getOneStringCoordinates(rootNote, scaleName, currentTuning, 24, oneStringIndex);
   } else if (fingeringPattern === "two-strings") {
+    // Always emit the full pair note set regardless of interval setting (UAT-10).
+    // Visibility is decoupled from interval — interval only affects connector lines.
     coords = getTwoStringsCoordinates(rootNote, scaleName, currentTuning, 24, twoStringsPair);
     if (twoStringsInterval > 0) {
       const board = getFretboardNotes(currentTuning, 24);
       const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
       const target = TWO_STRINGS_INTERVAL_SEMITONES[twoStringsInterval - 1] ?? 4;
       intervalPairs = getTwoStringsIntervalPairs(twoStringsPair, board, scaleNoteSet, target, currentTuning);
-      // When an interval filter is active, restrict coords to only the pair members
-      const pairSet = new Set<string>();
-      for (const p of intervalPairs) { pairSet.add(p.a); pairSet.add(p.b); }
-      coords = coords.filter((c) => pairSet.has(c));
     }
   } else {
     coords = getScaleNotes(rootNote, scaleName);

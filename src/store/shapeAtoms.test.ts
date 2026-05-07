@@ -10,7 +10,7 @@ import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
 
 // ---------------------------------------------------------------------------
-// shapeDataAtom — two-strings intervalPairs branch (UAT-8 regression guard)
+// shapeDataAtom — two-strings intervalPairs branch (UAT-8 + UAT-10 regression guard)
 // ---------------------------------------------------------------------------
 
 describe("shapeDataAtom — two-strings intervalPairs", () => {
@@ -74,6 +74,55 @@ describe("shapeDataAtom — two-strings intervalPairs", () => {
       const bStr = parseInt(pair.b.split("-")[0], 10);
       expect(aStr).toBe(pairIndex);
       expect(bStr).toBe(pairIndex + 1);
+    }
+  });
+
+  // ---------------------------------------------------------------------------
+  // UAT-10 regression guard: visibility decoupled from interval setting
+  // ---------------------------------------------------------------------------
+
+  it("with interval > 0, highlightNotes contains all pair scale notes (visibility unfiltered)", () => {
+    // Build store with interval = Off to get the full unfiltered note set
+    const storeOff = makeAtomStore([
+      [fingeringPatternAtom, "two-strings"],
+      [twoStringsPairAtom, 0],
+      [twoStringsIntervalAtom, 0], // Off
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+    ]);
+    // Build store with interval > 0
+    const storeOn = makeAtomStore([
+      [fingeringPatternAtom, "two-strings"],
+      [twoStringsPairAtom, 0],
+      [twoStringsIntervalAtom, 1], // 3rds
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+    ]);
+
+    const offData = storeOff.get(shapeDataAtom);
+    const onData = storeOn.get(shapeDataAtom);
+
+    // highlightNotes should be identical whether interval is On or Off
+    expect(new Set(onData.highlightNotes)).toEqual(new Set(offData.highlightNotes));
+    // intervalPairs should only be non-empty when interval > 0
+    expect(offData.intervalPairs).toHaveLength(0);
+    expect(onData.intervalPairs.length).toBeGreaterThan(0);
+  });
+
+  it("intervalPairs is a strict subset of highlightNotes when interval > 0", () => {
+    const store = makeAtomStore([
+      [fingeringPatternAtom, "two-strings"],
+      [twoStringsPairAtom, 0],
+      [twoStringsIntervalAtom, 2], // 4ths
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+    ]);
+    const data = store.get(shapeDataAtom);
+    const highlightSet = new Set(data.highlightNotes);
+    // Every pair member coord must be in highlightNotes
+    for (const pair of data.intervalPairs) {
+      expect(highlightSet.has(pair.a)).toBe(true);
+      expect(highlightSet.has(pair.b)).toBe(true);
     }
   });
 });
