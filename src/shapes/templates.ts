@@ -202,10 +202,35 @@ function getDerivedTemplates(
   return result;
 }
 
+/**
+ * Per-shape hand-tuned overrides applied on top of derived templates.
+ * Used to tighten polygons whose derived geometry overshoots post-dedup notes.
+ */
+const PARTIAL_TEMPLATE_OVERRIDES: Record<string, Partial<Record<CagedShape, ShapeTemplate>>> = {
+  'Locrian Natural 6': {
+    E: { anchorString: 5, perString: [[0,3],[2,3],[0,3],[-1,3],[0,1],[0,3]] },
+  },
+  'Dorian Sharp 4': {
+    E: { anchorString: 5, perString: [[0,3],[-1,3],[-1,0],[-1,2],[1,2],[0,3]] },
+  },
+  'Lydian Sharp 2': {
+    E: { anchorString: 5, perString: [[-1,3],[-1,2],[0,1],[-1,2],[-1,2],[-1,3]] },
+  },
+  'Altered Diminished': {
+    E: { anchorString: 5, perString: [[0,3],[1,2],[0,3],[-1,3],[-1,3],[0,3]] },
+  },
+};
+
 export function get7NoteTemplate(
   scaleName: string,
 ): Record<CagedShape, ShapeTemplate> | null {
-  return HAND_TUNED_TEMPLATES[scaleName] ?? getDerivedTemplates(scaleName);
+  const base = HAND_TUNED_TEMPLATES[scaleName] ?? getDerivedTemplates(scaleName);
+  if (!base) return null;
+
+  const overrides = PARTIAL_TEMPLATE_OVERRIDES[scaleName];
+  if (!overrides) return base;
+
+  return { ...base, ...overrides };
 }
 
 export const SHAPE_TEMPLATES_PENT: Record<CagedShape, ShapeTemplate> = {
