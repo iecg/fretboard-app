@@ -570,7 +570,9 @@ export interface UseChordConnectorPolylinesParams {
  * - `paletteIndex` — 0–7, deterministic per shape identity; indexes into
  *   --chord-connector-color-N CSS tokens for per-voicing color differentiation.
  *
- * Re-runs only when noteData, chordToneNames, or geometry helpers change.
+ * Re-runs when noteData, chordToneNames, or geometry helpers change.
+ * The geometry helpers are included because resize/layout shifts can change
+ * fret and string coordinates without changing the musical note data.
  */
 export function useChordConnectorPolylines({
   noteData,
@@ -590,7 +592,6 @@ export function useChordConnectorPolylines({
         stringRowPx,
         chordRoot,
       ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [noteData, chordToneNames, stringRowPx, chordRoot],
+    [noteData, chordToneNames, fretCenterX, stringYAt, stringRowPx, chordRoot],
   );
 }
