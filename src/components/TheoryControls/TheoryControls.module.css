@@ -98,7 +98,7 @@
 .theory-disclosure-btn::before {
   content: "";
   position: absolute;
-  inset: -0.05rem -0.55rem;
+  inset: -0.35rem -0.55rem;
   border-radius: var(--radius-lg);
   background-color: transparent;
   background-image: none;

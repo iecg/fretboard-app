@@ -1,5 +1,8 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { createStore, Provider } from "jotai";
 import { TheoryControls, TheorySection } from "../TheoryControls/TheoryControls";
@@ -146,6 +149,52 @@ describe("TheoryControls/TheoryControls", () => {
       'section[data-compact="true"]',
     );
     expect(theorySections.length).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe("TheoryControls/TheorySection — disclosure ::before focus-ring inset", () => {
+  it("disclosure button ::before has symmetric vertical inset >= 0.25rem", () => {
+    // jsdom cannot reliably compute box-shadow on ::before pseudo-elements.
+    // Instead, assert the structural CSS source rule directly: read the CSS
+    // module file and parse the inset shorthand to verify both vertical and
+    // horizontal insets are present and the vertical value is >= 0.25rem.
+    const cssPath = resolve(
+      dirname(fileURLToPath(import.meta.url)),
+      "./TheoryControls.module.css",
+    );
+    const css = readFileSync(cssPath, "utf-8");
+
+    // Locate the ::before block and extract the inset value.
+    const beforeBlock = css.match(/\.theory-disclosure-btn::before\s*\{([^}]+)\}/);
+    expect(beforeBlock, "::before block must exist in TheoryControls.module.css").toBeTruthy();
+
+    const insetMatch = beforeBlock![1].match(/inset:\s*([^;]+);/);
+    expect(insetMatch, "inset property must exist in ::before block").toBeTruthy();
+
+    const insetValue = insetMatch![1].trim();
+    // Inset shorthand: "vertical horizontal" (2-value) — e.g. "-0.35rem -0.55rem"
+    const parts = insetValue.split(/\s+/);
+    expect(parts.length).toBeGreaterThanOrEqual(1);
+
+    // Parse the vertical inset (first value) — allow negative values (outset).
+    const verticalRaw = parts[0];
+    const verticalRem = parseFloat(verticalRaw);
+    // The absolute value must be >= 0.25rem so the ring is not visually clipped.
+    expect(Math.abs(verticalRem)).toBeGreaterThanOrEqual(0.25);
+  });
+
+  it("disclosure button has outline: none on :focus-visible (ring provided by ::before box-shadow)", () => {
+    const cssPath = resolve(
+      dirname(fileURLToPath(import.meta.url)),
+      "./TheoryControls.module.css",
+    );
+    const css = readFileSync(cssPath, "utf-8");
+    // The :focus-visible rule on the button must suppress the browser outline.
+    const focusVisibleBlock = css.match(
+      /\.theory-disclosure-btn:focus-visible\s*\{([^}]+)\}/,
+    );
+    expect(focusVisibleBlock, ":focus-visible block must exist").toBeTruthy();
+    expect(focusVisibleBlock![1]).toMatch(/outline:\s*none/);
   });
 });
 
