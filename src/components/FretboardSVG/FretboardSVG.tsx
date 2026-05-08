@@ -173,37 +173,30 @@ export const FretboardSVG = memo(function FretboardSVG({
       const pixelPoints: string[] = [];
       const verts = poly.vertices;
       const halfVerts = verts.length / 2;
-      const clampedMin = Math.max(0, poly.intendedMin);
-      const clampedMax = Math.min(maxFret, poly.intendedMax);
 
-      const minLeftFret = Math.min(...verts.slice(0, halfVerts).map(v => v.fret));
-      const maxRightFret = Math.max(...verts.slice(halfVerts).map(v => v.fret));
-      const resolveLeftFret = (fret: number) =>
-        minLeftFret < 0 && fret === clampedMin && poly.intendedMin < clampedMin
-          ? poly.intendedMin
-          : fret;
-      const resolveRightFret = (fret: number) =>
-        maxRightFret > maxFret && fret === clampedMax && poly.intendedMax > clampedMax
-          ? poly.intendedMax
-          : fret;
+      // Vertex frets are used as-is. A vertex stays off-board only when its
+      // template offset truly puts it there (i.e., the scale would have a
+      // note at the imaginary fret). Vertices that legitimately sit at fret 0
+      // or maxFret are not pulled to intendedMin/intendedMax — that flattened
+      // mixed-offset templates and produced spurious off-board extension.
 
-      pixelPoints.push(`${fretToX(resolveLeftFret(verts[0].fret))},0`);
+      pixelPoints.push(`${fretToX(verts[0].fret)},0`);
       for (let i = 0; i < halfVerts; i++) {
-        const fx = fretToX(resolveLeftFret(verts[i].fret));
+        const fx = fretToX(verts[i].fret);
         pixelPoints.push(`${fx},${stringYAt(verts[i].string, fx)}`);
       }
       pixelPoints.push(
-        `${fretToX(resolveLeftFret(verts[halfVerts - 1].fret))},${neckHeight}`,
+        `${fretToX(verts[halfVerts - 1].fret)},${neckHeight}`,
       );
       pixelPoints.push(
-        `${fretToX(resolveRightFret(verts[halfVerts].fret))},${neckHeight}`,
+        `${fretToX(verts[halfVerts].fret)},${neckHeight}`,
       );
       for (let i = halfVerts; i < verts.length; i++) {
-        const fx = fretToX(resolveRightFret(verts[i].fret));
+        const fx = fretToX(verts[i].fret);
         pixelPoints.push(`${fx},${stringYAt(verts[i].string, fx)}`);
       }
       pixelPoints.push(
-        `${fretToX(resolveRightFret(verts[verts.length - 1].fret))},0`,
+        `${fretToX(verts[verts.length - 1].fret)},0`,
       );
 
       const points = pixelPoints.join(" ");
@@ -217,7 +210,7 @@ export const FretboardSVG = memo(function FretboardSVG({
         centerX,
       };
     });
-  }, [shapePolygons, startFret, endFret, maxFret, neckHeight, fretToX, stringYAt]);
+  }, [shapePolygons, startFret, endFret, neckHeight, fretToX, stringYAt]);
 
   const displayRoot = rootNote
     ? getNoteDisplay(rootNote, rootNote, useFlats)

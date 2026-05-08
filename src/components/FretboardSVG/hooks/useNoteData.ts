@@ -241,9 +241,6 @@ export function useNoteData({
                 isInActiveShape,
                 hasChordOverlay,
                 isHighlighted,
-                shapePolygons,
-                boxBounds,
-                fretIndex,
               )
             : classifyNote(
                 isScaleRoot,
@@ -254,9 +251,6 @@ export function useNoteData({
                 hasChordOverlay,
                 isChordInRange,
                 isInActiveShape,
-                shapePolygons,
-                boxBounds,
-                fretIndex,
               );
 
         // Skip explicitly hidden notes, but keep "note-inactive" (those not in the 

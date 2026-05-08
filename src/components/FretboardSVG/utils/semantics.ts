@@ -1,5 +1,4 @@
 import type { PracticeLens, NoteSemantics } from "../../../core/theory";
-import type { ShapePolygon } from "../../../shapes";
 import {
   RADIUS_SCALE_KEY_TONIC,
   RADIUS_SCALE_CHORD_ROOT,
@@ -61,22 +60,11 @@ export function classifyNote(
   hasChordOverlay: boolean,
   isChordInRange: boolean,
   isInActiveShape: boolean,
-  shapePolygons: ShapePolygon[],
-  boxBounds: BoxBound[],
-  fretIndex: number,
 ): string {
   if (!hasChordOverlay) {
     if (isScaleRoot && isHighlighted) return "key-tonic";
     if (isColorNote && isHighlighted) return "note-blue";
     if (isHighlighted) return "note-active";
-    if (
-      isColorNote &&
-      shapePolygons.length > 0 &&
-      boxBounds.some(
-        (b) => fretIndex >= b.minFret - 1 && fretIndex <= b.maxFret + 1,
-      )
-    )
-      return "note-blue";
     return "note-inactive";
   }
 
@@ -95,14 +83,11 @@ export function classifyNoteFromSemantics(
   isInActiveShape: boolean,
   hasChordOverlay: boolean,
   isHighlighted: boolean,
-  shapePolygons: ShapePolygon[],
-  boxBounds: BoxBound[],
-  fretIndex: number,
 ): string {
   if (!hasChordOverlay) {
     return classifyNote(
       sem.isScaleRoot, sem.isChordRoot, sem.isColorTone, isHighlighted,
-      sem.isChordTone, hasChordOverlay, isChordInRange, isInActiveShape, shapePolygons, boxBounds, fretIndex,
+      sem.isChordTone, hasChordOverlay, isChordInRange, isInActiveShape,
     );
   }
 

@@ -31,12 +31,12 @@ describe("semantics utils", () => {
 
   describe("classifyNote", () => {
     it("classifies key-tonic correctly without chord overlay", () => {
-      const res = classifyNote(true, false, false, true, false, false, true, true, [], [], 0);
+      const res = classifyNote(true, false, false, true, false, false, true, true);
       expect(res).toBe("key-tonic");
     });
 
     it("classifies chord-root correctly with chord overlay", () => {
-      const res = classifyNote(false, true, false, true, true, true, true, true, [], [], 0);
+      const res = classifyNote(false, true, false, true, true, true, true, true);
       expect(res).toBe("chord-root");
     });
   });
@@ -52,7 +52,7 @@ describe("semantics utils", () => {
         isTension: false,
         isGuideTone: false,
       };
-      const res = classifyNoteFromSemantics(sem, true, true, true, true, [], [], 0);
+      const res = classifyNoteFromSemantics(sem, true, true, true, true);
       expect(res).toBe("chord-root");
     });
 
@@ -68,7 +68,7 @@ describe("semantics utils", () => {
         isGuideTone: false,
         isDiatonicChord: true,
       };
-      const res = classifyNoteFromSemantics(sem, true, true, true, false, [], [], 0);
+      const res = classifyNoteFromSemantics(sem, true, true, true, false);
       expect(res).toBe("note-diatonic-chord");
     });
 
@@ -83,7 +83,7 @@ describe("semantics utils", () => {
         isGuideTone: false,
         isDiatonicChord: true,
       };
-      const res = classifyNoteFromSemantics(sem, true, true, true, false, [], [], 0);
+      const res = classifyNoteFromSemantics(sem, true, true, true, false);
       expect(res).toBe("chord-root");
     });
 
@@ -98,8 +98,22 @@ describe("semantics utils", () => {
         isGuideTone: false,
         isDiatonicChord: false,
       };
-      const res = classifyNoteFromSemantics(sem, true, true, true, false, [], [], 0);
+      const res = classifyNoteFromSemantics(sem, true, true, true, false);
       expect(res).toBe("chord-tone-in-scale");
+    });
+
+    it("returns note-blue for color tone without chord overlay when highlighted", () => {
+      const sem: NoteSemantics = {
+        isScaleRoot: false,
+        isChordRoot: false,
+        isChordTone: false,
+        isInScale: true,
+        isColorTone: true,
+        isTension: false,
+        isGuideTone: false,
+      };
+      const res = classifyNoteFromSemantics(sem, false, false, false, true);
+      expect(res).toBe("note-blue");
     });
 
     it("falls through to chord-tone-in-scale when isDiatonicChord is undefined (manual mode)", () => {
@@ -113,7 +127,7 @@ describe("semantics utils", () => {
         isGuideTone: false,
         // isDiatonicChord omitted (undefined)
       };
-      const res = classifyNoteFromSemantics(sem, true, true, true, false, [], [], 0);
+      const res = classifyNoteFromSemantics(sem, true, true, true, false);
       expect(res).toBe("chord-tone-in-scale");
     });
   });

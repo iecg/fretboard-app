@@ -8,6 +8,7 @@ import {
   MAJOR_MODE_NAMES,
   MODE_OFFSETS,
   isMajorScale,
+  shouldUseRelativeMinorAnchor,
   getRelativeMinorRoot,
   get7NoteTemplate,
 } from "./templates";
@@ -60,7 +61,7 @@ export function getCagedCoordinates(
   const validNotes = getScaleNotes(rootNote, scaleName);
   const layout = getFretboardNotes(tuning, frets);
 
-  const useMajorRemap = isMajorScale(scaleName);
+  const useMajorRemap = shouldUseRelativeMinorAnchor(scaleName);
   const effectiveShape = useMajorRemap ? MAJOR_TO_MINOR_SHAPE[shape] : shape;
   const anchorNote = useMajorRemap ? getRelativeMinorRoot(rootNote) : rootNote;
 
