@@ -47,23 +47,15 @@ export function MainLayoutWrapper({
       {header}
 
       {showSummary && !!summary && (
-        <div
-          className={styles["summary-shell"]}
-          data-testid="summary-shell"
-          data-layout-tier={layoutTier}
-          data-layout-variant={layoutVariant}
-        >
-          {summary}
-        </div>
-      )}
-
-      {showChordDock && !!chordDock && (
-        <div
-          className={styles["chord-dock-shell"]}
-          data-layout-tier={layoutTier}
-          data-layout-variant={layoutVariant}
-        >
-          {chordDock}
+        <div className={styles["summary-shell-container"]}>
+          <div
+            className={styles["summary-shell"]}
+            data-testid="summary-shell"
+            data-layout-tier={layoutTier}
+            data-layout-variant={layoutVariant}
+          >
+            {summary}
+          </div>
         </div>
       )}
 
@@ -77,6 +69,18 @@ export function MainLayoutWrapper({
       >
         {children}
       </main>
+
+      {showChordDock && !!chordDock && (
+        <div className={styles["chord-dock-shell-container"]}>
+          <div
+            className={styles["chord-dock-shell"]}
+            data-layout-tier={layoutTier}
+            data-layout-variant={layoutVariant}
+          >
+            {chordDock}
+          </div>
+        </div>
+      )}
 
       {showControlsPanel && controlsPanel}
 

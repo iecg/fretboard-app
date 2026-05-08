@@ -52,7 +52,9 @@ export function ScaleStripPanel() {
           aria-pressed={!scaleVisible}
           onClick={toggleScaleVisible}
         >
-          {scaleVisible ? <EyeOpenIcon /> : <EyeClosedIcon />}
+          <span style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {scaleVisible ? <EyeOpenIcon /> : <EyeClosedIcon />}
+          </span>
         </button>
       }
     />

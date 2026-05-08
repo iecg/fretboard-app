@@ -1,4 +1,5 @@
 import React, { memo } from "react";
+import { motion } from "motion/react";
 import { clsx } from "clsx";
 import { formatAccidental } from "../../core/theory";
 import { getNoteVisuals } from "./utils/semantics";
@@ -95,12 +96,17 @@ export const FretboardNoteLayer = memo(({
         const baseOpacity = applyDimOpacity ? 0.8 : 1;
         const finalOpacity = baseOpacity * applyLensEmphasis.opacityBoost;
         return (
-          <g
-            key={`note-${stringIndex}-${fretIndex}`}
+          <motion.g
+            key={`note-${stringIndex}-${fretIndex}-${noteClass}`}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{
+              scale: isHidden ? 0 : 1,
+              opacity: isHidden ? 0 : finalOpacity,
+            }}
+            transition={{ type: "spring", damping: 20, stiffness: 300, duration: 0.2 }}
             className={clsx(
               styles["fretboard-note"],
               styles[noteClass],
-              isHidden && "hidden",
             )}
             data-note-role={noteClass !== "note-inactive" ? noteClass : undefined}
             data-note-shape={noteShape}
@@ -110,7 +116,6 @@ export const FretboardNoteLayer = memo(({
             data-scale-degree={degreeColorsEnabled ? scaleDegree : undefined}
             data-degree-colors={degreeColorsEnabled ? "true" : undefined}
             style={{
-              opacity: finalOpacity,
               "--note-r": r,
               ...(degreeColor && degreeColorsEnabled
                 ? { "--degree-color": degreeColor }
@@ -123,7 +128,7 @@ export const FretboardNoteLayer = memo(({
                 {formatAccidental(displayValue)}
               </text>
             )}
-          </g>
+          </motion.g>
         );
       })}
     </>

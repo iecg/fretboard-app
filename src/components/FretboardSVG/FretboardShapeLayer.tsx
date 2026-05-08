@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { motion, AnimatePresence } from "motion/react";
 
 interface SvgPolygon {
   points: string;
@@ -11,19 +12,22 @@ interface FretboardShapeLayerProps {
 }
 
 export const FretboardShapeLayer = memo(({ svgPolygons }: FretboardShapeLayerProps) => {
-  if (svgPolygons.length === 0) return null;
   return (
-    <>
+    <AnimatePresence>
       {svgPolygons.map(({ points, color, key }) => (
-        <polygon
+        <motion.polygon
           key={key}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
           points={points}
           fill={color}
           stroke="none"
           style={{ pointerEvents: "none" }}
         />
       ))}
-    </>
+    </AnimatePresence>
   );
 });
 FretboardShapeLayer.displayName = "FretboardShapeLayer";

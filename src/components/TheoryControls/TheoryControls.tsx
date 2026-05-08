@@ -8,7 +8,7 @@ import { ChordOverlayControls } from "../ChordOverlayControls/ChordOverlayContro
 import { KeyExplorer } from "../KeyExplorer/KeyExplorer";
 import { NOTES } from "../../core/theory";
 import {
-  ANIMATION_DURATION_FAST,
+  ANIMATION_DURATION_STANDARD,
   ANIMATION_EASE,
 } from "../../core/constants";
 import { getDegreesForScale } from "../../core/degrees";
@@ -57,8 +57,30 @@ export function TheorySection({
         aria-controls={contentId}
         onClick={() => setIsOpen((value) => !value)}
       >
-        <span className={styles["theory-disclosure-title"]}>{title}</span>
-        <span className={styles["theory-disclosure-summary"]}>{summary}</span>
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={title}
+            initial={{ opacity: 0, x: -12 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 12 }}
+            transition={{ duration: 0.16 }}
+            className={styles["theory-disclosure-title"]}
+          >
+            {title}
+          </motion.span>
+        </AnimatePresence>
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={summary}
+            initial={{ opacity: 0, x: 8 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -8 }}
+            transition={{ duration: 0.16 }}
+            className={styles["theory-disclosure-summary"]}
+          >
+            {summary}
+          </motion.span>
+        </AnimatePresence>
         <ChevronDown
           className={styles["theory-disclosure-icon"]}
           aria-hidden="true"
@@ -75,10 +97,10 @@ export function TheorySection({
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{
-              duration: ANIMATION_DURATION_FAST,
+              duration: ANIMATION_DURATION_STANDARD,
               ease: ANIMATION_EASE,
             }}
-            style={{ clipPath: "inset(0 -1rem)" }}
+            style={{ clipPath: "inset(0 -1rem)", height: "auto", opacity: 1 }}
           >
             {children}
           </motion.div>

@@ -90,6 +90,11 @@
   white-space: nowrap;
 }
 
+.chord-practice-bar-groups-container {
+  overflow: hidden;
+  width: 100%;
+}
+
 .chord-practice-bar-groups {
   display: flex;
   flex-direction: row;
@@ -97,6 +102,7 @@
   column-gap: 1.25rem;
   row-gap: 0.3rem;
   flex-wrap: wrap;
+  padding-top: 0.15rem; /* Small buffer for focus rings/shadows */
 }
 
 .practice-bar-group {

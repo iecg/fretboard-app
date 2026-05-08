@@ -1,5 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from "react";
 import { useSetAtom, useAtomValue, useAtom, createStore, Provider } from "jotai";
+import { AnimatePresence, motion } from "motion/react";
 import clsx from "clsx";
 import { Fretboard } from "./components/Fretboard/Fretboard";
 import { HelpCircle, Music2, Layers, Layout, Compass, Settings2, Volume2, VolumeX } from "lucide-react";
@@ -167,11 +168,22 @@ function AppContent() {
                 title={isMuted ? "Unmute" : "Mute"}
                 aria-label={isMuted ? "Unmute audio" : "Mute audio"}
               >
-                {isMuted ? (
-                  <VolumeX className="icon icon-muted" />
-                ) : (
-                  <Volume2 className="icon icon-active" />
-                )}
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span
+                    key={isMuted ? "muted" : "unmuted"}
+                    initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
+                    animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                    exit={{ opacity: 0, scale: 0.8, rotate: 10 }}
+                    transition={{ duration: 0.15 }}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+                  >
+                    {isMuted ? (
+                      <VolumeX className="icon icon-muted" />
+                    ) : (
+                      <Volume2 className="icon icon-active" />
+                    )}
+                  </motion.span>
+                </AnimatePresence>
               </button>
               <button
                 ref={helpTriggerRef}

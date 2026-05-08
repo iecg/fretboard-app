@@ -1,4 +1,5 @@
 import React, { memo } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import clsx from "clsx";
 import {
   CIRCLE_OF_FIFTHS,
@@ -164,10 +165,10 @@ export const CircleOfFifths = memo(function CircleOfFifths({
             );
 
             return (
-              <path
+              <motion.path
                 key={note}
                 id={`slice-${svgId}-${index}`}
-                ref={(el) => { segmentRefs.current[index] = el; }}
+                ref={(el) => { segmentRefs.current[index] = el as unknown as SVGPathElement; }}
                 d={slicePath(index)}
                 className={clsx(styles["circle-slice"], {
                   [styles.active]: isActive,
@@ -204,6 +205,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
                 aria-pressed={isActive}
                 tabIndex={index === focusedIndex ? 0 : -1}
                 onKeyDown={(e) => handleKeyDown(e, index)}
+                transition={{ duration: 0.3 }}
               />
             );
           })}
@@ -213,7 +215,12 @@ export const CircleOfFifths = memo(function CircleOfFifths({
               geometry is identical. Carries .circle-slice.active classes so the
               existing CSS stroke-width rule fires on a real element (not a shadow tree). */}
           {CIRCLE_OF_FIFTHS.indexOf(rootNote) >= 0 && (
-            <path
+            <motion.path
+              key={`active-outline-${rootNote}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
               d={slicePath(CIRCLE_OF_FIFTHS.indexOf(rootNote))}
               className={clsx(styles["circle-slice"], styles["active"])}
               pointerEvents="none"
@@ -367,31 +374,58 @@ export const CircleOfFifths = memo(function CircleOfFifths({
             strokeWidth={1.4}
           />
           
-          <text
-            x={CX}
-            y={CY}
-            dominantBaseline="middle"
-            textAnchor="middle"
-            fill="var(--cof-note-active)"
-            fontSize={SIZE * 0.07}
-            fontWeight="bold"
-            style={{ pointerEvents: "none" }}
-          >
-            {formatAccidental(rootDisplayLabel)}
-          </text>
+          <AnimatePresence mode="wait">
+            <motion.text
+              key={rootNote}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.15 }}
+              x={CX}
+              y={CY}
+              dominantBaseline="middle"
+              textAnchor="middle"
+              fill="var(--cof-note-active)"
+              fontSize={SIZE * 0.07}
+              fontWeight="bold"
+              style={{ pointerEvents: "none" }}
+            >
+              {formatAccidental(rootDisplayLabel)}
+            </motion.text>
+          </AnimatePresence>
         </svg>
       </div>
 
       <div className={styles["circle-footer"]}>
         <div className={styles["circle-footer-item"]}>
           <span className={styles["circle-footer-label"]}>Key Signature</span>
-          <span className={styles["circle-footer-value"]}>{keySigText}</span>
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={keySigText}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              transition={{ duration: 0.1 }}
+              className={styles["circle-footer-value"]}
+            >
+              {keySigText}
+            </motion.span>
+          </AnimatePresence>
         </div>
         <div className={styles["circle-footer-item"]}>
           <span className={styles["circle-footer-label"]}>{relLabel}</span>
-          <span className={styles["circle-footer-value"]}>
-            {formatAccidental(relDisplay)}{relSuffix}
-          </span>
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={`${relDisplay}-${relSuffix}`}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              transition={{ duration: 0.1 }}
+              className={styles["circle-footer-value"]}
+            >
+              {formatAccidental(relDisplay)}{relSuffix}
+            </motion.span>
+          </AnimatePresence>
         </div>
       </div>
     </div>

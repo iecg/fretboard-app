@@ -62,7 +62,11 @@ export function DegreeChipStrip({
           data-has-action={headerAction ? 'true' : undefined}
         >
           {headerAction}
-          {!hideHeader && scaleName}
+          {!hideHeader && (
+            <span>
+              {scaleName}
+            </span>
+          )}
         </header>
       )}
       {visible && (
@@ -70,6 +74,7 @@ export function DegreeChipStrip({
           {chips.map((chip, i) => {
             const isHidden = hiddenNotes?.has(chip.internalNote) ?? false;
             const isColorNote = colorNotes?.has(chip.internalNote) ?? false;
+
             return (
               <li
                 key={`${chip.note}-${i}`}
