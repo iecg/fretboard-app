@@ -1,5 +1,6 @@
 import { SCALES, NOTES, getScaleNotes } from "../core/theory";
 import { getFretboardNotes, STANDARD_TUNING } from "../core/guitar";
+import { MAX_FRET } from "../core/constants";
 
 /** Mode names for degrees of the major scale (Ionian through Locrian). */
 export const MAJOR_MODE_NAMES = [
@@ -118,13 +119,19 @@ function deriveTemplate(
   const rootNote = useMajorRemap ? 'F' : 'C';
   const anchorNote = useMajorRemap ? getRelativeMinorRoot(rootNote) : rootNote;
   const validNotes = getScaleNotes(rootNote, scaleName);
-  const layout = getFretboardNotes(STANDARD_TUNING, 24);
+  const layout = getFretboardNotes(STANDARD_TUNING, MAX_FRET);
 
+  // 2-fret buffer keeps the canonical anchor away from either fretboard edge
+  // so derived offsets reflect mid-board geometry, not edge-clamped notes.
+  const EDGE_BUFFER = 2;
   let canonicalRootFret = -1;
   const anchorString = layout[config.rootStringFocus];
-  for (let rf = 0; rf <= 24; rf++) {
+  for (let rf = 0; rf <= MAX_FRET; rf++) {
     if (anchorString[rf] !== anchorNote) continue;
-    if (rf + config.fretOffsetMin >= 2 && rf + config.fretOffsetMax <= 22) {
+    if (
+      rf + config.fretOffsetMin >= EDGE_BUFFER &&
+      rf + config.fretOffsetMax <= MAX_FRET - EDGE_BUFFER
+    ) {
       canonicalRootFret = rf;
       break;
     }
