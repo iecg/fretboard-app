@@ -31,12 +31,12 @@ describe("semantics utils", () => {
 
   describe("classifyNote", () => {
     it("classifies key-tonic correctly without chord overlay", () => {
-      const res = classifyNote(true, false, false, true, false, false, true, true, [], [], 0);
+      const res = classifyNote(true, false, false, true, false, false, true, true);
       expect(res).toBe("key-tonic");
     });
 
     it("classifies chord-root correctly with chord overlay", () => {
-      const res = classifyNote(false, true, false, true, true, true, true, true, [], [], 0);
+      const res = classifyNote(false, true, false, true, true, true, true, true);
       expect(res).toBe("chord-root");
     });
   });
@@ -52,7 +52,7 @@ describe("semantics utils", () => {
         isTension: false,
         isGuideTone: false,
       };
-      const res = classifyNoteFromSemantics(sem, true, true, true, true, [], [], 0);
+      const res = classifyNoteFromSemantics(sem, true, true, true, true);
       expect(res).toBe("chord-root");
     });
 
@@ -68,7 +68,7 @@ describe("semantics utils", () => {
         isGuideTone: false,
         isDiatonicChord: true,
       };
-      const res = classifyNoteFromSemantics(sem, true, true, true, false, [], [], 0);
+      const res = classifyNoteFromSemantics(sem, true, true, true, false);
       expect(res).toBe("note-diatonic-chord");
     });
 
@@ -83,7 +83,7 @@ describe("semantics utils", () => {
         isGuideTone: false,
         isDiatonicChord: true,
       };
-      const res = classifyNoteFromSemantics(sem, true, true, true, false, [], [], 0);
+      const res = classifyNoteFromSemantics(sem, true, true, true, false);
       expect(res).toBe("chord-root");
     });
 
@@ -98,7 +98,7 @@ describe("semantics utils", () => {
         isGuideTone: false,
         isDiatonicChord: false,
       };
-      const res = classifyNoteFromSemantics(sem, true, true, true, false, [], [], 0);
+      const res = classifyNoteFromSemantics(sem, true, true, true, false);
       expect(res).toBe("chord-tone-in-scale");
     });
 
@@ -113,7 +113,7 @@ describe("semantics utils", () => {
         isGuideTone: false,
         // isDiatonicChord omitted (undefined)
       };
-      const res = classifyNoteFromSemantics(sem, true, true, true, false, [], [], 0);
+      const res = classifyNoteFromSemantics(sem, true, true, true, false);
       expect(res).toBe("chord-tone-in-scale");
     });
   });
