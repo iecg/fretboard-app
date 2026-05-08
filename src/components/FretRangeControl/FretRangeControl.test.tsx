@@ -58,6 +58,13 @@ describe("FretRangeControl/FretRangeControl", () => {
       render(<FretRangeControl {...defaultProps} layout="mobile" />);
       expect(screen.queryByText("—")).toBeNull();
     });
+
+    it("renders a group with accessible name 'Fret Range'", () => {
+      render(<FretRangeControl {...defaultProps} layout="mobile" />);
+      expect(
+        screen.getByRole("group", { name: "Fret Range" }),
+      ).toBeInTheDocument();
+    });
   });
 
   describe("Start fret callbacks", () => {
@@ -187,6 +194,13 @@ describe("FretRangeControl/FretRangeControl", () => {
       expect(getStartButtons().increment).toBeInTheDocument();
       expect(getEndButtons().decrement).toBeInTheDocument();
       expect(getEndButtons().increment).toBeInTheDocument();
+    });
+
+    it("renders a group with accessible name 'Fret Range'", () => {
+      render(<FretRangeControl {...defaultProps} layout="dashboard" />);
+      expect(
+        screen.getByRole("group", { name: "Fret Range" }),
+      ).toBeInTheDocument();
     });
   });
 });
