@@ -120,11 +120,11 @@ export const CircleOfFifths = memo(function CircleOfFifths({
     } else if (e.key === "Home") {
       e.preventDefault();
       setKeyboardFocused(true);
-      setFocusedIndex(0);
+      setFocusedIndex(CIRCLE_OF_FIFTHS.indexOf("C"));
     } else if (e.key === "End") {
       e.preventDefault();
       setKeyboardFocused(true);
-      setFocusedIndex(11);
+      setFocusedIndex(CIRCLE_OF_FIFTHS.indexOf("B"));
     } else if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       setRootNote(CIRCLE_OF_FIFTHS[index]);

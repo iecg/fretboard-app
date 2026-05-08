@@ -439,6 +439,7 @@ export const FretboardSVG = memo(function FretboardSVG({
               noteBubblePx={noteBubblePx}
               displayFormat={displayFormat}
               degreeColorsEnabled={degreeColorsEnabled}
+              onNoteClick={onNoteClick}
             />
           </g>
         </svg>

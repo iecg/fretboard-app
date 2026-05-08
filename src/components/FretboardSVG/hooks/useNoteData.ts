@@ -9,6 +9,7 @@ import {
   type NoteSemantics,
 } from "../../../core/theory";
 import { DEGREE_COLORS, getDegreesForScale } from "../../../core/degrees";
+import { getFretNoteWithOctave, parseNote } from "../../../core/guitar";
 import type { ShapePolygon, CagedShape } from "../../../shapes";
 import type { ActiveShapeType } from "../../../hooks/useFretboardState";
 import {
@@ -23,6 +24,7 @@ export interface NoteData {
   stringIndex: number;
   fretIndex: number;
   noteName: string;
+  octave: number;
   noteClass: string;
   displayValue: string;
   applyDimOpacity: boolean;
@@ -88,6 +90,7 @@ export function useNoteData({
   degreeColorsEnabled,
   wrappedNotes,
   practiceLens,
+  tuning,
   noteSemantics,
 }: UseNoteDataProps): NoteData[] {
   return useMemo(() => {
@@ -313,10 +316,17 @@ export function useNoteData({
           }
         }
 
+        const openString = tuning[stringIndex];
+        const noteWithOctave = openString
+          ? getFretNoteWithOctave(openString, fretIndex)
+          : `${noteName}4`;
+        const octave = parseNote(noteWithOctave)?.octave ?? 4;
+
         const objectToBePushed = {
           stringIndex,
           fretIndex,
           noteName,
+          octave,
           noteClass,
           displayValue,
           applyDimOpacity,
@@ -331,5 +341,5 @@ export function useNoteData({
       }
     }
     return notes;
-  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, degreeColorsEnabled, wrappedNotes, practiceLens, noteSemantics, activePattern, activeShape, shapeScope]);
+  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, degreeColorsEnabled, wrappedNotes, practiceLens, tuning, noteSemantics, activePattern, activeShape, shapeScope]);
 }
