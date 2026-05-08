@@ -102,6 +102,20 @@ describe("semantics utils", () => {
       expect(res).toBe("chord-tone-in-scale");
     });
 
+    it("returns note-blue for color tone without chord overlay when highlighted", () => {
+      const sem: NoteSemantics = {
+        isScaleRoot: false,
+        isChordRoot: false,
+        isChordTone: false,
+        isInScale: true,
+        isColorTone: true,
+        isTension: false,
+        isGuideTone: false,
+      };
+      const res = classifyNoteFromSemantics(sem, false, false, false, true);
+      expect(res).toBe("note-blue");
+    });
+
     it("falls through to chord-tone-in-scale when isDiatonicChord is undefined (manual mode)", () => {
       const sem: NoteSemantics = {
         isScaleRoot: false,
