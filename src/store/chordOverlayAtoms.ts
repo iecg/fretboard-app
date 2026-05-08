@@ -438,8 +438,17 @@ export const chordMemberFactsAtom = atom((get): ChordMemberFact[] => {
 });
 
 /**
- * ChordRowEntry list with scale-membership and roles.
- * Used by practiceLensAtoms and atoms.ts summary atoms.
+ * Catalog of chord members annotated with scale-membership flags and role
+ * tags — the canonical input shared by every practice-lens composite (see
+ * `practiceLensAtoms.ts`) and the chord summary atoms in `atoms.ts`.
+ *
+ * Inputs (read via `get`): `chordTypeAtom`, `chordRootAtom`, `rootNoteAtom`,
+ * `scaleNameAtom`. Empty array when no chord is selected.
+ *
+ * Output: `ChordRowEntry[]` covering every chord member, including those that
+ * fall outside the active scale (consumers decide how to render outsiders).
+ *
+ * See the "Lens & Note Roles" section in `CLAUDE.md` for the role taxonomy.
  */
 export const allChordMembersAtom = atom((get) => {
   const chordType = get(chordTypeAtom);
