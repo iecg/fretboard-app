@@ -1,6 +1,5 @@
 import { SCALES, NOTES, getScaleNotes } from "../core/theory";
 import { getFretboardNotes, STANDARD_TUNING } from "../core/guitar";
-import { deduplicateAdjacentStrings } from "./helpers";
 
 /** Mode names for degrees of the major scale (Ionian through Locrian). */
 export const MAJOR_MODE_NAMES = [
@@ -135,19 +134,23 @@ function deriveTemplate(
   const intendedMin = canonicalRootFret + config.fretOffsetMin;
   const intendedMax = canonicalRootFret + config.fretOffsetMax;
   const numStrings = STANDARD_TUNING.length;
-  const maxNotesPerString = config.maxNotesPerString ?? {};
 
+  // 7-note scales bypass maxNotesPerString at runtime (polygons.ts:118), so
+  // skip it here too — applying the cap would yield template ranges that
+  // don't match the actual collected notes during rendering.
   const perStringNotes: number[][] = [];
   for (let s = 0; s < numStrings; s++) {
     const stringNotes: number[] = [];
     for (let f = intendedMin; f <= intendedMax; f++) {
       if (validNotes.includes(layout[s][f])) stringNotes.push(f);
     }
-    const cap = maxNotesPerString[s];
-    perStringNotes.push(cap != null ? stringNotes.slice(0, cap) : stringNotes);
+    perStringNotes.push(stringNotes);
   }
 
-  deduplicateAdjacentStrings(perStringNotes, layout, null);
+  // Skip dedup: hand-tuned templates describe the full shape boundary on
+  // every string (matching all scale notes in the window). Dedup is a
+  // runtime concern for dot rendering only — applying it here would shrink
+  // template ranges and produce indented polygons.
 
   const perString: [number, number][] = [];
   for (let s = 0; s < numStrings; s++) {
