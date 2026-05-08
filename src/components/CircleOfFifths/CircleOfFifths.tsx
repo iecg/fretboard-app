@@ -168,7 +168,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
               <motion.path
                 key={note}
                 id={`slice-${svgId}-${index}`}
-                ref={(el) => { segmentRefs.current[index] = el as unknown as SVGPathElement; }}
+                ref={(el: SVGPathElement | null) => { segmentRefs.current[index] = el; }}
                 d={slicePath(index)}
                 className={clsx(styles["circle-slice"], {
                   [styles.active]: isActive,
@@ -205,7 +205,6 @@ export const CircleOfFifths = memo(function CircleOfFifths({
                 aria-pressed={isActive}
                 tabIndex={index === focusedIndex ? 0 : -1}
                 onKeyDown={(e) => handleKeyDown(e, index)}
-                transition={{ duration: 0.3 }}
               />
             );
           })}

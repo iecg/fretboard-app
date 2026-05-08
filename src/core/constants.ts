@@ -55,7 +55,18 @@ export const DRAWER_DROPUP_THRESHOLD = 260;
 // Animation transitions (motion/react)
 export const ANIMATION_DURATION_FAST = 0.2;
 export const ANIMATION_DURATION_STANDARD = 0.24;
+export const ANIMATION_DURATION_XFADE = 0.15;
 export const ANIMATION_EASE = "easeOut";
+
+// Reusable motion presets
+export const SPRING_TAP = { type: "spring", stiffness: 500, damping: 25 } as const;
+export const WHILE_TAP_BTN = { scale: 0.94 } as const;
+export const WHILE_TAP_PILL = { scale: 0.96 } as const;
+export const ACTIVE_POP_TRANSITION = { duration: 0.2 } as const;
+export const STEPPER_VALUE_POP_TRANSITION = {
+  y: { type: "spring", stiffness: 400, damping: 28 },
+  opacity: { duration: 0.15 },
+} as const;
 
 // Settings / Atoms
 export const FRET_ZOOM_MIN = 100;

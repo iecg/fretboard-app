@@ -44,7 +44,7 @@
   color: var(--surface-control-fg);
   display: block;
   width: 100%;
-  padding: 0; /* Centering handled by stepper-value-slot */
+  padding: 0;
 }
 
 .stepper-icon {

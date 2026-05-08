@@ -94,8 +94,8 @@ export function NoteGrid({
         return (
           <motion.button
             key={n}
-            ref={(el) => {
-              buttonRefs.current[index] = el as unknown as HTMLButtonElement;
+            ref={(el: HTMLButtonElement | null) => {
+              buttonRefs.current[index] = el;
             }}
             type="button"
             className={clsx(shared["note-btn"], isActive && shared.active)}

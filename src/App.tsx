@@ -28,6 +28,7 @@ import { ScaleStripPanel } from "./components/ScaleStripPanel/ScaleStripPanel";
 import { ChordOverlayDock } from "./components/ChordOverlayDock/ChordOverlayDock";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
 import sharedStyles from "./components/shared/shared.module.css";
+import { ANIMATION_DURATION_XFADE } from "./core/constants";
 import "./styles/App.css";
 
 const ExpandedControlsPanel = lazy(() =>
@@ -174,8 +175,8 @@ function AppContent() {
                     initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
                     animate={{ opacity: 1, scale: 1, rotate: 0 }}
                     exit={{ opacity: 0, scale: 0.8, rotate: 10 }}
-                    transition={{ duration: 0.15 }}
-                    style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+                    transition={{ duration: ANIMATION_DURATION_XFADE }}
+                    className={sharedStyles["flex-center"]}
                   >
                     {isMuted ? (
                       <VolumeX className="icon icon-muted" />

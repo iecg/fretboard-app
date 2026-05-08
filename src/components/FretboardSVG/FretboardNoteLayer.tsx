@@ -97,7 +97,7 @@ export const FretboardNoteLayer = memo(({
         const finalOpacity = baseOpacity * applyLensEmphasis.opacityBoost;
         return (
           <motion.g
-            key={`note-${stringIndex}-${fretIndex}-${noteClass}`}
+            key={`note-${stringIndex}-${fretIndex}`}
             initial={{ scale: 0, opacity: 0 }}
             animate={{
               scale: isHidden ? 0 : 1,

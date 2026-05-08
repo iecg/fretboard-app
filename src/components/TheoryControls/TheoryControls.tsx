@@ -100,7 +100,7 @@ export function TheorySection({
               duration: ANIMATION_DURATION_STANDARD,
               ease: ANIMATION_EASE,
             }}
-            style={{ clipPath: "inset(0 -1rem)", height: "auto", opacity: 1 }}
+            style={{ clipPath: "inset(0 -1rem)" }}
           >
             {children}
           </motion.div>
