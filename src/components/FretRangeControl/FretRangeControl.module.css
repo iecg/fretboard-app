@@ -34,7 +34,7 @@
   color: var(--surface-control-fg);
   display: block;
   width: 100%;
-  padding: 0; /* Let slot handle spacing */
+  padding: 0;
 }
 
 .fret-icon {

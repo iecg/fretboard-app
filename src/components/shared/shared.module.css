@@ -353,6 +353,13 @@
   margin: 0;
 }
 
+/* Flex-center utility — used as inner span for AnimatePresence icon swaps. */
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Icon Button - shared circular button chrome for header, modal close, etc. */
 .icon-button {
   display: inline-flex;

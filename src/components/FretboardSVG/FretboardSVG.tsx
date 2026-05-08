@@ -400,9 +400,9 @@ export const FretboardSVG = memo(function FretboardSVG({
                   data-has-active-voicing={activeVoicingKey ? "true" : undefined}
                 >
                   {/* Fill pass: all voicings rendered first (below outlines) */}
-                  {connectorPolylines.map((voicing, i) => (
+                  {connectorPolylines.map((voicing) => (
                     <motion.path
-                      key={`fill-${voicing.voicingKey}-${i}`}
+                      key={`fill-${voicing.voicingKey}`}
                       initial={{ opacity: 0, scale: 0.98 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.98 }}
@@ -415,9 +415,9 @@ export const FretboardSVG = memo(function FretboardSVG({
                     />
                   ))}
                   {/* Outline pass: all voicings rendered on top */}
-                  {connectorPolylines.map((voicing, i) => (
+                  {connectorPolylines.map((voicing) => (
                     <motion.path
-                      key={`outline-${voicing.voicingKey}-${i}`}
+                      key={`outline-${voicing.voicingKey}`}
                       initial={{ opacity: 0, scale: 0.98 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.98 }}

@@ -2,6 +2,11 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { Minus, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { StepperShell } from "../StepperShell/StepperShell";
+import {
+  SPRING_TAP,
+  STEPPER_VALUE_POP_TRANSITION,
+  WHILE_TAP_BTN,
+} from "../../core/constants";
 import styles from "./StepperControl.module.css";
 import shared from "../shared/shared.module.css";
 
@@ -56,8 +61,8 @@ export function StepperControl({
           aria-label={`Decrease ${label ?? "value"} (current: ${value})`}
           onClick={() => onChange(Math.max(min, value - step))}
           disabled={value <= min}
-          whileTap={{ scale: 0.94 }}
-          transition={{ type: "spring", stiffness: 500, damping: 25 }}
+          whileTap={WHILE_TAP_BTN}
+          transition={SPRING_TAP}
         >
           <Minus className={styles["stepper-icon"]} aria-hidden="true" />
         </motion.button>
@@ -68,10 +73,7 @@ export function StepperControl({
               initial={{ y: 12, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -12, opacity: 0 }}
-              transition={{
-                y: { type: "spring", stiffness: 400, damping: 28 },
-                opacity: { duration: 0.15 }
-              }}
+              transition={STEPPER_VALUE_POP_TRANSITION}
               className={styles["stepper-value"]}
             >
               {formatValue(value)}
@@ -84,8 +86,8 @@ export function StepperControl({
           aria-label={`Increase ${label ?? "value"} (current: ${value})`}
           onClick={() => onChange(Math.min(max, value + step))}
           disabled={value >= max}
-          whileTap={{ scale: 0.94 }}
-          transition={{ type: "spring", stiffness: 500, damping: 25 }}
+          whileTap={WHILE_TAP_BTN}
+          transition={SPRING_TAP}
         >
           <Plus className={styles["stepper-icon"]} aria-hidden="true" />
         </motion.button>

@@ -1,5 +1,6 @@
 import { useScaleState } from "../../hooks/useScaleState";
 import { DegreeChipStrip } from "../DegreeChipStrip/DegreeChipStrip";
+import shared from "../shared/shared.module.css";
 import styles from "../DegreeChipStrip/DegreeChipStrip.module.css";
 
 function EyeOpenIcon() {
@@ -52,7 +53,7 @@ export function ScaleStripPanel() {
           aria-pressed={!scaleVisible}
           onClick={toggleScaleVisible}
         >
-          <span style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <span className={shared["flex-center"]}>
             {scaleVisible ? <EyeOpenIcon /> : <EyeClosedIcon />}
           </span>
         </button>

@@ -5,6 +5,7 @@ import {
 } from "../LabeledSelect/LabeledSelect";
 import { StepperShell } from "../StepperShell/StepperShell";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { SPRING_TAP, WHILE_TAP_BTN } from "../../core/constants";
 import styles from "./StepperSelect.module.css";
 
 export type StepperSelectOption = LabeledSelectOption;
@@ -54,8 +55,8 @@ export function StepperSelect({
         onClick={onPrevious}
         aria-label={previousLabel}
         disabled={disabled || previousDisabled}
-        whileTap={{ scale: 0.94 }}
-        transition={{ type: "spring", stiffness: 500, damping: 25 }}
+        whileTap={WHILE_TAP_BTN}
+        transition={SPRING_TAP}
       >
         <ChevronLeft className="icon" size={16} />
       </motion.button>
@@ -75,8 +76,8 @@ export function StepperSelect({
         onClick={onNext}
         aria-label={nextLabel}
         disabled={disabled || nextDisabled}
-        whileTap={{ scale: 0.94 }}
-        transition={{ type: "spring", stiffness: 500, damping: 25 }}
+        whileTap={WHILE_TAP_BTN}
+        transition={SPRING_TAP}
       >
         <ChevronRight className="icon" size={16} />
       </motion.button>

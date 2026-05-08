@@ -8,6 +8,7 @@ import {
   toggleChordHiddenNoteAtom,
   toggleChordOverlayHiddenAtom,
 } from "../../store/atoms";
+import shared from "../shared/shared.module.css";
 import styles from "./ChordPracticeBar.module.css";
 
 function EyeOpenIcon() {
@@ -37,7 +38,6 @@ interface PillProps {
 
 function Pill({ note, noteHidden, onToggleNote }: PillProps) {
   const aria = [note.displayNote, note.intervalName].filter(Boolean).join(", ");
-
   return (
     <li className={styles["practice-bar-pill-item"]}>
       <button
@@ -80,7 +80,6 @@ interface GroupProps {
 
 function Group({ variant, group, hiddenNotes, onToggleNote }: GroupProps) {
   if (group.notes.length === 0) return null;
-
   return (
     <div
       className={styles["practice-bar-group"]}
@@ -166,17 +165,13 @@ export function ChordPracticeBar({
           aria-pressed={!collapsed}
           onClick={() => toggleCollapsed()}
         >
-          <span style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <span className={shared["flex-center"]}>
             {collapsed ? <EyeClosedIcon /> : <EyeOpenIcon />}
           </span>
         </button>
-        <span className={styles["chord-practice-bar-title"]}>
-          {title}
-        </span>
+        <span className={styles["chord-practice-bar-title"]}>{title}</span>
         {lensLabel && (
-          <span className={styles["chord-practice-bar-lens-label"]}>
-            {lensLabel}
-          </span>
+          <span className={styles["chord-practice-bar-lens-label"]}>{lensLabel}</span>
         )}
         {badge && <span className={styles["chord-practice-bar-badge"]}>{badge}</span>}
       </div>

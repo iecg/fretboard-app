@@ -102,7 +102,8 @@
   column-gap: 1.25rem;
   row-gap: 0.3rem;
   flex-wrap: wrap;
-  padding-top: 0.15rem; /* Small buffer for focus rings/shadows */
+  /* Small buffer to keep focus rings/shadows visible despite container's overflow:hidden. */
+  padding-top: 0.15rem;
 }
 
 .practice-bar-group {

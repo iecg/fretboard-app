@@ -2,6 +2,11 @@ import { Minus, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import clsx from "clsx";
 import { StepperShell } from "../StepperShell/StepperShell";
+import {
+  SPRING_TAP,
+  STEPPER_VALUE_POP_TRANSITION,
+  WHILE_TAP_BTN,
+} from "../../core/constants";
 import styles from "./FretRangeControl.module.css";
 
 export interface FretRangeControlProps {
@@ -46,8 +51,8 @@ export function FretRangeControl({
             aria-label={`Decrease start fret${labels ? ` (${startFret})` : ""}`}
             onClick={() => onStartChange(Math.max(0, startFret - 1))}
             disabled={startFret <= 0}
-            whileTap={{ scale: 0.94 }}
-            transition={{ type: "spring", stiffness: 500, damping: 25 }}
+            whileTap={WHILE_TAP_BTN}
+            transition={SPRING_TAP}
           >
             <Minus className={styles["fret-icon"]} aria-hidden="true" />
           </motion.button>
@@ -58,10 +63,7 @@ export function FretRangeControl({
                 initial={{ y: 10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: -10, opacity: 0 }}
-                transition={{
-                  y: { type: "spring", stiffness: 400, damping: 28 },
-                  opacity: { duration: 0.15 }
-                }}
+                transition={STEPPER_VALUE_POP_TRANSITION}
                 className={styles["fret-value"]}
               >
                 {startFret}
@@ -74,8 +76,8 @@ export function FretRangeControl({
             aria-label={`Increase start fret${labels ? ` (${startFret})` : ""}`}
             onClick={() => onStartChange(Math.min(endFret - 1, startFret + 1))}
             disabled={startFret >= endFret - 1}
-            whileTap={{ scale: 0.94 }}
-            transition={{ type: "spring", stiffness: 500, damping: 25 }}
+            whileTap={WHILE_TAP_BTN}
+            transition={SPRING_TAP}
           >
             <Plus className={styles["fret-icon"]} aria-hidden="true" />
           </motion.button>
@@ -95,8 +97,8 @@ export function FretRangeControl({
             aria-label={`Decrease end fret${labels ? ` (${endFret})` : ""}`}
             onClick={() => onEndChange(Math.max(startFret + 1, endFret - 1))}
             disabled={endFret <= startFret + 1}
-            whileTap={{ scale: 0.94 }}
-            transition={{ type: "spring", stiffness: 500, damping: 25 }}
+            whileTap={WHILE_TAP_BTN}
+            transition={SPRING_TAP}
           >
             <Minus className={styles["fret-icon"]} aria-hidden="true" />
           </motion.button>
@@ -107,10 +109,7 @@ export function FretRangeControl({
                 initial={{ y: 10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: -10, opacity: 0 }}
-                transition={{
-                  y: { type: "spring", stiffness: 400, damping: 28 },
-                  opacity: { duration: 0.15 }
-                }}
+                transition={STEPPER_VALUE_POP_TRANSITION}
                 className={styles["fret-value"]}
               >
                 {endFret}
@@ -123,8 +122,8 @@ export function FretRangeControl({
             aria-label={`Increase end fret${labels ? ` (${endFret})` : ""}`}
             onClick={() => onEndChange(Math.min(maxFret, endFret + 1))}
             disabled={endFret >= maxFret}
-            whileTap={{ scale: 0.94 }}
-            transition={{ type: "spring", stiffness: 500, damping: 25 }}
+            whileTap={WHILE_TAP_BTN}
+            transition={SPRING_TAP}
           >
             <Plus className={styles["fret-icon"]} aria-hidden="true" />
           </motion.button>
