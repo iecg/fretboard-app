@@ -1,9 +1,11 @@
 import { describe, it, expect } from "vitest";
+import { renderHook } from "@testing-library/react";
 import {
   buildChordConnectorPolylines,
   MAX_PLAYABLE_FRET_POSITIONS,
   CHORD_TONE_CLASSES,
   CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
+  useChordConnectorPolylines,
 } from "./useChordConnectorPolylines";
 import type { NoteData } from "./useNoteData";
 
@@ -939,6 +941,58 @@ describe("per-voicing offset: determinism and paletteIndex independence", () => 
     const minEnvelope = STRING_ROW_PX * CHORD_CONNECTOR_BASE_RADIUS_FACTOR;
     const bubbleRadius = STRING_ROW_PX * 0.45;
     expect(minEnvelope).toBeGreaterThan(bubbleRadius);
+  });
+});
+
+describe("useChordConnectorPolylines", () => {
+  it("recomputes paths when resize changes fret/string geometry", () => {
+    const noteData = [
+      makeNote(0, 1, "C", "chord-root"),
+      makeNote(1, 2, "E", "chord-tone-in-scale"),
+      makeNote(2, 3, "G", "chord-tone-in-scale"),
+    ];
+    const chordToneNames = ["C", "E", "G"];
+    const wideFretCenterX = (fi: number) => fi * 20;
+    const compactFretCenterX = (fi: number) => fi * 10;
+    const tallStringYAt = (si: number) => si * 24;
+    const compactStringYAt = (si: number) => si * 18;
+
+    const { result, rerender } = renderHook(
+      ({
+        fretCenterX,
+        stringYAt,
+      }: {
+        fretCenterX: (fretIndex: number) => number;
+        stringYAt: (stringIndex: number, x: number) => number;
+      }) =>
+        useChordConnectorPolylines({
+          noteData,
+          chordToneNames,
+          fretCenterX,
+          stringYAt,
+          stringRowPx: STRING_ROW_PX,
+          chordRoot: "C",
+        }),
+      {
+        initialProps: {
+          fretCenterX: wideFretCenterX,
+          stringYAt: tallStringYAt,
+        },
+      },
+    );
+
+    const initialPath = result.current[0]!.paths.fill;
+    expect(result.current[0]!.vertices.map((v) => v.x)).toEqual([20, 40, 60]);
+    expect(result.current[0]!.vertices.map((v) => v.y)).toEqual([0, 24, 48]);
+
+    rerender({
+      fretCenterX: compactFretCenterX,
+      stringYAt: compactStringYAt,
+    });
+
+    expect(result.current[0]!.paths.fill).not.toBe(initialPath);
+    expect(result.current[0]!.vertices.map((v) => v.x)).toEqual([10, 20, 30]);
+    expect(result.current[0]!.vertices.map((v) => v.y)).toEqual([0, 18, 36]);
   });
 });
 
