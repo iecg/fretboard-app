@@ -28,19 +28,24 @@ import {
 // independent (chord atoms must not read scale atoms directly).
 // ---------------------------------------------------------------------------
 
+function toNoteSet(
+  scaleNotes: ReadonlySet<string> | readonly string[],
+): ReadonlySet<string> {
+  return scaleNotes instanceof Set ? scaleNotes : new Set(scaleNotes);
+}
+
 export function isChordMemberInScale(
   note: string,
   scaleNotes: ReadonlySet<string> | readonly string[],
 ): boolean {
-  const set = scaleNotes instanceof Set ? scaleNotes : new Set(scaleNotes);
-  return set.has(note);
+  return toNoteSet(scaleNotes).has(note);
 }
 
 export function hasAnyChordToneOutsideScale(
   chordNotes: readonly string[],
   scaleNotes: ReadonlySet<string> | readonly string[],
 ): boolean {
-  const set = scaleNotes instanceof Set ? scaleNotes : new Set(scaleNotes);
+  const set = toNoteSet(scaleNotes);
   return chordNotes.some((n) => !set.has(n));
 }
 
@@ -74,8 +79,7 @@ export function buildChordRowEntries(
       const noteIdx = NOTES.indexOf(m.note);
       if (noteIdx !== -1 && tonicIdx !== -1) {
         const semitone = (noteIdx - tonicIdx + 12) % 12;
-        scaleDegree = (degreesMap[semitone] ??
-          INTERVAL_NAMES[semitone]) as DegreeId | undefined;
+        scaleDegree = degreesMap[semitone] ?? INTERVAL_NAMES[semitone];
         scaleInterval = formatAccidental(INTERVAL_NAMES[semitone] ?? "1");
       }
     }
