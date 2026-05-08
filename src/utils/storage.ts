@@ -52,12 +52,7 @@ export function withStorageErrorBoundary<T>(
       try {
         const raw = localStorage.getItem(key);
         if (raw === null) return defaultValue;
-        try {
-          return parse(raw);
-        } catch (e) {
-          console.warn("localStorage.getItem failed", { key, e });
-          return defaultValue;
-        }
+        return parse(raw);
       } catch (e) {
         console.warn("localStorage.getItem failed", { key, e });
         return defaultValue;
@@ -136,55 +131,53 @@ export function createStorage<T>(options: StorageOptions<T> = {}) {
     migrate,
   } = options;
 
+  const save = (key: string, value: T) => {
+    if (!hasLocalStorage()) return;
+    try {
+      localStorage.setItem(key, serialize(onWrite(value)));
+    } catch (e) {
+      console.warn("localStorage.setItem failed", { key, e });
+    }
+  };
+
   return {
     getItem(key: string, initialValue: T): T {
-      const boundary = withStorageErrorBoundary<T>(key, initialValue, {
-        parse: (raw) => deserialize(raw),
-        serialize: (v) => serialize(onWrite(v)),
-      });
-      const stored = boundary.getRaw();
-      if (stored === null) {
-        if (migrate) {
-          const migrated = migrate();
+      if (!hasLocalStorage()) return initialValue;
+      try {
+        const stored = localStorage.getItem(key);
+        if (stored === null) {
+          const migrated = migrate?.();
           if (migrated !== undefined) {
-            boundary.set(migrated);
+            save(key, migrated);
             return migrated;
           }
+          save(key, initialValue);
+          return initialValue;
         }
-        boundary.set(initialValue);
-        return initialValue;
-      }
 
-      let deserialized: T;
-      try {
-        deserialized = deserialize(stored);
+        const processed = onRead(deserialize(stored));
+        if (!validate(processed)) {
+          save(key, initialValue);
+          return initialValue;
+        }
+        // Self-heal: persist the normalized form (e.g. legacy scale names).
+        if (serialize(processed) !== stored) save(key, processed);
+        return processed;
       } catch (e) {
         console.warn("localStorage.getItem failed", { key, e });
-        boundary.set(initialValue);
         return initialValue;
       }
-      const processed = onRead(deserialized);
-
-      if (!validate(processed)) {
-        boundary.set(initialValue);
-        return initialValue;
-      }
-
-      // Self-heal: if onRead normalized the value (e.g. legacy scale names),
-      // save it. Compare in serialized form to match what's in localStorage.
-      if (serialize(processed) !== stored) {
-        boundary.set(processed);
-      }
-
-      return processed;
     },
     setItem(key: string, value: T): void {
-      withStorageErrorBoundary<T>(key, value, {
-        serialize: (v) => serialize(onWrite(v)),
-      }).set(value);
+      save(key, value);
     },
     removeItem(key: string): void {
-      withStorageErrorBoundary(key, null).remove();
+      if (!hasLocalStorage()) return;
+      try {
+        localStorage.removeItem(key);
+      } catch (e) {
+        console.warn("localStorage.removeItem failed", { key, e });
+      }
     },
   };
 }
