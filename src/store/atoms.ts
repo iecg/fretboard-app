@@ -90,6 +90,7 @@ export {
   settingsOverlayOpenAtom,
   compactDensityAtom,
   themeAtom,
+  coachmarkSettingsDismissedAtom,
 } from "./uiAtoms";
 
 export {

@@ -27,6 +27,7 @@ import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark
 import { ScaleStripPanel } from "./components/ScaleStripPanel/ScaleStripPanel";
 import { ChordOverlayDock } from "./components/ChordOverlayDock/ChordOverlayDock";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
+import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
 import sharedStyles from "./components/shared/shared.module.css";
 import { ANIMATION_DURATION_XFADE } from "./core/constants";
 import "./styles/App.css";
@@ -156,15 +157,17 @@ function AppContent() {
           brandIcon={<BrandMark />}
           actions={
             <>
-              <button
-                type="button"
-                onClick={() => setSettingsOverlayOpen((v) => !v)}
-                className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--lg"])}
-                title="Settings"
-                aria-label="Open settings"
-              >
-                <Settings2 className="icon" />
-              </button>
+              <SettingsTooltip>
+                <button
+                  type="button"
+                  onClick={() => setSettingsOverlayOpen((v) => !v)}
+                  className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--lg"])}
+                  title="Settings"
+                  aria-label="Open settings"
+                >
+                  <Settings2 className="icon" />
+                </button>
+              </SettingsTooltip>
               <button
                 type="button"
                 onClick={toggleMute}

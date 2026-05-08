@@ -1,0 +1,94 @@
+/* SettingsTooltip — hover/focus tooltip + first-run coach mark for the gear button */
+
+.wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+/* ── Hover/focus tooltip ──────────────────────────────────────────────── */
+
+.tooltip {
+  position: fixed;
+  z-index: 90;
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-lg);
+  background: var(--surface-overlay);
+  border: 1px solid var(--surface-overlay-border);
+  box-shadow: var(--shadow-lg);
+  min-width: 9rem;
+  pointer-events: none;
+}
+
+.tooltip-label {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--surface-control-fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0 0 0.35rem;
+}
+
+.tooltip-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+
+.tooltip-section {
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+/* ── First-run coach mark ─────────────────────────────────────────────── */
+
+.coach-mark {
+  position: fixed;
+  z-index: 95;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: var(--radius-lg);
+  background: var(--interactive-focus);
+  color: var(--color-white, #fff);
+  box-shadow: 0 4px 20px rgb(0 0 0 / 0.25);
+  max-width: 14rem;
+  cursor: pointer;
+}
+
+.coach-mark-text {
+  flex: 1;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.coach-mark-close {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.2);
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Arrow pointing up toward the gear button */
+.coach-mark::before {
+  content: "";
+  position: absolute;
+  top: -0.4rem;
+  left: 1rem;
+  width: 0.7rem;
+  height: 0.7rem;
+  background: var(--interactive-focus);
+  transform: rotate(45deg);
+  border-radius: 2px;
+}

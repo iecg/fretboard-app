@@ -1,6 +1,6 @@
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
-import { k, createStorage, rawStringStorage, GET_ON_INIT } from "../utils/storage";
+import { k, createStorage, rawStringStorage, booleanStorage, GET_ON_INIT } from "../utils/storage";
 
 const MOBILE_TABS = ["scales", "chords", "cof", "view"] as const;
 type MobileTab = (typeof MOBILE_TABS)[number];
@@ -62,5 +62,13 @@ export const themeAtom = atomWithStorage<ThemePreference>(
   k("theme"),
   "system",
   rawStringStorage<ThemePreference>(),
+  GET_ON_INIT,
+);
+
+/** Persisted flag: true once the user has dismissed the first-run settings coach mark. */
+export const coachmarkSettingsDismissedAtom = atomWithStorage<boolean>(
+  "fretflow:coachmark.settings.dismissed",
+  false,
+  booleanStorage,
   GET_ON_INIT,
 );

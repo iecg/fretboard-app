@@ -57,10 +57,13 @@ export async function loadVisualState(
         }
       });
 
+      // Suppress the first-run coach mark so it never appears in snapshots.
+      localStorage.setItem("fretflow:coachmark.settings.dismissed", "true");
+
       // Write new state
       Object.entries(s).forEach(([key, value]) => {
         if (value === undefined || value === null) return;
-        
+
         // Serialize simple types as strings
         localStorage.setItem(`${prefix}${key}`, String(value));
       });
@@ -190,7 +193,12 @@ export async function waitForStable(locator: Locator, timeout = 2000) {
 export async function prepareVisualPage(page: Page, viewport = { width: 1280, height: 720 }) {
   await page.setViewportSize(viewport);
   await page.emulateMedia({ reducedMotion: "reduce" });
-  
+
+  // Suppress the first-run coach mark so it never appears in snapshots.
+  await page.addInitScript(() => {
+    localStorage.setItem("fretflow:coachmark.settings.dismissed", "true");
+  });
+
   // Disable all animations, transitions, and hide scrollbars globally
   await page.addStyleTag({
     content: `
