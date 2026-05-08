@@ -42,10 +42,8 @@ export {
   practiceLensAtom,
   chordTonesAtom,
   chordMembersAtom,
-  hasOutsideChordMembersAtom,
   chordLabelAtom,
   chordSummaryNotesAtom,
-  allChordMembersAtom,
   chordMemberFactsAtom,
   chordDegreeAtom,
   chordOverlayModeAtom,
@@ -109,3 +107,11 @@ export {
   setScaleNameAtom,
   resetAtom,
 } from "./actions";
+
+export {
+  hasOutsideChordMembersAtom,
+  allChordMembersAtom,
+  isChordMemberInScale,
+  hasAnyChordToneOutsideScale,
+  buildChordRowEntries,
+} from "./composableSelectors";

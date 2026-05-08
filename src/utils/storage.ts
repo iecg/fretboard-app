@@ -5,22 +5,104 @@ export { STORAGE_PREFIX, LEGACY_KEYS };
 export const storageKey = (key: string) => `${STORAGE_PREFIX}${key}`;
 export const k = storageKey;
 
+/**
+ * Single uniform error boundary around localStorage.
+ *
+ * Handles, in one place:
+ *  - SSR / `window` absence (returns the default, never throws),
+ *  - JSON parse failures (`schema.parse` may throw — caught and warned),
+ *  - quota / serialization failures on write,
+ *  - any other unexpected `localStorage` exception.
+ *
+ * Use this from migrate/read helpers and atom storage adapters so they
+ * never need their own try/catch ladder.
+ */
+export interface StorageBoundarySchema<T> {
+  parse?: (raw: string) => T;
+  serialize?: (value: T) => string;
+}
+
+export interface StorageBoundary<T> {
+  get(): T;
+  getRaw(): string | null;
+  set(value: T): void;
+  remove(): void;
+}
+
+function hasLocalStorage(): boolean {
+  try {
+    return typeof globalThis !== "undefined"
+      && typeof (globalThis as { localStorage?: Storage }).localStorage !== "undefined";
+  } catch {
+    return false;
+  }
+}
+
+export function withStorageErrorBoundary<T>(
+  key: string,
+  defaultValue: T,
+  schema: StorageBoundarySchema<T> = {},
+): StorageBoundary<T> {
+  const parse = schema.parse ?? ((raw: string) => raw as unknown as T);
+  const serialize = schema.serialize ?? ((v: T) => String(v));
+
+  return {
+    get(): T {
+      if (!hasLocalStorage()) return defaultValue;
+      try {
+        const raw = localStorage.getItem(key);
+        if (raw === null) return defaultValue;
+        return parse(raw);
+      } catch (e) {
+        console.warn("localStorage.getItem failed", { key, e });
+        return defaultValue;
+      }
+    },
+    getRaw(): string | null {
+      if (!hasLocalStorage()) return null;
+      try {
+        return localStorage.getItem(key);
+      } catch (e) {
+        console.warn("localStorage.getItem failed", { key, e });
+        return null;
+      }
+    },
+    set(value: T): void {
+      if (!hasLocalStorage()) return;
+      try {
+        localStorage.setItem(key, serialize(value));
+      } catch (e) {
+        console.warn("localStorage.setItem failed", { key, e });
+      }
+    },
+    remove(): void {
+      if (!hasLocalStorage()) return;
+      try {
+        localStorage.removeItem(key);
+      } catch (e) {
+        console.warn("localStorage.removeItem failed", { key, e });
+      }
+    },
+  };
+}
+
 // Migrate legacy keys on module load.
 function migrateLegacyKeys() {
-  try {
-    for (const legacyKey of LEGACY_KEYS) {
-      const prefixedKey = k(legacyKey);
-      if (localStorage.getItem(prefixedKey) !== null) {
-        localStorage.removeItem(legacyKey);
-        continue;
-      }
-      const legacyValue = localStorage.getItem(legacyKey);
-      if (legacyValue === null) continue;
-      localStorage.setItem(prefixedKey, legacyValue);
-      localStorage.removeItem(legacyKey);
+  if (!hasLocalStorage()) return;
+  for (const legacyKey of LEGACY_KEYS) {
+    const prefixedKey = k(legacyKey);
+    const prefixed = withStorageErrorBoundary<string>(prefixedKey, "");
+    const legacy = withStorageErrorBoundary<string>(legacyKey, "");
+    if (prefixed.getRaw() !== null) {
+      legacy.remove();
+      continue;
     }
-  } catch (e) {
-    console.warn("Legacy key migration failed", e);
+    const legacyValue = legacy.getRaw();
+    if (legacyValue === null) continue;
+    prefixed.set(legacyValue);
+    // Only drop the legacy key once the new write is observable — otherwise
+    // a quota/security failure on set() would silently lose the user's data.
+    if (prefixed.getRaw() === legacyValue) legacy.remove();
   }
 }
 migrateLegacyKeys();
@@ -52,39 +134,36 @@ export function createStorage<T>(options: StorageOptions<T> = {}) {
   } = options;
 
   const save = (key: string, value: T) => {
-    localStorage.setItem(key, serialize(onWrite(value)));
+    if (!hasLocalStorage()) return;
+    try {
+      localStorage.setItem(key, serialize(onWrite(value)));
+    } catch (e) {
+      console.warn("localStorage.setItem failed", { key, e });
+    }
   };
 
   return {
     getItem(key: string, initialValue: T): T {
+      if (!hasLocalStorage()) return initialValue;
       try {
         const stored = localStorage.getItem(key);
         if (stored === null) {
-          if (migrate) {
-            const migrated = migrate();
-            if (migrated !== undefined) {
-              save(key, migrated);
-              return migrated;
-            }
+          const migrated = migrate?.();
+          if (migrated !== undefined) {
+            save(key, migrated);
+            return migrated;
           }
           save(key, initialValue);
           return initialValue;
         }
 
-        const deserialized = deserialize(stored);
-        const processed = onRead(deserialized);
-
+        const processed = onRead(deserialize(stored));
         if (!validate(processed)) {
           save(key, initialValue);
           return initialValue;
         }
-
-        // Self-heal: if onRead normalized the value (e.g. legacy scale names), save it.
-        // We use serialize(processed) to ensure we compare with the string form in localStorage.
-        if (serialize(processed) !== stored) {
-          save(key, processed);
-        }
-
+        // Self-heal: persist the normalized form (e.g. legacy scale names).
+        if (serialize(processed) !== stored) save(key, processed);
         return processed;
       } catch (e) {
         console.warn("localStorage.getItem failed", { key, e });
@@ -92,13 +171,10 @@ export function createStorage<T>(options: StorageOptions<T> = {}) {
       }
     },
     setItem(key: string, value: T): void {
-      try {
-        save(key, value);
-      } catch (e) {
-        console.warn("localStorage.setItem failed", { key, e });
-      }
+      save(key, value);
     },
     removeItem(key: string): void {
+      if (!hasLocalStorage()) return;
       try {
         localStorage.removeItem(key);
       } catch (e) {
