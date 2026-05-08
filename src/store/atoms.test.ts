@@ -210,7 +210,16 @@ describe("atoms", () => {
     });
 
     it("self-heals below-min values to default", () => {
-      localStorage.setItem(k("fretZoom"), "10"); // fretZoom min is 50
+      localStorage.setItem(k("fretZoom"), "10"); // fretZoom min is 100
+      const store = makeStore();
+      const unsub = mount(store, fretZoomAtom);
+      expect(store.get(fretZoomAtom)).toBe(100);
+      expect(localStorage.getItem(k("fretZoom"))).toBe("100");
+      unsub();
+    });
+
+    it("self-heals legacy sub-auto zoom values to default", () => {
+      localStorage.setItem(k("fretZoom"), "50");
       const store = makeStore();
       const unsub = mount(store, fretZoomAtom);
       expect(store.get(fretZoomAtom)).toBe(100);

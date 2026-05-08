@@ -58,6 +58,6 @@ export const ANIMATION_DURATION_STANDARD = 0.24;
 export const ANIMATION_EASE = "easeOut";
 
 // Settings / Atoms
-export const FRET_ZOOM_MIN = 50;
+export const FRET_ZOOM_MIN = 100;
 export const FRET_ZOOM_MAX = 200;
 export const FRET_ZOOM_DEFAULT = 100;
