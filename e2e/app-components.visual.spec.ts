@@ -3,7 +3,6 @@ import { prepareVisualPage, expectLocatorVisual, loadVisualState } from "./visua
 
 test.describe("App Components Visual", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
     // Use the shared helper to load the desktop viewport as requested (1280x900)
     await prepareVisualPage(page, { width: 1280, height: 900 });
   });

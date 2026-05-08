@@ -189,15 +189,30 @@ export async function waitForStable(locator: Locator, timeout = 2000) {
 /**
  * Prepares a page for visual regression testing by setting the viewport,
  * enabling reduced motion, and ensuring the page is in a stable state.
+ *
+ * By default, this function navigates to "/" after registering the
+ * coachmark-suppression init script so the flag is in localStorage before
+ * the app boots. Pass `{ goto: false }` to skip the internal navigation
+ * (e.g. when the caller navigates to a non-root path).
  */
-export async function prepareVisualPage(page: Page, viewport = { width: 1280, height: 720 }) {
+export async function prepareVisualPage(
+  page: Page,
+  viewport = { width: 1280, height: 720 },
+  options: { goto?: boolean } = {}
+) {
   await page.setViewportSize(viewport);
   await page.emulateMedia({ reducedMotion: "reduce" });
 
   // Suppress the first-run coach mark so it never appears in snapshots.
+  // addInitScript must be registered BEFORE page.goto so the flag is set
+  // in localStorage before the app boots.
   await page.addInitScript(() => {
     localStorage.setItem("fretflow:coachmark.settings.dismissed", "true");
   });
+
+  if (options.goto !== false) {
+    await page.goto("/");
+  }
 
   // Disable all animations, transitions, and hide scrollbars globally
   await page.addStyleTag({
