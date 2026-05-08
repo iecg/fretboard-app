@@ -77,16 +77,6 @@ const SHAPE_TEMPLATES_LOCRIAN: Record<CagedShape, ShapeTemplate> = {
   D: { anchorString: 3, perString: [[1,4],[1,4],[0,3],[0,3],[1,3],[1,4]] },
 };
 
-/** Lydian mode templates. Shares geometry with Dorian (anchored on relative
- * minor) but D-shape string 2 tightens to match post-dedup notes. */
-const SHAPE_TEMPLATES_LYDIAN: Record<CagedShape, ShapeTemplate> = {
-  C: { anchorString: 4, perString: [[-2,0],[-2,1],[-3,0],[-3,0],[-3,0],[-2,0]] },
-  A: { anchorString: 4, perString: [[0,3],[0,3],[-1,2],[0,2],[0,3],[0,3]] },
-  G: { anchorString: 5, perString: [[-3,0],[-2,0],[-3,0],[-3,0],[-3,0],[-3,0]] },
-  E: { anchorString: 5, perString: [[0,3],[0,3],[-1,2],[-1,2],[0,2],[0,3]] },
-  D: { anchorString: 3, perString: [[0,3],[0,3],[0,2],[0,3],[0,3],[0,3]] },
-};
-
 /** Harmonic Minor templates. */
 const SHAPE_TEMPLATES_HARMONIC_MINOR: Record<CagedShape, ShapeTemplate> = {
   C: { anchorString: 4, perString: [[-2,1],[-3,1],[-3,1],[-3,0],[-1,0],[-2,1]] },
@@ -103,7 +93,6 @@ const HAND_TUNED_TEMPLATES: Record<string, Record<CagedShape, ShapeTemplate>> = 
   'Phrygian':       SHAPE_TEMPLATES_PHRYGIAN,
   'Locrian':        SHAPE_TEMPLATES_LOCRIAN,
   'Harmonic Minor': SHAPE_TEMPLATES_HARMONIC_MINOR,
-  'Lydian':         SHAPE_TEMPLATES_LYDIAN,
   'Mixolydian':     SHAPE_TEMPLATES_PHRYGIAN,
 };
 
