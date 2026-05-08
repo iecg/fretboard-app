@@ -86,8 +86,17 @@ const getDisplayLabel = (e: ChordRowEntry): string =>
   e.scaleInterval ?? e.memberName;
 
 /**
- * Maps note → NoteSemantics allowing multiple properties to coexist.
- * Accommodates notes with multiple roles (e.g., chord root outside scale).
+ * Maps note → {@link NoteSemantics}, allowing multiple properties to coexist
+ * for notes that fill more than one role (e.g. a chord root that lies outside
+ * the active scale).
+ *
+ * Inputs (read via `get`): `chordTypeAtom`, `chordOverlayHiddenAtom`,
+ * `rootNoteAtom`, `scaleNameAtom`, plus the chord-row catalog.
+ *
+ * Output: `Map<note, NoteSemantics>`. Empty map when there is no chord or the
+ * overlay is hidden — consumers fall back to the scale-only base model.
+ *
+ * See the "Lens & Note Roles" section in `CLAUDE.md` for the role taxonomy.
  */
 export const noteSemanticMapAtom = atom((get) => {
   const chordType = get(chordTypeAtom);
@@ -175,7 +184,16 @@ export const noteSemanticMapAtom = atom((get) => {
 });
 
 /**
- * Derives ordered coaching cues for the practice bar based on active lens.
+ * Derives the ordered coaching cues rendered in the practice bar.
+ *
+ * Inputs (read via `get`): the active practice lens (`practiceLensAtom`),
+ * chord root/type, scale name, and the chord-row catalog.
+ *
+ * Output: `PracticeCue[]` ordered for left-to-right display. Returns `[]`
+ * when no chord is active.
+ *
+ * See the "Lens & Note Roles" section in `CLAUDE.md` for how cues compose
+ * with the base note-role model.
  */
 export const practiceCuesAtom = atom((get) => {
   const chordType = get(chordTypeAtom);

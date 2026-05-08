@@ -74,6 +74,9 @@ function AppContent() {
   const helpTriggerRef = useRef<HTMLButtonElement>(null);
   const layout = useLayoutMode();
   const theme = useResolvedTheme();
+  // Debug mode: visiting `?audit=note-colors` swaps the entire app for the
+  // NoteColorAudit harness (and clears `data-theme` so both light/dark swatches
+  // can be inspected side-by-side). See "Debug modes" in CLAUDE.md.
   const showNoteColorAudit =
     typeof window !== "undefined" &&
     new URLSearchParams(window.location.search).get("audit") === "note-colors";
