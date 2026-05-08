@@ -153,11 +153,11 @@ describe("TheoryControls/TheoryControls", () => {
 });
 
 describe("TheoryControls/TheorySection — disclosure ::before focus-ring inset", () => {
-  it("disclosure button ::before has symmetric vertical inset >= 0.25rem", () => {
+  it("disclosure button ::before resting inset is 0 after frame removal", () => {
     // jsdom cannot reliably compute box-shadow on ::before pseudo-elements.
     // Instead, assert the structural CSS source rule directly: read the CSS
-    // module file and parse the inset shorthand to verify both vertical and
-    // horizontal insets are present and the vertical value is >= 0.25rem.
+    // module file and parse the inset shorthand to verify the resting inset is
+    // 0 (aligned to the button's own bounds) after the nested-card frame was removed.
     const cssPath = resolve(
       dirname(fileURLToPath(import.meta.url)),
       "./TheoryControls.module.css",
@@ -172,15 +172,16 @@ describe("TheoryControls/TheorySection — disclosure ::before focus-ring inset"
     expect(insetMatch, "inset property must exist in ::before block").toBeTruthy();
 
     const insetValue = insetMatch![1].trim();
-    // Inset shorthand: "vertical horizontal" (2-value) — e.g. "-0.35rem -0.55rem"
+    // After frame removal, the resting inset must be a single zero value so the
+    // ::before layer aligns to the button's own bounding box.
     const parts = insetValue.split(/\s+/);
     expect(parts.length).toBeGreaterThanOrEqual(1);
 
-    // Parse the vertical inset (first value) — allow negative values (outset).
+    // Parse the vertical inset (first value).
     const verticalRaw = parts[0];
     const verticalRem = parseFloat(verticalRaw);
-    // The absolute value must be >= 0.25rem so the ring is not visually clipped.
-    expect(Math.abs(verticalRem)).toBeGreaterThanOrEqual(0.25);
+    // Resting inset must be 0 — the ring is no longer compensating for a parent frame.
+    expect(verticalRem).toBe(0);
   });
 
   it("disclosure button has outline: none on :focus-visible (ring provided by ::before box-shadow)", () => {
