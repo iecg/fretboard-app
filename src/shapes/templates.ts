@@ -111,7 +111,7 @@ function deriveTemplate(
   const intervals = SCALES[scaleName];
   if (!intervals || intervals.length !== 7) return null;
 
-  const useMajorRemap = intervals.includes(4);
+  const useMajorRemap = shouldUseRelativeMinorAnchor(scaleName);
   const effectiveShape = useMajorRemap ? MAJOR_TO_MINOR_SHAPE[shape] : shape;
   const config = SHAPE_CONFIGS[effectiveShape];
 
@@ -244,6 +244,21 @@ export const MAJOR_TO_MINOR_SHAPE: Record<CagedShape, CagedShape> = {
 export function isMajorScale(scaleName: string): boolean {
   const intervals = SCALES[scaleName];
   return intervals ? intervals.includes(4) : false;
+}
+
+/**
+ * Whether to anchor a scale's CAGED templates on its relative-minor root.
+ * Only applies to scales whose templates were authored against the relative
+ * minor — i.e. modes of the major scale family with a major 3rd. Scales from
+ * other families (harmonic/melodic minor) anchor on their own root, even
+ * when their intervals contain a major 3rd.
+ */
+const RELATIVE_MINOR_REMAP_SCALES = new Set([
+  'Major', 'Lydian', 'Mixolydian',
+]);
+
+export function shouldUseRelativeMinorAnchor(scaleName: string): boolean {
+  return RELATIVE_MINOR_REMAP_SCALES.has(scaleName);
 }
 
 export function getRelativeMinorRoot(majorRoot: string): string {
