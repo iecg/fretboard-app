@@ -1,6 +1,7 @@
 import { SCALES, NOTES, getScaleNotes } from "../core/theory";
 import { getFretboardNotes, STANDARD_TUNING } from "../core/guitar";
 import { MAX_FRET } from "../core/constants";
+import { deduplicateAdjacentStrings } from "./helpers";
 
 /** Mode names for degrees of the major scale (Ionian through Locrian). */
 export const MAJOR_MODE_NAMES = [
@@ -164,10 +165,10 @@ function deriveTemplate(
     perStringNotes.push(stringNotes);
   }
 
-  // Skip dedup: hand-tuned templates describe the full shape boundary on
-  // every string (matching all scale notes in the window). Dedup is a
-  // runtime concern for dot rendering only — applying it here would shrink
-  // template ranges and produce indented polygons.
+  // Apply adjacent-string deduplication to match runtime dot rendering, so
+  // derived polygons hug the actually-visible notes per string. Without this
+  // the polygon overshoots strings where dedup removed an outer note.
+  deduplicateAdjacentStrings(perStringNotes, layout, null);
 
   const perString: [number, number][] = [];
   for (let s = 0; s < numStrings; s++) {
@@ -202,35 +203,10 @@ function getDerivedTemplates(
   return result;
 }
 
-/**
- * Per-shape hand-tuned overrides applied on top of derived templates.
- * Used to tighten polygons whose derived geometry overshoots post-dedup notes.
- */
-const PARTIAL_TEMPLATE_OVERRIDES: Record<string, Partial<Record<CagedShape, ShapeTemplate>>> = {
-  'Locrian Natural 6': {
-    E: { anchorString: 5, perString: [[0,3],[2,3],[0,3],[-1,3],[0,1],[0,3]] },
-  },
-  'Dorian Sharp 4': {
-    E: { anchorString: 5, perString: [[0,3],[-1,3],[-1,0],[-1,2],[1,2],[0,3]] },
-  },
-  'Lydian Sharp 2': {
-    E: { anchorString: 5, perString: [[-1,3],[-1,2],[0,1],[-1,2],[-1,2],[-1,3]] },
-  },
-  'Altered Diminished': {
-    E: { anchorString: 5, perString: [[0,3],[1,2],[0,3],[-1,3],[-1,3],[0,3]] },
-  },
-};
-
 export function get7NoteTemplate(
   scaleName: string,
 ): Record<CagedShape, ShapeTemplate> | null {
-  const base = HAND_TUNED_TEMPLATES[scaleName] ?? getDerivedTemplates(scaleName);
-  if (!base) return null;
-
-  const overrides = PARTIAL_TEMPLATE_OVERRIDES[scaleName];
-  if (!overrides) return base;
-
-  return { ...base, ...overrides };
+  return HAND_TUNED_TEMPLATES[scaleName] ?? getDerivedTemplates(scaleName);
 }
 
 export const SHAPE_TEMPLATES_PENT: Record<CagedShape, ShapeTemplate> = {
