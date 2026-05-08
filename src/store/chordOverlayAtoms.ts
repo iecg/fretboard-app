@@ -53,12 +53,9 @@ function migrateViewModeToLens(viewMode: string): PracticeLens {
 const practiceLensStorage = createStorage<PracticeLens>({
   validate: (v) => (PRACTICE_LENS_VALUES as string[]).includes(v),
   migrate: () => {
-    const oldViewMode = localStorage.getItem(k("viewMode")) || localStorage.getItem("viewMode");
-    if (oldViewMode) {
-      const migrated = migrateViewModeToLens(oldViewMode);
-      // Optional: cleanup legacy keys could go here, but legacy behavior just returned migrated
-      return migrated;
-    }
+    const oldViewMode =
+      readLocalStorage(k("viewMode")) ?? readLocalStorage("viewMode");
+    if (oldViewMode) return migrateViewModeToLens(oldViewMode);
     return undefined;
   },
 });

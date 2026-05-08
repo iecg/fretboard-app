@@ -100,7 +100,9 @@ function migrateLegacyKeys() {
     const legacyValue = legacy.getRaw();
     if (legacyValue === null) continue;
     prefixed.set(legacyValue);
-    legacy.remove();
+    // Only drop the legacy key once the new write is observable — otherwise
+    // a quota/security failure on set() would silently lose the user's data.
+    if (prefixed.getRaw() === legacyValue) legacy.remove();
   }
 }
 migrateLegacyKeys();
