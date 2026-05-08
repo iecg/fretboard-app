@@ -1,4 +1,5 @@
 import { useRef, useEffect } from "react";
+import { motion } from "motion/react";
 import clsx from "clsx";
 import { formatAccidental, getNoteDisplay } from "../../core/theory";
 import shared from "../shared/shared.module.css";
@@ -88,23 +89,29 @@ export function NoteGrid({
 
   return (
     <div className={shared["note-grid"]} role="group" aria-label="Note selector" data-compact={compact ? "true" : undefined}>
-      {notes.map((n, index) => (
-        <button
-          key={n}
-          ref={(el) => {
-            buttonRefs.current[index] = el;
-          }}
-          type="button"
-          className={clsx(shared["note-btn"], selected === n && shared.active)}
-          aria-pressed={selected === n}
-          onClick={() => onSelect(n)}
-          onKeyDown={(e) => handleKeyDown(e, index)}
-        >
-          <span className={shared["note-btn-label"]}>
-            {formatAccidental(getNoteDisplay(n, n, useFlats))}
-          </span>
-        </button>
-      ))}
+      {notes.map((n, index) => {
+        const isActive = selected === n;
+        return (
+          <motion.button
+            key={n}
+            ref={(el) => {
+              buttonRefs.current[index] = el as unknown as HTMLButtonElement;
+            }}
+            type="button"
+            className={clsx(shared["note-btn"], isActive && shared.active)}
+            aria-pressed={isActive}
+            onClick={() => onSelect(n)}
+            onKeyDown={(e) => handleKeyDown(e, index)}
+            whileTap={{ scale: 0.95 }}
+            animate={isActive ? { scale: [1, 1.05, 1] } : { scale: 1 }}
+            transition={{ duration: 0.2 }}
+          >
+            <span className={shared["note-btn-label"]}>
+              {formatAccidental(getNoteDisplay(n, n, useFlats))}
+            </span>
+          </motion.button>
+        );
+      })}
     </div>
   );
 }

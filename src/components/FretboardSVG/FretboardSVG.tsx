@@ -1,5 +1,6 @@
 import { useId, useMemo, useCallback, memo, type CSSProperties } from "react";
 import { useAtomValue } from "jotai";
+import { motion, AnimatePresence } from "motion/react";
 import {
   getNoteDisplay,
   type PracticeLens,
@@ -385,35 +386,52 @@ export const FretboardSVG = memo(function FretboardSVG({
 
           <g clipPath={svgDefUrl("fretboard-taper")}>
             <FretboardShapeLayer svgPolygons={svgPolygons} />
-            {connectorPolylines.length > 0 && (
-              <g
-                className={styles["chord-connectors"]}
-                aria-hidden="true"
-                pointerEvents="none"
-                data-has-active-voicing={activeVoicingKey ? "true" : undefined}
-              >
-                {/* Fill pass: all voicings rendered first (below outlines) */}
-                {connectorPolylines.map((voicing, i) => (
-                  <path
-                    key={`fill-${i}`}
-                    d={voicing.paths.fill}
-                    data-layer="fill"
-                    data-palette-index={voicing.paletteIndex + 1}
-                    data-active-voicing={voicing.voicingKey === activeVoicingKey ? voicing.voicingKey : undefined}
-                  />
-                ))}
-                {/* Outline pass: all voicings rendered on top */}
-                {connectorPolylines.map((voicing, i) => (
-                  <path
-                    key={`outline-${i}`}
-                    d={voicing.paths.outline}
-                    data-layer="outline"
-                    data-palette-index={voicing.paletteIndex + 1}
-                    data-active-voicing={voicing.voicingKey === activeVoicingKey ? voicing.voicingKey : undefined}
-                  />
-                ))}
-              </g>
-            )}
+            <AnimatePresence>
+              {connectorPolylines.length > 0 && (
+                <motion.g
+                  key="chord-connectors"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className={styles["chord-connectors"]}
+                  aria-hidden="true"
+                  pointerEvents="none"
+                  data-has-active-voicing={activeVoicingKey ? "true" : undefined}
+                >
+                  {/* Fill pass: all voicings rendered first (below outlines) */}
+                  {connectorPolylines.map((voicing, i) => (
+                    <motion.path
+                      key={`fill-${voicing.voicingKey}-${i}`}
+                      initial={{ opacity: 0, scale: 0.98 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.98 }}
+                      transition={{ duration: 0.2 }}
+                      d={voicing.paths.fill}
+                      data-layer="fill"
+                      data-palette-index={voicing.paletteIndex + 1}
+                      data-active-voicing={voicing.voicingKey === activeVoicingKey ? voicing.voicingKey : undefined}
+                      style={{ originX: "50%", originY: "50%" }}
+                    />
+                  ))}
+                  {/* Outline pass: all voicings rendered on top */}
+                  {connectorPolylines.map((voicing, i) => (
+                    <motion.path
+                      key={`outline-${voicing.voicingKey}-${i}`}
+                      initial={{ opacity: 0, scale: 0.98 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.98 }}
+                      transition={{ duration: 0.2 }}
+                      d={voicing.paths.outline}
+                      data-layer="outline"
+                      data-palette-index={voicing.paletteIndex + 1}
+                      data-active-voicing={voicing.voicingKey === activeVoicingKey ? voicing.voicingKey : undefined}
+                      style={{ originX: "50%", originY: "50%" }}
+                    />
+                  ))}
+                </motion.g>
+              )}
+            </AnimatePresence>
             <FretboardNoteLayer
               noteData={noteData}
               fretCenterX={fretCenterX}

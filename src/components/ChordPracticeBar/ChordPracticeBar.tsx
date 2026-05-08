@@ -37,6 +37,7 @@ interface PillProps {
 
 function Pill({ note, noteHidden, onToggleNote }: PillProps) {
   const aria = [note.displayNote, note.intervalName].filter(Boolean).join(", ");
+
   return (
     <li className={styles["practice-bar-pill-item"]}>
       <button
@@ -79,6 +80,7 @@ interface GroupProps {
 
 function Group({ variant, group, hiddenNotes, onToggleNote }: GroupProps) {
   if (group.notes.length === 0) return null;
+
   return (
     <div
       className={styles["practice-bar-group"]}
@@ -164,30 +166,38 @@ export function ChordPracticeBar({
           aria-pressed={!collapsed}
           onClick={() => toggleCollapsed()}
         >
-          {collapsed ? <EyeClosedIcon /> : <EyeOpenIcon />}
+          <span style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {collapsed ? <EyeClosedIcon /> : <EyeOpenIcon />}
+          </span>
         </button>
-        <span className={styles["chord-practice-bar-title"]}>{title}</span>
+        <span className={styles["chord-practice-bar-title"]}>
+          {title}
+        </span>
         {lensLabel && (
-          <span className={styles["chord-practice-bar-lens-label"]}>{lensLabel}</span>
+          <span className={styles["chord-practice-bar-lens-label"]}>
+            {lensLabel}
+          </span>
         )}
         {badge && <span className={styles["chord-practice-bar-badge"]}>{badge}</span>}
       </div>
       {!collapsed && (
-        <div className={styles["chord-practice-bar-groups"]}>
-          {!dedupGroups && (
+        <div className={styles["chord-practice-bar-groups-container"]}>
+          <div className={styles["chord-practice-bar-groups"]}>
+            {!dedupGroups && (
+              <Group
+                variant="chord"
+                group={chordGroup}
+                hiddenNotes={hiddenNotes}
+                onToggleNote={toggleNote}
+              />
+            )}
             <Group
-              variant="chord"
-              group={chordGroup}
+              variant="land-on"
+              group={landOnGroup}
               hiddenNotes={hiddenNotes}
               onToggleNote={toggleNote}
             />
-          )}
-          <Group
-            variant="land-on"
-            group={landOnGroup}
-            hiddenNotes={hiddenNotes}
-            onToggleNote={toggleNote}
-          />
+          </div>
         </div>
       )}
     </section>

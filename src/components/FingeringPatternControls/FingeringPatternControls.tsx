@@ -1,5 +1,6 @@
 import { useCallback, useId, useRef, useState } from "react";
 import { useAtom } from "jotai";
+import { motion } from "motion/react";
 import clsx from "clsx";
 import { CAGED_SHAPES, type CagedShape } from "../../shapes";
 import { useShapeState } from "../../hooks/useShapeState";
@@ -83,7 +84,7 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
               aria-describedby={shapeHelpId}
               data-compact={compact ? "true" : undefined}
             >
-              <button
+              <motion.button
                 type="button"
                 className={clsx(
                   shared["toggle-btn"],
@@ -91,71 +92,80 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
                 )}
                 aria-pressed={cagedShapes.size === CAGED_SHAPES.length}
                 onClick={() => setCagedShapes(new Set(CAGED_SHAPES))}
+                whileTap={{ scale: 0.96 }}
+                animate={cagedShapes.size === CAGED_SHAPES.length ? { scale: [1, 1.04, 1] } : { scale: 1 }}
+                transition={{ duration: 0.2 }}
               >
                 All
-              </button>
-              {CAGED_SHAPES.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  className={clsx(
-                    shared["toggle-btn"],
-                    cagedShapes.has(s) && shared.active,
-                  )}
-                  data-pressing={pressingShape === s || undefined}
-                  aria-pressed={cagedShapes.has(s)}
-                  title={
-                    isTouchPrimary
-                      ? "Tap to select; long press to add/remove"
-                      : "Click to select; Shift+click to toggle multiple"
-                  }
-                  onPointerDown={(e) => {
-                    // Long press only applies to touch/pen — desktop uses Shift+click
-                    if (e.pointerType !== "touch" && e.pointerType !== "pen") return;
-                    cancelPress();
-                    longPressedShapeRef.current = null;
-                    pressStartRef.current = { x: e.clientX, y: e.clientY };
-                    setPressingShape(s);
-                    pressTimerRef.current = setTimeout(() => {
-                      longPressedShapeRef.current = s;
-                      pressTimerRef.current = null;
-                      pressStartRef.current = null;
-                      setPressingShape(null);
-                      toggleCagedShape(s);
-                      navigator.vibrate?.(30);
-                    }, LONG_PRESS_MS);
-                  }}
-                  onPointerMove={(e) => {
-                    if (!pressStartRef.current) return;
-                    const dx = e.clientX - pressStartRef.current.x;
-                    const dy = e.clientY - pressStartRef.current.y;
-                    if (Math.hypot(dx, dy) > MOVE_CANCEL_PX) cancelPress();
-                  }}
-                  onPointerUp={cancelPress}
-                  onPointerCancel={cancelPress}
-                  onPointerLeave={cancelPress}
-                  onContextMenu={(e) => {
-                    // Suppress context menu that browsers show on long press
-                    if (longPressedShapeRef.current !== null) e.preventDefault();
-                  }}
-                  onClick={(e) => {
-                    // If this click followed a long press, skip single-select
-                    if (longPressedShapeRef.current !== null) {
+              </motion.button>
+              {CAGED_SHAPES.map((s) => {
+                const isActive = cagedShapes.has(s);
+                return (
+                  <motion.button
+                    key={s}
+                    type="button"
+                    className={clsx(
+                      shared["toggle-btn"],
+                      isActive && shared.active,
+                    )}
+                    data-pressing={pressingShape === s || undefined}
+                    aria-pressed={isActive}
+                    title={
+                      isTouchPrimary
+                        ? "Tap to select; long press to add/remove"
+                        : "Click to select; Shift+click to toggle multiple"
+                    }
+                    onPointerDown={(e) => {
+                      // Long press only applies to touch/pen — desktop uses Shift+click
+                      if (e.pointerType !== "touch" && e.pointerType !== "pen") return;
+                      cancelPress();
                       longPressedShapeRef.current = null;
-                      return;
-                    }
-                    onShapeClick?.(s);
-                    onRecenter?.();
-                    if (e.shiftKey) {
-                      toggleCagedShape(s);
-                    } else {
-                      selectSingleCagedShape(s);
-                    }
-                  }}
-                >
-                  {s}
-                </button>
-              ))}
+                      pressStartRef.current = { x: e.clientX, y: e.clientY };
+                      setPressingShape(s);
+                      pressTimerRef.current = setTimeout(() => {
+                        longPressedShapeRef.current = s;
+                        pressTimerRef.current = null;
+                        pressStartRef.current = null;
+                        setPressingShape(null);
+                        toggleCagedShape(s);
+                        navigator.vibrate?.(30);
+                      }, LONG_PRESS_MS);
+                    }}
+                    onPointerMove={(e) => {
+                      if (!pressStartRef.current) return;
+                      const dx = e.clientX - pressStartRef.current.x;
+                      const dy = e.clientY - pressStartRef.current.y;
+                      if (Math.hypot(dx, dy) > MOVE_CANCEL_PX) cancelPress();
+                    }}
+                    onPointerUp={cancelPress}
+                    onPointerCancel={cancelPress}
+                    onPointerLeave={cancelPress}
+                    onContextMenu={(e) => {
+                      // Suppress context menu that browsers show on long press
+                      if (longPressedShapeRef.current !== null) e.preventDefault();
+                    }}
+                    onClick={(e) => {
+                      // If this click followed a long press, skip single-select
+                      if (longPressedShapeRef.current !== null) {
+                        longPressedShapeRef.current = null;
+                        return;
+                      }
+                      onShapeClick?.(s);
+                      onRecenter?.();
+                      if (e.shiftKey) {
+                        toggleCagedShape(s);
+                      } else {
+                        selectSingleCagedShape(s);
+                      }
+                    }}
+                    whileTap={{ scale: 0.96 }}
+                    animate={isActive ? { scale: [1, 1.04, 1] } : { scale: 1 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {s}
+                  </motion.button>
+                );
+              })}
             </div>
             <p className={shared["field-hint"]}>
               {isTouchPrimary ? "Long press to add shapes" : "Shift+click to add shapes"}

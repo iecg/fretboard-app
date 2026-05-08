@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import {
   LabeledSelect,
   type LabeledSelectOption,
@@ -47,15 +48,17 @@ export function StepperSelect({
       aria-label={groupLabel}
       data-compact={compact ? "true" : undefined}
     >
-      <button
+      <motion.button
         type="button"
         className={styles["nav-button"]}
         onClick={onPrevious}
         aria-label={previousLabel}
         disabled={disabled || previousDisabled}
+        whileTap={{ scale: 0.94 }}
+        transition={{ type: "spring", stiffness: 500, damping: 25 }}
       >
         <ChevronLeft className="icon" size={16} />
-      </button>
+      </motion.button>
       <div className={styles["select-slot"]}>
         <LabeledSelect
           label={selectLabel}
@@ -66,15 +69,17 @@ export function StepperSelect({
           disabled={disabled}
         />
       </div>
-      <button
+      <motion.button
         type="button"
         className={styles["nav-button"]}
         onClick={onNext}
         aria-label={nextLabel}
         disabled={disabled || nextDisabled}
+        whileTap={{ scale: 0.94 }}
+        transition={{ type: "spring", stiffness: 500, damping: 25 }}
       >
         <ChevronRight className="icon" size={16} />
-      </button>
+      </motion.button>
     </StepperShell>
   );
 }

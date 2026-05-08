@@ -1,5 +1,6 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { Minus, Plus } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import { StepperShell } from "../StepperShell/StepperShell";
 import styles from "./StepperControl.module.css";
 import shared from "../shared/shared.module.css";
@@ -49,25 +50,45 @@ export function StepperControl({
         role="group"
         aria-label={label ?? "Stepper control"}
       >
-        <button
+        <motion.button
           type="button"
           className={styles["stepper-btn"]}
           aria-label={`Decrease ${label ?? "value"} (current: ${value})`}
           onClick={() => onChange(Math.max(min, value - step))}
           disabled={value <= min}
+          whileTap={{ scale: 0.94 }}
+          transition={{ type: "spring", stiffness: 500, damping: 25 }}
         >
           <Minus className={styles["stepper-icon"]} aria-hidden="true" />
-        </button>
-        <span className={styles["stepper-value"]}>{formatValue(value)}</span>
-        <button
+        </motion.button>
+        <div className={styles["stepper-value-slot"]}>
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.span
+              key={value}
+              initial={{ y: 12, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -12, opacity: 0 }}
+              transition={{
+                y: { type: "spring", stiffness: 400, damping: 28 },
+                opacity: { duration: 0.15 }
+              }}
+              className={styles["stepper-value"]}
+            >
+              {formatValue(value)}
+            </motion.span>
+          </AnimatePresence>
+        </div>
+        <motion.button
           type="button"
           className={styles["stepper-btn"]}
           aria-label={`Increase ${label ?? "value"} (current: ${value})`}
           onClick={() => onChange(Math.min(max, value + step))}
           disabled={value >= max}
+          whileTap={{ scale: 0.94 }}
+          transition={{ type: "spring", stiffness: 500, damping: 25 }}
         >
           <Plus className={styles["stepper-icon"]} aria-hidden="true" />
-        </button>
+        </motion.button>
       </StepperShell>
     </div>
   );

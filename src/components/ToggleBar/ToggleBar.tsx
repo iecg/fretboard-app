@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { motion } from "motion/react";
 import { cva, type VariantProps } from "class-variance-authority";
 import styles from "./ToggleBar.module.css";
 import shared from "../shared/shared.module.css";
@@ -74,7 +75,7 @@ export function ToggleBar<Value extends string | number>({
         const isActive = value === option.value;
         const descId = option.description ? `${descPrefix}-${option.value}` : undefined;
         return (
-          <button
+          <motion.button
             key={option.value}
             type="button"
             {...(isTabs
@@ -85,9 +86,12 @@ export function ToggleBar<Value extends string | number>({
             disabled={option.disabled}
             title={option.title}
             aria-describedby={descId}
+            whileTap={{ scale: 0.96 }}
+            animate={isActive ? { scale: [1, 1.04, 1] } : { scale: 1 }}
+            transition={{ duration: 0.2 }}
           >
             {option.label}
-          </button>
+          </motion.button>
         );
       })}
       {options.map((option) =>

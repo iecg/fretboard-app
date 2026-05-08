@@ -48,6 +48,56 @@ window.matchMedia = vi.fn().mockImplementation((query: string) => ({
   dispatchEvent: vi.fn(),
 }));
 
+// motion/react uses RAF-sequenced animations which never fire in jsdom, causing
+// AnimatePresence to defer rendering its children indefinitely and making any
+// waitFor that depends on animated content flaky. Replace with instant renders.
+vi.mock("motion/react", async () => {
+  const React = await import("react");
+  const ANIMATION_PROPS = new Set([
+    "initial",
+    "animate",
+    "exit",
+    "transition",
+    "variants",
+    "whileHover",
+    "whileTap",
+    "whileFocus",
+    "whileDrag",
+    "whileInView",
+    "layoutId",
+    "layout",
+    "onAnimationStart",
+    "onAnimationComplete",
+    "onUpdate",
+  ]);
+  const makeElement = (tag: string) =>
+    React.forwardRef<HTMLElement, Record<string, unknown>>(({ children, ...props }, ref) => {
+      const rest: Record<string, unknown> = {};
+      Object.entries(props).forEach(([key, value]) => {
+        if (!ANIMATION_PROPS.has(key)) {
+          rest[key] = value;
+        }
+      });
+      return React.createElement(tag, { ...rest, ref }, children as React.ReactNode);
+    });
+
+  const componentCache = new Map<string, React.ForwardRefExoticComponent<unknown>>();
+  const motionProxy = new Proxy({} as Record<string, unknown>, {
+    get(_t, prop: string) {
+      if (!componentCache.has(prop)) {
+        componentCache.set(prop, makeElement(prop) as React.ForwardRefExoticComponent<unknown>);
+      }
+      return componentCache.get(prop);
+    },
+  });
+
+  return {
+    motion: motionProxy,
+    AnimatePresence: ({ children }: { children: React.ReactNode }) =>
+      children as React.ReactElement,
+  };
+});
+
 /**
  * Snapshot serializer that normalizes React useId() generated IDs.
  * React generated IDs (e.g., _r_c_) shift between runs, causing snapshot instability.
