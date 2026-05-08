@@ -184,18 +184,21 @@ describe("TheoryControls/TheorySection — disclosure ::before focus-ring inset"
     expect(verticalRem).toBe(0);
   });
 
-  it("disclosure button has outline: none on :focus-visible (ring provided by ::before box-shadow)", () => {
+  it("disclosure button uses native outline on :focus-visible (no ::before box-shadow ring)", () => {
     const cssPath = resolve(
       dirname(fileURLToPath(import.meta.url)),
       "./TheoryControls.module.css",
     );
     const css = readFileSync(cssPath, "utf-8");
-    // The :focus-visible rule on the button must suppress the browser outline.
+    // The :focus-visible rule must use a native outline, not suppress it.
     const focusVisibleBlock = css.match(
       /\.theory-disclosure-btn:focus-visible\s*\{([^}]+)\}/,
     );
     expect(focusVisibleBlock, ":focus-visible block must exist").toBeTruthy();
-    expect(focusVisibleBlock![1]).toMatch(/outline:\s*none/);
+    expect(focusVisibleBlock![1]).toMatch(/outline:\s*1\.5px solid var\(--interactive-focus\)/);
+    expect(focusVisibleBlock![1]).toMatch(/outline-offset:\s*1px/);
+    // Must NOT suppress the outline.
+    expect(focusVisibleBlock![1]).not.toMatch(/outline:\s*none/);
   });
 });
 

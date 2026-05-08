@@ -86,8 +86,7 @@
   background-color: transparent;
   background-image: none;
   transition: background-color var(--transition-fast) ease,
-              background-image var(--transition-fast) ease,
-              box-shadow var(--transition-fast) ease;
+              background-image var(--transition-fast) ease;
   pointer-events: none;
   z-index: -1;
 }
@@ -96,7 +95,6 @@
   inset: 0;
   background-color: var(--surface-control-hover-bg);
   background-image: var(--surface-control-hover-bg-image);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
 }
 
 .theory-disclosure-btn:hover {
@@ -108,14 +106,14 @@
 }
 
 .theory-disclosure-btn:focus-visible {
-  outline: none;
+  outline: 1.5px solid var(--interactive-focus);
+  outline-offset: 1px;
 }
 
 .theory-disclosure-btn:focus-visible::before {
   inset: 0;
   background-color: var(--surface-control-hover-bg);
   background-image: var(--surface-control-hover-bg-image);
-  box-shadow: var(--control-focus-glow), 0 0 0 2px var(--interactive-focus);
 }
 
 .theory-disclosure-title {
