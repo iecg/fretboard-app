@@ -110,6 +110,7 @@
 }
 
 .theory-disclosure-btn:hover::before {
+  inset: 0 -0.55rem;
   background-color: var(--surface-control-hover-bg);
   background-image: var(--surface-control-hover-bg-image);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
