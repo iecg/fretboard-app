@@ -275,7 +275,7 @@ export function isMajorScale(scaleName: string): boolean {
  * when their intervals contain a major 3rd.
  */
 const RELATIVE_MINOR_REMAP_SCALES = new Set([
-  'Major', 'Lydian', 'Mixolydian',
+  'Major', 'Lydian', 'Mixolydian', 'Major Pentatonic', 'Major Blues',
 ]);
 
 export function shouldUseRelativeMinorAnchor(scaleName: string): boolean {
