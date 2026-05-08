@@ -13,7 +13,27 @@ interface FretboardNoteLayerProps {
   noteBubblePx: number;
   displayFormat: "notes" | "degrees" | "none";
   degreeColorsEnabled?: boolean;
+  onNoteClick?: (stringIndex: number, fretIndex: number, noteName: string) => void;
 }
+
+const ROLE_DESCRIPTIONS: Record<string, string> = {
+  "root-active": "scale root",
+  "chord-root": "chord root",
+  "chord-tone": "chord tone",
+  "chord-tone-in-scale": "chord tone in scale",
+  "chord-tone-outside-scale": "chord tone outside scale",
+  "note-diatonic-chord": "diatonic chord tone",
+  "note-blue": "blue note",
+  "note-active": "scale note",
+  "note-scale-only": "scale note",
+  "chord-outside": "chord tone outside scale",
+  "color-tone": "color tone",
+  "key-tonic": "key tonic",
+  "note-inactive": "inactive",
+};
+
+const formatRole = (noteClass: string): string =>
+  ROLE_DESCRIPTIONS[noteClass] ?? noteClass.replace(/-/g, " ");
 
 export const FretboardNoteLayer = memo(({
   noteData,
@@ -22,12 +42,15 @@ export const FretboardNoteLayer = memo(({
   noteBubblePx,
   displayFormat,
   degreeColorsEnabled,
+  onNoteClick,
 }: FretboardNoteLayerProps) => {
   return (
     <>
       {noteData.map(({
         stringIndex,
         fretIndex,
+        noteName,
+        octave,
         noteClass,
         displayValue,
         applyDimOpacity,
@@ -95,6 +118,9 @@ export const FretboardNoteLayer = memo(({
 
         const baseOpacity = applyDimOpacity ? 0.8 : 1;
         const finalOpacity = baseOpacity * applyLensEmphasis.opacityBoost;
+        const roleLabel = formatRole(noteClass);
+        const ariaLabel = `${noteName}${octave} — ${roleLabel}`;
+        const interactive = !!onNoteClick && !isHidden;
         return (
           <motion.g
             key={`note-${stringIndex}-${fretIndex}`}
@@ -108,6 +134,25 @@ export const FretboardNoteLayer = memo(({
               styles["fretboard-note"],
               styles[noteClass],
             )}
+            role="button"
+            aria-label={ariaLabel}
+            aria-hidden={isHidden || undefined}
+            tabIndex={interactive ? 0 : -1}
+            onClick={
+              interactive
+                ? () => onNoteClick!(stringIndex, fretIndex, noteName)
+                : undefined
+            }
+            onKeyDown={
+              interactive
+                ? (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onNoteClick!(stringIndex, fretIndex, noteName);
+                    }
+                  }
+                : undefined
+            }
             data-note-role={noteClass !== "note-inactive" ? noteClass : undefined}
             data-note-shape={noteShape}
             data-note-tension={isTension || undefined}

@@ -33,6 +33,7 @@ function makeNote(
     stringIndex: si,
     fretIndex: fi,
     noteName,
+    octave: 4,
     noteClass,
     displayValue: noteName,
     applyDimOpacity: false,
