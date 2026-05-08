@@ -3,10 +3,8 @@ import { atomWithStorage, RESET } from "jotai/utils";
 import {
   NOTES,
   CHORD_DEFINITIONS,
-  INTERVAL_NAMES,
   LENS_REGISTRY,
   getChordNotes,
-  getScaleNotes,
   getNoteDisplay,
   formatAccidental,
   getDiatonicChord,
@@ -15,7 +13,6 @@ import type {
   ChordMemberFact,
   ResolvedChordMember,
   PracticeLens,
-  ChordRowEntry,
 } from "../core/theory";
 import {
   getDegreesForScale,
@@ -29,9 +26,9 @@ import {
   booleanStorage,
   constrainedNumberStorage,
   GET_ON_INIT,
+  withStorageErrorBoundary,
 } from "../utils/storage";
 import {
-  scaleNotesAtom,
   useFlatsAtom,
   rootNoteAtom,
   scaleNameAtom,
@@ -77,14 +74,10 @@ const practiceLensStorage = createStorage<PracticeLens>({
  * plain strings — not JSON-encoded — by rawStringStorage/chordTypeStorage serializers.
  */
 function readLocalStorage(key: string): string | null {
-  try {
-    const raw = localStorage.getItem(key);
-    if (raw === null) return null;
-    // Return empty string as null (chordTypeStorage serializes null → "")
-    return raw === "" ? null : raw;
-  } catch {
-    return null;
-  }
+  const raw = withStorageErrorBoundary<string | null>(key, null).getRaw();
+  if (raw === null) return null;
+  // Return empty string as null (chordTypeStorage serializes null → "")
+  return raw === "" ? null : raw;
 }
 
 /** Diatonic triad quality names — the only types that can be inferred from degree. */
@@ -379,20 +372,6 @@ export const chordMembersAtom = atom((get) => {
   }));
 });
 
-export const hasOutsideChordMembersAtom = atom((get) => {
-  const chordType = get(chordTypeAtom);
-  if (!chordType) return false;
-  const chordRoot = get(chordRootAtom);
-  const def = CHORD_DEFINITIONS[chordType];
-  if (!def) return false;
-  const rootIndex = NOTES.indexOf(chordRoot);
-  if (rootIndex === -1) return false;
-  const tones = def.members.map((m) => NOTES[(rootIndex + m.semitone) % 12]);
-  const scaleNotes = get(scaleNotesAtom);
-  const scaleNoteSet = new Set(scaleNotes);
-  return tones.some((note) => !scaleNoteSet.has(note));
-});
-
 export const chordLabelAtom = atom((get) => {
   const chordRoot = get(chordRootAtom);
   const chordType = get(chordTypeAtom);
@@ -433,66 +412,6 @@ export const chordMemberFactsAtom = atom((get): ChordMemberFact[] => {
       memberName: m.name === "root" ? "1" : formatAccidental(m.name),
       semitone: m.semitone,
       isChordRoot: m.name === "root",
-    };
-  });
-});
-
-/**
- * Catalog of chord members annotated with scale-membership flags and role
- * tags — the canonical input shared by every practice-lens composite (see
- * `practiceLensAtoms.ts`) and the chord summary atoms in `atoms.ts`.
- *
- * Inputs (read via `get`): `chordTypeAtom`, `chordRootAtom`, `rootNoteAtom`,
- * `scaleNameAtom`. Empty array when no chord is selected.
- *
- * Output: `ChordRowEntry[]` covering every chord member, including those that
- * fall outside the active scale (consumers decide how to render outsiders).
- *
- * See the "Lens & Note Roles" section in `CLAUDE.md` for the role taxonomy.
- */
-export const allChordMembersAtom = atom((get) => {
-  const chordType = get(chordTypeAtom);
-  if (!chordType) return [] as ChordRowEntry[];
-
-  const rootNote = get(rootNoteAtom);
-  const scaleName = get(scaleNameAtom);
-  const chordRoot = get(chordRootAtom);
-  const useFlats = get(useFlatsAtom);
-  const chordMembers = get(chordMembersAtom);
-  const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
-
-  return chordMembers.map((m): ChordRowEntry => {
-    const inScale = scaleNoteSet.has(m.note);
-    const isRoot = m.name === "root";
-    let role: ChordRowEntry["role"];
-    if (isRoot) {
-      role = "chord-root";
-    } else if (inScale) {
-      role = "chord-tone-in-scale";
-    } else {
-      role = "chord-tone-outside-scale";
-    }
-    let scaleDegree: DegreeId | undefined;
-    let scaleInterval: string | undefined;
-    if (inScale) {
-      const noteIdx = NOTES.indexOf(m.note);
-      const tonicIdx = NOTES.indexOf(rootNote);
-      if (noteIdx !== -1 && tonicIdx !== -1) {
-        const semitone = (noteIdx - tonicIdx + 12) % 12;
-        scaleDegree = (
-          getDegreesForScale(scaleName)[semitone] ?? INTERVAL_NAMES[semitone]
-        ) as DegreeId | undefined;
-        scaleInterval = formatAccidental(INTERVAL_NAMES[semitone] ?? "1");
-      }
-    }
-    return {
-      internalNote: m.note,
-      displayNote: formatAccidental(getNoteDisplay(m.note, chordRoot, useFlats)),
-      memberName: m.name === "root" ? "1" : formatAccidental(m.name),
-      role,
-      inScale,
-      scaleDegree,
-      scaleInterval,
     };
   });
 });

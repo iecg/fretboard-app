@@ -16,7 +16,7 @@ import {
   formatAccidental,
 } from "../core/theory";
 import { DEGREE_COLORS, getDegreesForScale } from "../core/degrees";
-import { k, createStorage, rawStringStorage, booleanStorage, GET_ON_INIT } from "../utils/storage";
+import { k, createStorage, rawStringStorage, booleanStorage, GET_ON_INIT, withStorageErrorBoundary } from "../utils/storage";
 import { fingeringPatternAtom, cagedShapesAtom } from "./fingeringAtoms";
 import type { CagedShape } from "../shapes";
 import type { PracticeBarColorNote } from "../core/theory";
@@ -70,15 +70,11 @@ export const scaleBrowseModeAtom = atomWithStorage<ScaleBrowseMode>(
 
 // Translates legacy "useFlats" to new mode and clears the stale key.
 function readLegacyAccidentalMode(): "sharps" | "flats" | "auto" {
-  try {
-    const legacy = localStorage.getItem("useFlats");
-    if (legacy === null) return "auto";
-    localStorage.removeItem("useFlats");
-    return legacy === "true" ? "flats" : "sharps";
-  } catch (e) {
-    console.warn("localStorage access failed", { e });
-    return "auto";
-  }
+  const legacy = withStorageErrorBoundary<string | null>("useFlats", null);
+  const raw = legacy.getRaw();
+  if (raw === null) return "auto";
+  legacy.remove();
+  return raw === "true" ? "flats" : "sharps";
 }
 
 // Session-only: "auto" picks best enharmonic spelling per root+scale.
@@ -197,15 +193,11 @@ export const toggleHiddenNoteAtom = atom(null, (_get, set, note: string) => {
 
 // Maps old tri-state "off" → false and removes the stale key.
 function readLegacyScaleVisibility(): boolean {
-  try {
-    const legacy = localStorage.getItem(k("scaleVisibilityMode"));
-    if (legacy === null) return true;
-    localStorage.removeItem(k("scaleVisibilityMode"));
-    return legacy !== "off";
-  } catch (e) {
-    console.warn("localStorage access failed", { e });
-    return true;
-  }
+  const legacy = withStorageErrorBoundary<string | null>(k("scaleVisibilityMode"), null);
+  const raw = legacy.getRaw();
+  if (raw === null) return true;
+  legacy.remove();
+  return raw !== "off";
 }
 
 export const scaleVisibleAtom = atomWithStorage<boolean>(

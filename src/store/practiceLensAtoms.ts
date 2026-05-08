@@ -41,13 +41,15 @@ import {
   chordTonesAtom,
   chordMembersAtom,
   practiceLensAtom,
-  hasOutsideChordMembersAtom,
-  allChordMembersAtom,
   chordDegreeAtom,
   chordOverlayModeAtom,
   chordOverlayHiddenAtom,
   chordHiddenNotesAtom,
 } from "./chordOverlayAtoms";
+import {
+  hasOutsideChordMembersAtom,
+  allChordMembersAtom,
+} from "./composableSelectors";
 import { shapeHighlightedNoteSetAtom } from "./shapeAtoms";
 
 // Guide tone members: 3rd and 7th

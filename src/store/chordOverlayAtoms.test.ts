@@ -10,9 +10,9 @@ import {
   chordRootOverrideAtom,
   chordTypeAtom,
   chordQualityOverrideAtom,
-  allChordMembersAtom,
   setChordDegreeAtom,
 } from "./chordOverlayAtoms";
+import { allChordMembersAtom } from "./composableSelectors";
 import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
 
