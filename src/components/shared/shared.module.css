@@ -83,6 +83,26 @@
   letter-spacing: 0.12em;
 }
 
+/* Canonical field-label token set — identical to .section-label; kept as a
+   semantic alias so control labels can compose from it without importing
+   a section-level name. */
+.label-canonical {
+  font-size: 0.72rem;
+  color: var(--surface-control-fg-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* Demoted child label — sits one step below .label-canonical in the
+   visual hierarchy. font-size: 0.65rem is a magic number; pending
+   a future --text-xxs token in tokens.css. */
+.field-sublabel {
+  font-size: 0.65rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
 .toggle-group {
   display: flex;
   gap: 0.22rem;
