@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { loadVisualState, getPseudoStyle } from "./visual-helpers";
+import { loadVisualState } from "./visual-helpers";
 
 function colorToHex(color: string): string {
   const c = color.replace(/\s*,\s*/g, ",").replace(/\s+/g, " ").trim().toLowerCase();
@@ -478,10 +478,14 @@ test.describe("Theme Contract", () => {
           }
         });
 
-        test("collapsed disclosure hover should use theme-appropriate hover surface", async ({ page }) => {
+        test("collapsed disclosure hover should shift title color to tokenized hover-fg", async ({ page }) => {
           // Disclosure rows only exist in TheoryControls (rendered at tablet
           // tier and above). The desktop viewport is already configured by the
           // surrounding beforeEach.
+          //
+          // Simplified hover contract (post UAT polish): the disclosure host is
+          // transparent and stays transparent on hover. Hover affordance is
+          // expressed by shifting title + icon color to --surface-control-hover-fg.
           const theoryControls = page.getByTestId("theory-controls");
           await expect(theoryControls).toBeVisible();
 
@@ -494,22 +498,29 @@ test.describe("Theme Contract", () => {
             await expect(chordsDisclosure).toHaveAttribute("aria-expanded", "false");
           }
 
-          // Hover paint lives on `::before` — host is transparent.
-          const beforeBg = await getPseudoStyle(chordsDisclosure, "::before", "backgroundColor");
-          await chordsDisclosure.hover();
-          const afterStyles = await chordsDisclosure.evaluate((el) => {
-            const cs = getComputedStyle(el, "::before");
-            return { bg: cs.backgroundColor, bgImg: cs.backgroundImage };
-          });
+          // The disclosure host inherits text color, but the title element
+          // resting color is --surface-control-fg-muted (a muted gray); on
+          // hover it shifts to --surface-control-hover-fg. Measure the title.
+          const titleEl = chordsDisclosure.locator("> span").first();
+          await expect(titleEl).toBeVisible();
 
-          expect(afterStyles.bg).not.toBe(beforeBg);
+          const beforeColor = await titleEl.evaluate((el) =>
+            getComputedStyle(el).color,
+          );
+          await chordsDisclosure.hover();
+          const afterColor = await titleEl.evaluate((el) =>
+            getComputedStyle(el).color,
+          );
+
+          // Hover must produce a tokenized color shift on the title.
+          expect(afterColor).not.toBe(beforeColor);
+
           if (theme === "dark") {
-            expect(
-              isCyanLike(afterStyles.bg) || afterStyles.bgImg.includes("gradient"),
-            ).toBe(true);
+            // Dark: --surface-control-hover-fg = white
+            expect(afterColor.replace(/\s/g, "")).toBe("rgb(255,255,255)");
           } else {
-            // light: --surface-control-hover-bg = #f0ede9 -> rgb(240, 237, 233) (Phase 4 child-tier hover token; parent --chrome-hover-bg stays #e3ded7)
-            expect(afterStyles.bg.replace(/\s/g, "")).toBe("rgb(240,237,233)");
+            // Light: --surface-control-hover-fg = --text-main = #0f172a -> rgb(15, 23, 42)
+            expect(afterColor.replace(/\s/g, "")).toBe("rgb(15,23,42)");
           }
         });
 
@@ -674,9 +685,15 @@ test.describe("Theme Contract", () => {
           }
         });
 
-        test("theory disclosure focus uses tokenized focus glow", async ({ page }) => {
+        test("theory disclosure focus uses tokenized native outline", async ({ page }) => {
           // Disclosure rows live in TheoryControls — rendered at desktop tier
           // (already configured by the surrounding beforeEach).
+          //
+          // Simplified focus contract (post UAT polish): the disclosure no
+          // longer paints a custom box-shadow glow on a `::before` layer. It
+          // uses a native `outline: 1.5px solid var(--interactive-focus)` with
+          // an offset, in both themes. Color comes from the tokenized
+          // --interactive-focus value (cyan-family).
           const theoryControls = page.getByTestId("theory-controls");
           await expect(theoryControls).toBeVisible();
 
@@ -689,23 +706,24 @@ test.describe("Theme Contract", () => {
           }
 
           await disclosureBtn.focus();
-          // Glow box-shadow lives on `::before`; outline lives on the host.
-          const [outlineStyle, boxShadow] = await Promise.all([
-            disclosureBtn.evaluate((el) => getComputedStyle(el).outlineStyle),
-            getPseudoStyle(disclosureBtn, "::before", "boxShadow"),
-          ]);
-          const focusStyles = { outlineStyle, boxShadow };
+          const focusStyles = await disclosureBtn.evaluate((el) => {
+            const cs = getComputedStyle(el);
+            return {
+              outlineStyle: cs.outlineStyle,
+              outlineColor: cs.outlineColor,
+            };
+          });
 
+          // Both themes use the same native solid outline contract.
+          expect(focusStyles.outlineStyle).toBe("solid");
+          // Outline color must resolve to the tokenized --interactive-focus
+          // value (light: #0891b2 → rgb(8,145,178); dark: --neon-cyan →
+          // rgb(77,228,255)), not browser default or transparent.
+          const outlineNorm = focusStyles.outlineColor.replace(/\s/g, "");
           if (theme === "dark") {
-            // Dark mode: --control-focus-ring = none; glow via --control-focus-glow (cyan)
-            expect(focusStyles.outlineStyle).toBe("none");
-            expect(focusStyles.boxShadow).not.toBe("none");
-            // The glow resolves from --neon-cyan (77, 228, 255 in dark mode)
-            expect(isCyanLike(focusStyles.boxShadow)).toBe(true);
+            expect(isCyanLike(focusStyles.outlineColor)).toBe(true);
           } else {
-            // Light mode: --control-focus-ring = 2px solid neon-cyan → solid outline
-            // Check that either outlineStyle is solid OR a focus box-shadow was applied to ::before
-            expect(focusStyles.outlineStyle === "solid" || focusStyles.boxShadow !== "none").toBe(true);
+            expect(outlineNorm).toBe("rgb(8,145,178)");
           }
         });
       });

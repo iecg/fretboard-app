@@ -176,10 +176,12 @@ test.describe("production css module scoping", () => {
       await chordDisclosure.click();
     }
     await page.getByRole("button", { name: "Manual" }).click();
-    const chordTypeSelect = page.getByRole("combobox", { name: "Chord Type" });
-    await expect(chordTypeSelect).toBeVisible();
+    // Chord Type was migrated from a <select> combobox to a ToggleBar (group of
+    // buttons). The ToggleBar renders role="group" with aria-label="Chord Type".
+    const chordTypeGroup = page.getByRole("group", { name: "Chord Type" });
+    await expect(chordTypeGroup).toBeVisible();
 
-    const styles = await chordTypeSelect.evaluate((el) => {
+    const styles = await chordTypeGroup.evaluate((el) => {
       const computed = getComputedStyle(el);
       return {
         backgroundColor: computed.backgroundColor,
