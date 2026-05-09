@@ -153,35 +153,27 @@ describe("TheoryControls/TheoryControls", () => {
 });
 
 describe("TheoryControls/TheorySection — disclosure ::before focus-ring inset", () => {
-  it("disclosure button ::before resting inset is 0 after frame removal", () => {
-    // jsdom cannot reliably compute box-shadow on ::before pseudo-elements.
-    // Instead, assert the structural CSS source rule directly: read the CSS
-    // module file and parse the inset shorthand to verify the resting inset is
-    // 0 (aligned to the button's own bounds) after the nested-card frame was removed.
+  it("disclosure button has no ::before hover background surface", () => {
+    // The hover treatment is now purely a color shift on the title and icon —
+    // no background surface is painted via ::before. Assert the CSS source has
+    // no ::before rule on .theory-disclosure-btn (resting or hover).
     const cssPath = resolve(
       dirname(fileURLToPath(import.meta.url)),
       "./TheoryControls.module.css",
     );
     const css = readFileSync(cssPath, "utf-8");
 
-    // Locate the ::before block and extract the inset value.
-    const beforeBlock = css.match(/\.theory-disclosure-btn::before\s*\{([^}]+)\}/);
-    expect(beforeBlock, "::before block must exist in TheoryControls.module.css").toBeTruthy();
+    const restingBeforeBlock = css.match(/\.theory-disclosure-btn::before\s*\{/);
+    expect(
+      restingBeforeBlock,
+      "::before resting block must NOT exist — hover background surface was removed",
+    ).toBeNull();
 
-    const insetMatch = beforeBlock![1].match(/inset:\s*([^;]+);/);
-    expect(insetMatch, "inset property must exist in ::before block").toBeTruthy();
-
-    const insetValue = insetMatch![1].trim();
-    // After frame removal, the resting inset must be a single zero value so the
-    // ::before layer aligns to the button's own bounding box.
-    const parts = insetValue.split(/\s+/);
-    expect(parts.length).toBeGreaterThanOrEqual(1);
-
-    // Parse the vertical inset (first value).
-    const verticalRaw = parts[0];
-    const verticalRem = parseFloat(verticalRaw);
-    // Resting inset must be 0 — the ring is no longer compensating for a parent frame.
-    expect(verticalRem).toBe(0);
+    const hoverBeforeBlock = css.match(/\.theory-disclosure-btn:hover::before\s*\{/);
+    expect(
+      hoverBeforeBlock,
+      "::before hover block must NOT exist — hover background surface was removed",
+    ).toBeNull();
   });
 
   it("disclosure button uses native outline on :focus-visible (no ::before box-shadow ring)", () => {
