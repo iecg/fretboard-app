@@ -1,5 +1,9 @@
 import { expect, type Locator, type Page } from "@playwright/test";
-import { STORAGE_PREFIX, LEGACY_KEYS } from "../src/utils/storageConstants";
+import {
+  STORAGE_PREFIX,
+  LEGACY_KEYS,
+  COACHMARK_SETTINGS_DISMISSED_KEY,
+} from "../src/utils/storageConstants";
 
 export interface FullPageVisualOptions {
   maxDiffPixels?: number;
@@ -48,7 +52,7 @@ export async function loadVisualState(
 
   // Inject state into localStorage before the app boots
   await page.addInitScript(
-    ({ s, prefix, legacyKeys }) => {
+    ({ s, prefix, legacyKeys, coachmarkKey }) => {
       // Clear previous state
       Object.keys(localStorage).forEach((key) => {
         const legacy = legacyKeys as readonly string[];
@@ -58,7 +62,7 @@ export async function loadVisualState(
       });
 
       // Suppress the first-run coach mark so it never appears in snapshots.
-      localStorage.setItem("fretflow:coachmark.settings.dismissed", "true");
+      localStorage.setItem(coachmarkKey, "true");
 
       // Write new state
       Object.entries(s).forEach(([key, value]) => {
@@ -68,7 +72,12 @@ export async function loadVisualState(
         localStorage.setItem(`${prefix}${key}`, String(value));
       });
     },
-    { s: state, prefix: STORAGE_PREFIX, legacyKeys: LEGACY_KEYS }
+    {
+      s: state,
+      prefix: STORAGE_PREFIX,
+      legacyKeys: LEGACY_KEYS,
+      coachmarkKey: COACHMARK_SETTINGS_DISMISSED_KEY,
+    }
   );
 
   await page.goto("/");
@@ -207,16 +216,16 @@ export async function prepareVisualPage(
   // addInitScript covers future navigations; for callers that already
   // navigated and pass goto:false, set the flag retroactively on the
   // currently-loaded document so the suppression still applies.
-  await page.addInitScript(() => {
-    localStorage.setItem("fretflow:coachmark.settings.dismissed", "true");
-  });
+  await page.addInitScript((key: string) => {
+    localStorage.setItem(key, "true");
+  }, COACHMARK_SETTINGS_DISMISSED_KEY);
 
   if (options.goto !== false) {
     await page.goto("/");
   } else {
-    await page.evaluate(() => {
-      localStorage.setItem("fretflow:coachmark.settings.dismissed", "true");
-    });
+    await page.evaluate((key: string) => {
+      localStorage.setItem(key, "true");
+    }, COACHMARK_SETTINGS_DISMISSED_KEY);
   }
 
   // Disable all animations, transitions, and hide scrollbars globally
