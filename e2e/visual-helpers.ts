@@ -204,14 +204,19 @@ export async function prepareVisualPage(
   await page.emulateMedia({ reducedMotion: "reduce" });
 
   // Suppress the first-run coach mark so it never appears in snapshots.
-  // addInitScript must be registered BEFORE page.goto so the flag is set
-  // in localStorage before the app boots.
+  // addInitScript covers future navigations; for callers that already
+  // navigated and pass goto:false, set the flag retroactively on the
+  // currently-loaded document so the suppression still applies.
   await page.addInitScript(() => {
     localStorage.setItem("fretflow:coachmark.settings.dismissed", "true");
   });
 
   if (options.goto !== false) {
     await page.goto("/");
+  } else {
+    await page.evaluate(() => {
+      localStorage.setItem("fretflow:coachmark.settings.dismissed", "true");
+    });
   }
 
   // Disable all animations, transitions, and hide scrollbars globally
