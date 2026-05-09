@@ -108,6 +108,11 @@
   color: var(--surface-control-hover-fg);
 }
 
+:global([data-theme="modern-dark"]) .theory-disclosure-btn:hover::before {
+  background-color: color-mix(in srgb, #4DE4FF 6%, transparent);
+  background-image: none;
+}
+
 .theory-disclosure-btn:focus-visible {
   outline: 1.5px solid var(--interactive-focus);
   outline-offset: 1px;
