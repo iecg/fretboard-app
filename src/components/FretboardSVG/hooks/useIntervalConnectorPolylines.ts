@@ -179,7 +179,6 @@ export function useIntervalConnectorPolylines({
         stringYAt,
         stringRowPx,
       ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [intervalPairs, tuning, scaleSemitones, stringRowPx],
+    [intervalPairs, tuning, scaleSemitones, fretCenterX, stringYAt, stringRowPx],
   );
 }
