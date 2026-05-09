@@ -1,0 +1,41 @@
+.coachmark {
+  background: var(--interactive-focus);
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-float);
+  z-index: var(--z-coachmark);
+  padding: var(--space-3) var(--space-4);
+  max-width: 280px;
+  color: #ffffff;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.coach-mark-text {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.coach-mark-close {
+  align-self: flex-end;
+  background: rgb(255 255 255 / 0.2);
+  border: 1px solid rgb(255 255 255 / 0.3);
+  border-radius: var(--radius-sm);
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: var(--space-1) var(--space-2);
+  transition: background 0.15s ease;
+}
+
+.coach-mark-close:hover {
+  background: rgb(255 255 255 / 0.3);
+}
+
+.coach-mark-close:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
