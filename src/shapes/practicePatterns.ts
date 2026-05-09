@@ -79,14 +79,14 @@ function absolutePitch(openStringNote: string, fret: number): number {
  *
  * @param loPitch   Lower absolute pitch (semitones).
  * @param hiPitch   Higher absolute pitch (semitones).
- * @param sds       Scale-degree pitch classes (0-11), order-insensitive.
+ * @param sds       Scale-degree pitch classes (0-11) as a Set for O(1) lookup.
  */
-function sdStepsBetween(loPitch: number, hiPitch: number, sds: number[]): number {
+function sdStepsBetween(loPitch: number, hiPitch: number, sds: Set<number>): number {
   if (hiPitch <= loPitch) return -1;
   let count = 0;
   for (let p = loPitch + 1; p <= hiPitch; p++) {
     const cls = ((p % 12) + 12) % 12;
-    if (sds.includes(cls)) count++;
+    if (sds.has(cls)) count++;
   }
   return count;
 }
@@ -205,8 +205,8 @@ export function getTwoStringsIntervalPairs(
   const openB = tuning[sB];
   if (!openA || !openB) return [];
 
-  // Build sorted scale-degree lookup: chromatic pitch classes present in the scale.
-  const scaleDegreesSorted = [...scaleSemitones].sort((a, b) => a - b);
+  // Pitch-class membership set for O(1) sdStepsBetween lookups.
+  const scaleDegreeSet = new Set<number>(scaleSemitones);
 
   const pairs: Array<{ a: string; b: string }> = [];
 
@@ -221,7 +221,7 @@ export function getTwoStringsIntervalPairs(
       const pitchB = absolutePitch(openB, fretB);
       // Directional: higher string (sA, lower index) must have higher absolute pitch.
       if (pitchA <= pitchB) continue;
-      const dist = sdStepsBetween(pitchB, pitchA, scaleDegreesSorted);
+      const dist = sdStepsBetween(pitchB, pitchA, scaleDegreeSet);
       if (dist === targetSdDistance) {
         pairs.push({ a: `${sA}-${fretA}`, b: `${sB}-${fretB}` });
       }
@@ -262,7 +262,7 @@ export function getOneStringIntervalPairs(
   const openNote = tuning[stringIndex];
   if (!row || !openNote) return [];
 
-  const scaleDegreesSorted = [...scaleSemitones].sort((a, b) => a - b);
+  const scaleDegreeSet = new Set<number>(scaleSemitones);
 
   const pairs: Array<{ a: string; b: string }> = [];
 
@@ -275,7 +275,7 @@ export function getOneStringIntervalPairs(
       const noteHigh = row[fHigh];
       if (!noteHigh || !scaleNoteSet.has(noteHigh)) continue;
       const pitchHigh = absolutePitch(openNote, fHigh);
-      const dist = sdStepsBetween(pitchLow, pitchHigh, scaleDegreesSorted);
+      const dist = sdStepsBetween(pitchLow, pitchHigh, scaleDegreeSet);
       if (dist === targetSdDistance) {
         // a = higher-fret (higher-pitched), b = lower-fret (lower-pitched)
         pairs.push({ a: `${stringIndex}-${fHigh}`, b: `${stringIndex}-${fLow}` });
