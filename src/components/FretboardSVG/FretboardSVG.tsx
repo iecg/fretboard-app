@@ -3,8 +3,7 @@ import { useAtomValue } from "jotai";
 import { motion, AnimatePresence } from "motion/react";
 import {
   getNoteDisplay,
-  getScaleNotes,
-  NOTES,
+  getScaleSemitones,
   type PracticeLens,
   type NoteSemantics,
 } from "../../core/theory";
@@ -319,14 +318,11 @@ export const FretboardSVG = memo(function FretboardSVG({
     noteSemantics,
   });
 
-  // Compute scale semitone offsets (0-11, chromatic position in NOTES) for the
-  // interval connector polylines. These drive per-pair color via scale-degree position.
+  // Scale semitone offsets (0-11) drive per-pair color via scale-degree position
+  // on the interval connector polylines.
   const scaleSemitones = useMemo(() => {
     if (!scaleName || !rootNote) return [];
-    const scaleNoteNames = getScaleNotes(rootNote, scaleName);
-    return scaleNoteNames
-      .map((n) => NOTES.indexOf(n))
-      .filter((i) => i !== -1);
+    return getScaleSemitones(rootNote, scaleName);
   }, [scaleName, rootNote]);
 
   const intervalConnectorPolylines = useIntervalConnectorPolylines({

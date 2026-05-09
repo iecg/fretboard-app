@@ -8,7 +8,7 @@ import {
   type ShapePolygon,
 } from "../shapes";
 import { getFretNote, getFretboardNotes } from "../core/guitar";
-import { getScaleNotes, NOTES } from "../core/theory";
+import { getScaleNotes, getScaleSemitones } from "../core/theory";
 import {
   getOneStringCoordinates,
   getTwoStringsCoordinates,
@@ -96,11 +96,8 @@ export const shapeDataAtom = atom((get) => {
     if (oneStringInterval > 0) {
       // UAT-22: On mode connects consecutive scale tones (2nds) only — SD distance = 1.
       const board = getFretboardNotes(currentTuning, 24);
-      const scaleNoteNames = getScaleNotes(rootNote, scaleName);
-      const scaleNoteSet = new Set(scaleNoteNames);
-      const scaleNoteSemitones = scaleNoteNames
-        .map((n) => NOTES.indexOf(n))
-        .filter((i) => i !== -1);
+      const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
+      const scaleNoteSemitones = getScaleSemitones(rootNote, scaleName);
       intervalPairs = getOneStringIntervalPairs(
         oneStringIndex,
         board,
@@ -117,13 +114,8 @@ export const shapeDataAtom = atom((get) => {
     coords = getTwoStringsCoordinates(rootNote, scaleName, currentTuning, 24, activePairTuple);
     if (twoStringsInterval > 0) {
       const board = getFretboardNotes(currentTuning, 24);
-      const scaleNoteNames = getScaleNotes(rootNote, scaleName);
-      const scaleNoteSet = new Set(scaleNoteNames);
-      // Build scale semitone offsets (0-11, chromatic position in NOTES array).
-      // These represent the scale's internal structure for SD-distance computation.
-      const scaleNoteSemitones = scaleNoteNames
-        .map((n) => NOTES.indexOf(n))
-        .filter((i) => i !== -1);
+      const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
+      const scaleNoteSemitones = getScaleSemitones(rootNote, scaleName);
       const targetSdDist = TWO_STRINGS_INTERVAL_SD_DISTANCES[twoStringsInterval - 1] ?? 2;
       intervalPairs = getTwoStringsIntervalPairs(activePairTuple, board, scaleNoteSet, scaleNoteSemitones, targetSdDist, currentTuning);
     }

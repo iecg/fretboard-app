@@ -516,6 +516,19 @@ export function getScaleNotes(rootNote: string, scaleName: string): string[] {
   return getIntervalNotes(rootNote, intervals);
 }
 
+/**
+ * Returns the chromatic semitone offsets (0-11) of a scale's notes within the
+ * NOTES array. Convenience wrapper over getScaleNotes that filters out any
+ * note names not found in NOTES (defensive against typos / unsupported scales).
+ *
+ * Order matches getScaleNotes (root first, then ascending intervals).
+ */
+export function getScaleSemitones(rootNote: string, scaleName: string): number[] {
+  return getScaleNotes(rootNote, scaleName)
+    .map((n) => NOTES.indexOf(n))
+    .filter((i) => i !== -1);
+}
+
 export function getChordNotes(rootNote: string, chordName: string): string[] {
   const intervals = CHORDS[chordName];
   if (!intervals) return [];

@@ -4,6 +4,7 @@ import {
   CHORDS,
   CHORD_DEFINITIONS,
   getScaleNotes,
+  getScaleSemitones,
   getChordNotes,
   getNoteIndex,
   getNoteDisplay,
@@ -87,6 +88,30 @@ describe("getScaleNotes", () => {
       "F#",
       "G#",
     ]);
+  });
+});
+
+describe("getScaleSemitones", () => {
+  it("returns chromatic semitone offsets for C Major", () => {
+    // C=0, D=2, E=4, F=5, G=7, A=9, B=11
+    expect(getScaleSemitones("C", "Major")).toEqual([0, 2, 4, 5, 7, 9, 11]);
+  });
+
+  it("returns chromatic semitone offsets for A Minor Pentatonic", () => {
+    // A=9, C=0, D=2, E=4, G=7
+    expect(getScaleSemitones("A", "Minor Pentatonic")).toEqual([9, 0, 2, 4, 7]);
+  });
+
+  it("returns empty array for unknown scale", () => {
+    expect(getScaleSemitones("C", "NonExistent")).toEqual([]);
+  });
+
+  it("matches getScaleNotes ordering (root first)", () => {
+    const notes = getScaleNotes("D", "Major");
+    const semis = getScaleSemitones("D", "Major");
+    expect(semis).toHaveLength(notes.length);
+    // First entry is the root
+    expect(semis[0]).toBe(2); // D = index 2 in NOTES
   });
 });
 
