@@ -179,6 +179,7 @@ export function TheoryControls({ keyExplorer, compact = false }: TheoryControlsP
         <ScaleSelector compact={compact} />
         {keyExplorer ? <KeyExplorer>{keyExplorer}</KeyExplorer> : null}
       </TheorySection>
+      <hr className={styles["theory-section-divider"]} />
       <TheorySection
         title="Chords"
         summary={isChordsDisabled ? "Disabled" : chordSummary}

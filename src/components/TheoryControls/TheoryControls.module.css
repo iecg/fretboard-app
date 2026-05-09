@@ -35,8 +35,11 @@
   padding: 0.15rem 0;
 }
 
-.theory-section + .theory-section {
+.theory-section-divider {
+  border: none;
   border-top: 1px solid var(--surface-card-border);
+  margin: 0;
+  height: 0;
 }
 
 .theory-section-content {
