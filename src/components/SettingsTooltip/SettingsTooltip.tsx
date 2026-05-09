@@ -1,6 +1,8 @@
+import type { ReactElement } from "react";
+
 export interface SettingsTooltipProps {
   /** The gear <button> element (trigger). */
-  children: React.ReactElement;
+  children: ReactElement;
 }
 
 /** Thin pass-through — the button already carries title="Settings" and
