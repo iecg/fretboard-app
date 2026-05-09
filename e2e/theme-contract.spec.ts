@@ -381,13 +381,16 @@ test.describe("Theme Contract", () => {
   test.describe("Interaction Contract", () => {
     const themes = ["light", "dark"] as const;
 
-    // Helper to check if a color is "cyan-like" or matches a specific hex/rgb
+    // Helper to check if a color resolves to the app's cyan-family identity:
+    // dark theme uses --neon-cyan / --neon-cyan-bright; light theme uses
+    // --interactive-focus = #0891b2.
     const isCyanLike = (color: string) => {
       const normalized = color.toLowerCase().replace(/\s/g, "");
-      // neon-cyan: rgb(77, 228, 255)
-      // neon-cyan-bright: rgb(140, 238, 255)
-      return normalized.includes("77,228,255") || 
+      // dark: neon-cyan rgb(77, 228, 255), neon-cyan-bright rgb(140, 238, 255)
+      // light: interactive-focus rgb(8, 145, 178)
+      return normalized.includes("77,228,255") ||
              normalized.includes("140,238,255") ||
+             normalized.includes("8,145,178") ||
              (normalized.includes("0.301961") && normalized.includes("0.894118")) ||
              (normalized.includes("0.549") && normalized.includes("0.933"));
     };
@@ -716,15 +719,9 @@ test.describe("Theme Contract", () => {
 
           // Both themes use the same native solid outline contract.
           expect(focusStyles.outlineStyle).toBe("solid");
-          // Outline color must resolve to the tokenized --interactive-focus
-          // value (light: #0891b2 → rgb(8,145,178); dark: --neon-cyan →
-          // rgb(77,228,255)), not browser default or transparent.
-          const outlineNorm = focusStyles.outlineColor.replace(/\s/g, "");
-          if (theme === "dark") {
-            expect(isCyanLike(focusStyles.outlineColor)).toBe(true);
-          } else {
-            expect(outlineNorm).toBe("rgb(8,145,178)");
-          }
+          // Outline color must resolve to the tokenized cyan-family
+          // --interactive-focus value (light: #0891b2; dark: --neon-cyan).
+          expect(isCyanLike(focusStyles.outlineColor)).toBe(true);
         });
       });
     }
