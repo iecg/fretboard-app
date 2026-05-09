@@ -1,189 +1,87 @@
-import { useState, useRef, useEffect, useCallback, useId } from "react";
-import { createPortal } from "react-dom";
-import { useAtom } from "jotai";
-import { motion, AnimatePresence } from "motion/react";
-import clsx from "clsx";
-import { coachmarkSettingsDismissedAtom } from "../../store/atoms";
-import styles from "./SettingsTooltip.module.css";
+import { useState } from 'react';
+import { FloatingPortal, FloatingArrow } from '@floating-ui/react';
+import { motion, AnimatePresence } from 'motion/react';
+import { useAtom } from 'jotai';
+import { coachmarkSettingsDismissedAtom } from '../../store/atoms';
+import { Coachmark } from '../shared/Tooltip';
+import { useFloatingTooltipBase } from '../shared/Tooltip/useFloatingTooltipBase';
+import { ANIMATION_DURATION_FAST, ANIMATION_EASE } from '../../core/constants';
+import tooltipStyles from '../shared/Tooltip/Tooltip.module.css';
 
-const SECTION_TITLES = ["View", "Instrument", "Appearance", "Notation", "Chord Layout", "Reset"];
-
-interface TriggerRect {
-  bottom: number;
-  left: number;
-  right: number;
-  top: number;
-  width: number;
-}
-
-function measureRect(el: HTMLElement): TriggerRect {
-  const r = el.getBoundingClientRect();
-  return { bottom: r.bottom, left: r.left, right: r.right, top: r.top, width: r.width };
-}
+const SECTION_TITLES = ['View', 'Instrument', 'Appearance', 'Notation', 'Chord Layout', 'Reset'];
 
 export interface SettingsTooltipProps {
   /** The gear <button> element (trigger). */
-  children: React.ReactNode;
+  children: React.ReactElement;
 }
 
 export function SettingsTooltip({ children }: SettingsTooltipProps) {
   const [dismissed, setDismissed] = useAtom(coachmarkSettingsDismissedAtom);
-  const [tooltipVisible, setTooltipVisible] = useState(false);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const [rect, setRect] = useState<TriggerRect | null>(null);
-  const tooltipId = useId();
+  const [open, setOpen] = useState(false);
 
-  const measure = useCallback(() => {
-    if (wrapperRef.current) {
-      setRect(measureRect(wrapperRef.current));
-    }
-  }, []);
+  const {
+    refs,
+    floatingStyles,
+    context,
+    arrowRef,
+    getReferenceProps,
+    getFloatingProps,
+  } = useFloatingTooltipBase({ open, onOpenChange: setOpen, placement: 'bottom', role: 'tooltip' });
 
-  // Measure when tooltip or coach mark needs positioning
-  useEffect(() => {
-    if (tooltipVisible || !dismissed) {
-      measure();
-    }
-  }, [tooltipVisible, dismissed, measure]);
-
-  // Tooltip show/hide
-  const showTooltip = useCallback(() => {
-    measure();
-    setTooltipVisible(true);
-  }, [measure]);
-
-  const hideTooltip = useCallback(() => {
-    setTooltipVisible(false);
-  }, []);
-
-  // Dismiss coach mark on any click in the wrapper (the gear button was clicked)
-  const handleWrapperKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if ((e.key === "Enter" || e.key === " ") && !dismissed) {
-      setDismissed(true);
-    }
-  }, [dismissed, setDismissed]);
-
-  // Global Escape: dismiss coach mark or hide tooltip
-  useEffect(() => {
-    if (!tooltipVisible && dismissed) return;
-
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        e.stopPropagation();
-        if (!dismissed) {
-          setDismissed(true);
-        }
-        setTooltipVisible(false);
-      }
-    }
-    window.addEventListener("keydown", handleKeyDown, { capture: true });
-    return () => window.removeEventListener("keydown", handleKeyDown, { capture: true });
-  }, [tooltipVisible, dismissed, setDismissed]);
-
-  // Computed position: place tooltip below-left of the trigger
-  const tooltipStyle =
-    rect
-      ? {
-          top: rect.bottom + 8,
-          left: Math.max(8, rect.right - 160),
-        }
-      : undefined;
-
-  // Coach mark: place below the trigger, slightly left to center arrow on button
-  const coachStyle =
-    rect
-      ? {
-          top: rect.bottom + 12,
-          left: Math.max(8, rect.left - 16),
-        }
-      : undefined;
-
-  // Inject aria-describedby into the trigger button child
-  const triggerChild = (() => {
-    if (typeof children === "object" && children !== null && "type" in (children as React.ReactElement)) {
-      const el = children as React.ReactElement<React.HTMLAttributes<HTMLElement>>;
-      return (
-        <el.type
-          {...el.props}
-          aria-describedby={tooltipId}
-          className={clsx(el.props.className)}
-        />
-      );
-    }
-    return children;
-  })();
-
+  // Attach the tooltip's reference to a transparent wrapper so hover/focus events
+  // reach the tooltip hook while Coachmark manages the same trigger for its own floating.
+  // display:contents collapses the wrapper box so layout is unaffected.
   return (
-    <div
-      ref={wrapperRef}
-      className={styles.wrapper}
-      onMouseEnter={showTooltip}
-      onMouseLeave={hideTooltip}
-      onFocus={showTooltip}
-      onBlur={hideTooltip}
-      onClick={() => { if (!dismissed) setDismissed(true); }}
-      onKeyDown={handleWrapperKeyDown}
-      role="presentation"
-    >
-      {triggerChild}
+    <>
+      {/* Tooltip reference wrapper — display:contents means no layout impact */}
+      <span ref={refs.setReference} style={{ display: 'contents' }} {...getReferenceProps()}>
+        <Coachmark
+          dismissed={dismissed}
+          onDismiss={() => setDismissed(true)}
+          placement="bottom"
+          content={<span>Tap the gear to explore View, Notation, and more.</span>}
+        >
+          {children}
+        </Coachmark>
+      </span>
 
-      {createPortal(
-        <>
-          {/* Hover / focus tooltip */}
-          <AnimatePresence>
-            {tooltipVisible && dismissed && (
-              <motion.div
-                id={tooltipId}
-                role="tooltip"
-                className={styles.tooltip}
-                style={tooltipStyle}
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.15 }}
-              >
-                <p className={styles["tooltip-label"]}>Settings</p>
-                <ul className={styles["tooltip-sections"]} aria-label="Settings sections">
-                  {SECTION_TITLES.map((title) => (
-                    <li key={title} className={styles["tooltip-section"]}>
-                      {title}
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* First-run coach mark */}
-          <AnimatePresence>
-            {!dismissed && (
-              <motion.button
-                type="button"
-                className={styles["coach-mark"]}
-                style={coachStyle}
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.2, delay: 0.4 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setDismissed(true);
-                }}
-                aria-label="Dismiss settings tip"
-                data-testid="settings-coach-mark"
-              >
-                <span className={styles["coach-mark-text"]}>
-                  Tap the gear to explore View, Notation, and more.
-                </span>
-                <span className={styles["coach-mark-close"]} aria-hidden="true">
-                  ✕
-                </span>
-              </motion.button>
-            )}
-          </AnimatePresence>
-        </>,
-        document.body,
-      )}
-    </div>
+      {/* Hover / focus tooltip — only shown when coachmark is dismissed */}
+      <AnimatePresence>
+        {open && dismissed && (
+          <FloatingPortal>
+            <motion.div
+              // eslint-disable-next-line react-hooks/refs
+              ref={refs.setFloating}
+              role="tooltip"
+              style={floatingStyles}
+              className={tooltipStyles.tooltip}
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
+              {...getFloatingProps()}
+            >
+              <p className={tooltipStyles['tooltip-label']}>Settings</p>
+              <ul className={tooltipStyles['tooltip-sections']} aria-label="Settings sections">
+                {SECTION_TITLES.map((title) => (
+                  <li key={title} className={tooltipStyles['tooltip-section']}>
+                    {title}
+                  </li>
+                ))}
+              </ul>
+              <FloatingArrow
+                ref={arrowRef}
+                context={context}
+                fill="var(--surface-overlay)"
+                stroke="var(--surface-overlay-border)"
+                strokeWidth={1}
+                width={14}
+                height={7}
+              />
+            </motion.div>
+          </FloatingPortal>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
