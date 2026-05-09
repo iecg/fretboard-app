@@ -71,6 +71,27 @@ function absolutePitch(openStringNote: string, fret: number): number {
 }
 
 /**
+ * Non-wrapping ladder-step count between two absolute pitches.
+ * Counts scale-degree pitch classes encountered while walking up from
+ * loPitch+1 to hiPitch (inclusive). Does NOT wrap around the octave, so a
+ * C-E pair spanning a 10th (9 ladder steps) is never mistaken for a 3rd (2
+ * ladder steps). Returns -1 when hiPitch <= loPitch.
+ *
+ * @param loPitch   Lower absolute pitch (semitones).
+ * @param hiPitch   Higher absolute pitch (semitones).
+ * @param sds       Scale-degree pitch classes (0-11), order-insensitive.
+ */
+function sdStepsBetween(loPitch: number, hiPitch: number, sds: number[]): number {
+  if (hiPitch <= loPitch) return -1;
+  let count = 0;
+  for (let p = loPitch + 1; p <= hiPitch; p++) {
+    const cls = ((p % 12) + 12) % 12;
+    if (sds.includes(cls)) count++;
+  }
+  return count;
+}
+
+/**
  * Returns all "string-fret" coordinates where the note at [stringIdx][fret]
  * is in scaleNoteSet, optionally restricted to [fretMin, fretMax].
  */
@@ -187,23 +208,6 @@ export function getTwoStringsIntervalPairs(
   // Build sorted scale-degree lookup: chromatic pitch classes present in the scale.
   const scaleDegreesSorted = [...scaleSemitones].sort((a, b) => a - b);
 
-  /**
-   * Non-wrapping ladder-step count between two absolute pitches.
-   * Counts scale-degree pitch classes encountered while walking up from
-   * loPitch+1 to hiPitch (inclusive). Does NOT wrap around the octave, so a
-   * C-E pair spanning a 10th (9 ladder steps) is never mistaken for a 3rd (2
-   * ladder steps). Returns -1 when hiPitch <= loPitch.
-   */
-  function sdStepsBetween(loPitch: number, hiPitch: number, sds: number[]): number {
-    if (hiPitch <= loPitch) return -1;
-    let count = 0;
-    for (let p = loPitch + 1; p <= hiPitch; p++) {
-      const cls = ((p % 12) + 12) % 12;
-      if (sds.includes(cls)) count++;
-    }
-    return count;
-  }
-
   const pairs: Array<{ a: string; b: string }> = [];
 
   for (let fretA = 0; fretA < rowA.length; fretA++) {
@@ -259,20 +263,6 @@ export function getOneStringIntervalPairs(
   if (!row || !openNote) return [];
 
   const scaleDegreesSorted = [...scaleSemitones].sort((a, b) => a - b);
-
-  /**
-   * Non-wrapping ladder-step count between two absolute pitches.
-   * Mirrors the private sdStepsBetween in getTwoStringsIntervalPairs.
-   */
-  function sdStepsBetween(loPitch: number, hiPitch: number, sds: number[]): number {
-    if (hiPitch <= loPitch) return -1;
-    let count = 0;
-    for (let p = loPitch + 1; p <= hiPitch; p++) {
-      const cls = ((p % 12) + 12) % 12;
-      if (sds.includes(cls)) count++;
-    }
-    return count;
-  }
 
   const pairs: Array<{ a: string; b: string }> = [];
 
