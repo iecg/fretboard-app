@@ -59,6 +59,11 @@
   gap: 0.68rem;
 }
 
+:global(.app-container[data-layout-tier="desktop"]) :global(.dashboard-card--theory) [data-card-body] {
+  padding-top: 0.45rem;
+  padding-bottom: 0.55rem;
+}
+
 /* Use 3-column grid for wide viewports with limited vertical space. */
 :global(.app-container[data-layout-variant="desktop-stacked"]) .controls-panel {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(13rem, 17rem);
