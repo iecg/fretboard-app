@@ -2,6 +2,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { FretRangeControl } from "../FretRangeControl/FretRangeControl";
+import { axe } from "../../test-utils/a11y";
 
 const defaultProps = {
   startFret: 3,
@@ -201,6 +202,22 @@ describe("FretRangeControl/FretRangeControl", () => {
       expect(
         screen.getByRole("group", { name: "Fret Range" }),
       ).toBeInTheDocument();
+    });
+  });
+
+  describe("Accessibility", () => {
+    it("has no accessibility violations (toolbar layout)", async () => {
+      const { container } = render(
+        <FretRangeControl {...defaultProps} layout="toolbar" />,
+      );
+      expect(await axe(container)).toHaveNoViolations();
+    });
+
+    it("has no accessibility violations (dashboard layout)", async () => {
+      const { container } = render(
+        <FretRangeControl {...defaultProps} layout="dashboard" />,
+      );
+      expect(await axe(container)).toHaveNoViolations();
     });
   });
 });
