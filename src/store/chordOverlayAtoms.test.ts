@@ -448,7 +448,7 @@ describe("allChordMembersAtom — scaleInterval for out-of-scale notes", () => {
     expect(dbEntry!.scaleDegree).toBeUndefined();
   });
 
-  it("Case 2: A Natural Minor + E7 — G# (only out-of-scale note) gets scaleInterval='b6'", () => {
+  it("Case 2: A Natural Minor + E7 — G# (only out-of-scale note) gets scaleInterval='7'", () => {
     const store = makeAtomStore([
       [chordOverlayModeAtom, "manual"],
       [chordRootAtom, "E"],
