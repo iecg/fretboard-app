@@ -202,9 +202,18 @@
   padding: 0.12rem 0;
 }
 
+:global(.app-container[data-layout-tier="desktop"]) .theory-disclosure-btn {
+  min-height: 2.1rem;
+}
+
 :global(.app-container[data-layout-tier="desktop"]) .theory-section-content {
-  padding-top: 0.62rem;
-  padding-bottom: 0.42rem;
+  gap: 0.62rem;
+  padding-top: 0.46rem;
+  padding-bottom: 0.32rem;
+}
+
+:global(.app-container[data-layout-tier="desktop"]) .theory-chord-content {
+  gap: 0.62rem;
 }
 
 :global(.app-container[data-layout-tier="tablet"]) .theory-section {
