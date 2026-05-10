@@ -1,3 +1,18 @@
+/*
+ * DegreeChordList row styling.
+ *
+ * Theme contract (Plan 04-03 review):
+ *   - Body text uses --text-primary; quality column uses --text-muted.
+ *     Both are theme-aware semantic tokens that resolve to readable values
+ *     on Card surfaces in both modern-light and modern-dark.
+ *   - Hover / focus-visible / active states layer over the Card surface using
+ *     color-mix on --accent-primary (#0891b2 in :root, unchanged across
+ *     themes). The 8% hover and 18% active alpha values were chosen so the
+ *     tint is visible on light cream surfaces without being heavy on dark
+ *     warm surfaces — confirmed by inspecting both themes during Plan 04-03.
+ *   - No theme-specific overrides required: all values pass legibility in
+ *     modern-light and modern-dark. No new tokens introduced.
+ */
 .list {
   display: flex;
   flex-direction: column;
