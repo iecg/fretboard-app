@@ -22,8 +22,12 @@ export interface DegreeChordListProps {
   onSelect?: (degreeId: DegreeId) => void;
   /** Optional outer class. */
   className?: string;
+  /** Optional id forwarded to the root <ul> (enables aria-labelledby relationships). */
+  id?: string;
   /** Optional outer aria-label override for the list landmark. */
   "aria-label"?: string;
+  /** Optional test hook forwarded to the root <ul>. */
+  "data-testid"?: string;
 }
 
 /**
@@ -61,7 +65,9 @@ function DegreeChordListImpl({
   activeDegreeId,
   onSelect,
   className,
+  id,
   "aria-label": ariaLabel,
+  "data-testid": dataTestId,
 }: DegreeChordListProps) {
   const rows = useMemo<DegreeRowData[]>(() => {
     const sequence = getDegreeSequence(scaleName);
@@ -91,7 +97,12 @@ function DegreeChordListImpl({
     ariaLabel ?? `Diatonic chords for ${rootNote} ${scaleName}`;
 
   return (
-    <ul className={clsx(styles.list, className)} aria-label={label}>
+    <ul
+      className={clsx(styles.list, className)}
+      aria-label={label}
+      id={id}
+      data-testid={dataTestId}
+    >
       {rows.map((row) => {
         const isActive = row.enabled && activeDegreeId === row.degreeId;
         const buttonAriaLabel = row.enabled
