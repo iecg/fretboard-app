@@ -1,6 +1,7 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
   fingeringPatternAtom,
+  setFingeringPatternAtom,
   cagedShapesAtom,
   toggleCagedShapeAtom,
   selectSingleCagedShapeAtom,
@@ -10,11 +11,16 @@ import {
   recenterKeyAtom,
   shapeDataAtom,
   autoCenterTargetAtom,
+  oneStringIndexAtom,
+  oneStringIntervalAtom,
+  twoStringsPairAtom,
+  twoStringsIntervalAtom,
 } from "../store/atoms";
 import { type CagedShape } from "../shapes";
 
 export function useShapeState() {
-  const [fingeringPattern, setFingeringPattern] = useAtom(fingeringPatternAtom);
+  const fingeringPattern = useAtomValue(fingeringPatternAtom);
+  const setFingeringPattern = useSetAtom(setFingeringPatternAtom);
   const [cagedShapes, setCagedShapes] = useAtom(cagedShapesAtom);
   const toggleCagedShape = useSetAtom(toggleCagedShapeAtom);
   const selectSingleCagedShape = useSetAtom(selectSingleCagedShapeAtom);
@@ -22,6 +28,10 @@ export function useShapeState() {
   const [npsOctave, setNpsOctave] = useAtom(npsOctaveAtom);
   const [clickedShape, setClickedShape] = useAtom(clickedShapeAtom);
   const [recenterKey, setRecenterKey] = useAtom(recenterKeyAtom);
+  const [oneStringIndex, setOneStringIndex] = useAtom(oneStringIndexAtom);
+  const [oneStringInterval, setOneStringInterval] = useAtom(oneStringIntervalAtom);
+  const [twoStringsPair, setTwoStringsPair] = useAtom(twoStringsPairAtom);
+  const [twoStringsInterval, setTwoStringsInterval] = useAtom(twoStringsIntervalAtom);
 
   const { highlightNotes, boxBounds, shapePolygons, wrappedNotes } =
     useAtomValue(shapeDataAtom);
@@ -56,5 +66,13 @@ export function useShapeState() {
     autoCenterTarget,
     onShapeClick,
     onRecenter,
+    oneStringIndex,
+    setOneStringIndex,
+    oneStringInterval,
+    setOneStringInterval,
+    twoStringsPair,
+    setTwoStringsPair,
+    twoStringsInterval,
+    setTwoStringsInterval,
   };
 }

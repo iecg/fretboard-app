@@ -28,6 +28,7 @@ import {
   chordQualityOverrideAtom,
   setRootNoteAtom,
   setScaleNameAtom,
+  setFingeringPatternAtom,
   resetAtom,
   useFlatsAtom,
   currentTuningAtom,
@@ -701,7 +702,7 @@ describe("atoms", () => {
       expect(store.get(chordRootAtom)).toBe("C");
       expect(store.get(linkChordRootAtom)).toBe(true);
       expect(store.get(chordFretSpreadAtom)).toBe(0);
-      expect(store.get(fingeringPatternAtom)).toBe("all");
+      expect(store.get(fingeringPatternAtom)).toBe("none");
       expect(store.get(npsPositionAtom)).toBe(1);
       expect(store.get(scaleBrowseModeAtom)).toBe("parallel");
       expect(store.get(tuningNameAtom)).toBe("Standard");
@@ -991,6 +992,51 @@ describe("atoms", () => {
       store.set(scaleNameAtom, "Minor Blues");
       // No chord overlay (chordType remains null by default)
       expect(store.get(effectiveColorNotesAtom)).toEqual(["F#"]);
+    });
+  });
+
+  describe("setFingeringPatternAtom — auto-clear degree on 1/2-string", () => {
+    it("sets fingeringPatternAtom to the requested value", () => {
+      const store = makeStore();
+      store.set(setFingeringPatternAtom, "caged");
+      expect(store.get(fingeringPatternAtom)).toBe("caged");
+    });
+
+    it("clears chordDegreeAtom to null when pattern changes to one-string", () => {
+      const store = makeStore();
+      store.set(chordDegreeAtom, "I" as import("../core/degrees").DegreeId);
+      store.set(setFingeringPatternAtom, "one-string");
+      expect(store.get(fingeringPatternAtom)).toBe("one-string");
+      expect(store.get(chordDegreeAtom)).toBeNull();
+    });
+
+    it("clears chordDegreeAtom to null when pattern changes to two-strings", () => {
+      const store = makeStore();
+      store.set(chordDegreeAtom, "V" as import("../core/degrees").DegreeId);
+      store.set(setFingeringPatternAtom, "two-strings");
+      expect(store.get(fingeringPatternAtom)).toBe("two-strings");
+      expect(store.get(chordDegreeAtom)).toBeNull();
+    });
+
+    it("does NOT clear chordDegreeAtom when pattern changes to caged", () => {
+      const store = makeStore();
+      store.set(chordDegreeAtom, "IV" as import("../core/degrees").DegreeId);
+      store.set(setFingeringPatternAtom, "caged");
+      expect(store.get(chordDegreeAtom)).toBe("IV");
+    });
+
+    it("does NOT clear chordDegreeAtom when pattern changes to none", () => {
+      const store = makeStore();
+      store.set(chordDegreeAtom, "ii" as import("../core/degrees").DegreeId);
+      store.set(setFingeringPatternAtom, "none");
+      expect(store.get(chordDegreeAtom)).toBe("ii");
+    });
+
+    it("does NOT clear chordDegreeAtom when pattern changes to 3nps", () => {
+      const store = makeStore();
+      store.set(chordDegreeAtom, "iii" as import("../core/degrees").DegreeId);
+      store.set(setFingeringPatternAtom, "3nps");
+      expect(store.get(chordDegreeAtom)).toBe("iii");
     });
   });
 });

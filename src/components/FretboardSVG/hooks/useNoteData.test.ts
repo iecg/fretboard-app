@@ -212,4 +212,5 @@ describe("useNoteData", () => {
     expect(blueNote?.scaleDegree).toBe("b5");
     expect(blueNote?.degreeColor).toBe("#0047ff");
   });
+
 });

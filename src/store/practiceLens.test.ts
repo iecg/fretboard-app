@@ -402,7 +402,10 @@ describe("practiceBarChordGroupAtom", () => {
     localStorage.clear();
   });
 
-  it("falls back to chord-member labels only for outside-scale tones", () => {
+  it("shows scale-relative interval for outside-scale tones (no memberName fallback)", () => {
+    // C# Minor Triad (C#, E, G#) against C Major scale.
+    // C# and G# are out-of-scale — they now receive their scale-relative
+    // scaleInterval (♭2, ♭6) instead of the chord-member name fallback (1, 5).
     const store = makeStore();
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Major");
@@ -411,9 +414,9 @@ describe("practiceBarChordGroupAtom", () => {
 
     const chordGroup = store.get(practiceBarChordGroupAtom);
     expect(chordGroup.notes.map((n) => [n.internalNote, n.intervalName])).toEqual([
-      ["C#", "1"],
+      ["C#", "♭2"],
       ["E", "3"],
-      ["G#", "5"],
+      ["G#", "♭6"],
     ]);
   });
 

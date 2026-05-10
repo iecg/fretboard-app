@@ -11,6 +11,28 @@ import {
   SCALE_TO_PARENT_MAJOR_OFFSET,
   SCALES,
 } from "./theoryCatalog";
+import { CHORD_DEFINITIONS } from "./theory";
+
+describe("chord catalog — new chord types round-trip", () => {
+  const NEW_CHORD_TYPES: Array<{ key: string; intervals: number[] }> = [
+    { key: "Augmented Triad", intervals: [0, 4, 8] },
+    { key: "Sus2", intervals: [0, 2, 7] },
+    { key: "Minor 6th", intervals: [0, 3, 7, 9] },
+    { key: "Diminished 7th", intervals: [0, 3, 6, 9] },
+    { key: "Half-Diminished 7th", intervals: [0, 3, 6, 10] },
+    { key: "Minor-Major 7th", intervals: [0, 3, 7, 11] },
+  ];
+
+  for (const { key, intervals } of NEW_CHORD_TYPES) {
+    it(`${key} is defined in CHORD_DEFINITIONS`, () => {
+      expect(CHORD_DEFINITIONS[key]).toBeDefined();
+    });
+
+    it(`${key} has correct interval set`, () => {
+      expect(CHORD_DEFINITIONS[key].members.map((m) => m.semitone)).toEqual(intervals);
+    });
+  }
+});
 
 describe("theory catalog", () => {
   it("resolves every persisted scaleName to the correct family and member", () => {

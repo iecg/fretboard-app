@@ -1,0 +1,5 @@
+/* Panel-level disabled overlay — applied when fingering pattern is one-string or two-strings */
+.panel-disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}

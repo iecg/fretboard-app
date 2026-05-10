@@ -1,5 +1,9 @@
 import { expect, type Locator, type Page } from "@playwright/test";
-import { STORAGE_PREFIX, LEGACY_KEYS } from "../src/utils/storageConstants";
+import {
+  STORAGE_PREFIX,
+  LEGACY_KEYS,
+  COACHMARK_SETTINGS_DISMISSED_KEY,
+} from "../src/utils/storageConstants";
 
 export interface FullPageVisualOptions {
   maxDiffPixels?: number;
@@ -48,7 +52,7 @@ export async function loadVisualState(
 
   // Inject state into localStorage before the app boots
   await page.addInitScript(
-    ({ s, prefix, legacyKeys }) => {
+    ({ s, prefix, legacyKeys, coachmarkKey }) => {
       // Clear previous state
       Object.keys(localStorage).forEach((key) => {
         const legacy = legacyKeys as readonly string[];
@@ -57,15 +61,23 @@ export async function loadVisualState(
         }
       });
 
+      // Suppress the first-run coach mark so it never appears in snapshots.
+      localStorage.setItem(coachmarkKey, "true");
+
       // Write new state
       Object.entries(s).forEach(([key, value]) => {
         if (value === undefined || value === null) return;
-        
+
         // Serialize simple types as strings
         localStorage.setItem(`${prefix}${key}`, String(value));
       });
     },
-    { s: state, prefix: STORAGE_PREFIX, legacyKeys: LEGACY_KEYS }
+    {
+      s: state,
+      prefix: STORAGE_PREFIX,
+      legacyKeys: LEGACY_KEYS,
+      coachmarkKey: COACHMARK_SETTINGS_DISMISSED_KEY,
+    }
   );
 
   await page.goto("/");
@@ -186,11 +198,36 @@ export async function waitForStable(locator: Locator, timeout = 2000) {
 /**
  * Prepares a page for visual regression testing by setting the viewport,
  * enabling reduced motion, and ensuring the page is in a stable state.
+ *
+ * By default, this function navigates to "/" after registering the
+ * coachmark-suppression init script so the flag is in localStorage before
+ * the app boots. Pass `{ goto: false }` to skip the internal navigation
+ * (e.g. when the caller navigates to a non-root path).
  */
-export async function prepareVisualPage(page: Page, viewport = { width: 1280, height: 720 }) {
+export async function prepareVisualPage(
+  page: Page,
+  viewport = { width: 1280, height: 720 },
+  options: { goto?: boolean } = {}
+) {
   await page.setViewportSize(viewport);
   await page.emulateMedia({ reducedMotion: "reduce" });
-  
+
+  // Suppress the first-run coach mark so it never appears in snapshots.
+  // addInitScript covers future navigations; for callers that already
+  // navigated and pass goto:false, set the flag retroactively on the
+  // currently-loaded document so the suppression still applies.
+  await page.addInitScript((key: string) => {
+    localStorage.setItem(key, "true");
+  }, COACHMARK_SETTINGS_DISMISSED_KEY);
+
+  if (options.goto !== false) {
+    await page.goto("/");
+  } else {
+    await page.evaluate((key: string) => {
+      localStorage.setItem(key, "true");
+    }, COACHMARK_SETTINGS_DISMISSED_KEY);
+  }
+
   // Disable all animations, transitions, and hide scrollbars globally
   await page.addStyleTag({
     content: `

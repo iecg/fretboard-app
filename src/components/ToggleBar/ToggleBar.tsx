@@ -52,6 +52,8 @@ interface ToggleBarProps<Value extends string | number> extends VariantProps<
   label?: string;
   /** Compact mode — tighter padding, smaller hit-areas, smaller font. */
   compact?: boolean;
+  /** When "scroll" — the toggle group scrolls horizontally instead of shrinking buttons. */
+  overflow?: "scroll";
 }
 
 export function ToggleBar<Value extends string | number>({
@@ -61,6 +63,7 @@ export function ToggleBar<Value extends string | number>({
   variant = "default",
   label,
   compact = false,
+  overflow,
 }: ToggleBarProps<Value>) {
   const isTabs = variant === "tabs";
   const descPrefix = useId();
@@ -70,6 +73,7 @@ export function ToggleBar<Value extends string | number>({
       role={isTabs ? "tablist" : "group"}
       aria-label={label}
       data-compact={compact ? "true" : undefined}
+      data-overflow={overflow ?? undefined}
     >
       {options.map((option) => {
         const isActive = value === option.value;

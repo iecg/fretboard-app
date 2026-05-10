@@ -83,6 +83,26 @@
   letter-spacing: 0.12em;
 }
 
+/* Canonical field-label token set — identical to .section-label; kept as a
+   semantic alias so control labels can compose from it without importing
+   a section-level name. */
+.label-canonical {
+  font-size: 0.72rem;
+  color: var(--surface-control-fg-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* Demoted child label — sits one step below .label-canonical in the
+   visual hierarchy. font-size: 0.65rem is a magic number; pending
+   a future --text-xxs token in tokens.css. */
+.field-sublabel {
+  font-size: 0.65rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
 .toggle-group {
   display: flex;
   gap: 0.22rem;
@@ -94,11 +114,14 @@
 }
 
 .toggle-group--default {
-  /* Intentional marker class for variant composition. */
+  /* Fill the row container so buttons share the available width equally.
+     Each .toggle-btn already has flex:1, so the bar stretches without gaps. */
+  width: 100%;
 }
 
 .toggle-btn {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
   min-height: 2.65rem;
   padding: 0.5rem 0.78rem;
   font-size: 0.9rem;
@@ -330,6 +353,26 @@
 /* Out-specify mobile-tabs scope (max-width: 767px sets min-height: 36px). */
 [data-layout-scope="mobile-tabs"] .toggle-group[data-compact="true"] .toggle-btn {
   min-height: 1.6rem;
+}
+
+/* Horizontal scroll variant — opt-in via overflow="scroll" prop on ToggleBar.
+   Buttons keep their natural width (no flex:1 stretch) so labels are fully
+   readable when the row overflows. Scrollbar hidden cross-browser. */
+.toggle-group[data-overflow="scroll"] {
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.toggle-group[data-overflow="scroll"]::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.toggle-group[data-overflow="scroll"] .toggle-btn {
+  flex: 0 0 auto;
+  min-width: max-content;
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 

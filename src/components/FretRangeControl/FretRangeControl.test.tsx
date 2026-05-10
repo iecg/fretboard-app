@@ -2,6 +2,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { FretRangeControl } from "../FretRangeControl/FretRangeControl";
+import { axe } from "../../test-utils/a11y";
 
 const defaultProps = {
   startFret: 3,
@@ -57,6 +58,13 @@ describe("FretRangeControl/FretRangeControl", () => {
     it("does not show separator", () => {
       render(<FretRangeControl {...defaultProps} layout="mobile" />);
       expect(screen.queryByText("—")).toBeNull();
+    });
+
+    it("renders a group with accessible name 'Fret Range'", () => {
+      render(<FretRangeControl {...defaultProps} layout="mobile" />);
+      expect(
+        screen.getByRole("group", { name: "Fret Range" }),
+      ).toBeInTheDocument();
     });
   });
 
@@ -187,6 +195,29 @@ describe("FretRangeControl/FretRangeControl", () => {
       expect(getStartButtons().increment).toBeInTheDocument();
       expect(getEndButtons().decrement).toBeInTheDocument();
       expect(getEndButtons().increment).toBeInTheDocument();
+    });
+
+    it("renders a group with accessible name 'Fret Range'", () => {
+      render(<FretRangeControl {...defaultProps} layout="dashboard" />);
+      expect(
+        screen.getByRole("group", { name: "Fret Range" }),
+      ).toBeInTheDocument();
+    });
+  });
+
+  describe("Accessibility", () => {
+    it("has no accessibility violations (toolbar layout)", async () => {
+      const { container } = render(
+        <FretRangeControl {...defaultProps} layout="toolbar" />,
+      );
+      expect(await axe(container)).toHaveNoViolations();
+    });
+
+    it("has no accessibility violations (dashboard layout)", async () => {
+      const { container } = render(
+        <FretRangeControl {...defaultProps} layout="dashboard" />,
+      );
+      expect(await axe(container)).toHaveNoViolations();
     });
   });
 });

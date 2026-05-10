@@ -87,11 +87,11 @@
 
 .overlay-section-title {
   margin: 0;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--chrome-fg-muted);
+  font-size: 1rem;
+  font-weight: var(--font-weight-semibold, 600);
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text-main);
 }
 
 .overlay-section-body {
@@ -120,9 +120,11 @@
 }
 
 .overlay-field-label {
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: var(--chrome-fg);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--surface-control-fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
 }
 
 .overlay-field-control {

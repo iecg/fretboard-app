@@ -7,14 +7,25 @@ import {
   getShapeCenterFret,
   type ShapePolygon,
 } from "../shapes";
-import { getFretNote } from "../core/guitar";
-import { getScaleNotes } from "../core/theory";
+import { getFretNote, getFretboardNotes } from "../core/guitar";
+import { getScaleNotes, NOTES } from "../core/theory";
+import {
+  getOneStringCoordinates,
+  getTwoStringsCoordinates,
+  getTwoStringsIntervalPairs,
+  TWO_STRINGS_INTERVAL_SD_DISTANCES,
+  getOneStringIntervalPairs,
+} from "../shapes/practicePatterns";
 import {
   fingeringPatternAtom,
   cagedShapesAtom,
   npsPositionAtom,
   npsOctaveAtom,
   clickedShapeAtom,
+  oneStringIndexAtom,
+  oneStringIntervalAtom,
+  twoStringsIntervalAtom,
+  twoStringsActivePairTupleAtom,
 } from "./fingeringAtoms";
 import {
   rootNoteAtom,
@@ -35,10 +46,15 @@ export const shapeDataAtom = atom((get) => {
   const cagedShapes = get(cagedShapesAtom);
   const npsPosition = get(npsPositionAtom);
   const npsOctave = get(npsOctaveAtom);
+  const oneStringIndex = get(oneStringIndexAtom);
+  const oneStringInterval = get(oneStringIntervalAtom);
+  const twoStringsInterval = get(twoStringsIntervalAtom);
+  const activePairTuple = get(twoStringsActivePairTupleAtom);
 
   let coords: string[] = [];
   let bounds: { minFret: number; maxFret: number }[] = [];
   let polygons: ShapePolygon[] = [];
+  let intervalPairs: Array<{ a: string; b: string }> = [];
   const mergedWrappedNotes = new Set<string>();
 
   if (fingeringPattern === "caged") {
@@ -74,6 +90,41 @@ export const shapeDataAtom = atom((get) => {
     );
     coords = res.coordinates;
     bounds = res.bounds;
+  } else if (fingeringPattern === "one-string") {
+    // Always emit full string coords (visibility independent of interval — UAT-10 model).
+    coords = getOneStringCoordinates(rootNote, scaleName, currentTuning, 24, oneStringIndex);
+    if (oneStringInterval > 0) {
+      // UAT-22: On mode connects consecutive scale tones (2nds) only — SD distance = 1.
+      const board = getFretboardNotes(currentTuning, 24);
+      const scaleNoteNames = getScaleNotes(rootNote, scaleName);
+      const scaleNoteSet = new Set(scaleNoteNames);
+      const scaleNoteSemitones = scaleNoteNames
+        .map((n) => NOTES.indexOf(n))
+        .filter((i) => i !== -1);
+      intervalPairs = getOneStringIntervalPairs(
+        oneStringIndex,
+        board,
+        scaleNoteSet,
+        scaleNoteSemitones,
+        1, // SD distance = 1 → scale 2nds (consecutive scale tones)
+        currentTuning,
+      );
+    }
+  } else if (fingeringPattern === "two-strings") {
+    // Always emit the full pair note set regardless of interval setting (UAT-10).
+    // Visibility is decoupled from interval — interval only affects connector lines.
+    // activePairTuple handles adjacent-vs-skip-one topology (Option X).
+    coords = getTwoStringsCoordinates(rootNote, scaleName, currentTuning, 24, activePairTuple);
+    if (twoStringsInterval > 0) {
+      const board = getFretboardNotes(currentTuning, 24);
+      const scaleNoteNames = getScaleNotes(rootNote, scaleName);
+      const scaleNoteSet = new Set(scaleNoteNames);
+      const scaleNoteSemitones = scaleNoteNames
+        .map((n) => NOTES.indexOf(n))
+        .filter((i) => i !== -1);
+      const targetSdDist = TWO_STRINGS_INTERVAL_SD_DISTANCES[twoStringsInterval - 1] ?? 2;
+      intervalPairs = getTwoStringsIntervalPairs(activePairTuple, board, scaleNoteSet, scaleNoteSemitones, targetSdDist, currentTuning);
+    }
   } else {
     coords = getScaleNotes(rootNote, scaleName);
   }
@@ -83,6 +134,7 @@ export const shapeDataAtom = atom((get) => {
     boxBounds: bounds,
     shapePolygons: polygons,
     wrappedNotes: mergedWrappedNotes,
+    intervalPairs,
   };
 });
 
@@ -154,7 +206,7 @@ export const shapeHighlightedNoteSetAtom = atom((get) => {
   const { highlightNotes } = get(shapeDataAtom);
   const currentTuning = get(currentTuningAtom);
 
-  if (fingeringPattern === "all") return null;
+  if (fingeringPattern === "none") return null;
   const noteSet = new Set<string>();
   for (const coord of highlightNotes) {
     const dashIdx = coord.indexOf("-");

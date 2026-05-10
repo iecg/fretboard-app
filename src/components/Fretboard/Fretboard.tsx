@@ -45,7 +45,7 @@ interface FretboardProps {
   stringRowPx?: number;
   autoCenterTarget?: AutoCenterTarget;
   recenterKey?: number;
-  activePattern?: "caged" | "3nps" | "all";
+  activePattern?: "caged" | "3nps" | "none";
   activeShape?: ActiveShapeType;
   shapeScope?: ShapeScope;
   id?: string;

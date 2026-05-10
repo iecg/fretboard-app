@@ -4,6 +4,7 @@ import {
   CHORDS,
   CHORD_DEFINITIONS,
   getScaleNotes,
+  getScaleSemitones,
   getChordNotes,
   getNoteIndex,
   getNoteDisplay,
@@ -87,6 +88,30 @@ describe("getScaleNotes", () => {
       "F#",
       "G#",
     ]);
+  });
+});
+
+describe("getScaleSemitones", () => {
+  it("returns chromatic semitone offsets for C Major", () => {
+    // C=0, D=2, E=4, F=5, G=7, A=9, B=11
+    expect(getScaleSemitones("C", "Major")).toEqual([0, 2, 4, 5, 7, 9, 11]);
+  });
+
+  it("returns chromatic semitone offsets for A Minor Pentatonic", () => {
+    // A=9, C=0, D=2, E=4, G=7
+    expect(getScaleSemitones("A", "Minor Pentatonic")).toEqual([9, 0, 2, 4, 7]);
+  });
+
+  it("returns empty array for unknown scale", () => {
+    expect(getScaleSemitones("C", "NonExistent")).toEqual([]);
+  });
+
+  it("matches getScaleNotes ordering (root first)", () => {
+    const notes = getScaleNotes("D", "Major");
+    const semis = getScaleSemitones("D", "Major");
+    expect(semis).toHaveLength(notes.length);
+    // First entry is the root
+    expect(semis[0]).toBe(2); // D = index 2 in NOTES
   });
 });
 
@@ -295,6 +320,41 @@ describe("resolver + key signature integration", () => {
     const useFlats = resolveAccidentalMode("E", "Dorian", "auto");
     expect(useFlats).toBe(false);
     expect(getKeySignatureForDisplay("E", "Dorian", useFlats)).toBe(2);
+  });
+});
+
+describe("CHORD_DEFINITIONS — new chord types", () => {
+  it("CHORD_DEFINITIONS contains 15 entries (9 original + 6 new)", () => {
+    expect(Object.keys(CHORD_DEFINITIONS).length).toBe(15);
+  });
+
+  it("original keys are still present", () => {
+    expect("Major Triad" in CHORD_DEFINITIONS).toBe(true);
+    expect("Power Chord (5)" in CHORD_DEFINITIONS).toBe(true);
+  });
+
+  it("Augmented Triad has intervals [0, 4, 8]", () => {
+    expect(CHORD_DEFINITIONS["Augmented Triad"].members.map((m) => m.semitone)).toEqual([0, 4, 8]);
+  });
+
+  it("Sus2 has intervals [0, 2, 7]", () => {
+    expect(CHORD_DEFINITIONS["Sus2"].members.map((m) => m.semitone)).toEqual([0, 2, 7]);
+  });
+
+  it("Minor 6th has intervals [0, 3, 7, 9]", () => {
+    expect(CHORD_DEFINITIONS["Minor 6th"].members.map((m) => m.semitone)).toEqual([0, 3, 7, 9]);
+  });
+
+  it("Diminished 7th has intervals [0, 3, 6, 9]", () => {
+    expect(CHORD_DEFINITIONS["Diminished 7th"].members.map((m) => m.semitone)).toEqual([0, 3, 6, 9]);
+  });
+
+  it("Half-Diminished 7th has intervals [0, 3, 6, 10]", () => {
+    expect(CHORD_DEFINITIONS["Half-Diminished 7th"].members.map((m) => m.semitone)).toEqual([0, 3, 6, 10]);
+  });
+
+  it("Minor-Major 7th has intervals [0, 3, 7, 11]", () => {
+    expect(CHORD_DEFINITIONS["Minor-Major 7th"].members.map((m) => m.semitone)).toEqual([0, 3, 7, 11]);
   });
 });
 

@@ -4,9 +4,11 @@ import { expectLocatorVisual, prepareVisualPage } from "./visual-helpers";
 test.describe("Note Color Audit Visual", () => {
   test("note color audit matrix", async ({ page }) => {
     await page.goto("./?audit=note-colors");
+    // The audit route has no coachmark, so { goto: false } is safe: the caller
+    // controls navigation and prepareVisualPage skips its internal goto.
     // Keep viewport comfortably above compact-height threshold (899px) so
     // Linux scrollbar/layout jitter can't flip to desktop-stacked mid-capture.
-    await prepareVisualPage(page, { width: 1280, height: 920 });
+    await prepareVisualPage(page, { width: 1280, height: 920 }, { goto: false });
 
     const boxStyle = async (auditId: string) =>
       page.evaluate((id) => {

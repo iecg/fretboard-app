@@ -75,12 +75,12 @@ export function buildChordRowEntries(
     const role = chordMemberRole(m, scaleNoteSet);
     let scaleDegree: DegreeId | undefined;
     let scaleInterval: string | undefined;
-    if (inScale) {
-      const noteIdx = NOTES.indexOf(m.note);
-      if (noteIdx !== -1 && tonicIdx !== -1) {
-        const semitone = (noteIdx - tonicIdx + 12) % 12;
+    const noteIdx = NOTES.indexOf(m.note);
+    if (noteIdx !== -1 && tonicIdx !== -1) {
+      const semitone = (noteIdx - tonicIdx + 12) % 12;
+      scaleInterval = formatAccidental(INTERVAL_NAMES[semitone] ?? "1");
+      if (inScale) {
         scaleDegree = degreesMap[semitone] ?? INTERVAL_NAMES[semitone];
-        scaleInterval = formatAccidental(INTERVAL_NAMES[semitone] ?? "1");
       }
     }
     return {

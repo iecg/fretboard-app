@@ -3,7 +3,6 @@ import { prepareVisualPage, expectFullPageVisual, loadVisualState, expectLocator
 
 test.describe("App Mobile Visual", () => {
   test("app-mobile-portrait-390x844", async ({ page }) => {
-    await page.goto("/");
     await prepareVisualPage(page, { width: 390, height: 844 });
 
     await expect(page.getByTestId("app-container")).toBeVisible();
@@ -32,7 +31,6 @@ test.describe("App Mobile Visual", () => {
   });
 
   test("app-mobile-landscape-667x375", async ({ page }) => {
-    await page.goto("/");
     await prepareVisualPage(page, { width: 667, height: 375 });
 
     await expect(page.getByTestId("app-container")).toBeVisible();

@@ -488,7 +488,7 @@ describe("Integration Tests - User Workflows", () => {
     it("enabling CAGED fingering pattern", async () => {
       render(<App />);
 
-      expect(localStorage.getItem(k("fingeringPattern"))).toBe("all");
+      expect(localStorage.getItem(k("fingeringPattern"))).toBe("none");
 
       localStorage.setItem(k("fingeringPattern"), "caged");
       const { rerender } = render(<App />);
@@ -511,7 +511,7 @@ describe("Integration Tests - User Workflows", () => {
     });
 
     it("switching between fingering patterns", async () => {
-      const patterns = ["all", "caged", "3nps"];
+      const patterns = ["none", "caged", "3nps"];
 
       for (const pattern of patterns) {
         localStorage.clear();

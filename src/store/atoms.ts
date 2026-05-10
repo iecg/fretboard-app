@@ -11,6 +11,11 @@ export {
   npsOctaveAtom,
   clickedShapeAtom,
   recenterKeyAtom,
+  oneStringIndexAtom,
+  oneStringIntervalAtom,
+  twoStringsPairAtom,
+  twoStringsIntervalAtom,
+  twoStringsActivePairTupleAtom,
 } from "./fingeringAtoms";
 
 export {
@@ -53,7 +58,6 @@ export {
   chordHiddenNotesAtom,
   toggleChordHiddenNoteAtom,
   toggleChordOverlayHiddenAtom,
-  activeVoicingKeyAtom,
   setChordDegreeAtom,
 } from "./chordOverlayAtoms";
 
@@ -105,6 +109,7 @@ export {
 export {
   setRootNoteAtom,
   setScaleNameAtom,
+  setFingeringPatternAtom,
   resetAtom,
 } from "./actions";
 

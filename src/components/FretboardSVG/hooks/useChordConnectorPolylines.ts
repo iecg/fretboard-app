@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { NoteData } from "./useNoteData";
-import { polarSort, offsetOutlinePath } from "../utils/pathGeometry";
+import { convexHull, offsetOutlinePath } from "../utils/pathGeometry";
 import { NOTES } from "../../../core/theory";
 
 /**
@@ -76,8 +76,7 @@ export interface ChordConnectorVoicing {
   /**
    * Stable identity key derived from the canonical sorted "(stringIndex,fretIndex)"
    * pairs joined by "|" (e.g. "0,7|1,8|2,9"). Same vertex set → same key across
-   * renders. Used by FretboardHitTargetLayer to identify which voicing is active
-   * and by FretboardSVG to write the data-active-voicing attribute.
+   * renders.
    */
   voicingKey: string;
 }
@@ -536,7 +535,7 @@ export function buildChordConnectorPolylines(
   const results: ChordConnectorVoicing[] = pendingVoicings.map((pv) => {
     const offsetPx = clusterOffsetMap.get(pv.canonicalKey) ?? 0;
     const pathStr = offsetOutlinePath(
-      polarSort(pv.rawVertices),
+      convexHull(pv.rawVertices),
       baseRadius + offsetPx,
     );
     const paths = { fill: pathStr, outline: pathStr };

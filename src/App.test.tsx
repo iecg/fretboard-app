@@ -597,12 +597,13 @@ describe("App", () => {
       const chordOverlayBtn = await screen.findByRole("button", { name: /Chords/i });
       fireEvent.click(chordOverlayBtn);
 
-      // New UI: switch to Manual mode first, then set chord type
+      // New UI: switch to Manual mode first, then set chord type via toggle bar
       const manualBtn = await screen.findByRole("button", { name: "Manual" });
       fireEvent.click(manualBtn);
 
-      const chordTypeSelect = await screen.findByRole("combobox", { name: "Chord Type" });
-      fireEvent.change(chordTypeSelect, { target: { value: "Minor Triad" } });
+      const chordTypeGroup = await screen.findByRole("group", { name: "Chord Type" });
+      const minButton = within(chordTypeGroup).getByRole("button", { name: "min" });
+      fireEvent.click(minButton);
 
       await waitFor(() => {
         expect(localStorage.getItem(k("chordQualityOverride"))).toBe("Minor Triad");

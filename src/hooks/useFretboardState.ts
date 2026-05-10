@@ -23,7 +23,7 @@ import {
 } from "../store/atoms";
 import type { CagedShape } from "../shapes";
 
-type ActivePatternType = "caged" | "3nps" | "all";
+type ActivePatternType = "caged" | "3nps" | "none";
 export type ActiveShapeType = CagedShape | number | CagedShape[] | undefined;
 
 export type ShapeScope = "single" | "multi" | "global";
@@ -57,13 +57,13 @@ export function useFretboardState() {
   let activeShape: ActiveShapeType;
   let shapeScope: ShapeScope = "global";
 
-  if (fingeringPattern === "all") {
-    activePattern = "all";
+  if (fingeringPattern === "none") {
+    activePattern = "none";
     activeShape = undefined;
     shapeScope = "global";
   } else if (fingeringPattern === "caged") {
     if (cagedShapes.size === 0) {
-      activePattern = "all";
+      activePattern = "none";
       activeShape = undefined;
       shapeScope = "global";
     } else if (cagedShapes.size === 1) {
@@ -71,7 +71,7 @@ export function useFretboardState() {
       activeShape = Array.from(cagedShapes)[0] as CagedShape;
       shapeScope = "single";
     } else {
-      activePattern = "all";
+      activePattern = "none";
       activeShape = Array.from(cagedShapes) as CagedShape[];
       shapeScope = "multi";
     }

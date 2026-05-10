@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import clsx from "clsx";
 import { CAGED_SHAPES, type CagedShape } from "../../shapes";
 import { useShapeState } from "../../hooks/useShapeState";
-import { displayFormatAtom } from "../../store/atoms";
+import { displayFormatAtom, type FingeringPattern } from "../../store/atoms";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import shared from "../shared/shared.module.css";
 
@@ -30,6 +30,14 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
     setNpsOctave,
     onShapeClick,
     onRecenter,
+    oneStringIndex,
+    setOneStringIndex,
+    oneStringInterval,
+    setOneStringInterval,
+    twoStringsPair,
+    setTwoStringsPair,
+    twoStringsInterval,
+    setTwoStringsInterval,
   } = useShapeState();
 
   const [displayFormat, setDisplayFormat] = useAtom(displayFormatAtom);
@@ -58,12 +66,14 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
         <span className={shared["section-label"]}>Fingering Pattern</span>
         <ToggleBar
           options={[
-            { value: "all", label: "All" },
+            { value: "none", label: "None" },
             { value: "caged", label: "CAGED" },
             { value: "3nps", label: "3NPS" },
+            { value: "one-string", label: "1-String" },
+            { value: "two-strings", label: "2-Strings" },
           ]}
           value={fingeringPattern}
-          onChange={(v) => setFingeringPattern(v as "all" | "caged" | "3nps")}
+          onChange={(v) => setFingeringPattern(v as FingeringPattern)}
           compact={compact}
         />
       </div>
@@ -200,6 +210,81 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
               compact={compact}
             />
           </div>
+        </>
+      )}
+
+      {fingeringPattern === "one-string" && (
+        <>
+          <div className={shared["control-section"]}>
+            <span className={shared["section-label"]}>String</span>
+            <ToggleBar
+              options={[1, 2, 3, 4, 5, 6].map((n, i) => ({ value: i, label: String(n) }))}
+              value={oneStringIndex}
+              onChange={(v) => setOneStringIndex(v as number)}
+              compact={compact}
+            />
+          </div>
+          <div className={shared["control-section"]}>
+            <span className={shared["section-label"]}>Connectors</span>
+            <ToggleBar
+              options={[
+                { value: 0, label: "Off" },
+                { value: 1, label: "On" },
+              ]}
+              value={oneStringInterval}
+              onChange={(v) => setOneStringInterval(v as number)}
+              compact={compact}
+            />
+          </div>
+          {oneStringInterval > 0 && (
+            <p className={shared["field-hint"]}>Shows consecutive scale steps (2nds)</p>
+          )}
+        </>
+      )}
+
+      {fingeringPattern === "two-strings" && (
+        <>
+          <div className={shared["control-section"]}>
+            <span className={shared["section-label"]}>Strings</span>
+            <ToggleBar
+              options={
+                twoStringsInterval === 3
+                  ? [
+                      { value: 0, label: "1-3" },
+                      { value: 1, label: "2-4" },
+                      { value: 2, label: "3-5" },
+                      { value: 3, label: "4-6" },
+                    ]
+                  : [
+                      { value: 0, label: "1-2" },
+                      { value: 1, label: "2-3" },
+                      { value: 2, label: "3-4" },
+                      { value: 3, label: "4-5" },
+                      { value: 4, label: "5-6" },
+                    ]
+              }
+              value={twoStringsPair}
+              onChange={(v) => setTwoStringsPair(v as number)}
+              compact={compact}
+            />
+          </div>
+          <div className={shared["control-section"]}>
+            <span className={shared["section-label"]}>Interval</span>
+            <ToggleBar
+              options={[
+                { value: 0, label: "Off" },
+                { value: 1, label: "3rds" },
+                { value: 2, label: "4ths" },
+                { value: 3, label: "6ths" },
+              ]}
+              value={twoStringsInterval}
+              onChange={(v) => setTwoStringsInterval(v as number)}
+              compact={compact}
+            />
+          </div>
+          {twoStringsInterval > 0 && (
+            <p className={shared["field-hint"]}>Pair members connected</p>
+          )}
         </>
       )}
 

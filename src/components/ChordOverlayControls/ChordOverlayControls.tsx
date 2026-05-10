@@ -1,34 +1,59 @@
 import { startTransition, useEffect } from "react";
 import { useAtomValue } from "jotai";
-import { NOTES, LENS_REGISTRY, CHORD_DEFINITIONS } from "../../core/theory";
+import clsx from "clsx";
+import { NOTES, LENS_REGISTRY } from "../../core/theory";
 import { getDegreesForScale } from "../../core/degrees";
-import { lensAvailabilityAtom } from "../../store/atoms";
+import { lensAvailabilityAtom, fingeringPatternAtom } from "../../store/atoms";
 import { NoteGrid } from "../NoteGrid/NoteGrid";
-import {
-  StepperSelect,
-  type StepperSelectOption,
-} from "../StepperSelect/StepperSelect";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { useChordState } from "../../hooks/useChordState";
 import { useScaleState } from "../../hooks/useScaleState";
-import styles from "../TheoryControls/TheoryControls.module.css";
+import theoryStyles from "../TheoryControls/TheoryControls.module.css";
+import panelStyles from "./ChordOverlayControls.module.css";
 import shared from "../shared/shared.module.css";
 
-// Derive the dropdown options from the canonical chord-definition catalogue so
-// the UI never drifts when new types are added. Object.keys preserves insertion
-// order on string keys (ES2015+), and CHORD_DEFINITIONS in src/core/theory.ts
-// is declared in family order (triads → 6 → 7ths → sus → power).
-const CHORD_OPTIONS: string[] = Object.keys(CHORD_DEFINITIONS);
+// UI-only shorthand label map — maps CHORD_DEFINITIONS keys to chord-symbol
+// shorthand for display in the toggle bar. Canonical keys are unchanged.
+const CHORD_TYPE_SHORT_LABELS: Record<string, string> = {
+  "Major Triad": "Maj",
+  "Minor Triad": "min",
+  "Diminished Triad": "dim",
+  "Augmented Triad": "aug",
+  "Sus2": "sus2",
+  "Sus4": "sus4",
+  "Power Chord (5)": "5",
+  "Major 6th": "M6",
+  "Minor 6th": "m6",
+  "Major 7th": "M7",
+  "Minor 7th": "m7",
+  "Dominant 7th": "7",
+  "Diminished 7th": "dim7",
+  "Half-Diminished 7th": "m7♭5",
+  "Minor-Major 7th": "mM7",
+};
+
+// Display order for the chord-type toggle bar: triads → suspended → power → 6ths → 7ths.
+// This controls toggle-bar order exclusively; CHORD_DEFINITIONS key order in theory.ts
+// is never reordered to match this.
+const CHORD_TYPE_DISPLAY_ORDER: readonly string[] = [
+  "Major Triad",
+  "Minor Triad",
+  "Diminished Triad",
+  "Augmented Triad",
+  "Sus2",
+  "Sus4",
+  "Power Chord (5)",
+  "Major 6th",
+  "Minor 6th",
+  "Major 7th",
+  "Minor 7th",
+  "Dominant 7th",
+  "Diminished 7th",
+  "Half-Diminished 7th",
+  "Minor-Major 7th",
+];
 
 const CHORD_NONE_VALUE = "__none__";
-
-const CHORD_SELECT_OPTIONS: StepperSelectOption[] = [
-  { value: CHORD_NONE_VALUE, label: "Off" },
-  ...CHORD_OPTIONS.map((option) => ({
-    value: option,
-    label: option,
-  })),
-];
 
 export interface ChordOverlayControlsProps {
   compact?: boolean;
@@ -51,8 +76,11 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
   } = useChordState();
 
   const lensAvailability = useAtomValue(lensAvailabilityAtom);
+  const fingeringPattern = useAtomValue(fingeringPatternAtom);
+  const isPatternDisabled =
+    fingeringPattern === "one-string" || fingeringPattern === "two-strings";
 
-  const degreeSelectOptions: StepperSelectOption[] = [
+  const degreeSelectOptions = [
     { value: CHORD_NONE_VALUE, label: "Off" },
     ...Object.values(getDegreesForScale(scaleName)).map((deg) => ({
       value: deg,
@@ -110,40 +138,38 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
     });
   };
 
-  const handleStepChordType = (direction: -1 | 1) => {
-    const currentIndex =
-      chordQualityOverride === null ? -1 : CHORD_OPTIONS.indexOf(chordQualityOverride);
-    const totalSlots = CHORD_OPTIONS.length + 1;
-    const currentSlot = currentIndex + 1;
-    const nextSlot = (currentSlot + direction + totalSlots) % totalSlots;
-    const nextValue = nextSlot === 0 ? null : CHORD_OPTIONS[nextSlot - 1];
-    startTransition(() => {
-      setChordQualityOverride(nextValue);
-    });
-  };
-
   return (
-    <div className={styles["theory-chord-content"]}>
+    <div
+      className={clsx(theoryStyles["theory-chord-content"], isPatternDisabled && panelStyles["panel-disabled"])}
+      data-disabled={isPatternDisabled ? "true" : undefined}
+    >
+      {isPatternDisabled && (
+        <p className={shared["field-hint"]} aria-live="polite">
+          Chord overlay disabled for single/two-string patterns.
+        </p>
+      )}
       <div className={shared["control-section"]}>
         <span className={shared["section-label"]}>Chord Mode</span>
         <ToggleBar
           options={[
-            { value: "degree", label: "Degree" },
-            { value: "manual", label: "Manual" },
+            { value: "degree", label: isPatternDisabled ? "Disabled" : "Degree", disabled: isPatternDisabled },
+            { value: "manual", label: "Manual", disabled: isPatternDisabled },
           ]}
           value={chordOverlayMode}
-          onChange={setChordOverlayMode}
+          onChange={isPatternDisabled ? () => undefined : setChordOverlayMode}
           label="Chord overlay mode"
           compact={compact}
         />
-        <p className={shared["field-hint"]}>
-          {chordOverlayMode === "degree"
-            ? "Picks a chord by scale degree — diatonic to the key."
-            : "Sets any chord type and root — independent of the key."}
-        </p>
+        {!isPatternDisabled && (
+          <p className={shared["field-hint"]}>
+            {chordOverlayMode === "degree"
+              ? "Picks a chord by scale degree — diatonic to the key."
+              : "Sets any chord type and root — independent of the key."}
+          </p>
+        )}
       </div>
 
-      {chordOverlayMode === "degree" && (
+      {!isPatternDisabled && chordOverlayMode === "degree" && (
         <>
           <div className={shared["control-section"]}>
             <span className={shared["section-label"]}>Degree</span>
@@ -158,43 +184,42 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
           {chordDegree ? (
             <div className={shared["control-section"]}>
               <span className={shared["section-label"]}>Chord Type</span>
-              <StepperSelect
-                selectLabel="Chord Type"
-                groupLabel="Browse chord types"
-                previousLabel="Previous chord type"
-                nextLabel="Next chord type"
-                value={chordQualityOverride ?? CHORD_NONE_VALUE}
-                options={CHORD_SELECT_OPTIONS}
+              <ToggleBar
+                label="Chord Type"
+                options={CHORD_TYPE_DISPLAY_ORDER.map((key) => ({
+                  value: key,
+                  label: CHORD_TYPE_SHORT_LABELS[key] ?? key,
+                }))}
+                value={chordType ?? ""}
                 onChange={handleChordTypeChange}
-                onPrevious={() => handleStepChordType(-1)}
-                onNext={() => handleStepChordType(1)}
                 compact={compact}
+                overflow="scroll"
               />
               <p className={shared["field-hint"]}>
-                Off uses the diatonic default for this degree. Picking a quality
-                pins it for the active degree only — switching degrees resets to
-                the new degree's diatonic default.
+                Switching degrees picks the diatonic default automatically.
               </p>
             </div>
           ) : null}
         </>
       )}
 
-      {chordOverlayMode === "manual" && (
+      {!isPatternDisabled && chordOverlayMode === "manual" && (
         <>
           <div className={shared["control-section"]}>
             <span className={shared["section-label"]}>Chord Type</span>
-            <StepperSelect
-              selectLabel="Chord Type"
-              groupLabel="Browse chord types"
-              previousLabel="Previous chord type"
-              nextLabel="Next chord type"
+            <ToggleBar
+              label="Chord Type"
+              options={[
+                { value: CHORD_NONE_VALUE, label: "Off" },
+                ...CHORD_TYPE_DISPLAY_ORDER.map((key) => ({
+                  value: key,
+                  label: CHORD_TYPE_SHORT_LABELS[key] ?? key,
+                })),
+              ]}
               value={chordQualityOverride ?? CHORD_NONE_VALUE}
-              options={CHORD_SELECT_OPTIONS}
               onChange={handleChordTypeChange}
-              onPrevious={() => handleStepChordType(-1)}
-              onNext={() => handleStepChordType(1)}
               compact={compact}
+              overflow="scroll"
             />
           </div>
           <div className={shared["control-section"]}>
@@ -214,7 +239,7 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
         </>
       )}
 
-      {chordType ? (
+      {!isPatternDisabled && chordType ? (
         <div className={shared["control-section"]}>
           <span className={shared["section-label"]}>Lens</span>
           <ToggleBar

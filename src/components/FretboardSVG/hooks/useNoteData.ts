@@ -52,7 +52,7 @@ export interface UseNoteDataProps {
   shapePolygons: ShapePolygon[];
   boxBounds: BoxBound[];
   chordFretSpread: number;
-  activePattern?: "caged" | "3nps" | "all";
+  activePattern?: "caged" | "3nps" | "none";
   shapeScope?: "single" | "multi" | "global";
   activeShape?: ActiveShapeType;
   scaleName: string;
@@ -140,7 +140,9 @@ export function useNoteData({
             highlightSet.has(`${stringIndex}-${fretIndex}`));
         
         const isChordTone =
-          !isNoteHidden && hasChordOverlay && chordToneSet.has(noteName);
+          !isNoteHidden &&
+          hasChordOverlay &&
+          chordToneSet.has(noteName);
         
         const isScaleRoot =
           !isNoteHidden &&
@@ -232,11 +234,13 @@ export function useNoteData({
         // Keys are sharp-normalized (per project convention) so no enharmonic lookup needed.
         const semantics = noteSemantics?.get(noteName);
 
+        const effectiveSemantics = semantics;
+
         const noteClass = isNoteHidden
           ? "note-inactive"
-          : semantics
+          : effectiveSemantics
             ? classifyNoteFromSemantics(
-                semantics,
+                effectiveSemantics,
                 isChordInRange,
                 isInActiveShape,
                 hasChordOverlay,
@@ -287,8 +291,8 @@ export function useNoteData({
         const lensEmphasis = getLensEmphasis(
           noteClass,
           hasChordOverlay ? practiceLens : undefined,
-          semantics?.isGuideTone ?? false,
-          semantics?.isTension ?? false,
+          effectiveSemantics?.isGuideTone ?? false,
+          effectiveSemantics?.isTension ?? false,
         );
 
         // Visual hiddenness: inactive notes are not rendered in the note layer.
@@ -326,8 +330,8 @@ export function useNoteData({
           applyDimOpacity,
           applyLensEmphasis: lensEmphasis,
           isHidden,
-          isTension: semantics?.isTension ?? false,
-          isGuideTone: semantics?.isGuideTone ?? false,
+          isTension: effectiveSemantics?.isTension ?? false,
+          isGuideTone: effectiveSemantics?.isGuideTone ?? false,
           scaleDegree,
           degreeColor,
         };

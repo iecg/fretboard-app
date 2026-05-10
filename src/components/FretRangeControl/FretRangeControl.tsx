@@ -37,9 +37,14 @@ export function FretRangeControl({
   const labels = showLabels ?? !isToolbar;
 
   return (
-    <div className={clsx(styles["fret-range-control"], styles[layout ?? "toolbar"])} data-compact={compact ? "true" : undefined}>
+    <div
+      role="group"
+      aria-label="Fret Range"
+      className={clsx(styles["fret-range-control"], styles[layout ?? "toolbar"])}
+      data-compact={compact ? "true" : undefined}
+    >
       <div className={clsx(styles["fret-group"], styles["fret-start"])}>
-        {labels && <span className={styles["fret-label"]}>Start</span>}
+        {labels && <span className={styles["fret-sublabel"]}>Start</span>}
         <StepperShell
           className={styles["fret-stepper"]}
           role="group"
@@ -85,7 +90,7 @@ export function FretRangeControl({
       </div>
       {sep && <span className={styles["range-separator"]}>—</span>}
       <div className={clsx(styles["fret-group"], styles["fret-end"])}>
-        {labels && <span className={styles["fret-label"]}>End</span>}
+        {labels && <span className={styles["fret-sublabel"]}>End</span>}
         <StepperShell
           className={styles["fret-stepper"]}
           role="group"

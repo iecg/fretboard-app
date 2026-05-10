@@ -4,13 +4,16 @@ import {
   NOTES,
   CHORD_DEFINITIONS,
   LENS_REGISTRY,
+  INTERVAL_NAMES,
   getChordNotes,
   getNoteDisplay,
   formatAccidental,
   getDiatonicChord,
+  getScaleNotes,
 } from "../core/theory";
 import type {
   ChordMemberFact,
+  ChordRowEntry,
   ResolvedChordMember,
   PracticeLens,
 } from "../core/theory";
@@ -253,16 +256,15 @@ export const chordTypeAtom = atom(
 );
 
 /**
- * Action atom for changing the active scale degree in degree mode. Clears any
- * `chordQualityOverride` so each new degree starts at its diatonic default
- * (e.g. picking V resolves to Major Triad even if the previous degree had a
- * Dominant 7th override). No-op writes (same degree) do NOT clear the override.
+ * Action atom for changing the active scale degree in degree mode. Always
+ * clears any `chordQualityOverride` so each click on a degree button starts
+ * at its diatonic default (e.g. picking V resolves to Major Triad even if a
+ * Dominant 7th override was active, and re-clicking the same degree clears
+ * the override too).
  */
 export const setChordDegreeAtom = atom(
   null,
-  (get, set, value: DegreeId | null) => {
-    const current = get(chordDegreeAtom);
-    if (current === value) return;
+  (_get, set, value: DegreeId | null) => {
     set(chordDegreeAtom, value);
     set(chordQualityOverrideAtom, null);
   },
@@ -414,9 +416,53 @@ export const chordMemberFactsAtom = atom((get): ChordMemberFact[] => {
 });
 
 /**
- * Transient atom (non-persisted) tracking the active voicing key when a
- * chord-tone note is hovered or focused. Set by FretboardHitTargetLayer,
- * read by FretboardSVG to drive the data-active-voicing attribute on
- * connector <path> elements. Null when no voicing is active.
+ * ChordRowEntry list with scale-membership and roles.
+ * Used by practiceLensAtoms and atoms.ts summary atoms.
  */
-export const activeVoicingKeyAtom = atom<string | null>(null);
+export const allChordMembersAtom = atom((get) => {
+  const chordType = get(chordTypeAtom);
+  if (!chordType) return [] as ChordRowEntry[];
+
+  const rootNote = get(rootNoteAtom);
+  const scaleName = get(scaleNameAtom);
+  const chordRoot = get(chordRootAtom);
+  const useFlats = get(useFlatsAtom);
+  const chordMembers = get(chordMembersAtom);
+  const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
+
+  return chordMembers.map((m): ChordRowEntry => {
+    const inScale = scaleNoteSet.has(m.note);
+    const isRoot = m.name === "root";
+    let role: ChordRowEntry["role"];
+    if (isRoot) {
+      role = "chord-root";
+    } else if (inScale) {
+      role = "chord-tone-in-scale";
+    } else {
+      role = "chord-tone-outside-scale";
+    }
+    let scaleDegree: DegreeId | undefined;
+    let scaleInterval: string | undefined;
+    const noteIdx = NOTES.indexOf(m.note);
+    const tonicIdx = NOTES.indexOf(rootNote);
+    if (noteIdx !== -1 && tonicIdx !== -1) {
+      const semitone = (noteIdx - tonicIdx + 12) % 12;
+      scaleInterval = formatAccidental(INTERVAL_NAMES[semitone] ?? "1");
+      if (inScale) {
+        scaleDegree = (
+          getDegreesForScale(scaleName)[semitone] ?? INTERVAL_NAMES[semitone]
+        ) as DegreeId | undefined;
+      }
+    }
+    return {
+      internalNote: m.note,
+      displayNote: formatAccidental(getNoteDisplay(m.note, chordRoot, useFlats)),
+      memberName: m.name === "root" ? "1" : formatAccidental(m.name),
+      role,
+      inScale,
+      scaleDegree,
+      scaleInterval,
+    };
+  });
+});
+

@@ -3,15 +3,21 @@ import { useAtomValue } from "jotai";
 import { motion, AnimatePresence } from "motion/react";
 import {
   getNoteDisplay,
+  getScaleSemitones,
   type PracticeLens,
   type NoteSemantics,
 } from "../../core/theory";
-import { scaleDegreeColorsEnabledAtom, activeVoicingKeyAtom } from "../../store/atoms";
+import {
+  scaleDegreeColorsEnabledAtom,
+  fingeringPatternAtom,
+  effectiveShapeDataAtom,
+} from "../../store/atoms";
 import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
 import styles from "./FretboardSVG.module.css";
 import { useFretboardGeometry } from "./hooks/useFretboardGeometry";
 import { useNoteData } from "./hooks/useNoteData";
 import { useChordConnectorPolylines } from "./hooks/useChordConnectorPolylines";
+import { useIntervalConnectorPolylines } from "./hooks/useIntervalConnectorPolylines";
 import { type BoxBound } from "./utils/semantics";
 import { FretboardBackground } from "./FretboardBackground";
 import { FretboardDefs } from "./FretboardDefs";
@@ -59,7 +65,7 @@ interface FretboardSVGProps {
    * When provided along with activeShape, the chord overlay will only highlight
    * chord tones that fall within the active shape/position boundaries.
    */
-  activePattern?: "caged" | "3nps" | "all";
+  activePattern?: "caged" | "3nps" | "none";
   /**
    * Active shape (CAGED letter or 3NPS position number) for shape-constrained
    * chord overlay rendering.
@@ -122,7 +128,8 @@ export const FretboardSVG = memo(function FretboardSVG({
   // neckWidthPx + scale math, so the value isn't read here.
   void effectiveZoom;
   const degreeColorsEnabled = useAtomValue(scaleDegreeColorsEnabledAtom);
-  const activeVoicingKey = useAtomValue(activeVoicingKeyAtom);
+  const fingeringPattern = useAtomValue(fingeringPatternAtom);
+  const { intervalPairs } = useAtomValue(effectiveShapeDataAtom);
   const internalId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const defsPrefix = `fretboard-${id ?? internalId}`;
   const svgDefId = useCallback((id: string) => `${defsPrefix}-${id}`, [defsPrefix]);
@@ -311,9 +318,32 @@ export const FretboardSVG = memo(function FretboardSVG({
     noteSemantics,
   });
 
+  // Scale semitone offsets (0-11) drive per-pair color via scale-degree position
+  // on the interval connector polylines.
+  const scaleSemitones = useMemo(() => {
+    if (!scaleName || !rootNote) return [];
+    return getScaleSemitones(rootNote, scaleName);
+  }, [scaleName, rootNote]);
+
+  const intervalConnectorPolylines = useIntervalConnectorPolylines({
+    intervalPairs,
+    tuning,
+    scaleSemitones,
+    fretCenterX,
+    stringYAt,
+    stringRowPx,
+  });
+
+  // Per-string chord filter (UAT-3): when fingering pattern restricts to 1 or 2 strings,
+  // highlightNotes already contains only those string coords, so chord-tone role naturally
+  // applies only to in-pattern notes. Chord connectors are suppressed separately here
+  // because cross-string voicings do not make sense in a 1/2-string context.
   const connectorPolylines = useChordConnectorPolylines({
     noteData,
-    chordToneNames: chordTones,
+    chordToneNames:
+      fingeringPattern === "one-string" || fingeringPattern === "two-strings"
+        ? []
+        : chordTones,
     fretCenterX,
     stringYAt,
     stringRowPx,
@@ -379,7 +409,7 @@ export const FretboardSVG = memo(function FretboardSVG({
 
           <g clipPath={svgDefUrl("fretboard-taper")}>
             <FretboardShapeLayer svgPolygons={svgPolygons} />
-            <AnimatePresence>
+<AnimatePresence>
               {connectorPolylines.length > 0 && (
                 <motion.g
                   key="chord-connectors"
@@ -390,7 +420,6 @@ export const FretboardSVG = memo(function FretboardSVG({
                   className={styles["chord-connectors"]}
                   aria-hidden="true"
                   pointerEvents="none"
-                  data-has-active-voicing={activeVoicingKey ? "true" : undefined}
                 >
                   {/* Fill pass: all voicings rendered first (below outlines) */}
                   {connectorPolylines.map((voicing) => (
@@ -403,7 +432,6 @@ export const FretboardSVG = memo(function FretboardSVG({
                       d={voicing.paths.fill}
                       data-layer="fill"
                       data-palette-index={voicing.paletteIndex + 1}
-                      data-active-voicing={voicing.voicingKey === activeVoicingKey ? voicing.voicingKey : undefined}
                       style={{ originX: "50%", originY: "50%" }}
                     />
                   ))}
@@ -418,13 +446,41 @@ export const FretboardSVG = memo(function FretboardSVG({
                       d={voicing.paths.outline}
                       data-layer="outline"
                       data-palette-index={voicing.paletteIndex + 1}
-                      data-active-voicing={voicing.voicingKey === activeVoicingKey ? voicing.voicingKey : undefined}
                       style={{ originX: "50%", originY: "50%" }}
                     />
                   ))}
                 </motion.g>
               )}
             </AnimatePresence>
+            {/* Interval connectors — capsule/blob shape matching chord-connector visual style.
+                Per-pair color driven by lower-note scale-degree via --chord-connector-color-N.
+                Two render passes (fill + outline) mirror chord-connector convention. */}
+            {intervalConnectorPolylines.length > 0 && (
+              <g
+                className={styles["interval-connectors"]}
+                aria-hidden="true"
+                pointerEvents="none"
+              >
+                {/* Fill pass */}
+                {intervalConnectorPolylines.map((line) => (
+                  <path
+                    key={`iv-fill-${line.key}`}
+                    d={line.paths.fill}
+                    data-layer="fill"
+                    data-palette-index={line.paletteIndex}
+                  />
+                ))}
+                {/* Outline pass */}
+                {intervalConnectorPolylines.map((line) => (
+                  <path
+                    key={`iv-outline-${line.key}`}
+                    d={line.paths.outline}
+                    data-layer="outline"
+                    data-palette-index={line.paletteIndex}
+                  />
+                ))}
+              </g>
+            )}
             <FretboardNoteLayer
               noteData={noteData}
               fretCenterX={fretCenterX}
@@ -446,7 +502,6 @@ export const FretboardSVG = memo(function FretboardSVG({
           neckWidthPx={neckWidthPx}
           neckHeight={neckHeight}
           onNoteClick={onNoteClick}
-          connectorVoicings={connectorPolylines}
         />
       </div>
 

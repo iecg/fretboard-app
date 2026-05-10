@@ -64,3 +64,4 @@ export const themeAtom = atomWithStorage<ThemePreference>(
   rawStringStorage<ThemePreference>(),
   GET_ON_INIT,
 );
+
