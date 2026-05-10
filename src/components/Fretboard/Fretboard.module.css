@@ -12,8 +12,10 @@
   width: 100%;
   min-width: 0;
   height: 100%;
-  overflow-x: hidden;
-  overflow-y: hidden;
+  /* Phase 3: clip horizontally (no horizontal scrollbar push), but allow
+     vertical SVG paint to escape so connectors crossing the taper edge render. */
+  overflow-x: clip;
+  overflow-y: visible;
   contain: layout paint;
 }
 
@@ -30,6 +32,7 @@
 /* Tablet: enable native touch scroll on the fretboard (same as mobile). */
 :global(.app-container[data-layout-tier="tablet"]) .fretboard-wrapper {
   overflow-x: auto;
+  overflow-y: visible;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -42,6 +45,7 @@
 
   .fretboard-wrapper {
     overflow-x: auto;
+    overflow-y: visible;
     -webkit-overflow-scrolling: touch;
   }
 }
