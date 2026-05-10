@@ -225,4 +225,41 @@ test.describe("Chord Connector Visual Tests", () => {
 
     await expectLocatorVisual(fretboard, "connector-c-major-focus-light");
   });
+
+  // ─── Phase 3: Spread voicing — connector geometry crosses the fretboard taper edge ──
+  // Validates that chord-connectors render past the SVG bounding box once relocated
+  // out of the taper clip (Plan 03-01). Uses a wider locator (the <main data-testid=
+  // "main-fretboard"> wrapper) than the other scenarios so the overflow paint that
+  // escapes the SVG element box is captured in the snapshot. The fretboard-svg
+  // test-id locator clips to the SVG element and would hide this overflow region.
+  test("C major spread connector — edge crossing — dark", async ({ page }) => {
+    await loadVisualState(page, {
+      rootNote: "C",
+      scaleName: "Major",
+      chordOverlayMode: "manual",
+      chordRootOverride: "C",
+      chordQualityOverride: "Major",
+      chordFretSpread: 12,
+    });
+    const locator = page.getByTestId("main-fretboard");
+    await locator.scrollIntoViewIfNeeded();
+    await waitForStableLayout(page);
+    await expectLocatorVisual(locator, "connector-c-major-spread-edge-dark");
+  });
+
+  test("C major spread connector — edge crossing — light", async ({ page }) => {
+    await loadVisualState(page, {
+      rootNote: "C",
+      scaleName: "Major",
+      chordOverlayMode: "manual",
+      chordRootOverride: "C",
+      chordQualityOverride: "Major",
+      chordFretSpread: 12,
+      theme: "light",
+    });
+    const locator = page.getByTestId("main-fretboard");
+    await locator.scrollIntoViewIfNeeded();
+    await waitForStableLayout(page);
+    await expectLocatorVisual(locator, "connector-c-major-spread-edge-light");
+  });
 });
