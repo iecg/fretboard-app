@@ -242,6 +242,14 @@ export const FretboardDefs = memo(({
       <clipPath id={svgDefId("fretboard-taper")}>
         <path d={taperPath} />
       </clipPath>
+      {/* Rectangular clip matching the SVG's bounding box. Connector overlays
+          (chord + interval) use this instead of the wood `fretboard-taper` so
+          they can cross the wood's tapered top/bottom and nut/body edges near
+          the outer strings, while still being bounded by the SVG box so they
+          cannot leak past the wood region into the surrounding app background. */}
+      <clipPath id={svgDefId("fretboard-svg-box")}>
+        <rect x={0} y={0} width={neckWidthPx} height={neckHeight} />
+      </clipPath>
     </defs>
   );
 });

@@ -411,12 +411,16 @@ export const FretboardSVG = memo(function FretboardSVG({
             <FretboardShapeLayer svgPolygons={svgPolygons} />
           </g>
 
-          {/* Chord + interval connectors render OUTSIDE the taper clip so
-              geometry that crosses the wood region's top/bottom edge stays
-              visible. Rendered BEFORE the note layer so note bubbles paint
-              on top (later SVG siblings paint above earlier ones). */}
+          {/* Chord + interval connectors render OUTSIDE the wood `fretboard-taper`
+              clip so geometry that crosses the wood's tapered top/bottom + nut/body
+              edges near the outer strings stays visible. They ARE clipped to the
+              SVG's bounding box (`fretboard-svg-box`) so connector arches cannot
+              leak past the wood region into the surrounding app background.
+              Rendered BEFORE the note layer so note bubbles paint on top (later
+              SVG siblings paint above earlier ones). */}
           <g
             className={styles["fretboard-overlays"]}
+            clipPath={svgDefUrl("fretboard-svg-box")}
             aria-hidden="true"
             pointerEvents="none"
           >
