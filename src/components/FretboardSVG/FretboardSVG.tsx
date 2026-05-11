@@ -142,7 +142,21 @@ export const FretboardSVG = memo(function FretboardSVG({
 
   const noteBubblePx = Math.round(stringRowPx * NOTE_BUBBLE_RATIO);
   const noteFontPx = Math.round(stringRowPx * NOTE_FONT_RATIO);
-  const neckHeight = tuning.length * stringRowPx;
+  // Playable region height — the original neck height before connector
+  // overshoot padding was added. Strings and inlays remain centered within
+  // this box; the surrounding inset is wood-only.
+  const stringsBoxHeight = tuning.length * stringRowPx;
+  // Vertical padding above the top string and below the bottom string. Sized
+  // to cover the maximum chord-connector capsule overshoot — the connector
+  // hook builds capsules of radius
+  // `stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR + offsetPx` where
+  // CHORD_CONNECTOR_BASE_RADIUS_FACTOR = 0.47 and the maximum bucket offset
+  // is 10 px. Adding 2 px of breathing room keeps capsules safely inside the
+  // wood backdrop instead of bleeding into the app gradient. Kept in sync
+  // manually with `useChordConnectorPolylines.ts` rather than imported to
+  // avoid coupling render geometry to overlay-detection internals.
+  const verticalInsetPx = Math.ceil(stringRowPx * 0.47) + 12;
+  const neckHeight = stringsBoxHeight + 2 * verticalInsetPx;
   const totalColumns = endFret - startFret;
   const hasChordOverlay = chordTones.length > 0;
   const numStrings = tuning.length;
@@ -162,6 +176,8 @@ export const FretboardSVG = memo(function FretboardSVG({
     maxFret,
     neckWidthPx,
     neckHeight,
+    stringsBoxHeight,
+    verticalInsetPx,
     noteBubblePx,
     numStrings,
   });
@@ -187,23 +203,29 @@ export const FretboardSVG = memo(function FretboardSVG({
       // or maxFret are not pulled to intendedMin/intendedMax — that flattened
       // mixed-offset templates and produced spurious off-board extension.
 
-      pixelPoints.push(`${fretToX(verts[0].fret)},0`);
+      // Shape polygons stay within the playable region — top edge at the
+      // inset, bottom edge at the inset + playable height. The connector
+      // overshoot padding above/below is wood-only and shouldn't change
+      // the shape footprint.
+      const polyTopY = verticalInsetPx;
+      const polyBottomY = verticalInsetPx + stringsBoxHeight;
+      pixelPoints.push(`${fretToX(verts[0].fret)},${polyTopY}`);
       for (let i = 0; i < halfVerts; i++) {
         const fx = fretToX(verts[i].fret);
         pixelPoints.push(`${fx},${stringYAt(verts[i].string, fx)}`);
       }
       pixelPoints.push(
-        `${fretToX(verts[halfVerts - 1].fret)},${neckHeight}`,
+        `${fretToX(verts[halfVerts - 1].fret)},${polyBottomY}`,
       );
       pixelPoints.push(
-        `${fretToX(verts[halfVerts].fret)},${neckHeight}`,
+        `${fretToX(verts[halfVerts].fret)},${polyBottomY}`,
       );
       for (let i = halfVerts; i < verts.length; i++) {
         const fx = fretToX(verts[i].fret);
         pixelPoints.push(`${fx},${stringYAt(verts[i].string, fx)}`);
       }
       pixelPoints.push(
-        `${fretToX(verts[verts.length - 1].fret)},0`,
+        `${fretToX(verts[verts.length - 1].fret)},${polyTopY}`,
       );
 
       const points = pixelPoints.join(" ");
@@ -217,7 +239,7 @@ export const FretboardSVG = memo(function FretboardSVG({
         centerX,
       };
     });
-  }, [shapePolygons, startFret, endFret, neckHeight, fretToX, stringYAt]);
+  }, [shapePolygons, startFret, endFret, verticalInsetPx, stringsBoxHeight, fretToX, stringYAt]);
 
   const displayRoot = rootNote
     ? getNoteDisplay(rootNote, rootNote, useFlats)
@@ -230,8 +252,13 @@ export const FretboardSVG = memo(function FretboardSVG({
     .filter(Boolean)
     .join(" ");
 
-  // Inlays follow local tapered geometry.
-  const inlayYAt = useCallback(() => neckHeight / 2, [neckHeight]);
+  // Inlays follow the playable region center, not the SVG center, so they
+  // stay aligned with the strings rather than drifting into the connector
+  // overshoot padding above/below.
+  const inlayYAt = useCallback(
+    () => verticalInsetPx + stringsBoxHeight / 2,
+    [verticalInsetPx, stringsBoxHeight],
+  );
   const inlayYTopAt = useCallback((x: number) =>
     numStrings >= 4
       ? (stringYAt(1, x) + stringYAt(2, x)) / 2
