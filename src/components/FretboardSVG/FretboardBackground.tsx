@@ -40,13 +40,6 @@ export const FretboardBackground = memo(
 
     const woodStack = (
       <>
-        <rect
-          x={0}
-          y={0}
-          width={neckWidthPx}
-          height={neckHeight}
-          fill={svgDefUrl("fretboard-wood")}
-        />
         {woodGrainDataUrl ? (
           <image
             href={woodGrainDataUrl}
@@ -178,6 +171,20 @@ export const FretboardBackground = memo(
 
     return (
       <>
+        {/* Base wood backdrop fills the full SVG box (not clipped to the taper)
+            so chord/interval connectors that overflow into the taper-carved gaps
+            (rounded body corner + nut-end triangles) paint on a wood-toned
+            backdrop instead of revealing the app-container radial gradient.
+            The visible tapered wood (grain, highlights, pores, vignette, edge
+            strokes) still paints inside the `fretboard-taper` clip group below
+            and reads as a tapered shape via its texture detail. */}
+        <rect
+          x={0}
+          y={0}
+          width={neckWidthPx}
+          height={neckHeight}
+          fill={svgDefUrl("fretboard-wood")}
+        />
         <g clipPath={svgDefUrl("fretboard-taper")}>
           {woodStack}
           {/* Headstock area inherits woodStack (gradient + grain + vignette) — no separate fill needed */}

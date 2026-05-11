@@ -414,10 +414,12 @@ export const FretboardSVG = memo(function FretboardSVG({
           {/* Chord + interval connectors render OUTSIDE the wood `fretboard-taper`
               clip so geometry that crosses the wood's tapered top/bottom + nut/body
               edges near the outer strings stays visible. They ARE clipped to the
-              SVG's bounding box (`fretboard-svg-box`) so connector arches cannot
-              leak past the wood region into the surrounding app background.
-              Rendered BEFORE the note layer so note bubbles paint on top (later
-              SVG siblings paint above earlier ones). */}
+              SVG's bounding box (`fretboard-svg-box`). A base wood-gradient rect
+              behind the tapered wood stack (see FretboardBackground) fills the same
+              SVG box, so connector pixels that overflow into the taper-carved
+              corner gaps land on a wood-toned backdrop instead of revealing the
+              app-container gradient. Rendered BEFORE the note layer so note
+              bubbles paint on top (later SVG siblings paint above earlier ones). */}
           <g
             className={styles["fretboard-overlays"]}
             clipPath={svgDefUrl("fretboard-svg-box")}

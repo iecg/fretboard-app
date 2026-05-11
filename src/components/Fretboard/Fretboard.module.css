@@ -12,18 +12,18 @@
   width: 100%;
   min-width: 0;
   height: 100%;
-  /* Phase 3c: clip rectangularly to the wrapper box so SVG paint bleed
-     (filter regions on string shadows, sub-pixel taper edge strokes) and
-     connector overlay geometry cannot leak past the wood region into the
-     surrounding app background. `overflow: clip` is the non-scrolling
-     rectangular clip primitive; no `overflow-clip-margin` is set, so the
-     clip is flush with the wrapper edge.
+  /* Phase 3c: clip rectangularly to the wrapper box so sub-pixel paint bleed
+     (string-shadow filter regions, taper edge strokes) cannot leak past the
+     SVG into the surrounding app background. `overflow: clip` is the
+     non-scrolling rectangular clip primitive; no `overflow-clip-margin` is
+     set, so the clip is flush with the wrapper edge.
 
      Chord and interval connectors that cross the wood's tapered top/bottom
      and nut/body edges remain visible because they are SVG-level clipped to
      `fretboard-svg-box` (the SVG bounding rect), not to `fretboard-taper`
-     (the wood wedge). They render in the transparent triangular gaps between
-     the wood taper and the SVG box without escaping the wrapper. */
+     (the wood wedge). The wood gradient is painted as a full-SVG-box base
+     layer behind the tapered wood stack, so connectors that overflow into
+     the taper-carved corner gaps still sit on a wood-toned backdrop. */
   overflow: clip;
   contain: layout;
 }

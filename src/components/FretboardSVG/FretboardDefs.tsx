@@ -245,8 +245,10 @@ export const FretboardDefs = memo(({
       {/* Rectangular clip matching the SVG's bounding box. Connector overlays
           (chord + interval) use this instead of the wood `fretboard-taper` so
           they can cross the wood's tapered top/bottom and nut/body edges near
-          the outer strings, while still being bounded by the SVG box so they
-          cannot leak past the wood region into the surrounding app background. */}
+          the outer strings. A base wood-gradient rect fills the same SVG box
+          beneath the tapered wood stack, so connectors painting in the
+          taper-carved corner gaps still land on a wood-toned backdrop and the
+          app-container gradient does not show through. */}
       <clipPath id={svgDefId("fretboard-svg-box")}>
         <rect x={0} y={0} width={neckWidthPx} height={neckHeight} />
       </clipPath>
