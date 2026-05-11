@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { useAtomValue, useSetAtom } from "jotai";
-import type { PracticeBarGroup, PracticeBarNote } from "../../core/theory";
+import type { PracticeBarGroup, PracticeBarNote } from "@fretflow/core";
 import {
   chordOverlayHiddenAtom,
   chordHiddenNotesAtom,

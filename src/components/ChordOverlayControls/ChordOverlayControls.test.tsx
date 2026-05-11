@@ -5,7 +5,7 @@ import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
 import { renderWithAtoms, renderWithStore, makeAtomStore } from "../../test-utils/renderWithAtoms";
 import { act } from "react";
-import { LENS_REGISTRY } from "../../core/theory";
+import { LENS_REGISTRY } from "@fretflow/core";
 import {
   chordDegreeAtom,
   chordOverlayModeAtom,

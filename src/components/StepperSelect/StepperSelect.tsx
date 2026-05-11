@@ -5,7 +5,7 @@ import {
 } from "../LabeledSelect/LabeledSelect";
 import { StepperShell } from "../StepperShell/StepperShell";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { SPRING_TAP, WHILE_TAP_BTN } from "../../core/constants";
+import { SPRING_TAP, WHILE_TAP_BTN } from "@fretflow/core";
 import styles from "./StepperSelect.module.css";
 
 export type StepperSelectOption = LabeledSelectOption;

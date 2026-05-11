@@ -42,8 +42,8 @@ import {
   hiddenNotesAtom,
   toggleHiddenNoteAtom,
 } from "./atoms";
-import { STANDARD_TUNING, TUNINGS } from "../core/guitar";
-import { CAGED_SHAPES } from "../shapes";
+import { STANDARD_TUNING, TUNINGS } from "@fretflow/core";
+import { CAGED_SHAPES } from "@fretflow/core";
 
 function makeStore() {
   return createStore();
@@ -1004,7 +1004,7 @@ describe("atoms", () => {
 
     it("clears chordDegreeAtom to null when pattern changes to one-string", () => {
       const store = makeStore();
-      store.set(chordDegreeAtom, "I" as import("../core/degrees").DegreeId);
+      store.set(chordDegreeAtom, "I" as import("@fretflow/core").DegreeId);
       store.set(setFingeringPatternAtom, "one-string");
       expect(store.get(fingeringPatternAtom)).toBe("one-string");
       expect(store.get(chordDegreeAtom)).toBeNull();
@@ -1012,7 +1012,7 @@ describe("atoms", () => {
 
     it("clears chordDegreeAtom to null when pattern changes to two-strings", () => {
       const store = makeStore();
-      store.set(chordDegreeAtom, "V" as import("../core/degrees").DegreeId);
+      store.set(chordDegreeAtom, "V" as import("@fretflow/core").DegreeId);
       store.set(setFingeringPatternAtom, "two-strings");
       expect(store.get(fingeringPatternAtom)).toBe("two-strings");
       expect(store.get(chordDegreeAtom)).toBeNull();
@@ -1020,21 +1020,21 @@ describe("atoms", () => {
 
     it("does NOT clear chordDegreeAtom when pattern changes to caged", () => {
       const store = makeStore();
-      store.set(chordDegreeAtom, "IV" as import("../core/degrees").DegreeId);
+      store.set(chordDegreeAtom, "IV" as import("@fretflow/core").DegreeId);
       store.set(setFingeringPatternAtom, "caged");
       expect(store.get(chordDegreeAtom)).toBe("IV");
     });
 
     it("does NOT clear chordDegreeAtom when pattern changes to none", () => {
       const store = makeStore();
-      store.set(chordDegreeAtom, "ii" as import("../core/degrees").DegreeId);
+      store.set(chordDegreeAtom, "ii" as import("@fretflow/core").DegreeId);
       store.set(setFingeringPatternAtom, "none");
       expect(store.get(chordDegreeAtom)).toBe("ii");
     });
 
     it("does NOT clear chordDegreeAtom when pattern changes to 3nps", () => {
       const store = makeStore();
-      store.set(chordDegreeAtom, "iii" as import("../core/degrees").DegreeId);
+      store.set(chordDegreeAtom, "iii" as import("@fretflow/core").DegreeId);
       store.set(setFingeringPatternAtom, "3nps");
       expect(store.get(chordDegreeAtom)).toBe("iii");
     });

@@ -2,8 +2,8 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, fireEvent } from "@testing-library/react";
 import { CircleOfFifths } from "../CircleOfFifths/CircleOfFifths";
-import { CIRCLE_OF_FIFTHS, SCALES } from "../../core/theory";
-import { getCircleNoteLabels } from "../../core/circleOfFifthsUtils";
+import { CIRCLE_OF_FIFTHS, SCALES } from "@fretflow/core";
+import { getCircleNoteLabels } from "@fretflow/core";
 
 describe("CircleOfFifths/CircleOfFifths", () => {
   const mockSetRootNote = vi.fn();

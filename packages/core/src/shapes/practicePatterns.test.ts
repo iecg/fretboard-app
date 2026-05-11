@@ -5,8 +5,8 @@ import {
   getTwoStringsIntervalPairs,
   getOneStringIntervalPairs,
 } from "./practicePatterns";
-import { getFretboardNotes } from "../core/guitar";
-import { getScaleNotes, SCALES, normalizeScaleName } from "../core/theory";
+import { getFretboardNotes } from "../guitar";
+import { getScaleNotes, SCALES, normalizeScaleName } from "../theory";
 
 // ---------------------------------------------------------------------------
 // Shared fixture

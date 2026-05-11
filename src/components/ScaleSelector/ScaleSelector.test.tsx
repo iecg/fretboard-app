@@ -5,7 +5,7 @@ import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
 import { rootNoteAtom, scaleNameAtom } from "../../store/atoms";
-import { getScaleFamilyOptions } from "../../core/theoryCatalog";
+import { getScaleFamilyOptions } from "@fretflow/core";
 import { ScaleSelector } from "./ScaleSelector";
 
 beforeEach(() => {

@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, fireEvent } from "@testing-library/react";
 import { FretboardSVG } from "../FretboardSVG/FretboardSVG";
-import { getFretboardNotes } from "../../core/guitar";
-import type { CagedShape, ShapePolygon } from "../../shapes";
-import type { NoteSemantics } from "../../core/theory";
+import { getFretboardNotes } from "@fretflow/core";
+import type { CagedShape, ShapePolygon } from "@fretflow/core";
+import type { NoteSemantics } from "@fretflow/core";
 import { axe } from "../../test-utils/a11y";
 
 const STANDARD_TUNING = ["E4", "B3", "G3", "D3", "A2", "E2"];

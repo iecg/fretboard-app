@@ -29,7 +29,7 @@ import { ChordOverlayDock } from "./components/ChordOverlayDock/ChordOverlayDock
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
 import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
 import sharedStyles from "./components/shared/shared.module.css";
-import { ANIMATION_DURATION_XFADE } from "./core/constants";
+import { ANIMATION_DURATION_XFADE } from "@fretflow/core";
 import "./styles/App.css";
 
 const ExpandedControlsPanel = lazy(() =>

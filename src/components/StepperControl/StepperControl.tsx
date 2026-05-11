@@ -6,7 +6,7 @@ import {
   SPRING_TAP,
   STEPPER_VALUE_POP_TRANSITION,
   WHILE_TAP_BTN,
-} from "../../core/constants";
+} from "@fretflow/core";
 import styles from "./StepperControl.module.css";
 import shared from "../shared/shared.module.css";
 

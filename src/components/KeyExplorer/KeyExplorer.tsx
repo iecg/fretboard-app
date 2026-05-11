@@ -4,7 +4,7 @@ import clsx from "clsx";
 import {
   ANIMATION_DURATION_STANDARD,
   ANIMATION_EASE,
-} from "../../core/constants";
+} from "@fretflow/core";
 import styles from "../TheoryControls/TheoryControls.module.css";
 
 interface KeyExplorerProps {

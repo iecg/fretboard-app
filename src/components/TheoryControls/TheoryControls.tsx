@@ -6,12 +6,12 @@ import { ChevronDown } from "lucide-react";
 import { ScaleSelector } from "../ScaleSelector/ScaleSelector";
 import { ChordOverlayControls } from "../ChordOverlayControls/ChordOverlayControls";
 import { KeyExplorer } from "../KeyExplorer/KeyExplorer";
-import { NOTES } from "../../core/theory";
+import { NOTES } from "@fretflow/core";
 import {
   ANIMATION_DURATION_STANDARD,
   ANIMATION_EASE,
-} from "../../core/constants";
-import { getDegreesForScale } from "../../core/degrees";
+} from "@fretflow/core";
+import { getDegreesForScale } from "@fretflow/core";
 import { useChordState } from "../../hooks/useChordState";
 import { useScaleState } from "../../hooks/useScaleState";
 import { scaleLabelAtom, fingeringPatternAtom } from "../../store/atoms";

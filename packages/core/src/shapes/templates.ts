@@ -1,6 +1,6 @@
-import { SCALES, NOTES, getScaleNotes } from "../core/theory";
-import { getFretboardNotes, STANDARD_TUNING } from "../core/guitar";
-import { MAX_FRET } from "../core/constants";
+import { SCALES, NOTES, getScaleNotes } from "../theory";
+import { getFretboardNotes, STANDARD_TUNING } from "../guitar";
+import { MAX_FRET } from "../constants";
 import { deduplicateAdjacentStrings } from "./helpers";
 
 /** Mode names for degrees of the major scale (Ionian through Locrian). */

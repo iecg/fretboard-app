@@ -4,7 +4,7 @@ import { createStore } from "jotai";
 import {
   LENS_REGISTRY,
   type LensAvailabilityContext,
-} from "../core/theory";
+} from "@fretflow/core";
 import * as atomsModule from "./atoms";
 import {
   chordMemberFactsAtom,

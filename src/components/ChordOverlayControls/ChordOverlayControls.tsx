@@ -1,8 +1,8 @@
 import { startTransition, useEffect } from "react";
 import { useAtomValue } from "jotai";
 import clsx from "clsx";
-import { NOTES, LENS_REGISTRY } from "../../core/theory";
-import { getDegreesForScale } from "../../core/degrees";
+import { NOTES, LENS_REGISTRY } from "@fretflow/core";
+import { getDegreesForScale } from "@fretflow/core";
 import { lensAvailabilityAtom, fingeringPatternAtom } from "../../store/atoms";
 import { NoteGrid } from "../NoteGrid/NoteGrid";
 import { ToggleBar } from "../ToggleBar/ToggleBar";

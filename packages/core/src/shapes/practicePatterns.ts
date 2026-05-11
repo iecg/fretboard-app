@@ -8,9 +8,9 @@
  * No Jotai, no atoms, no side effects — these are plain computation functions.
  */
 
-import { getFretboardNotes, parseNote } from "../core/guitar";
-import { NOTES } from "../core/theory";
-import { getScaleNotes } from "../core/theory";
+import { getFretboardNotes, parseNote } from "../guitar";
+import { NOTES } from "../theory";
+import { getScaleNotes } from "../theory";
 
 // ---------------------------------------------------------------------------
 // 2-Strings interval pairing

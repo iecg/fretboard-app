@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { Provider, createStore } from "jotai";
 import { scaleDegreeColorsEnabledAtom } from "../../store/atoms";
 import { ChordPracticeBar } from "./ChordPracticeBar";
-import type { PracticeBarGroup, PracticeBarNote } from "../../core/theory";
+import type { PracticeBarGroup, PracticeBarNote } from "@fretflow/core";
 import { axe } from "../../test-utils/a11y";
 import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
 import {

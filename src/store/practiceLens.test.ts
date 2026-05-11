@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from "vitest";
 import { createStore } from "jotai";
-import type { PracticeLens } from "../core/theory";
+import type { PracticeLens } from "@fretflow/core";
 import { k } from "../utils/storage";
 import {
   practiceLensAtom,

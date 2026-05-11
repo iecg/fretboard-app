@@ -8,6 +8,11 @@
     "skipLibCheck": true,
 
     "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
+    "paths": {
+      "@fretflow/core": ["packages/core/src/index.ts"]
+    },
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
@@ -20,5 +25,5 @@
     "noFallthroughCasesInSwitch": true,
     "strict": true
   },
-  "include": ["src"]
+  "include": ["src", "packages/core/src"]
 }

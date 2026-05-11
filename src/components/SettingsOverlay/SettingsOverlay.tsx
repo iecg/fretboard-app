@@ -13,7 +13,7 @@ import { useFocusTrap } from "../../hooks/useFocusTrap";
 import {
   ANIMATION_DURATION_STANDARD,
   ANIMATION_EASE,
-} from "../../core/constants";
+} from "@fretflow/core";
 import { OverlaySection } from "./shared";
 import ViewSettingsSection from "./sections/ViewSettingsSection";
 import InstrumentSettingsSection from "./sections/InstrumentSettingsSection";

@@ -1,5 +1,5 @@
 import { LabeledSelect } from "../../LabeledSelect/LabeledSelect";
-import { TUNINGS } from "../../../core/guitar";
+import { TUNINGS } from "@fretflow/core";
 import { SETTING_FIELDS } from "../constants";
 import { OverlayFieldHeader } from "../shared";
 import { useSettingsForm } from "../useSettingsForm";

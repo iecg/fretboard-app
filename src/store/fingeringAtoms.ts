@@ -3,7 +3,7 @@ import { atomWithStorage } from "jotai/utils";
 import {
   CAGED_SHAPES,
   type CagedShape,
-} from "../shapes";
+} from "@fretflow/core";
 import {
   k,
   createStorage,

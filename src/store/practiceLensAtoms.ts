@@ -9,7 +9,7 @@ import {
   getNoteDisplay,
   formatAccidental,
   getDiatonicChord,
-} from "../core/theory";
+} from "@fretflow/core";
 import type {
   ChordMemberName,
   LensAvailabilityContext,
@@ -20,12 +20,12 @@ import type {
 
   PracticeBarNote,
   PracticeBarGroup,
-} from "../core/theory";
+} from "@fretflow/core";
 import {
   getDegreesForScale,
   DEGREE_COLORS,
   type DegreeId,
-} from "../core/degrees";
+} from "@fretflow/core";
 import {
   rootNoteAtom,
   scaleNameAtom,

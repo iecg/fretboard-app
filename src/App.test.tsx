@@ -10,8 +10,8 @@ import {
 } from "@testing-library/react";
 import App from "./App";
 import { synth } from "./core/audio";
-import { get3NPSCoordinates } from "./shapes";
-import { STANDARD_TUNING } from "./core/guitar";
+import { get3NPSCoordinates } from "@fretflow/core";
+import { STANDARD_TUNING } from "@fretflow/core";
 import { k } from "./test-utils/storage";
 
 // Mock child components to isolate App logic

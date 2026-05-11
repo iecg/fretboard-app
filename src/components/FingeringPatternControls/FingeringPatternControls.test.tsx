@@ -12,7 +12,7 @@ import {
   twoStringsPairAtom,
   twoStringsIntervalAtom,
 } from "../../store/atoms";
-import { type CagedShape } from "../../shapes";
+import { type CagedShape } from "@fretflow/core";
 import { axe } from "../../test-utils/a11y";
 
 describe("FingeringPatternControls/FingeringPatternControls", () => {

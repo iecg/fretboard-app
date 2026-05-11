@@ -2,7 +2,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, fireEvent } from "@testing-library/react";
 import { CircleOfFifths } from "./CircleOfFifths";
-import { CIRCLE_OF_FIFTHS } from "../../core/theory";
+import { CIRCLE_OF_FIFTHS } from "@fretflow/core";
 import { axe } from "../../test-utils/a11y";
 
 const getSlices = () =>

@@ -14,7 +14,7 @@ import {
   chordRootOverrideAtom,
   chordQualityOverrideAtom,
 } from "./chordOverlayAtoms";
-import type { ResolvedChordMember } from "../core/theory";
+import type { ResolvedChordMember } from "@fretflow/core";
 
 describe("pure predicates", () => {
   it("isChordMemberInScale: true when the note is in the set", () => {

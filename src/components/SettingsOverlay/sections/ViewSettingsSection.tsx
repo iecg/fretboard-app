@@ -3,7 +3,7 @@ import { useAtom } from "jotai";
 import { StepperControl } from "../../StepperControl/StepperControl";
 import { FretRangeControl } from "../../FretRangeControl/FretRangeControl";
 import { ToggleBar } from "../../ToggleBar/ToggleBar";
-import { MAX_FRET, FRET_ZOOM_MIN, FRET_ZOOM_MAX } from "../../../core/constants";
+import { MAX_FRET, FRET_ZOOM_MIN, FRET_ZOOM_MAX } from "@fretflow/core";
 import { ZOOM_STEP, SETTING_FIELDS } from "../constants";
 import { OverlayFieldHeader } from "../shared";
 import { useSettingsForm } from "../useSettingsForm";

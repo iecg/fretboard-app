@@ -1,4 +1,4 @@
-import type { PracticeLens, NoteSemantics } from "../../../core/theory";
+import type { PracticeLens, NoteSemantics } from "@fretflow/core";
 import {
   RADIUS_SCALE_KEY_TONIC,
   RADIUS_SCALE_CHORD_ROOT,
@@ -6,7 +6,7 @@ import {
   RADIUS_SCALE_NOTE_ACTIVE,
   RADIUS_SCALE_COLOR_TONE,
   RADIUS_SCALE_DEFAULT,
-} from "../../../core/constants";
+} from "@fretflow/core";
 
 export type BoxBound = { minFret: number; maxFret: number };
 

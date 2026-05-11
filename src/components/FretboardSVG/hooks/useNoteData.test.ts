@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { useNoteData } from "./useNoteData";
-import type { ShapePolygon, CagedShape } from "../../../shapes";
+import type { ShapePolygon, CagedShape } from "@fretflow/core";
 
 describe("useNoteData", () => {
   it("generates correct note data for a simple tuning", () => {

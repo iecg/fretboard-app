@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { NOTES } from "../../../core/theory";
+import { NOTES } from "@fretflow/core";
 import { offsetOutlinePath } from "../utils/pathGeometry";
 import { CHORD_CONNECTOR_BASE_RADIUS_FACTOR } from "./useChordConnectorPolylines";
 

@@ -3,13 +3,24 @@
   "private": true,
   "version": "1.20.0",
   "type": "module",
+  "main": "./packages/core/dist/index.js",
+  "types": "./packages/core/dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./packages/core/dist/index.d.ts",
+      "default": "./packages/core/dist/index.js"
+    }
+  },
+  "workspaces": [
+    "packages/core"
+  ],
   "engines": {
     "node": ">=24.0.0"
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
-    "build:types": "tsc -b",
+    "build": "npm run build --workspace @fretflow/core && tsc -b && vite build",
+    "build:types": "npm run build --workspace @fretflow/core && tsc -b",
     "lint": "eslint . && stylelint 'src/**/*.css'",
     "preview": "vite preview",
     "test": "vitest run",
@@ -22,9 +33,10 @@
     "test:visual:ci": "bash scripts/run-linux-visual-tests.sh",
     "test:visual:update": "npm run build && playwright test --config=playwright.config.visual.ts --update-snapshots",
     "test:visual:update:linux": "bash scripts/update-linux-snapshots.sh",
-    "prepare": "husky"
+    "prepare": "npm run build --workspace @fretflow/core && husky"
   },
   "dependencies": {
+    "@fretflow/core": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "jotai": "^2.20.0",
