@@ -12,11 +12,12 @@
   width: 100%;
   min-width: 0;
   height: 100%;
-  /* Phase 3: clip horizontally (no horizontal scrollbar push), but allow
-     vertical SVG paint to escape so connectors crossing the taper edge render. */
-  overflow-x: clip;
-  overflow-y: visible;
-  contain: layout paint;
+  /* Phase 3: allow SVG paint to escape in both axes so chord/interval connectors
+     crossing the fretboard taper edges (top/bottom + nut/body ends) render fully.
+     `contain: paint` would clip to the padding edge regardless of overflow, so it
+     is dropped here. `contain: layout` is kept for the layout-isolation perf hint. */
+  overflow: visible;
+  contain: layout;
 }
 
 /* Hide scrollbar while preserving scroll behavior */
