@@ -38,7 +38,10 @@ describe("fretboardGeometry", () => {
   });
 
   it("getStringY calculates y coordinate", () => {
+    // Strings are centered within neckHeight; the value must sit inside
+    // the box and be positive.
     const y = getStringY(0, 0, 6, 1000, 200);
     expect(y).toBeGreaterThan(0);
+    expect(y).toBeLessThan(200);
   });
 });

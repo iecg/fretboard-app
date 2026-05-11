@@ -5,6 +5,7 @@ import {
   MAX_PLAYABLE_FRET_POSITIONS,
   CHORD_TONE_CLASSES,
   CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
+  clampConnectorRadiusToYBounds,
   useChordConnectorPolylines,
 } from "./useChordConnectorPolylines";
 import type { NoteData } from "./useNoteData";
@@ -942,6 +943,18 @@ describe("per-voicing offset: determinism and paletteIndex independence", () => 
     const minEnvelope = STRING_ROW_PX * CHORD_CONNECTOR_BASE_RADIUS_FACTOR;
     const bubbleRadius = STRING_ROW_PX * 0.45;
     expect(minEnvelope).toBeGreaterThan(bubbleRadius);
+  });
+
+  it("clamps connector radius to the available SVG y bounds", () => {
+    const preferredRadius = STRING_ROW_PX * CHORD_CONNECTOR_BASE_RADIUS_FACTOR;
+    const radius = clampConnectorRadiusToYBounds(
+      [{ x: 500, y: 15.12 }, { x: 548, y: 15.12 }],
+      preferredRadius,
+      { minY: 0, maxY: STRING_ROW_PX * 6 },
+    );
+
+    expect(radius).toBeLessThan(preferredRadius);
+    expect(radius).toBeCloseTo(14.12, 2);
   });
 });
 

@@ -111,6 +111,35 @@ export const MAX_PLAYABLE_FRET_POSITIONS = 3;
  */
 export const CHORD_CONNECTOR_BASE_RADIUS_FACTOR = 0.47;
 
+export interface ConnectorYBounds {
+  minY: number;
+  maxY: number;
+}
+
+const CONNECTOR_BOUNDARY_GUARD_PX = 1;
+
+export function clampConnectorRadiusToYBounds(
+  vertices: ChordConnectorVertex[],
+  preferredRadius: number,
+  yBounds?: ConnectorYBounds,
+): number {
+  if (!yBounds || vertices.length === 0) return preferredRadius;
+
+  let minVertexY = Infinity;
+  let maxVertexY = -Infinity;
+  for (const vertex of vertices) {
+    if (vertex.y < minVertexY) minVertexY = vertex.y;
+    if (vertex.y > maxVertexY) maxVertexY = vertex.y;
+  }
+
+  const availableRadius = Math.min(
+    minVertexY - yBounds.minY,
+    yBounds.maxY - maxVertexY,
+  ) - CONNECTOR_BOUNDARY_GUARD_PX;
+
+  return Math.max(0, Math.min(preferredRadius, availableRadius));
+}
+
 /**
  * Per-voicing pixel offset deltas added to the base radius.
  * Assigned by adjacency-aware cluster detection so that voicings whose
@@ -342,6 +371,7 @@ export function buildChordConnectorPolylines(
   stringYAt: (stringIndex: number, x: number) => number,
   stringRowPx: number,
   chordRoot: string,
+  yBounds?: ConnectorYBounds,
 ): ChordConnectorVoicing[] {
   // stringRowPx drives the capsule perpOffset for collinear voicings.
 
@@ -534,9 +564,14 @@ export function buildChordConnectorPolylines(
 
   const results: ChordConnectorVoicing[] = pendingVoicings.map((pv) => {
     const offsetPx = clusterOffsetMap.get(pv.canonicalKey) ?? 0;
+    const radius = clampConnectorRadiusToYBounds(
+      pv.rawVertices,
+      baseRadius + offsetPx,
+      yBounds,
+    );
     const pathStr = offsetOutlinePath(
       convexHull(pv.rawVertices),
-      baseRadius + offsetPx,
+      radius,
     );
     const paths = { fill: pathStr, outline: pathStr };
     return { paths, vertices: pv.rawVertices, paletteIndex: pv.paletteIndex, voicingKey: pv.canonicalKey };
@@ -555,6 +590,7 @@ export interface UseChordConnectorPolylinesParams {
   /** Sharps-only chord-root name (e.g. "C", "F#"). Drives bass-interval-based
    *  paletteIndex assignment. Empty string = paletteIndex defaults to 0. */
   chordRoot: string;
+  yBounds?: ConnectorYBounds;
 }
 
 /**
@@ -580,6 +616,7 @@ export function useChordConnectorPolylines({
   stringYAt,
   stringRowPx,
   chordRoot,
+  yBounds,
 }: UseChordConnectorPolylinesParams): ChordConnectorVoicing[] {
   return useMemo(
     () =>
@@ -590,7 +627,8 @@ export function useChordConnectorPolylines({
         stringYAt,
         stringRowPx,
         chordRoot,
+        yBounds,
       ),
-    [noteData, chordToneNames, fretCenterX, stringYAt, stringRowPx, chordRoot],
+    [noteData, chordToneNames, fretCenterX, stringYAt, stringRowPx, chordRoot, yBounds],
   );
 }

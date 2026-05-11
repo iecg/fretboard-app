@@ -134,6 +134,19 @@ export function getTaperGeometry(
   return { taperYLeft: yLeft, taperPath, cornerR };
 }
 
+/**
+ * Compute the SVG Y coordinate of a string at a given x.
+ *
+ * Strings span the full neckHeight box (= `tuning.length * stringRowPx`),
+ * centered vertically. `localSpread` (the visible string-to-string spacing
+ * including the slight left-side compression from `STRING_SPREAD_LEFT_FRAC`)
+ * is derived from `neckHeight` so spacing scales with the rendered neck.
+ *
+ * Vertical padding for chord/interval connector capsule overshoot is
+ * provided by the outer HTML wrapper (`.fretboard-neck`) and a base wood
+ * `<rect>` that paints outside the SVG bounding box — the SVG itself
+ * remains sized to the original playable neckHeight.
+ */
 export function getStringY(
   stringIndex: number,
   x: number,

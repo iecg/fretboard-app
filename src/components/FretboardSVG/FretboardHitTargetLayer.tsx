@@ -30,6 +30,8 @@ export const FretboardHitTargetLayer = memo(({
       className={styles["fretboard-a11y-layer"]}
       style={{
         position: "absolute",
+        top: 0,
+        left: 0,
         width: neckWidthPx,
         height: neckHeight,
       }}

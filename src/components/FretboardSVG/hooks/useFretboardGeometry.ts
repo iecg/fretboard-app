@@ -13,6 +13,12 @@ export interface FretboardGeometryParams {
   endFret: number;
   maxFret: number;
   neckWidthPx: number;
+  /**
+   * Playable neck height (`tuning.length * stringRowPx`). Strings, frets,
+   * inlays, and shape polygons are positioned within this box. The
+   * connector-overshoot padding above and below the wood is provided by
+   * the outer HTML wrapper, not by the SVG itself.
+   */
   neckHeight: number;
   noteBubblePx: number;
   numStrings: number;

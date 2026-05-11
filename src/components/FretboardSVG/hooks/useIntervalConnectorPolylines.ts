@@ -1,7 +1,11 @@
 import { useMemo } from "react";
 import { NOTES } from "@fretflow/core";
 import { offsetOutlinePath } from "../utils/pathGeometry";
-import { CHORD_CONNECTOR_BASE_RADIUS_FACTOR } from "./useChordConnectorPolylines";
+import {
+  CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
+  clampConnectorRadiusToYBounds,
+  type ConnectorYBounds,
+} from "./useChordConnectorPolylines";
 
 /**
  * Interval connector output — one entry per interval pair.
@@ -62,6 +66,7 @@ export function buildIntervalConnectorPolylines(
   fretCenterX: (fretIndex: number) => number,
   stringYAt: (stringIndex: number, x: number) => number,
   stringRowPx: number,
+  yBounds?: ConnectorYBounds,
 ): IntervalConnectorPolyline[] {
   if (intervalPairs.length === 0) return [];
 
@@ -123,7 +128,8 @@ export function buildIntervalConnectorPolylines(
     // Build the path using offsetOutlinePath — for a 2-vertex input this
     // produces a capsule, matching the chord-connector visual style exactly.
     const vertices = [{ x: xA, y: yA }, { x: xB, y: yB }];
-    const pathStr = offsetOutlinePath(vertices, baseRadius);
+    const radius = clampConnectorRadiusToYBounds(vertices, baseRadius, yBounds);
+    const pathStr = offsetOutlinePath(vertices, radius);
     const paths = { fill: pathStr, outline: pathStr };
 
     results.push({
@@ -144,6 +150,7 @@ export interface UseIntervalConnectorPolylinesParams {
   fretCenterX: (fretIndex: number) => number;
   stringYAt: (stringIndex: number, x: number) => number;
   stringRowPx: number;
+  yBounds?: ConnectorYBounds;
 }
 
 /**
@@ -168,6 +175,7 @@ export function useIntervalConnectorPolylines({
   fretCenterX,
   stringYAt,
   stringRowPx,
+  yBounds,
 }: UseIntervalConnectorPolylinesParams): IntervalConnectorPolyline[] {
   return useMemo(
     () =>
@@ -178,7 +186,8 @@ export function useIntervalConnectorPolylines({
         fretCenterX,
         stringYAt,
         stringRowPx,
+        yBounds,
       ),
-    [intervalPairs, tuning, scaleSemitones, fretCenterX, stringYAt, stringRowPx],
+    [intervalPairs, tuning, scaleSemitones, fretCenterX, stringYAt, stringRowPx, yBounds],
   );
 }

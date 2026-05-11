@@ -12,11 +12,20 @@
   width: 100%;
   min-width: 0;
   height: 100%;
-  /* Phase 3: clip horizontally (no horizontal scrollbar push), but allow
-     vertical SVG paint to escape so connectors crossing the taper edge render. */
-  overflow-x: clip;
-  overflow-y: visible;
-  contain: layout paint;
+  /* Phase 3c: clip rectangularly to the wrapper box so sub-pixel paint bleed
+     (string-shadow filter regions, taper edge strokes) cannot leak past the
+     SVG into the surrounding app background. `overflow: clip` is the
+     non-scrolling rectangular clip primitive; no `overflow-clip-margin` is
+     set, so the clip is flush with the wrapper edge.
+
+     Chord and interval connectors that cross the wood's tapered top/bottom
+     and nut/body edges remain visible because they are SVG-level clipped to
+     `fretboard-svg-box` (the SVG bounding rect), not to `fretboard-taper`
+     (the wood wedge). Connector pixels that land in the taper-carved corner
+     gaps paint on the app-container backdrop — an accepted trade-off; the
+     wood gradient itself stays clipped to the taper. */
+  overflow: clip;
+  contain: layout;
 }
 
 /* Hide scrollbar while preserving scroll behavior */

@@ -142,10 +142,17 @@ export const FretboardSVG = memo(function FretboardSVG({
 
   const noteBubblePx = Math.round(stringRowPx * NOTE_BUBBLE_RATIO);
   const noteFontPx = Math.round(stringRowPx * NOTE_FONT_RATIO);
+  // Playable neck height — strings, frets, inlays, and shape polygons all
+  // live within this box, matching the original (pre-connector-fix)
+  // proportions of a guitar fretboard.
   const neckHeight = tuning.length * stringRowPx;
   const totalColumns = endFret - startFret;
   const hasChordOverlay = chordTones.length > 0;
   const numStrings = tuning.length;
+  const connectorYBounds = useMemo(
+    () => ({ minY: 0, maxY: neckHeight }),
+    [neckHeight],
+  );
 
   const {
     wireXRel,
@@ -230,7 +237,6 @@ export const FretboardSVG = memo(function FretboardSVG({
     .filter(Boolean)
     .join(" ");
 
-  // Inlays follow local tapered geometry.
   const inlayYAt = useCallback(() => neckHeight / 2, [neckHeight]);
   const inlayYTopAt = useCallback((x: number) =>
     numStrings >= 4
@@ -332,6 +338,7 @@ export const FretboardSVG = memo(function FretboardSVG({
     fretCenterX,
     stringYAt,
     stringRowPx,
+    yBounds: connectorYBounds,
   });
 
   // Per-string chord filter (UAT-3): when fingering pattern restricts to 1 or 2 strings,
@@ -348,6 +355,7 @@ export const FretboardSVG = memo(function FretboardSVG({
     stringYAt,
     stringRowPx,
     chordRoot: chordRoot ?? "",
+    yBounds: connectorYBounds,
   });
 
   return (
@@ -409,23 +417,19 @@ export const FretboardSVG = memo(function FretboardSVG({
 
           <g clipPath={svgDefUrl("fretboard-taper")}>
             <FretboardShapeLayer svgPolygons={svgPolygons} />
-            <FretboardNoteLayer
-              noteData={noteData}
-              fretCenterX={fretCenterX}
-              stringYAt={stringYAt}
-              noteBubblePx={noteBubblePx}
-              displayFormat={displayFormat}
-              degreeColorsEnabled={degreeColorsEnabled}
-              onNoteClick={onNoteClick}
-            />
           </g>
 
-          {/* Phase 3: chord + interval connectors render OUTSIDE the taper clip
-              so geometry that crosses the wood region's top/bottom edge stays visible.
-              Z-order: connectors paint ABOVE notes; note text uses paint-order:stroke
-              with a dark outline so labels remain legible against connector fills. */}
+          {/* Chord + interval connectors render OUTSIDE the wood `fretboard-taper`
+              clip so geometry that crosses the wood's tapered top/bottom + nut/body
+              edges near the outer strings stays visible. They are clipped to the
+              SVG's bounding box (`fretboard-svg-box`). Connector pixels that land
+              in the taper-carved corner gaps paint on the app-container backdrop —
+              that's an accepted trade-off; the wood gradient stays clipped to the
+              taper and does not overflow. Rendered BEFORE the note layer so note
+              bubbles paint on top (later SVG siblings paint above earlier ones). */}
           <g
             className={styles["fretboard-overlays"]}
+            clipPath={svgDefUrl("fretboard-svg-box")}
             aria-hidden="true"
             pointerEvents="none"
           >
@@ -501,6 +505,19 @@ export const FretboardSVG = memo(function FretboardSVG({
                 ))}
               </g>
             )}
+          </g>
+
+          {/* Note bubbles render LAST so they paint on top of the connectors. */}
+          <g clipPath={svgDefUrl("fretboard-taper")}>
+            <FretboardNoteLayer
+              noteData={noteData}
+              fretCenterX={fretCenterX}
+              stringYAt={stringYAt}
+              noteBubblePx={noteBubblePx}
+              displayFormat={displayFormat}
+              degreeColorsEnabled={degreeColorsEnabled}
+              onNoteClick={onNoteClick}
+            />
           </g>
         </svg>
 
