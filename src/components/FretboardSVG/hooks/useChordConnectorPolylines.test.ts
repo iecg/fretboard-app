@@ -4,8 +4,9 @@ import {
   buildChordConnectorPolylines,
   MAX_PLAYABLE_FRET_POSITIONS,
   CHORD_TONE_CLASSES,
-  CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
   clampConnectorRadiusToYBounds,
+  CHORD_CONNECTOR_RADIUS_FACTORS,
+  computeChordConnectorRadiusPx,
   useChordConnectorPolylines,
   INTERVAL_TO_PALETTE,
 } from "./useChordConnectorPolylines";
@@ -931,23 +932,62 @@ describe("per-voicing offset: determinism and paletteIndex independence", () => 
     expect(result1[0]!.paths.fill).toBe(result2[0]!.paths.fill);
   });
 
-  it("(c) base radius factor (CHORD_CONNECTOR_BASE_RADIUS_FACTOR) is 0.47", () => {
-    // Guards the single-source-of-truth constant.
-    expect(CHORD_CONNECTOR_BASE_RADIUS_FACTOR).toBe(0.47);
+  it("(c) adaptive radius factors use compact, medium, and max widths", () => {
+    expect(CHORD_CONNECTOR_RADIUS_FACTORS).toEqual({
+      compact: 0.34,
+      medium: 0.38,
+      max: 0.42,
+    });
   });
 
-  it("(c) minimum envelope (base radius, offsetPx = 0) encloses the note-bubble radius", () => {
-    // The note-bubble radius is ~stringRowPx * 0.45.
-    // The minimum possible envelope is stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR + 0
-    // (OFFSET_BUCKET is non-negative so 0 is the smallest offsetPx).
-    // Guard: 0.47 * stringRowPx must exceed 0.45 * stringRowPx.
-    const minEnvelope = STRING_ROW_PX * CHORD_CONNECTOR_BASE_RADIUS_FACTOR;
-    const bubbleRadius = STRING_ROW_PX * 0.45;
-    expect(minEnvelope).toBeGreaterThan(bubbleRadius);
+  it("(c) same-fret / one-position voicings use the smaller compact radius", () => {
+    const sameFret = [
+      makeNote(0, 5, "C", "chord-root"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(2, 5, "G", "chord-tone-in-scale"),
+    ];
+
+    expect(computeChordConnectorRadiusPx(sameFret, STRING_ROW_PX, 0)).toBeCloseTo(12.24);
+  });
+
+  it("(c) 2-position and 3-position voicings produce progressively wider radii", () => {
+    const twoPositions = [
+      makeNote(0, 2, "C", "chord-root"),
+      makeNote(1, 2, "E", "chord-tone-in-scale"),
+      makeNote(2, 3, "G", "chord-tone-in-scale"),
+    ];
+    const threePositions = [
+      makeNote(0, 2, "C", "chord-root"),
+      makeNote(1, 3, "E", "chord-tone-in-scale"),
+      makeNote(2, 4, "G", "chord-tone-in-scale"),
+    ];
+
+    const twoPositionRadius = computeChordConnectorRadiusPx(twoPositions, STRING_ROW_PX, 0);
+    const threePositionRadius = computeChordConnectorRadiusPx(threePositions, STRING_ROW_PX, 0);
+    const compactRadius = computeChordConnectorRadiusPx(twoPositions.slice(0, 2), STRING_ROW_PX, 0);
+
+    expect(twoPositionRadius).toBeCloseTo(13.68);
+    expect(threePositionRadius).toBeCloseTo(15.12);
+    expect(twoPositionRadius).toBeGreaterThan(compactRadius);
+    expect(threePositionRadius).toBeGreaterThan(twoPositionRadius);
+  });
+
+  it("(c) crowded-cluster radius remains capped below the old widest envelope", () => {
+    const maxWidthVoicing = [
+      makeNote(0, 2, "C", "chord-root"),
+      makeNote(1, 3, "E", "chord-tone-in-scale"),
+      makeNote(2, 4, "G", "chord-tone-in-scale"),
+    ];
+
+    const newMaxEnvelope = computeChordConnectorRadiusPx(maxWidthVoicing, STRING_ROW_PX, 6);
+    const oldMaxEnvelope = STRING_ROW_PX * 0.47 + 10;
+
+    expect(newMaxEnvelope).toBeCloseTo(21.12);
+    expect(newMaxEnvelope).toBeLessThan(oldMaxEnvelope);
   });
 
   it("clamps connector radius to the available SVG y bounds", () => {
-    const preferredRadius = STRING_ROW_PX * CHORD_CONNECTOR_BASE_RADIUS_FACTOR;
+    const preferredRadius = STRING_ROW_PX * CHORD_CONNECTOR_RADIUS_FACTORS.max;
     const radius = clampConnectorRadiusToYBounds(
       [{ x: 500, y: 15.12 }, { x: 548, y: 15.12 }],
       preferredRadius,

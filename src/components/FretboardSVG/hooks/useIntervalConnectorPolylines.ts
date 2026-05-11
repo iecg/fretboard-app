@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { NOTES } from "@fretflow/core";
 import { offsetOutlinePath } from "../utils/pathGeometry";
 import {
-  CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
+  CHORD_CONNECTOR_RADIUS_FACTORS,
   clampConnectorRadiusToYBounds,
   type ConnectorYBounds,
 } from "./useChordConnectorPolylines";
@@ -84,7 +84,7 @@ export function buildIntervalConnectorPolylines(
     return octave * 12 + noteIdx + fret;
   }
 
-  const baseRadius = stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR;
+  const baseRadius = stringRowPx * CHORD_CONNECTOR_RADIUS_FACTORS.compact;
   const results: IntervalConnectorPolyline[] = [];
 
   for (let i = 0; i < intervalPairs.length; i++) {
