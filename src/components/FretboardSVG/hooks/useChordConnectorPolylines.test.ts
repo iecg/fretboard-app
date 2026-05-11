@@ -1020,15 +1020,14 @@ describe("per-voicing offset: determinism and paletteIndex independence", () => 
       makeNote(2, 5, "G", "chord-tone-in-scale"),
     ];
 
-    // Chord-root squircle radius follows the rendered bubble minus the 1px
-    // squircle reduction: round(36 × 0.8) × 0.5 × 0.86 - 1 = 11.47.
-    // The compact factor alone (0.34 × 36 = 12.24) sits inside the squircle, so
-    // the floor lifts the radius to chordRootRadius + CHORD_CONNECTOR_MIN_HALO_PX
-    // = 11.47 + 2 = 13.47.
+    // Chord-root squircle radius follows the rendered bubble minus the 3px
+    // squircle reduction: round(36 × 0.8) × 0.5 × 0.86 - 3 = 9.47.
+    // The compact factor (0.34 × 36 = 12.24) now exceeds the floor
+    // (9.47 + 2 = 11.47), so the factor wins.
     const computedRadius = computeChordConnectorRadiusPx(sameFret, STRING_ROW_PX, 0);
     const chordRootRadius = chordRootVisualRadiusPx(STRING_ROW_PX);
     expect(computedRadius).toBeGreaterThan(chordRootRadius);
-    expect(computedRadius).toBeCloseTo(13.47);
+    expect(computedRadius).toBeCloseTo(12.24);
   });
 
   it("(c) 2-position and 3-position voicings produce progressively wider radii", () => {
@@ -1046,8 +1045,8 @@ describe("per-voicing offset: determinism and paletteIndex independence", () => 
     const twoPositionRadius = computeChordConnectorRadiusPx(twoPositions, STRING_ROW_PX, 0);
     const threePositionRadius = computeChordConnectorRadiusPx(threePositions, STRING_ROW_PX, 0);
 
-    // medium factor (0.38 × 36 = 13.68) now sits just above the reduced
-    // 13.47 floor; max factor (0.42 × 36 = 15.12) remains wider.
+    // Both factors exceed the reduced 11.47 floor, so span-based sizing
+    // governs: medium (0.38 × 36 = 13.68), max (0.42 × 36 = 15.12).
     expect(twoPositionRadius).toBeCloseTo(13.68);
     expect(threePositionRadius).toBeCloseTo(15.12);
     expect(threePositionRadius).toBeGreaterThan(twoPositionRadius);

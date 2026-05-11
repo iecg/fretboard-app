@@ -5,6 +5,7 @@ import { FretboardNoteLayer } from "./FretboardNoteLayer";
 import type { NoteData } from "./hooks/useNoteData";
 import {
   CHORD_ROOT_HALO_RADIUS_PX,
+  CIRCLE_RADIUS_REDUCTION_PX,
   SQUIRCLE_RADIUS_REDUCTION_PX,
 } from "./utils/noteSizing";
 
@@ -60,9 +61,10 @@ describe("FretboardNoteLayer", () => {
     expect(label.getAttribute("y")).toBe("50");
   });
 
-  it("does not reduce circular note geometry", () => {
+  it("reduces circular note geometry by CIRCLE_RADIUS_REDUCTION_PX", () => {
     const noteBubblePx = 40;
-    const expectedCircleRadius = (noteBubblePx / 2) * 0.82;
+    const rawCircleRadius = (noteBubblePx / 2) * 0.82;
+    const expectedCircleRadius = rawCircleRadius - CIRCLE_RADIUS_REDUCTION_PX;
 
     const { container } = render(
       <svg>

@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { clsx } from "clsx";
 import { formatAccidental } from "@fretflow/core";
 import { getNoteVisuals } from "./utils/semantics";
-import { CHORD_ROOT_HALO_RADIUS_PX, reduceSquircleRadius } from "./utils/noteSizing";
+import { CHORD_ROOT_HALO_RADIUS_PX, reduceCircleRadius, reduceSquircleRadius } from "./utils/noteSizing";
 import styles from "./FretboardSVG.module.css";
 import type { NoteData } from "./hooks/useNoteData";
 
@@ -87,7 +87,7 @@ export const FretboardNoteLayer = memo(({
         const rawRadius = baseRadius * radiusScale * applyLensEmphasis.radiusBoost;
         const r = noteShape === "squircle"
           ? reduceSquircleRadius(rawRadius)
-          : rawRadius;
+          : reduceCircleRadius(rawRadius);
 
         const shapeEl =
           noteShape === "squircle" ? (

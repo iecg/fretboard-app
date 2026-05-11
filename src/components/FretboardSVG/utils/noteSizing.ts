@@ -3,11 +3,16 @@ import {
   RADIUS_SCALE_CHORD_ROOT,
 } from "@fretflow/core";
 
-export const SQUIRCLE_RADIUS_REDUCTION_PX = 1;
+export const SQUIRCLE_RADIUS_REDUCTION_PX = 3;
+export const CIRCLE_RADIUS_REDUCTION_PX = 2;
 export const CHORD_ROOT_HALO_RADIUS_PX = 3.5;
 
 export function reduceSquircleRadius(radiusPx: number): number {
   return Math.max(0, radiusPx - SQUIRCLE_RADIUS_REDUCTION_PX);
+}
+
+export function reduceCircleRadius(radiusPx: number): number {
+  return Math.max(0, radiusPx - CIRCLE_RADIUS_REDUCTION_PX);
 }
 
 export function chordRootVisualRadiusPx(stringRowPx: number): number {
