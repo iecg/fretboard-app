@@ -39,13 +39,13 @@
   outline: none;
 }
 
-.fretboard-note :is(circle, rect, polygon) {
+.fretboard-note :is(circle, path, polygon) {
   stroke-width: 1.9;
   paint-order: stroke;
   transition: stroke-width 0.12s ease-out, stroke 0.12s ease-out;
 }
 
-.fretboard-note:focus-visible :is(circle, rect, polygon) {
+.fretboard-note:focus-visible :is(circle, path, polygon) {
   stroke: var(--accent-primary) !important;
   stroke-width: 3 !important;
 }
@@ -67,7 +67,7 @@
   fill: var(--fretboard-note-text-fill);
 }
 
-.fretboard-note.key-tonic :is(circle, rect, polygon) {
+.fretboard-note.key-tonic :is(circle, path, polygon) {
   stroke: var(--note-ring-tonic);
   fill: var(--fretboard-note-fill-tonic);
   stroke-width: 2.3;
@@ -77,7 +77,7 @@
   stroke-width: 2.3;
 }
 
-.fretboard-note.chord-root :is(circle, rect, polygon) {
+.fretboard-note.chord-root :is(circle, path, polygon) {
   stroke: var(--note-ring-tonic);
   fill: var(--fretboard-note-fill-chord-root);
   stroke-width: 2.5;
@@ -87,20 +87,20 @@
   stroke-width: 2.3;
 }
 
-.fretboard-note.chord-tone-in-scale :is(circle, rect, polygon),
-.fretboard-note.note-diatonic-chord :is(circle, rect, polygon) {
+.fretboard-note.chord-tone-in-scale :is(circle, path, polygon),
+.fretboard-note.note-diatonic-chord :is(circle, path, polygon) {
   stroke: var(--note-ring-tonic);
   fill: var(--fretboard-note-fill-chord-tone);
   stroke-width: 2.3;
 }
 
-.fretboard-note.note-active :is(circle, rect, polygon) {
+.fretboard-note.note-active :is(circle, path, polygon) {
   stroke: var(--note-ring);
   fill: var(--fretboard-note-fill-chord-tone);
   stroke-width: 1.9;
 }
 
-.fretboard-note.note-blue :is(circle, rect, polygon) {
+.fretboard-note.note-blue :is(circle, path, polygon) {
   stroke: var(--note-ring-color-tone);
   fill: var(--fretboard-note-fill-chord-tone);
   stroke-width: 1.9;
@@ -123,13 +123,13 @@
   fill: var(--fretboard-note-text-fill);
 }
 
-.fretboard-note.scale-only :is(circle, rect, polygon) {
+.fretboard-note.scale-only :is(circle, path, polygon) {
   stroke: var(--note-ring);
   fill: var(--fretboard-note-fill-scale-only);
   stroke-width: 1.7;
 }
 
-.fretboard-note.color-tone :is(circle, rect, polygon) {
+.fretboard-note.color-tone :is(circle, path, polygon) {
   stroke: var(--note-ring-color-tone);
   fill: var(--fretboard-note-fill-chord-tone);
   stroke-width: 1.9;
@@ -213,7 +213,7 @@
   fill: var(--note-label-on-color);
 }
 
-.fretboard-note.chord-tone-outside-scale :is(circle, rect, polygon) {
+.fretboard-note.chord-tone-outside-scale :is(circle, path, polygon) {
   stroke: var(--neon-orange-dim);
   fill: var(--fretboard-note-fill-chord-outside);
   stroke-width: 2.0;
@@ -236,7 +236,7 @@
    Circle radius is compensated via the CSS r property (using --note-r set in JS)
    to preserve the outer edge of the majority of note bubbles: baseline chosen as
    note-active (previous light value 2.8), delta = 3.6 - 2.8 = 0.8, shrink = 0.4px. */
-:global([data-theme="modern-light"]) .fretboard-note :is(circle, rect, polygon) {
+:global([data-theme="modern-light"]) .fretboard-note :is(circle, path, polygon) {
   stroke-width: 3.6;
 }
 
@@ -262,7 +262,7 @@
   filter: var(--fretboard-svg-glow-violet-url);
 }
 
-.fretboard-note.chord-root[data-note-tension] rect:last-of-type {
+.fretboard-note.chord-root[data-note-tension] path:last-of-type {
   stroke-dasharray: 6 3;
   fill: var(--fretboard-note-fill-tension-emph);
   stroke: var(--neon-orange);
@@ -270,7 +270,7 @@
 }
 
 /* Lens emphasis selectors */
-[data-practice-lens="guide-tones"] .fretboard-note[data-note-guide-tone] :is(circle, rect, polygon) {
+[data-practice-lens="guide-tones"] .fretboard-note[data-note-guide-tone] :is(circle, path, polygon) {
   stroke-width: 3.8;
   fill: var(--fretboard-note-fill-guide-emph);
   stroke: var(--neon-orange);
@@ -280,9 +280,9 @@
   filter: var(--fretboard-svg-glow-orange-url);
 }
 
-[data-practice-lens="guide-tones"] .fretboard-note.chord-root:not([data-note-guide-tone]) rect:last-of-type,
-[data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]) :is(circle, rect, polygon),
-[data-practice-lens="guide-tones"] .fretboard-note.note-diatonic-chord:not([data-note-guide-tone]) :is(circle, rect, polygon) {
+[data-practice-lens="guide-tones"] .fretboard-note.chord-root:not([data-note-guide-tone]) path:last-of-type,
+[data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]) :is(circle, path, polygon),
+[data-practice-lens="guide-tones"] .fretboard-note.note-diatonic-chord:not([data-note-guide-tone]) :is(circle, path, polygon) {
   stroke-width: 1.4;
   fill: var(--fretboard-note-fill-deemphasis-chord);
   stroke: rgb(200 110 40);
@@ -295,7 +295,7 @@
   opacity: 0.68;
 }
 
-[data-practice-lens="guide-tones"] .fretboard-note.color-tone :is(circle, rect, polygon) {
+[data-practice-lens="guide-tones"] .fretboard-note.color-tone :is(circle, path, polygon) {
   stroke: var(--note-ring-color-tone);
   fill: var(--fretboard-note-fill-deemphasis-violet);
 }
@@ -305,7 +305,7 @@
   opacity: 0.68;
 }
 
-[data-practice-lens="tension"] .fretboard-note.chord-tone-outside-scale :is(circle, rect, polygon) {
+[data-practice-lens="tension"] .fretboard-note.chord-tone-outside-scale :is(circle, path, polygon) {
   stroke: var(--neon-orange);
   fill: var(--fretboard-note-fill-tension-strong);
   stroke-dasharray: 6 3;
@@ -316,14 +316,14 @@
   filter: var(--fretboard-svg-glow-orange-url);
 }
 
-[data-practice-lens="tension"] .fretboard-note.chord-root[data-note-tension] rect:last-of-type {
+[data-practice-lens="tension"] .fretboard-note.chord-root[data-note-tension] path:last-of-type {
   stroke: var(--neon-orange);
   fill: var(--fretboard-note-fill-tension-strong);
   stroke-dasharray: 6 3;
   stroke-width: 3.8;
 }
 
-[data-practice-lens="tension"] .fretboard-note.chord-root:not([data-note-tension]) rect:last-of-type {
+[data-practice-lens="tension"] .fretboard-note.chord-root:not([data-note-tension]) path:last-of-type {
   stroke-width: 1.8;
   fill: var(--fretboard-note-fill-chord-root);
   stroke: rgb(255 154 77);
@@ -334,8 +334,8 @@
   opacity: 0.72;
 }
 
-[data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale :is(circle, rect, polygon),
-[data-practice-lens="tension"] .fretboard-note.note-diatonic-chord :is(circle, rect, polygon) {
+[data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale :is(circle, path, polygon),
+[data-practice-lens="tension"] .fretboard-note.note-diatonic-chord :is(circle, path, polygon) {
   stroke-width: 1.4;
   fill: var(--fretboard-note-fill-deemphasis-chord);
   stroke: rgb(200 110 40);
@@ -347,7 +347,7 @@
   opacity: 0.68;
 }
 
-[data-practice-lens="tension"] .fretboard-note.color-tone :is(circle, rect, polygon) {
+[data-practice-lens="tension"] .fretboard-note.color-tone :is(circle, path, polygon) {
   stroke: var(--note-ring-color-tone);
   fill: var(--fretboard-note-fill-deemphasis-violet);
 }
@@ -358,7 +358,7 @@
 }
 
 /* Degree color mode — keep this after role/lens selectors so degree fills win while role/lens rings remain visible. */
-.fretboard-board[data-degree-colors="true"] .fretboard-note[data-scale-degree] :is(circle, rect, polygon) {
+.fretboard-board[data-degree-colors="true"] .fretboard-note[data-scale-degree] :is(circle, path, polygon) {
   fill: var(--note-degree-fill, var(--degree-color, #141e28));
 }
 

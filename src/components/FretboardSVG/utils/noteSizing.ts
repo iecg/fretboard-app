@@ -19,3 +19,10 @@ export function chordRootVisualRadiusPx(stringRowPx: number): number {
   const noteBubblePx = Math.round(stringRowPx * NOTE_BUBBLE_RATIO);
   return reduceSquircleRadius(noteBubblePx * 0.5 * RADIUS_SCALE_CHORD_ROOT);
 }
+
+const SQUIRCLE_K = 0.91;
+
+export function squirclePath(cx: number, cy: number, r: number): string {
+  const k = SQUIRCLE_K * r;
+  return `M${cx + r} ${cy}C${cx + r} ${cy + k} ${cx + k} ${cy + r} ${cx} ${cy + r}C${cx - k} ${cy + r} ${cx - r} ${cy + k} ${cx - r} ${cy}C${cx - r} ${cy - k} ${cx - k} ${cy - r} ${cx} ${cy - r}C${cx + k} ${cy - r} ${cx + r} ${cy - k} ${cx + r} ${cy}Z`;
+}
