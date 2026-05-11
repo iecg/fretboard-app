@@ -4,7 +4,7 @@ import { offsetOutlinePath } from "../utils/pathGeometry";
 import {
   applyConnectorRadiusFloor,
   CHORD_CONNECTOR_RADIUS_FACTORS,
-  clampConnectorRadiusToYBounds,
+  resolveConnectorRadiusPx,
   type ConnectorYBounds,
 } from "./useChordConnectorPolylines";
 
@@ -35,7 +35,7 @@ interface ParsedIntervalPair {
   fB: number;
 }
 
-const SAME_STRING_LANE_OFFSETS_PX = [0, 3, 6, 3] as const;
+const SAME_STRING_RADIUS_OFFSETS_PX = [3, 0] as const;
 
 /**
  * Compute the scale-degree position (0-based) of a note semitone within the
@@ -97,7 +97,7 @@ function assignSameStringLaneOffsets(
       .forEach((entry, laneIndex) => {
         result.set(
           entry.inputIndex,
-          SAME_STRING_LANE_OFFSETS_PX[laneIndex % SAME_STRING_LANE_OFFSETS_PX.length]!,
+          SAME_STRING_RADIUS_OFFSETS_PX[laneIndex % SAME_STRING_RADIUS_OFFSETS_PX.length]!,
         );
       });
   }
@@ -204,7 +204,14 @@ export function buildIntervalConnectorPolylines(
     // produces a capsule, matching the chord-connector visual style exactly.
     const vertices = [{ x: xA, y: yA }, { x: xB, y: yB }];
     const preferredRadius = baseRadius + laneOffset;
-    const radius = clampConnectorRadiusToYBounds(vertices, preferredRadius, yBounds);
+    const touchesOuterString =
+      sA === 0 || sB === 0 || sA === tuning.length - 1 || sB === tuning.length - 1;
+    const radius = resolveConnectorRadiusPx({
+      vertices,
+      preferredRadius,
+      yBounds,
+      edgeSafe: touchesOuterString,
+    });
     const pathStr = offsetOutlinePath(vertices, radius);
     const paths = { fill: pathStr, outline: pathStr };
 

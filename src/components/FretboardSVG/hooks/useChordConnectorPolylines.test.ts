@@ -7,10 +7,12 @@ import {
   clampConnectorRadiusToYBounds,
   CHORD_CONNECTOR_RADIUS_FACTORS,
   computeChordConnectorRadiusPx,
+  resolveConnectorRadiusPx,
   useChordConnectorPolylines,
   INTERVAL_TO_PALETTE,
 } from "./useChordConnectorPolylines";
 import type { NoteData } from "./useNoteData";
+import { chordRootVisualRadiusPx } from "../utils/noteSizing";
 
 // Geometry stubs: identity-like helpers for predictable test assertions.
 // fretCenterX returns fret * 10 so we can spot-check x values.
@@ -80,6 +82,40 @@ describe("buildChordConnectorPolylines", () => {
     ];
     const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
     expect(result).toEqual([]);
+  });
+
+  it("documents shape-scoped CAGED behavior: different active chord-tone sets can produce different voicings", () => {
+    const eShapeLikeNotes = [
+      makeNote(0, 3, "C", "chord-root"),
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(2, 5, "G", "chord-tone-in-scale"),
+    ];
+    const gShapeLikeNotes = [
+      makeNote(1, 5, "E", "chord-tone-in-scale"),
+      makeNote(2, 5, "C", "chord-root"),
+      makeNote(3, 5, "G", "chord-tone-in-scale"),
+    ];
+
+    const eShape = buildChordConnectorPolylines(
+      eShapeLikeNotes,
+      ["C", "E", "G"],
+      fretCenterX,
+      stringYAt,
+      STRING_ROW_PX,
+      "C",
+    );
+    const gShape = buildChordConnectorPolylines(
+      gShapeLikeNotes,
+      ["C", "E", "G"],
+      fretCenterX,
+      stringYAt,
+      STRING_ROW_PX,
+      "C",
+    );
+
+    expect(eShape.map((voicing) => voicing.voicingKey)).not.toEqual(
+      gShape.map((voicing) => voicing.voicingKey),
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -984,14 +1020,15 @@ describe("per-voicing offset: determinism and paletteIndex independence", () => 
       makeNote(2, 5, "G", "chord-tone-in-scale"),
     ];
 
-    // Chord-root squircle radius at default rowPx: 36 × 0.8 × 0.5 × 0.86 = 12.384.
+    // Chord-root squircle radius follows the rendered bubble minus the 1px
+    // squircle reduction: round(36 × 0.8) × 0.5 × 0.86 - 1 = 11.47.
     // The compact factor alone (0.34 × 36 = 12.24) sits inside the squircle, so
     // the floor lifts the radius to chordRootRadius + CHORD_CONNECTOR_MIN_HALO_PX
-    // = 12.384 + 2 = 14.384.
+    // = 11.47 + 2 = 13.47.
     const computedRadius = computeChordConnectorRadiusPx(sameFret, STRING_ROW_PX, 0);
-    const chordRootRadius = STRING_ROW_PX * 0.8 * 0.5 * 0.86;
+    const chordRootRadius = chordRootVisualRadiusPx(STRING_ROW_PX);
     expect(computedRadius).toBeGreaterThan(chordRootRadius);
-    expect(computedRadius).toBeCloseTo(14.384);
+    expect(computedRadius).toBeCloseTo(13.47);
   });
 
   it("(c) 2-position and 3-position voicings produce progressively wider radii", () => {
@@ -1009,9 +1046,9 @@ describe("per-voicing offset: determinism and paletteIndex independence", () => 
     const twoPositionRadius = computeChordConnectorRadiusPx(twoPositions, STRING_ROW_PX, 0);
     const threePositionRadius = computeChordConnectorRadiusPx(threePositions, STRING_ROW_PX, 0);
 
-    // medium factor (0.38 × 36 = 13.68) is below the 14.384 floor and gets
-    // lifted; max factor (0.42 × 36 = 15.12) sits above the floor.
-    expect(twoPositionRadius).toBeCloseTo(14.384);
+    // medium factor (0.38 × 36 = 13.68) now sits just above the reduced
+    // 13.47 floor; max factor (0.42 × 36 = 15.12) remains wider.
+    expect(twoPositionRadius).toBeCloseTo(13.68);
     expect(threePositionRadius).toBeCloseTo(15.12);
     expect(threePositionRadius).toBeGreaterThan(twoPositionRadius);
   });
@@ -1040,6 +1077,29 @@ describe("per-voicing offset: determinism and paletteIndex independence", () => 
 
     expect(radius).toBeLessThan(preferredRadius);
     expect(radius).toBeCloseTo(14.12, 2);
+  });
+
+  it("edge-safe radius can shrink below the squircle floor only when requested", () => {
+    const preferredRadius = STRING_ROW_PX * CHORD_CONNECTOR_RADIUS_FACTORS.max;
+    const vertices = [{ x: 500, y: 12 }, { x: 548, y: 12 }];
+    const yBounds = { minY: 0, maxY: STRING_ROW_PX * 6 };
+
+    const middleRadius = resolveConnectorRadiusPx({
+      vertices,
+      preferredRadius,
+      yBounds,
+      edgeSafe: false,
+    });
+    const edgeRadius = resolveConnectorRadiusPx({
+      vertices,
+      preferredRadius,
+      yBounds,
+      edgeSafe: true,
+    });
+
+    expect(middleRadius).toBe(preferredRadius);
+    expect(edgeRadius).toBeCloseTo(11, 2);
+    expect(edgeRadius).toBeLessThan(chordRootVisualRadiusPx(STRING_ROW_PX) + 2);
   });
 });
 

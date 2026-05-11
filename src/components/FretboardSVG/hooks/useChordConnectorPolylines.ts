@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import type { NoteData } from "./useNoteData";
 import { offsetOpenPolylinePath } from "../utils/pathGeometry";
-import { NOTE_BUBBLE_RATIO, NOTES, RADIUS_SCALE_CHORD_ROOT } from "@fretflow/core";
+import { NOTES } from "@fretflow/core";
+import { chordRootVisualRadiusPx } from "../utils/noteSizing";
 
 /**
  * Count the number of distinct fret positions spanned by the **fretted** notes
@@ -133,6 +134,7 @@ export interface ConnectorYBounds {
 }
 
 const CONNECTOR_BOUNDARY_GUARD_PX = 1;
+const CONNECTOR_CONFLICT_GAP_PX = 1.5;
 
 export function clampConnectorRadiusToYBounds(
   vertices: ChordConnectorVertex[],
@@ -156,15 +158,31 @@ export function clampConnectorRadiusToYBounds(
   return Math.max(0, Math.min(preferredRadius, availableRadius));
 }
 
+export function resolveConnectorRadiusPx({
+  vertices,
+  preferredRadius,
+  yBounds,
+  edgeSafe,
+}: {
+  vertices: ChordConnectorVertex[];
+  preferredRadius: number;
+  yBounds?: ConnectorYBounds;
+  edgeSafe: boolean;
+}): number {
+  return edgeSafe
+    ? clampConnectorRadiusToYBounds(vertices, preferredRadius, yBounds)
+    : preferredRadius;
+}
+
 /**
  * Per-voicing pixel offset deltas added to the base radius.
  * Assigned by adjacency-aware cluster detection so that voicings whose
- * envelopes overlap receive distinct offsets with 1.5 px spacing between
+ * envelopes overlap receive distinct offsets with 3 px spacing between
  * adjacent values. Non-negative: smallest envelope equals base radius
  * (no bubble-clipping risk). Five entries cap the cluster size; clusters
  * larger than 5 wrap with modulo (documented, accepted trade-off).
  */
-const OFFSET_BUCKET = [0, 1.5, 3, 4.5, 6] as const;
+const OFFSET_BUCKET = [0, 3, 6, 9, 12] as const;
 
 /**
  * Lift a raw span-based connector radius above the chord-root squircle's
@@ -180,9 +198,10 @@ export function applyConnectorRadiusFloor(
   spanRadiusPx: number,
   stringRowPx: number,
 ): number {
-  const chordRootBubbleRadius =
-    stringRowPx * NOTE_BUBBLE_RATIO * 0.5 * RADIUS_SCALE_CHORD_ROOT;
-  return Math.max(spanRadiusPx, chordRootBubbleRadius + CHORD_CONNECTOR_MIN_HALO_PX);
+  return Math.max(
+    spanRadiusPx,
+    chordRootVisualRadiusPx(stringRowPx) + CHORD_CONNECTOR_MIN_HALO_PX,
+  );
 }
 
 /**
@@ -219,134 +238,153 @@ export function computeChordConnectorRadiusPx(
   return flooredRadius + Math.max(offsetPx, 0);
 }
 
-/**
- * Compute the axis-aligned bounding box of a set of vertices, inflated
- * outward by `inflateBy` pixels on every side. Used to approximate
- * envelope-vs-envelope overlap before full geometry is computed.
- */
-function inflatedAABB(
-  vertices: ChordConnectorVertex[],
-  inflateBy: number,
-): { minX: number; maxX: number; minY: number; maxY: number } {
-  let minX = Infinity;
-  let maxX = -Infinity;
-  let minY = Infinity;
-  let maxY = -Infinity;
-  for (const v of vertices) {
-    if (v.x < minX) minX = v.x;
-    if (v.x > maxX) maxX = v.x;
-    if (v.y < minY) minY = v.y;
-    if (v.y > maxY) maxY = v.y;
+function touchesOuterString(combo: NoteData[], lowestStringIndex: number): boolean {
+  return combo.some((note) =>
+    note.stringIndex === 0 || note.stringIndex === lowestStringIndex,
+  );
+}
+
+function pointToSegmentDistance(
+  p: ChordConnectorVertex,
+  a: ChordConnectorVertex,
+  b: ChordConnectorVertex,
+): number {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq < 1e-9) return Math.hypot(p.x - a.x, p.y - a.y);
+  const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / lenSq));
+  const x = a.x + t * dx;
+  const y = a.y + t * dy;
+  return Math.hypot(p.x - x, p.y - y);
+}
+
+function segmentDistance(
+  a: ChordConnectorVertex,
+  b: ChordConnectorVertex,
+  c: ChordConnectorVertex,
+  d: ChordConnectorVertex,
+): number {
+  const orient = (
+    p: ChordConnectorVertex,
+    q: ChordConnectorVertex,
+    r: ChordConnectorVertex,
+  ) => (q.x - p.x) * (r.y - p.y) - (q.y - p.y) * (r.x - p.x);
+  const onSegment = (
+    p: ChordConnectorVertex,
+    q: ChordConnectorVertex,
+    r: ChordConnectorVertex,
+  ) =>
+    q.x >= Math.min(p.x, r.x) - 1e-9 &&
+    q.x <= Math.max(p.x, r.x) + 1e-9 &&
+    q.y >= Math.min(p.y, r.y) - 1e-9 &&
+    q.y <= Math.max(p.y, r.y) + 1e-9;
+
+  const o1 = orient(a, b, c);
+  const o2 = orient(a, b, d);
+  const o3 = orient(c, d, a);
+  const o4 = orient(c, d, b);
+  if (
+    (o1 * o2 < 0 && o3 * o4 < 0) ||
+    (Math.abs(o1) < 1e-9 && onSegment(a, c, b)) ||
+    (Math.abs(o2) < 1e-9 && onSegment(a, d, b)) ||
+    (Math.abs(o3) < 1e-9 && onSegment(c, a, d)) ||
+    (Math.abs(o4) < 1e-9 && onSegment(c, b, d))
+  ) {
+    return 0;
   }
-  return {
-    minX: minX - inflateBy,
-    maxX: maxX + inflateBy,
-    minY: minY - inflateBy,
-    maxY: maxY + inflateBy,
-  };
+
+  return Math.min(
+    pointToSegmentDistance(a, c, d),
+    pointToSegmentDistance(b, c, d),
+    pointToSegmentDistance(c, a, b),
+    pointToSegmentDistance(d, a, b),
+  );
+}
+
+function polylineDistance(
+  a: ChordConnectorVertex[],
+  b: ChordConnectorVertex[],
+): number {
+  if (a.length === 0 || b.length === 0) return Infinity;
+  if (a.length === 1 && b.length === 1) {
+    return Math.hypot(a[0]!.x - b[0]!.x, a[0]!.y - b[0]!.y);
+  }
+
+  let minDistance = Infinity;
+  for (let i = 0; i < Math.max(1, a.length - 1); i++) {
+    const a0 = a[i]!;
+    const a1 = a[Math.min(i + 1, a.length - 1)]!;
+    for (let j = 0; j < Math.max(1, b.length - 1); j++) {
+      const b0 = b[j]!;
+      const b1 = b[Math.min(j + 1, b.length - 1)]!;
+      minDistance = Math.min(minDistance, segmentDistance(a0, a1, b0, b1));
+    }
+  }
+  return minDistance;
 }
 
 /**
- * Test whether two axis-aligned bounding boxes intersect.
+ * Assign radius offsets using a centerline conflict graph. AABB clustering was
+ * too coarse in some positions and too weak in dense same-fret stacks. The
+ * graph is based on actual polyline distance and base effective radii, then a
+ * deterministic greedy color pass selects the smallest available radius slot.
  */
-function aabbIntersects(
-  a: { minX: number; maxX: number; minY: number; maxY: number },
-  b: { minX: number; maxX: number; minY: number; maxY: number },
-): boolean {
-  return a.minX <= b.maxX && a.maxX >= b.minX && a.minY <= b.maxY && a.maxY >= b.minY;
-}
+function assignConflictOffsets(
+  pendingVoicings: Array<{
+    rawVertices: ChordConnectorVertex[];
+    sourceCombo: NoteData[];
+    canonicalKey: string;
+  }>,
+  stringRowPx: number,
+  yBounds: ConnectorYBounds | undefined,
+  lowestStringIndex: number,
+): Map<string, number> {
+  const result = new Map<string, number>();
+  const conflicts = pendingVoicings.map(() => new Set<number>());
+  const baseRadii = pendingVoicings.map((pv) =>
+    resolveConnectorRadiusPx({
+      vertices: pv.rawVertices,
+      preferredRadius: computeChordConnectorRadiusPx(pv.sourceCombo, stringRowPx, 0),
+      yBounds,
+      edgeSafe: touchesOuterString(pv.sourceCombo, lowestStringIndex),
+    }),
+  );
 
-/**
- * Cluster pending voicings by inflated-AABB pairwise overlap using union-find.
- * Returns an array of clusters; each cluster is an array of indices into
- * `pendingVoicings`. Singletons (no overlap) appear as single-element arrays.
- */
-function detectOverlapClusters(
-  pendingVoicings: { rawVertices: ChordConnectorVertex[]; canonicalKey: string }[],
-  baseRadius: number,
-  maxBucketOffset: number,
-): number[][] {
-  const n = pendingVoicings.length;
-  const inflate = baseRadius + maxBucketOffset;
-
-  // Precompute inflated AABBs.
-  const boxes = pendingVoicings.map((pv) => inflatedAABB(pv.rawVertices, inflate));
-
-  // Union-find arrays.
-  const parent = Array.from({ length: n }, (_, i) => i);
-  const rank = new Array<number>(n).fill(0);
-
-  function find(x: number): number {
-    while (parent[x] !== x) {
-      parent[x] = parent[parent[x]!]!; // path compression (halving)
-      x = parent[x]!;
-    }
-    return x;
-  }
-
-  function union(x: number, y: number): void {
-    const rx = find(x);
-    const ry = find(y);
-    if (rx === ry) return;
-    if (rank[rx]! < rank[ry]!) {
-      parent[rx] = ry;
-    } else if (rank[rx]! > rank[ry]!) {
-      parent[ry] = rx;
-    } else {
-      parent[ry] = rx;
-      rank[rx] = rank[rx]! + 1;
-    }
-  }
-
-  // Union all overlapping pairs.
-  for (let i = 0; i < n; i++) {
-    for (let j = i + 1; j < n; j++) {
-      if (aabbIntersects(boxes[i]!, boxes[j]!)) {
-        union(i, j);
+  for (let i = 0; i < pendingVoicings.length; i++) {
+    for (let j = i + 1; j < pendingVoicings.length; j++) {
+      const distance = polylineDistance(
+        pendingVoicings[i]!.rawVertices,
+        pendingVoicings[j]!.rawVertices,
+      );
+      if (distance <= baseRadii[i]! + baseRadii[j]! + CONNECTOR_CONFLICT_GAP_PX) {
+        conflicts[i]!.add(j);
+        conflicts[j]!.add(i);
       }
     }
   }
 
-  // Collect clusters by root.
-  const clusterMap = new Map<number, number[]>();
-  for (let i = 0; i < n; i++) {
-    const root = find(i);
-    let cluster = clusterMap.get(root);
-    if (!cluster) {
-      cluster = [];
-      clusterMap.set(root, cluster);
+  const sortedIndices = Array.from({ length: pendingVoicings.length }, (_, i) => i)
+    .sort((a, b) =>
+      pendingVoicings[a]!.canonicalKey.localeCompare(
+        pendingVoicings[b]!.canonicalKey,
+      ),
+    );
+
+  const assignedOffsets = new Map<number, number>();
+  for (const idx of sortedIndices) {
+    const used = new Set<number>();
+    for (const neighbor of conflicts[idx]!) {
+      const assigned = assignedOffsets.get(neighbor);
+      if (assigned !== undefined) used.add(assigned);
     }
-    cluster.push(i);
+
+    const offset = OFFSET_BUCKET.find((candidate) => !used.has(candidate)) ??
+      OFFSET_BUCKET[sortedIndices.indexOf(idx) % OFFSET_BUCKET.length]!;
+    assignedOffsets.set(idx, offset);
+    result.set(pendingVoicings[idx]!.canonicalKey, offset);
   }
 
-  return Array.from(clusterMap.values());
-}
-
-/**
- * Assign offsets from OFFSET_BUCKET to each voicing based on its cluster.
- * Within each cluster, members are sorted by canonicalKey (lexicographic) for
- * determinism, then assigned OFFSET_BUCKET[i % OFFSET_BUCKET.length].
- * Singleton clusters (no overlap) receive offset 0.
- * Returns a Map<canonicalKey, offsetPx>.
- */
-function assignClusterOffsets(
-  clusters: number[][],
-  pendingVoicings: { canonicalKey: string }[],
-): Map<string, number> {
-  const result = new Map<string, number>();
-  for (const cluster of clusters) {
-    if (cluster.length === 1) {
-      result.set(pendingVoicings[cluster[0]!]!.canonicalKey, 0);
-    } else {
-      // Sort by canonicalKey for determinism.
-      const sorted = [...cluster].sort((a, b) =>
-        pendingVoicings[a]!.canonicalKey.localeCompare(pendingVoicings[b]!.canonicalKey),
-      );
-      sorted.forEach((idx, i) => {
-        result.set(pendingVoicings[idx]!.canonicalKey, OFFSET_BUCKET[i % OFFSET_BUCKET.length]!);
-      });
-    }
-  }
   return result;
 }
 
@@ -414,7 +452,7 @@ export const CHORD_TONE_CLASSES = new Set([
  *      b. **Cluster + assign pass** — after the loop, `detectOverlapClusters`
  *         computes adjacency-aware voicing groups via inflated-AABB union-find;
  *         `assignClusterOffsets` maps each `canonicalKey` to a distinct
- *         `offsetPx` from OFFSET_BUCKET (1.5 px spacing). Voicings that do not
+ *         `offsetPx` from OFFSET_BUCKET (3 px spacing). Voicings that do not
  *         overlap any other voicing receive offset 0. Finally the pending list
  *         is iterated once more to emit final paths via
  *         `offsetOpenPolylinePath(rawVertices, computeChordConnectorRadiusPx(...))`.
@@ -607,18 +645,17 @@ export function buildChordConnectorPolylines(
       // palette[4]; perfect 5th in bass = 7 → palette[7]; etc.
       const paletteIndex = bassIntervalSemitones(bestCombo, chordRoot) % 8;
 
-      // Collect — path generation deferred to pass 2 after cluster assignment.
+      // Collect — path generation deferred to pass 2 after conflict assignment.
       pendingVoicings.push({ rawVertices, sourceCombo: bestCombo, paletteIndex, canonicalKey });
     }
   }
 
-  // Pass 2: cluster + assign offsets, then emit final voicings with paths.
+  // Pass 2: assign conflict offsets, then emit final voicings with paths.
   //
-  // `detectOverlapClusters` groups voicings whose inflated AABBs intersect
-  // via union-find (AABB inflated by the maximum possible contour radius so the
-  // test approximates envelope-vs-envelope overlap, not just vertex proximity).
-  // `assignClusterOffsets` sorts each cluster by canonicalKey and assigns
-  // OFFSET_BUCKET[i % OFFSET_BUCKET.length] to member i — singletons get 0.
+  // `assignConflictOffsets` builds a graph from centerline distances and base
+  // effective radii, then greedily chooses the smallest non-conflicting
+  // OFFSET_BUCKET for each voicing in canonical-key order. This keeps unrelated
+  // voicings tight while separating real same-stack overlaps.
   //
   // `offsetOpenPolylinePath` Minkowski-sums the rawVertices polyline (in
   // string-index order) with a disk of radius
@@ -630,18 +667,30 @@ export function buildChordConnectorPolylines(
   //   - 2 vertices → capsule.
   //   - 1 vertex → circle.
   // fill === outline (byte-identical) — renderer differentiates via fill/stroke.
-  const maxBaseRadius = stringRowPx * CHORD_CONNECTOR_RADIUS_FACTORS.max;
-  const maxBucketOffset = OFFSET_BUCKET[OFFSET_BUCKET.length - 1]!; // 6
-  const clusters = detectOverlapClusters(pendingVoicings, maxBaseRadius, maxBucketOffset);
-  const clusterOffsetMap = assignClusterOffsets(clusters, pendingVoicings);
+  let lowestStringIndex = 0;
+  for (const note of noteData) {
+    if (note.stringIndex > lowestStringIndex) lowestStringIndex = note.stringIndex;
+  }
+  const clusterOffsetMap = assignConflictOffsets(
+    pendingVoicings,
+    stringRowPx,
+    yBounds,
+    lowestStringIndex,
+  );
 
   const results: ChordConnectorVoicing[] = pendingVoicings.map((pv) => {
     const offsetPx = clusterOffsetMap.get(pv.canonicalKey) ?? 0;
-    const radius = clampConnectorRadiusToYBounds(
-      pv.rawVertices,
-      computeChordConnectorRadiusPx(pv.sourceCombo, stringRowPx, offsetPx),
-      yBounds,
+    const preferredRadius = computeChordConnectorRadiusPx(
+      pv.sourceCombo,
+      stringRowPx,
+      offsetPx,
     );
+    const radius = resolveConnectorRadiusPx({
+      vertices: pv.rawVertices,
+      preferredRadius,
+      yBounds,
+      edgeSafe: touchesOuterString(pv.sourceCombo, lowestStringIndex),
+    });
     // Open-polyline offset (not convex-hull offset). The rawVertices array
     // is in window order — string-index ascending — so the resulting pill
     // traces the voicing across strings rather than enveloping the convex

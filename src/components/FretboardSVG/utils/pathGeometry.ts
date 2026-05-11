@@ -421,15 +421,15 @@ export function offsetOutlinePath(polygon: Array<{ x: number; y: number }>, r: n
  *     forward along "side A" (the math-RHS / screen-LHS normal of each edge),
  *     semicircular cap at the end vertex, backward along "side B"
  *     (the opposite normal), semicircular cap at the start vertex.
- *     Interior corners receive a round arc only on the convex/outside side.
- *     The concave/inside side uses the intersection of the adjacent offset
- *     edge lines, matching a centered thick stroke and avoiding arcs that
- *     twist through the corner.
+ *     Interior corners receive a round arc on the convex/outside side. The
+ *     concave/inside side uses a bounded quadratic fillet around the
+ *     intersection of the adjacent offset edge lines, matching a centered
+ *     thick stroke while avoiding arcs that twist through the corner.
  *
- * Mitering the inside corner is essential: an inside arc sweeps through the
- * bend and can visibly twist the tube, while a straight bevel chord can cut
- * across both adjacent offset edges. Intersecting the adjacent offset lines
- * keeps the inner boundary centered on the original polyline.
+ * Centering the inside corner on the offset-line intersection is essential:
+ * an inside arc sweeps through the bend and can visibly twist the tube, while
+ * a straight bevel chord can cut across both adjacent offset edges. The small
+ * bounded fillet only rounds the local miter point.
  *
  * Inside/outside selection at an interior vertex `V_{i+1}` uses the screen
  * cross-product of the adjacent edges:
@@ -478,7 +478,12 @@ export function offsetOpenPolylinePath(
   // screen-LHS of a screen walker (because y is flipped). For a CCW-math
   // perimeter this points outward — see offsetOutlinePath for the full
   // derivation.
-  const edges: Array<{ ex: number; ey: number; nx: number; ny: number }> = [];
+  const edges: Array<{
+    ex: number;
+    ey: number;
+    nx: number;
+    ny: number;
+  }> = [];
   for (let i = 0; i < n - 1; i++) {
     const dx = filtered[i + 1]!.x - filtered[i]!.x;
     const dy = filtered[i + 1]!.y - filtered[i]!.y;
@@ -528,6 +533,50 @@ export function offsetOpenPolylinePath(
   const parts: string[] = [];
   const ri = r2(rr);
   const clockwiseSweep = 1;
+  const innerFilletPx = (
+    join: { x: number; y: number } | null,
+    inLimit: { x: number; y: number },
+    outLimit: { x: number; y: number },
+  ): number => {
+    if (!join) return 0;
+    const inDist = Math.hypot(join.x - inLimit.x, join.y - inLimit.y);
+    const outDist = Math.hypot(join.x - outLimit.x, join.y - outLimit.y);
+    return Math.min(rr * 0.55, 8, inDist * 0.45, outDist * 0.45);
+  };
+
+  const pushInnerFillet = (
+    join: { x: number; y: number } | null,
+    inLimit: { x: number; y: number },
+    outLimit: { x: number; y: number },
+    filletPx: number,
+    fallback: { x: number; y: number },
+  ): void => {
+    if (!join || filletPx < 0.5) {
+      const p = join ?? fallback;
+      parts.push(`L ${r2(p.x)} ${r2(p.y)}`);
+      return;
+    }
+
+    const inDist = Math.hypot(join.x - inLimit.x, join.y - inLimit.y);
+    const outDist = Math.hypot(join.x - outLimit.x, join.y - outLimit.y);
+    if (inDist < 1e-9 || outDist < 1e-9) {
+      parts.push(`L ${r2(join.x)} ${r2(join.y)}`);
+      return;
+    }
+
+    const before = {
+      x: join.x + ((inLimit.x - join.x) / inDist) * filletPx,
+      y: join.y + ((inLimit.y - join.y) / inDist) * filletPx,
+    };
+    const after = {
+      x: join.x + ((outLimit.x - join.x) / outDist) * filletPx,
+      y: join.y + ((outLimit.y - join.y) / outDist) * filletPx,
+    };
+
+    parts.push(`L ${r2(before.x)} ${r2(before.y)}`);
+    parts.push(`Q ${r2(join.x)} ${r2(join.y)} ${r2(after.x)} ${r2(after.y)}`);
+  };
+
   const offsetLineIntersection = (
     vertex: { x: number; y: number },
     edgeA: { ex: number; ey: number; nx: number; ny: number },
@@ -582,14 +631,24 @@ export function offsetOpenPolylinePath(
         parts.push(`A ${ri} ${ri} 0 0 ${clockwiseSweep} ${r2(nextX)} ${r2(nextY)}`);
       } else {
         // Screen-left turn → side A is inside. The boundary of a thick
-        // centered stroke runs through the intersection of the adjacent
-        // offset edge lines; drawing an arc here twists through the corner.
+        // centered stroke is rounded locally around the intersection of the
+        // adjacent offset edge lines; drawing an arc here twists through the corner.
         const join = offsetLineIntersection(filtered[i + 1]!, e0, e1, 1);
-        if (join) {
-          parts.push(`L ${r2(join.x)} ${r2(join.y)}`);
-        } else {
-          parts.push(`L ${r2(nextX)} ${r2(nextY)}`);
-        }
+        const inLimit = {
+          x: filtered[i]!.x + rr * e0.nx,
+          y: filtered[i]!.y + rr * e0.ny,
+        };
+        const outLimit = {
+          x: filtered[i + 2]!.x + rr * e1.nx,
+          y: filtered[i + 2]!.y + rr * e1.ny,
+        };
+        pushInnerFillet(
+          join,
+          inLimit,
+          outLimit,
+          innerFilletPx(join, inLimit, outLimit),
+          { x: nextX, y: nextY },
+        );
       }
     }
   }
@@ -624,14 +683,24 @@ export function offsetOpenPolylinePath(
         parts.push(`A ${ri} ${ri} 0 0 ${clockwiseSweep} ${r2(prevX)} ${r2(prevY)}`);
       } else {
         // Screen-right turn → side B is inside. Use the offset-line
-        // intersection instead of an arc so the inner boundary stays centered
-        // and does not twist across the bend.
+        // intersection as the local fillet control point so the inner
+        // boundary stays centered and does not twist across the bend.
         const join = offsetLineIntersection(filtered[i]!, e0, e1, -1);
-        if (join) {
-          parts.push(`L ${r2(join.x)} ${r2(join.y)}`);
-        } else {
-          parts.push(`L ${r2(prevX)} ${r2(prevY)}`);
-        }
+        const inLimit = {
+          x: filtered[i + 1]!.x - rr * e1.nx,
+          y: filtered[i + 1]!.y - rr * e1.ny,
+        };
+        const outLimit = {
+          x: filtered[i - 1]!.x - rr * e0.nx,
+          y: filtered[i - 1]!.y - rr * e0.ny,
+        };
+        pushInnerFillet(
+          join,
+          inLimit,
+          outLimit,
+          innerFilletPx(join, inLimit, outLimit),
+          { x: prevX, y: prevY },
+        );
       }
     }
   }

@@ -727,6 +727,8 @@ describe("offsetOpenPolylinePath", () => {
     expect(d.endsWith("Z")).toBe(true);
     const aCount = (d.match(/\bA\b/g) ?? []).length;
     expect(aCount).toBe(3);
+    const qCount = (d.match(/\bQ\b/g) ?? []).length;
+    expect(qCount).toBe(1);
   });
 
   it("4 non-collinear vertices: emits 4 A commands (2 outside joins + 2 end caps)", () => {
@@ -742,9 +744,11 @@ describe("offsetOpenPolylinePath", () => {
     expect(d.endsWith("Z")).toBe(true);
     const aCount = (d.match(/\bA\b/g) ?? []).length;
     expect(aCount).toBe(4);
+    const qCount = (d.match(/\bQ\b/g) ?? []).length;
+    expect(qCount).toBe(2);
   });
 
-  it("inside corners use offset-line intersections instead of arcs", () => {
+  it("inside corners use bounded fillets around offset-line intersections instead of arcs", () => {
     const d = offsetOpenPolylinePath(
       [
         { x: 0, y: 0 },
@@ -754,12 +758,12 @@ describe("offsetOpenPolylinePath", () => {
       10,
     );
 
-    expect(d).toContain("L 30 10 L 0 10");
+    expect(d).toContain("L 30 15.5 Q 30 10 24.5 10 L 0 10");
     expect(d).not.toContain("L 30 0");
     expect(d).not.toMatch(/A\s+10\s+10\s+0\s+0\s+0\s+/);
   });
 
-  it("screen-right corner keeps the outside arc on side A and inside arc on side B", () => {
+  it("screen-right corner keeps the outside arc on side A and inside fillet on side B", () => {
     const d = offsetOpenPolylinePath(
       [
         { x: 0, y: 0 },
@@ -770,13 +774,13 @@ describe("offsetOpenPolylinePath", () => {
     );
 
     expect(d).toContain("L 40 -10 A 10 10 0 0 1 50 0");
-    expect(d).toContain("L 30 10 L 0 10");
+    expect(d).toContain("L 30 15.5 Q 30 10 24.5 10 L 0 10");
     expect(d).not.toContain("L 40 -10 A 10 10 0 0 0 50 0");
     expect(d).not.toContain("L 30 0 A");
     expect(d.endsWith("Z")).toBe(true);
   });
 
-  it("screen-left corner keeps side A mitered and side B rounded outside", () => {
+  it("screen-left corner keeps side A filleted and side B rounded outside", () => {
     const d = offsetOpenPolylinePath(
       [
         { x: 0, y: 0 },
@@ -786,10 +790,25 @@ describe("offsetOpenPolylinePath", () => {
       10,
     );
 
-    expect(d).toContain("M 0 -10 L 30 -10 L 30 -40");
+    expect(d).toContain("M 0 -10 L 24.5 -10 Q 30 -10 30 -15.5 L 30 -40");
     expect(d).toContain("L 50 0 A 10 10 0 0 1 40 10");
     expect(d).not.toContain("L 40 -10 A");
     expect(d).not.toContain("L 50 0 A 10 10 0 0 0 40 10");
+    expect(d.endsWith("Z")).toBe(true);
+  });
+
+  it("short inside corners clamp the fillet before it crosses adjacent segments", () => {
+    const d = offsetOpenPolylinePath(
+      [
+        { x: 0, y: 0 },
+        { x: 8, y: 0 },
+        { x: 8, y: 8 },
+      ],
+      10,
+    );
+
+    expect(d).toContain("Q -2 10 -1.1 10");
+    expect(d).not.toContain("Q -2 10 -2 12.8");
     expect(d.endsWith("Z")).toBe(true);
   });
 

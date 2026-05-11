@@ -180,7 +180,7 @@ describe("buildIntervalConnectorPolylines (UAT-24)", () => {
     expect(result[0]!.paths.fill).not.toMatch(/(?:^|[ ,])-[0-9]/);
   });
 
-  it("staggered same-string pairs use centered concentric lanes with distinct y extents", () => {
+  it("staggered same-string pairs start large and alternate between two centered radii", () => {
     const result = buildIntervalConnectorPolylines(
       SAMPLE_PAIRS,
       STANDARD_TUNING,
@@ -194,15 +194,15 @@ describe("buildIntervalConnectorPolylines (UAT-24)", () => {
     expect(result).toHaveLength(SAMPLE_PAIRS.length);
     const extents = result.map((entry) => yExtent(entry.paths.fill));
     const centers = result.map((entry) => yCenter(entry.paths.fill));
-    expect(extents[1]!.maxY).toBeGreaterThan(extents[0]!.maxY);
-    expect(extents[2]!.maxY).toBeGreaterThan(extents[1]!.maxY);
+    expect(extents[0]!.maxY).toBeGreaterThan(extents[1]!.maxY);
+    expect(extents[2]!.maxY).toBeCloseTo(extents[0]!.maxY);
     expect(extents[3]!.maxY).toBeCloseTo(extents[1]!.maxY);
-    expect(extents[1]!.minY).toBeLessThan(extents[0]!.minY);
-    expect(extents[2]!.minY).toBeLessThan(extents[1]!.minY);
+    expect(extents[0]!.minY).toBeLessThan(extents[1]!.minY);
+    expect(extents[2]!.minY).toBeCloseTo(extents[0]!.minY);
     centers.forEach((center) => expect(center).toBeCloseTo(stringYAt(5, fretCenterX(5))));
   });
 
-  it("same-string top and bottom lanes stay centered while inside y bounds", () => {
+  it("same-string top and bottom lanes stay centered and do not collapse at y bounds", () => {
     const neckHeight = STRING_ROW_PX * 6;
     const topStringYAt = () => 24;
     const bottomStringYAt = () => neckHeight - 24;
@@ -234,17 +234,61 @@ describe("buildIntervalConnectorPolylines (UAT-24)", () => {
       { minY: 0, maxY: neckHeight },
     );
 
-    for (const entry of [...top, ...bottom]) {
-      const extent = yExtent(entry.paths.fill);
-      expect(extent.minY).toBeGreaterThanOrEqual(0);
-      expect(extent.maxY).toBeLessThanOrEqual(neckHeight);
-    }
-    expect(yExtent(top[1]!.paths.fill).maxY).toBeGreaterThan(yExtent(top[0]!.paths.fill).maxY);
-    expect(yExtent(top[2]!.paths.fill).maxY).toBeGreaterThan(yExtent(top[1]!.paths.fill).maxY);
-    expect(yExtent(bottom[1]!.paths.fill).minY).toBeLessThan(yExtent(bottom[0]!.paths.fill).minY);
-    expect(yExtent(bottom[2]!.paths.fill).minY).toBeLessThan(yExtent(bottom[1]!.paths.fill).minY);
+    expect(yExtent(top[0]!.paths.fill).maxY).toBeGreaterThan(yExtent(top[1]!.paths.fill).maxY);
+    expect(yExtent(top[2]!.paths.fill).maxY).toBeCloseTo(yExtent(top[0]!.paths.fill).maxY);
+    expect(yExtent(bottom[0]!.paths.fill).minY).toBeLessThan(yExtent(bottom[1]!.paths.fill).minY);
+    expect(yExtent(bottom[2]!.paths.fill).minY).toBeCloseTo(yExtent(bottom[0]!.paths.fill).minY);
     top.forEach((entry) => expect(yCenter(entry.paths.fill)).toBeCloseTo(topStringYAt()));
     bottom.forEach((entry) => expect(yCenter(entry.paths.fill)).toBeCloseTo(bottomStringYAt()));
+  });
+
+  it("same-string smaller radius stays at the chord-root squircle floor away from edges", () => {
+    const result = buildIntervalConnectorPolylines(
+      [
+        { a: "3-5", b: "3-7" },
+        { a: "3-7", b: "3-9" },
+      ],
+      STANDARD_TUNING,
+      C_MAJOR_SEMITONES,
+      fretCenterX,
+      stringYAt,
+      STRING_ROW_PX,
+    );
+    const baseRadius = applyConnectorRadiusFloor(
+      STRING_ROW_PX * CHORD_CONNECTOR_RADIUS_FACTORS.compact,
+      STRING_ROW_PX,
+    );
+    const extent = yExtent(result[1]!.paths.fill);
+
+    expect((extent.maxY - extent.minY) / 2).toBeCloseTo(baseRadius);
+  });
+
+  it("top-string fret-24 same-string connectors are edge capped without negative clipping", () => {
+    const neckHeight = STRING_ROW_PX * 6;
+    const bridgeStringYAt = () => 12;
+    const bridgeFretCenterX = (fi: number) => 500 + fi * 24;
+
+    const result = buildIntervalConnectorPolylines(
+      [
+        { a: "0-19", b: "0-21" },
+        { a: "0-21", b: "0-22" },
+        { a: "0-22", b: "0-24" },
+      ],
+      STANDARD_TUNING,
+      C_MAJOR_SEMITONES,
+      bridgeFretCenterX,
+      bridgeStringYAt,
+      STRING_ROW_PX,
+      { minY: 0, maxY: neckHeight },
+    );
+
+    expect(result).toHaveLength(3);
+    const extents = result.map((entry) => yExtent(entry.paths.fill));
+    extents.forEach((extent) => {
+      expect(extent.minY).toBeGreaterThanOrEqual(0);
+      expect(extent.maxY).toBeLessThanOrEqual(neckHeight);
+    });
+    expect((extents[0]!.maxY - extents[0]!.minY) / 2).toBeCloseTo(11);
   });
 
   it("two-string pairs keep the existing centered capsule path", () => {
