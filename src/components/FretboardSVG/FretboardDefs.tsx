@@ -4,6 +4,13 @@ interface FretboardDefsProps {
   svgDefId: (id: string) => string;
   neckWidthPx: number;
   neckHeight: number;
+  /**
+   * Vertical overflow allowance above and below the SVG box. The
+   * `fretboard-svg-box` clipPath is grown by this amount in both
+   * directions so chord/interval connector overlays can paint into the
+   * wood-toned padding zone provided by the outer wrapper.
+   */
+  verticalInsetPx: number;
   taperPath: string;
 }
 
@@ -11,6 +18,7 @@ export const FretboardDefs = memo(({
   svgDefId,
   neckWidthPx,
   neckHeight,
+  verticalInsetPx,
   taperPath,
 }: FretboardDefsProps) => {
   return (
@@ -242,15 +250,23 @@ export const FretboardDefs = memo(({
       <clipPath id={svgDefId("fretboard-taper")}>
         <path d={taperPath} />
       </clipPath>
-      {/* Rectangular clip matching the SVG's bounding box. Connector overlays
-          (chord + interval) use this instead of the wood `fretboard-taper` so
-          they can cross the wood's tapered top/bottom and nut/body edges near
-          the outer strings. A base wood-gradient rect fills the same SVG box
-          beneath the tapered wood stack, so connectors painting in the
-          taper-carved corner gaps still land on a wood-toned backdrop and the
-          app-container gradient does not show through. */}
+      {/* Rectangular clip extending `verticalInsetPx` above and below the
+          SVG's bounding box. Connector overlays (chord + interval) use this
+          instead of the wood `fretboard-taper` so they can cross the wood's
+          tapered top/bottom and nut/body edges near the outer strings — and
+          so capsule overshoot above the top string / below the bottom string
+          paints into the wood-toned padding zone provided by the outer
+          `.fretboard-neck` wrapper. A base wood-gradient rect that overflows
+          the SVG by the same inset (see FretboardBackground) gives those
+          connector pixels a wood-toned backdrop instead of revealing the
+          app-container gradient. */}
       <clipPath id={svgDefId("fretboard-svg-box")}>
-        <rect x={0} y={0} width={neckWidthPx} height={neckHeight} />
+        <rect
+          x={0}
+          y={-verticalInsetPx}
+          width={neckWidthPx}
+          height={neckHeight + 2 * verticalInsetPx}
+        />
       </clipPath>
     </defs>
   );

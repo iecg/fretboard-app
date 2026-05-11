@@ -12,6 +12,12 @@ interface FretboardHitTargetLayerProps {
   noteFontPx: number;
   neckWidthPx: number;
   neckHeight: number;
+  /**
+   * Top inset within `.fretboard-neck` so hit targets stay aligned with
+   * the SVG-rendered strings while the surrounding container reserves
+   * wood-toned padding above and below the wood for connector overshoot.
+   */
+  verticalInsetPx: number;
   onNoteClick?: (stringIndex: number, fretIndex: number, noteName: string) => void;
 }
 
@@ -23,6 +29,7 @@ export const FretboardHitTargetLayer = memo(({
   noteFontPx,
   neckWidthPx,
   neckHeight,
+  verticalInsetPx,
   onNoteClick,
 }: FretboardHitTargetLayerProps) => {
   return (
@@ -30,6 +37,8 @@ export const FretboardHitTargetLayer = memo(({
       className={styles["fretboard-a11y-layer"]}
       style={{
         position: "absolute",
+        top: verticalInsetPx,
+        left: 0,
         width: neckWidthPx,
         height: neckHeight,
       }}

@@ -14,23 +14,12 @@ export interface FretboardGeometryParams {
   maxFret: number;
   neckWidthPx: number;
   /**
-   * Full SVG height (`stringsBoxHeight + 2 * verticalInsetPx`). Used for the
-   * taper geometry so the wood backdrop and taper-clipped wood stack cover
-   * the entire SVG box, including the inset zones above the top string and
-   * below the bottom string.
+   * Playable neck height (`tuning.length * stringRowPx`). Strings, frets,
+   * inlays, and shape polygons are positioned within this box. The
+   * connector-overshoot padding above and below the wood is provided by
+   * the outer HTML wrapper, not by the SVG itself.
    */
   neckHeight: number;
-  /**
-   * Playable region height (`tuning.length * stringRowPx`). Strings are
-   * positioned within this box, then offset by `verticalInsetPx`.
-   */
-  stringsBoxHeight: number;
-  /**
-   * Padding above the top string (and below the bottom string) that lets
-   * chord-connector capsules overshoot the outermost strings without being
-   * clipped at the SVG edge.
-   */
-  verticalInsetPx: number;
   noteBubblePx: number;
   numStrings: number;
 }
@@ -41,8 +30,6 @@ export function useFretboardGeometry({
   maxFret,
   neckWidthPx,
   neckHeight,
-  stringsBoxHeight,
-  verticalInsetPx,
   noteBubblePx,
   numStrings,
 }: FretboardGeometryParams) {
@@ -94,15 +81,8 @@ export function useFretboardGeometry({
 
   const stringYAt = useCallback(
     (s: number, x: number) =>
-      getStringY(
-        s,
-        x,
-        numStrings,
-        neckWidthPx,
-        stringsBoxHeight,
-        verticalInsetPx,
-      ),
-    [numStrings, neckWidthPx, stringsBoxHeight, verticalInsetPx]
+      getStringY(s, x, numStrings, neckWidthPx, neckHeight),
+    [numStrings, neckWidthPx, neckHeight]
   );
 
   return {

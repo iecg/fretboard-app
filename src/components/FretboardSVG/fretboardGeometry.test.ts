@@ -38,17 +38,10 @@ describe("fretboardGeometry", () => {
   });
 
   it("getStringY calculates y coordinate", () => {
-    // Strings sit centered within the playable box and offset by the
-    // vertical inset; with inset=0 the result matches the legacy behavior.
-    const y = getStringY(0, 0, 6, 1000, 200, 0);
+    // Strings are centered within neckHeight; the value must sit inside
+    // the box and be positive.
+    const y = getStringY(0, 0, 6, 1000, 200);
     expect(y).toBeGreaterThan(0);
-  });
-
-  it("getStringY applies vertical inset", () => {
-    const yNoInset = getStringY(0, 0, 6, 1000, 200, 0);
-    const yWithInset = getStringY(0, 0, 6, 1000, 200, 30);
-    // Adding an inset of 30 must shift every string down by exactly 30 px
-    // without altering the spread between strings.
-    expect(yWithInset - yNoInset).toBe(30);
+    expect(y).toBeLessThan(200);
   });
 });

@@ -137,34 +137,29 @@ export function getTaperGeometry(
 /**
  * Compute the SVG Y coordinate of a string at a given x.
  *
- * Strings are positioned within the playable region of height
- * `stringsBoxHeight` (= `tuning.length * stringRowPx`), centered vertically,
- * then offset downward by `verticalInsetPx` so the playable region sits
- * inside a taller SVG canvas. The extra inset above and below leaves room
- * for chord/interval connector capsules to overshoot the outermost strings
- * without being clipped at the SVG edge.
+ * Strings span the full neckHeight box (= `tuning.length * stringRowPx`),
+ * centered vertically. `localSpread` (the visible string-to-string spacing
+ * including the slight left-side compression from `STRING_SPREAD_LEFT_FRAC`)
+ * is derived from `neckHeight` so spacing scales with the rendered neck.
  *
- * `localSpread` (the visible string-to-string spacing including the slight
- * left-side compression from `STRING_SPREAD_LEFT_FRAC`) is computed from the
- * playable box height, NOT the full SVG height — so the spread between
- * strings is unaffected by the added inset.
+ * Vertical padding for chord/interval connector capsule overshoot is
+ * provided by the outer HTML wrapper (`.fretboard-neck`) and a base wood
+ * `<rect>` that paints outside the SVG bounding box — the SVG itself
+ * remains sized to the original playable neckHeight.
  */
 export function getStringY(
   stringIndex: number,
   x: number,
   numStrings: number,
   neckWidthPx: number,
-  stringsBoxHeight: number,
-  verticalInsetPx: number
+  neckHeight: number
 ): number {
   const xFrac =
     neckWidthPx > 0 ? Math.max(0, Math.min(1, x / neckWidthPx)) : 0;
   const localSpread =
     (STRING_SPREAD_LEFT_FRAC + (1 - STRING_SPREAD_LEFT_FRAC) * xFrac) *
-    stringsBoxHeight *
+    neckHeight *
     STRING_OCCUPY_FRAC;
   const t = numStrings > 1 ? stringIndex / (numStrings - 1) : 0.5;
-  return (
-    verticalInsetPx + stringsBoxHeight / 2 - localSpread / 2 + t * localSpread
-  );
+  return neckHeight / 2 - localSpread / 2 + t * localSpread;
 }

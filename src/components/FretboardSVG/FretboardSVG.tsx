@@ -142,21 +142,21 @@ export const FretboardSVG = memo(function FretboardSVG({
 
   const noteBubblePx = Math.round(stringRowPx * NOTE_BUBBLE_RATIO);
   const noteFontPx = Math.round(stringRowPx * NOTE_FONT_RATIO);
-  // Playable region height — the original neck height before connector
-  // overshoot padding was added. Strings and inlays remain centered within
-  // this box; the surrounding inset is wood-only.
-  const stringsBoxHeight = tuning.length * stringRowPx;
-  // Vertical padding above the top string and below the bottom string. Sized
-  // to cover the maximum chord-connector capsule overshoot — the connector
-  // hook builds capsules of radius
-  // `stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR + offsetPx` where
-  // CHORD_CONNECTOR_BASE_RADIUS_FACTOR = 0.47 and the maximum bucket offset
-  // is 10 px. Adding 2 px of breathing room keeps capsules safely inside the
-  // wood backdrop instead of bleeding into the app gradient. Kept in sync
+  // Playable neck height — strings, frets, inlays, and shape polygons all
+  // live within this box, matching the original (pre-connector-fix)
+  // proportions of a guitar fretboard.
+  const neckHeight = tuning.length * stringRowPx;
+  // Vertical padding outside the SVG that gives chord-connector capsules
+  // room to overshoot the outermost strings without revealing the
+  // app-container gradient. Sized to cover the maximum capsule radius
+  // (`stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR + maxOffsetPx`
+  // where CHORD_CONNECTOR_BASE_RADIUS_FACTOR = 0.47, max offset = 10 px,
+  // plus a 2 px breathing buffer). Painted by a wood-toned `<rect>` that
+  // overflows the SVG box, clipped by an extended `fretboard-svg-box`,
+  // and surrounded by extra height on `.fretboard-neck`. Kept in sync
   // manually with `useChordConnectorPolylines.ts` rather than imported to
   // avoid coupling render geometry to overlay-detection internals.
   const verticalInsetPx = Math.ceil(stringRowPx * 0.47) + 12;
-  const neckHeight = stringsBoxHeight + 2 * verticalInsetPx;
   const totalColumns = endFret - startFret;
   const hasChordOverlay = chordTones.length > 0;
   const numStrings = tuning.length;
@@ -176,8 +176,6 @@ export const FretboardSVG = memo(function FretboardSVG({
     maxFret,
     neckWidthPx,
     neckHeight,
-    stringsBoxHeight,
-    verticalInsetPx,
     noteBubblePx,
     numStrings,
   });
@@ -203,29 +201,23 @@ export const FretboardSVG = memo(function FretboardSVG({
       // or maxFret are not pulled to intendedMin/intendedMax — that flattened
       // mixed-offset templates and produced spurious off-board extension.
 
-      // Shape polygons stay within the playable region — top edge at the
-      // inset, bottom edge at the inset + playable height. The connector
-      // overshoot padding above/below is wood-only and shouldn't change
-      // the shape footprint.
-      const polyTopY = verticalInsetPx;
-      const polyBottomY = verticalInsetPx + stringsBoxHeight;
-      pixelPoints.push(`${fretToX(verts[0].fret)},${polyTopY}`);
+      pixelPoints.push(`${fretToX(verts[0].fret)},0`);
       for (let i = 0; i < halfVerts; i++) {
         const fx = fretToX(verts[i].fret);
         pixelPoints.push(`${fx},${stringYAt(verts[i].string, fx)}`);
       }
       pixelPoints.push(
-        `${fretToX(verts[halfVerts - 1].fret)},${polyBottomY}`,
+        `${fretToX(verts[halfVerts - 1].fret)},${neckHeight}`,
       );
       pixelPoints.push(
-        `${fretToX(verts[halfVerts].fret)},${polyBottomY}`,
+        `${fretToX(verts[halfVerts].fret)},${neckHeight}`,
       );
       for (let i = halfVerts; i < verts.length; i++) {
         const fx = fretToX(verts[i].fret);
         pixelPoints.push(`${fx},${stringYAt(verts[i].string, fx)}`);
       }
       pixelPoints.push(
-        `${fretToX(verts[verts.length - 1].fret)},${polyTopY}`,
+        `${fretToX(verts[verts.length - 1].fret)},0`,
       );
 
       const points = pixelPoints.join(" ");
@@ -239,7 +231,7 @@ export const FretboardSVG = memo(function FretboardSVG({
         centerX,
       };
     });
-  }, [shapePolygons, startFret, endFret, verticalInsetPx, stringsBoxHeight, fretToX, stringYAt]);
+  }, [shapePolygons, startFret, endFret, neckHeight, fretToX, stringYAt]);
 
   const displayRoot = rootNote
     ? getNoteDisplay(rootNote, rootNote, useFlats)
@@ -252,13 +244,7 @@ export const FretboardSVG = memo(function FretboardSVG({
     .filter(Boolean)
     .join(" ");
 
-  // Inlays follow the playable region center, not the SVG center, so they
-  // stay aligned with the strings rather than drifting into the connector
-  // overshoot padding above/below.
-  const inlayYAt = useCallback(
-    () => verticalInsetPx + stringsBoxHeight / 2,
-    [verticalInsetPx, stringsBoxHeight],
-  );
+  const inlayYAt = useCallback(() => neckHeight / 2, [neckHeight]);
   const inlayYTopAt = useCallback((x: number) =>
     numStrings >= 4
       ? (stringYAt(1, x) + stringYAt(2, x)) / 2
@@ -390,7 +376,14 @@ export const FretboardSVG = memo(function FretboardSVG({
         className={styles["fretboard-neck"]}
         style={
           {
-            height: `${neckHeight}px`,
+            // The neck box reserves `verticalInsetPx` of wood-toned padding
+            // above the top string and below the bottom string so chord/
+            // interval connector capsules can overshoot the outermost
+            // strings without revealing the .app-container gradient. The
+            // SVG itself stays sized to the playable `neckHeight`; an
+            // extended base-wood `<rect>` overflows the SVG via
+            // `overflow: visible` to fill the padding zones.
+            height: `${neckHeight + 2 * verticalInsetPx}px`,
             width: `${neckWidthPx}px`,
             willChange: "transform",
             "--string-row-px": `${stringRowPx}px`,
@@ -408,7 +401,7 @@ export const FretboardSVG = memo(function FretboardSVG({
           style={{
             display: "block",
             position: "absolute",
-            top: 0,
+            top: verticalInsetPx,
             left: 0,
           }}
           aria-hidden="true"
@@ -417,12 +410,14 @@ export const FretboardSVG = memo(function FretboardSVG({
             svgDefId={svgDefId}
             neckWidthPx={neckWidthPx}
             neckHeight={neckHeight}
+            verticalInsetPx={verticalInsetPx}
             taperPath={taperPath}
           />
 
           <FretboardBackground
             neckWidthPx={neckWidthPx}
             neckHeight={neckHeight}
+            verticalInsetPx={verticalInsetPx}
             startFret={startFret}
             maxFret={maxFret}
             tuning={tuning}
@@ -549,6 +544,7 @@ export const FretboardSVG = memo(function FretboardSVG({
           noteFontPx={noteFontPx}
           neckWidthPx={neckWidthPx}
           neckHeight={neckHeight}
+          verticalInsetPx={verticalInsetPx}
           onNoteClick={onNoteClick}
         />
       </div>
