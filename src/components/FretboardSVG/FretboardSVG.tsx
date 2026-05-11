@@ -409,21 +409,12 @@ export const FretboardSVG = memo(function FretboardSVG({
 
           <g clipPath={svgDefUrl("fretboard-taper")}>
             <FretboardShapeLayer svgPolygons={svgPolygons} />
-            <FretboardNoteLayer
-              noteData={noteData}
-              fretCenterX={fretCenterX}
-              stringYAt={stringYAt}
-              noteBubblePx={noteBubblePx}
-              displayFormat={displayFormat}
-              degreeColorsEnabled={degreeColorsEnabled}
-              onNoteClick={onNoteClick}
-            />
           </g>
 
-          {/* Phase 3: chord + interval connectors render OUTSIDE the taper clip
-              so geometry that crosses the wood region's top/bottom edge stays visible.
-              Z-order: connectors paint ABOVE notes; note text uses paint-order:stroke
-              with a dark outline so labels remain legible against connector fills. */}
+          {/* Chord + interval connectors render OUTSIDE the taper clip so
+              geometry that crosses the wood region's top/bottom edge stays
+              visible. Rendered BEFORE the note layer so note bubbles paint
+              on top (later SVG siblings paint above earlier ones). */}
           <g
             className={styles["fretboard-overlays"]}
             aria-hidden="true"
@@ -501,6 +492,19 @@ export const FretboardSVG = memo(function FretboardSVG({
                 ))}
               </g>
             )}
+          </g>
+
+          {/* Note bubbles render LAST so they paint on top of the connectors. */}
+          <g clipPath={svgDefUrl("fretboard-taper")}>
+            <FretboardNoteLayer
+              noteData={noteData}
+              fretCenterX={fretCenterX}
+              stringYAt={stringYAt}
+              noteBubblePx={noteBubblePx}
+              displayFormat={displayFormat}
+              degreeColorsEnabled={degreeColorsEnabled}
+              onNoteClick={onNoteClick}
+            />
           </g>
         </svg>
 
