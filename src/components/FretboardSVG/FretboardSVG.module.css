@@ -13,7 +13,9 @@
 .fretboard-neck {
   position: relative;
   background: transparent;
-  overflow: hidden;
+  /* Phase 3: visible so chord/interval-connector SVG paint can extend past
+     the neck box vertically when connectors cross the taper edge. */
+  overflow: visible;
 }
 
 .fretboard-main-svg {

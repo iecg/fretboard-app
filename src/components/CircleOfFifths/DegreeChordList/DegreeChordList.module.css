@@ -1,0 +1,87 @@
+/*
+ * DegreeChordList row styling.
+ *
+ * Theme contract (Plan 04-03 review):
+ *   - Body text uses --text-primary; quality column uses --text-muted.
+ *     Both are theme-aware semantic tokens that resolve to readable values
+ *     on Card surfaces in both modern-light and modern-dark.
+ *   - Hover / focus-visible / active states layer over the Card surface using
+ *     color-mix on --accent-primary (#0891b2 in :root, unchanged across
+ *     themes). The 8% hover and 18% active alpha values were chosen so the
+ *     tint is visible on light cream surfaces without being heavy on dark
+ *     warm surfaces — confirmed by inspecting both themes during Plan 04-03.
+ *   - No theme-specific overrides required: all values pass legibility in
+ *     modern-light and modern-dark. No new tokens introduced.
+ */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.item {
+  display: block;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr 3.5rem;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.35rem 0.6rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.4rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.row:hover,
+.row:focus-visible {
+  background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
+  border-color: color-mix(in srgb, var(--accent-primary) 40%, transparent);
+}
+
+.row:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+.row-active {
+  border-color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 18%, transparent);
+}
+
+.row[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.numeral {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-weight: 600;
+  text-align: left;
+}
+
+.root {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  text-align: left;
+}
+
+.quality {
+  font-family: var(--font-sans);
+  font-size: 0.85em;
+  color: var(--text-muted);
+  text-align: right;
+}
