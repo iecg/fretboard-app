@@ -127,4 +127,23 @@ describe("buildIntervalConnectorPolylines (UAT-24)", () => {
     // Key contains the coord strings joined by |
     expect(result[0]!.key).toContain("|");
   });
+
+  it("keeps bridge-side top-string capsules inside the SVG y bounds", () => {
+    const neckHeight = STRING_ROW_PX * 6;
+    const bridgeStringYAt = () => 15.12;
+    const bridgeFretCenterX = (fi: number) => 500 + fi * 24;
+
+    const result = buildIntervalConnectorPolylines(
+      [{ a: "0-12", b: "0-14" }],
+      STANDARD_TUNING,
+      C_MAJOR_SEMITONES,
+      bridgeFretCenterX,
+      bridgeStringYAt,
+      STRING_ROW_PX,
+      { minY: 0, maxY: neckHeight },
+    );
+
+    expect(result).toHaveLength(1);
+    expect(result[0]!.paths.fill).not.toMatch(/(?:^|[ ,])-[0-9]/);
+  });
 });

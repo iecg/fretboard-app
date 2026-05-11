@@ -149,6 +149,10 @@ export const FretboardSVG = memo(function FretboardSVG({
   const totalColumns = endFret - startFret;
   const hasChordOverlay = chordTones.length > 0;
   const numStrings = tuning.length;
+  const connectorYBounds = useMemo(
+    () => ({ minY: 0, maxY: neckHeight }),
+    [neckHeight],
+  );
 
   const {
     wireXRel,
@@ -334,6 +338,7 @@ export const FretboardSVG = memo(function FretboardSVG({
     fretCenterX,
     stringYAt,
     stringRowPx,
+    yBounds: connectorYBounds,
   });
 
   // Per-string chord filter (UAT-3): when fingering pattern restricts to 1 or 2 strings,
@@ -350,6 +355,7 @@ export const FretboardSVG = memo(function FretboardSVG({
     stringYAt,
     stringRowPx,
     chordRoot: chordRoot ?? "",
+    yBounds: connectorYBounds,
   });
 
   return (
