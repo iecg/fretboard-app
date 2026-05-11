@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
 import { axe } from '../../test-utils/a11y';
 import { Fretboard } from './Fretboard';
-import { STANDARD_TUNING } from '../../core/guitar';
+import { STANDARD_TUNING } from '@fretflow/core';
 
 describe('Fretboard/Fretboard', () => {
   const defaultProps = {

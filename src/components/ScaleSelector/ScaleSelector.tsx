@@ -1,5 +1,5 @@
 import { startTransition } from "react";
-import { NOTES } from "../../core/theory";
+import { NOTES } from "@fretflow/core";
 import {
   getActiveScaleBrowseOption,
   getAdjacentScaleBrowseOption,
@@ -11,7 +11,7 @@ import {
   resolveScaleCatalogEntry,
   supportsRelativeScaleBrowsing,
   type ScaleBrowseMode,
-} from "../../core/theoryCatalog";
+} from "@fretflow/core";
 import { NoteGrid } from "../NoteGrid/NoteGrid";
 import { StepperSelect } from "../StepperSelect/StepperSelect";
 import { ToggleBar } from "../ToggleBar/ToggleBar";

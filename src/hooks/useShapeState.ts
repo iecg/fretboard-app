@@ -16,7 +16,7 @@ import {
   twoStringsPairAtom,
   twoStringsIntervalAtom,
 } from "../store/atoms";
-import { type CagedShape } from "../shapes";
+import { type CagedShape } from "@fretflow/core";
 
 export function useShapeState() {
   const fingeringPattern = useAtomValue(fingeringPatternAtom);

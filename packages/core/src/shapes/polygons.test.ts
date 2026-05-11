@@ -5,9 +5,9 @@ import {
   wrapOvershootNotes,
   deduplicateAdjacentStrings,
   MAX_WRAP_OVERSHOOT,
-} from "../shapes/polygons";
-import { getFretboardNotes } from "../core/guitar";
-import { STANDARD_TUNING } from "../core/guitar";
+} from "./polygons";
+import { getFretboardNotes } from "../guitar";
+import { STANDARD_TUNING } from "../guitar";
 
 describe("buildPolygonFromNotes", () => {
   it("returns empty array when all strings have no notes (empty shape)", () => {

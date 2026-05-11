@@ -1,7 +1,7 @@
 import React, { memo } from "react";
 import { motion } from "motion/react";
 import { clsx } from "clsx";
-import { formatAccidental } from "../../core/theory";
+import { formatAccidental } from "@fretflow/core";
 import { getNoteVisuals } from "./utils/semantics";
 import styles from "./FretboardSVG.module.css";
 import type { NoteData } from "./hooks/useNoteData";

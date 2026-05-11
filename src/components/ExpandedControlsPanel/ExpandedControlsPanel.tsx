@@ -19,7 +19,7 @@ import { FretRangeControl } from "../FretRangeControl/FretRangeControl";
 import { TheoryControls } from "../TheoryControls/TheoryControls";
 import { Card } from "../Card/Card";
 import { TAB_LABELS } from "../../constants/tabLabels";
-import { MAX_FRET } from "../../core/constants";
+import { MAX_FRET } from "@fretflow/core";
 import { useCompactDensity } from "../../hooks/useCompactDensity";
 
 // Lazy-loaded component

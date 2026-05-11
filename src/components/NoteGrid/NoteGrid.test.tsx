@@ -2,7 +2,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { NoteGrid } from "../NoteGrid/NoteGrid";
-import { NOTES } from "../../core/theory";
+import { NOTES } from "@fretflow/core";
 
 describe("NoteGrid/NoteGrid", () => {
   it("renders 12 note buttons", () => {

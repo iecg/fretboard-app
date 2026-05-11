@@ -7,10 +7,10 @@ import {
   getKeySignatureForDisplay,
   formatAccidental,
   SCALES,
-} from "../../core/theory";
-import { getDegreesForScale } from "../../core/degrees";
-import { getScaleCatalogEntry } from "../../core/theoryCatalog";
-import { getCircleNoteLabels } from "../../core/circleOfFifthsUtils";
+} from "@fretflow/core";
+import { getDegreesForScale } from "@fretflow/core";
+import { getScaleCatalogEntry } from "@fretflow/core";
+import { getCircleNoteLabels } from "@fretflow/core";
 import styles from "./CircleOfFifths.module.css";
 
 const SIZE = 320;

@@ -4,7 +4,7 @@ import {
   normalizeScaleName,
   type ScaleBrowseMode,
   getActiveScaleBrowseOption,
-} from "../core/theoryCatalog";
+} from "@fretflow/core";
 import {
   resolveAccidentalMode,
   SCALES,
@@ -14,12 +14,12 @@ import {
   getNoteDisplay, getNoteDisplayInScale,
   getDivergentNotes,
   formatAccidental,
-} from "../core/theory";
-import { DEGREE_COLORS, getDegreesForScale } from "../core/degrees";
+} from "@fretflow/core";
+import { DEGREE_COLORS, getDegreesForScale } from "@fretflow/core";
 import { k, createStorage, rawStringStorage, booleanStorage, GET_ON_INIT, withStorageErrorBoundary } from "../utils/storage";
 import { fingeringPatternAtom, cagedShapesAtom } from "./fingeringAtoms";
-import type { CagedShape } from "../shapes";
-import type { PracticeBarColorNote } from "../core/theory";
+import type { CagedShape } from "@fretflow/core";
+import type { PracticeBarColorNote } from "@fretflow/core";
 
 const SCALE_BROWSE_MODES = ["parallel", "relative"] as const;
 

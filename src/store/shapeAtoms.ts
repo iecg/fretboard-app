@@ -6,16 +6,16 @@ import {
   findMainShape,
   getShapeCenterFret,
   type ShapePolygon,
-} from "../shapes";
-import { getFretNote, getFretboardNotes } from "../core/guitar";
-import { getScaleNotes, NOTES } from "../core/theory";
+} from "@fretflow/core";
+import { getFretNote, getFretboardNotes } from "@fretflow/core";
+import { getScaleNotes, NOTES } from "@fretflow/core";
 import {
   getOneStringCoordinates,
   getTwoStringsCoordinates,
   getTwoStringsIntervalPairs,
   TWO_STRINGS_INTERVAL_SD_DISTANCES,
   getOneStringIntervalPairs,
-} from "../shapes/practicePatterns";
+} from "@fretflow/core";
 import {
   fingeringPatternAtom,
   cagedShapesAtom,

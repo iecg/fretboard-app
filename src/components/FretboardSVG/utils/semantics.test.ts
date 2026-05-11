@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { getLensEmphasis, classifyNote, classifyNoteFromSemantics, getNoteVisuals } from "./semantics";
-import type { NoteSemantics } from "../../../core/theory";
-import { RADIUS_SCALE_CHORD_TONE } from "../../../core/constants";
+import type { NoteSemantics } from "@fretflow/core";
+import { RADIUS_SCALE_CHORD_TONE } from "@fretflow/core";
 
 describe("semantics utils", () => {
   describe("getLensEmphasis", () => {

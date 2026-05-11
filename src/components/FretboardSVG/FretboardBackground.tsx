@@ -1,6 +1,6 @@
 import { memo, type ReactNode } from "react";
 import { clsx } from "clsx";
-import { NUT_WIDTH } from "../../core/constants";
+import { NUT_WIDTH } from "@fretflow/core";
 import { useResolvedTheme } from "../../hooks/useResolvedTheme";
 import { useWoodGrainTexture } from "./hooks/useWoodGrainTexture";
 import styles from "./FretboardSVG.module.css";

@@ -1,5 +1,5 @@
-import { DEGREE_COLORS } from "../../core/degrees";
-import type { PracticeLens } from "../../core/theory";
+import { DEGREE_COLORS } from "@fretflow/core";
+import type { PracticeLens } from "@fretflow/core";
 
 export type AuditTheme = {
   id: "light" | "dark";

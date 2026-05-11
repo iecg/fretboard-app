@@ -7,7 +7,7 @@ import {
   getFretboardNotes,
   STANDARD_TUNING,
   STANDARD_FRET_MARKERS,
-} from '../core/guitar';
+} from './guitar';
 
 describe('parseNote', () => {
   it('parses note with octave', () => {

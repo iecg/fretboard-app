@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { clsx } from "clsx";
-import { formatAccidental } from "../../core/theory";
+import { formatAccidental } from "@fretflow/core";
 import styles from "./FretboardSVG.module.css";
 import type { NoteData } from "./hooks/useNoteData";
 

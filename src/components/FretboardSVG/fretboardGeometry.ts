@@ -3,7 +3,7 @@ import {
   NECK_TAPER_SCALE,
   STRING_SPREAD_LEFT_FRAC,
   STRING_OCCUPY_FRAC,
-} from "../../core/constants";
+} from "@fretflow/core";
 
 export function getFretboardScale(
   startFret: number,

@@ -10,18 +10,18 @@ import {
   formatAccidental,
   getDiatonicChord,
   getScaleNotes,
-} from "../core/theory";
+} from "@fretflow/core";
 import type {
   ChordMemberFact,
   ChordRowEntry,
   ResolvedChordMember,
   PracticeLens,
-} from "../core/theory";
+} from "@fretflow/core";
 import {
   getDegreesForScale,
   getQualityForDegree,
   type DegreeId,
-} from "../core/degrees";
+} from "@fretflow/core";
 import {
   k,
   createStorage,

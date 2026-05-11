@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { getCagedCoordinates, CAGED_SHAPES, findMainShape, getShapeCenterFret } from '../shapes';
+import { getCagedCoordinates, CAGED_SHAPES, findMainShape, getShapeCenterFret } from './index';
 import { get3NPSCoordinates } from './threeNPS';
-import { STANDARD_TUNING } from '../core/guitar';
+import { STANDARD_TUNING } from '../guitar';
 
 describe('getCagedCoordinates', () => {
   it('returns non-empty coordinates for standard input', () => {
@@ -739,5 +739,4 @@ describe('get3NPSCoordinates', () => {
     }
   });
 });
-
 

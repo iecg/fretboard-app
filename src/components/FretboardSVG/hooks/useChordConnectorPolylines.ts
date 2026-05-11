@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import type { NoteData } from "./useNoteData";
 import { convexHull, offsetOutlinePath } from "../utils/pathGeometry";
-import { NOTES } from "../../../core/theory";
+import { NOTES } from "@fretflow/core";
 
 /**
  * Count the number of distinct fret positions spanned by the **fretted** notes

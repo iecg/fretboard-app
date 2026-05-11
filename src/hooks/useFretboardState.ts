@@ -21,7 +21,7 @@ import {
   cagedShapesAtom,
   npsPositionAtom,
 } from "../store/atoms";
-import type { CagedShape } from "../shapes";
+import type { CagedShape } from "@fretflow/core";
 
 type ActivePatternType = "caged" | "3nps" | "none";
 export type ActiveShapeType = CagedShape | number | CagedShape[] | undefined;

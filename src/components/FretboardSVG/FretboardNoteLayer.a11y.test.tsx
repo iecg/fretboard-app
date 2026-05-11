@@ -2,7 +2,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, fireEvent } from "@testing-library/react";
 import { FretboardSVG } from "./FretboardSVG";
-import { getFretboardNotes, STANDARD_TUNING } from "../../core/guitar";
+import { getFretboardNotes, STANDARD_TUNING } from "@fretflow/core";
 import { axe } from "../../test-utils/a11y";
 
 const BASE_PROPS = {

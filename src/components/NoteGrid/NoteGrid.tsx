@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "react";
 import { motion } from "motion/react";
 import clsx from "clsx";
-import { formatAccidental, getNoteDisplay } from "../../core/theory";
+import { formatAccidental, getNoteDisplay } from "@fretflow/core";
 import shared from "../shared/shared.module.css";
 
 interface NoteGridProps {

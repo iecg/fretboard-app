@@ -6,7 +6,7 @@ import { useFocusTrap } from "../../hooks/useFocusTrap";
 import {
   ANIMATION_DURATION_FAST,
   ANIMATION_EASE,
-} from "../../core/constants";
+} from "@fretflow/core";
 import styles from "./HelpModal.module.css";
 import sharedStyles from "../shared/shared.module.css";
 

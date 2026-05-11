@@ -6,7 +6,7 @@ import {
   getScaleSemitones,
   type PracticeLens,
   type NoteSemantics,
-} from "../../core/theory";
+} from "@fretflow/core";
 import {
   scaleDegreeColorsEnabledAtom,
   fingeringPatternAtom,
@@ -25,7 +25,7 @@ import { FretboardShapeLayer } from "./FretboardShapeLayer";
 import { FretboardNoteLayer } from "./FretboardNoteLayer";
 import { FretboardHitTargetLayer } from "./FretboardHitTargetLayer";
 import { FretNumbersRow } from "./FretNumbersRow";
-import type { ShapePolygon } from "../../shapes";
+import type { ShapePolygon } from "@fretflow/core";
 import type { ActiveShapeType } from "../../hooks/useFretboardState";
 import {
   INLAY_FRETS,
@@ -35,7 +35,7 @@ import {
   NOTE_FONT_RATIO,
   INLAY_RADIUS_RATIO,
   INLAY_RADIUS_MIN,
-} from "../../core/constants";
+} from "@fretflow/core";
 
 interface FretboardSVGProps {
   effectiveZoom: number;

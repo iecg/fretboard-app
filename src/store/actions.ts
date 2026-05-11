@@ -1,7 +1,7 @@
 import { atom } from "jotai";
 import { RESET } from "jotai/utils";
 import { STORAGE_PREFIX } from "../utils/storage";
-import { remapDegreeForScale, type DegreeId } from "../core/degrees";
+import { remapDegreeForScale, type DegreeId } from "@fretflow/core";
 import {
   rootNoteAtom,
   baseScaleNameAtom,

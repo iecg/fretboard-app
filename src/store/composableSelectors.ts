@@ -6,9 +6,9 @@ import {
   formatAccidental,
   getNoteDisplay,
   getScaleNotes,
-} from "../core/theory";
-import type { ChordRowEntry, ResolvedChordMember } from "../core/theory";
-import { getDegreesForScale, type DegreeId } from "../core/degrees";
+} from "@fretflow/core";
+import type { ChordRowEntry, ResolvedChordMember } from "@fretflow/core";
+import { getDegreesForScale, type DegreeId } from "@fretflow/core";
 import {
   chordMembersAtom,
   chordRootAtom,

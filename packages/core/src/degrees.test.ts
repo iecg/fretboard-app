@@ -6,7 +6,7 @@ import {
   getDegreesForScale,
   getQualityForDegree,
   remapDegreeForScale,
-} from '../core/degrees';
+} from './degrees';
 
 const BASE_DEGREE_COLOR_KEYS = ["I", "II", "III", "IV", "V", "VI", "VII"] as const;
 

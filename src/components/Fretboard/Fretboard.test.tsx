@@ -4,7 +4,7 @@ import { render, screen, fireEvent, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Provider, createStore } from "jotai";
 import { Fretboard } from "../Fretboard/Fretboard";
-import { STANDARD_TUNING } from "../../core/guitar";
+import { STANDARD_TUNING } from "@fretflow/core";
 import { fretEndAtom, fretStartAtom, fretZoomAtom, scaleDegreeColorsEnabledAtom } from "../../store/atoms";
 
 // Mock audio synth

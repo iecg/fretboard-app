@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { ToggleBar } from "../../components/ToggleBar/ToggleBar";
 import { NoteGrid } from "../../components/NoteGrid/NoteGrid";
-import { NOTES } from "../../core/theory";
+import { NOTES } from "@fretflow/core";
 
 const sharedCSS = readFileSync(
   resolve(__dirname, "./shared.module.css"),

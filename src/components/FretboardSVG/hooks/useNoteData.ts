@@ -7,10 +7,10 @@ import {
   SCALES,
   type PracticeLens,
   type NoteSemantics,
-} from "../../../core/theory";
-import { DEGREE_COLORS, getDegreesForScale } from "../../../core/degrees";
-import { getFretNoteWithOctave, parseNote } from "../../../core/guitar";
-import type { ShapePolygon, CagedShape } from "../../../shapes";
+} from "@fretflow/core";
+import { DEGREE_COLORS, getDegreesForScale } from "@fretflow/core";
+import { getFretNoteWithOctave, parseNote } from "@fretflow/core";
+import type { ShapePolygon, CagedShape } from "@fretflow/core";
 import type { ActiveShapeType } from "../../../hooks/useFretboardState";
 import {
   getLensEmphasis,

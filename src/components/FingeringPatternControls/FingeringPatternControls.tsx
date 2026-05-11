@@ -2,7 +2,7 @@ import { useCallback, useId, useRef, useState } from "react";
 import { useAtom } from "jotai";
 import { motion } from "motion/react";
 import clsx from "clsx";
-import { CAGED_SHAPES, type CagedShape } from "../../shapes";
+import { CAGED_SHAPES, type CagedShape } from "@fretflow/core";
 import { useShapeState } from "../../hooks/useShapeState";
 import { displayFormatAtom, type FingeringPattern } from "../../store/atoms";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
