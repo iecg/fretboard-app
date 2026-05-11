@@ -6,6 +6,15 @@ import { getNoteVisuals } from "./utils/semantics";
 import styles from "./FretboardSVG.module.css";
 import type { NoteData } from "./hooks/useNoteData";
 
+const CHORD_NOTE_CLASSES = new Set([
+  "chord-root",
+  "chord-tone",
+  "chord-tone-in-scale",
+  "chord-tone-outside-scale",
+  "chord-outside",
+  "note-diatonic-chord",
+]);
+
 interface FretboardNoteLayerProps {
   noteData: NoteData[];
   fretCenterX: (fretIndex: number) => number;
@@ -14,6 +23,7 @@ interface FretboardNoteLayerProps {
   displayFormat: "notes" | "degrees" | "none";
   degreeColorsEnabled?: boolean;
   onNoteClick?: (stringIndex: number, fretIndex: number, noteName: string) => void;
+  filter?: "chord" | "non-chord";
 }
 
 const ROLE_DESCRIPTIONS: Record<string, string> = {
@@ -43,10 +53,18 @@ export const FretboardNoteLayer = memo(({
   displayFormat,
   degreeColorsEnabled,
   onNoteClick,
+  filter,
 }: FretboardNoteLayerProps) => {
+  const filteredNotes = filter
+    ? noteData.filter(({ noteClass }) => {
+        const isChord = CHORD_NOTE_CLASSES.has(noteClass);
+        return filter === "chord" ? isChord : !isChord;
+      })
+    : noteData;
+
   return (
     <>
-      {noteData.map(({
+      {filteredNotes.map(({
         stringIndex,
         fretIndex,
         noteName,

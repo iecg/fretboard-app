@@ -419,14 +419,29 @@ export const FretboardSVG = memo(function FretboardSVG({
             <FretboardShapeLayer svgPolygons={svgPolygons} />
           </g>
 
+          {/* Non-chord notes render BEFORE connectors so connectors paint on top. */}
+          {hasChordOverlay && (
+            <g clipPath={svgDefUrl("fretboard-taper")}>
+              <FretboardNoteLayer
+                noteData={noteData}
+                fretCenterX={fretCenterX}
+                stringYAt={stringYAt}
+                noteBubblePx={noteBubblePx}
+                displayFormat={displayFormat}
+                degreeColorsEnabled={degreeColorsEnabled}
+                onNoteClick={onNoteClick}
+                filter="non-chord"
+              />
+            </g>
+          )}
+
           {/* Chord + interval connectors render OUTSIDE the wood `fretboard-taper`
               clip so geometry that crosses the wood's tapered top/bottom + nut/body
               edges near the outer strings stays visible. They are clipped to the
               SVG's bounding box (`fretboard-svg-box`). Connector pixels that land
               in the taper-carved corner gaps paint on the app-container backdrop —
               that's an accepted trade-off; the wood gradient stays clipped to the
-              taper and does not overflow. Rendered BEFORE the note layer so note
-              bubbles paint on top (later SVG siblings paint above earlier ones). */}
+              taper and does not overflow. */}
           <g
             className={styles["fretboard-overlays"]}
             clipPath={svgDefUrl("fretboard-svg-box")}
@@ -507,7 +522,7 @@ export const FretboardSVG = memo(function FretboardSVG({
             )}
           </g>
 
-          {/* Note bubbles render LAST so they paint on top of the connectors. */}
+          {/* Chord notes (or all notes when no overlay) render LAST — on top of connectors. */}
           <g clipPath={svgDefUrl("fretboard-taper")}>
             <FretboardNoteLayer
               noteData={noteData}
@@ -517,6 +532,7 @@ export const FretboardSVG = memo(function FretboardSVG({
               displayFormat={displayFormat}
               degreeColorsEnabled={degreeColorsEnabled}
               onNoteClick={onNoteClick}
+              filter={hasChordOverlay ? "chord" : undefined}
             />
           </g>
         </svg>
