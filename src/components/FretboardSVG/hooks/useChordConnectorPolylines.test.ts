@@ -551,10 +551,12 @@ describe("buildChordConnectorPolylines", () => {
   // Contour smoke tests (fat polyline geometry)
   // -------------------------------------------------------------------------
 
-  it("triad voicing (3 different frets): paths.fill is rounded offset polygon visiting all 3 vertices", () => {
-    // C major triad on 3 different frets — non-collinear, so offsetOutlinePath
-    // emits a rounded offset polygon: arc at each corner, line between arcs,
-    // closed with Z. fill === outline (byte-identical).
+  it("triad voicing (3 different frets): paths.fill is a rounded tube visiting all 3 vertices", () => {
+    // C major triad on 3 different frets — non-collinear, so
+    // offsetOpenPolylinePath emits a rounded tube tracing the voicing
+    // order: a round arc on the outside of the bend at V_1, a mitered
+    // intersection on the inside, plus a semicircular cap at each end.
+    // fill === outline (byte-identical).
     const noteData = [
       makeNote(0, 3, "C", "chord-root"),
       makeNote(1, 5, "E", "chord-tone-in-scale"),
@@ -565,19 +567,18 @@ describe("buildChordConnectorPolylines", () => {
     const { paths } = result[0]!;
     expect(paths.fill).not.toBe("");
     expect(paths.fill.startsWith("M")).toBe(true);
-    // Rounded offset polygon → ends with Z.
     expect(paths.fill.endsWith("Z")).toBe(true);
-    // Non-collinear → corner arcs present (one per vertex).
+    // Non-collinear triad → 1 outside corner arc + 2 end caps = 3 A commands.
     const aCount = (paths.fill.match(/\bA\b/g) ?? []).length;
     expect(aCount).toBe(3);
     // fill and outline are byte-identical for every voicing.
     expect(paths.fill).toBe(paths.outline);
   });
 
-  it("7th chord voicing (4 vertices): paths.fill is rounded offset polygon visiting all 4 vertices", () => {
+  it("7th chord voicing (4 vertices): paths.fill is a rounded tube visiting all 4 vertices", () => {
     // Cmaj7: C, E, G, B across 4 strings within 3 fret positions.
     // Frets [3,4,4,5]: positions {3,4,5} → count 3 ≤ MAX_PLAYABLE_FRET_POSITIONS → kept.
-    // Non-collinear 4-vertex offset polygon (fill === outline).
+    // Non-collinear 4-vertex tube (fill === outline).
     const noteData = [
       makeNote(0, 3, "C", "chord-root"),
       makeNote(1, 4, "E", "chord-tone-in-scale"),
@@ -589,9 +590,8 @@ describe("buildChordConnectorPolylines", () => {
     const { paths } = result[0]!;
     expect(paths.fill).not.toBe("");
     expect(paths.fill.startsWith("M")).toBe(true);
-    // Rounded offset polygon → ends with Z.
     expect(paths.fill.endsWith("Z")).toBe(true);
-    // 4 vertices → 4 corner arcs.
+    // 4 vertices with 2 interior corners → 2 outside corner arcs + 2 end caps.
     const aCount = (paths.fill.match(/\bA\b/g) ?? []).length;
     expect(aCount).toBe(4);
     // fill and outline are byte-identical.
@@ -684,6 +684,43 @@ describe("buildChordConnectorPolylines", () => {
     expect(result[0]!.paths.fill).toContain("A");    // arc command from capsule
     expect(result[0]!.paths.outline).toContain("A");
     expect(result[0]!.paths.fill).toBe(result[0]!.paths.outline);
+  });
+
+  // -------------------------------------------------------------------------
+  // Regression: open-string acute triad — formerly rendered as an awkward
+  // convex-hull triangle. Under the new path-offset geometry the contour is
+  // a smooth tube tracing the voicing across strings, so no acute external
+  // corner remains.
+  // -------------------------------------------------------------------------
+
+  it("(regression) open-string acute triad uses tube geometry, not a triangle hull", () => {
+    // D(open) on string 3, A#(fret 1) on string 4, G(fret 3) on string 5 —
+    // a skinny, acutely-angled 3-note voicing. The tube path has two
+    // outside arc at the bend plus two semicircular end caps; the inside
+    // corner is mitered so it does not twist through the turn. A convex-hull offset would
+    // emit three corner arcs around the hull, producing a visible acute
+    // angle at A#.
+    const noteData = [
+      makeNote(3, 0, "D", "chord-root"),
+      makeNote(4, 1, "A#", "chord-tone-in-scale"),
+      makeNote(5, 3, "G", "chord-tone-in-scale"),
+    ];
+    const result = buildChordConnectorPolylines(
+      noteData, ["D", "A#", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "D",
+    );
+    expect(result).toHaveLength(1);
+    const { paths } = result[0]!;
+    expect(paths.fill.startsWith("M")).toBe(true);
+    expect(paths.fill.endsWith("Z")).toBe(true);
+    // Tube: 1 outside corner arc + 2 end caps = 3 A.
+    const aCount = (paths.fill.match(/\bA\b/g) ?? []).length;
+    expect(aCount).toBe(3);
+    // Tube has 2 forward-side L's + 2 backward-side L's = 4 L commands when
+    // both inside and outside corner transitions use arcs. A convex-hull
+    // offset would emit 3 (one per hull edge), so a count ≥ 4 distinguishes
+    // the tube geometry without depending on a specific bevel/miter detail.
+    const lCount = (paths.fill.match(/\bL\b/g) ?? []).length;
+    expect(lCount).toBeGreaterThanOrEqual(4);
   });
 });
 
@@ -940,14 +977,21 @@ describe("per-voicing offset: determinism and paletteIndex independence", () => 
     });
   });
 
-  it("(c) same-fret / one-position voicings use the smaller compact radius", () => {
+  it("(c) same-fret / one-position voicings are floored above the chord-root squircle", () => {
     const sameFret = [
       makeNote(0, 5, "C", "chord-root"),
       makeNote(1, 5, "E", "chord-tone-in-scale"),
       makeNote(2, 5, "G", "chord-tone-in-scale"),
     ];
 
-    expect(computeChordConnectorRadiusPx(sameFret, STRING_ROW_PX, 0)).toBeCloseTo(12.24);
+    // Chord-root squircle radius at default rowPx: 36 × 0.8 × 0.5 × 0.86 = 12.384.
+    // The compact factor alone (0.34 × 36 = 12.24) sits inside the squircle, so
+    // the floor lifts the radius to chordRootRadius + CHORD_CONNECTOR_MIN_HALO_PX
+    // = 12.384 + 2 = 14.384.
+    const computedRadius = computeChordConnectorRadiusPx(sameFret, STRING_ROW_PX, 0);
+    const chordRootRadius = STRING_ROW_PX * 0.8 * 0.5 * 0.86;
+    expect(computedRadius).toBeGreaterThan(chordRootRadius);
+    expect(computedRadius).toBeCloseTo(14.384);
   });
 
   it("(c) 2-position and 3-position voicings produce progressively wider radii", () => {
@@ -964,11 +1008,11 @@ describe("per-voicing offset: determinism and paletteIndex independence", () => 
 
     const twoPositionRadius = computeChordConnectorRadiusPx(twoPositions, STRING_ROW_PX, 0);
     const threePositionRadius = computeChordConnectorRadiusPx(threePositions, STRING_ROW_PX, 0);
-    const compactRadius = computeChordConnectorRadiusPx(twoPositions.slice(0, 2), STRING_ROW_PX, 0);
 
-    expect(twoPositionRadius).toBeCloseTo(13.68);
+    // medium factor (0.38 × 36 = 13.68) is below the 14.384 floor and gets
+    // lifted; max factor (0.42 × 36 = 15.12) sits above the floor.
+    expect(twoPositionRadius).toBeCloseTo(14.384);
     expect(threePositionRadius).toBeCloseTo(15.12);
-    expect(twoPositionRadius).toBeGreaterThan(compactRadius);
     expect(threePositionRadius).toBeGreaterThan(twoPositionRadius);
   });
 

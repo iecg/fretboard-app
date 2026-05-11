@@ -399,6 +399,252 @@ export function offsetOutlinePath(polygon: Array<{ x: number; y: number }>, r: n
 }
 
 // ---------------------------------------------------------------------------
+// offsetOpenPolylinePath
+// ---------------------------------------------------------------------------
+
+/**
+ * Build an SVG path string for the Minkowski sum of an OPEN polyline with a
+ * disk of radius `r`.
+ *
+ * The result is a closed "pill" that follows the polyline's vertex order
+ * rather than its convex hull. This avoids the awkward acute-triangle
+ * silhouette that `offsetOutlinePath(convexHull(...), r)` produces for
+ * skinny 3-note voicings — instead the contour reads as a rounded tube
+ * tracing the chord's voicing.
+ *
+ * Dispatches on the (deduplicated) vertex count:
+ * - **0** → empty string.
+ * - **1** → circle (delegates to `offsetOutlinePath`).
+ * - **2** → capsule (delegates to `offsetOutlinePath`).
+ * - **3+ collinear** → capsule between the two extreme vertices.
+ * - **3+ non-collinear** → analytical perimeter:
+ *     forward along "side A" (the math-RHS / screen-LHS normal of each edge),
+ *     semicircular cap at the end vertex, backward along "side B"
+ *     (the opposite normal), semicircular cap at the start vertex.
+ *     Interior corners receive a round arc only on the convex/outside side.
+ *     The concave/inside side uses the intersection of the adjacent offset
+ *     edge lines, matching a centered thick stroke and avoiding arcs that
+ *     twist through the corner.
+ *
+ * Mitering the inside corner is essential: an inside arc sweeps through the
+ * bend and can visibly twist the tube, while a straight bevel chord can cut
+ * across both adjacent offset edges. Intersecting the adjacent offset lines
+ * keeps the inner boundary centered on the original polyline.
+ *
+ * Inside/outside selection at an interior vertex `V_{i+1}` uses the screen
+ * cross-product of the adjacent edges:
+ *   - `cross > 0` → screen-right turn → side A (math-RHS / screen-LHS) is
+ *     outside (sweep=1 arc on side A, sweep=0 arc on side B).
+ *   - `cross < 0` → screen-left turn → side B is outside (sweep=1 arc on
+ *     side B, sweep=0 arc on side A).
+ *   - `|cross|` near zero → smooth bend, both sides emit a straight line.
+ *
+ * Coordinates are rounded to 2 decimal places for deterministic snapshotting.
+ *
+ * @param vertices - Open polyline vertex sequence in traversal order.
+ *                   Caller is responsible for ordering (e.g., chord
+ *                   connector passes vertices in string-index order so
+ *                   the pill traces the voicing across strings).
+ * @param r        - Offset radius in pixels (≥ 0).
+ * @returns SVG path `d` attribute string closed with `Z`, or `''` for empty input.
+ */
+export function offsetOpenPolylinePath(
+  vertices: Array<{ x: number; y: number }>,
+  r: number,
+): string {
+  if (vertices.length === 0) return "";
+  const rr = Math.max(r, 0);
+
+  // Drop coincident adjacent vertices so degenerate edges don't poison the
+  // normal computation. (Chord-connector inputs never coincide in practice,
+  // but the function is exported for direct testing — defend at the boundary.)
+  const filtered: Array<{ x: number; y: number }> = [];
+  for (const v of vertices) {
+    const prev = filtered[filtered.length - 1];
+    if (!prev || Math.abs(v.x - prev.x) > 1e-9 || Math.abs(v.y - prev.y) > 1e-9) {
+      filtered.push(v);
+    }
+  }
+
+  // Single point / capsule fall through to the existing offsetOutlinePath
+  // dispatch so the byte format is identical for those degenerate cases.
+  if (filtered.length === 1) return offsetOutlinePath([filtered[0]!], rr);
+  if (filtered.length === 2) return offsetOutlinePath([filtered[0]!, filtered[1]!], rr);
+
+  const n = filtered.length;
+
+  // Per-edge unit direction and side-A normal. Side-A = (e.y, -e.x) which is
+  // the math-RHS perpendicular in math y-up convention, equivalent to the
+  // screen-LHS of a screen walker (because y is flipped). For a CCW-math
+  // perimeter this points outward — see offsetOutlinePath for the full
+  // derivation.
+  const edges: Array<{ ex: number; ey: number; nx: number; ny: number }> = [];
+  for (let i = 0; i < n - 1; i++) {
+    const dx = filtered[i + 1]!.x - filtered[i]!.x;
+    const dy = filtered[i + 1]!.y - filtered[i]!.y;
+    const len = Math.sqrt(dx * dx + dy * dy);
+    if (len < 1e-9) {
+      edges.push({ ex: 0, ey: 0, nx: 0, ny: 0 });
+    } else {
+      const ex = dx / len;
+      const ey = dy / len;
+      edges.push({ ex, ey, nx: ey, ny: -ex });
+    }
+  }
+
+  // Collinear fallback: when every consecutive edge pair is parallel, the
+  // hull is a segment and the natural offset is a capsule between the two
+  // farthest vertices. Matches the legacy `offsetOutlinePath(convexHull(...),
+  // r)` behavior for collinear inputs.
+  let allCollinear = true;
+  for (let i = 0; i < n - 2; i++) {
+    const e0 = edges[i]!;
+    const e1 = edges[i + 1]!;
+    const cross = e0.ex * e1.ey - e0.ey * e1.ex;
+    if (Math.abs(cross) > 1e-9) {
+      allCollinear = false;
+      break;
+    }
+  }
+  if (allCollinear) {
+    let maxDist = 0;
+    let ep0 = filtered[0]!;
+    let ep1 = filtered[n - 1]!;
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        const dx = filtered[j]!.x - filtered[i]!.x;
+        const dy = filtered[j]!.y - filtered[i]!.y;
+        const d = dx * dx + dy * dy;
+        if (d > maxDist) {
+          maxDist = d;
+          ep0 = filtered[i]!;
+          ep1 = filtered[j]!;
+        }
+      }
+    }
+    return offsetOutlinePath([ep0, ep1], rr);
+  }
+
+  const parts: string[] = [];
+  const ri = r2(rr);
+  const clockwiseSweep = 1;
+  const offsetLineIntersection = (
+    vertex: { x: number; y: number },
+    edgeA: { ex: number; ey: number; nx: number; ny: number },
+    edgeB: { ex: number; ey: number; nx: number; ny: number },
+    side: 1 | -1,
+  ): { x: number; y: number } | null => {
+    const p = {
+      x: vertex.x + rr * side * edgeA.nx,
+      y: vertex.y + rr * side * edgeA.ny,
+    };
+    const q = {
+      x: vertex.x + rr * side * edgeB.nx,
+      y: vertex.y + rr * side * edgeB.ny,
+    };
+    const det = edgeA.ex * edgeB.ey - edgeA.ey * edgeB.ex;
+    if (Math.abs(det) < 1e-9) return null;
+    const qmpX = q.x - p.x;
+    const qmpY = q.y - p.y;
+    const t = (qmpX * edgeB.ey - qmpY * edgeB.ex) / det;
+    return {
+      x: p.x + t * edgeA.ex,
+      y: p.y + t * edgeA.ey,
+    };
+  };
+
+  // Start point on side A of the first edge.
+  const startAx = filtered[0]!.x + rr * edges[0]!.nx;
+  const startAy = filtered[0]!.y + rr * edges[0]!.ny;
+  parts.push(`M ${r2(startAx)} ${r2(startAy)}`);
+
+  // Forward pass on side A: V_0 → V_{n-1}.
+  for (let i = 0; i < n - 1; i++) {
+    const endEdgeX = filtered[i + 1]!.x + rr * edges[i]!.nx;
+    const endEdgeY = filtered[i + 1]!.y + rr * edges[i]!.ny;
+
+    if (i === n - 2) {
+      parts.push(`L ${r2(endEdgeX)} ${r2(endEdgeY)}`);
+    } else {
+      const e0 = edges[i]!;
+      const e1 = edges[i + 1]!;
+      const cross = e0.ex * e1.ey - e0.ey * e1.ex;
+      const nextX = filtered[i + 1]!.x + rr * e1.nx;
+      const nextY = filtered[i + 1]!.y + rr * e1.ny;
+      if (Math.abs(cross) < 1e-9) {
+        // Smooth bend — incoming and outgoing offset points already coincide
+        // up to numeric noise; emit a straight line as a no-op fallback.
+        parts.push(`L ${r2(endEdgeX)} ${r2(endEdgeY)}`);
+      } else if (cross > 0) {
+        // Screen-right turn → side A is outside → round arc of radius r
+        // around V_{i+1}, sweeping clockwise in SVG screen space.
+        parts.push(`L ${r2(endEdgeX)} ${r2(endEdgeY)}`);
+        parts.push(`A ${ri} ${ri} 0 0 ${clockwiseSweep} ${r2(nextX)} ${r2(nextY)}`);
+      } else {
+        // Screen-left turn → side A is inside. The boundary of a thick
+        // centered stroke runs through the intersection of the adjacent
+        // offset edge lines; drawing an arc here twists through the corner.
+        const join = offsetLineIntersection(filtered[i + 1]!, e0, e1, 1);
+        if (join) {
+          parts.push(`L ${r2(join.x)} ${r2(join.y)}`);
+        } else {
+          parts.push(`L ${r2(nextX)} ${r2(nextY)}`);
+        }
+      }
+    }
+  }
+
+  // Semicircular end cap at V_{n-1}: arc from side A to side B passing
+  // through the direction the polyline was heading at the final edge.
+  const endBx = filtered[n - 1]!.x - rr * edges[n - 2]!.nx;
+  const endBy = filtered[n - 1]!.y - rr * edges[n - 2]!.ny;
+  parts.push(`A ${ri} ${ri} 0 0 1 ${r2(endBx)} ${r2(endBy)}`);
+
+  // Backward pass on side B: V_{n-1} → V_0.
+  for (let i = n - 2; i >= 0; i--) {
+    const startEdgeX = filtered[i]!.x - rr * edges[i]!.nx;
+    const startEdgeY = filtered[i]!.y - rr * edges[i]!.ny;
+
+    if (i === 0) {
+      parts.push(`L ${r2(startEdgeX)} ${r2(startEdgeY)}`);
+    } else {
+      // Cross at V_i computed from forward edges (i-1, i) — intrinsic to
+      // the geometry, independent of walk direction.
+      const e0 = edges[i - 1]!;
+      const e1 = edges[i]!;
+      const cross = e0.ex * e1.ey - e0.ey * e1.ex;
+      const prevX = filtered[i]!.x - rr * e0.nx;
+      const prevY = filtered[i]!.y - rr * e0.ny;
+      if (Math.abs(cross) < 1e-9) {
+        parts.push(`L ${r2(startEdgeX)} ${r2(startEdgeY)}`);
+      } else if (cross < 0) {
+        // Screen-left turn → side B is outside → round arc on the convex
+        // side, sweeping clockwise in SVG screen space.
+        parts.push(`L ${r2(startEdgeX)} ${r2(startEdgeY)}`);
+        parts.push(`A ${ri} ${ri} 0 0 ${clockwiseSweep} ${r2(prevX)} ${r2(prevY)}`);
+      } else {
+        // Screen-right turn → side B is inside. Use the offset-line
+        // intersection instead of an arc so the inner boundary stays centered
+        // and does not twist across the bend.
+        const join = offsetLineIntersection(filtered[i]!, e0, e1, -1);
+        if (join) {
+          parts.push(`L ${r2(join.x)} ${r2(join.y)}`);
+        } else {
+          parts.push(`L ${r2(prevX)} ${r2(prevY)}`);
+        }
+      }
+    }
+  }
+
+  // Semicircular start cap at V_0: arc back to the M anchor through the
+  // direction opposite the first edge.
+  parts.push(`A ${ri} ${ri} 0 0 1 ${r2(startAx)} ${r2(startAy)}`);
+  parts.push("Z");
+
+  return parts.join(" ");
+}
+
+// ---------------------------------------------------------------------------
 // closedPolylinePath
 // ---------------------------------------------------------------------------
 
@@ -544,4 +790,3 @@ export function inflatedCapsulePath(vertices: Point[], perpOffset: number): stri
     ].join(" ");
   }
 }
-

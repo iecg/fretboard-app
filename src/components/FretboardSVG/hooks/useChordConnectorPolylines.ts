@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import type { NoteData } from "./useNoteData";
-import { convexHull, offsetOutlinePath } from "../utils/pathGeometry";
-import { NOTES } from "@fretflow/core";
+import { offsetOpenPolylinePath } from "../utils/pathGeometry";
+import { NOTE_BUBBLE_RATIO, NOTES, RADIUS_SCALE_CHORD_ROOT } from "@fretflow/core";
 
 /**
  * Count the number of distinct fret positions spanned by the **fretted** notes
@@ -108,12 +108,24 @@ export const MAX_PLAYABLE_FRET_POSITIONS = 3;
  * Minkowski-sum disk radius factors for the chord-connector outline envelope.
  * Compact stacked voicings should not use the same width as wider grips; the
  * radius scales with the number of fretted positions occupied by the voicing.
+ *
+ * Note: at default `stringRowPx`, the `compact` and `medium` factors fall
+ * below the floor enforced in `computeChordConnectorRadiusPx`, so they only
+ * apply at smaller row heights where the absolute floor would be excessive.
  */
 export const CHORD_CONNECTOR_RADIUS_FACTORS = {
   compact: 0.34,
   medium: 0.38,
   max: 0.42,
 } as const;
+
+/**
+ * Minimum gap in pixels between the chord-root squircle edge and the
+ * connector contour. Ensures the envelope always sits visibly outside the
+ * largest chord-note bubble even after the y-bound clamp shaves 1 px for
+ * the boundary guard.
+ */
+export const CHORD_CONNECTOR_MIN_HALO_PX = 2;
 
 export interface ConnectorYBounds {
   minY: number;
@@ -155,6 +167,25 @@ export function clampConnectorRadiusToYBounds(
 const OFFSET_BUCKET = [0, 1.5, 3, 4.5, 6] as const;
 
 /**
+ * Lift a raw span-based connector radius above the chord-root squircle's
+ * outer edge plus a small halo so the contour never collapses inside the
+ * note bubble. Shared by chord connectors and interval connectors.
+ *
+ * Computed in pixel space (rather than as a factor of `stringRowPx`) so the
+ * halo gap is constant across the adaptive row-height range — at large row
+ * heights the relative gap shrinks, which matches the intent that the floor
+ * is a "minimum visible separation" rather than a proportional adjustment.
+ */
+export function applyConnectorRadiusFloor(
+  spanRadiusPx: number,
+  stringRowPx: number,
+): number {
+  const chordRootBubbleRadius =
+    stringRowPx * NOTE_BUBBLE_RATIO * 0.5 * RADIUS_SCALE_CHORD_ROOT;
+  return Math.max(spanRadiusPx, chordRootBubbleRadius + CHORD_CONNECTOR_MIN_HALO_PX);
+}
+
+/**
  * Compute the effective connector contour radius for one voicing.
  *
  * The base radius follows the fretted-position span:
@@ -162,7 +193,11 @@ const OFFSET_BUCKET = [0, 1.5, 3, 4.5, 6] as const;
  * - 2 fretted positions → medium grip
  * - 3+ fretted positions → widest playable grip
  *
- * `offsetPx` is added after the span-based radius to separate overlapping
+ * The span radius is then passed through `applyConnectorRadiusFloor` so the
+ * envelope is always larger than the chord-root squircle even when the
+ * span-based factor would tuck the contour inside the note bubble.
+ *
+ * `offsetPx` is added after the floored span radius to separate overlapping
  * voicing envelopes without forcing every connector to use the widest width.
  */
 export function computeChordConnectorRadiusPx(
@@ -177,7 +212,11 @@ export function computeChordConnectorRadiusPx(
       : frettedPositionCount === 2
         ? CHORD_CONNECTOR_RADIUS_FACTORS.medium
         : CHORD_CONNECTOR_RADIUS_FACTORS.max;
-  return (stringRowPx * radiusFactor) + Math.max(offsetPx, 0);
+  const flooredRadius = applyConnectorRadiusFloor(
+    stringRowPx * radiusFactor,
+    stringRowPx,
+  );
+  return flooredRadius + Math.max(offsetPx, 0);
 }
 
 /**
@@ -339,11 +378,12 @@ export const CHORD_TONE_CLASSES = new Set([
  * ```
  * - `paths.fill` / `paths.outline` — pre-computed SVG path strings for the two
  *   render layers. Both strings are byte-identical for every voicing — the
- *   path is built by `offsetOutlinePath(polarSort(vertices), r)` where
- *   `r = computeChordConnectorRadiusPx(...)`,
- *   which Minkowski-sums the polygon with a disk to produce a rounded contour:
- *   smooth blob for non-collinear triads (eliminates thin-sliver artifacts on
- *   cross-fret voicings), capsule fallback for exactly-collinear inputs.
+ *   path is built by `offsetOpenPolylinePath(rawVertices, r)` where
+ *   `r = computeChordConnectorRadiusPx(...)`. This Minkowski-sums the OPEN
+ *   polyline (vertices in string-index order) with a disk to produce a
+ *   rounded tube tracing the voicing — round-arc joins on convex corners,
+ *   bevels on concave corners — and falls back to a capsule for exactly
+ *   collinear inputs.
  * - `vertices` — original (unmodified) chord-tone pixel positions in string-index
  *   order, retained for unit tests and future per-voicing color keying.
  *
@@ -377,7 +417,7 @@ export const CHORD_TONE_CLASSES = new Set([
  *         `offsetPx` from OFFSET_BUCKET (1.5 px spacing). Voicings that do not
  *         overlap any other voicing receive offset 0. Finally the pending list
  *         is iterated once more to emit final paths via
- *         `offsetOutlinePath(convexHull(rawVertices), computeChordConnectorRadiusPx(...))`.
+ *         `offsetOpenPolylinePath(rawVertices, computeChordConnectorRadiusPx(...))`.
  *
  * Returns an array of `{ d, vertices }` objects, one per distinct playable voicing.
  * Returns [] when N < 2 or no valid voicing can be assembled.
@@ -580,11 +620,13 @@ export function buildChordConnectorPolylines(
   // `assignClusterOffsets` sorts each cluster by canonicalKey and assigns
   // OFFSET_BUCKET[i % OFFSET_BUCKET.length] to member i — singletons get 0.
   //
-  // `offsetOutlinePath` Minkowski-sums the polar-sorted polygon with a disk of
-  // radius `computeChordConnectorRadiusPx(...)` and dispatches internally:
-  //   - 3+ non-collinear vertices → rounded offset polygon (smooth blob,
-  //     fixes thin-sliver triangles for cross-fret triads).
-  //   - 3+ collinear vertices → falls back to a capsule (matches old look).
+  // `offsetOpenPolylinePath` Minkowski-sums the rawVertices polyline (in
+  // string-index order) with a disk of radius
+  // `computeChordConnectorRadiusPx(...)` and dispatches internally:
+  //   - 3+ non-collinear vertices → rounded tube tracing the voicing
+  //     order (avoids acute-triangle silhouettes from cross-fret triads).
+  //   - 3+ collinear vertices → falls back to a capsule between the extreme
+  //     vertices (matches old look).
   //   - 2 vertices → capsule.
   //   - 1 vertex → circle.
   // fill === outline (byte-identical) — renderer differentiates via fill/stroke.
@@ -600,10 +642,13 @@ export function buildChordConnectorPolylines(
       computeChordConnectorRadiusPx(pv.sourceCombo, stringRowPx, offsetPx),
       yBounds,
     );
-    const pathStr = offsetOutlinePath(
-      convexHull(pv.rawVertices),
-      radius,
-    );
+    // Open-polyline offset (not convex-hull offset). The rawVertices array
+    // is in window order — string-index ascending — so the resulting pill
+    // traces the voicing across strings rather than enveloping the convex
+    // hull. This avoids the acute-triangle silhouette that 3-note non-
+    // collinear voicings produced under the previous geometry. Collinear
+    // voicings still fall back to a capsule inside `offsetOpenPolylinePath`.
+    const pathStr = offsetOpenPolylinePath(pv.rawVertices, radius);
     const paths = { fill: pathStr, outline: pathStr };
     return { paths, vertices: pv.rawVertices, paletteIndex: pv.paletteIndex, voicingKey: pv.canonicalKey };
   });

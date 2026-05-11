@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { NOTES } from "@fretflow/core";
 import { offsetOutlinePath } from "../utils/pathGeometry";
 import {
+  applyConnectorRadiusFloor,
   CHORD_CONNECTOR_RADIUS_FACTORS,
   clampConnectorRadiusToYBounds,
   type ConnectorYBounds,
@@ -25,6 +26,17 @@ export interface IntervalConnectorPolyline {
   key: string;
 }
 
+interface ParsedIntervalPair {
+  inputIndex: number;
+  pair: { a: string; b: string };
+  sA: number;
+  fA: number;
+  sB: number;
+  fB: number;
+}
+
+const SAME_STRING_LANE_OFFSETS_PX = [0, 3, 6, 3] as const;
+
 /**
  * Compute the scale-degree position (0-based) of a note semitone within the
  * sorted scale-degrees array. Returns -1 if the note is not in the scale.
@@ -35,6 +47,61 @@ function noteToScaleDegree(
 ): number {
   const norm = ((noteSemitone % 12) + 12) % 12;
   return scaleDegreesSorted.indexOf(norm);
+}
+
+function parseIntervalPair(
+  pair: { a: string; b: string },
+  inputIndex: number,
+): ParsedIntervalPair | null {
+  const partA = pair.a.split("-");
+  const partB = pair.b.split("-");
+  if (partA.length < 2 || partB.length < 2) return null;
+
+  const sA = parseInt(partA[0]!, 10);
+  const fA = parseInt(partA[1]!, 10);
+  const sB = parseInt(partB[0]!, 10);
+  const fB = parseInt(partB[1]!, 10);
+  if (isNaN(sA) || isNaN(fA) || isNaN(sB) || isNaN(fB)) return null;
+
+  return { inputIndex, pair, sA, fA, sB, fB };
+}
+
+function assignSameStringLaneOffsets(
+  parsedPairs: ParsedIntervalPair[],
+): Map<number, number> {
+  const byString = new Map<number, Array<{
+    inputIndex: number;
+    lowerFret: number;
+    upperFret: number;
+  }>>();
+
+  for (const parsed of parsedPairs) {
+    if (parsed.sA !== parsed.sB) continue;
+    const entries = byString.get(parsed.sA) ?? [];
+    entries.push({
+      inputIndex: parsed.inputIndex,
+      lowerFret: Math.min(parsed.fA, parsed.fB),
+      upperFret: Math.max(parsed.fA, parsed.fB),
+    });
+    byString.set(parsed.sA, entries);
+  }
+
+  const result = new Map<number, number>();
+  for (const entries of byString.values()) {
+    entries
+      .sort((a, b) =>
+        a.lowerFret - b.lowerFret ||
+        a.upperFret - b.upperFret ||
+        a.inputIndex - b.inputIndex,
+      )
+      .forEach((entry, laneIndex) => {
+        result.set(
+          entry.inputIndex,
+          SAME_STRING_LANE_OFFSETS_PX[laneIndex % SAME_STRING_LANE_OFFSETS_PX.length]!,
+        );
+      });
+  }
+  return result;
 }
 
 /**
@@ -72,6 +139,13 @@ export function buildIntervalConnectorPolylines(
 
   // Build sorted scale-degree lookup once.
   const scaleDegreesSorted = [...scaleSemitones].sort((a, b) => a - b);
+  const parsedPairs: ParsedIntervalPair[] = [];
+  for (let i = 0; i < intervalPairs.length; i++) {
+    const parsed = parseIntervalPair(intervalPairs[i]!, i);
+    if (parsed) parsedPairs.push(parsed);
+  }
+  if (parsedPairs.length === 0) return [];
+  const sameStringLaneOffsetByIndex = assignSameStringLaneOffsets(parsedPairs);
 
   /** Absolute semitone pitch of a note on the given open string + fret. */
   function absolutePitch(openStringNote: string, fret: number): number {
@@ -84,24 +158,25 @@ export function buildIntervalConnectorPolylines(
     return octave * 12 + noteIdx + fret;
   }
 
-  const baseRadius = stringRowPx * CHORD_CONNECTOR_RADIUS_FACTORS.compact;
+  // Apply the same chord-root squircle floor used by chord connectors so the
+  // interval capsule sits visibly outside the note bubbles. The compact
+  // factor alone (0.34 × stringRowPx) lands roughly at the chord-root
+  // squircle radius and would tuck the contour inside the bubble.
+  const baseRadius = applyConnectorRadiusFloor(
+    stringRowPx * CHORD_CONNECTOR_RADIUS_FACTORS.compact,
+    stringRowPx,
+  );
   const results: IntervalConnectorPolyline[] = [];
 
-  for (let i = 0; i < intervalPairs.length; i++) {
-    const pair = intervalPairs[i]!;
-    const partA = pair.a.split("-");
-    const partB = pair.b.split("-");
-    if (partA.length < 2 || partB.length < 2) continue;
-    const sA = parseInt(partA[0]!, 10);
-    const fA = parseInt(partA[1]!, 10);
-    const sB = parseInt(partB[0]!, 10);
-    const fB = parseInt(partB[1]!, 10);
-    if (isNaN(sA) || isNaN(fA) || isNaN(sB) || isNaN(fB)) continue;
-
+  for (const parsed of parsedPairs) {
+    const { pair, sA, fA, sB, fB } = parsed;
     const xA = fretCenterX(fA);
-    const yA = stringYAt(sA, xA);
     const xB = fretCenterX(fB);
+    const yA = stringYAt(sA, xA);
     const yB = stringYAt(sB, xB);
+
+    const laneOffset =
+      sA === sB ? (sameStringLaneOffsetByIndex.get(parsed.inputIndex) ?? 0) : 0;
 
     // Determine which member is the lower-pitched one for palette color.
     const openA = tuning[sA];
@@ -128,7 +203,8 @@ export function buildIntervalConnectorPolylines(
     // Build the path using offsetOutlinePath — for a 2-vertex input this
     // produces a capsule, matching the chord-connector visual style exactly.
     const vertices = [{ x: xA, y: yA }, { x: xB, y: yB }];
-    const radius = clampConnectorRadiusToYBounds(vertices, baseRadius, yBounds);
+    const preferredRadius = baseRadius + laneOffset;
+    const radius = clampConnectorRadiusToYBounds(vertices, preferredRadius, yBounds);
     const pathStr = offsetOutlinePath(vertices, radius);
     const paths = { fill: pathStr, outline: pathStr };
 

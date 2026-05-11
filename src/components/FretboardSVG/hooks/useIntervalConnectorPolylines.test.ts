@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
+import { applyConnectorRadiusFloor, CHORD_CONNECTOR_RADIUS_FACTORS } from "./useChordConnectorPolylines";
 import { buildIntervalConnectorPolylines } from "./useIntervalConnectorPolylines";
+import { offsetOutlinePath } from "../utils/pathGeometry";
 
 // Standard tuning (high-string-first, with octave markers).
 const STANDARD_TUNING = ["E4", "B3", "G3", "D3", "A2", "E2"];
@@ -21,6 +23,37 @@ const SAMPLE_PAIRS = [
   { a: "5-9", b: "5-10" },
   { a: "5-10", b: "5-12" },
 ];
+
+function absolutePathPoints(path: string): Array<{ x: number; y: number }> {
+  const tokens = path.split(/\s+/);
+  const points: Array<{ x: number; y: number }> = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i];
+    if (t === "M" || t === "L") {
+      const x = Number(tokens[i + 1]);
+      const y = Number(tokens[i + 2]);
+      if (Number.isFinite(x) && Number.isFinite(y)) points.push({ x, y });
+    } else if (t === "A") {
+      const x = Number(tokens[i + 6]);
+      const y = Number(tokens[i + 7]);
+      if (Number.isFinite(x) && Number.isFinite(y)) points.push({ x, y });
+    }
+  }
+  return points;
+}
+
+function yExtent(path: string): { minY: number; maxY: number } {
+  const points = absolutePathPoints(path);
+  return {
+    minY: Math.min(...points.map((p) => p.y)),
+    maxY: Math.max(...points.map((p) => p.y)),
+  };
+}
+
+function yCenter(path: string): number {
+  const { minY, maxY } = yExtent(path);
+  return (minY + maxY) / 2;
+}
 
 describe("buildIntervalConnectorPolylines (UAT-24)", () => {
   it("returns empty array for empty intervalPairs", () => {
@@ -145,5 +178,97 @@ describe("buildIntervalConnectorPolylines (UAT-24)", () => {
 
     expect(result).toHaveLength(1);
     expect(result[0]!.paths.fill).not.toMatch(/(?:^|[ ,])-[0-9]/);
+  });
+
+  it("staggered same-string pairs use centered concentric lanes with distinct y extents", () => {
+    const result = buildIntervalConnectorPolylines(
+      SAMPLE_PAIRS,
+      STANDARD_TUNING,
+      C_MAJOR_SEMITONES,
+      fretCenterX,
+      stringYAt,
+      STRING_ROW_PX,
+      { minY: 0, maxY: STRING_ROW_PX * 6 },
+    );
+
+    expect(result).toHaveLength(SAMPLE_PAIRS.length);
+    const extents = result.map((entry) => yExtent(entry.paths.fill));
+    const centers = result.map((entry) => yCenter(entry.paths.fill));
+    expect(extents[1]!.maxY).toBeGreaterThan(extents[0]!.maxY);
+    expect(extents[2]!.maxY).toBeGreaterThan(extents[1]!.maxY);
+    expect(extents[3]!.maxY).toBeCloseTo(extents[1]!.maxY);
+    expect(extents[1]!.minY).toBeLessThan(extents[0]!.minY);
+    expect(extents[2]!.minY).toBeLessThan(extents[1]!.minY);
+    centers.forEach((center) => expect(center).toBeCloseTo(stringYAt(5, fretCenterX(5))));
+  });
+
+  it("same-string top and bottom lanes stay centered while inside y bounds", () => {
+    const neckHeight = STRING_ROW_PX * 6;
+    const topStringYAt = () => 24;
+    const bottomStringYAt = () => neckHeight - 24;
+    const sameStringPairs = [
+      { a: "0-2", b: "0-0" },
+      { a: "0-4", b: "0-2" },
+      { a: "0-5", b: "0-4" },
+    ];
+
+    const top = buildIntervalConnectorPolylines(
+      sameStringPairs,
+      STANDARD_TUNING,
+      C_MAJOR_SEMITONES,
+      fretCenterX,
+      topStringYAt,
+      STRING_ROW_PX,
+      { minY: 0, maxY: neckHeight },
+    );
+    const bottom = buildIntervalConnectorPolylines(
+      sameStringPairs.map((pair) => ({
+        a: pair.a.replace("0-", "5-"),
+        b: pair.b.replace("0-", "5-"),
+      })),
+      STANDARD_TUNING,
+      C_MAJOR_SEMITONES,
+      fretCenterX,
+      bottomStringYAt,
+      STRING_ROW_PX,
+      { minY: 0, maxY: neckHeight },
+    );
+
+    for (const entry of [...top, ...bottom]) {
+      const extent = yExtent(entry.paths.fill);
+      expect(extent.minY).toBeGreaterThanOrEqual(0);
+      expect(extent.maxY).toBeLessThanOrEqual(neckHeight);
+    }
+    expect(yExtent(top[1]!.paths.fill).maxY).toBeGreaterThan(yExtent(top[0]!.paths.fill).maxY);
+    expect(yExtent(top[2]!.paths.fill).maxY).toBeGreaterThan(yExtent(top[1]!.paths.fill).maxY);
+    expect(yExtent(bottom[1]!.paths.fill).minY).toBeLessThan(yExtent(bottom[0]!.paths.fill).minY);
+    expect(yExtent(bottom[2]!.paths.fill).minY).toBeLessThan(yExtent(bottom[1]!.paths.fill).minY);
+    top.forEach((entry) => expect(yCenter(entry.paths.fill)).toBeCloseTo(topStringYAt()));
+    bottom.forEach((entry) => expect(yCenter(entry.paths.fill)).toBeCloseTo(bottomStringYAt()));
+  });
+
+  it("two-string pairs keep the existing centered capsule path", () => {
+    const result = buildIntervalConnectorPolylines(
+      [{ a: "0-5", b: "1-5" }],
+      STANDARD_TUNING,
+      C_MAJOR_SEMITONES,
+      fretCenterX,
+      stringYAt,
+      STRING_ROW_PX,
+    );
+    const baseRadius = applyConnectorRadiusFloor(
+      STRING_ROW_PX * CHORD_CONNECTOR_RADIUS_FACTORS.compact,
+      STRING_ROW_PX,
+    );
+    const expected = offsetOutlinePath(
+      [
+        { x: fretCenterX(5), y: stringYAt(0, fretCenterX(5)) },
+        { x: fretCenterX(5), y: stringYAt(1, fretCenterX(5)) },
+      ],
+      baseRadius,
+    );
+
+    expect(result).toHaveLength(1);
+    expect(result[0]!.paths.fill).toBe(expected);
   });
 });
