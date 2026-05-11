@@ -21,9 +21,9 @@
      Chord and interval connectors that cross the wood's tapered top/bottom
      and nut/body edges remain visible because they are SVG-level clipped to
      `fretboard-svg-box` (the SVG bounding rect), not to `fretboard-taper`
-     (the wood wedge). The wood gradient is painted as a full-SVG-box base
-     layer behind the tapered wood stack, so connectors that overflow into
-     the taper-carved corner gaps still sit on a wood-toned backdrop. */
+     (the wood wedge). Connector pixels that land in the taper-carved corner
+     gaps paint on the app-container backdrop — an accepted trade-off; the
+     wood gradient itself stays clipped to the taper. */
   overflow: clip;
   contain: layout;
 }

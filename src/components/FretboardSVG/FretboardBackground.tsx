@@ -8,14 +8,6 @@ import styles from "./FretboardSVG.module.css";
 interface FretboardBackgroundProps {
   neckWidthPx: number;
   neckHeight: number;
-  /**
-   * Vertical overflow allowance above and below the SVG box. The base
-   * wood `<rect>` extends by this amount in both directions (relying on
-   * `overflow: visible` on the SVG) so connector capsules that overshoot
-   * the outermost strings paint onto a wood-toned backdrop provided by
-   * the outer `.fretboard-neck` wrapper.
-   */
-  verticalInsetPx: number;
   startFret: number;
   maxFret: number;
   tuning: string[];
@@ -31,7 +23,6 @@ export const FretboardBackground = memo(
   ({
     neckWidthPx,
     neckHeight,
-    verticalInsetPx,
     startFret,
     maxFret,
     tuning,
@@ -49,6 +40,13 @@ export const FretboardBackground = memo(
 
     const woodStack = (
       <>
+        <rect
+          x={0}
+          y={0}
+          width={neckWidthPx}
+          height={neckHeight}
+          fill={svgDefUrl("fretboard-wood")}
+        />
         {woodGrainDataUrl ? (
           <image
             href={woodGrainDataUrl}
@@ -180,24 +178,6 @@ export const FretboardBackground = memo(
 
     return (
       <>
-        {/* Base wood backdrop. Paints a wood-gradient rectangle that
-            extends `verticalInsetPx` above the SVG box (y = -verticalInsetPx)
-            and `verticalInsetPx` below it — the SVG has `overflow: visible`
-            so this rect's paint bleeds into the surrounding HTML wrapper.
-            That gives chord/interval connector capsules a wood-toned
-            backdrop both inside the taper-carved corner gaps (rounded body
-            corner + nut-end triangles) AND in the overshoot zone above the
-            top string and below the bottom string. The visible tapered
-            wood (grain, highlights, pores, vignette, edge strokes) still
-            paints inside the `fretboard-taper` clip group below and reads
-            as a tapered shape via its texture detail. */}
-        <rect
-          x={0}
-          y={-verticalInsetPx}
-          width={neckWidthPx}
-          height={neckHeight + 2 * verticalInsetPx}
-          fill={svgDefUrl("fretboard-wood")}
-        />
         <g clipPath={svgDefUrl("fretboard-taper")}>
           {woodStack}
           {/* Headstock area inherits woodStack (gradient + grain + vignette) — no separate fill needed */}

@@ -146,17 +146,6 @@ export const FretboardSVG = memo(function FretboardSVG({
   // live within this box, matching the original (pre-connector-fix)
   // proportions of a guitar fretboard.
   const neckHeight = tuning.length * stringRowPx;
-  // Vertical padding outside the SVG that gives chord-connector capsules
-  // room to overshoot the outermost strings without revealing the
-  // app-container gradient. Sized to cover the maximum capsule radius
-  // (`stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR + maxOffsetPx`
-  // where CHORD_CONNECTOR_BASE_RADIUS_FACTOR = 0.47, max offset = 10 px,
-  // plus a 2 px breathing buffer). Painted by a wood-toned `<rect>` that
-  // overflows the SVG box, clipped by an extended `fretboard-svg-box`,
-  // and surrounded by extra height on `.fretboard-neck`. Kept in sync
-  // manually with `useChordConnectorPolylines.ts` rather than imported to
-  // avoid coupling render geometry to overlay-detection internals.
-  const verticalInsetPx = Math.ceil(stringRowPx * 0.47) + 12;
   const totalColumns = endFret - startFret;
   const hasChordOverlay = chordTones.length > 0;
   const numStrings = tuning.length;
@@ -376,14 +365,7 @@ export const FretboardSVG = memo(function FretboardSVG({
         className={styles["fretboard-neck"]}
         style={
           {
-            // The neck box reserves `verticalInsetPx` of wood-toned padding
-            // above the top string and below the bottom string so chord/
-            // interval connector capsules can overshoot the outermost
-            // strings without revealing the .app-container gradient. The
-            // SVG itself stays sized to the playable `neckHeight`; an
-            // extended base-wood `<rect>` overflows the SVG via
-            // `overflow: visible` to fill the padding zones.
-            height: `${neckHeight + 2 * verticalInsetPx}px`,
+            height: `${neckHeight}px`,
             width: `${neckWidthPx}px`,
             willChange: "transform",
             "--string-row-px": `${stringRowPx}px`,
@@ -401,7 +383,7 @@ export const FretboardSVG = memo(function FretboardSVG({
           style={{
             display: "block",
             position: "absolute",
-            top: verticalInsetPx,
+            top: 0,
             left: 0,
           }}
           aria-hidden="true"
@@ -410,14 +392,12 @@ export const FretboardSVG = memo(function FretboardSVG({
             svgDefId={svgDefId}
             neckWidthPx={neckWidthPx}
             neckHeight={neckHeight}
-            verticalInsetPx={verticalInsetPx}
             taperPath={taperPath}
           />
 
           <FretboardBackground
             neckWidthPx={neckWidthPx}
             neckHeight={neckHeight}
-            verticalInsetPx={verticalInsetPx}
             startFret={startFret}
             maxFret={maxFret}
             tuning={tuning}
@@ -435,12 +415,11 @@ export const FretboardSVG = memo(function FretboardSVG({
 
           {/* Chord + interval connectors render OUTSIDE the wood `fretboard-taper`
               clip so geometry that crosses the wood's tapered top/bottom + nut/body
-              edges near the outer strings stays visible. They ARE clipped to the
-              SVG's bounding box (`fretboard-svg-box`). A base wood-gradient rect
-              behind the tapered wood stack (see FretboardBackground) fills the same
-              SVG box, so connector pixels that overflow into the taper-carved
-              corner gaps land on a wood-toned backdrop instead of revealing the
-              app-container gradient. Rendered BEFORE the note layer so note
+              edges near the outer strings stays visible. They are clipped to the
+              SVG's bounding box (`fretboard-svg-box`). Connector pixels that land
+              in the taper-carved corner gaps paint on the app-container backdrop —
+              that's an accepted trade-off; the wood gradient stays clipped to the
+              taper and does not overflow. Rendered BEFORE the note layer so note
               bubbles paint on top (later SVG siblings paint above earlier ones). */}
           <g
             className={styles["fretboard-overlays"]}
@@ -544,7 +523,6 @@ export const FretboardSVG = memo(function FretboardSVG({
           noteFontPx={noteFontPx}
           neckWidthPx={neckWidthPx}
           neckHeight={neckHeight}
-          verticalInsetPx={verticalInsetPx}
           onNoteClick={onNoteClick}
         />
       </div>
