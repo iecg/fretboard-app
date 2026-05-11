@@ -80,11 +80,12 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
   const isPatternDisabled =
     fingeringPattern === "one-string" || fingeringPattern === "two-strings";
 
+  const hasQualityOverride = chordQualityOverride != null;
   const degreeSelectOptions = [
     { value: CHORD_NONE_VALUE, label: "Off" },
     ...Object.values(getDegreesForScale(scaleName)).map((deg) => ({
       value: deg,
-      label: deg,
+      label: hasQualityOverride && deg === chordDegree ? `${deg}*` : deg,
     })),
   ];
 
@@ -196,7 +197,9 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
                 overflow="scroll"
               />
               <p className={shared["field-hint"]}>
-                Switching degrees picks the diatonic default automatically.
+                {hasQualityOverride
+                  ? "Custom chord type — not the diatonic default."
+                  : "Switching degrees picks the diatonic default automatically."}
               </p>
             </div>
           ) : null}

@@ -50,6 +50,7 @@ const DEGREE_MODE_SEEDS = [
   [rootNoteAtom, "C"],
   [chordOverlayModeAtom, "degree"],
   [chordDegreeAtom, "I"],
+  [chordQualityOverrideAtom, null],
   [fingeringPatternAtom, "caged"],
 ] as const;
 
