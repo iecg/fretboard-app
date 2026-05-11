@@ -325,9 +325,9 @@
      Per-voicing palette (--chord-connector-color-1..8) at 0.3 alpha lets the
      bright neon hues read against dark rosewood (#160d07) without fighting the
      note-bubble fills. */
-  --chord-connector-fill-opacity: 0.15;
-  --chord-connector-outline-width: 1.25px;
-  --chord-connector-outline-opacity: 0.85;
+  --chord-connector-fill-opacity: 0.18;
+  --chord-connector-outline-width: 1.75px;
+  --chord-connector-outline-opacity: 0.9;
   /* Per-voicing chord-connector palette — 8 bright hues spread ~40°+ apart
      around the wheel for maximum distinctness on dark rosewood (#160d07).
      All values sit at saturation 70-100% and lightness 55-75% so they pop
