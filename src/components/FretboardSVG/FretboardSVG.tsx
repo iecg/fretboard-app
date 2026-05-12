@@ -173,20 +173,33 @@ export const FretboardSVG = memo(function FretboardSVG({
     numStrings,
   });
 
+  // Stable polygon data — identity is anchored to shapePolygons only.
+  // Does not depend on pixel-space functions so zoom/scroll do not invalidate it.
+  const polygonData = useMemo(() => {
+    return shapePolygons.map((poly, polyIdx) => ({
+      verts: poly.vertices,
+      halfVerts: poly.vertices.length / 2,
+      color: poly.color,
+      key: `${poly.shape}-${polyIdx}`,
+      poly,
+    }));
+  }, [shapePolygons]);
+
+  // Pixel transform — cheap iteration over stable polygonData.
+  // Recomputes on zoom/scroll (fretToX, stringYAt, neckHeight change) but
+  // polygonData reference stays the same so only this memo re-runs.
   const svgPolygons = useMemo(() => {
-    return shapePolygons.map((poly, polyIdx) => {
-      if (poly.vertices.length === 0) {
+    return polygonData.map(({ verts, halfVerts, color, key, poly }) => {
+      if (verts.length === 0) {
         return {
           points: "",
-          color: poly.color,
-          key: `${poly.shape}-${polyIdx}`,
+          color,
+          key,
           poly,
           centerX: 0,
         };
       }
       const pixelPoints: string[] = [];
-      const verts = poly.vertices;
-      const halfVerts = verts.length / 2;
 
       // Vertex frets are used as-is. A vertex stays off-board only when its
       // template offset truly puts it there (i.e., the scale would have a
@@ -218,13 +231,13 @@ export const FretboardSVG = memo(function FretboardSVG({
       const centerX = fretToX(Math.max(startFret, Math.min(endFret, s5Center)));
       return {
         points,
-        color: poly.color,
-        key: `${poly.shape}-${polyIdx}`,
+        color,
+        key,
         poly,
         centerX,
       };
     });
-  }, [shapePolygons, startFret, endFret, neckHeight, fretToX, stringYAt]);
+  }, [polygonData, startFret, endFret, neckHeight, fretToX, stringYAt]);
 
   const displayRoot = rootNote
     ? getNoteDisplay(rootNote, rootNote, useFlats)
