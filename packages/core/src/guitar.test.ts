@@ -53,6 +53,18 @@ describe('getFretNoteWithOctave', () => {
     // B3 + 1 fret = C4
     expect(getFretNoteWithOctave('B3', 1)).toBe('C4');
   });
+
+  it('clamps high fret numbers to MAX_FRET', () => {
+    const extreme = getFretNoteWithOctave('E4', 100);
+    const clamped = getFretNoteWithOctave('E4', 25);
+    expect(extreme).toBe(clamped);
+  });
+
+  it('clamps negative fret to 0', () => {
+    const negative = getFretNoteWithOctave('E4', -1);
+    const zero = getFretNoteWithOctave('E4', 0);
+    expect(negative).toBe(zero);
+  });
 });
 
 describe('getNoteFrequency', () => {
