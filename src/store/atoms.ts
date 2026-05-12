@@ -101,6 +101,7 @@ export {
 export {
   shapeDataAtom,
   effectiveShapeDataAtom,
+  intervalPairsAtom,
   autoCenterTargetAtom,
   shapeHighlightedNoteSetAtom,
   type AutoCenterTarget,

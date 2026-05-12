@@ -201,6 +201,8 @@ export const autoCenterTargetAtom = atom((get) => {
   return target;
 });
 
+export const intervalPairsAtom = atom((get) => get(effectiveShapeDataAtom).intervalPairs);
+
 export const shapeHighlightedNoteSetAtom = atom((get) => {
   const fingeringPattern = get(fingeringPatternAtom);
   const { highlightNotes } = get(shapeDataAtom);

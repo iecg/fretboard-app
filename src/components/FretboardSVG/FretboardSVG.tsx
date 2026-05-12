@@ -10,7 +10,7 @@ import {
 import {
   scaleDegreeColorsEnabledAtom,
   fingeringPatternAtom,
-  effectiveShapeDataAtom,
+  intervalPairsAtom,
 } from "../../store/atoms";
 import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
 import styles from "./FretboardSVG.module.css";
@@ -129,7 +129,7 @@ export const FretboardSVG = memo(function FretboardSVG({
   void effectiveZoom;
   const degreeColorsEnabled = useAtomValue(scaleDegreeColorsEnabledAtom);
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
-  const { intervalPairs } = useAtomValue(effectiveShapeDataAtom);
+  const intervalPairs = useAtomValue(intervalPairsAtom);
   const internalId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const defsPrefix = `fretboard-${id ?? internalId}`;
   const svgDefId = useCallback((id: string) => `${defsPrefix}-${id}`, [defsPrefix]);
