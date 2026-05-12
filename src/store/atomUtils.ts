@@ -1,6 +1,6 @@
 import { atom, type Atom } from "jotai";
 
-export const EMPTY_SET: Set<string> = new Set<string>();
+export const EMPTY_SET: Set<string> = Object.freeze(new Set<string>()) as Set<string>;
 
 export function setsEqual(a: ReadonlySet<string>, b: ReadonlySet<string>): boolean {
   if (a === b) return true;

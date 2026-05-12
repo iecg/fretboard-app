@@ -37,6 +37,8 @@ import {
   INLAY_RADIUS_MIN,
 } from "@fretflow/core";
 
+const DEFAULT_WRAPPED_NOTES = new Set<string>();
+
 interface FretboardSVGProps {
   /** Pixels per fret column used to size the scroll container; passed through but not read internally. */
   effectiveZoom: number;
@@ -136,7 +138,7 @@ export const FretboardSVG = memo(function FretboardSVG({
   practiceLens,
   colorNotes = [],
   shapePolygons = [],
-  wrappedNotes = new Set<string>(),
+  wrappedNotes = DEFAULT_WRAPPED_NOTES,
   hiddenNotes,
   useFlats = false,
   scaleName = "",
