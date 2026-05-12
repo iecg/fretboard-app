@@ -21,8 +21,7 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
-  // Set all jsx-a11y rules to 'warn' to surface issues without breaking CI.
-  // Promote to 'error' after primitive work completes.
+  // Set all jsx-a11y rules to 'error' — violations break CI.
   {
     files: ['**/*.{ts,tsx}'],
     plugins: { 'jsx-a11y': jsxA11y },
@@ -30,7 +29,7 @@ export default defineConfig([
       ...Object.fromEntries(
         Object.entries(jsxA11y.configs.recommended.rules).map(([rule, value]) => [
           rule,
-          Array.isArray(value) ? ['warn', ...value.slice(1)] : 'warn',
+          Array.isArray(value) ? ['error', ...value.slice(1)] : 'error',
         ])
       ),
     },
