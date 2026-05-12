@@ -125,6 +125,11 @@
   --token-chip-active-bg: #0891b2;
   --token-chip-tonic-bg: #ea580c;
 
+  /* Degree chip surface tokens */
+  --chip-divider: #f5f2ed;
+  --chip-hidden-bg: #f0ede6;
+  --chip-hidden-border: #e8e4df;
+
   /* Elevation shadows — softer, smaller, professional */
   --elevation-card: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
   --elevation-overlay: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
@@ -305,6 +310,10 @@
    chord-tone fills (cream #fef3e2, yellow #fde68a).
    ========================================================================== */
 [data-theme="modern-dark"] {
+  /* VersionBadge text tokens — dark mode muted blue-gray */
+  --text-version: rgb(196 209 223 / 0.46);
+  --text-version-link: rgb(210 225 238 / 0.74);
+
   /* Scale-only fill: warm brown that reads distinctly against dark rosewood.
      #3a2f28 sits ~2–3 L-steps above wood-mid #0d0805 — visible but subordinate
      to the more vivid chord-tone fills. Replaces the cool blue-gray #121a26

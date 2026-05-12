@@ -15,7 +15,7 @@
 }
 
 :global([data-theme="modern-dark"]) .version-badge {
-  color: rgb(196 209 223 / 0.46);
+  color: var(--text-version);
   opacity: 1;
 }
 
@@ -26,7 +26,7 @@
 }
 
 :global([data-theme="modern-dark"]) .version-badge a {
-  color: rgb(210 225 238 / 0.74);
+  color: var(--text-version-link);
   opacity: 1;
 }
 

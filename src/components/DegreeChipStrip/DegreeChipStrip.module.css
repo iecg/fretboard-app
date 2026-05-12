@@ -272,7 +272,7 @@
 }
 
 :global([data-theme="modern-light"]) .degree-chip-strip {
-  --color-note-inner-fill: #ffffff;
+  --color-note-inner-fill: var(--surface-float);
 }
 
 :global([data-theme="modern-light"]) .degree-chip-item[data-in-scale='true'] .degree-chip,
@@ -307,31 +307,31 @@
 
 /* Light-mode: lift chip fill above card-top for clear visual hierarchy */
 :global([data-theme="modern-light"]) .degree-chip {
-  background: #ffffff;
+  background: var(--surface-float);
 }
 
 /* Light-mode: inter-chip divider subtly above card-top (#fcf9f5) */
 :global([data-theme="modern-light"]) .degree-chip-strip {
-  --chip-line-muted: #f5f2ed;
+  --chip-line-muted: var(--chip-divider);
 }
 
 /* Light-mode: hidden chips keep the sunken fill, but still dim so hidden reads consistently across themes. */
 :global([data-theme="modern-light"]) .degree-chip-item[data-hidden='true'] .degree-chip {
-  background: #f0ede6;
-  border-color: #e8e4df;
+  background: var(--chip-hidden-bg);
+  border-color: var(--chip-hidden-border);
   box-shadow: none;
   opacity: var(--note-hidden-opacity);
 }
 
 :global([data-theme="modern-light"]) .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true'][data-hidden='true'] .degree-chip {
-  background: #f0ede6;
-  border-color: #e8e4df;
+  background: var(--chip-hidden-bg);
+  border-color: var(--chip-hidden-border);
   box-shadow: none;
   opacity: var(--note-hidden-opacity);
 }
 
 :global([data-theme="modern-light"]) .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-scale-degree][data-in-scale='true'][data-hidden='true'][data-is-color-note='true'] .degree-chip {
-  background: #e8e4df;
+  background: var(--chip-hidden-border);
   border-color: transparent;
   box-shadow: none;
   opacity: var(--note-hidden-opacity);
