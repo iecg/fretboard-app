@@ -4,35 +4,22 @@
   min-width: 0;
 }
 
-.app-shell {
-  --layout-gap: 0.75rem;
-}
-
-.summary-shell-container,
-.chord-dock-shell-container {
-  display: block;
-  width: 100%;
-}
-
 .summary-shell {
   display: flex;
   justify-content: center;
   width: 100%;
 }
 
-.chord-dock-shell {
-  display: flex;
-  justify-content: center;
-  overflow: hidden;
-  width: 100%;
-}
-
-/* Pull summary-shell closer to header to create a tighter 'top band' zone. */
-.summary-shell[data-layout-tier="desktop"] {
+/* Pull summary closer to header for tighter top band. Same value across every
+   variant of the tier — the band hugs the header in all desktop/tablet layouts. */
+.summary-shell[data-layout-tier="desktop"][data-layout-variant="desktop-split"],
+.summary-shell[data-layout-tier="desktop"][data-layout-variant="desktop-stacked"],
+.summary-shell[data-layout-tier="desktop"][data-layout-variant="desktop-3col"] {
   margin-top: -0.18rem;
 }
 
-.summary-shell[data-layout-tier="tablet"] {
+.summary-shell[data-layout-tier="tablet"][data-layout-variant="tablet-split"],
+.summary-shell[data-layout-tier="tablet"][data-layout-variant="tablet-stacked"] {
   margin-top: -0.1rem;
 }
 

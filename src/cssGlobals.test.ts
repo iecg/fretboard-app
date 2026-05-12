@@ -116,9 +116,9 @@ import { describe, it, expect } from "vitest";
  * - fret-label, fret-value, fret-btn: fret parts
  *
  * **Layout/spacing**:
- * - summary-shell: summary container shell
- * - chord-dock-shell: chord dock container shell
- * - chord-overlay-dock: chord overlay dock
+ * - top-band-summary: unified scale + chord summary card
+ * - summary-shell: summary positioning shell
+ * - chord-section: chord bar AnimatePresence wrapper
  *
  * **Scale selector**:
  * - theory-mode-browser: scale browser container

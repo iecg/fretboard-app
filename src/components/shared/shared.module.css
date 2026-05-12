@@ -7,6 +7,55 @@
   --strip-shadow: none;
 }
 
+/* ===== Shared Eye Toggle ===== */
+.eye-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--strip-eye-toggle-padding, 0.2rem);
+  border: none;
+  background: transparent;
+  color: var(--text-main);
+  opacity: 0.6;
+  cursor: pointer;
+  border-radius: 0.3rem;
+  transition: opacity var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.eye-toggle:hover { opacity: 1; }
+
+.eye-toggle:focus-visible {
+  outline: 2px solid var(--chip-focus-ring);
+  outline-offset: 2px;
+  opacity: 1;
+}
+
+.eye-toggle[aria-pressed="true"] { opacity: 0.4; }
+
+/* Lucide's Eye/EyeOff path fills less of its viewBox than the feather-style
+   inline SVG main previously used. Scale it up visually so the rendered eye
+   reads at the same size, without changing the button's layout box. */
+.eye-toggle svg { transform: scale(1.2); }
+
+/* ===== Shared Card Section Header ===== */
+/* Compact header pattern used by sections nested inside a unified card
+   (e.g., DegreeChipStrip + ChordPracticeBar inside TopBandSummary). */
+.card-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.45rem;
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: var(--strip-header-size, clamp(0.92rem, 1.5vw, 1.05rem));
+  font-weight: var(--font-weight-medium);
+  color: var(--text-main);
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  flex-wrap: wrap;
+}
+
 /* Inset / nested card surface — apply to content panels nested inside a top-level card. */
 .nested-surface {
   background: var(--nested-card-bg);

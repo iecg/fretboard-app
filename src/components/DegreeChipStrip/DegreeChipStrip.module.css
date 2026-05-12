@@ -13,50 +13,24 @@
 
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: var(--strip-gap, 0.4rem);
   width: min(100%, 30rem);
   margin: 0 auto;
-  padding: 0.5rem 0.9rem 0.55rem;
-  border-radius: 1rem;
-  background: var(--strip-fill);
-  border: var(--strip-border);
-  box-shadow: var(--strip-shadow);
+  padding: var(--strip-padding, 0.5rem 0.9rem 0.55rem);
+  border-radius: var(--strip-radius, 1rem);
+  background: var(--strip-bg-override, var(--strip-fill));
+  border: var(--strip-border-override, var(--strip-border));
+  box-shadow: var(--strip-shadow-override, var(--strip-shadow));
   align-items: center;
   text-align: center;
 }
 
 .degree-chip-strip-header {
-  font-family: var(--font-sans);
-  font-size: clamp(0.92rem, 1.5vw, 1.05rem);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-main);
-  line-height: 1.2;
-  letter-spacing: 0.01em;
-}
-
-/* Left-align header with eye toggle. */
-.degree-chip-strip-header[data-has-action] {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 0.5rem;
-  width: 100%;
-  line-height: initial;
+  composes: card-section-header from "../shared/shared.module.css";
 }
 
 .scale-eye-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.2rem;
-  border: none;
-  background: transparent;
-  color: var(--text-main);
-  opacity: 0.6;
-  cursor: pointer;
-  border-radius: 0.3rem;
-  transition: opacity var(--transition-fast);
-  flex-shrink: 0;
+  composes: eye-toggle from "../shared/shared.module.css";
 }
 
 .scale-eye-toggle:hover { opacity: 1; }

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import clsx from 'clsx';
+import { AnimatePresence, motion } from 'motion/react';
 import { useAtomValue } from 'jotai';
 import { scaleDegreeColorsEnabledAtom } from '../../store/atoms';
 import styles from './DegreeChipStrip.module.css';
@@ -57,46 +58,53 @@ export function DegreeChipStrip({
       data-degree-colors={degreeColorsEnabled ? 'true' : undefined}
     >
       {(!hideHeader || headerAction) && (
-        <header
-          className={styles['degree-chip-strip-header']}
-          data-has-action={headerAction ? 'true' : undefined}
-        >
+        <div className={styles['degree-chip-strip-header']}>
           {headerAction}
           {!hideHeader && scaleName}
-        </header>
+        </div>
       )}
-      {visible && (
-        <ul className={styles['degree-chip-strip-list']}>
-          {chips.map((chip, i) => {
-            const isHidden = hiddenNotes?.has(chip.internalNote) ?? false;
-            const isColorNote = colorNotes?.has(chip.internalNote) ?? false;
-            return (
-              <li
-                key={`${chip.note}-${i}`}
-                className={styles['degree-chip-item']}
-                data-in-scale={chip.inScale ? 'true' : undefined}
-                data-is-tonic={chip.isTonic ? 'true' : undefined}
-                data-hidden={isHidden ? 'true' : undefined}
-                data-is-color-note={isColorNote ? 'true' : undefined}
-                data-scale-degree={degreeColorsEnabled ? chip.scaleDegree : undefined}
-                style={degreeColorsEnabled && chip.degreeColor ? { "--degree-color": chip.degreeColor } as React.CSSProperties : undefined}
-              >
-                <button
-                  type="button"
-                  className={styles['degree-chip']}
-                  aria-pressed={isHidden}
-                  aria-label={`${isHidden ? 'Show' : 'Hide'} ${chip.note}`}
-                  onClick={() => onChipToggle?.(chip.internalNote)}
-                  disabled={!onChipToggle}
+      <AnimatePresence initial={false}>
+        {visible && (
+          <motion.ul
+            key="chip-list"
+            className={styles['degree-chip-strip-list']}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+            style={{ overflow: 'hidden' }}
+          >
+            {chips.map((chip, i) => {
+              const isHidden = hiddenNotes?.has(chip.internalNote) ?? false;
+              const isColorNote = colorNotes?.has(chip.internalNote) ?? false;
+              return (
+                <li
+                  key={`${chip.note}-${i}`}
+                  className={styles['degree-chip-item']}
+                  data-in-scale={chip.inScale ? 'true' : undefined}
+                  data-is-tonic={chip.isTonic ? 'true' : undefined}
+                  data-hidden={isHidden ? 'true' : undefined}
+                  data-is-color-note={isColorNote ? 'true' : undefined}
+                  data-scale-degree={degreeColorsEnabled ? chip.scaleDegree : undefined}
+                  style={degreeColorsEnabled && chip.degreeColor ? { '--degree-color': chip.degreeColor } as React.CSSProperties : undefined}
                 >
-                  <span className={styles['degree-chip-note']}>{chip.note}</span>
-                </button>
-                <span className={styles['degree-chip-interval']}>{chip.interval}</span>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+                  <button
+                    type="button"
+                    className={styles['degree-chip']}
+                    aria-pressed={isHidden}
+                    aria-label={`${isHidden ? 'Show' : 'Hide'} ${chip.note}`}
+                    onClick={() => onChipToggle?.(chip.internalNote)}
+                    disabled={!onChipToggle}
+                  >
+                    <span className={styles['degree-chip-note']}>{chip.note}</span>
+                  </button>
+                  <span className={styles['degree-chip-interval']}>{chip.interval}</span>
+                </li>
+              );
+            })}
+          </motion.ul>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
