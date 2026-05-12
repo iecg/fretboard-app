@@ -16,7 +16,9 @@ import {
   chordOverlayHiddenAtom,
   mobileTabAtom,
   showChordPracticeBarAtom,
+  audioErrorAtom,
 } from "./store/atoms";
+import audioErrorStyles from "./components/AudioErrorBanner/AudioErrorBanner.module.css";
 import { BottomTabBar, type BottomTabItem } from "./components/BottomTabBar/BottomTabBar";
 import { TAB_LABELS } from "./constants/tabLabels";
 import useLayoutMode from "./hooks/useLayoutMode";
@@ -71,6 +73,7 @@ function AppContent() {
   const rootNote = useAtomValue(rootNoteAtom);
   const scaleName = useAtomValue(scaleNameAtom);
   const setChordOverlayHidden = useSetAtom(chordOverlayHiddenAtom);
+  const [audioError, setAudioError] = useAtom(audioErrorAtom);
 
   const [showHelp, setShowHelp] = useState(false);
   const helpTriggerRef = useRef<HTMLButtonElement>(null);
@@ -98,6 +101,13 @@ function AppContent() {
   useEffect(() => {
     synth.setMute(isMuted);
   }, [isMuted]);
+
+  useEffect(() => {
+    synth.onError = (msg) => setAudioError(msg);
+    return () => {
+      synth.onError = undefined;
+    };
+  }, [setAudioError]);
 
   // Safari/iOS robustness: resume AudioContext on first interaction
   useEffect(() => {
@@ -245,6 +255,19 @@ function AppContent() {
         onSelect={(id) => setMobileTab(id as "scales" | "chords" | "cof" | "view")}
         aria-label="Mobile navigation"
       />
+    )}
+    {audioError && (
+      <div role="alert" className={audioErrorStyles.banner}>
+        <span className={audioErrorStyles.message}>{audioError}</span>
+        <button
+          type="button"
+          className={audioErrorStyles.dismiss}
+          onClick={() => setAudioError(null)}
+          aria-label="Dismiss audio error notification"
+        >
+          Dismiss
+        </button>
+      </div>
     )}
   </>
   );

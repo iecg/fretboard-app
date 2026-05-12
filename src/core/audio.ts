@@ -37,6 +37,7 @@ class GuitarSynth {
   private masterGain: GainNode | null = null;
   private unsupported: boolean = false;
   private guitarWave: PeriodicWave | null = null;
+  onError?: (message: string) => void;
 
   // Pool reduces node creation overhead
   private voicePool: Voice[] = [];
@@ -114,6 +115,7 @@ class GuitarSynth {
         await this.ctx.resume();
       } catch (e) {
         console.warn("AudioContext resume failed:", e);
+        this.onError?.("Audio could not be started. Try tapping the screen or interacting with the page.");
       }
     }
   }
@@ -171,6 +173,7 @@ class GuitarSynth {
       } catch (e) {
         // Fallback for browser gesture blocking
         console.warn("AudioContext resume failed in playNote:", e);
+        this.onError?.("Audio could not be started. Try tapping the screen or interacting with the page.");
         return;
       }
     }

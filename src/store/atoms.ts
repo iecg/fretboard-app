@@ -96,6 +96,7 @@ export {
   enharmonicDisplayAtom,
   isMutedAtom,
   toggleMuteAtom,
+  audioErrorAtom,
 } from "./audioAtoms";
 
 export {
