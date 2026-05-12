@@ -26,6 +26,8 @@ import {
   chordDegreeAtom,
   chordOverlayModeAtom,
   chordQualityOverrideAtom,
+  chordRootOverrideAtom,
+  chordOverlayHiddenAtom,
   setRootNoteAtom,
   setScaleNameAtom,
   setFingeringPatternAtom,
@@ -710,6 +712,23 @@ describe("atoms", () => {
       expect(store.get(fretEndAtom)).toBe(25);
       expect(store.get(accidentalModeAtom)).toBe("auto");
       expect(store.get(mobileTabAtom)).toBe("scales");
+    });
+
+    it("resets chord overlay backing atoms to defaults", () => {
+      const store = makeStore();
+      store.set(chordDegreeAtom, "V" as import("@fretflow/core").DegreeId);
+      store.set(chordOverlayModeAtom, "manual");
+      store.set(chordRootOverrideAtom, "F#");
+      store.set(chordQualityOverrideAtom, "Minor Triad");
+      store.set(chordOverlayHiddenAtom, true);
+
+      store.set(resetAtom);
+
+      expect(store.get(chordDegreeAtom)).toBeNull();
+      expect(store.get(chordOverlayModeAtom)).toBe("degree");
+      expect(store.get(chordRootOverrideAtom)).toBe("C");
+      expect(store.get(chordQualityOverrideAtom)).toBeNull();
+      expect(store.get(chordOverlayHiddenAtom)).toBe(false);
     });
 
     it("migrates legacy unprefixed keys to prefixed keys", async () => {
