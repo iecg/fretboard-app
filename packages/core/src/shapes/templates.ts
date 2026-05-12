@@ -41,6 +41,12 @@ export interface ShapeTemplate {
 /**
  * Fixed polygon templates for 7-note shapes. Verified for all roots.
  * Used by Natural Minor and remapped major-quality scales.
+ *
+ * Each template's `perString` array contains `[leftOffset, rightOffset]` tuples,
+ * one per string (0–5, high to low). Offsets are relative to the shape's root fret
+ * on the anchor string. Negative offsets = frets below the root, positive = above.
+ * These values are hand-tuned per CAGED shape to enclose exactly the notes that
+ * belong to that position without extending beyond the shape's natural boundaries.
  */
 const SHAPE_TEMPLATES_7NOTE: Record<CagedShape, ShapeTemplate> = {
   C: { anchorString: 4, perString: [[-2,1],[-2,1],[-3,0],[-3,0],[-2,0],[-2,1]] },
@@ -50,7 +56,11 @@ const SHAPE_TEMPLATES_7NOTE: Record<CagedShape, ShapeTemplate> = {
   D: { anchorString: 3, perString: [[0,3],[1,3],[0,3],[0,3],[0,3],[0,3]] },
 };
 
-/** Dorian mode templates. */
+/**
+ * Dorian mode templates. Per-string offsets follow the same convention as
+ * SHAPE_TEMPLATES_7NOTE: [leftOffset, rightOffset] relative to the anchor root,
+ * hand-tuned to fit the unique note distribution of Dorian.
+ */
 const SHAPE_TEMPLATES_DORIAN: Record<CagedShape, ShapeTemplate> = {
   C: { anchorString: 4, perString: [[-2,0],[-2,1],[-3,0],[-3,0],[-3,0],[-2,0]] },
   A: { anchorString: 4, perString: [[0,3],[0,3],[-1,2],[0,2],[0,3],[0,3]] },
@@ -59,7 +69,10 @@ const SHAPE_TEMPLATES_DORIAN: Record<CagedShape, ShapeTemplate> = {
   D: { anchorString: 3, perString: [[0,3],[0,3],[0,4],[0,3],[0,3],[0,3]] },
 };
 
-/** Phrygian mode templates. */
+/**
+ * Phrygian mode templates. Per-string offsets tuned to accommodate Phrygian's
+ * characteristic flat-2 and flat-3 intervals relative to the root.
+ */
 const SHAPE_TEMPLATES_PHRYGIAN: Record<CagedShape, ShapeTemplate> = {
   C: { anchorString: 4, perString: [[-2,1],[-2,1],[-3,0],[-2,0],[-2,1],[-2,1]] },
   A: { anchorString: 4, perString: [[0,3],[-1,3],[0,3],[0,3],[0,3],[0,3]] },
@@ -68,7 +81,10 @@ const SHAPE_TEMPLATES_PHRYGIAN: Record<CagedShape, ShapeTemplate> = {
   D: { anchorString: 3, perString: [[1,3],[1,4],[0,3],[0,3],[0,3],[1,3]] },
 };
 
-/** Locrian mode templates. */
+/**
+ * Locrian mode templates. Per-string offsets tuned for Locrian's flat-2,
+ * flat-3, flat-5, and flat-7 intervals.
+ */
 const SHAPE_TEMPLATES_LOCRIAN: Record<CagedShape, ShapeTemplate> = {
   C: { anchorString: 4, perString: [[-2,1],[-2,1],[-2,0],[-2,1],[-2,1],[-2,1]] },
   A: { anchorString: 4, perString: [[-1,3],[-1,3],[0,3],[0,3],[0,3],[-1,3]] },
@@ -77,7 +93,10 @@ const SHAPE_TEMPLATES_LOCRIAN: Record<CagedShape, ShapeTemplate> = {
   D: { anchorString: 3, perString: [[1,4],[1,4],[0,3],[0,3],[1,3],[1,4]] },
 };
 
-/** Harmonic Minor templates. */
+/**
+ * Harmonic Minor templates. Per-string offsets tuned for Harmonic Minor's
+ * raised-7th (natural 7) compared to Natural Minor, which affects the note layout.
+ */
 const SHAPE_TEMPLATES_HARMONIC_MINOR: Record<CagedShape, ShapeTemplate> = {
   C: { anchorString: 4, perString: [[-2,1],[-3,1],[-3,1],[-3,0],[-1,0],[-2,1]] },
   A: { anchorString: 4, perString: [[0,1],[0,3],[1,2],[0,3],[-1,3],[0,1]] },
@@ -198,6 +217,11 @@ export function get7NoteTemplate(
   return HAND_TUNED_TEMPLATES[scaleName] ?? getDerivedTemplates(scaleName);
 }
 
+/**
+ * Pentatonic shape templates. Per-string offsets tuned for 5-note pentatonic scales.
+ * Same [leftOffset, rightOffset] convention as 7-note templates, hand-tuned to fit
+ * the sparser note distribution of pentatonic positions.
+ */
 export const SHAPE_TEMPLATES_PENT: Record<CagedShape, ShapeTemplate> = {
   C: {
     anchorString: 4,
@@ -221,6 +245,15 @@ export const SHAPE_TEMPLATES_PENT: Record<CagedShape, ShapeTemplate> = {
   },
 };
 
+/**
+ * Configuration for each CAGED shape's fret range and per-string limits.
+ * - `rootStringFocus`: The string index where the root note is typically played (0–5, high to low).
+ * - `fretOffsetMin/Max`: The fret range scanned relative to the root fret (e.g., -3 to 1 means
+ *   from 3 frets below the root to 1 fret above). These define the span of notes visible
+ *   in the shape for dynamic polygon generation.
+ * - `maxNotesPerString`: Optional per-string caps (e.g., G shape limits string 2 to 2 notes
+ *   to avoid overshooting the adjacent-string deduplication). Most strings have no cap.
+ */
 export interface ShapeConfig {
   rootStringFocus: number;
   fretOffsetMin: number;
@@ -228,6 +261,15 @@ export interface ShapeConfig {
   maxNotesPerString?: Partial<Record<number, number>>;
 }
 
+/**
+ * Configuration for each CAGED shape's fret range and root string focus.
+ * Used by deriveTemplate() to scan and extract per-string note ranges,
+ * and by the renderer to select which string a chord's root visually anchors to.
+ *
+ * Examples:
+ * - C: root on string 4 (A string), scans from -3 to +1 relative to root
+ * - E: root on string 5 (low E), scans from -1 to +3 relative to root
+ */
 export const SHAPE_CONFIGS: Record<CagedShape, ShapeConfig> = {
   C: { rootStringFocus: 4, fretOffsetMin: -3, fretOffsetMax: 1 },
   A: { rootStringFocus: 4, fretOffsetMin: -1, fretOffsetMax: 3 },
