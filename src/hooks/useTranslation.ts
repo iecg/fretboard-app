@@ -2,7 +2,7 @@ import { useAtomValue } from "jotai";
 import { languageAtom } from "../store/languageAtom";
 import { en } from "../i18n/en";
 import { es } from "../i18n/es";
-import { Dictionary } from "../i18n/types";
+import type { Dictionary } from "../i18n/types";
 
 const dictionaries: Record<string, Dictionary> = { en, es };
 

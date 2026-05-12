@@ -21,6 +21,8 @@ import AppearanceSettingsSection from "./sections/AppearanceSettingsSection";
 import NotationSettingsSection from "./sections/NotationSettingsSection";
 import ChordLayoutSettingsSection from "./sections/ChordLayoutSettingsSection";
 import ResetSettingsSection from "./sections/ResetSettingsSection";
+import LanguageSettingsSection from "./sections/LanguageSettingsSection";
+import { useTranslation } from "../../hooks/useTranslation";
 import { VersionBadge } from "../VersionBadge/VersionBadge";
 import styles from "./SettingsOverlay.module.css";
 import sharedStyles from "../shared/shared.module.css";
@@ -56,6 +58,7 @@ function SettingsOverlaySurface({
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
   const compact = useCompactDensity();
+  const { t } = useTranslation();
 
   const close = () => {
     setIsOpen(false);
@@ -95,7 +98,7 @@ function SettingsOverlaySurface({
         ref={drawerRef}
         role="dialog"
         aria-modal="true"
-        aria-label="Settings"
+        aria-label={t("settings.title")}
         data-layout-tier={layout.tier}
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
@@ -105,13 +108,13 @@ function SettingsOverlaySurface({
         transition={{ duration: ANIMATION_DURATION_STANDARD, ease: ANIMATION_EASE }}
       >
         <div className={styles["settings-overlay-header"]}>
-          <span className={styles["settings-overlay-title"]}>Settings</span>
+          <span className={styles["settings-overlay-title"]}>{t("settings.title")}</span>
           <button
             type="button"
             ref={closeButtonRef}
             className={clsx(sharedStyles["icon-button"], styles["settings-overlay-close"])}
             onClick={close}
-            aria-label="Close settings"
+            aria-label={t("settings.close")}
           >
             <X className="icon" />
           </button>
@@ -123,6 +126,7 @@ function SettingsOverlaySurface({
           <OverlaySection id="instrument" title="Instrument">
             <InstrumentSettingsSection compact={compact} />
           </OverlaySection>
+          <LanguageSettingsSection compact={compact} />
           <AppearanceSettingsSection compact={compact} />
           <NotationSettingsSection compact={compact} />
           <ChordLayoutSettingsSection compact={compact} />
