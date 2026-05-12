@@ -23,6 +23,7 @@ import { BottomTabBar, type BottomTabItem } from "./components/BottomTabBar/Bott
 import { TAB_LABELS } from "./constants/tabLabels";
 import useLayoutMode from "./hooks/useLayoutMode";
 import { useResolvedTheme } from "./hooks/useResolvedTheme";
+import { useTranslation } from "./hooks/useTranslation";
 import { AppHeader } from "./components/AppHeader/AppHeader";
 import { BrandMark } from "./components/BrandMark/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark";
@@ -63,6 +64,13 @@ const MOBILE_TAB_ITEMS: BottomTabItem[] = [
 ];
 
 function AppContent() {
+  const { t } = useTranslation();
+
+  const translatedTabItems = MOBILE_TAB_ITEMS.map((item) => ({
+    ...item,
+    label: t(`tabs.${item.id}`),
+  }));
+
   const chordType = useAtomValue(chordTypeAtom);
   const isMuted = useAtomValue(isMutedAtom);
   const showChordPracticeBar = useAtomValue(showChordPracticeBarAtom);
@@ -260,7 +268,7 @@ function AppContent() {
     </MainLayoutWrapper>
     {layout.showMobileTabs && !settingsOverlayOpen && (
       <BottomTabBar
-        items={MOBILE_TAB_ITEMS}
+        items={translatedTabItems}
         activeId={mobileTab}
         onSelect={(id) => setMobileTab(id as "scales" | "chords" | "cof" | "view")}
         aria-label="Mobile navigation"
