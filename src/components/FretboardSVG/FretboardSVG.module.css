@@ -419,12 +419,21 @@
 }
 
 /* -----------------------------------------------------------------------
-   Chord-tone connector layer — two-pass fill + outline render.
+   Chord-tone connector layer — three-pass halo + fill + outline render.
+   Halo layer: wide semi-transparent white stroke for background contrast.
    Fill layer: low-opacity closed polygon beneath note bubbles.
    Outline layer: thin contrasting stroke traced on top.
-   Both layers use the same closed-path geometry (polygon or capsule).
+   All layers use the same closed-path geometry (polygon or capsule).
    Color driven by --chord-connector-color-N via data-palette-index attribute selectors.
    ----------------------------------------------------------------------- */
+.chord-connectors path[data-layer="halo"] {
+  fill: none;
+  stroke: var(--chord-connector-halo-color, rgba(255, 255, 255, 0.5));
+  stroke-width: var(--chord-connector-halo-width, 3px);
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
 .chord-connectors path[data-layer="fill"] {
   fill: currentColor;
   fill-opacity: var(--chord-connector-fill-opacity, 0.15);
@@ -465,9 +474,17 @@
 
 /* -----------------------------------------------------------------------
    2-Strings interval connectors — polyline style matching chord connectors.
-   Two-pass fill + outline render; per-pair color via --chord-connector-color-N.
+   Three-pass halo + fill + outline render; per-pair color via --chord-connector-color-N.
    Shares the same CSS token convention as .chord-connectors.
    ----------------------------------------------------------------------- */
+.interval-connectors path[data-layer="halo"] {
+  fill: none;
+  stroke: var(--chord-connector-halo-color, rgba(255, 255, 255, 0.5));
+  stroke-width: var(--chord-connector-halo-width, 3px);
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
 .interval-connectors path[data-layer="fill"] {
   fill: currentColor;
   fill-opacity: var(--chord-connector-fill-opacity, 0.15);
