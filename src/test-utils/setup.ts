@@ -94,6 +94,8 @@ vi.mock("motion/react", async () => {
     motion: motionProxy,
     AnimatePresence: ({ children }: { children: React.ReactNode }) =>
       children as React.ReactElement,
+    MotionConfig: ({ children }: { children: React.ReactNode }) =>
+      children as React.ReactElement,
   };
 });
 
