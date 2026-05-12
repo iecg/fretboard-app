@@ -1214,6 +1214,192 @@ describe("adjacency-aware offset assignment", () => {
 });
 
 // -------------------------------------------------------------------------
+// Overlap offset regression: G major triad on full neck
+//
+// C major scale, degree V (G major = G, B, D).
+// Standard tuning high-to-low: E4(str0) B3(str1) G3(str2) D3(str3) A2(str4) E2(str5)
+//
+// Chord-tone positions (frets 0–22):
+//   G: str0@{3,15}, str1@{8,20}, str2@{0,12}, str3@{5,17}, str4@{10,22}, str5@{3,15}
+//   B: str0@{7,19}, str1@{0,12}, str2@{4,16}, str3@{9,21}, str4@{2,14}, str5@{7,19}
+//   D: str0@{10,22}, str1@{3,15}, str2@{7,19}, str3@{0,12}, str4@{5,17}, str5@{10,22}
+//
+// The E-shape CAGED voicings cluster around frets 7–10 and repeat at 19–22.
+// Both groups should receive independent offset budgets so their
+// overlapping connectors are visually separated.
+// -------------------------------------------------------------------------
+
+describe("G major triad overlap offsets (full neck)", () => {
+  // All G-major chord tones on 6 strings, frets 0–22.
+  function gMajorChordTones(): NoteData[] {
+    const tones: Array<[number, number, string, string]> = [
+      // G positions
+      [0, 3, "G", "chord-tone-in-scale"], [0, 15, "G", "chord-tone-in-scale"],
+      [1, 8, "G", "chord-tone-in-scale"], [1, 20, "G", "chord-tone-in-scale"],
+      [2, 0, "G", "chord-root"],          [2, 12, "G", "chord-root"],
+      [3, 5, "G", "chord-tone-in-scale"], [3, 17, "G", "chord-tone-in-scale"],
+      [4, 10, "G", "chord-tone-in-scale"],[4, 22, "G", "chord-tone-in-scale"],
+      [5, 3, "G", "chord-tone-in-scale"], [5, 15, "G", "chord-tone-in-scale"],
+      // B positions
+      [0, 7, "B", "chord-tone-in-scale"], [0, 19, "B", "chord-tone-in-scale"],
+      [1, 0, "B", "chord-tone-in-scale"], [1, 12, "B", "chord-tone-in-scale"],
+      [2, 4, "B", "chord-tone-in-scale"], [2, 16, "B", "chord-tone-in-scale"],
+      [3, 9, "B", "chord-tone-in-scale"], [3, 21, "B", "chord-tone-in-scale"],
+      [4, 2, "B", "chord-tone-in-scale"], [4, 14, "B", "chord-tone-in-scale"],
+      [5, 7, "B", "chord-tone-in-scale"], [5, 19, "B", "chord-tone-in-scale"],
+      // D positions
+      [0, 10, "D", "chord-tone-in-scale"],[0, 22, "D", "chord-tone-in-scale"],
+      [1, 3, "D", "chord-tone-in-scale"], [1, 15, "D", "chord-tone-in-scale"],
+      [2, 7, "D", "chord-tone-in-scale"], [2, 19, "D", "chord-tone-in-scale"],
+      [3, 0, "D", "chord-tone-in-scale"], [3, 12, "D", "chord-tone-in-scale"],
+      [4, 5, "D", "chord-tone-in-scale"], [4, 17, "D", "chord-tone-in-scale"],
+      [5, 10, "D", "chord-tone-in-scale"],[5, 22, "D", "chord-tone-in-scale"],
+    ];
+    return tones.map(([si, fi, name, cls]) => makeNote(si, fi, name, cls));
+  }
+
+  // Helper: extract voicings whose vertices fall within a fret range.
+  function voicingsInFretRange(
+    voicings: ReturnType<typeof buildChordConnectorPolylines>,
+    minFret: number,
+    maxFret: number,
+  ) {
+    return voicings.filter((v) => {
+      const frets = v.voicingKey.split("|").map((p) => Number(p.split(",")[1]));
+      return frets.every((f) => f >= minFret && f <= maxFret);
+    });
+  }
+
+  // Helper: check if two voicingKeys share a (string,fret) position.
+  function keysSharePosition(a: string, b: string): boolean {
+    const setA = new Set(a.split("|"));
+    for (const pos of b.split("|")) {
+      if (setA.has(pos)) return true;
+    }
+    return false;
+  }
+
+  it("produces voicings in both the fret 7–10 and 19–22 regions", () => {
+    const result = buildChordConnectorPolylines(
+      gMajorChordTones(), ["G", "B", "D"], fretCenterX, stringYAt, STRING_ROW_PX, "G",
+    );
+
+    const low = voicingsInFretRange(result, 7, 10);
+    const high = voicingsInFretRange(result, 19, 22);
+
+    expect(low.length).toBeGreaterThanOrEqual(3);
+    expect(high.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("frets 7–10: overlapping voicings have distinct paths", () => {
+    const result = buildChordConnectorPolylines(
+      gMajorChordTones(), ["G", "B", "D"], fretCenterX, stringYAt, STRING_ROW_PX, "G",
+    );
+
+    const group = voicingsInFretRange(result, 7, 10);
+    // Every pair that shares a position must have different paths.
+    for (let i = 0; i < group.length; i++) {
+      for (let j = i + 1; j < group.length; j++) {
+        if (keysSharePosition(group[i]!.voicingKey, group[j]!.voicingKey)) {
+          expect(
+            group[i]!.paths.fill,
+            `frets 7-10: voicings "${group[i]!.voicingKey}" and "${group[j]!.voicingKey}" share a position but have identical paths (same radius)`,
+          ).not.toBe(group[j]!.paths.fill);
+        }
+      }
+    }
+  });
+
+  it("frets 19–22: overlapping voicings have distinct paths", () => {
+    const result = buildChordConnectorPolylines(
+      gMajorChordTones(), ["G", "B", "D"], fretCenterX, stringYAt, STRING_ROW_PX, "G",
+    );
+
+    const group = voicingsInFretRange(result, 19, 22);
+    // Every pair that shares a position must have different paths.
+    for (let i = 0; i < group.length; i++) {
+      for (let j = i + 1; j < group.length; j++) {
+        if (keysSharePosition(group[i]!.voicingKey, group[j]!.voicingKey)) {
+          expect(
+            group[i]!.paths.fill,
+            `frets 19-22: voicings "${group[i]!.voicingKey}" and "${group[j]!.voicingKey}" share a position but have identical paths (same radius)`,
+          ).not.toBe(group[j]!.paths.fill);
+        }
+      }
+    }
+  });
+
+  it("non-overlapping voicings share the same (minimal) offset", () => {
+    const result = buildChordConnectorPolylines(
+      gMajorChordTones(), ["G", "B", "D"], fretCenterX, stringYAt, STRING_ROW_PX, "G",
+    );
+
+    const group = voicingsInFretRange(result, 7, 10);
+    // Non-overlapping pairs should share the same radius.
+    for (let i = 0; i < group.length; i++) {
+      for (let j = i + 1; j < group.length; j++) {
+        if (!keysSharePosition(group[i]!.voicingKey, group[j]!.voicingKey)) {
+          const rxI = parseFloat(group[i]!.paths.fill.match(/A ([\d.]+)/)?.[1] ?? "0");
+          const rxJ = parseFloat(group[j]!.paths.fill.match(/A ([\d.]+)/)?.[1] ?? "0");
+          expect(
+            rxI,
+            `non-overlapping voicings "${group[i]!.voicingKey}" and "${group[j]!.voicingKey}" should share the same radius`,
+          ).toBeCloseTo(rxJ, 1);
+        }
+      }
+    }
+  });
+
+  it("frets 7-10 and 19-22 receive independent offset budgets", () => {
+    const result = buildChordConnectorPolylines(
+      gMajorChordTones(), ["G", "B", "D"], fretCenterX, stringYAt, STRING_ROW_PX, "G",
+    );
+
+    const baseRadius = STRING_ROW_PX * CHORD_CONNECTOR_BASE_RADIUS_FACTOR;
+
+    // Both regions should have the same offset distribution (isomorphic shapes).
+    const extractOffsets = (minF: number, maxF: number) =>
+      voicingsInFretRange(result, minF, maxF)
+        .map((v) => {
+          const rx = parseFloat(v.paths.fill.match(/A ([\d.]+)/)?.[1] ?? "0");
+          return Math.round(rx - baseRadius);
+        })
+        .sort((a, b) => a - b);
+
+    const offsets7 = extractOffsets(7, 10);
+    const offsets19 = extractOffsets(19, 22);
+
+    expect(offsets7).toEqual(offsets19);
+    // Verify they use minimal offsets (0 and CONNECTOR_OFFSET_STEP=3).
+    expect(offsets7).toEqual([0, 3, 3]);
+  });
+
+  it("yBounds clamping does not erase offset differentiation", () => {
+    // With yBounds, edge voicings (touching str0 or str5) get clamped.
+    // The post-clamp fix should ensure overlapping pairs still differ.
+    // stringYAt = si * 20 → str0=0, str5=100. neckHeight = 100.
+    const yBounds = { minY: 0, maxY: 100 };
+
+    const result = buildChordConnectorPolylines(
+      gMajorChordTones(), ["G", "B", "D"], fretCenterX, stringYAt, STRING_ROW_PX, "G", yBounds,
+    );
+
+    const group = voicingsInFretRange(result, 19, 22);
+    // Every pair sharing a position must have distinct paths even after clamping.
+    for (let i = 0; i < group.length; i++) {
+      for (let j = i + 1; j < group.length; j++) {
+        if (keysSharePosition(group[i]!.voicingKey, group[j]!.voicingKey)) {
+          expect(
+            group[i]!.paths.fill,
+            `yBounds clamped: "${group[i]!.voicingKey}" and "${group[j]!.voicingKey}" share a position but have identical paths`,
+          ).not.toBe(group[j]!.paths.fill);
+        }
+      }
+    }
+  });
+});
+
+// -------------------------------------------------------------------------
 // voicingKey: stability, uniqueness, and order-independence
 // -------------------------------------------------------------------------
 
