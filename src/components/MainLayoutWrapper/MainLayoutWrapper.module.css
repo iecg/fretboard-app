@@ -4,30 +4,13 @@
   min-width: 0;
 }
 
-.app-shell {
-  --layout-gap: 0.75rem;
-}
-
-.summary-shell-container,
-.chord-dock-shell-container {
-  display: block;
-  width: 100%;
-}
-
 .summary-shell {
   display: flex;
   justify-content: center;
   width: 100%;
 }
 
-.chord-dock-shell {
-  display: flex;
-  justify-content: center;
-  overflow: hidden;
-  width: 100%;
-}
-
-/* Pull summary-shell closer to header to create a tighter 'top band' zone. */
+/* Pull summary closer to header for tighter top band. */
 .summary-shell[data-layout-tier="desktop"] {
   margin-top: -0.18rem;
 }

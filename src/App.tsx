@@ -15,7 +15,6 @@ import {
   scaleNameAtom,
   chordOverlayHiddenAtom,
   mobileTabAtom,
-  showChordPracticeBarAtom,
   audioErrorAtom,
 } from "./store/atoms";
 import audioErrorStyles from "./components/AudioErrorBanner/AudioErrorBanner.module.css";
@@ -26,8 +25,7 @@ import { useResolvedTheme } from "./hooks/useResolvedTheme";
 import { AppHeader } from "./components/AppHeader/AppHeader";
 import { BrandMark } from "./components/BrandMark/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark";
-import { ScaleStripPanel } from "./components/ScaleStripPanel/ScaleStripPanel";
-import { ChordOverlayDock } from "./components/ChordOverlayDock/ChordOverlayDock";
+import { TopBandSummary } from "./components/TopBandSummary/TopBandSummary";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
 import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
 import sharedStyles from "./components/shared/shared.module.css";
@@ -65,7 +63,6 @@ const MOBILE_TAB_ITEMS: BottomTabItem[] = [
 function AppContent() {
   const chordType = useAtomValue(chordTypeAtom);
   const isMuted = useAtomValue(isMutedAtom);
-  const showChordPracticeBar = useAtomValue(showChordPracticeBarAtom);
   const [mobileTab, setMobileTab] = useAtom(mobileTabAtom);
   const [settingsOverlayOpen, setSettingsOverlayOpen] = useAtom(settingsOverlayOpenAtom);
   const toggleMute = useSetAtom(toggleMuteAtom);
@@ -167,7 +164,6 @@ function AppContent() {
       layoutVariant={layout.variant}
       isChordActive={!!chordType}
       showSummary={layout.showSummary}
-      showChordDock={showChordPracticeBar}
       showControlsPanel={layout.showControlsPanel}
       showMobileTabs={layout.showMobileTabs}
       header={
@@ -227,8 +223,7 @@ function AppContent() {
           }
         />
       }
-      summary={<ScaleStripPanel />}
-      chordDock={<ChordOverlayDock />}
+      summary={<TopBandSummary />}
       helpModal={
         <Suspense fallback={null}>
           <HelpModal

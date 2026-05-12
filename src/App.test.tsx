@@ -406,30 +406,28 @@ describe("App", () => {
   });
 
   describe("Summary ribbon", () => {
-    it("scale strip renders alone in the summary-shell — no chord dock nested inside", () => {
+    it("scale strip renders in the top-band-summary", () => {
       render(<App />);
-      expect(document.querySelector(".summary-shell .degree-chip-strip")).toBeTruthy();
-      expect(document.querySelector(".summary-shell .chord-practice-bar")).toBeNull();
+      expect(document.querySelector(".top-band-summary .degree-chip-strip")).toBeTruthy();
     });
 
-    it("chord dock renders in chord-dock-shell, not inside summary-shell", async () => {
+    it("chord practice bar renders in the top-band-summary when active", async () => {
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("chordRoot"), "D");
       localStorage.setItem(k("chordType"), "Dominant 7th");
       localStorage.setItem(k("practiceLens"), "tension");
       render(<App />);
       await waitFor(() => {
-        expect(document.querySelector(".chord-dock-shell .chord-practice-bar")).toBeTruthy();
+        expect(document.querySelector(".top-band-summary .chord-practice-bar")).toBeTruthy();
       });
-      expect(document.querySelector(".summary-shell .chord-practice-bar")).toBeNull();
     });
 
-    it("targets lens: scale strip always in summary-shell", async () => {
+    it("targets lens: scale strip always in top-band-summary", async () => {
       localStorage.setItem(k("chordType"), "Major Triad");
       localStorage.setItem(k("practiceLens"), "targets");
       render(<App />);
       await waitFor(() => {
-        expect(document.querySelector(".summary-shell .degree-chip-strip")).toBeTruthy();
+        expect(document.querySelector(".top-band-summary .degree-chip-strip")).toBeTruthy();
       });
     });
 
@@ -456,28 +454,27 @@ describe("App", () => {
       });
     });
 
-    it("targets lens: renders chord practice bar in dock shell and scale strip in summary shell (outside tones)", async () => {
-      // Use Dominant 7th which has Bb outside C Major — forces practice bar to show
+    it("targets lens: both scale strip and chord bar render in unified summary (outside tones)", async () => {
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("chordRoot"), "C");
       localStorage.setItem(k("chordType"), "Dominant 7th");
       localStorage.setItem(k("practiceLens"), "targets");
       render(<App />);
       await waitFor(() => {
-        expect(document.querySelector(".chord-dock-shell .chord-practice-bar")).toBeTruthy();
-        expect(document.querySelector(".summary-shell .degree-chip-strip")).toBeTruthy();
+        expect(document.querySelector(".top-band-summary .chord-practice-bar")).toBeTruthy();
+        expect(document.querySelector(".top-band-summary .degree-chip-strip")).toBeTruthy();
       });
     });
 
-    it("tension lens: renders chord practice bar in dock shell and scale strip in summary shell", async () => {
+    it("tension lens: both scale strip and chord bar render in unified summary", async () => {
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("chordRoot"), "D");
       localStorage.setItem(k("chordType"), "Dominant 7th");
       localStorage.setItem(k("practiceLens"), "tension");
       render(<App />);
       await waitFor(() => {
-        expect(document.querySelector(".chord-dock-shell .chord-practice-bar")).toBeTruthy();
-        expect(document.querySelector(".summary-shell .degree-chip-strip")).toBeTruthy();
+        expect(document.querySelector(".top-band-summary .chord-practice-bar")).toBeTruthy();
+        expect(document.querySelector(".top-band-summary .degree-chip-strip")).toBeTruthy();
       });
     });
 
@@ -486,7 +483,7 @@ describe("App", () => {
       localStorage.setItem(k("practiceLens"), "targets");
       render(<App />);
       await waitFor(() => {
-        expect(document.querySelector(".chord-dock-shell")).toBeTruthy();
+        expect(document.querySelector(".top-band-summary .chord-practice-bar")).toBeTruthy();
       });
       expect(document.querySelector(".chord-row-legend")).toBeNull();
     });
@@ -495,7 +492,6 @@ describe("App", () => {
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("scaleName"), "Major");
       localStorage.setItem(k("chordRoot"), "C");
-      // Dominant 7th has Bb which is outside C Major → bar is non-trivial and shown
       localStorage.setItem(k("chordType"), "Dominant 7th");
       localStorage.setItem(k("practiceLens"), "targets");
       render(<App />);
@@ -507,26 +503,20 @@ describe("App", () => {
       expect(title.textContent).toContain("Dominant 7th");
     });
 
-    it("chord dock and scale strip are in correct shells", async () => {
+    it("chord bar and scale strip are siblings, not nested", async () => {
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("chordRoot"), "D");
       localStorage.setItem(k("chordType"), "Dominant 7th");
       localStorage.setItem(k("practiceLens"), "tension");
       render(<App />);
       await waitFor(() => {
-        expect(document.querySelector(".chord-dock-shell .chord-practice-bar")).toBeTruthy();
+        expect(document.querySelector(".top-band-summary .chord-practice-bar")).toBeTruthy();
       });
-      // chord-practice-bar must NOT be nested inside degree-chip-strip
       expect(document.querySelector(".degree-chip-strip .chord-practice-bar")).toBeNull();
-      // chord dock does NOT include a duplicate degree-chip-strip — the scale
-      // strip is owned exclusively by the summary-shell.
-      expect(document.querySelector(".chord-dock-shell .degree-chip-strip")).toBeNull();
-      // scale strip lives in summary-shell.
-      const summaryStrip = document.querySelector(".summary-shell .degree-chip-strip");
-      expect(summaryStrip).toBeTruthy();
+      expect(document.querySelector(".top-band-summary .degree-chip-strip")).toBeTruthy();
     });
 
-    it("chord dock remains visible when scale is hidden (eye-off)", async () => {
+    it("chord bar remains visible when scale is hidden (eye-off)", async () => {
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("chordRoot"), "C");
       localStorage.setItem(k("chordType"), "Dominant 7th");
