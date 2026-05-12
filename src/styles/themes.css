@@ -276,34 +276,24 @@
      --note-blue, --note-blue-glow, --shadow-note-root, --shadow-note-active,
      --shadow-ping-start, --shadow-ping-end */
 
-  /* Chord-tone connector overrides for light mode.
-     Per-voicing palette (--chord-connector-color-1..8) is darkened (slots 1-3
-     L~30%) so each color reads distinctly at low alpha against the warm-maple
-     wood background. Fill opacity bumped to 0.40 in light mode (vs. dark's
-     0.15) — at 0.15 the tinted fills blend into wood mid-tone (#f1c38e); 0.40
-     is the threshold where envelope shapes read clearly without overpowering
-     the note-bubble hierarchy. Outline (1.25px @ 0.85) remains the dominant
-     edge cue. Dark mode keeps 0.15 because near-black rosewood contrasts
-     bright connector hues at lower alpha. */
+  /* Chord-tone connector palette — canonical Okabe-Ito 8-color palette.
+     Identical across light and dark themes for consistent voicing identity.
+     A halo/casing stroke (--chord-connector-halo-*) provides the contrasting
+     edge that makes these colors readable against any wood background —
+     the palette itself is not modified for contrast. */
   --chord-connector-fill-opacity: 0.40;
   --chord-connector-outline-width: 1.25px;
   --chord-connector-outline-opacity: 0.85;
-  /* Per-voicing chord-connector palette — 8 hues spread ~50°+ apart (Okabe-Ito
-     derived) for CVD-safe distinctness on warm maple wood (#f1c38e mid-tone).
-     Warm slots 1-3 (vermillion/orange/amber) are darkened to L 28-33% and
-     saturated to S 85%+ so the 0.15 fill and 1.25px outline read cleanly over
-     #f1c38e without blending. Cool slots 4-8 hold their original L 37-60%
-     range — cool hues already read distinctly against the warm wood palette.
-     Yellow-green is skipped (collides with wood mid-tone); amber-deep replaces
-     pure yellow which would vanish on the cream surface (#fcf9f5). */
-  --chord-connector-color-1: #B85700; /* Okabe-Ito: vermillion — hue ~17°, darkened L~31% */
-  --chord-connector-color-2: #C66800; /* orange — hue ~35°, darkened L~32% */
-  --chord-connector-color-3: #B58B00; /* amber — hue ~43°, darkened L~33%, S~80% */
-  --chord-connector-color-4: #009E73; /* Okabe-Ito: bluish-green — hue ~164° */
-  --chord-connector-color-5: #00A896; /* cyan-teal — hue ~174° */
-  --chord-connector-color-6: #0072B2; /* Okabe-Ito: blue — hue ~206° */
-  --chord-connector-color-7: #8B5CA6; /* purple-violet — hue ~278° */
-  --chord-connector-color-8: #CC79A7; /* Okabe-Ito: reddish-purple — hue ~329° */
+  --chord-connector-halo-width: 2px;
+  --chord-connector-halo-color: rgba(255, 255, 255, 0.45);
+  --chord-connector-color-1: #E69F00; /* Okabe-Ito: orange */
+  --chord-connector-color-2: #D55E00; /* Okabe-Ito: vermillion */
+  --chord-connector-color-3: #999999; /* Okabe-Ito: gray */
+  --chord-connector-color-4: #009E73; /* Okabe-Ito: bluish green */
+  --chord-connector-color-5: #56B4E9; /* Okabe-Ito: sky blue */
+  --chord-connector-color-6: #0072B2; /* Okabe-Ito: blue */
+  --chord-connector-color-7: #CC79A7; /* Okabe-Ito: reddish purple */
+  --chord-connector-color-8: #F0E442; /* Okabe-Ito: yellow */
 }
 
 /* ==========================================================================
@@ -322,39 +312,34 @@
   --fretboard-note-fill-scale-only: #3a2f28;
 
   /* Chord-tone connector overrides for dark mode.
-     Per-voicing palette (--chord-connector-color-1..8) at 0.3 alpha lets the
-     bright neon hues read against dark rosewood (#160d07) without fighting the
-     note-bubble fills. */
+     Same canonical Okabe-Ito palette as light mode. Lower fill opacity because
+     dark rosewood provides high contrast at lower alpha. Halo disabled —
+     all canonical Okabe-Ito colors pass WCAG 3:1 against rosewood. */
   --chord-connector-fill-opacity: 0.15;
   --chord-connector-outline-width: 1.25px;
   --chord-connector-outline-opacity: 0.85;
-  /* Per-voicing chord-connector palette — 8 bright hues spread ~40°+ apart
-     around the wheel for maximum distinctness on dark rosewood (#160d07).
-     All values sit at saturation 70-100% and lightness 55-75% so they pop
-     against near-black wood without washing into one another. Hue ordering
-     mirrors the light-theme palette so a given paletteIndex feels like the
-     "same voicing color" across themes (red→orange→yellow→green→teal→blue
-     →violet→pink). */
-  --chord-connector-color-1: #FF7F4F; /* Okabe-Ito: vermillion (bright) — hue ~17° */
-  --chord-connector-color-2: #FF9D33; /* orange (bright) — hue ~35° */
-  --chord-connector-color-3: #FFB833; /* amber-gold (bright) — hue ~43° */
-  --chord-connector-color-4: #00D9A3; /* Okabe-Ito: bluish-green (bright) — hue ~164° */
-  --chord-connector-color-5: #2DD4BF; /* cyan-teal (bright) — hue ~174° */
-  --chord-connector-color-6: #3B82F6; /* Okabe-Ito: blue (bright) — hue ~217° */
-  --chord-connector-color-7: #A78BFA; /* purple-violet (bright) — hue ~278° */
-  --chord-connector-color-8: #E879B9; /* Okabe-Ito: reddish-purple (bright) — hue ~329° */
+  --chord-connector-halo-width: 0;
+  --chord-connector-halo-color: transparent;
+  --chord-connector-color-1: #E69F00; /* Okabe-Ito: orange */
+  --chord-connector-color-2: #D55E00; /* Okabe-Ito: vermillion */
+  --chord-connector-color-3: #999999; /* Okabe-Ito: gray */
+  --chord-connector-color-4: #009E73; /* Okabe-Ito: bluish green */
+  --chord-connector-color-5: #56B4E9; /* Okabe-Ito: sky blue */
+  --chord-connector-color-6: #0072B2; /* Okabe-Ito: blue */
+  --chord-connector-color-7: #CC79A7; /* Okabe-Ito: reddish purple */
+  --chord-connector-color-8: #F0E442; /* Okabe-Ito: yellow */
 
-  /* CAGED shapes — dark mode bright Okabe-Ito palette */
-  --caged-e: #FF7F4F;                        /* Okabe-Ito vermillion (bright), slot 1 */
-  --caged-d: #FFB833;                        /* Okabe-Ito amber-gold (bright), slot 3 */
-  --caged-c: #00D9A3;                        /* Okabe-Ito bluish-green (bright), slot 4 */
-  --caged-a: #3B82F6;                        /* Okabe-Ito blue (bright), slot 6 */
-  --caged-g: #E879B9;                        /* Okabe-Ito reddish-purple (bright), slot 8 */
-  --caged-e-bg: rgba(255, 127, 79, 0.18);    /* E #FF7F4F + 0.18 */
-  --caged-d-bg: rgba(255, 184, 51, 0.18);    /* D #FFB833 + 0.18 */
-  --caged-c-bg: rgba(0, 217, 163, 0.18);     /* C #00D9A3 + 0.18 */
-  --caged-a-bg: rgba(59, 130, 246, 0.18);    /* A #3B82F6 + 0.18 */
-  --caged-g-bg: rgba(232, 121, 185, 0.18);   /* G #E879B9 + 0.18 */
+  /* CAGED shapes — canonical Okabe-Ito palette (same as light mode) */
+  --caged-e: #E69F00;                        /* Okabe-Ito orange, slot 1 */
+  --caged-d: #999999;                        /* Okabe-Ito gray, slot 3 */
+  --caged-c: #009E73;                        /* Okabe-Ito bluish green, slot 4 */
+  --caged-a: #0072B2;                        /* Okabe-Ito blue, slot 6 */
+  --caged-g: #CC79A7;                        /* Okabe-Ito reddish purple, slot 7 */
+  --caged-e-bg: rgba(230, 159, 0, 0.18);    /* E #E69F00 + 0.18 */
+  --caged-d-bg: rgba(153, 153, 153, 0.18);  /* D #999999 + 0.18 */
+  --caged-c-bg: rgba(0, 158, 115, 0.18);    /* C #009E73 + 0.18 */
+  --caged-a-bg: rgba(0, 114, 178, 0.18);    /* A #0072B2 + 0.18 */
+  --caged-g-bg: rgba(204, 121, 167, 0.18);  /* G #CC79A7 + 0.18 */
 }
 
 [data-theme="modern-light"] [data-scale-degree] {

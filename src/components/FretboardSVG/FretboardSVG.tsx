@@ -460,6 +460,15 @@ export const FretboardSVG = memo(function FretboardSVG({
                   aria-hidden="true"
                   pointerEvents="none"
                 >
+                  {/* Halo pass: wide semi-transparent white stroke for background contrast */}
+                  {connectorPolylines.map((voicing) => (
+                    <path
+                      key={`halo-${voicing.voicingKey}`}
+                      d={voicing.paths.outline}
+                      data-layer="halo"
+                      data-palette-index={voicing.paletteIndex + 1}
+                    />
+                  ))}
                   {/* Fill pass: all voicings rendered first (below outlines) */}
                   {connectorPolylines.map((voicing) => (
                     <motion.path
@@ -500,6 +509,15 @@ export const FretboardSVG = memo(function FretboardSVG({
                 aria-hidden="true"
                 pointerEvents="none"
               >
+                {/* Halo pass */}
+                {intervalConnectorPolylines.map((line) => (
+                  <path
+                    key={`iv-halo-${line.key}`}
+                    d={line.paths.outline}
+                    data-layer="halo"
+                    data-palette-index={line.paletteIndex}
+                  />
+                ))}
                 {/* Fill pass */}
                 {intervalConnectorPolylines.map((line) => (
                   <path

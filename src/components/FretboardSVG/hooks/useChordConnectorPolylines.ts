@@ -31,7 +31,7 @@ function voicingFrettedPositionCount(combo: NoteData[]): number {
 
 /**
  * Hand-picked palette slots per inversion count, maximising perceptual
- * distance across the 8-color Okabe-Ito-derived palette:
+ * distance across the 8-color canonical Okabe-Ito palette:
  *
  *   slot 0 = vermillion (red-warm)
  *   slot 3 = bluish-green
