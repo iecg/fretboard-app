@@ -10,6 +10,7 @@ import {
   practiceLensAtom,
 } from "../../store/atoms";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
+import { axe } from "../../test-utils/a11y";
 
 describe("TopBandSummary chord integration", () => {
   beforeEach(() => {
@@ -49,5 +50,16 @@ describe("TopBandSummary chord integration", () => {
     ]);
     expect(screen.queryByText("Chord:")).toBeNull();
     expect(screen.getByText("Land on:")).toBeTruthy();
+  });
+
+  it("has no accessibility violations on the unified surface", async () => {
+    const { container } = renderWithAtoms(<TopBandSummary />, [
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [chordRootAtom, "D"],
+      [chordTypeAtom, "Minor 7th"],
+      [practiceLensAtom, "targets"],
+    ]);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

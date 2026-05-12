@@ -58,10 +58,10 @@ export function DegreeChipStrip({
       data-degree-colors={degreeColorsEnabled ? 'true' : undefined}
     >
       {(!hideHeader || headerAction) && (
-        <header className={styles['degree-chip-strip-header']}>
+        <div className={styles['degree-chip-strip-header']}>
           {headerAction}
           {!hideHeader && scaleName}
-        </header>
+        </div>
       )}
       <AnimatePresence initial={false}>
         {visible && (

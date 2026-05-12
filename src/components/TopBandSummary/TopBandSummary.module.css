@@ -18,11 +18,8 @@
   --strip-border-override: none;
   --strip-shadow-override: none;
 
-  /* Compact overrides cascading to children */
-  --strip-padding: 0.32rem 0.85rem 0.34rem;
+  /* Card owns the rounded corners — flatten nested strip corners. */
   --strip-radius: 0;
-  --strip-gap: 0.3rem;
-  --strip-header-size: clamp(0.92rem, 1.5vw, 1.05rem);
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */

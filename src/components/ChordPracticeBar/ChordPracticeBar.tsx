@@ -140,7 +140,7 @@ export function ChordPracticeBar({
       data-collapsed={collapsed ? "true" : undefined}
       data-degree-colors={degreeColorsEnabled ? "true" : undefined}
     >
-      <header className={styles["chord-practice-bar-header"]}>
+      <div className={styles["chord-practice-bar-header"]}>
         <button
           type="button"
           className={styles["practice-bar-eye-toggle"]}
@@ -159,7 +159,7 @@ export function ChordPracticeBar({
           <span className={styles["chord-practice-bar-lens-label"]}>{lensLabel}</span>
         )}
         {badge && <span className={styles["chord-practice-bar-badge"]}>{badge}</span>}
-      </header>
+      </div>
       <AnimatePresence initial={false}>
         {!collapsed && (
           <motion.div

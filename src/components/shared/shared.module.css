@@ -33,6 +33,11 @@
 
 .eye-toggle[aria-pressed="true"] { opacity: 0.4; }
 
+/* Lucide's Eye/EyeOff path fills less of its viewBox than the feather-style
+   inline SVG main previously used. Scale it up visually so the rendered eye
+   reads at the same size, without changing the button's layout box. */
+.eye-toggle svg { transform: scale(1.2); }
+
 /* ===== Shared Card Section Header ===== */
 /* Compact header pattern used by sections nested inside a unified card
    (e.g., DegreeChipStrip + ChordPracticeBar inside TopBandSummary). */
