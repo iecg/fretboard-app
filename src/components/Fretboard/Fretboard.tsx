@@ -22,32 +22,55 @@ import {
 import type { ShapePolygon } from "@fretflow/core";
 
 interface FretboardProps {
+  /** String tuning ordered from high string (index 0) to low string; defaults to atom-driven state. */
   tuning?: string[];
+  /** Maximum fret number rendered on the neck. */
   maxFret?: number;
+  /** Notes to highlight as scale tones (stored as sharps, e.g. "C#"). */
   highlightNotes?: string[];
+  /** Root note of the active scale, used for degree calculations and coloring. */
   rootNote?: string;
+  /** Controls how notes are labeled inside bubbles: note names, scale degrees, or hidden. */
   displayFormat?: "notes" | "degrees" | "none";
+  /** Per-string fret-range boxes that constrain shape/chord highlighting. */
   boxBounds?: { minFret: number; maxFret: number }[];
+  /** Chord tone note names to overlay on the fretboard. */
   chordTones?: string[];
+  /** Root note of the active chord overlay. */
   chordRoot?: string;
+  /** Fret spread of the chord voicing, used to size shape-constrained rendering. */
   chordFretSpread?: number;
+  /** Notes to render with a special "color" highlight role. */
   colorNotes?: string[];
+  /** CAGED / 3NPS shape polygon definitions to render as filled regions. */
   shapePolygons?: ShapePolygon[];
+  /** Set of note names that wrap across the nut (open-string equivalents). */
   wrappedNotes?: Set<string>;
+  /** Set of note names to suppress from rendering entirely. */
   hiddenNotes?: Set<string>;
+  /** Callback fired when the user taps a fret; receives string index, fret index, and note name. */
   onFretClick?: (
     stringIndex: number,
     fretIndex: number,
     noteName: string,
   ) => void;
+  /** When true, renders flat spellings instead of sharps where applicable. */
   useFlats?: boolean;
+  /** Name of the active scale (e.g. "Major", "Dorian"). */
   scaleName?: string;
+  /** Height in pixels of each string row. */
   stringRowPx?: number;
+  /** Fret range to scroll/center the viewport on after a shape change. */
   autoCenterTarget?: AutoCenterTarget;
+  /** Incrementing key that re-triggers auto-centering without changing the target. */
   recenterKey?: number;
+  /** Active fingering pattern system: CAGED, 3NPS, or none. */
   activePattern?: "caged" | "3nps" | "none";
+  /** Selected shape within the active pattern (CAGED letter or 3NPS position number). */
   activeShape?: ActiveShapeType;
+  /** Rendering scope for the chord overlay relative to the active shape. */
   shapeScope?: ShapeScope;
+  /** Optional DOM id forwarded to the inner SVG element for stable references. */
   id?: string;
 }
 

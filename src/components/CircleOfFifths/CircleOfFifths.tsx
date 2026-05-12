@@ -35,6 +35,21 @@ function slicePath(index: number): string {
   return `M ${ix1} ${iy1} L ${ox1} ${oy1} A ${OUTER_RADIUS} ${OUTER_RADIUS} 0 0 1 ${ox2} ${oy2} L ${ix2} ${iy2} A ${INNER_RADIUS} ${INNER_RADIUS} 0 0 0 ${ix1} ${iy1} Z`;
 }
 
+interface CircleOfFifthsProps {
+  /** Currently selected root note (e.g., "C", "G#"). */
+  rootNote: string;
+  /** Callback invoked when the user selects a new root note. */
+  setRootNote: (n: string) => void;
+  /** Name of the active scale, used to highlight scale-member segments. */
+  scaleName?: string;
+  /** When true, renders flat spellings instead of sharps where applicable. */
+  useFlats?: boolean;
+  /** Controls enharmonic label display: "auto" infers from the key, "on" always shows, "off" never shows. */
+  enharmonicDisplay?: "auto" | "on" | "off";
+  /** Layout variant: "card" wraps the SVG in a card container; "inline" renders flush. */
+  variant?: "card" | "inline";
+}
+
 export const CircleOfFifths = memo(function CircleOfFifths({
   rootNote,
   setRootNote,
@@ -42,14 +57,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
   useFlats = false,
   enharmonicDisplay = "auto",
   variant = "card",
-}: {
-  rootNote: string;
-  setRootNote: (n: string) => void;
-  scaleName?: string;
-  useFlats?: boolean;
-  enharmonicDisplay?: "auto" | "on" | "off";
-  variant?: "card" | "inline";
-}) {
+}: CircleOfFifthsProps) {
   const rootIndex = CIRCLE_OF_FIFTHS.indexOf(rootNote);
   const scaleIntervals = SCALES[scaleName] || [];
 

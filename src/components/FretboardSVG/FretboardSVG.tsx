@@ -38,27 +38,49 @@ import {
 } from "@fretflow/core";
 
 interface FretboardSVGProps {
+  /** Pixels per fret column used to size the scroll container; passed through but not read internally. */
   effectiveZoom: number;
+  /** Total rendered neck width in pixels. */
   neckWidthPx: number;
+  /** First fret column visible in the viewport (0 = open strings). */
   startFret: number;
+  /** Last fret column visible in the viewport (exclusive upper bound). */
   endFret: number;
+  /** Height in pixels of each string row. */
   stringRowPx?: number;
+  /** Pre-computed 2-D note name grid: fretboardLayout[string][fret]. */
   fretboardLayout: string[][];
+  /** String tuning ordered from high string (index 0) to low string. */
   tuning: string[];
+  /** Total fret count on the neck; caps note rendering. */
   maxFret?: number;
+  /** Notes to highlight as scale tones (stored as sharps). */
   highlightNotes: string[];
+  /** Root note of the active scale, used for degree labels and color mapping. */
   rootNote: string;
+  /** Controls the label style inside note bubbles. */
   displayFormat?: "notes" | "degrees" | "none";
+  /** Per-string fret-range boxes constraining shape/chord highlighting. */
   boxBounds?: BoxBound[];
+  /** Chord tone note names to overlay on the fretboard. */
   chordTones?: string[];
+  /** Root note of the active chord overlay. */
   chordRoot?: string;
+  /** Fret spread of the chord voicing, used for shape-constrained rendering. */
   chordFretSpread?: number;
+  /** Active practice lens that drives note emphasis rules (colors, tension cues, squircles). */
   practiceLens?: PracticeLens;
+  /** Notes to render with the special "color" highlight role. */
   colorNotes?: string[];
+  /** CAGED / 3NPS shape polygons to render as filled regions behind the notes. */
   shapePolygons?: ShapePolygon[];
+  /** Set of note names that wrap across the nut (open-string equivalents). */
   wrappedNotes?: Set<string>;
+  /** Set of note names to suppress from rendering entirely. */
   hiddenNotes?: Set<string>;
+  /** When true, renders flat spellings instead of sharps where applicable. */
   useFlats?: boolean;
+  /** Name of the active scale, used for degree color mapping and aria label. */
   scaleName?: string;
   /**
    * Active pattern context for shape-constrained chord overlay rendering.
@@ -85,7 +107,9 @@ interface FretboardSVGProps {
    * semantic roles simultaneously — e.g. chord root AND tension note.
    */
   noteSemantics?: Map<string, NoteSemantics>;
+  /** Optional DOM id applied to the SVG wrapper for stable external references. */
   id?: string;
+  /** Callback fired when the user clicks a note bubble; receives string index, fret index, and note name. */
   onNoteClick?: (
     stringIndex: number,
     fretIndex: number,
