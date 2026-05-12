@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { clsx } from "clsx";
 import { formatAccidental } from "@fretflow/core";
 import { getNoteVisuals } from "./utils/semantics";
+import { CHORD_ROOT_HALO_RADIUS_PX, reduceCircleRadius, reduceSquircleRadius, squirclePath } from "./utils/noteSizing";
 import styles from "./FretboardSVG.module.css";
 import type { NoteData } from "./hooks/useNoteData";
 
@@ -83,22 +84,17 @@ export const FretboardNoteLayer = memo(({
         const cy = stringYAt(stringIndex, cx);
         const baseRadius = noteBubblePx / 2;
         const { radiusScale, noteShape } = getNoteVisuals(noteClass);
-        const r = baseRadius * radiusScale * applyLensEmphasis.radiusBoost;
+        const rawRadius = baseRadius * radiusScale * applyLensEmphasis.radiusBoost;
+        const r = noteShape === "squircle"
+          ? reduceSquircleRadius(rawRadius)
+          : reduceCircleRadius(rawRadius);
 
         const shapeEl =
           noteShape === "squircle" ? (
             <>
               {noteClass === "chord-root" && (
-                /* Outer halo: inline style prevents CSS class rules from overriding
-                   fill/stroke so the halo remains a transparent ring (not a filled rect).
-                   When isTension, the halo echoes the dashed tension signal. */
-                <rect
-                  x={cx - r - 3.5}
-                  y={cy - r - 3.5}
-                  width={(r + 3.5) * 2}
-                  height={(r + 3.5) * 2}
-                  rx={(r + 3.5) * 0.38}
-                  ry={(r + 3.5) * 0.38}
+                <path
+                  d={squirclePath(cx, cy, r + CHORD_ROOT_HALO_RADIUS_PX)}
                   style={{
                     fill: "none",
                     stroke: isTension
@@ -110,14 +106,7 @@ export const FretboardNoteLayer = memo(({
                   }}
                 />
               )}
-              <rect
-                x={cx - r}
-                y={cy - r}
-                width={r * 2}
-                height={r * 2}
-                rx={r * 0.38}
-                ry={r * 0.38}
-              />
+              <path d={squirclePath(cx, cy, r)} />
             </>
           ) : noteShape === "diamond" ? (
             <polygon

@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import type { NoteData } from "./useNoteData";
-import { convexHull, offsetOutlinePath } from "../utils/pathGeometry";
+import { offsetOpenPolylinePath } from "../utils/pathGeometry";
 import { NOTES } from "@fretflow/core";
+import { chordRootVisualRadiusPx } from "../utils/noteSizing";
 
 /**
  * Count the number of distinct fret positions spanned by the **fretted** notes
@@ -29,23 +30,56 @@ function voicingFrettedPositionCount(combo: NoteData[]): number {
 }
 
 /**
- * Maps each of the 12 semitone intervals (0-11) to one of 8 palette slots
- * (0-7). Designed so intervals that co-occur within any standard chord type
- * (triads, 7ths, aug, dim) never collide.
+ * Hand-picked palette slots per inversion count, maximising perceptual
+ * distance across the 8-color Okabe-Ito-derived palette:
  *
- * Verification:
- *   Aug triad  (0,4,8)    → (0,4,3) ✓
- *   Dim7       (0,3,6,9)  → (0,3,6,5) ✓
- *   Dom7       (0,4,7,10) → (0,4,7,1) ✓
- *   Maj7       (0,4,7,11) → (0,4,7,6) ✓
- *   Min7       (0,3,7,10) → (0,3,7,1) ✓
- *   Aug7       (0,4,8,10) → (0,4,3,1) ✓
- *   MinMaj7    (0,3,7,11) → (0,3,7,6) ✓
- *   Half-dim7  (0,3,6,10) → (0,3,6,1) ✓
+ *   slot 0 = vermillion (red-warm)
+ *   slot 3 = bluish-green
+ *   slot 5 = blue
+ *   slot 6 = purple
+ *   slot 7 = reddish-purple
+ *
+ * Each row maps inversion number (0 = root, 1 = 1st inv, …) to a palette
+ * slot that sits in a different perceptual colour group from its neighbours.
  */
-export const INTERVAL_TO_PALETTE: readonly number[] = [
-  0, 1, 2, 3, 4, 5, 6, 7, 3, 5, 1, 6,
-];
+export const INVERSION_SLOTS: Record<number, readonly number[]> = {
+  2: [0, 5],
+  3: [0, 3, 6],
+  4: [0, 3, 5, 7],
+};
+
+/**
+ * Compute the palette index for a voicing based on its inversion number
+ * (which chord tone is in the bass). Ensures distinct, perceptually
+ * separated colours for every inversion of any chord type.
+ */
+export function inversionPaletteIndex(
+  bestCombo: NoteData[],
+  chordRoot: string,
+  chordToneNames: string[],
+): number {
+  const bassInterval = bassIntervalSemitones(bestCombo, chordRoot);
+  const rootIdx = NOTES.indexOf(chordRoot);
+  if (rootIdx < 0) return 0;
+
+  const toneIntervals = chordToneNames
+    .map((name) => {
+      const idx = NOTES.indexOf(name);
+      return idx < 0 ? -1 : (idx - rootIdx + 12) % 12;
+    })
+    .filter((i) => i >= 0);
+  toneIntervals.sort((a, b) => a - b);
+
+  const unique = [...new Set(toneIntervals)];
+  const invNum = unique.indexOf(bassInterval);
+  if (invNum < 0) return 0;
+
+  const slots = INVERSION_SLOTS[unique.length];
+  if (slots) return slots[invNum] ?? 0;
+
+  const step = Math.max(1, Math.floor(8 / unique.length));
+  return (invNum * step) % 8;
+}
 
 /**
  * Compute the bass-note interval (in semitones, 0-11) from the chord root to
@@ -124,11 +158,27 @@ export const MAX_FRET_SPAN = 5;
 export const MAX_PLAYABLE_FRET_POSITIONS = 3;
 
 /**
- * Minkowski-sum disk radius factor for the chord-connector outline envelope.
- * Applied as `stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR + offsetPx`.
- * Reduced from the legacy value to sit the outline closer to the note bubbles.
+ * Uniform base radius factor for chord-connector outlines. All voicings
+ * share this base; differentiation comes only from conflict offsets.
  */
-export const CHORD_CONNECTOR_BASE_RADIUS_FACTOR = 0.47;
+export const CHORD_CONNECTOR_BASE_RADIUS_FACTOR = 0.42;
+
+/**
+ * Legacy per-span factors. Interval connectors still use `compact`.
+ */
+export const CHORD_CONNECTOR_RADIUS_FACTORS = {
+  compact: 0.34,
+  medium: 0.38,
+  max: 0.42,
+} as const;
+
+/**
+ * Minimum gap in pixels between the chord-root squircle edge and the
+ * connector contour. Ensures the envelope always sits visibly outside the
+ * largest chord-note bubble even after the y-bound clamp shaves 1 px for
+ * the boundary guard.
+ */
+export const CHORD_CONNECTOR_MIN_HALO_PX = 2;
 
 export interface ConnectorYBounds {
   minY: number;
@@ -136,6 +186,7 @@ export interface ConnectorYBounds {
 }
 
 const CONNECTOR_BOUNDARY_GUARD_PX = 1;
+const CONNECTOR_CONFLICT_GAP_PX = 1.5;
 
 export function clampConnectorRadiusToYBounds(
   vertices: ChordConnectorVertex[],
@@ -159,187 +210,216 @@ export function clampConnectorRadiusToYBounds(
   return Math.max(0, Math.min(preferredRadius, availableRadius));
 }
 
-/**
- * Fixed pixel step between adjacent colour indices. Each graph-colouring
- * level adds CONNECTOR_OFFSET_STEP px to the base radius — just enough to
- * visually separate the 1.25 px stroke outlines without inflating
- * connectors more than necessary. Capped at MAX_CONNECTOR_OFFSET to
- * prevent unbounded growth in highly-connected clusters.
- */
-const CONNECTOR_OFFSET_STEP = 3;
-const MAX_CONNECTOR_OFFSET = 10;
-
-/**
- * Extract the set of "stringIndex,fretIndex" position tokens from a
- * canonical key like "0,7|1,8|2,7".
- */
-function positionSet(canonicalKey: string): Set<string> {
-  return new Set(canonicalKey.split("|"));
+export function resolveConnectorRadiusPx({
+  vertices,
+  preferredRadius,
+  yBounds,
+  edgeSafe,
+}: {
+  vertices: ChordConnectorVertex[];
+  preferredRadius: number;
+  yBounds?: ConnectorYBounds;
+  edgeSafe: boolean;
+}): number {
+  return edgeSafe
+    ? clampConnectorRadiusToYBounds(vertices, preferredRadius, yBounds)
+    : preferredRadius;
 }
 
 /**
- * Test whether two voicings share at least one (string, fret) position.
- * Voicings that share a vertex produce overlapping connector outlines
- * regardless of radius, so they must receive distinct offsets.
+ * Per-voicing pixel offset deltas added to the base radius.
+ * Assigned by adjacency-aware cluster detection so that voicings whose
+ * envelopes overlap receive distinct offsets with 3 px spacing between
+ * adjacent values. Non-negative: smallest envelope equals base radius
+ * (no bubble-clipping risk). Five entries cap the cluster size; clusters
+ * larger than 5 wrap with modulo (documented, accepted trade-off).
  */
-function sharesPosition(aPositions: Set<string>, bPositions: Set<string>): boolean {
-  for (const pos of aPositions) {
-    if (bPositions.has(pos)) return true;
-  }
-  return false;
+const OFFSET_BUCKET = [0, 3, 6, 9, 12] as const;
+
+/**
+ * Lift a raw span-based connector radius above the chord-root squircle's
+ * outer edge plus a small halo so the contour never collapses inside the
+ * note bubble. Shared by chord connectors and interval connectors.
+ *
+ * Computed in pixel space (rather than as a factor of `stringRowPx`) so the
+ * halo gap is constant across the adaptive row-height range — at large row
+ * heights the relative gap shrinks, which matches the intent that the floor
+ * is a "minimum visible separation" rather than a proportional adjustment.
+ */
+export function applyConnectorRadiusFloor(
+  spanRadiusPx: number,
+  stringRowPx: number,
+): number {
+  return Math.max(
+    spanRadiusPx,
+    chordRootVisualRadiusPx(stringRowPx) + CHORD_CONNECTOR_MIN_HALO_PX,
+  );
 }
 
 /**
- * Cluster pending voicings by shared (string, fret) positions using
- * union-find. Two voicings are connected if they share at least one
- * vertex position. This produces tight, spatially local clusters —
- * voicings at distant fret regions remain independent even though
- * their inflated envelopes might overlap.
+ * Compute the effective connector contour radius for one voicing.
  *
- * Returns an array of clusters; each cluster is an array of indices
- * into `pendingVoicings`. Singletons appear as single-element arrays.
+ * All voicings share a single uniform base radius so non-overlapping
+ * connectors look identical. Conflict offsets are added on top only
+ * when two voicings geometrically overlap.
  */
-function detectOverlapClusters(
-  pendingVoicings: { canonicalKey: string }[],
-): number[][] {
-  const n = pendingVoicings.length;
+export function computeChordConnectorRadiusPx(
+  _combo: NoteData[],
+  stringRowPx: number,
+  offsetPx: number,
+): number {
+  const flooredRadius = applyConnectorRadiusFloor(
+    stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
+    stringRowPx,
+  );
+  return flooredRadius + Math.max(offsetPx, 0);
+}
 
-  // Precompute position sets.
-  const positions = pendingVoicings.map((pv) => positionSet(pv.canonicalKey));
+function touchesOuterString(combo: NoteData[], lowestStringIndex: number): boolean {
+  return combo.some((note) =>
+    note.stringIndex === 0 || note.stringIndex === lowestStringIndex,
+  );
+}
 
-  // Union-find arrays.
-  const parent = Array.from({ length: n }, (_, i) => i);
-  const rank = new Array<number>(n).fill(0);
+function pointToSegmentDistance(
+  p: ChordConnectorVertex,
+  a: ChordConnectorVertex,
+  b: ChordConnectorVertex,
+): number {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq < 1e-9) return Math.hypot(p.x - a.x, p.y - a.y);
+  const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / lenSq));
+  const x = a.x + t * dx;
+  const y = a.y + t * dy;
+  return Math.hypot(p.x - x, p.y - y);
+}
 
-  function find(x: number): number {
-    while (parent[x] !== x) {
-      parent[x] = parent[parent[x]!]!;
-      x = parent[x]!;
-    }
-    return x;
+function segmentDistance(
+  a: ChordConnectorVertex,
+  b: ChordConnectorVertex,
+  c: ChordConnectorVertex,
+  d: ChordConnectorVertex,
+): number {
+  const orient = (
+    p: ChordConnectorVertex,
+    q: ChordConnectorVertex,
+    r: ChordConnectorVertex,
+  ) => (q.x - p.x) * (r.y - p.y) - (q.y - p.y) * (r.x - p.x);
+  const onSegment = (
+    p: ChordConnectorVertex,
+    q: ChordConnectorVertex,
+    r: ChordConnectorVertex,
+  ) =>
+    q.x >= Math.min(p.x, r.x) - 1e-9 &&
+    q.x <= Math.max(p.x, r.x) + 1e-9 &&
+    q.y >= Math.min(p.y, r.y) - 1e-9 &&
+    q.y <= Math.max(p.y, r.y) + 1e-9;
+
+  const o1 = orient(a, b, c);
+  const o2 = orient(a, b, d);
+  const o3 = orient(c, d, a);
+  const o4 = orient(c, d, b);
+  if (
+    (o1 * o2 < 0 && o3 * o4 < 0) ||
+    (Math.abs(o1) < 1e-9 && onSegment(a, c, b)) ||
+    (Math.abs(o2) < 1e-9 && onSegment(a, d, b)) ||
+    (Math.abs(o3) < 1e-9 && onSegment(c, a, d)) ||
+    (Math.abs(o4) < 1e-9 && onSegment(c, b, d))
+  ) {
+    return 0;
   }
 
-  function union(x: number, y: number): void {
-    const rx = find(x);
-    const ry = find(y);
-    if (rx === ry) return;
-    if (rank[rx]! < rank[ry]!) {
-      parent[rx] = ry;
-    } else if (rank[rx]! > rank[ry]!) {
-      parent[ry] = rx;
-    } else {
-      parent[ry] = rx;
-      rank[rx] = rank[rx]! + 1;
-    }
+  return Math.min(
+    pointToSegmentDistance(a, c, d),
+    pointToSegmentDistance(b, c, d),
+    pointToSegmentDistance(c, a, b),
+    pointToSegmentDistance(d, a, b),
+  );
+}
+
+function polylineDistance(
+  a: ChordConnectorVertex[],
+  b: ChordConnectorVertex[],
+): number {
+  if (a.length === 0 || b.length === 0) return Infinity;
+  if (a.length === 1 && b.length === 1) {
+    return Math.hypot(a[0]!.x - b[0]!.x, a[0]!.y - b[0]!.y);
   }
 
-  // Union voicings that share at least one (string, fret) position.
-  for (let i = 0; i < n; i++) {
-    for (let j = i + 1; j < n; j++) {
-      if (sharesPosition(positions[i]!, positions[j]!)) {
-        union(i, j);
-      }
+  let minDistance = Infinity;
+  for (let i = 0; i < Math.max(1, a.length - 1); i++) {
+    const a0 = a[i]!;
+    const a1 = a[Math.min(i + 1, a.length - 1)]!;
+    for (let j = 0; j < Math.max(1, b.length - 1); j++) {
+      const b0 = b[j]!;
+      const b1 = b[Math.min(j + 1, b.length - 1)]!;
+      minDistance = Math.min(minDistance, segmentDistance(a0, a1, b0, b1));
     }
   }
-
-  // Collect clusters by root.
-  const clusterMap = new Map<number, number[]>();
-  for (let i = 0; i < n; i++) {
-    const root = find(i);
-    let cluster = clusterMap.get(root);
-    if (!cluster) {
-      cluster = [];
-      clusterMap.set(root, cluster);
-    }
-    cluster.push(i);
-  }
-
-  return Array.from(clusterMap.values());
+  return minDistance;
 }
 
 /**
- * Assign offsets to each voicing based on its cluster, using greedy graph
- * coloring with evenly-spaced offsets.
- *
- * Within each cluster the algorithm:
- * 1. Builds a pairwise adjacency graph from shared (string, fret) positions.
- * 2. Greedy-colours the graph (decreasing-degree order, canonicalKey
- *    tiebreak) assigning the smallest unused colour index to each node.
- * 3. Maps colour indices to pixel offsets via fixed step:
- *    offset = min(colour * CONNECTOR_OFFSET_STEP, MAX_CONNECTOR_OFFSET).
- *
- * The fixed step keeps radius increases minimal:
- *   2 colours → {0, 3}       3 px gap
- *   3 colours → {0, 3, 6}    3 px gap, max +6 px
- *   4 colours → {0, 3, 6, 9} 3 px gap, max +9 px
- * Non-overlapping pairs within a cluster share colour 0 (offset 0),
- * keeping radii at the base minimum.
- *
- * Singleton clusters receive offset 0.
- * Returns a Map<canonicalKey, offsetPx>.
+ * Assign radius offsets using a centerline conflict graph. AABB clustering was
+ * too coarse in some positions and too weak in dense same-fret stacks. The
+ * graph is based on actual polyline distance and base effective radii, then a
+ * deterministic greedy color pass selects the smallest available radius slot.
  */
-function assignClusterOffsets(
-  clusters: number[][],
-  pendingVoicings: { canonicalKey: string }[],
+function assignConflictOffsets(
+  pendingVoicings: Array<{
+    rawVertices: ChordConnectorVertex[];
+    sourceCombo: NoteData[];
+    canonicalKey: string;
+  }>,
+  stringRowPx: number,
+  yBounds: ConnectorYBounds | undefined,
+  lowestStringIndex: number,
 ): Map<string, number> {
   const result = new Map<string, number>();
+  const conflicts = pendingVoicings.map(() => new Set<number>());
+  const baseRadii = pendingVoicings.map((pv) =>
+    resolveConnectorRadiusPx({
+      vertices: pv.rawVertices,
+      preferredRadius: computeChordConnectorRadiusPx(pv.sourceCombo, stringRowPx, 0),
+      yBounds,
+      edgeSafe: touchesOuterString(pv.sourceCombo, lowestStringIndex),
+    }),
+  );
 
-  for (const cluster of clusters) {
-    if (cluster.length === 1) {
-      result.set(pendingVoicings[cluster[0]!]!.canonicalKey, 0);
-      continue;
-    }
-
-    const n = cluster.length;
-
-    // Build pairwise overlap adjacency within the cluster using shared
-    // (string, fret) positions — the same criterion used for clustering.
-    const positions = cluster.map((idx) => positionSet(pendingVoicings[idx]!.canonicalKey));
-    const adjacency: Set<number>[] = Array.from({ length: n }, () => new Set<number>());
-
-    for (let i = 0; i < n; i++) {
-      for (let j = i + 1; j < n; j++) {
-        if (sharesPosition(positions[i]!, positions[j]!)) {
-          adjacency[i]!.add(j);
-          adjacency[j]!.add(i);
-        }
-      }
-    }
-
-    // Process order: highest degree first; ties broken by canonicalKey for
-    // determinism.
-    const order = Array.from({ length: n }, (_, i) => i).sort((a, b) => {
-      const degDiff = adjacency[b]!.size - adjacency[a]!.size;
-      if (degDiff !== 0) return degDiff;
-      return pendingVoicings[cluster[a]!]!.canonicalKey.localeCompare(
-        pendingVoicings[cluster[b]!]!.canonicalKey,
+  for (let i = 0; i < pendingVoicings.length; i++) {
+    for (let j = i + 1; j < pendingVoicings.length; j++) {
+      const distance = polylineDistance(
+        pendingVoicings[i]!.rawVertices,
+        pendingVoicings[j]!.rawVertices,
       );
-    });
-
-    // Greedy graph colouring: assign the smallest colour index not used by
-    // any overlapping neighbour.
-    const colorAssignments = new Array<number>(n).fill(-1);
-
-    for (const localIdx of order) {
-      const usedColors = new Set<number>();
-      for (const neighbor of adjacency[localIdx]!) {
-        if (colorAssignments[neighbor]! >= 0) {
-          usedColors.add(colorAssignments[neighbor]!);
-        }
+      if (distance <= baseRadii[i]! + baseRadii[j]! + CONNECTOR_CONFLICT_GAP_PX) {
+        conflicts[i]!.add(j);
+        conflicts[j]!.add(i);
       }
-      let color = 0;
-      while (usedColors.has(color)) color++;
-      colorAssignments[localIdx] = color;
+    }
+  }
+
+  const sortedIndices = Array.from({ length: pendingVoicings.length }, (_, i) => i)
+    .sort((a, b) =>
+      pendingVoicings[a]!.canonicalKey.localeCompare(
+        pendingVoicings[b]!.canonicalKey,
+      ),
+    );
+
+  const assignedOffsets = new Map<number, number>();
+  for (const idx of sortedIndices) {
+    const used = new Set<number>();
+    for (const neighbor of conflicts[idx]!) {
+      const assigned = assignedOffsets.get(neighbor);
+      if (assigned !== undefined) used.add(assigned);
     }
 
-    // Map colour indices to pixel offsets using a fixed step.
-    // colour 0 → 0, colour 1 → STEP, colour 2 → 2*STEP, etc.
-    // Capped at MAX_CONNECTOR_OFFSET to prevent unbounded growth.
-    for (let i = 0; i < n; i++) {
-      const color = colorAssignments[i]!;
-      const offset = Math.min(color * CONNECTOR_OFFSET_STEP, MAX_CONNECTOR_OFFSET);
-      result.set(pendingVoicings[cluster[i]!]!.canonicalKey, offset);
-    }
+    const offset = OFFSET_BUCKET.find((candidate) => !used.has(candidate)) ??
+      OFFSET_BUCKET[sortedIndices.indexOf(idx) % OFFSET_BUCKET.length]!;
+    assignedOffsets.set(idx, offset);
+    result.set(pendingVoicings[idx]!.canonicalKey, offset);
   }
 
   return result;
@@ -373,11 +453,12 @@ export const CHORD_TONE_CLASSES = new Set([
  * ```
  * - `paths.fill` / `paths.outline` — pre-computed SVG path strings for the two
  *   render layers. Both strings are byte-identical for every voicing — the
- *   path is built by `offsetOutlinePath(polarSort(vertices), r)` where
- *   `r = stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR + offsetPx`,
- *   which Minkowski-sums the polygon with a disk to produce a rounded contour:
- *   smooth blob for non-collinear triads (eliminates thin-sliver artifacts on
- *   cross-fret voicings), capsule fallback for exactly-collinear inputs.
+ *   path is built by `offsetOpenPolylinePath(rawVertices, r)` where
+ *   `r = computeChordConnectorRadiusPx(...)`. This Minkowski-sums the OPEN
+ *   polyline (vertices in string-index order) with a disk to produce a
+ *   rounded tube tracing the voicing — round-arc joins on convex corners,
+ *   bevels on concave corners — and falls back to a capsule for exactly
+ *   collinear inputs.
  * - `vertices` — original (unmodified) chord-tone pixel positions in string-index
  *   order, retained for unit tests and future per-voicing color keying.
  *
@@ -408,10 +489,10 @@ export const CHORD_TONE_CLASSES = new Set([
  *      b. **Cluster + assign pass** — after the loop, `detectOverlapClusters`
  *         computes adjacency-aware voicing groups via inflated-AABB union-find;
  *         `assignClusterOffsets` maps each `canonicalKey` to a distinct
- *         `offsetPx` from graph-coloring (evenly spaced). Voicings that do not
+ *         `offsetPx` from OFFSET_BUCKET (3 px spacing). Voicings that do not
  *         overlap any other voicing receive offset 0. Finally the pending list
  *         is iterated once more to emit final paths via
- *         `offsetOutlinePath(polarSort(rawVertices), baseRadius + offsetPx)`.
+ *         `offsetOpenPolylinePath(rawVertices, computeChordConnectorRadiusPx(...))`.
  *
  * Returns an array of `{ d, vertices }` objects, one per distinct playable voicing.
  * Returns [] when N < 2 or no valid voicing can be assembled.
@@ -423,7 +504,7 @@ export const CHORD_TONE_CLASSES = new Set([
  * @param fretCenterX     Maps fretIndex → SVG x coordinate.
  * @param stringYAt       Maps (stringIndex, x) → SVG y coordinate.
  * @param stringRowPx     Row height in pixels; scales the base Minkowski-sum disk
- *                        radius (`stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR`).
+ *                        radius (`computeChordConnectorRadiusPx(...)`).
  * @param chordRoot       Sharps-only chord-root name (e.g. "C", "F#"). Used to
  *                        compute the bass-note interval that drives paletteIndex.
  *                        Empty string = paletteIndex defaults to 0.
@@ -477,6 +558,7 @@ export function buildChordConnectorPolylines(
   // Pass 1: collect raw voicings (defer path generation until offsets are known).
   const pendingVoicings: {
     rawVertices: ChordConnectorVertex[];
+    sourceCombo: NoteData[];
     paletteIndex: number;
     canonicalKey: string;
   }[] = [];
@@ -594,76 +676,86 @@ export function buildChordConnectorPolylines(
         return { x, y };
       });
 
-      // Compute palette index from the bass-note interval (semitones from
-      // chord root). Same inversion → same color across positions and chord
-      // qualities. Root in bass = 0 → palette[0]; major 3rd in bass = 4 →
-      // palette[4]; perfect 5th in bass = 7 → palette[7]; etc.
-      const interval = bassIntervalSemitones(bestCombo, chordRoot);
-      const paletteIndex = INTERVAL_TO_PALETTE[interval] ?? interval % 8;
+      const paletteIndex = inversionPaletteIndex(bestCombo, chordRoot, chordToneNames);
 
-      // Collect — path generation deferred to pass 2 after cluster assignment.
-      pendingVoicings.push({ rawVertices, paletteIndex, canonicalKey });
+      // Collect — path generation deferred to pass 2 after conflict assignment.
+      pendingVoicings.push({ rawVertices, sourceCombo: bestCombo, paletteIndex, canonicalKey });
     }
   }
 
-  // Pass 2: cluster + assign offsets, then emit final voicings with paths.
+  // Pass 2: assign conflict offsets, then emit final voicings with paths.
   //
-  // `detectOverlapClusters` groups voicings that share at least one
-  // (string, fret) position via union-find. This produces tight, spatially
-  // local clusters — voicings at distant fret regions stay independent.
+  // `assignConflictOffsets` builds a graph from centerline distances and base
+  // effective radii, then greedily chooses the smallest non-conflicting
+  // OFFSET_BUCKET for each voicing in canonical-key order. This keeps unrelated
+  // voicings tight while separating real same-stack overlaps.
   //
-  // `assignClusterOffsets` greedy-colours each cluster's shared-position
-  // overlap graph and maps colour indices to evenly-spaced pixel offsets
-  // across [0, MAX_CONNECTOR_OFFSET].
-  //
-  // `offsetOutlinePath` Minkowski-sums the polar-sorted polygon with a disk of
-  // radius `baseRadius + offsetPx` and dispatches internally:
-  //   - 3+ non-collinear vertices → rounded offset polygon.
-  //   - 3+ collinear vertices → capsule fallback.
+  // `offsetOpenPolylinePath` Minkowski-sums the rawVertices polyline (in
+  // string-index order) with a disk of radius
+  // `computeChordConnectorRadiusPx(...)` and dispatches internally:
+  //   - 3+ non-collinear vertices → rounded tube tracing the voicing
+  //     order (avoids acute-triangle silhouettes from cross-fret triads).
+  //   - 3+ collinear vertices → falls back to a capsule between the extreme
+  //     vertices (matches old look).
   //   - 2 vertices → capsule.
   //   - 1 vertex → circle.
   // fill === outline (byte-identical) — renderer differentiates via fill/stroke.
-  const baseRadius = stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR;
-  const clusters = detectOverlapClusters(pendingVoicings);
-  const clusterOffsetMap = assignClusterOffsets(clusters, pendingVoicings);
+  let lowestStringIndex = 0;
+  for (const note of noteData) {
+    if (note.stringIndex > lowestStringIndex) lowestStringIndex = note.stringIndex;
+  }
+  const clusterOffsetMap = assignConflictOffsets(
+    pendingVoicings,
+    stringRowPx,
+    yBounds,
+    lowestStringIndex,
+  );
 
-  // Compute initial radii (offset + clamp).
+  // Compute initial radii (uniform base + offset, then edge-safe clamp).
+  const baseRadius = applyConnectorRadiusFloor(
+    stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
+    stringRowPx,
+  );
   const radii = pendingVoicings.map((pv) => {
     const offsetPx = clusterOffsetMap.get(pv.canonicalKey) ?? 0;
-    return clampConnectorRadiusToYBounds(pv.rawVertices, baseRadius + offsetPx, yBounds);
+    return resolveConnectorRadiusPx({
+      vertices: pv.rawVertices,
+      preferredRadius: baseRadius + Math.max(offsetPx, 0),
+      yBounds,
+      edgeSafe: touchesOuterString(pv.sourceCombo, lowestStringIndex),
+    });
   });
 
-  // Post-clamp collision fix: if clamping collapsed two overlapping
-  // voicings to the same radius, nudge the unclamped one so they differ.
-  // This handles edge/boundary voicings (strings 0 or 5) where the
-  // clamped radius erases the offset differentiation.
+  // Post-clamp collision fix: when yBounds clamping collapses two
+  // overlapping voicings to the same radius, nudge the unclamped one
+  // so they remain visually distinguishable.
   if (yBounds) {
-    const positionSets = pendingVoicings.map((pv) => positionSet(pv.canonicalKey));
     for (let i = 0; i < pendingVoicings.length; i++) {
       for (let j = i + 1; j < pendingVoicings.length; j++) {
-        if (!sharesPosition(positionSets[i]!, positionSets[j]!)) continue;
+        const dist = polylineDistance(
+          pendingVoicings[i]!.rawVertices,
+          pendingVoicings[j]!.rawVertices,
+        );
+        if (dist > radii[i]! + radii[j]! + CONNECTOR_CONFLICT_GAP_PX) continue;
         if (Math.abs(radii[i]! - radii[j]!) >= 1) continue;
 
-        // Two overlapping voicings have the same clamped radius.
-        // The one whose preferred radius was NOT clamped can be adjusted.
-        const prefI = baseRadius + (clusterOffsetMap.get(pendingVoicings[i]!.canonicalKey) ?? 0);
-        const prefJ = baseRadius + (clusterOffsetMap.get(pendingVoicings[j]!.canonicalKey) ?? 0);
+        const offI = clusterOffsetMap.get(pendingVoicings[i]!.canonicalKey) ?? 0;
+        const offJ = clusterOffsetMap.get(pendingVoicings[j]!.canonicalKey) ?? 0;
+        const prefI = baseRadius + Math.max(offI, 0);
+        const prefJ = baseRadius + Math.max(offJ, 0);
         const clampedI = radii[i]! < prefI - 0.5;
         const clampedJ = radii[j]! < prefJ - 0.5;
 
+        const step = OFFSET_BUCKET[1] ?? 3;
         if (clampedI && !clampedJ) {
-          // i was clamped, j is free — shrink j below the clamped value.
-          radii[j] = Math.max(0, radii[i]! - CONNECTOR_OFFSET_STEP);
+          radii[j] = Math.max(0, radii[i]! - step);
         } else if (clampedJ && !clampedI) {
-          // j was clamped, i is free — shrink i below the clamped value.
-          radii[i] = Math.max(0, radii[j]! - CONNECTOR_OFFSET_STEP);
+          radii[i] = Math.max(0, radii[j]! - step);
         } else if (clampedI && clampedJ) {
-          // Both clamped to the same value — shrink the one with the
-          // smaller preferred radius (it was closer to clamping anyway).
           if (prefI <= prefJ) {
-            radii[i] = Math.max(0, radii[i]! - CONNECTOR_OFFSET_STEP);
+            radii[i] = Math.max(0, radii[i]! - step);
           } else {
-            radii[j] = Math.max(0, radii[j]! - CONNECTOR_OFFSET_STEP);
+            radii[j] = Math.max(0, radii[j]! - step);
           }
         }
       }
@@ -671,7 +763,7 @@ export function buildChordConnectorPolylines(
   }
 
   const results: ChordConnectorVoicing[] = pendingVoicings.map((pv, idx) => {
-    const pathStr = offsetOutlinePath(convexHull(pv.rawVertices), radii[idx]!);
+    const pathStr = offsetOpenPolylinePath(pv.rawVertices, radii[idx]!);
     const paths = { fill: pathStr, outline: pathStr };
     return { paths, vertices: pv.rawVertices, paletteIndex: pv.paletteIndex, voicingKey: pv.canonicalKey };
   });

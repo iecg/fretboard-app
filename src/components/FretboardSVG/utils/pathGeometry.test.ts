@@ -7,6 +7,7 @@ import {
   inflatedCapsulePath,
   convexHull,
   offsetOutlinePath,
+  offsetOpenPolylinePath,
   openPolylinePath,
 } from "./pathGeometry";
 
@@ -676,3 +677,213 @@ describe("offsetOutlinePath", () => {
   });
 });
 
+describe("offsetOpenPolylinePath", () => {
+  it("returns empty string for empty input", () => {
+    expect(offsetOpenPolylinePath([], 10)).toBe("");
+  });
+
+  it("1-vertex input: returns the same circle path as offsetOutlinePath", () => {
+    const v = { x: 50, y: 50 };
+    const r = 20;
+    expect(offsetOpenPolylinePath([v], r)).toBe(offsetOutlinePath([v], r));
+  });
+
+  it("2-vertex input: delegates to the offsetOutlinePath capsule", () => {
+    const a = { x: 0, y: 0 };
+    const b = { x: 60, y: 0 };
+    const r = 12;
+    expect(offsetOpenPolylinePath([a, b], r)).toBe(offsetOutlinePath([a, b], r));
+  });
+
+  it("3 collinear vertices: falls back to a 2-vertex capsule between the extremes", () => {
+    // All on a vertical line, equally spaced.
+    const pts = [
+      { x: 100, y: 0 },
+      { x: 100, y: 30 },
+      { x: 100, y: 60 },
+    ];
+    const r = 18;
+    const d = offsetOpenPolylinePath(pts, r);
+    // Identical byte output to the legacy capsule via offsetOutlinePath.
+    expect(d).toBe(offsetOutlinePath([pts[0]!, pts[2]!], r));
+    // Structural sanity.
+    expect(d).toContain("A");
+    expect(d.endsWith("Z")).toBe(true);
+  });
+
+  it("3 non-collinear vertices: emits 3 A commands (1 outside join + 2 end caps)", () => {
+    // Skinny diagonal triad — the geometry that previously rendered as an
+    // acute convex-hull triangle. Each interior vertex contributes an arc
+    // on both sides (one outside long-way + one inside short-way) so the
+    // tube doesn't bevel across the polyline.
+    const pts = [
+      { x: 0, y: 0 },     // V_0
+      { x: 10, y: 36 },   // V_1 (mid)
+      { x: 30, y: 72 },   // V_2
+    ];
+    const d = offsetOpenPolylinePath(pts, 14);
+    expect(d).not.toBe("");
+    expect(d.startsWith("M")).toBe(true);
+    expect(d.endsWith("Z")).toBe(true);
+    const aCount = (d.match(/\bA\b/g) ?? []).length;
+    expect(aCount).toBe(3);
+    const qCount = (d.match(/\bQ\b/g) ?? []).length;
+    expect(qCount).toBe(1);
+  });
+
+  it("4 non-collinear vertices: emits 4 A commands (2 outside joins + 2 end caps)", () => {
+    const pts = [
+      { x: 30, y: 0 },
+      { x: 40, y: 20 },
+      { x: 40, y: 40 },
+      { x: 50, y: 60 },
+    ];
+    const d = offsetOpenPolylinePath(pts, 14);
+    expect(d).not.toBe("");
+    expect(d.startsWith("M")).toBe(true);
+    expect(d.endsWith("Z")).toBe(true);
+    const aCount = (d.match(/\bA\b/g) ?? []).length;
+    expect(aCount).toBe(4);
+    const qCount = (d.match(/\bQ\b/g) ?? []).length;
+    expect(qCount).toBe(2);
+  });
+
+  it("inside corners use bounded fillets around offset-line intersections instead of arcs", () => {
+    const d = offsetOpenPolylinePath(
+      [
+        { x: 0, y: 0 },
+        { x: 40, y: 0 },
+        { x: 40, y: 40 },
+      ],
+      10,
+    );
+
+    expect(d).toContain("L 30 15.5 Q 30 10 24.5 10 L 0 10");
+    expect(d).not.toContain("L 30 0");
+    expect(d).not.toMatch(/A\s+10\s+10\s+0\s+0\s+0\s+/);
+  });
+
+  it("screen-right corner keeps the outside arc on side A and inside fillet on side B", () => {
+    const d = offsetOpenPolylinePath(
+      [
+        { x: 0, y: 0 },
+        { x: 40, y: 0 },
+        { x: 40, y: 40 },
+      ],
+      10,
+    );
+
+    expect(d).toContain("L 40 -10 A 10 10 0 0 1 50 0");
+    expect(d).toContain("L 30 15.5 Q 30 10 24.5 10 L 0 10");
+    expect(d).not.toContain("L 40 -10 A 10 10 0 0 0 50 0");
+    expect(d).not.toContain("L 30 0 A");
+    expect(d.endsWith("Z")).toBe(true);
+  });
+
+  it("screen-left corner keeps side A filleted and side B rounded outside", () => {
+    const d = offsetOpenPolylinePath(
+      [
+        { x: 0, y: 0 },
+        { x: 40, y: 0 },
+        { x: 40, y: -40 },
+      ],
+      10,
+    );
+
+    expect(d).toContain("M 0 -10 L 24.5 -10 Q 30 -10 30 -15.5 L 30 -40");
+    expect(d).toContain("L 50 0 A 10 10 0 0 1 40 10");
+    expect(d).not.toContain("L 40 -10 A");
+    expect(d).not.toContain("L 50 0 A 10 10 0 0 0 40 10");
+    expect(d.endsWith("Z")).toBe(true);
+  });
+
+  it("short inside corners clamp the fillet before it crosses adjacent segments", () => {
+    const d = offsetOpenPolylinePath(
+      [
+        { x: 0, y: 0 },
+        { x: 8, y: 0 },
+        { x: 8, y: 8 },
+      ],
+      10,
+    );
+
+    expect(d).toContain("Q -2 10 -1.1 10");
+    expect(d).not.toContain("Q -2 10 -2 12.8");
+    expect(d.endsWith("Z")).toBe(true);
+  });
+
+  it("non-collinear tube envelops every input vertex within radius r", () => {
+    // The output pill should clearly contain every input vertex — each
+    // vertex should lie within r of at least one point on the perimeter.
+    // We verify the weaker but still meaningful property: every coordinate
+    // emitted by the path is at distance ≥ 0 and ≤ ~ 1.5r from at least one
+    // input vertex (i.e., the perimeter never strays far from the polyline).
+    const pts = [
+      { x: 0, y: 0 },
+      { x: 50, y: 20 },
+      { x: 100, y: 0 },
+    ];
+    const r = 25;
+    const d = offsetOpenPolylinePath(pts, r);
+
+    // Extract every absolute (M/L/A endpoint) coordinate.
+    const tokens = d.split(/\s+/);
+    const points: Array<{ x: number; y: number }> = [];
+    for (let i = 0; i < tokens.length; i++) {
+      const t = tokens[i];
+      if (t === "M" || t === "L") {
+        const x = Number(tokens[i + 1]);
+        const y = Number(tokens[i + 2]);
+        if (Number.isFinite(x) && Number.isFinite(y)) points.push({ x, y });
+      } else if (t === "A") {
+        const x = Number(tokens[i + 6]);
+        const y = Number(tokens[i + 7]);
+        if (Number.isFinite(x) && Number.isFinite(y)) points.push({ x, y });
+      }
+    }
+    expect(points.length).toBeGreaterThan(0);
+
+    // Every perimeter point must be within (r + slop) of at least one input
+    // vertex. slop covers the bevel chord which can dip slightly past r in
+    // the limit of acute corners.
+    const tolerance = r * 1.5;
+    for (const p of points) {
+      const minDist = Math.min(
+        ...pts.map((v) => Math.hypot(p.x - v.x, p.y - v.y)),
+      );
+      expect(minDist).toBeLessThanOrEqual(tolerance);
+    }
+  });
+
+  it("coincident adjacent vertices are filtered before geometry", () => {
+    const dWithDup = offsetOpenPolylinePath(
+      [{ x: 0, y: 0 }, { x: 0, y: 0 }, { x: 60, y: 0 }],
+      10,
+    );
+    const dWithoutDup = offsetOpenPolylinePath(
+      [{ x: 0, y: 0 }, { x: 60, y: 0 }],
+      10,
+    );
+    expect(dWithDup).toBe(dWithoutDup);
+  });
+
+  it("r=0 produces a valid degenerate path", () => {
+    const d = offsetOpenPolylinePath(
+      [{ x: 0, y: 0 }, { x: 40, y: 30 }, { x: 80, y: 0 }],
+      0,
+    );
+    expect(d).not.toBe("");
+    expect(d.startsWith("M")).toBe(true);
+    expect(d.endsWith("Z")).toBe(true);
+  });
+
+  it("deterministic: identical inputs produce byte-identical output", () => {
+    const pts = [
+      { x: 10, y: 20 },
+      { x: 30, y: 40 },
+      { x: 70, y: 30 },
+    ];
+    const r = 16;
+    expect(offsetOpenPolylinePath(pts, r)).toBe(offsetOpenPolylinePath(pts, r));
+  });
+});
