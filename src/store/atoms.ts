@@ -96,11 +96,13 @@ export {
   enharmonicDisplayAtom,
   isMutedAtom,
   toggleMuteAtom,
+  audioErrorAtom,
 } from "./audioAtoms";
 
 export {
   shapeDataAtom,
   effectiveShapeDataAtom,
+  intervalPairsAtom,
   autoCenterTargetAtom,
   shapeHighlightedNoteSetAtom,
   type AutoCenterTarget,

@@ -50,10 +50,9 @@ describe("CircleOfFifths/CircleOfFifths", () => {
       render(<CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} />);
 
       const paths = document.querySelectorAll('path[class*="circle-slice"]');
-      if (paths.length > 0) {
-        fireEvent.click(paths[0]);
-        expect(mockSetRootNote).toHaveBeenCalled();
-      }
+      expect(paths.length).toBeGreaterThan(0);
+      fireEvent.click(paths[0]);
+      expect(mockSetRootNote).toHaveBeenCalled();
     });
 
     it("highlights active root note", () => {

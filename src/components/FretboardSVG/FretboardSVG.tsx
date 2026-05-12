@@ -10,13 +10,13 @@ import {
 import {
   scaleDegreeColorsEnabledAtom,
   fingeringPatternAtom,
-  effectiveShapeDataAtom,
+  intervalPairsAtom,
 } from "../../store/atoms";
 import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
 import styles from "./FretboardSVG.module.css";
 import { useFretboardGeometry } from "./hooks/useFretboardGeometry";
 import { useNoteData } from "./hooks/useNoteData";
-import { useChordConnectorPolylines } from "./hooks/useChordConnectorPolylines";
+import { useChordConnectorPolylines, CHORD_TONE_CLASSES } from "./hooks/useChordConnectorPolylines";
 import { useIntervalConnectorPolylines } from "./hooks/useIntervalConnectorPolylines";
 import { type BoxBound } from "./utils/semantics";
 import { FretboardBackground } from "./FretboardBackground";
@@ -37,28 +37,52 @@ import {
   INLAY_RADIUS_MIN,
 } from "@fretflow/core";
 
+const DEFAULT_WRAPPED_NOTES = new Set<string>();
+
 interface FretboardSVGProps {
+  /** Pixels per fret column used to size the scroll container; passed through but not read internally. */
   effectiveZoom: number;
+  /** Total rendered neck width in pixels. */
   neckWidthPx: number;
+  /** First fret column visible in the viewport (0 = open strings). */
   startFret: number;
+  /** Last fret column visible in the viewport (exclusive upper bound). */
   endFret: number;
+  /** Height in pixels of each string row. */
   stringRowPx?: number;
+  /** Pre-computed 2-D note name grid: fretboardLayout[string][fret]. */
   fretboardLayout: string[][];
+  /** String tuning ordered from high string (index 0) to low string. */
   tuning: string[];
+  /** Total fret count on the neck; caps note rendering. */
   maxFret?: number;
+  /** Notes to highlight as scale tones (stored as sharps). */
   highlightNotes: string[];
+  /** Root note of the active scale, used for degree labels and color mapping. */
   rootNote: string;
+  /** Controls the label style inside note bubbles. */
   displayFormat?: "notes" | "degrees" | "none";
+  /** Per-string fret-range boxes constraining shape/chord highlighting. */
   boxBounds?: BoxBound[];
+  /** Chord tone note names to overlay on the fretboard. */
   chordTones?: string[];
+  /** Root note of the active chord overlay. */
   chordRoot?: string;
+  /** Fret spread of the chord voicing, used for shape-constrained rendering. */
   chordFretSpread?: number;
+  /** Active practice lens that drives note emphasis rules (colors, tension cues, squircles). */
   practiceLens?: PracticeLens;
+  /** Notes to render with the special "color" highlight role. */
   colorNotes?: string[];
+  /** CAGED / 3NPS shape polygons to render as filled regions behind the notes. */
   shapePolygons?: ShapePolygon[];
+  /** Set of note names that wrap across the nut (open-string equivalents). */
   wrappedNotes?: Set<string>;
+  /** Set of note names to suppress from rendering entirely. */
   hiddenNotes?: Set<string>;
+  /** When true, renders flat spellings instead of sharps where applicable. */
   useFlats?: boolean;
+  /** Name of the active scale, used for degree color mapping and aria label. */
   scaleName?: string;
   /**
    * Active pattern context for shape-constrained chord overlay rendering.
@@ -85,7 +109,9 @@ interface FretboardSVGProps {
    * semantic roles simultaneously — e.g. chord root AND tension note.
    */
   noteSemantics?: Map<string, NoteSemantics>;
+  /** Optional DOM id applied to the SVG wrapper for stable external references. */
   id?: string;
+  /** Callback fired when the user clicks a note bubble; receives string index, fret index, and note name. */
   onNoteClick?: (
     stringIndex: number,
     fretIndex: number,
@@ -112,7 +138,7 @@ export const FretboardSVG = memo(function FretboardSVG({
   practiceLens,
   colorNotes = [],
   shapePolygons = [],
-  wrappedNotes = new Set<string>(),
+  wrappedNotes = DEFAULT_WRAPPED_NOTES,
   hiddenNotes,
   useFlats = false,
   scaleName = "",
@@ -129,7 +155,7 @@ export const FretboardSVG = memo(function FretboardSVG({
   void effectiveZoom;
   const degreeColorsEnabled = useAtomValue(scaleDegreeColorsEnabledAtom);
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
-  const { intervalPairs } = useAtomValue(effectiveShapeDataAtom);
+  const intervalPairs = useAtomValue(intervalPairsAtom);
   const internalId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const defsPrefix = `fretboard-${id ?? internalId}`;
   const svgDefId = useCallback((id: string) => `${defsPrefix}-${id}`, [defsPrefix]);
@@ -173,20 +199,33 @@ export const FretboardSVG = memo(function FretboardSVG({
     numStrings,
   });
 
+  // Stable polygon data — identity is anchored to shapePolygons only.
+  // Does not depend on pixel-space functions so zoom/scroll do not invalidate it.
+  const polygonData = useMemo(() => {
+    return shapePolygons.map((poly, polyIdx) => ({
+      verts: poly.vertices,
+      halfVerts: poly.vertices.length / 2,
+      color: poly.color,
+      key: `${poly.shape}-${polyIdx}`,
+      poly,
+    }));
+  }, [shapePolygons]);
+
+  // Pixel transform — cheap iteration over stable polygonData.
+  // Recomputes on zoom/scroll (fretToX, stringYAt, neckHeight change) but
+  // polygonData reference stays the same so only this memo re-runs.
   const svgPolygons = useMemo(() => {
-    return shapePolygons.map((poly, polyIdx) => {
-      if (poly.vertices.length === 0) {
+    return polygonData.map(({ verts, halfVerts, color, key, poly }) => {
+      if (verts.length === 0) {
         return {
           points: "",
-          color: poly.color,
-          key: `${poly.shape}-${polyIdx}`,
+          color,
+          key,
           poly,
           centerX: 0,
         };
       }
       const pixelPoints: string[] = [];
-      const verts = poly.vertices;
-      const halfVerts = verts.length / 2;
 
       // Vertex frets are used as-is. A vertex stays off-board only when its
       // template offset truly puts it there (i.e., the scale would have a
@@ -218,13 +257,13 @@ export const FretboardSVG = memo(function FretboardSVG({
       const centerX = fretToX(Math.max(startFret, Math.min(endFret, s5Center)));
       return {
         points,
-        color: poly.color,
-        key: `${poly.shape}-${polyIdx}`,
+        color,
+        key,
         poly,
         centerX,
       };
     });
-  }, [shapePolygons, startFret, endFret, neckHeight, fretToX, stringYAt]);
+  }, [polygonData, startFret, endFret, neckHeight, fretToX, stringYAt]);
 
   const displayRoot = rootNote
     ? getNoteDisplay(rootNote, rootNote, useFlats)
@@ -237,7 +276,7 @@ export const FretboardSVG = memo(function FretboardSVG({
     .filter(Boolean)
     .join(" ");
 
-  const inlayYAt = useCallback(() => neckHeight / 2, [neckHeight]);
+  const inlayY = useMemo(() => neckHeight / 2, [neckHeight]);
   const inlayYTopAt = useCallback((x: number) =>
     numStrings >= 4
       ? (stringYAt(1, x) + stringYAt(2, x)) / 2
@@ -250,30 +289,31 @@ export const FretboardSVG = memo(function FretboardSVG({
 
   const inlays = useMemo(() => {
     const inlayR = Math.max(INLAY_RADIUS_MIN, stringRowPx * INLAY_RADIUS_RATIO);
-    return Array.from({ length: totalColumns + 1 }).map((_, idx) => {
-      const fretIndex = startFret + idx;
-      if (INLAY_FRETS.includes(fretIndex)) {
+    const maxFretVisible = startFret + totalColumns;
+
+    const singles = INLAY_FRETS
+      .filter((f) => f >= startFret && f <= maxFretVisible)
+      .map((fretIndex) => {
         const x = fretCenterX(fretIndex);
         return (
           <circle
             key={`inlay-${fretIndex}`}
             data-fret-marker={fretIndex}
             cx={x}
-            cy={inlayYAt()}
+            cy={inlayY}
             r={inlayR}
             fill={svgDefUrl("inlay-pearl")}
             filter={svgDefUrl("inlay-shadow")}
           />
         );
-      }
-      if (INLAY_DOUBLE_FRETS.includes(fretIndex)) {
+      });
+
+    const doubles = INLAY_DOUBLE_FRETS
+      .filter((f) => f >= startFret && f <= maxFretVisible)
+      .map((fretIndex) => {
         const x = fretCenterX(fretIndex);
         return (
-          <g
-            key={`inlay-${fretIndex}`}
-            data-fret-marker={fretIndex}
-            data-double-marker="true"
-          >
+          <g key={`inlay-${fretIndex}`} data-fret-marker={fretIndex} data-double-marker="true">
             <circle
               cx={x}
               cy={inlayYTopAt(x)}
@@ -290,10 +330,10 @@ export const FretboardSVG = memo(function FretboardSVG({
             />
           </g>
         );
-      }
-      return null;
-    });
-  }, [totalColumns, startFret, stringRowPx, svgDefUrl, fretCenterX, inlayYAt, inlayYBottomAt, inlayYTopAt]);
+      });
+
+    return [...singles, ...doubles];
+  }, [totalColumns, startFret, stringRowPx, svgDefUrl, fretCenterX, inlayY, inlayYBottomAt, inlayYTopAt]);
 
   const noteData = useNoteData({
     numStrings,
@@ -341,12 +381,19 @@ export const FretboardSVG = memo(function FretboardSVG({
     yBounds: connectorYBounds,
   });
 
+  // Pre-filter noteData to chord-tone subset so scale-only note changes
+  // do not trigger expensive connector recalculation.
+  const chordNoteData = useMemo(
+    () => noteData.filter((n) => CHORD_TONE_CLASSES.has(n.noteClass)),
+    [noteData],
+  );
+
   // Per-string chord filter (UAT-3): when fingering pattern restricts to 1 or 2 strings,
   // highlightNotes already contains only those string coords, so chord-tone role naturally
   // applies only to in-pattern notes. Chord connectors are suppressed separately here
   // because cross-string voicings do not make sense in a 1/2-string context.
   const connectorPolylines = useChordConnectorPolylines({
-    noteData,
+    noteData: chordNoteData,
     chordToneNames:
       fingeringPattern === "one-string" || fingeringPattern === "two-strings"
         ? []
@@ -471,30 +518,22 @@ export const FretboardSVG = memo(function FretboardSVG({
                   ))}
                   {/* Fill pass: all voicings rendered first (below outlines) */}
                   {connectorPolylines.map((voicing) => (
-                    <motion.path
+                    <path
                       key={`fill-${voicing.voicingKey}`}
-                      initial={{ opacity: 0, scale: 0.98 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.98 }}
-                      transition={{ duration: 0.2 }}
+                      className={styles["chord-connector-path"]}
                       d={voicing.paths.fill}
                       data-layer="fill"
                       data-palette-index={voicing.paletteIndex + 1}
-                      style={{ originX: "50%", originY: "50%" }}
                     />
                   ))}
                   {/* Outline pass: all voicings rendered on top */}
                   {connectorPolylines.map((voicing) => (
-                    <motion.path
+                    <path
                       key={`outline-${voicing.voicingKey}`}
-                      initial={{ opacity: 0, scale: 0.98 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.98 }}
-                      transition={{ duration: 0.2 }}
+                      className={styles["chord-connector-path"]}
                       d={voicing.paths.outline}
                       data-layer="outline"
                       data-palette-index={voicing.paletteIndex + 1}
-                      style={{ originX: "50%", originY: "50%" }}
                     />
                   ))}
                 </motion.g>

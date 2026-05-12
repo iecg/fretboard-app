@@ -22,6 +22,7 @@ const AUDIO_CONFIG = {
 
   SILENT_OSC_STOP: 0.001,
   STOP_BUFFER: 0.1,
+  MAX_TEMPORARY_VOICES: 4,
 } as const;
 
 interface Voice {
@@ -36,10 +37,12 @@ class GuitarSynth {
   private masterGain: GainNode | null = null;
   private unsupported: boolean = false;
   private guitarWave: PeriodicWave | null = null;
+  onError?: (message: string) => void;
 
   // Pool reduces node creation overhead
   private voicePool: Voice[] = [];
   private readonly POOL_SIZE = AUDIO_CONFIG.POOL_SIZE;
+  private temporaryVoiceCount: number = 0;
 
   private getAudioContextConstructor():
     | (new () => AudioContext)
@@ -112,6 +115,7 @@ class GuitarSynth {
         await this.ctx.resume();
       } catch (e) {
         console.warn("AudioContext resume failed:", e);
+        this.onError?.("Audio could not be started. Try tapping the screen or interacting with the page.");
       }
     }
   }
@@ -137,12 +141,19 @@ class GuitarSynth {
     const voice = this.voicePool.find((v) => !v.active);
     if (voice) return voice;
 
-    // Create temporary voice if pool exhausted
+    // Create temporary voice if pool exhausted (capped to prevent unbounded allocation)
     if (this.ctx && this.masterGain) {
+      if (this.temporaryVoiceCount >= AUDIO_CONFIG.MAX_TEMPORARY_VOICES) {
+        console.warn(
+          `GuitarSynth: temporary voice limit (${AUDIO_CONFIG.MAX_TEMPORARY_VOICES}) reached, skipping note`,
+        );
+        return null;
+      }
       const gain = this.ctx.createGain();
       const filter = this.ctx.createBiquadFilter();
       filter.connect(gain);
       gain.connect(this.masterGain);
+      this.temporaryVoiceCount++;
       return { gain, filter, active: false };
     }
 
@@ -162,6 +173,7 @@ class GuitarSynth {
       } catch (e) {
         // Fallback for browser gesture blocking
         console.warn("AudioContext resume failed in playNote:", e);
+        this.onError?.("Audio could not be started. Try tapping the screen or interacting with the page.");
         return;
       }
     }
@@ -205,6 +217,7 @@ class GuitarSynth {
       if (!this.voicePool.includes(voice)) {
         voice.filter.disconnect();
         voice.gain.disconnect();
+        this.temporaryVoiceCount--;
       }
     };
   }

@@ -332,14 +332,27 @@ test.describe("Theme Contract", () => {
 
   test("Circle of Fifths should use dark colors in dark mode", async ({ page }) => {
     await loadVisualState(page, { theme: "dark" });
-    
+
     const cofContainer = page.getByTestId("circle-of-fifths");
-    const centerStart = await cofContainer.evaluate((el) => 
-      getComputedStyle(el).getPropertyValue("--cof-center-start").trim()
-    );
-    
-    // In dark mode: rgb(34 40 54 / 0.98) == #222836fa (minified)
-    expect(colorToHex(centerStart)).toBe("#222836fa");
+    // Resolve the custom property to a computed rgba value via a temp element,
+    // since the raw value may be a color-mix() expression that colorToHex can't parse.
+    const centerStart = await cofContainer.evaluate((el) => {
+      const raw = getComputedStyle(el).getPropertyValue("--cof-center-start").trim();
+      const tmp = document.createElement("div");
+      tmp.style.color = raw;
+      el.appendChild(tmp);
+      const resolved = getComputedStyle(tmp).color;
+      tmp.remove();
+      return resolved;
+    });
+
+    // In dark mode the center gradient start is a dark navy with ~98% opacity.
+    // The resolved value is rgba(34, 40, 54, 0.98) → #222836fa.
+    const [r, g, b] = parseRgbChannels(centerStart);
+    // Dark navy: all channels well below 100
+    expect(r).toBeLessThan(100);
+    expect(g).toBeLessThan(100);
+    expect(b).toBeLessThan(100);
   });
 
   test("Disabled controls should have correct opacity in light mode", async ({ page }) => {

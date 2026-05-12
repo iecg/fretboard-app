@@ -80,7 +80,7 @@ describe("responsive layout helper", () => {
     [375, 667, "mobile", "mobile", 28],
     [390, 844, "mobile", "mobile", 28],
     // phone landscape
-    [667, 375, "mobile", "landscape-mobile", 28],
+    [667, 375, "mobile", "mobile", 28],
     // tablet portrait
     [768, 1024, "tablet", "tablet-split", 36],
     // compact tablet (short height)
@@ -108,9 +108,9 @@ describe("responsive layout helper", () => {
     },
   );
 
-  it("shows mobile tabs in portrait mobile and portrait tablet (tablet-split)", () => {
+  it("shows mobile tabs on all mobile viewports and tablet-split", () => {
     expect(getResponsiveLayout(390, 844).showMobileTabs).toBe(true);
-    expect(getResponsiveLayout(667, 375).showMobileTabs).toBe(false);
+    expect(getResponsiveLayout(667, 375).showMobileTabs).toBe(true);    // landscape mobile
     expect(getResponsiveLayout(768, 1024).showMobileTabs).toBe(true);   // tablet-split
     expect(getResponsiveLayout(768, 400).showMobileTabs).toBe(false);   // tablet-stacked
     expect(getResponsiveLayout(1440, 900).showMobileTabs).toBe(false);
@@ -131,7 +131,7 @@ describe("responsive layout helper", () => {
     expect(getResponsiveLayout(1440, 900).isSplitPanel).toBe(false);  // desktop-3col
   });
 
-  it("routes panel mode correctly for all seven variants", () => {
+  it("routes panel mode correctly for all six variants", () => {
     expect(getResponsiveLayout(1440, 900).panelMode).toBe("3col");    // desktop-3col
     expect(getResponsiveLayout(1024, 1366).panelMode).toBe("split");  // desktop-split
     expect(getResponsiveLayout(768, 1024).panelMode).toBe("split");   // tablet-split
@@ -140,9 +140,9 @@ describe("responsive layout helper", () => {
     expect(getResponsiveLayout(390, 844).panelMode).toBe("stacked");  // mobile (no panel)
   });
 
-  it("hides the summary only in landscape mobile", () => {
+  it("always shows the summary", () => {
     expect(getResponsiveLayout(390, 844).showSummary).toBe(true);
     expect(getResponsiveLayout(1440, 900).showSummary).toBe(true);
-    expect(getResponsiveLayout(667, 375).showSummary).toBe(false);
+    expect(getResponsiveLayout(667, 375).showSummary).toBe(true);
   });
 });

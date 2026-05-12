@@ -46,10 +46,8 @@
   display: block;
 }
 
-@media (max-width: 767px) {
-  .app-header-brand-icon :global(.brand-mark) {
-    width: clamp(3rem, 11vw, 3.75rem);
-  }
+:global(.app-container[data-layout-tier="mobile"]) .app-header-brand-icon :global(.brand-mark) {
+  width: clamp(3rem, 11vw, 3.75rem);
 }
 
 .app-header-brand-text {
@@ -146,17 +144,15 @@
   flex-shrink: 0;
 }
 
-@media (max-width: 767px) {
-  .app-header {
-    padding-inline: 0.75rem;
-    /* Mobile app-container uses 0.65rem padding (see App.css @media rules). */
-    margin-top: -0.65rem;
-    margin-inline: -0.65rem;
-  }
+:global(.app-container[data-layout-tier="mobile"]) .app-header {
+  padding-inline: 0.75rem;
+  /* Mobile app-container uses 0.65rem padding (see App.css @media rules). */
+  margin-top: -0.65rem;
+  margin-inline: -0.65rem;
+}
 
-  .app-header-brand-title {
-    font-size: clamp(1.72rem, 9vw, 2.3rem);
-  }
+:global(.app-container[data-layout-tier="mobile"]) .app-header-brand-title {
+  font-size: clamp(1.72rem, 9vw, 2.3rem);
 }
 
 /* Desktop compact header — smaller brand mark, tighter vertical padding.

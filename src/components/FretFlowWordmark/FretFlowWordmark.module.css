@@ -5,10 +5,8 @@
   display: block;
 }
 
-@media (max-width: 767px) {
-  .fretflow-wordmark {
-    height: clamp(1.1rem, 5.5vw, 1.5rem);
-  }
+:global(.app-container[data-layout-tier="mobile"]) .fretflow-wordmark {
+  height: clamp(1.1rem, 5.5vw, 1.5rem);
 }
 
 :global(.app-container[data-layout-tier="desktop"]) .fretflow-wordmark {

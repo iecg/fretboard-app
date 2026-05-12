@@ -1,4 +1,4 @@
-import { atom } from "jotai";
+import { atom, type Atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import {
   normalizeScaleName,
@@ -18,6 +18,7 @@ import {
 import { DEGREE_COLORS, getDegreesForScale } from "@fretflow/core";
 import { k, createStorage, rawStringStorage, booleanStorage, GET_ON_INIT, withStorageErrorBoundary } from "../utils/storage";
 import { fingeringPatternAtom, cagedShapesAtom } from "./fingeringAtoms";
+import { gatedAtom, EMPTY_SET, setsEqual } from "./atomUtils";
 import type { CagedShape } from "@fretflow/core";
 import type { PracticeBarColorNote } from "@fretflow/core";
 
@@ -170,7 +171,7 @@ export const hiddenNotesAtom = atom(
     if (state && state.root === root && state.scale === scale) {
       return state.notes;
     }
-    return new Set<string>();
+    return EMPTY_SET;
   },
   (get, set, update: Set<string> | ((prev: Set<string>) => Set<string>)) => {
     const root = get(rootNoteAtom);
@@ -178,6 +179,7 @@ export const hiddenNotesAtom = atom(
     const currentNotes = get(hiddenNotesAtom);
     const nextNotes =
       typeof update === "function" ? update(currentNotes) : update;
+    if (setsEqual(currentNotes, nextNotes)) return;
     set(internalHiddenNotesAtom, { root, scale, notes: nextNotes });
   },
 );
@@ -208,18 +210,18 @@ export const scaleVisibleAtom = atomWithStorage<boolean>(
 );
 
 // Returns a set of notes that are hidden in the current scale.
-export const effectiveHiddenNotesAtom = atom((get) => {
-  const visible = get(scaleVisibleAtom);
-  if (!visible) return new Set<string>();
-  return get(hiddenNotesAtom);
-});
+export const effectiveHiddenNotesAtom = gatedAtom(
+  hiddenNotesAtom,
+  scaleVisibleAtom,
+  new Set<string>(),
+);
 
 // Color notes (blue notes, characteristic tones) are cleared when scale is off.
-export const effectiveColorNotesAtom = atom((get) => {
-  const visible = get(scaleVisibleAtom);
-  if (!visible) return [] as string[];
-  return get(colorNotesAtom);
-});
+export const effectiveColorNotesAtom: Atom<string[]> = gatedAtom(
+  colorNotesAtom,
+  scaleVisibleAtom,
+  [] as string[],
+);
 
 export const practiceBarColorNotesAtom = atom((get) => {
   const colorNotes = get(colorNotesAtom);

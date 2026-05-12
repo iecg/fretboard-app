@@ -78,6 +78,14 @@ describe("getScaleNotes", () => {
     expect(getScaleNotes("C", "NonExistent")).toEqual([]);
   });
 
+  it("returns empty array for invalid root note", () => {
+    expect(getScaleNotes("X", "Major")).toEqual([]);
+  });
+
+  it("returns empty array for invalid scale name", () => {
+    expect(getScaleNotes("C", "NonexistentScale")).toEqual([]);
+  });
+
   it("returns A Melodic Minor notes", () => {
     expect(getScaleNotes("A", "Melodic Minor")).toEqual([
       "A",
@@ -130,6 +138,14 @@ describe("getChordNotes", () => {
 
   it("returns D Sus4", () => {
     expect(getChordNotes("D", "Sus4")).toEqual(["D", "G", "A"]);
+  });
+
+  it("returns empty array for invalid root note", () => {
+    expect(getChordNotes("X", "Major Triad")).toEqual([]);
+  });
+
+  it("returns empty array for invalid chord name", () => {
+    expect(getChordNotes("C", "NonexistentChord")).toEqual([]);
   });
 });
 

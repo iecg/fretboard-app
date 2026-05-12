@@ -76,7 +76,7 @@
 }
 
 .section-label {
-  font-size: 0.72rem;
+  font-size: var(--text-2xs);
   color: var(--surface-control-fg-muted);
   font-weight: 500;
   text-transform: uppercase;
@@ -87,7 +87,7 @@
    semantic alias so control labels can compose from it without importing
    a section-level name. */
 .label-canonical {
-  font-size: 0.72rem;
+  font-size: var(--text-2xs);
   color: var(--surface-control-fg-muted);
   font-weight: 500;
   text-transform: uppercase;
@@ -95,10 +95,9 @@
 }
 
 /* Demoted child label — sits one step below .label-canonical in the
-   visual hierarchy. font-size: 0.65rem is a magic number; pending
-   a future --text-xxs token in tokens.css. */
+   visual hierarchy. */
 .field-sublabel {
-  font-size: 0.65rem;
+  font-size: var(--text-xxs);
   font-weight: 400;
   color: var(--text-muted);
 }
@@ -377,7 +376,7 @@
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
 .field-hint {
-  font-size: 0.68rem;
+  font-size: var(--text-xxs);
   color: var(--text-muted);
   text-align: center;
   line-height: 1;
@@ -484,11 +483,9 @@
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
-@media (max-width: 767px) {
-  .icon-button--lg {
-    width: 2.7rem;
-    height: 2.7rem;
-  }
+:global(.app-container[data-layout-tier="mobile"]) .icon-button--lg {
+  width: 2.7rem;
+  height: 2.7rem;
 }
 
 .sr-only {
@@ -528,16 +525,14 @@
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
-@media (max-width: 767px) {
-  [data-layout-scope="mobile-tabs"] .toggle-btn,
-  [data-layout-scope="mobile-tabs"] .note-btn,
-  [data-layout-scope="mobile-tabs"] .link-toggle {
-    min-height: 36px;
-  }
+:global(.app-container[data-layout-tier="mobile"]) [data-layout-scope="mobile-tabs"] .toggle-btn,
+:global(.app-container[data-layout-tier="mobile"]) [data-layout-scope="mobile-tabs"] .note-btn,
+:global(.app-container[data-layout-tier="mobile"]) [data-layout-scope="mobile-tabs"] .link-toggle {
+  min-height: 36px;
+}
 
-  [data-layout-scope="mobile-tabs"] .control-section {
-    width: 100%;
-  }
+:global(.app-container[data-layout-tier="mobile"]) [data-layout-scope="mobile-tabs"] .control-section {
+  width: 100%;
 }
 
 :global(.overlay-field--accidentals) .toggle-btn {

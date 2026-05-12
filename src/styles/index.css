@@ -32,8 +32,6 @@
   --caged-c-bg: rgba(0, 158, 115, 0.18);    /* C #009E73 + 0.18 */
   --caged-a-bg: rgba(0, 114, 178, 0.18);    /* A #0072B2 + 0.18 */
   --caged-g-bg: rgba(204, 121, 167, 0.18);  /* G #CC79A7 + 0.18 */
-  --z-overlay-backdrop: 200;
-  --z-overlay-drawer: 201;
   background-color: var(--bg-color);
   color: var(--text-main);
   scrollbar-gutter: stable;

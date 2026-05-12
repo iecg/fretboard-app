@@ -187,8 +187,8 @@ describe("TheoryControls/TheorySection — disclosure ::before focus-ring inset"
       /\.theory-disclosure-btn:focus-visible\s*\{([^}]+)\}/,
     );
     expect(focusVisibleBlock, ":focus-visible block must exist").toBeTruthy();
-    expect(focusVisibleBlock![1]).toMatch(/outline:\s*1\.5px solid var\(--interactive-focus\)/);
-    expect(focusVisibleBlock![1]).toMatch(/outline-offset:\s*1px/);
+    expect(focusVisibleBlock![1]).toMatch(/outline:\s*var\(--focus-ring\)/);
+    expect(focusVisibleBlock![1]).toMatch(/outline-offset:\s*var\(--focus-ring-offset\)/);
     // Must NOT suppress the outline.
     expect(focusVisibleBlock![1]).not.toMatch(/outline:\s*none/);
   });

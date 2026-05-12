@@ -16,7 +16,9 @@ import {
   chordOverlayHiddenAtom,
   mobileTabAtom,
   showChordPracticeBarAtom,
+  audioErrorAtom,
 } from "./store/atoms";
+import audioErrorStyles from "./components/AudioErrorBanner/AudioErrorBanner.module.css";
 import { BottomTabBar, type BottomTabItem } from "./components/BottomTabBar/BottomTabBar";
 import { TAB_LABELS } from "./constants/tabLabels";
 import useLayoutMode from "./hooks/useLayoutMode";
@@ -71,6 +73,7 @@ function AppContent() {
   const rootNote = useAtomValue(rootNoteAtom);
   const scaleName = useAtomValue(scaleNameAtom);
   const setChordOverlayHidden = useSetAtom(chordOverlayHiddenAtom);
+  const [audioError, setAudioError] = useAtom(audioErrorAtom);
 
   const [showHelp, setShowHelp] = useState(false);
   const helpTriggerRef = useRef<HTMLButtonElement>(null);
@@ -98,6 +101,13 @@ function AppContent() {
   useEffect(() => {
     synth.setMute(isMuted);
   }, [isMuted]);
+
+  useEffect(() => {
+    synth.onError = (msg) => setAudioError(msg);
+    return () => {
+      synth.onError = undefined;
+    };
+  }, [setAudioError]);
 
   // Safari/iOS robustness: resume AudioContext on first interaction
   useEffect(() => {
@@ -142,6 +152,16 @@ function AppContent() {
 
   return (
   <>
+    {/* Portrait lock — CSS-only, shown via @media orientation:landscape on mobile */}
+    <div className="rotate-overlay" role="alert" aria-live="polite">
+      <div className="rotate-overlay-content">
+        <svg className="rotate-overlay-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="4" y="2" width="16" height="20" rx="2" />
+          <path d="M12 18h.01" />
+        </svg>
+        <p className="rotate-overlay-message">Please rotate your device to portrait mode</p>
+      </div>
+    </div>
     <MainLayoutWrapper
       layoutTier={layout.tier}
       layoutVariant={layout.variant}
@@ -245,6 +265,19 @@ function AppContent() {
         onSelect={(id) => setMobileTab(id as "scales" | "chords" | "cof" | "view")}
         aria-label="Mobile navigation"
       />
+    )}
+    {audioError && (
+      <div role="alert" className={audioErrorStyles.banner}>
+        <span className={audioErrorStyles.message}>{audioError}</span>
+        <button
+          type="button"
+          className={audioErrorStyles.dismiss}
+          onClick={() => setAudioError(null)}
+          aria-label="Dismiss audio error notification"
+        >
+          Dismiss
+        </button>
+      </div>
     )}
   </>
   );

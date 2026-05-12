@@ -71,10 +71,8 @@
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
-@media (max-width: 767px) {
-  .nav-button {
-    width: 2.7rem;
-  }
+:global(.app-container[data-layout-tier="mobile"]) .nav-button {
+  width: 2.7rem;
 }
 
 /* ===== Compact variant — tighter hit-areas for space-constrained layouts ===== */
@@ -111,8 +109,6 @@
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
-@media (max-width: 767px) {
-  .stepper-select[data-compact="true"] .nav-button {
-    width: 1.95rem;
-  }
+:global(.app-container[data-layout-tier="mobile"]) .stepper-select[data-compact="true"] .nav-button {
+  width: 1.95rem;
 }

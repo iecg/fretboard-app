@@ -47,7 +47,9 @@ function SettingsOverlaySurface({
   layout,
   setIsOpen,
 }: {
+  /** Resolved responsive layout used to set data-layout-tier on the drawer. */
   layout: ReturnType<typeof getResponsiveLayout>;
+  /** Callback to open or close the settings drawer. */
   setIsOpen: (value: boolean) => void;
 }) {
   const drawerRef = useRef<HTMLDivElement>(null);

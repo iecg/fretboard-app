@@ -30,6 +30,22 @@ export {
   isShapeTruncated,
 } from "./helpers";
 
+type CoordSet = Map<number, Set<number>>;
+
+function coordSetAdd(cs: CoordSet, s: number, f: number): void {
+  let frets = cs.get(s);
+  if (!frets) { frets = new Set(); cs.set(s, frets); }
+  frets.add(f);
+}
+
+function coordSetToStrings(cs: CoordSet): string[] {
+  const result: string[] = [];
+  for (const [s, frets] of cs) {
+    for (const f of frets) result.push(`${s}-${f}`);
+  }
+  return result;
+}
+
 /** A shape polygon ready for rendering — an ordered list of vertices. */
 export interface ShapePolygon {
   vertices: ShapeVertex[];
@@ -77,7 +93,8 @@ export function getCagedCoordinates(
     searchFret = rf + 1;
   }
 
-  const coordinates: Set<string> = new Set();
+  const validNoteSet = new Set(validNotes);
+  const coordinates: CoordSet = new Map();
   const bounds: { minFret: number; maxFret: number }[] = [];
   const allWrappedNotes = new Set<string>();
 
@@ -112,7 +129,7 @@ export function getCagedCoordinates(
     for (let s = 0; s < tuning.length; s++) {
       const stringNotes: number[] = [];
       for (let f = shapeMin; f <= shapeMax; f++) {
-        if (validNotes.includes(layout[s][f])) {
+        if (validNoteSet.has(layout[s][f])) {
           stringNotes.push(f);
         }
       }
@@ -145,10 +162,10 @@ export function getCagedCoordinates(
 
     for (let s = 0; s < tuning.length; s++) {
       for (const f of perStringNotes[s]) {
-        coordinates.add(`${s}-${f}`);
+        coordSetAdd(coordinates, s, f);
       }
     }
-    coordinates.add(`${rootStringFocus}-${rootFret}`);
+    coordSetAdd(coordinates, rootStringFocus, rootFret);
 
     const isMinorQuality = !isMajorScale(scaleName);
     const cagedLabel = `${shape}${isMinorQuality ? 'm' : ''} Shape`;
@@ -205,7 +222,7 @@ export function getCagedCoordinates(
   }
 
   return {
-    coordinates: Array.from(coordinates),
+    coordinates: coordSetToStrings(coordinates),
     bounds,
     polygons,
     wrappedNotes: allWrappedNotes,

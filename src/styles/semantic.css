@@ -38,6 +38,12 @@
   --surface-overlay-border: var(--chrome-border);
 
   --surface-card: var(--surface-card-top); /* compat alias → surface-card-top */
+
+  /* Border tokens — semantic roles:
+     --surface-card-border:        default card/panel border (Card, HelpModal, nested panels)
+     --surface-card-header-border: card section divider (card header/body separator, field dividers)
+     --chrome-border:              app chrome elements (overlay drawer, toolbar, strip surfaces)
+  */
   --surface-card-border: rgb(255 255 255 / 0.1);
   --surface-card-header-border: var(--token-border-subtler);
 
@@ -88,9 +94,11 @@
   /* Z-index layers */
   --z-note: var(--token-z-note);
   --z-dropdown: var(--token-z-dropdown);
-  --z-help-overlay: var(--token-z-help-overlay);
-  --z-bottom-nav: var(--token-z-bottom-nav);
   --z-header: var(--token-z-header);
+  --z-bottom-nav: var(--token-z-bottom-nav);
+  --z-overlay-backdrop: var(--token-z-overlay-backdrop);
+  --z-overlay-drawer: var(--token-z-overlay-drawer);
+  --z-help-overlay: var(--token-z-help-overlay);
 
   /* Interaction Roles */
   --interactive-primary: var(--accent-primary);
@@ -297,9 +305,10 @@
   *,
   *::before,
   *::after {
-    animation-duration: 0.001ms !important;
+    animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
   .loading-spinner {
     animation: none;

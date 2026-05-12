@@ -236,9 +236,16 @@ export function getDegreeSequence(scaleName: string): DegreeId[] {
  *
  * For 7-note scales, Roman numerals are computed from the actual diatonic triad
  * built on each scale step (third + fifth intervals → quality → casing/suffix).
- * For non-7-note scales (pentatonic, blues), falls back to the closest 7-note
- * template based on whether interval 4 is present — pragmatic, since true
- * diatonic-triad theory does not apply to scales with fewer than 7 notes.
+ *
+ * **Non-7-note scale fallback:** Pentatonic, blues, and other non-7-note scales
+ * cannot form full diatonic triads on every step, so true degree analysis does
+ * not apply. Instead, the function falls back to the closest 7-note parent map:
+ *   - Major degrees when interval 4 (major 3rd) is present (major quality).
+ *   - Natural Minor degrees otherwise (minor quality).
+ *
+ * This is pragmatically correct because consumers only look up semitones that
+ * are actually present in the scale — the extra entries in the 7-note map are
+ * simply never accessed. Unknown or missing scales fall back to Natural Minor.
  */
 export function getDegreesForScale(scaleName: string): Record<number, string> {
   if (MODE_DEGREES[scaleName]) return MODE_DEGREES[scaleName];

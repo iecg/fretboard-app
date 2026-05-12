@@ -15,6 +15,9 @@ import {
   chordOverlayModeAtom,
   chordRootAtom,
   chordTypeAtom,
+  chordRootOverrideAtom,
+  chordQualityOverrideAtom,
+  chordOverlayHiddenAtom,
   linkChordRootAtom,
   chordFretSpreadAtom,
   practiceLensAtom,
@@ -110,6 +113,11 @@ export const resetAtom = atom(null, (_get, set) => {
   set(scaleVisibleAtom, RESET);
   set(chordRootAtom, RESET);
   set(chordTypeAtom, RESET);
+  set(chordDegreeAtom, RESET);
+  set(chordOverlayModeAtom, RESET);
+  set(chordRootOverrideAtom, RESET);
+  set(chordQualityOverrideAtom, RESET);
+  set(chordOverlayHiddenAtom, RESET);
   set(linkChordRootAtom, RESET);
   set(chordFretSpreadAtom, RESET);
   set(practiceLensAtom, RESET);

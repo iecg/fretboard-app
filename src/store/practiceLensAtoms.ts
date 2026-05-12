@@ -87,13 +87,124 @@ export const practiceBarColorNotesFilteredAtom = atom((get) => {
 const getDisplayLabel = (e: ChordRowEntry): string =>
   e.scaleInterval ?? e.memberName;
 
+function toCueNote(e: ChordRowEntry): PracticeCueNote {
+  return {
+    internalNote: e.internalNote,
+    displayNote: e.displayNote,
+    intervalName: getDisplayLabel(e),
+    role: e.role,
+  };
+}
+
+function buildLandOnCue(allChordMembers: ChordRowEntry[]): PracticeCue {
+  return {
+    kind: "land-on",
+    label: "Land on",
+    notes: allChordMembers.map(toCueNote),
+  };
+}
+
+const cueBaseInputsAtom = atom((get) => {
+  const chordType = get(chordTypeAtom);
+  if (!chordType) return null;
+  return {
+    chordType,
+    chordRoot: get(chordRootAtom),
+    useFlats: get(useFlatsAtom),
+    allChordMembers: get(allChordMembersAtom),
+    scaleNotes: get(scaleNotesAtom),
+  };
+});
+
+const targetsCuesAtom = atom((get) => {
+  const base = get(cueBaseInputsAtom);
+  if (!base) return [] as PracticeCue[];
+  const cues: PracticeCue[] = [];
+  if (base.allChordMembers.length > 0) {
+    cues.push(buildLandOnCue(base.allChordMembers));
+  }
+  return cues;
+});
+
+const guideTonesCuesAtom = atom((get) => {
+  const base = get(cueBaseInputsAtom);
+  if (!base) return [] as PracticeCue[];
+  const cues: PracticeCue[] = [];
+  if (base.allChordMembers.length > 0) {
+    cues.push(buildLandOnCue(base.allChordMembers));
+  }
+  const guideNotes = base.allChordMembers.filter((e) =>
+    GUIDE_TONE_FORMATTED.has(e.memberName),
+  );
+  if (guideNotes.length > 0) {
+    cues.push({
+      kind: "guide-tones",
+      label: "Guide tones",
+      notes: guideNotes.map((e) => ({
+        ...toCueNote(e),
+        role: "guide-tone" as const,
+      })),
+    });
+  }
+  return cues;
+});
+
+const tensionCuesAtom = atom((get) => {
+  const base = get(cueBaseInputsAtom);
+  if (!base) return [] as PracticeCue[];
+  const { allChordMembers, chordRoot, useFlats, scaleNotes } = base;
+
+  const displayNote = (note: string) =>
+    formatAccidental(getNoteDisplay(note, chordRoot, useFlats));
+
+  const cues: PracticeCue[] = [];
+  if (allChordMembers.length > 0) {
+    cues.push(buildLandOnCue(allChordMembers));
+  }
+  const tensionMembers = allChordMembers.filter((e) => !e.inScale);
+  if (tensionMembers.length > 0) {
+    const tensionNotes = tensionMembers.map((e) => ({
+      ...toCueNote(e),
+      role: "chord-tone-outside-scale" as const,
+      resolvesTo: findNearestScaleResolution(e.internalNote, scaleNotes, displayNote),
+    }));
+    cues.push({
+      kind: "tension",
+      label: "Tension",
+      notes: tensionNotes,
+    });
+  }
+  return cues;
+});
+
+/** Gathers chord-specific inputs. Returns null when there is no active chord or the overlay is hidden. */
+const chordSemanticInputsAtom = atom((get) => {
+  const chordType = get(chordTypeAtom);
+  if (!chordType) return null;
+  if (get(chordOverlayHiddenAtom)) return null;
+  return {
+    chordRoot: get(chordRootAtom),
+    chordMembers: get(chordMembersAtom),
+    hiddenNotes: get(chordHiddenNotesAtom),
+    chordDegree: get(chordDegreeAtom),
+    chordOverlayMode: get(chordOverlayModeAtom),
+    chordType,
+  };
+});
+
+/** Gathers scale-specific inputs. */
+const scaleSemanticInputsAtom = atom((get) => ({
+  rootNote: get(rootNoteAtom),
+  scaleName: get(scaleNameAtom),
+  colorNotes: get(colorNotesAtom),
+}));
+
 /**
  * Maps note → {@link NoteSemantics}, allowing multiple properties to coexist
  * for notes that fill more than one role (e.g. a chord root that lies outside
  * the active scale).
  *
- * Inputs (read via `get`): `chordTypeAtom`, `chordOverlayHiddenAtom`,
- * `rootNoteAtom`, `scaleNameAtom`, plus the chord-row catalog.
+ * Inputs (read via `get`): `chordSemanticInputsAtom`, `scaleSemanticInputsAtom`.
  *
  * Output: `Map<note, NoteSemantics>`. Empty map when there is no chord or the
  * overlay is hidden — consumers fall back to the scale-only base model.
@@ -101,17 +212,12 @@ const getDisplayLabel = (e: ChordRowEntry): string =>
  * See the "Lens & Note Roles" section in `CLAUDE.md` for the role taxonomy.
  */
 export const noteSemanticMapAtom = atom((get) => {
-  const chordType = get(chordTypeAtom);
-  if (!chordType) return new Map<string, NoteSemantics>();
-  // Eye toggle collapsed → no chord semantics (note colors revert to scale-only).
-  if (get(chordOverlayHiddenAtom)) return new Map<string, NoteSemantics>();
+  const chordInputs = get(chordSemanticInputsAtom);
+  if (!chordInputs) return new Map<string, NoteSemantics>();
 
-  const rootNote = get(rootNoteAtom);
-  const scaleName = get(scaleNameAtom);
-  const chordRoot = get(chordRootAtom);
-  const chordMembers = get(chordMembersAtom);
-  const colorNotes = get(colorNotesAtom);
-  const hiddenNotes = get(chordHiddenNotesAtom);
+  const scaleInputs = get(scaleSemanticInputsAtom);
+  const { rootNote, scaleName, colorNotes } = scaleInputs;
+  const { chordRoot, chordMembers, hiddenNotes, chordDegree, chordOverlayMode, chordType } = chordInputs;
 
   const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
   const colorNoteSet = new Set(colorNotes);
@@ -129,8 +235,6 @@ export const noteSemanticMapAtom = atom((get) => {
 
   // Phase 04: diatonic chord check (computed once per evaluation)
   const degreesMap = getDegreesForScale(scaleName);
-  const chordDegree = get(chordDegreeAtom);
-  const chordOverlayMode = get(chordOverlayModeAtom);
 
   let diatonicChordRoot: string | undefined;
   let diatonicChordQuality: string | undefined;
@@ -198,86 +302,13 @@ export const noteSemanticMapAtom = atom((get) => {
  * with the base note-role model.
  */
 export const practiceCuesAtom = atom((get) => {
-  const chordType = get(chordTypeAtom);
-  if (!chordType) return [] as PracticeCue[];
-
   const practiceLens = get(practiceLensAtom);
-  const chordRoot = get(chordRootAtom);
-  const useFlats = get(useFlatsAtom);
-  const allChordMembers = get(allChordMembersAtom);
-  const scaleNotes = get(scaleNotesAtom);
-
-  const displayNote = (note: string) =>
-    formatAccidental(getNoteDisplay(note, chordRoot, useFlats));
-
-  const toCueNote = (e: ChordRowEntry): PracticeCueNote => ({
-    internalNote: e.internalNote,
-    displayNote: e.displayNote,
-    intervalName: getDisplayLabel(e),
-    role: e.role,
-  });
-
-  const findResolution = (note: string) =>
-    findNearestScaleResolution(note, scaleNotes, displayNote);
-
-  const buildLandOnCue = (): PracticeCue => ({
-    kind: "land-on",
-    label: "Land on",
-    notes: allChordMembers.map(toCueNote),
-  });
-
-  const cues: PracticeCue[] = [];
-
   switch (practiceLens) {
-    case "targets": {
-      if (allChordMembers.length > 0) {
-        cues.push(buildLandOnCue());
-      }
-      break;
-    }
-
-    case "guide-tones": {
-      if (allChordMembers.length > 0) {
-        cues.push(buildLandOnCue());
-      }
-      const guideNotes = allChordMembers.filter((e) =>
-        GUIDE_TONE_FORMATTED.has(e.memberName),
-      );
-      if (guideNotes.length > 0) {
-        cues.push({
-          kind: "guide-tones",
-          label: "Guide tones",
-          notes: guideNotes.map((e) => ({
-            ...toCueNote(e),
-            role: "guide-tone" as const,
-          })),
-        });
-      }
-      break;
-    }
-
-    case "tension": {
-      if (allChordMembers.length > 0) {
-        cues.push(buildLandOnCue());
-      }
-      const tensionMembers = allChordMembers.filter((e) => !e.inScale);
-      if (tensionMembers.length > 0) {
-        const tensionNotes = tensionMembers.map((e) => ({
-          ...toCueNote(e),
-          role: "chord-tone-outside-scale" as const,
-          resolvesTo: findResolution(e.internalNote),
-        }));
-        cues.push({
-          kind: "tension",
-          label: "Tension",
-          notes: tensionNotes,
-        });
-      }
-      break;
-    }
+    case "targets": return get(targetsCuesAtom);
+    case "guide-tones": return get(guideTonesCuesAtom);
+    case "tension": return get(tensionCuesAtom);
+    default: return [] as PracticeCue[];
   }
-
-  return cues;
 });
 
 const entryToBarNote = (e: ChordRowEntry): PracticeBarNote => ({

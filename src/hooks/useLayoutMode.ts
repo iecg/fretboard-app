@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { getResponsiveLayout, type ResponsiveLayout } from "../layout/responsive";
 
 export default function useLayoutMode(): ResponsiveLayout {
@@ -16,5 +16,8 @@ export default function useLayoutMode(): ResponsiveLayout {
     return () => window.removeEventListener("resize", handler);
   }, []);
 
-  return getResponsiveLayout(viewportWidth, viewportHeight);
+  return useMemo(
+    () => getResponsiveLayout(viewportWidth, viewportHeight),
+    [viewportWidth, viewportHeight],
+  );
 }

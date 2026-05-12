@@ -513,6 +513,7 @@ export function getIntervalNotes(
 export function getScaleNotes(rootNote: string, scaleName: string): string[] {
   const intervals = SCALES[normalizeScaleName(scaleName)];
   if (!intervals) return [];
+  if (getNoteIndex(rootNote) === -1) return [];
   return getIntervalNotes(rootNote, intervals);
 }
 
@@ -532,6 +533,7 @@ export function getScaleSemitones(rootNote: string, scaleName: string): number[]
 export function getChordNotes(rootNote: string, chordName: string): string[] {
   const intervals = CHORDS[chordName];
   if (!intervals) return [];
+  if (getNoteIndex(rootNote) === -1) return [];
   return getIntervalNotes(rootNote, intervals);
 }
 

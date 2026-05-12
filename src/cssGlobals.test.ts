@@ -126,6 +126,12 @@ import { describe, it, expect } from "vitest";
  * - theory-nav-btn: browser navigation button
  * - theory-chord-section, theory-chord-content: chord section container
  * - theory-disclosure-title, theory-disclosure-summary: disclosure text
+ *
+ * **Portrait lock overlay** (CSS-only, no React component):
+ * - rotate-overlay: fixed overlay container
+ * - rotate-overlay-content: centered content wrapper
+ * - rotate-overlay-icon: phone rotation SVG icon
+ * - rotate-overlay-message: text message
  */
 const APPROVED_GLOBALS = new Set([
   // Core semantic/utility classes (truly cross-cutting)
@@ -140,6 +146,10 @@ const APPROVED_GLOBALS = new Set([
   "custom-scrollbar",
   "hide-scrollbar",
   "brand-mark",
+  "rotate-overlay",
+  "rotate-overlay-content",
+  "rotate-overlay-icon",
+  "rotate-overlay-message",
 ]);
 
 /**

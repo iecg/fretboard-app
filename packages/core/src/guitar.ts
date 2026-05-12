@@ -1,5 +1,5 @@
 import { NOTES } from './theory';
-import { DEFAULT_OCTAVE, A4_FREQUENCY, A4_ABS_DISTANCE, STANDARD_FRET_MARKERS } from './constants';
+import { DEFAULT_OCTAVE, A4_FREQUENCY, A4_ABS_DISTANCE, MAX_FRET, STANDARD_FRET_MARKERS } from './constants';
 
 export interface NoteWithOctave {
   noteName: string;
@@ -49,9 +49,11 @@ export function getFretNote(openStringNote: string, fretNumber: number): string 
  * Returns the note name with octave for a given fret on a string.
  */
 export function getFretNoteWithOctave(openStringNote: string, fretNumber: number): string {
+  const sanitized = Number.isFinite(fretNumber) ? Math.round(fretNumber) : 0;
+  const clampedFret = Math.max(0, Math.min(MAX_FRET, sanitized));
   const parsed = parseNote(openStringNote) ?? { noteName: "E", octave: DEFAULT_OCTAVE };
   const openIndex = NOTES.indexOf(parsed.noteName);
-  const totalSemi = parsed.octave * 12 + openIndex + fretNumber;
+  const totalSemi = parsed.octave * 12 + openIndex + clampedFret;
   const newOctave = Math.floor(totalSemi / 12);
   const newNoteIndex = totalSemi % 12;
   return `${NOTES[newNoteIndex]}${newOctave}`;

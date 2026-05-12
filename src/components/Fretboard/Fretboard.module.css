@@ -46,15 +46,13 @@
 }
 
 /* Mobile inline layout */
-@media (max-width: 767px) {
-  .fretboard-outer {
-    width: 100%;
-    overflow: hidden;
-  }
+:global(.app-container[data-layout-tier="mobile"]) .fretboard-outer {
+  width: 100%;
+  overflow: hidden;
+}
 
-  .fretboard-wrapper {
-    overflow-x: auto;
-    overflow-y: visible;
-    -webkit-overflow-scrolling: touch;
-  }
+:global(.app-container[data-layout-tier="mobile"]) .fretboard-wrapper {
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
 }
