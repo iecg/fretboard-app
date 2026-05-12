@@ -29,7 +29,7 @@ import { ChordOverlayDock } from "./components/ChordOverlayDock/ChordOverlayDock
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
 import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
 import sharedStyles from "./components/shared/shared.module.css";
-import { ControlsPanelSkeleton, MobileTabSkeleton, OverlaySpinner } from "./components/LoadingSkeleton/LoadingSkeleton";
+import { ControlsPanelSkeleton, MobileTabSkeleton } from "./components/LoadingSkeleton/LoadingSkeleton";
 import { ANIMATION_DURATION_XFADE } from "@fretflow/core";
 import "./styles/App.css";
 
@@ -210,7 +210,7 @@ function AppContent() {
       summary={<ScaleStripPanel />}
       chordDock={<ChordOverlayDock />}
       helpModal={
-        <Suspense fallback={<OverlaySpinner />}>
+        <Suspense fallback={null}>
           <HelpModal
             isOpen={showHelp}
             onClose={() => setShowHelp(false)}
@@ -229,7 +229,7 @@ function AppContent() {
         </Suspense>
       }
       settingsOverlay={
-        <Suspense fallback={<OverlaySpinner />}>
+        <Suspense fallback={null}>
           <SettingsOverlay />
         </Suspense>
       }
