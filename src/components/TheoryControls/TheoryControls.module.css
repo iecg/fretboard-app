@@ -90,8 +90,8 @@
 }
 
 .theory-disclosure-btn:focus-visible {
-  outline: 1.5px solid var(--interactive-focus);
-  outline-offset: 1px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .theory-disclosure-title {

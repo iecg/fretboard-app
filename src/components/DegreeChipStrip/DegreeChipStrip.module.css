@@ -62,8 +62,8 @@
 .scale-eye-toggle:hover { opacity: 1; }
 
 .scale-eye-toggle:focus-visible {
-  outline: 2px solid var(--chip-focus-ring);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
   opacity: 1;
 }
 
@@ -119,8 +119,8 @@
 }
 
 .degree-chip:focus-visible {
-  outline: 2px solid var(--chip-focus-ring);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .degree-chip-item[data-in-scale='true'] .degree-chip {

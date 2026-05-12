@@ -45,8 +45,8 @@
 .practice-bar-eye-toggle:hover { opacity: 1; }
 
 .practice-bar-eye-toggle:focus-visible {
-  outline: 2px solid var(--chip-focus-ring);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
   opacity: 1;
 }
 
