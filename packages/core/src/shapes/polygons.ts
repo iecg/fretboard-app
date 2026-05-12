@@ -77,6 +77,7 @@ export function getCagedCoordinates(
     searchFret = rf + 1;
   }
 
+  const validNoteSet = new Set(validNotes);
   const coordinates: Set<string> = new Set();
   const bounds: { minFret: number; maxFret: number }[] = [];
   const allWrappedNotes = new Set<string>();
@@ -112,7 +113,7 @@ export function getCagedCoordinates(
     for (let s = 0; s < tuning.length; s++) {
       const stringNotes: number[] = [];
       for (let f = shapeMin; f <= shapeMax; f++) {
-        if (validNotes.includes(layout[s][f])) {
+        if (validNoteSet.has(layout[s][f])) {
           stringNotes.push(f);
         }
       }
