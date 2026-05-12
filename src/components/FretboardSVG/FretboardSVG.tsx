@@ -462,16 +462,11 @@ export const FretboardSVG = memo(function FretboardSVG({
                 >
                   {/* Halo pass: wide semi-transparent white stroke for background contrast */}
                   {connectorPolylines.map((voicing) => (
-                    <motion.path
+                    <path
                       key={`halo-${voicing.voicingKey}`}
-                      initial={{ opacity: 0, scale: 0.98 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.98 }}
-                      transition={{ duration: 0.2 }}
                       d={voicing.paths.outline}
                       data-layer="halo"
                       data-palette-index={voicing.paletteIndex + 1}
-                      style={{ originX: "50%", originY: "50%" }}
                     />
                   ))}
                   {/* Fill pass: all voicings rendered first (below outlines) */}
