@@ -29,6 +29,25 @@ function voicingFrettedPositionCount(combo: NoteData[]): number {
 }
 
 /**
+ * Maps each of the 12 semitone intervals (0-11) to one of 8 palette slots
+ * (0-7). Designed so intervals that co-occur within any standard chord type
+ * (triads, 7ths, aug, dim) never collide.
+ *
+ * Verification:
+ *   Aug triad  (0,4,8)    → (0,4,3) ✓
+ *   Dim7       (0,3,6,9)  → (0,3,6,5) ✓
+ *   Dom7       (0,4,7,10) → (0,4,7,1) ✓
+ *   Maj7       (0,4,7,11) → (0,4,7,6) ✓
+ *   Min7       (0,3,7,10) → (0,3,7,1) ✓
+ *   Aug7       (0,4,8,10) → (0,4,3,1) ✓
+ *   MinMaj7    (0,3,7,11) → (0,3,7,6) ✓
+ *   Half-dim7  (0,3,6,10) → (0,3,6,1) ✓
+ */
+export const INTERVAL_TO_PALETTE: readonly number[] = [
+  0, 1, 2, 3, 4, 5, 6, 7, 3, 5, 1, 6,
+];
+
+/**
  * Compute the bass-note interval (in semitones, 0-11) from the chord root to
  * the lowest physical note in a voicing.
  *
@@ -579,7 +598,8 @@ export function buildChordConnectorPolylines(
       // chord root). Same inversion → same color across positions and chord
       // qualities. Root in bass = 0 → palette[0]; major 3rd in bass = 4 →
       // palette[4]; perfect 5th in bass = 7 → palette[7]; etc.
-      const paletteIndex = bassIntervalSemitones(bestCombo, chordRoot) % 8;
+      const interval = bassIntervalSemitones(bestCombo, chordRoot);
+      const paletteIndex = INTERVAL_TO_PALETTE[interval] ?? interval % 8;
 
       // Collect — path generation deferred to pass 2 after cluster assignment.
       pendingVoicings.push({ rawVertices, paletteIndex, canonicalKey });

@@ -7,6 +7,7 @@ import {
   CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
   clampConnectorRadiusToYBounds,
   useChordConnectorPolylines,
+  INTERVAL_TO_PALETTE,
 } from "./useChordConnectorPolylines";
 import type { NoteData } from "./useNoteData";
 
@@ -1473,5 +1474,75 @@ describe("voicingKey field", () => {
     expect(key).toContain("0,5");
     expect(key).toContain("1,7");
     expect(key).toContain("2,6");
+  });
+
+  // -------------------------------------------------------------------------
+  // INTERVAL_TO_PALETTE — collision-free mapping
+  // -------------------------------------------------------------------------
+
+  describe("INTERVAL_TO_PALETTE", () => {
+    it("maps all 12 semitone intervals to valid palette indices 0-7", () => {
+      expect(INTERVAL_TO_PALETTE).toHaveLength(12);
+      for (const slot of INTERVAL_TO_PALETTE) {
+        expect(slot).toBeGreaterThanOrEqual(0);
+        expect(slot).toBeLessThanOrEqual(7);
+      }
+    });
+
+    it.each([
+      { name: "augmented triad", intervals: [0, 4, 8] },
+      { name: "diminished 7th", intervals: [0, 3, 6, 9] },
+      { name: "dominant 7th", intervals: [0, 4, 7, 10] },
+      { name: "major 7th", intervals: [0, 4, 7, 11] },
+      { name: "minor 7th", intervals: [0, 3, 7, 10] },
+      { name: "augmented 7th", intervals: [0, 4, 8, 10] },
+      { name: "minor-major 7th", intervals: [0, 3, 7, 11] },
+      { name: "half-diminished 7th", intervals: [0, 3, 6, 10] },
+    ])("produces distinct palette indices for $name ($intervals)", ({ intervals }) => {
+      const mapped = intervals.map((i) => INTERVAL_TO_PALETTE[i]);
+      const unique = new Set(mapped);
+      expect(unique.size).toBe(intervals.length);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Augmented triad inversions get distinct colors
+  // -------------------------------------------------------------------------
+
+  it("augmented triad inversions (E aug: E, G#, C) receive distinct paletteIndex values", () => {
+    // E augmented triad: E (root), G# (maj 3rd), C (aug 5th = enharmonic B#)
+    // Three voicings on strings 0-2, each with a different bass note on string 2.
+    // Frets kept within MAX_FRET_SPAN (5) per voicing.
+    const noteData = [
+      // Voicing 1: E in bass (string 2) — root position, interval 0
+      // Frets 4,5,4 → fretted span = 5-4+1 = 2 ✓
+      makeNote(0, 4, "G#", "chord-tone-in-scale"),
+      makeNote(1, 5, "C", "chord-tone-in-scale"),
+      makeNote(2, 4, "E", "chord-tone-in-scale"),
+      // Voicing 2: G# in bass (string 2) — 1st inversion, interval 4
+      makeNote(0, 8, "C", "chord-tone-in-scale"),
+      makeNote(1, 9, "E", "chord-tone-in-scale"),
+      makeNote(2, 8, "G#", "chord-tone-in-scale"),
+      // Voicing 3: C in bass (string 2) — 2nd inversion, interval 8
+      makeNote(0, 12, "E", "chord-tone-in-scale"),
+      makeNote(1, 13, "G#", "chord-tone-in-scale"),
+      makeNote(2, 12, "C", "chord-tone-in-scale"),
+    ];
+
+    const result = buildChordConnectorPolylines(
+      noteData,
+      ["E", "G#", "C"],
+      fretCenterX,
+      stringYAt,
+      STRING_ROW_PX,
+      "E",
+    );
+
+    expect(result.length).toBeGreaterThanOrEqual(3);
+
+    const paletteIndices = result.map((v) => v.paletteIndex);
+    const unique = new Set(paletteIndices);
+    // All three inversions must have distinct palette indices.
+    expect(unique.size).toBe(paletteIndices.length);
   });
 });
