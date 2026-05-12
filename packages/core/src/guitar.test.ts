@@ -8,6 +8,7 @@ import {
   STANDARD_TUNING,
   STANDARD_FRET_MARKERS,
 } from './guitar';
+import { MAX_FRET } from './constants';
 
 describe('parseNote', () => {
   it('parses note with octave', () => {
@@ -56,7 +57,7 @@ describe('getFretNoteWithOctave', () => {
 
   it('clamps high fret numbers to MAX_FRET', () => {
     const extreme = getFretNoteWithOctave('E4', 100);
-    const clamped = getFretNoteWithOctave('E4', 25);
+    const clamped = getFretNoteWithOctave('E4', MAX_FRET);
     expect(extreme).toBe(clamped);
   });
 
@@ -64,6 +65,18 @@ describe('getFretNoteWithOctave', () => {
     const negative = getFretNoteWithOctave('E4', -1);
     const zero = getFretNoteWithOctave('E4', 0);
     expect(negative).toBe(zero);
+  });
+
+  it('defaults NaN fretNumber to 0', () => {
+    expect(getFretNoteWithOctave('E4', NaN)).toBe(getFretNoteWithOctave('E4', 0));
+  });
+
+  it('defaults Infinity fretNumber to 0', () => {
+    expect(getFretNoteWithOctave('E4', Infinity)).toBe(getFretNoteWithOctave('E4', 0));
+  });
+
+  it('rounds float fretNumber to nearest integer', () => {
+    expect(getFretNoteWithOctave('E4', 5.7)).toBe(getFretNoteWithOctave('E4', 6));
   });
 });
 
