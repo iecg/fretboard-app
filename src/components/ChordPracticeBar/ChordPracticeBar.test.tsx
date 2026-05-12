@@ -471,7 +471,7 @@ describe("ChordPracticeBar/ChordPracticeBar", () => {
       ).toBeTruthy();
     });
 
-    it("eye button has aria-pressed=true when overlay is visible", () => {
+    it("eye button has aria-pressed=false when overlay is visible", () => {
       const { container } = renderWithAtoms(
         <ChordPracticeBar
           title="D Minor 7"
@@ -481,10 +481,10 @@ describe("ChordPracticeBar/ChordPracticeBar", () => {
         [[chordOverlayHiddenAtom, false]],
       );
       const eyeBtn = container.querySelector(".practice-bar-eye-toggle");
-      expect(eyeBtn?.getAttribute("aria-pressed")).toBe("true");
+      expect(eyeBtn?.getAttribute("aria-pressed")).toBe("false");
     });
 
-    it("eye button has aria-pressed=false when overlay is hidden", () => {
+    it("eye button has aria-pressed=true when overlay is hidden", () => {
       const { container } = renderWithAtoms(
         <ChordPracticeBar
           title="D Minor 7"
@@ -494,10 +494,10 @@ describe("ChordPracticeBar/ChordPracticeBar", () => {
         [[chordOverlayHiddenAtom, true]],
       );
       const eyeBtn = container.querySelector(".practice-bar-eye-toggle");
-      expect(eyeBtn?.getAttribute("aria-pressed")).toBe("false");
+      expect(eyeBtn?.getAttribute("aria-pressed")).toBe("true");
     });
 
-    it("renders eye-open icon (data-icon) when overlay is visible", () => {
+    it("renders eye-open icon when overlay is visible", () => {
       const { container } = renderWithAtoms(
         <ChordPracticeBar
           title="D Minor 7"
@@ -507,12 +507,12 @@ describe("ChordPracticeBar/ChordPracticeBar", () => {
         [[chordOverlayHiddenAtom, false]],
       );
       const eyeBtn = container.querySelector(".practice-bar-eye-toggle");
-      expect(eyeBtn?.getAttribute("aria-pressed")).toBe("true");
-      expect(eyeBtn?.querySelector('[data-icon="eye-open"]')).toBeTruthy();
-      expect(eyeBtn?.querySelector('[data-icon="eye-closed"]')).toBeNull();
+      expect(eyeBtn?.getAttribute("aria-pressed")).toBe("false");
+      expect(eyeBtn?.querySelector('.lucide-eye')).toBeTruthy();
+      expect(eyeBtn?.querySelector('.lucide-eye-off')).toBeNull();
     });
 
-    it("renders eye-closed icon (data-icon) when overlay is hidden", () => {
+    it("renders eye-closed icon when overlay is hidden", () => {
       const { container } = renderWithAtoms(
         <ChordPracticeBar
           title="D Minor 7"
@@ -522,9 +522,9 @@ describe("ChordPracticeBar/ChordPracticeBar", () => {
         [[chordOverlayHiddenAtom, true]],
       );
       const eyeBtn = container.querySelector(".practice-bar-eye-toggle");
-      expect(eyeBtn?.getAttribute("aria-pressed")).toBe("false");
-      expect(eyeBtn?.querySelector('[data-icon="eye-closed"]')).toBeTruthy();
-      expect(eyeBtn?.querySelector('[data-icon="eye-open"]')).toBeNull();
+      expect(eyeBtn?.getAttribute("aria-pressed")).toBe("true");
+      expect(eyeBtn?.querySelector('.lucide-eye-off')).toBeTruthy();
+      expect(eyeBtn?.querySelector('.lucide-eye')).toBeNull();
     });
 
     it("sets data-collapsed='true' on the section when hidden", () => {

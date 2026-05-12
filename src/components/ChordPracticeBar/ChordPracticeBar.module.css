@@ -5,13 +5,14 @@
 
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  width: 100%;
-  padding: 0.38rem 0.85rem 0.42rem;
-  border-radius: 0.85rem;
-  background: var(--strip-fill);
-  border: var(--strip-border);
-  box-shadow: var(--strip-shadow);
+  gap: var(--strip-gap, 0.3rem);
+  width: min(100%, 30rem);
+  margin: 0 auto;
+  padding: var(--strip-padding, 0.38rem 0.85rem 0.42rem);
+  border-radius: var(--strip-radius, 0.85rem);
+  background: var(--strip-bg-override, var(--strip-fill));
+  border: var(--strip-border-override, var(--strip-border));
+  box-shadow: var(--strip-shadow-override, var(--strip-shadow));
 
 }
 
@@ -21,25 +22,11 @@
 }
 
 .chord-practice-bar-header {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  flex-wrap: wrap;
+  composes: card-section-header from "../shared/shared.module.css";
 }
 
 .practice-bar-eye-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.2rem;
-  border: none;
-  background: transparent;
-  color: var(--text-main);
-  opacity: 0.6;
-  cursor: pointer;
-  border-radius: 0.3rem;
-  transition: opacity var(--transition-fast);
-  flex-shrink: 0;
+  composes: eye-toggle from "../shared/shared.module.css";
 }
 
 .practice-bar-eye-toggle:hover { opacity: 1; }
@@ -53,12 +40,8 @@
 .practice-bar-eye-toggle[aria-pressed="true"] { opacity: 0.4; }
 
 .chord-practice-bar-title {
-  font-family: var(--font-sans);
-  font-size: clamp(0.82rem, 1.3vw, 0.94rem);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-main);
-  line-height: 1.2;
-  letter-spacing: 0.01em;
+  /* Inherits font, color, weight from .card-section-header parent. */
+  white-space: nowrap;
 }
 
 .chord-practice-bar-lens-label {
@@ -365,8 +348,9 @@
 :global(.app-container[data-layout-tier="desktop"]) .chord-practice-bar {
   padding: 0.3rem 0.85rem 0.34rem;
   gap: 0.3rem;
+  width: min(100%, 32rem);
 }
 
 :global(.app-container[data-layout-tier="desktop"]) .chord-practice-bar-title {
-  font-size: clamp(0.78rem, 1.1vw, 0.9rem);
+  font-size: clamp(0.84rem, 1.2vw, 0.96rem);
 }

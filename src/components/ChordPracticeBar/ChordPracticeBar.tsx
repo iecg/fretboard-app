@@ -1,5 +1,7 @@
 import clsx from "clsx";
 import { useAtomValue, useSetAtom } from "jotai";
+import { Eye, EyeOff } from "lucide-react";
+import { AnimatePresence, motion } from 'motion/react';
 import type { PracticeBarGroup, PracticeBarNote } from "@fretflow/core";
 import {
   chordOverlayHiddenAtom,
@@ -10,25 +12,6 @@ import {
 } from "../../store/atoms";
 import shared from "../shared/shared.module.css";
 import styles from "./ChordPracticeBar.module.css";
-
-function EyeOpenIcon() {
-  return (
-    <svg data-icon="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-      <circle cx="12" cy="12" r="3"/>
-    </svg>
-  );
-}
-
-function EyeClosedIcon() {
-  return (
-    <svg data-icon="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-      <path d="m1 1 22 22"/>
-    </svg>
-  );
-}
 
 interface PillProps {
   note: PracticeBarNote;
@@ -157,16 +140,18 @@ export function ChordPracticeBar({
       data-collapsed={collapsed ? "true" : undefined}
       data-degree-colors={degreeColorsEnabled ? "true" : undefined}
     >
-      <div className={styles["chord-practice-bar-header"]}>
+      <header className={styles["chord-practice-bar-header"]}>
         <button
           type="button"
           className={styles["practice-bar-eye-toggle"]}
           aria-label="Toggle visibility of chord overlay"
-          aria-pressed={!collapsed}
+          aria-pressed={collapsed}
           onClick={() => toggleCollapsed()}
         >
           <span className={shared["flex-center"]}>
-            {collapsed ? <EyeClosedIcon /> : <EyeOpenIcon />}
+            {collapsed
+              ? <EyeOff size={16} aria-hidden="true" />
+              : <Eye size={16} aria-hidden="true" />}
           </span>
         </button>
         <span className={styles["chord-practice-bar-title"]}>{title}</span>
@@ -174,27 +159,37 @@ export function ChordPracticeBar({
           <span className={styles["chord-practice-bar-lens-label"]}>{lensLabel}</span>
         )}
         {badge && <span className={styles["chord-practice-bar-badge"]}>{badge}</span>}
-      </div>
-      {!collapsed && (
-        <div className={styles["chord-practice-bar-groups-container"]}>
-          <div className={styles["chord-practice-bar-groups"]}>
-            {!dedupGroups && (
+      </header>
+      <AnimatePresence initial={false}>
+        {!collapsed && (
+          <motion.div
+            key="groups"
+            className={styles["chord-practice-bar-groups-container"]}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            style={{ overflow: "hidden" }}
+          >
+            <div className={styles["chord-practice-bar-groups"]}>
+              {!dedupGroups && (
+                <Group
+                  variant="chord"
+                  group={chordGroup}
+                  hiddenNotes={hiddenNotes}
+                  onToggleNote={toggleNote}
+                />
+              )}
               <Group
-                variant="chord"
-                group={chordGroup}
+                variant="land-on"
+                group={landOnGroup}
                 hiddenNotes={hiddenNotes}
                 onToggleNote={toggleNote}
               />
-            )}
-            <Group
-              variant="land-on"
-              group={landOnGroup}
-              hiddenNotes={hiddenNotes}
-              onToggleNote={toggleNote}
-            />
-          </div>
-        </div>
-      )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
