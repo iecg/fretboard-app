@@ -155,7 +155,8 @@ export function Fretboard(props: FretboardProps) {
     const shapeCenter = (shapeLeft + shapeRight) / 2;
 
     el.scrollTo({ left: Math.max(0, shapeCenter - containerW / 2), behavior: "smooth" });
-  }, [autoCenterTarget, recenterKey, startFret, endFret, effectiveZoom, stringRowPx, totalColumns, containerWidth]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- trigger only on target/key changes; geometry derived from current values
+  }, [autoCenterTarget, recenterKey]);
 
   const updateCursor = useCallback((dragging: boolean) => {
     if (!scrollRef.current) return;
