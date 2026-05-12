@@ -123,7 +123,8 @@
   fill: var(--fretboard-note-text-fill);
 }
 
-.fretboard-note.scale-only :is(circle, path, polygon) {
+.fretboard-note.scale-only :is(circle, path, polygon),
+.fretboard-note.note-inactive :is(circle, path, polygon) {
   stroke: var(--note-ring);
   fill: var(--fretboard-note-fill-scale-only);
   stroke-width: 1.7;
