@@ -11,7 +11,7 @@
   background: linear-gradient(
     90deg,
     var(--token-surface-dim) 25%,
-    rgb(255 255 255 / 0.08) 50%,
+    var(--token-shimmer-highlight) 50%,
     var(--token-surface-dim) 75%
   );
   background-size: 200% 100%;
@@ -41,7 +41,7 @@
 
 /* Card-shaped skeleton matching the app's Card component */
 .card-skeleton {
-  background: var(--token-surface-card-base);
+  background: var(--surface-card-top);
   border: 1px solid var(--token-border-subtle);
   border-radius: var(--radius-card);
   box-shadow: var(--elevation-card);

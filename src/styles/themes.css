@@ -120,6 +120,7 @@
   --token-border-subtler: var(--surface-raised);    /* was #f1f5f9 */
   --token-border-faint:   var(--surface-shell);     /* was #f8fafc */
   --token-surface-dim:    var(--surface-shell);     /* was #f8fafc */
+  --token-shimmer-highlight: rgb(0 0 0 / 0.06);
 
   /* Chip backgrounds — using solid accents for active states */
   --token-chip-active-bg: #0891b2;
