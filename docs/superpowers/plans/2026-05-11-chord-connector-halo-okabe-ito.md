@@ -41,8 +41,8 @@ Replace lines 279-306 in `src/styles/themes.css` — the entire light-mode conne
   --chord-connector-fill-opacity: 0.40;
   --chord-connector-outline-width: 1.25px;
   --chord-connector-outline-opacity: 0.85;
-  --chord-connector-halo-width: 3px;
-  --chord-connector-halo-color: rgba(255, 255, 255, 0.7);
+  --chord-connector-halo-width: 2px;
+  --chord-connector-halo-color: rgba(255, 255, 255, 0.45);
   --chord-connector-color-1: #E69F00; /* Okabe-Ito: orange */
   --chord-connector-color-2: #D55E00; /* Okabe-Ito: vermillion */
   --chord-connector-color-3: #999999; /* Okabe-Ito: gray */
@@ -60,13 +60,13 @@ Replace lines 324-357 in `src/styles/themes.css` — the entire `[data-theme="mo
 ```css
   /* Chord-tone connector overrides for dark mode.
      Same canonical Okabe-Ito palette as light mode. Lower fill opacity because
-     dark rosewood provides high contrast at lower alpha. Halo is subtler on
-     dark backgrounds. */
+     dark rosewood provides high contrast at lower alpha. Halo disabled —
+     all canonical Okabe-Ito colors pass WCAG 3:1 against rosewood. */
   --chord-connector-fill-opacity: 0.15;
   --chord-connector-outline-width: 1.25px;
   --chord-connector-outline-opacity: 0.85;
-  --chord-connector-halo-width: 3px;
-  --chord-connector-halo-color: rgba(255, 255, 255, 0.3);
+  --chord-connector-halo-width: 0;
+  --chord-connector-halo-color: transparent;
   --chord-connector-color-1: #E69F00; /* Okabe-Ito: orange */
   --chord-connector-color-2: #D55E00; /* Okabe-Ito: vermillion */
   --chord-connector-color-3: #999999; /* Okabe-Ito: gray */

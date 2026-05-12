@@ -55,9 +55,10 @@ A third render pass is added before the existing fill and outline passes.
 ### Halo CSS tokens
 
 ```css
---chord-connector-halo-width: 3px;
---chord-connector-halo-color: rgba(255, 255, 255, 0.7);  /* light */
---chord-connector-halo-color: rgba(255, 255, 255, 0.3);  /* dark */
+--chord-connector-halo-width: 2px;
+--chord-connector-halo-color: rgba(255, 255, 255, 0.45);  /* light */
+--chord-connector-halo-width: 0;                          /* dark — disabled */
+--chord-connector-halo-color: transparent;                 /* dark — disabled */
 ```
 
 The halo uses the same path geometry as the outline pass. `stroke-linejoin: round; stroke-linecap: round;` matches the outline.
