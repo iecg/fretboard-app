@@ -274,6 +274,24 @@ describe("Integration Tests - User Workflows", () => {
 
       expect(localStorage.getItem(k("rootNote"))).toBe("C");
     });
+
+    it("clicking a fretboard note button calls playNote on the synth", async () => {
+      localStorage.setItem(k("isMuted"), "false");
+      render(<App />);
+
+      // The FretboardHitTargetLayer renders a button per note.
+      // Buttons are enabled (not disabled) because Fretboard always passes handleFretClick as onNoteClick.
+      const noteButtons = screen
+        .getAllByRole("button")
+        .filter((btn) => btn.getAttribute("aria-label")?.includes("on string"));
+
+      expect(noteButtons.length).toBeGreaterThan(0);
+
+      fireEvent.click(noteButtons[0]);
+
+      expect(mockSynth.playNote).toHaveBeenCalledTimes(1);
+      expect(mockSynth.playNote).toHaveBeenCalledWith(expect.any(Number));
+    });
   });
 
   describe("Workflow 5: Mute Toggle Prevents Audio", () => {
