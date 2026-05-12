@@ -348,10 +348,7 @@ test.describe("Theme Contract", () => {
 
     // In dark mode the center gradient start is a dark navy with ~98% opacity.
     // The resolved value is rgba(34, 40, 54, 0.98) → #222836fa.
-    const { r, g, b } = (() => {
-      const m = centerStart.match(/rgba?\((\d+),?\s*(\d+),?\s*(\d+)/);
-      return m ? { r: +m[1], g: +m[2], b: +m[3] } : { r: 0, g: 0, b: 0 };
-    })();
+    const [r, g, b] = parseRgbChannels(centerStart);
     // Dark navy: all channels well below 100
     expect(r).toBeLessThan(100);
     expect(g).toBeLessThan(100);

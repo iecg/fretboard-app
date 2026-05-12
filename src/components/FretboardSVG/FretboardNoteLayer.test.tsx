@@ -16,7 +16,19 @@ import {
   RADIUS_SCALE_NOTE_ACTIVE,
 } from "@fretflow/core";
 
-function makeNote(noteClass: string, overrides: Partial<NoteData> = {}): NoteData {
+type NoteClass =
+  | "chord-root"
+  | "chord-tone-in-scale"
+  | "chord-tone-outside-scale"
+  | "note-diatonic-chord"
+  | "color-tone"
+  | "scale-only"
+  | "note-active"
+  | "note-blue"
+  | "key-tonic"
+  | "note-inactive";
+
+function makeNote(noteClass: NoteClass, overrides: Partial<NoteData> = {}): NoteData {
   return {
     stringIndex: 0,
     fretIndex: 5,
@@ -379,7 +391,7 @@ describe("FretboardNoteLayer", () => {
           noteData={[
             makeNote("chord-root", { stringIndex: 0, fretIndex: 0 }),
             makeNote("note-active", { stringIndex: 1, fretIndex: 1 }),
-            makeNote("chord-tone", { stringIndex: 2, fretIndex: 2 }),
+            makeNote("chord-tone-in-scale", { stringIndex: 2, fretIndex: 2 }),
           ]}
           fretCenterX={(fi) => fi * 50}
           stringYAt={(si) => si * 30}
@@ -402,7 +414,7 @@ describe("FretboardNoteLayer", () => {
           noteData={[
             makeNote("chord-root", { stringIndex: 0, fretIndex: 0 }),
             makeNote("note-active", { stringIndex: 1, fretIndex: 1 }),
-            makeNote("note-scale-only", { stringIndex: 2, fretIndex: 2 }),
+            makeNote("scale-only", { stringIndex: 2, fretIndex: 2 }),
           ]}
           fretCenterX={(fi) => fi * 50}
           stringYAt={(si) => si * 30}
@@ -414,7 +426,7 @@ describe("FretboardNoteLayer", () => {
     );
 
     const labels = container.querySelectorAll("text");
-    // Only note-active and note-scale-only should render
+    // Only note-active and scale-only should render
     expect(labels.length).toBe(2);
   });
 });
