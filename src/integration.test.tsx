@@ -281,9 +281,8 @@ describe("Integration Tests - User Workflows", () => {
 
       // The FretboardHitTargetLayer renders a button per note.
       // Buttons are enabled (not disabled) because Fretboard always passes handleFretClick as onNoteClick.
-      const noteButtons = screen
-        .getAllByRole("button")
-        .filter((btn) => btn.getAttribute("aria-label")?.includes("on string"));
+      const allButtons = await screen.findAllByRole("button");
+      const noteButtons = allButtons.filter((btn) => btn.getAttribute("aria-label")?.includes("on string"));
 
       expect(noteButtons.length).toBeGreaterThan(0);
 
