@@ -38,104 +38,149 @@ import {
   fretEndAtom,
 } from "./layoutAtoms";
 
-export const shapeDataAtom = atom((get) => {
-  const fingeringPattern = get(fingeringPatternAtom);
+export interface ShapeData {
+  highlightNotes: string[];
+  boxBounds: { minFret: number; maxFret: number }[];
+  shapePolygons: ShapePolygon[];
+  wrappedNotes: Set<string>;
+  intervalPairs: Array<{ a: string; b: string }>;
+}
+
+const cagedShapeDataAtom = atom((get): ShapeData => {
   const rootNote = get(rootNoteAtom);
   const scaleName = get(scaleNameAtom);
   const currentTuning = get(currentTuningAtom);
   const cagedShapes = get(cagedShapesAtom);
-  const npsPosition = get(npsPositionAtom);
-  const npsOctave = get(npsOctaveAtom);
-  const oneStringIndex = get(oneStringIndexAtom);
-  const oneStringInterval = get(oneStringIntervalAtom);
-  const twoStringsInterval = get(twoStringsIntervalAtom);
-  const activePairTuple = get(twoStringsActivePairTupleAtom);
 
-  let coords: string[] = [];
-  let bounds: { minFret: number; maxFret: number }[] = [];
-  let polygons: ShapePolygon[] = [];
-  let intervalPairs: Array<{ a: string; b: string }> = [];
+  const shapesToRender = CAGED_SHAPES.filter((s) => cagedShapes.has(s));
+  const allCoords = new Set<string>();
+  const allBounds: { minFret: number; maxFret: number }[] = [];
+  const allPolygons: ShapePolygon[] = [];
   const mergedWrappedNotes = new Set<string>();
 
-  if (fingeringPattern === "caged") {
-    const shapesToRender = CAGED_SHAPES.filter((s) => cagedShapes.has(s));
-    const allCoords = new Set<string>();
-    const allBounds: { minFret: number; maxFret: number }[] = [];
-    const allPolygons: ShapePolygon[] = [];
-    for (const shape of shapesToRender) {
-      const res = getCagedCoordinates(
-        rootNote,
-        shape,
-        scaleName,
-        currentTuning,
-        24,
-      );
-      res.coordinates.forEach((c) => allCoords.add(c));
-      allBounds.push(...res.bounds);
-      allPolygons.push(...res.polygons);
-      res.wrappedNotes.forEach((kk) => mergedWrappedNotes.add(kk));
-    }
+  for (const shape of shapesToRender) {
+    const res = getCagedCoordinates(rootNote, shape, scaleName, currentTuning, 24);
+    res.coordinates.forEach((c) => allCoords.add(c));
+    allBounds.push(...res.bounds);
+    allPolygons.push(...res.polygons);
+    res.wrappedNotes.forEach((kk) => mergedWrappedNotes.add(kk));
+  }
 
-    coords = Array.from(allCoords);
-    bounds = allBounds;
-    polygons = allPolygons;
-  } else if (fingeringPattern === "3nps") {
-    const res = get3NPSCoordinates(
-      rootNote,
-      scaleName,
+  return {
+    highlightNotes: Array.from(allCoords),
+    boxBounds: allBounds,
+    shapePolygons: allPolygons,
+    wrappedNotes: mergedWrappedNotes,
+    intervalPairs: [],
+  };
+});
+
+const threeNpsShapeDataAtom = atom((get): ShapeData => {
+  const rootNote = get(rootNoteAtom);
+  const scaleName = get(scaleNameAtom);
+  const currentTuning = get(currentTuningAtom);
+  const npsPosition = get(npsPositionAtom);
+  const npsOctave = get(npsOctaveAtom);
+
+  const res = get3NPSCoordinates(rootNote, scaleName, currentTuning, 24, npsPosition, npsOctave);
+
+  return {
+    highlightNotes: res.coordinates,
+    boxBounds: res.bounds,
+    shapePolygons: [],
+    wrappedNotes: new Set<string>(),
+    intervalPairs: [],
+  };
+});
+
+const oneStringShapeDataAtom = atom((get): ShapeData => {
+  const rootNote = get(rootNoteAtom);
+  const scaleName = get(scaleNameAtom);
+  const currentTuning = get(currentTuningAtom);
+  const oneStringIndex = get(oneStringIndexAtom);
+  const oneStringInterval = get(oneStringIntervalAtom);
+
+  // Always emit full string coords (visibility independent of interval — UAT-10 model).
+  const coords = getOneStringCoordinates(rootNote, scaleName, currentTuning, 24, oneStringIndex);
+  let intervalPairs: Array<{ a: string; b: string }> = [];
+
+  if (oneStringInterval > 0) {
+    // UAT-22: On mode connects consecutive scale tones (2nds) only — SD distance = 1.
+    const board = getFretboardNotes(currentTuning, 24);
+    const scaleNoteNames = getScaleNotes(rootNote, scaleName);
+    const scaleNoteSet = new Set(scaleNoteNames);
+    const scaleNoteSemitones = scaleNoteNames.map((n) => NOTES.indexOf(n)).filter((i) => i !== -1);
+    intervalPairs = getOneStringIntervalPairs(
+      oneStringIndex,
+      board,
+      scaleNoteSet,
+      scaleNoteSemitones,
+      1, // SD distance = 1 → scale 2nds (consecutive scale tones)
       currentTuning,
-      24,
-      npsPosition,
-      npsOctave,
     );
-    coords = res.coordinates;
-    bounds = res.bounds;
-  } else if (fingeringPattern === "one-string") {
-    // Always emit full string coords (visibility independent of interval — UAT-10 model).
-    coords = getOneStringCoordinates(rootNote, scaleName, currentTuning, 24, oneStringIndex);
-    if (oneStringInterval > 0) {
-      // UAT-22: On mode connects consecutive scale tones (2nds) only — SD distance = 1.
-      const board = getFretboardNotes(currentTuning, 24);
-      const scaleNoteNames = getScaleNotes(rootNote, scaleName);
-      const scaleNoteSet = new Set(scaleNoteNames);
-      const scaleNoteSemitones = scaleNoteNames
-        .map((n) => NOTES.indexOf(n))
-        .filter((i) => i !== -1);
-      intervalPairs = getOneStringIntervalPairs(
-        oneStringIndex,
-        board,
-        scaleNoteSet,
-        scaleNoteSemitones,
-        1, // SD distance = 1 → scale 2nds (consecutive scale tones)
-        currentTuning,
-      );
-    }
-  } else if (fingeringPattern === "two-strings") {
-    // Always emit the full pair note set regardless of interval setting (UAT-10).
-    // Visibility is decoupled from interval — interval only affects connector lines.
-    // activePairTuple handles adjacent-vs-skip-one topology (Option X).
-    coords = getTwoStringsCoordinates(rootNote, scaleName, currentTuning, 24, activePairTuple);
-    if (twoStringsInterval > 0) {
-      const board = getFretboardNotes(currentTuning, 24);
-      const scaleNoteNames = getScaleNotes(rootNote, scaleName);
-      const scaleNoteSet = new Set(scaleNoteNames);
-      const scaleNoteSemitones = scaleNoteNames
-        .map((n) => NOTES.indexOf(n))
-        .filter((i) => i !== -1);
-      const targetSdDist = TWO_STRINGS_INTERVAL_SD_DISTANCES[twoStringsInterval - 1] ?? 2;
-      intervalPairs = getTwoStringsIntervalPairs(activePairTuple, board, scaleNoteSet, scaleNoteSemitones, targetSdDist, currentTuning);
-    }
-  } else {
-    coords = getScaleNotes(rootNote, scaleName);
   }
 
   return {
     highlightNotes: coords,
-    boxBounds: bounds,
-    shapePolygons: polygons,
-    wrappedNotes: mergedWrappedNotes,
+    boxBounds: [],
+    shapePolygons: [],
+    wrappedNotes: new Set<string>(),
     intervalPairs,
   };
+});
+
+const twoStringsShapeDataAtom = atom((get): ShapeData => {
+  const rootNote = get(rootNoteAtom);
+  const scaleName = get(scaleNameAtom);
+  const currentTuning = get(currentTuningAtom);
+  const twoStringsInterval = get(twoStringsIntervalAtom);
+  const activePairTuple = get(twoStringsActivePairTupleAtom);
+
+  // Always emit the full pair note set regardless of interval setting (UAT-10).
+  // Visibility is decoupled from interval — interval only affects connector lines.
+  // activePairTuple handles adjacent-vs-skip-one topology (Option X).
+  const coords = getTwoStringsCoordinates(rootNote, scaleName, currentTuning, 24, activePairTuple);
+  let intervalPairs: Array<{ a: string; b: string }> = [];
+
+  if (twoStringsInterval > 0) {
+    const board = getFretboardNotes(currentTuning, 24);
+    const scaleNoteNames = getScaleNotes(rootNote, scaleName);
+    const scaleNoteSet = new Set(scaleNoteNames);
+    const scaleNoteSemitones = scaleNoteNames.map((n) => NOTES.indexOf(n)).filter((i) => i !== -1);
+    const targetSdDist = TWO_STRINGS_INTERVAL_SD_DISTANCES[twoStringsInterval - 1] ?? 2;
+    intervalPairs = getTwoStringsIntervalPairs(activePairTuple, board, scaleNoteSet, scaleNoteSemitones, targetSdDist, currentTuning);
+  }
+
+  return {
+    highlightNotes: coords,
+    boxBounds: [],
+    shapePolygons: [],
+    wrappedNotes: new Set<string>(),
+    intervalPairs,
+  };
+});
+
+export const shapeDataAtom = atom((get): ShapeData => {
+  const fingeringPattern = get(fingeringPatternAtom);
+  switch (fingeringPattern) {
+    case "caged": return get(cagedShapeDataAtom);
+    case "3nps": return get(threeNpsShapeDataAtom);
+    case "one-string": return get(oneStringShapeDataAtom);
+    case "two-strings": return get(twoStringsShapeDataAtom);
+    default: {
+      const rootNote = get(rootNoteAtom);
+      const scaleName = get(scaleNameAtom);
+      // Subscribe to currentTuningAtom so tuningNameAtom is always initialized on first render.
+      get(currentTuningAtom);
+      return {
+        highlightNotes: getScaleNotes(rootNote, scaleName),
+        boxBounds: [],
+        shapePolygons: [],
+        wrappedNotes: new Set<string>(),
+        intervalPairs: [],
+      };
+    }
+  }
 });
 
 // Returns empty highlightNotes when scale is hidden; chord overlay remains active via chordTones.
