@@ -40,6 +40,7 @@ src/__snapshots__/
 .claude/
 .vbw-planning
 .gemini/
+.superpowers/
 
 # === Generated Files ===
 scripts/gif-capture/frames/
