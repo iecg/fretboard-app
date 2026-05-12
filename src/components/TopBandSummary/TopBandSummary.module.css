@@ -1,0 +1,50 @@
+.top-band-summary {
+  background: var(--surface-card-top);
+  border: 1px solid var(--surface-card-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--elevation-card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(100%, 30rem);
+  margin: 0 auto;
+  overflow: visible;
+  transition:
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast);
+
+  /* Suppress child strip surfaces — the card owns the fill. */
+  --strip-bg-override: transparent;
+  --strip-border-override: none;
+  --strip-shadow-override: none;
+
+  /* Compact overrides cascading to children */
+  --strip-padding: 0.32rem 0.85rem 0.34rem;
+  --strip-radius: 0;
+  --strip-gap: 0.3rem;
+  --strip-header-size: clamp(0.92rem, 1.5vw, 1.05rem);
+  --strip-eye-icon-size: 1rem;
+  --strip-eye-toggle-padding: 0.1rem;
+}
+
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global(.app-container[data-layout-tier="desktop"]) .top-band-summary {
+  width: min(100%, 32rem);
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
+
+.chord-section {
+  width: 100%;
+}
+
+/* Inset hairline divider between the chip strip and the chord section.
+   Rendered inside the animated motion container so it appears/disappears
+   in lockstep with the chord bar — no orphaned line. */
+.chord-section::before {
+  content: "";
+  display: block;
+  height: 1px;
+  margin: 0 0.85rem;
+  background: var(--chrome-border);
+  opacity: 0.6;
+}
