@@ -492,30 +492,22 @@ export const FretboardSVG = memo(function FretboardSVG({
                   ))}
                   {/* Fill pass: all voicings rendered first (below outlines) */}
                   {connectorPolylines.map((voicing) => (
-                    <motion.path
+                    <path
                       key={`fill-${voicing.voicingKey}`}
-                      initial={{ opacity: 0, scale: 0.98 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.98 }}
-                      transition={{ duration: 0.2 }}
+                      className={styles["chord-connector-path"]}
                       d={voicing.paths.fill}
                       data-layer="fill"
                       data-palette-index={voicing.paletteIndex + 1}
-                      style={{ originX: "50%", originY: "50%" }}
                     />
                   ))}
                   {/* Outline pass: all voicings rendered on top */}
                   {connectorPolylines.map((voicing) => (
-                    <motion.path
+                    <path
                       key={`outline-${voicing.voicingKey}`}
-                      initial={{ opacity: 0, scale: 0.98 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.98 }}
-                      transition={{ duration: 0.2 }}
+                      className={styles["chord-connector-path"]}
                       d={voicing.paths.outline}
                       data-layer="outline"
                       data-palette-index={voicing.paletteIndex + 1}
-                      style={{ originX: "50%", originY: "50%" }}
                     />
                   ))}
                 </motion.g>

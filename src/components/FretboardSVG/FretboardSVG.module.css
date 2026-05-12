@@ -418,6 +418,10 @@
   color: var(--fretboard-fret-number-color);
 }
 
+.chord-connector-path {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
 /* -----------------------------------------------------------------------
    Chord-tone connector layer — three-pass halo + fill + outline render.
    Halo layer: wide semi-transparent white stroke for background contrast.
