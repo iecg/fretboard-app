@@ -18,7 +18,7 @@ import {
 import { DEGREE_COLORS, getDegreesForScale } from "@fretflow/core";
 import { k, createStorage, rawStringStorage, booleanStorage, GET_ON_INIT, withStorageErrorBoundary } from "../utils/storage";
 import { fingeringPatternAtom, cagedShapesAtom } from "./fingeringAtoms";
-import { gatedAtom } from "./atomUtils";
+import { gatedAtom, EMPTY_SET, setsEqual } from "./atomUtils";
 import type { CagedShape } from "@fretflow/core";
 import type { PracticeBarColorNote } from "@fretflow/core";
 
@@ -171,7 +171,7 @@ export const hiddenNotesAtom = atom(
     if (state && state.root === root && state.scale === scale) {
       return state.notes;
     }
-    return new Set<string>();
+    return EMPTY_SET;
   },
   (get, set, update: Set<string> | ((prev: Set<string>) => Set<string>)) => {
     const root = get(rootNoteAtom);
@@ -179,6 +179,7 @@ export const hiddenNotesAtom = atom(
     const currentNotes = get(hiddenNotesAtom);
     const nextNotes =
       typeof update === "function" ? update(currentNotes) : update;
+    if (setsEqual(currentNotes, nextNotes)) return;
     set(internalHiddenNotesAtom, { root, scale, notes: nextNotes });
   },
 );

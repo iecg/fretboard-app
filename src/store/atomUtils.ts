@@ -1,5 +1,14 @@
 import { atom, type Atom } from "jotai";
 
+export const EMPTY_SET: Set<string> = new Set<string>();
+
+export function setsEqual(a: ReadonlySet<string>, b: ReadonlySet<string>): boolean {
+  if (a === b) return true;
+  if (a.size !== b.size) return false;
+  for (const v of a) if (!b.has(v)) return false;
+  return true;
+}
+
 /**
  * Creates a read-only atom that returns `sourceAtom`'s value when
  * `visibleAtom` is true, or the provided `fallback` when false.

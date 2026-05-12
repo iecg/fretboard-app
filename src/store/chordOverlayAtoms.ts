@@ -1,5 +1,6 @@
 import { atom } from "jotai";
 import { atomWithStorage, RESET } from "jotai/utils";
+import { EMPTY_SET, setsEqual } from "./atomUtils";
 import {
   NOTES,
   CHORD_DEFINITIONS,
@@ -296,7 +297,7 @@ export const chordHiddenNotesAtom = atom(
     if (state && state.chordRoot === chordRoot && state.chordType === chordType) {
       return state.notes;
     }
-    return new Set<string>();
+    return EMPTY_SET;
   },
   (get, set, update: Set<string> | ((prev: Set<string>) => Set<string>)) => {
     const chordRoot = get(chordRootAtom);
@@ -304,6 +305,7 @@ export const chordHiddenNotesAtom = atom(
     const currentNotes = get(chordHiddenNotesAtom);
     const nextNotes =
       typeof update === "function" ? update(currentNotes) : update;
+    if (setsEqual(currentNotes, nextNotes)) return;
     set(internalChordHiddenNotesAtom, { chordRoot, chordType, notes: nextNotes });
   },
 );
