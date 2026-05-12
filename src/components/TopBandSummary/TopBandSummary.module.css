@@ -23,8 +23,6 @@
   --strip-radius: 0;
   --strip-gap: 0.3rem;
   --strip-header-size: clamp(0.92rem, 1.5vw, 1.05rem);
-  --strip-eye-icon-size: 1rem;
-  --strip-eye-toggle-padding: 0.1rem;
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */

@@ -52,8 +52,8 @@ export function TopBandSummary() {
           >
             <span className={shared["flex-center"]}>
               {scaleVisible
-                ? <Eye size={16} aria-hidden="true" />
-                : <EyeOff size={16} aria-hidden="true" />}
+                ? <Eye size={18} aria-hidden="true" />
+                : <EyeOff size={18} aria-hidden="true" />}
             </span>
           </button>
         }

@@ -150,8 +150,8 @@ export function ChordPracticeBar({
         >
           <span className={shared["flex-center"]}>
             {collapsed
-              ? <EyeOff size={16} aria-hidden="true" />
-              : <Eye size={16} aria-hidden="true" />}
+              ? <EyeOff size={18} aria-hidden="true" />
+              : <Eye size={18} aria-hidden="true" />}
           </span>
         </button>
         <span className={styles["chord-practice-bar-title"]}>{title}</span>
