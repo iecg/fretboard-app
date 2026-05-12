@@ -2,6 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { render } from "@testing-library/react";
 import { FretNumbersRow } from "./FretNumbersRow";
+import { axe } from "../../test-utils/a11y";
 
 const defaultProps = {
   totalColumns: 4,
@@ -12,6 +13,11 @@ const defaultProps = {
 };
 
 describe("FretNumbersRow", () => {
+  it("has no accessibility violations", async () => {
+    const { container } = render(<FretNumbersRow {...defaultProps} />);
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
   it("renders a container div with aria-hidden", () => {
     const { container } = render(<FretNumbersRow {...defaultProps} />);
     const div = container.firstChild as HTMLElement;

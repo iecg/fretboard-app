@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
 import { themeAtom } from "../../store/atoms";
 import { FretboardBackground } from "./FretboardBackground";
+import { axe } from "../../test-utils/a11y";
 
 // useWoodGrainTexture uses canvas/createObjectURL which isn't available in jsdom
 vi.mock("./hooks/useWoodGrainTexture", () => ({
@@ -103,6 +104,16 @@ describe("FretboardBackground", () => {
     const paths = container.querySelectorAll("path");
     // Two edge paths always rendered
     expect(paths.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("has no accessibility violations", async () => {
+    const { container } = renderWithAtoms(
+      <svg>
+        <FretboardBackground {...defaultProps} />
+      </svg>,
+      [[themeAtom, "dark"]],
+    );
+    expect(await axe(container)).toHaveNoViolations();
   });
 
   it("renders inlay children when provided", () => {

@@ -2,8 +2,21 @@
 import { describe, expect, it } from "vitest";
 import { render } from "@testing-library/react";
 import { FretboardShapeLayer } from "./FretboardShapeLayer";
+import { axe } from "../../test-utils/a11y";
 
 describe("FretboardShapeLayer", () => {
+  it("has no accessibility violations", async () => {
+    const polygons = [
+      { key: "shape-A", points: "0,0 100,0 100,50 0,50", color: "red" },
+    ];
+    const { container } = render(
+      <svg>
+        <FretboardShapeLayer svgPolygons={polygons} />
+      </svg>,
+    );
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
   it("renders nothing when svgPolygons is empty", () => {
     const { container } = render(
       <svg>

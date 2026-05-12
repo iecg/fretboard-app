@@ -2,6 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { render } from "@testing-library/react";
 import { FretboardDefs } from "./FretboardDefs";
+import { axe } from "../../test-utils/a11y";
 
 function makeId(id: string) {
   return `test-${id}`;
@@ -14,6 +15,15 @@ describe("FretboardDefs", () => {
     neckHeight: 200,
     taperPath: "M 0 5 L 600 0 L 600 200 L 0 195 Z",
   };
+
+  it("has no accessibility violations", async () => {
+    const { container } = render(
+      <svg>
+        <FretboardDefs {...defaultProps} />
+      </svg>,
+    );
+    expect(await axe(container)).toHaveNoViolations();
+  });
 
   it("renders a <defs> element", () => {
     const { container } = render(

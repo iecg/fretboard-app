@@ -2,6 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { render } from "@testing-library/react";
 import { FretboardNoteLayer } from "./FretboardNoteLayer";
+import { axe } from "../../test-utils/a11y";
 import type { NoteData } from "./hooks/useNoteData";
 import {
   CHORD_ROOT_HALO_RADIUS_PX,
@@ -33,6 +34,21 @@ function makeNote(noteClass: string, overrides: Partial<NoteData> = {}): NoteDat
 }
 
 describe("FretboardNoteLayer", () => {
+  it("has no accessibility violations", async () => {
+    const { container } = render(
+      <svg>
+        <FretboardNoteLayer
+          noteData={[makeNote("note-active")]}
+          fretCenterX={() => 100}
+          stringYAt={() => 50}
+          noteBubblePx={40}
+          displayFormat="notes"
+        />
+      </svg>,
+    );
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
   it("renders squircle as a superellipse path, not a rounded rect", () => {
     const noteBubblePx = 40;
     const rawChordRootRadius = (noteBubblePx / 2) * 0.86;
