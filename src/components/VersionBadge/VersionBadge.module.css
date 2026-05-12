@@ -50,15 +50,13 @@
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
-@media (max-width: 767px) {
-  .version-badge {
-    font-size: 0.6rem;
-    color: var(--text-muted);
-    opacity: 0.7;
-  }
+:global(.app-container[data-layout-tier="mobile"]) .version-badge {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
 
-  .kofi-badge-icon {
-    height: 16px;
-  }
+:global(.app-container[data-layout-tier="mobile"]) .kofi-badge-icon {
+  height: 16px;
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */

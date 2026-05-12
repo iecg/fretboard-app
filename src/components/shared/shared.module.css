@@ -483,11 +483,9 @@
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
-@media (max-width: 767px) {
-  .icon-button--lg {
-    width: 2.7rem;
-    height: 2.7rem;
-  }
+:global(.app-container[data-layout-tier="mobile"]) .icon-button--lg {
+  width: 2.7rem;
+  height: 2.7rem;
 }
 
 .sr-only {
@@ -527,16 +525,14 @@
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
-@media (max-width: 767px) {
-  [data-layout-scope="mobile-tabs"] .toggle-btn,
-  [data-layout-scope="mobile-tabs"] .note-btn,
-  [data-layout-scope="mobile-tabs"] .link-toggle {
-    min-height: 36px;
-  }
+:global(.app-container[data-layout-tier="mobile"]) [data-layout-scope="mobile-tabs"] .toggle-btn,
+:global(.app-container[data-layout-tier="mobile"]) [data-layout-scope="mobile-tabs"] .note-btn,
+:global(.app-container[data-layout-tier="mobile"]) [data-layout-scope="mobile-tabs"] .link-toggle {
+  min-height: 36px;
+}
 
-  [data-layout-scope="mobile-tabs"] .control-section {
-    width: 100%;
-  }
+:global(.app-container[data-layout-tier="mobile"]) [data-layout-scope="mobile-tabs"] .control-section {
+  width: 100%;
 }
 
 :global(.overlay-field--accidentals) .toggle-btn {
