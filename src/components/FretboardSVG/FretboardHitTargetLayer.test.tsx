@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, fireEvent } from "@testing-library/react";
 import { FretboardHitTargetLayer } from "./FretboardHitTargetLayer";
 import type { NoteData } from "./hooks/useNoteData";
+import { axe } from "../../test-utils/a11y";
 
 function makeNote(overrides: Partial<NoteData> = {}): NoteData {
   return {
@@ -48,10 +49,36 @@ describe("FretboardHitTargetLayer", () => {
     expect(container.querySelectorAll("button").length).toBe(2);
   });
 
-  it("sets aria-label with display value, string number, and fret", () => {
+  it("sets aria-label with display value, string number, fret, and role", () => {
     const { container } = render(<FretboardHitTargetLayer {...defaultProps} />);
     const btn = container.querySelector("button")!;
-    expect(btn.getAttribute("aria-label")).toMatch(/string 1.*fret 5/i);
+    expect(btn.getAttribute("aria-label")).toBe(
+      "C on string 1, fret 5, scale tone",
+    );
+  });
+
+  it("includes role in aria-label for each noteClass", () => {
+    const cases: Array<[NoteData["noteClass"], string | null]> = [
+      ["root-active", "root"],
+      ["chord-tone", "chord tone"],
+      ["note-blue", "blue note"],
+      ["note-active", "scale tone"],
+      ["note-scale-only", "scale tone"],
+      ["chord-outside", "chord outside"],
+      ["note-inactive", null],
+    ];
+    for (const [noteClass, expectedRole] of cases) {
+      const noteData = [makeNote({ noteClass })];
+      const { container } = render(
+        <FretboardHitTargetLayer {...defaultProps} noteData={noteData} />,
+      );
+      const label = container.querySelector("button")!.getAttribute("aria-label")!;
+      if (expectedRole) {
+        expect(label).toContain(`, ${expectedRole}`);
+      } else {
+        expect(label).toBe("C on string 1, fret 5");
+      }
+    }
   });
 
   it("is disabled when no onNoteClick provided", () => {
@@ -122,5 +149,10 @@ describe("FretboardHitTargetLayer", () => {
     const { container } = render(<FretboardHitTargetLayer {...defaultProps} />);
     const btn = container.querySelector("button")!;
     expect(btn.style.opacity).toBe("0");
+  });
+
+  it("has no accessibility violations", async () => {
+    const { container } = render(<FretboardHitTargetLayer {...defaultProps} />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

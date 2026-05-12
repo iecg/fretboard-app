@@ -4,6 +4,15 @@ import { formatAccidental } from "@fretflow/core";
 import styles from "./FretboardSVG.module.css";
 import type { NoteData } from "./hooks/useNoteData";
 
+const NOTE_CLASS_ROLE: Record<string, string> = {
+  "root-active": "root",
+  "chord-tone": "chord tone",
+  "note-blue": "blue note",
+  "note-active": "scale tone",
+  "note-scale-only": "scale tone",
+  "chord-outside": "chord outside",
+};
+
 interface FretboardHitTargetLayerProps {
   noteData: NoteData[];
   fretCenterX: (fretIndex: number) => number;
@@ -52,7 +61,7 @@ export const FretboardHitTargetLayer = memo(({
             disabled={!onNoteClick}
             aria-hidden={isHidden || undefined}
             tabIndex={isHidden ? -1 : undefined}
-            aria-label={`${formatAccidental(displayValue)} on string ${stringIndex + 1}, fret ${fretIndex}`}
+            aria-label={`${formatAccidental(displayValue)} on string ${stringIndex + 1}, fret ${fretIndex}${NOTE_CLASS_ROLE[noteClass] ? `, ${NOTE_CLASS_ROLE[noteClass]}` : ""}`}
             data-note-role={noteClass !== "note-inactive" ? noteClass : undefined}
             data-note-tension={isTension || undefined}
             data-note-guide-tone={isGuideTone || undefined}
