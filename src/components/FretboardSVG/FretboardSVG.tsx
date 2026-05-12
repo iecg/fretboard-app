@@ -16,7 +16,7 @@ import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
 import styles from "./FretboardSVG.module.css";
 import { useFretboardGeometry } from "./hooks/useFretboardGeometry";
 import { useNoteData } from "./hooks/useNoteData";
-import { useChordConnectorPolylines } from "./hooks/useChordConnectorPolylines";
+import { useChordConnectorPolylines, CHORD_TONE_CLASSES } from "./hooks/useChordConnectorPolylines";
 import { useIntervalConnectorPolylines } from "./hooks/useIntervalConnectorPolylines";
 import { type BoxBound } from "./utils/semantics";
 import { FretboardBackground } from "./FretboardBackground";
@@ -341,12 +341,19 @@ export const FretboardSVG = memo(function FretboardSVG({
     yBounds: connectorYBounds,
   });
 
+  // Pre-filter noteData to chord-tone subset so scale-only note changes
+  // do not trigger expensive connector recalculation.
+  const chordNoteData = useMemo(
+    () => noteData.filter((n) => CHORD_TONE_CLASSES.has(n.noteClass)),
+    [noteData],
+  );
+
   // Per-string chord filter (UAT-3): when fingering pattern restricts to 1 or 2 strings,
   // highlightNotes already contains only those string coords, so chord-tone role naturally
   // applies only to in-pattern notes. Chord connectors are suppressed separately here
   // because cross-string voicings do not make sense in a 1/2-string context.
   const connectorPolylines = useChordConnectorPolylines({
-    noteData,
+    noteData: chordNoteData,
     chordToneNames:
       fingeringPattern === "one-string" || fingeringPattern === "two-strings"
         ? []
