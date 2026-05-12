@@ -109,6 +109,34 @@ export {
 } from "./shapeAtoms";
 
 export {
+  progressionEnabledAtom,
+  progressionStepsAtom,
+  progressionTempoBpmAtom,
+  progressionLoopEnabledAtom,
+  activeProgressionStepIndexAtom,
+  activeProgressionStepAtom,
+  activeResolvedProgressionStepAtom,
+  resolvedProgressionStepsAtom,
+  progressionStepDurationMsAtom,
+  progressionPlaybackBlockedReasonAtom,
+  progressionPlayingAtom,
+  progressionStepDeadlineAtom,
+  setProgressionActiveStepIndexAtom,
+  setProgressionPlayingAtom,
+  loadProgressionPresetAtom,
+  remapProgressionStepsForScaleAtom,
+  addProgressionStepAtom,
+  removeProgressionStepAtom,
+  moveProgressionStepAtom,
+  updateProgressionStepDegreeAtom,
+  updateProgressionStepDurationAtom,
+  updateProgressionStepQualityAtom,
+  advanceProgressionPlaybackAtom,
+  previousProgressionStepAtom,
+  resetProgressionAtomsAtom,
+} from "./progressionAtoms";
+
+export {
   setRootNoteAtom,
   setScaleNameAtom,
   setFingeringPatternAtom,
