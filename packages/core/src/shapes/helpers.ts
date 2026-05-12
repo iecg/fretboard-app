@@ -180,7 +180,7 @@ export function buildPolygonFromNotes(
   numStrings: number,
   wrappedNotes: Set<string> = new Set(),
 ): ShapeVertex[] {
-  const leftEdge: ShapeVertex[] = [];
+  const vertices: ShapeVertex[] = [];
   const rightEdge: ShapeVertex[] = [];
 
   for (let s = 0; s < numStrings; s++) {
@@ -188,11 +188,15 @@ export function buildPolygonFromNotes(
     if (notes.length === 0) continue;
     const nonWrapped = notes.filter(f => !wrappedNotes.has(`${s}-${f}`));
     if (nonWrapped.length === 0) continue;
-    leftEdge.push({ fret: nonWrapped[0], string: s });
+    vertices.push({ fret: nonWrapped[0], string: s });
     rightEdge.push({ fret: nonWrapped[nonWrapped.length - 1], string: s });
   }
 
-  return [...leftEdge, ...rightEdge.reverse()];
+  for (let i = rightEdge.length - 1; i >= 0; i--) {
+    vertices.push(rightEdge[i]);
+  }
+
+  return vertices;
 }
 
 /**
