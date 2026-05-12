@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { ErrorBoundary, ErrorFallback } from "./ErrorBoundary";
+import { axe } from "../../test-utils/a11y";
 
 const ThrowingChild = () => {
   throw new Error("Test error");
@@ -33,11 +34,14 @@ describe("ErrorBoundary", () => {
   });
 
   it("does not render children when error occurs", () => {
+    const SafeChild = () => <div>Safe content</div>;
     render(
       <ErrorBoundary fallback={<div>Custom fallback</div>}>
+        <SafeChild />
         <ThrowingChild />
       </ErrorBoundary>
     );
+    expect(screen.getByText("Custom fallback")).toBeTruthy();
     expect(screen.queryByText("Safe content")).toBeNull();
   });
 });
@@ -66,6 +70,11 @@ describe("ErrorFallback", () => {
     expect(
       screen.getByText("An error occurred while rendering the app")
     ).toBeTruthy();
+  });
+
+  it("has no accessibility violations", async () => {
+    const { container } = render(<ErrorFallback />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 
   it("calls window.location.reload when Try Again is clicked", () => {
