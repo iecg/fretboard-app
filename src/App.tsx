@@ -29,6 +29,7 @@ import { ChordOverlayDock } from "./components/ChordOverlayDock/ChordOverlayDock
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
 import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
 import sharedStyles from "./components/shared/shared.module.css";
+import { ControlsPanelSkeleton, MobileTabSkeleton } from "./components/LoadingSkeleton/LoadingSkeleton";
 import { ANIMATION_DURATION_XFADE } from "@fretflow/core";
 import "./styles/App.css";
 
@@ -209,7 +210,7 @@ function AppContent() {
       summary={<ScaleStripPanel />}
       chordDock={<ChordOverlayDock />}
       helpModal={
-        <Suspense fallback={<div className="loading-spinner" />}>
+        <Suspense fallback={null}>
           <HelpModal
             isOpen={showHelp}
             onClose={() => setShowHelp(false)}
@@ -218,17 +219,17 @@ function AppContent() {
         </Suspense>
       }
       controlsPanel={
-        <Suspense fallback={<div className="loading-spinner" />}>
+        <Suspense fallback={<ControlsPanelSkeleton mode={layout.panelMode} />}>
           <ExpandedControlsPanel mode={layout.panelMode} />
         </Suspense>
       }
       mobileTabs={
-        <Suspense fallback={<div className="loading-spinner" />}>
+        <Suspense fallback={<MobileTabSkeleton />}>
           <MobileTabPanel />
         </Suspense>
       }
       settingsOverlay={
-        <Suspense fallback={<div className="loading-spinner" />}>
+        <Suspense fallback={null}>
           <SettingsOverlay />
         </Suspense>
       }

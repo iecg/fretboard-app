@@ -21,6 +21,7 @@ import { Card } from "../Card/Card";
 import { TAB_LABELS } from "../../constants/tabLabels";
 import { MAX_FRET } from "@fretflow/core";
 import { useCompactDensity } from "../../hooks/useCompactDensity";
+import { CircleOfFifthsSkeleton } from "../LoadingSkeleton/LoadingSkeleton";
 
 // Lazy-loaded component
 const CircleOfFifths = lazy(() =>
@@ -89,7 +90,7 @@ export function KeyColumn() {
 
   return (
     <Card title={TAB_LABELS.cof} data-layout-column="key" data-testid="key-column">
-      <Suspense fallback={null}>
+      <Suspense fallback={<CircleOfFifthsSkeleton />}>
         <CircleOfFifths
           rootNote={rootNote}
           setRootNote={handleSetRootNote}
