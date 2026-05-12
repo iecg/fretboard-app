@@ -30,6 +30,7 @@ import { ScaleStripPanel } from "./components/ScaleStripPanel/ScaleStripPanel";
 import { ChordOverlayDock } from "./components/ChordOverlayDock/ChordOverlayDock";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
 import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
+import { RotateOverlay } from "./components/RotateOverlay/RotateOverlay";
 import sharedStyles from "./components/shared/shared.module.css";
 import { ControlsPanelSkeleton, MobileTabSkeleton } from "./components/LoadingSkeleton/LoadingSkeleton";
 import { ANIMATION_DURATION_XFADE } from "@fretflow/core";
@@ -152,6 +153,7 @@ function AppContent() {
 
   return (
   <>
+    <RotateOverlay />
     <MainLayoutWrapper
       layoutTier={layout.tier}
       layoutVariant={layout.variant}
