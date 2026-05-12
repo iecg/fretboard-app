@@ -29,8 +29,9 @@ export function deduplicateAdjacentStrings(
     const upperNotes = new Map<string, number[]>();
     for (let i = 0; i < upper.length; i++) {
       const name = layout[s][upper[i]];
-      if (!upperNotes.has(name)) upperNotes.set(name, []);
-      upperNotes.get(name)!.push(i);
+      const arr = upperNotes.get(name);
+      if (arr) arr.push(i);
+      else upperNotes.set(name, [i]);
     }
 
     const toRemoveUpper = new Set<number>();
