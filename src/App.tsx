@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense, useMemo } from "react";
 import { useSetAtom, useAtomValue, useAtom, createStore, Provider } from "jotai";
 import { AnimatePresence, motion } from "motion/react";
 import clsx from "clsx";
@@ -66,10 +66,10 @@ const MOBILE_TAB_ITEMS: BottomTabItem[] = [
 function AppContent() {
   const { t } = useTranslation();
 
-  const translatedTabItems = MOBILE_TAB_ITEMS.map((item) => ({
+  const translatedTabItems = useMemo(() => MOBILE_TAB_ITEMS.map((item) => ({
     ...item,
     label: t(`tabs.${item.id}`),
-  }));
+  })), [t]);
 
   const chordType = useAtomValue(chordTypeAtom);
   const isMuted = useAtomValue(isMutedAtom);
