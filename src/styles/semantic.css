@@ -38,6 +38,12 @@
   --surface-overlay-border: var(--chrome-border);
 
   --surface-card: var(--surface-card-top); /* compat alias → surface-card-top */
+
+  /* Border tokens — semantic roles:
+     --surface-card-border:        default card/panel border (Card, HelpModal, nested panels)
+     --surface-card-header-border: card section divider (card header/body separator, field dividers)
+     --chrome-border:              app chrome elements (overlay drawer, toolbar, strip surfaces)
+  */
   --surface-card-border: rgb(255 255 255 / 0.1);
   --surface-card-header-border: var(--token-border-subtler);
 
