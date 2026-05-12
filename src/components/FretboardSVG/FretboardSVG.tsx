@@ -263,9 +263,11 @@ export const FretboardSVG = memo(function FretboardSVG({
 
   const inlays = useMemo(() => {
     const inlayR = Math.max(INLAY_RADIUS_MIN, stringRowPx * INLAY_RADIUS_RATIO);
-    return Array.from({ length: totalColumns + 1 }).map((_, idx) => {
-      const fretIndex = startFret + idx;
-      if (INLAY_FRETS.includes(fretIndex)) {
+    const maxFretVisible = startFret + totalColumns;
+
+    const singles = INLAY_FRETS
+      .filter((f) => f >= startFret && f <= maxFretVisible)
+      .map((fretIndex) => {
         const x = fretCenterX(fretIndex);
         return (
           <circle
@@ -278,15 +280,14 @@ export const FretboardSVG = memo(function FretboardSVG({
             filter={svgDefUrl("inlay-shadow")}
           />
         );
-      }
-      if (INLAY_DOUBLE_FRETS.includes(fretIndex)) {
+      });
+
+    const doubles = INLAY_DOUBLE_FRETS
+      .filter((f) => f >= startFret && f <= maxFretVisible)
+      .map((fretIndex) => {
         const x = fretCenterX(fretIndex);
         return (
-          <g
-            key={`inlay-${fretIndex}`}
-            data-fret-marker={fretIndex}
-            data-double-marker="true"
-          >
+          <g key={`inlay-${fretIndex}`} data-fret-marker={fretIndex} data-double-marker="true">
             <circle
               cx={x}
               cy={inlayYTopAt(x)}
@@ -303,9 +304,9 @@ export const FretboardSVG = memo(function FretboardSVG({
             />
           </g>
         );
-      }
-      return null;
-    });
+      });
+
+    return [...singles, ...doubles];
   }, [totalColumns, startFret, stringRowPx, svgDefUrl, fretCenterX, inlayY, inlayYBottomAt, inlayYTopAt]);
 
   const noteData = useNoteData({
