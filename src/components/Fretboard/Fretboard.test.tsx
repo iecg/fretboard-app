@@ -613,7 +613,6 @@ describe("Fretboard/Fretboard", () => {
       act(() => {
         store.set(fretZoomAtom, 100);
       });
-
       return { ...result, wrapper };
     }
 
@@ -629,9 +628,13 @@ describe("Fretboard/Fretboard", () => {
       expect(onFretClick).toHaveBeenCalledTimes(1);
     });
 
-    it("suppresses click after a drag of > 5px", () => {
+    it("suppresses click after a drag of > 5px", async () => {
       const onFretClick = vi.fn();
       const { wrapper } = renderWithOverflow(createStore(), { onFretClick });
+      // Flush rAF used by the hasOverflow effect so drag detection activates
+      await act(async () => {
+        await new Promise((r) => requestAnimationFrame(r));
+      });
 
       fireEvent.pointerDown(wrapper, { pointerId: 1, pageX: 100, buttons: 1 });
       fireEvent.pointerMove(wrapper, {

@@ -125,7 +125,10 @@ export function Fretboard(props: FretboardProps) {
   useEffect(() => {
     const el = scrollRef.current;
     if (!el || containerWidth === null) return;
-    setHasOverflow(el.scrollWidth > el.clientWidth + 1);
+    const id = requestAnimationFrame(() => {
+      setHasOverflow(el.scrollWidth > el.clientWidth + 1);
+    });
+    return () => cancelAnimationFrame(id);
   }, [effectiveZoom, totalColumns, containerWidth]);
 
   useEffect(() => {
