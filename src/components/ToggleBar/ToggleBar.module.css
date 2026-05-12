@@ -45,6 +45,3 @@
   color: var(--text-on-accent);
 }
 
-:global(.app-container[data-layout-variant="landscape-mobile"]) .mobile-tab-bar {
-  display: none !important;
-}

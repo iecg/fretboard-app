@@ -4,7 +4,6 @@ export type ResponsiveTier = "mobile" | "tablet" | "desktop";
 
 export type ResponsiveVariant =
   | "mobile"
-  | "landscape-mobile"
   | "tablet-split"
   | "tablet-stacked"
   | "desktop-split"
@@ -58,7 +57,7 @@ export function getResponsiveVariant(
   const tier = getResponsiveTier(viewportWidth);
 
   if (tier === "mobile") {
-    return viewportHeight < viewportWidth ? "landscape-mobile" : "mobile";
+    return "mobile";
   }
 
   if (tier === "tablet") {
@@ -95,8 +94,7 @@ export function getResponsiveLayout(
         ? "split"
         : "stacked";
   const showMobileTabs =
-    (tier === "mobile" && variant !== "landscape-mobile") ||
-    variant === "tablet-split";
+    tier === "mobile" || variant === "tablet-split";
 
   return {
     tier,
@@ -105,7 +103,7 @@ export function getResponsiveLayout(
     stringRowPx: getStringRowPx(tier),
     showControlsPanel: tier !== "mobile" && variant !== "tablet-split",
     showMobileTabs,
-    showSummary: variant !== "landscape-mobile",
+    showSummary: true,
     isSplitPanel,
     panelMode,
   };

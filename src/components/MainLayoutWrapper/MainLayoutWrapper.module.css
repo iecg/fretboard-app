@@ -36,10 +36,6 @@
   margin-top: -0.1rem;
 }
 
-.main-fretboard[data-layout-variant="landscape-mobile"] {
-  margin-bottom: 0;
-}
-
 /* stylelint-disable selector-pseudo-class-no-unknown */
 :global(.app-container[data-layout-tier="mobile"]) .app-shell {
   --layout-gap: 0.5rem;

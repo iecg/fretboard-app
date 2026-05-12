@@ -18,9 +18,7 @@ async function gotoApp(page: Page, width: number, height: number) {
 
   if (usesMobileTabs) {
     // Wait for the lazy-loaded mobile tab content to mount before continuing.
-    if (variant !== "landscape-mobile") {
-      await expect(page.locator('[data-testid="mobile-tab-content"]')).toBeVisible();
-    }
+    await expect(page.locator('[data-testid="mobile-tab-content"]')).toBeVisible();
   } else {
     // Wait for lazy-loaded controls panel cards to mount on tablet/desktop layouts.
     await expect(page.locator(".dashboard-card")).toHaveCount(3);
@@ -128,39 +126,6 @@ test.describe("responsive layout regressions", () => {
         after.actionsRect!.bottom > after.titleRect!.top;
       expect(headerSharesRow, viewport.name).toBe(true);
     }
-  });
-
-  test("keeps landscape mobile overlays usable without stealing the fretboard", async ({
-    page,
-  }) => {
-    await gotoApp(page, 667, 375);
-
-    const initial = await getMetrics(page);
-    expect(initial.tier).toBe("mobile");
-    expect(initial.variant).toBe("landscape-mobile");
-    expect(initial.summaryCount).toBe(0);
-    await expect(page.locator('[data-testid="main-fretboard"]')).toBeVisible();
-    await expect(page.locator('[data-testid="mobile-tab-content"]')).toHaveCount(0);
-
-    await page.getByRole("button", { name: "Open help" }).click();
-    const withHelp = await getMetrics(page);
-    expect(withHelp.helpModalRect).not.toBeNull();
-    expect(withHelp.helpModalRect!.left).toBeGreaterThanOrEqual(0);
-    expect(withHelp.helpModalRect!.top).toBeGreaterThanOrEqual(0);
-    expect(withHelp.helpModalRect!.right).toBeLessThanOrEqual(667);
-    expect(withHelp.helpModalRect!.bottom).toBeLessThanOrEqual(375);
-    expect(withHelp.helpContent).not.toBeNull();
-    expect(withHelp.helpContent!.overflowY).toBe("auto");
-    expect(withHelp.helpContent!.scrollHeight).toBeGreaterThan(
-      withHelp.helpContent!.clientHeight,
-    );
-
-    await page.getByRole("button", { name: "Close help" }).click();
-    await page.getByRole("button", { name: "Open settings" }).click();
-    const withSettings = await getMetrics(page);
-    expect(withSettings.settingsDrawerRect).not.toBeNull();
-    expect(withSettings.settingsDrawerRect!.width).toBeGreaterThanOrEqual(665);
-    expect(withSettings.scrollWidth).toBeLessThanOrEqual(withSettings.innerWidth);
   });
 
   test("reflows compact desktop layouts instead of clipping them", async ({ page }) => {

@@ -167,8 +167,7 @@ describe("App", () => {
       render(<App />);
 
       // DegreeChipStrip replaces the old collapsible disclosure; on mobile the
-      // strip is hidden via CSS (showSummary=false for landscape-mobile only).
-      // In portrait mobile the strip is always visible.
+      // strip is always visible.
       expect(
         screen.getByRole("group", { name: /scale degrees/i }),
       ).toBeInTheDocument();
@@ -717,23 +716,6 @@ describe("App", () => {
           screen.queryByRole("dialog", { name: "FretFlow Help" }),
         ).toBeNull();
       });
-    });
-
-    it("hides mobile tabs and summary in landscape mobile", async () => {
-      setViewport(667, 375);
-      render(<App />);
-
-      await waitFor(() => {
-        const appContainer = document.querySelector(".app-container");
-        expect(appContainer?.getAttribute("data-layout-variant")).toBe(
-          "landscape-mobile",
-        );
-      });
-
-      expect(document.querySelector(".mobile-tab-content")).toBeNull();
-      expect(
-        screen.queryByRole("group", { name: /scale degrees/i }),
-      ).toBeNull();
     });
 
     it("closes the help modal when the backdrop is clicked", async () => {

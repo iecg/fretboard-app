@@ -30,7 +30,6 @@ import { ScaleStripPanel } from "./components/ScaleStripPanel/ScaleStripPanel";
 import { ChordOverlayDock } from "./components/ChordOverlayDock/ChordOverlayDock";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
 import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
-import { RotateOverlay } from "./components/RotateOverlay/RotateOverlay";
 import sharedStyles from "./components/shared/shared.module.css";
 import { ControlsPanelSkeleton, MobileTabSkeleton } from "./components/LoadingSkeleton/LoadingSkeleton";
 import { ANIMATION_DURATION_XFADE } from "@fretflow/core";
@@ -153,7 +152,16 @@ function AppContent() {
 
   return (
   <>
-    <RotateOverlay />
+    {/* Portrait lock — CSS-only, shown via @media orientation:landscape on mobile */}
+    <div className="rotate-overlay" role="alert" aria-live="polite">
+      <div className="rotate-overlay-content">
+        <svg className="rotate-overlay-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="4" y="2" width="16" height="20" rx="2" />
+          <path d="M12 18h.01" />
+        </svg>
+        <p className="rotate-overlay-message">Please rotate your device to portrait mode</p>
+      </div>
+    </div>
     <MainLayoutWrapper
       layoutTier={layout.tier}
       layoutVariant={layout.variant}

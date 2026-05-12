@@ -3,7 +3,6 @@ import {
   prepareVisualPage,
   expectFullPageVisual,
   openSettings,
-  openHelp,
   loadVisualState,
 } from "./visual-helpers";
 
@@ -22,15 +21,4 @@ test.describe("App Overlays Visual", () => {
     await expectFullPageVisual(page, "app-settings-light-mobile-390x844");
   });
 
-  test("app-help-landscape-667x375", async ({ page }) => {
-    await prepareVisualPage(page, { width: 667, height: 375 });
-    await openHelp(page);
-    await expectFullPageVisual(page, "app-help-landscape-667x375", linuxDarkOverlayTolerance);
-  });
-
-  test("app-help-light-landscape-667x375", async ({ page }) => {
-    await loadVisualState(page, { theme: "light" }, { width: 667, height: 375 });
-    await openHelp(page);
-    await expectFullPageVisual(page, "app-help-light-landscape-667x375");
-  });
 });

@@ -44,7 +44,4 @@
   border-radius: 1rem;
 }
 
-:global(.app-container[data-layout-variant="landscape-mobile"]) .mobile-tab-content {
-  display: none;
-}
 /* stylelint-enable selector-pseudo-class-no-unknown */
