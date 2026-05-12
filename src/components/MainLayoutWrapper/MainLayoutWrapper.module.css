@@ -10,12 +10,16 @@
   width: 100%;
 }
 
-/* Pull summary closer to header for tighter top band. */
-.summary-shell[data-layout-tier="desktop"] {
+/* Pull summary closer to header for tighter top band. Same value across every
+   variant of the tier — the band hugs the header in all desktop/tablet layouts. */
+.summary-shell[data-layout-tier="desktop"][data-layout-variant="desktop-split"],
+.summary-shell[data-layout-tier="desktop"][data-layout-variant="desktop-stacked"],
+.summary-shell[data-layout-tier="desktop"][data-layout-variant="desktop-3col"] {
   margin-top: -0.18rem;
 }
 
-.summary-shell[data-layout-tier="tablet"] {
+.summary-shell[data-layout-tier="tablet"][data-layout-variant="tablet-split"],
+.summary-shell[data-layout-tier="tablet"][data-layout-variant="tablet-stacked"] {
   margin-top: -0.1rem;
 }
 

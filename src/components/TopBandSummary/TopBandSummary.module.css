@@ -23,7 +23,7 @@
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
-:global(.app-container[data-layout-tier="desktop"]) .top-band-summary {
+:global(.app-container[data-layout-tier="desktop"][data-layout-variant^="desktop-"]) .top-band-summary {
   width: min(100%, 32rem);
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
