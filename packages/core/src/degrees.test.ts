@@ -387,6 +387,232 @@ describe('getQualityForDegree', () => {
       expect(getQualityForDegree('XI', 'Major')).toBeUndefined();
     });
   });
+
+  describe('getQualityForDegree algorithmic fallback — Melodic Minor modes', () => {
+    // Melodic Minor [0,2,3,5,7,9,11]
+    // Degrees: i ii III+ IV V vi° vii°
+    describe('Melodic Minor (Jazz Minor)', () => {
+      it('i → Minor Triad', () => {
+        expect(getQualityForDegree('i', 'Melodic Minor')).toBe('Minor Triad');
+      });
+
+      it('ii → Minor Triad', () => {
+        expect(getQualityForDegree('ii', 'Melodic Minor')).toBe('Minor Triad');
+      });
+
+      it('III+ → Major Triad (augmented collapses to Major: no Augmented Triad in chord definitions)', () => {
+        expect(getQualityForDegree('III+', 'Melodic Minor')).toBe('Major Triad');
+      });
+
+      it('IV → Major Triad', () => {
+        expect(getQualityForDegree('IV', 'Melodic Minor')).toBe('Major Triad');
+      });
+
+      it('V → Major Triad', () => {
+        expect(getQualityForDegree('V', 'Melodic Minor')).toBe('Major Triad');
+      });
+
+      it('vi° → Diminished Triad', () => {
+        expect(getQualityForDegree('vi°', 'Melodic Minor')).toBe('Diminished Triad');
+      });
+
+      it('vii° → Diminished Triad', () => {
+        expect(getQualityForDegree('vii°', 'Melodic Minor')).toBe('Diminished Triad');
+      });
+    });
+
+    // Dorian Flat 2 [0,1,3,5,7,9,10]
+    // Degrees: i II+ III IV v° vi° vii
+    describe('Dorian Flat 2 (2nd mode)', () => {
+      it('i → Minor Triad', () => {
+        expect(getQualityForDegree('i', 'Dorian Flat 2')).toBe('Minor Triad');
+      });
+
+      it('II+ → Major Triad (augmented collapses to Major)', () => {
+        expect(getQualityForDegree('II+', 'Dorian Flat 2')).toBe('Major Triad');
+      });
+
+      it('III → Major Triad', () => {
+        expect(getQualityForDegree('III', 'Dorian Flat 2')).toBe('Major Triad');
+      });
+
+      it('IV → Major Triad', () => {
+        expect(getQualityForDegree('IV', 'Dorian Flat 2')).toBe('Major Triad');
+      });
+
+      it('v° → Diminished Triad', () => {
+        expect(getQualityForDegree('v°', 'Dorian Flat 2')).toBe('Diminished Triad');
+      });
+
+      it('vi° → Diminished Triad', () => {
+        expect(getQualityForDegree('vi°', 'Dorian Flat 2')).toBe('Diminished Triad');
+      });
+
+      it('vii → Minor Triad', () => {
+        expect(getQualityForDegree('vii', 'Dorian Flat 2')).toBe('Minor Triad');
+      });
+    });
+
+    // Lydian Augmented [0,2,4,6,8,9,11]
+    // Degrees: I+ II III iv° v° vi vii
+    describe('Lydian Augmented (3rd mode)', () => {
+      it('I+ → Major Triad (augmented collapses to Major)', () => {
+        expect(getQualityForDegree('I+', 'Lydian Augmented')).toBe('Major Triad');
+      });
+
+      it('II → Major Triad', () => {
+        expect(getQualityForDegree('II', 'Lydian Augmented')).toBe('Major Triad');
+      });
+
+      it('III → Major Triad', () => {
+        expect(getQualityForDegree('III', 'Lydian Augmented')).toBe('Major Triad');
+      });
+
+      it('iv° → Diminished Triad', () => {
+        expect(getQualityForDegree('iv°', 'Lydian Augmented')).toBe('Diminished Triad');
+      });
+
+      it('v° → Diminished Triad', () => {
+        expect(getQualityForDegree('v°', 'Lydian Augmented')).toBe('Diminished Triad');
+      });
+
+      it('vi → Minor Triad', () => {
+        expect(getQualityForDegree('vi', 'Lydian Augmented')).toBe('Minor Triad');
+      });
+
+      it('vii → Minor Triad', () => {
+        expect(getQualityForDegree('vii', 'Lydian Augmented')).toBe('Minor Triad');
+      });
+    });
+
+    // Lydian Dominant [0,2,4,6,7,9,10]
+    // Degrees: I II iii° iv° v vi VII+
+    describe('Lydian Dominant (4th mode)', () => {
+      it('I → Major Triad', () => {
+        expect(getQualityForDegree('I', 'Lydian Dominant')).toBe('Major Triad');
+      });
+
+      it('II → Major Triad', () => {
+        expect(getQualityForDegree('II', 'Lydian Dominant')).toBe('Major Triad');
+      });
+
+      it('iii° → Diminished Triad', () => {
+        expect(getQualityForDegree('iii°', 'Lydian Dominant')).toBe('Diminished Triad');
+      });
+
+      it('iv° → Diminished Triad', () => {
+        expect(getQualityForDegree('iv°', 'Lydian Dominant')).toBe('Diminished Triad');
+      });
+
+      it('v → Minor Triad', () => {
+        expect(getQualityForDegree('v', 'Lydian Dominant')).toBe('Minor Triad');
+      });
+
+      it('vi → Minor Triad', () => {
+        expect(getQualityForDegree('vi', 'Lydian Dominant')).toBe('Minor Triad');
+      });
+
+      it('VII+ → Major Triad (augmented collapses to Major)', () => {
+        expect(getQualityForDegree('VII+', 'Lydian Dominant')).toBe('Major Triad');
+      });
+    });
+
+    // Mixolydian Flat 6 [0,2,4,5,7,8,10]
+    // Degrees: I ii° iii° iv v VI+ VII
+    describe('Mixolydian Flat 6 (5th mode)', () => {
+      it('I → Major Triad', () => {
+        expect(getQualityForDegree('I', 'Mixolydian Flat 6')).toBe('Major Triad');
+      });
+
+      it('ii° → Diminished Triad', () => {
+        expect(getQualityForDegree('ii°', 'Mixolydian Flat 6')).toBe('Diminished Triad');
+      });
+
+      it('iii° → Diminished Triad', () => {
+        expect(getQualityForDegree('iii°', 'Mixolydian Flat 6')).toBe('Diminished Triad');
+      });
+
+      it('iv → Minor Triad', () => {
+        expect(getQualityForDegree('iv', 'Mixolydian Flat 6')).toBe('Minor Triad');
+      });
+
+      it('v → Minor Triad', () => {
+        expect(getQualityForDegree('v', 'Mixolydian Flat 6')).toBe('Minor Triad');
+      });
+
+      it('VI+ → Major Triad (augmented collapses to Major)', () => {
+        expect(getQualityForDegree('VI+', 'Mixolydian Flat 6')).toBe('Major Triad');
+      });
+
+      it('VII → Major Triad', () => {
+        expect(getQualityForDegree('VII', 'Mixolydian Flat 6')).toBe('Major Triad');
+      });
+    });
+
+    // Locrian Natural 2 [0,2,3,5,6,8,10]
+    // Degrees: i° ii° iii iv V+ VI VII
+    describe('Locrian Natural 2 (6th mode)', () => {
+      it('i° → Diminished Triad', () => {
+        expect(getQualityForDegree('i°', 'Locrian Natural 2')).toBe('Diminished Triad');
+      });
+
+      it('ii° → Diminished Triad', () => {
+        expect(getQualityForDegree('ii°', 'Locrian Natural 2')).toBe('Diminished Triad');
+      });
+
+      it('iii → Minor Triad', () => {
+        expect(getQualityForDegree('iii', 'Locrian Natural 2')).toBe('Minor Triad');
+      });
+
+      it('iv → Minor Triad', () => {
+        expect(getQualityForDegree('iv', 'Locrian Natural 2')).toBe('Minor Triad');
+      });
+
+      it('V+ → Major Triad (augmented collapses to Major)', () => {
+        expect(getQualityForDegree('V+', 'Locrian Natural 2')).toBe('Major Triad');
+      });
+
+      it('VI → Major Triad', () => {
+        expect(getQualityForDegree('VI', 'Locrian Natural 2')).toBe('Major Triad');
+      });
+
+      it('VII → Major Triad', () => {
+        expect(getQualityForDegree('VII', 'Locrian Natural 2')).toBe('Major Triad');
+      });
+    });
+
+    // Altered [0,1,3,4,6,8,10]
+    // Degrees: i° ii iii IV+ V VI vii°
+    describe('Altered (7th mode)', () => {
+      it('i° → Diminished Triad', () => {
+        expect(getQualityForDegree('i°', 'Altered')).toBe('Diminished Triad');
+      });
+
+      it('ii → Minor Triad', () => {
+        expect(getQualityForDegree('ii', 'Altered')).toBe('Minor Triad');
+      });
+
+      it('iii → Minor Triad', () => {
+        expect(getQualityForDegree('iii', 'Altered')).toBe('Minor Triad');
+      });
+
+      it('IV+ → Major Triad (augmented collapses to Major)', () => {
+        expect(getQualityForDegree('IV+', 'Altered')).toBe('Major Triad');
+      });
+
+      it('V → Major Triad', () => {
+        expect(getQualityForDegree('V', 'Altered')).toBe('Major Triad');
+      });
+
+      it('VI → Major Triad', () => {
+        expect(getQualityForDegree('VI', 'Altered')).toBe('Major Triad');
+      });
+
+      it('vii° → Diminished Triad', () => {
+        expect(getQualityForDegree('vii°', 'Altered')).toBe('Diminished Triad');
+      });
+    });
+  });
 });
 
 describe('getAdjacentDegree', () => {
