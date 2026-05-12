@@ -17,21 +17,21 @@
   /* Note colors (note-blue refers to the musical "blue note") */
   --note-blue: #9333ea;
   --note-blue-glow: rgba(147, 51, 234, 0.5);
-  --caged-e: #B85700;      /* Okabe-Ito vermillion, chord-connector slot 1 (light) */
+  --caged-e: #E69F00;      /* Okabe-Ito orange, connector slot 1 */
   --caged-e-fg: #fff1f2;
-  --caged-d: #B58B00;      /* Okabe-Ito amber-gold, chord-connector slot 3 (light) */
+  --caged-d: #999999;      /* Okabe-Ito gray, connector slot 3 */
   --caged-d-fg: #fff8db;
-  --caged-c: #009E73;      /* Okabe-Ito bluish-green, chord-connector slot 4 (light) */
+  --caged-c: #009E73;      /* Okabe-Ito bluish green, connector slot 4 */
   --caged-c-fg: #f0fdf4;
-  --caged-a: #0072B2;      /* Okabe-Ito blue, chord-connector slot 6 (light) */
+  --caged-a: #0072B2;      /* Okabe-Ito blue, connector slot 6 */
   --caged-a-fg: #eff6ff;
-  --caged-g: #CC79A7;      /* Okabe-Ito reddish-purple, chord-connector slot 8 (light) */
+  --caged-g: #CC79A7;      /* Okabe-Ito reddish purple, connector slot 7 */
   --caged-g-fg: #faf5ff;
-  --caged-e-bg: rgba(184, 87, 0, 0.18);    /* E #B85700 + 0.18 */
-  --caged-d-bg: rgba(181, 139, 0, 0.18);   /* D #B58B00 + 0.18 */
-  --caged-c-bg: rgba(0, 158, 115, 0.18);   /* C #009E73 + 0.18 */
-  --caged-a-bg: rgba(0, 114, 178, 0.18);   /* A #0072B2 + 0.18 */
-  --caged-g-bg: rgba(204, 121, 167, 0.18); /* G #CC79A7 + 0.18 */
+  --caged-e-bg: rgba(230, 159, 0, 0.18);    /* E #E69F00 + 0.18 */
+  --caged-d-bg: rgba(153, 153, 153, 0.18);  /* D #999999 + 0.18 */
+  --caged-c-bg: rgba(0, 158, 115, 0.18);    /* C #009E73 + 0.18 */
+  --caged-a-bg: rgba(0, 114, 178, 0.18);    /* A #0072B2 + 0.18 */
+  --caged-g-bg: rgba(204, 121, 167, 0.18);  /* G #CC79A7 + 0.18 */
   --z-overlay-backdrop: 200;
   --z-overlay-drawer: 201;
   background-color: var(--bg-color);
