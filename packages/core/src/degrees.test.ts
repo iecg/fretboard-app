@@ -192,6 +192,18 @@ describe('getDegreesForScale', () => {
       expect(degrees[0]).toBeDefined(); // Has a root
     });
   });
+
+  describe('non-7-note scale fallback strategy', () => {
+    it('returns Major degrees for major-quality pentatonic (contains interval 4)', () => {
+      const degrees = getDegreesForScale('Major Pentatonic');
+      expect(degrees).toEqual(getDegreesForScale('Major'));
+    });
+
+    it('returns Natural Minor degrees for minor-quality pentatonic (no interval 4)', () => {
+      const degrees = getDegreesForScale('Minor Pentatonic');
+      expect(degrees).toEqual(getDegreesForScale('Natural Minor'));
+    });
+  });
 });
 
 describe('DEGREE_COLORS', () => {
