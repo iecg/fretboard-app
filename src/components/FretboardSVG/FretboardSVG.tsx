@@ -237,7 +237,7 @@ export const FretboardSVG = memo(function FretboardSVG({
     .filter(Boolean)
     .join(" ");
 
-  const inlayYAt = useCallback(() => neckHeight / 2, [neckHeight]);
+  const inlayY = useMemo(() => neckHeight / 2, [neckHeight]);
   const inlayYTopAt = useCallback((x: number) =>
     numStrings >= 4
       ? (stringYAt(1, x) + stringYAt(2, x)) / 2
@@ -259,7 +259,7 @@ export const FretboardSVG = memo(function FretboardSVG({
             key={`inlay-${fretIndex}`}
             data-fret-marker={fretIndex}
             cx={x}
-            cy={inlayYAt()}
+            cy={inlayY}
             r={inlayR}
             fill={svgDefUrl("inlay-pearl")}
             filter={svgDefUrl("inlay-shadow")}
@@ -293,7 +293,7 @@ export const FretboardSVG = memo(function FretboardSVG({
       }
       return null;
     });
-  }, [totalColumns, startFret, stringRowPx, svgDefUrl, fretCenterX, inlayYAt, inlayYBottomAt, inlayYTopAt]);
+  }, [totalColumns, startFret, stringRowPx, svgDefUrl, fretCenterX, inlayY, inlayYBottomAt, inlayYTopAt]);
 
   const noteData = useNoteData({
     numStrings,
