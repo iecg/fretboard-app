@@ -4,15 +4,17 @@ import { chordFretSpreadAtom } from "../../../store/atoms";
 import { StepperControl } from "../../StepperControl/StepperControl";
 import { OverlaySection, OverlayFieldHeader } from "../shared";
 import { SETTING_FIELDS } from "../constants";
+import { useTranslation } from "../../../hooks/useTranslation";
 import styles from "../SettingsOverlay.module.css";
 import shared from "../../shared/shared.module.css";
 
 export default function ChordLayoutSettingsSection({ compact }: { compact?: boolean }) {
   const [chordFretSpread, setChordFretSpread] = useAtom(chordFretSpreadAtom);
+  const { t } = useTranslation();
   const config = SETTING_FIELDS.chordSpread;
 
   return (
-    <OverlaySection id="chord-layout" title="Chord Layout">
+    <OverlaySection id="chord-layout" title={t("settings.sections.chordLayout")}>
       <div className={styles["overlay-field"]}>
         <OverlayFieldHeader label={config.label} />
         <div className={styles["overlay-field-control"]}>

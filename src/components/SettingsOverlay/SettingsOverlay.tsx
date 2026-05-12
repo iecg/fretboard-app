@@ -120,17 +120,17 @@ function SettingsOverlaySurface({
           </button>
         </div>
         <div className={clsx(styles["settings-overlay-content"], "custom-scrollbar")}>
-          <OverlaySection id="view" title="View">
+          <OverlaySection id="view" title={t("settings.sections.view")}>
             <ViewSettingsSection compact={compact} />
           </OverlaySection>
-          <OverlaySection id="instrument" title="Instrument">
+          <OverlaySection id="instrument" title={t("settings.sections.instrument")}>
             <InstrumentSettingsSection compact={compact} />
           </OverlaySection>
           <LanguageSettingsSection compact={compact} />
           <AppearanceSettingsSection compact={compact} />
           <NotationSettingsSection compact={compact} />
           <ChordLayoutSettingsSection compact={compact} />
-          <OverlaySection id="reset" title="Reset" tone="danger">
+          <OverlaySection id="reset" title={t("settings.sections.reset")} tone="danger">
             <ResetSettingsSection onClose={close} />
           </OverlaySection>
           <VersionBadge />
