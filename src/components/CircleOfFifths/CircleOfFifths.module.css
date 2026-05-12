@@ -109,7 +109,7 @@
   font-family: var(--font-display);
   font-size: 1.05rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text-main);
   letter-spacing: 0.02em;
 }
 

@@ -2,7 +2,7 @@
  * DegreeChordList row styling.
  *
  * Theme contract (Plan 04-03 review):
- *   - Body text uses --text-primary; quality column uses --text-muted.
+ *   - Body text uses --text-main; quality column uses --text-muted.
  *     Both are theme-aware semantic tokens that resolve to readable values
  *     on Card surfaces in both modern-light and modern-dark.
  *   - Hover / focus-visible / active states layer over the Card surface using
@@ -36,7 +36,7 @@
   background: transparent;
   border: 1px solid transparent;
   border-radius: 0.4rem;
-  color: var(--text-primary);
+  color: var(--text-main);
   cursor: pointer;
   font: inherit;
   font-variant-numeric: tabular-nums;
