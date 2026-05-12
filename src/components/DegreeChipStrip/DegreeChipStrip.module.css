@@ -265,11 +265,6 @@
   letter-spacing: 0.02em;
 }
 
-:global([data-theme="modern-dark"]) .degree-chip-strip {
-  --chip-border-muted: rgb(255 255 255 / 0.22);
-  --chip-line-muted:   rgb(255 255 255 / 0.18);
-  --color-note-inner-fill: var(--fretboard-note-fill-chord-tone);
-}
 
 :global([data-theme="modern-light"]) .degree-chip-strip {
   --color-note-inner-fill: var(--surface-float);
