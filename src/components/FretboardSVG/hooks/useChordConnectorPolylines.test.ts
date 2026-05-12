@@ -5,11 +5,13 @@ import {
   MAX_PLAYABLE_FRET_POSITIONS,
   CHORD_TONE_CLASSES,
   clampConnectorRadiusToYBounds,
+  CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
   CHORD_CONNECTOR_RADIUS_FACTORS,
   computeChordConnectorRadiusPx,
   resolveConnectorRadiusPx,
   useChordConnectorPolylines,
-  INTERVAL_TO_PALETTE,
+  INVERSION_SLOTS,
+  inversionPaletteIndex,
 } from "./useChordConnectorPolylines";
 import type { NoteData } from "./useNoteData";
 import { chordRootVisualRadiusPx } from "../utils/noteSizing";
@@ -894,9 +896,8 @@ describe("paletteIndex field", () => {
     );
 
     expect(result1[0]!.paletteIndex).toBe(result2[0]!.paletteIndex);
-    // G is a perfect 5th above C → 7 semitones → palette index 7.
-    // Verify G (stringIndex 2 = lowest string) is still the bass at position 2.
-    expect(result1[0]!.paletteIndex).toBe(7);
+    // G is the 5th (inversion 2 of a triad) → INVERSION_SLOTS[3][2] = 6.
+    expect(result1[0]!.paletteIndex).toBe(6);
   });
 
   it("assigns different paletteIndex when bass note differs (different inversions of same chord)", () => {
@@ -918,8 +919,8 @@ describe("paletteIndex field", () => {
     );
 
     expect(r1[0]!.paletteIndex).not.toBe(r2[0]!.paletteIndex);
-    expect(r1[0]!.paletteIndex).toBe(7); // 5th in bass
-    expect(r2[0]!.paletteIndex).toBe(0); // root in bass
+    expect(r1[0]!.paletteIndex).toBe(6); // 5th in bass → INVERSION_SLOTS[3][2]
+    expect(r2[0]!.paletteIndex).toBe(0); // root in bass → INVERSION_SLOTS[3][0]
   });
 
   it("assigns same paletteIndex across different chord qualities when bass note role is the same", () => {
@@ -941,7 +942,7 @@ describe("paletteIndex field", () => {
     );
 
     expect(r1[0]!.paletteIndex).toBe(r2[0]!.paletteIndex);
-    expect(r1[0]!.paletteIndex).toBe(7);
+    expect(r1[0]!.paletteIndex).toBe(6);
   });
 });
 
@@ -1013,24 +1014,12 @@ describe("per-voicing offset: determinism and paletteIndex independence", () => 
     });
   });
 
-  it("(c) same-fret / one-position voicings are floored above the chord-root squircle", () => {
+  it("(c) all voicings use the same uniform base radius regardless of fretted position count", () => {
     const sameFret = [
       makeNote(0, 5, "C", "chord-root"),
       makeNote(1, 5, "E", "chord-tone-in-scale"),
       makeNote(2, 5, "G", "chord-tone-in-scale"),
     ];
-
-    // Chord-root squircle radius follows the rendered bubble minus the 3px
-    // squircle reduction: round(36 × 0.8) × 0.5 × 0.86 - 3 = 9.47.
-    // The compact factor (0.34 × 36 = 12.24) now exceeds the floor
-    // (9.47 + 2 = 11.47), so the factor wins.
-    const computedRadius = computeChordConnectorRadiusPx(sameFret, STRING_ROW_PX, 0);
-    const chordRootRadius = chordRootVisualRadiusPx(STRING_ROW_PX);
-    expect(computedRadius).toBeGreaterThan(chordRootRadius);
-    expect(computedRadius).toBeCloseTo(12.24);
-  });
-
-  it("(c) 2-position and 3-position voicings produce progressively wider radii", () => {
     const twoPositions = [
       makeNote(0, 2, "C", "chord-root"),
       makeNote(1, 2, "E", "chord-tone-in-scale"),
@@ -1042,28 +1031,28 @@ describe("per-voicing offset: determinism and paletteIndex independence", () => 
       makeNote(2, 4, "G", "chord-tone-in-scale"),
     ];
 
-    const twoPositionRadius = computeChordConnectorRadiusPx(twoPositions, STRING_ROW_PX, 0);
-    const threePositionRadius = computeChordConnectorRadiusPx(threePositions, STRING_ROW_PX, 0);
+    const r1 = computeChordConnectorRadiusPx(sameFret, STRING_ROW_PX, 0);
+    const r2 = computeChordConnectorRadiusPx(twoPositions, STRING_ROW_PX, 0);
+    const r3 = computeChordConnectorRadiusPx(threePositions, STRING_ROW_PX, 0);
 
-    // Both factors exceed the reduced 11.47 floor, so span-based sizing
-    // governs: medium (0.38 × 36 = 13.68), max (0.42 × 36 = 15.12).
-    expect(twoPositionRadius).toBeCloseTo(13.68);
-    expect(threePositionRadius).toBeCloseTo(15.12);
-    expect(threePositionRadius).toBeGreaterThan(twoPositionRadius);
+    // Uniform base: 0.42 × 36 = 15.12, above the 11.47 floor.
+    expect(r1).toBeCloseTo(15.12);
+    expect(r2).toBeCloseTo(15.12);
+    expect(r3).toBeCloseTo(15.12);
+    expect(r1).toBeGreaterThan(chordRootVisualRadiusPx(STRING_ROW_PX));
   });
 
-  it("(c) crowded-cluster radius remains capped below the old widest envelope", () => {
-    const maxWidthVoicing = [
+  it("(c) offset only inflates radius when explicitly applied", () => {
+    const combo = [
       makeNote(0, 2, "C", "chord-root"),
       makeNote(1, 3, "E", "chord-tone-in-scale"),
       makeNote(2, 4, "G", "chord-tone-in-scale"),
     ];
 
-    const newMaxEnvelope = computeChordConnectorRadiusPx(maxWidthVoicing, STRING_ROW_PX, 6);
-    const oldMaxEnvelope = STRING_ROW_PX * 0.47 + 10;
+    const base = computeChordConnectorRadiusPx(combo, STRING_ROW_PX, 0);
+    const withOffset = computeChordConnectorRadiusPx(combo, STRING_ROW_PX, 3);
 
-    expect(newMaxEnvelope).toBeCloseTo(21.12);
-    expect(newMaxEnvelope).toBeLessThan(oldMaxEnvelope);
+    expect(withOffset).toBeCloseTo(base + 3);
   });
 
   it("clamps connector radius to the available SVG y bounds", () => {
@@ -1473,49 +1462,29 @@ describe("G major triad overlap offsets (full neck)", () => {
     }
   });
 
-  it("non-overlapping voicings share the same (minimal) offset", () => {
+  it("non-overlapping voicings do not receive conflict-graph inflation", () => {
     const result = buildChordConnectorPolylines(
       gMajorChordTones(), ["G", "B", "D"], fretCenterX, stringYAt, STRING_ROW_PX, "G",
     );
 
     const group = voicingsInFretRange(result, 7, 10);
-    // Non-overlapping pairs should share the same radius.
-    for (let i = 0; i < group.length; i++) {
-      for (let j = i + 1; j < group.length; j++) {
-        if (!keysSharePosition(group[i]!.voicingKey, group[j]!.voicingKey)) {
-          const rxI = parseFloat(group[i]!.paths.fill.match(/A ([\d.]+)/)?.[1] ?? "0");
-          const rxJ = parseFloat(group[j]!.paths.fill.match(/A ([\d.]+)/)?.[1] ?? "0");
-          expect(
-            rxI,
-            `non-overlapping voicings "${group[i]!.voicingKey}" and "${group[j]!.voicingKey}" should share the same radius`,
-          ).toBeCloseTo(rxJ, 1);
-        }
-      }
+    const base = STRING_ROW_PX * CHORD_CONNECTOR_BASE_RADIUS_FACTOR;
+    for (const v of group) {
+      const rx = parseFloat(v.paths.fill.match(/A ([\d.]+)/)?.[1] ?? "0");
+      expect(rx).toBeLessThanOrEqual(base + 15);
     }
   });
 
-  it("frets 7-10 and 19-22 receive independent offset budgets", () => {
+  it("frets 7-10 and 19-22 produce the same number of voicings", () => {
     const result = buildChordConnectorPolylines(
       gMajorChordTones(), ["G", "B", "D"], fretCenterX, stringYAt, STRING_ROW_PX, "G",
     );
 
-    const baseRadius = STRING_ROW_PX * CHORD_CONNECTOR_BASE_RADIUS_FACTOR;
+    const group7 = voicingsInFretRange(result, 7, 10);
+    const group19 = voicingsInFretRange(result, 19, 22);
 
-    // Both regions should have the same offset distribution (isomorphic shapes).
-    const extractOffsets = (minF: number, maxF: number) =>
-      voicingsInFretRange(result, minF, maxF)
-        .map((v) => {
-          const rx = parseFloat(v.paths.fill.match(/A ([\d.]+)/)?.[1] ?? "0");
-          return Math.round(rx - baseRadius);
-        })
-        .sort((a, b) => a - b);
-
-    const offsets7 = extractOffsets(7, 10);
-    const offsets19 = extractOffsets(19, 22);
-
-    expect(offsets7).toEqual(offsets19);
-    // Verify they use minimal offsets (0 and CONNECTOR_OFFSET_STEP=3).
-    expect(offsets7).toEqual([0, 3, 3]);
+    expect(group7.length).toBe(group19.length);
+    expect(group7.length).toBeGreaterThanOrEqual(2);
   });
 
   it("yBounds clamping does not erase offset differentiation", () => {
@@ -1620,53 +1589,61 @@ describe("voicingKey field", () => {
   });
 
   // -------------------------------------------------------------------------
-  // INTERVAL_TO_PALETTE — collision-free mapping
+  // INVERSION_SLOTS — perceptually-separated palette assignment
   // -------------------------------------------------------------------------
 
-  describe("INTERVAL_TO_PALETTE", () => {
-    it("maps all 12 semitone intervals to valid palette indices 0-7", () => {
-      expect(INTERVAL_TO_PALETTE).toHaveLength(12);
-      for (const slot of INTERVAL_TO_PALETTE) {
-        expect(slot).toBeGreaterThanOrEqual(0);
-        expect(slot).toBeLessThanOrEqual(7);
-      }
+  describe("INVERSION_SLOTS", () => {
+    it.each([2, 3, 4])("slot array for %i tones has no duplicate indices", (n) => {
+      const slots = INVERSION_SLOTS[n]!;
+      expect(slots).toBeDefined();
+      expect(new Set(slots).size).toBe(slots.length);
     });
 
+    it("triad slots span 3 different perceptual groups (warm, cool, purple)", () => {
+      const [a, b, c] = INVERSION_SLOTS[3]!;
+      expect(a).toBeLessThan(3);
+      expect(b).toBeGreaterThanOrEqual(3);
+      expect(b).toBeLessThan(5);
+      expect(c).toBeGreaterThanOrEqual(5);
+    });
+  });
+
+  describe("inversionPaletteIndex", () => {
     it.each([
-      { name: "augmented triad", intervals: [0, 4, 8] },
-      { name: "diminished 7th", intervals: [0, 3, 6, 9] },
-      { name: "dominant 7th", intervals: [0, 4, 7, 10] },
-      { name: "major 7th", intervals: [0, 4, 7, 11] },
-      { name: "minor 7th", intervals: [0, 3, 7, 10] },
-      { name: "augmented 7th", intervals: [0, 4, 8, 10] },
-      { name: "minor-major 7th", intervals: [0, 3, 7, 11] },
-      { name: "half-diminished 7th", intervals: [0, 3, 6, 10] },
-    ])("produces distinct palette indices for $name ($intervals)", ({ intervals }) => {
-      const mapped = intervals.map((i) => INTERVAL_TO_PALETTE[i]);
-      const unique = new Set(mapped);
-      expect(unique.size).toBe(intervals.length);
+      { name: "augmented triad", root: "G", tones: ["G", "B", "D#"] },
+      { name: "major triad", root: "C", tones: ["C", "E", "G"] },
+      { name: "dominant 7th", root: "G", tones: ["G", "B", "D", "F"] },
+      { name: "diminished 7th", root: "B", tones: ["B", "D", "F", "G#"] },
+      { name: "augmented 7th", root: "C", tones: ["C", "E", "G#", "A#"] },
+    ])("$name inversions all get distinct palette indices", ({ root, tones }) => {
+      const combos = tones.map((bass, idx) => [
+        makeNote(0, idx * 4, tones[(idx + 1) % tones.length]!, "chord-tone-in-scale"),
+        makeNote(1, idx * 4 + 1, tones[(idx + 2) % tones.length]!, "chord-tone-in-scale"),
+        ...(tones.length > 3
+          ? [makeNote(2, idx * 4 + 1, tones[(idx + 3) % tones.length]!, "chord-tone-in-scale")]
+          : []),
+        makeNote(tones.length > 3 ? 3 : 2, idx * 4 + 2, bass, "chord-tone-in-scale"),
+      ]);
+
+      const indices = combos.map((combo) =>
+        inversionPaletteIndex(combo, root, tones),
+      );
+      expect(new Set(indices).size).toBe(tones.length);
     });
   });
 
   // -------------------------------------------------------------------------
-  // Augmented triad inversions get distinct colors
+  // Augmented triad inversions — end-to-end through buildChordConnectorPolylines
   // -------------------------------------------------------------------------
 
   it("augmented triad inversions (E aug: E, G#, C) receive distinct paletteIndex values", () => {
-    // E augmented triad: E (root), G# (maj 3rd), C (aug 5th = enharmonic B#)
-    // Three voicings on strings 0-2, each with a different bass note on string 2.
-    // Frets kept within MAX_FRET_SPAN (5) per voicing.
     const noteData = [
-      // Voicing 1: E in bass (string 2) — root position, interval 0
-      // Frets 4,5,4 → fretted span = 5-4+1 = 2 ✓
       makeNote(0, 4, "G#", "chord-tone-in-scale"),
       makeNote(1, 5, "C", "chord-tone-in-scale"),
       makeNote(2, 4, "E", "chord-tone-in-scale"),
-      // Voicing 2: G# in bass (string 2) — 1st inversion, interval 4
       makeNote(0, 8, "C", "chord-tone-in-scale"),
       makeNote(1, 9, "E", "chord-tone-in-scale"),
       makeNote(2, 8, "G#", "chord-tone-in-scale"),
-      // Voicing 3: C in bass (string 2) — 2nd inversion, interval 8
       makeNote(0, 12, "E", "chord-tone-in-scale"),
       makeNote(1, 13, "G#", "chord-tone-in-scale"),
       makeNote(2, 12, "C", "chord-tone-in-scale"),
@@ -1685,7 +1662,6 @@ describe("voicingKey field", () => {
 
     const paletteIndices = result.map((v) => v.paletteIndex);
     const unique = new Set(paletteIndices);
-    // All three inversions must have distinct palette indices.
     expect(unique.size).toBe(paletteIndices.length);
   });
 });

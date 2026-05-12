@@ -30,6 +30,58 @@ function voicingFrettedPositionCount(combo: NoteData[]): number {
 }
 
 /**
+ * Hand-picked palette slots per inversion count, maximising perceptual
+ * distance across the 8-color Okabe-Ito-derived palette:
+ *
+ *   slot 0 = vermillion (red-warm)
+ *   slot 3 = bluish-green
+ *   slot 5 = blue
+ *   slot 6 = purple
+ *   slot 7 = reddish-purple
+ *
+ * Each row maps inversion number (0 = root, 1 = 1st inv, …) to a palette
+ * slot that sits in a different perceptual colour group from its neighbours.
+ */
+export const INVERSION_SLOTS: Record<number, readonly number[]> = {
+  2: [0, 5],
+  3: [0, 3, 6],
+  4: [0, 3, 5, 7],
+};
+
+/**
+ * Compute the palette index for a voicing based on its inversion number
+ * (which chord tone is in the bass). Ensures distinct, perceptually
+ * separated colours for every inversion of any chord type.
+ */
+export function inversionPaletteIndex(
+  bestCombo: NoteData[],
+  chordRoot: string,
+  chordToneNames: string[],
+): number {
+  const bassInterval = bassIntervalSemitones(bestCombo, chordRoot);
+  const rootIdx = NOTES.indexOf(chordRoot);
+  if (rootIdx < 0) return 0;
+
+  const toneIntervals = chordToneNames
+    .map((name) => {
+      const idx = NOTES.indexOf(name);
+      return idx < 0 ? -1 : (idx - rootIdx + 12) % 12;
+    })
+    .filter((i) => i >= 0);
+  toneIntervals.sort((a, b) => a - b);
+
+  const unique = [...new Set(toneIntervals)];
+  const invNum = unique.indexOf(bassInterval);
+  if (invNum < 0) return 0;
+
+  const slots = INVERSION_SLOTS[unique.length];
+  if (slots) return slots[invNum] ?? 0;
+
+  const step = Math.max(1, Math.floor(8 / unique.length));
+  return (invNum * step) % 8;
+}
+
+/**
  * Compute the bass-note interval (in semitones, 0-11) from the chord root to
  * the lowest physical note in a voicing.
  *
@@ -106,13 +158,13 @@ export const MAX_FRET_SPAN = 5;
 export const MAX_PLAYABLE_FRET_POSITIONS = 3;
 
 /**
- * Minkowski-sum disk radius factors for the chord-connector outline envelope.
- * Compact stacked voicings should not use the same width as wider grips; the
- * radius scales with the number of fretted positions occupied by the voicing.
- *
- * Note: at default `stringRowPx`, the `compact` and `medium` factors fall
- * below the floor enforced in `computeChordConnectorRadiusPx`, so they only
- * apply at smaller row heights where the absolute floor would be excessive.
+ * Uniform base radius factor for chord-connector outlines. All voicings
+ * share this base; differentiation comes only from conflict offsets.
+ */
+export const CHORD_CONNECTOR_BASE_RADIUS_FACTOR = 0.42;
+
+/**
+ * Legacy per-span factors. Interval connectors still use `compact`.
  */
 export const CHORD_CONNECTOR_RADIUS_FACTORS = {
   compact: 0.34,
@@ -207,32 +259,17 @@ export function applyConnectorRadiusFloor(
 /**
  * Compute the effective connector contour radius for one voicing.
  *
- * The base radius follows the fretted-position span:
- * - 0 or 1 fretted positions → compact stacked/open voicing
- * - 2 fretted positions → medium grip
- * - 3+ fretted positions → widest playable grip
- *
- * The span radius is then passed through `applyConnectorRadiusFloor` so the
- * envelope is always larger than the chord-root squircle even when the
- * span-based factor would tuck the contour inside the note bubble.
- *
- * `offsetPx` is added after the floored span radius to separate overlapping
- * voicing envelopes without forcing every connector to use the widest width.
+ * All voicings share a single uniform base radius so non-overlapping
+ * connectors look identical. Conflict offsets are added on top only
+ * when two voicings geometrically overlap.
  */
 export function computeChordConnectorRadiusPx(
-  combo: NoteData[],
+  _combo: NoteData[],
   stringRowPx: number,
   offsetPx: number,
 ): number {
-  const frettedPositionCount = voicingFrettedPositionCount(combo);
-  const radiusFactor =
-    frettedPositionCount <= 1
-      ? CHORD_CONNECTOR_RADIUS_FACTORS.compact
-      : frettedPositionCount === 2
-        ? CHORD_CONNECTOR_RADIUS_FACTORS.medium
-        : CHORD_CONNECTOR_RADIUS_FACTORS.max;
   const flooredRadius = applyConnectorRadiusFloor(
-    stringRowPx * radiusFactor,
+    stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
     stringRowPx,
   );
   return flooredRadius + Math.max(offsetPx, 0);
@@ -639,11 +676,7 @@ export function buildChordConnectorPolylines(
         return { x, y };
       });
 
-      // Compute palette index from the bass-note interval (semitones from
-      // chord root). Same inversion → same color across positions and chord
-      // qualities. Root in bass = 0 → palette[0]; major 3rd in bass = 4 →
-      // palette[4]; perfect 5th in bass = 7 → palette[7]; etc.
-      const paletteIndex = bassIntervalSemitones(bestCombo, chordRoot) % 8;
+      const paletteIndex = inversionPaletteIndex(bestCombo, chordRoot, chordToneNames);
 
       // Collect — path generation deferred to pass 2 after conflict assignment.
       pendingVoicings.push({ rawVertices, sourceCombo: bestCombo, paletteIndex, canonicalKey });
@@ -678,26 +711,59 @@ export function buildChordConnectorPolylines(
     lowestStringIndex,
   );
 
-  const results: ChordConnectorVoicing[] = pendingVoicings.map((pv) => {
+  // Compute initial radii (uniform base + offset, then edge-safe clamp).
+  const baseRadius = applyConnectorRadiusFloor(
+    stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
+    stringRowPx,
+  );
+  const radii = pendingVoicings.map((pv) => {
     const offsetPx = clusterOffsetMap.get(pv.canonicalKey) ?? 0;
-    const preferredRadius = computeChordConnectorRadiusPx(
-      pv.sourceCombo,
-      stringRowPx,
-      offsetPx,
-    );
-    const radius = resolveConnectorRadiusPx({
+    return resolveConnectorRadiusPx({
       vertices: pv.rawVertices,
-      preferredRadius,
+      preferredRadius: baseRadius + Math.max(offsetPx, 0),
       yBounds,
       edgeSafe: touchesOuterString(pv.sourceCombo, lowestStringIndex),
     });
-    // Open-polyline offset (not convex-hull offset). The rawVertices array
-    // is in window order — string-index ascending — so the resulting pill
-    // traces the voicing across strings rather than enveloping the convex
-    // hull. This avoids the acute-triangle silhouette that 3-note non-
-    // collinear voicings produced under the previous geometry. Collinear
-    // voicings still fall back to a capsule inside `offsetOpenPolylinePath`.
-    const pathStr = offsetOpenPolylinePath(pv.rawVertices, radius);
+  });
+
+  // Post-clamp collision fix: when yBounds clamping collapses two
+  // overlapping voicings to the same radius, nudge the unclamped one
+  // so they remain visually distinguishable.
+  if (yBounds) {
+    for (let i = 0; i < pendingVoicings.length; i++) {
+      for (let j = i + 1; j < pendingVoicings.length; j++) {
+        const dist = polylineDistance(
+          pendingVoicings[i]!.rawVertices,
+          pendingVoicings[j]!.rawVertices,
+        );
+        if (dist > radii[i]! + radii[j]! + CONNECTOR_CONFLICT_GAP_PX) continue;
+        if (Math.abs(radii[i]! - radii[j]!) >= 1) continue;
+
+        const offI = clusterOffsetMap.get(pendingVoicings[i]!.canonicalKey) ?? 0;
+        const offJ = clusterOffsetMap.get(pendingVoicings[j]!.canonicalKey) ?? 0;
+        const prefI = baseRadius + Math.max(offI, 0);
+        const prefJ = baseRadius + Math.max(offJ, 0);
+        const clampedI = radii[i]! < prefI - 0.5;
+        const clampedJ = radii[j]! < prefJ - 0.5;
+
+        const step = OFFSET_BUCKET[1] ?? 3;
+        if (clampedI && !clampedJ) {
+          radii[j] = Math.max(0, radii[i]! - step);
+        } else if (clampedJ && !clampedI) {
+          radii[i] = Math.max(0, radii[j]! - step);
+        } else if (clampedI && clampedJ) {
+          if (prefI <= prefJ) {
+            radii[i] = Math.max(0, radii[i]! - step);
+          } else {
+            radii[j] = Math.max(0, radii[j]! - step);
+          }
+        }
+      }
+    }
+  }
+
+  const results: ChordConnectorVoicing[] = pendingVoicings.map((pv, idx) => {
+    const pathStr = offsetOpenPolylinePath(pv.rawVertices, radii[idx]!);
     const paths = { fill: pathStr, outline: pathStr };
     return { paths, vertices: pv.rawVertices, paletteIndex: pv.paletteIndex, voicingKey: pv.canonicalKey };
   });
