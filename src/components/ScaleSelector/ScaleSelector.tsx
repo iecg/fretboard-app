@@ -12,6 +12,7 @@ import {
   supportsRelativeScaleBrowsing,
   type ScaleBrowseMode,
 } from "@fretflow/core";
+import { useTranslation } from "../../hooks/useTranslation";
 import { NoteGrid } from "../NoteGrid/NoteGrid";
 import { StepperSelect } from "../StepperSelect/StepperSelect";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
@@ -24,6 +25,7 @@ export interface ScaleSelectorProps {
 }
 
 export function ScaleSelector({ compact }: ScaleSelectorProps) {
+  const { t } = useTranslation();
   const {
     rootNote,
     setRootNote,
@@ -175,8 +177,8 @@ export function ScaleSelector({ compact }: ScaleSelectorProps) {
               />
               <p className={shared["field-hint"]}>
                 {effectiveBrowseMode === "parallel"
-                  ? "Cycle modes that share the current root note."
-                  : "Cycle modes that share the current key signature."}
+                  ? t("controls.scaleParallelHint")
+                  : t("controls.scaleRelativeHint")}
               </p>
             </div>
           ) : null}

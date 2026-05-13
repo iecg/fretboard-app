@@ -8,10 +8,12 @@ import { ZOOM_STEP, SETTING_FIELDS } from "../constants";
 import { OverlayFieldHeader } from "../shared";
 import { useSettingsForm } from "../useSettingsForm";
 import { compactDensityAtom } from "../../../store/atoms";
+import { useTranslation } from "../../../hooks/useTranslation";
 import styles from "../SettingsOverlay.module.css";
 import shared from "../../shared/shared.module.css";
 
 export default function ViewSettingsSection({ compact }: { compact?: boolean }) {
+  const { t } = useTranslation();
   const {
     fretZoom,
     setFretZoom,
@@ -29,7 +31,7 @@ export default function ViewSettingsSection({ compact }: { compact?: boolean }) 
       <div
         className={clsx(styles["overlay-field"], styles["overlay-field--divided"])}
       >
-        <OverlayFieldHeader label={SETTING_FIELDS.zoom.label} />
+        <OverlayFieldHeader label={t(SETTING_FIELDS.zoom.labelKey)} />
         <div className={styles["overlay-field-control"]}>
           <StepperControl
             value={fretZoom}
@@ -44,7 +46,7 @@ export default function ViewSettingsSection({ compact }: { compact?: boolean }) 
         </div>
       </div>
       <div className={clsx(styles["overlay-field"], styles["overlay-field--divided"])}>
-        <OverlayFieldHeader label={SETTING_FIELDS.fretRange.label} />
+        <OverlayFieldHeader label={t(SETTING_FIELDS.fretRange.labelKey)} />
         <div className={styles["overlay-field-control"]}>
           <FretRangeControl
             startFret={fretStart}
@@ -77,7 +79,7 @@ export default function ViewSettingsSection({ compact }: { compact?: boolean }) 
         </p>
       </div>
       <div className={styles["overlay-field"]}>
-        <OverlayFieldHeader label={SETTING_FIELDS.scaleDegreeColors.label} />
+        <OverlayFieldHeader label={t(SETTING_FIELDS.scaleDegreeColors.labelKey)} />
         <div className={styles["overlay-field-control"]}>
           <ToggleBar
             options={[
@@ -89,9 +91,9 @@ export default function ViewSettingsSection({ compact }: { compact?: boolean }) 
             compact={compact}
           />
         </div>
-        {SETTING_FIELDS.scaleDegreeColors.hint && (
+        {SETTING_FIELDS.scaleDegreeColors.hintKey && (
           <p className={clsx(shared["field-hint"], styles["overlay-field-hint"])}>
-            {SETTING_FIELDS.scaleDegreeColors.hint}
+            {t(SETTING_FIELDS.scaleDegreeColors.hintKey)}
           </p>
         )}
       </div>
