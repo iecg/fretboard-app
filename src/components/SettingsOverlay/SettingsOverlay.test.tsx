@@ -101,6 +101,7 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(headings).toEqual([
       "View",
       "Instrument",
+      "Language",
       "Appearance",
       "Notation",
       "Chord Layout",
@@ -118,6 +119,9 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(screen.getByRole("combobox", { name: "Tuning" })).toBeTruthy();
     expect(screen.getByText("Accidentals")).toBeTruthy();
     expect(screen.getByText("Enharmonic Display")).toBeTruthy();
+    expect(screen.getAllByText("Language").length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: /english/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /español/i })).toBeTruthy();
     expect(screen.getByText("Theme")).toBeTruthy();
     expect(screen.getByRole("button", { name: /light/i })).toBeTruthy();
     expect(screen.getByRole("button", { name: /dark/i })).toBeTruthy();

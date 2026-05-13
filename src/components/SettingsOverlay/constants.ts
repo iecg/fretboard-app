@@ -110,3 +110,8 @@ export const SETTINGS_SECTIONS: readonly SettingsSectionConfig[] = [
 ] as const;
 
 export const ZOOM_STEP = 10;
+
+export const LANGUAGE_OPTIONS = [
+  { value: "en", label: "English" },
+  { value: "es", label: "Español" },
+] as const;

@@ -1,15 +1,17 @@
 import { useAtom } from "jotai";
-import clsx from "clsx";
 import { accidentalModeAtom, enharmonicDisplayAtom } from "../../../store/atoms";
 import { ToggleBar } from "../../ToggleBar/ToggleBar";
 import { OverlaySection, OverlayFieldHeader } from "../shared";
 import { ACCIDENTAL_OPTIONS, ENHARMONIC_DISPLAY_OPTIONS, SETTING_FIELDS } from "../constants";
+import { useTranslation } from "../../../hooks/useTranslation";
+import clsx from "clsx";
 import styles from "../SettingsOverlay.module.css";
 import shared from "../../shared/shared.module.css";
 
 export default function NotationSettingsSection({ compact }: { compact?: boolean }) {
   const [accidentalMode, setAccidentalMode] = useAtom(accidentalModeAtom);
   const [enharmonicDisplay, setEnharmonicDisplay] = useAtom(enharmonicDisplayAtom);
+  const { t } = useTranslation();
 
   const fields = [
     {
@@ -37,7 +39,7 @@ export default function NotationSettingsSection({ compact }: { compact?: boolean
   ];
 
   return (
-    <OverlaySection id="notation" title="Notation">
+    <OverlaySection id="notation" title={t("settings.sections.notation")}>
       {fields.map(({ config, control }, index) => {
         return (
           <div

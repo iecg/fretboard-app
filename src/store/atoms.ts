@@ -122,3 +122,6 @@ export {
   hasAnyChordToneOutsideScale,
   buildChordRowEntries,
 } from "./composableSelectors";
+
+export { languageAtom } from "./languageAtom";
+
