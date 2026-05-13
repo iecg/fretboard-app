@@ -70,7 +70,7 @@ export default function ViewSettingsSection({ compact }: { compact?: boolean }) 
             ]}
             value={compactDensity}
             onChange={(v) => setCompactDensity(v as "auto" | "on" | "off")}
-            label="Compact controls"
+            label={t("settings.view.compactControls")}
             compact={compact}
           />
         </div>
@@ -83,8 +83,8 @@ export default function ViewSettingsSection({ compact }: { compact?: boolean }) 
         <div className={styles["overlay-field-control"]}>
           <ToggleBar
             options={[
-              { value: "false", label: "Off" },
-              { value: "true", label: "On" },
+              { value: "false", label: t("controls.off") },
+              { value: "true", label: t("controls.on") },
             ]}
             value={String(scaleDegreeColorsEnabled)}
             onChange={(v) => setScaleDegreeColorsEnabled(v === "true")}
