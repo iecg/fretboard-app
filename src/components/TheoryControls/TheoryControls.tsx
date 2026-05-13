@@ -16,7 +16,7 @@ import { ProgressionControls } from "../ProgressionControls/ProgressionControls"
 import { useProgressionState } from "../../hooks/useProgressionState";
 import { useChordState } from "../../hooks/useChordState";
 import { useScaleState } from "../../hooks/useScaleState";
-import { scaleLabelAtom, fingeringPatternAtom } from "../../store/atoms";
+import { scaleLabelAtom, fingeringPatternAtom, totalProgressionBarsAtom } from "../../store/atoms";
 import styles from "../TheoryControls/TheoryControls.module.css";
 
 interface TheoryControlsProps {
@@ -181,11 +181,13 @@ function useProgressionSectionSummary() {
     progressionSteps,
     progressionPlaybackBlockedReason,
   } = useProgressionState();
+  const totalBars = useAtomValue(totalProgressionBarsAtom);
 
   if (!progressionEnabled) return "Off";
   if (progressionSteps.length === 0) return "Empty";
   if (progressionPlaybackBlockedReason?.startsWith("Chord overlay disabled")) return "Disabled";
-  return `${progressionSteps.length} ${progressionSteps.length === 1 ? "step" : "steps"}`;
+  const rounded = Math.max(1, Math.round(totalBars));
+  return `${rounded} ${rounded === 1 ? "bar" : "bars"}`;
 }
 
 type TheoryOpenSection = "scale" | "chords" | "progression" | null;

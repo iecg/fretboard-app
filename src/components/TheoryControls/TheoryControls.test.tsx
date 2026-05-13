@@ -509,7 +509,7 @@ describe("TheoryControls UAT-20 — chord section disabled on 1/2-string", () =>
     expect(screen.getByRole("button", { name: "I-V-vi-IV" })).toBeInTheDocument();
   });
 
-  it("summarizes enabled progression with step count", () => {
+  it("summarizes enabled progression with total bars", () => {
     const store = createStore();
     store.set(progressionEnabledAtom, true);
     store.set(progressionStepsAtom, [
@@ -519,6 +519,15 @@ describe("TheoryControls UAT-20 — chord section disabled on 1/2-string", () =>
 
     renderWithStore(<TheoryControls />, store);
 
-    expect(screen.getByRole("button", { name: /Progression.*2 steps/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Progression.*2 bars/i })).toBeInTheDocument();
+  });
+
+  it("summarises progression by total bars", () => {
+    const store = createStore();
+    store.set(progressionEnabledAtom, true);
+
+    renderWithStore(<TheoryControls />, store);
+
+    expect(screen.getByRole("button", { name: /Progression.*4 bars/i })).toBeInTheDocument();
   });
 });
