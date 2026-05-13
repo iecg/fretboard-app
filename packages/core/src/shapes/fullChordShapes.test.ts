@@ -57,4 +57,18 @@ describe('getFullChordShapeMatches', () => {
       }),
     ).toEqual([]);
   });
+
+  it('skips out-of-range frets but keeps match when 4+ valid notes remain', () => {
+    // E-shape Major Triad template: [0, 0, 1, 2, 2, 0] with anchor offset 0 on string 5.
+    // At rootFret=11 (D# on string 5), resolved frets are:
+    //  string 0: 0 + 11 = 11 ✓
+    //  string 1: 0 + 11 = 11 ✓
+    //  string 2: 1 + 11 = 12 ✓
+    //  string 3: 2 + 11 = 13 (exceeds maxFret=12, skipped)
+    //  string 4: 2 + 11 = 13 (exceeds maxFret=12, skipped)
+    //  string 5: 0 + 11 = 11 ✓
+    // Result: 4 valid notes remain ([11, 11, 12, 11] on strings [0, 1, 2, 5]).
+    // All 4 are D# Major Triad notes → match accepted.
+    expect(getMatchPositions('D#', 'Major Triad', 'E', 11)).toBe('0-11|1-11|2-12|5-11');
+  });
 });
