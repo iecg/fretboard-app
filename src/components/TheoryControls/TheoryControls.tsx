@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { useAtomValue } from "jotai";
 import { AnimatePresence, motion } from "motion/react";
 import clsx from "clsx";
@@ -86,7 +86,7 @@ export function TheorySection({
         aria-disabled={disabled ? "true" : undefined}
         onClick={handleToggle}
       >
-<AnimatePresence mode="wait">
+        <AnimatePresence mode="wait">
           <motion.span
             key={title}
             initial={{ opacity: 0, x: -12 }}
@@ -202,12 +202,12 @@ export function TheoryControls({ keyExplorer, compact }: TheoryControlsProps) {
   const initialOpenSection: TheoryOpenSection =
     Boolean(chordType) && !isChordsDisabled ? "chords" : "scale";
   const [openSection, setOpenSection] = useState<TheoryOpenSection>(initialOpenSection);
+  let effectiveOpenSection = openSection;
 
-  useEffect(() => {
-    if (openSection === "chords" && isChordsDisabled) {
-      setOpenSection("scale");
-    }
-  }, [isChordsDisabled, openSection]);
+  if (openSection === "chords" && isChordsDisabled) {
+    effectiveOpenSection = "scale";
+    setOpenSection("scale");
+  }
 
   const setSectionOpen = (section: Exclude<TheoryOpenSection, null>) => (open: boolean) => {
     setOpenSection(open ? section : null);
@@ -218,7 +218,7 @@ export function TheoryControls({ keyExplorer, compact }: TheoryControlsProps) {
       <TheorySection
         title="Scale"
         summary={scaleLabel}
-        open={openSection === "scale"}
+        open={effectiveOpenSection === "scale"}
         onOpenChange={setSectionOpen("scale")}
         compact={compact}
       >
@@ -229,7 +229,7 @@ export function TheoryControls({ keyExplorer, compact }: TheoryControlsProps) {
       <TheorySection
         title="Chords"
         summary={isChordsDisabled ? "Disabled" : chordSummary}
-        open={openSection === "chords"}
+        open={effectiveOpenSection === "chords"}
         onOpenChange={setSectionOpen("chords")}
         compact={compact}
         disabled={isChordsDisabled}
@@ -240,7 +240,7 @@ export function TheoryControls({ keyExplorer, compact }: TheoryControlsProps) {
       <TheorySection
         title="Progression"
         summary={progressionSummary}
-        open={openSection === "progression"}
+        open={effectiveOpenSection === "progression"}
         onOpenChange={setSectionOpen("progression")}
         compact={compact}
       >

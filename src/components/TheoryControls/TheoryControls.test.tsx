@@ -136,6 +136,28 @@ describe("TheoryControls/TheoryControls", () => {
     expect(screen.getByRole("combobox", { name: "Scale Family" })).toBeInTheDocument();
   });
 
+  it("keeps Scale open when disabled Chords are enabled again", () => {
+    const store = createStore();
+    store.set(chordTypeAtom, "Major Triad");
+
+    renderWithStore(<TheoryControls />, store);
+
+    expect(screen.getByRole("group", { name: "Chord overlay mode" })).toBeInTheDocument();
+
+    act(() => {
+      store.set(fingeringPatternAtom, "one-string");
+    });
+
+    expect(screen.getByRole("combobox", { name: "Scale Family" })).toBeInTheDocument();
+
+    act(() => {
+      store.set(fingeringPatternAtom, "caged");
+    });
+
+    expect(screen.getByRole("combobox", { name: "Scale Family" })).toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "Chord overlay mode" })).not.toBeInTheDocument();
+  });
+
   it("shows the inline key explorer only after disclosure is opened", () => {
     renderWithStore(<TheoryControls keyExplorer={<div>Key Wheel</div>} />);
 
