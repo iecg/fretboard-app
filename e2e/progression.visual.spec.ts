@@ -11,10 +11,10 @@ test.describe("Progression Visual", () => {
       {
         progressionEnabled: true,
         progressionSteps: [
-          { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
-          { id: "two", degree: "V", duration: "1-bar", qualityOverride: "Dominant 7th" },
-          { id: "three", degree: "vi", duration: "2-bars", qualityOverride: null },
-          { id: "four", degree: "IV", duration: "1-bar", qualityOverride: null },
+          { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+          { id: "three", degree: "vi", duration: { value: 2, unit: "bar" }, qualityOverride: null },
+          { id: "four", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null },
         ],
       },
       { width: 1280, height: 900 },
@@ -33,8 +33,8 @@ test.describe("Progression Visual", () => {
         progressionEnabled: true,
         mobileTab: "progression",
         progressionSteps: [
-          { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
-          { id: "two", degree: "V", duration: "1-bar", qualityOverride: null },
+          { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
         ],
       },
       { width: 390, height: 844 },
@@ -52,7 +52,7 @@ test.describe("Progression Visual", () => {
         progressionEnabled: true,
         fingeringPattern: "one-string",
         progressionSteps: [
-          { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
+          { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
         ],
       },
       { width: 1280, height: 900 },

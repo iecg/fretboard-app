@@ -33,7 +33,19 @@ export interface VisualState {
   chordFretSpread?: number;
   practiceLens?: string;
   theme?: "light" | "dark" | "system";
-  [key: string]: string | number | boolean | undefined;
+  /** Progression atom seeds (Phase 03+). */
+  progressionEnabled?: boolean;
+  progressionTempoBpm?: number;
+  progressionLoopEnabled?: boolean;
+  progressionSteps?: Array<{
+    id: string;
+    degree: string;
+    duration: { value: number; unit: "beat" | "bar" };
+    qualityOverride: string | null;
+  }>;
+  mobileTab?: string;
+  fingeringPattern?: string;
+  [key: string]: unknown;
 }
 
 /**

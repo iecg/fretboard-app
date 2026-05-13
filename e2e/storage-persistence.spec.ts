@@ -71,8 +71,8 @@ test.describe("storage persistence", () => {
         progressionTempoBpm: 132,
         progressionLoopEnabled: false,
         progressionSteps: [
-          { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
-          { id: "two", degree: "V", duration: "2-bars", qualityOverride: "Dominant 7th" },
+          { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "two", degree: "V", duration: { value: 2, unit: "bar" }, qualityOverride: "Dominant 7th" },
         ],
       },
       { width: 1280, height: 900 },
