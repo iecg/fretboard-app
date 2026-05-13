@@ -6,6 +6,7 @@ import {
   activeResolvedProgressionStepAtom,
   addProgressionStepAtom,
   advanceProgressionPlaybackAtom,
+  beatsPerBarAtom,
   loadProgressionPresetAtom,
   moveProgressionStepAtom,
   progressionEnabledAtom,
@@ -146,6 +147,28 @@ describe("progressionAtoms", () => {
 function mount<T>(store: ReturnType<typeof createStore>, atom: Atom<T>): () => void {
   return store.sub(atom, () => {});
 }
+
+describe("beatsPerBarAtom", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("defaults to 4", () => {
+    const store = createStore();
+    expect(store.get(beatsPerBarAtom)).toBe(4);
+  });
+
+  it("accepts 3, 4, 6, 8 and persists", () => {
+    const store = createStore();
+    const unsub = mount(store, beatsPerBarAtom);
+    store.set(beatsPerBarAtom, 3);
+    expect(store.get(beatsPerBarAtom)).toBe(3);
+    store.set(beatsPerBarAtom, 6);
+    expect(store.get(beatsPerBarAtom)).toBe(6);
+    expect(localStorage.getItem("fretflow:progressionBeatsPerBar")).toBe("6");
+    unsub();
+  });
+});
 
 describe("progression storage hydration", () => {
   beforeEach(() => {

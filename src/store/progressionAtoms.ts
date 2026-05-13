@@ -80,6 +80,13 @@ export const progressionLoopEnabledAtom = atomWithStorage<boolean>(
   GET_ON_INIT,
 );
 
+export const beatsPerBarAtom = atomWithStorage<number>(
+  k("progressionBeatsPerBar"),
+  DEFAULT_BEATS_PER_BAR,
+  constrainedNumberStorage({ min: 1, max: 32, integer: true }),
+  GET_ON_INIT,
+);
+
 export const activeProgressionStepIndexAtom = atom(0);
 const progressionPlayingStateAtom = atom(false);
 export const progressionStepDeadlineAtom = atom<number | null>(null);
@@ -106,7 +113,8 @@ export const activeResolvedProgressionStepAtom = atom((get) => {
 export const progressionStepDurationMsAtom = atom((get) => {
   const step = get(activeProgressionStepAtom);
   if (!step) return 0;
-  return getProgressionDurationMs(step.duration, get(progressionTempoBpmAtom), DEFAULT_BEATS_PER_BAR);
+  const beatsPerBar = get(beatsPerBarAtom);
+  return getProgressionDurationMs(step.duration, get(progressionTempoBpmAtom), beatsPerBar);
 });
 
 export const progressionPlaybackBlockedReasonAtom = atom((get) => {
@@ -223,7 +231,7 @@ export const advanceProgressionPlaybackAtom = atom(null, (get, set) => {
   if (get(progressionPlayingStateAtom)) {
     const nextStep = get(progressionStepsAtom)[next];
     const durationMs = nextStep
-      ? getProgressionDurationMs(nextStep.duration, get(progressionTempoBpmAtom), DEFAULT_BEATS_PER_BAR)
+      ? getProgressionDurationMs(nextStep.duration, get(progressionTempoBpmAtom), get(beatsPerBarAtom))
       : 0;
     set(progressionStepDeadlineAtom, Date.now() + durationMs);
   }
