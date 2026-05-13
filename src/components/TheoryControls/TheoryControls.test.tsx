@@ -76,6 +76,39 @@ describe("TheoryControls/TheoryControls", () => {
     expect(screen.getByRole("button", { name: "Manual" })).toBeInTheDocument();
   });
 
+  it("opens only one theory section at a time", () => {
+    renderWithStore(<TheoryControls />);
+
+    expect(screen.getByText("Root")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Chords/i }));
+    expect(screen.getByRole("group", { name: "Chord overlay mode" })).toBeInTheDocument();
+    expect(screen.queryByText("Root")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Progression/i }));
+    expect(screen.getByText("Progression Mode")).toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "Chord overlay mode" })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Scale/i }));
+    expect(screen.getByText("Root")).toBeInTheDocument();
+    expect(screen.queryByText("Progression Mode")).not.toBeInTheDocument();
+  });
+
+  it("keeps disabled Chords collapsed when another section opens", () => {
+    const store = createStore();
+    store.set(fingeringPatternAtom, "one-string");
+
+    renderWithStore(<TheoryControls />, store);
+
+    fireEvent.click(screen.getByRole("button", { name: /Chords.*Disabled/i }));
+    expect(screen.queryByRole("group", { name: "Chord overlay mode" })).not.toBeInTheDocument();
+    expect(screen.getByText("Root")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Progression/i }));
+    expect(screen.getByText("Progression Mode")).toBeInTheDocument();
+    expect(screen.queryByText("Root")).not.toBeInTheDocument();
+  });
+
   it("shows the inline key explorer only after disclosure is opened", () => {
     renderWithStore(<TheoryControls keyExplorer={<div>Key Wheel</div>} />);
 

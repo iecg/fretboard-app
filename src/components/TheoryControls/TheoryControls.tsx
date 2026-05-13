@@ -29,6 +29,8 @@ export interface TheorySectionProps {
   title: string;
   summary: string;
   defaultOpen?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   children: ReactNode;
   /** Reduces vertical padding and font size on disclosure rows for tight layouts. */
   compact?: boolean;
@@ -43,21 +45,27 @@ export function TheorySection({
   title,
   summary,
   defaultOpen = false,
+  open,
+  onOpenChange,
   children,
   compact = false,
   disabled = false,
 }: TheorySectionProps) {
-  // Track the user-controlled open/close state. When disabled, the panel is
-  // always rendered as collapsed without needing side effects.
   const [userOpen, setUserOpen] = useState(defaultOpen);
+  const isControlled = open !== undefined;
+  const requestedOpen = isControlled ? open : userOpen;
 
   // Derive effective open state: disabled always collapses the panel.
-  const isOpen = !disabled && userOpen;
+  const isOpen = !disabled && requestedOpen;
   const contentId = useId();
 
   const handleToggle = () => {
     if (disabled) return;
-    setUserOpen((value) => !value);
+    const nextOpen = !isOpen;
+    if (!isControlled) {
+      setUserOpen(nextOpen);
+    }
+    onOpenChange?.(nextOpen);
   };
 
   return (
@@ -180,6 +188,8 @@ function useProgressionSectionSummary() {
   return `${progressionSteps.length} ${progressionSteps.length === 1 ? "step" : "steps"}`;
 }
 
+type TheoryOpenSection = "scale" | "chords" | "progression" | null;
+
 export function TheoryControls({ keyExplorer, compact }: TheoryControlsProps) {
   const scaleLabel = useAtomValue(scaleLabelAtom);
   const chordSummary = useChordSectionSummary();
@@ -189,10 +199,23 @@ export function TheoryControls({ keyExplorer, compact }: TheoryControlsProps) {
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
   const isChordsDisabled =
     fingeringPattern === "one-string" || fingeringPattern === "two-strings";
+  const initialOpenSection: TheoryOpenSection =
+    Boolean(chordType) && !isChordsDisabled ? "chords" : "scale";
+  const [openSection, setOpenSection] = useState<TheoryOpenSection>(initialOpenSection);
+
+  const setSectionOpen = (section: Exclude<TheoryOpenSection, null>) => (open: boolean) => {
+    setOpenSection(open ? section : null);
+  };
 
   return (
     <div className={styles["theory-controls"]} data-testid="theory-controls">
-      <TheorySection title="Scale" summary={scaleLabel} defaultOpen compact={compact}>
+      <TheorySection
+        title="Scale"
+        summary={scaleLabel}
+        open={openSection === "scale"}
+        onOpenChange={setSectionOpen("scale")}
+        compact={compact}
+      >
         <ScaleSelector compact={compact} />
         {keyExplorer ? <KeyExplorer>{keyExplorer}</KeyExplorer> : null}
       </TheorySection>
@@ -200,7 +223,8 @@ export function TheoryControls({ keyExplorer, compact }: TheoryControlsProps) {
       <TheorySection
         title="Chords"
         summary={isChordsDisabled ? "Disabled" : chordSummary}
-        defaultOpen={Boolean(chordType)}
+        open={openSection === "chords"}
+        onOpenChange={setSectionOpen("chords")}
         compact={compact}
         disabled={isChordsDisabled}
       >
@@ -210,7 +234,8 @@ export function TheoryControls({ keyExplorer, compact }: TheoryControlsProps) {
       <TheorySection
         title="Progression"
         summary={progressionSummary}
-        defaultOpen={false}
+        open={openSection === "progression"}
+        onOpenChange={setSectionOpen("progression")}
         compact={compact}
       >
         <ProgressionControls compact={compact} />
