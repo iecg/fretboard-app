@@ -14,12 +14,7 @@ import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { StepperControl } from "../StepperControl/StepperControl";
 import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
 import shared from "../shared/shared.module.css";
-import {
-  CHORD_NONE_VALUE,
-  CHORD_TYPE_DISPLAY_ORDER,
-  CHORD_TYPE_SHORT_LABELS,
-} from "../ChordOverlayControls/chordTypeOptions";
-import { buildDegreeToggleOptions } from "../shared/chordControlOptions";
+import { buildDegreeToggleOptions, buildQualityToggleOptions, CHORD_QUALITY_DIATONIC_VALUE } from "../shared/chordControlOptions";
 import { CUSTOM_PRESET_ID } from "../../store/atoms";
 import { ProgressionPlaybackBar } from "../ProgressionPlaybackBar/ProgressionPlaybackBar";
 import styles from "./ProgressionControls.module.css";
@@ -51,10 +46,10 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
   } = useProgressionState();
 
   const activeStep = progressionSteps[activeProgressionStepIndex] ?? null;
-  const qualityValue = activeStep?.qualityOverride ?? CHORD_NONE_VALUE;
+  const qualityValue = activeStep?.qualityOverride ?? CHORD_QUALITY_DIATONIC_VALUE;
   const degreeOptions = buildDegreeToggleOptions({
     scaleName,
-    qualityOverridden: qualityValue !== CHORD_NONE_VALUE,
+    qualityOverridden: qualityValue !== CHORD_QUALITY_DIATONIC_VALUE,
     activeDegree: activeStep?.degree ?? null,
   });
 
@@ -226,17 +221,11 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
             <span className={shared["section-label"]}>Quality</span>
             <ToggleBar
               label="Step chord quality"
-              options={[
-                { value: CHORD_NONE_VALUE, label: "Diatonic" },
-                ...CHORD_TYPE_DISPLAY_ORDER.map((quality) => ({
-                  value: quality,
-                  label: CHORD_TYPE_SHORT_LABELS[quality] ?? quality,
-                })),
-              ]}
+              options={buildQualityToggleOptions({ diatonicLabel: "Diatonic" })}
               value={qualityValue}
               onChange={(quality) => updateProgressionStepQuality({
                 id: activeStep.id,
-                qualityOverride: quality === CHORD_NONE_VALUE ? null : quality,
+                qualityOverride: quality === CHORD_QUALITY_DIATONIC_VALUE ? null : quality,
               })}
               compact={compact}
               overflow="scroll"
