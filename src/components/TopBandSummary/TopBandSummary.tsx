@@ -99,7 +99,7 @@ export function TopBandSummary() {
             exit={{ height: 0, overflow: "hidden", opacity: 0 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
           >
-            <div className={styles["progression-status"]} role="group" aria-label="Progression status">
+            <div className={styles["progression-status"]} role="group" aria-label="Progression status" data-testid="progression-status">
               <span className={styles["progression-position"]}>
                 {progressionPositionLabel}
               </span>
@@ -122,7 +122,7 @@ export function TopBandSummary() {
             </div>
           </motion.div>
         )}
-        {showChordBar && (
+        {!progressionEnabled && showChordBar && (
           <motion.div
             key="chord-section"
             className={styles["chord-section"]}
@@ -130,6 +130,7 @@ export function TopBandSummary() {
             animate={{ height: "auto", overflow: "visible", opacity: 1 }}
             exit={{ height: 0, overflow: "hidden", opacity: 0 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
+            data-testid="chord-practice-bar"
           >
             <ChordPracticeBar
               title={practiceBarTitle}
