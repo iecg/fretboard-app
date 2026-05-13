@@ -13,6 +13,11 @@ import {
   setChordDegreeAtom,
 } from "./chordOverlayAtoms";
 import { allChordMembersAtom } from "./composableSelectors";
+import {
+  progressionEnabledAtom,
+  progressionStepsAtom,
+} from "./progressionAtoms";
+import { fingeringPatternAtom } from "./fingeringAtoms";
 import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
 
@@ -241,6 +246,225 @@ describe("chordOverlayAtoms — degree mode quality override", () => {
     expect(store.get(chordTypeAtom)).toBe("Dominant 7th");
     // V in C Lydian → G (degree-derived root re-resolves).
     expect(store.get(chordRootAtom)).toBe("G");
+  });
+});
+
+describe("chordOverlayAtoms - progression source priority", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("progression mode takes over chordRootAtom and chordTypeAtom", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, [
+        { id: "one", degree: "V", duration: "1-bar", qualityOverride: "Dominant 7th" },
+      ]],
+    ]);
+
+    expect(store.get(chordRootAtom)).toBe("G");
+    expect(store.get(chordTypeAtom)).toBe("Dominant 7th");
+  });
+
+  it("writing chordTypeAtom while progression is enabled updates the active step override", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, [
+        { id: "one", degree: "V", duration: "1-bar", qualityOverride: null },
+      ]],
+    ]);
+
+    store.set(chordTypeAtom, "Dominant 7th");
+
+    expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBe("Dominant 7th");
+    expect(store.get(chordOverlayModeAtom)).toBe("degree");
+    expect(store.get(chordTypeAtom)).toBe("Dominant 7th");
+  });
+
+  it("RESET on chordTypeAtom while progression is enabled clears the active step override", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, [
+        { id: "one", degree: "V", duration: "1-bar", qualityOverride: "Dominant 7th" },
+      ]],
+    ]);
+
+    expect(store.get(chordTypeAtom)).toBe("Dominant 7th");
+
+    store.set(chordTypeAtom, RESET);
+
+    expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBeNull();
+    expect(store.get(chordTypeAtom)).toBe("Major Triad");
+  });
+
+  it("setChordDegreeAtom updates active progression step degree while progression is enabled", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, [
+        { id: "one", degree: "V", duration: "1-bar", qualityOverride: null },
+      ]],
+    ]);
+
+    store.set(setChordDegreeAtom, "ii");
+
+    expect(store.get(progressionStepsAtom)[0]?.degree).toBe("ii");
+    expect(store.get(chordDegreeAtom)).toBeNull();
+    expect(store.get(chordRootAtom)).toBe("D");
+    expect(store.get(chordTypeAtom)).toBe("Minor Triad");
+  });
+
+  it("writing chordRootAtom while progression is enabled does not switch to manual mode", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, [
+        { id: "one", degree: "V", duration: "1-bar", qualityOverride: null },
+      ]],
+    ]);
+
+    store.set(chordRootAtom, "D");
+
+    expect(store.get(chordRootAtom)).toBe("G");
+    expect(store.get(chordOverlayModeAtom)).toBe("degree");
+  });
+
+  it("writing chordRootAtom updates fallback root when progression is enabled but pattern-disabled", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, [
+        { id: "one", degree: "V", duration: "1-bar", qualityOverride: null },
+      ]],
+      [fingeringPatternAtom, "one-string"],
+    ]);
+
+    store.set(chordRootAtom, "D");
+
+    expect(store.get(chordRootAtom)).toBe("D");
+    expect(store.get(chordOverlayModeAtom)).toBe("manual");
+  });
+
+  it("writing chordTypeAtom updates fallback quality without mutating hidden progression when pattern-disabled", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, [
+        { id: "one", degree: "V", duration: "1-bar", qualityOverride: null },
+      ]],
+      [fingeringPatternAtom, "one-string"],
+    ]);
+
+    store.set(chordTypeAtom, "Dominant 7th");
+
+    expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBeNull();
+    expect(store.get(chordTypeAtom)).toBe("Dominant 7th");
+  });
+
+  it("setChordDegreeAtom updates fallback degree without mutating hidden progression when pattern-disabled", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, [
+        { id: "one", degree: "V", duration: "1-bar", qualityOverride: null },
+      ]],
+      [fingeringPatternAtom, "one-string"],
+    ]);
+
+    store.set(setChordDegreeAtom, "ii");
+
+    expect(store.get(chordDegreeAtom)).toBe("ii");
+    expect(store.get(progressionStepsAtom)[0]?.degree).toBe("V");
+  });
+
+  it("RESET on chordTypeAtom resets fallback atoms without clearing hidden progression override when pattern-disabled", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, [
+        { id: "one", degree: "V", duration: "1-bar", qualityOverride: "Dominant 7th" },
+      ]],
+      [fingeringPatternAtom, "one-string"],
+      [chordOverlayModeAtom, "manual"],
+      [chordRootOverrideAtom, "D"],
+      [chordQualityOverrideAtom, "Minor Triad"],
+    ]);
+
+    store.set(chordTypeAtom, RESET);
+
+    expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBe("Dominant 7th");
+    expect(store.get(chordOverlayModeAtom)).toBe("degree");
+    expect(store.get(chordDegreeAtom)).toBeNull();
+    expect(store.get(chordTypeAtom)).toBeNull();
+  });
+
+  it("uses fallback chord reads when progression active step is unavailable", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, [
+        { id: "bad", degree: "not-a-degree", duration: "1-bar", qualityOverride: null },
+      ]],
+      [chordOverlayModeAtom, "manual"],
+      [chordRootOverrideAtom, "D"],
+      [chordQualityOverrideAtom, "Minor Triad"],
+    ]);
+
+    expect(store.get(chordRootAtom)).toBe("D");
+    expect(store.get(chordTypeAtom)).toBe("Minor Triad");
+  });
+
+  it("writes fallback chord values when progression active step is unavailable", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, [
+        { id: "bad", degree: "not-a-degree", duration: "1-bar", qualityOverride: null },
+      ]],
+      [chordOverlayModeAtom, "manual"],
+      [chordRootOverrideAtom, "D"],
+      [chordQualityOverrideAtom, "Minor Triad"],
+    ]);
+
+    store.set(chordTypeAtom, "Major Triad");
+    store.set(chordRootAtom, "F");
+
+    expect(store.get(chordTypeAtom)).toBe("Major Triad");
+    expect(store.get(chordRootAtom)).toBe("F");
+    expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBeNull();
+  });
+
+  it("setChordDegreeAtom updates fallback degree when progression active step is unavailable", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, [
+        { id: "bad", degree: "not-a-degree", duration: "1-bar", qualityOverride: null },
+      ]],
+      [chordOverlayModeAtom, "manual"],
+      [chordRootOverrideAtom, "D"],
+      [chordQualityOverrideAtom, "Minor Triad"],
+    ]);
+
+    store.set(setChordDegreeAtom, "ii");
+
+    expect(store.get(chordDegreeAtom)).toBe("ii");
+    expect(store.get(progressionStepsAtom)[0]?.degree).toBe("not-a-degree");
   });
 });
 
@@ -517,3 +741,55 @@ describe("allChordMembersAtom — scaleInterval for out-of-scale notes", () => {
   });
 });
 
+describe("chordOverlayAtoms - progression source priority", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("progression mode takes over chordRootAtom and chordTypeAtom", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, [
+        { id: "one", degree: "V", duration: "1-bar", qualityOverride: "Dominant 7th" },
+      ]],
+    ]);
+
+    expect(store.get(chordRootAtom)).toBe("G");
+    expect(store.get(chordTypeAtom)).toBe("Dominant 7th");
+  });
+
+  it("writing chordTypeAtom while progression is enabled updates the active step override", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, [
+        { id: "one", degree: "V", duration: "1-bar", qualityOverride: null },
+      ]],
+    ]);
+
+    store.set(chordTypeAtom, "Dominant 7th");
+
+    expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBe("Dominant 7th");
+    expect(store.get(chordOverlayModeAtom)).toBe("degree");
+    expect(store.get(chordTypeAtom)).toBe("Dominant 7th");
+  });
+
+  it("writing chordRootAtom while progression is enabled does not switch to manual mode", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, [
+        { id: "one", degree: "V", duration: "1-bar", qualityOverride: null },
+      ]],
+    ]);
+
+    store.set(chordRootAtom, "D");
+
+    expect(store.get(chordRootAtom)).toBe("G");
+    expect(store.get(chordOverlayModeAtom)).toBe("degree");
+  });
+});

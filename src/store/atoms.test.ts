@@ -28,6 +28,12 @@ import {
   chordQualityOverrideAtom,
   chordRootOverrideAtom,
   chordOverlayHiddenAtom,
+  progressionStepsAtom,
+  progressionEnabledAtom,
+  progressionTempoBpmAtom,
+  progressionPlayingAtom,
+  activeProgressionStepIndexAtom,
+  setProgressionPlayingAtom,
   setRootNoteAtom,
   setScaleNameAtom,
   setFingeringPatternAtom,
@@ -1056,6 +1062,46 @@ describe("atoms", () => {
       store.set(chordDegreeAtom, "iii" as import("@fretflow/core").DegreeId);
       store.set(setFingeringPatternAtom, "3nps");
       expect(store.get(chordDegreeAtom)).toBe("iii");
+    });
+  });
+
+  describe("progression action integration", () => {
+    it("setScaleNameAtom remaps progression degree labels by ordinal and resets the cursor", () => {
+      const store = makeStore();
+      store.set(progressionStepsAtom, [
+        { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
+        { id: "two", degree: "V", duration: "1-bar", qualityOverride: null },
+        { id: "three", degree: "vi", duration: "1-bar", qualityOverride: null },
+      ]);
+      store.set(activeProgressionStepIndexAtom, 2);
+
+      store.set(setScaleNameAtom, "Natural Minor");
+
+      expect(store.get(progressionStepsAtom).map((step) => step.degree)).toEqual(["i", "v", "VI"]);
+      expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
+    });
+
+    it("setFingeringPatternAtom pauses progression playback for chord-disabled patterns", () => {
+      const store = makeStore();
+      store.set(progressionEnabledAtom, true);
+      store.set(progressionStepsAtom, [
+        { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
+      ]);
+      store.set(setProgressionPlayingAtom, true);
+
+      store.set(setFingeringPatternAtom, "one-string");
+
+      expect(store.get(progressionPlayingAtom)).toBe(false);
+    });
+
+    it("resetAtom resets persisted progression settings", () => {
+      const store = makeStore();
+      store.set(progressionEnabledAtom, true);
+      store.set(progressionTempoBpmAtom, 140);
+      store.set(resetAtom);
+
+      expect(store.get(progressionEnabledAtom)).toBe(false);
+      expect(store.get(progressionTempoBpmAtom)).toBe(90);
     });
   });
 });
