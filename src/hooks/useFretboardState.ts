@@ -20,6 +20,8 @@ import {
   fingeringPatternAtom,
   cagedShapesAtom,
   npsPositionAtom,
+  fullChordMatchesAtom,
+  fullChordPositionsAtom,
 } from "../store/atoms";
 import type { CagedShape } from "@fretflow/core";
 
@@ -52,6 +54,8 @@ export function useFretboardState() {
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
   const cagedShapes = useAtomValue(cagedShapesAtom);
   const npsPosition = useAtomValue(npsPositionAtom);
+  const fullChordMatches = useAtomValue(fullChordMatchesAtom);
+  const fullChordPositions = useAtomValue(fullChordPositionsAtom);
 
   let activePattern: ActivePatternType | undefined;
   let activeShape: ActiveShapeType;
@@ -105,5 +109,7 @@ export function useFretboardState() {
     activePattern,
     activeShape,
     shapeScope,
+    fullChordMatches,
+    fullChordPositions,
   };
 }

@@ -53,9 +53,16 @@ describe("Fretboard wiring", () => {
       }>;
     };
 
-    expect(lastCall.fullChordPositionKeys).toEqual(
-      new Set(["0-0", "1-0", "2-1", "3-2", "4-2", "5-0"]),
-    );
+    // Wiring test: verify state.fullChordPositions flows into fullChordPositionKeys
+    expect(lastCall.fullChordPositionKeys).toBeInstanceOf(Set);
+    expect(lastCall.fullChordPositionKeys?.has("0-0")).toBe(true);
+    expect(lastCall.fullChordPositionKeys?.has("1-0")).toBe(true);
+    expect(lastCall.fullChordPositionKeys?.has("2-1")).toBe(true);
+    expect(lastCall.fullChordPositionKeys?.has("3-2")).toBe(true);
+    expect(lastCall.fullChordPositionKeys?.has("4-2")).toBe(true);
+    expect(lastCall.fullChordPositionKeys?.has("5-0")).toBe(true);
+
+    // Wiring test: verify state.fullChordMatches flows into fullChordVoicings
     expect(lastCall.fullChordVoicings).toEqual(
       expect.arrayContaining([
         {

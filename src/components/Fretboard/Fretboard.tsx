@@ -296,6 +296,11 @@ export function Fretboard(props: FretboardProps) {
           activeShape={activeShape}
           shapeScope={shapeScope}
           noteSemantics={noteSemantics}
+          fullChordPositionKeys={new Set(state.fullChordPositions)}
+          fullChordVoicings={state.fullChordMatches.map((match) => ({
+            voicingKey: match.positionKeys.map((key) => key.replace("-", ",")).join("|"),
+            notes: match.notes,
+          }))}
           id={id}
           onNoteClick={handleFretClick}
         />
