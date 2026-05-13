@@ -13,7 +13,9 @@ import {
   progressionTempoBpmAtom,
   rootNoteAtom,
   scaleNameAtom,
+  setProgressionPlayingAtom,
 } from "../../store/atoms";
+import { TopBandSummary } from "../TopBandSummary/TopBandSummary";
 import { ProgressionPlaybackBar } from "./ProgressionPlaybackBar";
 
 const BASE_SEEDS = [
@@ -54,7 +56,7 @@ describe("ProgressionPlaybackBar", () => {
 
     it("advances automatically while playing", () => {
       const store = makeAtomStore([...BASE_SEEDS]);
-      renderWithStore(<ProgressionPlaybackBar />, store);
+      renderWithStore(<><TopBandSummary /><ProgressionPlaybackBar /></>, store);
 
       fireEvent.click(screen.getByRole("button", { name: "Play progression" }));
       expect(store.get(progressionPlayingAtom)).toBe(true);
@@ -66,13 +68,30 @@ describe("ProgressionPlaybackBar", () => {
       expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
     });
 
+    it("advances while the transport bar is unmounted", () => {
+      const store = makeAtomStore([
+        ...BASE_SEEDS,
+        [progressionTempoBpmAtom, 240],
+      ]);
+      store.set(setProgressionPlayingAtom, true);
+
+      renderWithStore(<TopBandSummary />, store);
+      expect(screen.queryByRole("group", { name: "Progression playback" })).not.toBeInTheDocument();
+
+      act(() => {
+        vi.advanceTimersByTime(250);
+      });
+
+      expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
+    });
+
     it("stops at the final step when loop is off", () => {
       const store = makeAtomStore([
         ...BASE_SEEDS,
         [progressionLoopEnabledAtom, false],
         [activeProgressionStepIndexAtom, 1],
       ]);
-      renderWithStore(<ProgressionPlaybackBar />, store);
+      renderWithStore(<><TopBandSummary /><ProgressionPlaybackBar /></>, store);
 
       fireEvent.click(screen.getByRole("button", { name: "Play progression" }));
       act(() => {

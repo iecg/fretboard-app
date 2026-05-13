@@ -4,6 +4,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { showChordPracticeBarAtom } from "../../store/atoms";
 import { useScaleState } from "../../hooks/useScaleState";
 import { usePracticeBarState } from "../../hooks/usePracticeBarState";
+import { useProgressionPlaybackLoop } from "../../hooks/useProgressionPlaybackLoop";
 import { useProgressionState } from "../../hooks/useProgressionState";
 import {
   findNextResolvableStepIndex,
@@ -15,6 +16,8 @@ import shared from "../shared/shared.module.css";
 import styles from "./TopBandSummary.module.css";
 
 export function TopBandSummary() {
+  useProgressionPlaybackLoop();
+
   const {
     scaleLabel,
     hiddenNotes,
@@ -54,6 +57,10 @@ export function TopBandSummary() {
   const progressionPositionLabel = resolvedProgressionSteps.length === 0
     ? "No steps"
     : `Step ${activeProgressionStepIndex + 1} of ${resolvedProgressionSteps.length}`;
+  const activeStepUnavailableReason = activeResolvedProgressionStep?.unavailable
+    ? activeResolvedProgressionStep.unavailableReason
+    : null;
+  const progressionStatusNote = progressionPlaybackBlockedReason ?? activeStepUnavailableReason;
 
   return (
     <MotionConfig reducedMotion="user">
@@ -109,8 +116,8 @@ export function TopBandSummary() {
                   {nextProgressionStep ? `${nextProgressionStep.degree} · ${nextProgressionStep.resolvedChordLabel ?? "Unavailable"}` : "End"}
                 </span>
               </div>
-              {progressionPlaybackBlockedReason ? (
-                <span className={styles["progression-status-note"]}>{progressionPlaybackBlockedReason}</span>
+              {progressionStatusNote ? (
+                <span className={styles["progression-status-note"]}>{progressionStatusNote}</span>
               ) : null}
             </div>
           </motion.div>

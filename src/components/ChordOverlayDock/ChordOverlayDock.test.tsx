@@ -119,6 +119,24 @@ describe("TopBandSummary chord integration", () => {
     expect(screen.queryByText("Step 1 of 0")).not.toBeInTheDocument();
   });
 
+  it("shows the active step unavailable reason when another progression step can resolve", () => {
+    renderWithAtoms(<TopBandSummary />, [
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [activeProgressionStepIndexAtom, 0],
+      [progressionStepsAtom, [
+        { id: "bad", degree: "not-a-degree", duration: "1-bar", qualityOverride: null },
+        { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
+      ]],
+    ]);
+
+    expect(screen.getByRole("group", { name: "Progression status" })).toBeInTheDocument();
+    expect(screen.getByText(/not-a-degree.*Unavailable/i)).toBeInTheDocument();
+    expect(screen.getByText("Degree unavailable in this scale")).toBeInTheDocument();
+    expect(screen.queryByText("No progression steps resolve in this scale.")).not.toBeInTheDocument();
+  });
+
   it("does not render progression transport controls in the top band", () => {
     renderWithAtoms(<TopBandSummary />, [
       [rootNoteAtom, "C"],

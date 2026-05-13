@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import clsx from "clsx";
 import { Pause, Play, Repeat, SkipBack, SkipForward } from "lucide-react";
 import {
@@ -16,7 +15,6 @@ export function ProgressionPlaybackBar() {
     progressionLoopEnabled,
     setProgressionLoopEnabled,
     progressionPlaying,
-    progressionStepDurationMs,
     progressionPlaybackBlockedReason,
     activeProgressionStepIndex,
     activeResolvedProgressionStep,
@@ -26,21 +24,6 @@ export function ProgressionPlaybackBar() {
     advanceProgressionPlayback,
     previousProgressionStep,
   } = useProgressionState();
-
-  useEffect(() => {
-    if (!progressionEnabled || !progressionPlaying || progressionPlaybackBlockedReason) return;
-    const timeoutId = window.setTimeout(() => {
-      advanceProgressionPlayback();
-    }, progressionStepDurationMs);
-    return () => window.clearTimeout(timeoutId);
-  }, [
-    advanceProgressionPlayback,
-    progressionEnabled,
-    progressionPlaybackBlockedReason,
-    progressionPlaying,
-    progressionStepDurationMs,
-    activeProgressionStepIndex,
-  ]);
 
   if (!progressionEnabled) return null;
 
