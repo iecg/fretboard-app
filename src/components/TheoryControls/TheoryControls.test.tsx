@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { createStore, Provider } from "jotai";
 import { TheoryControls, TheorySection } from "../TheoryControls/TheoryControls";
 import {
@@ -136,7 +136,7 @@ describe("TheoryControls/TheoryControls", () => {
     expect(screen.getByRole("combobox", { name: "Scale Family" })).toBeInTheDocument();
   });
 
-  it("keeps Scale open when disabled Chords are enabled again", async () => {
+  it("allows Chords to reopen when disabled Chords are enabled again", () => {
     const store = createStore();
     store.set(chordTypeAtom, "Major Triad");
 
@@ -150,23 +150,12 @@ describe("TheoryControls/TheoryControls", () => {
 
     expect(screen.getByRole("combobox", { name: "Scale Family" })).toBeInTheDocument();
 
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: /Scale.*C Major/i })).toHaveAttribute(
-        "aria-expanded",
-        "true",
-      );
-    });
-
     act(() => {
       store.set(fingeringPatternAtom, "caged");
     });
 
-    expect(screen.getByRole("combobox", { name: "Scale Family" })).toBeInTheDocument();
-    expect(screen.queryByRole("group", { name: "Chord overlay mode" })).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: /Chords/i }));
-
     expect(screen.getByRole("group", { name: "Chord overlay mode" })).toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: "Scale Family" })).not.toBeInTheDocument();
   });
 
   it("shows the inline key explorer only after disclosure is opened", () => {

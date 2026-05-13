@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { useAtomValue } from "jotai";
 import { AnimatePresence, motion } from "motion/react";
 import clsx from "clsx";
@@ -204,21 +204,6 @@ export function TheoryControls({ keyExplorer, compact }: TheoryControlsProps) {
   const [openSection, setOpenSection] = useState<TheoryOpenSection>(initialOpenSection);
   const shouldReleaseDisabledChords = openSection === "chords" && isChordsDisabled;
   const effectiveOpenSection = shouldReleaseDisabledChords ? "scale" : openSection;
-
-  useEffect(() => {
-    if (!shouldReleaseDisabledChords) return;
-
-    let cancelled = false;
-    queueMicrotask(() => {
-      if (!cancelled) {
-        setOpenSection("scale");
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [shouldReleaseDisabledChords]);
 
   const setSectionOpen = (section: Exclude<TheoryOpenSection, null>) => (open: boolean) => {
     setOpenSection(open ? section : null);
