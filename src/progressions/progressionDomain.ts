@@ -29,7 +29,7 @@ const LEGACY_DURATION_MAP: Record<string, ProgressionStepDuration> = {
   "2-bars": { value: 2, unit: "bar" },
 };
 
-export function isProgressionDurationUnit(value: unknown): value is ProgressionStepDurationUnit {
+function isProgressionDurationUnit(value: unknown): value is ProgressionStepDurationUnit {
   return value === "beat" || value === "bar";
 }
 
@@ -54,8 +54,7 @@ export function migrateLegacyDuration(value: unknown): ProgressionStepDuration {
 }
 
 export function formatProgressionDurationLabel(duration: ProgressionStepDuration): string {
-  const noun = duration.unit === "beat" ? "beat" : "bar";
-  return `${duration.value} ${noun}${duration.value === 1 ? "" : "s"}`;
+  return `${duration.value} ${duration.unit}${duration.value === 1 ? "" : "s"}`;
 }
 
 export interface ProgressionStep {

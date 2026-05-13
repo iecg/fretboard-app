@@ -4,6 +4,7 @@ import {
   createProgressionStep,
   findFirstResolvableStepIndex,
   findNextResolvableStepIndex,
+  formatProgressionDurationLabel,
   getProgressionDurationMs,
   isProgressionDuration,
   migrateLegacyDuration,
@@ -140,5 +141,18 @@ describe("ProgressionStepDuration (object shape)", () => {
     expect(migrateLegacyDuration("garbage")).toEqual({ value: 1, unit: "bar" });
     expect(migrateLegacyDuration(null)).toEqual({ value: 1, unit: "bar" });
     expect(migrateLegacyDuration({ value: 0, unit: "bar" })).toEqual({ value: 1, unit: "bar" });
+  });
+});
+
+describe("formatProgressionDurationLabel", () => {
+  it("singularises for value=1", () => {
+    expect(formatProgressionDurationLabel({ value: 1, unit: "bar" })).toBe("1 bar");
+    expect(formatProgressionDurationLabel({ value: 1, unit: "beat" })).toBe("1 beat");
+  });
+
+  it("pluralises for value>1", () => {
+    expect(formatProgressionDurationLabel({ value: 2, unit: "bar" })).toBe("2 bars");
+    expect(formatProgressionDurationLabel({ value: 3, unit: "beat" })).toBe("3 beats");
+    expect(formatProgressionDurationLabel({ value: 12, unit: "bar" })).toBe("12 bars");
   });
 });
