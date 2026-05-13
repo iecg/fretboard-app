@@ -170,6 +170,26 @@ describe("beatsPerBarAtom", () => {
   });
 });
 
+describe("updateProgressionStepDurationAtom", () => {
+  it("writes the new object duration shape", () => {
+    const store = createStore();
+    const id = store.get(progressionStepsAtom)[0].id;
+    store.set(updateProgressionStepDurationAtom, { id, duration: { value: 3, unit: "beat" } });
+    const updated = store.get(progressionStepsAtom).find((s) => s.id === id);
+    expect(updated?.duration).toEqual({ value: 3, unit: "beat" });
+  });
+
+  it("rejects out-of-range or non-integer values", () => {
+    const store = createStore();
+    const id = store.get(progressionStepsAtom)[0].id;
+    const before = store.get(progressionStepsAtom).find((s) => s.id === id)?.duration;
+    store.set(updateProgressionStepDurationAtom, { id, duration: { value: 0, unit: "bar" } });
+    expect(store.get(progressionStepsAtom).find((s) => s.id === id)?.duration).toEqual(before);
+    store.set(updateProgressionStepDurationAtom, { id, duration: { value: 17, unit: "bar" } });
+    expect(store.get(progressionStepsAtom).find((s) => s.id === id)?.duration).toEqual(before);
+  });
+});
+
 describe("progression storage hydration", () => {
   beforeEach(() => {
     localStorage.clear();
