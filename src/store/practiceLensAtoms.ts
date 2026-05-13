@@ -45,6 +45,7 @@ import {
   chordOverlayModeAtom,
   chordOverlayHiddenAtom,
   chordHiddenNotesAtom,
+  fullChordsEnabledAtom,
 } from "./chordOverlayAtoms";
 import {
   hasOutsideChordMembersAtom,
@@ -283,6 +284,7 @@ export const noteSemanticMapAtom = atom((get) => {
           && diatonicChordRoot !== undefined
           && diatonicChordRoot === chordRoot
           && diatonicChordQuality === chordType,
+        isFullChordMode: get(fullChordsEnabledAtom),
       });
     }
   }

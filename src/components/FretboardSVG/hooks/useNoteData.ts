@@ -63,6 +63,7 @@ export interface UseNoteDataProps {
   practiceLens?: PracticeLens;
   tuning: string[];
   noteSemantics?: Map<string, NoteSemantics>;
+  fullChordPositionKeys?: Set<string>;
 }
 
 export function useNoteData({
@@ -92,6 +93,7 @@ export function useNoteData({
   practiceLens,
   tuning,
   noteSemantics,
+  fullChordPositionKeys,
 }: UseNoteDataProps): NoteData[] {
   return useMemo(() => {
     const notes: NoteData[] = [];
@@ -117,6 +119,7 @@ export function useNoteData({
 
     // Pre-calculate chord tones set
     const chordToneSet = new Set(chordTones);
+    const hasFullChordPositionFilter = !!fullChordPositionKeys && fullChordPositionKeys.size > 0;
 
     // Pre-calculate color notes set
     const colorNoteSet = new Set(colorNotes);
@@ -131,18 +134,22 @@ export function useNoteData({
         if (fretIndex >= maxFret) continue;
 
         const noteName = layoutRow[fretIndex];
+        const positionKey = `${stringIndex}-${fretIndex}`;
+        const isMatchedFullChordPosition =
+          !hasFullChordPositionFilter || fullChordPositionKeys.has(positionKey);
 
-        const isNoteHidden = normalizedHidden.has(noteName) || normalizedHidden.has(`${stringIndex}-${fretIndex}`);
+        const isNoteHidden = normalizedHidden.has(noteName) || normalizedHidden.has(positionKey);
 
         const isHighlighted =
           !isNoteHidden &&
           (highlightSet.has(noteName) ||
-            highlightSet.has(`${stringIndex}-${fretIndex}`));
+            highlightSet.has(positionKey));
         
         const isChordTone =
           !isNoteHidden &&
           hasChordOverlay &&
-          chordToneSet.has(noteName);
+          chordToneSet.has(noteName) &&
+          isMatchedFullChordPosition;
         
         const isScaleRoot =
           !isNoteHidden &&
@@ -153,6 +160,7 @@ export function useNoteData({
         const isChordRootNote =
           !isNoteHidden &&
           !!chordRoot &&
+          isMatchedFullChordPosition &&
           (noteName === chordRoot ||
             ENHARMONICS[noteName] === chordRoot ||
             ENHARMONICS[chordRoot] === noteName);
@@ -233,8 +241,16 @@ export function useNoteData({
         // Use the composable semantic model when available; fall back to booleans.
         // Keys are sharp-normalized (per project convention) so no enharmonic lookup needed.
         const semantics = noteSemantics?.get(noteName);
-
-        const effectiveSemantics = semantics;
+        const effectiveSemantics = semantics && !isMatchedFullChordPosition
+          ? {
+              ...semantics,
+              isChordRoot: false,
+              isChordTone: false,
+              isGuideTone: false,
+              isTension: false,
+              isDiatonicChord: false,
+            }
+          : semantics;
 
         const noteClass = isNoteHidden
           ? "note-inactive"
@@ -339,5 +355,5 @@ export function useNoteData({
       }
     }
     return notes;
-  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, degreeColorsEnabled, wrappedNotes, practiceLens, tuning, noteSemantics, activePattern, activeShape, shapeScope]);
+  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, degreeColorsEnabled, wrappedNotes, practiceLens, tuning, noteSemantics, activePattern, activeShape, shapeScope, fullChordPositionKeys]);
 }

@@ -27,7 +27,7 @@ import { FretboardShapeLayer } from "./FretboardShapeLayer";
 import { FretboardNoteLayer } from "./FretboardNoteLayer";
 import { FretboardHitTargetLayer } from "./FretboardHitTargetLayer";
 import { FretNumbersRow } from "./FretNumbersRow";
-import type { ShapePolygon } from "@fretflow/core";
+import type { FullChordMatchNote, ShapePolygon } from "@fretflow/core";
 import type { ActiveShapeType } from "../../hooks/useFretboardState";
 import {
   INLAY_FRETS,
@@ -111,6 +111,8 @@ interface FretboardSVGProps {
    * semantic roles simultaneously — e.g. chord root AND tension note.
    */
   noteSemantics?: Map<string, NoteSemantics>;
+  fullChordPositionKeys?: Set<string>;
+  fullChordVoicings?: Array<{ voicingKey: string; notes: FullChordMatchNote[] }>;
   /** Optional DOM id applied to the SVG wrapper for stable external references. */
   id?: string;
   /** Callback fired when the user clicks a note bubble; receives string index, fret index, and note name. */
@@ -148,6 +150,8 @@ export const FretboardSVG = memo(function FretboardSVG({
   activeShape,
   shapeScope,
   noteSemantics,
+  fullChordPositionKeys,
+  fullChordVoicings,
   id,
   onNoteClick,
 }: FretboardSVGProps) {
@@ -364,6 +368,7 @@ export const FretboardSVG = memo(function FretboardSVG({
     practiceLens,
     tuning,
     noteSemantics,
+    fullChordPositionKeys,
   });
 
   // Scale semitone offsets (0-11) drive per-pair color via scale-degree position
@@ -405,6 +410,7 @@ export const FretboardSVG = memo(function FretboardSVG({
     stringRowPx,
     chordRoot: chordRoot ?? "",
     yBounds: connectorYBounds,
+    explicitVoicings: fullChordVoicings,
   });
 
   return (
