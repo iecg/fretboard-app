@@ -87,6 +87,24 @@ describe("TopBandSummary chord integration", () => {
     expect(screen.getByText("1 bar")).toBeInTheDocument();
   });
 
+  it("wraps next progression status to the current step when it is the only playable step", () => {
+    renderWithAtoms(<TopBandSummary />, [
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [activeProgressionStepIndexAtom, 0],
+      [progressionStepsAtom, [
+        { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
+        { id: "bad", degree: "not-a-degree", duration: "1-bar", qualityOverride: null },
+      ]],
+    ]);
+
+    expect(screen.getByRole("group", { name: "Progression status" })).toBeInTheDocument();
+    expect(screen.getByText("Next")).toBeInTheDocument();
+    expect(screen.getAllByText(/I.*C Major Triad/i)).toHaveLength(2);
+    expect(screen.queryByText("End")).not.toBeInTheDocument();
+  });
+
   it("does not render progression transport controls in the top band", () => {
     renderWithAtoms(<TopBandSummary />, [
       [rootNoteAtom, "C"],

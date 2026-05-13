@@ -5,7 +5,10 @@ import { showChordPracticeBarAtom } from "../../store/atoms";
 import { useScaleState } from "../../hooks/useScaleState";
 import { usePracticeBarState } from "../../hooks/usePracticeBarState";
 import { useProgressionState } from "../../hooks/useProgressionState";
-import { PROGRESSION_DURATION_LABELS } from "../../progressions/progressionDomain";
+import {
+  findNextResolvableStepIndex,
+  PROGRESSION_DURATION_LABELS,
+} from "../../progressions/progressionDomain";
 import { DegreeChipStrip } from "../DegreeChipStrip/DegreeChipStrip";
 import { ChordPracticeBar } from "../ChordPracticeBar/ChordPracticeBar";
 import shared from "../shared/shared.module.css";
@@ -39,11 +42,15 @@ export function TopBandSummary() {
   } = useProgressionState();
 
   const colorNoteSet = colorNotes.length > 0 ? new Set<string>(colorNotes) : undefined;
-  const nextProgressionStep = resolvedProgressionSteps
-    .slice(activeProgressionStepIndex + 1)
-    .find((step) => !step.unavailable)
-    ?? resolvedProgressionSteps.slice(0, activeProgressionStepIndex).find((step) => !step.unavailable)
-    ?? null;
+  const nextProgressionStepIndex = findNextResolvableStepIndex(
+    resolvedProgressionSteps,
+    activeProgressionStepIndex,
+    1,
+    true,
+  );
+  const nextProgressionStep = nextProgressionStepIndex === null
+    ? null
+    : resolvedProgressionSteps[nextProgressionStepIndex] ?? null;
 
   return (
     <MotionConfig reducedMotion="user">
