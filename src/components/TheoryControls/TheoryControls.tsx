@@ -12,6 +12,8 @@ import {
   ANIMATION_EASE,
 } from "@fretflow/core";
 import { getDegreesForScale } from "@fretflow/core";
+import { ProgressionControls } from "../ProgressionControls/ProgressionControls";
+import { useProgressionState } from "../../hooks/useProgressionState";
 import { useChordState } from "../../hooks/useChordState";
 import { useScaleState } from "../../hooks/useScaleState";
 import { scaleLabelAtom, fingeringPatternAtom } from "../../store/atoms";
@@ -165,9 +167,24 @@ function useChordSectionSummary() {
   }`;
 }
 
-export function TheoryControls({ keyExplorer, compact = false }: TheoryControlsProps) {
-  const scaleSummary = useAtomValue(scaleLabelAtom);
+function useProgressionSectionSummary() {
+  const {
+    progressionEnabled,
+    progressionSteps,
+    progressionPlaybackBlockedReason,
+  } = useProgressionState();
+
+  if (!progressionEnabled) return "Off";
+  if (progressionSteps.length === 0) return "Empty";
+  if (progressionPlaybackBlockedReason?.startsWith("Chord overlay disabled")) return "Disabled";
+  return `${progressionSteps.length} ${progressionSteps.length === 1 ? "step" : "steps"}`;
+}
+
+export function TheoryControls({ keyExplorer, compact }: TheoryControlsProps) {
+  const scaleLabel = useAtomValue(scaleLabelAtom);
   const chordSummary = useChordSectionSummary();
+  const progressionSummary = useProgressionSectionSummary();
+
   const { chordType } = useChordState();
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
   const isChordsDisabled =
@@ -175,7 +192,7 @@ export function TheoryControls({ keyExplorer, compact = false }: TheoryControlsP
 
   return (
     <div className={styles["theory-controls"]} data-testid="theory-controls">
-      <TheorySection title="Scale" summary={scaleSummary} defaultOpen compact={compact}>
+      <TheorySection title="Scale" summary={scaleLabel} defaultOpen compact={compact}>
         <ScaleSelector compact={compact} />
         {keyExplorer ? <KeyExplorer>{keyExplorer}</KeyExplorer> : null}
       </TheorySection>
@@ -188,6 +205,15 @@ export function TheoryControls({ keyExplorer, compact = false }: TheoryControlsP
         disabled={isChordsDisabled}
       >
         <ChordOverlayControls compact={compact} />
+      </TheorySection>
+      <hr className={styles["theory-section-divider"]} />
+      <TheorySection
+        title="Progression"
+        summary={progressionSummary}
+        defaultOpen={false}
+        compact={compact}
+      >
+        <ProgressionControls compact={compact} />
       </TheorySection>
     </div>
   );

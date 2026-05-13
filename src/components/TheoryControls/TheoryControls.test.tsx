@@ -13,6 +13,8 @@ import {
   chordTypeAtom,
   practiceLensAtom,
   fingeringPatternAtom,
+  progressionEnabledAtom,
+  progressionStepsAtom,
 } from "../../store/atoms";
 import { axe } from "../../test-utils/a11y";
 
@@ -375,5 +377,29 @@ describe("TheoryControls UAT-20 — chord section disabled on 1/2-string", () =>
     );
     const chordsBtn = screen.getByRole("button", { name: /Chords.*Disabled/i });
     expect(chordsBtn).toBeInTheDocument();
+  });
+
+  it("renders a Progression section after Chords", () => {
+    renderWithStore(<TheoryControls />);
+
+    expect(screen.getByRole("button", { name: /Progression.*Off/i })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Progression/i }));
+
+    expect(screen.getByText("Progression Mode")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "I-V-vi-IV" })).toBeInTheDocument();
+  });
+
+  it("summarizes enabled progression with step count", () => {
+    const store = createStore();
+    store.set(progressionEnabledAtom, true);
+    store.set(progressionStepsAtom, [
+      { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
+      { id: "two", degree: "V", duration: "1-bar", qualityOverride: null },
+    ]);
+
+    renderWithStore(<TheoryControls />, store);
+
+    expect(screen.getByRole("button", { name: /Progression.*2 steps/i })).toBeInTheDocument();
   });
 });
