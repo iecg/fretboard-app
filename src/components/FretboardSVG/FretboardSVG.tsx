@@ -27,7 +27,7 @@ import { FretboardShapeLayer } from "./FretboardShapeLayer";
 import { FretboardNoteLayer } from "./FretboardNoteLayer";
 import { FretboardHitTargetLayer } from "./FretboardHitTargetLayer";
 import { FretNumbersRow } from "./FretNumbersRow";
-import type { FullChordMatchNote, ShapePolygon } from "@fretflow/core";
+import type { CagedShape, FullChordMatchNote, ShapePolygon } from "@fretflow/core";
 import type { ActiveShapeType } from "../../hooks/useFretboardState";
 import {
   INLAY_FRETS,
@@ -112,7 +112,11 @@ interface FretboardSVGProps {
    */
   noteSemantics?: Map<string, NoteSemantics>;
   fullChordPositionKeys?: Set<string>;
-  fullChordVoicings?: Array<{ voicingKey: string; notes: FullChordMatchNote[] }>;
+  fullChordVoicings?: Array<{
+    voicingKey: string;
+    notes: FullChordMatchNote[];
+    shape?: CagedShape;
+  }>;
   /** Optional DOM id applied to the SVG wrapper for stable external references. */
   id?: string;
   /** Callback fired when the user clicks a note bubble; receives string index, fret index, and note name. */
@@ -274,6 +278,19 @@ export const FretboardSVG = memo(function FretboardSVG({
   const displayRoot = rootNote
     ? getNoteDisplay(rootNote, rootNote, useFlats)
     : "";
+  const fullChordShapeByPosition = useMemo(() => {
+    const shapeByPosition = new Map<string, CagedShape>();
+    for (const voicing of fullChordVoicings ?? []) {
+      if (!voicing.shape) continue;
+      for (const note of voicing.notes) {
+        const positionKey = `${note.stringIndex}-${note.fretIndex}`;
+        if (!shapeByPosition.has(positionKey)) {
+          shapeByPosition.set(positionKey, voicing.shape);
+        }
+      }
+    }
+    return shapeByPosition;
+  }, [fullChordVoicings]);
   const ariaLabel = [
     "Guitar fretboard",
     displayRoot ? `— ${displayRoot}` : "",
@@ -369,6 +386,7 @@ export const FretboardSVG = memo(function FretboardSVG({
     tuning,
     noteSemantics,
     fullChordPositionKeys,
+    fullChordShapeByPosition,
   });
 
   // Scale semitone offsets (0-11) drive per-pair color via scale-degree position
@@ -420,6 +438,7 @@ export const FretboardSVG = memo(function FretboardSVG({
       className={styles["fretboard-board"]}
       data-practice-lens={hasChordOverlay ? practiceLens : undefined}
       data-degree-colors={degreeColorsEnabled ? "true" : undefined}
+      data-full-chord-mode={fullChordVoicings?.length ? "true" : undefined}
       data-testid="fretboard-svg"
     >
       <div
@@ -521,6 +540,7 @@ export const FretboardSVG = memo(function FretboardSVG({
                       key={`halo-${voicing.voicingKey}`}
                       d={voicing.paths.outline}
                       data-layer="halo"
+                      data-caged-shape={voicing.shape}
                       data-palette-index={voicing.paletteIndex + 1}
                     />
                   ))}
@@ -531,6 +551,7 @@ export const FretboardSVG = memo(function FretboardSVG({
                       className={styles["chord-connector-path"]}
                       d={voicing.paths.fill}
                       data-layer="fill"
+                      data-caged-shape={voicing.shape}
                       data-palette-index={voicing.paletteIndex + 1}
                     />
                   ))}
@@ -541,6 +562,7 @@ export const FretboardSVG = memo(function FretboardSVG({
                       className={styles["chord-connector-path"]}
                       d={voicing.paths.outline}
                       data-layer="outline"
+                      data-caged-shape={voicing.shape}
                       data-palette-index={voicing.paletteIndex + 1}
                     />
                   ))}

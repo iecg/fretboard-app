@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import type { NoteData } from "./useNoteData";
 import { offsetOpenPolylinePath } from "../utils/pathGeometry";
-import { NOTES } from "@fretflow/core";
+import { NOTES, type CagedShape } from "@fretflow/core";
 import { chordRootVisualRadiusPx } from "../utils/noteSizing";
 
 /**
@@ -126,6 +126,7 @@ export interface ChordConnectorVoicing {
    * yields same index. Used to index into --chord-connector-color-N CSS tokens.
    */
   paletteIndex: number;
+  shape?: CagedShape;
   /**
    * Stable identity key derived from the canonical sorted "(stringIndex,fretIndex)"
    * pairs joined by "|" (e.g. "0,7|1,8|2,9"). Same vertex set → same key across
@@ -136,6 +137,7 @@ export interface ChordConnectorVoicing {
 
 export interface ExplicitChordConnectorVoicing {
   voicingKey: string;
+  shape?: CagedShape;
   notes: Array<{
     stringIndex: number;
     fretIndex: number;
@@ -381,6 +383,7 @@ function assignConflictOffsets(
     rawVertices: ChordConnectorVertex[];
     sourceCombo: NoteData[];
     canonicalKey: string;
+    shape?: CagedShape;
   }>,
   stringRowPx: number,
   yBounds: ConnectorYBounds | undefined,
@@ -805,6 +808,7 @@ function finalizeChordConnectorPolylines(
     paletteIndex: number;
     canonicalKey: string;
     voicingKey: string;
+    shape?: CagedShape;
   }>,
   stringRowPx: number,
   yBounds?: ConnectorYBounds,
@@ -875,7 +879,13 @@ function finalizeChordConnectorPolylines(
   return pendingVoicings.map((pv, idx) => {
     const pathStr = offsetOpenPolylinePath(pv.rawVertices, radii[idx]!);
     const paths = { fill: pathStr, outline: pathStr };
-    return { paths, vertices: pv.rawVertices, paletteIndex: pv.paletteIndex, voicingKey: pv.voicingKey };
+    return {
+      paths,
+      vertices: pv.rawVertices,
+      paletteIndex: pv.paletteIndex,
+      shape: pv.shape,
+      voicingKey: pv.voicingKey,
+    };
   });
 }
 
@@ -905,6 +915,7 @@ function buildExplicitChordConnectorPolylines(
       sourceCombo,
       paletteIndex: inversionPaletteIndex(sourceCombo, chordRoot, chordToneNames),
       canonicalKey,
+      shape: voicing.shape,
       voicingKey: voicing.voicingKey,
     };
   });

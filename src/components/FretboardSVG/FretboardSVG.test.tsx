@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, fireEvent } from "@testing-library/react";
+import "../../styles/index.css";
+import "../../styles/themes.css";
 import { FretboardSVG } from "../FretboardSVG/FretboardSVG";
 import { getFretboardNotes } from "@fretflow/core";
 import type { CagedShape, ShapePolygon } from "@fretflow/core";
@@ -270,8 +272,13 @@ describe("FretboardSVG/FretboardSVG", () => {
       "4-10",
       "5-8",
     ]);
-    const fullChordVoicings = [
+    const fullChordVoicings: Array<{
+      shape: CagedShape;
+      voicingKey: string;
+      notes: Array<{ stringIndex: number; fretIndex: number; noteName: string }>;
+    }> = [
       {
+        shape: "E",
         voicingKey: "e-shape-c-major",
         notes: [
           { stringIndex: 0, fretIndex: 8, noteName: "C" },
@@ -315,6 +322,33 @@ describe("FretboardSVG/FretboardSVG", () => {
     expect(container.querySelectorAll('path[data-layer="halo"]').length).toBe(1);
     expect(container.querySelectorAll('path[data-layer="fill"]').length).toBe(1);
     expect(container.querySelectorAll('path[data-layer="outline"]').length).toBe(1);
+    expect(
+      container.querySelector('.chord-root[data-full-chord-shape="E"]'),
+    ).not.toBeNull();
+    expect(
+      container.querySelector('path[data-layer="fill"][data-caged-shape="E"]'),
+    ).not.toBeNull();
+    expect(
+      container.querySelector('.chord-root[data-full-chord-shape="E"] path:last-of-type'),
+    ).toHaveStyle({ fill: "var(--caged-e)" });
+    expect(
+      container.querySelector('.chord-root[data-full-chord-shape="E"] text'),
+    ).toHaveStyle({ fill: "var(--caged-e-fg)" });
+  });
+
+  it("keeps the D-shape light-theme background in the same gray family as dark mode", () => {
+    const themedScope = document.createElement("div");
+    themedScope.setAttribute("data-theme", "modern-light");
+    document.body.appendChild(themedScope);
+
+    expect(
+      getComputedStyle(themedScope)
+        .getPropertyValue("--caged-d-bg")
+        .replace(/\s+/g, "")
+        .trim(),
+    ).toBe("rgba(153,153,153,0.35)");
+
+    themedScope.remove();
   });
 
   describe("role-based shapes", () => {

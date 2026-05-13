@@ -34,6 +34,7 @@ export interface NoteData {
   isGuideTone: boolean;
   scaleDegree?: string;
   degreeColor?: string;
+  fullChordShape?: CagedShape;
 }
 
 export interface UseNoteDataProps {
@@ -64,6 +65,7 @@ export interface UseNoteDataProps {
   tuning: string[];
   noteSemantics?: Map<string, NoteSemantics>;
   fullChordPositionKeys?: Set<string>;
+  fullChordShapeByPosition?: Map<string, CagedShape>;
 }
 
 export function useNoteData({
@@ -94,6 +96,7 @@ export function useNoteData({
   tuning,
   noteSemantics,
   fullChordPositionKeys,
+  fullChordShapeByPosition,
 }: UseNoteDataProps): NoteData[] {
   return useMemo(() => {
     const notes: NoteData[] = [];
@@ -137,6 +140,7 @@ export function useNoteData({
         const positionKey = `${stringIndex}-${fretIndex}`;
         const isMatchedFullChordPosition =
           !hasFullChordPositionFilter || fullChordPositionKeys.has(positionKey);
+        const fullChordShape = fullChordShapeByPosition?.get(positionKey);
 
         const isNoteHidden = normalizedHidden.has(noteName) || normalizedHidden.has(positionKey);
 
@@ -350,10 +354,11 @@ export function useNoteData({
           isGuideTone: effectiveSemantics?.isGuideTone ?? false,
           scaleDegree,
           degreeColor,
+          fullChordShape,
         };
         notes.push(objectToBePushed);
       }
     }
     return notes;
-  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, degreeColorsEnabled, wrappedNotes, practiceLens, tuning, noteSemantics, activePattern, activeShape, shapeScope, fullChordPositionKeys]);
+  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, degreeColorsEnabled, wrappedNotes, practiceLens, tuning, noteSemantics, activePattern, activeShape, shapeScope, fullChordPositionKeys, fullChordShapeByPosition]);
 }

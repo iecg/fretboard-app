@@ -189,7 +189,7 @@
 
   /* CAGED shapes — boost visibility for light mode (Okabe-Ito RGB, 0.35 alpha) */
   --caged-e-bg: rgba(184, 87, 0, 0.35);    /* E #B85700 + 0.35 boost */
-  --caged-d-bg: rgba(181, 139, 0, 0.35);   /* D #B58B00 + 0.35 boost */
+  --caged-d-bg: rgba(153, 153, 153, 0.35); /* D stays neutral gray in light mode too */
   --caged-c-bg: rgba(0, 158, 115, 0.35);   /* C #009E73 + 0.35 boost */
   --caged-a-bg: rgba(0, 114, 178, 0.35);   /* A #0072B2 + 0.35 boost */
   --caged-g-bg: rgba(204, 121, 167, 0.35); /* G #CC79A7 + 0.35 boost */

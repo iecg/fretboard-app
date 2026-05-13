@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { renderHook } from "@testing-library/react";
+import type { CagedShape } from "@fretflow/core";
 import {
   buildChordConnectorPolylines,
   MAX_PLAYABLE_FRET_POSITIONS,
@@ -63,8 +64,13 @@ describe("buildChordConnectorPolylines", () => {
 
   describe("useChordConnectorPolylines", () => {
     it("builds exactly one connector from an explicit 6-string E-shape voicing with repeated roots", () => {
-      const explicitVoicings = [
+      const explicitVoicings: Array<{
+        shape: CagedShape;
+        voicingKey: string;
+        notes: Array<{ stringIndex: number; fretIndex: number; noteName: string }>;
+      }> = [
         {
+          shape: "E",
           voicingKey: "e-shape-c-major",
           notes: [
             { stringIndex: 0, fretIndex: 8, noteName: "C" },
@@ -91,6 +97,7 @@ describe("buildChordConnectorPolylines", () => {
 
       expect(result.current).toHaveLength(1);
       expect(result.current[0]?.voicingKey).toBe("e-shape-c-major");
+      expect(result.current[0]?.shape).toBe("E");
       expect(result.current[0]?.vertices).toHaveLength(6);
     });
   });

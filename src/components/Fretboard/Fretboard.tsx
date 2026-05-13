@@ -298,6 +298,7 @@ export function Fretboard(props: FretboardProps) {
           noteSemantics={noteSemantics}
           fullChordPositionKeys={new Set(state.fullChordPositions)}
           fullChordVoicings={state.fullChordMatches.map((match) => ({
+            shape: match.shape,
             voicingKey: match.positionKeys.map((key) => key.replace("-", ",")).join("|"),
             notes: match.notes,
           }))}
