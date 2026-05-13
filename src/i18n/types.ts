@@ -12,6 +12,12 @@ export interface Dictionary {
       chordLayout: string;
       reset: string;
     };
+    view: {
+      auto: string;
+      zoomSuffix: string;
+      compactControls: string;
+      compactAutoHint: string;
+    };
     fields: {
       zoom: string;
       fretRange: string;
@@ -64,6 +70,10 @@ export interface Dictionary {
     lens: string;
     disabled: string;
     off: string;
+    on: string;
+    manual: string;
+    shapeHintTouch: string;
+    shapeHintPointer: string;
     chordOverlayDisabled: string;
     degreeModeHint: string;
     manualModeHint: string;

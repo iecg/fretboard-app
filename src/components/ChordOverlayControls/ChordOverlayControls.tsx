@@ -157,7 +157,7 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
         <ToggleBar
           options={[
             { value: "degree", label: isPatternDisabled ? t("controls.disabled") : t("controls.degree"), disabled: isPatternDisabled },
-            { value: "manual", label: "Manual", disabled: isPatternDisabled },
+            { value: "manual", label: t("controls.manual"), disabled: isPatternDisabled },
           ]}
           value={chordOverlayMode}
           onChange={isPatternDisabled ? () => undefined : setChordOverlayMode}

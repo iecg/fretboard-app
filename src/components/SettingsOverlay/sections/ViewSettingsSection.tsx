@@ -39,7 +39,7 @@ export default function ViewSettingsSection({ compact }: { compact?: boolean }) 
             min={FRET_ZOOM_MIN}
             max={FRET_ZOOM_MAX}
             step={ZOOM_STEP}
-            formatValue={(zoom) => (zoom <= 100 ? "Auto" : `${zoom}%`)}
+            formatValue={(zoom) => (zoom <= 100 ? t("settings.view.auto") : `${zoom}${t("settings.view.zoomSuffix")}`)}
             buttonVariant="mobile"
             compact={compact}
           />
@@ -60,13 +60,13 @@ export default function ViewSettingsSection({ compact }: { compact?: boolean }) 
         </div>
       </div>
       <div className={clsx(styles["overlay-field"], styles["overlay-field--divided"])}>
-        <OverlayFieldHeader label="Compact Controls" />
+        <OverlayFieldHeader label={t("settings.view.compactControls")} />
         <div className={styles["overlay-field-control"]}>
           <ToggleBar
             options={[
-              { value: "auto", label: "Auto" },
-              { value: "on", label: "On" },
-              { value: "off", label: "Off" },
+              { value: "auto", label: t("settings.view.auto") },
+              { value: "on", label: t("controls.on") },
+              { value: "off", label: t("controls.off") },
             ]}
             value={compactDensity}
             onChange={(v) => setCompactDensity(v as "auto" | "on" | "off")}
@@ -75,7 +75,7 @@ export default function ViewSettingsSection({ compact }: { compact?: boolean }) 
           />
         </div>
         <p className={clsx(shared["field-hint"], styles["overlay-field-hint"])}>
-          Auto: compact on mobile and portrait tablet.
+          {t("settings.view.compactAutoHint")}
         </p>
       </div>
       <div className={styles["overlay-field"]}>

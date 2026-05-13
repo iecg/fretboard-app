@@ -83,9 +83,7 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
           <div className={shared["control-section"]}>
             <span className={shared["section-label"]} id={shapeLabelId}>{t("controls.shape")}</span>
             <span id={shapeHelpId} className={shared["sr-only"]}>
-              {isTouchPrimary
-                ? "Tap to select a shape. Long press to toggle multiple shapes."
-                : "Click to select a shape. Shift+click to toggle multiple shapes."}
+              {isTouchPrimary ? t("controls.shapeHintTouch") : t("controls.shapeHintPointer")}
             </span>
             <div
               className={shared["toggle-group"]}

@@ -14,6 +14,12 @@ export const en: Dictionary = {
       chordLayout: "Chord Layout",
       reset: "Reset",
     },
+    view: {
+      auto: "Auto",
+      zoomSuffix: "%",
+      compactControls: "Compact Controls",
+      compactAutoHint: "Auto: compact on mobile and portrait tablet.",
+    },
     fields: {
       zoom: "Zoom",
       fretRange: "Fret Range",
@@ -66,6 +72,10 @@ export const en: Dictionary = {
     lens: "Lens",
     disabled: "Disabled",
     off: "Off",
+    on: "On",
+    manual: "Manual",
+    shapeHintTouch: "Tap to select a shape. Long press to toggle multiple shapes.",
+    shapeHintPointer: "Click to select a shape. Shift+click to toggle multiple shapes.",
     chordOverlayDisabled: "Chord overlay disabled for single/two-string patterns.",
     degreeModeHint: "Picks a chord by scale degree — diatonic to the key.",
     manualModeHint: "Sets any chord type and root — independent of the key.",
