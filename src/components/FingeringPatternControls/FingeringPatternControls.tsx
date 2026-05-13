@@ -2,7 +2,7 @@ import { useCallback, useId, useRef, useState } from "react";
 import { useAtom } from "jotai";
 import { motion } from "motion/react";
 import clsx from "clsx";
-import { CAGED_SHAPES, type CagedShape } from "@fretflow/core";
+import { CAGED_SHAPES, type CagedShape, ANIMATION_DURATION_FAST } from "@fretflow/core";
 import { useShapeState } from "../../hooks/useShapeState";
 import { displayFormatAtom, type FingeringPattern } from "../../store/atoms";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
@@ -104,7 +104,7 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
                 onClick={() => setCagedShapes(new Set(CAGED_SHAPES))}
                 whileTap={{ scale: 0.96 }}
                 animate={cagedShapes.size === CAGED_SHAPES.length ? { scale: [1, 1.04, 1] } : { scale: 1 }}
-                transition={{ duration: 0.2 }}
+                transition={{ duration: ANIMATION_DURATION_FAST }}
               >
                 All
               </motion.button>
@@ -170,7 +170,7 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
                     }}
                     whileTap={{ scale: 0.96 }}
                     animate={isActive ? { scale: [1, 1.04, 1] } : { scale: 1 }}
-                    transition={{ duration: 0.2 }}
+                    transition={{ duration: ANIMATION_DURATION_FAST }}
                   >
                     {s}
                   </motion.button>

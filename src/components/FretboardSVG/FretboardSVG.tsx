@@ -6,6 +6,8 @@ import {
   getScaleSemitones,
   type PracticeLens,
   type NoteSemantics,
+  ANIMATION_DURATION_FAST,
+  ANIMATION_EASE,
 } from "@fretflow/core";
 import {
   scaleDegreeColorsEnabledAtom,
@@ -495,14 +497,14 @@ export const FretboardSVG = memo(function FretboardSVG({
             aria-hidden="true"
             pointerEvents="none"
           >
-            <AnimatePresence>
+            <AnimatePresence mode="wait">
               {connectorPolylines.length > 0 && (
                 <motion.g
-                  key="chord-connectors"
+                  key={`chord-connectors-${chordRoot}-${chordTones?.join("-") ?? "none"}`}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.25 }}
+                  transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
                   className={styles["chord-connectors"]}
                   aria-hidden="true"
                   pointerEvents="none"

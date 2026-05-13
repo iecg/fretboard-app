@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "react";
 import { motion } from "motion/react";
 import clsx from "clsx";
-import { formatAccidental, getNoteDisplay } from "@fretflow/core";
+import { formatAccidental, getNoteDisplay, ANIMATION_DURATION_FAST } from "@fretflow/core";
 import shared from "../shared/shared.module.css";
 
 interface NoteGridProps {
@@ -104,7 +104,7 @@ export function NoteGrid({
             onKeyDown={(e) => handleKeyDown(e, index)}
             whileTap={{ scale: 0.95 }}
             animate={isActive ? { scale: [1, 1.05, 1] } : { scale: 1 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: ANIMATION_DURATION_FAST }}
           >
             <span className={shared["note-btn-label"]}>
               {formatAccidental(getNoteDisplay(n, n, useFlats))}

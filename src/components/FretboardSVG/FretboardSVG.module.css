@@ -27,10 +27,6 @@
   --placeholder: 0;
 }
 
-.fretboard-note {
-  transition: opacity 0.15s ease-out;
-}
-
 .fretboard-note:global(.hidden) {
   display: none;
 }

@@ -1,6 +1,7 @@
 import { useAtomValue } from "jotai";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { Eye, EyeOff } from "lucide-react";
+import { ANIMATION_DURATION_FAST, ANIMATION_EASE } from "@fretflow/core";
 import { showChordPracticeBarAtom } from "../../store/atoms";
 import { useScaleState } from "../../hooks/useScaleState";
 import { usePracticeBarState } from "../../hooks/usePracticeBarState";
@@ -66,7 +67,7 @@ export function TopBandSummary() {
             initial={{ height: 0, overflow: "hidden", opacity: 0 }}
             animate={{ height: "auto", overflow: "visible", opacity: 1 }}
             exit={{ height: 0, overflow: "hidden", opacity: 0 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
+            transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
           >
             <ChordPracticeBar
               title={practiceBarTitle}
