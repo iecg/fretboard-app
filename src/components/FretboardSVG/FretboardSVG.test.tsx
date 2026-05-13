@@ -217,6 +217,106 @@ describe("FretboardSVG/FretboardSVG", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
+  it("renders chord roles only for matched full-chord coordinates and drives one explicit connector", () => {
+    const semantics = new Map<string, NoteSemantics>([
+      [
+        "C",
+        {
+          isScaleRoot: true,
+          isChordRoot: true,
+          isChordTone: true,
+          isInScale: true,
+          isColorTone: false,
+          isGuideTone: false,
+          isTension: false,
+          memberName: "root",
+          isFullChordMode: true,
+        },
+      ],
+      [
+        "E",
+        {
+          isScaleRoot: false,
+          isChordRoot: false,
+          isChordTone: true,
+          isInScale: true,
+          isColorTone: false,
+          isGuideTone: false,
+          isTension: false,
+          memberName: "3",
+          isFullChordMode: true,
+        },
+      ],
+      [
+        "G",
+        {
+          isScaleRoot: false,
+          isChordRoot: false,
+          isChordTone: true,
+          isInScale: true,
+          isColorTone: false,
+          isGuideTone: false,
+          isTension: false,
+          memberName: "5",
+          isFullChordMode: true,
+        },
+      ],
+    ]);
+    const fullChordPositionKeys = new Set([
+      "0-8",
+      "1-8",
+      "2-9",
+      "3-10",
+      "4-10",
+      "5-8",
+    ]);
+    const fullChordVoicings = [
+      {
+        voicingKey: "e-shape-c-major",
+        notes: [
+          { stringIndex: 0, fretIndex: 8, noteName: "C" },
+          { stringIndex: 1, fretIndex: 8, noteName: "G" },
+          { stringIndex: 2, fretIndex: 9, noteName: "E" },
+          { stringIndex: 3, fretIndex: 10, noteName: "C" },
+          { stringIndex: 4, fretIndex: 10, noteName: "G" },
+          { stringIndex: 5, fretIndex: 8, noteName: "C" },
+        ],
+      },
+    ];
+
+    const { container } = render(
+      <FretboardSVG
+        {...BASE_PROPS}
+        chordTones={["C", "E", "G"]}
+        chordRoot="C"
+        highlightNotes={["C", "E", "G"]}
+        noteSemantics={semantics}
+        fullChordPositionKeys={fullChordPositionKeys}
+        fullChordVoicings={fullChordVoicings}
+      />,
+    );
+
+    const chordRoleLabels = Array.from(
+      container.querySelectorAll(
+        ".note-bubble.chord-root:not(.hidden), .note-bubble.chord-tone-in-scale:not(.hidden)",
+      ),
+    )
+      .map((el) => el.getAttribute("aria-label"))
+      .sort();
+
+    expect(chordRoleLabels).toEqual([
+      "C on string 1, fret 8",
+      "C on string 4, fret 10",
+      "C on string 6, fret 8",
+      "E on string 3, fret 9",
+      "G on string 2, fret 8",
+      "G on string 5, fret 10",
+    ]);
+    expect(container.querySelectorAll('path[data-layer="halo"]').length).toBe(1);
+    expect(container.querySelectorAll('path[data-layer="fill"]').length).toBe(1);
+    expect(container.querySelectorAll('path[data-layer="outline"]').length).toBe(1);
+  });
+
   describe("role-based shapes", () => {
     it("chord-root notes have data-note-shape=squircle", () => {
       const { container } = render(
