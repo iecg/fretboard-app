@@ -278,6 +278,8 @@ export const FretboardSVG = memo(function FretboardSVG({
   const displayRoot = rootNote
     ? getNoteDisplay(rootNote, rootNote, useFlats)
     : "";
+  // If multiple fullChordVoicings map to the same positionKey, shapeByPosition
+  // keeps the first shape encountered so note colors stay deterministic.
   const fullChordShapeByPosition = useMemo(() => {
     const shapeByPosition = new Map<string, CagedShape>();
     for (const voicing of fullChordVoicings ?? []) {

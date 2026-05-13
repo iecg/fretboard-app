@@ -899,7 +899,8 @@ function buildExplicitChordConnectorPolylines(
   yBounds?: ConnectorYBounds,
 ): ChordConnectorVoicing[] {
   const pendingVoicings = explicitVoicings.map((voicing) => {
-    const sourceCombo = createExplicitSourceCombo(voicing.notes);
+    const sourceCombo = createExplicitSourceCombo(voicing.notes)
+      .sort((left, right) => left.stringIndex - right.stringIndex);
     const rawVertices = sourceCombo.map((note) => {
       const x = fretCenterX(note.fretIndex);
       const y = stringYAt(note.stringIndex, x);
