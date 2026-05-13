@@ -8,7 +8,7 @@ import { ChordOverlayControls } from "../ChordOverlayControls/ChordOverlayContro
 import { KeyExplorer } from "../KeyExplorer/KeyExplorer";
 import { NOTES } from "@fretflow/core";
 import {
-  ANIMATION_DURATION_STANDARD,
+  ANIMATION_DURATION_XFADE,
   ANIMATION_EASE,
 } from "@fretflow/core";
 import { getDegreesForScale } from "@fretflow/core";
@@ -82,7 +82,7 @@ export function TheorySection({
             initial={{ opacity: 0, x: -12 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 12 }}
-            transition={{ duration: 0.16 }}
+            transition={{ duration: ANIMATION_DURATION_XFADE, ease: ANIMATION_EASE }}
             className={styles["theory-disclosure-title"]}
           >
             {title}
@@ -94,7 +94,7 @@ export function TheorySection({
             initial={{ opacity: 0, x: 8 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -8 }}
-            transition={{ duration: 0.16 }}
+            transition={{ duration: ANIMATION_DURATION_XFADE, ease: ANIMATION_EASE }}
             className={styles["theory-disclosure-summary"]}
           >
             {summary}
@@ -116,7 +116,7 @@ export function TheorySection({
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{
-              duration: ANIMATION_DURATION_STANDARD,
+              duration: ANIMATION_DURATION_XFADE,
               ease: ANIMATION_EASE,
             }}
             style={{ clipPath: "inset(0 -1rem)" }}

@@ -108,10 +108,10 @@
   fill: var(--surface-base);
   cursor: pointer;
   transition:
-    fill var(--transition-fast),
-    filter var(--transition-fast),
-    opacity var(--transition-fast),
-    stroke var(--transition-fast);
+    fill 0.2s ease,
+    filter 0.2s ease,
+    opacity 0.2s ease,
+    stroke 0.2s ease;
   stroke: var(--surface-highlight) !important;
   stroke-width: 1 !important;
 }

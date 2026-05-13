@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { ANIMATION_DURATION_FAST, ANIMATION_EASE } from "@fretflow/core";
 
 interface SvgPolygon {
   points: string;
@@ -20,7 +21,7 @@ export const FretboardShapeLayer = memo(({ svgPolygons }: FretboardShapeLayerPro
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.25 }}
+          transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
           points={points}
           fill={color}
           stroke="none"

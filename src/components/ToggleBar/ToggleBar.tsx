@@ -1,6 +1,7 @@
 import { useId } from "react";
 import { motion } from "motion/react";
 import { cva, type VariantProps } from "class-variance-authority";
+import { ANIMATION_DURATION_FAST } from "@fretflow/core";
 import styles from "./ToggleBar.module.css";
 import shared from "../shared/shared.module.css";
 
@@ -92,7 +93,7 @@ export function ToggleBar<Value extends string | number>({
             aria-describedby={descId}
             whileTap={{ scale: 0.96 }}
             animate={isActive ? { scale: [1, 1.04, 1] } : { scale: 1 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: ANIMATION_DURATION_FAST }}
           >
             {option.label}
           </motion.button>
