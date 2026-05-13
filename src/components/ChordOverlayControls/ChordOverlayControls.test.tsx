@@ -11,10 +11,12 @@ import {
   chordOverlayModeAtom,
   chordQualityOverrideAtom,
   chordRootOverrideAtom,
+  fullChordsEnabledAtom,
   scaleNameAtom,
   rootNoteAtom,
   practiceLensAtom,
   fingeringPatternAtom,
+  tuningNameAtom,
 } from "../../store/atoms";
 import { ChordOverlayControls } from "./ChordOverlayControls";
 
@@ -292,6 +294,72 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       ]);
 
       expect(screen.queryByRole("group", { name: "Practice lens" })).not.toBeInTheDocument();
+    });
+  });
+
+  describe("7b. full chords control", () => {
+    it.each(["Major Triad", "Minor Triad", "Dominant 7th"])(
+      "renders the Full Chords toggle for supported quality %s",
+      (quality) => {
+        renderWithAtoms(<ChordOverlayControls />, [
+          ...MANUAL_MODE_SEEDS,
+          [chordQualityOverrideAtom, quality],
+        ]);
+
+        const group = screen.getByRole("group", { name: "Full Chords" });
+        expect(within(group).getByRole("button", { name: "Off" })).toBeInTheDocument();
+        expect(within(group).getByRole("button", { name: "On" })).toBeInTheDocument();
+        expect(
+          screen.getByText("Show canonical CAGED voicings instead of scattered chord tones."),
+        ).toBeInTheDocument();
+      },
+    );
+
+    it("clicking On writes fullChordsEnabledAtom = true", async () => {
+      const store = makeAtomStore([...MANUAL_MODE_SEEDS, [fullChordsEnabledAtom, false]]);
+      renderWithStore(<ChordOverlayControls />, store);
+
+      const group = screen.getByRole("group", { name: "Full Chords" });
+      await userEvent.click(within(group).getByRole("button", { name: "On" }));
+
+      expect(store.get(fullChordsEnabledAtom)).toBe(true);
+    });
+
+    it("switching to an unsupported quality turns Full Chords off automatically", async () => {
+      const store = makeAtomStore([
+        ...MANUAL_MODE_SEEDS,
+        [fullChordsEnabledAtom, true],
+        [chordQualityOverrideAtom, "Major Triad"],
+      ]);
+      renderWithStore(<ChordOverlayControls />, store);
+
+      const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
+      await userEvent.click(within(chordTypeGroup).getByRole("button", { name: "M7" }));
+
+      const fullChordsGroup = screen.getByRole("group", { name: "Full Chords" });
+      expect(store.get(fullChordsEnabledAtom)).toBe(false);
+      expect(within(fullChordsGroup).getByRole("button", { name: "Off" })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+      expect(
+        screen.getByText(
+          "Full Chords currently supports Major Triad, Minor Triad, and Dominant 7th.",
+        ),
+      ).toBeInTheDocument();
+    });
+
+    it("disables On for unsupported tunings and shows the 6-string helper text", () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        ...MANUAL_MODE_SEEDS,
+        [tuningNameAtom, "Bass Standard (4 String)"],
+      ]);
+
+      const group = screen.getByRole("group", { name: "Full Chords" });
+      expect(within(group).getByRole("button", { name: "On" })).toBeDisabled();
+      expect(
+        screen.getByText("Full Chords currently supports 6-string tunings only."),
+      ).toBeInTheDocument();
     });
   });
 
