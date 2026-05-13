@@ -1,22 +1,29 @@
 // @vitest-environment jsdom
-import { describe, expect, it, beforeEach } from "vitest";
-import { screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { act, screen, fireEvent } from "@testing-library/react";
+import { axe } from "../../test-utils/a11y";
 import { makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
 import {
   activeProgressionStepIndexAtom,
+  fingeringPatternAtom,
   progressionEnabledAtom,
+  progressionLoopEnabledAtom,
   progressionPlayingAtom,
   progressionStepsAtom,
   progressionTempoBpmAtom,
+  rootNoteAtom,
+  scaleNameAtom,
 } from "../../store/atoms";
 import { ProgressionPlaybackBar } from "./ProgressionPlaybackBar";
 
 const BASE_SEEDS = [
+  [rootNoteAtom, "C"],
+  [scaleNameAtom, "Major"],
   [progressionEnabledAtom, true],
+  [progressionTempoBpmAtom, 120],
   [progressionStepsAtom, [
-    { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
-    { id: "two", degree: "V", duration: "1-bar", qualityOverride: null },
+    { id: "one", degree: "I", duration: "1-beat", qualityOverride: null },
+    { id: "two", degree: "V", duration: "1-beat", qualityOverride: null },
   ]],
 ] as const;
 
@@ -25,52 +32,71 @@ describe("ProgressionPlaybackBar", () => {
     localStorage.clear();
   });
 
-  it("renders transport controls and tempo", () => {
+  it("renders active step, next step, tempo, loop, and transport controls", () => {
     renderWithStore(<ProgressionPlaybackBar />, makeAtomStore([...BASE_SEEDS]));
 
-    expect(screen.getByRole("button", { name: "Start playback" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Previous step" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Next step" })).toBeInTheDocument();
-    expect(screen.getByRole("spinbutton", { name: "Tempo (BPM)" })).toHaveValue(90);
+    expect(screen.getByRole("group", { name: "Progression playback" })).toBeInTheDocument();
+    expect(screen.getByText("I")).toBeInTheDocument();
+    expect(screen.getByText("C Major Triad")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Play progression" })).toBeInTheDocument();
+    expect(screen.getByRole("spinbutton", { name: "Progression tempo" })).toHaveValue(120);
+    expect(screen.getByRole("button", { name: "Loop progression" })).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("toggles play/pause state", async () => {
-    const store = makeAtomStore([...BASE_SEEDS]);
+  describe("Playback with fake timers", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("advances automatically while playing", () => {
+      const store = makeAtomStore([...BASE_SEEDS]);
+      renderWithStore(<ProgressionPlaybackBar />, store);
+
+      fireEvent.click(screen.getByRole("button", { name: "Play progression" }));
+      expect(store.get(progressionPlayingAtom)).toBe(true);
+
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
+
+      expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
+    });
+
+    it("stops at the final step when loop is off", () => {
+      const store = makeAtomStore([
+        ...BASE_SEEDS,
+        [progressionLoopEnabledAtom, false],
+        [activeProgressionStepIndexAtom, 1],
+      ]);
+      renderWithStore(<ProgressionPlaybackBar />, store);
+
+      fireEvent.click(screen.getByRole("button", { name: "Play progression" }));
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
+
+      expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
+      expect(store.get(progressionPlayingAtom)).toBe(false);
+    });
+  });
+
+  it("shows the disabled reason and prevents playback for one-string patterns", () => {
+    const store = makeAtomStore([
+      ...BASE_SEEDS,
+      [fingeringPatternAtom, "one-string"],
+    ]);
     renderWithStore(<ProgressionPlaybackBar />, store);
 
-    await userEvent.click(screen.getByRole("button", { name: "Start playback" }));
-    expect(store.get(progressionPlayingAtom)).toBe(true);
-
-    await userEvent.click(screen.getByRole("button", { name: "Pause playback" }));
-    expect(store.get(progressionPlayingAtom)).toBe(false);
+    expect(screen.getByText("Chord overlay disabled for single/two-string patterns.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Play progression" })).toBeDisabled();
   });
 
-  it("navigates steps", async () => {
-    const store = makeAtomStore([...BASE_SEEDS]);
-    renderWithStore(<ProgressionPlaybackBar />, store);
-
-    await userEvent.click(screen.getByRole("button", { name: "Next step" }));
-    expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
-
-    await userEvent.click(screen.getByRole("button", { name: "Previous step" }));
-    expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
-  });
-
-  it("updates tempo", async () => {
-    const store = makeAtomStore([...BASE_SEEDS]);
-    renderWithStore(<ProgressionPlaybackBar />, store);
-
-    const input = screen.getByRole("spinbutton", { name: "Tempo (BPM)" });
-    await userEvent.clear(input);
-    await userEvent.type(input, "120");
-
-    expect(store.get(progressionTempoBpmAtom)).toBe(120);
-  });
-
-  it("renders nothing when progression is disabled", () => {
-    const { container } = renderWithStore(<ProgressionPlaybackBar />, makeAtomStore([
-      [progressionEnabledAtom, false],
-    ]));
-    expect(container).toBeEmptyDOMElement();
+  it("has no accessibility violations", async () => {
+    const { container } = renderWithStore(<ProgressionPlaybackBar />, makeAtomStore([...BASE_SEEDS]));
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

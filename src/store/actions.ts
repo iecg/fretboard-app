@@ -27,7 +27,13 @@ import {
   cagedShapesAtom,
   npsPositionAtom,
   npsOctaveAtom,
+  isChordOverlayPatternDisabled,
 } from "./fingeringAtoms";
+import {
+  remapProgressionStepsForScaleAtom,
+  resetProgressionAtomsAtom,
+  setProgressionPlayingAtom,
+} from "./progressionAtoms";
 import {
   displayFormatAtom,
   scaleDegreeColorsEnabledAtom,
@@ -56,8 +62,9 @@ export const setFingeringPatternAtom = atom(
   null,
   (_get, set, pattern: import("./fingeringAtoms").FingeringPattern) => {
     set(fingeringPatternAtom, pattern);
-    if (pattern === "one-string" || pattern === "two-strings") {
+    if (isChordOverlayPatternDisabled(pattern)) {
       set(chordDegreeAtom, null);
+      set(setProgressionPlayingAtom, false);
     }
   },
 );
@@ -88,6 +95,7 @@ export const setScaleNameAtom = atom(null, (get, set, value: string) => {
   set(scaleNameAtom, value);
   const newScale = get(scaleNameAtom); // normalized via scaleNameAtom write
   if (newScale === prevScale) return;
+  set(remapProgressionStepsForScaleAtom, newScale);
   const oldDegree = get(chordDegreeAtom);
   if (!oldDegree) return;
   const remapped = remapDegreeForScale(oldDegree, prevScale, newScale);
@@ -121,6 +129,7 @@ export const resetAtom = atom(null, (_get, set) => {
   set(linkChordRootAtom, RESET);
   set(chordFretSpreadAtom, RESET);
   set(practiceLensAtom, RESET);
+  set(resetProgressionAtomsAtom);
   set(fingeringPatternAtom, RESET);
   set(cagedShapesAtom, RESET);
   set(npsPositionAtom, RESET);

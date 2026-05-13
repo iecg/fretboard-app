@@ -51,6 +51,15 @@ import {
   allChordMembersAtom,
 } from "./composableSelectors";
 import { shapeHighlightedNoteSetAtom } from "./shapeAtoms";
+import {
+  fingeringPatternAtom,
+  isChordOverlayPatternDisabled,
+} from "./fingeringAtoms";
+import {
+  activeProgressionStepAtom,
+  activeResolvedProgressionStepAtom,
+  progressionEnabledAtom,
+} from "./progressionAtoms";
 
 // Guide tone members: 3rd and 7th
 const GUIDE_TONE_RAW = new Set(["b3", "3", "b7", "7"]);
@@ -182,12 +191,18 @@ const chordSemanticInputsAtom = atom((get) => {
   const chordType = get(chordTypeAtom);
   if (!chordType) return null;
   if (get(chordOverlayHiddenAtom)) return null;
+  const progressionStep =
+    get(progressionEnabledAtom) &&
+    !isChordOverlayPatternDisabled(get(fingeringPatternAtom)) &&
+    !get(activeResolvedProgressionStepAtom)?.unavailable
+      ? get(activeProgressionStepAtom)
+      : null;
   return {
     chordRoot: get(chordRootAtom),
     chordMembers: get(chordMembersAtom),
     hiddenNotes: get(chordHiddenNotesAtom),
-    chordDegree: get(chordDegreeAtom),
-    chordOverlayMode: get(chordOverlayModeAtom),
+    chordDegree: progressionStep?.degree ?? get(chordDegreeAtom),
+    chordOverlayMode: progressionStep ? "degree" : get(chordOverlayModeAtom),
     chordType,
   };
 });
