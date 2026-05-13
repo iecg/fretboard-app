@@ -12,12 +12,14 @@ import { useProgressionState } from "../../hooks/useProgressionState";
 import { useScaleState } from "../../hooks/useScaleState";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { StepperControl } from "../StepperControl/StepperControl";
+import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
 import shared from "../shared/shared.module.css";
 import {
   CHORD_NONE_VALUE,
   CHORD_TYPE_DISPLAY_ORDER,
   CHORD_TYPE_SHORT_LABELS,
 } from "../ChordOverlayControls/chordTypeOptions";
+import { CUSTOM_PRESET_ID } from "../../store/atoms";
 import { ProgressionPlaybackBar } from "../ProgressionPlaybackBar/ProgressionPlaybackBar";
 import styles from "./ProgressionControls.module.css";
 
@@ -44,6 +46,7 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
     updateProgressionStepQuality,
     beatsPerBar,
     setBeatsPerBar,
+    currentProgressionPresetId,
   } = useProgressionState();
 
   const activeStep = progressionSteps[activeProgressionStepIndex] ?? null;
@@ -92,19 +95,19 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
       </div>
 
       <div className={shared["control-section"]}>
-        <span className={shared["section-label"]}>Presets</span>
-        <div className={styles["preset-row"]}>
-          {PROGRESSION_PRESETS.map((preset) => (
-            <button
-              key={preset.id}
-              type="button"
-              className={shared["control-button"]}
-              onClick={() => startTransition(() => loadProgressionPreset(preset.id))}
-            >
-              {preset.label}
-            </button>
-          ))}
-        </div>
+        <LabeledSelect
+          label="Preset"
+          value={currentProgressionPresetId}
+          onChange={(id) => {
+            if (id === CUSTOM_PRESET_ID) return;
+            startTransition(() => loadProgressionPreset(id));
+          }}
+          options={[
+            { value: CUSTOM_PRESET_ID, label: "Custom", disabled: currentProgressionPresetId !== CUSTOM_PRESET_ID },
+            ...PROGRESSION_PRESETS.map((preset) => ({ value: preset.id, label: preset.label })),
+          ]}
+          compact={compact}
+        />
       </div>
 
       <div className={shared["control-section"]}>

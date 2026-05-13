@@ -506,7 +506,7 @@ describe("TheoryControls UAT-20 — chord section disabled on 1/2-string", () =>
     fireEvent.click(screen.getByRole("button", { name: /Progression/i }));
 
     expect(screen.getByText("Progression Mode")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "I-V-vi-IV" })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Preset" })).toBeInTheDocument();
   });
 
   it("summarizes enabled progression with total bars", () => {

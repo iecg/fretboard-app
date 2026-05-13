@@ -33,8 +33,8 @@ describe("ProgressionControls", () => {
     renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
 
     expect(screen.getByRole("group", { name: "Progression mode" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "I-V-vi-IV" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Step 1.*I.*C Major Triad/i })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Preset" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /1.*I.*C Major Triad/i })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Progression degree" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Step duration" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Step chord quality" })).toBeInTheDocument();
@@ -55,7 +55,7 @@ describe("ProgressionControls", () => {
     const store = makeAtomStore([...BASE_SEEDS]);
     renderWithStore(<ProgressionControls />, store);
 
-    await userEvent.click(screen.getByRole("button", { name: "ii-V-I" }));
+    await userEvent.selectOptions(screen.getByRole("combobox", { name: "Preset" }), "two-five-one");
 
     expect(store.get(progressionStepsAtom).map((step) => step.degree)).toEqual(["ii", "V", "I"]);
     expect(store.get(progressionEnabledAtom)).toBe(true);
@@ -124,5 +124,23 @@ describe("ProgressionControls METER", () => {
     expect(screen.getByText("4")).toBeTruthy();
     fireEvent.click(screen.getByLabelText(/Increase Beats per bar/i));
     expect(screen.getByText("6")).toBeTruthy();
+  });
+});
+
+describe("ProgressionControls PRESET", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("renders a LabeledSelect with default preset value", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+    ]);
+    renderWithStore(<ProgressionControls />, store);
+    const select = screen.getByLabelText(/Preset/i) as HTMLSelectElement;
+    expect(select.tagName).toBe("SELECT");
+    expect(select.value).toBe("one-five-six-four"); // default I-V-vi-IV preset
   });
 });
