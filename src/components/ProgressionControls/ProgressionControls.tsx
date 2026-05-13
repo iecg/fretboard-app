@@ -1,7 +1,6 @@
 import { startTransition } from "react";
 import clsx from "clsx";
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
-import { getDegreeSequence } from "@fretflow/core";
 import {
   PROGRESSION_PRESETS,
   BEATS_PER_BAR_OPTIONS,
@@ -19,6 +18,7 @@ import {
   CHORD_TYPE_DISPLAY_ORDER,
   CHORD_TYPE_SHORT_LABELS,
 } from "../ChordOverlayControls/chordTypeOptions";
+import { buildDegreeToggleOptions } from "../shared/chordControlOptions";
 import { CUSTOM_PRESET_ID } from "../../store/atoms";
 import { ProgressionPlaybackBar } from "../ProgressionPlaybackBar/ProgressionPlaybackBar";
 import styles from "./ProgressionControls.module.css";
@@ -50,11 +50,12 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
   } = useProgressionState();
 
   const activeStep = progressionSteps[activeProgressionStepIndex] ?? null;
-  const degreeOptions = getDegreeSequence(scaleName).map((degree) => ({
-    value: degree,
-    label: degree,
-  }));
   const qualityValue = activeStep?.qualityOverride ?? CHORD_NONE_VALUE;
+  const degreeOptions = buildDegreeToggleOptions({
+    scaleName,
+    qualityOverridden: qualityValue !== CHORD_NONE_VALUE,
+    activeDegree: activeStep?.degree ?? null,
+  });
 
   return (
     <div className={styles["progression-controls"]} data-compact={compact ? "true" : undefined}>

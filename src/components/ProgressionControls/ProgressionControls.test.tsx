@@ -166,3 +166,13 @@ describe("ProgressionControls CHORDS list", () => {
     expect(getAllByText("1 bar").length).toBeGreaterThan(0);
   });
 });
+
+describe("ProgressionControls DEGREE", () => {
+  it("uses the shared degree option builder (degree-only, no Off sentinel)", () => {
+    const { getByLabelText } = renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    const group = getByLabelText("Progression degree");
+    expect(group).toBeTruthy();
+    // No "Off" button inside the degree toggle group itself
+    expect(within(group).queryByRole("button", { name: "Off" })).toBeNull();
+  });
+});
