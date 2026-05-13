@@ -29,7 +29,7 @@ export const scaleDegreeColorsEnabledAtom = atomWithStorage<boolean>(
   GET_ON_INIT,
 );
 
-export const mobileTabAtom = atomWithStorage<"scales" | "chords" | "cof" | "view">(
+export const mobileTabAtom = atomWithStorage<MobileTab>(
   k("mobileTab"),
   "scales",
   mobileTabStorage,

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { loadVisualState } from "./visual-helpers";
 
 const STORAGE_KEY_ROOT_NOTE = "fretflow:rootNote";
 
@@ -60,5 +61,27 @@ test.describe("storage persistence", () => {
       STORAGE_KEY_ROOT_NOTE,
     );
     expect(persistedValue).toBe("G");
+  });
+
+  test("persists progression settings across reload", async ({ page }) => {
+    await loadVisualState(
+      page,
+      {
+        progressionEnabled: true,
+        progressionTempoBpm: 132,
+        progressionLoopEnabled: false,
+        progressionSteps: [
+          { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
+          { id: "two", degree: "V", duration: "2-bars", qualityOverride: "Dominant 7th" },
+        ],
+      },
+      { width: 1280, height: 900 },
+    );
+
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await expect(page.getByRole("group", { name: "Progression playback" })).toBeVisible();
+    await expect(page.getByRole("spinbutton", { name: "Progression tempo" })).toHaveValue("132");
+    await page.locator('button:has-text("Progression")').filter({ hasText: "steps" }).click();
+    await expect(page.getByRole("button", { name: /Step 2.*V.*2 bars/i })).toBeVisible();
   });
 });

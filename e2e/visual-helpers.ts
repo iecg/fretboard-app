@@ -68,8 +68,9 @@ export async function loadVisualState(
       Object.entries(s).forEach(([key, value]) => {
         if (value === undefined || value === null) return;
 
-        // Serialize simple types as strings
-        localStorage.setItem(`${prefix}${key}`, String(value));
+        // Serialize complex types as JSON, simple types as strings
+        const serialized = typeof value === "object" ? JSON.stringify(value) : String(value);
+        localStorage.setItem(`${prefix}${key}`, serialized);
       });
     },
     {
