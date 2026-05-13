@@ -20,9 +20,9 @@ test.describe("Progression Visual", () => {
       { width: 1280, height: 900 },
     );
 
-    await expect(page.getByRole("group", { name: "Progression playback" })).toBeVisible();
     await page.locator('button:has-text("Progression")').filter({ hasText: "steps" }).click();
     await expect(page.getByText("Progression Mode")).toBeVisible();
+    await expect(page.getByRole("group", { name: "Progression playback" })).toBeVisible();
     await expectFullPageVisual(page, "progression-desktop-1280x900", linuxTolerance);
   });
 
