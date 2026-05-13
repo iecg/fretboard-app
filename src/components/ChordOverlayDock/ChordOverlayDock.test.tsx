@@ -105,6 +105,20 @@ describe("TopBandSummary chord integration", () => {
     expect(screen.queryByText("End")).not.toBeInTheDocument();
   });
 
+  it("shows a sane blocked status for an empty enabled progression", () => {
+    renderWithAtoms(<TopBandSummary />, [
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, []],
+    ]);
+
+    expect(screen.getByRole("group", { name: "Progression status" })).toBeInTheDocument();
+    expect(screen.getByText("No steps")).toBeInTheDocument();
+    expect(screen.getByText(/Add or load progression steps to start playback/i)).toBeInTheDocument();
+    expect(screen.queryByText("Step 1 of 0")).not.toBeInTheDocument();
+  });
+
   it("does not render progression transport controls in the top band", () => {
     renderWithAtoms(<TopBandSummary />, [
       [rootNoteAtom, "C"],

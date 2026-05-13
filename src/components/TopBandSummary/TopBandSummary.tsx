@@ -51,6 +51,9 @@ export function TopBandSummary() {
   const nextProgressionStep = nextProgressionStepIndex === null
     ? null
     : resolvedProgressionSteps[nextProgressionStepIndex] ?? null;
+  const progressionPositionLabel = resolvedProgressionSteps.length === 0
+    ? "No steps"
+    : `Step ${activeProgressionStepIndex + 1} of ${resolvedProgressionSteps.length}`;
 
   return (
     <MotionConfig reducedMotion="user">
@@ -91,7 +94,7 @@ export function TopBandSummary() {
           >
             <div className={styles["progression-status"]} role="group" aria-label="Progression status">
               <span className={styles["progression-position"]}>
-                Step {activeProgressionStepIndex + 1} of {resolvedProgressionSteps.length}
+                {progressionPositionLabel}
               </span>
               <div className={styles["progression-status-grid"]}>
                 <span className={styles["progression-status-label"]}>Current</span>
