@@ -1,7 +1,7 @@
 import { useAtom } from "jotai";
 import { languageAtom } from "../../../store/languageAtom";
 import { ToggleBar } from "../../ToggleBar/ToggleBar";
-import { OverlaySection, OverlayFieldHeader } from "../shared";
+import { OverlaySection } from "../shared";
 import { LANGUAGE_OPTIONS } from "../constants";
 import { useTranslation } from "../../../hooks/useTranslation";
 import styles from "../SettingsOverlay.module.css";
@@ -14,7 +14,6 @@ export default function LanguageSettingsSection({ compact }: { compact?: boolean
   return (
     <OverlaySection id="language" title={t("settings.language")}>
       <div className={styles["overlay-field"]}>
-        <OverlayFieldHeader label={t("settings.language")} />
         <div className={styles["overlay-field-control"]}>
           <ToggleBar
             options={LANGUAGE_OPTIONS}
