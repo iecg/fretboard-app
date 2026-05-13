@@ -71,4 +71,79 @@ describe('getFullChordShapeMatches', () => {
     // All 4 are D# Major Triad notes → match accepted.
     expect(getMatchPositions('D#', 'Major Triad', 'E', 11)).toBe('0-11|1-11|2-12|5-11');
   });
+
+  describe('canonical open-shape templates', () => {
+    it('verifies all 15 canonical templates - 9 produce open matches, 6 do not', () => {
+      // Table-driven test covering all 15 FULL_CHORD_TEMPLATES entries.
+      // Each row specifies: [chordRoot, chordType, shape, expectedPositionKeys].
+      // 
+      // Of the 15 canonical templates, only 9 produce valid open (rootFret=0) matches.
+      // The C and G shapes for all 3 qualities match at rootFret=3, not 0, because
+      // their anchor strings (A string for C, low E for G) don't have the root note
+      // at the nut position for C and G chords respectively.
+      //
+      // This test protects the dataset by asserting on the 9 that do produce open
+      // matches, and documenting the 6 that do not.
+      const cases: Array<[string, string, string, string | null]> = [
+        // Major Triad (3 open, 2 non-open)
+        ['C', 'Major Triad', 'C', null], // C shape matches C Major at rootFret=3, not 0
+        ['A', 'Major Triad', 'A', '0-0|1-2|2-2|3-2|4-0'],
+        ['G', 'Major Triad', 'G', null], // G shape matches G Major at rootFret=3, not 0
+        ['E', 'Major Triad', 'E', '0-0|1-0|2-1|3-2|4-2|5-0'],
+        ['D', 'Major Triad', 'D', '0-2|1-3|2-2|3-0'],
+
+        // Minor Triad (3 open, 2 non-open)
+        ['C', 'Minor Triad', 'C', null], // C shape matches C Minor at rootFret=3, not 0
+        ['A', 'Minor Triad', 'A', '0-0|1-1|2-2|3-2|4-0'],
+        ['G', 'Minor Triad', 'G', null], // G shape matches G Minor at rootFret=3, not 0
+        ['E', 'Minor Triad', 'E', '0-0|1-0|2-0|3-2|4-2|5-0'],
+        ['D', 'Minor Triad', 'D', '0-1|1-3|2-2|3-0'],
+
+        // Dominant 7th (3 open, 2 non-open)
+        ['C', 'Dominant 7th', 'C', null], // C shape matches C7 at rootFret=3, not 0
+        ['A', 'Dominant 7th', 'A', '0-0|1-2|2-0|3-2|4-0'],
+        ['G', 'Dominant 7th', 'G', null], // G shape matches G7 at rootFret=3, not 0
+        ['E', 'Dominant 7th', 'E', '0-0|1-0|2-1|3-0|4-2|5-0'],
+        ['D', 'Dominant 7th', 'D', '0-2|1-1|2-2|3-0'],
+      ];
+
+      for (const [root, quality, shape, expectedKeys] of cases) {
+        const actual = getMatchPositions(root, quality, shape, 0);
+        if (expectedKeys === null) {
+          // Document that this canonical template does not produce a valid open match
+          expect(actual).toBeUndefined();
+        } else {
+          expect(actual).toBe(expectedKeys);
+        }
+      }
+    });
+
+    it('validates the 9 canonical templates that produce open matches', () => {
+      // Expanded individual assertions for the 9 templates that match at rootFret=0.
+      // Major Triads (A, E, D)
+      expect(getMatchPositions('A', 'Major Triad', 'A', 0)).toBe('0-0|1-2|2-2|3-2|4-0');
+      expect(getMatchPositions('E', 'Major Triad', 'E', 0)).toBe('0-0|1-0|2-1|3-2|4-2|5-0');
+      expect(getMatchPositions('D', 'Major Triad', 'D', 0)).toBe('0-2|1-3|2-2|3-0');
+
+      // Minor Triads (A, E, D)
+      expect(getMatchPositions('A', 'Minor Triad', 'A', 0)).toBe('0-0|1-1|2-2|3-2|4-0');
+      expect(getMatchPositions('E', 'Minor Triad', 'E', 0)).toBe('0-0|1-0|2-0|3-2|4-2|5-0');
+      expect(getMatchPositions('D', 'Minor Triad', 'D', 0)).toBe('0-1|1-3|2-2|3-0');
+
+      // Dominant 7ths (A, E, D)
+      expect(getMatchPositions('A', 'Dominant 7th', 'A', 0)).toBe('0-0|1-2|2-0|3-2|4-0');
+      expect(getMatchPositions('E', 'Dominant 7th', 'E', 0)).toBe('0-0|1-0|2-1|3-0|4-2|5-0');
+      expect(getMatchPositions('D', 'Dominant 7th', 'D', 0)).toBe('0-2|1-1|2-2|3-0');
+    });
+
+    it('documents the 6 canonical templates that do not produce open matches', () => {
+      // C and G shapes for all 3 qualities match at rootFret=3, not 0
+      expect(getMatchPositions('C', 'Major Triad', 'C', 0)).toBeUndefined();
+      expect(getMatchPositions('G', 'Major Triad', 'G', 0)).toBeUndefined();
+      expect(getMatchPositions('C', 'Minor Triad', 'C', 0)).toBeUndefined();
+      expect(getMatchPositions('G', 'Minor Triad', 'G', 0)).toBeUndefined();
+      expect(getMatchPositions('C', 'Dominant 7th', 'C', 0)).toBeUndefined();
+      expect(getMatchPositions('G', 'Dominant 7th', 'G', 0)).toBeUndefined();
+    });
+  });
 });
