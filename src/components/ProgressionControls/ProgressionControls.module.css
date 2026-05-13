@@ -76,6 +76,12 @@
   font-weight: var(--font-weight-medium);
 }
 
+.duration-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
 .step-actions {
   display: flex;
   align-items: center;

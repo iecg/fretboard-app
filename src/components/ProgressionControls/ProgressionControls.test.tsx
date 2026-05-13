@@ -36,7 +36,8 @@ describe("ProgressionControls", () => {
     expect(screen.getByRole("combobox", { name: "Preset" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^1.*I.*C Major Triad/i })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Progression degree" })).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: "Step duration" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Duration value" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Duration unit" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Step chord quality" })).toBeInTheDocument();
   });
 
@@ -69,7 +70,10 @@ describe("ProgressionControls", () => {
     expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
 
     await userEvent.click(within(screen.getByRole("group", { name: "Progression degree" })).getByRole("button", { name: "vi" }));
-    await userEvent.click(within(screen.getByRole("group", { name: "Step duration" })).getByRole("button", { name: "2 bars" }));
+    // Set duration value to 2 via stepper
+    fireEvent.click(screen.getByLabelText(/Increase Duration value/i));
+    // Set duration unit to Bar
+    await userEvent.click(within(screen.getByRole("group", { name: "Duration unit" })).getByRole("button", { name: "Bar" }));
     await userEvent.click(within(screen.getByRole("group", { name: "Step chord quality" })).getByRole("button", { name: "7" }));
 
     expect(store.get(progressionStepsAtom)[1]).toMatchObject({
@@ -174,5 +178,26 @@ describe("ProgressionControls DEGREE", () => {
     expect(group).toBeTruthy();
     // No "Off" button inside the degree toggle group itself
     expect(within(group).queryByRole("button", { name: "Off" })).toBeNull();
+  });
+});
+
+describe("ProgressionControls DURATION", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("renders a numeric stepper + Beat/Bar toggle", () => {
+    const { getByRole, getByText } = renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    expect(getByRole("group", { name: /Duration value/i })).toBeTruthy();
+    expect(getByText("Beat")).toBeTruthy();
+    expect(getByText("Bar")).toBeTruthy();
+  });
+
+  it("increments the active chord's duration value", () => {
+    const { getByRole, getByLabelText } = renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    fireEvent.click(getByLabelText(/Increase Duration value/i));
+    // The displayed value should now be 2 (within the duration stepper group)
+    const durationGroup = getByRole("group", { name: /Duration value/i });
+    expect(within(durationGroup).getByText("2")).toBeTruthy();
   });
 });

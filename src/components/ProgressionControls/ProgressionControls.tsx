@@ -4,8 +4,9 @@ import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import {
   PROGRESSION_PRESETS,
   BEATS_PER_BAR_OPTIONS,
+  MIN_PROGRESSION_STEP_DURATION_VALUE,
+  MAX_PROGRESSION_STEP_DURATION_VALUE,
   formatProgressionDurationLabel,
-  type ProgressionStepDuration,
 } from "../../progressions/progressionDomain";
 import { useProgressionState } from "../../hooks/useProgressionState";
 import { useScaleState } from "../../hooks/useScaleState";
@@ -189,30 +190,37 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
           </div>
           <div className={shared["control-section"]}>
             <span className={shared["section-label"]}>Duration</span>
-            <ToggleBar
-              label="Step duration"
-              options={[
-                { value: "1-beat", label: "1 beat" },
-                { value: "2-beats", label: "2 beats" },
-                { value: "1-bar", label: "1 bar" },
-                { value: "2-bars", label: "2 bars" },
-              ]}
-              value={
-                activeStep.duration.value === 1 && activeStep.duration.unit === "beat" ? "1-beat"
-                : activeStep.duration.value === 2 && activeStep.duration.unit === "beat" ? "2-beats"
-                : activeStep.duration.value === 1 && activeStep.duration.unit === "bar" ? "1-bar"
-                : "2-bars"
-              }
-              onChange={(s) => {
-                const duration: ProgressionStepDuration =
-                  s === "1-beat" ? { value: 1, unit: "beat" }
-                  : s === "2-beats" ? { value: 2, unit: "beat" }
-                  : s === "1-bar" ? { value: 1, unit: "bar" }
-                  : { value: 2, unit: "bar" };
-                updateProgressionStepDuration({ id: activeStep.id, duration });
-              }}
-              compact={compact}
-            />
+            <div className={styles["duration-row"]}>
+              <StepperControl
+                label="Duration value"
+                value={activeStep.duration.value}
+                min={MIN_PROGRESSION_STEP_DURATION_VALUE}
+                max={MAX_PROGRESSION_STEP_DURATION_VALUE}
+                step={1}
+                onChange={(next) =>
+                  updateProgressionStepDuration({
+                    id: activeStep.id,
+                    duration: { ...activeStep.duration, value: next },
+                  })
+                }
+                compact={compact}
+              />
+              <ToggleBar
+                label="Duration unit"
+                value={activeStep.duration.unit}
+                options={[
+                  { value: "beat", label: "Beat" },
+                  { value: "bar", label: "Bar" },
+                ]}
+                onChange={(unit) =>
+                  updateProgressionStepDuration({
+                    id: activeStep.id,
+                    duration: { ...activeStep.duration, unit: unit as "beat" | "bar" },
+                  })
+                }
+                compact={compact}
+              />
+            </div>
           </div>
           <div className={shared["control-section"]}>
             <span className={shared["section-label"]}>Quality</span>
