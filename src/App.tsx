@@ -27,6 +27,7 @@ import { BrandMark } from "./components/BrandMark/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark";
 import { TopBandSummary } from "./components/TopBandSummary/TopBandSummary";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
+import { ProgressionPlaybackBar } from "./components/ProgressionPlaybackBar/ProgressionPlaybackBar";
 import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
 import sharedStyles from "./components/shared/shared.module.css";
 import { ControlsPanelSkeleton, MobileTabSkeleton } from "./components/LoadingSkeleton/LoadingSkeleton";
@@ -253,6 +254,7 @@ function AppContent() {
       <Fretboard
         stringRowPx={layout.stringRowPx}
       />
+      <ProgressionPlaybackBar />
     </MainLayoutWrapper>
     {layout.showMobileTabs && !settingsOverlayOpen && (
       <BottomTabBar
