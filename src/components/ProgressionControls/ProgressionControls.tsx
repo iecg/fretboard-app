@@ -16,7 +16,6 @@ import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
 import shared from "../shared/shared.module.css";
 import { buildDegreeToggleOptions, buildQualityToggleOptions, CHORD_QUALITY_DIATONIC_VALUE } from "../shared/chordControlOptions";
 import { CUSTOM_PRESET_ID } from "../../store/atoms";
-import { ProgressionPlaybackBar } from "../ProgressionPlaybackBar/ProgressionPlaybackBar";
 import styles from "./ProgressionControls.module.css";
 
 export interface ProgressionControlsProps {
@@ -68,8 +67,6 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
           compact={compact}
         />
       </div>
-
-      <ProgressionPlaybackBar />
 
       <div className={shared["control-section"]}>
         <span className={shared["section-label"]}>Meter</span>

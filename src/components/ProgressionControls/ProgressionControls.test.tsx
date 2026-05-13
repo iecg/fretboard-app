@@ -41,17 +41,6 @@ describe("ProgressionControls", () => {
     expect(screen.getByRole("group", { name: "Step chord quality" })).toBeInTheDocument();
   });
 
-  it("renders progression playback controls inside the progression panel", () => {
-    renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
-
-    expect(screen.getByRole("group", { name: "Progression playback" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Previous progression step" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Play progression" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Next progression step" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Loop progression" })).toBeInTheDocument();
-    expect(screen.getByRole("spinbutton", { name: "Progression tempo" })).toBeInTheDocument();
-  });
-
   it("loads a preset into the editable list", async () => {
     const store = makeAtomStore([...BASE_SEEDS]);
     renderWithStore(<ProgressionControls />, store);
