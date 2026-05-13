@@ -5,7 +5,9 @@ import {
   createProgressionStep,
   findFirstResolvableStepIndex,
   findNextResolvableStepIndex,
+  formatChordShortLabel,
   formatProgressionDurationLabel,
+  formatProgressionPlaybackPosition,
   getProgressionDurationBeats,
   getProgressionDurationMs,
   isProgressionDuration,
@@ -157,6 +159,54 @@ describe("formatProgressionDurationLabel", () => {
     expect(formatProgressionDurationLabel({ value: 2, unit: "bar" })).toBe("2 bars");
     expect(formatProgressionDurationLabel({ value: 3, unit: "beat" })).toBe("3 beats");
     expect(formatProgressionDurationLabel({ value: 12, unit: "bar" })).toBe("12 bars");
+  });
+});
+
+describe("formatChordShortLabel", () => {
+  it("renders bare root for major triads", () => {
+    expect(formatChordShortLabel("C", "Major Triad")).toBe("C");
+    expect(formatChordShortLabel("F♯", "Major Triad")).toBe("F♯");
+  });
+
+  it("appends idiomatic suffixes for common qualities", () => {
+    expect(formatChordShortLabel("A", "Minor Triad")).toBe("Am");
+    expect(formatChordShortLabel("G", "Dominant 7th")).toBe("G7");
+    expect(formatChordShortLabel("C", "Major 7th")).toBe("Cmaj7");
+    expect(formatChordShortLabel("D", "Minor 7th")).toBe("Dm7");
+    expect(formatChordShortLabel("B", "Diminished Triad")).toBe("B°");
+    expect(formatChordShortLabel("F", "Half-Diminished 7th")).toBe("Fø7");
+  });
+
+  it("falls back to 'root quality' for unknown qualities", () => {
+    expect(formatChordShortLabel("C", "Made-Up Chord")).toBe("C Made-Up Chord");
+  });
+});
+
+describe("formatProgressionPlaybackPosition", () => {
+  it("formats the bar/beat/subdivision readout at the start of the progression", () => {
+    expect(formatProgressionPlaybackPosition(1, 5, 4)).toEqual({
+      current: "01.1.000",
+      total: "05.4.000",
+    });
+  });
+
+  it("derives beat and subdivision from the fractional bar offset", () => {
+    expect(formatProgressionPlaybackPosition(1.25, 4, 4).current).toBe("01.2.000");
+    expect(formatProgressionPlaybackPosition(1.3, 4, 4).current).toBe("01.2.200");
+  });
+
+  it("honors the active meter when deriving beat counts", () => {
+    expect(formatProgressionPlaybackPosition(2.5, 4, 8)).toEqual({
+      current: "02.5.000",
+      total: "04.8.000",
+    });
+  });
+
+  it("clamps fractional totals up and current below the project end", () => {
+    expect(formatProgressionPlaybackPosition(99, 3.25, 4)).toEqual({
+      current: "04.1.000",
+      total: "04.4.000",
+    });
   });
 });
 

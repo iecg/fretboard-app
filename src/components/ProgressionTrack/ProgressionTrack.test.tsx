@@ -43,12 +43,28 @@ describe("ProgressionTrack", () => {
     expect(screen.getByText("Play")).toBeTruthy();
     expect(screen.getByText("Loop")).toBeTruthy();
     expect(screen.getByText("Position")).toBeTruthy();
-    expect(screen.getByText("01.1 / 05.4")).toBeTruthy();
+    expect(screen.getByText("01.1.000")).toBeTruthy();
+    expect(screen.getByText("05.4.000")).toBeTruthy();
     expect(screen.getByText("90")).toBeTruthy();
     expect(screen.getByText("BPM")).toBeTruthy();
     expect(screen.getByText("C Major (Ionian)")).toBeTruthy();
     expect(screen.getByRole("button", { name: /Step 1, I, C Major Triad, 1 bar, active/i })).toBeTruthy();
     expect(screen.getByRole("button", { name: /Step 3, vi, A Minor Triad, 2 bars/i })).toBeTruthy();
+  });
+
+  it("renders short chord labels (e.g. C, G7, Am, F) in the visible block text", () => {
+    renderWithAtoms(<ProgressionTrack />, [
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, fourStepProgression],
+      [beatsPerBarAtom, 4],
+    ]);
+
+    // Verbose names stay in aria-label for accessibility; the visible chord-name
+    // span uses the compact idiomatic form.
+    expect(screen.getByText("C", { selector: "span" })).toBeTruthy();
+    expect(screen.getByText("G7", { selector: "span" })).toBeTruthy();
+    expect(screen.getByText("Am", { selector: "span" })).toBeTruthy();
+    expect(screen.getByText("F", { selector: "span" })).toBeTruthy();
   });
 
   it("renders tempo as readout instead of editable tempo controls", () => {

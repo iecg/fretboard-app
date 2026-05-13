@@ -3,17 +3,15 @@ import clsx from "clsx";
 import { Pause, Play, Repeat, SkipBack, SkipForward } from "lucide-react";
 import { useProgressionState } from "../../hooks/useProgressionState";
 import { useScaleState } from "../../hooks/useScaleState";
-import { formatProgressionDurationLabel } from "../../progressions/progressionDomain";
+import {
+  formatProgressionDurationLabel,
+  formatProgressionPlaybackPosition,
+} from "../../progressions/progressionDomain";
 import shared from "../shared/shared.module.css";
 import styles from "./ProgressionTrack.module.css";
 
 function formatDurationShort(label: string): string {
   return label.replace(" bars", "b").replace(" bar", "b").replace(" beats", "bt").replace(" beat", "bt");
-}
-
-function formatPosition(currentBar: number, activeIndex: number, totalBars: number, totalSteps: number): string {
-  const bar = String(Math.max(1, currentBar)).padStart(2, "0");
-  return `${bar}.${activeIndex + 1} / ${String(totalBars).padStart(2, "0")}.${totalSteps}`;
 }
 
 export function ProgressionTrack() {
@@ -38,9 +36,13 @@ export function ProgressionTrack() {
   const canPlay = !progressionPlaybackBlockedReason;
   const totalDurationBars = Math.max(1, totalProgressionBars);
   const totalBarsForDisplay = Math.max(1, Math.ceil(totalProgressionBars));
-  const totalSteps = Math.max(1, resolvedProgressionSteps.length);
   const activeStep = resolvedProgressionSteps[activeProgressionStepIndex] ?? null;
   const playheadLeft = `${Math.max(0, Math.min(100, ((currentProgressionBar - 1) / totalDurationBars) * 100))}%`;
+  const position = formatProgressionPlaybackPosition(
+    currentProgressionBar,
+    totalProgressionBars,
+    beatsPerBar,
+  );
 
   return (
     <section
@@ -97,7 +99,11 @@ export function ProgressionTrack() {
 
         <div className={styles.positionReadout}>
           <span className={styles.readoutLabel}>Position</span>
-          <span className={styles.positionValue}>{formatPosition(currentProgressionBar, activeProgressionStepIndex, totalBarsForDisplay, totalSteps)}</span>
+          <span className={styles.positionValue} aria-label={`Position ${position.current} of ${position.total}`}>
+            <span className={styles.positionCurrent}>{position.current}</span>
+            <span className={styles.positionSeparator} aria-hidden="true"> / </span>
+            <span className={styles.positionTotal}>{position.total}</span>
+          </span>
         </div>
 
         <div className={styles.contextReadouts}>
@@ -147,7 +153,12 @@ export function ProgressionTrack() {
               >
                 <span className={styles.degreeBadge}>{step.degree}</span>
                 <span className={styles.blockText}>
-                  <span className={styles.chordName}>{step.resolvedChordLabel ?? step.unavailableReason}</span>
+                  <span
+                    className={styles.chordName}
+                    title={step.resolvedChordLabel ?? step.unavailableReason ?? undefined}
+                  >
+                    {step.shortChordLabel ?? step.unavailableReason}
+                  </span>
                   <span className={styles.duration}>{formatDurationShort(duration)}</span>
                 </span>
               </button>

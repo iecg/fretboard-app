@@ -57,6 +57,75 @@ export function formatProgressionDurationLabel(duration: ProgressionStepDuration
   return `${duration.value} ${duration.unit}${duration.value === 1 ? "" : "s"}`;
 }
 
+const CHORD_QUALITY_SUFFIX: Record<string, string> = {
+  "Major Triad": "",
+  "Minor Triad": "m",
+  "Diminished Triad": "°",
+  "Augmented Triad": "+",
+  "Major 6th": "6",
+  "Minor 6th": "m6",
+  "Major 7th": "maj7",
+  "Minor 7th": "m7",
+  "Dominant 7th": "7",
+  "Diminished 7th": "°7",
+  "Half-Diminished 7th": "ø7",
+  "Minor-Major 7th": "mMaj7",
+};
+
+/**
+ * Compact chord label (e.g. "C", "Am", "G7", "Fø7") for tight display
+ * surfaces such as the progression track. Falls back to "root quality" when the
+ * quality has no registered suffix.
+ */
+export function formatChordShortLabel(rootLabel: string, quality: string): string {
+  const suffix = CHORD_QUALITY_SUFFIX[quality];
+  if (suffix === undefined) return `${rootLabel} ${quality}`;
+  return `${rootLabel}${suffix}`;
+}
+
+export interface FormattedPlaybackPosition {
+  current: string;
+  total: string;
+}
+
+/**
+ * Format the DAW-style position readout for the progression track.
+ *
+ * Returns a bar.beat.subdivision pair such as `01.2.067 / 05.4.000` where:
+ * - bar is the 1-indexed bar (zero-padded to width 2)
+ * - beat is the 1-indexed beat within the current bar
+ * - subdivision is the thousandths offset past the current beat
+ *
+ * The total uses the rounded-up total bar count and pins beat/subdivision to
+ * the meter's last beat, matching how DAWs display the project end position.
+ */
+export function formatProgressionPlaybackPosition(
+  currentProgressionBar: number,
+  totalProgressionBars: number,
+  beatsPerBar: number,
+): FormattedPlaybackPosition {
+  const safeBeats = Math.max(1, Math.floor(beatsPerBar));
+  const totalBars = Math.max(1, Math.ceil(totalProgressionBars));
+  const clampedBar = Math.max(1, Math.min(currentProgressionBar, totalBars));
+  const bar = Math.floor(clampedBar);
+  const positionInBar = Math.max(0, Math.min(1, clampedBar - bar));
+  const beatPos = positionInBar * safeBeats;
+  const beatIndex = Math.min(safeBeats - 1, Math.floor(beatPos));
+  const beat = beatIndex + 1;
+  const subdivision = Math.min(
+    999,
+    Math.max(0, Math.round((beatPos - Math.floor(beatPos)) * 1000)),
+  );
+
+  const pad2 = (n: number) => String(n).padStart(2, "0");
+  const pad3 = (n: number) => String(n).padStart(3, "0");
+
+  return {
+    current: `${pad2(bar)}.${beat}.${pad3(subdivision)}`,
+    total: `${pad2(totalBars)}.${safeBeats}.000`,
+  };
+}
+
 export interface ProgressionStep {
   id: string;
   degree: DegreeId;
@@ -77,6 +146,11 @@ export interface ResolvedProgressionStep extends ProgressionStep {
   diatonicQuality: string | null;
   label: string;
   resolvedChordLabel: string | null;
+  /**
+   * Compact chord label suitable for tight DAW-style surfaces (e.g. "C", "Am",
+   * "G7"). Null when the chord cannot be resolved in the current scale.
+   */
+  shortChordLabel: string | null;
   unavailable: boolean;
   unavailableReason: string | null;
   qualityOverrideApplied: boolean;
@@ -291,6 +365,7 @@ export function resolveProgressionStep(
       diatonicQuality: null,
       label: step.degree,
       resolvedChordLabel: null,
+      shortChordLabel: null,
       unavailable: true,
       unavailableReason: "Degree unavailable in this scale",
       qualityOverrideApplied: false,
@@ -311,6 +386,7 @@ export function resolveProgressionStep(
     diatonicQuality: diatonic.quality,
     label: step.degree,
     resolvedChordLabel: `${rootLabel} ${quality}`,
+    shortChordLabel: formatChordShortLabel(rootLabel, quality),
     unavailable: false,
     unavailableReason: null,
     qualityOverrideApplied: overrideValid && quality !== diatonic.quality,
