@@ -5,6 +5,7 @@ import {
   NOTES,
   CHORD_DEFINITIONS,
   LENS_REGISTRY,
+  getFullChordShapeMatches,
   getChordNotes,
   getNoteDisplay,
   formatAccidental,
@@ -34,6 +35,7 @@ import {
   rootNoteAtom,
   scaleNameAtom,
 } from "./scaleAtoms";
+import { currentTuningAtom } from "./layoutAtoms";
 
 const chordFretSpreadStorage = constrainedNumberStorage({
   min: 0,
@@ -337,6 +339,27 @@ export const chordFretSpreadAtom = atomWithStorage(
   GET_ON_INIT,
 );
 
+export const fullChordsEnabledAtom = atomWithStorage<boolean>(
+  k("fullChordsEnabled"),
+  false,
+  booleanStorage,
+  GET_ON_INIT,
+);
+
+export const fullChordMatchesAtom = atom((get) => {
+  if (!get(fullChordsEnabledAtom)) return [];
+  return getFullChordShapeMatches({
+    chordRoot: get(chordRootAtom),
+    chordType: get(chordTypeAtom) ?? "",
+    tuning: get(currentTuningAtom),
+    maxFret: 24,
+  });
+});
+
+export const fullChordPositionsAtom = atom((get) =>
+  get(fullChordMatchesAtom).flatMap((match) => match.positionKeys),
+);
+
 // Migrates from legacy viewMode value on first access.
 export const practiceLensAtom = atomWithStorage<PracticeLens>(
   k("practiceLens"),
@@ -413,5 +436,4 @@ export const chordMemberFactsAtom = atom((get): ChordMemberFact[] => {
     };
   });
 });
-
 
