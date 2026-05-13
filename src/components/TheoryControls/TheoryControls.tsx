@@ -1,4 +1,4 @@
-import { useId, useState, type ReactNode } from "react";
+import { useEffect, useId, useState, type ReactNode } from "react";
 import { useAtomValue } from "jotai";
 import { AnimatePresence, motion } from "motion/react";
 import clsx from "clsx";
@@ -202,6 +202,12 @@ export function TheoryControls({ keyExplorer, compact }: TheoryControlsProps) {
   const initialOpenSection: TheoryOpenSection =
     Boolean(chordType) && !isChordsDisabled ? "chords" : "scale";
   const [openSection, setOpenSection] = useState<TheoryOpenSection>(initialOpenSection);
+
+  useEffect(() => {
+    if (openSection === "chords" && isChordsDisabled) {
+      setOpenSection("scale");
+    }
+  }, [isChordsDisabled, openSection]);
 
   const setSectionOpen = (section: Exclude<TheoryOpenSection, null>) => (open: boolean) => {
     setOpenSection(open ? section : null);

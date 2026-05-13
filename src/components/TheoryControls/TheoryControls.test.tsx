@@ -89,9 +89,19 @@ describe("TheoryControls/TheoryControls", () => {
     expect(screen.getByText("Progression Mode")).toBeInTheDocument();
     expect(screen.queryByRole("group", { name: "Chord overlay mode" })).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /Scale/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Scale.*C Major/i }));
     expect(screen.getByText("Root")).toBeInTheDocument();
     expect(screen.queryByText("Progression Mode")).not.toBeInTheDocument();
+  });
+
+  it("closes the currently open theory section when clicked", () => {
+    renderWithStore(<TheoryControls />);
+
+    expect(screen.getByText("Root")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Scale.*C Major/i }));
+
+    expect(screen.queryByText("Root")).not.toBeInTheDocument();
   });
 
   it("keeps disabled Chords collapsed when another section opens", () => {
@@ -107,6 +117,23 @@ describe("TheoryControls/TheoryControls", () => {
     fireEvent.click(screen.getByRole("button", { name: /Progression/i }));
     expect(screen.getByText("Progression Mode")).toBeInTheDocument();
     expect(screen.queryByText("Root")).not.toBeInTheDocument();
+  });
+
+  it("falls back to Scale when open Chords become disabled", () => {
+    const store = createStore();
+    store.set(chordTypeAtom, "Major Triad");
+
+    renderWithStore(<TheoryControls />, store);
+
+    expect(screen.getByRole("group", { name: "Chord overlay mode" })).toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: "Scale Family" })).not.toBeInTheDocument();
+
+    act(() => {
+      store.set(fingeringPatternAtom, "one-string");
+    });
+
+    expect(screen.queryByRole("group", { name: "Chord overlay mode" })).not.toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Scale Family" })).toBeInTheDocument();
   });
 
   it("shows the inline key explorer only after disclosure is opened", () => {
@@ -230,6 +257,20 @@ describe("TheoryControls/TheorySection — disclosure ::before focus-ring inset"
 });
 
 describe("TheoryControls/TheorySection", () => {
+  it("opens with defaultOpen and toggles closed when uncontrolled", () => {
+    render(
+      <TheorySection title="Scale" summary="C Major" defaultOpen>
+        <div data-testid="inner-content">content</div>
+      </TheorySection>,
+    );
+
+    expect(screen.getByTestId("inner-content")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Scale.*C Major/i }));
+
+    expect(screen.queryByTestId("inner-content")).not.toBeInTheDocument();
+  });
+
   it("does not render data-compact attribute by default", async () => {
     const { container } = render(
       <TheorySection title="Scale" summary="C Major">
