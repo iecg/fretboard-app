@@ -44,3 +44,5 @@ src/__snapshots__/
 # === Generated Files ===
 scripts/gif-capture/frames/
 docs/
+
+.superpowers/
