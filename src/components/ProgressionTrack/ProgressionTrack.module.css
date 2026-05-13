@@ -1,0 +1,301 @@
+.track {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--surface-card-border);
+  border-radius: var(--radius-card);
+  background: var(--surface-card-top);
+  box-shadow: var(--elevation-card);
+}
+
+.track[data-playing="true"] {
+  border-color: var(--selected-border);
+}
+
+.transportRow {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.transportCluster {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.transportCluster button {
+  min-width: 2.25rem;
+  min-height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.playButton {
+  border-radius: 999px;
+  background: var(--accent-primary);
+  color: var(--text-on-accent);
+}
+
+.playButton[aria-disabled="true"] {
+  opacity: var(--disabled-opacity);
+  cursor: not-allowed;
+}
+
+.loopOn {
+  border-color: var(--selected-border);
+  background: var(--selected-bg);
+  color: var(--selected-fg);
+}
+
+.statusLights {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.statusLight {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  min-height: 2.25rem;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--surface-control-border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-control);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.statusLight::before {
+  content: "";
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--chrome-border);
+}
+
+.statusLight[data-active="true"] {
+  color: var(--text-main);
+}
+
+.statusLight[data-active="true"]::before {
+  background: var(--accent-primary);
+  box-shadow: 0 0 0.65rem var(--accent-primary);
+}
+
+.positionReadout,
+.contextBox {
+  min-height: 2.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.1rem;
+  padding: 0.38rem 0.55rem;
+  border: 1px solid var(--surface-control-border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-control);
+}
+
+.positionReadout {
+  flex: 1 1 9rem;
+  min-width: 8rem;
+}
+
+.readoutLabel {
+  color: var(--text-muted);
+  font-size: var(--text-2xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.positionValue,
+.tempoValue,
+.scaleValue {
+  color: var(--text-main);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.1;
+}
+
+.positionValue,
+.tempoValue {
+  font-variant-numeric: tabular-nums;
+}
+
+.tempoValue {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.28rem;
+}
+
+.tempoValue span {
+  color: var(--text-muted);
+  font-size: var(--text-2xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.scaleValue {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contextReadouts {
+  display: grid;
+  grid-template-columns: minmax(4.75rem, auto) minmax(7rem, 1fr);
+  gap: var(--space-2);
+  min-width: min(18rem, 100%);
+}
+
+.timeline {
+  min-width: 0;
+  overflow-x: auto;
+  padding-block-end: 0.15rem;
+}
+
+.ruler {
+  --bar-count: 1;
+
+  display: grid;
+  grid-template-columns: repeat(var(--bar-count), minmax(3rem, 1fr));
+  min-width: max(100%, calc(var(--bar-count) * 3rem));
+  padding-inline: 0.35rem;
+  color: var(--text-muted);
+  font-size: var(--text-2xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.ruler span {
+  padding-block-end: 0.22rem;
+  border-inline-start: 1px solid var(--chrome-border);
+  padding-inline-start: 0.3rem;
+}
+
+.blocks {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 0.35rem;
+  min-width: 100%;
+  min-height: 4rem;
+  padding: 0.35rem;
+  border: 1px solid var(--chrome-border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-card-top);
+}
+
+.playhead {
+  position: absolute;
+  inset-block: 0.25rem;
+  width: 2px;
+  z-index: 2;
+  border-radius: 999px;
+  background: var(--accent-primary);
+  box-shadow: 0 0 0.7rem var(--accent-primary);
+  pointer-events: none;
+}
+
+.block {
+  position: relative;
+  min-width: 5.5rem;
+  min-height: 3.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.48rem 0.55rem;
+  border: 1px solid var(--surface-control-border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-control);
+  color: var(--surface-control-fg);
+  text-align: left;
+  cursor: pointer;
+  transition: var(--transition-surface);
+}
+
+.block:hover {
+  border-color: var(--surface-control-hover-border);
+  background: var(--surface-control-hover-bg);
+  color: var(--surface-control-hover-fg);
+}
+
+.block:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  box-shadow: var(--focus-ring-glow);
+}
+
+.block[data-active="true"] {
+  border-color: var(--selected-border);
+  background: var(--selected-bg);
+  color: var(--selected-fg);
+}
+
+.block[data-unavailable="true"] {
+  opacity: var(--disabled-opacity);
+}
+
+.degreeBadge {
+  flex: 0 0 auto;
+  min-width: 2.25rem;
+  padding: 0.2rem 0.38rem;
+  border-radius: var(--radius-sm);
+  background: var(--token-chip-bg);
+  color: var(--token-chip-fg);
+  text-align: center;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+.blockText {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+
+.chordName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.duration {
+  color: var(--text-muted);
+  font-size: var(--text-2xs);
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+}
+
+.statusNote {
+  margin: 0.45rem 0 0;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+@media (max-width: 760px) {
+  .transportRow {
+    flex-wrap: wrap;
+  }
+
+  .positionReadout {
+    flex: 1 1 7rem;
+  }
+
+  .contextReadouts {
+    flex: 1 1 100%;
+    width: 100%;
+    grid-template-columns: minmax(4.75rem, 0.8fr) minmax(7rem, 1.2fr);
+  }
+}
