@@ -36,10 +36,11 @@ export function ProgressionTrack() {
   const { scaleLabel } = useScaleState();
 
   const canPlay = !progressionPlaybackBlockedReason;
-  const totalBars = Math.max(1, Math.round(totalProgressionBars));
+  const totalDurationBars = Math.max(1, totalProgressionBars);
+  const totalBarsForDisplay = Math.max(1, Math.ceil(totalProgressionBars));
   const totalSteps = Math.max(1, resolvedProgressionSteps.length);
   const activeStep = resolvedProgressionSteps[activeProgressionStepIndex] ?? null;
-  const playheadLeft = `${Math.max(0, Math.min(100, ((currentProgressionBar - 1) / totalBars) * 100))}%`;
+  const playheadLeft = `${Math.max(0, Math.min(100, ((currentProgressionBar - 1) / totalDurationBars) * 100))}%`;
 
   return (
     <section
@@ -96,7 +97,7 @@ export function ProgressionTrack() {
 
         <div className={styles.positionReadout}>
           <span className={styles.readoutLabel}>Position</span>
-          <span className={styles.positionValue}>{formatPosition(currentProgressionBar, activeProgressionStepIndex, totalBars, totalSteps)}</span>
+          <span className={styles.positionValue}>{formatPosition(currentProgressionBar, activeProgressionStepIndex, totalBarsForDisplay, totalSteps)}</span>
         </div>
 
         <div className={styles.contextReadouts}>
@@ -114,13 +115,18 @@ export function ProgressionTrack() {
       <div className={styles.timeline} aria-label="Progression timeline">
         <div
           className={styles.ruler}
-          style={{ "--bar-count": totalBars } as CSSProperties}
+          style={{ "--bar-count": totalBarsForDisplay } as CSSProperties}
           aria-hidden="true"
         >
-          {Array.from({ length: totalBars }, (_, i) => <span key={i}>{i + 1}</span>)}
+          {Array.from({ length: totalBarsForDisplay }, (_, i) => <span key={i}>{i + 1}</span>)}
         </div>
         <div className={styles.blocks}>
-          <span className={styles.playhead} style={{ left: playheadLeft }} aria-hidden="true" />
+          <span
+            className={styles.playhead}
+            style={{ left: playheadLeft }}
+            data-testid="progression-playhead"
+            aria-hidden="true"
+          />
           {resolvedProgressionSteps.map((step, index) => {
             const duration = formatProgressionDurationLabel(step.duration);
             const selected = index === activeProgressionStepIndex;

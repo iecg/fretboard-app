@@ -89,6 +89,17 @@ describe("ProgressionTrack", () => {
     ).toBe("0.25");
   });
 
+  it("positions the playhead using exact fractional total duration bars", () => {
+    const { container } = renderWithAtoms(<ProgressionTrack />, [
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, beatDurationProgression],
+      [beatsPerBarAtom, 8],
+      [activeProgressionStepIndexAtom, 1],
+    ]);
+
+    expect(container.querySelector<HTMLElement>("[data-testid='progression-playhead']")?.style.left).toBe("20%");
+  });
+
   it("disables playback when progression playback is blocked", () => {
     renderWithAtoms(<ProgressionTrack />, [
       [progressionEnabledAtom, false],

@@ -209,7 +209,7 @@
 
   position: relative;
   flex: var(--duration-bars) 1 0;
-  min-width: min(5.5rem, 34vw);
+  min-width: 0;
   min-height: 3.25rem;
   display: flex;
   align-items: center;
