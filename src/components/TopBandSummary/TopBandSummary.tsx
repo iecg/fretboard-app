@@ -6,6 +6,8 @@ import { useScaleState } from "../../hooks/useScaleState";
 import { usePracticeBarState } from "../../hooks/usePracticeBarState";
 import { DegreeChipStrip } from "../DegreeChipStrip/DegreeChipStrip";
 import { ChordPracticeBar } from "../ChordPracticeBar/ChordPracticeBar";
+import { ProgressionPlaybackBar } from "../ProgressionPlaybackBar/ProgressionPlaybackBar";
+import { useProgressionState } from "../../hooks/useProgressionState";
 import shared from "../shared/shared.module.css";
 import styles from "./TopBandSummary.module.css";
 
@@ -28,6 +30,7 @@ export function TopBandSummary() {
     chordGroup,
     landOnGroup,
   } = usePracticeBarState();
+  const { progressionEnabled } = useProgressionState();
 
   const colorNoteSet = colorNotes.length > 0 ? new Set<string>(colorNotes) : undefined;
 
@@ -59,6 +62,18 @@ export function TopBandSummary() {
         }
       />
       <AnimatePresence initial={false}>
+        {progressionEnabled && (
+          <motion.div
+            key="progression-section"
+            className={styles["progression-section"]}
+            initial={{ height: 0, overflow: "hidden", opacity: 0 }}
+            animate={{ height: "auto", overflow: "visible", opacity: 1 }}
+            exit={{ height: 0, overflow: "hidden", opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+          >
+            <ProgressionPlaybackBar />
+          </motion.div>
+        )}
         {showChordBar && (
           <motion.div
             key="chord-section"

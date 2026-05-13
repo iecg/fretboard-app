@@ -28,18 +28,30 @@
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
-.chord-section {
+.chord-section,
+.progression-section {
   width: 100%;
 }
 
-/* Inset hairline divider between the chip strip and the chord section.
+.progression-section {
+  padding: 0.35rem 0.85rem;
+}
+
+/* Inset hairline divider between the chip strip and the dynamic sections.
    Rendered inside the animated motion container so it appears/disappears
-   in lockstep with the chord bar — no orphaned line. */
-.chord-section::before {
+   in lockstep with the content — no orphaned lines. */
+.chord-section::before,
+.progression-section::before {
   content: "";
   display: block;
   height: 1px;
-  margin: 0 0.85rem;
+  margin: 0 0;
   background: var(--chrome-border);
   opacity: 0.6;
+}
+
+.progression-section::before {
+  margin-left: -0.85rem;
+  margin-right: -0.85rem;
+  margin-bottom: 0.35rem;
 }
