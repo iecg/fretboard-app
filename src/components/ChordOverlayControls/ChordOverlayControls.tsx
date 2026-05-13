@@ -55,6 +55,11 @@ const CHORD_TYPE_DISPLAY_ORDER: readonly string[] = [
 ];
 
 const CHORD_NONE_VALUE = "__none__";
+const FULL_CHORD_SUPPORTED_TYPES = new Set([
+  "Major Triad",
+  "Minor Triad",
+  "Dominant 7th",
+]);
 
 export interface ChordOverlayControlsProps {
   compact?: boolean;
@@ -64,6 +69,9 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
   const { scaleName, useFlats } = useScaleState();
   const {
     chordType,
+    currentTuning,
+    fullChordsEnabled,
+    setFullChordsEnabled,
     practiceLens,
     setPracticeLens,
     chordDegree,
@@ -80,6 +88,10 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
   const isPatternDisabled =
     fingeringPattern === "one-string" || fingeringPattern === "two-strings";
+  const fullChordsSupported =
+    chordType != null &&
+    FULL_CHORD_SUPPORTED_TYPES.has(chordType) &&
+    currentTuning.length === 6;
 
   const hasQualityOverride = chordQualityOverride != null;
   const degreeSelectOptions = [
@@ -127,6 +139,12 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
       }
     }
   }, [currentLensEntry, lensAvailability, setPracticeLens]);
+
+  useEffect(() => {
+    if (fullChordsEnabled && !fullChordsSupported) {
+      setFullChordsEnabled(false);
+    }
+  }, [fullChordsEnabled, fullChordsSupported, setFullChordsEnabled]);
 
   const handleDegreeChange = (value: string) => {
     startTransition(() => {
@@ -244,6 +262,29 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
           </div>
         </>
       )}
+
+      {!isPatternDisabled && chordType ? (
+        <div className={shared["control-section"]}>
+          <span className={shared["section-label"]}>Full Chords</span>
+          <ToggleBar
+            options={[
+              { value: "off", label: "Off" },
+              { value: "on", label: "On", disabled: !fullChordsSupported },
+            ]}
+            value={fullChordsEnabled ? "on" : "off"}
+            onChange={(value) => setFullChordsEnabled(value === "on")}
+            label="Full Chords"
+            compact={compact}
+          />
+          <p className={shared["field-hint"]}>
+            {fullChordsSupported
+              ? "Show canonical CAGED voicings instead of scattered chord tones."
+              : currentTuning.length !== 6
+                ? "Full Chords currently supports 6-string tunings only."
+                : "Full Chords currently supports Major Triad, Minor Triad, and Dominant 7th."}
+          </p>
+        </div>
+      ) : null}
 
       {!isPatternDisabled && chordType ? (
         <div className={shared["control-section"]}>

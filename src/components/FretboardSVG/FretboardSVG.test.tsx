@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, fireEvent } from "@testing-library/react";
+import "../../styles/index.css";
+import "../../styles/themes.css";
 import { FretboardSVG } from "../FretboardSVG/FretboardSVG";
 import { getFretboardNotes } from "@fretflow/core";
 import type { CagedShape, ShapePolygon } from "@fretflow/core";
@@ -215,6 +217,138 @@ describe("FretboardSVG/FretboardSVG", () => {
   it("has no a11y violations", async () => {
     const { container } = render(<FretboardSVG {...BASE_PROPS} />);
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("renders chord roles only for matched full-chord coordinates and drives one explicit connector", () => {
+    const semantics = new Map<string, NoteSemantics>([
+      [
+        "C",
+        {
+          isScaleRoot: true,
+          isChordRoot: true,
+          isChordTone: true,
+          isInScale: true,
+          isColorTone: false,
+          isGuideTone: false,
+          isTension: false,
+          memberName: "root",
+          isFullChordMode: true,
+        },
+      ],
+      [
+        "E",
+        {
+          isScaleRoot: false,
+          isChordRoot: false,
+          isChordTone: true,
+          isInScale: true,
+          isColorTone: false,
+          isGuideTone: false,
+          isTension: false,
+          memberName: "3",
+          isFullChordMode: true,
+        },
+      ],
+      [
+        "G",
+        {
+          isScaleRoot: false,
+          isChordRoot: false,
+          isChordTone: true,
+          isInScale: true,
+          isColorTone: false,
+          isGuideTone: false,
+          isTension: false,
+          memberName: "5",
+          isFullChordMode: true,
+        },
+      ],
+    ]);
+    const fullChordPositionKeys = new Set([
+      "0-8",
+      "1-8",
+      "2-9",
+      "3-10",
+      "4-10",
+      "5-8",
+    ]);
+    const fullChordVoicings: Array<{
+      shape: CagedShape;
+      voicingKey: string;
+      notes: Array<{ stringIndex: number; fretIndex: number; noteName: string }>;
+    }> = [
+      {
+        shape: "E",
+        voicingKey: "e-shape-c-major",
+        notes: [
+          { stringIndex: 0, fretIndex: 8, noteName: "C" },
+          { stringIndex: 1, fretIndex: 8, noteName: "G" },
+          { stringIndex: 2, fretIndex: 9, noteName: "E" },
+          { stringIndex: 3, fretIndex: 10, noteName: "C" },
+          { stringIndex: 4, fretIndex: 10, noteName: "G" },
+          { stringIndex: 5, fretIndex: 8, noteName: "C" },
+        ],
+      },
+    ];
+
+    const { container } = render(
+      <FretboardSVG
+        {...BASE_PROPS}
+        chordTones={["C", "E", "G"]}
+        chordRoot="C"
+        highlightNotes={["C", "E", "G"]}
+        noteSemantics={semantics}
+        fullChordPositionKeys={fullChordPositionKeys}
+        fullChordVoicings={fullChordVoicings}
+      />,
+    );
+
+    const chordRoleLabels = Array.from(
+      container.querySelectorAll(
+        ".note-bubble.chord-root:not(.hidden), .note-bubble.chord-tone-in-scale:not(.hidden)",
+      ),
+    )
+      .map((el) => el.getAttribute("aria-label"))
+      .sort();
+
+    expect(chordRoleLabels).toEqual([
+      "C on string 1, fret 8",
+      "C on string 4, fret 10",
+      "C on string 6, fret 8",
+      "E on string 3, fret 9",
+      "G on string 2, fret 8",
+      "G on string 5, fret 10",
+    ]);
+    expect(container.querySelectorAll('path[data-layer="halo"]').length).toBe(1);
+    expect(container.querySelectorAll('path[data-layer="fill"]').length).toBe(1);
+    expect(container.querySelectorAll('path[data-layer="outline"]').length).toBe(1);
+    expect(
+      container.querySelector('.chord-root[data-full-chord-shape="E"]'),
+    ).not.toBeNull();
+    expect(
+      container.querySelector('path[data-layer="fill"][data-caged-shape="E"]'),
+    ).not.toBeNull();
+    expect(
+      container.querySelector('.chord-root[data-full-chord-shape="E"] path:last-of-type'),
+    ).toHaveStyle({ fill: "var(--caged-e)" });
+    expect(
+      container.querySelector('.chord-root[data-full-chord-shape="E"] text'),
+    ).toHaveStyle({ fill: "var(--caged-e-fg)" });
+  });
+
+  it("keeps the D-shape light-theme background in the same gray family as dark mode", () => {
+    const themedScope = document.createElement("div");
+    themedScope.setAttribute("data-theme", "modern-light");
+    document.body.appendChild(themedScope);
+
+    expect(
+      getComputedStyle(themedScope)
+        .getPropertyValue("--caged-d-bg")
+        .replace(/\s+/g, "")
+        .trim(),
+    ).toBe("rgba(153,153,153,0.35)");
+
+    themedScope.remove();
   });
 
   describe("role-based shapes", () => {

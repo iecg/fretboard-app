@@ -20,6 +20,7 @@ import {
   fingeringPatternAtom,
   cagedShapesAtom,
   npsPositionAtom,
+  fullChordMatchesAtom,
 } from "../store/atoms";
 import type { CagedShape } from "@fretflow/core";
 
@@ -52,6 +53,7 @@ export function useFretboardState() {
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
   const cagedShapes = useAtomValue(cagedShapesAtom);
   const npsPosition = useAtomValue(npsPositionAtom);
+  const fullChordMatches = useAtomValue(fullChordMatchesAtom);
 
   let activePattern: ActivePatternType | undefined;
   let activeShape: ActiveShapeType;
@@ -81,6 +83,13 @@ export function useFretboardState() {
     shapeScope = npsPosition !== undefined && npsPosition > 0 ? "single" : "global";
   }
 
+  const visibleFullChordMatches = fingeringPattern === "caged"
+    ? fullChordMatches.filter((match) => cagedShapes.has(match.shape))
+    : fullChordMatches;
+  const visibleFullChordPositions = Array.from(
+    new Set(visibleFullChordMatches.flatMap((match) => match.positionKeys)),
+  );
+
   return {
     currentTuning,
     rootNote,
@@ -105,5 +114,7 @@ export function useFretboardState() {
     activePattern,
     activeShape,
     shapeScope,
+    fullChordMatches: visibleFullChordMatches,
+    fullChordPositions: visibleFullChordPositions,
   };
 }

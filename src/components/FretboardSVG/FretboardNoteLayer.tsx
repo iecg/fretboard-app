@@ -79,6 +79,7 @@ export const FretboardNoteLayer = memo(({
         isGuideTone,
         scaleDegree,
         degreeColor,
+        fullChordShape,
       }) => {
         const cx = fretCenterX(fretIndex);
         const cy = stringYAt(stringIndex, cx);
@@ -167,6 +168,7 @@ export const FretboardNoteLayer = memo(({
             data-note-shape={noteShape}
             data-note-tension={isTension || undefined}
             data-note-guide-tone={isGuideTone || undefined}
+            data-full-chord-shape={fullChordShape}
             data-lens-emphasis={applyLensEmphasis.glowColor ?? undefined}
             data-scale-degree={degreeColorsEnabled ? scaleDegree : undefined}
             data-degree-colors={degreeColorsEnabled ? "true" : undefined}

@@ -36,7 +36,7 @@ export default defineConfig({
         classNameStrategy: 'non-scoped',
       },
     },
-    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    include: ['src/**/*.{test,spec}.{ts,tsx}', 'packages/core/src/**/*.{test,spec}.{ts,tsx}'],
     exclude: ['e2e/**'],
     // Vitest 4 CI defaults to updateSnapshot="none". "new" ensures missing snapshots
     // are written. Snapshots are gitignored as Node 22/24 produce slight SVG differences.

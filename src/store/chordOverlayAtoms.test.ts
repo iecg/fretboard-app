@@ -10,6 +10,9 @@ import {
   chordRootOverrideAtom,
   chordTypeAtom,
   chordQualityOverrideAtom,
+  fullChordsEnabledAtom,
+  fullChordMatchesAtom,
+  fullChordPositionsAtom,
   setChordDegreeAtom,
 } from "./chordOverlayAtoms";
 import { allChordMembersAtom } from "./composableSelectors";
@@ -401,7 +404,59 @@ describe("allChordMembersAtom — scaleDegree population", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Group F — allChordMembersAtom: scaleInterval for out-of-scale notes
+// Group G — full chord matches
+// ---------------------------------------------------------------------------
+
+describe("chordOverlayAtoms — full chord matches", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("manual mode E major with full chords enabled returns an E-shape match with open-string positions", () => {
+    const store = makeAtomStore([
+      [chordOverlayModeAtom, "manual"],
+      [chordRootAtom, "E"],
+      [chordTypeAtom, "Major Triad"],
+      [fullChordsEnabledAtom, true],
+    ]);
+
+    const matches = store.get(fullChordMatchesAtom);
+    const eShapeMatch = matches.find((match) => match.shape === "E" && match.rootFret === 0);
+
+    expect(eShapeMatch).toBeDefined();
+    expect(store.get(fullChordPositionsAtom)).toContain("5-0");
+    expect(store.get(fullChordPositionsAtom)).toContain("0-0");
+  });
+
+  it("degree mode V in C Major with Dominant 7th override resolves to G and returns at least one full chord match", () => {
+    const store = makeAtomStore([
+      [chordDegreeAtom, "V"],
+      [chordOverlayModeAtom, "degree"],
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [chordQualityOverrideAtom, "Dominant 7th"],
+      [fullChordsEnabledAtom, true],
+    ]);
+
+    expect(store.get(chordRootAtom)).toBe("G");
+    expect(store.get(fullChordMatchesAtom).length).toBeGreaterThan(0);
+  });
+
+  it("unsupported quality returns no full chord matches or positions", () => {
+    const store = makeAtomStore([
+      [chordOverlayModeAtom, "manual"],
+      [chordRootAtom, "C"],
+      [chordTypeAtom, "Major 7th"],
+      [fullChordsEnabledAtom, true],
+    ]);
+
+    expect(store.get(fullChordMatchesAtom)).toEqual([]);
+    expect(store.get(fullChordPositionsAtom)).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Group H — allChordMembersAtom: scaleInterval for out-of-scale notes
 // ---------------------------------------------------------------------------
 
 describe("allChordMembersAtom — scaleInterval for out-of-scale notes", () => {
@@ -516,4 +571,3 @@ describe("allChordMembersAtom — scaleInterval for out-of-scale notes", () => {
     expect(gsEntry!.scaleDegree).toBeUndefined();
   });
 });
-

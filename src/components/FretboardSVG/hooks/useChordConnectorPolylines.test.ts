@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { renderHook } from "@testing-library/react";
+import type { CagedShape } from "@fretflow/core";
 import {
   buildChordConnectorPolylines,
   MAX_PLAYABLE_FRET_POSITIONS,
@@ -59,6 +60,83 @@ describe("buildChordConnectorPolylines", () => {
   it("returns [] for empty noteData", () => {
     const result = buildChordConnectorPolylines([], ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
     expect(result).toEqual([]);
+  });
+
+  describe("useChordConnectorPolylines", () => {
+    it("builds exactly one connector from an explicit 6-string E-shape voicing with repeated roots", () => {
+      const explicitVoicings: Array<{
+        shape: CagedShape;
+        voicingKey: string;
+        notes: Array<{ stringIndex: number; fretIndex: number; noteName: string }>;
+      }> = [
+        {
+          shape: "E",
+          voicingKey: "e-shape-c-major",
+          notes: [
+            { stringIndex: 0, fretIndex: 8, noteName: "C" },
+            { stringIndex: 1, fretIndex: 8, noteName: "G" },
+            { stringIndex: 2, fretIndex: 9, noteName: "E" },
+            { stringIndex: 3, fretIndex: 10, noteName: "C" },
+            { stringIndex: 4, fretIndex: 10, noteName: "G" },
+            { stringIndex: 5, fretIndex: 8, noteName: "C" },
+          ],
+        },
+      ];
+
+      const { result } = renderHook(() =>
+        useChordConnectorPolylines({
+          noteData: [],
+          chordToneNames: ["C", "E", "G"],
+          fretCenterX,
+          stringYAt,
+          stringRowPx: STRING_ROW_PX,
+          chordRoot: "C",
+          explicitVoicings,
+        }),
+      );
+
+      expect(result.current).toHaveLength(1);
+      expect(result.current[0]?.voicingKey).toBe("e-shape-c-major");
+      expect(result.current[0]?.shape).toBe("E");
+      expect(result.current[0]?.vertices).toHaveLength(6);
+    });
+
+    it("orders explicit voicing geometry by string index even when notes are passed out of order", () => {
+      const explicitVoicings: Array<{
+        shape: CagedShape;
+        voicingKey: string;
+        notes: Array<{ stringIndex: number; fretIndex: number; noteName: string }>;
+      }> = [
+        {
+          shape: "E",
+          voicingKey: "e-shape-c-major-shuffled",
+          notes: [
+            { stringIndex: 5, fretIndex: 8, noteName: "C" },
+            { stringIndex: 3, fretIndex: 10, noteName: "C" },
+            { stringIndex: 1, fretIndex: 8, noteName: "G" },
+            { stringIndex: 4, fretIndex: 10, noteName: "G" },
+            { stringIndex: 0, fretIndex: 8, noteName: "C" },
+            { stringIndex: 2, fretIndex: 9, noteName: "E" },
+          ],
+        },
+      ];
+
+      const { result } = renderHook(() =>
+        useChordConnectorPolylines({
+          noteData: [],
+          chordToneNames: ["C", "E", "G"],
+          fretCenterX,
+          stringYAt,
+          stringRowPx: STRING_ROW_PX,
+          chordRoot: "C",
+          explicitVoicings,
+        }),
+      );
+
+      expect(result.current[0]?.vertices.map((vertex) => vertex.y)).toEqual([
+        0, 20, 40, 60, 80, 100,
+      ]);
+    });
   });
 
   it("returns [] when chordToneNames has fewer than 2 entries", () => {

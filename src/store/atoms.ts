@@ -44,6 +44,9 @@ export {
   chordTypeAtom,
   linkChordRootAtom,
   chordFretSpreadAtom,
+  fullChordsEnabledAtom,
+  fullChordMatchesAtom,
+  fullChordPositionsAtom,
   practiceLensAtom,
   chordTonesAtom,
   chordMembersAtom,
@@ -124,4 +127,3 @@ export {
 } from "./composableSelectors";
 
 export { languageAtom } from "./languageAtom";
-
