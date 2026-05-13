@@ -112,10 +112,13 @@ export function ProgressionTrack() {
         </div>
       </div>
 
-      <div className={styles.timeline} aria-label="Progression timeline">
+      <div
+        className={styles.timeline}
+        style={{ "--bar-count": totalBarsForDisplay } as CSSProperties}
+        aria-label="Progression timeline"
+      >
         <div
           className={styles.ruler}
-          style={{ "--bar-count": totalBarsForDisplay } as CSSProperties}
           aria-hidden="true"
         >
           {Array.from({ length: totalBarsForDisplay }, (_, i) => <span key={i}>{i + 1}</span>)}

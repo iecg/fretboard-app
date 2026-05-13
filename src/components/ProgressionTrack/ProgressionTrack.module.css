@@ -157,17 +157,18 @@
 }
 
 .timeline {
+  --bar-count: 1;
+  --timeline-lane-width: max(100%, calc(var(--bar-count) * 3rem));
+
   min-width: 0;
   overflow-x: auto;
   padding-block-end: 0.15rem;
 }
 
 .ruler {
-  --bar-count: 1;
-
   display: grid;
   grid-template-columns: repeat(var(--bar-count), minmax(3rem, 1fr));
-  min-width: max(100%, calc(var(--bar-count) * 3rem));
+  min-width: var(--timeline-lane-width);
   padding-inline: 0.35rem;
   color: var(--text-muted);
   font-size: var(--text-2xs);
@@ -185,7 +186,7 @@
   display: flex;
   align-items: stretch;
   gap: 0.35rem;
-  min-width: 100%;
+  min-width: var(--timeline-lane-width);
   min-height: 4rem;
   padding: 0.35rem;
   border: 1px solid var(--chrome-border);

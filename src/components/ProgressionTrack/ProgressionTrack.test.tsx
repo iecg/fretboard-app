@@ -76,12 +76,13 @@ describe("ProgressionTrack", () => {
   });
 
   it("sizes beat-duration blocks proportionally to the active meter", () => {
-    renderWithAtoms(<ProgressionTrack />, [
+    const { container } = renderWithAtoms(<ProgressionTrack />, [
       [progressionEnabledAtom, true],
       [progressionStepsAtom, beatDurationProgression],
       [beatsPerBarAtom, 8],
     ]);
 
+    expect(container.querySelector<HTMLElement>("[aria-label='Progression timeline']")?.style.getPropertyValue("--bar-count")).toBe("2");
     expect(
       screen
         .getByRole("button", { name: /Step 1, I, C Major Triad, 2 beats, active/i })
