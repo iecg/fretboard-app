@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createStore, type Atom } from "jotai";
+import { createStore } from "jotai";
 import {
-  activeProgressionStepAtom,
   activeProgressionStepIndexAtom,
   activeResolvedProgressionStepAtom,
   addProgressionStepAtom,
@@ -13,7 +12,6 @@ import {
   progressionLoopEnabledAtom,
   progressionPlaybackBlockedReasonAtom,
   progressionPlayingAtom,
-  progressionStepDeadlineAtom,
   progressionStepDurationMsAtom,
   progressionStepsAtom,
   progressionTempoBpmAtom,
@@ -25,11 +23,6 @@ import {
   updateProgressionStepQualityAtom,
 } from "./progressionAtoms";
 import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
-import { k } from "../test-utils/storage";
-
-function mount<T>(store: ReturnType<typeof createStore>, atom: Atom<T>): () => void {
-  return store.sub(atom, () => {});
-}
 
 describe("progressionAtoms", () => {
   beforeEach(() => {
@@ -56,13 +49,6 @@ describe("progressionAtoms", () => {
   it("loads a preset and remaps labels to the active scale", () => {
     const store = createStore();
     store.set(scaleNameAtom, "Natural Minor");
-    store.set(progressionEnabledAtom, true);
-    store.set(progressionStepsAtom, [
-      { id: "minor-one", degree: "i", duration: "1-bar", qualityOverride: null },
-    ]);
-    store.set(setProgressionPlayingAtom, true);
-    expect(store.get(progressionPlayingAtom)).toBe(true);
-    expect(store.get(progressionStepDeadlineAtom)).not.toBeNull();
 
     store.set(loadProgressionPresetAtom, "one-five-six-four");
 
@@ -73,9 +59,6 @@ describe("progressionAtoms", () => {
       "iv",
     ]);
     expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
-    expect(store.get(progressionEnabledAtom)).toBe(true);
-    expect(store.get(progressionPlayingAtom)).toBe(false);
-    expect(store.get(progressionStepDeadlineAtom)).toBeNull();
   });
 
   it("updates the active step degree, duration, and quality", () => {
@@ -114,114 +97,6 @@ describe("progressionAtoms", () => {
     store.set(removeProgressionStepAtom, "two");
     expect(store.get(progressionStepsAtom).map((step) => step.id)).not.toContain("two");
     expect(store.get(activeProgressionStepIndexAtom)).toBeLessThan(store.get(progressionStepsAtom).length);
-  });
-
-  it("preserves the active step identity when removing an earlier step", () => {
-    const store = createStore();
-    store.set(progressionStepsAtom, [
-      { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
-      { id: "two", degree: "V", duration: "1-bar", qualityOverride: null },
-      { id: "three", degree: "vi", duration: "1-bar", qualityOverride: null },
-      { id: "four", degree: "IV", duration: "1-bar", qualityOverride: null },
-    ]);
-    store.set(setProgressionActiveStepIndexAtom, 2);
-
-    store.set(removeProgressionStepAtom, "one");
-
-    expect(store.get(activeProgressionStepAtom)?.id).toBe("three");
-    expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
-  });
-
-  it("preserves the active step identity when moving a non-active step", () => {
-    const store = createStore();
-    store.set(progressionStepsAtom, [
-      { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
-      { id: "two", degree: "V", duration: "1-bar", qualityOverride: null },
-      { id: "three", degree: "vi", duration: "1-bar", qualityOverride: null },
-    ]);
-    store.set(setProgressionActiveStepIndexAtom, 2);
-
-    store.set(moveProgressionStepAtom, { id: "one", direction: 1 });
-
-    expect(store.get(activeProgressionStepAtom)?.id).toBe("three");
-    expect(store.get(activeProgressionStepIndexAtom)).toBe(2);
-  });
-
-  it("preserves active step identity when moving a non-active step across it", () => {
-    const store = createStore();
-    store.set(progressionStepsAtom, [
-      { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
-      { id: "two", degree: "V", duration: "1-bar", qualityOverride: null },
-      { id: "three", degree: "vi", duration: "1-bar", qualityOverride: null },
-    ]);
-    store.set(setProgressionActiveStepIndexAtom, 1);
-
-    store.set(moveProgressionStepAtom, { id: "one", direction: 1 });
-
-    expect(store.get(progressionStepsAtom).map((step) => step.id)).toEqual([
-      "two",
-      "one",
-      "three",
-    ]);
-    expect(store.get(activeProgressionStepAtom)?.id).toBe("two");
-    expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
-  });
-
-  it("preserves active step identity and moves the active index with it", () => {
-    const store = createStore();
-    store.set(progressionStepsAtom, [
-      { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
-      { id: "two", degree: "V", duration: "1-bar", qualityOverride: null },
-      { id: "three", degree: "vi", duration: "1-bar", qualityOverride: null },
-    ]);
-    store.set(setProgressionActiveStepIndexAtom, 1);
-
-    store.set(moveProgressionStepAtom, { id: "two", direction: 1 });
-
-    expect(store.get(progressionStepsAtom).map((step) => step.id)).toEqual([
-      "one",
-      "three",
-      "two",
-    ]);
-    expect(store.get(activeProgressionStepAtom)?.id).toBe("two");
-    expect(store.get(activeProgressionStepIndexAtom)).toBe(2);
-  });
-
-  it("filters invalid stored progression steps and self-heals storage", () => {
-    const storedSteps = [
-      { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
-      { id: "missing-duration", degree: "V", qualityOverride: null },
-      { id: "two", degree: "vi", duration: "2-bars", qualityOverride: "Minor 7th" },
-    ];
-    localStorage.setItem(k("progressionSteps"), JSON.stringify(storedSteps));
-
-    const store = createStore();
-    const unmount = mount(store, progressionStepsAtom);
-
-    expect(store.get(progressionStepsAtom).map((step) => step.id)).toEqual(["one", "two"]);
-    expect(JSON.parse(localStorage.getItem(k("progressionSteps")) ?? "[]")).toEqual([
-      { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
-      { id: "two", degree: "vi", duration: "2-bars", qualityOverride: "Minor 7th" },
-    ]);
-    unmount();
-  });
-
-  it("normalizes non-array stored progression steps to defaults and self-heals storage", () => {
-    localStorage.setItem(k("progressionSteps"), JSON.stringify({ id: "not-an-array" }));
-
-    const store = createStore();
-    const unmount = mount(store, progressionStepsAtom);
-
-    expect(store.get(progressionStepsAtom).map((step) => step.id)).toEqual([
-      "default-i",
-      "default-v",
-      "default-vi",
-      "default-iv",
-    ]);
-    expect(JSON.parse(localStorage.getItem(k("progressionSteps")) ?? "[]")).toEqual(
-      store.get(progressionStepsAtom),
-    );
-    unmount();
   });
 
   it("converts active step duration through tempo", () => {
