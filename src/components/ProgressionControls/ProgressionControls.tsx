@@ -17,6 +17,7 @@ import {
   CHORD_TYPE_DISPLAY_ORDER,
   CHORD_TYPE_SHORT_LABELS,
 } from "../ChordOverlayControls/chordTypeOptions";
+import { ProgressionPlaybackBar } from "../ProgressionPlaybackBar/ProgressionPlaybackBar";
 import styles from "./ProgressionControls.module.css";
 
 export interface ProgressionControlsProps {
@@ -64,6 +65,8 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
           compact={compact}
         />
       </div>
+
+      <ProgressionPlaybackBar />
 
       <div className={shared["control-section"]}>
         <span className={shared["section-label"]}>Presets</span>
