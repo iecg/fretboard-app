@@ -21,6 +21,11 @@ const fourStepProgression = [
   { id: "four", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null },
 ] as const;
 
+const beatDurationProgression = [
+  { id: "beat-step", degree: "I", duration: { value: 2, unit: "beat" }, qualityOverride: null },
+  { id: "bar-step", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+] as const;
+
 describe("ProgressionTrack", () => {
   it("renders transport, status, position, tempo, scale, ruler, and chord blocks", () => {
     renderWithAtoms(<ProgressionTrack />, [
@@ -68,6 +73,28 @@ describe("ProgressionTrack", () => {
     fireEvent.click(screen.getByRole("button", { name: /Step 3, vi, A Minor Triad, 2 bars/i }));
 
     expect(store.get(activeProgressionStepIndexAtom)).toBe(2);
+  });
+
+  it("sizes beat-duration blocks proportionally to the active meter", () => {
+    renderWithAtoms(<ProgressionTrack />, [
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, beatDurationProgression],
+      [beatsPerBarAtom, 8],
+    ]);
+
+    expect(
+      screen
+        .getByRole("button", { name: /Step 1, I, C Major Triad, 2 beats, active/i })
+        .style.getPropertyValue("--duration-bars"),
+    ).toBe("0.25");
+  });
+
+  it("disables playback when progression playback is blocked", () => {
+    renderWithAtoms(<ProgressionTrack />, [
+      [progressionEnabledAtom, false],
+    ]);
+
+    expect(screen.getByRole("button", { name: "Play progression" })).toBeDisabled();
   });
 
   it("play and loop controls reflect active state", () => {

@@ -43,7 +43,7 @@
   color: var(--text-on-accent);
 }
 
-.playButton[aria-disabled="true"] {
+.playButton:disabled {
   opacity: var(--disabled-opacity);
   cursor: not-allowed;
 }
@@ -205,8 +205,11 @@
 }
 
 .block {
+  --duration-bars: 1;
+
   position: relative;
-  min-width: 5.5rem;
+  flex: var(--duration-bars) 1 0;
+  min-width: min(5.5rem, 34vw);
   min-height: 3.25rem;
   display: flex;
   align-items: center;

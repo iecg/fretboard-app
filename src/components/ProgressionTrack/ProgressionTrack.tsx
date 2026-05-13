@@ -31,6 +31,7 @@ export function ProgressionTrack() {
     activeProgressionStepIndex,
     resolvedProgressionSteps,
     setActiveProgressionStepIndex,
+    beatsPerBar,
   } = useProgressionState();
   const { scaleLabel } = useScaleState();
 
@@ -63,7 +64,7 @@ export function ProgressionTrack() {
             type="button"
             className={clsx(shared["control-button"], styles.playButton)}
             onClick={() => setProgressionPlaying(!progressionPlaying)}
-            aria-disabled={!canPlay}
+            disabled={!canPlay}
             aria-label={progressionPlaying ? "Pause progression" : "Play progression"}
           >
             {progressionPlaying ? <Pause size={17} aria-hidden="true" /> : <Play size={17} aria-hidden="true" />}
@@ -123,13 +124,13 @@ export function ProgressionTrack() {
           {resolvedProgressionSteps.map((step, index) => {
             const duration = formatProgressionDurationLabel(step.duration);
             const selected = index === activeProgressionStepIndex;
-            const grow = step.duration.unit === "bar" ? step.duration.value : Math.max(1, step.duration.value / 4);
+            const durationBars = step.duration.unit === "bar" ? step.duration.value : step.duration.value / beatsPerBar;
             return (
               <button
                 key={step.id}
                 type="button"
                 className={styles.block}
-                style={{ flexGrow: grow }}
+                style={{ "--duration-bars": String(durationBars) } as CSSProperties}
                 data-active={selected ? "true" : undefined}
                 data-unavailable={step.unavailable ? "true" : undefined}
                 onClick={() => setActiveProgressionStepIndex(index)}
