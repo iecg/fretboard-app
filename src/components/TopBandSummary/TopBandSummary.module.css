@@ -43,46 +43,67 @@
   width: 100%;
 }
 
+.progression-status-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-block-end: var(--space-1);
+}
+
+.progression-title {
+  font-weight: 600;
+  flex: 1;
+}
+
 .progression-position {
+  font-size: var(--text-xs);
   color: var(--text-muted);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
-.progression-status-grid {
+.progression-status-row {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 0.25rem 0.55rem;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
   align-items: baseline;
 }
 
-.progression-status-label {
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  font-weight: 700;
+@media (max-width: 639px) {
+  .progression-status-row {
+    grid-template-columns: 1fr;
+  }
 }
 
-.progression-status-value,
-.progression-status-duration,
-.progression-status-note {
-  color: var(--text-primary);
-  font-size: 0.9rem;
-  line-height: 1.2;
+.progression-status-cell {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.progression-status-label {
+  text-transform: uppercase;
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
 }
 
 .progression-status-value {
+  color: var(--text-main);
+  font-size: 0.9rem;
+  line-height: 1.2;
   min-width: 0;
 }
 
-.progression-status-duration {
+.progression-status-meta {
   color: var(--text-muted);
-  white-space: nowrap;
+  font-size: var(--text-sm);
 }
 
 .progression-status-note {
   color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.2;
 }
 
 /* Inset hairline divider between the chip strip and the dynamic sections.

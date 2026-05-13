@@ -83,8 +83,8 @@ describe("TopBandSummary chord integration", () => {
     expect(screen.getByText(/I.*C Major Triad/i)).toBeInTheDocument();
     expect(screen.getByText("Next")).toBeInTheDocument();
     expect(screen.getByText(/V.*G Major Triad/i)).toBeInTheDocument();
-    expect(screen.getByText("Step 1 of 2")).toBeInTheDocument();
-    expect(screen.getByText("1 bar")).toBeInTheDocument();
+    expect(screen.getByText("Bar 1 of 3")).toBeInTheDocument();
+    expect(screen.getByText("(1 bar)")).toBeInTheDocument();
   });
 
   it("wraps next progression status to the current step when it is the only playable step", () => {
@@ -114,9 +114,9 @@ describe("TopBandSummary chord integration", () => {
     ]);
 
     expect(screen.getByRole("group", { name: "Progression status" })).toBeInTheDocument();
-    expect(screen.getByText("No steps")).toBeInTheDocument();
+    expect(screen.getByText("No chords")).toBeInTheDocument();
     expect(screen.getByText(/Add or load progression steps to start playback/i)).toBeInTheDocument();
-    expect(screen.queryByText("Step 1 of 0")).not.toBeInTheDocument();
+    expect(screen.queryByText("Bar 1 of 0")).not.toBeInTheDocument();
   });
 
   it("shows the active step unavailable reason when another progression step can resolve", () => {

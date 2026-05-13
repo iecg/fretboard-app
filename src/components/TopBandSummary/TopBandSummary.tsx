@@ -42,6 +42,9 @@ export function TopBandSummary() {
     activeResolvedProgressionStep,
     resolvedProgressionSteps,
     progressionPlaybackBlockedReason,
+    totalProgressionBars,
+    currentProgressionBar,
+    setProgressionEnabled,
   } = useProgressionState();
 
   const colorNoteSet = colorNotes.length > 0 ? new Set<string>(colorNotes) : undefined;
@@ -54,9 +57,10 @@ export function TopBandSummary() {
   const nextProgressionStep = nextProgressionStepIndex === null
     ? null
     : resolvedProgressionSteps[nextProgressionStepIndex] ?? null;
-  const progressionPositionLabel = resolvedProgressionSteps.length === 0
-    ? "No steps"
-    : `Step ${activeProgressionStepIndex + 1} of ${resolvedProgressionSteps.length}`;
+  const totalBars = Math.max(1, Math.round(totalProgressionBars));
+  const positionLabel = resolvedProgressionSteps.length === 0
+    ? "No chords"
+    : `Bar ${currentProgressionBar} of ${totalBars}`;
   const activeStepUnavailableReason = activeResolvedProgressionStep?.unavailable
     ? activeResolvedProgressionStep.unavailableReason
     : null;
@@ -100,20 +104,47 @@ export function TopBandSummary() {
             transition={{ duration: 0.2, ease: "easeOut" }}
           >
             <div className={styles["progression-status"]} role="group" aria-label="Progression status" data-testid="progression-status">
-              <span className={styles["progression-position"]}>
-                {progressionPositionLabel}
-              </span>
-              <div className={styles["progression-status-grid"]}>
-                <span className={styles["progression-status-label"]}>Current</span>
-                <span className={styles["progression-status-value"]}>
-                  {activeResolvedProgressionStep?.degree ?? "-"} · {activeResolvedProgressionStep?.resolvedChordLabel ?? "Unavailable"}
+              <div className={styles["progression-status-header"]}>
+                <button
+                  type="button"
+                  className={shared["eye-toggle"]}
+                  aria-label={progressionEnabled ? "Hide progression" : "Show progression"}
+                  aria-pressed={!progressionEnabled}
+                  onClick={() => setProgressionEnabled(!progressionEnabled)}
+                >
+                  <span className={shared["flex-center"]}>
+                    {progressionEnabled
+                      ? <Eye size={18} aria-hidden="true" />
+                      : <EyeOff size={18} aria-hidden="true" />}
+                  </span>
+                </button>
+                <span className={styles["progression-title"]}>Progression</span>
+                <span className={styles["progression-position"]}>{positionLabel}</span>
+              </div>
+              <div
+                className={styles["progression-status-row"]}
+                data-progression-status-row
+              >
+                <span className={styles["progression-status-cell"]}>
+                  <span className={styles["progression-status-label"]}>Current</span>
+                  <span className={styles["progression-status-value"]}>
+                    {activeResolvedProgressionStep
+                      ? `${activeResolvedProgressionStep.degree} · ${activeResolvedProgressionStep.resolvedChordLabel ?? "Unavailable"}`
+                      : "—"}
+                    {activeResolvedProgressionStep ? (
+                      <span className={styles["progression-status-meta"]}>
+                        {" "}({formatProgressionDurationLabel(activeResolvedProgressionStep.duration)})
+                      </span>
+                    ) : null}
+                  </span>
                 </span>
-                <span className={styles["progression-status-duration"]}>
-                  {activeResolvedProgressionStep ? formatProgressionDurationLabel(activeResolvedProgressionStep.duration) : ""}
-                </span>
-                <span className={styles["progression-status-label"]}>Next</span>
-                <span className={styles["progression-status-value"]}>
-                  {nextProgressionStep ? `${nextProgressionStep.degree} · ${nextProgressionStep.resolvedChordLabel ?? "Unavailable"}` : "End"}
+                <span className={styles["progression-status-cell"]}>
+                  <span className={styles["progression-status-label"]}>Next</span>
+                  <span className={styles["progression-status-value"]}>
+                    {nextProgressionStep
+                      ? `${nextProgressionStep.degree} · ${nextProgressionStep.resolvedChordLabel ?? "Unavailable"}`
+                      : "End"}
+                  </span>
                 </span>
               </div>
               {progressionStatusNote ? (
