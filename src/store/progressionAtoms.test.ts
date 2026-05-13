@@ -7,6 +7,8 @@ import {
   addProgressionStepAtom,
   advanceProgressionPlaybackAtom,
   beatsPerBarAtom,
+  currentProgressionBarAtom,
+  currentProgressionPresetIdAtom,
   loadProgressionPresetAtom,
   moveProgressionStepAtom,
   progressionEnabledAtom,
@@ -19,6 +21,7 @@ import {
   removeProgressionStepAtom,
   setProgressionActiveStepIndexAtom,
   setProgressionPlayingAtom,
+  totalProgressionBarsAtom,
   updateProgressionStepDegreeAtom,
   updateProgressionStepDurationAtom,
   updateProgressionStepQualityAtom,
@@ -211,5 +214,35 @@ describe("progression storage hydration", () => {
     expect(steps).toHaveLength(2);
     expect(steps[0].duration).toEqual({ value: 1, unit: "bar" });
     expect(steps[1].duration).toEqual({ value: 2, unit: "beat" });
+  });
+});
+
+describe("derived progression atoms", () => {
+  it("totalProgressionBarsAtom sums step bars", () => {
+    const store = createStore();
+    expect(store.get(totalProgressionBarsAtom)).toBe(4); // 4 default steps × 1 bar
+  });
+
+  it("currentProgressionBarAtom returns 1 when at the start", () => {
+    const store = createStore();
+    expect(store.get(currentProgressionBarAtom)).toBe(1);
+  });
+
+  it("currentProgressionBarAtom skips past previous chord bars", () => {
+    const store = createStore();
+    store.set(activeProgressionStepIndexAtom, 2);
+    expect(store.get(currentProgressionBarAtom)).toBe(3); // bars 1, 2 elapsed
+  });
+
+  it("currentProgressionPresetIdAtom matches the I-V-vi-IV default", () => {
+    const store = createStore();
+    expect(store.get(currentProgressionPresetIdAtom)).toBe("one-five-six-four");
+  });
+
+  it("currentProgressionPresetIdAtom returns 'custom' after any edit", () => {
+    const store = createStore();
+    const steps = store.get(progressionStepsAtom);
+    store.set(progressionStepsAtom, [...steps, { id: "new", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null }]);
+    expect(store.get(currentProgressionPresetIdAtom)).toBe("custom");
   });
 });

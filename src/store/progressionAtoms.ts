@@ -17,6 +17,7 @@ import {
   normalizeProgressionStep,
   remapProgressionStepsForScale,
   resolveProgressionStep,
+  totalProgressionBars,
   type ProgressionStep,
   type ProgressionStepDuration,
 } from "../progressions/progressionDomain";
@@ -98,6 +99,47 @@ export const resolvedProgressionStepsAtom = atom((get) => {
   return get(progressionStepsAtom).map((step, index) =>
     resolveProgressionStep(step, scaleName, rootNote, index, useFlats),
   );
+});
+
+export const totalProgressionBarsAtom = atom((get) => {
+  const beatsPerBar = get(beatsPerBarAtom);
+  return totalProgressionBars(
+    get(progressionStepsAtom).map((step) => step.duration),
+    beatsPerBar,
+  );
+});
+
+export const currentProgressionBarAtom = atom((get) => {
+  const beatsPerBar = get(beatsPerBarAtom);
+  const steps = get(progressionStepsAtom);
+  const activeIndex = clampProgressionIndex(get(activeProgressionStepIndexAtom), steps);
+  const elapsedBars = totalProgressionBars(
+    steps.slice(0, activeIndex).map((step) => step.duration),
+    beatsPerBar,
+  );
+  return elapsedBars + 1;
+});
+
+function stepsMatchPreset(
+  steps: readonly ProgressionStep[],
+  presetSteps: readonly Omit<ProgressionStep, "id">[],
+): boolean {
+  if (steps.length !== presetSteps.length) return false;
+  return steps.every((step, i) => {
+    const p = presetSteps[i];
+    return step.degree === p.degree
+      && step.duration.value === p.duration.value
+      && step.duration.unit === p.duration.unit
+      && step.qualityOverride === p.qualityOverride;
+  });
+}
+
+export const CUSTOM_PRESET_ID = "custom" as const;
+
+export const currentProgressionPresetIdAtom = atom<string>((get) => {
+  const steps = get(progressionStepsAtom);
+  const match = PROGRESSION_PRESETS.find((preset) => stepsMatchPreset(steps, preset.steps));
+  return match?.id ?? CUSTOM_PRESET_ID;
 });
 
 export const activeProgressionStepAtom = atom((get) => {
