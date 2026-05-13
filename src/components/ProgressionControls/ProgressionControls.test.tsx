@@ -34,7 +34,7 @@ describe("ProgressionControls", () => {
 
     expect(screen.getByRole("group", { name: "Progression mode" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Preset" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /1.*I.*C Major Triad/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^1.*I.*C Major Triad/i })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Progression degree" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Step duration" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Step chord quality" })).toBeInTheDocument();
@@ -65,7 +65,7 @@ describe("ProgressionControls", () => {
     const store = makeAtomStore([...BASE_SEEDS]);
     renderWithStore(<ProgressionControls />, store);
 
-    await userEvent.click(screen.getByRole("button", { name: /Step 2/i }));
+    await userEvent.click(screen.getByRole("button", { name: /^2.*V/i }));
     expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
 
     await userEvent.click(within(screen.getByRole("group", { name: "Progression degree" })).getByRole("button", { name: "vi" }));
@@ -142,5 +142,27 @@ describe("ProgressionControls PRESET", () => {
     const select = screen.getByLabelText(/Preset/i) as HTMLSelectElement;
     expect(select.tagName).toBe("SELECT");
     expect(select.value).toBe("one-five-six-four"); // default I-V-vi-IV preset
+  });
+});
+
+describe("ProgressionControls CHORDS list", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("uses the section label 'Chords' (not 'Steps')", () => {
+    const { getByText, queryByText } = renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    expect(getByText("Chords")).toBeTruthy();
+    expect(queryByText("Steps")).toBeNull();
+  });
+
+  it("rows do not contain the word 'Step'", () => {
+    const { queryByText } = renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    expect(queryByText(/^Step \d/)).toBeNull();
+  });
+
+  it("rows show the new duration label ('1 bar', '2 bars' etc.)", () => {
+    const { getAllByText } = renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    expect(getAllByText("1 bar").length).toBeGreaterThan(0);
   });
 });

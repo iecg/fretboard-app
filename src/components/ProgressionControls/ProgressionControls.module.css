@@ -50,7 +50,13 @@
   opacity: var(--disabled-opacity);
 }
 
-.step-index,
+.step-index {
+  font-variant-numeric: tabular-nums;
+  width: 1.5em;
+  text-align: right;
+  color: var(--color-text-muted);
+}
+
 .step-duration {
   font-size: var(--text-xxs);
   color: var(--text-muted);

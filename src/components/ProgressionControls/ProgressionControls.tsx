@@ -111,7 +111,7 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
       </div>
 
       <div className={shared["control-section"]}>
-        <span className={shared["section-label"]}>Steps</span>
+        <span className={shared["section-label"]}>Chords</span>
         {resolvedProgressionSteps.length === 0 ? (
           <p className={shared["field-hint"]}>Add a step or load a preset.</p>
         ) : (
@@ -124,7 +124,7 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
                   data-unavailable={step.unavailable ? "true" : undefined}
                   onClick={() => setActiveProgressionStepIndex(index)}
                 >
-                  <span className={styles["step-index"]}>Step {index + 1}</span>
+                  <span className={styles["step-index"]}>{index + 1}</span>
                   <span className={styles["step-degree"]}>{step.degree}</span>
                   <span className={styles["step-chord"]}>
                     {step.resolvedChordLabel ?? step.unavailableReason}
