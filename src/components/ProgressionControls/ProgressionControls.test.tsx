@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
 import { describe, expect, it, beforeEach } from "vitest";
-import { screen, within } from "@testing-library/react";
+import { screen, within, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
 import { makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
 import {
   activeProgressionStepIndexAtom,
+  beatsPerBarAtom,
   progressionEnabledAtom,
   progressionStepsAtom,
   rootNoteAtom,
@@ -109,5 +110,19 @@ describe("ProgressionControls", () => {
   it("has no accessibility violations", async () => {
     const { container } = renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
     expect(await axe(container)).toHaveNoViolations();
+  });
+});
+
+describe("ProgressionControls METER", () => {
+  it("renders a Beats per bar stepper that cycles 3→4→6→8", () => {
+    const store = makeAtomStore([
+      ...BASE_SEEDS,
+      [beatsPerBarAtom, 4],
+    ]);
+    renderWithStore(<ProgressionControls />, store);
+    expect(screen.getByText("Beats per bar")).toBeTruthy();
+    expect(screen.getByText("4")).toBeTruthy();
+    fireEvent.click(screen.getByLabelText(/Increase Beats per bar/i));
+    expect(screen.getByText("6")).toBeTruthy();
   });
 });

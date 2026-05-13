@@ -4,12 +4,14 @@ import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import { getDegreeSequence } from "@fretflow/core";
 import {
   PROGRESSION_PRESETS,
+  BEATS_PER_BAR_OPTIONS,
   formatProgressionDurationLabel,
   type ProgressionStepDuration,
 } from "../../progressions/progressionDomain";
 import { useProgressionState } from "../../hooks/useProgressionState";
 import { useScaleState } from "../../hooks/useScaleState";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
+import { StepperControl } from "../StepperControl/StepperControl";
 import shared from "../shared/shared.module.css";
 import {
   CHORD_NONE_VALUE,
@@ -40,6 +42,8 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
     updateProgressionStepDegree,
     updateProgressionStepDuration,
     updateProgressionStepQuality,
+    beatsPerBar,
+    setBeatsPerBar,
   } = useProgressionState();
 
   const activeStep = progressionSteps[activeProgressionStepIndex] ?? null;
@@ -66,6 +70,26 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
       </div>
 
       <ProgressionPlaybackBar />
+
+      <div className={shared["control-section"]}>
+        <span className={shared["section-label"]}>Meter</span>
+        <StepperControl
+          label="Beats per bar"
+          value={beatsPerBar}
+          min={BEATS_PER_BAR_OPTIONS[0]}
+          max={BEATS_PER_BAR_OPTIONS[BEATS_PER_BAR_OPTIONS.length - 1]}
+          step={1}
+          onChange={(next) => {
+            // Cycle through the allowed set directionally
+            const current = beatsPerBar;
+            const idx = BEATS_PER_BAR_OPTIONS.indexOf(current as 3 | 4 | 6 | 8);
+            const dir = next > current ? 1 : -1;
+            const nextIdx = Math.max(0, Math.min(BEATS_PER_BAR_OPTIONS.length - 1, idx + dir));
+            setBeatsPerBar(BEATS_PER_BAR_OPTIONS[nextIdx]);
+          }}
+          compact={compact}
+        />
+      </div>
 
       <div className={shared["control-section"]}>
         <span className={shared["section-label"]}>Presets</span>
