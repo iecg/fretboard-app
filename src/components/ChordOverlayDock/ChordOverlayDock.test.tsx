@@ -73,8 +73,8 @@ describe("TopBandSummary chord integration", () => {
       [progressionEnabledAtom, true],
       [activeProgressionStepIndexAtom, 0],
       [progressionStepsAtom, [
-        { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
-        { id: "two", degree: "V", duration: "2-bars", qualityOverride: null },
+        { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+        { id: "two", degree: "V", duration: { value: 2, unit: "bar" }, qualityOverride: null },
       ]],
     ]);
 

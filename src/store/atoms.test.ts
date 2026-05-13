@@ -1069,9 +1069,9 @@ describe("atoms", () => {
     it("setScaleNameAtom remaps progression degree labels by ordinal and resets the cursor", () => {
       const store = makeStore();
       store.set(progressionStepsAtom, [
-        { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
-        { id: "two", degree: "V", duration: "1-bar", qualityOverride: null },
-        { id: "three", degree: "vi", duration: "1-bar", qualityOverride: null },
+        { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+        { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+        { id: "three", degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null },
       ]);
       store.set(activeProgressionStepIndexAtom, 2);
 
@@ -1085,7 +1085,7 @@ describe("atoms", () => {
       const store = makeStore();
       store.set(progressionEnabledAtom, true);
       store.set(progressionStepsAtom, [
-        { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
+        { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
       ]);
       store.set(setProgressionPlayingAtom, true);
 

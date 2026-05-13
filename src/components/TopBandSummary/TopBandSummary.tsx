@@ -8,7 +8,7 @@ import { useProgressionPlaybackLoop } from "../../hooks/useProgressionPlaybackLo
 import { useProgressionState } from "../../hooks/useProgressionState";
 import {
   findNextResolvableStepIndex,
-  PROGRESSION_DURATION_LABELS,
+  formatProgressionDurationLabel,
 } from "../../progressions/progressionDomain";
 import { DegreeChipStrip } from "../DegreeChipStrip/DegreeChipStrip";
 import { ChordPracticeBar } from "../ChordPracticeBar/ChordPracticeBar";
@@ -109,7 +109,7 @@ export function TopBandSummary() {
                   {activeResolvedProgressionStep?.degree ?? "-"} · {activeResolvedProgressionStep?.resolvedChordLabel ?? "Unavailable"}
                 </span>
                 <span className={styles["progression-status-duration"]}>
-                  {activeResolvedProgressionStep ? PROGRESSION_DURATION_LABELS[activeResolvedProgressionStep.duration] : ""}
+                  {activeResolvedProgressionStep ? formatProgressionDurationLabel(activeResolvedProgressionStep.duration) : ""}
                 </span>
                 <span className={styles["progression-status-label"]}>Next</span>
                 <span className={styles["progression-status-value"]}>

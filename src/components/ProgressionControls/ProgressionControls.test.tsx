@@ -18,8 +18,8 @@ const BASE_SEEDS = [
   [scaleNameAtom, "Major"],
   [progressionEnabledAtom, true],
   [progressionStepsAtom, [
-    { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
-    { id: "two", degree: "V", duration: "1-bar", qualityOverride: null },
+    { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+    { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
   ]],
 ] as const;
 
@@ -73,7 +73,7 @@ describe("ProgressionControls", () => {
 
     expect(store.get(progressionStepsAtom)[1]).toMatchObject({
       degree: "vi",
-      duration: "2-bars",
+      duration: { value: 2, unit: "bar" },
       qualityOverride: "Dominant 7th",
     });
   });
@@ -82,7 +82,7 @@ describe("ProgressionControls", () => {
     const store = makeAtomStore([
       ...BASE_SEEDS,
       [progressionStepsAtom, [
-        { id: "one", degree: "V", duration: "1-bar", qualityOverride: "Dominant 7th" },
+        { id: "one", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
       ]],
     ]);
     renderWithStore(<ProgressionControls />, store);

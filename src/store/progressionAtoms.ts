@@ -29,10 +29,10 @@ import {
 } from "../utils/storage";
 
 const DEFAULT_STEPS: ProgressionStep[] = [
-  { id: "default-i", degree: "I", duration: "1-bar", qualityOverride: null },
-  { id: "default-v", degree: "V", duration: "1-bar", qualityOverride: null },
-  { id: "default-vi", degree: "vi", duration: "1-bar", qualityOverride: null },
-  { id: "default-iv", degree: "IV", duration: "1-bar", qualityOverride: null },
+  { id: "default-i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+  { id: "default-v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+  { id: "default-vi", degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+  { id: "default-iv", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null },
 ];
 
 const progressionStepsStorage = createStorage<ProgressionStep[]>({
@@ -158,7 +158,7 @@ export const addProgressionStepAtom = atom(null, (get, set) => {
   const degree = previous?.degree ?? degrees[0]?.degree ?? "I";
   const next = [
     ...get(progressionStepsAtom),
-    createProgressionStep({ degree, duration: "1-bar", qualityOverride: null }),
+    createProgressionStep({ degree, duration: { value: 1, unit: "bar" }, qualityOverride: null }),
   ];
   set(progressionStepsAtom, next);
   set(activeProgressionStepIndexAtom, next.length - 1);

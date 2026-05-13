@@ -373,7 +373,7 @@ describe("noteSemanticMapAtom", () => {
     store.set(chordTypeAtom, "Major Triad");
     store.set(progressionEnabledAtom, true);
     store.set(progressionStepsAtom, [
-      { id: "one", degree: "V", duration: "1-bar", qualityOverride: "Dominant 7th" },
+      { id: "one", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
     ]);
     store.set(fingeringPatternAtom, "one-string");
 

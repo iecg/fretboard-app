@@ -3,9 +3,8 @@ import clsx from "clsx";
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import { getDegreeSequence } from "@fretflow/core";
 import {
-  PROGRESSION_DURATION_LABELS,
-  PROGRESSION_DURATIONS,
   PROGRESSION_PRESETS,
+  formatProgressionDurationLabel,
   type ProgressionStepDuration,
 } from "../../progressions/progressionDomain";
 import { useProgressionState } from "../../hooks/useProgressionState";
@@ -104,7 +103,7 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
                     {step.resolvedChordLabel ?? step.unavailableReason}
                   </span>
                   <span className={styles["step-duration"]}>
-                    {PROGRESSION_DURATION_LABELS[step.duration]}
+                    {formatProgressionDurationLabel(step.duration)}
                   </span>
                 </button>
               </li>
@@ -164,15 +163,26 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
             <span className={shared["section-label"]}>Duration</span>
             <ToggleBar
               label="Step duration"
-              options={PROGRESSION_DURATIONS.map((duration) => ({
-                value: duration,
-                label: PROGRESSION_DURATION_LABELS[duration],
-              }))}
-              value={activeStep.duration}
-              onChange={(duration) => updateProgressionStepDuration({
-                id: activeStep.id,
-                duration: duration as ProgressionStepDuration,
-              })}
+              options={[
+                { value: "1-beat", label: "1 beat" },
+                { value: "2-beats", label: "2 beats" },
+                { value: "1-bar", label: "1 bar" },
+                { value: "2-bars", label: "2 bars" },
+              ]}
+              value={
+                activeStep.duration.value === 1 && activeStep.duration.unit === "beat" ? "1-beat"
+                : activeStep.duration.value === 2 && activeStep.duration.unit === "beat" ? "2-beats"
+                : activeStep.duration.value === 1 && activeStep.duration.unit === "bar" ? "1-bar"
+                : "2-bars"
+              }
+              onChange={(s) => {
+                const duration: ProgressionStepDuration =
+                  s === "1-beat" ? { value: 1, unit: "beat" }
+                  : s === "2-beats" ? { value: 2, unit: "beat" }
+                  : s === "1-bar" ? { value: 1, unit: "bar" }
+                  : { value: 2, unit: "bar" };
+                updateProgressionStepDuration({ id: activeStep.id, duration });
+              }}
               compact={compact}
             />
           </div>

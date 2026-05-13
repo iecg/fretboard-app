@@ -5,14 +5,17 @@ import {
   findFirstResolvableStepIndex,
   findNextResolvableStepIndex,
   getProgressionDurationMs,
+  isProgressionDuration,
+  migrateLegacyDuration,
   remapDegreeByOrdinal,
   remapProgressionStepsForScale,
   resolveProgressionStep,
+  type ProgressionStepDuration,
 } from "./progressionDomain";
 
 describe("progressionDomain", () => {
   it("resolves a diatonic step from active key and scale", () => {
-    const step = createProgressionStep({ degree: "V", duration: "1-bar", qualityOverride: null }, "step-v");
+    const step = createProgressionStep({ degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null }, "step-v");
     expect(resolveProgressionStep(step, "Major", "C")).toMatchObject({
       id: "step-v",
       degree: "V",
@@ -25,7 +28,7 @@ describe("progressionDomain", () => {
 
   it("applies a valid quality override without changing the degree-derived root", () => {
     const step = createProgressionStep(
-      { degree: "V", duration: "1-bar", qualityOverride: "Dominant 7th" },
+      { degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
       "step-v7",
     );
     expect(resolveProgressionStep(step, "Major", "C")).toMatchObject({
@@ -38,7 +41,7 @@ describe("progressionDomain", () => {
 
   it("falls back to the diatonic quality when an override is no longer in the chord catalog", () => {
     const step = createProgressionStep(
-      { degree: "V", duration: "1-bar", qualityOverride: "Missing Chord" },
+      { degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Missing Chord" },
       "step-invalid",
     );
     expect(resolveProgressionStep(step, "Major", "C")).toMatchObject({
@@ -58,30 +61,30 @@ describe("progressionDomain", () => {
 
   it("remaps all progression steps while preserving ids, durations, and overrides", () => {
     const steps = [
-      createProgressionStep({ degree: "I", duration: "1-bar", qualityOverride: null }, "one"),
-      createProgressionStep({ degree: "V", duration: "2-bars", qualityOverride: "Dominant 7th" }, "two"),
-      createProgressionStep({ degree: "vi", duration: "1-bar", qualityOverride: null }, "three"),
+      createProgressionStep({ degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null }, "one"),
+      createProgressionStep({ degree: "V", duration: { value: 2, unit: "bar" }, qualityOverride: "Dominant 7th" }, "two"),
+      createProgressionStep({ degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null }, "three"),
     ];
 
     expect(remapProgressionStepsForScale(steps, "Natural Minor")).toEqual([
-      { id: "one", degree: "i", duration: "1-bar", qualityOverride: null },
-      { id: "two", degree: "v", duration: "2-bars", qualityOverride: "Dominant 7th" },
-      { id: "three", degree: "VI", duration: "1-bar", qualityOverride: null },
+      { id: "one", degree: "i", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      { id: "two", degree: "v", duration: { value: 2, unit: "bar" }, qualityOverride: "Dominant 7th" },
+      { id: "three", degree: "VI", duration: { value: 1, unit: "bar" }, qualityOverride: null },
     ]);
   });
 
   it("converts musical durations to milliseconds at a tempo", () => {
-    expect(getProgressionDurationMs("1-beat", 120)).toBe(500);
-    expect(getProgressionDurationMs("2-beats", 120)).toBe(1000);
-    expect(getProgressionDurationMs("1-bar", 120)).toBe(2000);
-    expect(getProgressionDurationMs("2-bars", 120)).toBe(4000);
+    expect(getProgressionDurationMs({ value: 1, unit: "beat" }, 120)).toBe(500);
+    expect(getProgressionDurationMs({ value: 2, unit: "beat" }, 120)).toBe(1000);
+    expect(getProgressionDurationMs({ value: 1, unit: "bar" }, 120)).toBe(2000);
+    expect(getProgressionDurationMs({ value: 2, unit: "bar" }, 120)).toBe(4000);
   });
 
   it("skips unavailable steps while finding playback targets", () => {
     const steps = [
-      createProgressionStep({ degree: "not-a-degree", duration: "1-bar", qualityOverride: null }, "bad"),
-      createProgressionStep({ degree: "I", duration: "1-bar", qualityOverride: null }, "one"),
-      createProgressionStep({ degree: "V", duration: "1-bar", qualityOverride: null }, "two"),
+      createProgressionStep({ degree: "not-a-degree", duration: { value: 1, unit: "bar" }, qualityOverride: null }, "bad"),
+      createProgressionStep({ degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null }, "one"),
+      createProgressionStep({ degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null }, "two"),
     ];
     const resolved = steps.map((step) => resolveProgressionStep(step, "Major", "C"));
 
@@ -102,5 +105,40 @@ describe("progressionDomain", () => {
     const blues = PROGRESSION_PRESETS.find((preset) => preset.id === "twelve-bar-blues");
     expect(blues?.steps).toHaveLength(12);
     expect(blues?.steps.every((step) => step.qualityOverride === "Dominant 7th")).toBe(true);
+  });
+});
+
+describe("ProgressionStepDuration (object shape)", () => {
+  it("isProgressionDuration accepts well-formed object durations", () => {
+    expect(isProgressionDuration({ value: 1, unit: "bar" })).toBe(true);
+    expect(isProgressionDuration({ value: 4, unit: "beat" })).toBe(true);
+    expect(isProgressionDuration({ value: 16, unit: "bar" })).toBe(true);
+  });
+
+  it("isProgressionDuration rejects bad shapes", () => {
+    expect(isProgressionDuration(null)).toBe(false);
+    expect(isProgressionDuration("1-bar")).toBe(false);
+    expect(isProgressionDuration({ value: 0, unit: "bar" })).toBe(false);
+    expect(isProgressionDuration({ value: 1, unit: "wat" })).toBe(false);
+    expect(isProgressionDuration({ value: -1, unit: "beat" })).toBe(false);
+    expect(isProgressionDuration({ value: 1.5, unit: "beat" })).toBe(false);
+  });
+
+  it("migrateLegacyDuration normalises legacy strings to objects", () => {
+    expect(migrateLegacyDuration("1-beat")).toEqual({ value: 1, unit: "beat" });
+    expect(migrateLegacyDuration("2-beats")).toEqual({ value: 2, unit: "beat" });
+    expect(migrateLegacyDuration("1-bar")).toEqual({ value: 1, unit: "bar" });
+    expect(migrateLegacyDuration("2-bars")).toEqual({ value: 2, unit: "bar" });
+  });
+
+  it("migrateLegacyDuration passes through valid objects", () => {
+    const value: ProgressionStepDuration = { value: 3, unit: "bar" };
+    expect(migrateLegacyDuration(value)).toBe(value);
+  });
+
+  it("migrateLegacyDuration falls back to 1 bar for unknown input", () => {
+    expect(migrateLegacyDuration("garbage")).toEqual({ value: 1, unit: "bar" });
+    expect(migrateLegacyDuration(null)).toEqual({ value: 1, unit: "bar" });
+    expect(migrateLegacyDuration({ value: 0, unit: "bar" })).toEqual({ value: 1, unit: "bar" });
   });
 });

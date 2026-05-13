@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { Pause, Play, Repeat, SkipBack, SkipForward } from "lucide-react";
 import {
-  PROGRESSION_DURATION_LABELS,
+  formatProgressionDurationLabel,
 } from "../../progressions/progressionDomain";
 import { useProgressionState } from "../../hooks/useProgressionState";
 import shared from "../shared/shared.module.css";
@@ -46,7 +46,7 @@ export function ProgressionPlaybackBar() {
           <span className={styles["current-chord"]}>{current?.resolvedChordLabel ?? "No chord"}</span>
           {current ? (
             <span className={styles["current-duration"]}>
-              {PROGRESSION_DURATION_LABELS[current.duration]}
+              {formatProgressionDurationLabel(current.duration)}
             </span>
           ) : null}
         </div>

@@ -36,7 +36,7 @@ describe("progressionAtoms", () => {
     store.set(scaleNameAtom, "Major");
     store.set(progressionEnabledAtom, true);
     store.set(progressionStepsAtom, [
-      { id: "v", degree: "V", duration: "1-bar", qualityOverride: null },
+      { id: "v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
     ]);
 
     expect(store.get(activeResolvedProgressionStepAtom)).toMatchObject({
@@ -64,17 +64,17 @@ describe("progressionAtoms", () => {
   it("updates the active step degree, duration, and quality", () => {
     const store = createStore();
     store.set(progressionStepsAtom, [
-      { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
+      { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
     ]);
 
     store.set(updateProgressionStepDegreeAtom, { id: "one", degree: "V" });
-    store.set(updateProgressionStepDurationAtom, { id: "one", duration: "2-bars" });
+    store.set(updateProgressionStepDurationAtom, { id: "one", duration: { value: 2, unit: "bar" } });
     store.set(updateProgressionStepQualityAtom, { id: "one", qualityOverride: "Dominant 7th" });
 
     expect(store.get(progressionStepsAtom)[0]).toEqual({
       id: "one",
       degree: "V",
-      duration: "2-bars",
+      duration: { value: 2, unit: "bar" },
       qualityOverride: "Dominant 7th",
     });
   });
@@ -82,8 +82,8 @@ describe("progressionAtoms", () => {
   it("adds, removes, and moves steps while keeping the cursor in range", () => {
     const store = createStore();
     store.set(progressionStepsAtom, [
-      { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
-      { id: "two", degree: "V", duration: "1-bar", qualityOverride: null },
+      { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
     ]);
     store.set(setProgressionActiveStepIndexAtom, 1);
 
@@ -103,7 +103,7 @@ describe("progressionAtoms", () => {
     const store = createStore();
     store.set(progressionTempoBpmAtom, 120);
     store.set(progressionStepsAtom, [
-      { id: "one", degree: "I", duration: "2-bars", qualityOverride: null },
+      { id: "one", degree: "I", duration: { value: 2, unit: "bar" }, qualityOverride: null },
     ]);
 
     expect(store.get(progressionStepDurationMsAtom)).toBe(4000);
@@ -125,9 +125,9 @@ describe("progressionAtoms", () => {
     store.set(progressionEnabledAtom, true);
     store.set(progressionLoopEnabledAtom, false);
     store.set(progressionStepsAtom, [
-      { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
-      { id: "two", degree: "not-a-degree", duration: "1-bar", qualityOverride: null },
-      { id: "three", degree: "V", duration: "1-bar", qualityOverride: null },
+      { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      { id: "two", degree: "not-a-degree", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      { id: "three", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
     ]);
     store.set(setProgressionPlayingAtom, true);
 

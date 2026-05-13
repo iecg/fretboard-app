@@ -7,7 +7,56 @@ import {
   type DegreeId,
 } from "@fretflow/core";
 
-export type ProgressionStepDuration = "1-beat" | "2-beats" | "1-bar" | "2-bars";
+export type ProgressionStepDurationUnit = "beat" | "bar";
+
+export interface ProgressionStepDuration {
+  value: number;
+  unit: ProgressionStepDurationUnit;
+}
+
+export const DEFAULT_PROGRESSION_STEP_DURATION: ProgressionStepDuration = {
+  value: 1,
+  unit: "bar",
+};
+
+export const MIN_PROGRESSION_STEP_DURATION_VALUE = 1;
+export const MAX_PROGRESSION_STEP_DURATION_VALUE = 16;
+
+const LEGACY_DURATION_MAP: Record<string, ProgressionStepDuration> = {
+  "1-beat": { value: 1, unit: "beat" },
+  "2-beats": { value: 2, unit: "beat" },
+  "1-bar": { value: 1, unit: "bar" },
+  "2-bars": { value: 2, unit: "bar" },
+};
+
+export function isProgressionDurationUnit(value: unknown): value is ProgressionStepDurationUnit {
+  return value === "beat" || value === "bar";
+}
+
+export function isProgressionDuration(value: unknown): value is ProgressionStepDuration {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as ProgressionStepDuration;
+  return (
+    typeof candidate.value === "number"
+    && Number.isInteger(candidate.value)
+    && candidate.value >= MIN_PROGRESSION_STEP_DURATION_VALUE
+    && candidate.value <= MAX_PROGRESSION_STEP_DURATION_VALUE
+    && isProgressionDurationUnit(candidate.unit)
+  );
+}
+
+export function migrateLegacyDuration(value: unknown): ProgressionStepDuration {
+  if (typeof value === "string") {
+    return LEGACY_DURATION_MAP[value] ?? { ...DEFAULT_PROGRESSION_STEP_DURATION };
+  }
+  if (isProgressionDuration(value)) return value;
+  return { ...DEFAULT_PROGRESSION_STEP_DURATION };
+}
+
+export function formatProgressionDurationLabel(duration: ProgressionStepDuration): string {
+  const noun = duration.unit === "beat" ? "beat" : "bar";
+  return `${duration.value} ${noun}${duration.value === 1 ? "" : "s"}`;
+}
 
 export interface ProgressionStep {
   id: string;
@@ -35,20 +84,6 @@ export interface ResolvedProgressionStep extends ProgressionStep {
   invalidQualityOverride: boolean;
 }
 
-export const PROGRESSION_DURATIONS: readonly ProgressionStepDuration[] = [
-  "1-beat",
-  "2-beats",
-  "1-bar",
-  "2-bars",
-] as const;
-
-export const PROGRESSION_DURATION_LABELS: Record<ProgressionStepDuration, string> = {
-  "1-beat": "1 beat",
-  "2-beats": "2 beats",
-  "1-bar": "1 bar",
-  "2-bars": "2 bars",
-};
-
 export const DEFAULT_PROGRESSION_TEMPO_BPM = 90;
 export const MIN_PROGRESSION_TEMPO_BPM = 40;
 export const MAX_PROGRESSION_TEMPO_BPM = 240;
@@ -58,56 +93,56 @@ export const PROGRESSION_PRESETS: readonly ProgressionPreset[] = [
     id: "one-five-six-four",
     label: "I-V-vi-IV",
     steps: [
-      { degree: "I", duration: "1-bar", qualityOverride: null },
-      { degree: "V", duration: "1-bar", qualityOverride: null },
-      { degree: "vi", duration: "1-bar", qualityOverride: null },
-      { degree: "IV", duration: "1-bar", qualityOverride: null },
+      { degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      { degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      { degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      { degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null },
     ],
   },
   {
     id: "two-five-one",
     label: "ii-V-I",
     steps: [
-      { degree: "ii", duration: "1-bar", qualityOverride: null },
-      { degree: "V", duration: "1-bar", qualityOverride: "Dominant 7th" },
-      { degree: "I", duration: "1-bar", qualityOverride: null },
+      { degree: "ii", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      { degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+      { degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
     ],
   },
   {
     id: "one-six-four-five",
     label: "I-vi-IV-V",
     steps: [
-      { degree: "I", duration: "1-bar", qualityOverride: null },
-      { degree: "vi", duration: "1-bar", qualityOverride: null },
-      { degree: "IV", duration: "1-bar", qualityOverride: null },
-      { degree: "V", duration: "1-bar", qualityOverride: null },
+      { degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      { degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      { degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      { degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
     ],
   },
   {
     id: "one-four-five",
     label: "I-IV-V",
     steps: [
-      { degree: "I", duration: "1-bar", qualityOverride: null },
-      { degree: "IV", duration: "1-bar", qualityOverride: null },
-      { degree: "V", duration: "1-bar", qualityOverride: null },
+      { degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      { degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      { degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
     ],
   },
   {
     id: "twelve-bar-blues",
     label: "12-bar blues",
     steps: [
-      { degree: "I", duration: "1-bar", qualityOverride: "Dominant 7th" },
-      { degree: "I", duration: "1-bar", qualityOverride: "Dominant 7th" },
-      { degree: "I", duration: "1-bar", qualityOverride: "Dominant 7th" },
-      { degree: "I", duration: "1-bar", qualityOverride: "Dominant 7th" },
-      { degree: "IV", duration: "1-bar", qualityOverride: "Dominant 7th" },
-      { degree: "IV", duration: "1-bar", qualityOverride: "Dominant 7th" },
-      { degree: "I", duration: "1-bar", qualityOverride: "Dominant 7th" },
-      { degree: "I", duration: "1-bar", qualityOverride: "Dominant 7th" },
-      { degree: "V", duration: "1-bar", qualityOverride: "Dominant 7th" },
-      { degree: "IV", duration: "1-bar", qualityOverride: "Dominant 7th" },
-      { degree: "I", duration: "1-bar", qualityOverride: "Dominant 7th" },
-      { degree: "V", duration: "1-bar", qualityOverride: "Dominant 7th" },
+      { degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+      { degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+      { degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+      { degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+      { degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+      { degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+      { degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+      { degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+      { degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+      { degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+      { degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+      { degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
     ],
   },
 ] as const;
@@ -144,16 +179,12 @@ export function createProgressionStepId(): string {
   return `progression-step-${fallbackId}`;
 }
 
-export function isProgressionDuration(value: unknown): value is ProgressionStepDuration {
-  return PROGRESSION_DURATIONS.includes(value as ProgressionStepDuration);
-}
-
 export function isValidProgressionStep(value: unknown): value is ProgressionStep {
   if (!value || typeof value !== "object") return false;
-  const candidate = value as ProgressionStep;
+  const candidate = value as ProgressionStep & { duration: unknown };
   return typeof candidate.id === "string"
     && typeof candidate.degree === "string"
-    && isProgressionDuration(candidate.duration)
+    && (isProgressionDuration(candidate.duration) || typeof candidate.duration === "string")
     && (candidate.qualityOverride === null || typeof candidate.qualityOverride === "string");
 }
 
@@ -193,12 +224,9 @@ export function createStepsFromPreset(
 }
 
 export function getProgressionDurationBeats(duration: ProgressionStepDuration): number {
-  switch (duration) {
-    case "1-beat": return 1;
-    case "2-beats": return 2;
-    case "1-bar": return 4;
-    case "2-bars": return 8;
-  }
+  if (duration.unit === "beat") return duration.value;
+  // bar = 4 beats per bar
+  return duration.value * 4;
 }
 
 export function getProgressionDurationMs(

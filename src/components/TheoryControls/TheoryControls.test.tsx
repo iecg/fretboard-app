@@ -513,8 +513,8 @@ describe("TheoryControls UAT-20 — chord section disabled on 1/2-string", () =>
     const store = createStore();
     store.set(progressionEnabledAtom, true);
     store.set(progressionStepsAtom, [
-      { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
-      { id: "two", degree: "V", duration: "1-bar", qualityOverride: null },
+      { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
     ]);
 
     renderWithStore(<TheoryControls />, store);
