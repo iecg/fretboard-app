@@ -1,6 +1,7 @@
 import { atom } from "jotai";
 import { atomWithStorage, RESET } from "jotai/utils";
 import {
+  DEFAULT_BEATS_PER_BAR,
   DEFAULT_PROGRESSION_TEMPO_BPM,
   MAX_PROGRESSION_TEMPO_BPM,
   MIN_PROGRESSION_TEMPO_BPM,
@@ -101,7 +102,7 @@ export const activeResolvedProgressionStepAtom = atom((get) => {
 export const progressionStepDurationMsAtom = atom((get) => {
   const step = get(activeProgressionStepAtom);
   if (!step) return 0;
-  return getProgressionDurationMs(step.duration, get(progressionTempoBpmAtom));
+  return getProgressionDurationMs(step.duration, get(progressionTempoBpmAtom), DEFAULT_BEATS_PER_BAR);
 });
 
 export const progressionPlaybackBlockedReasonAtom = atom((get) => {
@@ -218,7 +219,7 @@ export const advanceProgressionPlaybackAtom = atom(null, (get, set) => {
   if (get(progressionPlayingStateAtom)) {
     const nextStep = get(progressionStepsAtom)[next];
     const durationMs = nextStep
-      ? getProgressionDurationMs(nextStep.duration, get(progressionTempoBpmAtom))
+      ? getProgressionDurationMs(nextStep.duration, get(progressionTempoBpmAtom), DEFAULT_BEATS_PER_BAR)
       : 0;
     set(progressionStepDeadlineAtom, Date.now() + durationMs);
   }

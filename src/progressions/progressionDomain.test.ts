@@ -1,16 +1,19 @@
 import { describe, expect, it } from "vitest";
 import {
+  DEFAULT_BEATS_PER_BAR,
   PROGRESSION_PRESETS,
   createProgressionStep,
   findFirstResolvableStepIndex,
   findNextResolvableStepIndex,
   formatProgressionDurationLabel,
+  getProgressionDurationBeats,
   getProgressionDurationMs,
   isProgressionDuration,
   migrateLegacyDuration,
   remapDegreeByOrdinal,
   remapProgressionStepsForScale,
   resolveProgressionStep,
+  totalProgressionBars,
   type ProgressionStepDuration,
 } from "./progressionDomain";
 
@@ -75,10 +78,10 @@ describe("progressionDomain", () => {
   });
 
   it("converts musical durations to milliseconds at a tempo", () => {
-    expect(getProgressionDurationMs({ value: 1, unit: "beat" }, 120)).toBe(500);
-    expect(getProgressionDurationMs({ value: 2, unit: "beat" }, 120)).toBe(1000);
-    expect(getProgressionDurationMs({ value: 1, unit: "bar" }, 120)).toBe(2000);
-    expect(getProgressionDurationMs({ value: 2, unit: "bar" }, 120)).toBe(4000);
+    expect(getProgressionDurationMs({ value: 1, unit: "beat" }, 120, DEFAULT_BEATS_PER_BAR)).toBe(500);
+    expect(getProgressionDurationMs({ value: 2, unit: "beat" }, 120, DEFAULT_BEATS_PER_BAR)).toBe(1000);
+    expect(getProgressionDurationMs({ value: 1, unit: "bar" }, 120, DEFAULT_BEATS_PER_BAR)).toBe(2000);
+    expect(getProgressionDurationMs({ value: 2, unit: "bar" }, 120, DEFAULT_BEATS_PER_BAR)).toBe(4000);
   });
 
   it("skips unavailable steps while finding playback targets", () => {
@@ -154,5 +157,51 @@ describe("formatProgressionDurationLabel", () => {
     expect(formatProgressionDurationLabel({ value: 2, unit: "bar" })).toBe("2 bars");
     expect(formatProgressionDurationLabel({ value: 3, unit: "beat" })).toBe("3 beats");
     expect(formatProgressionDurationLabel({ value: 12, unit: "bar" })).toBe("12 bars");
+  });
+});
+
+describe("progression duration math", () => {
+  it("getProgressionDurationBeats honors beatsPerBar for bar units", () => {
+    expect(getProgressionDurationBeats({ value: 1, unit: "beat" }, 4)).toBe(1);
+    expect(getProgressionDurationBeats({ value: 3, unit: "beat" }, 4)).toBe(3);
+    expect(getProgressionDurationBeats({ value: 1, unit: "bar" }, 4)).toBe(4);
+    expect(getProgressionDurationBeats({ value: 2, unit: "bar" }, 3)).toBe(6);
+    expect(getProgressionDurationBeats({ value: 1, unit: "bar" }, 6)).toBe(6);
+  });
+
+  it("getProgressionDurationMs scales by tempo", () => {
+    // 60 bpm = 1 beat / sec ⇒ 1 bar at 4 bpb = 4000 ms
+    expect(getProgressionDurationMs({ value: 1, unit: "bar" }, 60, 4)).toBe(4000);
+    expect(getProgressionDurationMs({ value: 2, unit: "beat" }, 60, 4)).toBe(2000);
+    // 120 bpm = 0.5 sec / beat ⇒ 1 bar at 4 bpb = 2000 ms
+    expect(getProgressionDurationMs({ value: 1, unit: "bar" }, 120, 4)).toBe(2000);
+  });
+
+  it("DEFAULT_BEATS_PER_BAR is 4", () => {
+    expect(DEFAULT_BEATS_PER_BAR).toBe(4);
+  });
+
+  it("totalProgressionBars sums durations expressed in bars", () => {
+    expect(
+      totalProgressionBars(
+        [
+          { value: 1, unit: "bar" },
+          { value: 1, unit: "bar" },
+        ],
+        4,
+      ),
+    ).toBe(2);
+    expect(
+      totalProgressionBars(
+        [
+          { value: 4, unit: "beat" }, // = 1 bar at 4 bpb
+          { value: 2, unit: "bar" },
+        ],
+        4,
+      ),
+    ).toBe(3);
+    expect(
+      totalProgressionBars([{ value: 6, unit: "beat" }], 3),
+    ).toBe(2);
   });
 });

@@ -222,21 +222,43 @@ export function createStepsFromPreset(
   );
 }
 
-export function getProgressionDurationBeats(duration: ProgressionStepDuration): number {
-  if (duration.unit === "beat") return duration.value;
-  // bar = 4 beats per bar
-  return duration.value * 4;
+export const DEFAULT_BEATS_PER_BAR = 4 as const;
+export const BEATS_PER_BAR_OPTIONS = [3, 4, 6, 8] as const;
+export type BeatsPerBar = (typeof BEATS_PER_BAR_OPTIONS)[number];
+
+export function isBeatsPerBar(value: unknown): value is BeatsPerBar {
+  return BEATS_PER_BAR_OPTIONS.includes(value as BeatsPerBar);
+}
+
+export function getProgressionDurationBeats(
+  duration: ProgressionStepDuration,
+  beatsPerBar: number,
+): number {
+  return duration.unit === "bar" ? duration.value * beatsPerBar : duration.value;
 }
 
 export function getProgressionDurationMs(
   duration: ProgressionStepDuration,
   tempoBpm: number,
+  beatsPerBar: number,
 ): number {
   const clampedTempo = Math.min(
     MAX_PROGRESSION_TEMPO_BPM,
     Math.max(MIN_PROGRESSION_TEMPO_BPM, Math.round(tempoBpm)),
   );
-  return Math.round((60_000 / clampedTempo) * getProgressionDurationBeats(duration));
+  const beats = getProgressionDurationBeats(duration, beatsPerBar);
+  return Math.round((60_000 / clampedTempo) * beats);
+}
+
+export function totalProgressionBars(
+  durations: readonly ProgressionStepDuration[],
+  beatsPerBar: number,
+): number {
+  const totalBeats = durations.reduce(
+    (sum, duration) => sum + getProgressionDurationBeats(duration, beatsPerBar),
+    0,
+  );
+  return totalBeats / beatsPerBar;
 }
 
 export function resolveProgressionStep(
