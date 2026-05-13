@@ -17,7 +17,7 @@ export default function AppearanceSettingsSection({ compact }: { compact?: boole
   return (
     <OverlaySection id="appearance" title={t("settings.sections.appearance")}>
       <div className={styles["overlay-field"]}>
-        <OverlayFieldHeader label={config.label} />
+        <OverlayFieldHeader label={t(config.labelKey)} />
         <div className={styles["overlay-field-control"]}>
           <ToggleBar
             options={THEME_OPTIONS}
@@ -26,9 +26,9 @@ export default function AppearanceSettingsSection({ compact }: { compact?: boole
             compact={compact}
           />
         </div>
-        {config.hint ? (
+        {config.hintKey ? (
           <p className={clsx(shared["field-hint"], styles["overlay-field-hint"])}>
-            {config.hint}
+            {t(config.hintKey)}
           </p>
         ) : null}
       </div>

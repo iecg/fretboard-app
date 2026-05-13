@@ -50,11 +50,11 @@ export default function NotationSettingsSection({ compact }: { compact?: boolean
               index < fields.length - 1 && styles["overlay-field--divided"],
             )}
           >
-            <OverlayFieldHeader label={config.label} />
+            <OverlayFieldHeader label={t(config.labelKey)} />
             <div className={styles["overlay-field-control"]}>{control}</div>
-            {config.hint ? (
+            {config.hintKey ? (
               <p className={clsx(shared["field-hint"], styles["overlay-field-hint"])}>
-                {config.hint}
+                {t(config.hintKey)}
               </p>
             ) : null}
           </div>

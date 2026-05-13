@@ -16,7 +16,7 @@ export default function ChordLayoutSettingsSection({ compact }: { compact?: bool
   return (
     <OverlaySection id="chord-layout" title={t("settings.sections.chordLayout")}>
       <div className={styles["overlay-field"]}>
-        <OverlayFieldHeader label={config.label} />
+        <OverlayFieldHeader label={t(config.labelKey)} />
         <div className={styles["overlay-field-control"]}>
           <StepperControl
             value={chordFretSpread}
@@ -28,9 +28,9 @@ export default function ChordLayoutSettingsSection({ compact }: { compact?: bool
             compact={compact}
           />
         </div>
-        {config.hint ? (
+        {config.hintKey ? (
           <p className={clsx(shared["field-hint"], styles["overlay-field-hint"])}>
-            {config.hint}
+            {t(config.hintKey)}
           </p>
         ) : null}
       </div>

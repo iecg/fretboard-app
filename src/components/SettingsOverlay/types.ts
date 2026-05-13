@@ -14,8 +14,8 @@ export type SettingFieldKey =
 
 export type SettingFieldConfig = {
   key: SettingFieldKey;
-  label: string;
-  hint?: string;
+  labelKey: string;
+  hintKey?: string;
   className?: string;
 };
 
