@@ -2,7 +2,6 @@ import { startTransition, useEffect } from "react";
 import { useAtomValue } from "jotai";
 import clsx from "clsx";
 import { NOTES, LENS_REGISTRY } from "@fretflow/core";
-import { getDegreesForScale } from "@fretflow/core";
 import { lensAvailabilityAtom, fingeringPatternAtom } from "../../store/atoms";
 import { NoteGrid } from "../NoteGrid/NoteGrid";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
@@ -11,11 +10,11 @@ import { useScaleState } from "../../hooks/useScaleState";
 import theoryStyles from "../TheoryControls/TheoryControls.module.css";
 import panelStyles from "./ChordOverlayControls.module.css";
 import shared from "../shared/shared.module.css";
+import { CHORD_NONE_VALUE } from "./chordTypeOptions";
 import {
-  CHORD_NONE_VALUE,
-  CHORD_TYPE_DISPLAY_ORDER,
-  CHORD_TYPE_SHORT_LABELS,
-} from "./chordTypeOptions";
+  buildDegreeToggleOptions,
+  buildQualityToggleOptions,
+} from "../shared/chordControlOptions";
 
 export interface ChordOverlayControlsProps {
   compact?: boolean;
@@ -43,13 +42,12 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
     fingeringPattern === "one-string" || fingeringPattern === "two-strings";
 
   const hasQualityOverride = chordQualityOverride != null;
-  const degreeSelectOptions = [
-    { value: CHORD_NONE_VALUE, label: "Off" },
-    ...Object.values(getDegreesForScale(scaleName)).map((deg) => ({
-      value: deg,
-      label: hasQualityOverride && deg === chordDegree ? `${deg}*` : deg,
-    })),
-  ];
+  const degreeSelectOptions = buildDegreeToggleOptions({
+    scaleName,
+    qualityOverridden: hasQualityOverride,
+    activeDegree: chordDegree,
+    includeOffSentinel: true,
+  });
 
   // Hide tension lens when unavailable and not currently active.
   const lensOptions = lensAvailability.flatMap((entry) => {
@@ -149,10 +147,7 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
               <span className={shared["section-label"]}>Chord Type</span>
               <ToggleBar
                 label="Chord Type"
-                options={CHORD_TYPE_DISPLAY_ORDER.map((key) => ({
-                  value: key,
-                  label: CHORD_TYPE_SHORT_LABELS[key] ?? key,
-                }))}
+                options={buildQualityToggleOptions({ includeSentinel: false })}
                 value={chordType ?? ""}
                 onChange={handleChordTypeChange}
                 compact={compact}
@@ -174,13 +169,7 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
             <span className={shared["section-label"]}>Chord Type</span>
             <ToggleBar
               label="Chord Type"
-              options={[
-                { value: CHORD_NONE_VALUE, label: "Off" },
-                ...CHORD_TYPE_DISPLAY_ORDER.map((key) => ({
-                  value: key,
-                  label: CHORD_TYPE_SHORT_LABELS[key] ?? key,
-                })),
-              ]}
+              options={buildQualityToggleOptions({ diatonicLabel: "Off" })}
               value={chordQualityOverride ?? CHORD_NONE_VALUE}
               onChange={handleChordTypeChange}
               compact={compact}

@@ -35,4 +35,14 @@ describe("buildQualityToggleOptions", () => {
     const opts = buildQualityToggleOptions({ diatonicLabel: "Off" });
     expect(opts[0].label).toBe("Off");
   });
+
+  it("omits the sentinel when includeSentinel is false", () => {
+    const opts = buildQualityToggleOptions({ includeSentinel: false });
+    expect(opts[0].value).not.toBe(CHORD_QUALITY_DIATONIC_VALUE);
+    // First entry should be a real chord quality, not the sentinel
+    expect(opts.every((o) => o.value !== CHORD_QUALITY_DIATONIC_VALUE)).toBe(true);
+    // Length should equal full list minus sentinel
+    const withSentinel = buildQualityToggleOptions();
+    expect(opts.length).toBe(withSentinel.length - 1);
+  });
 });

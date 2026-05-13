@@ -46,16 +46,24 @@ export const CHORD_QUALITY_DIATONIC_VALUE = CHORD_NONE_VALUE;
 export interface BuildQualityOptionsArgs {
   /** Override the label used for the leading sentinel (default "Diatonic"). */
   diatonicLabel?: string;
+  /**
+   * Whether to prepend the diatonic/Off sentinel as the first option.
+   * Defaults to true. Pass false for degree-mode quality pickers that do not
+   * need a "no-override" sentinel.
+   */
+  includeSentinel?: boolean;
 }
 
 export function buildQualityToggleOptions({
   diatonicLabel = "Diatonic",
+  includeSentinel = true,
 }: BuildQualityOptionsArgs = {}): ToggleOption[] {
-  return [
-    { value: CHORD_QUALITY_DIATONIC_VALUE, label: diatonicLabel },
-    ...CHORD_TYPE_DISPLAY_ORDER.map((key) => ({
-      value: key,
-      label: CHORD_TYPE_SHORT_LABELS[key] ?? key,
-    })),
-  ];
+  const qualities = CHORD_TYPE_DISPLAY_ORDER.map((key) => ({
+    value: key,
+    label: CHORD_TYPE_SHORT_LABELS[key] ?? key,
+  }));
+  if (!includeSentinel) {
+    return qualities;
+  }
+  return [{ value: CHORD_QUALITY_DIATONIC_VALUE, label: diatonicLabel }, ...qualities];
 }
