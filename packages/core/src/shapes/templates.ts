@@ -17,6 +17,34 @@ export const MODE_OFFSETS: Record<string, number> = {
 export type CagedShape = "C" | "A" | "G" | "E" | "D";
 export const CAGED_SHAPES: CagedShape[] = ["C", "A", "G", "E", "D"];
 
+export type FullChordQuality = "Major Triad" | "Minor Triad" | "Dominant 7th";
+
+export interface FullChordTemplate {
+  shape: CagedShape;
+  quality: FullChordQuality;
+  anchorString: number;
+  anchorFretOffset: number;
+  fretsHighToLow: Array<number | null>;
+}
+
+export const FULL_CHORD_TEMPLATES: FullChordTemplate[] = [
+  { shape: "C", quality: "Major Triad", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [0, 1, 0, 2, 3, null] },
+  { shape: "A", quality: "Major Triad", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [0, 2, 2, 2, 0, null] },
+  { shape: "G", quality: "Major Triad", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [3, 0, 0, 0, 2, 3] },
+  { shape: "E", quality: "Major Triad", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 0, 1, 2, 2, 0] },
+  { shape: "D", quality: "Major Triad", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [2, 3, 2, 0, null, null] },
+  { shape: "C", quality: "Minor Triad", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [null, 1, 0, 1, 3, null] },
+  { shape: "A", quality: "Minor Triad", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [0, 1, 2, 2, 0, null] },
+  { shape: "G", quality: "Minor Triad", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [3, 3, 3, 5, 5, 3] },
+  { shape: "E", quality: "Minor Triad", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 0, 0, 2, 2, 0] },
+  { shape: "D", quality: "Minor Triad", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [1, 3, 2, 0, null, null] },
+  { shape: "C", quality: "Dominant 7th", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [0, 1, 3, 2, 3, null] },
+  { shape: "A", quality: "Dominant 7th", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [0, 2, 0, 2, 0, null] },
+  { shape: "G", quality: "Dominant 7th", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [1, 0, 0, 0, 2, 3] },
+  { shape: "E", quality: "Dominant 7th", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 0, 1, 0, 2, 0] },
+  { shape: "D", quality: "Dominant 7th", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [2, 1, 2, 0, null, null] },
+];
+
 export const CAGED_SHAPE_COLORS: Record<
   CagedShape,
   { solid: string; bg: string }
