@@ -273,7 +273,7 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     setViewport(1440, 900);
     const { container } = renderOpenOverlay();
     expect(screen.getByText("Compact Controls")).toBeTruthy();
-    const compactGroup = screen.getByRole("group", { name: "Compact controls" });
+    const compactGroup = screen.getByRole("group", { name: "Compact Controls" });
     expect(compactGroup).toBeTruthy();
     expect(compactGroup.querySelector('[aria-pressed]')).toBeTruthy();
     expect(await axe(container)).toHaveNoViolations();
@@ -285,7 +285,7 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     store.set(settingsOverlayOpenAtom, true);
     const { container } = renderOverlay(store);
     expect(screen.getByText("Compact Controls")).toBeTruthy();
-    const compactGroup = screen.getByRole("group", { name: "Compact controls" });
+    const compactGroup = screen.getByRole("group", { name: "Compact Controls" });
     expect(compactGroup).toBeTruthy();
     expect(await axe(container)).toHaveNoViolations();
   });
@@ -293,7 +293,7 @@ describe("SettingsOverlay/SettingsOverlay", () => {
   it("clicking On sets compactDensityAtom to 'on'", async () => {
     setViewport(1440, 900);
     const { store, container } = renderOpenOverlay();
-    const compactGroup = screen.getByRole("group", { name: "Compact controls" });
+    const compactGroup = screen.getByRole("group", { name: "Compact Controls" });
     const onBtn = within(compactGroup).getByRole("button", { name: "On" });
     fireEvent.click(onBtn);
     expect(store.get(compactDensityAtom)).toBe("on");
@@ -306,7 +306,7 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     act(() => {
       store.set(compactDensityAtom, "on");
     });
-    const compactGroup = screen.getByRole("group", { name: "Compact controls" });
+    const compactGroup = screen.getByRole("group", { name: "Compact Controls" });
     const offBtn = within(compactGroup).getByRole("button", { name: "Off" });
     fireEvent.click(offBtn);
     expect(store.get(compactDensityAtom)).toBe("off");
@@ -319,7 +319,7 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     act(() => {
       store.set(compactDensityAtom, "on");
     });
-    const compactGroup = screen.getByRole("group", { name: "Compact controls" });
+    const compactGroup = screen.getByRole("group", { name: "Compact Controls" });
     const autoBtn = within(compactGroup).getByRole("button", { name: "Auto" });
     fireEvent.click(autoBtn);
     expect(store.get(compactDensityAtom)).toBe("auto");
