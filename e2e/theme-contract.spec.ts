@@ -856,7 +856,8 @@ test.describe("Theme Contract", () => {
       await expect(panelSurfaces).toHaveCount(0);
 
       const sections = page.getByTestId("theory-controls").locator("section[data-open]");
-      await expect(sections).toHaveCount(2);
+      // Scale + Chords + Progression = 3 theory sections (Progression added in redesign)
+      await expect(sections).toHaveCount(3);
     });
 
     test("chord practice strip aligns with card surface in light mode", async ({ page }) => {
@@ -1043,20 +1044,25 @@ test.describe("Theme Contract", () => {
       await expect(page.getByTestId("theory-controls")).toBeVisible();
 
       const sections = page.getByTestId("theory-controls").locator("section[data-open]");
-      await expect(sections).toHaveCount(2);
+      // Scale + Chords + Progression = 3 theory sections (Progression added in redesign)
+      await expect(sections).toHaveCount(3);
 
       const scaleBg = await sections.nth(0).evaluate((el) => getComputedStyle(el).backgroundColor);
       const chordBg = await sections.nth(1).evaluate((el) => getComputedStyle(el).backgroundColor);
+      const progressionBg = await sections.nth(2).evaluate((el) => getComputedStyle(el).backgroundColor);
 
       expect(scaleBg.replace(/\s/g, "")).toBe("rgba(0,0,0,0)");
       expect(chordBg).toBe(scaleBg);
+      expect(progressionBg).toBe(scaleBg);
     });
 
     test("rendered controls remain visually distinct inside flat theory sections", async ({ page }) => {
       for (const theme of ["light", "dark"] as const) {
-        await loadVisualState(page, { theme, chordType: "Major 7th" }, { width: 1280, height: 900 });
+        await loadVisualState(page, { theme }, { width: 1280, height: 900 });
         await expect(page.getByTestId("theory-controls")).toBeVisible();
 
+        // Scale section opens by default when no chordType is active. It holds
+        // the StepperSelect and combobox controls this test wants to measure.
         const theorySection = page.locator("section[data-open]").first();
         const scaleFamilyStepper = page.getByRole("group", { name: "Browse scale families" });
         const scaleFamilySelect = page.getByRole("combobox", { name: "Scale Family" }).first();

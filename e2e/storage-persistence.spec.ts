@@ -80,8 +80,11 @@ test.describe("storage persistence", () => {
 
     await page.reload({ waitUntil: "domcontentloaded" });
     await expect(page.getByRole("group", { name: "Progression playback" })).toBeVisible();
-    await expect(page.getByRole("spinbutton", { name: "Progression tempo" })).toHaveValue("132");
-    await page.locator('button:has-text("Progression")').filter({ hasText: "steps" }).click();
-    await expect(page.getByRole("button", { name: /Step 2.*V.*2 bars/i })).toBeVisible();
+    // Tempo is now a StepperControl (role=group, not spinbutton). Verify the
+    // decrease button carries the current value in its aria-label.
+    await expect(page.getByRole("button", { name: /Decrease Tempo \(current: 132\)/i })).toBeVisible();
+    await page.locator('button:has-text("Progression")').filter({ hasText: "bars" }).click();
+    // Chord rows no longer have a "Step N" prefix — check degree + chord name instead.
+    await expect(page.getByRole("button", { name: /V.*Dominant 7th.*2 bars/i })).toBeVisible();
   });
 });

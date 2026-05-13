@@ -107,7 +107,7 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
       <div className={shared["control-section"]}>
         <span className={shared["section-label"]}>Chords</span>
         {resolvedProgressionSteps.length === 0 ? (
-          <p className={shared["field-hint"]}>Add a step or load a preset.</p>
+          <p className={shared["field-hint"]}>Add a chord or load a preset.</p>
         ) : (
           <ol className={styles["step-list"]}>
             {resolvedProgressionSteps.map((step, index) => (
@@ -134,7 +134,7 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
       </div>
 
       <div className={styles["step-actions"]}>
-        <button type="button" className={shared["control-button"]} onClick={() => addProgressionStep()} aria-label="Add step">
+        <button type="button" className={shared["control-button"]} onClick={() => addProgressionStep()} aria-label="Add chord">
           <Plus size={16} aria-hidden="true" />
           <span>Add</span>
         </button>
@@ -143,7 +143,7 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
           className={shared["control-button"]}
           onClick={() => activeStep && moveProgressionStep({ id: activeStep.id, direction: -1 })}
           disabled={!activeStep || activeProgressionStepIndex === 0}
-          aria-label="Move step up"
+          aria-label="Move chord up"
         >
           <ArrowUp size={16} aria-hidden="true" />
         </button>
@@ -152,7 +152,7 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
           className={shared["control-button"]}
           onClick={() => activeStep && moveProgressionStep({ id: activeStep.id, direction: 1 })}
           disabled={!activeStep || activeProgressionStepIndex === progressionSteps.length - 1}
-          aria-label="Move step down"
+          aria-label="Move chord down"
         >
           <ArrowDown size={16} aria-hidden="true" />
         </button>
@@ -161,7 +161,7 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
           className={shared["control-button"]}
           onClick={() => activeStep && removeProgressionStep(activeStep.id)}
           disabled={!activeStep}
-          aria-label="Remove step"
+          aria-label="Remove chord"
         >
           <Trash2 size={16} aria-hidden="true" />
         </button>
@@ -217,7 +217,7 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
           <div className={shared["control-section"]}>
             <span className={shared["section-label"]}>Quality</span>
             <ToggleBar
-              label="Step chord quality"
+              label="Chord quality"
               options={buildQualityToggleOptions({ diatonicLabel: "Diatonic" })}
               value={qualityValue}
               onChange={(quality) => updateProgressionStepQuality({

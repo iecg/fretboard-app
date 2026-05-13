@@ -38,7 +38,7 @@ describe("ProgressionControls", () => {
     expect(screen.getByRole("group", { name: "Progression degree" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Duration value" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Duration unit" })).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: "Step chord quality" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Chord quality" })).toBeInTheDocument();
   });
 
   it("loads a preset into the editable list", async () => {
@@ -63,7 +63,7 @@ describe("ProgressionControls", () => {
     fireEvent.click(screen.getByLabelText(/Increase Duration value/i));
     // Set duration unit to Bar
     await userEvent.click(within(screen.getByRole("group", { name: "Duration unit" })).getByRole("button", { name: "Bar" }));
-    await userEvent.click(within(screen.getByRole("group", { name: "Step chord quality" })).getByRole("button", { name: "7" }));
+    await userEvent.click(within(screen.getByRole("group", { name: "Chord quality" })).getByRole("button", { name: "7" }));
 
     expect(store.get(progressionStepsAtom)[1]).toMatchObject({
       degree: "vi",
@@ -81,7 +81,7 @@ describe("ProgressionControls", () => {
     ]);
     renderWithStore(<ProgressionControls />, store);
 
-    await userEvent.click(within(screen.getByRole("group", { name: "Step chord quality" })).getByRole("button", { name: "Diatonic" }));
+    await userEvent.click(within(screen.getByRole("group", { name: "Chord quality" })).getByRole("button", { name: "Diatonic" }));
 
     expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBeNull();
   });
@@ -90,13 +90,13 @@ describe("ProgressionControls", () => {
     const store = makeAtomStore([...BASE_SEEDS]);
     renderWithStore(<ProgressionControls />, store);
 
-    await userEvent.click(screen.getByRole("button", { name: "Add step" }));
+    await userEvent.click(screen.getByRole("button", { name: "Add chord" }));
     expect(store.get(progressionStepsAtom)).toHaveLength(3);
 
-    await userEvent.click(screen.getByRole("button", { name: "Move step up" }));
+    await userEvent.click(screen.getByRole("button", { name: "Move chord up" }));
     expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
 
-    await userEvent.click(screen.getByRole("button", { name: "Remove step" }));
+    await userEvent.click(screen.getByRole("button", { name: "Remove chord" }));
     expect(store.get(progressionStepsAtom)).toHaveLength(2);
   });
 
