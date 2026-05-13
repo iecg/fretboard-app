@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createStore } from "jotai";
+import { createStore, type Atom } from "jotai";
 import {
   activeProgressionStepIndexAtom,
   activeResolvedProgressionStepAtom,
@@ -138,5 +138,35 @@ describe("progressionAtoms", () => {
     store.set(advanceProgressionPlaybackAtom);
     expect(store.get(activeProgressionStepIndexAtom)).toBe(2);
     expect(store.get(progressionPlayingAtom)).toBe(false);
+  });
+});
+
+// Trigger onMount for an atom so atomWithStorage reads from localStorage.
+// Returns cleanup (unsubscribe) function.
+function mount<T>(store: ReturnType<typeof createStore>, atom: Atom<T>): () => void {
+  return store.sub(atom, () => {});
+}
+
+describe("progression storage hydration", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("hydrates a step with a legacy duration string into the new object shape", () => {
+    const key = "fretflow:progressionSteps";
+    const legacy = [
+      { id: "x", degree: "I", duration: "1-bar", qualityOverride: null },
+      { id: "y", degree: "V", duration: "2-beats", qualityOverride: null },
+    ];
+    localStorage.setItem(key, JSON.stringify(legacy));
+
+    const store = createStore();
+    const unsub = mount(store, progressionStepsAtom);
+    const steps = store.get(progressionStepsAtom);
+    unsub();
+
+    expect(steps).toHaveLength(2);
+    expect(steps[0].duration).toEqual({ value: 1, unit: "bar" });
+    expect(steps[1].duration).toEqual({ value: 2, unit: "beat" });
   });
 });

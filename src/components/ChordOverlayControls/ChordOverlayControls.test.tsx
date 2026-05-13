@@ -249,7 +249,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
         [fingeringPatternAtom, "caged"],
         [progressionEnabledAtom, true],
         [progressionStepsAtom, [
-          { id: "one", degree: "V", duration: "1-bar", qualityOverride: null },
+          { id: "one", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
         ]],
       ]);
       renderWithStore(<ChordOverlayControls />, store);

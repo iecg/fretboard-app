@@ -180,11 +180,24 @@ export function createProgressionStepId(): string {
 
 export function isValidProgressionStep(value: unknown): value is ProgressionStep {
   if (!value || typeof value !== "object") return false;
-  const candidate = value as ProgressionStep & { duration: unknown };
+  const candidate = value as ProgressionStep;
   return typeof candidate.id === "string"
     && typeof candidate.degree === "string"
-    && (isProgressionDuration(candidate.duration) || typeof candidate.duration === "string")
+    && isProgressionDuration(candidate.duration)
     && (candidate.qualityOverride === null || typeof candidate.qualityOverride === "string");
+}
+
+export function normalizeProgressionStep(value: unknown): ProgressionStep | null {
+  if (!value || typeof value !== "object") return null;
+  const candidate = value as ProgressionStep & { duration: unknown };
+  if (typeof candidate.id !== "string" || typeof candidate.degree !== "string") return null;
+  if (candidate.qualityOverride !== null && typeof candidate.qualityOverride !== "string") return null;
+  return {
+    id: candidate.id,
+    degree: candidate.degree,
+    duration: migrateLegacyDuration(candidate.duration),
+    qualityOverride: candidate.qualityOverride ?? null,
+  };
 }
 
 export function getDegreeOrdinal(degree: DegreeId): number | null {

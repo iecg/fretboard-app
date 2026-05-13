@@ -24,8 +24,8 @@ const BASE_SEEDS = [
   [progressionEnabledAtom, true],
   [progressionTempoBpmAtom, 120],
   [progressionStepsAtom, [
-    { id: "one", degree: "I", duration: "1-beat", qualityOverride: null },
-    { id: "two", degree: "V", duration: "1-beat", qualityOverride: null },
+    { id: "one", degree: "I", duration: { value: 1, unit: "beat" }, qualityOverride: null },
+    { id: "two", degree: "V", duration: { value: 1, unit: "beat" }, qualityOverride: null },
   ]],
 ] as const;
 

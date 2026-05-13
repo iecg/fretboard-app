@@ -14,6 +14,7 @@ import {
   getProgressionDurationMs,
   isProgressionDuration,
   isValidProgressionStep,
+  normalizeProgressionStep,
   remapProgressionStepsForScale,
   resolveProgressionStep,
   type ProgressionStep,
@@ -39,8 +40,11 @@ const DEFAULT_STEPS: ProgressionStep[] = [
 const progressionStepsStorage = createStorage<ProgressionStep[]>({
   serialize: (value) => JSON.stringify(value),
   deserialize: (value) => JSON.parse(value) as ProgressionStep[],
-  validate: (value) => Array.isArray(value) && value.every(isValidProgressionStep),
-  onRead: (value) => value.filter(isValidProgressionStep),
+  validate: (value) => Array.isArray(value),
+  onRead: (value) =>
+    (value as unknown[])
+      .map((entry) => normalizeProgressionStep(entry))
+      .filter((step): step is ProgressionStep => step !== null),
   onWrite: (value) => value.filter(isValidProgressionStep),
 });
 

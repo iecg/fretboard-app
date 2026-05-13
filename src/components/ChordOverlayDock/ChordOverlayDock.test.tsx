@@ -94,8 +94,8 @@ describe("TopBandSummary chord integration", () => {
       [progressionEnabledAtom, true],
       [activeProgressionStepIndexAtom, 0],
       [progressionStepsAtom, [
-        { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
-        { id: "bad", degree: "not-a-degree", duration: "1-bar", qualityOverride: null },
+        { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+        { id: "bad", degree: "not-a-degree", duration: { value: 1, unit: "bar" }, qualityOverride: null },
       ]],
     ]);
 
@@ -126,8 +126,8 @@ describe("TopBandSummary chord integration", () => {
       [progressionEnabledAtom, true],
       [activeProgressionStepIndexAtom, 0],
       [progressionStepsAtom, [
-        { id: "bad", degree: "not-a-degree", duration: "1-bar", qualityOverride: null },
-        { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
+        { id: "bad", degree: "not-a-degree", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+        { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
       ]],
     ]);
 
@@ -143,8 +143,8 @@ describe("TopBandSummary chord integration", () => {
       [scaleNameAtom, "Major"],
       [progressionEnabledAtom, true],
       [progressionStepsAtom, [
-        { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
-        { id: "two", degree: "V", duration: "1-bar", qualityOverride: null },
+        { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+        { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
       ]],
     ]);
 
