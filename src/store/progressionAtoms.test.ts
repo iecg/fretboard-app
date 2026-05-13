@@ -19,6 +19,7 @@ import {
   progressionStepsAtom,
   progressionTempoBpmAtom,
   removeProgressionStepAtom,
+  resetProgressionAtomsAtom,
   setProgressionActiveStepIndexAtom,
   setProgressionPlayingAtom,
   totalProgressionBarsAtom,
@@ -26,6 +27,7 @@ import {
   updateProgressionStepDurationAtom,
   updateProgressionStepQualityAtom,
 } from "./progressionAtoms";
+import { DEFAULT_BEATS_PER_BAR } from "../progressions/progressionDomain";
 import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
 
 describe("progressionAtoms", () => {
@@ -169,6 +171,38 @@ describe("beatsPerBarAtom", () => {
     store.set(beatsPerBarAtom, 6);
     expect(store.get(beatsPerBarAtom)).toBe(6);
     expect(localStorage.getItem("fretflow:progressionBeatsPerBar")).toBe("6");
+    unsub();
+  });
+});
+
+describe("beatsPerBarAtom storage validation", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("falls back to the default when storage value is out-of-set", () => {
+    localStorage.setItem("fretflow:progressionBeatsPerBar", "5");
+    const store = createStore();
+    const unsub = mount(store, beatsPerBarAtom);
+    expect(store.get(beatsPerBarAtom)).toBe(DEFAULT_BEATS_PER_BAR);
+    unsub();
+    localStorage.removeItem("fretflow:progressionBeatsPerBar");
+  });
+});
+
+describe("resetProgressionAtomsAtom", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("resets beatsPerBarAtom to its default", () => {
+    const store = createStore();
+    const unsub = mount(store, beatsPerBarAtom);
+    store.set(beatsPerBarAtom, 6);
+    expect(store.get(beatsPerBarAtom)).toBe(6);
+
+    store.set(resetProgressionAtomsAtom);
+    expect(store.get(beatsPerBarAtom)).toBe(DEFAULT_BEATS_PER_BAR);
     unsub();
   });
 });

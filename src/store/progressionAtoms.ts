@@ -12,6 +12,7 @@ import {
   findFirstResolvableStepIndex,
   findNextResolvableStepIndex,
   getProgressionDurationMs,
+  isBeatsPerBar,
   isProgressionDuration,
   isValidProgressionStep,
   normalizeProgressionStep,
@@ -30,6 +31,12 @@ import {
   createStorage,
   k,
 } from "../utils/storage";
+
+const beatsPerBarStorage = createStorage<number>({
+  serialize: (v) => String(v),
+  deserialize: (raw) => Number(raw),
+  validate: (v): v is number => typeof v === "number" && isBeatsPerBar(v),
+});
 
 const DEFAULT_STEPS: ProgressionStep[] = [
   { id: "default-i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
@@ -84,7 +91,7 @@ export const progressionLoopEnabledAtom = atomWithStorage<boolean>(
 export const beatsPerBarAtom = atomWithStorage<number>(
   k("progressionBeatsPerBar"),
   DEFAULT_BEATS_PER_BAR,
-  constrainedNumberStorage({ min: 1, max: 32, integer: true }),
+  beatsPerBarStorage,
   GET_ON_INIT,
 );
 
@@ -294,6 +301,7 @@ export const resetProgressionAtomsAtom = atom(null, (_get, set) => {
   set(progressionStepsAtom, RESET);
   set(progressionTempoBpmAtom, RESET);
   set(progressionLoopEnabledAtom, RESET);
+  set(beatsPerBarAtom, RESET);
   set(activeProgressionStepIndexAtom, 0);
   set(progressionPlayingStateAtom, false);
   set(progressionStepDeadlineAtom, null);
