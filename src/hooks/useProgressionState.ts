@@ -4,6 +4,9 @@ import {
   activeResolvedProgressionStepAtom,
   addProgressionStepAtom,
   advanceProgressionPlaybackAtom,
+  beatsPerBarAtom,
+  currentProgressionBarAtom,
+  currentProgressionPresetIdAtom,
   loadProgressionPresetAtom,
   moveProgressionStepAtom,
   previousProgressionStepAtom,
@@ -19,6 +22,7 @@ import {
   resolvedProgressionStepsAtom,
   setProgressionActiveStepIndexAtom,
   setProgressionPlayingAtom,
+  totalProgressionBarsAtom,
   updateProgressionStepDegreeAtom,
   updateProgressionStepDurationAtom,
   updateProgressionStepQualityAtom,
@@ -36,6 +40,10 @@ export function useProgressionState() {
   const progressionStepDurationMs = useAtomValue(progressionStepDurationMsAtom);
   const progressionStepDeadline = useAtomValue(progressionStepDeadlineAtom);
   const progressionPlaybackBlockedReason = useAtomValue(progressionPlaybackBlockedReasonAtom);
+  const [beatsPerBar, setBeatsPerBar] = useAtom(beatsPerBarAtom);
+  const totalProgressionBars = useAtomValue(totalProgressionBarsAtom);
+  const currentProgressionBar = useAtomValue(currentProgressionBarAtom);
+  const currentProgressionPresetId = useAtomValue(currentProgressionPresetIdAtom);
 
   return {
     progressionEnabled,
@@ -52,6 +60,11 @@ export function useProgressionState() {
     progressionStepDurationMs,
     progressionStepDeadline,
     progressionPlaybackBlockedReason,
+    beatsPerBar,
+    setBeatsPerBar,
+    totalProgressionBars,
+    currentProgressionBar,
+    currentProgressionPresetId,
     loadProgressionPreset: useSetAtom(loadProgressionPresetAtom),
     setActiveProgressionStepIndex: useSetAtom(setProgressionActiveStepIndexAtom),
     addProgressionStep: useSetAtom(addProgressionStepAtom),

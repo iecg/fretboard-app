@@ -137,6 +137,11 @@ export {
   advanceProgressionPlaybackAtom,
   previousProgressionStepAtom,
   resetProgressionAtomsAtom,
+  beatsPerBarAtom,
+  totalProgressionBarsAtom,
+  currentProgressionBarAtom,
+  currentProgressionPresetIdAtom,
+  CUSTOM_PRESET_ID,
 } from "./progressionAtoms";
 
 export {
