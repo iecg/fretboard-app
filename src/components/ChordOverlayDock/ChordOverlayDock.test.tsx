@@ -3,11 +3,14 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { screen } from "@testing-library/react";
 import { TopBandSummary } from "../TopBandSummary/TopBandSummary";
 import {
+  activeProgressionStepIndexAtom,
   rootNoteAtom,
   scaleNameAtom,
   chordTypeAtom,
   chordRootAtom,
   practiceLensAtom,
+  progressionEnabledAtom,
+  progressionStepsAtom,
 } from "../../store/atoms";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
 import { axe } from "../../test-utils/a11y";
@@ -61,5 +64,42 @@ describe("TopBandSummary chord integration", () => {
       [practiceLensAtom, "targets"],
     ]);
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("shows read-only current and next progression status in the top band", () => {
+    renderWithAtoms(<TopBandSummary />, [
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [activeProgressionStepIndexAtom, 0],
+      [progressionStepsAtom, [
+        { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
+        { id: "two", degree: "V", duration: "2-bars", qualityOverride: null },
+      ]],
+    ]);
+
+    expect(screen.getByRole("group", { name: "Progression status" })).toBeInTheDocument();
+    expect(screen.getByText("Current")).toBeInTheDocument();
+    expect(screen.getByText(/I.*C Major Triad/i)).toBeInTheDocument();
+    expect(screen.getByText("Next")).toBeInTheDocument();
+    expect(screen.getByText(/V.*G Major Triad/i)).toBeInTheDocument();
+    expect(screen.getByText("Step 1 of 2")).toBeInTheDocument();
+    expect(screen.getByText("1 bar")).toBeInTheDocument();
+  });
+
+  it("does not render progression transport controls in the top band", () => {
+    renderWithAtoms(<TopBandSummary />, [
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, [
+        { id: "one", degree: "I", duration: "1-bar", qualityOverride: null },
+        { id: "two", degree: "V", duration: "1-bar", qualityOverride: null },
+      ]],
+    ]);
+
+    expect(screen.queryByRole("button", { name: "Play progression" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Loop progression" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("spinbutton", { name: "Progression tempo" })).not.toBeInTheDocument();
   });
 });

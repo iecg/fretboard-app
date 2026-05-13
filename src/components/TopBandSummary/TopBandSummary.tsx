@@ -4,6 +4,8 @@ import { Eye, EyeOff } from "lucide-react";
 import { showChordPracticeBarAtom } from "../../store/atoms";
 import { useScaleState } from "../../hooks/useScaleState";
 import { usePracticeBarState } from "../../hooks/usePracticeBarState";
+import { useProgressionState } from "../../hooks/useProgressionState";
+import { PROGRESSION_DURATION_LABELS } from "../../progressions/progressionDomain";
 import { DegreeChipStrip } from "../DegreeChipStrip/DegreeChipStrip";
 import { ChordPracticeBar } from "../ChordPracticeBar/ChordPracticeBar";
 import shared from "../shared/shared.module.css";
@@ -28,8 +30,20 @@ export function TopBandSummary() {
     chordGroup,
     landOnGroup,
   } = usePracticeBarState();
+  const {
+    progressionEnabled,
+    activeProgressionStepIndex,
+    activeResolvedProgressionStep,
+    resolvedProgressionSteps,
+    progressionPlaybackBlockedReason,
+  } = useProgressionState();
 
   const colorNoteSet = colorNotes.length > 0 ? new Set<string>(colorNotes) : undefined;
+  const nextProgressionStep = resolvedProgressionSteps
+    .slice(activeProgressionStepIndex + 1)
+    .find((step) => !step.unavailable)
+    ?? resolvedProgressionSteps.slice(0, activeProgressionStepIndex).find((step) => !step.unavailable)
+    ?? null;
 
   return (
     <MotionConfig reducedMotion="user">
@@ -59,6 +73,38 @@ export function TopBandSummary() {
         }
       />
       <AnimatePresence initial={false}>
+        {progressionEnabled && (
+          <motion.div
+            key="progression-status"
+            className={styles["progression-section"]}
+            initial={{ height: 0, overflow: "hidden", opacity: 0 }}
+            animate={{ height: "auto", overflow: "visible", opacity: 1 }}
+            exit={{ height: 0, overflow: "hidden", opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+          >
+            <div className={styles["progression-status"]} role="group" aria-label="Progression status">
+              <span className={styles["progression-position"]}>
+                Step {activeProgressionStepIndex + 1} of {resolvedProgressionSteps.length}
+              </span>
+              <div className={styles["progression-status-grid"]}>
+                <span className={styles["progression-status-label"]}>Current</span>
+                <span className={styles["progression-status-value"]}>
+                  {activeResolvedProgressionStep?.degree ?? "-"} · {activeResolvedProgressionStep?.resolvedChordLabel ?? "Unavailable"}
+                </span>
+                <span className={styles["progression-status-duration"]}>
+                  {activeResolvedProgressionStep ? PROGRESSION_DURATION_LABELS[activeResolvedProgressionStep.duration] : ""}
+                </span>
+                <span className={styles["progression-status-label"]}>Next</span>
+                <span className={styles["progression-status-value"]}>
+                  {nextProgressionStep ? `${nextProgressionStep.degree} · ${nextProgressionStep.resolvedChordLabel ?? "Unavailable"}` : "End"}
+                </span>
+              </div>
+              {progressionPlaybackBlockedReason ? (
+                <span className={styles["progression-status-note"]}>{progressionPlaybackBlockedReason}</span>
+              ) : null}
+            </div>
+          </motion.div>
+        )}
         {showChordBar && (
           <motion.div
             key="chord-section"
