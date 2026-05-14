@@ -29,6 +29,7 @@ import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
 import { ProgressionSummarySlot } from "./components/ProgressionSummarySlot/ProgressionSummarySlot";
 import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
+import { TooltipProvider } from "./components/Tooltip/Tooltip";
 import sharedStyles from "./components/shared/shared.module.css";
 import { ControlsPanelSkeleton, MobileTabSkeleton } from "./components/LoadingSkeleton/LoadingSkeleton";
 import { ANIMATION_DURATION_XFADE } from "@fretflow/core";
@@ -157,6 +158,7 @@ function AppContent() {
   }
 
   return (
+  <TooltipProvider>
   <>
     {/* Portrait lock — CSS-only, shown via @media orientation:landscape on mobile */}
     <div className="rotate-overlay" role="alert" aria-live="polite">
@@ -284,6 +286,7 @@ function AppContent() {
       </div>
     )}
   </>
+  </TooltipProvider>
   );
 }
 

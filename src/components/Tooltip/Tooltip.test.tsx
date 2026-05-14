@@ -1,22 +1,30 @@
 import { describe, it, expect } from "vitest";
 import { render, screen, act } from "@testing-library/react";
-import { Tooltip } from "./Tooltip";
+import { Tooltip, TooltipProvider } from "./Tooltip";
 
 describe("Tooltip", () => {
+  function withProvider(node: React.ReactElement) {
+    return <TooltipProvider delayDuration={0}>{node}</TooltipProvider>;
+  }
+
   it("renders the trigger child", () => {
     render(
-      <Tooltip content="Help text">
-        <button type="button">Trigger</button>
-      </Tooltip>,
+      withProvider(
+        <Tooltip content="Help text">
+          <button type="button">Trigger</button>
+        </Tooltip>,
+      ),
     );
     expect(screen.getByRole("button", { name: "Trigger" })).toBeTruthy();
   });
 
   it("shows the tooltip content on focus", async () => {
     render(
-      <Tooltip content="Help text" delayDuration={0}>
-        <button type="button">Trigger</button>
-      </Tooltip>,
+      withProvider(
+        <Tooltip content="Help text" delayDuration={0}>
+          <button type="button">Trigger</button>
+        </Tooltip>,
+      ),
     );
     const trigger = screen.getByRole("button", { name: "Trigger" });
     await act(async () => {
@@ -28,9 +36,11 @@ describe("Tooltip", () => {
 
   it("hides the tooltip content on blur", async () => {
     render(
-      <Tooltip content="Help text" delayDuration={0}>
-        <button type="button">Trigger</button>
-      </Tooltip>,
+      withProvider(
+        <Tooltip content="Help text" delayDuration={0}>
+          <button type="button">Trigger</button>
+        </Tooltip>,
+      ),
     );
     const trigger = screen.getByRole("button", { name: "Trigger" });
     await act(async () => {
@@ -41,5 +51,16 @@ describe("Tooltip", () => {
       trigger.blur();
     });
     expect(screen.queryByRole("tooltip")).toBeNull();
+  });
+
+  it("two Tooltip instances share their TooltipProvider", () => {
+    render(
+      <TooltipProvider delayDuration={0}>
+        <Tooltip content="First"><button type="button">A</button></Tooltip>
+        <Tooltip content="Second"><button type="button">B</button></Tooltip>
+      </TooltipProvider>,
+    );
+    expect(screen.getByRole("button", { name: "A" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "B" })).toBeTruthy();
   });
 });
