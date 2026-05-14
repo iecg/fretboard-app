@@ -193,13 +193,17 @@
 }
 
 .positionReadout {
-  flex: 1 1 auto;
-  min-width: 11rem;
+  /* Size to content (the readout's own digit width) rather than growing to
+     fill the remaining row. Combined with `margin-inline-end: auto` on the
+     context readouts, this leaves negative space between the position box
+     and the tempo/scale group, matching the reference faceplate. */
+  flex: 0 0 auto;
+  margin-inline-end: auto;
 }
 
 .contextReadouts {
   display: grid;
-  grid-template-columns: minmax(3.8rem, auto) minmax(6rem, 1fr);
+  grid-template-columns: minmax(3.8rem, auto) minmax(6rem, auto);
   gap: 0.35rem;
   flex-shrink: 0;
 }
@@ -371,12 +375,8 @@
   flex: 1 1 0;
   min-width: 0;
   position: relative;
-  display: flex;
-  align-items: flex-end;
-  gap: 0.4rem;
   height: 0.95rem;
-  padding-inline-start: 0.15rem;
-  border-inline-start: 1px solid rgb(193 218 235 / 0.1);
+  border-inline-start: 1px solid rgb(193 218 235 / 0.16);
 }
 
 .rulerBar:first-child {
@@ -384,26 +384,27 @@
 }
 
 .rulerBarNumber {
+  position: absolute;
+  inset-inline-start: 0.18rem;
+  inset-block-end: 0;
   color: var(--track-text-dim);
   font-weight: 500;
   letter-spacing: 0.04em;
   line-height: 1;
+  pointer-events: none;
 }
 
-.rulerTicks {
-  position: relative;
-  flex: 1 1 auto;
-  display: grid;
-  grid-template-columns: repeat(calc(var(--beats-per-bar) - 1), 1fr);
-  align-items: end;
-  height: 100%;
-}
-
+/* Each tick is absolutely positioned at the exact fractional offset of its
+   beat inside the bar (e.g. 25%, 50%, 75% in 4/4) so subdivisions land
+   mathematically rather than being distributed across the leftover space
+   after the bar number. */
 .rulerTick {
+  position: absolute;
+  inset-block-end: 0;
   width: 1px;
   height: 30%;
-  margin-block-start: auto;
   background: rgb(193 218 235 / 0.1);
+  pointer-events: none;
 }
 
 .lane {
@@ -626,6 +627,7 @@
   .positionReadout {
     flex: 1 1 100%;
     min-width: 0;
+    margin-inline-end: 0;
   }
 
   .contextReadouts {

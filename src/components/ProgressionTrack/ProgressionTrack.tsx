@@ -201,11 +201,13 @@ export function ProgressionTrack() {
           {Array.from({ length: totalBarsForDisplay }, (_, i) => (
             <span key={i} className={styles.rulerBar}>
               <span className={styles.rulerBarNumber}>{i + 1}</span>
-              <span className={styles.rulerTicks}>
-                {Array.from({ length: subdivisionsPerBar - 1 }, (__, j) => (
-                  <span key={j} className={styles.rulerTick} />
-                ))}
-              </span>
+              {Array.from({ length: subdivisionsPerBar - 1 }, (__, j) => (
+                <span
+                  key={j}
+                  className={styles.rulerTick}
+                  style={{ left: `${((j + 1) / subdivisionsPerBar) * 100}%` } as CSSProperties}
+                />
+              ))}
             </span>
           ))}
         </div>
