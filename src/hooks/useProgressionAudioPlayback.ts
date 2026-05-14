@@ -12,30 +12,100 @@ import {
 } from "../progressions/audio/scheduler";
 import { isMutedAtom } from "../store/atoms";
 import { resolveChordVoicing } from "../progressions/progressionAudio";
+import {
+  findNextResolvableStepIndex,
+  type ResolvedProgressionStep,
+} from "../progressions/progressionDomain";
 import { useProgressionState } from "./useProgressionState";
 
 /** Lead time between scheduling and the audible hit. Keeps Web Audio from
  * dropping the first event when `currentTime` and "now" are equal. */
 const SCHEDULE_LEAD_SECONDS = 0.02;
 
-/** Octave used for the synthesized bass note. Two octaves below middle C
- * sits in the typical electric-bass register without thumping the mix. */
+/** Octave used for the synthesized bass note. */
 const BASS_OCTAVE = 2;
 
+interface ScheduledSegment {
+  stepIndex: number;
+  /** AudioContext time at which this step starts. */
+  startTime: number;
+  /** AudioContext time at which this step ends — used to anchor the next. */
+  endTime: number;
+  handle: ScheduledStepHandle;
+}
+
+interface SchedulerInputs {
+  steps: readonly ResolvedProgressionStep[];
+  tempo: number;
+  beatsPerBar: number;
+  enable: {
+    strum: boolean;
+    bass: boolean;
+    drums: boolean;
+    metronome: boolean;
+  };
+}
+
+function buildSegment(
+  ctx: AudioContext,
+  bus: AudioNode,
+  stepIndex: number,
+  startTime: number,
+  inputs: SchedulerInputs,
+): ScheduledSegment | null {
+  const step = inputs.steps[stepIndex];
+  if (!step || step.unavailable || !step.root || !step.quality) return null;
+
+  const voicing = resolveChordVoicing(step.root, step.quality);
+  const bassNote = step.root ? `${step.root}${BASS_OCTAVE}` : null;
+  const secondsPerBeat = 60 / Math.max(1, inputs.tempo);
+  const beatsAvailable =
+    step.duration.unit === "bar"
+      ? step.duration.value * inputs.beatsPerBar
+      : step.duration.value;
+  const durationSec = beatsAvailable * secondsPerBeat;
+
+  const handle = scheduleProgressionStep(ctx, bus, {
+    voicing,
+    bassNote,
+    beatsAvailable,
+    beatsPerBar: inputs.beatsPerBar,
+    secondsPerBeat,
+    startTime,
+    enable: inputs.enable,
+  });
+
+  return {
+    stepIndex,
+    startTime,
+    endTime: startTime + durationSec,
+    handle,
+  };
+}
+
 /**
- * Drive the progression backing track. Each time the active step changes,
- * schedules a full bar of strum/bass/drum/metronome events onto the
- * `AudioContext` clock so the groove stays locked even when React renders
- * drift. On pause/mute the progression bus is silenced in ~20ms; on resume
- * it's restored before the next step's events fire.
+ * Drive the progression backing track. Maintains a small queue of two
+ * pre-scheduled "segments" (current + next) so the chord at the bar
+ * boundary fires on the audio clock instead of waiting for React's step
+ * timer to advance. This eliminates the perceptible lag at chord
+ * transitions even when the JS event loop is busy.
+ *
+ * Lifecycle:
+ *  - On step transition: drop expired segments, ensure the new active step
+ *    is scheduled, then queue the step that follows it.
+ *  - On tempo / meter / enable-flag changes: cancel pending segments and
+ *    re-schedule so the user hears the new groove on the next chord.
+ *  - On pause/mute/block: cancel every segment and silence the bus in
+ *    ~20ms via `silenceProgressionBus()`.
  */
 export function useProgressionAudioPlayback() {
   const {
     progressionEnabled,
     progressionPlaying,
     progressionPlaybackBlockedReason,
+    progressionLoopEnabled,
     activeProgressionStepIndex,
-    activeResolvedProgressionStep,
+    resolvedProgressionSteps,
     progressionTempoBpm,
     beatsPerBar,
     progressionStrumEnabled,
@@ -45,22 +115,26 @@ export function useProgressionAudioPlayback() {
   } = useProgressionState();
   const isMuted = useAtomValue(isMutedAtom);
 
-  // Step we last scheduled, so unrelated atom updates that re-run this effect
-  // don't double-schedule the same chord.
-  const lastScheduledStepRef = useRef<number | null>(null);
-  // Live voice handles for the currently-ringing step; cancelled on chord
-  // change or pause so plucked-string tails don't bleed into the next step.
-  const liveStepRef = useRef<ScheduledStepHandle | null>(null);
-
-  // Cancel + silence helper. Idempotent — safe to call on every state branch.
-  const stopAll = () => {
-    liveStepRef.current?.cancelAll();
-    liveStepRef.current = null;
-    silenceProgressionBus();
-    lastScheduledStepRef.current = null;
-  };
+  const segmentsRef = useRef<ScheduledSegment[]>([]);
+  /** Tracks which step we were on last effect run so we can distinguish a
+   * chord transition (pre-schedule the next) from a tempo/flag change
+   * (reschedule everything). */
+  const lastStepRef = useRef<number | null>(null);
 
   useEffect(() => {
+    // Defensive: HMR or hook-shape changes between reloads can leave the
+    // ref holding a value from the previous version of the hook. Re-establish
+    // the array invariant on every effect entry.
+    if (!Array.isArray(segmentsRef.current)) {
+      segmentsRef.current = [];
+    }
+    const stopAll = () => {
+      segmentsRef.current.forEach((s) => s.handle.cancelAll());
+      segmentsRef.current = [];
+      silenceProgressionBus();
+      lastStepRef.current = null;
+    };
+
     if (
       !progressionEnabled
       || !progressionPlaying
@@ -71,57 +145,87 @@ export function useProgressionAudioPlayback() {
       return;
     }
 
-    // Same step already scheduled — skip (atom-fan-out re-renders shouldn't
-    // restart the bar).
-    if (lastScheduledStepRef.current === activeProgressionStepIndex) return;
-
     const audio = ensureProgressionAudio();
     if (!audio) return;
     void resumeProgressionAudio();
-
-    // Bring the bus back to full level in case a previous pause silenced it.
     restoreProgressionBus();
 
-    const step = activeResolvedProgressionStep;
-    if (!step || step.unavailable || !step.root || !step.quality) return;
-
-    const voicing = resolveChordVoicing(step.root, step.quality);
-    const bassNote = step.root ? `${step.root}${BASS_OCTAVE}` : null;
-    const secondsPerBeat = 60 / Math.max(1, progressionTempoBpm);
-    const beatsAvailable =
-      step.duration.unit === "bar"
-        ? step.duration.value * beatsPerBar
-        : step.duration.value;
-
-    // Cancel the previous step's live voices before scheduling the next.
-    liveStepRef.current?.cancelAll();
-
-    liveStepRef.current = scheduleProgressionStep(audio.ctx, audio.bus, {
-      voicing,
-      bassNote,
-      beatsAvailable,
+    const inputs: SchedulerInputs = {
+      steps: resolvedProgressionSteps,
+      tempo: progressionTempoBpm,
       beatsPerBar,
-      secondsPerBeat,
-      startTime: audio.ctx.currentTime + SCHEDULE_LEAD_SECONDS,
       enable: {
         strum: progressionStrumEnabled,
         bass: progressionBassEnabled,
         drums: progressionDrumsEnabled,
         metronome: progressionMetronomeEnabled,
       },
-    });
-    lastScheduledStepRef.current = activeProgressionStepIndex;
-
-    return () => {
-      liveStepRef.current?.cancelAll();
-      liveStepRef.current = null;
     };
+
+    const now = audio.ctx.currentTime;
+    const isStepTransition =
+      lastStepRef.current !== null
+      && lastStepRef.current !== activeProgressionStepIndex;
+
+    // Drop segments whose audio has finished.
+    segmentsRef.current = segmentsRef.current.filter((s) => s.endTime > now);
+
+    if (!isStepTransition) {
+      // First activation or a non-step dep change (tempo/flags): wipe the
+      // queue so the new settings take effect on the current chord.
+      segmentsRef.current.forEach((s) => s.handle.cancelAll());
+      segmentsRef.current = [];
+    } else {
+      // Step transition: the active chord was already pre-scheduled — keep
+      // it. Drop anything we may have queued for a step the user just
+      // skipped past (manual prev/next).
+      segmentsRef.current = segmentsRef.current.filter(
+        (s) => s.stepIndex === activeProgressionStepIndex,
+      );
+    }
+
+    // Ensure the active step has a live segment. If we lost the
+    // pre-scheduled one (cancelled above, or this is the first chord),
+    // start it from "now + lead".
+    if (
+      !segmentsRef.current.find((s) => s.stepIndex === activeProgressionStepIndex)
+    ) {
+      const seg = buildSegment(
+        audio.ctx,
+        audio.bus,
+        activeProgressionStepIndex,
+        now + SCHEDULE_LEAD_SECONDS,
+        inputs,
+      );
+      if (seg) segmentsRef.current.push(seg);
+    }
+
+    // Pre-schedule the next resolvable step so its first hit lands exactly
+    // when the current chord's bar ends.
+    const nextIdx = findNextResolvableStepIndex(
+      resolvedProgressionSteps,
+      activeProgressionStepIndex,
+      1,
+      progressionLoopEnabled,
+    );
+    if (
+      nextIdx !== null
+      && !segmentsRef.current.find((s) => s.stepIndex === nextIdx)
+    ) {
+      const tail = segmentsRef.current[segmentsRef.current.length - 1];
+      const startAt = tail ? tail.endTime : now + SCHEDULE_LEAD_SECONDS;
+      const seg = buildSegment(audio.ctx, audio.bus, nextIdx, startAt, inputs);
+      if (seg) segmentsRef.current.push(seg);
+    }
+
+    lastStepRef.current = activeProgressionStepIndex;
   }, [
     progressionEnabled,
     progressionPlaying,
     progressionPlaybackBlockedReason,
+    progressionLoopEnabled,
     activeProgressionStepIndex,
-    activeResolvedProgressionStep,
+    resolvedProgressionSteps,
     isMuted,
     progressionTempoBpm,
     beatsPerBar,

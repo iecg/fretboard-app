@@ -137,46 +137,47 @@ export function ProgressionTrack() {
           </span>
         </div>
 
-        <div className={styles.instrumentToggles} aria-label="Backing instruments">
+        <div className={styles.instrumentCluster} role="group" aria-label="Backing instruments">
+          <span className={styles.clusterDivider} aria-hidden="true" />
           <button
             type="button"
-            className={clsx(styles.instrumentToggle, progressionStrumEnabled && styles["instrumentToggle--active"])}
+            className={clsx(styles.transportButton, progressionStrumEnabled && styles["transportButton--accent"])}
             onClick={() => setProgressionStrumEnabled(!progressionStrumEnabled)}
             aria-pressed={progressionStrumEnabled}
             aria-label="Chord strum"
             title="Chord strum"
           >
-            <Guitar size={13} strokeWidth={2.2} aria-hidden="true" />
+            <Guitar size={13} strokeWidth={2.4} aria-hidden="true" />
           </button>
           <button
             type="button"
-            className={clsx(styles.instrumentToggle, progressionBassEnabled && styles["instrumentToggle--active"])}
+            className={clsx(styles.transportButton, progressionBassEnabled && styles["transportButton--accent"])}
             onClick={() => setProgressionBassEnabled(!progressionBassEnabled)}
             aria-pressed={progressionBassEnabled}
             aria-label="Bassline"
             title="Bassline"
           >
-            <AudioWaveform size={13} strokeWidth={2.2} aria-hidden="true" />
+            <AudioWaveform size={13} strokeWidth={2.4} aria-hidden="true" />
           </button>
           <button
             type="button"
-            className={clsx(styles.instrumentToggle, progressionDrumsEnabled && styles["instrumentToggle--active"])}
+            className={clsx(styles.transportButton, progressionDrumsEnabled && styles["transportButton--accent"])}
             onClick={() => setProgressionDrumsEnabled(!progressionDrumsEnabled)}
             aria-pressed={progressionDrumsEnabled}
             aria-label="Drums"
             title="Drums"
           >
-            <Drum size={13} strokeWidth={2.2} aria-hidden="true" />
+            <Drum size={13} strokeWidth={2.4} aria-hidden="true" />
           </button>
           <button
             type="button"
-            className={clsx(styles.instrumentToggle, progressionMetronomeEnabled && styles["instrumentToggle--active"])}
+            className={clsx(styles.transportButton, progressionMetronomeEnabled && styles["transportButton--accent"])}
             onClick={() => setProgressionMetronomeEnabled(!progressionMetronomeEnabled)}
             aria-pressed={progressionMetronomeEnabled}
             aria-label="Metronome"
             title="Metronome"
           >
-            <Timer size={13} strokeWidth={2.2} aria-hidden="true" />
+            <Timer size={13} strokeWidth={2.4} aria-hidden="true" />
           </button>
         </div>
 
