@@ -136,6 +136,20 @@ describe("ProgressionControls PRESET", () => {
     expect(select.tagName).toBe("SELECT");
     expect(select.value).toBe("one-five-six-four"); // default I-V-vi-IV preset
   });
+
+  it("only lists presets that are available for the selected scale", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Minor Blues"],
+      [progressionEnabledAtom, true],
+    ]);
+    renderWithStore(<ProgressionControls />, store);
+
+    const select = screen.getByRole("combobox", { name: "Preset" });
+    expect(within(select).getAllByRole("option").map((option) => option.textContent)).toEqual([
+      "Custom",
+    ]);
+  });
 });
 
 describe("ProgressionControls CHORDS list", () => {
