@@ -31,6 +31,24 @@ function durationToBars(
   return duration.unit === "bar" ? duration.value : duration.value / beatsPerBar;
 }
 
+function getProgressionBlockLayouts(
+  steps: readonly { duration: { value: number; unit: "bar" | "beat" } }[],
+  beatsPerBar: number,
+  totalBarsForDisplay: number,
+): Array<{ durationBars: number; startPercent: number; widthPercent: number }> {
+  let elapsedBars = 0;
+  return steps.map((step) => {
+    const durationBars = durationToBars(step.duration, beatsPerBar);
+    const layout = {
+      durationBars,
+      startPercent: (elapsedBars / totalBarsForDisplay) * 100,
+      widthPercent: (durationBars / totalBarsForDisplay) * 100,
+    };
+    elapsedBars += durationBars;
+    return layout;
+  });
+}
+
 export function ProgressionTrack() {
   const {
     progressionTempoBpm,
@@ -65,6 +83,11 @@ export function ProgressionTrack() {
   const totalBarsForDisplay = Math.max(1, Math.ceil(totalProgressionBars));
   const scale = splitScaleLabel(scaleLabel);
   const subdivisionsPerBar = Math.max(1, Math.floor(beatsPerBar));
+  const blockLayouts = getProgressionBlockLayouts(
+    resolvedProgressionSteps,
+    beatsPerBar,
+    totalBarsForDisplay,
+  );
 
   // Stable callback so memoized ProgressionBlock children don't re-render on
   // every parent render of this component.
@@ -246,20 +269,33 @@ export function ProgressionTrack() {
             totalDurationBars={totalDurationBars}
           />
           <div className={styles.blocks}>
-            {resolvedProgressionSteps.map((step, index) => (
-              <ProgressionBlock
-                key={step.id}
-                step={step}
-                index={index}
-                active={index === activeProgressionStepIndex}
-                durationBars={durationToBars(step.duration, beatsPerBar)}
-                onSelect={selectStep}
-              />
-            ))}
+            {resolvedProgressionSteps.map((step, index) => {
+              const layout = blockLayouts[index] ?? {
+                durationBars: 0,
+                startPercent: 0,
+                widthPercent: 0,
+              };
+              return (
+                <ProgressionBlock
+                  key={step.id}
+                  step={step}
+                  index={index}
+                  active={index === activeProgressionStepIndex}
+                  durationBars={layout.durationBars}
+                  startPercent={layout.startPercent}
+                  widthPercent={layout.widthPercent}
+                  onSelect={selectStep}
+                />
+              );
+            })}
             {totalBarsForDisplay > totalDurationBars ? (
               <span
                 className={styles.blockSpacer}
-                style={{ "--duration-bars": String(totalBarsForDisplay - totalDurationBars) } as CSSProperties}
+                style={{
+                  "--duration-bars": String(totalBarsForDisplay - totalDurationBars),
+                  left: `${(totalDurationBars / totalBarsForDisplay) * 100}%`,
+                  width: `${((totalBarsForDisplay - totalDurationBars) / totalBarsForDisplay) * 100}%`,
+                } as CSSProperties}
                 aria-hidden="true"
               />
             ) : null}

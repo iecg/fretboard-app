@@ -3,6 +3,7 @@ import {
   buildMetronomePattern,
   clipPatternToBeats,
   POP_STRUM_PATTERN,
+  repeatPatternToBeats,
   ROCK_DRUM_PATTERN,
 } from "./patterns";
 
@@ -26,6 +27,35 @@ describe("clipPatternToBeats", () => {
     // POP_STRUM_PATTERN has hits at 0, 1, 1.5, 2.5, 3, 3.5.
     const clipped = clipPatternToBeats(POP_STRUM_PATTERN, 3);
     expect(clipped.map((h) => h.beat)).toEqual([0, 1, 1.5, 2.5]);
+  });
+});
+
+describe("repeatPatternToBeats", () => {
+  it("repeats a one-bar strum pattern across a multi-bar step", () => {
+    const repeated = repeatPatternToBeats(POP_STRUM_PATTERN, 8, 4);
+
+    expect(repeated.map((h) => h.beat)).toEqual([
+      0, 1, 1.5, 2.5, 3, 3.5,
+      4, 5, 5.5, 6.5, 7, 7.5,
+    ]);
+  });
+
+  it("clips repeated pattern hits to partial final bars", () => {
+    const repeated = repeatPatternToBeats(POP_STRUM_PATTERN, 5, 4);
+
+    expect(repeated.map((h) => h.beat)).toEqual([
+      0, 1, 1.5, 2.5, 3, 3.5,
+      4,
+    ]);
+  });
+
+  it("uses the active meter as the repeat length", () => {
+    const repeated = repeatPatternToBeats(POP_STRUM_PATTERN, 6, 3);
+
+    expect(repeated.map((h) => h.beat)).toEqual([
+      0, 1, 1.5, 2.5,
+      3, 4, 4.5, 5.5,
+    ]);
   });
 });
 

@@ -8,6 +8,8 @@ interface ProgressionBlockProps {
   index: number;
   active: boolean;
   durationBars: number;
+  startPercent: number;
+  widthPercent: number;
   onSelect: (index: number) => void;
 }
 
@@ -34,6 +36,8 @@ function ProgressionBlockComponent({
   index,
   active,
   durationBars,
+  startPercent,
+  widthPercent,
   onSelect,
 }: ProgressionBlockProps) {
   const duration = formatProgressionDurationLabel(step.duration);
@@ -41,7 +45,11 @@ function ProgressionBlockComponent({
     <button
       type="button"
       className={styles.block}
-      style={{ "--duration-bars": String(durationBars) } as CSSProperties}
+      style={{
+        "--duration-bars": String(durationBars),
+        left: `${startPercent}%`,
+        width: `${widthPercent}%`,
+      } as CSSProperties}
       data-active={active ? "true" : undefined}
       data-unavailable={step.unavailable ? "true" : undefined}
       onClick={() => onSelect(index)}
