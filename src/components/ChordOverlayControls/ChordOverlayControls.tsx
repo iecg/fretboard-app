@@ -6,6 +6,7 @@ import { lensAvailabilityAtom, fingeringPatternAtom } from "../../store/atoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import { NoteGrid } from "../NoteGrid/NoteGrid";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
+import { Switch } from "../Switch/Switch";
 import { useChordState } from "../../hooks/useChordState";
 import { useScaleState } from "../../hooks/useScaleState";
 import theoryStyles from "../TheoryControls/TheoryControls.module.css";
@@ -214,15 +215,11 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
       {!isPatternDisabled && chordType ? (
         <div className={shared["control-section"]}>
           <span className={shared["section-label"]}>Full Chords</span>
-          <ToggleBar
-            options={[
-              { value: "off", label: "Off" },
-              { value: "on", label: "On", disabled: !fullChordsSupported },
-            ]}
-            value={fullChordsEnabled ? "on" : "off"}
-            onChange={(value) => setFullChordsEnabled(value === "on")}
+          <Switch
             label="Full Chords"
-            compact={compact}
+            checked={fullChordsEnabled}
+            onChange={setFullChordsEnabled}
+            disabled={!fullChordsSupported}
           />
           <p className={shared["field-hint"]}>
             {fullChordsSupported
