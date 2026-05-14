@@ -71,6 +71,10 @@ export function ProgressionPlayhead({
     };
 
     write();
+    // When paused / blocked the timeline reports a fixed position; one
+    // write is enough. Skip the per-frame interval to save the CPU spent
+    // re-computing the same percent each tick.
+    if (!playing) return;
     const id = window.setInterval(write, TICK_MS);
     return () => window.clearInterval(id);
   }, [playing, stepStartBar, stepBars, stepIndex, totalDurationBars]);

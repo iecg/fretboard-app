@@ -192,10 +192,13 @@
   flex-shrink: 0;
 }
 
+/* Standalone divider sibling of the two clusters; the row's `gap` provides
+ * even spacing on both sides automatically, no margin tweaking needed. */
 .clusterDivider {
   width: 1px;
   height: 1.1rem;
-  margin-inline: 0.1rem 0.05rem;
+  align-self: center;
+  flex-shrink: 0;
   background: linear-gradient(
     to bottom,
     transparent,
@@ -707,10 +710,6 @@
   .transportRow {
     flex-wrap: wrap;
     row-gap: 0.4rem;
-  }
-
-  .statusLights {
-    order: -1;
   }
 
   .positionReadout {

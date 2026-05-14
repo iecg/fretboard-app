@@ -82,6 +82,17 @@ export function ProgressionTrack() {
       title={progressionPlaybackBlockedReason ?? undefined}
     >
       <div className={styles.transportRow}>
+        <div className={styles.statusLights} aria-label="Playback status">
+          <span className={styles.statusLight} data-active={progressionPlaying ? "true" : undefined}>
+            <span className={styles.statusDot} aria-hidden="true" />
+            <span className={styles.statusLabel}>Play</span>
+          </span>
+          <span className={styles.statusLight} data-active={progressionLoopEnabled ? "true" : undefined}>
+            <span className={styles.statusDot} aria-hidden="true" />
+            <span className={styles.statusLabel}>Loop</span>
+          </span>
+        </div>
+
         <div className={styles.transportCluster}>
           <button
             type="button"
@@ -125,19 +136,9 @@ export function ProgressionTrack() {
           </button>
         </div>
 
-        <div className={styles.statusLights} aria-label="Playback status">
-          <span className={styles.statusLight} data-active={progressionPlaying ? "true" : undefined}>
-            <span className={styles.statusDot} aria-hidden="true" />
-            <span className={styles.statusLabel}>Play</span>
-          </span>
-          <span className={styles.statusLight} data-active={progressionLoopEnabled ? "true" : undefined}>
-            <span className={styles.statusDot} aria-hidden="true" />
-            <span className={styles.statusLabel}>Loop</span>
-          </span>
-        </div>
+        <span className={styles.clusterDivider} aria-hidden="true" />
 
         <div className={styles.instrumentCluster} role="group" aria-label="Backing instruments">
-          <span className={styles.clusterDivider} aria-hidden="true" />
           <button
             type="button"
             className={clsx(styles.transportButton, progressionStrumEnabled && styles["transportButton--accent"])}

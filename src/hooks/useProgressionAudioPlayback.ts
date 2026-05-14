@@ -116,6 +116,11 @@ export function useProgressionAudioPlayback() {
 
   const segmentsRef = useRef<ScheduledSegment[]>([]);
   const lastStepRef = useRef<number | null>(null);
+  // Tracks whether playback was running on the last effect entry. Lets us
+  // distinguish "cold start / resumed from pause" (we must schedule the
+  // current chord from `now`) from "mid-playback dep change" (we keep the
+  // current chord intact and apply the new params on the next bar).
+  const wasPlayingRef = useRef<boolean>(false);
 
   useEffect(() => {
     if (!Array.isArray(segmentsRef.current)) segmentsRef.current = [];
@@ -134,12 +139,14 @@ export function useProgressionAudioPlayback() {
     ) {
       stopAll();
       clearTimeline();
+      wasPlayingRef.current = false;
       return;
     }
 
     if (!progressionPlaying) {
       stopAll();
       pauseTimeline();
+      wasPlayingRef.current = false;
       return;
     }
 
@@ -161,25 +168,45 @@ export function useProgressionAudioPlayback() {
     };
 
     const now = audio.ctx.currentTime;
+    const justStarted = !wasPlayingRef.current;
+    wasPlayingRef.current = true;
+
     const isStepTransition =
-      lastStepRef.current !== null
+      !justStarted
+      && lastStepRef.current !== null
       && lastStepRef.current !== activeProgressionStepIndex;
 
     // Drop segments whose audio has already finished.
     segmentsRef.current = segmentsRef.current.filter((s) => s.endTime > now);
 
-    if (!isStepTransition) {
-      // First activation or a non-step dep change (tempo / flags / resumed
-      // from pause): wipe the queue so the new settings take effect on the
-      // current chord starting at the next audio frame.
+    if (justStarted) {
+      // Cold start or resumed from pause: clear the queue and schedule the
+      // current chord from `now + LEAD`. Resuming from pause must restart
+      // the bar from beat 0 so the user hears the chord again.
       segmentsRef.current.forEach((s) => s.handle.cancelAll());
       segmentsRef.current = [];
-    } else {
-      // Step transition: the active chord was already pre-scheduled. Keep
-      // it; drop anything queued for a step the user just skipped past.
+    } else if (isStepTransition) {
+      // Step boundary: the active chord was already pre-scheduled — keep
+      // it and drop any queued segments for steps the user skipped past.
       segmentsRef.current = segmentsRef.current.filter(
         (s) => s.stepIndex === activeProgressionStepIndex,
       );
+    } else {
+      // Mid-step dep change (layer toggle / tempo / meter): preserve the
+      // currently-playing segment unchanged so the bar doesn't restart, and
+      // cancel only the pre-scheduled "next" segment. The user-toggled
+      // layer takes effect on the next bar boundary, which matches a
+      // hardware DAW's "punch-in" model and avoids audible double hits
+      // from a mid-bar restart.
+      const keepers: ScheduledSegment[] = [];
+      for (const s of segmentsRef.current) {
+        if (s.stepIndex === activeProgressionStepIndex) {
+          keepers.push(s);
+        } else {
+          s.handle.cancelAll();
+        }
+      }
+      segmentsRef.current = keepers;
     }
 
     // Ensure the active step has a live segment.
