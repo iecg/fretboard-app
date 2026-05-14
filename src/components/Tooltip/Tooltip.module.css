@@ -1,0 +1,58 @@
+.content {
+  z-index: 100;
+  max-width: 240px;
+  padding: 6px 10px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text-main, #e8f3fc);
+  background: var(--surface-well, #050a13);
+  border: 1px solid var(--surface-card-border, rgb(77 228 255 / 0.14));
+  border-radius: 6px;
+  box-shadow:
+    0 12px 28px -16px rgb(0 0 0 / 0.7),
+    0 0 0 1px rgb(77 228 255 / 0.08);
+  user-select: none;
+  animation-duration: 140ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.content[data-state="delayed-open"][data-side="top"],
+.content[data-state="instant-open"][data-side="top"] {
+  animation-name: slideDownAndFade;
+}
+.content[data-state="delayed-open"][data-side="right"],
+.content[data-state="instant-open"][data-side="right"] {
+  animation-name: slideLeftAndFade;
+}
+.content[data-state="delayed-open"][data-side="bottom"],
+.content[data-state="instant-open"][data-side="bottom"] {
+  animation-name: slideUpAndFade;
+}
+.content[data-state="delayed-open"][data-side="left"],
+.content[data-state="instant-open"][data-side="left"] {
+  animation-name: slideRightAndFade;
+}
+
+.arrow {
+  fill: var(--surface-well, #050a13);
+}
+
+@keyframes slideUpAndFade {
+  from { opacity: 0; transform: translateY(2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideRightAndFade {
+  from { opacity: 0; transform: translateX(-2px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideDownAndFade {
+  from { opacity: 0; transform: translateY(-2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideLeftAndFade {
+  from { opacity: 0; transform: translateX(2px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
