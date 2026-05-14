@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { getNoteFrequency } from "@fretflow/core";
 import { scheduleProgressionStep } from "./scheduler";
 import { _metronomeInternals } from "./metronome";
 
@@ -115,7 +116,7 @@ describe("scheduleProgressionStep", () => {
   it("returns a no-op handle when beatsAvailable is 0", () => {
     const handle = scheduleProgressionStep(mock.ctx, bus as unknown as AudioNode, {
       voicing: ["C3"],
-      bassNote: "C2",
+      bassNotes: ["C2"],
       beatsAvailable: 0,
       beatsPerBar: 4,
       secondsPerBeat: 0.5,
@@ -129,7 +130,7 @@ describe("scheduleProgressionStep", () => {
   it("does not schedule any oscillators when all flags are off", () => {
     scheduleProgressionStep(mock.ctx, bus as unknown as AudioNode, {
       voicing: ["C3", "E3", "G3"],
-      bassNote: "C2",
+      bassNotes: ["C2"],
       beatsAvailable: 4,
       beatsPerBar: 4,
       secondsPerBeat: 0.5,
@@ -143,7 +144,7 @@ describe("scheduleProgressionStep", () => {
   it("schedules strum hits only when strum flag is on", () => {
     scheduleProgressionStep(mock.ctx, bus as unknown as AudioNode, {
       voicing: ["C3", "E3", "G3"],
-      bassNote: null,
+      bassNotes: [],
       beatsAvailable: 4,
       beatsPerBar: 4,
       secondsPerBeat: 0.5,
@@ -157,7 +158,7 @@ describe("scheduleProgressionStep", () => {
   it("schedules bass voices when bass flag is on", () => {
     scheduleProgressionStep(mock.ctx, bus as unknown as AudioNode, {
       voicing: [],
-      bassNote: "C2",
+      bassNotes: ["C2"],
       beatsAvailable: 4,
       beatsPerBar: 4,
       secondsPerBeat: 0.5,
@@ -168,10 +169,32 @@ describe("scheduleProgressionStep", () => {
     expect(mock.oscCount()).toBe(2);
   });
 
+  it("uses the second bass note on beat 3 when available", () => {
+    scheduleProgressionStep(mock.ctx, bus as unknown as AudioNode, {
+      voicing: [],
+      bassNotes: ["C2", "G2"],
+      beatsAvailable: 4,
+      beatsPerBar: 4,
+      secondsPerBeat: 0.5,
+      startTime: 0,
+      enable: { strum: false, bass: true, drums: false, metronome: false },
+    });
+
+    expect(mock.oscCount()).toBe(2);
+    expect(mock.oscillators()[0].frequency.setValueAtTime).toHaveBeenCalledWith(
+      getNoteFrequency("C2"),
+      0,
+    );
+    expect(mock.oscillators()[1].frequency.setValueAtTime).toHaveBeenCalledWith(
+      getNoteFrequency("G2"),
+      1,
+    );
+  });
+
   it("schedules metronome clicks (one per beat) only when flag is on", () => {
     scheduleProgressionStep(mock.ctx, bus as unknown as AudioNode, {
       voicing: [],
-      bassNote: null,
+      bassNotes: [],
       beatsAvailable: 4,
       beatsPerBar: 4,
       secondsPerBeat: 0.5,
@@ -184,7 +207,7 @@ describe("scheduleProgressionStep", () => {
   it("uses buffer sources for the drum kit (kick adds oscillators, snare/hat add buffers)", () => {
     scheduleProgressionStep(mock.ctx, bus as unknown as AudioNode, {
       voicing: [],
-      bassNote: null,
+      bassNotes: [],
       beatsAvailable: 4,
       beatsPerBar: 4,
       secondsPerBeat: 0.5,
@@ -202,7 +225,7 @@ describe("scheduleProgressionStep", () => {
   it("clips strum hits past the available beats", () => {
     scheduleProgressionStep(mock.ctx, bus as unknown as AudioNode, {
       voicing: ["C3"],
-      bassNote: null,
+      bassNotes: [],
       beatsAvailable: 1, // only beat 0 of POP_STRUM_PATTERN qualifies
       beatsPerBar: 4,
       secondsPerBeat: 0.5,
@@ -215,7 +238,7 @@ describe("scheduleProgressionStep", () => {
   it("repeats strum hits once per bar for multi-bar chords", () => {
     scheduleProgressionStep(mock.ctx, bus as unknown as AudioNode, {
       voicing: ["C3"],
-      bassNote: null,
+      bassNotes: [],
       beatsAvailable: 8,
       beatsPerBar: 4,
       secondsPerBeat: 0.5,
@@ -228,7 +251,7 @@ describe("scheduleProgressionStep", () => {
   it("accents each bar downbeat when metronome repeats over multi-bar chords", () => {
     scheduleProgressionStep(mock.ctx, bus as unknown as AudioNode, {
       voicing: [],
-      bassNote: null,
+      bassNotes: [],
       beatsAvailable: 8,
       beatsPerBar: 4,
       secondsPerBeat: 0.5,
@@ -248,6 +271,28 @@ describe("scheduleProgressionStep", () => {
       _metronomeInternals.NORMAL_FREQ,
       _metronomeInternals.NORMAL_FREQ,
       _metronomeInternals.NORMAL_FREQ,
+    ]);
+  });
+
+  it("repeats the root-fifth bass pattern once per bar for multi-bar chords", () => {
+    scheduleProgressionStep(mock.ctx, bus as unknown as AudioNode, {
+      voicing: [],
+      bassNotes: ["C2", "G2"],
+      beatsAvailable: 8,
+      beatsPerBar: 4,
+      secondsPerBeat: 0.5,
+      startTime: 0,
+      enable: { strum: false, bass: true, drums: false, metronome: false },
+    });
+
+    const scheduledNotes = mock.oscillators().map((osc) =>
+      osc.frequency.setValueAtTime.mock.calls[0],
+    );
+    expect(scheduledNotes).toEqual([
+      [getNoteFrequency("C2"), 0],
+      [getNoteFrequency("G2"), 1],
+      [getNoteFrequency("C2"), 2],
+      [getNoteFrequency("G2"), 3],
     ]);
   });
 });

@@ -20,6 +20,7 @@ import {
   buildMetronomePattern,
   POP_STRUM_PATTERN,
   repeatPatternToBeats,
+  ROOT_FIFTH_BASS_PATTERN,
   ROCK_DRUM_PATTERN,
 } from "./patterns";
 import { pluckString, type PluckedVoiceHandle } from "./string";
@@ -34,8 +35,8 @@ export interface SchedulerEnableFlags {
 export interface SchedulerStepInput {
   /** Notes for the chord voicing (e.g. ["C3","E3","G3"]). Empty disables strum. */
   voicing: readonly string[];
-  /** Root note for the bass line (e.g. "C2"). Null disables bass for this step. */
-  bassNote: string | null;
+  /** Bass line notes, root first and optional fifth second (e.g. ["C2","G2"]). */
+  bassNotes: readonly string[];
   /** Step length expressed in beats (may be fractional for sub-bar steps). */
   beatsAvailable: number;
   /** Beats per bar at the current meter (used for metronome accent placement). */
@@ -93,20 +94,20 @@ export function scheduleProgressionStep(
     }
   }
 
-  // Bass: root note on beat 1, fifth-style pickup on beat 3 if room.
-  if (enable.bass && input.bassNote) {
-    const bassFreq = getNoteFrequency(input.bassNote);
-    if (Number.isFinite(bassFreq) && bassFreq > 0) {
-      const bassPattern: Array<{ beat: number; velocity: number }> = [
-        { beat: 0, velocity: 1 },
-        { beat: 2, velocity: 0.85 },
-      ];
-      const bassHits = repeatPatternToBeats(
-        bassPattern,
-        beatsAvailable,
-        beatsPerBar,
-      );
-      for (const hit of bassHits) {
+  // Bass: root note on beat 1, chord fifth on beat 3, repeated per bar.
+  if (enable.bass && input.bassNotes.length > 0) {
+    const bassHits = repeatPatternToBeats(
+      ROOT_FIFTH_BASS_PATTERN,
+      beatsAvailable,
+      beatsPerBar,
+    );
+    for (const hit of bassHits) {
+      const note =
+        hit.note === "fifth"
+          ? input.bassNotes[1] ?? input.bassNotes[0]
+          : input.bassNotes[0];
+      const bassFreq = getNoteFrequency(note);
+      if (Number.isFinite(bassFreq) && bassFreq > 0) {
         voices.push(
           scheduleBassNote(
             ctx,

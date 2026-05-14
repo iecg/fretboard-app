@@ -16,7 +16,7 @@ import {
   setActiveStep,
 } from "../progressions/audio/timeline";
 import { isMutedAtom } from "../store/atoms";
-import { resolveChordVoicing } from "../progressions/progressionAudio";
+import { resolveBassLineNotes, resolveChordVoicing } from "../progressions/progressionAudio";
 import {
   findNextResolvableStepIndex,
   type ResolvedProgressionStep,
@@ -26,10 +26,6 @@ import { useProgressionState } from "./useProgressionState";
 /** Lead between scheduling and audible hit; keeps Web Audio from dropping
  * the first event when `currentTime` and "now" are the same sample. */
 const SCHEDULE_LEAD_SECONDS = 0.02;
-
-/** Octave for the synthesized bass line. Two octaves below middle C sits
- * in the typical electric-bass register. */
-const BASS_OCTAVE = 2;
 
 interface ScheduledSegment {
   stepIndex: number;
@@ -61,7 +57,7 @@ function buildSegment(
   if (!step || step.unavailable || !step.root || !step.quality) return null;
 
   const voicing = resolveChordVoicing(step.root, step.quality);
-  const bassNote = step.root ? `${step.root}${BASS_OCTAVE}` : null;
+  const bassNotes = resolveBassLineNotes(step.root, step.quality);
   const secondsPerBeat = 60 / Math.max(1, inputs.tempo);
   const beatsAvailable =
     step.duration.unit === "bar"
@@ -71,7 +67,7 @@ function buildSegment(
 
   const handle = scheduleProgressionStep(ctx, bus, {
     voicing,
-    bassNote,
+    bassNotes,
     beatsAvailable,
     beatsPerBar: inputs.beatsPerBar,
     secondsPerBeat,
