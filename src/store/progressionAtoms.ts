@@ -11,6 +11,8 @@ import {
   createStepsFromPreset,
   findFirstResolvableStepIndex,
   findNextResolvableStepIndex,
+  getAvailableProgressionPresets,
+  getProgressionPresetStepsForScale,
   getProgressionDurationMs,
   isBeatsPerBar,
   isProgressionDuration,
@@ -184,7 +186,10 @@ export const CUSTOM_PRESET_ID = "custom" as const;
 
 export const currentProgressionPresetIdAtom = atom<string>((get) => {
   const steps = get(progressionStepsAtom);
-  const match = PROGRESSION_PRESETS.find((preset) => stepsMatchPreset(steps, preset.steps));
+  const scaleName = get(scaleNameAtom);
+  const match = getAvailableProgressionPresets(scaleName).find((preset) =>
+    stepsMatchPreset(steps, getProgressionPresetStepsForScale(preset, scaleName)),
+  );
   return match?.id ?? CUSTOM_PRESET_ID;
 });
 

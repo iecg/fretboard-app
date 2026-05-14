@@ -65,6 +65,7 @@ describe("progressionAtoms", () => {
       "iv",
     ]);
     expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
+    expect(store.get(currentProgressionPresetIdAtom)).toBe("one-five-six-four");
   });
 
   it("updates the active step degree, duration, and quality", () => {
@@ -271,6 +272,12 @@ describe("derived progression atoms", () => {
   it("currentProgressionPresetIdAtom matches the I-V-vi-IV default", () => {
     const store = createStore();
     expect(store.get(currentProgressionPresetIdAtom)).toBe("one-five-six-four");
+  });
+
+  it("currentProgressionPresetIdAtom ignores presets unavailable for the active scale", () => {
+    const store = createStore();
+    store.set(scaleNameAtom, "Minor Blues");
+    expect(store.get(currentProgressionPresetIdAtom)).toBe("custom");
   });
 
   it("currentProgressionPresetIdAtom returns 'custom' after any edit", () => {

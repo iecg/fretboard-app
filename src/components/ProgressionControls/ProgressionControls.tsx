@@ -2,11 +2,11 @@ import { startTransition } from "react";
 import clsx from "clsx";
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import {
-  PROGRESSION_PRESETS,
   BEATS_PER_BAR_OPTIONS,
   MIN_PROGRESSION_STEP_DURATION_VALUE,
   MAX_PROGRESSION_STEP_DURATION_VALUE,
   formatProgressionDurationLabel,
+  getAvailableProgressionPresets,
 } from "../../progressions/progressionDomain";
 import { useProgressionState } from "../../hooks/useProgressionState";
 import { useScaleState } from "../../hooks/useScaleState";
@@ -45,6 +45,7 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
   } = useProgressionState();
 
   const activeStep = progressionSteps[activeProgressionStepIndex] ?? null;
+  const availablePresets = getAvailableProgressionPresets(scaleName);
   const qualityValue = activeStep?.qualityOverride ?? CHORD_QUALITY_DIATONIC_VALUE;
   const degreeOptions = buildDegreeToggleOptions({
     scaleName,
@@ -98,7 +99,7 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
           }}
           options={[
             { value: CUSTOM_PRESET_ID, label: "Custom", disabled: currentProgressionPresetId !== CUSTOM_PRESET_ID },
-            ...PROGRESSION_PRESETS.map((preset) => ({ value: preset.id, label: preset.label })),
+            ...availablePresets.map((preset) => ({ value: preset.id, label: preset.label })),
           ]}
           compact={compact}
         />

@@ -325,11 +325,42 @@ export function createStepsFromPreset(
   preset: ProgressionPreset,
   scaleName: string,
 ): ProgressionStep[] {
-  return preset.steps.map((step) =>
+  return getProgressionPresetStepsForScale(preset, scaleName).map((step) =>
     createProgressionStep({
       ...step,
-      degree: remapDegreeByOrdinal(step.degree, scaleName),
     }),
+  );
+}
+
+export function getProgressionPresetStepsForScale(
+  preset: ProgressionPreset,
+  scaleName: string,
+): Array<Omit<ProgressionStep, "id">> {
+  return preset.steps.map((step) => ({
+    ...step,
+    degree: remapDegreeByOrdinal(step.degree, scaleName),
+  }));
+}
+
+export function isProgressionPresetAvailableForScale(
+  preset: ProgressionPreset,
+  scaleName: string,
+): boolean {
+  return getProgressionPresetStepsForScale(preset, scaleName).every((step, index) => {
+    const resolved = resolveProgressionStep(
+      { id: `preset-availability-${index}`, ...step },
+      scaleName,
+      "C",
+    );
+    return !resolved.unavailable;
+  });
+}
+
+export function getAvailableProgressionPresets(
+  scaleName: string,
+): ProgressionPreset[] {
+  return PROGRESSION_PRESETS.filter((preset) =>
+    isProgressionPresetAvailableForScale(preset, scaleName),
   );
 }
 
