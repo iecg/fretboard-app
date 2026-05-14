@@ -202,9 +202,12 @@ describe("formatProgressionPlaybackPosition", () => {
     });
   });
 
-  it("clamps fractional totals up and current below the project end", () => {
+  it("clamps fractional totals up and pins current at the final subdivision", () => {
+    // Past-end positions clamp to the last playable subdivision (bar N, beat
+    // beatsPerBar, sub 999) so the readout shows the project end instead of
+    // freezing earlier in the bar.
     expect(formatProgressionPlaybackPosition(99, 3.25, 4)).toMatchObject({
-      current: "04.1.000",
+      current: "04.4.999",
       total: "04.4.000",
     });
   });

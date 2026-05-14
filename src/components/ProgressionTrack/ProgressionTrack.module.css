@@ -4,6 +4,12 @@
  * Deep navy substrate, mint-cyan transport accent (--neon-cyan), warm amber
  * for the active chord block (--neon-orange), monospaced LCD-style readouts
  * with per-segment digit hierarchy, glowing playhead with arrowhead.
+ *
+ * The timeline is laid out so the ruler bar cells and the chord blocks share
+ * the same parent width with zero gap — each ruler cell flexes 1 unit per
+ * bar, each block flexes by its --duration-bars. This guarantees that bar
+ * markers, subdivisions, blocks, and the playhead all land on exact
+ * mathematical positions.
  * ------------------------------------------------------------------------- */
 
 .track {
@@ -25,10 +31,10 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
-  padding: 0.8rem 0.95rem 0.7rem;
+  gap: 0.45rem;
+  padding: 0.55rem 0.7rem 0.5rem;
   border: 1px solid var(--track-border);
-  border-radius: 14px;
+  border-radius: 12px;
   background:
     radial-gradient(120% 200% at 0% 0%, rgb(77 228 255 / 0.04), transparent 55%),
     linear-gradient(180deg, var(--track-bg-elevated), var(--track-bg));
@@ -46,14 +52,14 @@
 .transportRow {
   display: flex;
   align-items: stretch;
-  gap: 0.55rem;
+  gap: 0.45rem;
   min-width: 0;
 }
 
 .transportCluster {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.22rem;
   flex-shrink: 0;
 }
 
@@ -62,13 +68,13 @@
   --tb-border: rgb(77 228 255 / 0.18);
   --tb-bg: rgb(77 228 255 / 0.03);
 
-  width: 2.1rem;
-  height: 2.1rem;
+  width: 1.85rem;
+  height: 1.85rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: 1px solid var(--tb-border);
-  border-radius: 9px;
+  border-radius: 7px;
   background: var(--tb-bg);
   color: var(--tb-fg);
   cursor: pointer;
@@ -95,7 +101,7 @@
   --tb-border: var(--track-accent);
   box-shadow:
     0 0 0 1px var(--track-accent),
-    0 0 12px rgb(77 228 255 / 0.45);
+    0 0 10px rgb(77 228 255 / 0.45);
 }
 
 .transportButton:disabled {
@@ -110,8 +116,8 @@
 
   box-shadow:
     0 0 0 1px rgb(77 228 255 / 0.55),
-    0 0 16px rgb(77 228 255 / 0.35),
-    inset 0 0 18px rgb(77 228 255 / 0.12);
+    0 0 14px rgb(77 228 255 / 0.32),
+    inset 0 0 14px rgb(77 228 255 / 0.1);
 }
 
 .playButton {
@@ -126,27 +132,27 @@
   display: inline-flex;
   flex-direction: column;
   justify-content: center;
-  gap: 0.18rem;
+  gap: 0.15rem;
   flex-shrink: 0;
-  padding-inline: 0.1rem 0.25rem;
+  padding-inline: 0.08rem 0.2rem;
 }
 
 .statusLight {
   display: inline-flex;
   align-items: center;
-  gap: 0.42rem;
+  gap: 0.38rem;
   color: var(--track-text-muted);
   font-family: var(--font-mono);
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   font-weight: 500;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   transition: color 180ms ease;
 }
 
 .statusDot {
-  width: 0.42rem;
-  height: 0.42rem;
+  width: 0.4rem;
+  height: 0.4rem;
   border-radius: 999px;
   background: rgb(193 218 235 / 0.2);
   box-shadow: inset 0 0 0 1px rgb(193 218 235 / 0.15);
@@ -160,8 +166,8 @@
 .statusLight[data-active="true"] .statusDot {
   background: var(--track-accent);
   box-shadow:
-    0 0 6px var(--track-accent),
-    0 0 12px rgb(77 228 255 / 0.5);
+    0 0 5px var(--track-accent),
+    0 0 10px rgb(77 228 255 / 0.5);
   animation: track-pulse 1.4s ease-in-out infinite;
 }
 
@@ -179,33 +185,33 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 0.25rem;
-  padding: 0.4rem 0.75rem 0.45rem;
+  gap: 0.18rem;
+  padding: 0.3rem 0.6rem 0.32rem;
   border: 1px solid var(--track-border);
-  border-radius: 9px;
+  border-radius: 7px;
   background: var(--track-bg-readout);
 }
 
 .positionReadout {
   flex: 1 1 auto;
-  min-width: 12rem;
+  min-width: 11rem;
 }
 
 .contextReadouts {
   display: grid;
-  grid-template-columns: minmax(4.5rem, auto) minmax(6.5rem, 1fr);
-  gap: 0.45rem;
+  grid-template-columns: minmax(3.8rem, auto) minmax(6rem, 1fr);
+  gap: 0.35rem;
   flex-shrink: 0;
 }
 
 .contextBox {
-  padding-inline: 0.7rem;
+  padding-inline: 0.55rem;
 }
 
 .readoutLabel {
   color: var(--track-text-muted);
   font-family: var(--font-mono);
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   font-weight: 500;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -216,7 +222,7 @@
 .positionValue {
   display: inline-flex;
   align-items: baseline;
-  gap: 0.5rem;
+  gap: 0.42rem;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums slashed-zero;
   line-height: 1;
@@ -230,42 +236,41 @@
 
 .positionSeparator {
   color: var(--track-text-muted);
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 400;
 }
 
 .digits {
   display: inline-flex;
   align-items: baseline;
-  gap: 0.05rem;
+  gap: 0.04rem;
 }
 
 .digitBar {
   color: var(--track-accent);
-  font-size: 1.45rem;
+  font-size: 1.3rem;
   font-weight: 700;
   letter-spacing: -0.01em;
-  text-shadow: 0 0 14px rgb(77 228 255 / 0.45);
+  text-shadow: 0 0 12px rgb(77 228 255 / 0.45);
 }
 
 .digitDot {
   color: var(--track-accent-dim);
-  font-size: 1.45rem;
+  font-size: 1.3rem;
   font-weight: 700;
   margin-inline: 0.02em;
 }
 
 .digitBeat {
   color: var(--track-accent);
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 600;
 }
 
 .digitSub {
   color: var(--track-accent-dim);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 500;
-  align-self: baseline;
   padding-inline-start: 0.05em;
 }
 
@@ -286,20 +291,20 @@
 .tempoValue {
   display: inline-flex;
   align-items: baseline;
-  gap: 0.32rem;
+  gap: 0.28rem;
   color: var(--track-accent);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums slashed-zero;
-  font-size: 1.32rem;
+  font-size: 1.18rem;
   font-weight: 700;
   line-height: 1;
-  text-shadow: 0 0 14px rgb(77 228 255 / 0.4);
+  text-shadow: 0 0 12px rgb(77 228 255 / 0.4);
 }
 
 .tempoUnit {
   color: var(--track-text-muted);
   font-family: var(--font-mono);
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   font-weight: 500;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -311,7 +316,7 @@
 .scaleValue {
   display: inline-flex;
   align-items: baseline;
-  gap: 0.42rem;
+  gap: 0.36rem;
   min-width: 0;
   line-height: 1.05;
 }
@@ -319,7 +324,7 @@
 .scalePrimary {
   color: rgb(232 243 252 / 0.95);
   font-family: var(--font-sans);
-  font-size: 1.02rem;
+  font-size: 0.93rem;
   font-weight: 700;
   letter-spacing: -0.005em;
   overflow: hidden;
@@ -330,7 +335,7 @@
 .scaleSecondary {
   color: var(--track-text-dim);
   font-family: var(--font-sans);
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: 400;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -338,38 +343,44 @@
 }
 
 /* ----------------------------------------------------------------------------
- * Timeline — ruler + blocks + playhead
+ * Timeline — ruler + blocks share the same flex parent with zero gap so
+ * positions are mathematically exact.
  * ------------------------------------------------------------------------- */
 
 .timeline {
   --bar-count: 1;
   --beats-per-bar: 4;
-  --timeline-lane-width: max(100%, calc(var(--bar-count) * 3rem));
 
   display: flex;
   flex-direction: column;
-  gap: 0.32rem;
+  gap: 0.18rem;
   min-width: 0;
-  overflow-x: auto;
 }
 
 .ruler {
-  display: grid;
-  grid-template-columns: repeat(var(--bar-count), minmax(3rem, 1fr));
-  min-width: var(--timeline-lane-width);
+  display: flex;
+  align-items: stretch;
+  gap: 0;
   color: var(--track-text-muted);
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-variant-numeric: tabular-nums;
 }
 
 .rulerBar {
+  flex: 1 1 0;
+  min-width: 0;
   position: relative;
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  align-items: flex-end;
+  gap: 0.4rem;
   height: 0.95rem;
-  padding-inline-start: 0.3rem;
+  padding-inline-start: 0.15rem;
+  border-inline-start: 1px solid rgb(193 218 235 / 0.1);
+}
+
+.rulerBar:first-child {
+  border-inline-start: none;
 }
 
 .rulerBarNumber {
@@ -390,22 +401,30 @@
 
 .rulerTick {
   width: 1px;
-  height: 35%;
+  height: 30%;
   margin-block-start: auto;
-  background: rgb(193 218 235 / 0.12);
+  background: rgb(193 218 235 / 0.1);
+}
+
+.lane {
+  position: relative;
+  min-width: 0;
 }
 
 .blocks {
-  position: relative;
   display: flex;
   align-items: stretch;
-  gap: 0.32rem;
-  min-width: var(--timeline-lane-width);
-  min-height: 3.6rem;
-  padding: 0;
+  gap: 0;
+  min-height: 2.5rem;
 }
 
-/* Playhead — vertical line with arrowhead, optional motion animation ----- */
+.blockSpacer {
+  --duration-bars: 0;
+  flex: var(--duration-bars) 1 0;
+  min-width: 0;
+}
+
+/* Playhead — vertical line with arrowhead spanning the lane ---------------- */
 
 .playhead {
   position: absolute;
@@ -416,19 +435,13 @@
   flex-direction: column;
   align-items: center;
   pointer-events: none;
-  transition: left 80ms linear;
-}
-
-.playhead[data-animated="true"] {
-  /* Smooth-ish motion synced with playback frames */
-  transition: left 60ms linear;
 }
 
 .playheadArrow {
   width: 0;
   height: 0;
-  border-inline: 0.32rem solid transparent;
-  border-block-start: 0.4rem solid var(--track-accent);
+  border-inline: 0.3rem solid transparent;
+  border-block-start: 0.38rem solid var(--track-accent);
   filter: drop-shadow(0 0 4px rgb(77 228 255 / 0.7));
 }
 
@@ -438,7 +451,7 @@
   background: linear-gradient(
     180deg,
     var(--track-accent) 0%,
-    rgb(77 228 255 / 0.45) 100%
+    rgb(77 228 255 / 0.5) 100%
   );
   box-shadow: 0 0 7px rgb(77 228 255 / 0.65);
   border-radius: 999px;
@@ -449,7 +462,7 @@
 .block {
   --duration-bars: 1;
   --block-border: rgb(193 218 235 / 0.1);
-  --block-bg: rgb(255 255 255 / 0.01);
+  --block-bg: rgb(255 255 255 / 0.015);
   --block-fg: rgb(193 218 235 / 0.75);
   --block-name-fg: rgb(232 243 252 / 0.92);
   --block-badge-fg: rgb(232 243 252 / 0.6);
@@ -457,13 +470,16 @@
   position: relative;
   flex: var(--duration-bars) 1 0;
   min-width: 0;
-  min-height: 3.4rem;
   display: flex;
   align-items: center;
-  gap: 0.55rem;
-  padding: 0.4rem 0.6rem 0.4rem 0.55rem;
+  gap: 0.42rem;
+  padding: 0.28rem 0.45rem 0.28rem 0.4rem;
+  /* Use outline-style borders that don't add to width: blocks are sized
+     purely by flex, so neighbouring blocks share a 1px divider rather than
+     each carrying their own. */
   border: 1px solid var(--block-border);
-  border-radius: 10px;
+  border-inline-start-color: transparent;
+  border-radius: 0;
   background: var(--block-bg);
   color: var(--block-fg);
   text-align: left;
@@ -475,9 +491,27 @@
     transform 120ms ease;
 }
 
+/* First and last block round their outer edges so the lane reads as a unit. */
+.block:first-of-type {
+  border-start-start-radius: 9px;
+  border-end-start-radius: 9px;
+}
+
+.block:last-of-type {
+  border-start-end-radius: 9px;
+  border-end-end-radius: 9px;
+}
+
+/* Re-add the inter-block divider as the inline-start border of every block
+   after the first. This keeps each block exactly `--duration-bars` units
+   wide while still showing a 1px separator between them. */
+.block + .block {
+  border-inline-start: 1px solid var(--track-divider);
+}
+
 .block:hover:not([data-active="true"]) {
   --block-border: rgb(193 218 235 / 0.22);
-  --block-bg: rgb(255 255 255 / 0.025);
+  --block-bg: rgb(255 255 255 / 0.03);
 }
 
 .block:active {
@@ -487,7 +521,7 @@
 .block:focus-visible {
   outline: none;
   --block-border: var(--track-accent);
-  box-shadow: 0 0 0 1px var(--track-accent), 0 0 14px rgb(77 228 255 / 0.4);
+  box-shadow: 0 0 0 1px var(--track-accent), 0 0 12px rgb(77 228 255 / 0.4);
 }
 
 .block[data-active="true"] {
@@ -497,9 +531,11 @@
   --block-name-fg: rgb(255 224 195 / 0.98);
   --block-badge-fg: var(--track-warm);
 
+  border-inline-start-color: rgb(255 154 77 / 0.55);
   box-shadow:
-    inset 0 0 24px rgb(255 154 77 / 0.12),
-    0 0 14px rgb(255 154 77 / 0.15);
+    inset 0 0 22px rgb(255 154 77 / 0.12),
+    0 0 12px rgb(255 154 77 / 0.15);
+  z-index: 1;
 }
 
 .block[data-unavailable="true"] {
@@ -508,18 +544,18 @@
 
 .degreeBadge {
   flex: 0 0 auto;
-  min-width: 1.65rem;
-  height: 1.65rem;
+  min-width: 1.4rem;
+  height: 1.4rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding-inline: 0.34rem;
+  padding-inline: 0.3rem;
   border: 1px solid var(--block-border);
-  border-radius: 6px;
-  background: rgb(255 255 255 / 0.02);
+  border-radius: 5px;
+  background: rgb(255 255 255 / 0.025);
   color: var(--block-badge-fg);
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 600;
   letter-spacing: 0.02em;
 }
@@ -534,7 +570,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 0.12rem;
+  gap: 0.08rem;
 }
 
 .chordName {
@@ -544,16 +580,16 @@
   white-space: nowrap;
   color: var(--block-name-fg);
   font-family: var(--font-sans);
-  font-size: 0.98rem;
+  font-size: 0.88rem;
   font-weight: 700;
   letter-spacing: -0.005em;
-  line-height: 1.15;
+  line-height: 1.1;
 }
 
 .duration {
   color: var(--track-text-muted);
   font-family: var(--font-mono);
-  font-size: 0.6rem;
+  font-size: 0.56rem;
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -564,7 +600,7 @@
 }
 
 .statusNote {
-  margin: 0.45rem 0 0;
+  margin: 0.4rem 0 0;
   color: var(--track-text-muted);
   font-size: var(--text-xs);
 }
@@ -575,12 +611,12 @@
 
 @media (max-width: 760px) {
   .track {
-    padding: 0.65rem 0.7rem 0.55rem;
+    padding: 0.5rem 0.55rem 0.45rem;
   }
 
   .transportRow {
     flex-wrap: wrap;
-    row-gap: 0.5rem;
+    row-gap: 0.4rem;
   }
 
   .statusLights {
@@ -594,26 +630,26 @@
 
   .contextReadouts {
     flex: 1 1 100%;
-    grid-template-columns: minmax(4.5rem, 0.7fr) minmax(7rem, 1.3fr);
+    grid-template-columns: minmax(4rem, 0.7fr) minmax(7rem, 1.3fr);
   }
 
   .digitBar {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
   }
 
   .digitBeat {
-    font-size: 0.95rem;
+    font-size: 0.88rem;
   }
 
   .digitSub {
-    font-size: 0.72rem;
+    font-size: 0.68rem;
   }
 
   .tempoValue {
-    font-size: 1.15rem;
+    font-size: 1.05rem;
   }
 
   .scalePrimary {
-    font-size: 0.95rem;
+    font-size: 0.88rem;
   }
 }

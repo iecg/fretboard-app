@@ -113,7 +113,12 @@ export function formatProgressionPlaybackPosition(
 ): FormattedPlaybackPosition {
   const safeBeats = Math.max(1, Math.floor(beatsPerBar));
   const totalBars = Math.max(1, Math.ceil(totalProgressionBars));
-  const clampedBar = Math.max(1, Math.min(currentProgressionBar, totalBars));
+  // Position can range over [1, totalBars + 1). bar 1.0 is the first beat of
+  // bar 1, bar N + 1 - ε is the final subdivision of the last bar. Clamping
+  // to `totalBars` would freeze the readout at `0N.1.000` for the entire
+  // last bar instead of advancing through its beats.
+  const maxBar = totalBars + 1 - 1e-9;
+  const clampedBar = Math.max(1, Math.min(currentProgressionBar, maxBar));
   const bar = Math.floor(clampedBar);
   const positionInBar = Math.max(0, Math.min(1, clampedBar - bar));
   const beatPos = positionInBar * safeBeats;
