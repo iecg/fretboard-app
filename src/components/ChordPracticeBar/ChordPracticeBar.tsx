@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { useAtomValue, useSetAtom } from "jotai";
 import { Eye, EyeOff } from "lucide-react";
 import { AnimatePresence, motion } from 'motion/react';
+import { ANIMATION_DURATION_FAST, ANIMATION_EASE } from "@fretflow/core";
 import type { PracticeBarGroup, PracticeBarNote } from "@fretflow/core";
 import {
   chordOverlayHiddenAtom,
@@ -168,7 +169,7 @@ export function ChordPracticeBar({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.18, ease: "easeOut" }}
+            transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
             style={{ overflow: "hidden" }}
           >
             <div className={styles["chord-practice-bar-groups"]}>

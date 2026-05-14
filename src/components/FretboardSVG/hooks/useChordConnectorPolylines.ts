@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import type { NoteData } from "./useNoteData";
 import { offsetOpenPolylinePath } from "../utils/pathGeometry";
-import { NOTES } from "@fretflow/core";
+import { NOTES, type CagedShape } from "@fretflow/core";
 import { chordRootVisualRadiusPx } from "../utils/noteSizing";
 
 /**
@@ -126,12 +126,23 @@ export interface ChordConnectorVoicing {
    * yields same index. Used to index into --chord-connector-color-N CSS tokens.
    */
   paletteIndex: number;
+  shape?: CagedShape;
   /**
    * Stable identity key derived from the canonical sorted "(stringIndex,fretIndex)"
    * pairs joined by "|" (e.g. "0,7|1,8|2,9"). Same vertex set → same key across
    * renders.
    */
   voicingKey: string;
+}
+
+export interface ExplicitChordConnectorVoicing {
+  voicingKey: string;
+  shape?: CagedShape;
+  notes: Array<{
+    stringIndex: number;
+    fretIndex: number;
+    noteName: string;
+  }>;
 }
 
 /**
@@ -372,6 +383,7 @@ function assignConflictOffsets(
     rawVertices: ChordConnectorVertex[];
     sourceCombo: NoteData[];
     canonicalKey: string;
+    shape?: CagedShape;
   }>,
   stringRowPx: number,
   yBounds: ConnectorYBounds | undefined,
@@ -771,6 +783,147 @@ export function buildChordConnectorPolylines(
   return results;
 }
 
+function createExplicitSourceCombo(
+  notes: ExplicitChordConnectorVoicing["notes"],
+): NoteData[] {
+  return notes.map(({ stringIndex, fretIndex, noteName }) => ({
+    stringIndex,
+    fretIndex,
+    noteName,
+    octave: 4,
+    noteClass: "chord-tone-in-scale",
+    displayValue: noteName,
+    applyDimOpacity: false,
+    applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1 },
+    isHidden: false,
+    isTension: false,
+    isGuideTone: false,
+  }));
+}
+
+function finalizeChordConnectorPolylines(
+  pendingVoicings: Array<{
+    rawVertices: ChordConnectorVertex[];
+    sourceCombo: NoteData[];
+    paletteIndex: number;
+    canonicalKey: string;
+    voicingKey: string;
+    shape?: CagedShape;
+  }>,
+  stringRowPx: number,
+  yBounds?: ConnectorYBounds,
+): ChordConnectorVoicing[] {
+  if (pendingVoicings.length === 0) return [];
+
+  let lowestStringIndex = 0;
+  for (const voicing of pendingVoicings) {
+    for (const note of voicing.sourceCombo) {
+      if (note.stringIndex > lowestStringIndex) lowestStringIndex = note.stringIndex;
+    }
+  }
+
+  const clusterOffsetMap = assignConflictOffsets(
+    pendingVoicings,
+    stringRowPx,
+    yBounds,
+    lowestStringIndex,
+  );
+
+  const baseRadius = applyConnectorRadiusFloor(
+    stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
+    stringRowPx,
+  );
+  const radii = pendingVoicings.map((pv) => {
+    const offsetPx = clusterOffsetMap.get(pv.canonicalKey) ?? 0;
+    return resolveConnectorRadiusPx({
+      vertices: pv.rawVertices,
+      preferredRadius: baseRadius + Math.max(offsetPx, 0),
+      yBounds,
+      edgeSafe: touchesOuterString(pv.sourceCombo, lowestStringIndex),
+    });
+  });
+
+  if (yBounds) {
+    for (let i = 0; i < pendingVoicings.length; i++) {
+      for (let j = i + 1; j < pendingVoicings.length; j++) {
+        const dist = polylineDistance(
+          pendingVoicings[i]!.rawVertices,
+          pendingVoicings[j]!.rawVertices,
+        );
+        if (dist > radii[i]! + radii[j]! + CONNECTOR_CONFLICT_GAP_PX) continue;
+        if (Math.abs(radii[i]! - radii[j]!) >= 1) continue;
+
+        const offI = clusterOffsetMap.get(pendingVoicings[i]!.canonicalKey) ?? 0;
+        const offJ = clusterOffsetMap.get(pendingVoicings[j]!.canonicalKey) ?? 0;
+        const prefI = baseRadius + Math.max(offI, 0);
+        const prefJ = baseRadius + Math.max(offJ, 0);
+        const clampedI = radii[i]! < prefI - 0.5;
+        const clampedJ = radii[j]! < prefJ - 0.5;
+
+        const step = OFFSET_BUCKET[1] ?? 3;
+        if (clampedI && !clampedJ) {
+          radii[j] = Math.max(0, radii[i]! - step);
+        } else if (clampedJ && !clampedI) {
+          radii[i] = Math.max(0, radii[j]! - step);
+        } else if (clampedI && clampedJ) {
+          if (prefI <= prefJ) {
+            radii[i] = Math.max(0, radii[i]! - step);
+          } else {
+            radii[j] = Math.max(0, radii[j]! - step);
+          }
+        }
+      }
+    }
+  }
+
+  return pendingVoicings.map((pv, idx) => {
+    const pathStr = offsetOpenPolylinePath(pv.rawVertices, radii[idx]!);
+    const paths = { fill: pathStr, outline: pathStr };
+    return {
+      paths,
+      vertices: pv.rawVertices,
+      paletteIndex: pv.paletteIndex,
+      shape: pv.shape,
+      voicingKey: pv.voicingKey,
+    };
+  });
+}
+
+function buildExplicitChordConnectorPolylines(
+  explicitVoicings: ExplicitChordConnectorVoicing[],
+  chordToneNames: string[],
+  fretCenterX: (fretIndex: number) => number,
+  stringYAt: (stringIndex: number, x: number) => number,
+  stringRowPx: number,
+  chordRoot: string,
+  yBounds?: ConnectorYBounds,
+): ChordConnectorVoicing[] {
+  const pendingVoicings = explicitVoicings.map((voicing) => {
+    const sourceCombo = createExplicitSourceCombo(voicing.notes)
+      .sort((left, right) => left.stringIndex - right.stringIndex);
+    const rawVertices = sourceCombo.map((note) => {
+      const x = fretCenterX(note.fretIndex);
+      const y = stringYAt(note.stringIndex, x);
+      return { x, y };
+    });
+    const canonicalKey = voicing.notes
+      .map((note) => `${note.stringIndex},${note.fretIndex}`)
+      .sort()
+      .join("|");
+
+    return {
+      rawVertices,
+      sourceCombo,
+      paletteIndex: inversionPaletteIndex(sourceCombo, chordRoot, chordToneNames),
+      canonicalKey,
+      shape: voicing.shape,
+      voicingKey: voicing.voicingKey,
+    };
+  });
+
+  return finalizeChordConnectorPolylines(pendingVoicings, stringRowPx, yBounds);
+}
+
 export interface UseChordConnectorPolylinesParams {
   noteData: NoteData[];
   chordToneNames: string[];
@@ -782,6 +935,7 @@ export interface UseChordConnectorPolylinesParams {
    *  paletteIndex assignment. Empty string = paletteIndex defaults to 0. */
   chordRoot: string;
   yBounds?: ConnectorYBounds;
+  explicitVoicings?: ExplicitChordConnectorVoicing[];
 }
 
 /**
@@ -808,10 +962,23 @@ export function useChordConnectorPolylines({
   stringRowPx,
   chordRoot,
   yBounds,
+  explicitVoicings,
 }: UseChordConnectorPolylinesParams): ChordConnectorVoicing[] {
   return useMemo(
-    () =>
-      buildChordConnectorPolylines(
+    () => {
+      if (explicitVoicings && explicitVoicings.length > 0) {
+        return buildExplicitChordConnectorPolylines(
+          explicitVoicings,
+          chordToneNames,
+          fretCenterX,
+          stringYAt,
+          stringRowPx,
+          chordRoot,
+          yBounds,
+        );
+      }
+
+      return buildChordConnectorPolylines(
         noteData,
         chordToneNames,
         fretCenterX,
@@ -819,7 +986,8 @@ export function useChordConnectorPolylines({
         stringRowPx,
         chordRoot,
         yBounds,
-      ),
-    [noteData, chordToneNames, fretCenterX, stringYAt, stringRowPx, chordRoot, yBounds],
+      );
+    },
+    [noteData, chordToneNames, fretCenterX, stringYAt, stringRowPx, chordRoot, yBounds, explicitVoicings],
   );
 }

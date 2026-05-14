@@ -2,6 +2,7 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
   chordRootAtom,
   chordTypeAtom,
+  currentTuningAtom,
   linkChordRootAtom,
   practiceLensAtom,
   chordTonesAtom,
@@ -14,20 +15,27 @@ import {
   effectiveChordDegreeAtom,
   effectiveChordOverlayModeAtom,
   effectiveChordQualityOverrideAtom,
+  fullChordsEnabledAtom,
+  fullChordMatchesAtom,
+  fullChordPositionsAtom,
   setChordDegreeAtom,
 } from "../store/atoms";
 
 export function useChordState() {
   const [chordRoot, setChordRoot] = useAtom(chordRootAtom);
   const [chordType, setChordType] = useAtom(chordTypeAtom);
+  const currentTuning = useAtomValue(currentTuningAtom);
   const [linkChordRoot, setLinkChordRoot] = useAtom(linkChordRootAtom);
   const [practiceLens, setPracticeLens] = useAtom(practiceLensAtom);
   const chordFretSpread = useAtomValue(chordFretSpreadAtom);
+  const [fullChordsEnabled, setFullChordsEnabled] = useAtom(fullChordsEnabledAtom);
 
   const chordTones = useAtomValue(chordTonesAtom);
   const chordMembers = useAtomValue(chordMembersAtom);
   const hasOutsideChordMembers = useAtomValue(hasOutsideChordMembersAtom);
   const chordLabel = useAtomValue(chordLabelAtom);
+  const fullChordMatches = useAtomValue(fullChordMatchesAtom);
+  const fullChordPositions = useAtomValue(fullChordPositionsAtom);
 
   const chordDegree = useAtomValue(effectiveChordDegreeAtom);
   // Use the action wrapper so that picking a new degree clears any chord-quality
@@ -44,15 +52,20 @@ export function useChordState() {
     setChordRoot,
     chordType,
     setChordType,
+    currentTuning,
     linkChordRoot,
     setLinkChordRoot,
     practiceLens,
     setPracticeLens,
     chordFretSpread,
+    fullChordsEnabled,
+    setFullChordsEnabled,
     chordTones,
     chordMembers,
     hasOutsideChordMembers,
     chordLabel,
+    fullChordMatches,
+    fullChordPositions,
     chordDegree,
     setChordDegree,
     chordOverlayMode,

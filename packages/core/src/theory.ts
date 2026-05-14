@@ -130,6 +130,7 @@ export interface NoteSemantics {
   scaleDegree?: DegreeId;
   /** True when the active chord (chordRoot + chordType) exactly matches the diatonic chord for the active scale degree. False in manual mode or when qualityOverride diverges. */
   isDiatonicChord?: boolean;
+  isFullChordMode?: boolean;
 }
 
 // Pure chord member fact (no scale context)

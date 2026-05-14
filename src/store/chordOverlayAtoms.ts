@@ -5,6 +5,7 @@ import {
   NOTES,
   CHORD_DEFINITIONS,
   LENS_REGISTRY,
+  getFullChordShapeMatches,
   getChordNotes,
   getNoteDisplay,
   formatAccidental,
@@ -45,6 +46,7 @@ import {
   fingeringPatternAtom,
   isChordOverlayPatternDisabled,
 } from "./fingeringAtoms";
+import { currentTuningAtom } from "./layoutAtoms";
 
 const chordFretSpreadStorage = constrainedNumberStorage({
   min: 0,
@@ -417,6 +419,27 @@ export const chordFretSpreadAtom = atomWithStorage(
   0,
   chordFretSpreadStorage,
   GET_ON_INIT,
+);
+
+export const fullChordsEnabledAtom = atomWithStorage<boolean>(
+  k("fullChordsEnabled"),
+  false,
+  booleanStorage,
+  GET_ON_INIT,
+);
+
+export const fullChordMatchesAtom = atom((get) => {
+  if (!get(fullChordsEnabledAtom)) return [];
+  return getFullChordShapeMatches({
+    chordRoot: get(chordRootAtom),
+    chordType: get(chordTypeAtom) ?? "",
+    tuning: get(currentTuningAtom),
+    maxFret: 24,
+  });
+});
+
+export const fullChordPositionsAtom = atom((get) =>
+  get(fullChordMatchesAtom).flatMap((match) => match.positionKeys),
 );
 
 // Migrates from legacy viewMode value on first access.

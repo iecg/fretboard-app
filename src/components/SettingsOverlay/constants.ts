@@ -37,41 +37,41 @@ export const THEME_OPTIONS = [
 export const SETTING_FIELDS: Record<SettingFieldKey, SettingFieldConfig> = {
   zoom: {
     key: "zoom",
-    label: "Zoom",
+    labelKey: "settings.fields.zoom",
   },
   fretRange: {
     key: "fretRange",
-    label: "Fret Range",
+    labelKey: "settings.fields.fretRange",
   },
   scaleDegreeColors: {
     key: "scaleDegreeColors",
-    label: "Scale Degree Colors",
-    hint: "Colors each scale note by its degree.",
+    labelKey: "settings.fields.scaleDegreeColors",
+    hintKey: "settings.fields.scaleDegreeColorsHint",
   },
   tuning: {
     key: "tuning",
-    label: "Tuning",
+    labelKey: "settings.fields.tuning",
   },
   accidentals: {
     key: "accidentals",
-    label: "Accidentals",
+    labelKey: "settings.fields.accidentals",
     className: "overlay-field--accidentals",
-    hint: "Auto chooses sharps or flats based on the current musical context.",
+    hintKey: "settings.fields.accidentalsHint",
   },
   enharmonicDisplay: {
     key: "enharmonicDisplay",
-    label: "Enharmonic Display",
-    hint: "Controls whether equivalent note spellings appear when they clarify the theory view.",
+    labelKey: "settings.fields.enharmonicDisplay",
+    hintKey: "settings.fields.enharmonicDisplayHint",
   },
   chordSpread: {
     key: "chordSpread",
-    label: "Chord Spread",
-    hint: "Limits how far the visible chord tones can span across frets on the fretboard.",
+    labelKey: "settings.fields.chordSpread",
+    hintKey: "settings.fields.chordSpreadHint",
   },
   theme: {
     key: "theme",
-    label: "Theme",
-    hint: "Choose your preferred color theme. System matches your device settings.",
+    labelKey: "settings.fields.theme",
+    hintKey: "settings.fields.themeHint",
   },
 };
 
@@ -110,3 +110,8 @@ export const SETTINGS_SECTIONS: readonly SettingsSectionConfig[] = [
 ] as const;
 
 export const ZOOM_STEP = 10;
+
+export const LANGUAGE_OPTIONS = [
+  { value: "en", label: "English" },
+  { value: "es", label: "Español" },
+] as const;

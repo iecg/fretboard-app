@@ -2,21 +2,22 @@ import { useCallback, useId, useRef, useState } from "react";
 import { useAtom } from "jotai";
 import { motion } from "motion/react";
 import clsx from "clsx";
-import { CAGED_SHAPES, type CagedShape } from "@fretflow/core";
+import { CAGED_SHAPES, type CagedShape, ANIMATION_DURATION_FAST } from "@fretflow/core";
 import { useShapeState } from "../../hooks/useShapeState";
 import { displayFormatAtom, type FingeringPattern } from "../../store/atoms";
+import { useTranslation } from "../../hooks/useTranslation";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import shared from "../shared/shared.module.css";
 
 const LONG_PRESS_MS = 500;
 const MOVE_CANCEL_PX = 8;
 
-/** Primary pointer is coarse (touch/pen). */
 const isTouchPrimary =
   typeof window !== "undefined" &&
   window.matchMedia("(pointer: coarse)").matches;
 
 export function FingeringPatternControls({ compact = false }: { compact?: boolean }) {
+  const { t } = useTranslation();
   const {
     fingeringPattern,
     setFingeringPattern,
@@ -45,7 +46,6 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
   const shapeLabelId = useId();
   const shapeHelpId = useId();
 
-  // Long-press tracking for shape buttons.
   const pressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pressStartRef = useRef<{ x: number; y: number } | null>(null);
   const longPressedShapeRef = useRef<CagedShape | null>(null);
@@ -81,11 +81,9 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
       {fingeringPattern === "caged" && (
         <>
           <div className={shared["control-section"]}>
-            <span className={shared["section-label"]} id={shapeLabelId}>Shape</span>
+            <span className={shared["section-label"]} id={shapeLabelId}>{t("controls.shape")}</span>
             <span id={shapeHelpId} className={shared["sr-only"]}>
-              {isTouchPrimary
-                ? "Tap to select a shape. Long press to toggle multiple shapes."
-                : "Click to select a shape. Shift+click to toggle multiple shapes."}
+              {isTouchPrimary ? t("controls.shapeHintTouch") : t("controls.shapeHintPointer")}
             </span>
             <div
               className={shared["toggle-group"]}
@@ -104,7 +102,7 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
                 onClick={() => setCagedShapes(new Set(CAGED_SHAPES))}
                 whileTap={{ scale: 0.96 }}
                 animate={cagedShapes.size === CAGED_SHAPES.length ? { scale: [1, 1.04, 1] } : { scale: 1 }}
-                transition={{ duration: 0.2 }}
+                transition={{ duration: ANIMATION_DURATION_FAST }}
               >
                 All
               </motion.button>
@@ -126,7 +124,6 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
                         : "Click to select; Shift+click to toggle multiple"
                     }
                     onPointerDown={(e) => {
-                      // Long press only applies to touch/pen — desktop uses Shift+click
                       if (e.pointerType !== "touch" && e.pointerType !== "pen") return;
                       cancelPress();
                       longPressedShapeRef.current = null;
@@ -151,11 +148,9 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
                     onPointerCancel={cancelPress}
                     onPointerLeave={cancelPress}
                     onContextMenu={(e) => {
-                      // Suppress context menu that browsers show on long press
                       if (longPressedShapeRef.current !== null) e.preventDefault();
                     }}
                     onClick={(e) => {
-                      // If this click followed a long press, skip single-select
                       if (longPressedShapeRef.current !== null) {
                         longPressedShapeRef.current = null;
                         return;
@@ -170,7 +165,7 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
                     }}
                     whileTap={{ scale: 0.96 }}
                     animate={isActive ? { scale: [1, 1.04, 1] } : { scale: 1 }}
-                    transition={{ duration: 0.2 }}
+                    transition={{ duration: ANIMATION_DURATION_FAST }}
                   >
                     {s}
                   </motion.button>
@@ -178,7 +173,7 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
               })}
             </div>
             <p className={shared["field-hint"]}>
-              {isTouchPrimary ? "Long press to add shapes" : "Shift+click to add shapes"}
+              {isTouchPrimary ? t("controls.longPressToAdd") : t("controls.shiftClickToAdd")}
             </p>
           </div>
         </>
@@ -187,7 +182,7 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
       {fingeringPattern === "3nps" && (
         <>
           <div className={shared["control-section"]}>
-            <span className={shared["section-label"]}>Position</span>
+            <span className={shared["section-label"]}>{t("controls.position")}</span>
             <ToggleBar
               options={[1, 2, 3, 4, 5, 6, 7].map((p) => ({
                 value: p,
@@ -199,7 +194,7 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
             />
           </div>
           <div className={shared["control-section"]}>
-            <span className={shared["section-label"]}>Octave</span>
+            <span className={shared["section-label"]}>{t("controls.octave")}</span>
             <ToggleBar
               options={[
                 { value: 0, label: "Low" },
@@ -216,7 +211,7 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
       {fingeringPattern === "one-string" && (
         <>
           <div className={shared["control-section"]}>
-            <span className={shared["section-label"]}>String</span>
+            <span className={shared["section-label"]}>{t("controls.string")}</span>
             <ToggleBar
               options={[1, 2, 3, 4, 5, 6].map((n, i) => ({ value: i, label: String(n) }))}
               value={oneStringIndex}
@@ -225,10 +220,10 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
             />
           </div>
           <div className={shared["control-section"]}>
-            <span className={shared["section-label"]}>Connectors</span>
+            <span className={shared["section-label"]}>{t("controls.connectors")}</span>
             <ToggleBar
               options={[
-                { value: 0, label: "Off" },
+                { value: 0, label: t("controls.off") },
                 { value: 1, label: "On" },
               ]}
               value={oneStringInterval}
@@ -237,7 +232,7 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
             />
           </div>
           {oneStringInterval > 0 && (
-            <p className={shared["field-hint"]}>Shows consecutive scale steps (2nds)</p>
+            <p className={shared["field-hint"]}>{t("controls.showConsecutiveSteps")}</p>
           )}
         </>
       )}
@@ -245,7 +240,7 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
       {fingeringPattern === "two-strings" && (
         <>
           <div className={shared["control-section"]}>
-            <span className={shared["section-label"]}>Strings</span>
+            <span className={shared["section-label"]}>{t("controls.strings")}</span>
             <ToggleBar
               options={
                 twoStringsInterval === 3
@@ -269,10 +264,10 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
             />
           </div>
           <div className={shared["control-section"]}>
-            <span className={shared["section-label"]}>Interval</span>
+            <span className={shared["section-label"]}>{t("controls.interval")}</span>
             <ToggleBar
               options={[
-                { value: 0, label: "Off" },
+                { value: 0, label: t("controls.off") },
                 { value: 1, label: "3rds" },
                 { value: 2, label: "4ths" },
                 { value: 3, label: "6ths" },
@@ -283,13 +278,13 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
             />
           </div>
           {twoStringsInterval > 0 && (
-            <p className={shared["field-hint"]}>Pair members connected</p>
+            <p className={shared["field-hint"]}>{t("controls.pairMembersConnected")}</p>
           )}
         </>
       )}
 
       <div className={shared["control-section"]}>
-        <span className={shared["section-label"]}>Note Labels</span>
+        <span className={shared["section-label"]}>{t("controls.noteLabels")}</span>
         <ToggleBar
           options={(["notes", "degrees", "none"] as const).map((fmt) => ({
             value: fmt,

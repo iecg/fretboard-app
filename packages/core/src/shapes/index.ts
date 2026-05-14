@@ -1,5 +1,8 @@
-export type { CagedShape } from "./templates";
+export type { CagedShape, FullChordQuality } from "./templates";
 export { CAGED_SHAPES, CAGED_SHAPE_COLORS, isMajorScale } from "./templates";
+
+export type { FullChordMatch, FullChordMatchNote } from "./fullChordShapes";
+export { getFullChordShapeMatches } from "./fullChordShapes";
 
 export type { ShapeVertex, ShapePolygon, ShapeResult } from "./polygons";
 export { getCagedCoordinates } from "./polygons";

@@ -1,7 +1,7 @@
 import React, { memo } from "react";
 import { motion } from "motion/react";
 import { clsx } from "clsx";
-import { formatAccidental } from "@fretflow/core";
+import { formatAccidental, ANIMATION_DURATION_FAST, ANIMATION_EASE } from "@fretflow/core";
 import { getNoteVisuals } from "./utils/semantics";
 import { CHORD_ROOT_HALO_RADIUS_PX, reduceCircleRadius, reduceSquircleRadius, squirclePath } from "./utils/noteSizing";
 import styles from "./FretboardSVG.module.css";
@@ -79,6 +79,7 @@ export const FretboardNoteLayer = memo(({
         isGuideTone,
         scaleDegree,
         degreeColor,
+        fullChordShape,
       }) => {
         const cx = fretCenterX(fretIndex);
         const cy = stringYAt(stringIndex, cx);
@@ -136,7 +137,10 @@ export const FretboardNoteLayer = memo(({
               scale: isHidden ? 0 : 1,
               opacity: isHidden ? 0 : finalOpacity,
             }}
-            transition={{ type: "spring", damping: 20, stiffness: 300, duration: 0.2 }}
+            transition={{
+              duration: ANIMATION_DURATION_FAST,
+              ease: ANIMATION_EASE,
+            }}
             className={clsx(
               styles["fretboard-note"],
               styles[noteClass],
@@ -164,6 +168,7 @@ export const FretboardNoteLayer = memo(({
             data-note-shape={noteShape}
             data-note-tension={isTension || undefined}
             data-note-guide-tone={isGuideTone || undefined}
+            data-full-chord-shape={fullChordShape}
             data-lens-emphasis={applyLensEmphasis.glowColor ?? undefined}
             data-scale-degree={degreeColorsEnabled ? scaleDegree : undefined}
             data-degree-colors={degreeColorsEnabled ? "true" : undefined}

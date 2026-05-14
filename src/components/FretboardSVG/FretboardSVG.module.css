@@ -27,10 +27,6 @@
   --placeholder: 0;
 }
 
-.fretboard-note {
-  transition: opacity 0.15s ease-out;
-}
-
 .fretboard-note:global(.hidden) {
   display: none;
 }
@@ -94,6 +90,51 @@
   stroke-width: 2.3;
 }
 
+.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape="E"] :is(circle, path, polygon) {
+  stroke: var(--caged-e);
+  fill: var(--caged-e);
+}
+
+.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape="D"] :is(circle, path, polygon) {
+  stroke: var(--caged-d);
+  fill: var(--caged-d);
+}
+
+.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape="C"] :is(circle, path, polygon) {
+  stroke: var(--caged-c);
+  fill: var(--caged-c);
+}
+
+.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape="A"] :is(circle, path, polygon) {
+  stroke: var(--caged-a);
+  fill: var(--caged-a);
+}
+
+.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape="G"] :is(circle, path, polygon) {
+  stroke: var(--caged-g);
+  fill: var(--caged-g);
+}
+
+.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape="E"] text {
+  fill: var(--caged-e-fg);
+}
+
+.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape="D"] text {
+  fill: var(--caged-d-fg);
+}
+
+.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape="C"] text {
+  fill: var(--caged-c-fg);
+}
+
+.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape="A"] text {
+  fill: var(--caged-a-fg);
+}
+
+.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape="G"] text {
+  fill: var(--caged-g-fg);
+}
+
 .fretboard-note.note-active :is(circle, path, polygon) {
   stroke: var(--note-ring);
   fill: var(--fretboard-note-fill-chord-tone);
@@ -123,7 +164,8 @@
   fill: var(--fretboard-note-text-fill);
 }
 
-.fretboard-note.scale-only :is(circle, path, polygon) {
+.fretboard-note.scale-only :is(circle, path, polygon),
+.fretboard-note.note-inactive :is(circle, path, polygon) {
   stroke: var(--note-ring);
   fill: var(--fretboard-note-fill-scale-only);
   stroke-width: 1.7;
@@ -466,6 +508,12 @@
 .chord-connectors path[data-palette-index="6"] { color: var(--chord-connector-color-6); }
 .chord-connectors path[data-palette-index="7"] { color: var(--chord-connector-color-7); }
 .chord-connectors path[data-palette-index="8"] { color: var(--chord-connector-color-8); }
+
+.chord-connectors path[data-caged-shape="E"] { color: var(--caged-e); }
+.chord-connectors path[data-caged-shape="D"] { color: var(--caged-d); }
+.chord-connectors path[data-caged-shape="C"] { color: var(--caged-c); }
+.chord-connectors path[data-caged-shape="A"] { color: var(--caged-a); }
+.chord-connectors path[data-caged-shape="G"] { color: var(--caged-g); }
 
 /* -----------------------------------------------------------------------
    Active-voicing highlight ring.

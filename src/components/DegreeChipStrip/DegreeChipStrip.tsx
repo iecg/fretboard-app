@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import clsx from 'clsx';
 import { AnimatePresence, motion } from 'motion/react';
 import { useAtomValue } from 'jotai';
+import { ANIMATION_DURATION_FAST } from '@fretflow/core';
+
 import { scaleDegreeColorsEnabledAtom } from '../../store/atoms';
 import styles from './DegreeChipStrip.module.css';
 
@@ -71,7 +73,7 @@ export function DegreeChipStrip({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.18, ease: 'easeOut' }}
+            transition={{ duration: ANIMATION_DURATION_FAST }}
             style={{ overflow: 'hidden' }}
           >
             {chips.map((chip, i) => {

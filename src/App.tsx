@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense, useMemo } from "react";
 import { useSetAtom, useAtomValue, useAtom, createStore, Provider } from "jotai";
 import { AnimatePresence, motion } from "motion/react";
 import clsx from "clsx";
@@ -22,6 +22,7 @@ import { BottomTabBar, type BottomTabItem } from "./components/BottomTabBar/Bott
 import { TAB_LABELS } from "./constants/tabLabels";
 import useLayoutMode from "./hooks/useLayoutMode";
 import { useResolvedTheme } from "./hooks/useResolvedTheme";
+import { useTranslation } from "./hooks/useTranslation";
 import { AppHeader } from "./components/AppHeader/AppHeader";
 import { BrandMark } from "./components/BrandMark/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark";
@@ -62,6 +63,13 @@ const MOBILE_TAB_ITEMS: BottomTabItem[] = [
 ];
 
 function AppContent() {
+  const { t } = useTranslation();
+
+  const translatedTabItems = useMemo(() => MOBILE_TAB_ITEMS.map((item) => ({
+    ...item,
+    label: t(`tabs.${item.id}`),
+  })), [t]);
+
   const chordType = useAtomValue(chordTypeAtom);
   const isMuted = useAtomValue(isMutedAtom);
   const [mobileTab, setMobileTab] = useAtom(mobileTabAtom);
@@ -157,7 +165,7 @@ function AppContent() {
           <rect x="4" y="2" width="16" height="20" rx="2" />
           <path d="M12 18h.01" />
         </svg>
-        <p className="rotate-overlay-message">Please rotate your device to portrait mode</p>
+        <p className="rotate-overlay-message">{t("common.rotateMessage")}</p>
       </div>
     </div>
     <MainLayoutWrapper
@@ -180,8 +188,8 @@ function AppContent() {
                   type="button"
                   onClick={() => setSettingsOverlayOpen((v) => !v)}
                   className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--lg"])}
-                  title="Settings"
-                  aria-label="Open settings"
+                  title={t("settings.title")}
+                  aria-label={t("settings.open")}
                 >
                   <Settings2 className="icon" />
                 </button>
@@ -190,8 +198,8 @@ function AppContent() {
                 type="button"
                 onClick={toggleMute}
                 className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--lg"])}
-                title={isMuted ? "Unmute" : "Mute"}
-                aria-label={isMuted ? "Unmute audio" : "Mute audio"}
+                title={isMuted ? t("common.unmuteTitle") : t("common.muteTitle")}
+                aria-label={isMuted ? t("common.unmute") : t("common.mute")}
               >
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.span
@@ -215,8 +223,8 @@ function AppContent() {
                 type="button"
                 onClick={() => setShowHelp(true)}
                 className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--lg"])}
-                title="Help & Instructions"
-                aria-label="Open help"
+                title={t("common.helpTitle")}
+                aria-label={t("common.help")}
               >
                 <HelpCircle className="icon" />
               </button>
@@ -256,7 +264,7 @@ function AppContent() {
     </MainLayoutWrapper>
     {layout.showMobileTabs && !settingsOverlayOpen && (
       <BottomTabBar
-        items={MOBILE_TAB_ITEMS}
+        items={translatedTabItems}
         activeId={mobileTab}
         onSelect={(id) => setMobileTab(id as "scales" | "chords" | "cof" | "view")}
         aria-label="Mobile navigation"
@@ -269,9 +277,9 @@ function AppContent() {
           type="button"
           className={audioErrorStyles.dismiss}
           onClick={() => setAudioError(null)}
-          aria-label="Dismiss audio error notification"
+          aria-label={t("common.dismiss")}
         >
-          Dismiss
+          {t("common.dismiss")}
         </button>
       </div>
     )}
