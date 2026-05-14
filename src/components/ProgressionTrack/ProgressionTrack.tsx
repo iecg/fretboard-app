@@ -1,23 +1,12 @@
-import { type CSSProperties } from "react";
+import { useCallback, type CSSProperties } from "react";
 import clsx from "clsx";
 import { Pause, Play, Repeat, SkipBack, SkipForward } from "lucide-react";
 import { useProgressionState } from "../../hooks/useProgressionState";
 import { useScaleState } from "../../hooks/useScaleState";
-import { useSmoothProgressionPosition } from "../../hooks/useSmoothProgressionPosition";
-import {
-  formatProgressionDurationLabel,
-  formatProgressionPlaybackPosition,
-  type FormattedPlaybackPositionParts,
-} from "../../progressions/progressionDomain";
 import styles from "./ProgressionTrack.module.css";
-
-function formatDurationShort(label: string): string {
-  return label
-    .replace(" bars", "B")
-    .replace(" bar", "B")
-    .replace(" beats", "bt")
-    .replace(" beat", "bt");
-}
+import { ProgressionBlock } from "./ProgressionBlock";
+import { ProgressionPlayhead } from "./ProgressionPlayhead";
+import { ProgressionPositionReadout } from "./ProgressionPositionReadout";
 
 function splitScaleLabel(label: string): { primary: string; secondary: string | null } {
   const match = label.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
@@ -30,18 +19,6 @@ function durationToBars(
   beatsPerBar: number,
 ): number {
   return duration.unit === "bar" ? duration.value : duration.value / beatsPerBar;
-}
-
-function PositionDigits({ parts, muted = false }: { parts: FormattedPlaybackPositionParts; muted?: boolean }) {
-  return (
-    <span className={clsx(styles.digits, muted && styles["digits--muted"])}>
-      <span className={styles.digitBar}>{parts.bar}</span>
-      <span className={styles.digitDot} aria-hidden="true">.</span>
-      <span className={styles.digitBeat}>{parts.beat}</span>
-      <span className={styles.digitDot} aria-hidden="true">.</span>
-      <span className={styles.digitSub}>{parts.subdivision}</span>
-    </span>
-  );
 }
 
 export function ProgressionTrack() {
@@ -67,28 +44,17 @@ export function ProgressionTrack() {
   const canPlay = !progressionPlaybackBlockedReason;
   const activeStep = resolvedProgressionSteps[activeProgressionStepIndex] ?? null;
   const activeStepBars = activeStep ? durationToBars(activeStep.duration, beatsPerBar) : 0;
-
-  // Smooth, frame-rate position derived from the discrete step boundary and
-  // the active step's duration. Used by both the playhead and the readout so
-  // they move together at sub-step resolution.
-  const smoothBar = useSmoothProgressionPosition({
-    playing: progressionPlaying && canPlay,
-    stepStartBar: currentProgressionBar,
-    stepBars: activeStepBars,
-    stepDurationMs: progressionStepDurationMs,
-    stepIndex: activeProgressionStepIndex,
-  });
-
   const totalDurationBars = Math.max(1, totalProgressionBars);
   const totalBarsForDisplay = Math.max(1, Math.ceil(totalProgressionBars));
-  const playheadLeft = `${Math.max(0, Math.min(100, ((smoothBar - 1) / totalDurationBars) * 100))}%`;
-  const position = formatProgressionPlaybackPosition(
-    smoothBar,
-    totalProgressionBars,
-    beatsPerBar,
-  );
   const scale = splitScaleLabel(scaleLabel);
   const subdivisionsPerBar = Math.max(1, Math.floor(beatsPerBar));
+
+  // Stable callback so memoized ProgressionBlock children don't re-render on
+  // every parent render of this component.
+  const selectStep = useCallback(
+    (index: number) => setActiveProgressionStepIndex(index),
+    [setActiveProgressionStepIndex],
+  );
 
   return (
     <section
@@ -153,21 +119,15 @@ export function ProgressionTrack() {
           </span>
         </div>
 
-        <div className={styles.positionReadout}>
-          <span className={styles.readoutLabel}>Position</span>
-          <span
-            className={styles.positionValue}
-            aria-label={`Position ${position.current} of ${position.total}`}
-          >
-            <span className={styles.positionCurrent}>
-              <PositionDigits parts={position.parts.current} />
-            </span>
-            <span className={styles.positionSeparator} aria-hidden="true">/</span>
-            <span className={styles.positionTotal}>
-              <PositionDigits parts={position.parts.total} muted />
-            </span>
-          </span>
-        </div>
+        <ProgressionPositionReadout
+          playing={progressionPlaying && canPlay}
+          stepStartBar={currentProgressionBar}
+          stepBars={activeStepBars}
+          stepDurationMs={progressionStepDurationMs}
+          stepIndex={activeProgressionStepIndex}
+          totalProgressionBars={totalProgressionBars}
+          beatsPerBar={beatsPerBar}
+        />
 
         <div className={styles.contextReadouts}>
           <div className={styles.contextBox}>
@@ -202,11 +162,6 @@ export function ProgressionTrack() {
             <span key={i} className={styles.rulerBar}>
               {i > 0 ? <span className={styles.rulerBarTick} /> : null}
               <span className={styles.rulerBarNumber}>{i + 1}</span>
-              {/* Render minor ticks at every half-beat (8th-note resolution
-                  in 4/4). Beat positions get a taller variant; off-beats
-                  stay shorter. Combined with the bar-start major tick and
-                  the ruler's baseline, this matches the multi-height
-                  hash-mark pattern in the reference faceplate. */}
               {Array.from({ length: 2 * subdivisionsPerBar - 1 }, (__, j) => {
                 const offset = (j + 1) / (2 * subdivisionsPerBar);
                 const isBeat = (j + 1) % 2 === 0;
@@ -222,47 +177,25 @@ export function ProgressionTrack() {
           ))}
         </div>
         <div className={styles.lane}>
-          <span
-            className={styles.playhead}
-            style={{ left: playheadLeft }}
-            data-testid="progression-playhead"
-            data-animated={progressionPlaying ? "true" : undefined}
-            aria-hidden="true"
-          >
-            <span className={styles.playheadArrow} aria-hidden="true" />
-            <span className={styles.playheadLine} aria-hidden="true" />
-          </span>
+          <ProgressionPlayhead
+            playing={progressionPlaying && canPlay}
+            stepStartBar={currentProgressionBar}
+            stepBars={activeStepBars}
+            stepDurationMs={progressionStepDurationMs}
+            stepIndex={activeProgressionStepIndex}
+            totalDurationBars={totalDurationBars}
+          />
           <div className={styles.blocks}>
-            {resolvedProgressionSteps.map((step, index) => {
-              const duration = formatProgressionDurationLabel(step.duration);
-              const selected = index === activeProgressionStepIndex;
-              const durationBars = durationToBars(step.duration, beatsPerBar);
-              return (
-                <button
-                  key={step.id}
-                  type="button"
-                  className={styles.block}
-                  style={{ "--duration-bars": String(durationBars) } as CSSProperties}
-                  data-active={selected ? "true" : undefined}
-                  data-unavailable={step.unavailable ? "true" : undefined}
-                  onClick={() => setActiveProgressionStepIndex(index)}
-                  aria-label={`Step ${index + 1}, ${step.degree}, ${step.resolvedChordLabel ?? "Unavailable"}, ${duration}${selected ? ", active" : ""}`}
-                >
-                  <span className={styles.degreeBadge}>{step.degree}</span>
-                  <span className={styles.blockText}>
-                    <span
-                      className={styles.chordName}
-                      title={step.resolvedChordLabel ?? step.unavailableReason ?? undefined}
-                    >
-                      {step.shortChordLabel ?? step.unavailableReason}
-                    </span>
-                    <span className={styles.duration}>{formatDurationShort(duration)}</span>
-                  </span>
-                </button>
-              );
-            })}
-            {/* If steps don't fill the full ruler, pad with an empty trailing
-                cell so the ruler/blocks math stays exact. */}
+            {resolvedProgressionSteps.map((step, index) => (
+              <ProgressionBlock
+                key={step.id}
+                step={step}
+                index={index}
+                active={index === activeProgressionStepIndex}
+                durationBars={durationToBars(step.duration, beatsPerBar)}
+                onSelect={selectStep}
+              />
+            ))}
             {totalBarsForDisplay > totalDurationBars ? (
               <span
                 className={styles.blockSpacer}
