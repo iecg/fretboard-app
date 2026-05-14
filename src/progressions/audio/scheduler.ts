@@ -18,8 +18,8 @@ import { scheduleHiHat, scheduleKick, scheduleSnare } from "./drumKit";
 import { scheduleClick } from "./metronome";
 import {
   buildMetronomePattern,
-  clipPatternToBeats,
   POP_STRUM_PATTERN,
+  repeatPatternToBeats,
   ROCK_DRUM_PATTERN,
 } from "./patterns";
 import { pluckString, type PluckedVoiceHandle } from "./string";
@@ -73,7 +73,11 @@ export function scheduleProgressionStep(
 
   // Strum: trigger each pattern hit, voicing notes spread across STRUM_LAG.
   if (enable.strum && input.voicing.length > 0) {
-    const hits = clipPatternToBeats(POP_STRUM_PATTERN, beatsAvailable);
+    const hits = repeatPatternToBeats(
+      POP_STRUM_PATTERN,
+      beatsAvailable,
+      beatsPerBar,
+    );
     for (const hit of hits) {
       const hitTime = startTime + hit.beat * secondsPerBeat;
       const ordered =
@@ -93,12 +97,16 @@ export function scheduleProgressionStep(
   if (enable.bass && input.bassNote) {
     const bassFreq = getNoteFrequency(input.bassNote);
     if (Number.isFinite(bassFreq) && bassFreq > 0) {
-      const bassHits: Array<{ beat: number; velocity: number }> = [
+      const bassPattern: Array<{ beat: number; velocity: number }> = [
         { beat: 0, velocity: 1 },
+        { beat: 2, velocity: 0.85 },
       ];
-      if (beatsAvailable > 2) bassHits.push({ beat: 2, velocity: 0.85 });
+      const bassHits = repeatPatternToBeats(
+        bassPattern,
+        beatsAvailable,
+        beatsPerBar,
+      );
       for (const hit of bassHits) {
-        if (hit.beat >= beatsAvailable) continue;
         voices.push(
           scheduleBassNote(
             ctx,
@@ -117,17 +125,32 @@ export function scheduleProgressionStep(
 
   // Drums: fire-and-forget — no live handles needed.
   if (enable.drums) {
-    for (const hit of clipPatternToBeats(ROCK_DRUM_PATTERN.kicks, beatsAvailable)) {
+    const kicks = repeatPatternToBeats(
+      ROCK_DRUM_PATTERN.kicks,
+      beatsAvailable,
+      beatsPerBar,
+    );
+    const snares = repeatPatternToBeats(
+      ROCK_DRUM_PATTERN.snares,
+      beatsAvailable,
+      beatsPerBar,
+    );
+    const hats = repeatPatternToBeats(
+      ROCK_DRUM_PATTERN.hats,
+      beatsAvailable,
+      beatsPerBar,
+    );
+    for (const hit of kicks) {
       scheduleKick(ctx, bus, startTime + hit.beat * secondsPerBeat, {
         velocity: hit.velocity,
       });
     }
-    for (const hit of clipPatternToBeats(ROCK_DRUM_PATTERN.snares, beatsAvailable)) {
+    for (const hit of snares) {
       scheduleSnare(ctx, bus, startTime + hit.beat * secondsPerBeat, {
         velocity: hit.velocity,
       });
     }
-    for (const hit of clipPatternToBeats(ROCK_DRUM_PATTERN.hats, beatsAvailable)) {
+    for (const hit of hats) {
       scheduleHiHat(ctx, bus, startTime + hit.beat * secondsPerBeat, {
         velocity: hit.velocity,
       });
@@ -135,13 +158,15 @@ export function scheduleProgressionStep(
   }
 
   if (enable.metronome) {
-    const clicks = clipPatternToBeats(
+    const clicks = repeatPatternToBeats(
       buildMetronomePattern(beatsPerBar),
       beatsAvailable,
+      beatsPerBar,
     );
     for (const hit of clicks) {
+      const beatInBar = hit.beat % beatsPerBar;
       scheduleClick(ctx, bus, startTime + hit.beat * secondsPerBeat, {
-        accent: hit.beat === 0,
+        accent: Math.abs(beatInBar) < 1e-9,
         velocity: hit.velocity,
       });
     }

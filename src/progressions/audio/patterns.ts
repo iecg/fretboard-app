@@ -2,8 +2,8 @@
  * Beat-level patterns for the progression backing track.
  *
  * Every pattern is expressed in **beat fractions** within a bar (0 inclusive,
- * `beatsPerBar` exclusive), letting the scheduler scale a pattern to any
- * meter and tempo without owning timing math.
+ * `beatsPerBar` exclusive), letting the scheduler repeat/clip a pattern to
+ * any meter and tempo without owning timing math.
  *
  * Patterns are intentionally small and audition-friendly: a default rock
  * strum, a default rock drum beat, a four-on-the-floor metronome. They
@@ -37,7 +37,8 @@ export interface DrumPattern {
 /**
  * Eighth-note pop strum: D _ D U _ U D U.
  * Beats are emphasised; off-beats use a lighter velocity.
- * Designed for 4/4; the scheduler will skip hits past `beatsPerBar`.
+ * Designed for 4/4; the scheduler will repeat it per bar and skip hits past
+ * the active `beatsPerBar`.
  */
 export const POP_STRUM_PATTERN: readonly StrumHit[] = [
   { beat: 0, velocity: 0.95, direction: "down" },
@@ -50,8 +51,9 @@ export const POP_STRUM_PATTERN: readonly StrumHit[] = [
 
 /**
  * Steady rock beat for 4/4: kick on 1 and 3, snare on 2 and 4, eighth-note
- * closed hats throughout. The scheduler clips hits past `beatsPerBar`, so
- * 3/4 reads as the first three beats of the same groove.
+ * closed hats throughout. The scheduler repeats it per bar and clips hits
+ * past `beatsPerBar`, so 3/4 reads as the first three beats of the same
+ * groove.
  */
 export const ROCK_DRUM_PATTERN: DrumPattern = {
   kicks: [
@@ -98,4 +100,28 @@ export function clipPatternToBeats<T extends { beat: number }>(
 ): T[] {
   if (beatsAvailable <= 0) return [];
   return pattern.filter((hit) => hit.beat < beatsAvailable);
+}
+
+/**
+ * Repeat a one-bar pattern across the requested beat window. The repeat
+ * length is the active meter, so a 2-bar chord in 4/4 receives the same
+ * strum/drum/click pattern at beats 0..3.5 and 4..7.5, while a partial final
+ * bar is clipped to the chord duration.
+ */
+export function repeatPatternToBeats<T extends { beat: number }>(
+  pattern: readonly T[],
+  beatsAvailable: number,
+  beatsPerBar: number,
+): T[] {
+  if (beatsAvailable <= 0 || beatsPerBar <= 0) return [];
+  const hits: T[] = [];
+  for (let barStart = 0; barStart < beatsAvailable; barStart += beatsPerBar) {
+    for (const hit of pattern) {
+      if (hit.beat >= beatsPerBar) continue;
+      const beat = barStart + hit.beat;
+      if (beat >= beatsAvailable) continue;
+      hits.push({ ...hit, beat });
+    }
+  }
+  return hits;
 }

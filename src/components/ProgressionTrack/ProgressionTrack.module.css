@@ -482,15 +482,14 @@
 }
 
 .blocks {
-  display: flex;
-  align-items: stretch;
-  gap: 0;
+  position: relative;
   min-height: 2.5rem;
 }
 
 .blockSpacer {
   --duration-bars: 0;
-  flex: var(--duration-bars) 1 0;
+  position: absolute;
+  inset-block: 0;
   min-width: 0;
 }
 
@@ -543,8 +542,8 @@
   --block-name-fg: rgb(232 243 252 / 0.92);
   --block-badge-fg: rgb(232 243 252 / 0.6);
 
-  position: relative;
-  flex: var(--duration-bars) 1 0;
+  position: absolute;
+  inset-block: 0;
   min-width: 0;
   display: flex;
   align-items: center;

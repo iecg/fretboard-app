@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { scheduleProgressionStep } from "./scheduler";
+import { _metronomeInternals } from "./metronome";
 
 // Web Audio mock — counts node creations so tests can assert "drums scheduled
 // X hits" without depending on real audio timing.
@@ -70,6 +71,7 @@ interface MockCtx {
   ctx: any;
   oscCount: () => number;
   bufferSourceCount: () => number;
+  oscillators: () => ReturnType<typeof createMockOsc>[];
 }
 
 function buildMockCtx(): MockCtx {
@@ -97,6 +99,7 @@ function buildMockCtx(): MockCtx {
     ctx,
     oscCount: () => oscillators.length,
     bufferSourceCount: () => sources.length,
+    oscillators: () => oscillators,
   };
 }
 
@@ -207,5 +210,44 @@ describe("scheduleProgressionStep", () => {
       enable: { strum: true, bass: false, drums: false, metronome: false },
     });
     expect(mock.oscCount()).toBe(1);
+  });
+
+  it("repeats strum hits once per bar for multi-bar chords", () => {
+    scheduleProgressionStep(mock.ctx, bus as unknown as AudioNode, {
+      voicing: ["C3"],
+      bassNote: null,
+      beatsAvailable: 8,
+      beatsPerBar: 4,
+      secondsPerBeat: 0.5,
+      startTime: 0,
+      enable: { strum: true, bass: false, drums: false, metronome: false },
+    });
+    expect(mock.oscCount()).toBe(12);
+  });
+
+  it("accents each bar downbeat when metronome repeats over multi-bar chords", () => {
+    scheduleProgressionStep(mock.ctx, bus as unknown as AudioNode, {
+      voicing: [],
+      bassNote: null,
+      beatsAvailable: 8,
+      beatsPerBar: 4,
+      secondsPerBeat: 0.5,
+      startTime: 0,
+      enable: { strum: false, bass: false, drums: false, metronome: true },
+    });
+
+    const frequencies = mock.oscillators().map((osc) =>
+      osc.frequency.setValueAtTime.mock.calls[0]?.[0],
+    );
+    expect(frequencies).toEqual([
+      _metronomeInternals.ACCENT_FREQ,
+      _metronomeInternals.NORMAL_FREQ,
+      _metronomeInternals.NORMAL_FREQ,
+      _metronomeInternals.NORMAL_FREQ,
+      _metronomeInternals.ACCENT_FREQ,
+      _metronomeInternals.NORMAL_FREQ,
+      _metronomeInternals.NORMAL_FREQ,
+      _metronomeInternals.NORMAL_FREQ,
+    ]);
   });
 });

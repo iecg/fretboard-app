@@ -26,6 +26,13 @@ const beatDurationProgression = [
   { id: "bar-step", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
 ] as const;
 
+const twoBarLeadingProgression = [
+  { id: "one", degree: "I", duration: { value: 2, unit: "bar" }, qualityOverride: null },
+  { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+  { id: "three", degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+  { id: "four", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+] as const;
+
 describe("ProgressionTrack", () => {
   it("renders transport, status, position, tempo, scale, ruler, and chord blocks", () => {
     renderWithAtoms(<ProgressionTrack />, [
@@ -116,6 +123,28 @@ describe("ProgressionTrack", () => {
     ]);
 
     expect(container.querySelector<HTMLElement>("[data-testid='progression-playhead']")?.style.left).toBe("20%");
+  });
+
+  it("positions chord blocks by exact cumulative bar percentages", () => {
+    renderWithAtoms(<ProgressionTrack />, [
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, twoBarLeadingProgression],
+      [beatsPerBarAtom, 4],
+    ]);
+
+    const first = screen.getByRole("button", { name: /Step 1, I, C Major Triad, 2 bars, active/i });
+    const second = screen.getByRole("button", { name: /Step 2, V, G Major Triad, 1 bar/i });
+    const third = screen.getByRole("button", { name: /Step 3, vi, A Minor Triad, 1 bar/i });
+    const fourth = screen.getByRole("button", { name: /Step 4, IV, F Major Triad, 1 bar/i });
+
+    expect(first.style.left).toBe("0%");
+    expect(first.style.width).toBe("40%");
+    expect(second.style.left).toBe("40%");
+    expect(second.style.width).toBe("20%");
+    expect(third.style.left).toBe("60%");
+    expect(third.style.width).toBe("20%");
+    expect(fourth.style.left).toBe("80%");
+    expect(fourth.style.width).toBe("20%");
   });
 
   it("disables playback when progression playback is blocked", () => {
