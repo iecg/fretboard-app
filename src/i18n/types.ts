@@ -15,8 +15,6 @@ export interface Dictionary {
     view: {
       auto: string;
       zoomSuffix: string;
-      compactControls: string;
-      compactAutoHint: string;
     };
     fields: {
       zoom: string;

@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { render, screen, fireEvent, act, within } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import { Provider, createStore } from "jotai";
 import { axe } from "../../test-utils/a11y";
+import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
 import SettingsOverlay from "./SettingsOverlay";
 import { synth } from "../../core/audio";
-import { settingsOverlayOpenAtom, fretZoomAtom, themeAtom, compactDensityAtom } from "../../store/atoms";
+import { settingsOverlayOpenAtom, fretZoomAtom, themeAtom } from "../../store/atoms";
 import styles from "./SettingsOverlay.module.css";
 
 // Mock the audio synth singleton — we only care that setMute is called on reset.
@@ -269,61 +270,9 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(store.get(settingsOverlayOpenAtom)).toBe(true);
   });
 
-  it("renders compact toggle on desktop viewport", async () => {
-    setViewport(1440, 900);
-    const { container } = renderOpenOverlay();
-    expect(screen.getByText("Compact Controls")).toBeTruthy();
-    const compactGroup = screen.getByRole("group", { name: "Compact Controls" });
-    expect(compactGroup).toBeTruthy();
-    expect(compactGroup.querySelector('[aria-pressed]')).toBeTruthy();
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("renders compact toggle on mobile viewport", async () => {
-    setViewport(390, 844);
-    const store = createStore();
-    store.set(settingsOverlayOpenAtom, true);
-    const { container } = renderOverlay(store);
-    expect(screen.getByText("Compact Controls")).toBeTruthy();
-    const compactGroup = screen.getByRole("group", { name: "Compact Controls" });
-    expect(compactGroup).toBeTruthy();
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("clicking On sets compactDensityAtom to 'on'", async () => {
-    setViewport(1440, 900);
-    const { store, container } = renderOpenOverlay();
-    const compactGroup = screen.getByRole("group", { name: "Compact Controls" });
-    const onBtn = within(compactGroup).getByRole("button", { name: "On" });
-    fireEvent.click(onBtn);
-    expect(store.get(compactDensityAtom)).toBe("on");
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("clicking Off sets compactDensityAtom to 'off'", async () => {
-    setViewport(1440, 900);
-    const { store, container } = renderOpenOverlay();
-    act(() => {
-      store.set(compactDensityAtom, "on");
-    });
-    const compactGroup = screen.getByRole("group", { name: "Compact Controls" });
-    const offBtn = within(compactGroup).getByRole("button", { name: "Off" });
-    fireEvent.click(offBtn);
-    expect(store.get(compactDensityAtom)).toBe("off");
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("clicking Auto sets compactDensityAtom to 'auto'", async () => {
-    setViewport(1440, 900);
-    const { store, container } = renderOpenOverlay();
-    act(() => {
-      store.set(compactDensityAtom, "on");
-    });
-    const compactGroup = screen.getByRole("group", { name: "Compact Controls" });
-    const autoBtn = within(compactGroup).getByRole("button", { name: "Auto" });
-    fireEvent.click(autoBtn);
-    expect(store.get(compactDensityAtom)).toBe("auto");
-    expect(await axe(container)).toHaveNoViolations();
+  it("does not render a Compact Controls group", async () => {
+    renderWithAtoms(<SettingsOverlay />, [[settingsOverlayOpenAtom, true]]);
+    expect(screen.queryByRole("group", { name: /compact controls/i })).toBeNull();
   });
 
   it("traps focus when tabbing forward from the last control", () => {
