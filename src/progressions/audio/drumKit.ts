@@ -46,6 +46,32 @@ export interface DrumHitOptions {
   velocity?: number;
 }
 
+export interface DrumVoiceHandle {
+  cancel: () => void;
+}
+
+function createDrumVoiceHandle(
+  ctx: AudioContext,
+  sources: readonly AudioScheduledSourceNode[],
+  nodes: readonly AudioNode[],
+): DrumVoiceHandle {
+  let canceled = false;
+  return {
+    cancel: () => {
+      if (canceled) return;
+      canceled = true;
+      for (const source of sources) {
+        try {
+          source.stop(ctx.currentTime);
+        } catch {
+          // Source may already have ended or had an earlier stop time.
+        }
+      }
+      disposeNodes(...nodes);
+    },
+  };
+}
+
 /**
  * Schedule a kick drum hit at `time`. Models a punchy 808-style kick: sine
  * oscillator with a fast exponential pitch drop and a short click transient.
@@ -55,11 +81,11 @@ export function scheduleKick(
   dest: AudioNode,
   time: number,
   options: DrumHitOptions = {},
-): void {
+): DrumVoiceHandle {
   const velocity = clampVelocity(options.velocity);
   // Zero velocity → silent hit. Bail before scheduling so we never pass 0
   // into exponentialRampToValueAtTime (which throws on non-positive targets).
-  if (velocity <= 0) return;
+  if (velocity <= 0) return { cancel: () => {} };
 
   // Body
   const osc = ctx.createOscillator();
@@ -87,6 +113,12 @@ export function scheduleKick(
   click.start(time);
   click.stop(time + 0.05);
   click.onended = () => disposeNodes(click, clickGain);
+
+  return createDrumVoiceHandle(
+    ctx,
+    [osc, click],
+    [osc, gain, click, clickGain],
+  );
 }
 
 /**
@@ -98,9 +130,9 @@ export function scheduleSnare(
   dest: AudioNode,
   time: number,
   options: DrumHitOptions = {},
-): void {
+): DrumVoiceHandle {
   const velocity = clampVelocity(options.velocity);
-  if (velocity <= 0) return;
+  if (velocity <= 0) return { cancel: () => {} };
 
   // Noise rattle
   const noise = ctx.createBufferSource();
@@ -130,6 +162,12 @@ export function scheduleSnare(
   body.start(time);
   body.stop(time + 0.15);
   body.onended = () => disposeNodes(body, bodyGain);
+
+  return createDrumVoiceHandle(
+    ctx,
+    [noise, body],
+    [noise, noiseFilter, noiseGain, body, bodyGain],
+  );
 }
 
 export interface HiHatOptions extends DrumHitOptions {
@@ -147,9 +185,9 @@ export function scheduleHiHat(
   dest: AudioNode,
   time: number,
   options: HiHatOptions = {},
-): void {
+): DrumVoiceHandle {
   const velocity = clampVelocity(options.velocity);
-  if (velocity <= 0) return;
+  if (velocity <= 0) return { cancel: () => {} };
   const decay = options.open ? 0.3 : 0.05;
 
   const noise = ctx.createBufferSource();
@@ -173,6 +211,12 @@ export function scheduleHiHat(
   noise.start(time);
   noise.stop(time + decay + 0.05);
   noise.onended = () => disposeNodes(noise, hp, bp, gain);
+
+  return createDrumVoiceHandle(
+    ctx,
+    [noise],
+    [noise, hp, bp, gain],
+  );
 }
 
 export function _resetDrumKitForTests(): void {

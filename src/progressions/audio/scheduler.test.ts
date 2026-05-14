@@ -73,6 +73,7 @@ interface MockCtx {
   oscCount: () => number;
   bufferSourceCount: () => number;
   oscillators: () => ReturnType<typeof createMockOsc>[];
+  bufferSources: () => ReturnType<typeof createMockBufferSource>[];
 }
 
 function buildMockCtx(): MockCtx {
@@ -101,6 +102,7 @@ function buildMockCtx(): MockCtx {
     oscCount: () => oscillators.length,
     bufferSourceCount: () => sources.length,
     oscillators: () => oscillators,
+    bufferSources: () => sources,
   };
 }
 
@@ -204,6 +206,44 @@ describe("scheduleProgressionStep", () => {
     expect(mock.oscCount()).toBe(4);
   });
 
+  it("cancels scheduled metronome clicks when the step handle is cancelled", () => {
+    const handle = scheduleProgressionStep(mock.ctx, bus as unknown as AudioNode, {
+      voicing: [],
+      bassNotes: [],
+      beatsAvailable: 4,
+      beatsPerBar: 4,
+      secondsPerBeat: 0.5,
+      startTime: 3,
+      enable: { strum: false, bass: false, drums: false, metronome: true },
+    });
+
+    const scheduledSources = mock.oscillators();
+    expect(scheduledSources).toHaveLength(4);
+    expect(scheduledSources.every((source) => source.stop.mock.calls.length === 1))
+      .toBe(true);
+
+    handle.cancelAll();
+
+    expect(scheduledSources.every((source) => source.stop.mock.calls.length >= 2))
+      .toBe(true);
+  });
+
+  it("keeps step timing but skips past hits when rescheduling from a cutoff", () => {
+    scheduleProgressionStep(mock.ctx, bus as unknown as AudioNode, {
+      voicing: [],
+      bassNotes: [],
+      beatsAvailable: 4,
+      beatsPerBar: 4,
+      secondsPerBeat: 0.5,
+      startTime: 10,
+      scheduleFromTime: 10.76,
+      enable: { strum: false, bass: false, drums: false, metronome: true },
+    });
+
+    const startTimes = mock.oscillators().map((source) => source.start.mock.calls[0]?.[0]);
+    expect(startTimes).toEqual([11, 11.5]);
+  });
+
   it("uses buffer sources for the drum kit (kick adds oscillators, snare/hat add buffers)", () => {
     scheduleProgressionStep(mock.ctx, bus as unknown as AudioNode, {
       voicing: [],
@@ -220,6 +260,31 @@ describe("scheduleProgressionStep", () => {
     expect(mock.oscCount()).toBeGreaterThanOrEqual(6);
     // Snares + hats use noise buffers — at minimum 2 snares + 8 hats = 10.
     expect(mock.bufferSourceCount()).toBeGreaterThanOrEqual(10);
+  });
+
+  it("cancels scheduled drum hits when the step handle is cancelled", () => {
+    const handle = scheduleProgressionStep(mock.ctx, bus as unknown as AudioNode, {
+      voicing: [],
+      bassNotes: [],
+      beatsAvailable: 4,
+      beatsPerBar: 4,
+      secondsPerBeat: 0.5,
+      startTime: 3,
+      enable: { strum: false, bass: false, drums: true, metronome: false },
+    });
+
+    const scheduledSources = [
+      ...mock.oscillators(),
+      ...mock.bufferSources(),
+    ];
+    expect(scheduledSources.length).toBeGreaterThan(0);
+    expect(scheduledSources.every((source) => source.stop.mock.calls.length === 1))
+      .toBe(true);
+
+    handle.cancelAll();
+
+    expect(scheduledSources.every((source) => source.stop.mock.calls.length >= 2))
+      .toBe(true);
   });
 
   it("clips strum hits past the available beats", () => {

@@ -46,12 +46,23 @@ interface SchedulerInputs {
   };
 }
 
+type EnableFlags = SchedulerInputs["enable"];
+
+function sameEnableFlags(a: EnableFlags | null, b: EnableFlags): boolean {
+  return !!a
+    && a.strum === b.strum
+    && a.bass === b.bass
+    && a.drums === b.drums
+    && a.metronome === b.metronome;
+}
+
 function buildSegment(
   ctx: AudioContext,
   bus: AudioNode,
   stepIndex: number,
   startTime: number,
   inputs: SchedulerInputs,
+  scheduleFromTime?: number,
 ): ScheduledSegment | null {
   const step = inputs.steps[stepIndex];
   if (!step || step.unavailable || !step.root || !step.quality) return null;
@@ -72,6 +83,7 @@ function buildSegment(
     beatsPerBar: inputs.beatsPerBar,
     secondsPerBeat,
     startTime,
+    scheduleFromTime,
     enable: inputs.enable,
   });
 
@@ -117,6 +129,7 @@ export function useProgressionAudioPlayback() {
   // current chord from `now`) from "mid-playback dep change" (we keep the
   // current chord intact and apply the new params on the next bar).
   const wasPlayingRef = useRef<boolean>(false);
+  const lastEnableRef = useRef<EnableFlags | null>(null);
 
   useEffect(() => {
     if (!Array.isArray(segmentsRef.current)) segmentsRef.current = [];
@@ -126,6 +139,7 @@ export function useProgressionAudioPlayback() {
       segmentsRef.current = [];
       silenceProgressionBus();
       lastStepRef.current = null;
+      lastEnableRef.current = null;
     };
 
     if (
@@ -165,6 +179,7 @@ export function useProgressionAudioPlayback() {
 
     const now = audio.ctx.currentTime;
     const justStarted = !wasPlayingRef.current;
+    const enableChanged = !sameEnableFlags(lastEnableRef.current, inputs.enable);
     wasPlayingRef.current = true;
 
     const isStepTransition =
@@ -187,13 +202,30 @@ export function useProgressionAudioPlayback() {
       segmentsRef.current = segmentsRef.current.filter(
         (s) => s.stepIndex === activeProgressionStepIndex,
       );
+    } else if (enableChanged) {
+      // Instrument toggles are direct performance controls. Rebuild the
+      // active segment at its original start time so the timeline keeps its
+      // place, while the scheduler only recreates future hits.
+      const activeSegmentStart = segmentsRef.current.find(
+        (s) => s.stepIndex === activeProgressionStepIndex,
+      )?.startTime;
+      segmentsRef.current.forEach((s) => s.handle.cancelAll());
+      segmentsRef.current = [];
+      if (activeSegmentStart !== undefined) {
+        const seg = buildSegment(
+          audio.ctx,
+          audio.bus,
+          activeProgressionStepIndex,
+          activeSegmentStart,
+          inputs,
+          now + SCHEDULE_LEAD_SECONDS,
+        );
+        if (seg) segmentsRef.current.push(seg);
+      }
     } else {
-      // Mid-step dep change (layer toggle / tempo / meter): preserve the
+      // Mid-step dep change (tempo / meter / progression data): preserve the
       // currently-playing segment unchanged so the bar doesn't restart, and
-      // cancel only the pre-scheduled "next" segment. The user-toggled
-      // layer takes effect on the next bar boundary, which matches a
-      // hardware DAW's "punch-in" model and avoids audible double hits
-      // from a mid-bar restart.
+      // cancel only the pre-scheduled "next" segment.
       const keepers: ScheduledSegment[] = [];
       for (const s of segmentsRef.current) {
         if (s.stepIndex === activeProgressionStepIndex) {
@@ -255,6 +287,7 @@ export function useProgressionAudioPlayback() {
     }
 
     lastStepRef.current = activeProgressionStepIndex;
+    lastEnableRef.current = inputs.enable;
   }, [
     progressionEnabled,
     progressionPlaying,
