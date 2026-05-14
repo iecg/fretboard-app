@@ -36,28 +36,8 @@ describe("StepperSelect/StepperSelect", () => {
       expect(screen.getByRole("combobox", { name: "Test Select" })).toBeInTheDocument();
     });
 
-    it("does NOT set data-compact when compact is omitted", () => {
+    it("does not set data-compact (compact density is the default)", () => {
       render(<StepperSelect {...DEFAULT_PROPS} />);
-      const group = screen.getByRole("group", { name: "Browse test options" });
-      expect(group).not.toHaveAttribute("data-compact");
-    });
-
-    it("does NOT set data-compact when compact is false", () => {
-      render(<StepperSelect {...DEFAULT_PROPS} compact={false} />);
-      const group = screen.getByRole("group", { name: "Browse test options" });
-      expect(group).not.toHaveAttribute("data-compact");
-    });
-  });
-
-  describe("compact prop", () => {
-    it("sets data-compact='true' on the root element when compact is true", () => {
-      render(<StepperSelect {...DEFAULT_PROPS} compact />);
-      const group = screen.getByRole("group", { name: "Browse test options" });
-      expect(group).toHaveAttribute("data-compact", "true");
-    });
-
-    it("removes data-compact when compact is false", () => {
-      render(<StepperSelect {...DEFAULT_PROPS} compact={false} />);
       const group = screen.getByRole("group", { name: "Browse test options" });
       expect(group).not.toHaveAttribute("data-compact");
     });

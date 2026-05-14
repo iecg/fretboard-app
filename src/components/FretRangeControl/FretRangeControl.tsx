@@ -18,7 +18,6 @@ export interface FretRangeControlProps {
   layout?: "toolbar" | "mobile" | "dashboard";
   showSeparator?: boolean;
   showLabels?: boolean;
-  compact?: boolean;
 }
 
 export function FretRangeControl({
@@ -30,7 +29,6 @@ export function FretRangeControl({
   layout,
   showSeparator,
   showLabels,
-  compact,
 }: FretRangeControlProps) {
   const isToolbar = layout === "toolbar" || layout === undefined;
   const sep = showSeparator ?? isToolbar;
@@ -41,7 +39,6 @@ export function FretRangeControl({
       role="group"
       aria-label="Fret Range"
       className={clsx(styles["fret-range-control"], styles[layout ?? "toolbar"])}
-      data-compact={compact ? "true" : undefined}
     >
       <div className={clsx(styles["fret-group"], styles["fret-start"])}>
         {labels && <span className={styles["fret-sublabel"]}>Start</span>}

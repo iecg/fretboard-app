@@ -217,7 +217,7 @@ describe("TheoryControls/TheoryControls", () => {
     expect(screen.getByRole("button", { name: "Tension" })).not.toBeDisabled();
   });
 
-  it("no data-compact attributes are set by default", () => {
+  it("no data-compact attributes are set (compact density is the default)", () => {
     renderWithStore(<TheoryControls />);
 
     const sections = document.querySelectorAll("[data-compact]");
@@ -305,7 +305,7 @@ describe("TheoryControls/TheorySection", () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
-  it("does not render data-compact attribute by default", async () => {
+  it("does not render data-compact attribute (compact density is the default)", async () => {
     const { container } = render(
       <TheorySection title="Scale" summary="C Major">
         <div>content</div>
@@ -313,17 +313,6 @@ describe("TheoryControls/TheorySection", () => {
     );
     const section = container.querySelector("section");
     expect(section).not.toHaveAttribute("data-compact");
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("renders data-compact='true' when compact prop is set", async () => {
-    const { container } = render(
-      <TheorySection title="Scale" summary="C Major" compact>
-        <div>content</div>
-      </TheorySection>,
-    );
-    const section = container.querySelector("section");
-    expect(section).toHaveAttribute("data-compact", "true");
     expect(await axe(container)).toHaveNoViolations();
   });
 

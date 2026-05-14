@@ -30,8 +30,6 @@ export interface TheorySectionProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   children: ReactNode;
-  /** Reduces vertical padding and font size on disclosure rows for tight layouts. */
-  compact?: boolean;
   /**
    * When true, the disclosure arrow is grayed out and non-interactive, and the
    * panel auto-collapses.
@@ -46,7 +44,6 @@ export function TheorySection({
   open,
   onOpenChange,
   children,
-  compact = false,
   disabled = false,
 }: TheorySectionProps) {
   const [userOpen, setUserOpen] = useState(defaultOpen);
@@ -70,7 +67,6 @@ export function TheorySection({
     <section
       className={styles["theory-section"]}
       data-open={isOpen}
-      data-compact={compact ? "true" : undefined}
       data-disabled={disabled ? "true" : undefined}
     >
       <button

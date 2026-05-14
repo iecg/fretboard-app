@@ -11,10 +11,10 @@
 
 .fret-btn {
   composes: button from '../StepperShell/StepperShell.module.css';
-  min-width: 2.35rem;
-  min-height: 2.35rem;
-  padding: 0.45rem 0.6rem;
-  font-size: 0.88rem;
+  min-width: 1.8rem;
+  min-height: 1.8rem;
+  padding: 0.2rem 0.35rem;
+  font-size: 0.8rem;
 }
 
 .fret-value-slot {
@@ -29,7 +29,7 @@
 
 .fret-value {
   composes: value from '../StepperShell/StepperShell.module.css';
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: var(--surface-control-fg);
   display: block;
@@ -53,6 +53,7 @@
    The outer div[role="group"] is labelled via aria-label="Fret Range". */
 .fret-sublabel {
   composes: field-sublabel from '../shared/shared.module.css';
+  font-size: 0.65rem;
 }
 
 :global(.app-container[data-layout-tier="mobile"]) .fret-range-control.mobile,
@@ -122,25 +123,3 @@
   color: var(--surface-control-fg-muted);
 }
 
-/* Compact variant */
-.fret-range-control[data-compact="true"] .fret-btn {
-  min-width: 1.8rem;
-  min-height: 1.8rem;
-  padding: 0.2rem 0.35rem;
-  font-size: 0.8rem;
-}
-
-.fret-range-control[data-compact="true"] .fret-value {
-  font-size: 0.78rem;
-}
-
-.fret-range-control[data-compact="true"] .fret-sublabel {
-  font-size: 0.65rem;
-}
-
-/* Override mobile layout min-height when compact */
-/* stylelint-disable-next-line selector-pseudo-class-no-unknown */
-:global(.app-container[data-layout-tier="mobile"]) .fret-range-control[data-compact="true"] .fret-btn {
-  min-height: 1.8rem;
-  min-width: 1.8rem;
-}

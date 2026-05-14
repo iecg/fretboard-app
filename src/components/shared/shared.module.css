@@ -153,12 +153,12 @@
 
 .toggle-group {
   display: flex;
-  gap: 0.22rem;
+  gap: 0.1rem;
   background-color: var(--surface-control);
   background-image: var(--surface-control-bg-image);
   border: 1px solid var(--surface-control-border);
   border-radius: 1rem;
-  padding: 0.25rem;
+  padding: 0.12rem;
 }
 
 .toggle-group--default {
@@ -170,9 +170,10 @@
 .toggle-btn {
   flex: 1 1 0;
   min-width: 0;
-  min-height: 2.65rem;
-  padding: 0.5rem 0.78rem;
-  font-size: 0.9rem;
+  min-height: 1.6rem;
+  padding: 0.18rem 0.55rem;
+  font-size: 0.8rem;
+  line-height: 1.1;
   font-weight: 500;
   border-radius: 0.78rem;
   transition: var(--transition-surface), transform var(--transition-fast);
@@ -274,19 +275,19 @@
 .note-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 0.42rem;
+  gap: 0.3rem;
 }
 
 .note-btn {
   width: 100%;
-  min-height: 3.05rem;
+  min-height: 1.9rem;
   padding: 0;
-  font-size: 0.96rem;
+  font-size: 0.82rem;
   font-weight: 600;
   background-color: var(--surface-control);
   background-image: var(--surface-control-bg-image);
   border: 1px solid var(--surface-control-border);
-  border-radius: 0.95rem;
+  border-radius: 0.72rem;
   color: var(--surface-control-fg-muted);
   cursor: pointer;
   display: inline-flex;
@@ -346,62 +347,7 @@
   box-shadow: var(--selected-shadow);
 }
 
-/* ===== Desktop: tighter interactive controls ===== */
-/* stylelint-disable selector-pseudo-class-no-unknown */
-:global(.app-container[data-layout-tier="desktop"]) .toggle-btn {
-  min-height: 2.2rem;
-  padding: 0.3rem 0.68rem;
-  font-size: 0.85rem;
-}
-
-:global(.app-container[data-layout-tier="desktop"]) .note-btn {
-  min-height: 2.55rem;
-}
-
-/* Tablet tier: slightly tighter interactive controls — still touch-safe (≥44px). */
-:global(.app-container[data-layout-tier="tablet"]) .toggle-btn {
-  min-height: 2.75rem;
-  padding: 0.38rem 0.72rem;
-  font-size: 0.88rem;
-}
-
-:global(.app-container[data-layout-tier="tablet"]) .note-btn {
-  min-height: 2.82rem;
-}
-
-/* ===== NoteGrid compact variant ===== */
-.note-grid[data-compact="true"] {
-  gap: 0.3rem;
-}
-
-.note-grid[data-compact="true"] .note-btn {
-  min-height: 1.9rem;
-  font-size: 0.82rem;
-  border-radius: 0.72rem;
-}
-
-/* Override mobile-tabs scope for compact note-btn */
-[data-layout-scope="mobile-tabs"] .note-grid[data-compact="true"] .note-btn {
-  min-height: 1.9rem;
-}
-
-/* ===== Compact ToggleBar — tighter than StepperSelect compact ===== */
-.toggle-group[data-compact="true"] {
-  padding: 0.12rem;
-  gap: 0.1rem;
-}
-
-.toggle-group[data-compact="true"] .toggle-btn {
-  min-height: 1.6rem;
-  padding: 0.18rem 0.55rem;
-  font-size: 0.8rem;
-  line-height: 1.1;
-}
-
-/* Out-specify mobile-tabs scope (max-width: 767px sets min-height: 36px). */
-[data-layout-scope="mobile-tabs"] .toggle-group[data-compact="true"] .toggle-btn {
-  min-height: 1.6rem;
-}
+/* ===== NoteGrid and ToggleBar: compact density is the default ===== */
 
 /* Horizontal scroll variant — opt-in via overflow="scroll" prop on ToggleBar.
    Buttons keep their natural width (no flex:1 stretch) so labels are fully
@@ -422,7 +368,6 @@
   flex: 0 0 auto;
   min-width: max-content;
 }
-/* stylelint-enable selector-pseudo-class-no-unknown */
 
 .field-hint {
   font-size: var(--text-xxs);
@@ -574,8 +519,6 @@
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
-:global(.app-container[data-layout-tier="mobile"]) [data-layout-scope="mobile-tabs"] .toggle-btn,
-:global(.app-container[data-layout-tier="mobile"]) [data-layout-scope="mobile-tabs"] .note-btn,
 :global(.app-container[data-layout-tier="mobile"]) [data-layout-scope="mobile-tabs"] .link-toggle {
   min-height: 36px;
 }

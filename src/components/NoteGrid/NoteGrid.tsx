@@ -9,7 +9,6 @@ interface NoteGridProps {
   selected: string;
   onSelect: (note: string) => void;
   useFlats: boolean;
-  compact?: boolean;
 }
 
 const GRID_COLS = 6;
@@ -19,7 +18,6 @@ export function NoteGrid({
   selected,
   onSelect,
   useFlats,
-  compact,
 }: NoteGridProps) {
   const selectedIndex = notes.indexOf(selected);
   const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -88,7 +86,7 @@ export function NoteGrid({
   };
 
   return (
-    <div className={shared["note-grid"]} role="group" aria-label="Note selector" data-compact={compact ? "true" : undefined}>
+    <div className={shared["note-grid"]} role="group" aria-label="Note selector">
       {notes.map((n, index) => {
         const isActive = selected === n;
         return (

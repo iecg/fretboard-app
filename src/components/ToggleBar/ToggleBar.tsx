@@ -51,8 +51,6 @@ interface ToggleBarProps<Value extends string | number> extends VariantProps<
   onChange: (value: Value) => void;
   variant?: "default" | "tabs";
   label?: string;
-  /** Compact mode — tighter padding, smaller hit-areas, smaller font. */
-  compact?: boolean;
   /** When "scroll" — the toggle group scrolls horizontally instead of shrinking buttons. */
   overflow?: "scroll";
 }
@@ -63,7 +61,6 @@ export function ToggleBar<Value extends string | number>({
   onChange,
   variant = "default",
   label,
-  compact = false,
   overflow,
 }: ToggleBarProps<Value>) {
   const isTabs = variant === "tabs";
@@ -73,7 +70,6 @@ export function ToggleBar<Value extends string | number>({
       className={toggleBarVariants({ variant })}
       role={isTabs ? "tablist" : "group"}
       aria-label={label}
-      data-compact={compact ? "true" : undefined}
       data-overflow={overflow ?? undefined}
     >
       {options.map((option) => {
