@@ -11,6 +11,7 @@ import {
 import { useProgressionState } from "../../hooks/useProgressionState";
 import { useScaleState } from "../../hooks/useScaleState";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
+import { Switch } from "../Switch/Switch";
 import { StepperControl } from "../StepperControl/StepperControl";
 import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
 import shared from "../shared/shared.module.css";
@@ -57,15 +58,10 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
     <div className={styles["progression-controls"]} data-compact={compact ? "true" : undefined}>
       <div className={shared["control-section"]}>
         <span className={shared["section-label"]}>Progression Mode</span>
-        <ToggleBar
+        <Switch
           label="Progression mode"
-          value={progressionEnabled ? "on" : "off"}
-          options={[
-            { value: "on", label: "On" },
-            { value: "off", label: "Off" },
-          ]}
-          onChange={(value) => setProgressionEnabled(value === "on")}
-          compact={compact}
+          checked={progressionEnabled}
+          onChange={setProgressionEnabled}
         />
       </div>
 
