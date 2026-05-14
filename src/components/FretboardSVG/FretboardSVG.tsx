@@ -432,6 +432,7 @@ export const FretboardSVG = memo(function FretboardSVG({
     yBounds: connectorYBounds,
     explicitVoicings: fullChordVoicings,
   });
+  const connectorSource = fullChordVoicings?.length ? "full-chord" : "generated";
 
   return (
     <div
@@ -527,12 +528,13 @@ export const FretboardSVG = memo(function FretboardSVG({
             <AnimatePresence mode="wait">
               {connectorPolylines.length > 0 && (
                 <motion.g
-                  key={`chord-connectors-${chordRoot}-${chordTones?.join("-") ?? "none"}`}
+                  key={`chord-connectors-${connectorSource}-${chordRoot}-${chordTones?.join("-") ?? "none"}`}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
                   className={styles["chord-connectors"]}
+                  data-connector-source={connectorSource}
                   aria-hidden="true"
                   pointerEvents="none"
                 >

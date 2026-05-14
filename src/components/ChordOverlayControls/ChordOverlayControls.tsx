@@ -103,12 +103,6 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
     }
   }, [currentLensEntry, lensAvailability, setPracticeLens]);
 
-  useEffect(() => {
-    if (fullChordsEnabled && !fullChordsSupported) {
-      setFullChordsEnabled(false);
-    }
-  }, [fullChordsEnabled, fullChordsSupported, setFullChordsEnabled]);
-
   const handleDegreeChange = (value: string) => {
     startTransition(() => {
       setChordDegree(value === CHORD_NONE_VALUE ? null : value);

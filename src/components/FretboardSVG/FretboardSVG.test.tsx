@@ -336,6 +336,59 @@ describe("FretboardSVG/FretboardSVG", () => {
     ).toHaveStyle({ fill: "var(--caged-e-fg)" });
   });
 
+  it("replaces the full-chord connector group when full chords are toggled off", () => {
+    const fullChordVoicings: Array<{
+      shape: CagedShape;
+      voicingKey: string;
+      notes: Array<{ stringIndex: number; fretIndex: number; noteName: string }>;
+    }> = [
+      {
+        shape: "E",
+        voicingKey: "0,8|1,8|2,9|3,10|4,10|5,8",
+        notes: [
+          { stringIndex: 0, fretIndex: 8, noteName: "C" },
+          { stringIndex: 1, fretIndex: 8, noteName: "G" },
+          { stringIndex: 2, fretIndex: 9, noteName: "E" },
+          { stringIndex: 3, fretIndex: 10, noteName: "C" },
+          { stringIndex: 4, fretIndex: 10, noteName: "G" },
+          { stringIndex: 5, fretIndex: 8, noteName: "C" },
+        ],
+      },
+    ];
+
+    const { container, rerender } = render(
+      <FretboardSVG
+        {...BASE_PROPS}
+        chordTones={["C", "E", "G"]}
+        chordRoot="C"
+        fullChordPositionKeys={new Set(["0-8", "1-8", "2-9", "3-10", "4-10", "5-8"])}
+        fullChordVoicings={fullChordVoicings}
+      />,
+    );
+
+    expect(container.querySelectorAll('path[data-caged-shape="E"]').length).toBeGreaterThan(0);
+    expect(container.querySelector(".chord-connectors")).toHaveAttribute(
+      "data-connector-source",
+      "full-chord",
+    );
+
+    rerender(
+      <FretboardSVG
+        {...BASE_PROPS}
+        chordTones={["C", "E", "G"]}
+        chordRoot="C"
+        fullChordPositionKeys={new Set()}
+        fullChordVoicings={[]}
+      />,
+    );
+
+    expect(container.querySelectorAll("path[data-caged-shape]").length).toBe(0);
+    expect(container.querySelector(".chord-connectors")).toHaveAttribute(
+      "data-connector-source",
+      "generated",
+    );
+  });
+
   it("keeps the D-shape light-theme background in the same gray family as dark mode", () => {
     const themedScope = document.createElement("div");
     themedScope.setAttribute("data-theme", "modern-light");

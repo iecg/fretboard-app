@@ -181,6 +181,41 @@ describe("useNoteData", () => {
       expect(e2).toContain(3);
       expect(e2).toContain(8);
     });
+
+    it("full chord positions render outside the active CAGED shape without using chord spread", () => {
+      const { result } = renderHook(() =>
+        useNoteData({
+          numStrings: 1,
+          fretboardLayout: SINGLE_STRING_LAYOUT,
+          totalColumns: 12,
+          startFret: 0,
+          maxFret: 12,
+          hiddenNotes: new Set(),
+          highlightNotes: ["C", "E", "G"],
+          hasChordOverlay: true,
+          chordTones: ["C", "E", "G"],
+          rootNote: "C",
+          chordRoot: "C",
+          colorNotes: [],
+          shapePolygons: [polyAt5To7],
+          boxBounds: [],
+          chordFretSpread: 0,
+          activePattern: "caged",
+          shapeScope: "single",
+          activeShape: "E" as CagedShape,
+          scaleName: "Major",
+          useFlats: false,
+          wrappedNotes: new Set(),
+          tuning: ["E2"],
+          fullChordPositionKeys: new Set(["0-3"]),
+        }),
+      );
+
+      const exactFullChordTone = result.current.find((note) => note.stringIndex === 0 && note.fretIndex === 3);
+      const nonFullChordToneOutsideShape = result.current.find((note) => note.stringIndex === 0 && note.fretIndex === 0);
+      expect(exactFullChordTone?.noteClass).toBe("chord-tone-in-scale");
+      expect(nonFullChordToneOutsideShape?.noteClass).toBe("note-inactive");
+    });
   });
 
   it("assigns the blue-note color to blues-scale color notes", () => {
