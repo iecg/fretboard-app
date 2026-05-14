@@ -192,6 +192,9 @@ export function useNoteData({
         // buffer correctly extends the active shape boundary, not any visible shape.
         const isInPlayableContext: boolean = (() => {
           if (!hasChordOverlay) return false;
+          if (hasFullChordPositionFilter && fullChordPositionKeys.has(positionKey)) {
+            return true;
+          }
           // 3NPS has no polygon shapes; gate chord overlay by aggregate fret bounds
           // AND by per-coordinate shape membership.
           if (activePattern === "3nps" && shapeScope !== "global" && boxBounds.length > 0) {

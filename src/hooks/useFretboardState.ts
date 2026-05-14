@@ -22,12 +22,91 @@ import {
   npsPositionAtom,
   fullChordMatchesAtom,
 } from "../store/atoms";
-import type { CagedShape } from "@fretflow/core";
+import type { CagedShape, FullChordMatch, ShapePolygon } from "@fretflow/core";
 
 type ActivePatternType = "caged" | "3nps" | "none";
 export type ActiveShapeType = CagedShape | number | CagedShape[] | undefined;
 
 export type ShapeScope = "single" | "multi" | "global";
+
+function distanceOutsidePolygon(
+  polygon: ShapePolygon,
+  note: FullChordMatch["notes"][number],
+): number {
+  const leftFret = polygon.vertices[note.stringIndex]?.fret;
+  const rightFret = polygon.vertices[polygon.vertices.length - 1 - note.stringIndex]?.fret;
+  if (leftFret === undefined || rightFret === undefined) return Number.POSITIVE_INFINITY;
+
+  const minFret = Math.min(leftFret, rightFret);
+  const maxFret = Math.max(leftFret, rightFret);
+  if (note.fretIndex < minFret) return minFret - note.fretIndex;
+  if (note.fretIndex > maxFret) return note.fretIndex - maxFret;
+  return 0;
+}
+
+interface FullChordCandidateScore {
+  match: FullChordMatch;
+  outsideCount: number;
+  totalOutsideDistance: number;
+  maxOutsideDistance: number;
+  selectedShapePriority: number;
+}
+
+function scoreFullChordForCagedPosition(
+  match: FullChordMatch,
+  polygon: ShapePolygon,
+  selectedShapes: Set<CagedShape>,
+): FullChordCandidateScore | null {
+  const outsideDistances = match.notes.map((note) => distanceOutsidePolygon(polygon, note));
+  const outsideCount = outsideDistances.filter((distance) => distance > 0).length;
+  if (outsideCount > 2) return null;
+
+  return {
+    match,
+    outsideCount,
+    totalOutsideDistance: outsideDistances.reduce((sum, distance) => sum + distance, 0),
+    maxOutsideDistance: Math.max(...outsideDistances),
+    selectedShapePriority: selectedShapes.has(match.shape) ? 0 : 1,
+  };
+}
+
+function compareFullChordCandidateScores(
+  left: FullChordCandidateScore,
+  right: FullChordCandidateScore,
+): number {
+  return left.outsideCount - right.outsideCount ||
+    left.totalOutsideDistance - right.totalOutsideDistance ||
+    left.maxOutsideDistance - right.maxOutsideDistance ||
+    left.selectedShapePriority - right.selectedShapePriority;
+}
+
+function getPositionKey(match: FullChordMatch): string {
+  return match.positionKeys.join("|");
+}
+
+function selectFullChordMatchesForCagedPosition(
+  matches: FullChordMatch[],
+  activePolygons: ShapePolygon[],
+  selectedShapes: Set<CagedShape>,
+): FullChordMatch[] {
+  const byPosition = new Map<string, FullChordMatch>();
+  for (const polygon of activePolygons) {
+    const best = matches
+      .map((match) => scoreFullChordForCagedPosition(match, polygon, selectedShapes))
+      .filter((score): score is FullChordCandidateScore => score !== null)
+      .sort(compareFullChordCandidateScores)[0];
+
+    if (!best) continue;
+
+    const { match } = best;
+    const positionKey = getPositionKey(match);
+    const previous = byPosition.get(positionKey);
+    if (!previous || (selectedShapes.has(match.shape) && !selectedShapes.has(previous.shape))) {
+      byPosition.set(positionKey, match);
+    }
+  }
+  return Array.from(byPosition.values());
+}
 
 export function useFretboardState() {
   const currentTuning = useAtomValue(currentTuningAtom);
@@ -84,7 +163,11 @@ export function useFretboardState() {
   }
 
   const visibleFullChordMatches = fingeringPattern === "caged"
-    ? fullChordMatches.filter((match) => cagedShapes.has(match.shape))
+    ? selectFullChordMatchesForCagedPosition(
+        fullChordMatches,
+        shapePolygons,
+        cagedShapes,
+      )
     : fullChordMatches;
   const visibleFullChordPositions = Array.from(
     new Set(visibleFullChordMatches.flatMap((match) => match.positionKeys)),
