@@ -1,0 +1,80 @@
+.switch {
+  /* Slim 30 x 13 pill switch with an internal LED thumb.
+   * Replaces ToggleBar for true binary state. */
+  width: 30px;
+  height: 13px;
+  border-radius: 999px;
+  background: var(--surface-readout, #050a13);
+  border: 1px solid var(--surface-card-border, rgb(77 228 255 / 0.14));
+  position: relative;
+  cursor: pointer;
+  display: inline-block;
+  padding: 0;
+  flex-shrink: 0;
+  appearance: none;
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.switch::before {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--text-muted, rgb(193 218 235 / 0.45));
+  transition:
+    transform 220ms cubic-bezier(0.4, 0.7, 0.2, 1),
+    background-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.switch:hover:not(:disabled) {
+  border-color: rgb(77 228 255 / 0.35);
+}
+
+.switch:focus-visible {
+  outline: 2px solid var(--neon-cyan, #4de4ff);
+  outline-offset: 2px;
+}
+
+.switch:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* On state — cyan (default tone) */
+.switch[data-on]:not([data-tone="warm"]) {
+  background: rgb(77 228 255 / 0.18);
+  border-color: rgb(77 228 255 / 0.6);
+  box-shadow:
+    0 0 10px rgb(77 228 255 / 0.35),
+    inset 0 0 8px rgb(77 228 255 / 0.18);
+}
+
+.switch[data-on]:not([data-tone="warm"])::before {
+  background: var(--neon-cyan, #4de4ff);
+  box-shadow:
+    0 0 6px var(--neon-cyan, #4de4ff),
+    0 0 12px rgb(77 228 255 / 0.6);
+  transform: translateX(17px);
+}
+
+/* On state — amber (warm tone, used for chord-selected context) */
+.switch[data-on][data-tone="warm"] {
+  background: rgb(255 154 77 / 0.18);
+  border-color: rgb(255 154 77 / 0.6);
+  box-shadow:
+    0 0 10px rgb(255 154 77 / 0.35),
+    inset 0 0 8px rgb(255 154 77 / 0.18);
+}
+
+.switch[data-on][data-tone="warm"]::before {
+  background: var(--neon-orange, #ff9a4d);
+  box-shadow: 0 0 6px var(--neon-orange, #ff9a4d);
+  transform: translateX(17px);
+}
