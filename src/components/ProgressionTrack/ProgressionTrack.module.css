@@ -240,8 +240,9 @@
 
 .positionSeparator {
   color: var(--track-text-muted);
-  font-size: 0.9rem;
+  font-size: 0.78rem;
   font-weight: 400;
+  align-self: center;
 }
 
 .digits {
@@ -278,16 +279,26 @@
   padding-inline-start: 0.05em;
 }
 
+/* The total/denominator renders as a single uniform small readout rather
+   than reusing the bar / beat / subdivision size hierarchy. This matches
+   the reference faceplate where `/ 05.4.000` sits visually beneath the
+   bright current position digits. */
+.digits--muted {
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
 .digits--muted .digitBar,
 .digits--muted .digitDot,
 .digits--muted .digitBeat,
 .digits--muted .digitSub {
   color: var(--track-text-muted);
   text-shadow: none;
-}
-
-.digits--muted .digitBar {
-  font-weight: 500;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  padding-inline-start: 0;
 }
 
 /* Tempo readout ------------------------------------------------------------ */
@@ -506,11 +517,12 @@
   align-items: center;
   gap: 0.42rem;
   padding: 0.28rem 0.45rem 0.28rem 0.4rem;
-  /* Use outline-style borders that don't add to width: blocks are sized
-     purely by flex, so neighbouring blocks share a 1px divider rather than
-     each carrying their own. */
-  border: 1px solid var(--block-border);
-  border-inline-start-color: transparent;
+  /* Borders: top/bottom always visible, left/right resolved per-position so
+     adjacent blocks share a single 1px divider instead of each carrying
+     their own (which would stack into a 2px line at every boundary). */
+  border-block: 1px solid var(--block-border);
+  border-inline-start: 1px solid transparent;
+  border-inline-end: none;
   border-radius: 0;
   background: var(--block-bg);
   color: var(--block-fg);
@@ -523,20 +535,22 @@
     transform 120ms ease;
 }
 
-/* First and last block round their outer edges so the lane reads as a unit. */
+/* Outer edges of the lane use the regular block border. Inner boundaries
+   are owned by the next block's inline-start border (see below) so the
+   total is always exactly 1px at every divider. */
 .block:first-of-type {
+  border-inline-start: 1px solid var(--block-border);
   border-start-start-radius: 9px;
   border-end-start-radius: 9px;
 }
 
 .block:last-of-type {
+  border-inline-end: 1px solid var(--block-border);
   border-start-end-radius: 9px;
   border-end-end-radius: 9px;
 }
 
-/* Re-add the inter-block divider as the inline-start border of every block
-   after the first. This keeps each block exactly `--duration-bars` units
-   wide while still showing a 1px separator between them. */
+/* Single shared divider between adjacent blocks. */
 .block + .block {
   border-inline-start: 1px solid var(--track-divider);
 }
@@ -563,11 +577,25 @@
   --block-name-fg: rgb(255 224 195 / 0.98);
   --block-badge-fg: var(--track-warm);
 
+  border-block-color: rgb(255 154 77 / 0.55);
   border-inline-start-color: rgb(255 154 77 / 0.55);
   box-shadow:
     inset 0 0 22px rgb(255 154 77 / 0.12),
     0 0 12px rgb(255 154 77 / 0.15);
   z-index: 1;
+}
+
+/* When the active block isn't the last in the lane, its right edge belongs
+   to the next block's inline-start divider — paint that amber too so the
+   active block reads as fully outlined. */
+.block[data-active="true"] + .block {
+  border-inline-start-color: rgb(255 154 77 / 0.55);
+}
+
+/* When the active block IS the last in the lane, give it its own amber
+   inline-end border so it isn't open on the right. */
+.block[data-active="true"]:last-of-type {
+  border-inline-end-color: rgb(255 154 77 / 0.55);
 }
 
 .block[data-unavailable="true"] {
