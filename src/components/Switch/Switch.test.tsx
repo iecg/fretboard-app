@@ -35,6 +35,16 @@ describe("Switch", () => {
     expect(onChange).toHaveBeenCalledWith(false);
   });
 
+  it("ignores key repeat events to prevent rapid-fire toggles", () => {
+    const onChange = vi.fn();
+    render(<Switch checked={false} onChange={onChange} label="Test switch" />);
+    const sw = screen.getByRole("switch", { name: "Test switch" });
+    sw.focus();
+    fireEvent.keyDown(sw, { key: " ", code: "Space", repeat: true });
+    fireEvent.keyDown(sw, { key: "Enter", code: "Enter", repeat: true });
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it("does not fire onChange when disabled", () => {
     const onChange = vi.fn();
     render(<Switch checked={false} onChange={onChange} label="Test" disabled />);

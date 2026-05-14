@@ -32,7 +32,7 @@ export function Switch({
 }: SwitchProps) {
   function handleKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
     if (disabled) return;
-    if (event.key === " " || event.key === "Enter") {
+    if ((event.key === " " || event.key === "Enter") && !event.repeat) {
       event.preventDefault();
       onChange(!checked);
     }
@@ -49,7 +49,7 @@ export function Switch({
       data-on={checked ? "" : undefined}
       data-tone={tone}
       className={clsx(styles.switch, className)}
-      onClick={() => !disabled && onChange(!checked)}
+      onClick={() => onChange(!checked)}
       onKeyDown={handleKeyDown}
     />
   );

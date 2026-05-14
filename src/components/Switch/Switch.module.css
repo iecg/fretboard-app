@@ -4,7 +4,7 @@
   width: 30px;
   height: 13px;
   border-radius: 999px;
-  background: var(--surface-readout, #050a13);
+  background: var(--surface-well, #050a13);
   border: 1px solid var(--surface-card-border, rgb(77 228 255 / 0.14));
   position: relative;
   cursor: pointer;
