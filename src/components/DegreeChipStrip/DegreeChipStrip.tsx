@@ -31,8 +31,6 @@ export interface DegreeChipStripProps {
   visible?: boolean;
   /** Rendered inside the header landmark, to the right of the scale name. */
   headerAction?: ReactNode;
-  /** Compact mode — smaller chips and tighter padding for secondary surfaces. */
-  compact?: boolean;
 }
 
 export function DegreeChipStrip({
@@ -46,7 +44,6 @@ export function DegreeChipStrip({
   hideHeader,
   visible = true,
   headerAction,
-  compact,
 }: DegreeChipStripProps) {
   const degreeColorsEnabled = useAtomValue(scaleDegreeColorsEnabledAtom);
   const label = ariaLabel ?? `Scale degrees for ${scaleName}`;
@@ -55,7 +52,7 @@ export function DegreeChipStrip({
     <section
       role="group"
       aria-label={label}
-      className={clsx(styles['degree-chip-strip'], compact && styles['degree-chip-strip--compact'], className)}
+      className={clsx(styles['degree-chip-strip'], className)}
       data-scale-visible={visible ? 'true' : 'false'}
       data-degree-colors={degreeColorsEnabled ? 'true' : undefined}
     >
