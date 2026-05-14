@@ -22,7 +22,7 @@ test.describe("Progression Visual", () => {
 
     await page.locator('button:has-text("Progression")').filter({ hasText: "bars" }).click();
     await expect(page.getByText("Progression Mode")).toBeVisible();
-    await expect(page.getByRole("group", { name: "Progression playback" })).toBeVisible();
+    await expect(page.getByRole("group", { name: "Progression track" })).toBeVisible();
     await expectFullPageVisual(page, "progression-desktop-1280x900", linuxTolerance);
   });
 
@@ -41,7 +41,7 @@ test.describe("Progression Visual", () => {
     );
 
     await expect(page.getByRole("heading", { name: "Progression" })).toBeVisible();
-    await expect(page.getByRole("group", { name: "Progression playback" })).toBeVisible();
+    await expect(page.getByRole("group", { name: "Progression track" })).toBeVisible();
     await expectFullPageVisual(page, "progression-mobile-390x844", linuxTolerance);
   });
 

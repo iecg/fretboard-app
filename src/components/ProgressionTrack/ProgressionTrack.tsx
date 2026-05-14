@@ -265,7 +265,11 @@ export function ProgressionTrack() {
             ) : null}
           </div>
         </div>
-        {activeStep?.unavailable ? <p className={styles.statusNote}>{activeStep.unavailableReason}</p> : null}
+        {progressionPlaybackBlockedReason ? (
+          <p className={styles.statusNote} role="status">{progressionPlaybackBlockedReason}</p>
+        ) : activeStep?.unavailable ? (
+          <p className={styles.statusNote} role="status">{activeStep.unavailableReason}</p>
+        ) : null}
       </div>
     </section>
   );

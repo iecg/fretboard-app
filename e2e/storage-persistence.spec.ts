@@ -79,12 +79,15 @@ test.describe("storage persistence", () => {
     );
 
     await page.reload({ waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("group", { name: "Progression playback" })).toBeVisible();
-    // Tempo is now a StepperControl (role=group, not spinbutton). Verify the
-    // decrease button carries the current value in its aria-label.
-    await expect(page.getByRole("button", { name: /Decrease Tempo \(current: 132\)/i })).toBeVisible();
+    const track = page.getByRole("group", { name: "Progression track" });
+    await expect(track).toBeVisible();
+    // Tempo is now a read-only readout in the track header. Verify the
+    // persisted value made the round trip.
+    await expect(track.getByText(/132\s*BPM/i)).toBeVisible();
+    // Open the Progression drawer to verify chord-row state survived too.
     await page.locator('button:has-text("Progression")').filter({ hasText: "bars" }).click();
-    // Chord rows no longer have a "Step N" prefix — check degree + chord name instead.
-    await expect(page.getByRole("button", { name: /V.*Dominant 7th.*2 bars/i })).toBeVisible();
+    // Chord rows no longer have a "Step N" prefix — check degree + chord name
+    // in the drawer specifically (the track's chord block also matches).
+    await expect(page.getByRole("button", { name: "V G Dominant 7th 2 bars" })).toBeVisible();
   });
 });
