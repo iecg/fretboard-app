@@ -10,13 +10,17 @@ import {
   loadProgressionPresetAtom,
   moveProgressionStepAtom,
   previousProgressionStepAtom,
+  progressionBassEnabledAtom,
+  progressionDrumsEnabledAtom,
   progressionEnabledAtom,
   progressionLoopEnabledAtom,
+  progressionMetronomeEnabledAtom,
   progressionPlaybackBlockedReasonAtom,
   progressionPlayingAtom,
   progressionStepDurationMsAtom,
   progressionStepDeadlineAtom,
   progressionStepsAtom,
+  progressionStrumEnabledAtom,
   progressionTempoBpmAtom,
   removeProgressionStepAtom,
   resolvedProgressionStepsAtom,
@@ -32,6 +36,10 @@ export function useProgressionState() {
   const [progressionEnabled, setProgressionEnabled] = useAtom(progressionEnabledAtom);
   const [progressionTempoBpm, setProgressionTempoBpm] = useAtom(progressionTempoBpmAtom);
   const [progressionLoopEnabled, setProgressionLoopEnabled] = useAtom(progressionLoopEnabledAtom);
+  const [progressionStrumEnabled, setProgressionStrumEnabled] = useAtom(progressionStrumEnabledAtom);
+  const [progressionBassEnabled, setProgressionBassEnabled] = useAtom(progressionBassEnabledAtom);
+  const [progressionDrumsEnabled, setProgressionDrumsEnabled] = useAtom(progressionDrumsEnabledAtom);
+  const [progressionMetronomeEnabled, setProgressionMetronomeEnabled] = useAtom(progressionMetronomeEnabledAtom);
   const progressionSteps = useAtomValue(progressionStepsAtom);
   const resolvedProgressionSteps = useAtomValue(resolvedProgressionStepsAtom);
   const activeProgressionStepIndex = useAtomValue(activeProgressionStepIndexAtom);
@@ -56,6 +64,14 @@ export function useProgressionState() {
     setProgressionTempoBpm,
     progressionLoopEnabled,
     setProgressionLoopEnabled,
+    progressionStrumEnabled,
+    setProgressionStrumEnabled,
+    progressionBassEnabled,
+    setProgressionBassEnabled,
+    progressionDrumsEnabled,
+    setProgressionDrumsEnabled,
+    progressionMetronomeEnabled,
+    setProgressionMetronomeEnabled,
     progressionPlaying,
     progressionStepDurationMs,
     progressionStepDeadline,

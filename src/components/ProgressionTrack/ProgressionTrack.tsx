@@ -1,6 +1,16 @@
 import { useCallback, type CSSProperties } from "react";
 import clsx from "clsx";
-import { Pause, Play, Repeat, SkipBack, SkipForward } from "lucide-react";
+import {
+  AudioWaveform,
+  Drum,
+  Guitar,
+  Pause,
+  Play,
+  Repeat,
+  SkipBack,
+  SkipForward,
+  Timer,
+} from "lucide-react";
 import { useProgressionState } from "../../hooks/useProgressionState";
 import { useScaleState } from "../../hooks/useScaleState";
 import styles from "./ProgressionTrack.module.css";
@@ -26,6 +36,14 @@ export function ProgressionTrack() {
     progressionTempoBpm,
     progressionLoopEnabled,
     setProgressionLoopEnabled,
+    progressionStrumEnabled,
+    setProgressionStrumEnabled,
+    progressionBassEnabled,
+    setProgressionBassEnabled,
+    progressionDrumsEnabled,
+    setProgressionDrumsEnabled,
+    progressionMetronomeEnabled,
+    setProgressionMetronomeEnabled,
     progressionPlaying,
     progressionPlaybackBlockedReason,
     progressionStepDurationMs,
@@ -117,6 +135,49 @@ export function ProgressionTrack() {
             <span className={styles.statusDot} aria-hidden="true" />
             <span className={styles.statusLabel}>Loop</span>
           </span>
+        </div>
+
+        <div className={styles.instrumentToggles} aria-label="Backing instruments">
+          <button
+            type="button"
+            className={clsx(styles.instrumentToggle, progressionStrumEnabled && styles["instrumentToggle--active"])}
+            onClick={() => setProgressionStrumEnabled(!progressionStrumEnabled)}
+            aria-pressed={progressionStrumEnabled}
+            aria-label="Chord strum"
+            title="Chord strum"
+          >
+            <Guitar size={13} strokeWidth={2.2} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className={clsx(styles.instrumentToggle, progressionBassEnabled && styles["instrumentToggle--active"])}
+            onClick={() => setProgressionBassEnabled(!progressionBassEnabled)}
+            aria-pressed={progressionBassEnabled}
+            aria-label="Bassline"
+            title="Bassline"
+          >
+            <AudioWaveform size={13} strokeWidth={2.2} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className={clsx(styles.instrumentToggle, progressionDrumsEnabled && styles["instrumentToggle--active"])}
+            onClick={() => setProgressionDrumsEnabled(!progressionDrumsEnabled)}
+            aria-pressed={progressionDrumsEnabled}
+            aria-label="Drums"
+            title="Drums"
+          >
+            <Drum size={13} strokeWidth={2.2} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className={clsx(styles.instrumentToggle, progressionMetronomeEnabled && styles["instrumentToggle--active"])}
+            onClick={() => setProgressionMetronomeEnabled(!progressionMetronomeEnabled)}
+            aria-pressed={progressionMetronomeEnabled}
+            aria-label="Metronome"
+            title="Metronome"
+          >
+            <Timer size={13} strokeWidth={2.2} aria-hidden="true" />
+          </button>
         </div>
 
         <ProgressionPositionReadout

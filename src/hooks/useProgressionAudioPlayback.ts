@@ -1,28 +1,33 @@
 import { useEffect, useRef } from "react";
 import { useAtomValue } from "jotai";
-import { getNoteFrequency } from "@fretflow/core";
-import { synth } from "../core/audio";
-import { isMutedAtom } from "../store/atoms";
 import {
-  PROGRESSION_STRUM_DELAY_MS,
-  resolveChordVoicing,
-} from "../progressions/progressionAudio";
+  ensureProgressionAudio,
+  resumeProgressionAudio,
+  restoreProgressionBus,
+  silenceProgressionBus,
+} from "../progressions/audio/bus";
+import {
+  scheduleProgressionStep,
+  type ScheduledStepHandle,
+} from "../progressions/audio/scheduler";
+import { isMutedAtom } from "../store/atoms";
+import { resolveChordVoicing } from "../progressions/progressionAudio";
 import { useProgressionState } from "./useProgressionState";
 
+/** Lead time between scheduling and the audible hit. Keeps Web Audio from
+ * dropping the first event when `currentTime` and "now" are equal. */
+const SCHEDULE_LEAD_SECONDS = 0.02;
+
+/** Octave used for the synthesized bass note. Two octaves below middle C
+ * sits in the typical electric-bass register without thumping the mix. */
+const BASS_OCTAVE = 2;
+
 /**
- * Trigger an audible strum of the active chord whenever the active
- * progression step advances during playback.
- *
- * Reads chord identity from `activeResolvedProgressionStep` (root + quality),
- * resolves the voicing to absolute pitches, and schedules each note onto
- * the existing `GuitarSynth` with a small strum lag so the chord sounds
- * like a downstroke rather than a piano hit. Gated on `isMuted` so the
- * mute toggle in the header silences progression playback alongside
- * fretboard taps.
- *
- * The hook is a pure side-effect — it returns nothing. Mount it once
- * inside the progression surface that already owns the playback loop
- * (currently `ProgressionSummarySlot`).
+ * Drive the progression backing track. Each time the active step changes,
+ * schedules a full bar of strum/bass/drum/metronome events onto the
+ * `AudioContext` clock so the groove stays locked even when React renders
+ * drift. On pause/mute the progression bus is silenced in ~20ms; on resume
+ * it's restored before the next step's events fire.
  */
 export function useProgressionAudioPlayback() {
   const {
@@ -31,57 +36,86 @@ export function useProgressionAudioPlayback() {
     progressionPlaybackBlockedReason,
     activeProgressionStepIndex,
     activeResolvedProgressionStep,
+    progressionTempoBpm,
+    beatsPerBar,
+    progressionStrumEnabled,
+    progressionBassEnabled,
+    progressionDrumsEnabled,
+    progressionMetronomeEnabled,
   } = useProgressionState();
   const isMuted = useAtomValue(isMutedAtom);
 
-  // Track which step we last strummed so re-renders of this hook (e.g. from
-  // other atoms changing in `useProgressionState`) don't fire a fresh strum
-  // for an unchanged active step.
-  const lastStrummedStepRef = useRef<number | null>(null);
-  // Track the pending strum timeouts so we can cancel mid-strum if playback
-  // stops or the step advances faster than the strum completes.
-  const pendingTimeoutsRef = useRef<number[]>([]);
+  // Step we last scheduled, so unrelated atom updates that re-run this effect
+  // don't double-schedule the same chord.
+  const lastScheduledStepRef = useRef<number | null>(null);
+  // Live voice handles for the currently-ringing step; cancelled on chord
+  // change or pause so plucked-string tails don't bleed into the next step.
+  const liveStepRef = useRef<ScheduledStepHandle | null>(null);
+
+  // Cancel + silence helper. Idempotent — safe to call on every state branch.
+  const stopAll = () => {
+    liveStepRef.current?.cancelAll();
+    liveStepRef.current = null;
+    silenceProgressionBus();
+    lastScheduledStepRef.current = null;
+  };
 
   useEffect(() => {
-    const cancelPending = () => {
-      pendingTimeoutsRef.current.forEach((id) => window.clearTimeout(id));
-      pendingTimeoutsRef.current = [];
-    };
-
     if (
       !progressionEnabled
       || !progressionPlaying
       || progressionPlaybackBlockedReason
       || isMuted
     ) {
-      cancelPending();
-      lastStrummedStepRef.current = null;
+      stopAll();
       return;
     }
 
-    // The active step hasn't changed since our last strum; do nothing.
-    // Without this guard, unrelated atom updates that flow through
-    // `useProgressionState` (tempo edits, loop toggles, etc.) would each
-    // retrigger a fresh strum for the same chord.
-    if (lastStrummedStepRef.current === activeProgressionStepIndex) return;
-    lastStrummedStepRef.current = activeProgressionStepIndex;
+    // Same step already scheduled — skip (atom-fan-out re-renders shouldn't
+    // restart the bar).
+    if (lastScheduledStepRef.current === activeProgressionStepIndex) return;
+
+    const audio = ensureProgressionAudio();
+    if (!audio) return;
+    void resumeProgressionAudio();
+
+    // Bring the bus back to full level in case a previous pause silenced it.
+    restoreProgressionBus();
 
     const step = activeResolvedProgressionStep;
     if (!step || step.unavailable || !step.root || !step.quality) return;
 
     const voicing = resolveChordVoicing(step.root, step.quality);
-    if (voicing.length === 0) return;
+    const bassNote = step.root ? `${step.root}${BASS_OCTAVE}` : null;
+    const secondsPerBeat = 60 / Math.max(1, progressionTempoBpm);
+    const beatsAvailable =
+      step.duration.unit === "bar"
+        ? step.duration.value * beatsPerBar
+        : step.duration.value;
 
-    cancelPending();
-    voicing.forEach((note, i) => {
-      const freq = getNoteFrequency(note);
-      const id = window.setTimeout(() => {
-        void synth.playNote(freq);
-      }, i * PROGRESSION_STRUM_DELAY_MS);
-      pendingTimeoutsRef.current.push(id);
+    // Cancel the previous step's live voices before scheduling the next.
+    liveStepRef.current?.cancelAll();
+
+    liveStepRef.current = scheduleProgressionStep(audio.ctx, audio.bus, {
+      voicing,
+      bassNote,
+      beatsAvailable,
+      beatsPerBar,
+      secondsPerBeat,
+      startTime: audio.ctx.currentTime + SCHEDULE_LEAD_SECONDS,
+      enable: {
+        strum: progressionStrumEnabled,
+        bass: progressionBassEnabled,
+        drums: progressionDrumsEnabled,
+        metronome: progressionMetronomeEnabled,
+      },
     });
+    lastScheduledStepRef.current = activeProgressionStepIndex;
 
-    return cancelPending;
+    return () => {
+      liveStepRef.current?.cancelAll();
+      liveStepRef.current = null;
+    };
   }, [
     progressionEnabled,
     progressionPlaying,
@@ -89,5 +123,11 @@ export function useProgressionAudioPlayback() {
     activeProgressionStepIndex,
     activeResolvedProgressionStep,
     isMuted,
+    progressionTempoBpm,
+    beatsPerBar,
+    progressionStrumEnabled,
+    progressionBassEnabled,
+    progressionDrumsEnabled,
+    progressionMetronomeEnabled,
   ]);
 }

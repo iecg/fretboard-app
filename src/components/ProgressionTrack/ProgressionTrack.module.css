@@ -177,6 +177,68 @@
 }
 
 /* ----------------------------------------------------------------------------
+ * Instrument toggles — strum / bass / drums / metronome
+ * ------------------------------------------------------------------------- */
+
+.instrumentToggles {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  flex-shrink: 0;
+  padding: 0.18rem 0.3rem;
+  border: 1px solid var(--track-border);
+  border-radius: 8px;
+  background: var(--track-bg-readout);
+}
+
+.instrumentToggle {
+  width: 1.55rem;
+  height: 1.55rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--track-text-muted);
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 200ms ease,
+    transform 120ms ease;
+}
+
+.instrumentToggle:hover:not(:disabled) {
+  color: var(--track-accent);
+  border-color: rgb(77 228 255 / 0.3);
+  background: rgb(77 228 255 / 0.06);
+}
+
+.instrumentToggle:active:not(:disabled) {
+  transform: translateY(0.5px) scale(0.95);
+}
+
+.instrumentToggle:focus-visible {
+  outline: none;
+  border-color: var(--track-accent);
+  box-shadow:
+    0 0 0 1px var(--track-accent),
+    0 0 8px rgb(77 228 255 / 0.45);
+}
+
+.instrumentToggle--active {
+  color: var(--track-accent);
+  border-color: rgb(77 228 255 / 0.55);
+  background: rgb(77 228 255 / 0.1);
+  box-shadow:
+    0 0 0 1px rgb(77 228 255 / 0.5),
+    0 0 10px rgb(77 228 255 / 0.28),
+    inset 0 0 8px rgb(77 228 255 / 0.08);
+}
+
+/* ----------------------------------------------------------------------------
  * Readout boxes (Position, Tempo, Scale)
  * ------------------------------------------------------------------------- */
 
