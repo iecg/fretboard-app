@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useSmoothProgressionPosition } from "../../hooks/useSmoothProgressionPosition";
+import { useAudioProgressionPosition } from "../../hooks/useAudioProgressionPosition";
 import {
   formatProgressionPlaybackPosition,
   type FormattedPlaybackPositionParts,
@@ -10,7 +10,6 @@ interface ProgressionPositionReadoutProps {
   playing: boolean;
   stepStartBar: number;
   stepBars: number;
-  stepDurationMs: number;
   stepIndex: number;
   totalProgressionBars: number;
   beatsPerBar: number;
@@ -35,28 +34,25 @@ function PositionDigits({
 }
 
 /**
- * Renders the bar / beat / subdivision readout with smoothly interpolated
- * digits. Owns the 60Hz position state so that re-renders triggered by
- * sub-step motion stay localized to this small subtree — the parent
- * `ProgressionTrack` and its sibling components (transport, ruler, blocks)
- * are not re-rendered every tick.
+ * Renders the bar / beat / subdivision readout. The fractional bar position
+ * is sampled from the shared audio-clock `timeline`, so the displayed
+ * digits stay locked to the audio. On pause, the timeline reports
+ * `fraction = 0`, which snaps the readout to the start of the current bar
+ * — matching the playhead's "snap to bar start" pause behaviour.
  */
 export function ProgressionPositionReadout({
   playing,
   stepStartBar,
   stepBars,
-  stepDurationMs,
   stepIndex,
   totalProgressionBars,
   beatsPerBar,
 }: ProgressionPositionReadoutProps) {
-  const smoothBar = useSmoothProgressionPosition({
-    playing,
-    stepStartBar,
-    stepBars,
-    stepDurationMs,
-    stepIndex,
-  });
+  const tl = useAudioProgressionPosition();
+  const smoothBar =
+    playing && tl.stepIndex === stepIndex && !tl.paused && stepBars > 0
+      ? stepStartBar + tl.fraction * stepBars
+      : stepStartBar;
 
   const position = formatProgressionPlaybackPosition(
     smoothBar,

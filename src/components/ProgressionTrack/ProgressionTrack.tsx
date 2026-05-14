@@ -46,7 +46,6 @@ export function ProgressionTrack() {
     setProgressionMetronomeEnabled,
     progressionPlaying,
     progressionPlaybackBlockedReason,
-    progressionStepDurationMs,
     setProgressionPlaying,
     advanceProgressionPlayback,
     previousProgressionStep,
@@ -185,7 +184,6 @@ export function ProgressionTrack() {
           playing={progressionPlaying && canPlay}
           stepStartBar={currentProgressionBar}
           stepBars={activeStepBars}
-          stepDurationMs={progressionStepDurationMs}
           stepIndex={activeProgressionStepIndex}
           totalProgressionBars={totalProgressionBars}
           beatsPerBar={beatsPerBar}
@@ -243,7 +241,6 @@ export function ProgressionTrack() {
             playing={progressionPlaying && canPlay}
             stepStartBar={currentProgressionBar}
             stepBars={activeStepBars}
-            stepDurationMs={progressionStepDurationMs}
             stepIndex={activeProgressionStepIndex}
             totalDurationBars={totalDurationBars}
           />

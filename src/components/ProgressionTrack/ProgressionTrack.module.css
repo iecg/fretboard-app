@@ -221,12 +221,9 @@
 }
 
 .positionReadout {
-  /* Size to content (the readout's own digit width) rather than growing to
-     fill the remaining row. Combined with `margin-inline-end: auto` on the
-     context readouts, this leaves negative space between the position box
-     and the tempo/scale group, matching the reference faceplate. */
+  /* Size to content (digits + label) and stay adjacent to the transport
+     cluster so the playback group reads as one continuous unit. */
   flex: 0 0 auto;
-  margin-inline-end: auto;
 }
 
 .contextReadouts {
@@ -234,6 +231,11 @@
   grid-template-columns: minmax(3.8rem, auto) minmax(6rem, auto);
   gap: 0.35rem;
   flex-shrink: 0;
+  /* Push the contextual readouts to the trailing edge of the row, leaving
+     the negative space between Position and Tempo (mimicking a hardware
+     faceplate where playback and context indicators sit on opposite
+     halves of the panel). */
+  margin-inline-start: auto;
 }
 
 .contextBox {

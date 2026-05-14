@@ -1,4 +1,5 @@
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
+import { getTimelinePosition } from "../../progressions/audio/timeline";
 import styles from "./ProgressionTrack.module.css";
 
 interface ProgressionPlayheadProps {
@@ -8,66 +9,71 @@ interface ProgressionPlayheadProps {
   stepStartBar: number;
   /** Length of the current step expressed in bars (may be fractional). */
   stepBars: number;
-  /** Length of the current step in milliseconds. */
-  stepDurationMs: number;
-  /** Active step index — used to re-arm the animation when the step
-   *  boundary advances. */
+  /** Active step index — used so that "snap to start" on a paused/blocked
+   *  step references the correct bar. */
   stepIndex: number;
   /** Total length of the progression in bars. Used as the 0–100% denominator
    *  for the playhead's horizontal position. */
   totalDurationBars: number;
 }
 
+/** ~60 Hz position write interval. `setInterval` (not rAF) keeps the
+ *  headless preview ticking; rAF is paused there. */
+const TICK_MS = 16;
+
 /**
- * Renders the progression playhead and drives its horizontal motion through
- * a CSS `transition: left` rather than per-frame React state. The cost of
- * animating the playhead is thus a single style write per step boundary —
- * the browser handles every in-between frame on the compositor with no
- * additional JS work or React reconciliation.
+ * Renders the playhead and drives its horizontal motion by sampling the
+ * shared audio-clock `timeline` once per frame. Reads `AudioContext.currentTime`
+ * indirectly via `getTimelinePosition()`, so the visual position is locked
+ * to whatever the user is hearing — the metronome's audible click and the
+ * arrow's pixel position cannot drift.
  *
- * The arrow + line markup stays the same as the original implementation so
- * the component is a drop-in replacement.
+ * Style writes happen directly on the DOM ref to avoid React reconciliation
+ * cost on every animation frame; the component renders only when its props
+ * change (e.g. a new step boundary or total duration).
  */
 export function ProgressionPlayhead({
   playing,
   stepStartBar,
   stepBars,
-  stepDurationMs,
   stepIndex,
   totalDurationBars,
 }: ProgressionPlayheadProps) {
   const ref = useRef<HTMLSpanElement | null>(null);
 
-  // useLayoutEffect runs synchronously before paint, so the transition can be
-  // re-armed without ever flashing the old end position.
-  useLayoutEffect(() => {
+  useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const safeTotal = Math.max(1, totalDurationBars);
-    const startPct = ((stepStartBar - 1) / safeTotal) * 100;
-    const endPct = ((stepStartBar - 1 + stepBars) / safeTotal) * 100;
-    const clampedStart = Math.max(0, Math.min(100, startPct));
-    const clampedEnd = Math.max(0, Math.min(100, endPct));
-
-    if (!playing || stepDurationMs <= 0 || stepBars <= 0) {
-      // Paused / blocked: snap to step start, no animation.
-      el.style.transition = "none";
-      el.style.left = `${clampedStart}%`;
-      return;
-    }
-
-    // Playing: jump instantly to step start, then sweep to step end over
-    // the step's wall-clock duration. The two-phase write is necessary so
-    // the transition starts from the correct origin even when the previous
-    // animation ended elsewhere (e.g. after a loop wrap).
     el.style.transition = "none";
-    el.style.left = `${clampedStart}%`;
-    // Force a reflow so the browser commits the jump before we arm the
-    // transition; without it the two style writes would coalesce.
-    void el.offsetWidth;
-    el.style.transition = `left ${stepDurationMs}ms linear`;
-    el.style.left = `${clampedEnd}%`;
-  }, [playing, stepStartBar, stepBars, stepDurationMs, stepIndex, totalDurationBars]);
+
+    const safeTotal = Math.max(1, totalDurationBars);
+
+    const write = () => {
+      const tl = getTimelinePosition();
+      let bar: number;
+      if (
+        playing
+        && tl
+        && tl.stepIndex === stepIndex
+        && !tl.paused
+        && stepBars > 0
+      ) {
+        bar = stepStartBar + tl.fraction * stepBars;
+      } else {
+        // Paused, blocked, or between scheduled segments — snap to the
+        // start of the current step. This matches the user-expected
+        // "pause resets to bar start" behaviour.
+        bar = stepStartBar;
+      }
+      const pct = ((bar - 1) / safeTotal) * 100;
+      const clamped = Math.max(0, Math.min(100, pct));
+      el.style.left = `${clamped}%`;
+    };
+
+    write();
+    const id = window.setInterval(write, TICK_MS);
+    return () => window.clearInterval(id);
+  }, [playing, stepStartBar, stepBars, stepIndex, totalDurationBars]);
 
   return (
     <span

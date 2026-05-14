@@ -10,6 +10,11 @@ import {
   scheduleProgressionStep,
   type ScheduledStepHandle,
 } from "../progressions/audio/scheduler";
+import {
+  clearTimeline,
+  pauseTimeline,
+  setActiveStep,
+} from "../progressions/audio/timeline";
 import { isMutedAtom } from "../store/atoms";
 import { resolveChordVoicing } from "../progressions/progressionAudio";
 import {
@@ -18,18 +23,17 @@ import {
 } from "../progressions/progressionDomain";
 import { useProgressionState } from "./useProgressionState";
 
-/** Lead time between scheduling and the audible hit. Keeps Web Audio from
- * dropping the first event when `currentTime` and "now" are equal. */
+/** Lead between scheduling and audible hit; keeps Web Audio from dropping
+ * the first event when `currentTime` and "now" are the same sample. */
 const SCHEDULE_LEAD_SECONDS = 0.02;
 
-/** Octave used for the synthesized bass note. */
+/** Octave for the synthesized bass line. Two octaves below middle C sits
+ * in the typical electric-bass register. */
 const BASS_OCTAVE = 2;
 
 interface ScheduledSegment {
   stepIndex: number;
-  /** AudioContext time at which this step starts. */
   startTime: number;
-  /** AudioContext time at which this step ends — used to anchor the next. */
   endTime: number;
   handle: ScheduledStepHandle;
 }
@@ -85,18 +89,13 @@ function buildSegment(
 
 /**
  * Drive the progression backing track. Maintains a small queue of two
- * pre-scheduled "segments" (current + next) so the chord at the bar
+ * pre-scheduled segments (current + next) so the chord at the bar
  * boundary fires on the audio clock instead of waiting for React's step
- * timer to advance. This eliminates the perceptible lag at chord
- * transitions even when the JS event loop is busy.
+ * timer to advance.
  *
- * Lifecycle:
- *  - On step transition: drop expired segments, ensure the new active step
- *    is scheduled, then queue the step that follows it.
- *  - On tempo / meter / enable-flag changes: cancel pending segments and
- *    re-schedule so the user hears the new groove on the next chord.
- *  - On pause/mute/block: cancel every segment and silence the bus in
- *    ~20ms via `silenceProgressionBus()`.
+ * Also writes the active step into the shared `timeline` module — the
+ * playhead, position readout, and React playback loop all read from it,
+ * so audio and UI stay locked to a single AudioContext clock.
  */
 export function useProgressionAudioPlayback() {
   const {
@@ -116,18 +115,11 @@ export function useProgressionAudioPlayback() {
   const isMuted = useAtomValue(isMutedAtom);
 
   const segmentsRef = useRef<ScheduledSegment[]>([]);
-  /** Tracks which step we were on last effect run so we can distinguish a
-   * chord transition (pre-schedule the next) from a tempo/flag change
-   * (reschedule everything). */
   const lastStepRef = useRef<number | null>(null);
 
   useEffect(() => {
-    // Defensive: HMR or hook-shape changes between reloads can leave the
-    // ref holding a value from the previous version of the hook. Re-establish
-    // the array invariant on every effect entry.
-    if (!Array.isArray(segmentsRef.current)) {
-      segmentsRef.current = [];
-    }
+    if (!Array.isArray(segmentsRef.current)) segmentsRef.current = [];
+
     const stopAll = () => {
       segmentsRef.current.forEach((s) => s.handle.cancelAll());
       segmentsRef.current = [];
@@ -137,11 +129,17 @@ export function useProgressionAudioPlayback() {
 
     if (
       !progressionEnabled
-      || !progressionPlaying
       || progressionPlaybackBlockedReason
       || isMuted
     ) {
       stopAll();
+      clearTimeline();
+      return;
+    }
+
+    if (!progressionPlaying) {
+      stopAll();
+      pauseTimeline();
       return;
     }
 
@@ -167,37 +165,52 @@ export function useProgressionAudioPlayback() {
       lastStepRef.current !== null
       && lastStepRef.current !== activeProgressionStepIndex;
 
-    // Drop segments whose audio has finished.
+    // Drop segments whose audio has already finished.
     segmentsRef.current = segmentsRef.current.filter((s) => s.endTime > now);
 
     if (!isStepTransition) {
-      // First activation or a non-step dep change (tempo/flags): wipe the
-      // queue so the new settings take effect on the current chord.
+      // First activation or a non-step dep change (tempo / flags / resumed
+      // from pause): wipe the queue so the new settings take effect on the
+      // current chord starting at the next audio frame.
       segmentsRef.current.forEach((s) => s.handle.cancelAll());
       segmentsRef.current = [];
     } else {
-      // Step transition: the active chord was already pre-scheduled — keep
-      // it. Drop anything we may have queued for a step the user just
-      // skipped past (manual prev/next).
+      // Step transition: the active chord was already pre-scheduled. Keep
+      // it; drop anything queued for a step the user just skipped past.
       segmentsRef.current = segmentsRef.current.filter(
         (s) => s.stepIndex === activeProgressionStepIndex,
       );
     }
 
-    // Ensure the active step has a live segment. If we lost the
-    // pre-scheduled one (cancelled above, or this is the first chord),
-    // start it from "now + lead".
-    if (
-      !segmentsRef.current.find((s) => s.stepIndex === activeProgressionStepIndex)
-    ) {
+    // Ensure the active step has a live segment.
+    let activeSeg = segmentsRef.current.find(
+      (s) => s.stepIndex === activeProgressionStepIndex,
+    );
+    if (!activeSeg) {
+      const startAt = now + SCHEDULE_LEAD_SECONDS;
       const seg = buildSegment(
         audio.ctx,
         audio.bus,
         activeProgressionStepIndex,
-        now + SCHEDULE_LEAD_SECONDS,
+        startAt,
         inputs,
       );
-      if (seg) segmentsRef.current.push(seg);
+      if (seg) {
+        segmentsRef.current.push(seg);
+        activeSeg = seg;
+      }
+    }
+
+    // Publish the active step to the shared timeline so the playhead /
+    // position readout / playback loop read from the same audio clock.
+    if (activeSeg) {
+      setActiveStep(
+        activeSeg.stepIndex,
+        activeSeg.startTime,
+        activeSeg.endTime - activeSeg.startTime,
+      );
+    } else {
+      clearTimeline();
     }
 
     // Pre-schedule the next resolvable step so its first hit lands exactly
