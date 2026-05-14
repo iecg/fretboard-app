@@ -83,9 +83,16 @@ export function formatChordShortLabel(rootLabel: string, quality: string): strin
   return `${rootLabel}${suffix}`;
 }
 
+export interface FormattedPlaybackPositionParts {
+  bar: string;
+  beat: string;
+  subdivision: string;
+}
+
 export interface FormattedPlaybackPosition {
   current: string;
   total: string;
+  parts: { current: FormattedPlaybackPositionParts; total: FormattedPlaybackPositionParts };
 }
 
 /**
@@ -120,9 +127,21 @@ export function formatProgressionPlaybackPosition(
   const pad2 = (n: number) => String(n).padStart(2, "0");
   const pad3 = (n: number) => String(n).padStart(3, "0");
 
+  const currentParts: FormattedPlaybackPositionParts = {
+    bar: pad2(bar),
+    beat: String(beat),
+    subdivision: pad3(subdivision),
+  };
+  const totalParts: FormattedPlaybackPositionParts = {
+    bar: pad2(totalBars),
+    beat: String(safeBeats),
+    subdivision: "000",
+  };
+
   return {
-    current: `${pad2(bar)}.${beat}.${pad3(subdivision)}`,
-    total: `${pad2(totalBars)}.${safeBeats}.000`,
+    current: `${currentParts.bar}.${currentParts.beat}.${currentParts.subdivision}`,
+    total: `${totalParts.bar}.${totalParts.beat}.${totalParts.subdivision}`,
+    parts: { current: currentParts, total: totalParts },
   };
 }
 

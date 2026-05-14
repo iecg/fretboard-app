@@ -1,5 +1,6 @@
 :root {
   --font-sans: "Inter", system-ui, "Avenir", "Helvetica", "Arial", sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, "Menlo", "Consolas", monospace;
 
   color-scheme: dark;
 

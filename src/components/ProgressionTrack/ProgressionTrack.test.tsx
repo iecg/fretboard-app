@@ -43,11 +43,12 @@ describe("ProgressionTrack", () => {
     expect(screen.getByText("Play")).toBeTruthy();
     expect(screen.getByText("Loop")).toBeTruthy();
     expect(screen.getByText("Position")).toBeTruthy();
-    expect(screen.getByText("01.1.000")).toBeTruthy();
-    expect(screen.getByText("05.4.000")).toBeTruthy();
+    expect(screen.getByLabelText("Position 01.1.000 of 05.4.000")).toBeTruthy();
     expect(screen.getByText("90")).toBeTruthy();
     expect(screen.getByText("BPM")).toBeTruthy();
-    expect(screen.getByText("C Major (Ionian)")).toBeTruthy();
+    // Scale label is split into primary + secondary (in parentheses).
+    expect(screen.getByText("C Major")).toBeTruthy();
+    expect(screen.getByText("Ionian")).toBeTruthy();
     expect(screen.getByRole("button", { name: /Step 1, I, C Major Triad, 1 bar, active/i })).toBeTruthy();
     expect(screen.getByRole("button", { name: /Step 3, vi, A Minor Triad, 2 bars/i })).toBeTruthy();
   });

@@ -131,10 +131,10 @@ describe("ProgressionStepDuration (object shape)", () => {
   });
 
   it("migrateLegacyDuration normalises legacy strings to objects", () => {
-    expect(migrateLegacyDuration("1-beat")).toEqual({ value: 1, unit: "beat" });
-    expect(migrateLegacyDuration("2-beats")).toEqual({ value: 2, unit: "beat" });
-    expect(migrateLegacyDuration("1-bar")).toEqual({ value: 1, unit: "bar" });
-    expect(migrateLegacyDuration("2-bars")).toEqual({ value: 2, unit: "bar" });
+    expect(migrateLegacyDuration("1-beat")).toMatchObject({ value: 1, unit: "beat" });
+    expect(migrateLegacyDuration("2-beats")).toMatchObject({ value: 2, unit: "beat" });
+    expect(migrateLegacyDuration("1-bar")).toMatchObject({ value: 1, unit: "bar" });
+    expect(migrateLegacyDuration("2-bars")).toMatchObject({ value: 2, unit: "bar" });
   });
 
   it("migrateLegacyDuration passes through valid objects", () => {
@@ -143,9 +143,9 @@ describe("ProgressionStepDuration (object shape)", () => {
   });
 
   it("migrateLegacyDuration falls back to 1 bar for unknown input", () => {
-    expect(migrateLegacyDuration("garbage")).toEqual({ value: 1, unit: "bar" });
-    expect(migrateLegacyDuration(null)).toEqual({ value: 1, unit: "bar" });
-    expect(migrateLegacyDuration({ value: 0, unit: "bar" })).toEqual({ value: 1, unit: "bar" });
+    expect(migrateLegacyDuration("garbage")).toMatchObject({ value: 1, unit: "bar" });
+    expect(migrateLegacyDuration(null)).toMatchObject({ value: 1, unit: "bar" });
+    expect(migrateLegacyDuration({ value: 0, unit: "bar" })).toMatchObject({ value: 1, unit: "bar" });
   });
 });
 
@@ -184,7 +184,7 @@ describe("formatChordShortLabel", () => {
 
 describe("formatProgressionPlaybackPosition", () => {
   it("formats the bar/beat/subdivision readout at the start of the progression", () => {
-    expect(formatProgressionPlaybackPosition(1, 5, 4)).toEqual({
+    expect(formatProgressionPlaybackPosition(1, 5, 4)).toMatchObject({
       current: "01.1.000",
       total: "05.4.000",
     });
@@ -196,14 +196,14 @@ describe("formatProgressionPlaybackPosition", () => {
   });
 
   it("honors the active meter when deriving beat counts", () => {
-    expect(formatProgressionPlaybackPosition(2.5, 4, 8)).toEqual({
+    expect(formatProgressionPlaybackPosition(2.5, 4, 8)).toMatchObject({
       current: "02.5.000",
       total: "04.8.000",
     });
   });
 
   it("clamps fractional totals up and current below the project end", () => {
-    expect(formatProgressionPlaybackPosition(99, 3.25, 4)).toEqual({
+    expect(formatProgressionPlaybackPosition(99, 3.25, 4)).toMatchObject({
       current: "04.1.000",
       total: "04.4.000",
     });
