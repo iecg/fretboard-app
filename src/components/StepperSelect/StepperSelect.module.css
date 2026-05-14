@@ -45,7 +45,7 @@
   padding-bottom: 0 !important;
   font-size: 0.82rem;
   line-height: 1.1 !important;
-  min-height: 1.8rem !important;
+  min-height: unset !important;
 }
 
 .nav-button {
@@ -60,5 +60,9 @@
 .nav-button :global(.icon) {
   width: 0.95rem;
   height: 0.95rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .nav-button {
+  min-height: 36px;
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */

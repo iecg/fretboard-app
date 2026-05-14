@@ -347,8 +347,6 @@
   box-shadow: var(--selected-shadow);
 }
 
-/* ===== NoteGrid and ToggleBar: compact density is the default ===== */
-
 /* Horizontal scroll variant — opt-in via overflow="scroll" prop on ToggleBar.
    Buttons keep their natural width (no flex:1 stretch) so labels are fully
    readable when the row overflows. Scrollbar hidden cross-browser. */
@@ -520,6 +518,11 @@
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
 :global(.app-container[data-layout-tier="mobile"]) [data-layout-scope="mobile-tabs"] .link-toggle {
+  min-height: 36px;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) [data-layout-scope="mobile-tabs"] .toggle-btn,
+:global(.app-container[data-layout-tier="mobile"]) [data-layout-scope="mobile-tabs"] .note-btn {
   min-height: 36px;
 }
 
