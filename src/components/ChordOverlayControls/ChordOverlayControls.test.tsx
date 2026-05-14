@@ -340,7 +340,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
         ]);
 
         const sw = screen.getByRole("switch", { name: "Full Chords" });
-        expect(sw.hasAttribute("disabled")).toBe(false);
+        expect(sw).not.toBeDisabled();
       },
     );
 
