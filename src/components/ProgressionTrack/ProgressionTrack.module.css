@@ -362,31 +362,50 @@
 }
 
 .ruler {
+  position: relative;
   display: flex;
   align-items: stretch;
   gap: 0;
+  height: 1.05rem;
   color: var(--track-text-muted);
   font-family: var(--font-mono);
   font-size: 0.65rem;
   font-variant-numeric: tabular-nums;
 }
 
+/* Faint baseline that all ticks hang from, like a DAW timeline ruler. */
+.ruler::after {
+  content: "";
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline: 0;
+  height: 1px;
+  background: rgb(193 218 235 / 0.12);
+  pointer-events: none;
+}
+
 .rulerBar {
   flex: 1 1 0;
   min-width: 0;
   position: relative;
-  height: 0.95rem;
-  border-inline-start: 1px solid rgb(193 218 235 / 0.16);
 }
 
-.rulerBar:first-child {
-  border-inline-start: none;
+/* Major tick at the start of each bar (omitted on the first bar so the
+   left edge of the lane stays clean). Taller than the minor subdivision
+   ticks so the bar boundary reads clearly. */
+.rulerBarTick {
+  position: absolute;
+  inset-block: 25% 0;
+  inset-inline-start: 0;
+  width: 1px;
+  background: rgb(193 218 235 / 0.32);
+  pointer-events: none;
 }
 
 .rulerBarNumber {
   position: absolute;
-  inset-inline-start: 0.18rem;
-  inset-block-end: 0;
+  inset-inline-start: 0.22rem;
+  inset-block-end: 0.05rem;
   color: var(--track-text-dim);
   font-weight: 500;
   letter-spacing: 0.04em;
@@ -394,17 +413,23 @@
   pointer-events: none;
 }
 
-/* Each tick is absolutely positioned at the exact fractional offset of its
-   beat inside the bar (e.g. 25%, 50%, 75% in 4/4) so subdivisions land
-   mathematically rather than being distributed across the leftover space
-   after the bar number. */
+/* Minor ticks: each absolutely positioned at the exact fractional offset
+   of its beat or half-beat inside the bar (e.g. 12.5%, 25%, 37.5%... in
+   4/4) so subdivisions land mathematically rather than being distributed
+   across leftover space. Off-beats are short; beat positions get the
+   taller `--beat` variant. */
 .rulerTick {
   position: absolute;
   inset-block-end: 0;
   width: 1px;
-  height: 30%;
+  height: 22%;
   background: rgb(193 218 235 / 0.1);
   pointer-events: none;
+}
+
+.rulerTick--beat {
+  height: 42%;
+  background: rgb(193 218 235 / 0.2);
 }
 
 .lane {
@@ -443,6 +468,10 @@
   height: 0;
   border-inline: 0.3rem solid transparent;
   border-block-start: 0.38rem solid var(--track-accent);
+  /* Pull the arrow down by 1px so its tapering tip overlaps the 2px line
+     that follows. Without this, the arrow's single-pixel tip and the line's
+     squared top create a sub-pixel anti-aliasing gap. */
+  margin-block-end: -1px;
   filter: drop-shadow(0 0 4px rgb(77 228 255 / 0.7));
 }
 
@@ -455,7 +484,9 @@
     rgb(77 228 255 / 0.5) 100%
   );
   box-shadow: 0 0 7px rgb(77 228 255 / 0.65);
-  border-radius: 999px;
+  /* Round only the bottom — the top butts into the arrow above so it
+     should stay square. */
+  border-radius: 0 0 999px 999px;
 }
 
 /* Chord blocks ------------------------------------------------------------- */
