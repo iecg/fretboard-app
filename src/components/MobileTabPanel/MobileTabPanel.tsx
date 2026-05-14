@@ -12,6 +12,7 @@ import { ANIMATION_DURATION_XFADE } from "@fretflow/core";
 import { CircleOfFifths } from "../CircleOfFifths/CircleOfFifths";
 import { ScaleSelector } from "../ScaleSelector/ScaleSelector";
 import { ChordOverlayControls } from "../ChordOverlayControls/ChordOverlayControls";
+import { ProgressionControls } from "../ProgressionControls/ProgressionControls";
 import { FingeringPatternControls } from "../FingeringPatternControls/FingeringPatternControls";
 import { Card } from "../Card/Card";
 import { TAB_LABELS } from "../../constants/tabLabels";
@@ -68,6 +69,19 @@ export function MobileTabPanel() {
           >
             <Card title={TAB_LABELS.chords} className={styles["mobile-tab-card"]} data-mobile-tab="chords">
               <ChordOverlayControls compact={compact} />
+            </Card>
+          </motion.div>
+        )}
+        {mobileTab === "progression" && (
+          <motion.div
+            key="progression"
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            transition={{ duration: 0.15 }}
+          >
+            <Card title={TAB_LABELS.progression} className={styles["mobile-tab-card"]} data-mobile-tab="progression">
+              <ProgressionControls compact={compact} />
             </Card>
           </motion.div>
         )}

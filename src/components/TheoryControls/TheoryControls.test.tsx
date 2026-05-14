@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -13,6 +13,8 @@ import {
   chordTypeAtom,
   practiceLensAtom,
   fingeringPatternAtom,
+  progressionEnabledAtom,
+  progressionStepsAtom,
 } from "../../store/atoms";
 import { axe } from "../../test-utils/a11y";
 
@@ -72,6 +74,88 @@ describe("TheoryControls/TheoryControls", () => {
     expect(screen.getByRole("group", { name: "Chord overlay mode" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Degree" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Manual" })).toBeInTheDocument();
+  });
+
+  it("opens only one theory section at a time", () => {
+    renderWithStore(<TheoryControls />);
+
+    expect(screen.getByText("Root")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Chords/i }));
+    expect(screen.getByRole("group", { name: "Chord overlay mode" })).toBeInTheDocument();
+    expect(screen.queryByText("Root")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Progression/i }));
+    expect(screen.getByText("Progression Mode")).toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "Chord overlay mode" })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Scale.*C Major/i }));
+    expect(screen.getByText("Root")).toBeInTheDocument();
+    expect(screen.queryByText("Progression Mode")).not.toBeInTheDocument();
+  });
+
+  it("closes the currently open theory section when clicked", () => {
+    renderWithStore(<TheoryControls />);
+
+    expect(screen.getByText("Root")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Scale.*C Major/i }));
+
+    expect(screen.queryByText("Root")).not.toBeInTheDocument();
+  });
+
+  it("keeps disabled Chords collapsed when another section opens", () => {
+    const store = createStore();
+    store.set(fingeringPatternAtom, "one-string");
+
+    renderWithStore(<TheoryControls />, store);
+
+    fireEvent.click(screen.getByRole("button", { name: /Chords.*Disabled/i }));
+    expect(screen.queryByRole("group", { name: "Chord overlay mode" })).not.toBeInTheDocument();
+    expect(screen.getByText("Root")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Progression/i }));
+    expect(screen.getByText("Progression Mode")).toBeInTheDocument();
+    expect(screen.queryByText("Root")).not.toBeInTheDocument();
+  });
+
+  it("falls back to Scale when open Chords become disabled", () => {
+    const store = createStore();
+    store.set(chordTypeAtom, "Major Triad");
+
+    renderWithStore(<TheoryControls />, store);
+
+    expect(screen.getByRole("group", { name: "Chord overlay mode" })).toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: "Scale Family" })).not.toBeInTheDocument();
+
+    act(() => {
+      store.set(fingeringPatternAtom, "one-string");
+    });
+
+    expect(screen.queryByRole("group", { name: "Chord overlay mode" })).not.toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Scale Family" })).toBeInTheDocument();
+  });
+
+  it("allows Chords to reopen when disabled Chords are enabled again", () => {
+    const store = createStore();
+    store.set(chordTypeAtom, "Major Triad");
+
+    renderWithStore(<TheoryControls />, store);
+
+    expect(screen.getByRole("group", { name: "Chord overlay mode" })).toBeInTheDocument();
+
+    act(() => {
+      store.set(fingeringPatternAtom, "one-string");
+    });
+
+    expect(screen.getByRole("combobox", { name: "Scale Family" })).toBeInTheDocument();
+
+    act(() => {
+      store.set(fingeringPatternAtom, "caged");
+    });
+
+    expect(screen.getByRole("group", { name: "Chord overlay mode" })).toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: "Scale Family" })).not.toBeInTheDocument();
   });
 
   it("shows the inline key explorer only after disclosure is opened", () => {
@@ -195,6 +279,43 @@ describe("TheoryControls/TheorySection — disclosure ::before focus-ring inset"
 });
 
 describe("TheoryControls/TheorySection", () => {
+  it("opens with defaultOpen and toggles closed when uncontrolled", () => {
+    render(
+      <TheorySection title="Scale" summary="C Major" defaultOpen>
+        <div data-testid="inner-content">content</div>
+      </TheorySection>,
+    );
+
+    expect(screen.getByTestId("inner-content")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Scale.*C Major/i }));
+
+    expect(screen.queryByTestId("inner-content")).not.toBeInTheDocument();
+  });
+
+  it("supports controlled open state", () => {
+    const onOpenChange = vi.fn();
+    const { rerender } = render(
+      <TheorySection title="Scale" summary="C Major" open={false} onOpenChange={onOpenChange}>
+        <div data-testid="inner-content">content</div>
+      </TheorySection>,
+    );
+
+    expect(screen.queryByTestId("inner-content")).not.toBeInTheDocument();
+
+    rerender(
+      <TheorySection title="Scale" summary="C Major" open onOpenChange={onOpenChange}>
+        <div data-testid="inner-content">content</div>
+      </TheorySection>,
+    );
+
+    expect(screen.getByTestId("inner-content")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Scale.*C Major/i }));
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
   it("does not render data-compact attribute by default", async () => {
     const { container } = render(
       <TheorySection title="Scale" summary="C Major">
@@ -375,5 +496,38 @@ describe("TheoryControls UAT-20 — chord section disabled on 1/2-string", () =>
     );
     const chordsBtn = screen.getByRole("button", { name: /Chords.*Disabled/i });
     expect(chordsBtn).toBeInTheDocument();
+  });
+
+  it("renders a Progression section after Chords", () => {
+    renderWithStore(<TheoryControls />);
+
+    expect(screen.getByRole("button", { name: /Progression.*Off/i })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Progression/i }));
+
+    expect(screen.getByText("Progression Mode")).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Preset" })).toBeInTheDocument();
+  });
+
+  it("summarizes enabled progression with total bars", () => {
+    const store = createStore();
+    store.set(progressionEnabledAtom, true);
+    store.set(progressionStepsAtom, [
+      { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+    ]);
+
+    renderWithStore(<TheoryControls />, store);
+
+    expect(screen.getByRole("button", { name: /Progression.*2 bars/i })).toBeInTheDocument();
+  });
+
+  it("summarises progression by total bars", () => {
+    const store = createStore();
+    store.set(progressionEnabledAtom, true);
+
+    renderWithStore(<TheoryControls />, store);
+
+    expect(screen.getByRole("button", { name: /Progression.*4 bars/i })).toBeInTheDocument();
   });
 });

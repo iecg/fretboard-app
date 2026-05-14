@@ -78,6 +78,16 @@ describe("MobileTabPanel/MobileTabPanel", () => {
     expect(screen.queryByText("Root")).not.toBeInTheDocument();
   });
 
+  it("shows progression tab content when mobileTab atom is 'progression'", () => {
+    renderWithAtoms(<MobileTabPanel />, [
+      ...BASE_SEEDS,
+      [mobileTabAtom, "progression"],
+    ]);
+
+    expect(screen.getByRole("heading", { level: 2, name: /^Progression$/i })).toBeInTheDocument();
+    expect(screen.getByText("Progression Mode")).toBeInTheDocument();
+  });
+
   it("does not show scales content when on view tab", () => {
     renderWithAtoms(<MobileTabPanel />, [
       ...BASE_SEEDS,
@@ -89,6 +99,7 @@ describe("MobileTabPanel/MobileTabPanel", () => {
   it.each([
     ["scales"],
     ["chords"],
+    ["progression"],
     ["cof"],
     ["view"],
   ] as const)(

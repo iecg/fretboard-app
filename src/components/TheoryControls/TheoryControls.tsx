@@ -12,9 +12,11 @@ import {
   ANIMATION_EASE,
 } from "@fretflow/core";
 import { getDegreesForScale } from "@fretflow/core";
+import { ProgressionControls } from "../ProgressionControls/ProgressionControls";
+import { useProgressionState } from "../../hooks/useProgressionState";
 import { useChordState } from "../../hooks/useChordState";
 import { useScaleState } from "../../hooks/useScaleState";
-import { scaleLabelAtom, fingeringPatternAtom } from "../../store/atoms";
+import { scaleLabelAtom, fingeringPatternAtom, totalProgressionBarsAtom } from "../../store/atoms";
 import styles from "../TheoryControls/TheoryControls.module.css";
 
 interface TheoryControlsProps {
@@ -27,6 +29,8 @@ export interface TheorySectionProps {
   title: string;
   summary: string;
   defaultOpen?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   children: ReactNode;
   /** Reduces vertical padding and font size on disclosure rows for tight layouts. */
   compact?: boolean;
@@ -41,21 +45,27 @@ export function TheorySection({
   title,
   summary,
   defaultOpen = false,
+  open,
+  onOpenChange,
   children,
   compact = false,
   disabled = false,
 }: TheorySectionProps) {
-  // Track the user-controlled open/close state. When disabled, the panel is
-  // always rendered as collapsed without needing side effects.
   const [userOpen, setUserOpen] = useState(defaultOpen);
+  const isControlled = open !== undefined;
+  const requestedOpen = isControlled ? open : userOpen;
 
   // Derive effective open state: disabled always collapses the panel.
-  const isOpen = !disabled && userOpen;
+  const isOpen = !disabled && requestedOpen;
   const contentId = useId();
 
   const handleToggle = () => {
     if (disabled) return;
-    setUserOpen((value) => !value);
+    const nextOpen = !isOpen;
+    if (!isControlled) {
+      setUserOpen(nextOpen);
+    }
+    onOpenChange?.(nextOpen);
   };
 
   return (
@@ -76,7 +86,7 @@ export function TheorySection({
         aria-disabled={disabled ? "true" : undefined}
         onClick={handleToggle}
       >
-<AnimatePresence mode="wait">
+        <AnimatePresence mode="wait">
           <motion.span
             key={title}
             initial={{ opacity: 0, x: -12 }}
@@ -165,17 +175,51 @@ function useChordSectionSummary() {
   }`;
 }
 
-export function TheoryControls({ keyExplorer, compact = false }: TheoryControlsProps) {
-  const scaleSummary = useAtomValue(scaleLabelAtom);
+function useProgressionSectionSummary() {
+  const {
+    progressionEnabled,
+    progressionSteps,
+    progressionPlaybackBlockedReason,
+  } = useProgressionState();
+  const totalBars = useAtomValue(totalProgressionBarsAtom);
+
+  if (!progressionEnabled) return "Off";
+  if (progressionSteps.length === 0) return "Empty";
+  if (progressionPlaybackBlockedReason?.startsWith("Chord overlay disabled")) return "Disabled";
+  const rounded = Math.max(1, Math.round(totalBars));
+  return `${rounded} ${rounded === 1 ? "bar" : "bars"}`;
+}
+
+type TheoryOpenSection = "scale" | "chords" | "progression" | null;
+
+export function TheoryControls({ keyExplorer, compact }: TheoryControlsProps) {
+  const scaleLabel = useAtomValue(scaleLabelAtom);
   const chordSummary = useChordSectionSummary();
+  const progressionSummary = useProgressionSectionSummary();
+
   const { chordType } = useChordState();
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
   const isChordsDisabled =
     fingeringPattern === "one-string" || fingeringPattern === "two-strings";
+  const initialOpenSection: TheoryOpenSection =
+    Boolean(chordType) && !isChordsDisabled ? "chords" : "scale";
+  const [openSection, setOpenSection] = useState<TheoryOpenSection>(initialOpenSection);
+  const shouldReleaseDisabledChords = openSection === "chords" && isChordsDisabled;
+  const effectiveOpenSection = shouldReleaseDisabledChords ? "scale" : openSection;
+
+  const setSectionOpen = (section: Exclude<TheoryOpenSection, null>) => (open: boolean) => {
+    setOpenSection(open ? section : null);
+  };
 
   return (
     <div className={styles["theory-controls"]} data-testid="theory-controls">
-      <TheorySection title="Scale" summary={scaleSummary} defaultOpen compact={compact}>
+      <TheorySection
+        title="Scale"
+        summary={scaleLabel}
+        open={effectiveOpenSection === "scale"}
+        onOpenChange={setSectionOpen("scale")}
+        compact={compact}
+      >
         <ScaleSelector compact={compact} />
         {keyExplorer ? <KeyExplorer>{keyExplorer}</KeyExplorer> : null}
       </TheorySection>
@@ -183,11 +227,22 @@ export function TheoryControls({ keyExplorer, compact = false }: TheoryControlsP
       <TheorySection
         title="Chords"
         summary={isChordsDisabled ? "Disabled" : chordSummary}
-        defaultOpen={Boolean(chordType)}
+        open={effectiveOpenSection === "chords"}
+        onOpenChange={setSectionOpen("chords")}
         compact={compact}
         disabled={isChordsDisabled}
       >
         <ChordOverlayControls compact={compact} />
+      </TheorySection>
+      <hr className={styles["theory-section-divider"]} />
+      <TheorySection
+        title="Progression"
+        summary={progressionSummary}
+        open={effectiveOpenSection === "progression"}
+        onOpenChange={setSectionOpen("progression")}
+        compact={compact}
+      >
+        <ProgressionControls compact={compact} />
       </TheorySection>
     </div>
   );

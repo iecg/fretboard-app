@@ -33,7 +33,19 @@ export interface VisualState {
   chordFretSpread?: number;
   practiceLens?: string;
   theme?: "light" | "dark" | "system";
-  [key: string]: string | number | boolean | undefined;
+  /** Progression atom seeds (Phase 03+). */
+  progressionEnabled?: boolean;
+  progressionTempoBpm?: number;
+  progressionLoopEnabled?: boolean;
+  progressionSteps?: Array<{
+    id: string;
+    degree: string;
+    duration: { value: number; unit: "beat" | "bar" };
+    qualityOverride: string | null;
+  }>;
+  mobileTab?: string;
+  fingeringPattern?: string;
+  [key: string]: unknown;
 }
 
 /**
@@ -68,8 +80,9 @@ export async function loadVisualState(
       Object.entries(s).forEach(([key, value]) => {
         if (value === undefined || value === null) return;
 
-        // Serialize simple types as strings
-        localStorage.setItem(`${prefix}${key}`, String(value));
+        // Serialize complex types as JSON, simple types as strings
+        const serialized = typeof value === "object" ? JSON.stringify(value) : String(value);
+        localStorage.setItem(`${prefix}${key}`, serialized);
       });
     },
     {

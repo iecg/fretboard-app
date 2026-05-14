@@ -1,4 +1,4 @@
-import { atom } from "jotai";
+import { atom, type Getter } from "jotai";
 import { atomWithStorage, RESET } from "jotai/utils";
 import { EMPTY_SET, setsEqual } from "./atomUtils";
 import {
@@ -35,6 +35,17 @@ import {
   rootNoteAtom,
   scaleNameAtom,
 } from "./scaleAtoms";
+import {
+  activeResolvedProgressionStepAtom,
+  activeProgressionStepAtom,
+  progressionEnabledAtom,
+  updateProgressionStepDegreeAtom,
+  updateProgressionStepQualityAtom,
+} from "./progressionAtoms";
+import {
+  fingeringPatternAtom,
+  isChordOverlayPatternDisabled,
+} from "./fingeringAtoms";
 import { currentTuningAtom } from "./layoutAtoms";
 
 const chordFretSpreadStorage = constrainedNumberStorage({
@@ -153,7 +164,9 @@ const chordOverlayModeStorage = createStorage<"degree" | "manual">({
 });
 
 /** Explicit user intent: "degree" = chord follows the active scale degree; "manual" = pinned. */
-export const chordOverlayModeAtom = atomWithStorage<"degree" | "manual">(
+export type ChordOverlayMode = "degree" | "manual";
+
+export const chordOverlayModeAtom = atomWithStorage<ChordOverlayMode>(
   k("chordOverlayMode"),
   "degree",
   chordOverlayModeStorage,
@@ -187,6 +200,31 @@ export const chordQualityOverrideAtom = atomWithStorage<string | null>(
   GET_ON_INIT,
 );
 
+const progressionIsActiveChordSource = (get: Getter) => {
+  const activeStep = get(activeResolvedProgressionStepAtom);
+  return (
+    get(progressionEnabledAtom) &&
+    !isChordOverlayPatternDisabled(get(fingeringPatternAtom)) &&
+    !!activeStep &&
+    !activeStep.unavailable
+  );
+};
+
+export const effectiveChordDegreeAtom = atom((get): DegreeId | null => {
+  if (!progressionIsActiveChordSource(get)) return get(chordDegreeAtom);
+  return get(activeProgressionStepAtom)?.degree ?? null;
+});
+
+export const effectiveChordOverlayModeAtom = atom((get): ChordOverlayMode => {
+  if (progressionIsActiveChordSource(get)) return "degree";
+  return get(chordOverlayModeAtom);
+});
+
+export const effectiveChordQualityOverrideAtom = atom((get): string | null => {
+  if (!progressionIsActiveChordSource(get)) return get(chordQualityOverrideAtom);
+  return get(activeProgressionStepAtom)?.qualityOverride ?? null;
+});
+
 // ---------------------------------------------------------------------------
 // Public writable derived atoms — chordRootAtom and chordTypeAtom
 //
@@ -197,6 +235,13 @@ export const chordQualityOverrideAtom = atomWithStorage<string | null>(
 
 export const chordRootAtom = atom(
   (get): string => {
+    if (progressionIsActiveChordSource(get)) {
+      const progressionStep = get(activeResolvedProgressionStepAtom);
+      if (progressionStep?.root) {
+        return progressionStep.root;
+      }
+    }
+
     const mode = get(chordOverlayModeAtom);
     if (mode === "manual") return get(chordRootOverrideAtom);
     const degree = get(chordDegreeAtom);
@@ -206,12 +251,15 @@ export const chordRootAtom = atom(
     const result = getDiatonicChord(degree, scaleName, rootNote);
     return result?.root ?? get(chordRootOverrideAtom);
   },
-  (_get, set, value: string | typeof RESET) => {
+  (get, set, value: string | typeof RESET) => {
     if (value === RESET) {
       set(chordDegreeAtom, RESET);
       set(chordOverlayModeAtom, RESET);
       set(chordRootOverrideAtom, RESET);
       set(chordQualityOverrideAtom, RESET);
+      return;
+    }
+    if (progressionIsActiveChordSource(get)) {
       return;
     }
     set(chordRootOverrideAtom, value);
@@ -221,6 +269,11 @@ export const chordRootAtom = atom(
 
 export const chordTypeAtom = atom(
   (get): string | null => {
+    if (progressionIsActiveChordSource(get)) {
+      const progressionStep = get(activeResolvedProgressionStepAtom);
+      return progressionStep?.quality ?? null;
+    }
+
     const mode = get(chordOverlayModeAtom);
     if (mode === "manual") return get(chordQualityOverrideAtom);
     const degree = get(chordDegreeAtom);
@@ -238,10 +291,29 @@ export const chordTypeAtom = atom(
   },
   (get, set, value: string | null | typeof RESET) => {
     if (value === RESET) {
+      if (progressionIsActiveChordSource(get)) {
+        const step = get(activeProgressionStepAtom);
+        if (step) {
+          set(updateProgressionStepQualityAtom, {
+            id: step.id,
+            qualityOverride: null,
+          });
+        }
+      }
       set(chordDegreeAtom, RESET);
       set(chordOverlayModeAtom, RESET);
       set(chordRootOverrideAtom, RESET);
       set(chordQualityOverrideAtom, RESET);
+      return;
+    }
+    if (progressionIsActiveChordSource(get)) {
+      const step = get(activeProgressionStepAtom);
+      if (step) {
+        set(updateProgressionStepQualityAtom, {
+          id: step.id,
+          qualityOverride: value,
+        });
+      }
       return;
     }
     set(chordQualityOverrideAtom, value);
@@ -264,7 +336,17 @@ export const chordTypeAtom = atom(
  */
 export const setChordDegreeAtom = atom(
   null,
-  (_get, set, value: DegreeId | null) => {
+  (get, set, value: DegreeId | null) => {
+    if (progressionIsActiveChordSource(get)) {
+      const step = get(activeProgressionStepAtom);
+      if (step) {
+        set(updateProgressionStepDegreeAtom, {
+          id: step.id,
+          degree: value ?? step.degree,
+        });
+      }
+      return;
+    }
     set(chordDegreeAtom, value);
     set(chordQualityOverrideAtom, null);
   },
@@ -436,4 +518,3 @@ export const chordMemberFactsAtom = atom((get): ChordMemberFact[] => {
     };
   });
 });
-

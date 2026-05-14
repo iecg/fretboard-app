@@ -1,0 +1,750 @@
+/* ----------------------------------------------------------------------------
+ * Progression Track — hardware-DAW faceplate aesthetic
+ *
+ * Deep navy substrate, mint-cyan transport accent (--neon-cyan), warm amber
+ * for the active chord block (--neon-orange), monospaced LCD-style readouts
+ * with per-segment digit hierarchy, glowing playhead with arrowhead.
+ *
+ * The timeline is laid out so the ruler bar cells and the chord blocks share
+ * the same parent width with zero gap — each ruler cell flexes 1 unit per
+ * bar, each block flexes by its --duration-bars. This guarantees that bar
+ * markers, subdivisions, blocks, and the playhead all land on exact
+ * mathematical positions.
+ * ------------------------------------------------------------------------- */
+
+.track {
+  --track-accent: var(--neon-cyan, #4DE4FF);
+  --track-accent-dim: rgb(77 228 255 / 0.55);
+  --track-accent-faint: rgb(77 228 255 / 0.16);
+  --track-warm: var(--neon-orange, #FF9A4D);
+  --track-warm-dim: rgb(255 154 77 / 0.55);
+  --track-warm-faint: rgb(255 154 77 / 0.16);
+  --track-bg: #0a121d;
+  --track-bg-elevated: #0d1726;
+  --track-bg-readout: #050a13;
+  --track-border: rgb(77 228 255 / 0.12);
+  --track-divider: rgb(255 255 255 / 0.06);
+  --track-text-dim: rgb(193 218 235 / 0.55);
+  --track-text-muted: rgb(193 218 235 / 0.32);
+
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.55rem 0.7rem 0.5rem;
+  border: 1px solid var(--track-border);
+  border-radius: 12px;
+  background:
+    radial-gradient(120% 200% at 0% 0%, rgb(77 228 255 / 0.04), transparent 55%),
+    linear-gradient(180deg, var(--track-bg-elevated), var(--track-bg));
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.02) inset,
+    0 18px 40px -28px rgb(0 0 0 / 0.7);
+  color: var(--track-text-dim);
+  font-family: var(--font-sans);
+}
+
+/* ----------------------------------------------------------------------------
+ * Transport row
+ * ------------------------------------------------------------------------- */
+
+.transportRow {
+  display: flex;
+  align-items: stretch;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.transportCluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22rem;
+  flex-shrink: 0;
+}
+
+.transportButton {
+  --tb-fg: var(--track-accent-dim);
+  --tb-border: rgb(77 228 255 / 0.18);
+  --tb-bg: rgb(77 228 255 / 0.03);
+
+  width: 1.85rem;
+  height: 1.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--tb-border);
+  border-radius: 7px;
+  background: var(--tb-bg);
+  color: var(--tb-fg);
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 200ms ease,
+    transform 120ms ease;
+}
+
+.transportButton:hover:not(:disabled) {
+  --tb-fg: var(--track-accent);
+  --tb-border: rgb(77 228 255 / 0.45);
+  --tb-bg: rgb(77 228 255 / 0.08);
+}
+
+.transportButton:active:not(:disabled) {
+  transform: translateY(0.5px) scale(0.97);
+}
+
+.transportButton:focus-visible {
+  outline: none;
+  --tb-border: var(--track-accent);
+  box-shadow:
+    0 0 0 1px var(--track-accent),
+    0 0 10px rgb(77 228 255 / 0.45);
+}
+
+.transportButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.transportButton--accent {
+  --tb-fg: var(--track-accent);
+  --tb-border: rgb(77 228 255 / 0.6);
+  --tb-bg: rgb(77 228 255 / 0.1);
+
+  box-shadow:
+    0 0 0 1px rgb(77 228 255 / 0.55),
+    0 0 14px rgb(77 228 255 / 0.32),
+    inset 0 0 14px rgb(77 228 255 / 0.1);
+}
+
+.playButton {
+  color: var(--track-accent);
+}
+
+/* ----------------------------------------------------------------------------
+ * Status lights — small dot + uppercase label, stacked
+ * ------------------------------------------------------------------------- */
+
+.statusLights {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.15rem;
+  flex-shrink: 0;
+  padding-inline: 0.08rem 0.2rem;
+}
+
+.statusLight {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  color: var(--track-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transition: color 180ms ease;
+}
+
+.statusDot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: rgb(193 218 235 / 0.2);
+  box-shadow: inset 0 0 0 1px rgb(193 218 235 / 0.15);
+  transition: background-color 200ms ease, box-shadow 200ms ease;
+}
+
+.statusLight[data-active="true"] {
+  color: var(--track-accent);
+}
+
+.statusLight[data-active="true"] .statusDot {
+  background: var(--track-accent);
+  box-shadow:
+    0 0 5px var(--track-accent),
+    0 0 10px rgb(77 228 255 / 0.5);
+  animation: track-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes track-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+/* ----------------------------------------------------------------------------
+ * Instrument cluster — strum / bass / drums / metronome
+ *
+ * Visually a continuation of the transport cluster: same buttons, same
+ * sizing, same accent treatment. A faint vertical divider separates the two
+ * functional groups so the row still reads as Transport | Instruments
+ * without introducing a competing panel style.
+ * ------------------------------------------------------------------------- */
+
+.instrumentCluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22rem;
+  flex-shrink: 0;
+}
+
+/* Standalone divider sibling of the two clusters; the row's `gap` provides
+ * even spacing on both sides automatically, no margin tweaking needed. */
+.clusterDivider {
+  width: 1px;
+  height: 1.1rem;
+  align-self: center;
+  flex-shrink: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgb(193 218 235 / 0.18),
+    transparent
+  );
+}
+
+/* ----------------------------------------------------------------------------
+ * Readout boxes (Position, Tempo, Scale)
+ * ------------------------------------------------------------------------- */
+
+.positionReadout,
+.contextBox {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.18rem;
+  padding: 0.3rem 0.6rem 0.32rem;
+  border: 1px solid var(--track-border);
+  border-radius: 7px;
+  background: var(--track-bg-readout);
+}
+
+.positionReadout {
+  /* Size to content (digits + label) and stay adjacent to the transport
+     cluster so the playback group reads as one continuous unit. */
+  flex: 0 0 auto;
+}
+
+.contextReadouts {
+  display: grid;
+  grid-template-columns: minmax(3.8rem, auto) minmax(6rem, auto);
+  gap: 0.35rem;
+  flex-shrink: 0;
+  /* Push the contextual readouts to the trailing edge of the row, leaving
+     the negative space between Position and Tempo (mimicking a hardware
+     faceplate where playback and context indicators sit on opposite
+     halves of the panel). */
+  margin-inline-start: auto;
+}
+
+.contextBox {
+  padding-inline: 0.55rem;
+}
+
+.readoutLabel {
+  color: var(--track-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+/* Position readout — bar / beat / subdivision hierarchy ------------------- */
+
+.positionValue {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.42rem;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums slashed-zero;
+  line-height: 1;
+}
+
+.positionCurrent,
+.positionTotal {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.positionSeparator {
+  color: var(--track-text-muted);
+  font-size: 0.78rem;
+  font-weight: 400;
+  align-self: center;
+}
+
+.digits {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.04rem;
+}
+
+.digitBar {
+  color: var(--track-accent);
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-shadow: 0 0 12px rgb(77 228 255 / 0.45);
+}
+
+.digitDot {
+  color: var(--track-accent-dim);
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-inline: 0.02em;
+}
+
+.digitBeat {
+  color: var(--track-accent);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.digitSub {
+  color: var(--track-accent-dim);
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding-inline-start: 0.05em;
+}
+
+/* The total/denominator renders as a single uniform small readout rather
+   than reusing the bar / beat / subdivision size hierarchy. This matches
+   the reference faceplate where `/ 05.4.000` sits visually beneath the
+   bright current position digits. */
+.digits--muted {
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.digits--muted .digitBar,
+.digits--muted .digitDot,
+.digits--muted .digitBeat,
+.digits--muted .digitSub {
+  color: var(--track-text-muted);
+  text-shadow: none;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  padding-inline-start: 0;
+}
+
+/* Tempo readout ------------------------------------------------------------ */
+
+.tempoValue {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.28rem;
+  color: var(--track-accent);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums slashed-zero;
+  font-size: 1.18rem;
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: 0 0 12px rgb(77 228 255 / 0.4);
+}
+
+.tempoUnit {
+  color: var(--track-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-shadow: none;
+}
+
+/* Scale readout ------------------------------------------------------------ */
+
+.scaleValue {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.36rem;
+  min-width: 0;
+  line-height: 1.05;
+}
+
+.scalePrimary {
+  color: rgb(232 243 252 / 0.95);
+  font-family: var(--font-sans);
+  font-size: 0.93rem;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scaleSecondary {
+  color: var(--track-text-dim);
+  font-family: var(--font-sans);
+  font-size: 0.74rem;
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ----------------------------------------------------------------------------
+ * Timeline — ruler + blocks share the same flex parent with zero gap so
+ * positions are mathematically exact.
+ * ------------------------------------------------------------------------- */
+
+.timeline {
+  --bar-count: 1;
+  --beats-per-bar: 4;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-width: 0;
+}
+
+.ruler {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  height: 1.05rem;
+  color: var(--track-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Faint baseline that all ticks hang from, like a DAW timeline ruler. */
+.ruler::after {
+  content: "";
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline: 0;
+  height: 1px;
+  background: rgb(193 218 235 / 0.12);
+  pointer-events: none;
+}
+
+.rulerBar {
+  flex: 1 1 0;
+  min-width: 0;
+  position: relative;
+}
+
+/* Major tick at the start of each bar (omitted on the first bar so the
+   left edge of the lane stays clean). Taller than the minor subdivision
+   ticks so the bar boundary reads clearly. */
+.rulerBarTick {
+  position: absolute;
+  inset-block: 25% 0;
+  inset-inline-start: 0;
+  width: 1px;
+  background: rgb(193 218 235 / 0.32);
+  pointer-events: none;
+}
+
+.rulerBarNumber {
+  position: absolute;
+  inset-inline-start: 0.22rem;
+  inset-block-end: 0.05rem;
+  color: var(--track-text-dim);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* Minor ticks: each absolutely positioned at the exact fractional offset
+   of its beat or half-beat inside the bar (e.g. 12.5%, 25%, 37.5%... in
+   4/4) so subdivisions land mathematically rather than being distributed
+   across leftover space. Off-beats are short; beat positions get the
+   taller `--beat` variant. */
+.rulerTick {
+  position: absolute;
+  inset-block-end: 0;
+  width: 1px;
+  height: 22%;
+  background: rgb(193 218 235 / 0.1);
+  pointer-events: none;
+}
+
+.rulerTick--beat {
+  height: 42%;
+  background: rgb(193 218 235 / 0.2);
+}
+
+.lane {
+  position: relative;
+  min-width: 0;
+}
+
+.blocks {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  min-height: 2.5rem;
+}
+
+.blockSpacer {
+  --duration-bars: 0;
+  flex: var(--duration-bars) 1 0;
+  min-width: 0;
+}
+
+/* Playhead — vertical line with arrowhead spanning the lane ---------------- */
+
+.playhead {
+  position: absolute;
+  inset-block: -0.7rem 0;
+  width: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+.playheadArrow {
+  width: 0;
+  height: 0;
+  border-inline: 0.3rem solid transparent;
+  border-block-start: 0.38rem solid var(--track-accent);
+  /* Pull the arrow down by 1px so its tapering tip overlaps the 2px line
+     that follows. Without this, the arrow's single-pixel tip and the line's
+     squared top create a sub-pixel anti-aliasing gap. */
+  margin-block-end: -1px;
+  filter: drop-shadow(0 0 4px rgb(77 228 255 / 0.7));
+}
+
+.playheadLine {
+  width: 2px;
+  flex: 1 1 auto;
+  background: linear-gradient(
+    180deg,
+    var(--track-accent) 0%,
+    rgb(77 228 255 / 0.5) 100%
+  );
+  box-shadow: 0 0 7px rgb(77 228 255 / 0.65);
+  /* Round only the bottom — the top butts into the arrow above so it
+     should stay square. */
+  border-radius: 0 0 999px 999px;
+}
+
+/* Chord blocks ------------------------------------------------------------- */
+
+.block {
+  --duration-bars: 1;
+  --block-border: rgb(193 218 235 / 0.1);
+  --block-bg: rgb(255 255 255 / 0.015);
+  --block-fg: rgb(193 218 235 / 0.75);
+  --block-name-fg: rgb(232 243 252 / 0.92);
+  --block-badge-fg: rgb(232 243 252 / 0.6);
+
+  position: relative;
+  flex: var(--duration-bars) 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.42rem;
+  padding: 0.28rem 0.45rem 0.28rem 0.4rem;
+  /* Borders: top/bottom always visible, left/right resolved per-position so
+     adjacent blocks share a single 1px divider instead of each carrying
+     their own (which would stack into a 2px line at every boundary). */
+  border-block: 1px solid var(--block-border);
+  border-inline-start: 1px solid transparent;
+  border-inline-end: none;
+  border-radius: 0;
+  background: var(--block-bg);
+  color: var(--block-fg);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 220ms ease,
+    transform 120ms ease;
+}
+
+/* Outer edges of the lane use the regular block border. Inner boundaries
+   are owned by the next block's inline-start border (see below) so the
+   total is always exactly 1px at every divider. */
+.block:first-of-type {
+  border-inline-start: 1px solid var(--block-border);
+  border-start-start-radius: 9px;
+  border-end-start-radius: 9px;
+}
+
+.block:last-of-type {
+  border-inline-end: 1px solid var(--block-border);
+  border-start-end-radius: 9px;
+  border-end-end-radius: 9px;
+}
+
+/* Single shared divider between adjacent blocks. */
+.block + .block {
+  border-inline-start: 1px solid var(--track-divider);
+}
+
+.block:hover:not([data-active="true"]) {
+  --block-border: rgb(193 218 235 / 0.22);
+  --block-bg: rgb(255 255 255 / 0.03);
+}
+
+.block:active {
+  transform: translateY(0.5px);
+}
+
+.block:focus-visible {
+  outline: none;
+  --block-border: var(--track-accent);
+  box-shadow: 0 0 0 1px var(--track-accent), 0 0 12px rgb(77 228 255 / 0.4);
+}
+
+.block[data-active="true"] {
+  --block-border: rgb(255 154 77 / 0.55);
+  --block-bg: rgb(255 154 77 / 0.1);
+  --block-fg: rgb(255 200 150 / 0.95);
+  --block-name-fg: rgb(255 224 195 / 0.98);
+  --block-badge-fg: var(--track-warm);
+
+  border-block-color: rgb(255 154 77 / 0.55);
+  border-inline-start-color: rgb(255 154 77 / 0.55);
+  box-shadow:
+    inset 0 0 22px rgb(255 154 77 / 0.12),
+    0 0 12px rgb(255 154 77 / 0.15);
+  z-index: 1;
+}
+
+/* When the active block isn't the last in the lane, its right edge belongs
+   to the next block's inline-start divider — paint that amber too so the
+   active block reads as fully outlined. */
+.block[data-active="true"] + .block {
+  border-inline-start-color: rgb(255 154 77 / 0.55);
+}
+
+/* When the active block IS the last in the lane, give it its own amber
+   inline-end border so it isn't open on the right. */
+.block[data-active="true"]:last-of-type {
+  border-inline-end-color: rgb(255 154 77 / 0.55);
+}
+
+.block[data-unavailable="true"] {
+  opacity: 0.55;
+}
+
+.degreeBadge {
+  flex: 0 0 auto;
+  min-width: 1.4rem;
+  height: 1.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 0.3rem;
+  border: 1px solid var(--block-border);
+  border-radius: 5px;
+  background: rgb(255 255 255 / 0.025);
+  color: var(--block-badge-fg);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.block[data-active="true"] .degreeBadge {
+  border-color: rgb(255 154 77 / 0.5);
+  background: rgb(255 154 77 / 0.08);
+}
+
+.blockText {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.08rem;
+}
+
+.chordName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--block-name-fg);
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  line-height: 1.1;
+}
+
+.duration {
+  color: var(--track-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.block[data-active="true"] .duration {
+  color: rgb(255 200 150 / 0.7);
+}
+
+.statusNote {
+  margin: 0.4rem 0 0;
+  color: var(--track-text-muted);
+  font-size: var(--text-xs);
+}
+
+/* ----------------------------------------------------------------------------
+ * Responsive — tighten on narrow viewports without losing identity.
+ *
+ * Gated on the codebase's layout tier attribute (mobile = viewport ≤ 767px)
+ * rather than a raw pixel media query so this matches the convention used
+ * across the rest of the app (see CLAUDE.md, FretRangeControl,
+ * ChordOverlayDock, etc.).
+ * ------------------------------------------------------------------------- */
+
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global(.app-container[data-layout-tier="mobile"]) .track {
+  padding: 0.5rem 0.55rem 0.45rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .transportRow {
+  flex-wrap: wrap;
+  row-gap: 0.4rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .positionReadout {
+  flex: 1 1 100%;
+  min-width: 0;
+  margin-inline-end: 0;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .contextReadouts {
+  flex: 1 1 100%;
+  grid-template-columns: minmax(4rem, 0.7fr) minmax(7rem, 1.3fr);
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .digitBar {
+  font-size: 1.1rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .digitBeat {
+  font-size: 0.88rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .digitSub {
+  font-size: 0.68rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .tempoValue {
+  font-size: 1.05rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .scalePrimary {
+  font-size: 0.88rem;
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */

@@ -20,6 +20,9 @@ import {
   chordDegreeAtom,
   chordOverlayModeAtom,
   chordHiddenNotesAtom,
+  fingeringPatternAtom,
+  progressionEnabledAtom,
+  progressionStepsAtom,
 } from "./atoms";
 
 function makeStore() {
@@ -359,6 +362,27 @@ describe("noteSemanticMapAtom", () => {
     // …but it is no longer a chord tone or chord root.
     expect(after!.isChordTone).toBe(false);
     expect(after!.isChordRoot).toBe(false);
+  });
+
+  it("uses manual degree semantics when progression is enabled but chord overlay is disabled by pattern", () => {
+    const store = makeStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    store.set(chordDegreeAtom, "I");
+    store.set(chordOverlayModeAtom, "degree");
+    store.set(chordTypeAtom, "Major Triad");
+    store.set(progressionEnabledAtom, true);
+    store.set(progressionStepsAtom, [
+      { id: "one", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+    ]);
+    store.set(fingeringPatternAtom, "one-string");
+
+    const semanticMap = store.get(noteSemanticMapAtom);
+
+    expect(semanticMap.get("C")?.isDiatonicChord).toBe(true);
+    expect(semanticMap.get("E")?.isDiatonicChord).toBe(true);
+    expect(semanticMap.get("G")?.isDiatonicChord).toBe(true);
+    expect(semanticMap.get("G")?.isChordRoot).toBe(false);
   });
 });
 

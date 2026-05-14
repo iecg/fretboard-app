@@ -10,10 +10,11 @@ import {
   hasOutsideChordMembersAtom,
   chordLabelAtom,
   chordFretSpreadAtom,
-  chordDegreeAtom,
   chordOverlayModeAtom,
   chordRootOverrideAtom,
-  chordQualityOverrideAtom,
+  effectiveChordDegreeAtom,
+  effectiveChordOverlayModeAtom,
+  effectiveChordQualityOverrideAtom,
   fullChordsEnabledAtom,
   fullChordMatchesAtom,
   fullChordPositionsAtom,
@@ -36,13 +37,15 @@ export function useChordState() {
   const fullChordMatches = useAtomValue(fullChordMatchesAtom);
   const fullChordPositions = useAtomValue(fullChordPositionsAtom);
 
-  const chordDegree = useAtomValue(chordDegreeAtom);
+  const chordDegree = useAtomValue(effectiveChordDegreeAtom);
   // Use the action wrapper so that picking a new degree clears any chord-quality
   // override — each degree starts at its diatonic default.
   const setChordDegree = useSetAtom(setChordDegreeAtom);
-  const [chordOverlayMode, setChordOverlayMode] = useAtom(chordOverlayModeAtom);
+  const chordOverlayMode = useAtomValue(effectiveChordOverlayModeAtom);
+  const setChordOverlayMode = useSetAtom(chordOverlayModeAtom);
   const [chordRootOverride, setChordRootOverride] = useAtom(chordRootOverrideAtom);
-  const [chordQualityOverride, setChordQualityOverride] = useAtom(chordQualityOverrideAtom);
+  const chordQualityOverride = useAtomValue(effectiveChordQualityOverrideAtom);
+  const setChordQualityOverride = useSetAtom(chordTypeAtom);
 
   return {
     chordRoot,

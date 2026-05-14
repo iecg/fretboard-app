@@ -3,7 +3,7 @@ import { useSetAtom, useAtomValue, useAtom, createStore, Provider } from "jotai"
 import { AnimatePresence, motion } from "motion/react";
 import clsx from "clsx";
 import { Fretboard } from "./components/Fretboard/Fretboard";
-import { HelpCircle, Music2, Layers, Layout, Compass, Settings2, Volume2, VolumeX } from "lucide-react";
+import { HelpCircle, Music2, ListMusic, Layers, Layout, Compass, Settings2, Volume2, VolumeX } from "lucide-react";
 import { synth } from "./core/audio";
 import {
   isMutedAtom,
@@ -26,8 +26,8 @@ import { useTranslation } from "./hooks/useTranslation";
 import { AppHeader } from "./components/AppHeader/AppHeader";
 import { BrandMark } from "./components/BrandMark/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark";
-import { TopBandSummary } from "./components/TopBandSummary/TopBandSummary";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
+import { ProgressionSummarySlot } from "./components/ProgressionSummarySlot/ProgressionSummarySlot";
 import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
 import sharedStyles from "./components/shared/shared.module.css";
 import { ControlsPanelSkeleton, MobileTabSkeleton } from "./components/LoadingSkeleton/LoadingSkeleton";
@@ -57,6 +57,7 @@ const NoteColorAudit = lazy(() =>
 const MOBILE_TAB_ITEMS: BottomTabItem[] = [
   { id: "scales", label: TAB_LABELS.scales, icon: <Music2 size={18} /> },
   { id: "chords", label: TAB_LABELS.chords, icon: <Layers size={18} /> },
+  { id: "progression", label: TAB_LABELS.progression, icon: <ListMusic size={18} /> },
   { id: "cof", label: TAB_LABELS.cof, icon: <Compass size={18} /> },
   { id: "view", label: TAB_LABELS.view, icon: <Layout size={18} /> },
 ];
@@ -231,7 +232,7 @@ function AppContent() {
           }
         />
       }
-      summary={<TopBandSummary />}
+      summary={<ProgressionSummarySlot />}
       helpModal={
         <Suspense fallback={null}>
           <HelpModal
@@ -265,7 +266,7 @@ function AppContent() {
       <BottomTabBar
         items={translatedTabItems}
         activeId={mobileTab}
-        onSelect={(id) => setMobileTab(id as "scales" | "chords" | "cof" | "view")}
+        onSelect={(id) => setMobileTab(id as "scales" | "chords" | "progression" | "cof" | "view")}
         aria-label="Mobile navigation"
       />
     )}

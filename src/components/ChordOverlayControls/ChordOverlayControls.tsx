@@ -2,7 +2,6 @@ import { startTransition, useEffect } from "react";
 import { useAtomValue } from "jotai";
 import clsx from "clsx";
 import { NOTES, LENS_REGISTRY } from "@fretflow/core";
-import { getDegreesForScale } from "@fretflow/core";
 import { lensAvailabilityAtom, fingeringPatternAtom } from "../../store/atoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import { NoteGrid } from "../NoteGrid/NoteGrid";
@@ -12,49 +11,14 @@ import { useScaleState } from "../../hooks/useScaleState";
 import theoryStyles from "../TheoryControls/TheoryControls.module.css";
 import panelStyles from "./ChordOverlayControls.module.css";
 import shared from "../shared/shared.module.css";
+import { CHORD_NONE_VALUE } from "./chordTypeOptions";
+import {
+  buildDegreeToggleOptions,
+  buildQualityToggleOptions,
+} from "../shared/chordControlOptions";
 
-// UI-only shorthand label map — maps CHORD_DEFINITIONS keys to chord-symbol
-// shorthand for display in the toggle bar. Canonical keys are unchanged.
-const CHORD_TYPE_SHORT_LABELS: Record<string, string> = {
-  "Major Triad": "Maj",
-  "Minor Triad": "min",
-  "Diminished Triad": "dim",
-  "Augmented Triad": "aug",
-  "Sus2": "sus2",
-  "Sus4": "sus4",
-  "Power Chord (5)": "5",
-  "Major 6th": "M6",
-  "Minor 6th": "m6",
-  "Major 7th": "M7",
-  "Minor 7th": "m7",
-  "Dominant 7th": "7",
-  "Diminished 7th": "dim7",
-  "Half-Diminished 7th": "m7♭5",
-  "Minor-Major 7th": "mM7",
-};
-
-// Display order for the chord-type toggle bar: triads → suspended → power → 6ths → 7ths.
-// This controls toggle-bar order exclusively; CHORD_DEFINITIONS key order in theory.ts
-// is never reordered to match this.
-const CHORD_TYPE_DISPLAY_ORDER: readonly string[] = [
-  "Major Triad",
-  "Minor Triad",
-  "Diminished Triad",
-  "Augmented Triad",
-  "Sus2",
-  "Sus4",
-  "Power Chord (5)",
-  "Major 6th",
-  "Minor 6th",
-  "Major 7th",
-  "Minor 7th",
-  "Dominant 7th",
-  "Diminished 7th",
-  "Half-Diminished 7th",
-  "Minor-Major 7th",
-];
-
-const CHORD_NONE_VALUE = "__none__";
+// Subset of chord types that have full-chord shape data on the fretboard.
+// Used to gate the Full Chord overlay toggle in the UI.
 const FULL_CHORD_SUPPORTED_TYPES = new Set([
   "Major Triad",
   "Minor Triad",
@@ -94,13 +58,12 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
     currentTuning.length === 6;
 
   const hasQualityOverride = chordQualityOverride != null;
-  const degreeSelectOptions = [
-    { value: CHORD_NONE_VALUE, label: "Off" },
-    ...Object.values(getDegreesForScale(scaleName)).map((deg) => ({
-      value: deg,
-      label: hasQualityOverride && deg === chordDegree ? `${deg}*` : deg,
-    })),
-  ];
+  const degreeSelectOptions = buildDegreeToggleOptions({
+    scaleName,
+    qualityOverridden: hasQualityOverride,
+    activeDegree: chordDegree,
+    includeOffSentinel: true,
+  });
 
   // Hide tension lens when unavailable and not currently active.
   const lensOptions = lensAvailability.flatMap((entry) => {
@@ -208,10 +171,7 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
               <span className={shared["section-label"]}>{t("controls.chordType")}</span>
               <ToggleBar
                 label="Chord Type"
-                options={CHORD_TYPE_DISPLAY_ORDER.map((key) => ({
-                  value: key,
-                  label: CHORD_TYPE_SHORT_LABELS[key] ?? key,
-                }))}
+                options={buildQualityToggleOptions({ includeSentinel: false })}
                 value={chordType ?? ""}
                 onChange={handleChordTypeChange}
                 compact={compact}
@@ -233,13 +193,7 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
             <span className={shared["section-label"]}>{t("controls.chordType")}</span>
             <ToggleBar
               label="Chord Type"
-              options={[
-                { value: CHORD_NONE_VALUE, label: t("controls.off") },
-                ...CHORD_TYPE_DISPLAY_ORDER.map((key) => ({
-                  value: key,
-                  label: CHORD_TYPE_SHORT_LABELS[key] ?? key,
-                })),
-              ]}
+              options={buildQualityToggleOptions({ diatonicLabel: t("controls.off") })}
               value={chordQualityOverride ?? CHORD_NONE_VALUE}
               onChange={handleChordTypeChange}
               compact={compact}

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from "vitest";
+import { beforeEach, describe, it, expect } from "vitest";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
@@ -11,6 +11,8 @@ import {
   chordOverlayModeAtom,
   chordQualityOverrideAtom,
   chordRootOverrideAtom,
+  progressionEnabledAtom,
+  progressionStepsAtom,
   fullChordsEnabledAtom,
   scaleNameAtom,
   rootNoteAtom,
@@ -66,6 +68,10 @@ const MANUAL_MODE_SEEDS = [
 ] as const;
 
 describe("ChordOverlayControls/ChordOverlayControls", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
   describe("1. degree selection writes chordDegreeAtom", () => {
     it("clicking a degree button writes the value", async () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
@@ -231,6 +237,33 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       await userEvent.click(iButton);
       expect(iButton.getAttribute("aria-pressed")).toBe("true");
       expect(iiButton.getAttribute("aria-pressed")).toBe("false");
+    });
+  });
+
+  describe("5b. progression source display", () => {
+    it("shows and edits the active progression step in degree controls", async () => {
+      const store = makeAtomStore([
+        [scaleNameAtom, "Major"],
+        [rootNoteAtom, "C"],
+        [chordOverlayModeAtom, "degree"],
+        [chordDegreeAtom, null],
+        [chordQualityOverrideAtom, null],
+        [fingeringPatternAtom, "caged"],
+        [progressionEnabledAtom, true],
+        [progressionStepsAtom, [
+          { id: "one", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+        ]],
+      ]);
+      renderWithStore(<ChordOverlayControls />, store);
+
+      const degreeGroup = screen.getByRole("group", { name: "Chord degree" });
+      expect(within(degreeGroup).getByRole("button", { name: "V" })).toHaveAttribute("aria-pressed", "true");
+
+      const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
+      await userEvent.click(within(chordTypeGroup).getByRole("button", { name: "m7" }));
+
+      expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBe("Minor 7th");
+      expect(store.get(chordQualityOverrideAtom)).toBeNull();
     });
   });
 

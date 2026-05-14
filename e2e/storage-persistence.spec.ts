@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { loadVisualState } from "./visual-helpers";
 
 const STORAGE_KEY_ROOT_NOTE = "fretflow:rootNote";
 
@@ -60,5 +61,33 @@ test.describe("storage persistence", () => {
       STORAGE_KEY_ROOT_NOTE,
     );
     expect(persistedValue).toBe("G");
+  });
+
+  test("persists progression settings across reload", async ({ page }) => {
+    await loadVisualState(
+      page,
+      {
+        progressionEnabled: true,
+        progressionTempoBpm: 132,
+        progressionLoopEnabled: false,
+        progressionSteps: [
+          { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "two", degree: "V", duration: { value: 2, unit: "bar" }, qualityOverride: "Dominant 7th" },
+        ],
+      },
+      { width: 1280, height: 900 },
+    );
+
+    await page.reload({ waitUntil: "domcontentloaded" });
+    const track = page.getByRole("group", { name: "Progression track" });
+    await expect(track).toBeVisible();
+    // Tempo is now a read-only readout in the track header. Verify the
+    // persisted value made the round trip.
+    await expect(track.getByText(/132\s*BPM/i)).toBeVisible();
+    // Open the Progression drawer to verify chord-row state survived too.
+    await page.locator('button:has-text("Progression")').filter({ hasText: "bars" }).click();
+    // Chord rows no longer have a "Step N" prefix — check degree + chord name
+    // in the drawer specifically (the track's chord block also matches).
+    await expect(page.getByRole("button", { name: "V G Dominant 7th 2 bars" })).toBeVisible();
   });
 });

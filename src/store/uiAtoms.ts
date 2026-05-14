@@ -2,7 +2,7 @@ import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { k, createStorage, rawStringStorage, GET_ON_INIT } from "../utils/storage";
 
-const MOBILE_TABS = ["scales", "chords", "cof", "view"] as const;
+const MOBILE_TABS = ["scales", "chords", "progression", "cof", "view"] as const;
 type MobileTab = (typeof MOBILE_TABS)[number];
 
 const mobileTabStorage = createStorage<MobileTab>({
@@ -29,7 +29,7 @@ export const scaleDegreeColorsEnabledAtom = atomWithStorage<boolean>(
   GET_ON_INIT,
 );
 
-export const mobileTabAtom = atomWithStorage<"scales" | "chords" | "cof" | "view">(
+export const mobileTabAtom = atomWithStorage<MobileTab>(
   k("mobileTab"),
   "scales",
   mobileTabStorage,
