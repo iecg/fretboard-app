@@ -699,47 +699,52 @@
 }
 
 /* ----------------------------------------------------------------------------
- * Responsive — tighten on narrow viewports without losing identity
+ * Responsive — tighten on narrow viewports without losing identity.
+ *
+ * Gated on the codebase's layout tier attribute (mobile = viewport ≤ 767px)
+ * rather than a raw pixel media query so this matches the convention used
+ * across the rest of the app (see CLAUDE.md, FretRangeControl,
+ * ChordOverlayDock, etc.).
  * ------------------------------------------------------------------------- */
 
-@media (max-width: 760px) {
-  .track {
-    padding: 0.5rem 0.55rem 0.45rem;
-  }
-
-  .transportRow {
-    flex-wrap: wrap;
-    row-gap: 0.4rem;
-  }
-
-  .positionReadout {
-    flex: 1 1 100%;
-    min-width: 0;
-    margin-inline-end: 0;
-  }
-
-  .contextReadouts {
-    flex: 1 1 100%;
-    grid-template-columns: minmax(4rem, 0.7fr) minmax(7rem, 1.3fr);
-  }
-
-  .digitBar {
-    font-size: 1.1rem;
-  }
-
-  .digitBeat {
-    font-size: 0.88rem;
-  }
-
-  .digitSub {
-    font-size: 0.68rem;
-  }
-
-  .tempoValue {
-    font-size: 1.05rem;
-  }
-
-  .scalePrimary {
-    font-size: 0.88rem;
-  }
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global(.app-container[data-layout-tier="mobile"]) .track {
+  padding: 0.5rem 0.55rem 0.45rem;
 }
+
+:global(.app-container[data-layout-tier="mobile"]) .transportRow {
+  flex-wrap: wrap;
+  row-gap: 0.4rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .positionReadout {
+  flex: 1 1 100%;
+  min-width: 0;
+  margin-inline-end: 0;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .contextReadouts {
+  flex: 1 1 100%;
+  grid-template-columns: minmax(4rem, 0.7fr) minmax(7rem, 1.3fr);
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .digitBar {
+  font-size: 1.1rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .digitBeat {
+  font-size: 0.88rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .digitSub {
+  font-size: 0.68rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .tempoValue {
+  font-size: 1.05rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .scalePrimary {
+  font-size: 0.88rem;
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */

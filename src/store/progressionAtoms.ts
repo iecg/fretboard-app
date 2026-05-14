@@ -269,7 +269,14 @@ export const removeProgressionStepAtom = atom(null, (get, set, id: string) => {
   const next = get(progressionStepsAtom).filter((step) => step.id !== id);
   set(progressionStepsAtom, next);
   set(activeProgressionStepIndexAtom, clampProgressionIndex(get(activeProgressionStepIndexAtom), next));
-  if (next.length === 0) set(progressionPlayingStateAtom, false);
+  // Removing the final step leaves nothing to play, so stop playback AND
+  // clear the deadline — otherwise the next render of
+  // `progressionStepDeadlineAtom` could still hold a stale timer that the
+  // playback loop might attempt to honor.
+  if (next.length === 0) {
+    set(progressionPlayingStateAtom, false);
+    set(progressionStepDeadlineAtom, null);
+  }
 });
 
 export const moveProgressionStepAtom = atom(null, (get, set, update: { id: string; direction: -1 | 1 }) => {
@@ -332,7 +339,18 @@ export const previousProgressionStepAtom = atom(null, (get, set) => {
     -1,
     true,
   );
-  if (next !== null) set(activeProgressionStepIndexAtom, next);
+  if (next === null) return;
+  set(activeProgressionStepIndexAtom, next);
+  // Mirror `advanceProgressionPlaybackAtom`: when stepping backward during
+  // active playback, recompute the deadline from the new step's duration so
+  // the playback loop doesn't fire on the previous step's stale timer.
+  if (get(progressionPlayingStateAtom)) {
+    const nextStep = get(progressionStepsAtom)[next];
+    const durationMs = nextStep
+      ? getProgressionDurationMs(nextStep.duration, get(progressionTempoBpmAtom), get(beatsPerBarAtom))
+      : 0;
+    set(progressionStepDeadlineAtom, Date.now() + durationMs);
+  }
 });
 
 export const resetProgressionAtomsAtom = atom(null, (_get, set) => {

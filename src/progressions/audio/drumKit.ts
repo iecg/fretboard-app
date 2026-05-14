@@ -57,6 +57,9 @@ export function scheduleKick(
   options: DrumHitOptions = {},
 ): void {
   const velocity = clampVelocity(options.velocity);
+  // Zero velocity → silent hit. Bail before scheduling so we never pass 0
+  // into exponentialRampToValueAtTime (which throws on non-positive targets).
+  if (velocity <= 0) return;
 
   // Body
   const osc = ctx.createOscillator();
@@ -97,6 +100,7 @@ export function scheduleSnare(
   options: DrumHitOptions = {},
 ): void {
   const velocity = clampVelocity(options.velocity);
+  if (velocity <= 0) return;
 
   // Noise rattle
   const noise = ctx.createBufferSource();
@@ -145,6 +149,7 @@ export function scheduleHiHat(
   options: HiHatOptions = {},
 ): void {
   const velocity = clampVelocity(options.velocity);
+  if (velocity <= 0) return;
   const decay = options.open ? 0.3 : 0.05;
 
   const noise = ctx.createBufferSource();

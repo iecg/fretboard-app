@@ -8,13 +8,6 @@ import { CHORD_DEFINITIONS, NOTES } from "@fretflow/core";
 export const PROGRESSION_CHORD_ROOT_OCTAVE = 3;
 
 /**
- * Default strum lag between consecutive note onsets, in milliseconds.
- * Mimics a downstroke across strings; tight enough to land within a single
- * beat even at fast tempos.
- */
-export const PROGRESSION_STRUM_DELAY_MS = 25;
-
-/**
  * Compute the note name (without octave) at `semitone` half-steps above
  * `root`. Wraps the chromatic scale; returns `null` if the root is not in
  * the recognised note list.

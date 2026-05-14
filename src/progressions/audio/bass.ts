@@ -32,6 +32,12 @@ export function scheduleBassNote(
   options: BassNoteOptions = {},
 ): BassVoiceHandle {
   const velocity = Math.max(0, Math.min(1.2, options.velocity ?? 0.9));
+  // exponentialRampToValueAtTime requires strictly-positive targets, so a
+  // zero-velocity hit would throw. Skip scheduling entirely — silent bass
+  // notes have no audible effect and consume no nodes.
+  if (velocity <= 0) {
+    return { cancel: () => {} };
+  }
   const noteLen = Math.max(0.05, Math.min(2, options.durationSec ?? DECAY + RELEASE));
 
   const osc = ctx.createOscillator();

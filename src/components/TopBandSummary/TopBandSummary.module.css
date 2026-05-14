@@ -69,11 +69,14 @@
   align-items: baseline;
 }
 
-@media (max-width: 639px) {
-  .progression-status-row {
-    grid-template-columns: 1fr;
-  }
+/* Collapse to a single column on the mobile tier (≤ 767px) — uses the
+   codebase's layout-tier attribute instead of a raw pixel media query so this
+   stays in lock-step with the rest of the responsive system. */
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global(.app-container[data-layout-tier="mobile"]) .progression-status-row {
+  grid-template-columns: 1fr;
 }
+/* stylelint-enable selector-pseudo-class-no-unknown */
 
 .progression-status-cell {
   display: inline-flex;

@@ -24,6 +24,9 @@ export function scheduleClick(
   options: ClickOptions = {},
 ): void {
   const velocity = Math.max(0, Math.min(1, options.velocity ?? 0.6));
+  // Silent clicks would feed 0 into exponentialRampToValueAtTime, which
+  // throws. Skip scheduling entirely — there's nothing to hear anyway.
+  if (velocity <= 0) return;
   const frequency = options.accent ? ACCENT_FREQ : NORMAL_FREQ;
 
   const osc = ctx.createOscillator();

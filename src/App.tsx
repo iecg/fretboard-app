@@ -266,7 +266,7 @@ function AppContent() {
       <BottomTabBar
         items={translatedTabItems}
         activeId={mobileTab}
-        onSelect={(id) => setMobileTab(id as "scales" | "chords" | "cof" | "view")}
+        onSelect={(id) => setMobileTab(id as "scales" | "chords" | "progression" | "cof" | "view")}
         aria-label="Mobile navigation"
       />
     )}
