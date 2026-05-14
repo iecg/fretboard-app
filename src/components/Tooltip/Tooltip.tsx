@@ -31,8 +31,8 @@ export function Tooltip({
   delayDuration = 400,
 }: TooltipProps) {
   return (
-    <RadixTooltip.Provider delayDuration={delayDuration}>
-      <RadixTooltip.Root>
+    <RadixTooltip.Provider>
+      <RadixTooltip.Root delayDuration={delayDuration}>
         <RadixTooltip.Trigger asChild>{children}</RadixTooltip.Trigger>
         <RadixTooltip.Portal>
           <RadixTooltip.Content

@@ -14,6 +14,8 @@
     0 12px 28px -16px rgb(0 0 0 / 0.7),
     0 0 0 1px rgb(77 228 255 / 0.08);
   user-select: none;
+  /* Intentionally brisk — tooltip micro-animations feel sluggish at
+     ANIMATION_DURATION_FAST (200ms). */
   animation-duration: 140ms;
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
