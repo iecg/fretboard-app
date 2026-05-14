@@ -10,7 +10,7 @@ import { useTranslation } from "../../../hooks/useTranslation";
 import styles from "../SettingsOverlay.module.css";
 import shared from "../../shared/shared.module.css";
 
-export default function ViewSettingsSection({ compact }: { compact?: boolean }) {
+export default function ViewSettingsSection() {
   const { t } = useTranslation();
   const {
     fretZoom,
@@ -37,7 +37,7 @@ export default function ViewSettingsSection({ compact }: { compact?: boolean }) 
             step={ZOOM_STEP}
             formatValue={(zoom) => (zoom <= 100 ? t("settings.view.auto") : `${zoom}${t("settings.view.zoomSuffix")}`)}
             buttonVariant="mobile"
-            compact={compact}
+
           />
         </div>
       </div>
@@ -51,7 +51,7 @@ export default function ViewSettingsSection({ compact }: { compact?: boolean }) 
             onEndChange={setFretEnd}
             maxFret={MAX_FRET}
             layout="mobile"
-            compact={compact}
+
           />
         </div>
       </div>
@@ -65,7 +65,7 @@ export default function ViewSettingsSection({ compact }: { compact?: boolean }) 
             ]}
             value={String(scaleDegreeColorsEnabled)}
             onChange={(v) => setScaleDegreeColorsEnabled(v === "true")}
-            compact={compact}
+
           />
         </div>
         {SETTING_FIELDS.scaleDegreeColors.hintKey && (

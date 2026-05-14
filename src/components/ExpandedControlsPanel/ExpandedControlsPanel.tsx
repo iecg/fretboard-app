@@ -20,7 +20,6 @@ import { TheoryControls } from "../TheoryControls/TheoryControls";
 import { Card } from "../Card/Card";
 import { TAB_LABELS } from "../../constants/tabLabels";
 import { MAX_FRET } from "@fretflow/core";
-import { useCompactDensity } from "../../hooks/useCompactDensity";
 import { CircleOfFifthsSkeleton } from "../LoadingSkeleton/LoadingSkeleton";
 
 // Lazy-loaded component
@@ -32,7 +31,6 @@ const CircleOfFifths = lazy(() =>
  * Renders the Configuration card: FingeringPatternControls + fret range.
  */
 export function BaseControlsSection() {
-  const compact = useCompactDensity();
   const [fretStart, setFretStart] = useAtom(fretStartAtom);
   const [fretEnd, setFretEnd] = useAtom(fretEndAtom);
 
@@ -43,7 +41,7 @@ export function BaseControlsSection() {
       data-testid="dashboard-card-configuration"
     >
       <div className={styles["control-group"]}>
-        <FingeringPatternControls compact={compact} />
+        <FingeringPatternControls />
         <div className={shared["control-section"]}>
           <span className={shared["section-label"]}>Fret Range</span>
           <FretRangeControl
@@ -53,7 +51,6 @@ export function BaseControlsSection() {
             onEndChange={setFretEnd}
             maxFret={MAX_FRET}
             layout="dashboard"
-            compact={compact}
           />
         </div>
       </div>
@@ -65,14 +62,13 @@ export function BaseControlsSection() {
  * Renders the Music Theory card.
  */
 export function ScaleChordSection() {
-  const compact = useCompactDensity();
   return (
     <Card
       title="Theory"
       className={clsx("dashboard-card--theory")}
       data-testid="dashboard-card-theory"
     >
-      <TheoryControls compact={compact} />
+      <TheoryControls />
     </Card>
   );
 }

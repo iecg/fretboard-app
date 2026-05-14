@@ -21,8 +21,6 @@ import styles from "../TheoryControls/TheoryControls.module.css";
 
 interface TheoryControlsProps {
   keyExplorer?: ReactNode;
-  /** Reduces vertical padding and font size on disclosure rows for tight layouts. */
-  compact?: boolean;
 }
 
 export interface TheorySectionProps {
@@ -192,7 +190,7 @@ function useProgressionSectionSummary() {
 
 type TheoryOpenSection = "scale" | "chords" | "progression" | null;
 
-export function TheoryControls({ keyExplorer, compact }: TheoryControlsProps) {
+export function TheoryControls({ keyExplorer }: TheoryControlsProps) {
   const scaleLabel = useAtomValue(scaleLabelAtom);
   const chordSummary = useChordSectionSummary();
   const progressionSummary = useProgressionSectionSummary();
@@ -218,9 +216,8 @@ export function TheoryControls({ keyExplorer, compact }: TheoryControlsProps) {
         summary={scaleLabel}
         open={effectiveOpenSection === "scale"}
         onOpenChange={setSectionOpen("scale")}
-        compact={compact}
       >
-        <ScaleSelector compact={compact} />
+        <ScaleSelector />
         {keyExplorer ? <KeyExplorer>{keyExplorer}</KeyExplorer> : null}
       </TheorySection>
       <hr className={styles["theory-section-divider"]} />
@@ -229,10 +226,9 @@ export function TheoryControls({ keyExplorer, compact }: TheoryControlsProps) {
         summary={isChordsDisabled ? "Disabled" : chordSummary}
         open={effectiveOpenSection === "chords"}
         onOpenChange={setSectionOpen("chords")}
-        compact={compact}
         disabled={isChordsDisabled}
       >
-        <ChordOverlayControls compact={compact} />
+        <ChordOverlayControls />
       </TheorySection>
       <hr className={styles["theory-section-divider"]} />
       <TheorySection
@@ -240,9 +236,8 @@ export function TheoryControls({ keyExplorer, compact }: TheoryControlsProps) {
         summary={progressionSummary}
         open={effectiveOpenSection === "progression"}
         onOpenChange={setSectionOpen("progression")}
-        compact={compact}
       >
-        <ProgressionControls compact={compact} />
+        <ProgressionControls />
       </TheorySection>
     </div>
   );

@@ -8,7 +8,7 @@ import { useTranslation } from "../../../hooks/useTranslation";
 import styles from "../SettingsOverlay.module.css";
 import shared from "../../shared/shared.module.css";
 
-export default function AppearanceSettingsSection({ compact }: { compact?: boolean }) {
+export default function AppearanceSettingsSection() {
   const [theme, setTheme] = useAtom(themeAtom);
   const { t } = useTranslation();
 
@@ -23,7 +23,6 @@ export default function AppearanceSettingsSection({ compact }: { compact?: boole
             options={THEME_OPTIONS}
             value={theme}
             onChange={(v) => setTheme(v as typeof theme)}
-            compact={compact}
           />
         </div>
         {config.hintKey ? (

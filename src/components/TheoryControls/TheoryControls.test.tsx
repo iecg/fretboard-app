@@ -217,22 +217,11 @@ describe("TheoryControls/TheoryControls", () => {
     expect(screen.getByRole("button", { name: "Tension" })).not.toBeDisabled();
   });
 
-  it("compact prop is not set by default", () => {
+  it("no data-compact attributes are set by default", () => {
     renderWithStore(<TheoryControls />);
 
     const sections = document.querySelectorAll("[data-compact]");
     expect(sections).toHaveLength(0);
-  });
-
-  it("compact prop sets data-compact on theory sections", () => {
-    renderWithStore(<TheoryControls compact />);
-
-    // Both TheorySection elements must have data-compact="true".
-    // Additional child elements (NoteGrid, ToggleBar, etc.) may also carry it.
-    const theorySections = document.querySelectorAll(
-      'section[data-compact="true"]',
-    );
-    expect(theorySections.length).toBeGreaterThanOrEqual(2);
   });
 });
 

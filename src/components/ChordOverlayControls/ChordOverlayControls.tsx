@@ -26,11 +26,7 @@ const FULL_CHORD_SUPPORTED_TYPES = new Set([
   "Dominant 7th",
 ]);
 
-export interface ChordOverlayControlsProps {
-  compact?: boolean;
-}
-
-export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
+export function ChordOverlayControls() {
   const { scaleName, useFlats } = useScaleState();
   const {
     chordType,
@@ -138,7 +134,6 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
           value={chordOverlayMode}
           onChange={isPatternDisabled ? () => undefined : setChordOverlayMode}
           label="Chord overlay mode"
-          compact={compact}
         />
         {!isPatternDisabled && (
           <p className={shared["field-hint"]}>
@@ -158,7 +153,6 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
               value={chordDegree ?? CHORD_NONE_VALUE}
               onChange={handleDegreeChange}
               label="Chord degree"
-              compact={compact}
             />
           </div>
           {chordDegree ? (
@@ -169,7 +163,6 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
                 options={buildQualityToggleOptions({ includeSentinel: false })}
                 value={chordType ?? ""}
                 onChange={handleChordTypeChange}
-                compact={compact}
                 overflow="scroll"
               />
               <p className={shared["field-hint"]}>
@@ -191,7 +184,6 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
               options={buildQualityToggleOptions({ diatonicLabel: t("controls.off") })}
               value={chordQualityOverride ?? CHORD_NONE_VALUE}
               onChange={handleChordTypeChange}
-              compact={compact}
               overflow="scroll"
             />
           </div>
@@ -206,7 +198,6 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
                 });
               }}
               useFlats={useFlats}
-              compact={compact}
             />
           </div>
         </>
@@ -239,7 +230,6 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
             value={practiceLens}
             onChange={setPracticeLens}
             label="Practice lens"
-            compact={compact}
           />
           {activeLensDescription ? (
             <p className={shared["field-hint"]}>{activeLensDescription}</p>
