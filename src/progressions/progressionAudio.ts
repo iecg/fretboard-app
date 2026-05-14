@@ -6,6 +6,7 @@ import { CHORD_DEFINITIONS, NOTES } from "@fretflow/core";
  * dipping into mud (G3-B3-D4 etc.) or shrieking in the high octaves.
  */
 export const PROGRESSION_CHORD_ROOT_OCTAVE = 3;
+export const PROGRESSION_BASS_ROOT_OCTAVE = 2;
 
 /**
  * Compute the note name (without octave) at `semitone` half-steps above
@@ -48,6 +49,29 @@ export function resolveChordVoicing(
     // Absolute distance from C0 in semitones, then split back into
     // note-name + octave so each chord tone sits above the previous root.
     const absolute = rootOctave * 12 + rootIndex + member.semitone;
+    const note = NOTES[((absolute % 12) + 12) % 12];
+    const octave = Math.floor(absolute / 12);
+    return `${note}${octave}`;
+  });
+}
+
+export function resolveBassLineNotes(
+  root: string,
+  quality: string,
+  rootOctave: number = PROGRESSION_BASS_ROOT_OCTAVE,
+): string[] {
+  const definition = CHORD_DEFINITIONS[quality];
+  if (!definition) return [];
+  const rootIndex = NOTES.indexOf(root);
+  if (rootIndex < 0) return [];
+
+  const fifth = definition.members.find((member) =>
+    member.name === "5" || member.name === "b5" || member.name === "#5"
+  );
+  const semitones = fifth ? [0, fifth.semitone] : [0];
+
+  return semitones.map((semitone) => {
+    const absolute = rootOctave * 12 + rootIndex + semitone;
     const note = NOTES[((absolute % 12) + 12) % 12];
     const octave = Math.floor(absolute / 12);
     return `${note}${octave}`;

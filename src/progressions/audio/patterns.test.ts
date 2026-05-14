@@ -4,6 +4,7 @@ import {
   clipPatternToBeats,
   POP_STRUM_PATTERN,
   repeatPatternToBeats,
+  ROOT_FIFTH_BASS_PATTERN,
   ROCK_DRUM_PATTERN,
 } from "./patterns";
 
@@ -89,6 +90,15 @@ describe("ROCK_DRUM_PATTERN", () => {
     expect(ROCK_DRUM_PATTERN.hats).toHaveLength(8);
     expect(ROCK_DRUM_PATTERN.hats.map((h) => h.beat)).toEqual([
       0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5,
+    ]);
+  });
+});
+
+describe("ROOT_FIFTH_BASS_PATTERN", () => {
+  it("uses the same beat grid as the kick pattern with root then fifth roles", () => {
+    expect(ROOT_FIFTH_BASS_PATTERN).toEqual([
+      { beat: 0, velocity: 1, note: "root" },
+      { beat: 2, velocity: 0.85, note: "fifth" },
     ]);
   });
 });

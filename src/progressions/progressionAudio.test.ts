@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveChordVoicing } from "./progressionAudio";
+import { resolveBassLineNotes, resolveChordVoicing } from "./progressionAudio";
 
 describe("resolveChordVoicing", () => {
   it("stacks the C Major Triad as C-E-G at octave 3", () => {
@@ -48,5 +48,15 @@ describe("resolveChordVoicing", () => {
 
   it("returns 4 notes for seventh chords", () => {
     expect(resolveChordVoicing("D", "Minor 7th")).toHaveLength(4);
+  });
+});
+
+describe("resolveBassLineNotes", () => {
+  it("uses the chord root and perfect fifth in the bass octave", () => {
+    expect(resolveBassLineNotes("C", "Major Triad")).toEqual(["C2", "G2"]);
+  });
+
+  it("uses the altered fifth for diminished chords", () => {
+    expect(resolveBassLineNotes("B", "Diminished Triad")).toEqual(["B2", "F3"]);
   });
 });

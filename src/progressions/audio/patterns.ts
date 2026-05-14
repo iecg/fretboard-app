@@ -27,6 +27,12 @@ export interface DrumHit {
   velocity: number;
 }
 
+export interface BassHit {
+  beat: number;
+  velocity: number;
+  note: "root" | "fifth";
+}
+
 export interface DrumPattern {
   kicks: readonly DrumHit[];
   snares: readonly DrumHit[];
@@ -47,6 +53,16 @@ export const POP_STRUM_PATTERN: readonly StrumHit[] = [
   { beat: 2.5, velocity: 0.55, direction: "up" },
   { beat: 3, velocity: 0.7, direction: "down" },
   { beat: 3.5, velocity: 0.5, direction: "up" },
+];
+
+/**
+ * Simple root-fifth bass pattern: root on beat 1, fifth on beat 3. The
+ * scheduler repeats it per bar and resolves note roles against the active
+ * chord, falling back to the root if a chord has no fifth.
+ */
+export const ROOT_FIFTH_BASS_PATTERN: readonly BassHit[] = [
+  { beat: 0, velocity: 1, note: "root" },
+  { beat: 2, velocity: 0.85, note: "fifth" },
 ];
 
 /**
