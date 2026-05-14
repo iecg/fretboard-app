@@ -63,6 +63,11 @@ const MODE_DEGREES: Record<string, Record<number, string>> = {
   "Harmonic Minor":{ 0: "i",  2: "ii°", 3: "III+", 5: "iv", 7: "V", 8: "VI", 11: "vii°" },
 };
 
+const PENTATONIC_DEGREES: Record<string, Record<number, string>> = {
+  "Major Pentatonic": { 0: "I", 2: "ii", 4: "iii", 7: "V", 9: "vi" },
+  "Minor Pentatonic": { 0: "i", 3: "III", 5: "iv", 7: "v", 10: "VII" },
+};
+
 export const BLUE_NOTE_COLOR = "#0047ff";
 
 export const DEGREE_COLORS: Record<string, string> = {
@@ -109,6 +114,8 @@ const DEGREE_DIATONIC_QUALITY: Record<string, Record<number, string>> = {
   'Mixolydian':     { 0: "Major Triad", 2: "Minor Triad", 4: "Diminished Triad", 5: "Major Triad", 7: "Minor Triad", 9: "Minor Triad", 10: "Major Triad" },
   'Locrian':        { 0: "Diminished Triad", 1: "Major Triad", 3: "Minor Triad", 5: "Minor Triad", 6: "Major Triad", 8: "Major Triad", 10: "Minor Triad" },
   'Harmonic Minor': { 0: "Minor Triad", 2: "Diminished Triad", 3: "Major Triad", 5: "Minor Triad", 7: "Major Triad", 8: "Major Triad", 11: "Diminished Triad" },
+  'Major Pentatonic': { 0: "Major Triad", 2: "Minor Triad", 4: "Minor Triad", 7: "Major Triad", 9: "Minor Triad" },
+  'Minor Pentatonic': { 0: "Minor Triad", 3: "Major Triad", 5: "Minor Triad", 7: "Minor Triad", 10: "Major Triad" },
 };
 
 /**
@@ -237,18 +244,19 @@ export function getDegreeSequence(scaleName: string): DegreeId[] {
  * For 7-note scales, Roman numerals are computed from the actual diatonic triad
  * built on each scale step (third + fifth intervals → quality → casing/suffix).
  *
- * **Non-7-note scale fallback:** Pentatonic, blues, and other non-7-note scales
- * cannot form full diatonic triads on every step, so true degree analysis does
- * not apply. Instead, the function falls back to the closest 7-note parent map:
+ * **Non-7-note scale fallback:** Pentatonic uses explicit scale-step labels
+ * because its visible chord-degree controls should expose only the pentatonic
+ * tones. Blues and other non-7-note scales cannot form full diatonic triads on
+ * every step, so true degree analysis does not apply there. They fall back to
+ * the closest 7-note parent map:
  *   - Major degrees when interval 4 (major 3rd) is present (major quality).
  *   - Natural Minor degrees otherwise (minor quality).
  *
- * This is pragmatically correct because consumers only look up semitones that
- * are actually present in the scale — the extra entries in the 7-note map are
- * simply never accessed. Unknown or missing scales fall back to Natural Minor.
+ * Unknown or missing scales fall back to Natural Minor.
  */
 export function getDegreesForScale(scaleName: string): Record<number, string> {
   if (MODE_DEGREES[scaleName]) return MODE_DEGREES[scaleName];
+  if (PENTATONIC_DEGREES[scaleName]) return PENTATONIC_DEGREES[scaleName];
   const intervals = SCALES[scaleName];
   if (!intervals) return MODE_DEGREES["Natural Minor"];
 

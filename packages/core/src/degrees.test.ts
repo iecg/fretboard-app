@@ -174,16 +174,26 @@ describe('getDegreesForScale', () => {
   });
 
   describe('Pentatonic and blues scales', () => {
-    it('falls back gracefully for Major Pentatonic', () => {
+    it('returns scale-step degree labels for Major Pentatonic', () => {
       const degrees = getDegreesForScale('Major Pentatonic');
-      expect(degrees).toBeDefined();
-      expect(degrees[0]).toBeDefined(); // Has a root
+      expect(degrees).toEqual({
+        0: "I",
+        2: "ii",
+        4: "iii",
+        7: "V",
+        9: "vi",
+      });
     });
 
-    it('falls back gracefully for Minor Pentatonic', () => {
+    it('returns scale-step degree labels for Minor Pentatonic', () => {
       const degrees = getDegreesForScale('Minor Pentatonic');
-      expect(degrees).toBeDefined();
-      expect(degrees[0]).toBeDefined(); // Has a root
+      expect(degrees).toEqual({
+        0: "i",
+        3: "III",
+        5: "iv",
+        7: "v",
+        10: "VII",
+      });
     });
 
     it('falls back gracefully for Blues scale', () => {
@@ -194,14 +204,20 @@ describe('getDegreesForScale', () => {
   });
 
   describe('non-7-note scale fallback strategy', () => {
-    it('returns Major degrees for major-quality pentatonic (contains interval 4)', () => {
-      const degrees = getDegreesForScale('Major Pentatonic');
-      expect(degrees).toEqual(getDegreesForScale('Major'));
+    it('returns Major-family chord qualities for Major Pentatonic degrees', () => {
+      expect(getQualityForDegree("I", "Major Pentatonic")).toBe("Major Triad");
+      expect(getQualityForDegree("ii", "Major Pentatonic")).toBe("Minor Triad");
+      expect(getQualityForDegree("iii", "Major Pentatonic")).toBe("Minor Triad");
+      expect(getQualityForDegree("V", "Major Pentatonic")).toBe("Major Triad");
+      expect(getQualityForDegree("vi", "Major Pentatonic")).toBe("Minor Triad");
     });
 
-    it('returns Natural Minor degrees for minor-quality pentatonic (no interval 4)', () => {
-      const degrees = getDegreesForScale('Minor Pentatonic');
-      expect(degrees).toEqual(getDegreesForScale('Natural Minor'));
+    it('returns Natural-Minor-family chord qualities for Minor Pentatonic degrees', () => {
+      expect(getQualityForDegree("i", "Minor Pentatonic")).toBe("Minor Triad");
+      expect(getQualityForDegree("III", "Minor Pentatonic")).toBe("Major Triad");
+      expect(getQualityForDegree("iv", "Minor Pentatonic")).toBe("Minor Triad");
+      expect(getQualityForDegree("v", "Minor Pentatonic")).toBe("Minor Triad");
+      expect(getQualityForDegree("VII", "Minor Pentatonic")).toBe("Major Triad");
     });
   });
 });
