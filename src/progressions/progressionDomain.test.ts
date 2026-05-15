@@ -148,13 +148,16 @@ describe("progressionDomain", () => {
   });
 
   it("defines the initial presets as editable step templates", () => {
-    expect(PROGRESSION_PRESETS.map((preset) => preset.id)).toEqual([
-      "one-five-six-four",
-      "two-five-one",
-      "one-six-four-five",
-      "one-four-five",
-      "twelve-bar-blues",
-    ]);
+    const ids = PROGRESSION_PRESETS.map((preset) => preset.id);
+    expect(ids).toEqual(
+      expect.arrayContaining([
+        "one-five-six-four",
+        "two-five-one",
+        "one-six-four-five",
+        "one-four-five",
+        "twelve-bar-blues",
+      ]),
+    );
     const blues = PROGRESSION_PRESETS.find((preset) => preset.id === "twelve-bar-blues");
     expect(blues?.steps).toHaveLength(7);
     expect(blues?.steps.every((step) => step.qualityOverride === "Dominant 7th")).toBe(true);
@@ -166,6 +169,30 @@ describe("progressionDomain", () => {
     expect(isProgressionPresetAvailableForScale(oneFiveSixFour!, "Major")).toBe(true);
     expect(isProgressionPresetAvailableForScale(oneFiveSixFour!, "Minor Blues")).toBe(true);
     expect(getAvailableProgressionPresets("Minor Blues")).toEqual(PROGRESSION_PRESETS);
+  });
+});
+
+describe("expanded preset catalog", () => {
+  it("has at least 25 presets", () => {
+    expect(PROGRESSION_PRESETS.length).toBeGreaterThanOrEqual(25);
+  });
+  it("all presets have unique IDs", () => {
+    const ids = PROGRESSION_PRESETS.map((p) => p.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+  it("all presets have a category", () => {
+    for (const preset of PROGRESSION_PRESETS) {
+      expect(preset.category).toBeDefined();
+      expect(["pop-rock", "blues", "jazz", "folk", "modal", "minor"]).toContain(preset.category);
+    }
+  });
+  it("has presets in each category", () => {
+    const categories = new Set(PROGRESSION_PRESETS.map((p) => p.category));
+    expect(categories).toContain("pop-rock");
+    expect(categories).toContain("blues");
+    expect(categories).toContain("jazz");
+    expect(categories).toContain("modal");
+    expect(categories).toContain("minor");
   });
 });
 
