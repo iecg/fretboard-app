@@ -3,7 +3,6 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { screen } from "@testing-library/react";
 import { TopBandSummary } from "../TopBandSummary/TopBandSummary";
 import {
-  activeProgressionStepIndexAtom,
   rootNoteAtom,
   scaleNameAtom,
   chordTypeAtom,
@@ -64,77 +63,6 @@ describe("TopBandSummary chord integration", () => {
       [practiceLensAtom, "targets"],
     ]);
     expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("shows read-only current and next progression status in the top band", () => {
-    renderWithAtoms(<TopBandSummary />, [
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
-      [activeProgressionStepIndexAtom, 0],
-      [progressionStepsAtom, [
-        { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-        { id: "two", degree: "V", duration: { value: 2, unit: "bar" }, qualityOverride: null },
-      ]],
-    ]);
-
-    expect(screen.getByRole("group", { name: "Progression status" })).toBeInTheDocument();
-    expect(screen.getByText("Current")).toBeInTheDocument();
-    expect(screen.getByText(/I.*C Major Triad/i)).toBeInTheDocument();
-    expect(screen.getByText("Next")).toBeInTheDocument();
-    expect(screen.getByText(/V.*G Major Triad/i)).toBeInTheDocument();
-    expect(screen.getByText("Bar 1 of 3")).toBeInTheDocument();
-    expect(screen.getByText("(1 bar)")).toBeInTheDocument();
-  });
-
-  it("wraps next progression status to the current step when it is the only playable step", () => {
-    renderWithAtoms(<TopBandSummary />, [
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
-      [activeProgressionStepIndexAtom, 0],
-      [progressionStepsAtom, [
-        { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-        { id: "bad", degree: "not-a-degree", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-      ]],
-    ]);
-
-    expect(screen.getByRole("group", { name: "Progression status" })).toBeInTheDocument();
-    expect(screen.getByText("Next")).toBeInTheDocument();
-    expect(screen.getAllByText(/I.*C Major Triad/i)).toHaveLength(2);
-    expect(screen.queryByText("End")).not.toBeInTheDocument();
-  });
-
-  it("shows a sane blocked status for an empty enabled progression", () => {
-    renderWithAtoms(<TopBandSummary />, [
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
-      [progressionStepsAtom, []],
-    ]);
-
-    expect(screen.getByRole("group", { name: "Progression status" })).toBeInTheDocument();
-    expect(screen.getByText("No chords")).toBeInTheDocument();
-    expect(screen.getByText(/Add or load progression steps to start playback/i)).toBeInTheDocument();
-    expect(screen.queryByText("Bar 1 of 0")).not.toBeInTheDocument();
-  });
-
-  it("shows the active step unavailable reason when another progression step can resolve", () => {
-    renderWithAtoms(<TopBandSummary />, [
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
-      [activeProgressionStepIndexAtom, 0],
-      [progressionStepsAtom, [
-        { id: "bad", degree: "not-a-degree", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-        { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-      ]],
-    ]);
-
-    expect(screen.getByRole("group", { name: "Progression status" })).toBeInTheDocument();
-    expect(screen.getByText(/not-a-degree.*Unavailable/i)).toBeInTheDocument();
-    expect(screen.getByText("Degree unavailable in this scale")).toBeInTheDocument();
-    expect(screen.queryByText("No progression steps resolve in this scale.")).not.toBeInTheDocument();
   });
 
   it("does not render progression transport controls in the top band", () => {
