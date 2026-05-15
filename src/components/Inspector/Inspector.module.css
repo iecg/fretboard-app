@@ -1,18 +1,75 @@
 .root {
   display: flex;
   flex-direction: column;
+  gap: var(--space-2, 0.5rem);
+  padding: var(--space-3, 0.75rem);
+  background: var(--surface-well, #0a121d);
+  border: 1px solid var(--token-border-subtle, rgba(255, 255, 255, 0.06));
+  border-radius: var(--radius-md, 6px);
+  position: relative;
+  overflow: hidden;
+}
+
+.root::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 0% 0%,
+    rgba(77, 228, 255, 0.08),
+    transparent 60%
+  );
 }
 
 .tabList {
   display: flex;
+  gap: var(--space-1, 0.25rem);
+  border-bottom: 1px solid var(--token-border-subtle, rgba(255, 255, 255, 0.08));
+  position: relative;
+  z-index: 1;
 }
 
 .tab {
+  appearance: none;
   background: transparent;
   border: 0;
+  border-bottom: 2px solid transparent;
+  padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  font-family: var(--font-sans, "IBM Plex Sans", sans-serif);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgb(255 255 255 / 0.5);
   cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease, text-shadow 120ms ease;
+}
+
+.tab:hover {
+  color: rgb(255 255 255 / 0.85);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--neon-cyan, #4DE4FF);
+  outline-offset: 2px;
+}
+
+.tab[data-state="active"] {
+  color: var(--neon-cyan, #4DE4FF);
+  border-bottom-color: var(--neon-cyan, #4DE4FF);
+  text-shadow: 0 0 8px rgba(77, 228, 255, 0.4);
 }
 
 .tabPanel {
   min-height: 80px;
+  padding: var(--space-3, 0.75rem) 0;
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab {
+    transition: none;
+  }
 }
