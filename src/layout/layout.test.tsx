@@ -17,14 +17,30 @@ import {
 } from "../layout/responsive";
 
 // Regression guard: the Inspector controls panel depends on its CSS module
-// shipping. If the module is unimported or its core selectors are removed,
-// the panel loses its faceplate chrome and tab layout. This reads the file
-// directly to ensure it ships with the expected structural selectors.
+// shipping with the expected layout rules. If a rule is dropped, the panel
+// loses its column stack / tab-bar layout. This reads the file directly.
 describe("inspector panel CSS contract", () => {
-  it("declares the root, tab list, and tab panel selectors", () => {
-    expect(inspectorCSS).toContain(".root");
-    expect(inspectorCSS).toContain(".tabList");
-    expect(inspectorCSS).toContain(".tabPanel");
+  function ruleBlock(css: string, selector: string): string {
+    const start = css.indexOf(selector);
+    if (start === -1) return "";
+    return css.slice(start, css.indexOf("}", start));
+  }
+
+  it("stacks the panel root as a vertical flex column", () => {
+    const root = ruleBlock(inspectorCSS, ".root {");
+    expect(root).toContain("display: flex");
+    expect(root).toContain("flex-direction: column");
+  });
+
+  it("lays the tab list out as a row with a divider", () => {
+    const tabList = ruleBlock(inspectorCSS, ".tabList {");
+    expect(tabList).toContain("display: flex");
+    expect(tabList).toContain("border-bottom");
+  });
+
+  it("gives the tab panel a minimum height", () => {
+    const tabPanel = ruleBlock(inspectorCSS, ".tabPanel {");
+    expect(tabPanel).toContain("min-height");
   });
 });
 
