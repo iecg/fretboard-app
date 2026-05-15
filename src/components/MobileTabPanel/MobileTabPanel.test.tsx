@@ -1,7 +1,61 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { ANIMATION_DURATION_XFADE, ANIMATION_EASE } from "@fretflow/core";
 import { screen } from "@testing-library/react";
 import { MobileTabPanel } from "../MobileTabPanel/MobileTabPanel";
+
+// Capture the transition prop from every motion.div render before it is stripped,
+// so tests can assert the progression tab uses shared constants (not magic numbers).
+const { capturedTransitions } = vi.hoisted(() => ({
+  capturedTransitions: [] as Array<Record<string, unknown>>,
+}));
+
+vi.mock("motion/react", async () => {
+  const React = await import("react");
+  const ANIMATION_PROPS = new Set([
+    "initial", "animate", "exit", "transition", "variants",
+    "whileHover", "whileTap", "whileFocus", "whileDrag", "whileInView",
+    "layoutId", "layout", "onAnimationStart", "onAnimationComplete", "onUpdate",
+  ]);
+  const makeEl = (tag: string) =>
+    React.forwardRef<HTMLElement, Record<string, unknown>>((props, ref) => {
+      const { children, ...rest } = props;
+      const filtered: Record<string, unknown> = {};
+      Object.entries(rest).forEach(([k, v]) => {
+        if (!ANIMATION_PROPS.has(k)) filtered[k] = v;
+      });
+      return React.createElement(tag, { ...filtered, ref }, children as React.ReactNode);
+    });
+
+  // motion.div captures transition before stripping it from the forwarded props.
+  const makeDivWithCapture = () =>
+    React.forwardRef<HTMLDivElement, Record<string, unknown>>((props, ref) => {
+      const { children, transition, ...rest } = props;
+      if (transition && typeof transition === "object") {
+        capturedTransitions.push(transition as Record<string, unknown>);
+      }
+      const filtered: Record<string, unknown> = {};
+      Object.entries(rest).forEach(([k, v]) => {
+        if (!ANIMATION_PROPS.has(k)) filtered[k] = v;
+      });
+      return React.createElement("div", { ...filtered, ref }, children as React.ReactNode);
+    });
+
+  const cache = new Map<string, unknown>([["div", makeDivWithCapture()]]);
+  const motionProxy = new Proxy({} as Record<string, unknown>, {
+    get(_t, prop: string) {
+      if (!cache.has(prop)) cache.set(prop, makeEl(prop));
+      return cache.get(prop);
+    },
+  });
+  return {
+    motion: motionProxy,
+    AnimatePresence: ({ children }: { children: React.ReactNode }) => children as React.ReactElement,
+    MotionConfig: ({ children }: { children: React.ReactNode }) => children as React.ReactElement,
+    useReducedMotion: vi.fn().mockReturnValue(null),
+  };
+});
+
 import {
   mobileTabAtom,
   rootNoteAtom,
@@ -112,4 +166,27 @@ describe("MobileTabPanel/MobileTabPanel", () => {
       expect(await axe(container)).toHaveNoViolations();
     },
   );
+});
+
+describe("MobileTabPanel/MobileTabPanel progression-tab motion wiring", () => {
+  beforeEach(() => {
+    capturedTransitions.length = 0;
+  });
+
+  it("progression tab motion.div transition uses shared animation constants", () => {
+    renderWithAtoms(<MobileTabPanel />, [
+      ...BASE_SEEDS,
+      [mobileTabAtom, "progression"],
+    ]);
+
+    // Only the progression tab sets `ease` on its transition; other tabs omit it.
+    const progressionTransition = capturedTransitions.find(
+      (t) => Object.prototype.hasOwnProperty.call(t, "ease"),
+    );
+    expect(progressionTransition).toBeDefined();
+    expect(progressionTransition).toMatchObject({
+      duration: ANIMATION_DURATION_XFADE,
+      ease: ANIMATION_EASE,
+    });
+  });
 });

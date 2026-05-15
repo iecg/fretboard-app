@@ -1,11 +1,11 @@
 import React, { memo } from "react";
-import { motion } from "motion/react";
 import { clsx } from "clsx";
-import { formatAccidental, ANIMATION_DURATION_FAST, ANIMATION_EASE } from "@fretflow/core";
+import { formatAccidental } from "@fretflow/core";
 import { getNoteVisuals } from "./utils/semantics";
 import { CHORD_ROOT_HALO_RADIUS_PX, reduceCircleRadius, reduceSquircleRadius, squirclePath } from "./utils/noteSizing";
 import styles from "./FretboardSVG.module.css";
 import type { NoteData } from "./hooks/useNoteData";
+import type { NoteAnimationMode } from "./motionPolicy";
 
 const CHORD_NOTE_CLASSES = new Set([
   "chord-root",
@@ -25,6 +25,7 @@ interface FretboardNoteLayerProps {
   degreeColorsEnabled?: boolean;
   onNoteClick?: (stringIndex: number, fretIndex: number, noteName: string) => void;
   filter?: "chord" | "non-chord";
+  animationMode?: NoteAnimationMode;
 }
 
 const ROLE_DESCRIPTIONS: Record<string, string> = {
@@ -55,6 +56,7 @@ export const FretboardNoteLayer = memo(({
   degreeColorsEnabled,
   onNoteClick,
   filter,
+  animationMode = "css",
 }: FretboardNoteLayerProps) => {
   const filteredNotes = filter
     ? noteData.filter(({ noteClass }) => {
@@ -64,7 +66,7 @@ export const FretboardNoteLayer = memo(({
     : noteData;
 
   return (
-    <>
+    <g data-motion={animationMode}>
       {filteredNotes.map(({
         stringIndex,
         fretIndex,
@@ -130,20 +132,12 @@ export const FretboardNoteLayer = memo(({
         const ariaLabel = `${noteName}${octave} — ${roleLabel}`;
         const interactive = !!onNoteClick && !isHidden;
         return (
-          <motion.g
+          <g
             key={`note-${stringIndex}-${fretIndex}`}
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{
-              scale: isHidden ? 0 : 1,
-              opacity: isHidden ? 0 : finalOpacity,
-            }}
-            transition={{
-              duration: ANIMATION_DURATION_FAST,
-              ease: ANIMATION_EASE,
-            }}
             className={clsx(
               styles["fretboard-note"],
               styles[noteClass],
+              isHidden && "hidden",
             )}
             role="button"
             aria-label={ariaLabel}
@@ -174,6 +168,7 @@ export const FretboardNoteLayer = memo(({
             data-degree-colors={degreeColorsEnabled ? "true" : undefined}
             style={{
               "--note-r": r,
+              opacity: finalOpacity !== 1 ? finalOpacity : undefined,
               ...(degreeColor && degreeColorsEnabled
                 ? { "--degree-color": degreeColor }
                 : undefined),
@@ -185,10 +180,10 @@ export const FretboardNoteLayer = memo(({
                 {formatAccidental(displayValue)}
               </text>
             )}
-          </motion.g>
+          </g>
         );
       })}
-    </>
+    </g>
   );
 });
 FretboardNoteLayer.displayName = "FretboardNoteLayer";

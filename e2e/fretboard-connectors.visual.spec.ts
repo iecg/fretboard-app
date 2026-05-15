@@ -262,4 +262,22 @@ test.describe("Chord Connector Visual Tests", () => {
     await waitForStableLayout(page);
     await expectLocatorVisual(locator, "connector-c-major-spread-edge-light");
   });
+
+  // ─── Motion-policy refactor: static/group wrapper path ────────────────────
+  // Ensures the chord-connector layer still renders correctly when the CAGED
+  // shape layer is active alongside the overlay. This exercises the combined
+  // shape+connector wrapper path introduced by the motion-policy refactor.
+  test("C major connector with CAGED shape — static wrapper path — dark", async ({ page }) => {
+    await loadVisualState(page, {
+      rootNote: "C",
+      scaleName: "Major",
+      chordOverlayMode: "manual",
+      chordRootOverride: "C",
+      chordQualityOverride: "Major",
+      fingeringPattern: "caged",
+    });
+    const locator = page.getByTestId("fretboard-svg");
+    await locator.scrollIntoViewIfNeeded();
+    await expectLocatorVisual(locator, "connector-c-major-caged-shape-dark");
+  });
 });

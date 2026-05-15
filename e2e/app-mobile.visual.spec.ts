@@ -38,4 +38,17 @@ test.describe("App Mobile Visual", () => {
 
     await expectFullPageVisual(page, "app-mobile-landscape-667x375");
   });
+
+  // ─── Progression tab shell ─────────────────────────────────────────────────
+  // The progression tab <motion.div> was normalised to the shared
+  // ANIMATION_DURATION_XFADE + ANIMATION_EASE constants in MobileTabPanel.
+  // This snapshot locks in the initial appearance of that tab at portrait size.
+  test("app-mobile-progression-tab-portrait-390x844", async ({ page }) => {
+    await loadVisualState(page, { mobileTab: "progression" }, { width: 390, height: 844 });
+
+    await expect(page.getByTestId("app-container")).toBeVisible();
+    await expect(page.getByTestId("mobile-tab-content")).toBeVisible();
+
+    await expectFullPageVisual(page, "app-mobile-progression-tab-portrait-390x844");
+  });
 });

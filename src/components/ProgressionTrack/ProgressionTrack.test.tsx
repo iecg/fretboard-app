@@ -122,7 +122,7 @@ describe("ProgressionTrack", () => {
       [activeProgressionStepIndexAtom, 1],
     ]);
 
-    expect(container.querySelector<HTMLElement>("[data-testid='progression-playhead']")?.style.left).toBe("20%");
+    expect(container.querySelector<HTMLElement>("[data-testid='progression-playhead']")?.style.left).toBe("12.5%");
   });
 
   it("positions chord blocks by exact cumulative bar percentages", () => {

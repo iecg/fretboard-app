@@ -66,6 +66,7 @@ export function ProgressionPositionReadout({
   totalProgressionBars,
   beatsPerBar,
 }: ProgressionPositionReadoutProps) {
+  const containerRef = useRef<HTMLSpanElement | null>(null);
   const barRef = useRef<HTMLSpanElement | null>(null);
   const beatRef = useRef<HTMLSpanElement | null>(null);
   const subRef = useRef<HTMLSpanElement | null>(null);
@@ -75,6 +76,14 @@ export function ProgressionPositionReadout({
   const lastBarRef = useRef<string>("");
   const lastBeatRef = useRef<string>("");
   const lastSubRef = useRef<string>("");
+
+  // Store chord-boundary props in refs so the animation loop can access
+  // the latest values without needing to be cleared and restarted
+  // at every transition.
+  const propsRef = useRef({ stepStartBar, stepBars, stepIndex, totalProgressionBars, beatsPerBar });
+  useEffect(() => {
+    propsRef.current = { stepStartBar, stepBars, stepIndex, totalProgressionBars, beatsPerBar };
+  }, [stepStartBar, stepBars, stepIndex, totalProgressionBars, beatsPerBar]);
 
   // Initial / chord-change static render: the bar/total parts come from
   // props (or a fallback) so SSR and the first paint are correct.
@@ -86,10 +95,11 @@ export function ProgressionPositionReadout({
 
   useEffect(() => {
     const write = (positionBar: number) => {
+      const { totalProgressionBars: currentTotalBars, beatsPerBar: currentBPB } = propsRef.current;
       const p = formatProgressionPlaybackPosition(
         positionBar,
-        totalProgressionBars,
-        beatsPerBar,
+        currentTotalBars,
+        currentBPB,
       );
       const { bar, beat, subdivision } = p.parts.current;
       if (bar !== lastBarRef.current && barRef.current) {
@@ -104,17 +114,32 @@ export function ProgressionPositionReadout({
         subRef.current.textContent = subdivision;
         lastSubRef.current = subdivision;
       }
+
+      // Update aria-label imperatively so screen readers stay in sync with
+      // the high-frequency visual updates.
+      if (containerRef.current) {
+        containerRef.current.setAttribute(
+          "aria-label",
+          `Position ${p.current} of ${p.total}`,
+        );
+      }
     };
 
     const tick = () => {
       const tl = getTimelinePosition();
+      const {
+        stepStartBar: currentStepStartBar,
+        stepBars: currentStepBars,
+        stepIndex: currentStepIndex,
+      } = propsRef.current;
+
       const live =
         playing
         && tl
-        && tl.stepIndex === stepIndex
+        && tl.stepIndex === currentStepIndex
         && !tl.paused
-        && stepBars > 0;
-      const positionBar = live ? stepStartBar + tl.fraction * stepBars : stepStartBar;
+        && currentStepBars > 0;
+      const positionBar = live ? currentStepStartBar + tl.localFraction * currentStepBars : currentStepStartBar;
       write(positionBar);
     };
 
@@ -130,13 +155,15 @@ export function ProgressionPositionReadout({
     if (!playing) return;
     const id = window.setInterval(tick, TICK_MS);
     return () => window.clearInterval(id);
-  }, [playing, stepStartBar, stepBars, stepIndex, totalProgressionBars, beatsPerBar]);
+  }, [playing]);
 
   return (
     <div className={styles.positionReadout}>
       <span className={styles.readoutLabel}>Position</span>
       <span
+        ref={containerRef}
         className={styles.positionValue}
+        role="status"
         aria-label={`Position ${initialPosition.current} of ${initialPosition.total}`}
       >
         <span className={styles.positionCurrent}>

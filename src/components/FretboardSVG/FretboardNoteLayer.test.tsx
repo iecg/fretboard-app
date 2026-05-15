@@ -429,4 +429,21 @@ describe("FretboardNoteLayer", () => {
     // Only note-active and scale-only should render
     expect(labels.length).toBe(2);
   });
+
+  it("marks note groups with CSS animation mode", () => {
+    const { container } = render(
+      <svg>
+        <FretboardNoteLayer
+          noteData={[makeNote("note-active")]}
+          fretCenterX={() => 100}
+          stringYAt={() => 50}
+          noteBubblePx={40}
+          displayFormat="notes"
+          animationMode="css"
+        />
+      </svg>,
+    );
+
+    expect(container.querySelector('[data-motion="css"]')).toBeTruthy();
+  });
 });

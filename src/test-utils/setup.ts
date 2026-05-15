@@ -96,6 +96,7 @@ vi.mock("motion/react", async () => {
       children as React.ReactElement,
     MotionConfig: ({ children }: { children: React.ReactNode }) =>
       children as React.ReactElement,
+    useReducedMotion: vi.fn().mockReturnValue(null),
   };
 });
 
