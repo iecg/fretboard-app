@@ -113,7 +113,8 @@ export function Fretboard(props: FretboardProps) {
 
   const fullChordPositionKeys = useMemo(
     () => new Set(state.fullChordPositions),
-    // fullChordPositions is re-derived each render; gate on the upstream stable atom value
+    // fullChordPositions is memoized in useFretboardState; state.fullChordMatches is the
+    // stable upstream source used for gating here as fullChordPositions is derived from it.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [state.fullChordMatches],
   );

@@ -439,8 +439,7 @@ describe("FretboardNoteLayer", () => {
           stringYAt={() => 50}
           noteBubblePx={40}
           displayFormat="notes"
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          {...({ animationMode: "css" } as any)}
+          animationMode="css"
         />
       </svg>,
     );

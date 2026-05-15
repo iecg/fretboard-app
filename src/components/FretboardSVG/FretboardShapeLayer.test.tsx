@@ -76,8 +76,7 @@ describe("FretboardShapeLayer", () => {
       <svg>
         <FretboardShapeLayer
           svgPolygons={[{ key: "shape-A", points: "0,0 100,0 100,50 0,50", color: "red" }]}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          {...({ animationMode: "group" } as any)}
+          animationMode="group"
         />
       </svg>,
     );
