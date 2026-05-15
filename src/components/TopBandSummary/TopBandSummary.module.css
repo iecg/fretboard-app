@@ -1,11 +1,7 @@
-/* DAW faceplate surface — mirrors the recipe in Inspector.module.css so the
- * top band reads as the upper half of the same hardware unit as the Inspector.
- * (Values are duplicated rather than shared because Phase 4 must not modify
- * Inspector.module.css; a future phase may extract a shared `.faceplate`.) */
+/* The top band is a DAW faceplate — the upper half of the same theme-adaptive
+ * hardware unit as the Inspector, via the shared .faceplate class. */
 .top-band-summary {
-  --topband-bg: #0a121d;
-  --topband-bg-elevated: #0d1726;
-  --topband-border: rgb(77 228 255 / 0.12);
+  composes: faceplate from "../shared/shared.module.css";
 
   display: flex;
   flex-direction: column;
@@ -13,14 +9,6 @@
   width: min(100%, 30rem);
   margin: 0 auto;
   overflow: visible;
-  border: 1px solid var(--topband-border);
-  border-radius: 12px;
-  background:
-    radial-gradient(120% 200% at 0% 0%, rgb(77 228 255 / 0.04), transparent 55%),
-    linear-gradient(180deg, var(--topband-bg-elevated), var(--topband-bg));
-  box-shadow:
-    0 1px 0 rgb(255 255 255 / 0.02) inset,
-    0 18px 40px -28px rgb(0 0 0 / 0.7);
   transition:
     box-shadow var(--transition-fast),
     border-color var(--transition-fast);
