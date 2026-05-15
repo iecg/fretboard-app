@@ -24,14 +24,18 @@ import {
 import { useProgressionState } from "./useProgressionState";
 
 /** Lead between scheduling and audible hit; keeps Web Audio from dropping
- * the first event when `currentTime` and "now" are the same sample. */
-const SCHEDULE_LEAD_SECONDS = 0.02;
+ * the first event when `currentTime` and "now" are the same sample. Increased
+ * to 50ms to safely clear the fade-out ramp of replaced voices, avoiding
+ * "repeated" note flams during mid-bar re-scheduling. */
+const SCHEDULE_LEAD_SECONDS = 0.05;
 
 interface ScheduledSegment {
   stepIndex: number;
   startTime: number;
   endTime: number;
   handle: ScheduledStepHandle;
+  root: string | null;
+  quality: string | null;
 }
 
 interface SchedulerInputs {
@@ -92,6 +96,8 @@ function buildSegment(
     startTime,
     endTime: startTime + durationSec,
     handle,
+    root: step.root,
+    quality: step.quality,
   };
 }
 
@@ -130,6 +136,7 @@ export function useProgressionAudioPlayback() {
   // current chord intact and apply the new params on the next bar).
   const wasPlayingRef = useRef<boolean>(false);
   const lastEnableRef = useRef<EnableFlags | null>(null);
+  const lastActiveStartTimeRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!Array.isArray(segmentsRef.current)) segmentsRef.current = [];
@@ -140,6 +147,7 @@ export function useProgressionAudioPlayback() {
       silenceProgressionBus();
       lastStepRef.current = null;
       lastEnableRef.current = null;
+      lastActiveStartTimeRef.current = null;
     };
 
     if (
@@ -182,53 +190,40 @@ export function useProgressionAudioPlayback() {
     const enableChanged = !sameEnableFlags(lastEnableRef.current, inputs.enable);
     wasPlayingRef.current = true;
 
-    const isStepTransition =
-      !justStarted
-      && lastStepRef.current !== null
-      && lastStepRef.current !== activeProgressionStepIndex;
-
     // Drop segments whose audio has already finished.
     segmentsRef.current = segmentsRef.current.filter((s) => s.endTime > now);
 
     if (justStarted) {
       // Cold start or resumed from pause: clear the queue and schedule the
-      // current chord from `now + LEAD`. Resuming from pause must restart
-      // the bar from beat 0 so the user hears the chord again.
+      // current chord from `now + LEAD`.
       segmentsRef.current.forEach((s) => s.handle.cancelAll());
       segmentsRef.current = [];
-    } else if (isStepTransition) {
-      // Step boundary: the active chord was already pre-scheduled — keep
-      // it and drop any queued segments for steps the user skipped past.
-      segmentsRef.current = segmentsRef.current.filter(
-        (s) => s.stepIndex === activeProgressionStepIndex,
-      );
-    } else if (enableChanged) {
-      // Instrument toggles are direct performance controls. Rebuild the
-      // active segment at its original start time so the timeline keeps its
-      // place, while the scheduler only recreates future hits.
-      const activeSegmentStart = segmentsRef.current.find(
-        (s) => s.stepIndex === activeProgressionStepIndex,
-      )?.startTime;
-      segmentsRef.current.forEach((s) => s.handle.cancelAll());
-      segmentsRef.current = [];
-      if (activeSegmentStart !== undefined) {
-        const seg = buildSegment(
-          audio.ctx,
-          audio.bus,
-          activeProgressionStepIndex,
-          activeSegmentStart,
-          inputs,
-          now + SCHEDULE_LEAD_SECONDS,
-        );
-        if (seg) segmentsRef.current.push(seg);
-      }
+      lastActiveStartTimeRef.current = null;
     } else {
-      // Mid-step dep change (tempo / meter / progression data): preserve the
-      // currently-playing segment unchanged so the bar doesn't restart, and
-      // cancel only the pre-scheduled "next" segment.
+      // Reconciliation: discard segments that are no longer part of the
+      // current/next sequence, or whose resolution has become stale.
+      const nextIdx = findNextResolvableStepIndex(
+        resolvedProgressionSteps,
+        activeProgressionStepIndex,
+        1,
+        progressionLoopEnabled,
+      );
+
       const keepers: ScheduledSegment[] = [];
       for (const s of segmentsRef.current) {
-        if (s.stepIndex === activeProgressionStepIndex) {
+        const step = resolvedProgressionSteps[s.stepIndex];
+        const isDesired =
+          s.stepIndex === activeProgressionStepIndex || s.stepIndex === nextIdx;
+
+        const isCorrect =
+          step && step.root === s.root && step.quality === s.quality;
+
+        // Instrument toggles are direct performance controls. Rebuild the
+        // active segment immediately to apply the new texture.
+        const forceRebuildActive =
+          s.stepIndex === activeProgressionStepIndex && enableChanged;
+
+        if (isDesired && isCorrect && !forceRebuildActive) {
           keepers.push(s);
         } else {
           s.handle.cancelAll();
@@ -242,13 +237,20 @@ export function useProgressionAudioPlayback() {
       (s) => s.stepIndex === activeProgressionStepIndex,
     );
     if (!activeSeg) {
-      const startAt = now + SCHEDULE_LEAD_SECONDS;
+      // Re-scheduling the active segment: if we have a record of its
+      // previous startTime, use it so the bar doesn't restart rhythmically.
+      // Otherwise, anchor it to `now`.
+      const startAt = (lastStepRef.current === activeProgressionStepIndex)
+        ? (lastActiveStartTimeRef.current ?? now)
+        : now;
+
       const seg = buildSegment(
         audio.ctx,
         audio.bus,
         activeProgressionStepIndex,
         startAt,
         inputs,
+        now + SCHEDULE_LEAD_SECONDS,
       );
       if (seg) {
         segmentsRef.current.push(seg);
@@ -264,8 +266,10 @@ export function useProgressionAudioPlayback() {
         activeSeg.startTime,
         activeSeg.endTime - activeSeg.startTime,
       );
+      lastActiveStartTimeRef.current = activeSeg.startTime;
     } else {
       clearTimeline();
+      lastActiveStartTimeRef.current = null;
     }
 
     // Pre-schedule the next resolvable step so its first hit lands exactly
@@ -280,7 +284,7 @@ export function useProgressionAudioPlayback() {
       nextIdx !== null
       && !segmentsRef.current.find((s) => s.stepIndex === nextIdx)
     ) {
-      const tail = segmentsRef.current[segmentsRef.current.length - 1];
+      const tail = segmentsRef.current.find((s) => s.stepIndex === activeProgressionStepIndex);
       const startAt = tail ? tail.endTime : now + SCHEDULE_LEAD_SECONDS;
       const seg = buildSegment(audio.ctx, audio.bus, nextIdx, startAt, inputs);
       if (seg) segmentsRef.current.push(seg);

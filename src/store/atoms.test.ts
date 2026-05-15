@@ -1078,7 +1078,7 @@ describe("atoms", () => {
       store.set(setScaleNameAtom, "Natural Minor");
 
       expect(store.get(progressionStepsAtom).map((step) => step.degree)).toEqual(["i", "v", "VI"]);
-      expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
+      expect(store.get(activeProgressionStepIndexAtom)).toBe(2);
     });
 
     it("setFingeringPatternAtom pauses progression playback for chord-disabled patterns", () => {

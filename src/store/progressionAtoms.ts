@@ -253,8 +253,18 @@ export const loadProgressionPresetAtom = atom(null, (get, set, presetId: string)
 });
 
 export const remapProgressionStepsForScaleAtom = atom(null, (get, set, scaleName: string) => {
-  set(progressionStepsAtom, remapProgressionStepsForScale(get(progressionStepsAtom), scaleName));
-  const first = findFirstResolvableStepIndex(get(resolvedProgressionStepsAtom));
+  const steps = get(progressionStepsAtom);
+  const nextSteps = remapProgressionStepsForScale(steps, scaleName);
+  set(progressionStepsAtom, nextSteps);
+
+  const currentIndex = get(activeProgressionStepIndexAtom);
+  const resolved = get(resolvedProgressionStepsAtom);
+
+  if (resolved[currentIndex] && !resolved[currentIndex].unavailable) {
+    return;
+  }
+
+  const first = findFirstResolvableStepIndex(resolved);
   set(activeProgressionStepIndexAtom, first ?? 0);
 });
 
