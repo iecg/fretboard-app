@@ -120,6 +120,15 @@
   gap: 0.45rem;
 }
 
+/* Inline row: label on the left, switch (or other control) on the right */
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3, 0.75rem);
+  padding-block: var(--space-1, 0.25rem);
+}
+
 .active {
   /* Intentional marker class for CSS Modules state composition. */
 }

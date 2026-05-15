@@ -52,7 +52,7 @@ export function ProgressionControls() {
 
   return (
     <div className={styles["progression-controls"]}>
-      <div className={shared["control-section"]}>
+      <div className={shared["switch-row"]}>
         <span className={shared["section-label"]}>Progression Mode</span>
         <Switch
           label="Progression mode"

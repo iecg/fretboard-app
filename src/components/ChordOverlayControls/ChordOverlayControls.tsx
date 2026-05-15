@@ -205,13 +205,15 @@ export function ChordOverlayControls() {
 
       {!isPatternDisabled && chordType ? (
         <div className={shared["control-section"]}>
-          <span className={shared["section-label"]}>Full Chords</span>
-          <Switch
-            label="Full Chords"
-            checked={fullChordsEnabled}
-            onChange={setFullChordsEnabled}
-            disabled={!fullChordsSupported}
-          />
+          <div className={shared["switch-row"]}>
+            <span className={shared["section-label"]}>Full Chords</span>
+            <Switch
+              label="Full Chords"
+              checked={fullChordsEnabled}
+              onChange={setFullChordsEnabled}
+              disabled={!fullChordsSupported}
+            />
+          </div>
           <p className={shared["field-hint"]}>
             {fullChordsSupported
               ? "Show canonical CAGED voicings instead of scattered chord tones."
