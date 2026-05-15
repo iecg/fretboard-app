@@ -1,24 +1,36 @@
+/* DAW faceplate surface — mirrors the recipe in Inspector.module.css so the
+ * top band reads as the upper half of the same hardware unit as the Inspector.
+ * (Values are duplicated rather than shared because Phase 4 must not modify
+ * Inspector.module.css; a future phase may extract a shared `.faceplate`.) */
 .top-band-summary {
-  background: var(--surface-card-top);
-  border: 1px solid var(--surface-card-border);
-  border-radius: var(--radius-card);
-  box-shadow: var(--elevation-card);
+  --topband-bg: #0a121d;
+  --topband-bg-elevated: #0d1726;
+  --topband-border: rgb(77 228 255 / 0.12);
+
   display: flex;
   flex-direction: column;
   align-items: center;
   width: min(100%, 30rem);
   margin: 0 auto;
   overflow: visible;
+  border: 1px solid var(--topband-border);
+  border-radius: 12px;
+  background:
+    radial-gradient(120% 200% at 0% 0%, rgb(77 228 255 / 0.04), transparent 55%),
+    linear-gradient(180deg, var(--topband-bg-elevated), var(--topband-bg));
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.02) inset,
+    0 18px 40px -28px rgb(0 0 0 / 0.7);
   transition:
     box-shadow var(--transition-fast),
     border-color var(--transition-fast);
 
-  /* Suppress child strip surfaces — the card owns the fill. */
+  /* Suppress child strip surfaces — the faceplate owns the fill. */
   --strip-bg-override: transparent;
   --strip-border-override: none;
   --strip-shadow-override: none;
 
-  /* Card owns the rounded corners — flatten nested strip corners. */
+  /* Faceplate owns the rounded corners — flatten nested strip corners. */
   --strip-radius: 0;
 }
 
@@ -28,102 +40,18 @@
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
-.chord-section,
-.progression-section {
+.chord-section {
   width: 100%;
 }
 
-.progression-section {
-  padding: 0.35rem 0.85rem;
-}
-
-.progression-status {
-  display: grid;
-  gap: 0.35rem;
-  width: 100%;
-}
-
-.progression-status-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding-block-end: var(--space-1);
-}
-
-.progression-title {
-  font-weight: 600;
-  flex: 1;
-}
-
-.progression-position {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.progression-status-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
-  align-items: baseline;
-}
-
-/* Collapse to a single column on the mobile tier (≤ 767px) — uses the
-   codebase's layout-tier attribute instead of a raw pixel media query so this
-   stays in lock-step with the rest of the responsive system. */
-/* stylelint-disable selector-pseudo-class-no-unknown */
-:global(.app-container[data-layout-tier="mobile"]) .progression-status-row {
-  grid-template-columns: 1fr;
-}
-/* stylelint-enable selector-pseudo-class-no-unknown */
-
-.progression-status-cell {
-  display: inline-flex;
-  align-items: baseline;
-  gap: var(--space-2);
-}
-
-.progression-status-label {
-  text-transform: uppercase;
-  font-size: var(--text-xs);
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-}
-
-.progression-status-value {
-  color: var(--text-main);
-  font-size: 0.9rem;
-  line-height: 1.2;
-  min-width: 0;
-}
-
-.progression-status-meta {
-  color: var(--text-muted);
-  font-size: var(--text-sm);
-}
-
-.progression-status-note {
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  line-height: 1.2;
-}
-
-/* Inset hairline divider between the chip strip and the dynamic sections.
-   Rendered inside the animated motion container so it appears/disappears
-   in lockstep with the content — no orphaned lines. */
-.chord-section::before,
-.progression-section::before {
+/* Inset hairline divider between the chip strip and the chord-practice bar.
+   Rendered inside the animated motion container so it appears/disappears in
+   lockstep with the content — no orphaned lines. */
+.chord-section::before {
   content: "";
   display: block;
   height: 1px;
   margin: 0 0;
   background: var(--chrome-border);
   opacity: 0.6;
-}
-
-.progression-section::before {
-  margin-left: -0.85rem;
-  margin-right: -0.85rem;
-  margin-bottom: 0.35rem;
 }
