@@ -41,6 +41,12 @@ export const en: Dictionary = {
     cof: "Key",
     view: "View",
   },
+  inspector: {
+    viewTab: "View",
+    scaleTab: "Scale",
+    chordTab: "Chord",
+    progressionTab: "Progression",
+  },
   common: {
     mute: "Mute audio",
     muteTitle: "Mute",

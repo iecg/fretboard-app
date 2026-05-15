@@ -39,6 +39,12 @@ export interface Dictionary {
     cof: string;
     view: string;
   };
+  inspector: {
+    viewTab: string;
+    scaleTab: string;
+    chordTab: string;
+    progressionTab: string;
+  };
   common: {
     mute: string;
     muteTitle: string;
