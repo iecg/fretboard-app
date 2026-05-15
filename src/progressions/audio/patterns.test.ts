@@ -7,6 +7,15 @@ import {
   ROOT_FIFTH_BASS_PATTERN,
   ROCK_DRUM_PATTERN,
 } from "./patterns";
+import {
+  CHORD_PATTERNS,
+  BASS_PATTERNS,
+  DRUM_PATTERNS,
+  DRUM_VARIATIONS,
+  getChordPattern,
+  getBassPattern,
+  getDrumPattern,
+} from "./patterns";
 
 describe("clipPatternToBeats", () => {
   it("returns an empty array when no beats are available", () => {
@@ -100,5 +109,65 @@ describe("ROOT_FIFTH_BASS_PATTERN", () => {
       { beat: 0, velocity: 1, note: "root" },
       { beat: 2, velocity: 0.85, note: "fifth" },
     ]);
+  });
+});
+
+describe("pattern catalog", () => {
+  it("has 6 chord patterns with unique IDs", () => {
+    expect(CHORD_PATTERNS).toHaveLength(6);
+    const ids = CHORD_PATTERNS.map((p) => p.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("has 6 bass patterns with unique IDs", () => {
+    expect(BASS_PATTERNS).toHaveLength(6);
+    const ids = BASS_PATTERNS.map((p) => p.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("has 7 drum patterns with unique IDs", () => {
+    expect(DRUM_PATTERNS).toHaveLength(7);
+    const ids = DRUM_PATTERNS.map((p) => p.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("has 3 drum variations with unique IDs", () => {
+    expect(DRUM_VARIATIONS).toHaveLength(3);
+    const ids = DRUM_VARIATIONS.map((v) => v.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("all pattern beats are in range [0, 4)", () => {
+    for (const p of CHORD_PATTERNS) {
+      for (const h of p.hits) {
+        expect(h.beat).toBeGreaterThanOrEqual(0);
+        expect(h.beat).toBeLessThan(4);
+      }
+    }
+    for (const p of BASS_PATTERNS) {
+      for (const h of p.hits) {
+        expect(h.beat).toBeGreaterThanOrEqual(0);
+        expect(h.beat).toBeLessThan(4);
+      }
+    }
+    const drumPatterns = [
+      ...DRUM_PATTERNS,
+      ...DRUM_VARIATIONS.map((v) => v.pattern),
+    ];
+    for (const p of drumPatterns) {
+      const lanes = [p.kicks, p.snares, p.hats, p.openHats, p.ride];
+      for (const lane of lanes) {
+        for (const h of lane ?? []) {
+          expect(h.beat).toBeGreaterThanOrEqual(0);
+          expect(h.beat).toBeLessThan(4);
+        }
+      }
+    }
+  });
+
+  it("lookups return correct patterns", () => {
+    expect(getChordPattern("pop-8ths")).toBeDefined();
+    expect(getBassPattern("root-fifth")).toBeDefined();
+    expect(getDrumPattern("rock")).toBeDefined();
   });
 });

@@ -1,18 +1,28 @@
+import { useCallback } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
   activeProgressionStepIndexAtom,
   activeResolvedProgressionStepAtom,
   addProgressionStepAtom,
   advanceProgressionPlaybackAtom,
+  applyGenreStyleAtom,
   beatsPerBarAtom,
   currentProgressionBarAtom,
   currentProgressionPresetIdAtom,
   loadProgressionPresetAtom,
+  loadProgressionStepsAtom,
   moveProgressionStepAtom,
   previousProgressionStepAtom,
   progressionBassEnabledAtom,
+  progressionBassPatternAtom,
+  progressionChordEnabledAtom,
+  progressionChordInstrumentAtom,
+  progressionChordPatternAtom,
+  progressionDrumPatternAtom,
   progressionDrumsEnabledAtom,
+  progressionDrumVariationsAtom,
   progressionEnabledAtom,
+  progressionGenreStyleAtom,
   progressionLoopEnabledAtom,
   progressionMetronomeEnabledAtom,
   progressionPlaybackBlockedReasonAtom,
@@ -21,6 +31,7 @@ import {
   progressionStepDeadlineAtom,
   progressionStepsAtom,
   progressionStrumEnabledAtom,
+  progressionSwingAtom,
   progressionTempoBpmAtom,
   removeProgressionStepAtom,
   resolvedProgressionStepsAtom,
@@ -37,7 +48,63 @@ export function useProgressionState() {
   const [progressionTempoBpm, setProgressionTempoBpm] = useAtom(progressionTempoBpmAtom);
   const [progressionLoopEnabled, setProgressionLoopEnabled] = useAtom(progressionLoopEnabledAtom);
   const [progressionStrumEnabled, setProgressionStrumEnabled] = useAtom(progressionStrumEnabledAtom);
+  const [progressionChordEnabled, setProgressionChordEnabled] = useAtom(progressionChordEnabledAtom);
   const [progressionBassEnabled, setProgressionBassEnabled] = useAtom(progressionBassEnabledAtom);
+  const progressionGenreStyle = useAtomValue(progressionGenreStyleAtom);
+  const setGenreStyle = useSetAtom(progressionGenreStyleAtom);
+  const [progressionChordInstrument, rawSetChordInstrument] = useAtom(progressionChordInstrumentAtom);
+  const [progressionChordPattern, rawSetChordPattern] = useAtom(progressionChordPatternAtom);
+  const [progressionBassPattern, rawSetBassPattern] = useAtom(progressionBassPatternAtom);
+  const [progressionDrumPattern, rawSetDrumPattern] = useAtom(progressionDrumPatternAtom);
+  const [progressionDrumVariations, rawSetDrumVariations] = useAtom(progressionDrumVariationsAtom);
+  const [progressionSwing, rawSetSwing] = useAtom(progressionSwingAtom);
+
+  // Changing any individual instrument/pattern/swing setting after picking a
+  // genre means the active mix no longer matches that genre — revert the
+  // genre selector to "custom". `applyGenreStyle` is exempt: it legitimately
+  // sets the genre.
+  const setProgressionChordInstrument = useCallback(
+    (v: typeof progressionChordInstrument) => {
+      rawSetChordInstrument(v);
+      setGenreStyle("custom");
+    },
+    [rawSetChordInstrument, setGenreStyle],
+  );
+  const setProgressionChordPattern = useCallback(
+    (v: string) => {
+      rawSetChordPattern(v);
+      setGenreStyle("custom");
+    },
+    [rawSetChordPattern, setGenreStyle],
+  );
+  const setProgressionBassPattern = useCallback(
+    (v: string) => {
+      rawSetBassPattern(v);
+      setGenreStyle("custom");
+    },
+    [rawSetBassPattern, setGenreStyle],
+  );
+  const setProgressionDrumPattern = useCallback(
+    (v: string) => {
+      rawSetDrumPattern(v);
+      setGenreStyle("custom");
+    },
+    [rawSetDrumPattern, setGenreStyle],
+  );
+  const setProgressionDrumVariations = useCallback(
+    (v: string[]) => {
+      rawSetDrumVariations(v);
+      setGenreStyle("custom");
+    },
+    [rawSetDrumVariations, setGenreStyle],
+  );
+  const setProgressionSwing = useCallback(
+    (v: number) => {
+      rawSetSwing(v);
+      setGenreStyle("custom");
+    },
+    [rawSetSwing, setGenreStyle],
+  );
   const [progressionDrumsEnabled, setProgressionDrumsEnabled] = useAtom(progressionDrumsEnabledAtom);
   const [progressionMetronomeEnabled, setProgressionMetronomeEnabled] = useAtom(progressionMetronomeEnabledAtom);
   const progressionSteps = useAtomValue(progressionStepsAtom);
@@ -66,6 +133,22 @@ export function useProgressionState() {
     setProgressionLoopEnabled,
     progressionStrumEnabled,
     setProgressionStrumEnabled,
+    progressionChordEnabled,
+    setProgressionChordEnabled,
+    progressionGenreStyle,
+    applyGenreStyle: useSetAtom(applyGenreStyleAtom),
+    progressionChordInstrument,
+    setProgressionChordInstrument,
+    progressionChordPattern,
+    setProgressionChordPattern,
+    progressionBassPattern,
+    setProgressionBassPattern,
+    progressionDrumPattern,
+    setProgressionDrumPattern,
+    progressionDrumVariations,
+    setProgressionDrumVariations,
+    progressionSwing,
+    setProgressionSwing,
     progressionBassEnabled,
     setProgressionBassEnabled,
     progressionDrumsEnabled,
@@ -82,6 +165,7 @@ export function useProgressionState() {
     currentProgressionBar,
     currentProgressionPresetId,
     loadProgressionPreset: useSetAtom(loadProgressionPresetAtom),
+    loadProgressionSteps: useSetAtom(loadProgressionStepsAtom),
     setActiveProgressionStepIndex: useSetAtom(setProgressionActiveStepIndexAtom),
     addProgressionStep: useSetAtom(addProgressionStepAtom),
     removeProgressionStep: useSetAtom(removeProgressionStepAtom),

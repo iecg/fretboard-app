@@ -146,6 +146,33 @@ describe("ProgressionControls PRESET", () => {
     expect(select.value).toBe("one-five-six-four"); // default I-V-vi-IV preset
   });
 
+  it("renders preset selector with category groups", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+    ]);
+    renderWithStore(<ProgressionControls />, store);
+
+    const select = screen.getByLabelText(/preset/i);
+    const optgroups = select.querySelectorAll("optgroup");
+    expect(optgroups.length).toBeGreaterThan(0);
+  });
+
+  it("renders a suggested presets optgroup for the current scale", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+    ]);
+    renderWithStore(<ProgressionControls />, store);
+
+    const select = screen.getByLabelText("Preset");
+    const optgroups = Array.from(select.querySelectorAll("optgroup"));
+    const labels = optgroups.map((g) => g.getAttribute("label"));
+    expect(labels.some((l) => l?.startsWith("Suggested for"))).toBe(true);
+  });
+
   it("only lists presets that are available for the selected scale", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
@@ -155,14 +182,19 @@ describe("ProgressionControls PRESET", () => {
     renderWithStore(<ProgressionControls />, store);
 
     const select = screen.getByRole("combobox", { name: "Preset" });
-    expect(within(select).getAllByRole("option").map((option) => option.textContent)).toEqual([
-      "Custom",
-      "I-V-vi-IV",
-      "ii-V-I",
-      "I-vi-IV-V",
-      "I-IV-V",
-      "12-bar blues",
-    ]);
+    const optionLabels = within(select)
+      .getAllByRole("option")
+      .map((option) => option.textContent);
+    expect(optionLabels[0]).toBe("Custom");
+    expect(optionLabels).toEqual(
+      expect.arrayContaining([
+        "I-V-vi-IV",
+        "ii-V-I",
+        "I-vi-IV-V",
+        "I-IV-V",
+        "12-bar blues",
+      ]),
+    );
   });
 });
 

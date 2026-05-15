@@ -106,6 +106,19 @@ function buildMockCtx(): MockCtx {
   };
 }
 
+// Default catalog-driven fields that reproduce the OLD hardcoded behavior:
+// strum voice + pop-8ths (== POP_STRUM_PATTERN), root-fifth bass, rock drums,
+// no swing, no variations. Spread into every step input so existing
+// assertions about hit counts / timing remain valid.
+const defaultNewFields = {
+  chordInstrument: "strum" as const,
+  chordPatternId: "pop-8ths",
+  bassPatternId: "root-fifth",
+  drumPatternId: "rock",
+  drumVariations: [] as string[],
+  swing: 0,
+};
+
 describe("scheduleProgressionStep", () => {
   let bus: ReturnType<typeof createMockGain>;
   let mock: MockCtx;
@@ -124,6 +137,37 @@ describe("scheduleProgressionStep", () => {
       secondsPerBeat: 0.5,
       startTime: 0,
       enable: { strum: true, bass: true, drums: true, metronome: true },
+      ...defaultNewFields,
+    });
+    expect(mock.oscCount()).toBe(0);
+    expect(() => handle.cancelAll()).not.toThrow();
+  });
+
+  it("returns a no-op handle when beatsPerBar is 0", () => {
+    const handle = scheduleProgressionStep(mock.ctx, bus as unknown as AudioNode, {
+      voicing: ["C3"],
+      bassNotes: ["C2"],
+      beatsAvailable: 4,
+      beatsPerBar: 0,
+      secondsPerBeat: 0.5,
+      startTime: 0,
+      enable: { strum: true, bass: true, drums: true, metronome: true },
+      ...defaultNewFields,
+    });
+    expect(mock.oscCount()).toBe(0);
+    expect(() => handle.cancelAll()).not.toThrow();
+  });
+
+  it("returns a no-op handle when beatsPerBar is negative", () => {
+    const handle = scheduleProgressionStep(mock.ctx, bus as unknown as AudioNode, {
+      voicing: ["C3"],
+      bassNotes: ["C2"],
+      beatsAvailable: 4,
+      beatsPerBar: -4,
+      secondsPerBeat: 0.5,
+      startTime: 0,
+      enable: { strum: true, bass: true, drums: true, metronome: true },
+      ...defaultNewFields,
     });
     expect(mock.oscCount()).toBe(0);
     expect(() => handle.cancelAll()).not.toThrow();
@@ -138,6 +182,7 @@ describe("scheduleProgressionStep", () => {
       secondsPerBeat: 0.5,
       startTime: 0,
       enable: { strum: false, bass: false, drums: false, metronome: false },
+      ...defaultNewFields,
     });
     expect(mock.oscCount()).toBe(0);
     expect(mock.bufferSourceCount()).toBe(0);
@@ -152,6 +197,7 @@ describe("scheduleProgressionStep", () => {
       secondsPerBeat: 0.5,
       startTime: 0,
       enable: { strum: true, bass: false, drums: false, metronome: false },
+      ...defaultNewFields,
     });
     // 6 strum hits × 3-note voicing = 18 oscillators.
     expect(mock.oscCount()).toBe(18);
@@ -166,6 +212,7 @@ describe("scheduleProgressionStep", () => {
       secondsPerBeat: 0.5,
       startTime: 0,
       enable: { strum: false, bass: true, drums: false, metronome: false },
+      ...defaultNewFields,
     });
     // Beats 0 and 2 = two bass oscillators.
     expect(mock.oscCount()).toBe(2);
@@ -180,6 +227,7 @@ describe("scheduleProgressionStep", () => {
       secondsPerBeat: 0.5,
       startTime: 0,
       enable: { strum: false, bass: true, drums: false, metronome: false },
+      ...defaultNewFields,
     });
 
     expect(mock.oscCount()).toBe(2);
@@ -202,6 +250,7 @@ describe("scheduleProgressionStep", () => {
       secondsPerBeat: 0.5,
       startTime: 0,
       enable: { strum: false, bass: false, drums: false, metronome: true },
+      ...defaultNewFields,
     });
     expect(mock.oscCount()).toBe(4);
   });
@@ -215,6 +264,7 @@ describe("scheduleProgressionStep", () => {
       secondsPerBeat: 0.5,
       startTime: 3,
       enable: { strum: false, bass: false, drums: false, metronome: true },
+      ...defaultNewFields,
     });
 
     const scheduledSources = mock.oscillators();
@@ -238,6 +288,7 @@ describe("scheduleProgressionStep", () => {
       startTime: 10,
       scheduleFromTime: 10.76,
       enable: { strum: false, bass: false, drums: false, metronome: true },
+      ...defaultNewFields,
     });
 
     const startTimes = mock.oscillators().map((source) => source.start.mock.calls[0]?.[0]);
@@ -253,6 +304,7 @@ describe("scheduleProgressionStep", () => {
       secondsPerBeat: 0.5,
       startTime: 0,
       enable: { strum: false, bass: false, drums: true, metronome: false },
+      ...defaultNewFields,
     });
     // 2 kicks × (body + click) = 4 oscillators from kicks
     // 2 snares × (body) = 2 oscillators from snares
@@ -271,6 +323,7 @@ describe("scheduleProgressionStep", () => {
       secondsPerBeat: 0.5,
       startTime: 3,
       enable: { strum: false, bass: false, drums: true, metronome: false },
+      ...defaultNewFields,
     });
 
     const scheduledSources = [
@@ -296,6 +349,7 @@ describe("scheduleProgressionStep", () => {
       secondsPerBeat: 0.5,
       startTime: 0,
       enable: { strum: true, bass: false, drums: false, metronome: false },
+      ...defaultNewFields,
     });
     expect(mock.oscCount()).toBe(1);
   });
@@ -309,6 +363,7 @@ describe("scheduleProgressionStep", () => {
       secondsPerBeat: 0.5,
       startTime: 0,
       enable: { strum: true, bass: false, drums: false, metronome: false },
+      ...defaultNewFields,
     });
     expect(mock.oscCount()).toBe(12);
   });
@@ -322,6 +377,7 @@ describe("scheduleProgressionStep", () => {
       secondsPerBeat: 0.5,
       startTime: 0,
       enable: { strum: false, bass: false, drums: false, metronome: true },
+      ...defaultNewFields,
     });
 
     const frequencies = mock.oscillators().map((osc) =>
@@ -348,6 +404,7 @@ describe("scheduleProgressionStep", () => {
       secondsPerBeat: 0.5,
       startTime: 0,
       enable: { strum: false, bass: true, drums: false, metronome: false },
+      ...defaultNewFields,
     });
 
     const scheduledNotes = mock.oscillators().map((osc) =>

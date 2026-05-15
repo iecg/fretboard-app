@@ -219,6 +219,50 @@ export function scheduleHiHat(
   );
 }
 
+export interface RideOptions extends DrumHitOptions {
+  bell?: boolean;
+}
+
+/**
+ * Schedule a ride cymbal hit. Filtered noise with a longer decay than hi-hat.
+ * The optional `bell` mode raises the frequency and tightens the Q for a
+ * brighter, more focused ping.
+ */
+export function scheduleRide(
+  ctx: AudioContext,
+  dest: AudioNode,
+  time: number,
+  options: RideOptions = {},
+): DrumVoiceHandle {
+  const velocity = clampVelocity(options.velocity);
+  if (velocity <= 0) return { cancel: () => {} };
+  const decay = options.bell ? 0.15 : 0.5;
+
+  const noise = ctx.createBufferSource();
+  noise.buffer = getNoiseBuffer(ctx);
+
+  const bp = ctx.createBiquadFilter();
+  bp.type = "bandpass";
+  bp.frequency.value = options.bell ? 6000 : 4000;
+  bp.Q.value = options.bell ? 2 : 0.5;
+
+  const hp = ctx.createBiquadFilter();
+  hp.type = "highpass";
+  hp.frequency.value = 3000;
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.001, time);
+  gain.gain.exponentialRampToValueAtTime(0.25 * velocity, time + 0.003);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + decay);
+
+  noise.connect(bp).connect(hp).connect(gain).connect(dest);
+  noise.start(time);
+  noise.stop(time + decay + 0.05);
+  noise.onended = () => disposeNodes(noise, bp, hp, gain);
+
+  return createDrumVoiceHandle(ctx, [noise], [noise, bp, hp, gain]);
+}
+
 export function _resetDrumKitForTests(): void {
   cachedNoiseBuffer = null;
   cachedNoiseCtx = null;

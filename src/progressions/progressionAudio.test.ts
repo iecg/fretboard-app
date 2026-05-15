@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveBassLineNotes, resolveChordVoicing } from "./progressionAudio";
+import { resolveBassLineNotes, resolveChordVoicing, resolveBassNoteForRole } from "./progressionAudio";
 
 describe("resolveChordVoicing", () => {
   it("stacks the C Major Triad as C-E-G at octave 3", () => {
@@ -58,5 +58,29 @@ describe("resolveBassLineNotes", () => {
 
   it("uses the altered fifth for diminished chords", () => {
     expect(resolveBassLineNotes("B", "Diminished Triad")).toEqual(["B2", "F3"]);
+  });
+});
+
+describe("resolveBassNoteForRole", () => {
+  it("resolves root", () => {
+    expect(resolveBassNoteForRole("C", "Major Triad", "root")).toBe("C2");
+  });
+  it("resolves third", () => {
+    expect(resolveBassNoteForRole("C", "Major Triad", "third")).toBe("E2");
+  });
+  it("resolves fifth", () => {
+    expect(resolveBassNoteForRole("C", "Major Triad", "fifth")).toBe("G2");
+  });
+  it("resolves octave", () => {
+    expect(resolveBassNoteForRole("C", "Major Triad", "octave")).toBe("C3");
+  });
+  it("resolves chromatic-approach to semitone below next root", () => {
+    expect(resolveBassNoteForRole("C", "Major Triad", "chromatic-approach", "F")).toBe("E2");
+  });
+  it("falls back to semitone below current root when no next root", () => {
+    expect(resolveBassNoteForRole("C", "Major Triad", "chromatic-approach")).toBe("B1");
+  });
+  it("falls back to root when third/fifth unavailable", () => {
+    expect(resolveBassNoteForRole("C", "Power Chord", "third")).toBe("C2");
   });
 });

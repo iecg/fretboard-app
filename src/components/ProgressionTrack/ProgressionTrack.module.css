@@ -391,6 +391,76 @@
 }
 
 /* ----------------------------------------------------------------------------
+ * Accompaniment controls — secondary row of genre / instrument / pattern
+ * selectors plus the swing slider. Compact, faceplate-consistent styling.
+ * ------------------------------------------------------------------------- */
+
+.accompanimentControls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.genreSelect,
+.instrumentSelect,
+.patternSelect {
+  flex: 0 0 auto;
+  min-width: 0;
+  max-width: 9rem;
+  padding: 0.22rem 0.4rem;
+  border: 1px solid var(--track-border);
+  border-radius: 6px;
+  background: var(--track-bg-readout);
+  color: var(--track-text-dim);
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  cursor: pointer;
+  transition: border-color 160ms ease, color 160ms ease;
+}
+
+.genreSelect:hover,
+.instrumentSelect:hover,
+.patternSelect:hover {
+  border-color: rgb(77 228 255 / 0.4);
+  color: var(--track-accent);
+}
+
+.genreSelect:focus-visible,
+.instrumentSelect:focus-visible,
+.patternSelect:focus-visible {
+  outline: none;
+  border-color: var(--track-accent);
+  box-shadow: 0 0 0 1px var(--track-accent);
+}
+
+.swingControl {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  color: var(--track-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.swingControl input[type="range"] {
+  width: 4.5rem;
+  accent-color: var(--track-accent);
+  cursor: pointer;
+}
+
+.swingControl span {
+  min-width: 2.2rem;
+  color: var(--track-text-dim);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+/* ----------------------------------------------------------------------------
  * Timeline — ruler + blocks share the same flex parent with zero gap so
  * positions are mathematically exact.
  * ------------------------------------------------------------------------- */

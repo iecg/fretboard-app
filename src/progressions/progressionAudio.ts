@@ -1,4 +1,5 @@
 import { CHORD_DEFINITIONS, NOTES } from "@fretflow/core";
+import type { BassNoteRole } from "./audio/patterns";
 
 /**
  * Reasonable default octave for the root note of a strummed chord. Chosen
@@ -76,6 +77,53 @@ export function resolveBassLineNotes(
     const octave = Math.floor(absolute / 12);
     return `${note}${octave}`;
   });
+}
+
+export function resolveBassNoteForRole(
+  root: string,
+  quality: string,
+  role: BassNoteRole,
+  nextChordRoot?: string,
+  rootOctave: number = PROGRESSION_BASS_ROOT_OCTAVE,
+): string {
+  const rootIndex = NOTES.indexOf(root);
+  if (rootIndex < 0) return `${root}${rootOctave}`;
+
+  const definition = CHORD_DEFINITIONS[quality];
+  const rootAbsolute = rootOctave * 12 + rootIndex;
+
+  const toNote = (absolute: number) => {
+    const note = NOTES[((absolute % 12) + 12) % 12];
+    const oct = Math.floor(absolute / 12);
+    return `${note}${oct}`;
+  };
+
+  switch (role) {
+    case "root":
+      return toNote(rootAbsolute);
+    case "third": {
+      const third = definition?.members.find((m) => m.name === "3" || m.name === "b3");
+      return third ? toNote(rootAbsolute + third.semitone) : toNote(rootAbsolute);
+    }
+    case "fifth": {
+      const fifth = definition?.members.find((m) => m.name === "5" || m.name === "b5" || m.name === "#5");
+      return fifth ? toNote(rootAbsolute + fifth.semitone) : toNote(rootAbsolute);
+    }
+    case "octave":
+      return toNote(rootAbsolute + 12);
+    case "chromatic-approach": {
+      if (nextChordRoot) {
+        const nextIndex = NOTES.indexOf(nextChordRoot);
+        if (nextIndex >= 0) {
+          const nextAbsolute = rootOctave * 12 + nextIndex;
+          return toNote(nextAbsolute - 1);
+        }
+      }
+      return toNote(rootAbsolute - 1);
+    }
+    default:
+      return toNote(rootAbsolute);
+  }
 }
 
 /** Exported for tests that want to spot-check the chromatic wrap. */

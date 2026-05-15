@@ -148,15 +148,18 @@ describe("progressionDomain", () => {
   });
 
   it("defines the initial presets as editable step templates", () => {
-    expect(PROGRESSION_PRESETS.map((preset) => preset.id)).toEqual([
-      "one-five-six-four",
-      "two-five-one",
-      "one-six-four-five",
-      "one-four-five",
-      "twelve-bar-blues",
-    ]);
+    const ids = PROGRESSION_PRESETS.map((preset) => preset.id);
+    expect(ids).toEqual(
+      expect.arrayContaining([
+        "one-five-six-four",
+        "two-five-one",
+        "one-six-four-five",
+        "one-four-five",
+        "twelve-bar-blues",
+      ]),
+    );
     const blues = PROGRESSION_PRESETS.find((preset) => preset.id === "twelve-bar-blues");
-    expect(blues?.steps).toHaveLength(12);
+    expect(blues?.steps).toHaveLength(7);
     expect(blues?.steps.every((step) => step.qualityOverride === "Dominant 7th")).toBe(true);
   });
 
@@ -166,6 +169,62 @@ describe("progressionDomain", () => {
     expect(isProgressionPresetAvailableForScale(oneFiveSixFour!, "Major")).toBe(true);
     expect(isProgressionPresetAvailableForScale(oneFiveSixFour!, "Minor Blues")).toBe(true);
     expect(getAvailableProgressionPresets("Minor Blues")).toEqual(PROGRESSION_PRESETS);
+  });
+});
+
+describe("expanded preset catalog", () => {
+  it("has at least 25 presets", () => {
+    expect(PROGRESSION_PRESETS.length).toBeGreaterThanOrEqual(25);
+  });
+  it("all presets have unique IDs", () => {
+    const ids = PROGRESSION_PRESETS.map((p) => p.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+  it("all presets have a category", () => {
+    for (const preset of PROGRESSION_PRESETS) {
+      expect(preset.category).toBeDefined();
+      expect(["pop-rock", "blues", "jazz", "folk", "modal", "minor"]).toContain(preset.category);
+    }
+  });
+  it("has presets in each category", () => {
+    const categories = new Set(PROGRESSION_PRESETS.map((p) => p.category));
+    expect(categories).toContain("pop-rock");
+    expect(categories).toContain("blues");
+    expect(categories).toContain("jazz");
+    expect(categories).toContain("folk");
+    expect(categories).toContain("modal");
+    expect(categories).toContain("minor");
+  });
+});
+
+describe("twelve-bar-blues preset", () => {
+  const blues = PROGRESSION_PRESETS.find((p) => p.id === "twelve-bar-blues")!;
+
+  it("has 7 steps totaling 12 bars", () => {
+    expect(blues.steps).toHaveLength(7);
+    const totalBars = blues.steps.reduce(
+      (sum, s) => sum + (s.duration.unit === "bar" ? s.duration.value : 0),
+      0,
+    );
+    expect(totalBars).toBe(12);
+  });
+
+  it("uses multi-bar durations for repeated chords", () => {
+    expect(blues.steps[0]).toEqual(
+      expect.objectContaining({ degree: "I", duration: { value: 4, unit: "bar" } }),
+    );
+    expect(blues.steps[1]).toEqual(
+      expect.objectContaining({ degree: "IV", duration: { value: 2, unit: "bar" } }),
+    );
+    expect(blues.steps[2]).toEqual(
+      expect.objectContaining({ degree: "I", duration: { value: 2, unit: "bar" } }),
+    );
+  });
+
+  it("applies Dominant 7th to all steps", () => {
+    for (const step of blues.steps) {
+      expect(step.qualityOverride).toBe("Dominant 7th");
+    }
   });
 });
 
