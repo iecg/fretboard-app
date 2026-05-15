@@ -196,10 +196,26 @@ describe('getDegreesForScale', () => {
       });
     });
 
-    it('falls back gracefully for Blues scale', () => {
+    it('returns pentatonic degree labels for Minor Blues', () => {
       const degrees = getDegreesForScale('Minor Blues');
-      expect(degrees).toBeDefined();
-      expect(degrees[0]).toBeDefined(); // Has a root
+      expect(degrees).toEqual({
+        0: "i",
+        3: "III",
+        5: "iv",
+        7: "v",
+        10: "VII",
+      });
+    });
+
+    it('returns pentatonic degree labels for Major Blues', () => {
+      const degrees = getDegreesForScale('Major Blues');
+      expect(degrees).toEqual({
+        0: "I",
+        2: "ii",
+        4: "iii",
+        7: "V",
+        9: "vi",
+      });
     });
   });
 
@@ -218,6 +234,24 @@ describe('getDegreesForScale', () => {
       expect(getQualityForDegree("iv", "Minor Pentatonic")).toBe("Minor Triad");
       expect(getQualityForDegree("v", "Minor Pentatonic")).toBe("Minor Triad");
       expect(getQualityForDegree("VII", "Minor Pentatonic")).toBe("Major Triad");
+    });
+
+    it('returns chord qualities for Major Blues degrees', () => {
+      expect(getQualityForDegree("I", "Major Blues")).toBe("Major Triad");
+      expect(getQualityForDegree("ii", "Major Blues")).toBe("Minor Triad");
+      expect(getQualityForDegree("iii", "Major Blues")).toBe("Minor Triad");
+      expect(getQualityForDegree("V", "Major Blues")).toBe("Major Triad");
+      expect(getQualityForDegree("vi", "Major Blues")).toBe("Minor Triad");
+      expect(getQualityForDegree("b3", "Major Blues")).toBeUndefined();
+    });
+
+    it('returns chord qualities for Minor Blues degrees', () => {
+      expect(getQualityForDegree("i", "Minor Blues")).toBe("Minor Triad");
+      expect(getQualityForDegree("III", "Minor Blues")).toBe("Major Triad");
+      expect(getQualityForDegree("iv", "Minor Blues")).toBe("Minor Triad");
+      expect(getQualityForDegree("v", "Minor Blues")).toBe("Minor Triad");
+      expect(getQualityForDegree("VII", "Minor Blues")).toBe("Major Triad");
+      expect(getQualityForDegree("b5", "Minor Blues")).toBeUndefined();
     });
   });
 });

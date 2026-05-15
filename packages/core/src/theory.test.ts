@@ -472,6 +472,24 @@ describe("getDiatonicChord", () => {
     });
   });
 
+  describe("Blues scales", () => {
+    it("v in C Minor Blues resolves to G Minor Triad", () => {
+      expect(getDiatonicChord("v", "Minor Blues", "C")).toEqual({ root: "G", quality: "Minor Triad" });
+    });
+
+    it("b5 in C Minor Blues is a color tone, not a chord degree", () => {
+      expect(getDiatonicChord("b5", "Minor Blues", "C")).toBeUndefined();
+    });
+
+    it("V in C Major Blues resolves to G Major Triad", () => {
+      expect(getDiatonicChord("V", "Major Blues", "C")).toEqual({ root: "G", quality: "Major Triad" });
+    });
+
+    it("b3 in C Major Blues is a color tone, not a chord degree", () => {
+      expect(getDiatonicChord("b3", "Major Blues", "C")).toBeUndefined();
+    });
+  });
+
   describe("Unknown degree guard", () => {
     it("i is not a degree in Major scale — returns undefined", () => {
       expect(getDiatonicChord("i", "Major", "C#")).toBeUndefined();

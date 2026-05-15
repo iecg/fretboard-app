@@ -157,6 +157,11 @@ describe("ProgressionControls PRESET", () => {
     const select = screen.getByRole("combobox", { name: "Preset" });
     expect(within(select).getAllByRole("option").map((option) => option.textContent)).toEqual([
       "Custom",
+      "I-V-vi-IV",
+      "ii-V-I",
+      "I-vi-IV-V",
+      "I-IV-V",
+      "12-bar blues",
     ]);
   });
 });
