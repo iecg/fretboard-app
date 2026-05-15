@@ -24,6 +24,21 @@ export default defineConfig({
   },
   build: {
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id: string) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react-dom') || id.includes('react/') || id.includes('scheduler')) {
+              return 'vendor-react'
+            }
+            if (id.includes('motion-dom') || id.includes('motion-utils') || id.includes('framer-motion') || id.includes('/motion/')) {
+              return 'vendor-motion'
+            }
+            return 'vendor'
+          }
+        },
+      },
+    },
   },
   test: {
     globals: true,
