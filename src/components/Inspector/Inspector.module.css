@@ -6,28 +6,12 @@
   background: var(--surface-well, #0a121d);
   border: 1px solid var(--token-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--radius-md, 6px);
-  position: relative;
-  overflow: hidden;
-}
-
-.root::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(
-    circle at 0% 0%,
-    var(--bg-app-accent-glow-1),
-    transparent 60%
-  );
 }
 
 .tabList {
   display: flex;
   gap: var(--space-1, 0.25rem);
   border-bottom: 1px solid var(--token-border-subtle, rgba(255, 255, 255, 0.06));
-  position: relative;
-  z-index: 1;
 }
 
 .tab {
@@ -64,8 +48,6 @@
 .tabPanel {
   min-height: 80px;
   padding: var(--space-3, 0.75rem) 0;
-  position: relative;
-  z-index: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {
