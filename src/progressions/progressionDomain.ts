@@ -254,6 +254,17 @@ const ROMAN_ORDINALS: Record<string, number> = {
   VII: 6,
 };
 
+const PROGRESSION_HARMONY_SCALE: Record<string, string> = {
+  "Major Pentatonic": "Major",
+  "Major Blues": "Major",
+  "Minor Pentatonic": "Natural Minor",
+  "Minor Blues": "Natural Minor",
+};
+
+function getProgressionHarmonyScaleName(scaleName: string): string {
+  return PROGRESSION_HARMONY_SCALE[scaleName] ?? scaleName;
+}
+
 let fallbackId = 0;
 
 export function createProgressionStep(
@@ -306,7 +317,7 @@ export function getDegreeOrdinal(degree: DegreeId): number | null {
 
 export function remapDegreeByOrdinal(degree: DegreeId, toScaleName: string): DegreeId {
   const ordinal = getDegreeOrdinal(degree);
-  const targetDegrees = getDegreeSequence(toScaleName);
+  const targetDegrees = getDegreeSequence(getProgressionHarmonyScaleName(toScaleName));
   if (ordinal === null) return degree;
   return targetDegrees[ordinal] ?? degree;
 }
@@ -410,7 +421,11 @@ export function resolveProgressionStep(
   index = 0,
   useFlats = false,
 ): ResolvedProgressionStep {
-  const diatonic = getDiatonicChord(step.degree, scaleName, rootNote);
+  const diatonic = getDiatonicChord(
+    step.degree,
+    getProgressionHarmonyScaleName(scaleName),
+    rootNote,
+  );
   if (!diatonic) {
     return {
       ...step,

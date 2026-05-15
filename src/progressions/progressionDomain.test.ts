@@ -61,10 +61,55 @@ describe("progressionDomain", () => {
     });
   });
 
+  it("resolves major pentatonic and blues progression chords through major harmony", () => {
+    const step = createProgressionStep(
+      { degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      "step-iv",
+    );
+
+    expect(resolveProgressionStep(step, "Major Pentatonic", "C")).toMatchObject({
+      root: "F",
+      quality: "Major Triad",
+      unavailable: false,
+    });
+    expect(resolveProgressionStep(step, "Major Blues", "C")).toMatchObject({
+      root: "F",
+      quality: "Major Triad",
+      unavailable: false,
+    });
+  });
+
+  it("resolves minor pentatonic and blues progression chords through natural-minor harmony", () => {
+    const step = createProgressionStep(
+      { degree: "VI", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      "step-vi",
+    );
+
+    expect(resolveProgressionStep(step, "Minor Pentatonic", "C")).toMatchObject({
+      root: "G#",
+      quality: "Major Triad",
+      unavailable: false,
+    });
+    expect(resolveProgressionStep(step, "Minor Blues", "C")).toMatchObject({
+      root: "G#",
+      quality: "Major Triad",
+      unavailable: false,
+    });
+  });
+
   it("remaps degree labels by scale-step ordinal when the scale changes", () => {
     expect(remapDegreeByOrdinal("I", "Natural Minor")).toBe("i");
     expect(remapDegreeByOrdinal("V", "Natural Minor")).toBe("v");
     expect(remapDegreeByOrdinal("vi", "Natural Minor")).toBe("VI");
+  });
+
+  it("remaps progression degrees for pentatonic and blues scales against their major/minor harmony parent", () => {
+    expect(remapDegreeByOrdinal("IV", "Major Pentatonic")).toBe("IV");
+    expect(remapDegreeByOrdinal("vi", "Major Blues")).toBe("vi");
+    expect(remapDegreeByOrdinal("I", "Minor Pentatonic")).toBe("i");
+    expect(remapDegreeByOrdinal("V", "Minor Blues")).toBe("v");
+    expect(remapDegreeByOrdinal("vi", "Minor Blues")).toBe("VI");
+    expect(remapDegreeByOrdinal("IV", "Minor Blues")).toBe("iv");
   });
 
   it("remaps all progression steps while preserving ids, durations, and overrides", () => {
@@ -119,8 +164,8 @@ describe("progressionDomain", () => {
     const oneFiveSixFour = PROGRESSION_PRESETS.find((preset) => preset.id === "one-five-six-four");
     expect(oneFiveSixFour).toBeDefined();
     expect(isProgressionPresetAvailableForScale(oneFiveSixFour!, "Major")).toBe(true);
-    expect(isProgressionPresetAvailableForScale(oneFiveSixFour!, "Minor Blues")).toBe(false);
-    expect(getAvailableProgressionPresets("Minor Blues")).toEqual([]);
+    expect(isProgressionPresetAvailableForScale(oneFiveSixFour!, "Minor Blues")).toBe(true);
+    expect(getAvailableProgressionPresets("Minor Blues")).toEqual(PROGRESSION_PRESETS);
   });
 });
 
