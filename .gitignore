@@ -44,6 +44,8 @@ src/__snapshots__/
 
 # === Generated Files ===
 scripts/gif-capture/frames/
-docs/
+# Ignore docs/ contents, but keep superpowers specs/plans tracked so they aren't lost.
+docs/*
+!docs/superpowers/
 
 .superpowers/
