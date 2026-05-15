@@ -1,0 +1,143 @@
+// @vitest-environment jsdom
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { act } from "@testing-library/react";
+import { makeAtomStore, renderWithStore } from "../test-utils/renderWithAtoms";
+import {
+  beatsPerBarAtom,
+  chordRootAtom,
+  progressionEnabledAtom,
+  progressionStepsAtom,
+  progressionTempoBpmAtom,
+  rootNoteAtom,
+  scaleNameAtom,
+  setProgressionPlayingAtom,
+} from "../store/atoms";
+import { _resetTimelineForTests, setActiveStep } from "../progressions/audio/timeline";
+import { _resetProgressionAudioForTests } from "../progressions/audio/bus";
+import { useProgressionPlaybackLoop } from "./useProgressionPlaybackLoop";
+
+const threeChordProgression = [
+  { id: "one", degree: "I", duration: { value: 1, unit: "beat" }, qualityOverride: null },
+  { id: "two", degree: "V", duration: { value: 1, unit: "beat" }, qualityOverride: null },
+  { id: "three", degree: "vi", duration: { value: 1, unit: "beat" }, qualityOverride: null },
+] as const;
+
+function PlaybackLoopHarness() {
+  useProgressionPlaybackLoop();
+  return null;
+}
+
+describe("useProgressionPlaybackLoop", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(0));
+    _resetTimelineForTests();
+    _resetProgressionAudioForTests();
+
+    const audioContext = {
+      get currentTime() {
+        return Date.now() / 1000;
+      },
+      sampleRate: 44100,
+      state: "running" as AudioContextState,
+      createGain: () => ({
+        gain: {
+          value: 1,
+          cancelScheduledValues: vi.fn(),
+          setValueAtTime: vi.fn(),
+          linearRampToValueAtTime: vi.fn(),
+          exponentialRampToValueAtTime: vi.fn(),
+          setTargetAtTime: vi.fn(),
+        },
+        connect: vi.fn().mockReturnThis(),
+        disconnect: vi.fn(),
+      }),
+      destination: {} as AudioDestinationNode,
+      resume: vi.fn(),
+    };
+
+    (window as unknown as { AudioContext: unknown }).AudioContext =
+      vi.fn(function () {
+        return audioContext;
+      }) as unknown as typeof AudioContext;
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("advances the active progression chord as soon as the audio step ends", () => {
+    const tempoBpm = 61;
+    const stepDurationMs = 60000 / tempoBpm;
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, threeChordProgression],
+      [progressionTempoBpmAtom, tempoBpm],
+      [beatsPerBarAtom, 4],
+    ]);
+    store.set(setProgressionPlayingAtom, true);
+    setActiveStep(0, 0, stepDurationMs / 1000, 0, 10);
+
+    renderWithStore(<PlaybackLoopHarness />, store);
+
+    expect(store.get(chordRootAtom)).toBe("C");
+
+    act(() => {
+      vi.advanceTimersByTime(Math.ceil(stepDurationMs));
+    });
+
+    expect(store.get(chordRootAtom)).toBe("G");
+  });
+
+  it("advances multiple chords correctly when the timeline stays in sync", () => {
+    const tempoBpm = 60; // 1 beat = 1000ms
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, threeChordProgression],
+      [progressionTempoBpmAtom, tempoBpm],
+      [beatsPerBarAtom, 4],
+    ]);
+    store.set(setProgressionPlayingAtom, true);
+    
+    // Initially at step 0
+    setActiveStep(0, 0, 1.0, 0, 10);
+
+    renderWithStore(<PlaybackLoopHarness />, store);
+
+    expect(store.get(chordRootAtom)).toBe("C");
+
+    // Advance to end of first step
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
+    // Should have advanced to step 1 (G)
+    expect(store.get(chordRootAtom)).toBe("G");
+
+    // Timeline is still at step 0 (stale)
+    // The loop should be in a retry state, not advancing further.
+    act(() => {
+      vi.advanceTimersByTime(100); // Some more time
+    });
+    expect(store.get(chordRootAtom)).toBe("G");
+
+    // Now update timeline to step 1
+    act(() => {
+      setActiveStep(1, 1.0, 1.0, 1.0, 10);
+    });
+
+    // Still at G, but now it should have armed the next advance for t=2.0
+    expect(store.get(chordRootAtom)).toBe("G");
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
+    // Should have advanced to step 2 (Am, root is A)
+    expect(store.get(chordRootAtom)).toBe("A");
+  });
+});
