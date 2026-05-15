@@ -12,7 +12,12 @@ import {
   scaleNameAtom,
   setProgressionPlayingAtom,
 } from "../store/atoms";
-import { _resetTimelineForTests, setActiveStep } from "../progressions/audio/timeline";
+import {
+  _resetTimelineForTests,
+  pauseTimeline,
+  resumeTimelineAtCurrentTime,
+  setActiveStep,
+} from "../progressions/audio/timeline";
 import { _resetProgressionAudioForTests } from "../progressions/audio/bus";
 import { useProgressionPlaybackLoop } from "./useProgressionPlaybackLoop";
 
@@ -139,5 +144,62 @@ describe("useProgressionPlaybackLoop", () => {
 
     // Should have advanced to step 2 (Am, root is A)
     expect(store.get(chordRootAtom)).toBe("A");
+  });
+
+  it("resumes correctly and advances at the right time after a pause/resume cycle", () => {
+    const tempoBpm = 60; // 1 beat = 1000ms
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, threeChordProgression],
+      [progressionTempoBpmAtom, tempoBpm],
+      [beatsPerBarAtom, 4],
+    ]);
+    store.set(setProgressionPlayingAtom, true);
+
+    // Step 0: start=0, duration=1s
+    setActiveStep(0, 0, 1.0, 0, 10);
+
+    renderWithStore(<PlaybackLoopHarness />, store);
+
+    expect(store.get(chordRootAtom)).toBe("C");
+
+    // Advance 0.5s
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
+
+    // Pause
+    act(() => {
+      store.set(setProgressionPlayingAtom, false);
+      pauseTimeline();
+    });
+
+    // Advance time 5s
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
+
+    expect(store.get(chordRootAtom)).toBe("C");
+
+    // Resume
+    act(() => {
+      store.set(setProgressionPlayingAtom, true);
+      resumeTimelineAtCurrentTime();
+    });
+
+    // Now it's re-anchored to the current time (5.5s)
+    // It should advance after 1s (the full duration of the step from resume)
+
+    act(() => {
+      vi.advanceTimersByTime(900);
+    });
+    expect(store.get(chordRootAtom)).toBe("C");
+
+    act(() => {
+      vi.advanceTimersByTime(101);
+    });
+    expect(store.get(chordRootAtom)).toBe("G");
   });
 });

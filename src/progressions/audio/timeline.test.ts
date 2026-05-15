@@ -133,6 +133,55 @@ describe("timeline", () => {
     expect(getTimelinePosition()?.globalFraction).toBeCloseTo(0.0625, 4);
   });
 
+  it("maintains a perfectly linear globalFraction across multiple steps", () => {
+    const totalDuration = 10;
+
+    // Step 0: 0.0 -> 2.0s
+    setActiveStep(0, 0, 2.0, 0, totalDuration);
+    mockNow = 1.0;
+    expect(getTimelinePosition()?.globalFraction).toBeCloseTo(0.1, 5);
+
+    // Step 1: 2.0 -> 5.0s (3s duration)
+    setActiveStep(1, 2.0, 3.0, 2.0, totalDuration);
+    mockNow = 3.5;
+    // elapsed in step 1 = 1.5s
+    // cumulative = 2.0 + 1.5 = 3.5s
+    // globalFraction = 3.5 / 10 = 0.35
+    expect(getTimelinePosition()?.globalFraction).toBeCloseTo(0.35, 5);
+
+    // Step 2: 5.0 -> 10.0s (5s duration)
+    setActiveStep(2, 5.0, 5.0, 5.0, totalDuration);
+    mockNow = 7.5;
+    // elapsed in step 2 = 2.5s
+    // cumulative = 5.0 + 2.5 = 7.5s
+    // globalFraction = 7.5 / 10 = 0.75
+    expect(getTimelinePosition()?.globalFraction).toBeCloseTo(0.75, 5);
+  });
+
+  it("handles globalFraction correctly through pause and resume", () => {
+    const totalDuration = 10;
+    // Step 1: 2.0 -> 4.0s (2s duration)
+    setActiveStep(1, 0, 2.0, 2.0, totalDuration);
+    mockNow = 1.0;
+    expect(getTimelinePosition()?.globalFraction).toBeCloseTo(0.3, 5); // (2+1)/10
+
+    pauseTimeline();
+    mockNow = 5.0; // Time passes while paused
+    // When paused, it should snap to the start of the current step
+    expect(getTimelinePosition()?.globalFraction).toBeCloseTo(0.2, 5); // 2/10
+    expect(getTimelinePosition()?.paused).toBe(true);
+
+    mockNow = 10.0;
+    resumeTimelineAtCurrentTime();
+    // Re-anchored to mockNow = 10.0
+    expect(getTimelinePosition()?.globalFraction).toBeCloseTo(0.2, 5);
+    expect(getTimelinePosition()?.paused).toBe(false);
+
+    mockNow = 11.0;
+    // 1s elapsed since resume
+    expect(getTimelinePosition()?.globalFraction).toBeCloseTo(0.3, 5); // (2+1)/10
+  });
+
   it("clearTimeline wipes the active step", () => {
     setActiveStep(0, 0, 4, 0, 16);
     clearTimeline();
