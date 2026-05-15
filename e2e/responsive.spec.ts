@@ -20,8 +20,10 @@ async function gotoApp(page: Page, width: number, height: number) {
     // Wait for the lazy-loaded mobile tab content to mount before continuing.
     await expect(page.locator('[data-testid="mobile-tab-content"]')).toBeVisible();
   } else {
-    // Wait for lazy-loaded controls panel cards to mount on tablet/desktop layouts.
-    await expect(page.locator(".dashboard-card")).toHaveCount(3);
+    // Wait for the Inspector controls panel to mount on tablet/desktop layouts.
+    await expect(
+      page.getByRole("tablist", { name: "Inspector" }),
+    ).toBeVisible();
   }
 }
 
@@ -37,8 +39,10 @@ async function getMetrics(page: Page) {
     const helpModal = document.querySelector('[data-testid="help-modal"]');
     const helpContent = document.querySelector('[data-testid="help-modal-content"]');
     const circle = document.querySelector(circleSelector);
-    const controlsColumn = document.querySelector('[data-testid="dashboard-card-configuration"]');
-    const keyColumn = document.querySelector('[data-testid="key-column"]');
+    // The desktop controls panel is the Inspector (Radix Tabs); its tablist
+    // is the stable container hook now that .dashboard-card columns are gone.
+    const controlsColumn = document.querySelector('[role="tablist"][aria-label="Inspector"]');
+    const keyColumn = document.querySelector('[role="tabpanel"]');
 
     const subtitle = document.querySelector('[data-testid="app-header-brand-subtitle"]');
     const kofiDesktop = document.querySelector('[data-testid="kofi-btn-desktop"]');
@@ -207,11 +211,16 @@ test.describe("responsive layout regressions", () => {
     expect(initial.variant).toBe("desktop-stacked");
     expect(initial.summaryCount).toBe(1);
 
+    // The Circle of Fifths now lives in the Inspector's Scale tab.
+    await page.getByRole("tab", { name: "Scale" }).click();
+    await page.locator(CIRCLE_OF_FIFTHS_SELECTOR).waitFor({ state: "visible" });
     await page.locator(CIRCLE_OF_FIFTHS_SELECTOR).scrollIntoViewIfNeeded();
     const after = await getMetrics(page);
     expect(after.circleRect).not.toBeNull();
     expect(after.circleRect!.height).toBeGreaterThanOrEqual(220);
-    expect(after.circleRect!.height).toBeLessThanOrEqual(430);
+    // Inside the Inspector Scale tab the Circle renders slightly larger than in
+    // the legacy key-column layout — widen the upper bound accordingly.
+    expect(after.circleRect!.height).toBeLessThanOrEqual(480);
     expect(after.circleRect!.bottom).toBeLessThanOrEqual(768);
   });
 

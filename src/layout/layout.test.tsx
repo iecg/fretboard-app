@@ -4,8 +4,8 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { BREAKPOINTS } from "../layout/breakpoints";
 
-const expandedPanelCSS = readFileSync(
-  resolve(__dirname, "../components/ExpandedControlsPanel/ExpandedControlsPanel.module.css"),
+const inspectorCSS = readFileSync(
+  resolve(__dirname, "../components/Inspector/Inspector.module.css"),
   "utf-8",
 );
 import {
@@ -16,26 +16,31 @@ import {
   isCompactHeight,
 } from "../layout/responsive";
 
-// Regression guard: if ExpandedControlsPanel.css is unimported or its grid rule
-// is removed, the dashboard silently falls back to flex — this test catches it.
-describe("dashboard panel CSS contract", () => {
-  it("declares display: grid on .controls-panel", () => {
-    expect(expandedPanelCSS).toContain(".controls-panel");
-    expect(expandedPanelCSS).toContain("display: grid");
+// Regression guard: the Inspector controls panel depends on its CSS module
+// shipping with the expected layout rules. If a rule is dropped, the panel
+// loses its column stack / tab-bar layout. This reads the file directly.
+describe("inspector panel CSS contract", () => {
+  function ruleBlock(css: string, selector: string): string {
+    const start = css.indexOf(selector);
+    if (start === -1) return "";
+    return css.slice(start, css.indexOf("}", start));
+  }
+
+  it("stacks the panel root as a vertical flex column", () => {
+    const root = ruleBlock(inspectorCSS, ".root {");
+    expect(root).toContain("display: flex");
+    expect(root).toContain("flex-direction: column");
   });
 
-  it("3col mode declares grid-template-columns", () => {
-    expect(expandedPanelCSS).toContain('[data-mode="3col"]');
-    expect(expandedPanelCSS).toContain("grid-template-columns");
+  it("lays the tab list out as a row with a divider", () => {
+    const tabList = ruleBlock(inspectorCSS, ".tabList {");
+    expect(tabList).toContain("display: flex");
+    expect(tabList).toContain("border-bottom");
   });
 
-  it("split mode declares grid-template-columns", () => {
-    expect(expandedPanelCSS).toContain('[data-mode="split"]');
-    // Verify split has its own column definition (not just inherited from 3col)
-    const splitBlock = expandedPanelCSS.slice(
-      expandedPanelCSS.indexOf('[data-mode="split"]'),
-    );
-    expect(splitBlock).toContain("grid-template-columns");
+  it("gives the tab panel a minimum height", () => {
+    const tabPanel = ruleBlock(inspectorCSS, ".tabPanel {");
+    expect(tabPanel).toContain("min-height");
   });
 });
 

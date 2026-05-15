@@ -366,8 +366,8 @@ describe("Component Snapshots", () => {
 
       localStorage.clear();
       const { container } = render(<App />);
-      await screen.findByTestId("circle-of-fifths", {}, { timeout: 5000 });
-      await screen.findByTestId("theory-controls", {}, { timeout: 5000 });
+      // Inspector is the default desktop controls panel; wait for its tab list.
+      await screen.findByRole("tablist", { name: "Inspector" }, { timeout: 5000 });
       expect(container).toMatchSnapshot("app-desktop-3col-default");
     });
 
@@ -408,8 +408,8 @@ describe("Component Snapshots", () => {
       localStorage.setItem("displayFormat", "degrees");
 
       const { container } = render(<App />);
-      await screen.findByTestId("circle-of-fifths", {}, { timeout: 5000 });
-      await screen.findByTestId("theory-controls", {}, { timeout: 5000 });
+      // Inspector is the default desktop controls panel; wait for its tab list.
+      await screen.findByRole("tablist", { name: "Inspector" }, { timeout: 5000 });
       expect(container).toMatchSnapshot("app-desktop-3col-custom-config");
     });
 
@@ -430,8 +430,8 @@ describe("Component Snapshots", () => {
       localStorage.setItem("hideNonChordNotes", "true");
 
       const { container } = render(<App />);
-      await screen.findByTestId("circle-of-fifths", {}, { timeout: 5000 });
-      await screen.findByTestId("theory-controls", {}, { timeout: 5000 });
+      // Inspector is the default desktop controls panel; wait for its tab list.
+      await screen.findByRole("tablist", { name: "Inspector" }, { timeout: 5000 });
       expect(container).toMatchSnapshot("app-desktop-3col-with-chord-overlay");
     });
 
@@ -487,8 +487,8 @@ describe("Component Snapshots", () => {
 
       localStorage.clear();
       const { container } = render(<App />);
-      await screen.findByTestId("circle-of-fifths", {}, { timeout: 5000 });
-      await screen.findByTestId("theory-controls", {}, { timeout: 5000 });
+      // Inspector is the default desktop controls panel; wait for its tab list.
+      await screen.findByRole("tablist", { name: "Inspector" }, { timeout: 5000 });
       expect(container).toMatchSnapshot("app-desktop-split-1024x1366");
     });
 
@@ -525,8 +525,8 @@ describe("Component Snapshots", () => {
 
       localStorage.clear();
       const { container } = render(<App />);
-      await screen.findByTestId("circle-of-fifths", {}, { timeout: 5000 });
-      await screen.findByTestId("theory-controls", {}, { timeout: 5000 });
+      // Inspector is the default desktop controls panel; wait for its tab list.
+      await screen.findByRole("tablist", { name: "Inspector" }, { timeout: 5000 });
       expect(container).toMatchSnapshot("app-desktop-stacked-1200x720");
     });
 

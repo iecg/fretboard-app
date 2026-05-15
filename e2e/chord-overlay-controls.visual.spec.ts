@@ -31,6 +31,10 @@ test.describe("Chord Overlay Controls Visual", () => {
       { width: 1280, height: 900 },
     );
 
+    // ChordOverlayControls now lives in the Inspector's Chord tab — activate
+    // it so the panel is mounted into the DOM.
+    await page.getByRole("tab", { name: "Chord" }).click();
+
     // Wait for the chord-type toggle bar to be visible.
     await page
       .getByRole("group", { name: "Chord Type" })
@@ -59,6 +63,8 @@ test.describe("Chord Overlay Controls Visual", () => {
       },
       { width: 1280, height: 900 },
     );
+
+    await page.getByRole("tab", { name: "Chord" }).click();
 
     await page
       .getByRole("group", { name: "Chord Type" })

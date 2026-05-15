@@ -20,8 +20,9 @@ test.describe("Progression Visual", () => {
       { width: 1280, height: 900 },
     );
 
-    await page.locator('button:has-text("Progression")').filter({ hasText: "bars" }).click();
-    await expect(page.getByText("Progression Mode")).toBeVisible();
+    // progressionEnabled is seeded by loadVisualState, so progression mode is
+    // already active at boot. The ProgressionTrack renders in the top band via
+    // ProgressionSummarySlot (not inside the Inspector) — no click required.
     await expect(page.getByRole("group", { name: "Progression track" })).toBeVisible();
     await expectFullPageVisual(page, "progression-desktop-1280x900", linuxTolerance);
   });
