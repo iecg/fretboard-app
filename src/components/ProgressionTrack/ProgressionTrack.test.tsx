@@ -167,6 +167,26 @@ describe("ProgressionTrack", () => {
     expect(screen.getByRole("button", { name: "Play progression" })).toBeDisabled();
   });
 
+  it("renders genre selector", () => {
+    renderWithAtoms(<ProgressionTrack />, [
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, fourStepProgression],
+      [beatsPerBarAtom, 4],
+    ]);
+
+    expect(screen.getByLabelText("Genre style")).toBeInTheDocument();
+  });
+
+  it("renders chord instrument selector", () => {
+    renderWithAtoms(<ProgressionTrack />, [
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, fourStepProgression],
+      [beatsPerBarAtom, 4],
+    ]);
+
+    expect(screen.getByLabelText("Chord instrument")).toBeInTheDocument();
+  });
+
   it("play and loop controls reflect active state", () => {
     const store = makeAtomStore([
       [progressionEnabledAtom, true],
