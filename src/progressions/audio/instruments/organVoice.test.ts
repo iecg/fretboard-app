@@ -119,7 +119,9 @@ describe("organVoice", () => {
         ([target]: [number]) => target <= 0.01,
       ),
     );
-    expect(releasing.length).toBeGreaterThan(0);
+    // One gain node is the note merger (no release ramp); every other gain
+    // is a harmonic and must release.
+    expect(releasing.length).toBe(gains.length - 1);
   });
 
   it("calling cancel() does not throw", () => {
