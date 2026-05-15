@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, fireEvent } from "@testing-library/react";
 import "../../styles/index.css";
 import "../../styles/themes.css";
@@ -7,6 +7,12 @@ import { getFretboardNotes } from "@fretflow/core";
 import type { CagedShape, ShapePolygon } from "@fretflow/core";
 import type { NoteSemantics } from "@fretflow/core";
 import { axe } from "../../test-utils/a11y";
+import { resolveFretboardMotionPolicy } from "./motionPolicy";
+
+vi.mock("./motionPolicy", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./motionPolicy")>();
+  return { ...actual, resolveFretboardMotionPolicy: vi.fn().mockImplementation(actual.resolveFretboardMotionPolicy) };
+});
 
 const STANDARD_TUNING = ["E4", "B3", "G3", "D3", "A2", "E2"];
 
@@ -1316,6 +1322,64 @@ describe("FretboardSVG/FretboardSVG", () => {
         const opacity = parseFloat(getComputedStyle(el as Element).opacity);
         expect(opacity).toBeGreaterThanOrEqual(1);
       });
+    });
+  });
+
+  describe("motion policy wiring", () => {
+    const MINIMAL_POLYGON: ShapePolygon = {
+      shape: "E" as CagedShape,
+      color: "rgba(255,0,0,0.3)",
+      cagedLabel: "E",
+      modalLabel: "E",
+      truncated: false,
+      intendedMin: 0,
+      intendedMax: 4,
+      vertices: [
+        { fret: 0, string: 0 },
+        { fret: 0, string: 1 },
+        { fret: 4, string: 1 },
+        { fret: 4, string: 0 },
+      ],
+    };
+
+    afterEach(() => {
+      vi.mocked(resolveFretboardMotionPolicy).mockRestore();
+    });
+
+    it("uses group-mode wrappers when policy returns group modes", () => {
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          shapePolygons={[MINIMAL_POLYGON]}
+          chordTones={["C", "E", "G"]}
+          chordRoot="C"
+        />,
+      );
+      // Shape layer advertises data-motion="group"
+      const groupWrappers = container.querySelectorAll('[data-motion="group"]');
+      expect(groupWrappers.length).toBeGreaterThan(0);
+      expect(container.querySelector('[data-motion="none"]')).toBeNull();
+    });
+
+    it("collapses to static wrappers (data-motion=none) when policy returns none modes", () => {
+      vi.mocked(resolveFretboardMotionPolicy).mockReturnValue({
+        noteMode: "none",
+        shapeMode: "none",
+        connectorMode: "none",
+      });
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          shapePolygons={[MINIMAL_POLYGON]}
+          chordTones={["C", "E", "G"]}
+          chordRoot="C"
+        />,
+      );
+      // No animated group wrappers
+      expect(container.querySelector('[data-motion="group"]')).toBeNull();
+      // Static none-wrappers in place of animated ones
+      const staticWrappers = container.querySelectorAll('[data-motion="none"]');
+      expect(staticWrappers.length).toBeGreaterThan(0);
     });
   });
 });

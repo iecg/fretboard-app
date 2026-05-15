@@ -1,6 +1,6 @@
 import { useId, useMemo, useCallback, memo, type CSSProperties } from "react";
 import { useAtomValue } from "jotai";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import {
   getNoteDisplay,
   getScaleSemitones,
@@ -435,19 +435,11 @@ export const FretboardSVG = memo(function FretboardSVG({
   });
   const connectorSource = fullChordVoicings?.length ? "full-chord" : "generated";
 
-  const motionPolicy = useMemo(() => {
-    const prefersReducedMotion =
-      typeof window !== "undefined"
-        ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        : false;
-    return resolveFretboardMotionPolicy({
-      prefersReducedMotion,
-      noteCount: noteData.length,
-      shapeCount: svgPolygons.length,
-      connectorCount: connectorPolylines.length,
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const prefersReducedMotion = useReducedMotion() ?? false;
+  const motionPolicy = useMemo(
+    () => resolveFretboardMotionPolicy({ prefersReducedMotion }),
+    [prefersReducedMotion],
+  );
 
   return (
     <div

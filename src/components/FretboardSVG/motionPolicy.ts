@@ -4,9 +4,6 @@ export type ConnectorAnimationMode = "group" | "none";
 
 export interface FretboardMotionPolicyInput {
   prefersReducedMotion: boolean;
-  noteCount: number;
-  shapeCount: number;
-  connectorCount: number;
 }
 
 export interface FretboardMotionPolicy {

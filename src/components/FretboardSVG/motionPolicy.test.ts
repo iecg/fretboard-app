@@ -4,12 +4,7 @@ import { resolveFretboardMotionPolicy } from "./motionPolicy";
 describe("resolveFretboardMotionPolicy", () => {
   it("disables all motion when reduced motion is requested", () => {
     expect(
-      resolveFretboardMotionPolicy({
-        prefersReducedMotion: true,
-        noteCount: 42,
-        shapeCount: 3,
-        connectorCount: 2,
-      }),
+      resolveFretboardMotionPolicy({ prefersReducedMotion: true }),
     ).toEqual({
       noteMode: "none",
       shapeMode: "none",
@@ -19,12 +14,7 @@ describe("resolveFretboardMotionPolicy", () => {
 
   it("uses CSS for notes and group fades for shapes/connectors by default", () => {
     expect(
-      resolveFretboardMotionPolicy({
-        prefersReducedMotion: false,
-        noteCount: 42,
-        shapeCount: 2,
-        connectorCount: 1,
-      }),
+      resolveFretboardMotionPolicy({ prefersReducedMotion: false }),
     ).toEqual({
       noteMode: "css",
       shapeMode: "group",
