@@ -24,6 +24,29 @@ export default defineConfig({
   },
   build: {
     sourcemap: true,
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            {
+              name: 'vendor-react',
+              test: /node_modules[\\/](react-dom|react|scheduler)[\\/]/,
+              priority: 3,
+            },
+            {
+              name: 'vendor-motion',
+              test: /node_modules[\\/](framer-motion|motion-dom|motion-utils|motion)[\\/]/,
+              priority: 2,
+            },
+            {
+              name: 'vendor',
+              test: /node_modules[\\/]/,
+              priority: 1,
+            },
+          ],
+        },
+      },
+    },
   },
   test: {
     globals: true,
