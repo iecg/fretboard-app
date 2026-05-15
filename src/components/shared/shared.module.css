@@ -543,3 +543,16 @@
   font-size: var(--text-sm, 0.875rem);
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
+
+/* ===== Shared DAW faceplate surface ===== */
+/* Theme-adaptive panel chrome shared by the Inspector and TopBandSummary.
+   Surface treatment only — consumers add their own layout. Driven entirely by
+   the --faceplate-* tokens in semantic.css, so it follows the active theme. */
+.faceplate {
+  border: 1px solid var(--faceplate-border);
+  border-radius: 12px;
+  background:
+    radial-gradient(120% 200% at 0% 0%, var(--faceplate-wash), transparent 55%),
+    linear-gradient(180deg, var(--faceplate-bg-elevated), var(--faceplate-bg));
+  box-shadow: var(--faceplate-shadow);
+}

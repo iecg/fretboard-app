@@ -135,10 +135,6 @@ test.describe("Theme Contract", () => {
     // text-main: #0f172a -> rgb(15, 23, 42)
     expect(styles.color.replace(/\s/g, "")).toBe("rgb(15,23,42)");
 
-    // Verify the parent card provides the expected light-mode card surface.
-    const card = page.getByTestId("top-band-summary");
-    const cardBg = await card.evaluate((el) => getComputedStyle(el).backgroundColor);
-    expect(cardBg.replace(/\s/g, "")).toBe("rgb(252,249,245)");
   });
 
   test("BottomTabBar should use theme-appropriate active indicators", async ({ page }) => {
@@ -815,16 +811,25 @@ test.describe("Theme Contract", () => {
       expect(fb).toBeGreaterThanOrEqual(cb);
     });
 
-    test("top-level Card uses surface-card-top (not pure white) in light mode", async ({ page }) => {
+    test("faceplate substrate uses the light token in light mode", async ({ page }) => {
       await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
+      await expect(page.getByTestId("top-band-summary")).toBeVisible();
 
-      // The unified top-band card is the primary content surface above the fretboard.
-      const card = page.getByTestId("top-band-summary");
-      await expect(card).toBeVisible();
+      // The faceplate is theme-adaptive: a pale cool substrate in light mode.
+      const faceplateBg = await page.evaluate(() =>
+        getComputedStyle(document.documentElement).getPropertyValue("--faceplate-bg").trim(),
+      );
+      expect(colorToHex(faceplateBg)).toBe("#eef2f5");
+    });
 
-      const bg = await card.evaluate((el) => getComputedStyle(el).backgroundColor);
-      // surface-card-top = #fcf9f5 → rgb(252, 249, 245) (Phase 1 surface ladder recalibration)
-      expect(bg.replace(/\s/g, "")).toBe("rgb(252,249,245)");
+    test("faceplate substrate uses the navy token in dark mode", async ({ page }) => {
+      await loadVisualState(page, { theme: "dark" }, { width: 1280, height: 900 });
+      await expect(page.getByTestId("top-band-summary")).toBeVisible();
+
+      const faceplateBg = await page.evaluate(() =>
+        getComputedStyle(document.documentElement).getPropertyValue("--faceplate-bg").trim(),
+      );
+      expect(colorToHex(faceplateBg)).toBe("#0a121d");
     });
 
     test("chord practice strip aligns with card surface in light mode", async ({ page }) => {
@@ -838,16 +843,9 @@ test.describe("Theme Contract", () => {
       // visible warm card surface is provided by the parent card.
       expect(bg.replace(/\s/g, "")).toBe("rgba(0,0,0,0)");
 
-      // The parent card supplies surface-card-top = #fcf9f5 → rgb(252, 249, 245).
-      const cardBg = await page
-        .getByTestId("top-band-summary")
-        .evaluate((el) => getComputedStyle(el).backgroundColor);
-      expect(cardBg.replace(/\s/g, "")).toBe("rgb(252,249,245)");
-      // Must not be the old f1f5f9 value.
-      expect(cardBg.replace(/\s/g, "")).not.toBe("rgb(241,245,249)");
     });
 
-    test("chord practice and degree strips share the card surface in light mode", async ({ page }) => {
+    test("chord practice and degree strips share a transparent surface in light mode", async ({ page }) => {
       await loadVisualState(page, { theme: "light", chordType: "Major 7th" });
 
       const practiceBar = page.locator('section[aria-label^="Practice cues:"]');
@@ -863,11 +861,6 @@ test.describe("Theme Contract", () => {
       expect(practiceBg.replace(/\s/g, "")).toBe("rgba(0,0,0,0)");
       expect(degreeBg.replace(/\s/g, "")).toBe(practiceBg.replace(/\s/g, ""));
 
-      // And that shared parent surface is the card-top color.
-      const cardBg = await page
-        .getByTestId("top-band-summary")
-        .evaluate((el) => getComputedStyle(el).backgroundColor);
-      expect(cardBg.replace(/\s/g, "")).toBe("rgb(252,249,245)");
     });
 
     test("degree chip strip uses surface-strip token in light mode", async ({ page }) => {
@@ -882,10 +875,6 @@ test.describe("Theme Contract", () => {
       // parent card supplies the warm card-top surface.
       expect(bg.replace(/\s/g, "")).toBe("rgba(0,0,0,0)");
 
-      const cardBg = await page
-        .getByTestId("top-band-summary")
-        .evaluate((el) => getComputedStyle(el).backgroundColor);
-      expect(cardBg.replace(/\s/g, "")).toBe("rgb(252,249,245)");
     });
 
     test("settings overlay uses surface-float (highest elevation) in light mode", async ({ page }) => {

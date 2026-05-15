@@ -4,10 +4,7 @@ import {
   fretStartAtom,
   fretEndAtom,
   tuningNameAtom,
-  accidentalModeAtom,
-  enharmonicDisplayAtom,
   chordFretSpreadAtom,
-  scaleDegreeColorsEnabledAtom,
 } from "../../store/atoms";
 
 export function useSettingsForm() {
@@ -15,10 +12,7 @@ export function useSettingsForm() {
   const [fretStart, setFretStart] = useAtom(fretStartAtom);
   const [fretEnd, setFretEnd] = useAtom(fretEndAtom);
   const [tuningName, setTuningName] = useAtom(tuningNameAtom);
-  const [accidentalMode, setAccidentalMode] = useAtom(accidentalModeAtom);
-  const [enharmonicDisplay, setEnharmonicDisplay] = useAtom(enharmonicDisplayAtom);
   const [chordFretSpread, setChordFretSpread] = useAtom(chordFretSpreadAtom);
-  const [scaleDegreeColorsEnabled, setScaleDegreeColorsEnabled] = useAtom(scaleDegreeColorsEnabledAtom);
 
   return {
     fretZoom,
@@ -29,13 +23,7 @@ export function useSettingsForm() {
     setFretEnd,
     tuningName,
     setTuningName,
-    accidentalMode,
-    setAccidentalMode,
-    enharmonicDisplay,
-    setEnharmonicDisplay,
     chordFretSpread,
     setChordFretSpread,
-    scaleDegreeColorsEnabled,
-    setScaleDegreeColorsEnabled,
   };
 }
