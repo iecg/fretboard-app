@@ -13,14 +13,6 @@ interface ProgressionBlockProps {
   onSelect: (index: number) => void;
 }
 
-function formatDurationShort(label: string): string {
-  return label
-    .replace(" bars", "B")
-    .replace(" bar", "B")
-    .replace(" beats", "bt")
-    .replace(" beat", "bt");
-}
-
 /**
  * A single chord block in the progression timeline. Memoized so it only
  * re-renders when its own props change — this keeps the per-tick render
@@ -63,7 +55,7 @@ function ProgressionBlockComponent({
         >
           {step.shortChordLabel ?? step.unavailableReason}
         </span>
-        <span className={styles.duration}>{formatDurationShort(duration)}</span>
+        <span className={styles.duration}>{duration}</span>
       </span>
     </button>
   );

@@ -147,6 +147,18 @@ describe("ProgressionTrack", () => {
     expect(fourth.style.width).toBe("20%");
   });
 
+  it("shows spelled-out bar/beat labels in the visible duration span", () => {
+    renderWithAtoms(<ProgressionTrack />, [
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, fourStepProgression],
+      [beatsPerBarAtom, 4],
+    ]);
+
+    // The duration span must show full words, not abbreviations like "1B" or "2B"
+    expect(screen.getAllByText("1 bar", { selector: "span" }).length).toBeGreaterThan(0);
+    expect(screen.getByText("2 bars", { selector: "span" })).toBeTruthy();
+  });
+
   it("disables playback when progression playback is blocked", () => {
     renderWithAtoms(<ProgressionTrack />, [
       [progressionEnabledAtom, false],
