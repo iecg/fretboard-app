@@ -27,7 +27,11 @@ fi
 
 echo "Running Linux visual regression tests using Playwright v$PW_VERSION..."
 
+# --ipc=host: required for Chromium in Docker (Playwright docs). Without it,
+# Chromium exhausts the default 64 MB /dev/shm during fullPage screencast of
+# large pages and crashes with "Target page, context or browser has been closed".
 docker run --rm \
+  --ipc=host \
   --user root \
   -v "$(pwd):/work" \
   -v /work/node_modules \

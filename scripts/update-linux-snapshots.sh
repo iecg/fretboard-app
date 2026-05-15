@@ -31,7 +31,13 @@ echo "Updating Linux visual baselines using Playwright v$PW_VERSION..."
 # Run the update command inside the container
 # We use an anonymous volume for node_modules to avoid corrupting the host's node_modules
 # We call playwright directly to ensure arguments are handled correctly (args before --update-snapshots)
+# --ipc=host: required for Chromium in Docker. The default /dev/shm size
+# (64 MB) is too small for fullPage screencast stitching of large pages
+# (e.g. the expanded Progression inspector + fretboard), and the renderer
+# crashes mid-capture with "screencast.showOverlays: Target page, context or
+# browser has been closed". See https://playwright.dev/docs/docker.
 docker run --rm \
+  --ipc=host \
   --user root \
   -v "$(pwd):/work" \
   -v /work/node_modules \
