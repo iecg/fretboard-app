@@ -35,6 +35,11 @@
   outline: none;
 }
 
+/* CSS-mode note layer: animate opacity via CSS transitions instead of per-node JS animation */
+[data-motion="css"] .fretboard-note {
+  transition: opacity 0.15s ease;
+}
+
 .fretboard-note :is(circle, path, polygon) {
   stroke-width: 1.9;
   paint-order: stroke;

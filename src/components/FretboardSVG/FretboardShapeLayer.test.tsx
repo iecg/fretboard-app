@@ -70,4 +70,17 @@ describe("FretboardShapeLayer", () => {
     const pointerEvents = (poly as SVGElement).style?.pointerEvents;
     expect(style.includes("pointer-events: none") || pointerEvents === "none").toBe(true);
   });
+
+  it("wraps polygons in one animated group instead of animating every polygon", () => {
+    const { container } = render(
+      <svg>
+        <FretboardShapeLayer
+          svgPolygons={[{ key: "shape-A", points: "0,0 100,0 100,50 0,50", color: "red" }]}
+          animationMode="group"
+        />
+      </svg>,
+    );
+
+    expect(container.querySelector('g[data-motion="group"]')).toBeTruthy();
+  });
 });

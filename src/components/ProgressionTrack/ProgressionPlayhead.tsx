@@ -7,19 +7,12 @@ interface ProgressionPlayheadProps {
   playing: boolean;
   /** Bar number (1-indexed) where the current step starts. */
   stepStartBar: number;
-  /** Length of the current step expressed in bars (may be fractional). */
-  stepBars: number;
-  /** Active step index — used so that "snap to start" on a paused/blocked
-   *  step references the correct bar. */
-  stepIndex: number;
-  /** Total length of the progression in bars. Used as the 0–100% denominator
-   *  for the playhead's horizontal position. */
+  /** Total length of the progression in bars. Used to scale globalFraction. */
   totalDurationBars: number;
+  /** Total bars visible in the ruler. Used as the 0–100% denominator
+   *  for horizontal pixel positioning. */
+  totalBarsForDisplay: number;
 }
-
-/** ~60 Hz position write interval. `setInterval` (not rAF) keeps the
- *  headless preview ticking; rAF is paused there. */
-const TICK_MS = 16;
 
 /**
  * Renders the playhead and drives its horizontal motion by sampling the
@@ -35,49 +28,59 @@ const TICK_MS = 16;
 export function ProgressionPlayhead({
   playing,
   stepStartBar,
-  stepBars,
-  stepIndex,
   totalDurationBars,
+  totalBarsForDisplay,
 }: ProgressionPlayheadProps) {
   const ref = useRef<HTMLSpanElement | null>(null);
+
+  // Store chord-boundary props in refs so the animation loop can access
+  // the latest values without needing to be cleared and restarted
+  // at every transition.
+  const propsRef = useRef({ stepStartBar, totalDurationBars, totalBarsForDisplay });
+  useEffect(() => {
+    propsRef.current = { stepStartBar, totalDurationBars, totalBarsForDisplay };
+  }, [stepStartBar, totalDurationBars, totalBarsForDisplay]);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     el.style.transition = "none";
 
-    const safeTotal = Math.max(1, totalDurationBars);
+    let rafId: number | null = null;
 
     const write = () => {
       const tl = getTimelinePosition();
-      let bar: number;
-      if (
-        playing
-        && tl
-        && tl.stepIndex === stepIndex
-        && !tl.paused
-        && stepBars > 0
-      ) {
-        bar = stepStartBar + tl.fraction * stepBars;
+      const {
+        stepStartBar: currentStepStartBar,
+        totalDurationBars: currentTotalDurationBars,
+        totalBarsForDisplay: currentTotalBarsForDisplay,
+      } = propsRef.current;
+
+      const safeDisplayTotal = Math.max(1, currentTotalBarsForDisplay);
+
+      if (playing && tl && !tl.paused) {
+        // Linear motion across the whole track, scaled to display bars.
+        // Uses globalFraction which is perfectly continuous across audio steps.
+        const pct = (tl.globalFraction * currentTotalDurationBars / safeDisplayTotal) * 100;
+        el.style.left = `${Math.max(0, Math.min(100, pct))}%`;
+        rafId = requestAnimationFrame(write);
       } else {
-        // Paused, blocked, or between scheduled segments — snap to the
-        // start of the current step. This matches the user-expected
-        // "pause resets to bar start" behaviour.
-        bar = stepStartBar;
+        // Paused or stopped: snap to current chord's start bar.
+        const bar = currentStepStartBar;
+        const pct = ((bar - 1) / safeDisplayTotal) * 100;
+        el.style.left = `${Math.max(0, Math.min(100, pct))}%`;
+        rafId = null;
       }
-      const pct = ((bar - 1) / safeTotal) * 100;
-      const clamped = Math.max(0, Math.min(100, pct));
-      el.style.left = `${clamped}%`;
     };
 
     write();
-    // When paused / blocked the timeline reports a fixed position; one
-    // write is enough. Skip the per-frame interval to save the CPU spent
-    // re-computing the same percent each tick.
-    if (!playing) return;
-    const id = window.setInterval(write, TICK_MS);
-    return () => window.clearInterval(id);
-  }, [playing, stepStartBar, stepBars, stepIndex, totalDurationBars]);
+
+    return () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+    };
+  }, [playing]);
 
   return (
     <span

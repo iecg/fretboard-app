@@ -163,7 +163,7 @@ export default function SettingsOverlay() {
   }, [isOpen, layout.tier, setIsOpen]);
 
   return (
-    <AnimatePresence>
+    <AnimatePresence initial={false}>
       {isOpen ? (
         <SettingsOverlaySurface layout={layout} setIsOpen={setIsOpen} />
       ) : null}

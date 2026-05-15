@@ -1,6 +1,6 @@
 import { useId, useMemo, useCallback, memo, type CSSProperties } from "react";
 import { useAtomValue } from "jotai";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import {
   getNoteDisplay,
   getScaleSemitones,
@@ -27,6 +27,7 @@ import { FretboardShapeLayer } from "./FretboardShapeLayer";
 import { FretboardNoteLayer } from "./FretboardNoteLayer";
 import { FretboardHitTargetLayer } from "./FretboardHitTargetLayer";
 import { FretNumbersRow } from "./FretNumbersRow";
+import { resolveFretboardMotionPolicy } from "./motionPolicy";
 import type { CagedShape, FullChordMatchNote, ShapePolygon } from "@fretflow/core";
 import type { ActiveShapeType } from "../../hooks/useFretboardState";
 import {
@@ -434,6 +435,12 @@ export const FretboardSVG = memo(function FretboardSVG({
   });
   const connectorSource = fullChordVoicings?.length ? "full-chord" : "generated";
 
+  const prefersReducedMotion = useReducedMotion() ?? false;
+  const motionPolicy = useMemo(
+    () => resolveFretboardMotionPolicy({ prefersReducedMotion }),
+    [prefersReducedMotion],
+  );
+
   return (
     <div
       role="group"
@@ -493,7 +500,7 @@ export const FretboardSVG = memo(function FretboardSVG({
           />
 
           <g clipPath={svgDefUrl("fretboard-taper")}>
-            <FretboardShapeLayer svgPolygons={svgPolygons} />
+            <FretboardShapeLayer svgPolygons={svgPolygons} animationMode={motionPolicy.shapeMode} />
           </g>
 
           {/* Non-chord notes render BEFORE connectors so connectors paint on top. */}
@@ -508,6 +515,7 @@ export const FretboardSVG = memo(function FretboardSVG({
                 degreeColorsEnabled={degreeColorsEnabled}
                 onNoteClick={onNoteClick}
                 filter="non-chord"
+                animationMode={motionPolicy.noteMode}
               />
             </g>
           )}
@@ -527,50 +535,92 @@ export const FretboardSVG = memo(function FretboardSVG({
           >
             <AnimatePresence mode="wait">
               {connectorPolylines.length > 0 && (
-                <motion.g
-                  key={`chord-connectors-${connectorSource}-${chordRoot}-${chordTones?.join("-") ?? "none"}`}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
-                  className={styles["chord-connectors"]}
-                  data-connector-source={connectorSource}
-                  aria-hidden="true"
-                  pointerEvents="none"
-                >
-                  {/* Halo pass: wide semi-transparent white stroke for background contrast */}
-                  {connectorPolylines.map((voicing) => (
-                    <path
-                      key={`halo-${voicing.voicingKey}`}
-                      d={voicing.paths.outline}
-                      data-layer="halo"
-                      data-caged-shape={voicing.shape}
-                      data-palette-index={voicing.paletteIndex + 1}
-                    />
-                  ))}
-                  {/* Fill pass: all voicings rendered first (below outlines) */}
-                  {connectorPolylines.map((voicing) => (
-                    <path
-                      key={`fill-${voicing.voicingKey}`}
-                      className={styles["chord-connector-path"]}
-                      d={voicing.paths.fill}
-                      data-layer="fill"
-                      data-caged-shape={voicing.shape}
-                      data-palette-index={voicing.paletteIndex + 1}
-                    />
-                  ))}
-                  {/* Outline pass: all voicings rendered on top */}
-                  {connectorPolylines.map((voicing) => (
-                    <path
-                      key={`outline-${voicing.voicingKey}`}
-                      className={styles["chord-connector-path"]}
-                      d={voicing.paths.outline}
-                      data-layer="outline"
-                      data-caged-shape={voicing.shape}
-                      data-palette-index={voicing.paletteIndex + 1}
-                    />
-                  ))}
-                </motion.g>
+                motionPolicy.connectorMode === "group" ? (
+                  <motion.g
+                    key={`chord-connectors-${connectorSource}-${chordRoot}-${chordTones?.join("-") ?? "none"}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
+                    className={styles["chord-connectors"]}
+                    data-connector-source={connectorSource}
+                    data-motion="group"
+                    aria-hidden="true"
+                    pointerEvents="none"
+                  >
+                    {/* Halo pass: wide semi-transparent white stroke for background contrast */}
+                    {connectorPolylines.map((voicing) => (
+                      <path
+                        key={`halo-${voicing.voicingKey}`}
+                        d={voicing.paths.outline}
+                        data-layer="halo"
+                        data-caged-shape={voicing.shape}
+                        data-palette-index={voicing.paletteIndex + 1}
+                      />
+                    ))}
+                    {/* Fill pass: all voicings rendered first (below outlines) */}
+                    {connectorPolylines.map((voicing) => (
+                      <path
+                        key={`fill-${voicing.voicingKey}`}
+                        className={styles["chord-connector-path"]}
+                        d={voicing.paths.fill}
+                        data-layer="fill"
+                        data-caged-shape={voicing.shape}
+                        data-palette-index={voicing.paletteIndex + 1}
+                      />
+                    ))}
+                    {/* Outline pass: all voicings rendered on top */}
+                    {connectorPolylines.map((voicing) => (
+                      <path
+                        key={`outline-${voicing.voicingKey}`}
+                        className={styles["chord-connector-path"]}
+                        d={voicing.paths.outline}
+                        data-layer="outline"
+                        data-caged-shape={voicing.shape}
+                        data-palette-index={voicing.paletteIndex + 1}
+                      />
+                    ))}
+                  </motion.g>
+                ) : (
+                  <g
+                    key={`chord-connectors-${connectorSource}-${chordRoot}-${chordTones?.join("-") ?? "none"}`}
+                    className={styles["chord-connectors"]}
+                    data-connector-source={connectorSource}
+                    data-motion="none"
+                    aria-hidden="true"
+                    pointerEvents="none"
+                  >
+                    {connectorPolylines.map((voicing) => (
+                      <path
+                        key={`halo-${voicing.voicingKey}`}
+                        d={voicing.paths.outline}
+                        data-layer="halo"
+                        data-caged-shape={voicing.shape}
+                        data-palette-index={voicing.paletteIndex + 1}
+                      />
+                    ))}
+                    {connectorPolylines.map((voicing) => (
+                      <path
+                        key={`fill-${voicing.voicingKey}`}
+                        className={styles["chord-connector-path"]}
+                        d={voicing.paths.fill}
+                        data-layer="fill"
+                        data-caged-shape={voicing.shape}
+                        data-palette-index={voicing.paletteIndex + 1}
+                      />
+                    ))}
+                    {connectorPolylines.map((voicing) => (
+                      <path
+                        key={`outline-${voicing.voicingKey}`}
+                        className={styles["chord-connector-path"]}
+                        d={voicing.paths.outline}
+                        data-layer="outline"
+                        data-caged-shape={voicing.shape}
+                        data-palette-index={voicing.paletteIndex + 1}
+                      />
+                    ))}
+                  </g>
+                )
               )}
             </AnimatePresence>
             {/* Interval connectors — capsule/blob shape matching chord-connector visual style.
@@ -624,6 +674,7 @@ export const FretboardSVG = memo(function FretboardSVG({
               degreeColorsEnabled={degreeColorsEnabled}
               onNoteClick={onNoteClick}
               filter={hasChordOverlay ? "chord" : undefined}
+              animationMode={motionPolicy.noteMode}
             />
           </g>
         </svg>

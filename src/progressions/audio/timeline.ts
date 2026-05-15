@@ -28,7 +28,11 @@ interface ActiveStep {
   /** AudioContext time at which this step started playing. */
   audioStartTime: number;
   /** Step length in seconds. */
-  durationSec: number;
+  durationSec: number; // local duration
+  /** Offset from the beginning of the progression to the start of this step. */
+  cumulativeStartSec: number; // cumulative offset
+  /** Total duration of the progression in seconds. */
+  totalDurationSec: number; // total progression length
 }
 
 interface TimelineState {
@@ -43,8 +47,10 @@ let state: TimelineState = { active: null, paused: false };
 
 export interface TimelinePosition {
   stepIndex: number;
-  /** Position within the current step, 0..1. */
-  fraction: number;
+  /** Position across total duration, 0..1. */
+  globalFraction: number; // 0..1 across total duration
+  /** Position within current step, 0..1. */
+  localFraction: number;  // 0..1 within current step
   paused: boolean;
 }
 
@@ -58,9 +64,11 @@ export function setActiveStep(
   stepIndex: number,
   audioStartTime: number,
   durationSec: number,
+  cumulativeStartSec: number,
+  totalDurationSec: number,
 ): void {
   state = {
-    active: { stepIndex, audioStartTime, durationSec },
+    active: { stepIndex, audioStartTime, durationSec, cumulativeStartSec, totalDurationSec },
     paused: false,
   };
 }
@@ -101,24 +109,29 @@ export function clearTimeline(): void {
 
 /**
  * Current position relative to the active step, or `null` if no step is
- * playing yet. The fraction is clamped to [0, 1]; consumers can compute
- * `stepStartBar + fraction * stepBars` for the smooth bar position.
+ * playing yet. The fraction is allowed to be slightly negative or exceed 1.0; 
+ * consumers compute `stepStartBar + fraction * stepBars` for the smooth bar position, 
+ * which extrapolates seamlessly across chord boundaries while waiting for React to sync,
+ * even if the step advancement timer fires slightly early.
  */
 export function getTimelinePosition(): TimelinePosition | null {
   if (!state.active) return null;
   if (state.paused) {
-    return { stepIndex: state.active.stepIndex, fraction: 0, paused: true };
+    const localFraction = 0;
+    const globalFraction = state.active.cumulativeStartSec / Math.max(0.001, state.active.totalDurationSec);
+    return { stepIndex: state.active.stepIndex, globalFraction, localFraction, paused: true };
   }
   const audio = ensureProgressionAudio();
   if (!audio) {
-    return { stepIndex: state.active.stepIndex, fraction: 0, paused: false };
+    const globalFraction = state.active.cumulativeStartSec / Math.max(0.001, state.active.totalDurationSec);
+    return { stepIndex: state.active.stepIndex, globalFraction, localFraction: 0, paused: false };
   }
   const elapsed = audio.ctx.currentTime - state.active.audioStartTime;
-  const fraction = Math.max(
-    0,
-    Math.min(1, elapsed / Math.max(0.001, state.active.durationSec)),
-  );
-  return { stepIndex: state.active.stepIndex, fraction, paused: false };
+  const localFraction = elapsed / Math.max(0.001, state.active.durationSec);
+  const cumulativeElapsed = state.active.cumulativeStartSec + elapsed;
+  const globalFraction = cumulativeElapsed / Math.max(0.001, state.active.totalDurationSec);
+  
+  return { stepIndex: state.active.stepIndex, globalFraction, localFraction, paused: false };
 }
 
 /**
@@ -133,6 +146,20 @@ export function isCurrentStepFinished(): boolean {
   return (
     audio.ctx.currentTime
       >= state.active.audioStartTime + state.active.durationSec
+  );
+}
+
+/**
+ * Milliseconds until the current step ends on the audio clock, clamped to 0.
+ * Returns `null` when there is no active, running timeline step yet.
+ */
+export function getTimeUntilCurrentStepEndMs(): number | null {
+  if (!state.active || state.paused) return null;
+  const audio = ensureProgressionAudio();
+  if (!audio) return null;
+  return Math.max(
+    0,
+    (state.active.audioStartTime + state.active.durationSec - audio.ctx.currentTime) * 1000,
   );
 }
 

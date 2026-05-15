@@ -264,9 +264,8 @@ export function ProgressionTrack() {
           <ProgressionPlayhead
             playing={progressionPlaying && canPlay}
             stepStartBar={currentProgressionBar}
-            stepBars={activeStepBars}
-            stepIndex={activeProgressionStepIndex}
             totalDurationBars={totalDurationBars}
+            totalBarsForDisplay={totalBarsForDisplay}
           />
           <div className={styles.blocks}>
             {resolvedProgressionSteps.map((step, index) => {

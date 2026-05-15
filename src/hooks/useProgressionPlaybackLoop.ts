@@ -1,20 +1,14 @@
 import { useEffect } from "react";
 import { ensureProgressionAudio } from "../progressions/audio/bus";
-import { isCurrentStepFinished } from "../progressions/audio/timeline";
+import { getTimeUntilCurrentStepEndMs, getTimelinePosition } from "../progressions/audio/timeline";
 import { useProgressionState } from "./useProgressionState";
-
-/** Poll interval for the audio-clock step boundary check. 20 ms is the
- *  trade-off between sub-frame accuracy of the active-step badge and CPU
- *  spent on no-op polls. The playhead and position readout poll the same
- *  timeline at 60 Hz independently. */
-const AUDIO_TICK_MS = 20;
 
 /**
  * Advance the active progression step when the audio clock crosses the
  * end of the currently-scheduled segment. Replaces the prior
- * `setTimeout(stepDurationMs)` driver — anchoring step advancement to
- * `AudioContext.currentTime` keeps React's notion of "current chord" in
- * lockstep with the audio.
+ * `setTimeout(stepDurationMs)` driver — anchoring step advancement to the
+ * exact audio-clock boundary keeps React's notion of "current chord" in
+ * lockstep with the audio instead of landing on the next poll tick.
  *
  * Falls back to a JS-timer-based advance when Web Audio is unavailable
  * (jsdom, SSR, locked autoplay policy). The fallback path preserves the
@@ -43,12 +37,35 @@ export function useProgressionPlaybackLoop() {
     // Prefer the audio-clock-driven advance whenever the AudioContext is
     // ready, since it tracks what the user actually hears.
     if (ensureProgressionAudio()) {
-      const id = window.setInterval(() => {
-        if (isCurrentStepFinished()) {
-          advanceProgressionPlayback();
+      let timeoutId: number | null = null;
+      let cancelled = false;
+
+      const armAdvance = () => {
+        if (cancelled) return;
+
+        const tl = getTimelinePosition();
+        if (!tl || tl.stepIndex !== activeProgressionStepIndex) {
+          // PlaybackLoop runs before the audio scheduler effect in
+          // ProgressionSummarySlot, so on a fresh start or a step transition
+          // the timeline may not be armed until the next macrotask. Retry once
+          // the scheduler has had a chance to publish the active audio segment.
+          timeoutId = window.setTimeout(armAdvance, 0);
+          return;
         }
-      }, AUDIO_TICK_MS);
-      return () => window.clearInterval(id);
+
+        const remainingMs = getTimeUntilCurrentStepEndMs() ?? 0;
+        timeoutId = window.setTimeout(() => {
+          advanceProgressionPlayback();
+        }, remainingMs);
+      };
+
+      armAdvance();
+      return () => {
+        cancelled = true;
+        if (timeoutId !== null) {
+          window.clearTimeout(timeoutId);
+        }
+      };
     }
 
     // No Web Audio support — fall back to the wall-clock timer so the

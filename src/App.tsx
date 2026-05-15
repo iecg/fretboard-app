@@ -35,6 +35,7 @@ import sharedStyles from "./components/shared/shared.module.css";
 import { ControlsPanelSkeleton, MobileTabSkeleton } from "./components/LoadingSkeleton/LoadingSkeleton";
 import { ANIMATION_DURATION_XFADE } from "@fretflow/core";
 import { isInspectorPreviewEnabled } from "./utils/inspectorPreview";
+import { AppMotionConfig } from "./components/AppMotionConfig/AppMotionConfig";
 import "./styles/App.css";
 
 const ExpandedControlsPanel = lazy(() =>
@@ -301,7 +302,9 @@ function App() {
   const [store] = useState(() => createStore());
   return (
     <Provider store={store}>
-      <AppContent />
+      <AppMotionConfig>
+        <AppContent />
+      </AppMotionConfig>
     </Provider>
   );
 }
