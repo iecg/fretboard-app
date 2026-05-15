@@ -111,23 +111,6 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
-  it("renders scale degree colors as a divided View setting with hint styling", () => {
-    renderOpenOverlay();
-
-    const scaleDegreeLabel = screen.getByText("Scale Degree Colors");
-    const scaleDegreeField = scaleDegreeLabel.closest(`.${styles["overlay-field"]}`);
-    const fretRangeField = screen
-      .getByText("Fret Range")
-      .closest(`.${styles["overlay-field"]}`);
-    const hint = screen.getByText("Colors each scale note by its degree.");
-
-    expect(scaleDegreeField).toBeTruthy();
-    expect(scaleDegreeField).not.toHaveClass(styles["overlay-field--divided"]);
-    expect(fretRangeField).toHaveClass(styles["overlay-field--divided"]);
-    expect(hint).toHaveClass("field-hint");
-    expect(hint).toHaveClass(styles["overlay-field-hint"]);
-  });
-
   it("renders sections in the expected order", () => {
     renderOpenOverlay();
 
@@ -140,7 +123,6 @@ describe("SettingsOverlay/SettingsOverlay", () => {
       "Instrument",
       "Language",
       "Appearance",
-      "Notation",
       "Chord Layout",
       "Reset",
     ]);
@@ -151,11 +133,8 @@ describe("SettingsOverlay/SettingsOverlay", () => {
 
     expect(screen.getByText("Zoom")).toBeTruthy();
     expect(screen.getByText("Fret Range")).toBeTruthy();
-    expect(screen.getByText("Scale Degree Colors")).toBeTruthy();
     expect(screen.getAllByText("Tuning")).toHaveLength(2);
     expect(screen.getByRole("combobox", { name: "Tuning" })).toBeTruthy();
-    expect(screen.getByText("Accidentals")).toBeTruthy();
-    expect(screen.getByText("Enharmonic Display")).toBeTruthy();
     expect(screen.getAllByText("Language").length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: /english/i })).toBeTruthy();
     expect(screen.getByRole("button", { name: /español/i })).toBeTruthy();
@@ -190,16 +169,6 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(
       screen.getByText(
         "Limits how far the visible chord tones can span across frets on the fretboard.",
-      ),
-    ).toBeTruthy();
-    expect(
-      screen.getByText(
-        "Auto chooses sharps or flats based on the current musical context.",
-      ),
-    ).toBeTruthy();
-    expect(
-      screen.getByText(
-        "Controls whether equivalent note spellings appear when they clarify the theory view.",
       ),
     ).toBeTruthy();
 

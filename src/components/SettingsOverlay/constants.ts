@@ -1,29 +1,9 @@
 import {
-  type AccidentalOptionValue,
-  type EnharmonicDisplayValue,
   type ThemeOptionValue,
   type SettingFieldKey,
   type SettingFieldConfig,
   type SettingsSectionConfig,
 } from "./types";
-
-export const ACCIDENTAL_OPTIONS = [
-  { label: "Auto", value: "auto" },
-  { label: "♯", value: "sharps" },
-  { label: "♭", value: "flats" },
-] as const satisfies readonly {
-  label: string;
-  value: AccidentalOptionValue;
-}[];
-
-export const ENHARMONIC_DISPLAY_OPTIONS = [
-  { label: "Auto", value: "auto" },
-  { label: "On", value: "on" },
-  { label: "Off", value: "off" },
-] as const satisfies readonly {
-  label: string;
-  value: EnharmonicDisplayValue;
-}[];
 
 export const THEME_OPTIONS = [
   { label: "Light", value: "light" },

@@ -18,7 +18,6 @@ import { OverlaySection } from "./shared";
 import ViewSettingsSection from "./sections/ViewSettingsSection";
 import InstrumentSettingsSection from "./sections/InstrumentSettingsSection";
 import AppearanceSettingsSection from "./sections/AppearanceSettingsSection";
-import NotationSettingsSection from "./sections/NotationSettingsSection";
 import ChordLayoutSettingsSection from "./sections/ChordLayoutSettingsSection";
 import ResetSettingsSection from "./sections/ResetSettingsSection";
 import LanguageSettingsSection from "./sections/LanguageSettingsSection";
@@ -125,7 +124,6 @@ function SettingsOverlaySurface({
           </OverlaySection>
           <LanguageSettingsSection />
           <AppearanceSettingsSection />
-          <NotationSettingsSection />
           <ChordLayoutSettingsSection />
           <OverlaySection id="reset" title={t("settings.sections.reset")} tone="danger">
             <ResetSettingsSection onClose={close} />
