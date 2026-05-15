@@ -3,6 +3,7 @@ import { fretStartAtom, fretEndAtom } from "../../store/atoms";
 import { MAX_FRET } from "@fretflow/core";
 import { FingeringPatternControls } from "../FingeringPatternControls/FingeringPatternControls";
 import { FretRangeControl } from "../FretRangeControl/FretRangeControl";
+import shared from "../shared/shared.module.css";
 import styles from "./ViewTab.module.css";
 
 export function ViewTab() {
@@ -12,8 +13,8 @@ export function ViewTab() {
   return (
     <div className={styles.root} data-inspector-tab="view">
       <FingeringPatternControls />
-      <div className={styles.section}>
-        <span className={styles.sectionLabel}>Fret Range</span>
+      <div className={shared["control-section"]}>
+        <span className={shared["section-label"]}>Fret Range</span>
         <FretRangeControl
           startFret={fretStart}
           endFret={fretEnd}
