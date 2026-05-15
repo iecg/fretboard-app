@@ -45,4 +45,27 @@ describe("Inspector", () => {
     renderWithAtoms(<Inspector />, [[progressionEnabledAtom, true]]);
     expect(screen.getByRole("tab", { name: "Progression" })).toBeInTheDocument();
   });
+
+  it("renders the View tab body by default", () => {
+    renderInspector();
+    expect(screen.getByRole("tabpanel").getAttribute("data-tab-id")).toBe("view");
+    expect(screen.getByText(/fingering pattern/i)).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: /fret range/i })).toBeInTheDocument();
+  });
+
+  it("switches to the Scale tab body when the Scale tab is selected", async () => {
+    const user = userEvent.setup();
+    renderInspector();
+    await user.click(screen.getByRole("tab", { name: "Scale" }));
+    expect(screen.getByRole("tabpanel").getAttribute("data-tab-id")).toBe("scale");
+    expect(screen.getByText(/^root$/i)).toBeInTheDocument();
+  });
+
+  it("switches to the Chord tab body when the Chord tab is selected", async () => {
+    const user = userEvent.setup();
+    renderInspector();
+    await user.click(screen.getByRole("tab", { name: "Chord" }));
+    expect(screen.getByRole("tabpanel").getAttribute("data-tab-id")).toBe("chord");
+    expect(screen.getByText(/chord mode/i)).toBeInTheDocument();
+  });
 });
