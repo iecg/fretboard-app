@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { screen } from "@testing-library/react";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
+import { axe } from "../../test-utils/a11y";
 import { fretStartAtom, fretEndAtom } from "../../store/atoms";
 import { ViewTab } from "./ViewTab";
 
@@ -20,5 +21,10 @@ describe("ViewTab", () => {
     expect(startGroup.textContent).toContain("3");
     const endGroup = screen.getByRole("group", { name: /end fret/i });
     expect(endGroup.textContent).toContain("8");
+  });
+
+  it("has no accessibility violations", async () => {
+    const { container } = renderWithAtoms(<ViewTab />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

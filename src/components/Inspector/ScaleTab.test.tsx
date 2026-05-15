@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
+import { axe } from "../../test-utils/a11y";
 import { rootNoteAtom, scaleNameAtom } from "../../store/atoms";
 import { ScaleTab } from "./ScaleTab";
 
@@ -28,5 +29,18 @@ describe("ScaleTab", () => {
         screen.getByRole("group", { name: /circle of fifths/i }),
       ).toBeInTheDocument();
     });
+  });
+
+  it("has no accessibility violations", async () => {
+    const { container } = renderWithAtoms(<ScaleTab />, [
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+    ]);
+    await waitFor(() => {
+      expect(
+        screen.getByRole("group", { name: /circle of fifths/i }),
+      ).toBeInTheDocument();
+    });
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

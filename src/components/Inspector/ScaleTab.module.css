@@ -4,11 +4,11 @@
   gap: var(--space-3, 0.75rem);
 }
 
-@media (min-width: 1024px) {
-  .root {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-items: start;
-  }
+/* Two-column split on desktop. Gated on the layout-tier attribute (per the
+   project's responsive-CSS contract) rather than a raw viewport media query. */
+:global(.app-container[data-layout-tier="desktop"]) .root {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
 }
 
 .cofWrapper {
