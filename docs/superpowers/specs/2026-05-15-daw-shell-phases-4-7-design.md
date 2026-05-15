@@ -93,11 +93,10 @@ leaves the app in a working, releasable state.
 
 ---
 
-## 4. Phase 4 — TopBandSummary reskin + View/Scale tab leaf refactors
+## 4. Phase 4 — TopBandSummary reskin + View tab leaf refactor
 
 **Goal:** Reskin `TopBandSummary` into the DAW faceplate language, and finalize the View
-and Scale tab content by migrating the remaining notation/view switches into the
-Inspector.
+tab content by migrating the remaining notation/view switches into the Inspector.
 
 ### 4a. TopBandSummary reskin
 
@@ -125,16 +124,17 @@ changes.
 - The corresponding rows are removed from the SettingsOverlay sections. If a section
   becomes empty, remove the section; otherwise leave the remaining rows.
 
-### 4c. Scale tab leaf refactor
+### 4c. (Removed) Scale tab chord-type chip row — deferred
 
-- Add the **chord-type-for-scale chip row** to `ScaleTab`
-  (`src/components/Inspector/ScaleTab.tsx`) — the control that picks which chord type the
-  scale degrees are evaluated against. It binds to its existing atom; this is a relocation
-  /addition of the control into the tab, not new domain logic.
+The Phase 3 plan mentioned a "chord-type-for-scale chip row" for the Scale tab. On
+investigation, **no such control or atom exists in the codebase** — it is not a
+relocation but undefined new functionality, and the original spec that defined it is
+lost. It is therefore **dropped from this spec**. If the feature is still wanted, it
+needs its own brainstorm to define its behavior and atom before it can be planned.
 
 ### Data flow
 
-All controls in 4b/4c subscribe directly to their existing Jotai atoms, exactly as they
+All controls in 4b subscribe directly to their existing Jotai atoms, exactly as they
 do in `SettingsOverlay` today. No prop drilling, no new atoms.
 
 ### Testing
@@ -144,8 +144,6 @@ do in `SettingsOverlay` today. No prop drilling, no new atoms.
   branch is gone (no `progression-status` test id).
 - `ViewTab.test.tsx` — extend to assert the Accidentals / Enharmonic / Scale-degree-color
   switches render and toggle their atoms.
-- `ScaleTab.test.tsx` — extend to assert the chord-type chip row renders and updates its
-  atom.
 - `SettingsOverlay` tests — update to reflect the removed rows.
 - Visual regression — refresh darwin + linux baselines for `app-layout`, `app-components`,
   and any `TopBandSummary` snapshot.
@@ -154,8 +152,8 @@ do in `SettingsOverlay` today. No prop drilling, no new atoms.
 
 - `TopBandSummary` visually matches the Inspector faceplate; no progression-status code
   path remains in it.
-- The View tab shows the notation/view switches; the Scale tab shows the chord-type chip
-  row; both no longer appear in `SettingsOverlay`.
+- The View tab shows the Accidentals / Enharmonic / Scale-degree-color switches; they no
+  longer appear in `SettingsOverlay`.
 - `npm run lint`, `npm run test`, `npm run build` pass.
 
 ---
