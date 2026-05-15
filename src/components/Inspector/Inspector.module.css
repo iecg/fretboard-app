@@ -1,0 +1,18 @@
+.root {
+  display: flex;
+  flex-direction: column;
+}
+
+.tabList {
+  display: flex;
+}
+
+.tab {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.tabPanel {
+  min-height: 80px;
+}
