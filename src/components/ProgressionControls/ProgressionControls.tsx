@@ -8,6 +8,7 @@ import {
   formatProgressionDurationLabel,
   getAvailableProgressionPresets,
 } from "../../progressions/progressionDomain";
+import { generateCommonProgressions } from "../../progressions/progressionGeneration";
 import { useProgressionState } from "../../hooks/useProgressionState";
 import { useScaleState } from "../../hooks/useScaleState";
 import type { ProgressionPresetCategory } from "../../progressions/progressionDomain";
@@ -29,7 +30,7 @@ const CATEGORY_LABELS: Record<ProgressionPresetCategory, string> = {
 };
 
 export function ProgressionControls() {
-  const { scaleName } = useScaleState();
+  const { scaleName, rootNote } = useScaleState();
   const {
     progressionEnabled,
     setProgressionEnabled,
@@ -38,6 +39,7 @@ export function ProgressionControls() {
     activeProgressionStepIndex,
     activeResolvedProgressionStep,
     loadProgressionPreset,
+    loadProgressionSteps,
     setActiveProgressionStepIndex,
     addProgressionStep,
     removeProgressionStep,
@@ -59,6 +61,7 @@ export function ProgressionControls() {
       presets: availablePresets.filter((p) => p.category === cat),
     }))
     .filter((g) => g.presets.length > 0);
+  const suggestedPresets = generateCommonProgressions(scaleName, rootNote);
   const qualityValue = activeStep?.qualityOverride ?? CHORD_QUALITY_DIATONIC_VALUE;
   const degreeOptions = buildDegreeToggleOptions({
     scaleName,
@@ -105,6 +108,11 @@ export function ProgressionControls() {
           onChange={(event) => {
             const id = event.target.value;
             if (id === CUSTOM_PRESET_ID) return;
+            const suggested = suggestedPresets.find((p) => p.id === id);
+            if (suggested) {
+              startTransition(() => loadProgressionSteps(suggested.steps));
+              return;
+            }
             startTransition(() => loadProgressionPreset(id));
           }}
         >
@@ -118,6 +126,13 @@ export function ProgressionControls() {
               ))}
             </optgroup>
           ))}
+          {suggestedPresets.length > 0 && (
+            <optgroup label={`Suggested for ${scaleName}`}>
+              {suggestedPresets.map((preset) => (
+                <option key={preset.id} value={preset.id}>{preset.label}</option>
+              ))}
+            </optgroup>
+          )}
         </select>
       </div>
 

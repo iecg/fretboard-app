@@ -159,6 +159,20 @@ describe("ProgressionControls PRESET", () => {
     expect(optgroups.length).toBeGreaterThan(0);
   });
 
+  it("renders a suggested presets optgroup for the current scale", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+    ]);
+    renderWithStore(<ProgressionControls />, store);
+
+    const select = screen.getByLabelText("Preset");
+    const optgroups = Array.from(select.querySelectorAll("optgroup"));
+    const labels = optgroups.map((g) => g.getAttribute("label"));
+    expect(labels.some((l) => l?.startsWith("Suggested for"))).toBe(true);
+  });
+
   it("only lists presets that are available for the selected scale", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],

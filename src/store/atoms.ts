@@ -142,6 +142,7 @@ export {
   setProgressionActiveStepIndexAtom,
   setProgressionPlayingAtom,
   loadProgressionPresetAtom,
+  loadProgressionStepsAtom,
   remapProgressionStepsForScaleAtom,
   addProgressionStepAtom,
   removeProgressionStepAtom,
