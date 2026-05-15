@@ -24,18 +24,26 @@ export default defineConfig({
   },
   build: {
     sourcemap: true,
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        manualChunks(id: string) {
-          if (id.includes('node_modules')) {
-            if (id.includes('react-dom') || id.includes('react/') || id.includes('scheduler')) {
-              return 'vendor-react'
-            }
-            if (id.includes('motion-dom') || id.includes('motion-utils') || id.includes('framer-motion') || id.includes('/motion/')) {
-              return 'vendor-motion'
-            }
-            return 'vendor'
-          }
+        codeSplitting: {
+          groups: [
+            {
+              name: 'vendor-react',
+              test: /node_modules[\\/](react-dom|react|scheduler)[\\/]/,
+              priority: 3,
+            },
+            {
+              name: 'vendor-motion',
+              test: /node_modules[\\/](framer-motion|motion-dom|motion-utils|motion)[\\/]/,
+              priority: 2,
+            },
+            {
+              name: 'vendor',
+              test: /node_modules[\\/]/,
+              priority: 1,
+            },
+          ],
         },
       },
     },
