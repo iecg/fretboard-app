@@ -56,7 +56,6 @@ interface SchedulerInputs {
   drumPatternId: string;
   drumVariations: string[];
   swing: number;
-  loopEnabled: boolean;
 }
 
 type EnableFlags = SchedulerInputs["enable"];
@@ -241,7 +240,6 @@ export function useProgressionAudioPlayback() {
       drumPatternId: progressionDrumPattern,
       drumVariations: progressionDrumVariations,
       swing: progressionSwing,
-      loopEnabled: progressionLoopEnabled,
     };
 
     const config: ConfigFlags = {
