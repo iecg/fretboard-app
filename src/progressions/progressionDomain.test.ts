@@ -156,7 +156,7 @@ describe("progressionDomain", () => {
       "twelve-bar-blues",
     ]);
     const blues = PROGRESSION_PRESETS.find((preset) => preset.id === "twelve-bar-blues");
-    expect(blues?.steps).toHaveLength(12);
+    expect(blues?.steps).toHaveLength(7);
     expect(blues?.steps.every((step) => step.qualityOverride === "Dominant 7th")).toBe(true);
   });
 
@@ -166,6 +166,37 @@ describe("progressionDomain", () => {
     expect(isProgressionPresetAvailableForScale(oneFiveSixFour!, "Major")).toBe(true);
     expect(isProgressionPresetAvailableForScale(oneFiveSixFour!, "Minor Blues")).toBe(true);
     expect(getAvailableProgressionPresets("Minor Blues")).toEqual(PROGRESSION_PRESETS);
+  });
+});
+
+describe("twelve-bar-blues preset", () => {
+  const blues = PROGRESSION_PRESETS.find((p) => p.id === "twelve-bar-blues")!;
+
+  it("has 7 steps totaling 12 bars", () => {
+    expect(blues.steps).toHaveLength(7);
+    const totalBars = blues.steps.reduce(
+      (sum, s) => sum + (s.duration.unit === "bar" ? s.duration.value : 0),
+      0,
+    );
+    expect(totalBars).toBe(12);
+  });
+
+  it("uses multi-bar durations for repeated chords", () => {
+    expect(blues.steps[0]).toEqual(
+      expect.objectContaining({ degree: "I", duration: { value: 4, unit: "bar" } }),
+    );
+    expect(blues.steps[1]).toEqual(
+      expect.objectContaining({ degree: "IV", duration: { value: 2, unit: "bar" } }),
+    );
+    expect(blues.steps[2]).toEqual(
+      expect.objectContaining({ degree: "I", duration: { value: 2, unit: "bar" } }),
+    );
+  });
+
+  it("applies Dominant 7th to all steps", () => {
+    for (const step of blues.steps) {
+      expect(step.qualityOverride).toBe("Dominant 7th");
+    }
   });
 });
 
