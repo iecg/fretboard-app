@@ -9,6 +9,42 @@ import { synth } from "../../core/audio";
 import { settingsOverlayOpenAtom, fretZoomAtom, themeAtom } from "../../store/atoms";
 import styles from "./SettingsOverlay.module.css";
 
+// Spy on AnimatePresence so we can assert the initial={false} prop in the motion-wiring test.
+const { spiedAnimatePresence } = vi.hoisted(() => ({
+  spiedAnimatePresence: vi.fn((props: { children?: unknown; [k: string]: unknown }) => props.children),
+}));
+
+vi.mock("motion/react", async () => {
+  const React = await import("react");
+  const ANIMATION_PROPS = new Set([
+    "initial", "animate", "exit", "transition", "variants",
+    "whileHover", "whileTap", "whileFocus", "whileDrag", "whileInView",
+    "layoutId", "layout", "onAnimationStart", "onAnimationComplete", "onUpdate",
+  ]);
+  const makeEl = (tag: string) =>
+    React.forwardRef<HTMLElement, Record<string, unknown>>((props, ref) => {
+      const { children, ...rest } = props;
+      const filtered: Record<string, unknown> = {};
+      Object.entries(rest).forEach(([k, v]) => {
+        if (!ANIMATION_PROPS.has(k)) filtered[k] = v;
+      });
+      return React.createElement(tag, { ...filtered, ref }, children as React.ReactNode);
+    });
+  const cache = new Map<string, unknown>();
+  const motionProxy = new Proxy({} as Record<string, unknown>, {
+    get(_t, prop: string) {
+      if (!cache.has(prop)) cache.set(prop, makeEl(prop));
+      return cache.get(prop);
+    },
+  });
+  return {
+    motion: motionProxy,
+    AnimatePresence: spiedAnimatePresence,
+    MotionConfig: ({ children }: { children: React.ReactNode }) => children,
+    useReducedMotion: vi.fn().mockReturnValue(null),
+  };
+});
+
 // Mock the audio synth singleton — we only care that setMute is called on reset.
 vi.mock("../../core/audio", () => ({
   synth: {
@@ -338,3 +374,19 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(document.activeElement).toBe(trigger);
   });
 });
+
+describe("SettingsOverlay/SettingsOverlay motion wiring", () => {
+  it("AnimatePresence wrapper is configured with initial={false}", () => {
+    const store = createStore();
+    store.set(settingsOverlayOpenAtom, true);
+    renderOverlay(store);
+
+    // initial={false} prevents the overlay from replaying its entry animation
+    // on the first render when the app mounts with a previously-open state.
+    const passedInitialFalse = spiedAnimatePresence.mock.calls.some(
+      ([props]) => props.initial === false,
+    );
+    expect(passedInitialFalse).toBe(true);
+  });
+});
+
