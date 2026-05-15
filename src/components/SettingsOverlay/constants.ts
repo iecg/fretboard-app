@@ -2,7 +2,6 @@ import {
   type ThemeOptionValue,
   type SettingFieldKey,
   type SettingFieldConfig,
-  type SettingsSectionConfig,
 } from "./types";
 
 export const THEME_OPTIONS = [
@@ -23,25 +22,9 @@ export const SETTING_FIELDS: Record<SettingFieldKey, SettingFieldConfig> = {
     key: "fretRange",
     labelKey: "settings.fields.fretRange",
   },
-  scaleDegreeColors: {
-    key: "scaleDegreeColors",
-    labelKey: "settings.fields.scaleDegreeColors",
-    hintKey: "settings.fields.scaleDegreeColorsHint",
-  },
   tuning: {
     key: "tuning",
     labelKey: "settings.fields.tuning",
-  },
-  accidentals: {
-    key: "accidentals",
-    labelKey: "settings.fields.accidentals",
-    className: "overlay-field--accidentals",
-    hintKey: "settings.fields.accidentalsHint",
-  },
-  enharmonicDisplay: {
-    key: "enharmonicDisplay",
-    labelKey: "settings.fields.enharmonicDisplay",
-    hintKey: "settings.fields.enharmonicDisplayHint",
   },
   chordSpread: {
     key: "chordSpread",
@@ -54,40 +37,6 @@ export const SETTING_FIELDS: Record<SettingFieldKey, SettingFieldConfig> = {
     hintKey: "settings.fields.themeHint",
   },
 };
-
-export const SETTINGS_SECTIONS: readonly SettingsSectionConfig[] = [
-  {
-    id: "view",
-    title: "View",
-    fields: ["zoom", "fretRange", "scaleDegreeColors"],
-  },
-  {
-    id: "instrument",
-    title: "Instrument",
-    fields: ["tuning"],
-  },
-  {
-    id: "appearance",
-    title: "Appearance",
-    fields: ["theme"],
-  },
-  {
-    id: "notation",
-    title: "Notation",
-    fields: ["accidentals", "enharmonicDisplay"],
-  },
-  {
-    id: "chord-layout",
-    title: "Chord Layout",
-    fields: ["chordSpread"],
-  },
-  {
-    id: "reset",
-    title: "Reset",
-    tone: "danger",
-    fields: [],
-  },
-] as const;
 
 export const ZOOM_STEP = 10;
 
