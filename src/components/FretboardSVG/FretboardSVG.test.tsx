@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, fireEvent } from "@testing-library/react";
 import "../../styles/index.css";
 import "../../styles/themes.css";
@@ -1342,10 +1342,6 @@ describe("FretboardSVG/FretboardSVG", () => {
       ],
     };
 
-    afterEach(() => {
-      vi.mocked(resolveFretboardMotionPolicy).mockRestore();
-    });
-
     it("uses group-mode wrappers when policy returns group modes", () => {
       const { container } = render(
         <FretboardSVG
@@ -1362,7 +1358,7 @@ describe("FretboardSVG/FretboardSVG", () => {
     });
 
     it("collapses to static wrappers (data-motion=none) when policy returns none modes", () => {
-      vi.mocked(resolveFretboardMotionPolicy).mockReturnValue({
+      vi.mocked(resolveFretboardMotionPolicy).mockReturnValueOnce({
         noteMode: "none",
         shapeMode: "none",
         connectorMode: "none",
