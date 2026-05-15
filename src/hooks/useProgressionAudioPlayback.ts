@@ -19,6 +19,7 @@ import { isMutedAtom } from "../store/atoms";
 import { resolveBassLineNotes, resolveChordVoicing } from "../progressions/progressionAudio";
 import {
   findNextResolvableStepIndex,
+  getProgressionDurationMs,
   type ResolvedProgressionStep,
 } from "../progressions/progressionDomain";
 import { useProgressionState } from "./useProgressionState";
@@ -261,10 +262,23 @@ export function useProgressionAudioPlayback() {
     // Publish the active step to the shared timeline so the playhead /
     // position readout / playback loop read from the same audio clock.
     if (activeSeg) {
+      const steps = resolvedProgressionSteps;
+      const tempo = progressionTempoBpm;
+      const bpb = beatsPerBar;
+
+      const cumulativeStartMs = steps
+        .slice(0, activeSeg.stepIndex)
+        .reduce((sum, s) => sum + getProgressionDurationMs(s.duration, tempo, bpb), 0);
+
+      const totalDurationMs = steps
+        .reduce((sum, s) => sum + getProgressionDurationMs(s.duration, tempo, bpb), 0);
+
       setActiveStep(
         activeSeg.stepIndex,
         activeSeg.startTime,
         activeSeg.endTime - activeSeg.startTime,
+        cumulativeStartMs / 1000,
+        totalDurationMs / 1000,
       );
       lastActiveStartTimeRef.current = activeSeg.startTime;
     } else {
