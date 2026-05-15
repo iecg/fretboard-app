@@ -37,6 +37,7 @@ export interface Dictionary {
   tabs: {
     scales: string;
     chords: string;
+    progression: string;
     cof: string;
     view: string;
   };

@@ -39,6 +39,7 @@ export const en: Dictionary = {
   tabs: {
     scales: "Scales",
     chords: "Chords",
+    progression: "Progression",
     cof: "Key",
     view: "View",
   },
