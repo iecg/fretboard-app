@@ -1,0 +1,17 @@
+.root {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3, 0.75rem);
+}
+
+@media (min-width: 1024px) {
+  .root {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.cofWrapper {
+  display: flex;
+  flex-direction: column;
+}
