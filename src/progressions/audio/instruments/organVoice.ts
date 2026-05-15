@@ -2,6 +2,12 @@ import { getNoteFrequency } from "@fretflow/core";
 import type { ChordVoice, ChordVoiceOptions, VoiceHandle } from "./types";
 
 const ATTACK = 0.008;
+// Organ notes hold at full level (sustained timbre) then release. The envelope
+// is bounded so a note self-terminates: the scheduler fires `scheduleChord`
+// once per chord-pattern hit, so without a release every hit would stack
+// another non-decaying voice and the chord would crescendo without end.
+const HOLD = 0.8;
+const RELEASE = 0.5;
 const FADE_OUT = 0.04;
 const ENVELOPE_MIN = 0.001;
 
@@ -32,12 +38,22 @@ function scheduleOrganNote(
     const gain = ctx.createGain();
     osc.type = "sine";
     osc.frequency.setValueAtTime(harmonicFreq, time);
+
+    // Attack up to the drawbar level, hold flat, then release to silence.
+    const level = DRAWBAR_LEVELS[i];
     gain.gain.setValueAtTime(ENVELOPE_MIN, time);
-    gain.gain.linearRampToValueAtTime(DRAWBAR_LEVELS[i], time + ATTACK);
+    gain.gain.linearRampToValueAtTime(level, time + ATTACK);
+    gain.gain.setValueAtTime(level, time + ATTACK + HOLD);
+    gain.gain.exponentialRampToValueAtTime(
+      ENVELOPE_MIN,
+      time + ATTACK + HOLD + RELEASE,
+    );
 
     osc.connect(gain);
     gain.connect(merger);
     osc.start(time);
+    // Self-terminate: stop the oscillator once its envelope has released.
+    osc.stop(time + ATTACK + HOLD + RELEASE + 0.05);
     oscs.push(osc);
     gains.push(gain);
   }
