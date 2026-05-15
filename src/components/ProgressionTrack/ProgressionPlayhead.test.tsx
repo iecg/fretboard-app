@@ -120,4 +120,51 @@ describe("ProgressionPlayhead", () => {
     });
     expect(playhead.style.left).toBe("37.5%");
   });
+
+  it("starts moving when playback begins before the audio timeline is armed", () => {
+    let mockTime = 0;
+    const audioContext = {
+      get currentTime() {
+        return mockTime;
+      },
+      createGain: () => ({
+        gain: {
+          value: 1,
+          cancelScheduledValues: vi.fn(),
+          setValueAtTime: vi.fn(),
+          linearRampToValueAtTime: vi.fn(),
+        },
+        connect: vi.fn(),
+      }),
+      destination: {},
+    };
+
+    (window as unknown as { AudioContext: unknown }).AudioContext =
+      vi.fn(function () {
+        return audioContext;
+      }) as unknown as typeof AudioContext;
+
+    ensureProgressionAudio();
+
+    const { container } = render(
+      <ProgressionPlayhead
+        playing={true}
+        stepStartBar={1}
+        totalDurationBars={4}
+        totalBarsForDisplay={4}
+      />
+    );
+
+    const playhead = container.querySelector("[data-testid='progression-playhead']") as HTMLElement;
+    expect(playhead.style.left).toBe("0%");
+
+    setActiveStep(0, 0, 1.0, 0, 4.0);
+
+    act(() => {
+      mockTime = 0.5;
+      vi.advanceTimersByTime(16);
+    });
+
+    expect(playhead.style.left).toBe("12.5%");
+  });
 });
