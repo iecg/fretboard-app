@@ -12,7 +12,11 @@ export const strumVoice: ChordVoice = {
     time: number,
     options: ChordVoiceOptions,
   ): VoiceHandle {
-    const voices = notes.map((note, i) => {
+    // Up-strokes sound bottom-string-last: reverse the voicing so the strum
+    // lag accumulates from the high string downward.
+    const orderedNotes =
+      options.direction === "up" ? [...notes].reverse() : notes;
+    const voices = orderedNotes.map((note, i) => {
       const freq = getNoteFrequency(note);
       if (!Number.isFinite(freq) || freq <= 0) return null;
       return pluckString(ctx, dest, freq, time + i * STRUM_LAG_SECONDS, {

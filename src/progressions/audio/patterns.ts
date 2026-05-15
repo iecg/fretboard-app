@@ -100,6 +100,8 @@ export interface ChordHit {
   beat: number;
   velocity: number;
   style?: "staccato" | "sustained";
+  /** Strum direction; up-strokes reverse the voicing order. Defaults to down. */
+  direction?: StrumDirection;
 }
 
 export interface ChordPattern {
@@ -153,12 +155,12 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
     id: "pop-8ths",
     label: "Pop 8ths",
     hits: [
-      { beat: 0, velocity: 0.95 },
-      { beat: 1, velocity: 0.6 },
-      { beat: 1.5, velocity: 0.55 },
-      { beat: 2.5, velocity: 0.55 },
-      { beat: 3, velocity: 0.7 },
-      { beat: 3.5, velocity: 0.5 },
+      { beat: 0, velocity: 0.95, direction: "down" },
+      { beat: 1, velocity: 0.6, direction: "down" },
+      { beat: 1.5, velocity: 0.55, direction: "up" },
+      { beat: 2.5, velocity: 0.55, direction: "up" },
+      { beat: 3, velocity: 0.7, direction: "down" },
+      { beat: 3.5, velocity: 0.5, direction: "up" },
     ],
   },
   {

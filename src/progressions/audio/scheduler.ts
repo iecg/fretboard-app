@@ -145,6 +145,7 @@ export function scheduleProgressionStep(
         voice.scheduleChord(ctx, bus, input.voicing, hitTime, {
           velocity: hit.velocity,
           style: hit.style,
+          direction: hit.direction,
         }),
       );
     }
