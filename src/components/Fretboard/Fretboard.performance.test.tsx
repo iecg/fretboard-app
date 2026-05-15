@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, render } from "@testing-library/react";
 import { Provider, createStore } from "jotai";
 import { Fretboard } from "./Fretboard";
-import { fretZoomAtom } from "../../store/atoms";
+import { fretZoomAtom, fingeringPatternAtom, cagedShapesAtom } from "../../store/atoms";
 
 const received: Array<Record<string, unknown>> = [];
 
@@ -15,8 +15,15 @@ vi.mock("../FretboardSVG/FretboardSVG", () => ({
 }));
 
 describe("Fretboard performance wiring", () => {
-  it("reuses expensive derived props when zoom changes", () => {
+  beforeEach(() => {
+    // atomWithStorage persists to localStorage; clear between tests so each
+    // test starts from the atom's coded default, making zoom-change assertions
+    // reliable regardless of execution order.
+    localStorage.clear();
     received.length = 0;
+  });
+
+  it("reuses expensive derived props when zoom changes", () => {
     const store = createStore();
 
     render(
@@ -33,6 +40,35 @@ describe("Fretboard performance wiring", () => {
 
     const second = received.at(-1)!;
 
+    expect(second !== first).toBe(true);
+    expect(second.fretboardLayout).toBe(first.fretboardLayout);
+    expect(second.fullChordPositionKeys).toBe(first.fullChordPositionKeys);
+    expect(second.fullChordVoicings).toBe(first.fullChordVoicings);
+  });
+
+  it("reuses expensive derived props when zoom changes in CAGED mode", () => {
+    const store = createStore();
+
+    // Seed CAGED mode with a non-empty shape selection so the
+    // selectFullChordMatchesForCagedPosition code-path executes.
+    store.set(fingeringPatternAtom, "caged");
+    store.set(cagedShapesAtom, new Set(["C" as import("@fretflow/core").CagedShape]));
+
+    render(
+      <Provider store={store}>
+        <Fretboard stringRowPx={40} />
+      </Provider>,
+    );
+
+    const first = received.at(-1)!;
+
+    act(() => {
+      store.set(fretZoomAtom, 150);
+    });
+
+    const second = received.at(-1)!;
+
+    expect(second !== first).toBe(true);
     expect(second.fretboardLayout).toBe(first.fretboardLayout);
     expect(second.fullChordPositionKeys).toBe(first.fullChordPositionKeys);
     expect(second.fullChordVoicings).toBe(first.fullChordVoicings);

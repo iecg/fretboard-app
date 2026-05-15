@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useAtomValue } from "jotai";
 import {
   currentTuningAtom,
@@ -162,15 +163,23 @@ export function useFretboardState() {
     shapeScope = npsPosition !== undefined && npsPosition > 0 ? "single" : "global";
   }
 
-  const visibleFullChordMatches = fingeringPattern === "caged"
-    ? selectFullChordMatchesForCagedPosition(
-        fullChordMatches,
-        shapePolygons,
-        cagedShapes,
-      )
-    : fullChordMatches;
-  const visibleFullChordPositions = Array.from(
-    new Set(visibleFullChordMatches.flatMap((match) => match.positionKeys)),
+  const visibleFullChordMatches = useMemo(
+    () =>
+      fingeringPattern === "caged"
+        ? selectFullChordMatchesForCagedPosition(
+            fullChordMatches,
+            shapePolygons,
+            cagedShapes,
+          )
+        : fullChordMatches,
+    [fingeringPattern, fullChordMatches, shapePolygons, cagedShapes],
+  );
+  const visibleFullChordPositions = useMemo(
+    () =>
+      Array.from(
+        new Set(visibleFullChordMatches.flatMap((match) => match.positionKeys)),
+      ),
+    [visibleFullChordMatches],
   );
 
   return {
