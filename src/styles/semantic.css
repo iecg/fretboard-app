@@ -201,6 +201,18 @@
 
   /* Fretboard accessibility chrome — interactive UI layer, not SVG artwork */
   --fretboard-a11y-hover-bg: rgb(255 255 255 / 0.15);
+
+  /* DAW faceplate surface — theme-adaptive panel chrome shared by the
+     Inspector and TopBandSummary. :root carries the dark-mode values as a
+     safe default; the [data-theme] blocks below override per theme. */
+  --faceplate-bg: #0a121d;
+  --faceplate-bg-elevated: #0d1726;
+  --faceplate-wash: rgb(77 228 255 / 0.04);
+  --faceplate-border: rgb(77 228 255 / 0.12);
+  --faceplate-divider: rgb(255 255 255 / 0.06);
+  --faceplate-shadow: 0 1px 0 rgb(255 255 255 / 0.02) inset, 0 18px 40px -28px rgb(0 0 0 / 0.7);
+  --faceplate-accent: var(--neon-cyan);
+  --faceplate-accent-glow: var(--glow-cyan-sm);
 }
 
 [data-theme="modern-light"] {
@@ -229,6 +241,17 @@
    */
   --surface-control-hover-bg-image: none; /* intentional: no gradient overlay in light mode */
   --surface-control-hover-fg: var(--text-main); /* #0f172a — maximum-contrast dark on hover */
+
+  /* DAW faceplate — light mode: a pale cool-tinted substrate with a dimmer
+     cyan accent and a softer (but still present) glow. */
+  --faceplate-bg: #eef2f5;
+  --faceplate-bg-elevated: #f5f8fa;
+  --faceplate-wash: rgb(46 181 204 / 0.05);
+  --faceplate-border: rgb(46 181 204 / 0.35);
+  --faceplate-divider: rgb(0 0 0 / 0.08);
+  --faceplate-shadow: 0 1px 0 rgb(255 255 255 / 0.6) inset, 0 12px 28px -22px rgb(0 0 0 / 0.25);
+  --faceplate-accent: var(--neon-cyan-dim);
+  --faceplate-accent-glow: 0 0 4px rgb(46 181 204 / 0.30);
 }
 
 [data-theme="modern-dark"] {
@@ -262,6 +285,16 @@
 
   /* Fretboard accessibility chrome — alpha parity with light-mode (0.1), white channel for dark surfaces */
   --fretboard-a11y-hover-bg: rgb(255 255 255 / 0.1);
+
+  /* DAW faceplate — dark mode: navy substrate, bright cyan accent, neon glow. */
+  --faceplate-bg: #0a121d;
+  --faceplate-bg-elevated: #0d1726;
+  --faceplate-wash: rgb(77 228 255 / 0.04);
+  --faceplate-border: rgb(77 228 255 / 0.12);
+  --faceplate-divider: rgb(255 255 255 / 0.06);
+  --faceplate-shadow: 0 1px 0 rgb(255 255 255 / 0.02) inset, 0 18px 40px -28px rgb(0 0 0 / 0.7);
+  --faceplate-accent: var(--neon-cyan);
+  --faceplate-accent-glow: var(--glow-cyan-sm);
 }
 
 .panel-surface {
