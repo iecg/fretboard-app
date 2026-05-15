@@ -66,6 +66,7 @@ export function ProgressionPositionReadout({
   totalProgressionBars,
   beatsPerBar,
 }: ProgressionPositionReadoutProps) {
+  const containerRef = useRef<HTMLSpanElement | null>(null);
   const barRef = useRef<HTMLSpanElement | null>(null);
   const beatRef = useRef<HTMLSpanElement | null>(null);
   const subRef = useRef<HTMLSpanElement | null>(null);
@@ -113,6 +114,15 @@ export function ProgressionPositionReadout({
         subRef.current.textContent = subdivision;
         lastSubRef.current = subdivision;
       }
+
+      // Update aria-label imperatively so screen readers stay in sync with
+      // the high-frequency visual updates.
+      if (containerRef.current) {
+        containerRef.current.setAttribute(
+          "aria-label",
+          `Position ${p.current} of ${p.total}`,
+        );
+      }
     };
 
     const tick = () => {
@@ -151,7 +161,9 @@ export function ProgressionPositionReadout({
     <div className={styles.positionReadout}>
       <span className={styles.readoutLabel}>Position</span>
       <span
+        ref={containerRef}
         className={styles.positionValue}
+        role="status"
         aria-label={`Position ${initialPosition.current} of ${initialPosition.total}`}
       >
         <span className={styles.positionCurrent}>

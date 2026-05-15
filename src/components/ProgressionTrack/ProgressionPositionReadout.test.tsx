@@ -1,3 +1,4 @@
+import { axe } from "vitest-axe";
 // @vitest-environment jsdom
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, act } from "@testing-library/react";
@@ -37,8 +38,8 @@ describe("ProgressionPositionReadout", () => {
     vi.useRealTimers();
   });
 
-  it("renders initial position correctly", () => {
-    render(
+  it("renders initial position correctly and has no accessibility violations", async () => {
+    const { container } = render(
       <ProgressionPositionReadout
         playing={false}
         stepStartBar={1}
@@ -49,16 +50,20 @@ describe("ProgressionPositionReadout", () => {
       />
     );
 
-    // Initial render should show 01.1.000 / 04.4.000
-    // Use container.textContent or regex for more robust matching
-    expect(screen.getByText("01")).toBeTruthy();
-    expect(screen.getByText("1")).toBeTruthy();
-    expect(screen.getAllByText("000")).toHaveLength(2);
-    expect(screen.getByText("04")).toBeTruthy();
-    expect(screen.getByText("4")).toBeTruthy();
+    // Verify accessibility
+    let violations;
+    await act(async () => {
+      vi.useRealTimers();
+      violations = await axe(container);
+      vi.useFakeTimers();
+    });
+    expect(violations).toHaveNoViolations();
+
+    // Use semantic aria-label for robust assertion
+    expect(screen.getByRole("status", { name: "Position 01.1.000 of 04.4.000" })).toBeTruthy();
   });
 
-  it("updates digits during playback without NaN", () => {
+  it("updates digits during playback without NaN", async () => {
     let mockTime = 0;
     const audioContext = {
       get currentTime() {
@@ -86,7 +91,7 @@ describe("ProgressionPositionReadout", () => {
 
     setActiveStep(0, 0, 2.0, 0, 8.0); // 2s step, total 8s
 
-    render(
+    const { container } = render(
       <ProgressionPositionReadout
         playing={true}
         stepStartBar={1}
@@ -97,6 +102,9 @@ describe("ProgressionPositionReadout", () => {
       />
     );
 
+    // Initial label
+    expect(screen.getByRole("status", { name: "Position 01.1.000 of 04.4.000" })).toBeTruthy();
+
     // Advance 0.5s (25% of step)
     act(() => {
       mockTime = 0.5;
@@ -104,8 +112,7 @@ describe("ProgressionPositionReadout", () => {
     });
 
     // 25% of 4 beats = 1 beat. So 01.2.000 (1-indexed beat)
-    expect(screen.getByText("01")).toBeTruthy();
-    expect(screen.getByText("2")).toBeTruthy();
+    expect(screen.getByRole("status", { name: "Position 01.2.000 of 04.4.000" })).toBeTruthy();
     
     // Advance to 0.75s (37.5% of step)
     act(() => {
@@ -114,9 +121,16 @@ describe("ProgressionPositionReadout", () => {
     });
 
     // 37.5% of 4 beats = 1.5 beats. So 01.2.500
-    expect(screen.getByText("01")).toBeTruthy();
-    expect(screen.getByText("2")).toBeTruthy();
-    expect(screen.getByText("500")).toBeTruthy();
+    expect(screen.getByRole("status", { name: "Position 01.2.500 of 04.4.000" })).toBeTruthy();
+    
+    // Final a11y check during "playback"
+    let playbackViolations;
+    await act(async () => {
+      vi.useRealTimers();
+      playbackViolations = await axe(container);
+      vi.useFakeTimers();
+    });
+    expect(playbackViolations).toHaveNoViolations();
     
     // Ensure no NaN is present
     expect(screen.queryByText(/NaN/)).toBeNull();
