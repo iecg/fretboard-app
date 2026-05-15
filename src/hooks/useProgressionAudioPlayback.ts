@@ -81,6 +81,7 @@ function buildSegment(
       : step.duration.value;
   const durationSec = beatsAvailable * secondsPerBeat;
 
+  const nextStep = inputs.steps[stepIndex + 1];
   const handle = scheduleProgressionStep(ctx, bus, {
     voicing,
     bassNotes,
@@ -90,6 +91,17 @@ function buildSegment(
     startTime,
     scheduleFromTime,
     enable: inputs.enable,
+    // Catalog defaults reproduce the prior hardcoded backing track until
+    // instrument/pattern selection is wired into progression state.
+    chordInstrument: "strum",
+    chordPatternId: "pop-8ths",
+    bassPatternId: "root-fifth",
+    drumPatternId: "rock",
+    drumVariations: [],
+    swing: 0,
+    currentRoot: step.root,
+    currentQuality: step.quality,
+    nextChordRoot: nextStep?.root ?? undefined,
   });
 
   return {

@@ -6,28 +6,38 @@
  * the per-beat work in Web Audio time, so the strum + drum + bass groove
  * stays locked to the audio clock instead of drifting with React renders.
  *
+ * Instrument-agnostic: the scheduler no longer hardcodes a single strum /
+ * drum / bass pattern. It receives instrument + pattern ids and dispatches
+ * to the chord-voice registry and the pattern catalog. Swing is applied
+ * purely in the beat domain (off-beats shifted by `swing * 1/3` beats).
+ *
  * On pause/stop the hook calls `silenceProgressionBus()` upstream for an
  * immediate fade. `cancelAll()` here also cancels pending scheduled voices
  * so future hits do not leak into resumed playback.
  */
 
 import { getNoteFrequency } from "@fretflow/core";
-import { scheduleBassNote, type BassVoiceHandle } from "./bass";
+import { resolveBassNoteForRole } from "../progressionAudio";
+import { scheduleBassNote } from "./bass";
 import {
   scheduleHiHat,
   scheduleKick,
+  scheduleRide,
   scheduleSnare,
-  type DrumVoiceHandle,
 } from "./drumKit";
-import { scheduleClick, type ClickHandle } from "./metronome";
+import { getChordVoice } from "./instruments";
+import type { ChordInstrumentId, VoiceHandle } from "./instruments/types";
+import { scheduleClick } from "./metronome";
 import {
   buildMetronomePattern,
-  POP_STRUM_PATTERN,
+  getBassPattern,
+  getChordPattern,
+  getDrumPattern,
+  getDrumVariation,
   repeatPatternToBeats,
-  ROOT_FIFTH_BASS_PATTERN,
-  ROCK_DRUM_PATTERN,
+  type CatalogDrumPattern,
+  type DrumHit,
 } from "./patterns";
-import { pluckString, type PluckedVoiceHandle } from "./string";
 
 export interface SchedulerEnableFlags {
   strum: boolean;
@@ -54,6 +64,24 @@ export interface SchedulerStepInput {
    *  timeline back to beat 0. */
   scheduleFromTime?: number;
   enable: SchedulerEnableFlags;
+  /** Which chord synthesizer voices the strum lane. */
+  chordInstrument: ChordInstrumentId;
+  /** Catalog id of the chord/strum pattern. */
+  chordPatternId: string;
+  /** Catalog id of the bass pattern. */
+  bassPatternId: string;
+  /** Catalog id of the drum pattern. */
+  drumPatternId: string;
+  /** Catalog ids of additive drum variations overlaid on the base pattern. */
+  drumVariations: string[];
+  /** Swing ratio in [0, 1]. 0 = straight; higher pushes off-beats later. */
+  swing: number;
+  /** Root of the next chord (used to resolve chromatic-approach bass notes). */
+  nextChordRoot?: string;
+  /** Root of the current chord (enables role-resolved bass notes). */
+  currentRoot?: string;
+  /** Quality of the current chord (enables role-resolved bass notes). */
+  currentQuality?: string;
 }
 
 export interface ScheduledStepHandle {
@@ -61,7 +89,18 @@ export interface ScheduledStepHandle {
   cancelAll: () => void;
 }
 
-const STRUM_LAG_SECONDS = 0.018;
+const OFF_BEAT_TOLERANCE = 0.01;
+
+/**
+ * Apply swing in the beat domain: an off-beat (fractional part ≈ 0.5) is
+ * shifted forward by `swing * 1/3` beats. On-beats are untouched. Keeping
+ * swing in beats lets the caller scale by `secondsPerBeat` once.
+ */
+function swingBeat(beat: number, swing: number): number {
+  if (swing <= 0) return beat;
+  const isOff = Math.abs((beat % 1) - 0.5) < OFF_BEAT_TOLERANCE;
+  return isOff ? beat + swing * (1 / 3) : beat;
+}
 
 /**
  * Schedule every instrument event for a single progression step. Returns a
@@ -73,15 +112,14 @@ export function scheduleProgressionStep(
   bus: AudioNode,
   input: SchedulerStepInput,
 ): ScheduledStepHandle {
-  const voices: Array<
-    PluckedVoiceHandle | BassVoiceHandle | DrumVoiceHandle | ClickHandle
-  > = [];
+  const voices: VoiceHandle[] = [];
   const {
     startTime,
     secondsPerBeat,
     beatsAvailable,
     beatsPerBar,
     enable,
+    swing,
     scheduleFromTime = startTime,
   } = input;
 
@@ -91,105 +129,112 @@ export function scheduleProgressionStep(
 
   const shouldScheduleHit = (time: number) => time >= scheduleFromTime;
 
-  // Strum: trigger each pattern hit, voicing notes spread across STRUM_LAG.
-  if (enable.strum && input.voicing.length > 0) {
+  // Chord / strum lane — dispatch to the configured chord voice and pattern.
+  const chordPattern = getChordPattern(input.chordPatternId);
+  if (enable.strum && chordPattern && input.voicing.length > 0) {
+    const voice = getChordVoice(input.chordInstrument);
     const hits = repeatPatternToBeats(
-      POP_STRUM_PATTERN,
+      chordPattern.hits,
       beatsAvailable,
       beatsPerBar,
     );
     for (const hit of hits) {
-      const hitTime = startTime + hit.beat * secondsPerBeat;
+      const hitTime = startTime + swingBeat(hit.beat, swing) * secondsPerBeat;
       if (!shouldScheduleHit(hitTime)) continue;
-      const ordered =
-        hit.direction === "up" ? [...input.voicing].reverse() : input.voicing;
-      ordered.forEach((note, i) => {
-        const freq = getNoteFrequency(note);
-        if (!Number.isFinite(freq) || freq <= 0) return;
-        const noteTime = hitTime + i * STRUM_LAG_SECONDS;
-        voices.push(
-          pluckString(ctx, bus, freq, noteTime, { velocity: hit.velocity }),
-        );
-      });
+      voices.push(
+        voice.scheduleChord(ctx, bus, input.voicing, hitTime, {
+          velocity: hit.velocity,
+          style: hit.style,
+        }),
+      );
     }
   }
 
-  // Bass: root note on beat 1, chord fifth on beat 3, repeated per bar.
-  if (enable.bass && input.bassNotes.length > 0) {
+  // Bass lane — resolve note roles against the active chord when available.
+  const bassPattern = getBassPattern(input.bassPatternId);
+  if (enable.bass && bassPattern && input.bassNotes.length > 0) {
     const bassHits = repeatPatternToBeats(
-      ROOT_FIFTH_BASS_PATTERN,
+      bassPattern.hits,
       beatsAvailable,
       beatsPerBar,
     );
     for (const hit of bassHits) {
-      const note =
-        hit.note === "fifth"
-          ? input.bassNotes[1] ?? input.bassNotes[0]
-          : input.bassNotes[0];
-      const bassFreq = getNoteFrequency(note);
-      if (Number.isFinite(bassFreq) && bassFreq > 0) {
-        const hitTime = startTime + hit.beat * secondsPerBeat;
-        if (!shouldScheduleHit(hitTime)) continue;
-        voices.push(
-          scheduleBassNote(
-            ctx,
-            bus,
-            bassFreq,
-            hitTime,
-            {
-              velocity: hit.velocity,
-              durationSec: Math.min(0.9, secondsPerBeat * 1.4),
-            },
-          ),
+      let note: string;
+      if (input.currentRoot && input.currentQuality) {
+        note = resolveBassNoteForRole(
+          input.currentRoot,
+          input.currentQuality,
+          hit.note,
+          input.nextChordRoot,
         );
+      } else if (hit.note === "fifth") {
+        note = input.bassNotes[1] ?? input.bassNotes[0];
+      } else {
+        note = input.bassNotes[0];
       }
+      const bassFreq = getNoteFrequency(note);
+      if (!Number.isFinite(bassFreq) || bassFreq <= 0) continue;
+      const hitTime = startTime + swingBeat(hit.beat, swing) * secondsPerBeat;
+      if (!shouldScheduleHit(hitTime)) continue;
+      voices.push(
+        scheduleBassNote(ctx, bus, bassFreq, hitTime, {
+          velocity: hit.velocity,
+          durationSec: Math.min(0.9, secondsPerBeat * 1.4),
+        }),
+      );
     }
   }
 
-  // Drums: scheduled source nodes are tracked so pause/resume can cancel
-  // future hits before rebuilding the bar from beat 0.
-  if (enable.drums) {
-    const kicks = repeatPatternToBeats(
-      ROCK_DRUM_PATTERN.kicks,
-      beatsAvailable,
-      beatsPerBar,
-    );
-    const snares = repeatPatternToBeats(
-      ROCK_DRUM_PATTERN.snares,
-      beatsAvailable,
-      beatsPerBar,
-    );
-    const hats = repeatPatternToBeats(
-      ROCK_DRUM_PATTERN.hats,
-      beatsAvailable,
-      beatsPerBar,
-    );
-    for (const hit of kicks) {
-      const hitTime = startTime + hit.beat * secondsPerBeat;
-      if (!shouldScheduleHit(hitTime)) continue;
-      voices.push(
-        scheduleKick(ctx, bus, hitTime, {
-          velocity: hit.velocity,
-        }),
+  // Drums — base pattern every bar, variations overlaid additively on bars
+  // where `barIndex % barInterval === 0`.
+  const drumPattern = getDrumPattern(input.drumPatternId);
+  if (enable.drums && drumPattern) {
+    const scheduleDrumPattern = (pattern: CatalogDrumPattern, barOffset: number) => {
+      const scheduleLane = (
+        lane: readonly DrumHit[] | undefined,
+        fire: (hitTime: number, velocity: number) => VoiceHandle,
+      ) => {
+        if (!lane) return;
+        for (const hit of lane) {
+          const absBeat = barOffset * beatsPerBar + hit.beat;
+          if (absBeat >= beatsAvailable) continue;
+          const hitTime =
+            startTime +
+            (barOffset * beatsPerBar + swingBeat(hit.beat, swing)) *
+              secondsPerBeat;
+          if (!shouldScheduleHit(hitTime)) continue;
+          voices.push(fire(hitTime, hit.velocity));
+        }
+      };
+      scheduleLane(pattern.kicks, (t, v) =>
+        scheduleKick(ctx, bus, t, { velocity: v }),
       );
-    }
-    for (const hit of snares) {
-      const hitTime = startTime + hit.beat * secondsPerBeat;
-      if (!shouldScheduleHit(hitTime)) continue;
-      voices.push(
-        scheduleSnare(ctx, bus, hitTime, {
-          velocity: hit.velocity,
-        }),
+      scheduleLane(pattern.snares, (t, v) =>
+        scheduleSnare(ctx, bus, t, { velocity: v }),
       );
-    }
-    for (const hit of hats) {
-      const hitTime = startTime + hit.beat * secondsPerBeat;
-      if (!shouldScheduleHit(hitTime)) continue;
-      voices.push(
-        scheduleHiHat(ctx, bus, hitTime, {
-          velocity: hit.velocity,
-        }),
+      scheduleLane(pattern.hats, (t, v) =>
+        scheduleHiHat(ctx, bus, t, { velocity: v }),
       );
+      scheduleLane(pattern.openHats, (t, v) =>
+        scheduleHiHat(ctx, bus, t, { velocity: v, open: true }),
+      );
+      scheduleLane(pattern.ride, (t, v) =>
+        scheduleRide(ctx, bus, t, { velocity: v }),
+      );
+    };
+
+    const activeVariations = input.drumVariations
+      .map((id) => getDrumVariation(id))
+      .filter((v): v is NonNullable<typeof v> => v !== undefined);
+
+    const barCount = Math.ceil(beatsAvailable / beatsPerBar);
+    for (let bar = 0; bar < barCount; bar++) {
+      scheduleDrumPattern(drumPattern, bar);
+      for (const variation of activeVariations) {
+        if (bar % variation.barInterval === 0) {
+          scheduleDrumPattern(variation.pattern, bar);
+        }
+      }
     }
   }
 
@@ -219,5 +264,3 @@ export function scheduleProgressionStep(
     },
   };
 }
-
-export const _schedulerInternals = { STRUM_LAG_SECONDS };
