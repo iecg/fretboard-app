@@ -486,8 +486,25 @@ export const FRETBOARD_AUDIT_GROUPS = [
   },
 ] as const satisfies readonly FretboardAuditGroup[];
 
+export type CagedShapeAuditSwatch = {
+  id: string;
+  label: string;
+  shapeKey: string;
+  noteClass: string;
+  display: string;
+};
+
+export const CAGED_SHAPE_SWATCHES = [
+  { id: "caged-e", label: "E shape", shapeKey: "E", noteClass: "chord-tone-in-scale", display: "E" },
+  { id: "caged-d", label: "D shape", shapeKey: "D", noteClass: "chord-tone-in-scale", display: "D" },
+  { id: "caged-c", label: "C shape", shapeKey: "C", noteClass: "chord-tone-in-scale", display: "C" },
+  { id: "caged-a", label: "A shape", shapeKey: "A", noteClass: "chord-tone-in-scale", display: "A" },
+  { id: "caged-g", label: "G shape", shapeKey: "G", noteClass: "chord-tone-in-scale", display: "G" },
+] as const satisfies readonly CagedShapeAuditSwatch[];
+
 export type AuditSurface =
   | "fretboard"
+  | "caged-shape"
   | "practice-pill"
   | "degree-chip"
   | "degree-ramp";
@@ -540,6 +557,14 @@ export function getRenderedAuditCases(): RenderedAuditCase[] {
       contextId: "none" as const,
       degreeMode: AUDIT_DEGREE_MODES[1],
       surface: "degree-ramp" as const,
+      swatchId: swatch.id,
+      theme,
+    })),
+    ...CAGED_SHAPE_SWATCHES.map((swatch) => ({
+      auditId: getAuditId(theme, "caged-shape", "none", AUDIT_DEGREE_MODES[0], swatch.id),
+      contextId: "none" as const,
+      degreeMode: AUDIT_DEGREE_MODES[0],
+      surface: "caged-shape" as const,
       swatchId: swatch.id,
       theme,
     })),

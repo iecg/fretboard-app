@@ -18,6 +18,7 @@ import {
   AUDIT_DEGREE_ID,
   AUDIT_DEGREE_MODES,
   AUDIT_THEMES,
+  CAGED_SHAPE_SWATCHES,
   DEGREE_RAMP_SWATCHES,
   FRETBOARD_AUDIT_GROUPS,
   getAuditId,
@@ -27,6 +28,7 @@ import {
   type AuditDegreeMode,
   type AuditLens,
   type AuditTheme,
+  type CagedShapeAuditSwatch,
   type DegreeChipAuditSwatch,
   type DegreeRampAuditSwatch,
   type FretboardAuditSwatch,
@@ -909,6 +911,91 @@ function DegreeRampAuditMatrix({ theme }: { theme: AuditTheme }) {
   );
 }
 
+function CagedShapeNoteCard({
+  swatch,
+  theme,
+}: {
+  swatch: CagedShapeAuditSwatch;
+  theme: AuditTheme;
+}) {
+  const targetRef = useRef<SVGGraphicsElement | null>(null);
+  const opacityRef = useRef<SVGGElement | null>(null);
+  const labelRef = useRef<SVGTextElement | null>(null);
+  const shapeRef = useCallback((element: SVGGraphicsElement | null) => {
+    targetRef.current = element;
+  }, []);
+  const auditId = getAuditId(theme, "caged-shape", "none", AUDIT_DEGREE_MODES[0], swatch.id);
+  const { radiusScale } = getNoteVisuals(swatch.noteClass);
+  const noteRadius = 13 * radiusScale;
+  const computed = useComputedAuditStyle(auditId, "svg-note", targetRef, opacityRef, labelRef);
+
+  const fretboardSwatch: FretboardAuditSwatch = {
+    id: swatch.id,
+    label: swatch.label,
+    noteClass: swatch.noteClass,
+    display: swatch.display,
+  };
+
+  return (
+    <SwatchCard
+      label={swatch.label}
+      auditId={auditId}
+      readout={
+        <StyleReadout
+          computed={computed}
+          fields={[
+            "fill",
+            "stroke",
+            "strokeWidth",
+            "opacity",
+            "textFill",
+            "labelContrast",
+            "ringContrast",
+          ]}
+        />
+      }
+    >
+      <div
+        className={clsx(fretboardStyles["fretboard-board"], styles["fretboard-frame"])}
+        data-full-chord-mode="true"
+      >
+        <div className={styles["fretboard-scope"]}>
+          <svg className={styles["fretboard-svg"]} width="60" height="60" aria-hidden="true">
+            <g
+              ref={opacityRef}
+              className={clsx(
+                fretboardStyles["fretboard-note"],
+                fretboardStyles[swatch.noteClass],
+              )}
+              data-note-role={swatch.noteClass}
+              data-full-chord-shape={swatch.shapeKey}
+              style={{ "--note-r": String(noteRadius) } as CSSProperties}
+            >
+              <FretboardShape swatch={fretboardSwatch} shapeRef={shapeRef} />
+              <text ref={labelRef} x="30" y="30">
+                {swatch.display}
+              </text>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </SwatchCard>
+  );
+}
+
+function CagedShapeAuditMatrix({ theme }: { theme: AuditTheme }) {
+  return (
+    <section className={styles["audit-section"]}>
+      <h3 className={styles["section-title"]}>Full-Chord CAGED Shapes</h3>
+      <div className={styles["degree-ramp-grid"]}>
+        {CAGED_SHAPE_SWATCHES.map((swatch) => (
+          <CagedShapeNoteCard key={swatch.id} swatch={swatch} theme={theme} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export function NoteColorAudit() {
   const layout = useLayoutMode();
 
@@ -939,6 +1026,7 @@ export function NoteColorAudit() {
             <PracticePillAuditMatrix theme={theme} />
             <DegreeChipAuditMatrix theme={theme} />
             <DegreeRampAuditMatrix theme={theme} />
+            <CagedShapeAuditMatrix theme={theme} />
           </section>
         ))}
       </div>
