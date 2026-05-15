@@ -46,28 +46,20 @@ export function ProgressionPlayhead({
     if (!el) return;
     el.style.transition = "none";
 
-    const safeTotal = Math.max(1, totalDurationBars);
-
     const write = () => {
       const tl = getTimelinePosition();
-      let bar: number;
-      if (
-        playing
-        && tl
-        && tl.stepIndex === stepIndex
-        && !tl.paused
-        && stepBars > 0
-      ) {
-        bar = stepStartBar + tl.fraction * stepBars;
+      const safeTotal = Math.max(1, totalDurationBars);
+
+      if (playing && tl && !tl.paused) {
+        // Linear motion across the whole track
+        const pct = tl.globalFraction * 100;
+        el.style.left = `${Math.max(0, Math.min(100, pct))}%`;
       } else {
-        // Paused, blocked, or between scheduled segments — snap to the
-        // start of the current step. This matches the user-expected
-        // "pause resets to bar start" behaviour.
-        bar = stepStartBar;
+        // Paused or stopped: snap to current chord's start bar
+        const bar = stepStartBar;
+        const pct = ((bar - 1) / safeTotal) * 100;
+        el.style.left = `${Math.max(0, Math.min(100, pct))}%`;
       }
-      const pct = ((bar - 1) / safeTotal) * 100;
-      const clamped = Math.max(0, Math.min(100, pct));
-      el.style.left = `${clamped}%`;
     };
 
     write();
