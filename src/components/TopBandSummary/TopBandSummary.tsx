@@ -1,5 +1,5 @@
 import { useAtomValue } from "jotai";
-import { AnimatePresence, MotionConfig, motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { Eye, EyeOff } from "lucide-react";
 import { ANIMATION_DURATION_FAST, ANIMATION_EASE } from "@fretflow/core";
 import { showChordPracticeBarAtom } from "../../store/atoms";
@@ -68,7 +68,6 @@ export function TopBandSummary() {
   const progressionStatusNote = progressionPlaybackBlockedReason ?? activeStepUnavailableReason;
 
   return (
-    <MotionConfig reducedMotion="user">
     <div className={styles["top-band-summary"]} data-testid="top-band-summary">
       <DegreeChipStrip
         scaleName={scaleLabel}
@@ -175,6 +174,5 @@ export function TopBandSummary() {
         )}
       </AnimatePresence>
     </div>
-    </MotionConfig>
   );
 }

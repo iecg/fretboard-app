@@ -8,7 +8,7 @@ import {
   useFlatsAtom,
   enharmonicDisplayAtom,
 } from "../../store/atoms";
-import { ANIMATION_DURATION_XFADE } from "@fretflow/core";
+import { ANIMATION_DURATION_XFADE, ANIMATION_EASE } from "@fretflow/core";
 import { CircleOfFifths } from "../CircleOfFifths/CircleOfFifths";
 import { ScaleSelector } from "../ScaleSelector/ScaleSelector";
 import { ChordOverlayControls } from "../ChordOverlayControls/ChordOverlayControls";
@@ -76,7 +76,7 @@ export function MobileTabPanel() {
             initial={{ opacity: 0, x: 10 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -10 }}
-            transition={{ duration: 0.15 }}
+            transition={{ duration: ANIMATION_DURATION_XFADE, ease: ANIMATION_EASE }}
           >
             <Card title={TAB_LABELS.progression} className={styles["mobile-tab-card"]} data-mobile-tab="progression">
               <ProgressionControls />
