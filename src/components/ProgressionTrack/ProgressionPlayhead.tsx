@@ -12,9 +12,11 @@ interface ProgressionPlayheadProps {
   /** Active step index — used so that "snap to start" on a paused/blocked
    *  step references the correct bar. */
   stepIndex: number;
-  /** Total length of the progression in bars. Used as the 0–100% denominator
-   *  for the playhead's horizontal position. */
+  /** Total length of the progression in bars. Used to scale globalFraction. */
   totalDurationBars: number;
+  /** Total bars visible in the ruler. Used as the 0–100% denominator
+   *  for horizontal pixel positioning. */
+  totalBarsForDisplay: number;
 }
 
 /** ~60 Hz position write interval. `setInterval` (not rAF) keeps the
@@ -38,6 +40,7 @@ export function ProgressionPlayhead({
   stepBars,
   stepIndex,
   totalDurationBars,
+  totalBarsForDisplay,
 }: ProgressionPlayheadProps) {
   const ref = useRef<HTMLSpanElement | null>(null);
 
@@ -48,16 +51,16 @@ export function ProgressionPlayhead({
 
     const write = () => {
       const tl = getTimelinePosition();
-      const safeTotal = Math.max(1, totalDurationBars);
+      const safeDisplayTotal = Math.max(1, totalBarsForDisplay);
 
       if (playing && tl && !tl.paused) {
-        // Linear motion across the whole track
-        const pct = tl.globalFraction * 100;
+        // Linear motion across the whole track, scaled to display bars
+        const pct = (tl.globalFraction * totalDurationBars / safeDisplayTotal) * 100;
         el.style.left = `${Math.max(0, Math.min(100, pct))}%`;
       } else {
         // Paused or stopped: snap to current chord's start bar
         const bar = stepStartBar;
-        const pct = ((bar - 1) / safeTotal) * 100;
+        const pct = ((bar - 1) / safeDisplayTotal) * 100;
         el.style.left = `${Math.max(0, Math.min(100, pct))}%`;
       }
     };

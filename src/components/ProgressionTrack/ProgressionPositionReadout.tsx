@@ -114,7 +114,7 @@ export function ProgressionPositionReadout({
         && tl.stepIndex === stepIndex
         && !tl.paused
         && stepBars > 0;
-      const positionBar = live ? stepStartBar + tl.fraction * stepBars : stepStartBar;
+      const positionBar = live ? stepStartBar + tl.localFraction * stepBars : stepStartBar;
       write(positionBar);
     };
 

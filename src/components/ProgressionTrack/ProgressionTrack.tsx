@@ -267,6 +267,7 @@ export function ProgressionTrack() {
             stepBars={activeStepBars}
             stepIndex={activeProgressionStepIndex}
             totalDurationBars={totalDurationBars}
+            totalBarsForDisplay={totalBarsForDisplay}
           />
           <div className={styles.blocks}>
             {resolvedProgressionSteps.map((step, index) => {
