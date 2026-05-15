@@ -178,19 +178,21 @@ const chordDegreeStorage = createStorage<DegreeId | null>({
 
 **When to use `migrate`:** When you need one-time initialization logic that may require cross-atom lookups or complex computation.
 
-### Example 3: Boolean Coercion (`uiAtoms.ts`)
+### Example 3: Boolean Coercion (hypothetical)
 
-Migrate from legacy boolean storage:
+Migrate from legacy boolean storage to a string-enum value:
 
 ```ts
-const compactDensityStorage = createStorage<CompactDensityMode>({
-  validate: (v) => ["auto", "on", "off"].includes(v as string),
-  
+type DisplayDensityMode = "auto" | "compact" | "comfortable";
+
+const displayDensityStorage = createStorage<DisplayDensityMode>({
+  validate: (v) => ["auto", "compact", "comfortable"].includes(v as string),
+
   onRead: (v: unknown) => {
-    // Coerce old boolean values to new enum
-    if (v === true || v === "true") return "on";
+    // Coerce old boolean values stored under the same key.
+    if (v === true || v === "true") return "compact";
     if (v === false || v === "false") return "auto";
-    return v as CompactDensityMode;
+    return v as DisplayDensityMode;
   },
 });
 ```

@@ -332,28 +332,23 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
 
   describe("7b. full chords control", () => {
     it.each(["Major Triad", "Minor Triad", "Dominant 7th"])(
-      "renders the Full Chords toggle for supported quality %s",
+      "renders the Full Chords switch for supported quality %s",
       (quality) => {
         renderWithAtoms(<ChordOverlayControls />, [
           ...MANUAL_MODE_SEEDS,
           [chordQualityOverrideAtom, quality],
         ]);
 
-        const group = screen.getByRole("group", { name: "Full Chords" });
-        expect(within(group).getByRole("button", { name: "Off" })).toBeInTheDocument();
-        expect(within(group).getByRole("button", { name: "On" })).toBeInTheDocument();
-        expect(
-          screen.getByText("Show canonical CAGED voicings instead of scattered chord tones."),
-        ).toBeInTheDocument();
+        const sw = screen.getByRole("switch", { name: "Full Chords" });
+        expect(sw).not.toBeDisabled();
       },
     );
 
-    it("clicking On writes fullChordsEnabledAtom = true", async () => {
+    it("clicking the Full Chords switch writes fullChordsEnabledAtom = true", async () => {
       const store = makeAtomStore([...MANUAL_MODE_SEEDS, [fullChordsEnabledAtom, false]]);
       renderWithStore(<ChordOverlayControls />, store);
 
-      const group = screen.getByRole("group", { name: "Full Chords" });
-      await userEvent.click(within(group).getByRole("button", { name: "On" }));
+      await userEvent.click(screen.getByRole("switch", { name: "Full Chords" }));
 
       expect(store.get(fullChordsEnabledAtom)).toBe(true);
     });
@@ -369,13 +364,10 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
       await userEvent.click(within(chordTypeGroup).getByRole("button", { name: "M7" }));
 
-      const fullChordsGroup = screen.getByRole("group", { name: "Full Chords" });
+      const sw = screen.getByRole("switch", { name: "Full Chords" });
       expect(store.get(fullChordsEnabledAtom)).toBe(true);
-      expect(within(fullChordsGroup).getByRole("button", { name: "On" })).toBeDisabled();
-      expect(within(fullChordsGroup).getByRole("button", { name: "On" })).toHaveAttribute(
-        "aria-pressed",
-        "true",
-      );
+      expect(sw).toBeDisabled();
+      expect(sw.getAttribute("aria-checked")).toBe("true");
       expect(
         screen.getByText(
           "Full Chords currently supports Major Triad, Minor Triad, and Dominant 7th.",
@@ -385,21 +377,17 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       await userEvent.click(within(chordTypeGroup).getByRole("button", { name: "Maj" }));
 
       expect(store.get(fullChordsEnabledAtom)).toBe(true);
-      expect(within(fullChordsGroup).getByRole("button", { name: "On" })).not.toBeDisabled();
-      expect(within(fullChordsGroup).getByRole("button", { name: "On" })).toHaveAttribute(
-        "aria-pressed",
-        "true",
-      );
+      expect(sw).not.toBeDisabled();
+      expect(sw.getAttribute("aria-checked")).toBe("true");
     });
 
-    it("disables On for unsupported tunings and shows the 6-string helper text", () => {
+    it("disables the switch for unsupported tunings and shows the 6-string helper text", () => {
       renderWithAtoms(<ChordOverlayControls />, [
         ...MANUAL_MODE_SEEDS,
         [tuningNameAtom, "Bass Standard (4 String)"],
       ]);
 
-      const group = screen.getByRole("group", { name: "Full Chords" });
-      expect(within(group).getByRole("button", { name: "On" })).toBeDisabled();
+      expect(screen.getByRole("switch", { name: "Full Chords" })).toBeDisabled();
       expect(
         screen.getByText("Full Chords currently supports 6-string tunings only."),
       ).toBeInTheDocument();
@@ -524,26 +512,6 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
       const degreeLabel = screen.getByText("Degree", { selector: "span" });
       expect(degreeLabel).toBeInTheDocument();
-    });
-  });
-
-  describe("13. compact prop forwarding", () => {
-    it("forwards compact=true to StepperSelect instances in degree mode (data-compact present)", () => {
-      const { container } = renderWithAtoms(<ChordOverlayControls compact />, [...DEGREE_MODE_SEEDS]);
-      const compactGroups = container.querySelectorAll('[data-compact="true"]');
-      expect(compactGroups.length).toBeGreaterThan(0);
-    });
-
-    it("forwards compact=true to StepperSelect instances in manual mode (data-compact present)", () => {
-      const { container } = renderWithAtoms(<ChordOverlayControls compact />, [...MANUAL_MODE_SEEDS]);
-      const compactGroups = container.querySelectorAll('[data-compact="true"]');
-      expect(compactGroups.length).toBeGreaterThan(0);
-    });
-
-    it("does not set data-compact when compact prop is omitted", () => {
-      const { container } = renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
-      const compactGroups = container.querySelectorAll('[data-compact="true"]');
-      expect(compactGroups.length).toBe(0);
     });
   });
 

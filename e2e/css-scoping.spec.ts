@@ -233,7 +233,7 @@ test.describe("production css module scoping", () => {
 
     expect(result.found, "Mobile tab content should be present").toBe(true);
     expect(result.buttons.length, "Should have at least one button").toBeGreaterThan(0);
-    // Mobile auto-enables compact density (see useCompactDensity), which
+    // Compact density is the universal default at every breakpoint, which
     // intentionally lowers the toggle baseline to ~1.6rem. We still want a
     // tappable floor — 24px aligns with the compact baseline and rules out
     // accidental regressions to icon-button sized hit areas.

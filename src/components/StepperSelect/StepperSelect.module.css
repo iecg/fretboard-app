@@ -2,6 +2,8 @@
   min-width: 0;
   display: flex;
   align-items: stretch;
+  padding: 0.12rem;
+  gap: 0.12rem;
 }
 
 .select-slot {
@@ -34,81 +36,33 @@
   border: none !important;
   border-radius: 0 !important;
   background: transparent !important;
-  min-height: unset !important;
-  padding-left: 0.85rem !important;
-  padding-right: 2.4rem !important;
   color: var(--surface-control-fg) !important;
   outline: none !important;
   box-shadow: none !important;
-}
-
-.nav-button {
-  composes: button from '../StepperShell/StepperShell.module.css';
-  width: 2.75rem;
-  min-height: 2.65rem;
-  display: inline-flex;
-  color: var(--surface-control-fg);
-}
-
-/* stylelint-disable selector-pseudo-class-no-unknown */
-.nav-button :global(.icon) {
-  width: 1.18rem;
-  height: 1.18rem;
-}
-
-:global(.app-container[data-layout-tier="desktop"]) .nav-button {
-  width: 2.5rem;
-  min-height: 2.45rem;
-}
-
-:global(.app-container[data-layout-tier="tablet"]) .nav-button {
-  width: 2.75rem;
-  min-height: 2.62rem;
-}
-
-:global(.app-container[data-layout-tier="mobile"]) .nav-button {
-  min-height: 36px;
-}
-/* stylelint-enable selector-pseudo-class-no-unknown */
-
-:global(.app-container[data-layout-tier="mobile"]) .nav-button {
-  width: 2.7rem;
-}
-
-/* ===== Compact variant — tighter hit-areas for space-constrained layouts ===== */
-/* stylelint-disable selector-pseudo-class-no-unknown */
-.stepper-select[data-compact="true"] {
-  padding: 0.12rem;
-  gap: 0.12rem;
-}
-
-.stepper-select[data-compact="true"] .nav-button {
-  width: 2rem;
-  min-height: 1.8rem;
-}
-
-.stepper-select[data-compact="true"] .nav-button :global(.icon) {
-  width: 0.95rem;
-  height: 0.95rem;
-}
-
-.stepper-select[data-compact="true"] .select-slot select {
   padding-left: 0.55rem !important;
   padding-right: 1.7rem !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
   font-size: 0.82rem;
   line-height: 1.1 !important;
-  min-height: 1.8rem !important;
+  min-height: unset !important;
 }
 
-/* Override mobile-tier defaults so compact wins on mobile */
-:global(.app-container[data-layout-tier="mobile"]) .stepper-select[data-compact="true"] .nav-button {
+.nav-button {
+  composes: button from '../StepperShell/StepperShell.module.css';
   width: 2rem;
   min-height: 1.8rem;
+  display: inline-flex;
+  color: var(--surface-control-fg);
+}
+
+/* stylelint-disable selector-pseudo-class-no-unknown */
+.nav-button :global(.icon) {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .nav-button {
+  min-height: 36px;
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
-
-:global(.app-container[data-layout-tier="mobile"]) .stepper-select[data-compact="true"] .nav-button {
-  width: 1.95rem;
-}

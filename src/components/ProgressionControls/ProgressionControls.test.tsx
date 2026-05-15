@@ -32,7 +32,7 @@ describe("ProgressionControls", () => {
   it("renders enable toggle, presets, step list, and active step editor", () => {
     renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
 
-    expect(screen.getByRole("group", { name: "Progression mode" })).toBeInTheDocument();
+    expect(screen.getByRole("switch", { name: "Progression mode" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Preset" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^1.*I.*C Major Triad/i })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Progression degree" })).toBeInTheDocument();
@@ -98,6 +98,15 @@ describe("ProgressionControls", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Remove chord" }));
     expect(store.get(progressionStepsAtom)).toHaveLength(2);
+  });
+
+  it("toggles progression mode via the Switch", () => {
+    const store = makeAtomStore([[progressionEnabledAtom, false]]);
+    renderWithStore(<ProgressionControls />, store);
+    const sw = screen.getByRole("switch", { name: "Progression mode" });
+    expect(sw.getAttribute("aria-checked")).toBe("false");
+    fireEvent.click(sw);
+    expect(store.get(progressionEnabledAtom)).toBe(true);
   });
 
   it("has no accessibility violations", async () => {

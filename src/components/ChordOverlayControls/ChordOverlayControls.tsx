@@ -6,6 +6,7 @@ import { lensAvailabilityAtom, fingeringPatternAtom } from "../../store/atoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import { NoteGrid } from "../NoteGrid/NoteGrid";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
+import { Switch } from "../Switch/Switch";
 import { useChordState } from "../../hooks/useChordState";
 import { useScaleState } from "../../hooks/useScaleState";
 import theoryStyles from "../TheoryControls/TheoryControls.module.css";
@@ -25,11 +26,7 @@ const FULL_CHORD_SUPPORTED_TYPES = new Set([
   "Dominant 7th",
 ]);
 
-export interface ChordOverlayControlsProps {
-  compact?: boolean;
-}
-
-export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
+export function ChordOverlayControls() {
   const { scaleName, useFlats } = useScaleState();
   const {
     chordType,
@@ -137,7 +134,6 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
           value={chordOverlayMode}
           onChange={isPatternDisabled ? () => undefined : setChordOverlayMode}
           label="Chord overlay mode"
-          compact={compact}
         />
         {!isPatternDisabled && (
           <p className={shared["field-hint"]}>
@@ -157,7 +153,6 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
               value={chordDegree ?? CHORD_NONE_VALUE}
               onChange={handleDegreeChange}
               label="Chord degree"
-              compact={compact}
             />
           </div>
           {chordDegree ? (
@@ -168,7 +163,6 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
                 options={buildQualityToggleOptions({ includeSentinel: false })}
                 value={chordType ?? ""}
                 onChange={handleChordTypeChange}
-                compact={compact}
                 overflow="scroll"
               />
               <p className={shared["field-hint"]}>
@@ -190,7 +184,6 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
               options={buildQualityToggleOptions({ diatonicLabel: t("controls.off") })}
               value={chordQualityOverride ?? CHORD_NONE_VALUE}
               onChange={handleChordTypeChange}
-              compact={compact}
               overflow="scroll"
             />
           </div>
@@ -205,7 +198,6 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
                 });
               }}
               useFlats={useFlats}
-              compact={compact}
             />
           </div>
         </>
@@ -213,17 +205,15 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
 
       {!isPatternDisabled && chordType ? (
         <div className={shared["control-section"]}>
-          <span className={shared["section-label"]}>Full Chords</span>
-          <ToggleBar
-            options={[
-              { value: "off", label: "Off" },
-              { value: "on", label: "On", disabled: !fullChordsSupported },
-            ]}
-            value={fullChordsEnabled ? "on" : "off"}
-            onChange={(value) => setFullChordsEnabled(value === "on")}
-            label="Full Chords"
-            compact={compact}
-          />
+          <div className={shared["switch-row"]}>
+            <span className={shared["section-label"]}>Full Chords</span>
+            <Switch
+              label="Full Chords"
+              checked={fullChordsEnabled}
+              onChange={setFullChordsEnabled}
+              disabled={!fullChordsSupported}
+            />
+          </div>
           <p className={shared["field-hint"]}>
             {fullChordsSupported
               ? "Show canonical CAGED voicings instead of scattered chord tones."
@@ -242,7 +232,6 @@ export function ChordOverlayControls({ compact }: ChordOverlayControlsProps) {
             value={practiceLens}
             onChange={setPracticeLens}
             label="Practice lens"
-            compact={compact}
           />
           {activeLensDescription ? (
             <p className={shared["field-hint"]}>{activeLensDescription}</p>

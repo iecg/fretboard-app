@@ -6,7 +6,7 @@ import { useSettingsForm } from "../useSettingsForm";
 import { useTranslation } from "../../../hooks/useTranslation";
 import styles from "../SettingsOverlay.module.css";
 
-export default function InstrumentSettingsSection({ compact }: { compact?: boolean }) {
+export default function InstrumentSettingsSection() {
   const { t } = useTranslation();
   const { tuningName, setTuningName } = useSettingsForm();
 
@@ -20,7 +20,6 @@ export default function InstrumentSettingsSection({ compact }: { compact?: boole
           options={Object.keys(TUNINGS).map((name) => ({ value: name, label: name }))}
           onChange={setTuningName}
           hideLabel
-          compact={compact}
         />
       </div>
     </div>

@@ -8,7 +8,7 @@ import { useTranslation } from "../../../hooks/useTranslation";
 import styles from "../SettingsOverlay.module.css";
 import shared from "../../shared/shared.module.css";
 
-export default function ChordLayoutSettingsSection({ compact }: { compact?: boolean }) {
+export default function ChordLayoutSettingsSection() {
   const [chordFretSpread, setChordFretSpread] = useAtom(chordFretSpreadAtom);
   const { t } = useTranslation();
   const config = SETTING_FIELDS.chordSpread;
@@ -25,7 +25,6 @@ export default function ChordLayoutSettingsSection({ compact }: { compact?: bool
             max={4}
             step={1}
             buttonVariant="mobile"
-            compact={compact}
           />
         </div>
         {config.hintKey ? (

@@ -125,14 +125,8 @@ describe("ScaleSelector/ScaleSelector", () => {
     });
   });
 
-  describe("compact prop forwarding", () => {
-    it("forwards compact=true to StepperSelect instances (data-compact attribute present)", () => {
-      const { container } = renderWithAtoms(<ScaleSelector compact />, [...BASE_SEEDS]);
-      const compactGroups = container.querySelectorAll('[data-compact="true"]');
-      expect(compactGroups.length).toBeGreaterThan(0);
-    });
-
-    it("does not set data-compact when compact prop is omitted", () => {
+  describe("compact prop (removed — compact density is the default)", () => {
+    it("does not set data-compact on any element (compact density is the default)", () => {
       const { container } = renderWithAtoms(<ScaleSelector />, [...BASE_SEEDS]);
       const compactGroups = container.querySelectorAll('[data-compact="true"]');
       expect(compactGroups.length).toBe(0);

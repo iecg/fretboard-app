@@ -11,6 +11,7 @@ import {
 import { useProgressionState } from "../../hooks/useProgressionState";
 import { useScaleState } from "../../hooks/useScaleState";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
+import { Switch } from "../Switch/Switch";
 import { StepperControl } from "../StepperControl/StepperControl";
 import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
 import shared from "../shared/shared.module.css";
@@ -18,11 +19,7 @@ import { buildDegreeToggleOptions, buildQualityToggleOptions, CHORD_QUALITY_DIAT
 import { CUSTOM_PRESET_ID } from "../../store/atoms";
 import styles from "./ProgressionControls.module.css";
 
-export interface ProgressionControlsProps {
-  compact?: boolean;
-}
-
-export function ProgressionControls({ compact = false }: ProgressionControlsProps) {
+export function ProgressionControls() {
   const { scaleName } = useScaleState();
   const {
     progressionEnabled,
@@ -54,18 +51,13 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
   });
 
   return (
-    <div className={styles["progression-controls"]} data-compact={compact ? "true" : undefined}>
-      <div className={shared["control-section"]}>
+    <div className={styles["progression-controls"]}>
+      <div className={shared["switch-row"]}>
         <span className={shared["section-label"]}>Progression Mode</span>
-        <ToggleBar
+        <Switch
           label="Progression mode"
-          value={progressionEnabled ? "on" : "off"}
-          options={[
-            { value: "on", label: "On" },
-            { value: "off", label: "Off" },
-          ]}
-          onChange={(value) => setProgressionEnabled(value === "on")}
-          compact={compact}
+          checked={progressionEnabled}
+          onChange={setProgressionEnabled}
         />
       </div>
 
@@ -85,7 +77,6 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
             const nextIdx = Math.max(0, Math.min(BEATS_PER_BAR_OPTIONS.length - 1, idx + dir));
             setBeatsPerBar(BEATS_PER_BAR_OPTIONS[nextIdx]);
           }}
-          compact={compact}
         />
       </div>
 
@@ -101,7 +92,6 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
             { value: CUSTOM_PRESET_ID, label: "Custom", disabled: currentProgressionPresetId !== CUSTOM_PRESET_ID },
             ...availablePresets.map((preset) => ({ value: preset.id, label: preset.label })),
           ]}
-          compact={compact}
         />
       </div>
 
@@ -177,7 +167,6 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
               options={degreeOptions}
               value={activeStep.degree}
               onChange={(degree) => updateProgressionStepDegree({ id: activeStep.id, degree })}
-              compact={compact}
               overflow="scroll"
             />
           </div>
@@ -196,7 +185,6 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
                     duration: { ...activeStep.duration, value: next },
                   })
                 }
-                compact={compact}
               />
               <ToggleBar
                 label="Duration unit"
@@ -211,7 +199,6 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
                     duration: { ...activeStep.duration, unit: unit as "beat" | "bar" },
                   })
                 }
-                compact={compact}
               />
             </div>
           </div>
@@ -225,7 +212,6 @@ export function ProgressionControls({ compact = false }: ProgressionControlsProp
                 id: activeStep.id,
                 qualityOverride: quality === CHORD_QUALITY_DIATONIC_VALUE ? null : quality,
               })}
-              compact={compact}
               overflow="scroll"
             />
             <p className={shared["field-hint"]}>

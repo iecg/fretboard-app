@@ -20,11 +20,7 @@ import { useScaleState } from "../../hooks/useScaleState";
 import shared from "../shared/shared.module.css";
 import styles from "../TheoryControls/TheoryControls.module.css";
 
-export interface ScaleSelectorProps {
-  compact?: boolean;
-}
-
-export function ScaleSelector({ compact }: ScaleSelectorProps) {
+export function ScaleSelector() {
   const { t } = useTranslation();
   const {
     rootNote,
@@ -128,7 +124,6 @@ export function ScaleSelector({ compact }: ScaleSelectorProps) {
           selected={rootNote}
           onSelect={applyRootNote}
           useFlats={useFlats}
-          compact={compact}
         />
       </div>
 
@@ -144,7 +139,6 @@ export function ScaleSelector({ compact }: ScaleSelectorProps) {
           onChange={handleFamilySelect}
           onPrevious={() => handleStepFamily(-1)}
           onNext={() => handleStepFamily(1)}
-          compact={compact}
         />
       </div>
 
@@ -161,7 +155,6 @@ export function ScaleSelector({ compact }: ScaleSelectorProps) {
             onChange={handleBrowseSelect}
             onPrevious={() => handleStepBrowse(-1)}
             onNext={() => handleStepBrowse(1)}
-            compact={compact}
           />
           {supportsRelativeBrowse ? (
             <div className={styles["theory-mode-toggle-row"]}>
@@ -173,7 +166,6 @@ export function ScaleSelector({ compact }: ScaleSelectorProps) {
                 value={effectiveBrowseMode}
                 onChange={(value) => setScaleBrowseMode(value as ScaleBrowseMode)}
                 label="Scale relationship"
-                compact={compact}
               />
               <p className={shared["field-hint"]}>
                 {effectiveBrowseMode === "parallel"

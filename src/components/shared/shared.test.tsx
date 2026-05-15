@@ -15,30 +15,6 @@ const sharedCSS = readFileSync(
 // ─── CSS selector correctness ───────────────────────────────────────────────
 
 describe("shared.module.css responsive selectors", () => {
-  it("desktop toggle-btn rule uses :global() so it targets the real DOM", () => {
-    expect(sharedCSS).toContain(
-      ':global(.app-container[data-layout-tier="desktop"]) .toggle-btn',
-    );
-  });
-
-  it("desktop note-btn rule uses :global() so it targets the real DOM", () => {
-    expect(sharedCSS).toContain(
-      ':global(.app-container[data-layout-tier="desktop"]) .note-btn',
-    );
-  });
-
-  it("tablet toggle-btn rule uses :global() so it targets the real DOM", () => {
-    expect(sharedCSS).toContain(
-      ':global(.app-container[data-layout-tier="tablet"]) .toggle-btn',
-    );
-  });
-
-  it("tablet note-btn rule uses :global() so it targets the real DOM", () => {
-    expect(sharedCSS).toContain(
-      ':global(.app-container[data-layout-tier="tablet"]) .note-btn',
-    );
-  });
-
   it("no bare (unescaped) .app-container tier selectors remain", () => {
     // Bare selectors like `.app-container[data-layout-tier` (without :global)
     // are locally scoped and never match the global app-container element.
@@ -47,32 +23,29 @@ describe("shared.module.css responsive selectors", () => {
     expect(sharedCSS).not.toMatch(barePattern);
   });
 
-  it("desktop toggle-btn min-height is tighter than the base (2.2rem < 2.65rem)", () => {
-    const desktopBlock = sharedCSS.slice(
-      sharedCSS.indexOf(':global(.app-container[data-layout-tier="desktop"]) .toggle-btn'),
-    );
-    expect(desktopBlock).toContain("min-height: 2.2rem");
+  it("compact density is the default: toggle-btn base min-height is 1.6rem", () => {
+    // After Task 8, compact is the universal default — no tier-based overrides
+    // for toggle-btn or note-btn remain in shared.module.css.
+    expect(sharedCSS).toContain("min-height: 1.6rem");
   });
 
-  it("desktop note-btn min-height is tighter than the base (2.55rem < 3.05rem)", () => {
-    const desktopBlock = sharedCSS.slice(
-      sharedCSS.indexOf(':global(.app-container[data-layout-tier="desktop"]) .note-btn'),
-    );
-    expect(desktopBlock).toContain("min-height: 2.55rem");
+  it("compact density is the default: note-btn base min-height is 1.9rem", () => {
+    expect(sharedCSS).toContain("min-height: 1.9rem");
   });
 
-  it("tablet toggle-btn min-height is touch-safe (≥44px ≈ 2.75rem)", () => {
-    const tabletBlock = sharedCSS.slice(
-      sharedCSS.indexOf(':global(.app-container[data-layout-tier="tablet"]) .toggle-btn'),
+  it("no tier-specific toggle-btn or note-btn overrides exist (compact is universal default)", () => {
+    expect(sharedCSS).not.toContain(
+      ':global(.app-container[data-layout-tier="desktop"]) .toggle-btn',
     );
-    expect(tabletBlock).toContain("min-height: 2.75rem");
-  });
-
-  it("tablet note-btn min-height is touch-safe (≥44px ≈ 2.82rem)", () => {
-    const tabletBlock = sharedCSS.slice(
-      sharedCSS.indexOf(':global(.app-container[data-layout-tier="tablet"]) .note-btn'),
+    expect(sharedCSS).not.toContain(
+      ':global(.app-container[data-layout-tier="tablet"]) .toggle-btn',
     );
-    expect(tabletBlock).toContain("min-height: 2.82rem");
+    expect(sharedCSS).not.toContain(
+      ':global(.app-container[data-layout-tier="desktop"]) .note-btn',
+    );
+    expect(sharedCSS).not.toContain(
+      ':global(.app-container[data-layout-tier="tablet"]) .note-btn',
+    );
   });
 });
 

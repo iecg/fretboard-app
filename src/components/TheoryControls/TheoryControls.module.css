@@ -32,7 +32,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 0.15rem 0;
+  padding: 0.08rem 0;
 }
 
 .theory-section-divider {
@@ -45,9 +45,9 @@
 .theory-section-content {
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
-  padding-top: 0.75rem;
-  padding-bottom: 0.5rem;
+  gap: 0.75rem;
+  padding-top: 0.6rem;
+  padding-bottom: 0.4rem;
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
@@ -69,9 +69,9 @@
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.65rem;
-  min-height: 2.35rem;
-  padding: 0.24rem 0.55rem 0.24rem 0;
+  gap: 0.5rem;
+  min-height: 2rem;
+  padding: 0.15rem 0.55rem 0.15rem 0;
   border: none;
   background: transparent;
   color: inherit;
@@ -95,7 +95,7 @@
 }
 
 .theory-disclosure-title {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   color: var(--surface-control-fg-muted);
   font-weight: 500;
   text-transform: uppercase;
@@ -107,7 +107,7 @@
   justify-self: end;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 0.84rem;
+  font-size: 0.78rem;
   color: var(--surface-control-fg);
   font-weight: 600;
   white-space: nowrap;
@@ -223,27 +223,3 @@
   opacity: 0.45;
 }
 
-/* ===== Compact variant — tighter disclosure rows for space-constrained layouts ===== */
-.theory-section[data-compact="true"] {
-  padding: 0.08rem 0;
-}
-
-.theory-section[data-compact="true"] .theory-disclosure-btn {
-  min-height: 2rem;
-  padding: 0.15rem 0.55rem 0.15rem 0;
-  gap: 0.5rem;
-}
-
-.theory-section[data-compact="true"] .theory-disclosure-title {
-  font-size: 0.68rem;
-}
-
-.theory-section[data-compact="true"] .theory-disclosure-summary {
-  font-size: 0.78rem;
-}
-
-.theory-section[data-compact="true"] .theory-section-content {
-  gap: 0.75rem;
-  padding-top: 0.6rem;
-  padding-bottom: 0.4rem;
-}

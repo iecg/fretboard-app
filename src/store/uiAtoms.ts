@@ -38,24 +38,6 @@ export const mobileTabAtom = atomWithStorage<MobileTab>(
 
 export const settingsOverlayOpenAtom = atom<boolean>(false);
 
-export type CompactDensityMode = "auto" | "on" | "off";
-
-const compactDensityStorage = createStorage<CompactDensityMode>({
-  validate: (v) => ["auto", "on", "off"].includes(v as string),
-  onRead: (v: unknown) => {
-    if (v === true || v === "true") return "on";
-    if (v === false || v === "false") return "auto";
-    return v as CompactDensityMode;
-  },
-});
-
-export const compactDensityAtom = atomWithStorage<CompactDensityMode>(
-  k("compactDensity"),
-  "auto",
-  compactDensityStorage,
-  GET_ON_INIT,
-);
-
 export type ThemePreference = "light" | "dark" | "system";
 
 export const themeAtom = atomWithStorage<ThemePreference>(

@@ -17,8 +17,6 @@ export const en: Dictionary = {
     view: {
       auto: "Auto",
       zoomSuffix: "%",
-      compactControls: "Compact Controls",
-      compactAutoHint: "Auto: compact on mobile and portrait tablet.",
     },
     fields: {
       zoom: "Zoom",

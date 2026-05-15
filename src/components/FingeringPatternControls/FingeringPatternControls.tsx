@@ -16,7 +16,7 @@ const isTouchPrimary =
   typeof window !== "undefined" &&
   window.matchMedia("(pointer: coarse)").matches;
 
-export function FingeringPatternControls({ compact = false }: { compact?: boolean }) {
+export function FingeringPatternControls() {
   const { t } = useTranslation();
   const {
     fingeringPattern,
@@ -74,7 +74,7 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
           ]}
           value={fingeringPattern}
           onChange={(v) => setFingeringPattern(v as FingeringPattern)}
-          compact={compact}
+
         />
       </div>
 
@@ -90,7 +90,7 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
               role="group"
               aria-labelledby={shapeLabelId}
               aria-describedby={shapeHelpId}
-              data-compact={compact ? "true" : undefined}
+
             >
               <motion.button
                 type="button"
@@ -190,7 +190,7 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
               }))}
               value={npsPosition}
               onChange={(v) => setNpsPosition(v as number)}
-              compact={compact}
+
             />
           </div>
           <div className={shared["control-section"]}>
@@ -202,7 +202,7 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
               ]}
               value={npsOctave}
               onChange={(v) => setNpsOctave(v as number)}
-              compact={compact}
+
             />
           </div>
         </>
@@ -216,7 +216,7 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
               options={[1, 2, 3, 4, 5, 6].map((n, i) => ({ value: i, label: String(n) }))}
               value={oneStringIndex}
               onChange={(v) => setOneStringIndex(v as number)}
-              compact={compact}
+
             />
           </div>
           <div className={shared["control-section"]}>
@@ -228,7 +228,7 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
               ]}
               value={oneStringInterval}
               onChange={(v) => setOneStringInterval(v as number)}
-              compact={compact}
+
             />
           </div>
           {oneStringInterval > 0 && (
@@ -260,7 +260,7 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
               }
               value={twoStringsPair}
               onChange={(v) => setTwoStringsPair(v as number)}
-              compact={compact}
+
             />
           </div>
           <div className={shared["control-section"]}>
@@ -274,7 +274,7 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
               ]}
               value={twoStringsInterval}
               onChange={(v) => setTwoStringsInterval(v as number)}
-              compact={compact}
+
             />
           </div>
           {twoStringsInterval > 0 && (
@@ -297,7 +297,7 @@ export function FingeringPatternControls({ compact = false }: { compact?: boolea
           }))}
           value={displayFormat}
           onChange={(v) => setDisplayFormat(v as "notes" | "degrees" | "none")}
-          compact={compact}
+
         />
       </div>
     </>

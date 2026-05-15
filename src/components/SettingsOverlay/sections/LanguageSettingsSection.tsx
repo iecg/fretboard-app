@@ -7,7 +7,7 @@ import { useTranslation } from "../../../hooks/useTranslation";
 import styles from "../SettingsOverlay.module.css";
 import type { SupportedLanguage } from "../../../i18n/types";
 
-export default function LanguageSettingsSection({ compact }: { compact?: boolean }) {
+export default function LanguageSettingsSection() {
   const [language, setLanguage] = useAtom(languageAtom);
   const { t } = useTranslation();
 
@@ -19,7 +19,6 @@ export default function LanguageSettingsSection({ compact }: { compact?: boolean
             options={LANGUAGE_OPTIONS}
             value={language}
             onChange={(v) => setLanguage(v as SupportedLanguage)}
-            compact={compact}
           />
         </div>
       </div>

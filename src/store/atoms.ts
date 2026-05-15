@@ -94,7 +94,6 @@ export {
   scaleDegreeColorsEnabledAtom,
   mobileTabAtom,
   settingsOverlayOpenAtom,
-  compactDensityAtom,
   themeAtom,
 } from "./uiAtoms";
 

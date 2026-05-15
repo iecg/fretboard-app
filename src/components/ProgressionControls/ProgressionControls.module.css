@@ -96,11 +96,3 @@
   gap: 0.3rem;
 }
 
-.progression-controls[data-compact="true"] {
-  gap: 0.65rem;
-}
-
-.progression-controls[data-compact="true"] .step-row {
-  min-height: 2.15rem;
-  padding: 0.32rem 0.45rem;
-}

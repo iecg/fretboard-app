@@ -127,12 +127,12 @@ describe("StepperControl/StepperControl", () => {
     expect(wrapper.className).toContain("mobile");
   });
 
-  it("applies data-compact=true when compact prop is true", () => {
+  it("does not set data-compact attribute (compact density is the default)", () => {
     const { container } = render(
-      <StepperControl value={5} onChange={vi.fn()} min={0} max={10} compact={true} />,
+      <StepperControl value={5} onChange={vi.fn()} min={0} max={10} />,
     );
     const wrapper = container.firstChild as HTMLElement;
-    expect(wrapper.getAttribute("data-compact")).toBe("true");
+    expect(wrapper).not.toHaveAttribute("data-compact");
   });
 
   it("default step is 1 when not provided", () => {
