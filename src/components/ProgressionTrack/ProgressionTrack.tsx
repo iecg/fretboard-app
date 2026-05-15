@@ -264,8 +264,6 @@ export function ProgressionTrack() {
           <ProgressionPlayhead
             playing={progressionPlaying && canPlay}
             stepStartBar={currentProgressionBar}
-            stepBars={activeStepBars}
-            stepIndex={activeProgressionStepIndex}
             totalDurationBars={totalDurationBars}
             totalBarsForDisplay={totalBarsForDisplay}
           />

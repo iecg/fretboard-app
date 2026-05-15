@@ -76,6 +76,14 @@ export function ProgressionPositionReadout({
   const lastBeatRef = useRef<string>("");
   const lastSubRef = useRef<string>("");
 
+  // Store chord-boundary props in refs so the animation loop can access
+  // the latest values without needing to be cleared and restarted
+  // at every transition.
+  const propsRef = useRef({ stepStartBar, stepBars, stepIndex, totalProgressionBars, beatsPerBar });
+  useEffect(() => {
+    propsRef.current = { stepStartBar, stepBars, stepIndex, totalProgressionBars, beatsPerBar };
+  }, [stepStartBar, stepBars, stepIndex, totalProgressionBars, beatsPerBar]);
+
   // Initial / chord-change static render: the bar/total parts come from
   // props (or a fallback) so SSR and the first paint are correct.
   const initialPosition = formatProgressionPlaybackPosition(
@@ -86,10 +94,11 @@ export function ProgressionPositionReadout({
 
   useEffect(() => {
     const write = (positionBar: number) => {
+      const { totalProgressionBars: currentTotalBars, beatsPerBar: currentBPB } = propsRef.current;
       const p = formatProgressionPlaybackPosition(
         positionBar,
-        totalProgressionBars,
-        beatsPerBar,
+        currentTotalBars,
+        currentBPB,
       );
       const { bar, beat, subdivision } = p.parts.current;
       if (bar !== lastBarRef.current && barRef.current) {
@@ -108,13 +117,19 @@ export function ProgressionPositionReadout({
 
     const tick = () => {
       const tl = getTimelinePosition();
+      const {
+        stepStartBar: currentStepStartBar,
+        stepBars: currentStepBars,
+        stepIndex: currentStepIndex,
+      } = propsRef.current;
+
       const live =
         playing
         && tl
-        && tl.stepIndex === stepIndex
+        && tl.stepIndex === currentStepIndex
         && !tl.paused
-        && stepBars > 0;
-      const positionBar = live ? stepStartBar + tl.localFraction * stepBars : stepStartBar;
+        && currentStepBars > 0;
+      const positionBar = live ? currentStepStartBar + tl.localFraction * currentStepBars : currentStepStartBar;
       write(positionBar);
     };
 
@@ -130,7 +145,7 @@ export function ProgressionPositionReadout({
     if (!playing) return;
     const id = window.setInterval(tick, TICK_MS);
     return () => window.clearInterval(id);
-  }, [playing, stepStartBar, stepBars, stepIndex, totalProgressionBars, beatsPerBar]);
+  }, [playing]);
 
   return (
     <div className={styles.positionReadout}>
