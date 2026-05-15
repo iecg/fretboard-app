@@ -475,7 +475,7 @@ test.describe("Theme Contract", () => {
           }
         });
 
-        test("note buttons should have correct hover and focus behavior", async ({ page }) => {
+        test("note buttons should have correct hover styling", async ({ page }) => {
           // The Note selector lives in the Inspector's Scale tab.
           await page.getByRole("tab", { name: "Scale" }).click();
           const noteBtn = page
@@ -484,13 +484,8 @@ test.describe("Theme Contract", () => {
             .first();
           await expect(noteBtn).toBeVisible();
 
-          // Clicking the Scale tab leaves focus on the (pointer-focused) tab
-          // trigger, which would make a subsequent programmatic focus inherit a
-          // non-:focus-visible state. Blur it so the note button focus below is
-          // treated as keyboard-style focus and the :focus-visible rule applies.
-          await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
-
-          // Hover state
+          // Hover state — pointer modality is fine here since we only assert
+          // hover styles (color, borderColor), not :focus-visible.
           await noteBtn.hover();
           const hoverStyles = await noteBtn.evaluate((el) => {
             const cs = getComputedStyle(el);
@@ -507,17 +502,38 @@ test.describe("Theme Contract", () => {
             expect(hoverStyles.color.replace(/\s/g, "")).toBe("rgb(255,255,255)");
             expect(isCyanLike(hoverStyles.borderColor)).toBe(true);
           }
+        });
 
-          // Focus state — the :focus-visible note-btn rule only engages for
-          // keyboard-driven focus. A programmatic .focus() after the pointer
-          // hover above keeps pointer input modality, so drive focus with the
-          // keyboard: focus the note grid, then arrow onto a (still unpressed)
-          // sibling so the :focus-visible heuristic applies. Measure the
-          // currently keyboard-focused button via document.activeElement.
+        test("note buttons should have correct focus-visible styling", async ({ page }) => {
+          // The Note selector lives in the Inspector's Scale tab.
+          await page.getByRole("tab", { name: "Scale" }).click();
+          const noteGroup = page.getByRole("group", { name: "Note selector" });
+          await expect(noteGroup).toBeVisible();
+
+          // Target an unpressed (non-root) note button.
+          const noteBtn = noteGroup.getByRole("button", { pressed: false }).first();
+          await expect(noteBtn).toBeVisible();
+
+          // Chromium's :focus-visible heuristic keys off whether the focus
+          // change ITSELF came from a keyboard event — a programmatic .focus()
+          // never satisfies it, no matter what Tab presses preceded it. So the
+          // FINAL action that lands focus on the note button must be a real
+          // keyboard event.
+          //
+          // Move focus into the button's vicinity programmatically, then do a
+          // Shift+Tab / Tab round-trip: Shift+Tab keyboard-moves focus to the
+          // previous element, and Tab keyboard-moves it forward, landing back
+          // ON the note button via a genuine keyboard event so :focus-visible
+          // activates.
           await noteBtn.focus();
-          await noteBtn.press("ArrowRight");
-          const focusStyles = await page.evaluate(() => {
-            const el = document.activeElement as HTMLElement;
+          await page.keyboard.press("Shift+Tab");
+          await page.keyboard.press("Tab");
+
+          // Assert keyboard focus actually landed on the target note button
+          // before reading its computed styles.
+          await expect(noteBtn).toBeFocused();
+
+          const focusStyles = await noteBtn.evaluate((el) => {
             const cs = getComputedStyle(el);
             return {
               outlineStyle: cs.outlineStyle,
@@ -526,7 +542,8 @@ test.describe("Theme Contract", () => {
               pressed: el.getAttribute("aria-pressed"),
             };
           });
-          // The arrowed-to note must still be unpressed (not the active root).
+
+          // The button must still be unpressed (we only focused, not selected it).
           expect(focusStyles.pressed).toBe("false");
 
           if (theme === "light") {
