@@ -92,6 +92,366 @@ export const ROCK_DRUM_PATTERN: DrumPattern = {
   ],
 };
 
+// ─── Expanded Pattern Catalog ───────────────────────────────────────────────
+
+export type BassNoteRole = "root" | "third" | "fifth" | "octave" | "chromatic-approach";
+
+export interface ChordHit {
+  beat: number;
+  velocity: number;
+  style?: "staccato" | "sustained";
+}
+
+export interface ChordPattern {
+  id: string;
+  label: string;
+  hits: readonly ChordHit[];
+}
+
+export interface CatalogBassHit {
+  beat: number;
+  velocity: number;
+  note: BassNoteRole;
+}
+
+export interface CatalogBassPattern {
+  id: string;
+  label: string;
+  hits: readonly CatalogBassHit[];
+}
+
+export interface CatalogDrumPattern {
+  id: string;
+  label: string;
+  kicks: readonly DrumHit[];
+  snares: readonly DrumHit[];
+  hats: readonly DrumHit[];
+  openHats?: readonly DrumHit[];
+  ride?: readonly DrumHit[];
+}
+
+export interface DrumVariation {
+  id: string;
+  label: string;
+  barInterval: number;
+  pattern: CatalogDrumPattern;
+}
+
+const EIGHTH_HATS: readonly DrumHit[] = [
+  { beat: 0, velocity: 0.55 },
+  { beat: 0.5, velocity: 0.4 },
+  { beat: 1, velocity: 0.55 },
+  { beat: 1.5, velocity: 0.4 },
+  { beat: 2, velocity: 0.55 },
+  { beat: 2.5, velocity: 0.4 },
+  { beat: 3, velocity: 0.55 },
+  { beat: 3.5, velocity: 0.4 },
+];
+
+export const CHORD_PATTERNS: readonly ChordPattern[] = [
+  {
+    id: "pop-8ths",
+    label: "Pop 8ths",
+    hits: [
+      { beat: 0, velocity: 0.95 },
+      { beat: 1, velocity: 0.6 },
+      { beat: 1.5, velocity: 0.55 },
+      { beat: 2.5, velocity: 0.55 },
+      { beat: 3, velocity: 0.7 },
+      { beat: 3.5, velocity: 0.5 },
+    ],
+  },
+  {
+    id: "ballad-whole",
+    label: "Ballad Whole Notes",
+    hits: [{ beat: 0, velocity: 0.8, style: "sustained" }],
+  },
+  {
+    id: "offbeat-skank",
+    label: "Offbeat Skank",
+    hits: [
+      { beat: 0.5, velocity: 0.7 },
+      { beat: 1.5, velocity: 0.7 },
+      { beat: 2.5, velocity: 0.7 },
+      { beat: 3.5, velocity: 0.7 },
+    ],
+  },
+  {
+    id: "shuffle-comp",
+    label: "Shuffle Comp",
+    hits: [
+      { beat: 0, velocity: 0.9 },
+      { beat: 1.5, velocity: 0.6 },
+    ],
+  },
+  {
+    id: "jazz-comp",
+    label: "Jazz Comping",
+    hits: [
+      { beat: 0, velocity: 0.85 },
+      { beat: 1.5, velocity: 0.6 },
+      { beat: 3, velocity: 0.7 },
+    ],
+  },
+  {
+    id: "straight-quarters",
+    label: "Straight Quarters",
+    hits: [
+      { beat: 0, velocity: 0.8 },
+      { beat: 1, velocity: 0.6 },
+      { beat: 2, velocity: 0.7 },
+      { beat: 3, velocity: 0.6 },
+    ],
+  },
+];
+
+export const BASS_PATTERNS: readonly CatalogBassPattern[] = [
+  {
+    id: "root-fifth",
+    label: "Root-Fifth",
+    hits: [
+      { beat: 0, velocity: 1, note: "root" },
+      { beat: 2, velocity: 0.85, note: "fifth" },
+    ],
+  },
+  {
+    id: "walking",
+    label: "Walking Bass",
+    hits: [
+      { beat: 0, velocity: 1, note: "root" },
+      { beat: 1, velocity: 0.8, note: "third" },
+      { beat: 2, velocity: 0.85, note: "fifth" },
+      { beat: 3, velocity: 0.75, note: "chromatic-approach" },
+    ],
+  },
+  {
+    id: "arpeggiated",
+    label: "Arpeggiated",
+    hits: [
+      { beat: 0, velocity: 1, note: "root" },
+      { beat: 1, velocity: 0.8, note: "third" },
+      { beat: 2, velocity: 0.85, note: "fifth" },
+      { beat: 3, velocity: 0.7, note: "octave" },
+    ],
+  },
+  {
+    id: "shuffle",
+    label: "Shuffle Bass",
+    hits: [
+      { beat: 0, velocity: 1, note: "root" },
+      { beat: 2, velocity: 0.85, note: "fifth" },
+      { beat: 3.5, velocity: 0.6, note: "root" },
+    ],
+  },
+  {
+    id: "pedal",
+    label: "Pedal Tone",
+    hits: [
+      { beat: 0, velocity: 1, note: "root" },
+      { beat: 0.5, velocity: 0.6, note: "root" },
+      { beat: 1, velocity: 0.8, note: "root" },
+      { beat: 1.5, velocity: 0.6, note: "root" },
+      { beat: 2, velocity: 0.8, note: "root" },
+      { beat: 2.5, velocity: 0.6, note: "root" },
+      { beat: 3, velocity: 0.8, note: "root" },
+      { beat: 3.5, velocity: 0.6, note: "root" },
+    ],
+  },
+  {
+    id: "funk-syncopated",
+    label: "Funk Syncopated",
+    hits: [
+      { beat: 0, velocity: 1, note: "root" },
+      { beat: 0.5, velocity: 0.5, note: "octave" },
+      { beat: 1.5, velocity: 0.7, note: "fifth" },
+      { beat: 2.5, velocity: 0.6, note: "root" },
+      { beat: 3, velocity: 0.8, note: "fifth" },
+    ],
+  },
+];
+
+export const DRUM_PATTERNS: readonly CatalogDrumPattern[] = [
+  {
+    id: "rock",
+    label: "Rock",
+    kicks: [
+      { beat: 0, velocity: 1 },
+      { beat: 2, velocity: 0.9 },
+    ],
+    snares: [
+      { beat: 1, velocity: 1 },
+      { beat: 3, velocity: 1 },
+    ],
+    hats: EIGHTH_HATS,
+  },
+  {
+    id: "pop",
+    label: "Pop",
+    kicks: [
+      { beat: 0, velocity: 1 },
+      { beat: 1.5, velocity: 0.8 },
+    ],
+    snares: [
+      { beat: 1, velocity: 1 },
+      { beat: 3, velocity: 1 },
+    ],
+    hats: EIGHTH_HATS,
+  },
+  {
+    id: "blues-shuffle",
+    label: "Blues Shuffle",
+    kicks: [
+      { beat: 0, velocity: 1 },
+      { beat: 2, velocity: 0.9 },
+    ],
+    snares: [
+      { beat: 1, velocity: 1 },
+      { beat: 3, velocity: 1 },
+    ],
+    hats: EIGHTH_HATS,
+  },
+  {
+    id: "jazz-ride",
+    label: "Jazz Ride",
+    kicks: [
+      { beat: 0.5, velocity: 0.5 },
+      { beat: 2.5, velocity: 0.5 },
+    ],
+    snares: [{ beat: 3, velocity: 0.4 }],
+    hats: [],
+    ride: [
+      { beat: 0, velocity: 0.6 },
+      { beat: 1, velocity: 0.5 },
+      { beat: 1.5, velocity: 0.45 },
+      { beat: 2, velocity: 0.55 },
+      { beat: 3, velocity: 0.5 },
+      { beat: 3.5, velocity: 0.45 },
+    ],
+  },
+  {
+    id: "bossa",
+    label: "Bossa Nova",
+    kicks: [
+      { beat: 0, velocity: 0.8 },
+      { beat: 1.5, velocity: 0.7 },
+      { beat: 3, velocity: 0.75 },
+    ],
+    snares: [
+      { beat: 1, velocity: 0.5 },
+      { beat: 2.5, velocity: 0.5 },
+    ],
+    hats: [],
+  },
+  {
+    id: "ballad",
+    label: "Ballad",
+    kicks: [{ beat: 0, velocity: 0.8 }],
+    snares: [{ beat: 2, velocity: 0.8 }],
+    hats: [
+      { beat: 0, velocity: 0.35 },
+      { beat: 1, velocity: 0.3 },
+      { beat: 2, velocity: 0.35 },
+      { beat: 3, velocity: 0.3 },
+    ],
+  },
+  {
+    id: "funk",
+    label: "Funk",
+    kicks: [
+      { beat: 0, velocity: 1 },
+      { beat: 0.5, velocity: 0.7 },
+      { beat: 2.5, velocity: 0.8 },
+    ],
+    snares: [
+      { beat: 1, velocity: 1 },
+      { beat: 1.5, velocity: 0.3 },
+      { beat: 3, velocity: 1 },
+    ],
+    hats: [
+      { beat: 0, velocity: 0.5 },
+      { beat: 0.25, velocity: 0.3 },
+      { beat: 0.5, velocity: 0.4 },
+      { beat: 0.75, velocity: 0.3 },
+      { beat: 1, velocity: 0.5 },
+      { beat: 1.25, velocity: 0.3 },
+      { beat: 1.5, velocity: 0.4 },
+      { beat: 1.75, velocity: 0.3 },
+      { beat: 2, velocity: 0.5 },
+      { beat: 2.25, velocity: 0.3 },
+      { beat: 2.5, velocity: 0.4 },
+      { beat: 2.75, velocity: 0.3 },
+      { beat: 3, velocity: 0.5 },
+      { beat: 3.25, velocity: 0.3 },
+      { beat: 3.5, velocity: 0.4 },
+      { beat: 3.75, velocity: 0.3 },
+    ],
+  },
+];
+
+export const DRUM_VARIATIONS: readonly DrumVariation[] = [
+  {
+    id: "fill-every-4",
+    label: "Fill Every 4 Bars",
+    barInterval: 4,
+    pattern: {
+      id: "fill-every-4-pattern",
+      label: "Fill",
+      kicks: [{ beat: 0, velocity: 1 }],
+      snares: [
+        { beat: 2, velocity: 0.7 },
+        { beat: 2.5, velocity: 0.8 },
+        { beat: 3, velocity: 0.9 },
+        { beat: 3.5, velocity: 1 },
+      ],
+      hats: [],
+    },
+  },
+  {
+    id: "open-hat-and-of-4",
+    label: "Open Hat on And of 4",
+    barInterval: 1,
+    pattern: {
+      id: "open-hat-and-of-4-pattern",
+      label: "Open Hat",
+      kicks: [],
+      snares: [],
+      hats: [],
+      openHats: [{ beat: 3.5, velocity: 0.6 }],
+    },
+  },
+  {
+    id: "crash-bar-1",
+    label: "Crash on Bar 1",
+    barInterval: 1,
+    pattern: {
+      id: "crash-bar-1-pattern",
+      label: "Crash",
+      kicks: [],
+      snares: [],
+      hats: [],
+      ride: [{ beat: 0, velocity: 0.9 }],
+    },
+  },
+];
+
+export function getChordPattern(id: string): ChordPattern | undefined {
+  return CHORD_PATTERNS.find((p) => p.id === id);
+}
+
+export function getBassPattern(id: string): CatalogBassPattern | undefined {
+  return BASS_PATTERNS.find((p) => p.id === id);
+}
+
+export function getDrumPattern(id: string): CatalogDrumPattern | undefined {
+  return DRUM_PATTERNS.find((p) => p.id === id);
+}
+
+export function getDrumVariation(id: string): DrumVariation | undefined {
+  return DRUM_VARIATIONS.find((v) => v.id === id);
+}
+
+// ─── Utility Functions ───────────────────────────────────────────────────────
+
 /**
  * Generate metronome click events: one click per beat, with an accent on
  * beat 1. Returned dynamically because beat count depends on meter.
