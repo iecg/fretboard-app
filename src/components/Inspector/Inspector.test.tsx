@@ -34,4 +34,16 @@ describe("Inspector", () => {
     expect(screen.getByRole("tab", { name: "Scale" }).getAttribute("aria-selected")).toBe("true");
     expect(screen.getByRole("tab", { name: "View" }).getAttribute("aria-selected")).toBe("false");
   });
+
+  it("hides the Progression tab when progressionEnabledAtom is false", async () => {
+    const { progressionEnabledAtom } = await import("../../store/atoms");
+    renderWithAtoms(<Inspector />, [[progressionEnabledAtom, false]]);
+    expect(screen.queryByRole("tab", { name: "Progression" })).toBeNull();
+  });
+
+  it("shows the Progression tab when progressionEnabledAtom is true", async () => {
+    const { progressionEnabledAtom } = await import("../../store/atoms");
+    renderWithAtoms(<Inspector />, [[progressionEnabledAtom, true]]);
+    expect(screen.getByRole("tab", { name: "Progression" })).toBeInTheDocument();
+  });
 });

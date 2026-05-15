@@ -1,14 +1,23 @@
 import { useState } from "react";
 import * as RadixTabs from "@radix-ui/react-tabs";
+import { useAtomValue } from "jotai";
+import { progressionEnabledAtom } from "../../store/atoms";
 import { useTranslation } from "../../hooks/useTranslation";
-import { ALWAYS_VISIBLE_TABS, type InspectorTabId } from "./tabs";
+import {
+  ALWAYS_VISIBLE_TABS,
+  PROGRESSION_TAB,
+  type InspectorTabId,
+} from "./tabs";
 import styles from "./Inspector.module.css";
 
 export function Inspector() {
   const { t } = useTranslation();
   const [active, setActive] = useState<InspectorTabId>("view");
+  const progressionEnabled = useAtomValue(progressionEnabledAtom);
 
-  const visibleTabs = ALWAYS_VISIBLE_TABS;
+  const visibleTabs = progressionEnabled
+    ? [...ALWAYS_VISIBLE_TABS, PROGRESSION_TAB]
+    : ALWAYS_VISIBLE_TABS;
 
   return (
     <RadixTabs.Root
