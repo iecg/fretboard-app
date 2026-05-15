@@ -1,30 +1,18 @@
-/* Match the ProgressionTrack faceplate: same navy substrate, same subtle
- * top-left cyan wash, same shadow + border treatment. The Inspector reads as
- * the lower half of a single hardware unit rather than a separate panel. */
+/* The Inspector panel is a DAW faceplate — a theme-adaptive hardware-style
+ * surface shared with TopBandSummary via the .faceplate class. */
 .root {
-  --inspector-bg: #0a121d;
-  --inspector-bg-elevated: #0d1726;
-  --inspector-border: rgb(77 228 255 / 0.12);
-  --inspector-divider: rgb(255 255 255 / 0.06);
+  composes: faceplate from "../shared/shared.module.css";
 
   display: flex;
   flex-direction: column;
   gap: var(--space-2, 0.5rem);
   padding: var(--space-3, 0.75rem);
-  border: 1px solid var(--inspector-border);
-  border-radius: 12px;
-  background:
-    radial-gradient(120% 200% at 0% 0%, rgb(77 228 255 / 0.04), transparent 55%),
-    linear-gradient(180deg, var(--inspector-bg-elevated), var(--inspector-bg));
-  box-shadow:
-    0 1px 0 rgb(255 255 255 / 0.02) inset,
-    0 18px 40px -28px rgb(0 0 0 / 0.7);
 }
 
 .tabList {
   display: flex;
   gap: var(--space-1, 0.25rem);
-  border-bottom: 1px solid var(--inspector-divider);
+  border-bottom: 1px solid var(--faceplate-divider);
 }
 
 .tab {
@@ -48,14 +36,14 @@
 }
 
 .tab:focus-visible {
-  outline: 2px solid var(--neon-cyan, #4DE4FF);
+  outline: 2px solid var(--faceplate-accent);
   outline-offset: 2px;
 }
 
 .tab[data-state="active"] {
-  color: var(--neon-cyan, #4DE4FF);
-  border-bottom-color: var(--neon-cyan, #4DE4FF);
-  text-shadow: var(--glow-cyan-sm);
+  color: var(--faceplate-accent);
+  border-bottom-color: var(--faceplate-accent);
+  text-shadow: var(--faceplate-accent-glow);
 }
 
 .tabPanel {
