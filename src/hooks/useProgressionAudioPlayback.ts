@@ -22,6 +22,7 @@ import {
   getProgressionDurationMs,
   type ResolvedProgressionStep,
 } from "../progressions/progressionDomain";
+import type { ChordInstrumentId } from "../progressions/audio/instruments/types";
 import { useProgressionState } from "./useProgressionState";
 
 /** Lead between scheduling and audible hit; keeps Web Audio from dropping
@@ -49,6 +50,13 @@ interface SchedulerInputs {
     drums: boolean;
     metronome: boolean;
   };
+  chordInstrument: ChordInstrumentId;
+  chordPatternId: string;
+  bassPatternId: string;
+  drumPatternId: string;
+  drumVariations: string[];
+  swing: number;
+  loopEnabled: boolean;
 }
 
 type EnableFlags = SchedulerInputs["enable"];
@@ -59,6 +67,31 @@ function sameEnableFlags(a: EnableFlags | null, b: EnableFlags): boolean {
     && a.bass === b.bass
     && a.drums === b.drums
     && a.metronome === b.metronome;
+}
+
+/**
+ * Instrument / pattern / swing selections are direct performance controls,
+ * just like the enable toggles. When any of them changes mid-playback we
+ * rebuild the active segment so the new texture is heard immediately.
+ */
+interface ConfigFlags {
+  chordInstrument: ChordInstrumentId;
+  chordPatternId: string;
+  bassPatternId: string;
+  drumPatternId: string;
+  drumVariations: string[];
+  swing: number;
+}
+
+function sameConfigFlags(a: ConfigFlags | null, b: ConfigFlags): boolean {
+  return !!a
+    && a.chordInstrument === b.chordInstrument
+    && a.chordPatternId === b.chordPatternId
+    && a.bassPatternId === b.bassPatternId
+    && a.drumPatternId === b.drumPatternId
+    && a.swing === b.swing
+    && a.drumVariations.length === b.drumVariations.length
+    && a.drumVariations.every((v, i) => v === b.drumVariations[i]);
 }
 
 function buildSegment(
@@ -91,14 +124,12 @@ function buildSegment(
     startTime,
     scheduleFromTime,
     enable: inputs.enable,
-    // Catalog defaults reproduce the prior hardcoded backing track until
-    // instrument/pattern selection is wired into progression state.
-    chordInstrument: "strum",
-    chordPatternId: "pop-8ths",
-    bassPatternId: "root-fifth",
-    drumPatternId: "rock",
-    drumVariations: [],
-    swing: 0,
+    chordInstrument: inputs.chordInstrument,
+    chordPatternId: inputs.chordPatternId,
+    bassPatternId: inputs.bassPatternId,
+    drumPatternId: inputs.drumPatternId,
+    drumVariations: inputs.drumVariations,
+    swing: inputs.swing,
     currentRoot: step.root,
     currentQuality: step.quality,
     nextChordRoot: nextStep?.root ?? undefined,
@@ -138,6 +169,12 @@ export function useProgressionAudioPlayback() {
     progressionBassEnabled,
     progressionDrumsEnabled,
     progressionMetronomeEnabled,
+    progressionChordInstrument,
+    progressionChordPattern,
+    progressionBassPattern,
+    progressionDrumPattern,
+    progressionDrumVariations,
+    progressionSwing,
   } = useProgressionState();
   const isMuted = useAtomValue(isMutedAtom);
 
@@ -149,6 +186,7 @@ export function useProgressionAudioPlayback() {
   // current chord intact and apply the new params on the next bar).
   const wasPlayingRef = useRef<boolean>(false);
   const lastEnableRef = useRef<EnableFlags | null>(null);
+  const lastConfigRef = useRef<ConfigFlags | null>(null);
   const lastActiveStartTimeRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -160,6 +198,7 @@ export function useProgressionAudioPlayback() {
       silenceProgressionBus();
       lastStepRef.current = null;
       lastEnableRef.current = null;
+      lastConfigRef.current = null;
       lastActiveStartTimeRef.current = null;
     };
 
@@ -196,11 +235,28 @@ export function useProgressionAudioPlayback() {
         drums: progressionDrumsEnabled,
         metronome: progressionMetronomeEnabled,
       },
+      chordInstrument: progressionChordInstrument,
+      chordPatternId: progressionChordPattern,
+      bassPatternId: progressionBassPattern,
+      drumPatternId: progressionDrumPattern,
+      drumVariations: progressionDrumVariations,
+      swing: progressionSwing,
+      loopEnabled: progressionLoopEnabled,
+    };
+
+    const config: ConfigFlags = {
+      chordInstrument: inputs.chordInstrument,
+      chordPatternId: inputs.chordPatternId,
+      bassPatternId: inputs.bassPatternId,
+      drumPatternId: inputs.drumPatternId,
+      drumVariations: inputs.drumVariations,
+      swing: inputs.swing,
     };
 
     const now = audio.ctx.currentTime;
     const justStarted = !wasPlayingRef.current;
     const enableChanged = !sameEnableFlags(lastEnableRef.current, inputs.enable);
+    const configChanged = !sameConfigFlags(lastConfigRef.current, config);
     wasPlayingRef.current = true;
 
     // Drop segments whose audio has already finished.
@@ -231,10 +287,12 @@ export function useProgressionAudioPlayback() {
         const isCorrect =
           step && step.root === s.root && step.quality === s.quality;
 
-        // Instrument toggles are direct performance controls. Rebuild the
-        // active segment immediately to apply the new texture.
+        // Instrument toggles, plus instrument/pattern/swing selections, are
+        // direct performance controls. Rebuild the active segment immediately
+        // to apply the new texture.
         const forceRebuildActive =
-          s.stepIndex === activeProgressionStepIndex && enableChanged;
+          s.stepIndex === activeProgressionStepIndex
+          && (enableChanged || configChanged);
 
         if (isDesired && isCorrect && !forceRebuildActive) {
           keepers.push(s);
@@ -318,6 +376,7 @@ export function useProgressionAudioPlayback() {
 
     lastStepRef.current = activeProgressionStepIndex;
     lastEnableRef.current = inputs.enable;
+    lastConfigRef.current = config;
   }, [
     progressionEnabled,
     progressionPlaying,
@@ -332,5 +391,11 @@ export function useProgressionAudioPlayback() {
     progressionBassEnabled,
     progressionDrumsEnabled,
     progressionMetronomeEnabled,
+    progressionChordInstrument,
+    progressionChordPattern,
+    progressionBassPattern,
+    progressionDrumPattern,
+    progressionDrumVariations,
+    progressionSwing,
   ]);
 }
