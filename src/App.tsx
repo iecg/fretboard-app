@@ -34,15 +34,9 @@ import { TooltipProvider } from "./components/Tooltip/Tooltip";
 import sharedStyles from "./components/shared/shared.module.css";
 import { ControlsPanelSkeleton, MobileTabSkeleton } from "./components/LoadingSkeleton/LoadingSkeleton";
 import { ANIMATION_DURATION_XFADE } from "@fretflow/core";
-import { isInspectorPreviewEnabled } from "./utils/inspectorPreview";
 import { AppMotionConfig } from "./components/AppMotionConfig/AppMotionConfig";
 import "./styles/App.css";
 
-const ExpandedControlsPanel = lazy(() =>
-  import("./components/ExpandedControlsPanel/ExpandedControlsPanel").then((m) => ({
-    default: m.ExpandedControlsPanel,
-  }))
-);
 const SettingsOverlay = lazy(() => import("./components/SettingsOverlay/SettingsOverlay"));
 const HelpModal = lazy(() =>
   import("./components/HelpModal/HelpModal").then((m) => ({ default: m.HelpModal }))
@@ -95,7 +89,6 @@ function AppContent() {
   const showNoteColorAudit =
     typeof window !== "undefined" &&
     new URLSearchParams(window.location.search).get("audit") === "note-colors";
-  const showInspectorPreview = isInspectorPreviewEnabled();
 
   useLayoutEffect(() => {
     if (showNoteColorAudit) {
@@ -250,10 +243,7 @@ function AppContent() {
       }
       controlsPanel={
         <Suspense fallback={<ControlsPanelSkeleton mode={layout.panelMode} />}>
-          <>
-            <ExpandedControlsPanel mode={layout.panelMode} />
-            {showInspectorPreview && <Inspector />}
-          </>
+          <Inspector />
         </Suspense>
       }
       mobileTabs={

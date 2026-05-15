@@ -8,6 +8,7 @@ import {
   within,
   act,
 } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import App from "./App";
 import { synth } from "./core/audio";
 import { get3NPSCoordinates } from "@fretflow/core";
@@ -96,6 +97,16 @@ describe("App", () => {
     });
   };
 
+  // The Inspector is the default desktop/tablet controls panel. Its tab
+  // bodies (Radix Tabs) only mount when their tab is active, so tests that
+  // exercise Scale- or Chord-tab controls must select the tab first.
+  const selectInspectorTab = async (name: "View" | "Scale" | "Chord") => {
+    // Radix Tabs activates triggers via pointer events; userEvent emits them.
+    const tab = await screen.findByRole("tab", { name });
+    await userEvent.click(tab);
+    return tab;
+  };
+
   describe("Initialization", () => {
     it("renders without crashing", () => {
       render(<App />);
@@ -129,6 +140,8 @@ describe("App", () => {
       localStorage.setItem(k("rootNote"), "G");
       localStorage.setItem(k("scaleName"), "Minor");
       render(<App />);
+      // CircleOfFifths lives in the Inspector's Scale tab; select it first.
+      await selectInspectorTab("Scale");
       expect(await screen.findByTestId("circle-of-fifths")).toHaveTextContent(
         "CoF: G",
       );
@@ -208,6 +221,7 @@ describe("App", () => {
       render(<App />);
       expect(screen.getByTestId("fretboard")).toHaveTextContent("Fretboard: C");
 
+      await selectInspectorTab("Scale");
       const cofButton = await screen.findByTestId("circle-of-fifths");
       fireEvent.click(cofButton);
 
@@ -220,6 +234,7 @@ describe("App", () => {
 
     it("persists root note to localStorage", async () => {
       render(<App />);
+      await selectInspectorTab("Scale");
       const cofButton = await screen.findByTestId("circle-of-fifths");
       fireEvent.click(cofButton);
 
@@ -238,6 +253,7 @@ describe("App", () => {
       localStorage.setItem(k("chordRootOverride"), "C");
       render(<App />);
 
+      await selectInspectorTab("Scale");
       const cofButton = await screen.findByTestId("circle-of-fifths");
       fireEvent.click(cofButton);
 
@@ -254,6 +270,7 @@ describe("App", () => {
       localStorage.setItem(k("chordType"), "Major Triad");
       render(<App />);
 
+      await selectInspectorTab("Scale");
       const cofButton = await screen.findByTestId("circle-of-fifths");
       fireEvent.click(cofButton);
 
@@ -275,6 +292,7 @@ describe("App", () => {
       localStorage.setItem(k("chordRoot"), "D");
       render(<App />);
 
+      await selectInspectorTab("Scale");
       const cofButton = await screen.findByTestId("circle-of-fifths");
       fireEvent.click(cofButton);
 
@@ -287,6 +305,8 @@ describe("App", () => {
   describe("Scale selection", () => {
     it("renders the shared theory controls", async () => {
       render(<App />);
+      // Theory controls live in the Inspector's Scale tab.
+      await selectInspectorTab("Scale");
       expect(
         await screen.findByRole("combobox", { name: "Scale Family" }),
       ).toBeInTheDocument();
@@ -582,11 +602,11 @@ describe("App", () => {
   describe("Chord overlay", () => {
     it("can set chord type via manual mode", async () => {
       render(<App />);
-      // ExpandedControlsPanel is lazy loaded, wait for it to be ready
-      const chordOverlayBtn = await screen.findByRole("button", { name: /Chords/i });
-      fireEvent.click(chordOverlayBtn);
+      // Chord controls live in the Inspector's Chord tab; ChordOverlayControls
+      // is rendered directly there (no accordion section to expand).
+      await selectInspectorTab("Chord");
 
-      // New UI: switch to Manual mode first, then set chord type via toggle bar
+      // Switch to Manual mode first, then set chord type via toggle bar
       const manualBtn = await screen.findByRole("button", { name: "Manual" });
       fireEvent.click(manualBtn);
 
@@ -912,10 +932,10 @@ describe("App", () => {
         );
       });
 
-      expect(document.querySelector(".controls-panel")).toBeTruthy();
+      // The Inspector is the default desktop controls panel.
       expect(
-        document.querySelector('.controls-panel[data-mode="3col"]'),
-      ).toBeTruthy();
+        await screen.findByRole("tablist", { name: "Inspector" }),
+      ).toBeInTheDocument();
       expect(document.querySelector(".mobile-tab-content")).toBeNull();
     });
 
@@ -943,10 +963,10 @@ describe("App", () => {
         );
       });
 
-      expect(document.querySelector(".controls-panel")).toBeTruthy();
+      // The Inspector is the default desktop controls panel.
       expect(
-        document.querySelector('.controls-panel[data-mode="stacked"]'),
-      ).toBeTruthy();
+        await screen.findByRole("tablist", { name: "Inspector" }),
+      ).toBeInTheDocument();
       expect(document.querySelector(".mobile-tab-content")).toBeNull();
     });
 
@@ -974,80 +994,16 @@ describe("App", () => {
         );
       });
 
-      expect(document.querySelector(".controls-panel")).toBeTruthy();
+      // The Inspector is the default desktop controls panel.
       expect(
-        document.querySelector('.controls-panel[data-mode="split"]'),
-      ).toBeTruthy();
+        await screen.findByRole("tablist", { name: "Inspector" }),
+      ).toBeInTheDocument();
       expect(document.querySelector(".mobile-tab-content")).toBeNull();
     });
 
-    // Rendered CSS regression: verifies ExpandedControlsPanel.css is imported and
-    // its grid rules are applied to the DOM. Fails if the CSS import is removed.
-    it("dashboard panel has display:grid and gridTemplateColumns for desktop-3col", async () => {
-      Object.defineProperty(window, "innerWidth", {
-        writable: true,
-        configurable: true,
-        value: 1440,
-      });
-      Object.defineProperty(window, "innerHeight", {
-        writable: true,
-        configurable: true,
-        value: 900,
-      });
-      localStorage.clear();
-
-      render(<App />);
-      fireEvent(window, new Event("resize"));
-
-      await waitFor(() => {
-        expect(
-          document.querySelector('.controls-panel[data-mode="3col"]'),
-        ).toBeTruthy();
-      });
-
-      const panel = document.querySelector(
-        '.controls-panel[data-mode="3col"]',
-      ) as HTMLElement;
-      expect(panel).toBeTruthy();
-
-      const styles = window.getComputedStyle(panel);
-      expect(styles.display).toBe("grid");
-      expect(styles.gridTemplateColumns).toBeTruthy();
-      expect(styles.gridTemplateColumns).not.toBe("none");
-    });
-
-    it("dashboard panel has display:grid and gridTemplateColumns for desktop-split", async () => {
-      Object.defineProperty(window, "innerWidth", {
-        writable: true,
-        configurable: true,
-        value: 1024,
-      });
-      Object.defineProperty(window, "innerHeight", {
-        writable: true,
-        configurable: true,
-        value: 1366,
-      });
-      localStorage.clear();
-
-      render(<App />);
-      fireEvent(window, new Event("resize"));
-
-      await waitFor(() => {
-        expect(
-          document.querySelector('.controls-panel[data-mode="split"]'),
-        ).toBeTruthy();
-      });
-
-      const panel = document.querySelector(
-        '.controls-panel[data-mode="split"]',
-      ) as HTMLElement;
-      expect(panel).toBeTruthy();
-
-      const styles = window.getComputedStyle(panel);
-      expect(styles.display).toBe("grid");
-      expect(styles.gridTemplateColumns).toBeTruthy();
-      expect(styles.gridTemplateColumns).not.toBe("none");
-    });
+    // The ExpandedControlsPanel.module.css grid regression guards moved to
+    // layout.test.tsx in Phase 3 Task 7 — the Inspector is now the default
+    // controls panel and no longer renders the `.controls-panel` grid.
   });
 
   describe("Mobile settings interactions", () => {
@@ -1199,7 +1155,9 @@ describe("Chord overlay hidden reset on identity change", () => {
       expect(document.querySelector(".chord-practice-bar[data-collapsed=\"true\"]")).toBeTruthy();
     });
 
-    // Trigger root note change via CoF mock — effect resets hidden to false
+    // Trigger root note change via CoF mock — effect resets hidden to false.
+    // CircleOfFifths lives in the Inspector's Scale tab; select it first.
+    await userEvent.click(await screen.findByRole("tab", { name: "Scale" }));
     const cofButton = await screen.findByTestId("circle-of-fifths");
     fireEvent.click(cofButton);
 
