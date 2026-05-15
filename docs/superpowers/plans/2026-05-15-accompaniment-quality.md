@@ -779,6 +779,13 @@ git commit -m "feat(audio): add ride cymbal voice to drum kit"
 
 ## Task 8: Swing Module
 
+> **SUPERSEDED.** A standalone `swing.ts` module was built per this task, then
+> removed during final review. Swing is handled inline by the scheduler in the
+> beat domain (off-beats shifted by `swing * (1/3)` beats); there is no separate
+> swing module or `applySwing` export. Do not recreate `swing.ts` /
+> `swing.test.ts` — the unit-mismatch design below (mixing beats and seconds) is
+> the reason the module was dropped.
+
 **Files:**
 - Create: `src/progressions/audio/swing.ts`
 - Create: `src/progressions/audio/swing.test.ts`

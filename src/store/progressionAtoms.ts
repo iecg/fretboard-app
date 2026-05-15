@@ -34,6 +34,7 @@ import {
   constrainedNumberStorage,
   createStorage,
   k,
+  withStorageErrorBoundary,
 } from "../utils/storage";
 
 const beatsPerBarStorage = createStorage<number>({
@@ -118,10 +119,34 @@ export const progressionLoopEnabledAtom = atomWithStorage<boolean>(
  * experience (strum on by default) while leaving heavier voices off until
  * the user opts in.
  */
+/**
+ * Storage for the chord-enable toggle. Pre-rename builds persisted this under
+ * `progressionStrumEnabled`; when the new key is absent we migrate the old
+ * value so returning users keep their toggle state.
+ */
+const chordEnabledStorage = createStorage<boolean>({
+  serialize: (v) => String(v),
+  deserialize: (v) => {
+    if (v === "true") return true;
+    if (v === "false") return false;
+    return undefined as unknown as boolean;
+  },
+  validate: (v) => typeof v === "boolean",
+  migrate: () => {
+    const legacy = withStorageErrorBoundary<string>(
+      k("progressionStrumEnabled"),
+      "",
+    ).getRaw();
+    if (legacy === "true") return true;
+    if (legacy === "false") return false;
+    return undefined;
+  },
+});
+
 export const progressionChordEnabledAtom = atomWithStorage<boolean>(
   k("progressionChordEnabled"),
   true,
-  booleanStorage,
+  chordEnabledStorage,
   GET_ON_INIT,
 );
 // Backwards-compatibility alias — existing consumers still reference progressionStrumEnabledAtom.

@@ -191,6 +191,7 @@ describe("expanded preset catalog", () => {
     expect(categories).toContain("pop-rock");
     expect(categories).toContain("blues");
     expect(categories).toContain("jazz");
+    expect(categories).toContain("folk");
     expect(categories).toContain("modal");
     expect(categories).toContain("minor");
   });

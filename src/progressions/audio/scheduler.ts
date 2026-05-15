@@ -123,7 +123,9 @@ export function scheduleProgressionStep(
     scheduleFromTime = startTime,
   } = input;
 
-  if (beatsAvailable <= 0 || secondsPerBeat <= 0) {
+  // `beatsPerBar` is a divisor in the drum bar loop (`beatsAvailable / beatsPerBar`).
+  // A non-positive value would yield a non-finite bar count and hang the loop.
+  if (beatsAvailable <= 0 || secondsPerBeat <= 0 || beatsPerBar <= 0) {
     return { cancelAll: () => {} };
   }
 

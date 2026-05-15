@@ -143,6 +143,36 @@ describe("scheduleProgressionStep", () => {
     expect(() => handle.cancelAll()).not.toThrow();
   });
 
+  it("returns a no-op handle when beatsPerBar is 0", () => {
+    const handle = scheduleProgressionStep(mock.ctx, bus as unknown as AudioNode, {
+      voicing: ["C3"],
+      bassNotes: ["C2"],
+      beatsAvailable: 4,
+      beatsPerBar: 0,
+      secondsPerBeat: 0.5,
+      startTime: 0,
+      enable: { strum: true, bass: true, drums: true, metronome: true },
+      ...defaultNewFields,
+    });
+    expect(mock.oscCount()).toBe(0);
+    expect(() => handle.cancelAll()).not.toThrow();
+  });
+
+  it("returns a no-op handle when beatsPerBar is negative", () => {
+    const handle = scheduleProgressionStep(mock.ctx, bus as unknown as AudioNode, {
+      voicing: ["C3"],
+      bassNotes: ["C2"],
+      beatsAvailable: 4,
+      beatsPerBar: -4,
+      secondsPerBeat: 0.5,
+      startTime: 0,
+      enable: { strum: true, bass: true, drums: true, metronome: true },
+      ...defaultNewFields,
+    });
+    expect(mock.oscCount()).toBe(0);
+    expect(() => handle.cancelAll()).not.toThrow();
+  });
+
   it("does not schedule any oscillators when all flags are off", () => {
     scheduleProgressionStep(mock.ctx, bus as unknown as AudioNode, {
       voicing: ["C3", "E3", "G3"],

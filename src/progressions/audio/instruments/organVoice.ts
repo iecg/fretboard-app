@@ -42,6 +42,13 @@ function scheduleOrganNote(
     gains.push(gain);
   }
 
+  // No harmonics scheduled (every drawbar partial landed above the audible
+  // ceiling). Disconnect the merger so it does not dangle on `dest` forever.
+  if (oscs.length === 0) {
+    merger.disconnect();
+    return null;
+  }
+
   let stopped = false;
   const dispose = () => {
     try {
@@ -51,9 +58,7 @@ function scheduleOrganNote(
     } catch { /* already disconnected */ }
   };
 
-  if (oscs.length > 0) {
-    oscs[oscs.length - 1].onended = dispose;
-  }
+  oscs[oscs.length - 1].onended = dispose;
 
   return {
     cancel: () => {

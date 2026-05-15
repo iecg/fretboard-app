@@ -150,6 +150,19 @@ describe("pattern catalog", () => {
         expect(h.beat).toBeLessThan(4);
       }
     }
+    const drumPatterns = [
+      ...DRUM_PATTERNS,
+      ...DRUM_VARIATIONS.map((v) => v.pattern),
+    ];
+    for (const p of drumPatterns) {
+      const lanes = [p.kicks, p.snares, p.hats, p.openHats, p.ride];
+      for (const lane of lanes) {
+        for (const h of lane ?? []) {
+          expect(h.beat).toBeGreaterThanOrEqual(0);
+          expect(h.beat).toBeLessThan(4);
+        }
+      }
+    }
   });
 
   it("lookups return correct patterns", () => {

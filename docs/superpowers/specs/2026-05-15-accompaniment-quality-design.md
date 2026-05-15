@@ -9,7 +9,7 @@ Design spec for improving accompaniment quality across all instruments, introduc
 3. Add rhythm and note variety to bass patterns (walking, arpeggiated, shuffle, pedal, funk)
 4. Add drum pattern + variation system (base patterns with fills and variations per genre)
 5. Expand progression presets to 25+ curated entries across categories, plus scale-aware dynamic generation
-6. Fix the 12-bar blues preset (collapse 12 x 1-bar steps into 6 multi-bar steps)
+6. Fix the 12-bar blues preset (collapse 12 x 1-bar steps into 7 multi-bar steps)
 7. Change bar label display from abbreviated "2B" to spelled-out "2 bars"
 
 ## Non-Goals
@@ -370,7 +370,7 @@ The progression preset dropdown becomes a grouped list:
 
 New and modified files:
 
-```
+```text
 src/progressions/
 ├── audio/
 │   ├── instruments/
@@ -383,8 +383,7 @@ src/progressions/
 │   ├── drumKit.ts                # (modified) add ride cymbal
 │   ├── patterns.ts               # (expanded) full pattern catalog
 │   ├── genres.ts                 # GenreStyle definitions
-│   ├── scheduler.ts              # (refactored) instrument-agnostic
-│   ├── swing.ts                  # Swing time-shift logic
+│   ├── scheduler.ts              # (refactored) instrument-agnostic; swing applied inline
 │   ├── bus.ts                    # (unchanged)
 │   ├── metronome.ts              # (unchanged)
 │   ├── string.ts                 # (unchanged, used by strumVoice)
