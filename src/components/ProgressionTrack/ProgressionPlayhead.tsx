@@ -14,12 +14,17 @@ interface ProgressionPlayheadProps {
   totalBarsForDisplay: number;
 }
 
+/** ~60 Hz position write interval. Keeping this interval alive while playing
+ * lets the playhead recover when playback starts before the audio timeline is
+ * armed by the sibling audio effect. */
+const TICK_MS = 16;
+
 /**
  * Renders the playhead and drives its horizontal motion by sampling the
- * shared audio-clock `timeline` once per frame. Reads `AudioContext.currentTime`
- * indirectly via `getTimelinePosition()`, so the visual position is locked
- * to whatever the user is hearing — the metronome's audible click and the
- * arrow's pixel position cannot drift.
+ * shared audio-clock `timeline` at roughly 60 Hz. Reads
+ * `AudioContext.currentTime` indirectly via `getTimelinePosition()`, so the
+ * visual position is locked to whatever the user is hearing — the metronome's
+ * audible click and the arrow's pixel position cannot drift.
  *
  * Style writes happen directly on the DOM ref to avoid React reconciliation
  * cost on every animation frame; the component renders only when its props
@@ -46,8 +51,6 @@ export function ProgressionPlayhead({
     if (!el) return;
     el.style.transition = "none";
 
-    let rafId: number | null = null;
-
     const write = () => {
       const tl = getTimelinePosition();
       const {
@@ -63,23 +66,19 @@ export function ProgressionPlayhead({
         // Uses globalFraction which is perfectly continuous across audio steps.
         const pct = (tl.globalFraction * currentTotalDurationBars / safeDisplayTotal) * 100;
         el.style.left = `${Math.max(0, Math.min(100, pct))}%`;
-        rafId = requestAnimationFrame(write);
       } else {
         // Paused or stopped: snap to current chord's start bar.
         const bar = currentStepStartBar;
         const pct = ((bar - 1) / safeDisplayTotal) * 100;
         el.style.left = `${Math.max(0, Math.min(100, pct))}%`;
-        rafId = null;
       }
     };
 
     write();
 
-    return () => {
-      if (rafId !== null) {
-        cancelAnimationFrame(rafId);
-      }
-    };
+    if (!playing) return;
+    const id = window.setInterval(write, TICK_MS);
+    return () => window.clearInterval(id);
   }, [playing]);
 
   return (
