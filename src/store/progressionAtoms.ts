@@ -26,6 +26,8 @@ import {
 } from "../progressions/progressionDomain";
 import { fingeringPatternAtom, isChordOverlayPatternDisabled } from "./fingeringAtoms";
 import { rootNoteAtom, scaleNameAtom, useFlatsAtom } from "./scaleAtoms";
+import type { ChordInstrumentId } from "../progressions/audio/instruments/types";
+import { getGenreStyle } from "../progressions/audio/genres";
 import {
   GET_ON_INIT,
   booleanStorage,
@@ -46,6 +48,26 @@ const DEFAULT_STEPS: ProgressionStep[] = [
   { id: "default-vi", degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null },
   { id: "default-iv", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null },
 ];
+
+const stringStorage = createStorage<string>({
+  serialize: (v) => v,
+  deserialize: (raw) => raw,
+  validate: (v): v is string => typeof v === "string",
+});
+
+const chordInstrumentStorage = createStorage<ChordInstrumentId>({
+  serialize: (v) => v,
+  deserialize: (raw) => raw as ChordInstrumentId,
+  validate: (v): v is ChordInstrumentId =>
+    v === "strum" || v === "piano" || v === "organ",
+});
+
+const stringArrayStorage = createStorage<string[]>({
+  serialize: (v) => JSON.stringify(v),
+  deserialize: (raw) => JSON.parse(raw) as string[],
+  validate: (v): v is string[] =>
+    Array.isArray(v) && v.every((x) => typeof x === "string"),
+});
 
 const progressionStepsStorage = createStorage<ProgressionStep[]>({
   serialize: (value) => JSON.stringify(value),
@@ -96,12 +118,14 @@ export const progressionLoopEnabledAtom = atomWithStorage<boolean>(
  * experience (strum on by default) while leaving heavier voices off until
  * the user opts in.
  */
-export const progressionStrumEnabledAtom = atomWithStorage<boolean>(
-  k("progressionStrumEnabled"),
+export const progressionChordEnabledAtom = atomWithStorage<boolean>(
+  k("progressionChordEnabled"),
   true,
   booleanStorage,
   GET_ON_INIT,
 );
+// Backwards-compatibility alias — existing consumers still reference progressionStrumEnabledAtom.
+export const progressionStrumEnabledAtom = progressionChordEnabledAtom;
 
 export const progressionBassEnabledAtom = atomWithStorage<boolean>(
   k("progressionBassEnabled"),
@@ -135,6 +159,73 @@ export const beatsPerBarAtom = atomWithStorage<number>(
   beatsPerBarStorage,
   GET_ON_INIT,
 );
+
+/**
+ * Genre / instrument / pattern / swing configuration. Persisted so returning
+ * users keep their groove. Defaults reproduce the original behaviour exactly
+ * (genre "rock", strum instrument, "pop-8ths"/"root-fifth"/"rock" patterns,
+ * no swing).
+ */
+export const progressionGenreStyleAtom = atomWithStorage<string>(
+  k("progressionGenreStyle"),
+  "rock",
+  stringStorage,
+  GET_ON_INIT,
+);
+
+export const progressionChordInstrumentAtom = atomWithStorage<ChordInstrumentId>(
+  k("progressionChordInstrument"),
+  "strum",
+  chordInstrumentStorage,
+  GET_ON_INIT,
+);
+
+export const progressionChordPatternAtom = atomWithStorage<string>(
+  k("progressionChordPattern"),
+  "pop-8ths",
+  stringStorage,
+  GET_ON_INIT,
+);
+
+export const progressionBassPatternAtom = atomWithStorage<string>(
+  k("progressionBassPattern"),
+  "root-fifth",
+  stringStorage,
+  GET_ON_INIT,
+);
+
+export const progressionDrumPatternAtom = atomWithStorage<string>(
+  k("progressionDrumPattern"),
+  "rock",
+  stringStorage,
+  GET_ON_INIT,
+);
+
+export const progressionDrumVariationsAtom = atomWithStorage<string[]>(
+  k("progressionDrumVariations"),
+  [],
+  stringArrayStorage,
+  GET_ON_INIT,
+);
+
+export const progressionSwingAtom = atomWithStorage<number>(
+  k("progressionSwing"),
+  0,
+  constrainedNumberStorage({ min: 0, max: 0.5, integer: false }),
+  GET_ON_INIT,
+);
+
+export const applyGenreStyleAtom = atom(null, (_get, set, genreId: string) => {
+  const genre = getGenreStyle(genreId);
+  if (!genre) return;
+  set(progressionGenreStyleAtom, genreId);
+  set(progressionChordInstrumentAtom, genre.chordInstrument);
+  set(progressionChordPatternAtom, genre.chordPattern);
+  set(progressionBassPatternAtom, genre.bassPattern);
+  set(progressionDrumPatternAtom, genre.drumPattern);
+  set(progressionDrumVariationsAtom, genre.drumVariations);
+  set(progressionSwingAtom, genre.swing);
+});
 
 export const activeProgressionStepIndexAtom = atom(0);
 const progressionPlayingStateAtom = atom(false);
@@ -373,11 +464,18 @@ export const resetProgressionAtomsAtom = atom(null, (_get, set) => {
   set(progressionStepsAtom, RESET);
   set(progressionTempoBpmAtom, RESET);
   set(progressionLoopEnabledAtom, RESET);
-  set(progressionStrumEnabledAtom, RESET);
+  set(progressionChordEnabledAtom, RESET);
   set(progressionBassEnabledAtom, RESET);
   set(progressionDrumsEnabledAtom, RESET);
   set(progressionMetronomeEnabledAtom, RESET);
   set(beatsPerBarAtom, RESET);
+  set(progressionGenreStyleAtom, RESET);
+  set(progressionChordInstrumentAtom, RESET);
+  set(progressionChordPatternAtom, RESET);
+  set(progressionBassPatternAtom, RESET);
+  set(progressionDrumPatternAtom, RESET);
+  set(progressionDrumVariationsAtom, RESET);
+  set(progressionSwingAtom, RESET);
   set(activeProgressionStepIndexAtom, 0);
   set(progressionPlayingStateAtom, false);
   set(progressionStepDeadlineAtom, null);
