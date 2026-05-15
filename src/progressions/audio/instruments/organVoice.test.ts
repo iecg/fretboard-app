@@ -78,6 +78,50 @@ describe("organVoice", () => {
     expect(ctx.createOscillator).toHaveBeenCalled();
   });
 
+  it("schedules a stop for every oscillator so notes self-terminate", () => {
+    const ctx = buildMockCtx();
+    const bus = createMockGain();
+
+    organVoice.scheduleChord(
+      ctx as unknown as AudioContext,
+      bus as unknown as AudioNode,
+      ["C3", "E3", "G3"],
+      0,
+      { velocity: 0.8 },
+    );
+
+    const oscs = ctx.createOscillator.mock.results.map((r) => r.value);
+    expect(oscs.length).toBeGreaterThan(0);
+    for (const osc of oscs) {
+      expect(osc.stop).toHaveBeenCalled();
+      const [stopTime] = osc.stop.mock.calls[0];
+      expect(Number.isFinite(stopTime)).toBe(true);
+    }
+  });
+
+  it("releases each harmonic gain back toward silence", () => {
+    const ctx = buildMockCtx();
+    const bus = createMockGain();
+
+    organVoice.scheduleChord(
+      ctx as unknown as AudioContext,
+      bus as unknown as AudioNode,
+      ["C3"],
+      0,
+      { velocity: 0.8 },
+    );
+
+    const gains = ctx.createGain.mock.results.map((r) => r.value);
+    // Every harmonic gain must ramp down to a near-silent target so the
+    // note ends on its own instead of sustaining at full level.
+    const releasing = gains.filter((g) =>
+      g.gain.exponentialRampToValueAtTime.mock.calls.some(
+        ([target]: [number]) => target <= 0.01,
+      ),
+    );
+    expect(releasing.length).toBeGreaterThan(0);
+  });
+
   it("calling cancel() does not throw", () => {
     const ctx = buildMockCtx();
     const bus = createMockGain();
