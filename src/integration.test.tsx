@@ -7,7 +7,6 @@ import { TAB_LABELS } from "./constants/tabLabels";
 // Pre-import lazy-loaded components so React.lazy() resolves from the module
 // cache synchronously, allowing Suspense to mount them without async delay.
 import "./components/MobileTabPanel/MobileTabPanel";
-import "./components/TheoryControls/TheoryControls";
 
 // vi.mock is hoisted to the top of the file, so variables referenced inside its
 // factory must be declared with vi.hoisted() to be available at that point.
