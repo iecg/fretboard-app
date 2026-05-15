@@ -16,17 +16,21 @@ export interface ClickOptions {
   velocity?: number;
 }
 
+export interface ClickHandle {
+  cancel: () => void;
+}
+
 /** Schedule a single metronome click at the supplied AudioContext time. */
 export function scheduleClick(
   ctx: AudioContext,
   dest: AudioNode,
   time: number,
   options: ClickOptions = {},
-): void {
+): ClickHandle {
   const velocity = Math.max(0, Math.min(1, options.velocity ?? 0.6));
   // Silent clicks would feed 0 into exponentialRampToValueAtTime, which
   // throws. Skip scheduling entirely — there's nothing to hear anyway.
-  if (velocity <= 0) return;
+  if (velocity <= 0) return { cancel: () => {} };
   const frequency = options.accent ? ACCENT_FREQ : NORMAL_FREQ;
 
   const osc = ctx.createOscillator();
@@ -48,6 +52,27 @@ export function scheduleClick(
     } catch {
       // already disconnected
     }
+  };
+
+  let canceled = false;
+  return {
+    cancel: () => {
+      if (canceled) return;
+      canceled = true;
+      try {
+        gain.gain.cancelScheduledValues(ctx.currentTime);
+        gain.gain.setValueAtTime(Math.max(gain.gain.value, 0.0001), ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.01);
+        osc.stop(ctx.currentTime + 0.012);
+      } catch {
+        try {
+          osc.disconnect();
+          gain.disconnect();
+        } catch {
+          // already disconnected
+        }
+      }
+    },
   };
 }
 

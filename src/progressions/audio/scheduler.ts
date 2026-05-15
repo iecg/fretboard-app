@@ -6,16 +6,20 @@
  * the per-beat work in Web Audio time, so the strum + drum + bass groove
  * stays locked to the audio clock instead of drifting with React renders.
  *
- * On pause/stop the hook calls `silenceProgressionBus()` upstream — that's
- * the single kill switch. `cancelAll()` here additionally releases the live
- * pluck/bass voices so their oscillators tear down promptly instead of
- * waiting for their full envelope.
+ * On pause/stop the hook calls `silenceProgressionBus()` upstream for an
+ * immediate fade. `cancelAll()` here also cancels pending scheduled voices
+ * so future hits do not leak into resumed playback.
  */
 
 import { getNoteFrequency } from "@fretflow/core";
 import { scheduleBassNote, type BassVoiceHandle } from "./bass";
-import { scheduleHiHat, scheduleKick, scheduleSnare } from "./drumKit";
-import { scheduleClick } from "./metronome";
+import {
+  scheduleHiHat,
+  scheduleKick,
+  scheduleSnare,
+  type DrumVoiceHandle,
+} from "./drumKit";
+import { scheduleClick, type ClickHandle } from "./metronome";
 import {
   buildMetronomePattern,
   POP_STRUM_PATTERN,
@@ -45,6 +49,10 @@ export interface SchedulerStepInput {
   secondsPerBeat: number;
   /** AudioContext time at which the step begins. */
   startTime: number;
+  /** Optional lower bound for scheduled events, used when rebuilding a
+   *  still-playing step after an instrument toggle without moving the
+   *  timeline back to beat 0. */
+  scheduleFromTime?: number;
   enable: SchedulerEnableFlags;
 }
 
@@ -65,12 +73,23 @@ export function scheduleProgressionStep(
   bus: AudioNode,
   input: SchedulerStepInput,
 ): ScheduledStepHandle {
-  const voices: Array<PluckedVoiceHandle | BassVoiceHandle> = [];
-  const { startTime, secondsPerBeat, beatsAvailable, beatsPerBar, enable } = input;
+  const voices: Array<
+    PluckedVoiceHandle | BassVoiceHandle | DrumVoiceHandle | ClickHandle
+  > = [];
+  const {
+    startTime,
+    secondsPerBeat,
+    beatsAvailable,
+    beatsPerBar,
+    enable,
+    scheduleFromTime = startTime,
+  } = input;
 
   if (beatsAvailable <= 0 || secondsPerBeat <= 0) {
     return { cancelAll: () => {} };
   }
+
+  const shouldScheduleHit = (time: number) => time >= scheduleFromTime;
 
   // Strum: trigger each pattern hit, voicing notes spread across STRUM_LAG.
   if (enable.strum && input.voicing.length > 0) {
@@ -81,6 +100,7 @@ export function scheduleProgressionStep(
     );
     for (const hit of hits) {
       const hitTime = startTime + hit.beat * secondsPerBeat;
+      if (!shouldScheduleHit(hitTime)) continue;
       const ordered =
         hit.direction === "up" ? [...input.voicing].reverse() : input.voicing;
       ordered.forEach((note, i) => {
@@ -108,12 +128,14 @@ export function scheduleProgressionStep(
           : input.bassNotes[0];
       const bassFreq = getNoteFrequency(note);
       if (Number.isFinite(bassFreq) && bassFreq > 0) {
+        const hitTime = startTime + hit.beat * secondsPerBeat;
+        if (!shouldScheduleHit(hitTime)) continue;
         voices.push(
           scheduleBassNote(
             ctx,
             bus,
             bassFreq,
-            startTime + hit.beat * secondsPerBeat,
+            hitTime,
             {
               velocity: hit.velocity,
               durationSec: Math.min(0.9, secondsPerBeat * 1.4),
@@ -124,7 +146,8 @@ export function scheduleProgressionStep(
     }
   }
 
-  // Drums: fire-and-forget — no live handles needed.
+  // Drums: scheduled source nodes are tracked so pause/resume can cancel
+  // future hits before rebuilding the bar from beat 0.
   if (enable.drums) {
     const kicks = repeatPatternToBeats(
       ROCK_DRUM_PATTERN.kicks,
@@ -142,19 +165,31 @@ export function scheduleProgressionStep(
       beatsPerBar,
     );
     for (const hit of kicks) {
-      scheduleKick(ctx, bus, startTime + hit.beat * secondsPerBeat, {
-        velocity: hit.velocity,
-      });
+      const hitTime = startTime + hit.beat * secondsPerBeat;
+      if (!shouldScheduleHit(hitTime)) continue;
+      voices.push(
+        scheduleKick(ctx, bus, hitTime, {
+          velocity: hit.velocity,
+        }),
+      );
     }
     for (const hit of snares) {
-      scheduleSnare(ctx, bus, startTime + hit.beat * secondsPerBeat, {
-        velocity: hit.velocity,
-      });
+      const hitTime = startTime + hit.beat * secondsPerBeat;
+      if (!shouldScheduleHit(hitTime)) continue;
+      voices.push(
+        scheduleSnare(ctx, bus, hitTime, {
+          velocity: hit.velocity,
+        }),
+      );
     }
     for (const hit of hats) {
-      scheduleHiHat(ctx, bus, startTime + hit.beat * secondsPerBeat, {
-        velocity: hit.velocity,
-      });
+      const hitTime = startTime + hit.beat * secondsPerBeat;
+      if (!shouldScheduleHit(hitTime)) continue;
+      voices.push(
+        scheduleHiHat(ctx, bus, hitTime, {
+          velocity: hit.velocity,
+        }),
+      );
     }
   }
 
@@ -166,10 +201,14 @@ export function scheduleProgressionStep(
     );
     for (const hit of clicks) {
       const beatInBar = hit.beat % beatsPerBar;
-      scheduleClick(ctx, bus, startTime + hit.beat * secondsPerBeat, {
-        accent: Math.abs(beatInBar) < 1e-9,
-        velocity: hit.velocity,
-      });
+      const hitTime = startTime + hit.beat * secondsPerBeat;
+      if (!shouldScheduleHit(hitTime)) continue;
+      voices.push(
+        scheduleClick(ctx, bus, hitTime, {
+          accent: Math.abs(beatInBar) < 1e-9,
+          velocity: hit.velocity,
+        }),
+      );
     }
   }
 
