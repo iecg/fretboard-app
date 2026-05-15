@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useLayoutEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo } from "react";
 import { clsx } from "clsx";
 import { useAtomValue } from "jotai";
 import styles from "./Fretboard.module.css";
@@ -106,7 +106,27 @@ export function Fretboard(props: FretboardProps) {
   const onFretClickProp = props.onFretClick;
   const id = props.id;
 
-  const fretboardLayout = getFretboardNotes(tuning, Math.max(endFret, maxFret));
+  const fretboardLayout = useMemo(
+    () => getFretboardNotes(tuning, Math.max(endFret, maxFret)),
+    [tuning, endFret, maxFret],
+  );
+
+  const fullChordPositionKeys = useMemo(
+    () => new Set(state.fullChordPositions),
+    // fullChordPositions is re-derived each render; gate on the upstream stable atom value
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state.fullChordMatches],
+  );
+
+  const fullChordVoicings = useMemo(
+    () =>
+      state.fullChordMatches.map((match) => ({
+        shape: match.shape,
+        voicingKey: match.positionKeys.map((key) => key.replace("-", ",")).join("|"),
+        notes: match.notes,
+      })),
+    [state.fullChordMatches],
+  );
 
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
   const totalColumns = endFret - startFret;
@@ -296,12 +316,8 @@ export function Fretboard(props: FretboardProps) {
           activeShape={activeShape}
           shapeScope={shapeScope}
           noteSemantics={noteSemantics}
-          fullChordPositionKeys={new Set(state.fullChordPositions)}
-          fullChordVoicings={state.fullChordMatches.map((match) => ({
-            shape: match.shape,
-            voicingKey: match.positionKeys.map((key) => key.replace("-", ",")).join("|"),
-            notes: match.notes,
-          }))}
+          fullChordPositionKeys={fullChordPositionKeys}
+          fullChordVoicings={fullChordVoicings}
           id={id}
           onNoteClick={handleFretClick}
         />
