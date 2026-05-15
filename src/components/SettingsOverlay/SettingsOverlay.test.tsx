@@ -377,6 +377,8 @@ describe("SettingsOverlay/SettingsOverlay", () => {
 
 describe("SettingsOverlay/SettingsOverlay motion wiring", () => {
   it("AnimatePresence wrapper is configured with initial={false}", () => {
+    spiedAnimatePresence.mockClear();
+
     const store = createStore();
     store.set(settingsOverlayOpenAtom, true);
     renderOverlay(store);
