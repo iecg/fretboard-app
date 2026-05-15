@@ -216,11 +216,13 @@ test.describe("Theme Contract", () => {
   test("modern-dark active shared controls should use cyan-like treatment", async ({ page }) => {
     // Desktop layout to ensure all controls are visible
     await loadVisualState(page, { theme: "dark" }, { width: 1280, height: 900 });
-    
-    // Wait for the controls to be loaded (they are lazy-loaded)
-    await expect(page.getByTestId("theory-controls")).toBeVisible();
-    
-    // Check representative active controls: Root C, Note Labels "Notes", Fingering Pattern "All", Mode "Parallel"
+
+    // Shared controls now live in the Inspector. Open the Scale tab where the
+    // root note grid + scale family controls render.
+    await page.getByRole("tab", { name: "Scale" }).click();
+    await expect(page.getByRole("group", { name: "Note selector" })).toBeVisible();
+
+    // Check representative active controls: Root C, scale relationship toggle, etc.
     // Using aria-pressed="true" as a stable selector for active state
     const selectors = [
       'button[aria-pressed="true"]',
@@ -231,16 +233,14 @@ test.describe("Theme Contract", () => {
     for (const selector of selectors) {
       const activeEls = page.locator(selector);
       const count = await activeEls.count();
-      
+
       for (let i = 0; i < count; i++) {
         const activeEl = activeEls.nth(i);
-        // Only check buttons that are likely shared controls (toggle-btn or note-btn)
-        // We can check if they are inside theory-controls or dashboard-card-configuration
+        // Only check buttons that are shared controls inside the Inspector panel.
         const isSharedControl = await activeEl.evaluate((el) => {
-          return el.closest('[data-testid="theory-controls"]') || 
-                 el.closest('[data-testid="dashboard-card-configuration"]');
+          return el.closest('[role="tabpanel"]');
         });
-        
+
         if (!isSharedControl) continue;
         found = true;
 
@@ -272,12 +272,16 @@ test.describe("Theme Contract", () => {
 
   test("modern-light active shared controls should use app cyan", async ({ page }) => {
     await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
-    
-    // Wait for the controls to be loaded (they are lazy-loaded)
-    await expect(page.getByTestId("theory-controls")).toBeVisible();
-    
-    // Fingering Pattern "All" or Note Labels "Notes"
-    const activeEl = page.locator('button[aria-pressed="true"]').first();
+
+    // Shared controls now live in the Inspector. Open the Scale tab.
+    await page.getByRole("tab", { name: "Scale" }).click();
+    await expect(page.getByRole("group", { name: "Note selector" })).toBeVisible();
+
+    // Active root note button (aria-pressed) inside the Inspector panel.
+    const activeEl = page
+      .getByRole("tabpanel")
+      .locator('button[aria-pressed="true"]')
+      .first();
     await expect(activeEl).toBeVisible();
 
     const styles = await activeEl.evaluate((el) => {
@@ -296,10 +300,14 @@ test.describe("Theme Contract", () => {
   });
 
   test("Circle of Fifths should use light colors in light mode", async ({ page }) => {
-    await loadVisualState(page, { theme: "light" });
+    await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
+
+    // The Circle of Fifths now lives in the Inspector's Scale tab.
+    await page.getByRole("tab", { name: "Scale" }).click();
 
     // Check Circle center start color
     const cofContainer = page.getByTestId("circle-of-fifths");
+    await expect(cofContainer).toBeVisible();
     const centerStart = await cofContainer.evaluate((el) => {
       // Force resolution of color-mix by applying it to a temporary element
       const temp = document.createElement("div");
@@ -338,9 +346,13 @@ test.describe("Theme Contract", () => {
   });
 
   test("Circle of Fifths should use dark colors in dark mode", async ({ page }) => {
-    await loadVisualState(page, { theme: "dark" });
+    await loadVisualState(page, { theme: "dark" }, { width: 1280, height: 900 });
+
+    // The Circle of Fifths now lives in the Inspector's Scale tab.
+    await page.getByRole("tab", { name: "Scale" }).click();
 
     const cofContainer = page.getByTestId("circle-of-fifths");
+    await expect(cofContainer).toBeVisible();
     // Resolve the custom property to a computed rgba value via a temp element,
     // since the raw value may be a color-mix() expression that colorToHex can't parse.
     const centerStart = await cofContainer.evaluate((el) => {
@@ -420,11 +432,19 @@ test.describe("Theme Contract", () => {
         test.beforeEach(async ({ page }) => {
           // Use desktop viewport to ensure all controls are visible
           await loadVisualState(page, { theme }, { width: 1280, height: 900 });
-          // Ensure theory controls are visible
-          await expect(page.getByTestId("theory-controls")).toBeVisible();
+          // Ensure the Inspector controls panel is visible
+          await expect(
+            page.getByRole("tablist", { name: "Inspector" }),
+          ).toBeVisible();
         });
 
         test("shared default chrome should be equivalent across controls", async ({ page }) => {
+          // Note selector + scale family controls live in the Inspector Scale tab.
+          await page.getByRole("tab", { name: "Scale" }).click();
+          await expect(
+            page.getByRole("group", { name: "Note selector" }),
+          ).toBeVisible();
+
           const locators = {
             "Note Button": page.getByRole("group", { name: "Note selector" }).getByRole("button", { pressed: false }).first(),
             "Toggle Group": page.locator('[class*="toggle-group"]').first(),
@@ -456,12 +476,19 @@ test.describe("Theme Contract", () => {
         });
 
         test("note buttons should have correct hover and focus behavior", async ({ page }) => {
-          const theoryControls = page.getByTestId("theory-controls");
-          const noteBtn = theoryControls
+          // The Note selector lives in the Inspector's Scale tab.
+          await page.getByRole("tab", { name: "Scale" }).click();
+          const noteBtn = page
             .getByRole("group", { name: "Note selector" })
             .getByRole("button", { pressed: false })
             .first();
           await expect(noteBtn).toBeVisible();
+
+          // Clicking the Scale tab leaves focus on the (pointer-focused) tab
+          // trigger, which would make a subsequent programmatic focus inherit a
+          // non-:focus-visible state. Blur it so the note button focus below is
+          // treated as keyboard-style focus and the :focus-visible rule applies.
+          await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
 
           // Hover state
           await noteBtn.hover();
@@ -481,16 +508,26 @@ test.describe("Theme Contract", () => {
             expect(isCyanLike(hoverStyles.borderColor)).toBe(true);
           }
 
-          // Focus state
+          // Focus state — the :focus-visible note-btn rule only engages for
+          // keyboard-driven focus. A programmatic .focus() after the pointer
+          // hover above keeps pointer input modality, so drive focus with the
+          // keyboard: focus the note grid, then arrow onto a (still unpressed)
+          // sibling so the :focus-visible heuristic applies. Measure the
+          // currently keyboard-focused button via document.activeElement.
           await noteBtn.focus();
-          const focusStyles = await noteBtn.evaluate((el) => {
+          await noteBtn.press("ArrowRight");
+          const focusStyles = await page.evaluate(() => {
+            const el = document.activeElement as HTMLElement;
             const cs = getComputedStyle(el);
             return {
               outlineStyle: cs.outlineStyle,
               borderColor: cs.borderColor,
-              boxShadow: cs.boxShadow
+              boxShadow: cs.boxShadow,
+              pressed: el.getAttribute("aria-pressed"),
             };
           });
+          // The arrowed-to note must still be unpressed (not the active root).
+          expect(focusStyles.pressed).toBe("false");
 
           if (theme === "light") {
             expect(focusStyles.outlineStyle).toBe("solid");
@@ -498,52 +535,6 @@ test.describe("Theme Contract", () => {
             expect(focusStyles.outlineStyle).toBe("none");
             expect(isCyanLike(focusStyles.borderColor)).toBe(true);
             expect(isCyanLike(focusStyles.boxShadow)).toBe(true);
-          }
-        });
-
-        test("collapsed disclosure hover should shift title color to tokenized hover-fg", async ({ page }) => {
-          // Disclosure rows only exist in TheoryControls (rendered at tablet
-          // tier and above). The desktop viewport is already configured by the
-          // surrounding beforeEach.
-          //
-          // Simplified hover contract (post UAT polish): the disclosure host is
-          // transparent and stays transparent on hover. Hover affordance is
-          // expressed by shifting title + icon color to --surface-control-hover-fg.
-          const theoryControls = page.getByTestId("theory-controls");
-          await expect(theoryControls).toBeVisible();
-
-          const chordsDisclosure = theoryControls.getByRole("button", { name: /^Chords/i });
-          await expect(chordsDisclosure).toBeVisible();
-
-          // Ensure it is collapsed before measuring hover paint.
-          if ((await chordsDisclosure.getAttribute("aria-expanded")) === "true") {
-            await chordsDisclosure.click();
-            await expect(chordsDisclosure).toHaveAttribute("aria-expanded", "false");
-          }
-
-          // The disclosure host inherits text color, but the title element
-          // resting color is --surface-control-fg-muted (a muted gray); on
-          // hover it shifts to --surface-control-hover-fg. Measure the title.
-          const titleEl = chordsDisclosure.locator("> span").first();
-          await expect(titleEl).toBeVisible();
-
-          const beforeColor = await titleEl.evaluate((el) =>
-            getComputedStyle(el).color,
-          );
-          await chordsDisclosure.hover();
-          const afterColor = await titleEl.evaluate((el) =>
-            getComputedStyle(el).color,
-          );
-
-          // Hover must produce a tokenized color shift on the title.
-          expect(afterColor).not.toBe(beforeColor);
-
-          if (theme === "dark") {
-            // Dark: --surface-control-hover-fg = white
-            expect(afterColor.replace(/\s/g, "")).toBe("rgb(255,255,255)");
-          } else {
-            // Light: --surface-control-hover-fg = --text-main = #0f172a -> rgb(15, 23, 42)
-            expect(afterColor.replace(/\s/g, "")).toBe("rgb(15,23,42)");
           }
         });
 
@@ -591,9 +582,12 @@ test.describe("Theme Contract", () => {
         });
 
         test("ToggleBar buttons should only change color when unselected", async ({ page }) => {
-          const theoryControls = page.getByTestId("theory-controls");
-          const activeToggle = theoryControls.locator('button[aria-pressed="true"]').first();
-          const inactiveToggle = theoryControls.locator('button[aria-pressed="false"]').first();
+          // ToggleBars live inside the Inspector's Chord tab panel.
+          await page.getByRole("tab", { name: "Chord" }).click();
+          const panel = page.getByRole("tabpanel");
+          await expect(panel).toBeVisible();
+          const activeToggle = panel.locator('button[aria-pressed="true"]').first();
+          const inactiveToggle = panel.locator('button[aria-pressed="false"]').first();
           
           await expect(activeToggle).toBeVisible();
           await expect(inactiveToggle).toBeVisible();
@@ -620,9 +614,10 @@ test.describe("Theme Contract", () => {
         });
 
         test("labeled select should have correct hover and focus behavior", async ({ page }) => {
-          const theoryControls = page.getByTestId("theory-controls");
-          const shell = theoryControls.getByRole("group", { name: "Browse scale families" });
-          const select = theoryControls.getByRole("combobox", { name: "Scale Family" });
+          // Scale family controls live in the Inspector's Scale tab.
+          await page.getByRole("tab", { name: "Scale" }).click();
+          const shell = page.getByRole("group", { name: "Browse scale families" });
+          const select = page.getByRole("combobox", { name: "Scale Family" });
           await expect(shell).toBeVisible();
           await expect(select).toBeVisible();
 
@@ -669,6 +664,8 @@ test.describe("Theme Contract", () => {
         });
 
         test("theory stepper shell should use shared control hover treatment", async ({ page }) => {
+          // Scale family stepper lives in the Inspector's Scale tab.
+          await page.getByRole("tab", { name: "Scale" }).click();
           const stepperShell = page.getByRole("group", { name: "Browse scale families" });
           await expect(stepperShell).toBeVisible();
 
@@ -708,41 +705,6 @@ test.describe("Theme Contract", () => {
           }
         });
 
-        test("theory disclosure focus uses tokenized native outline", async ({ page }) => {
-          // Disclosure rows live in TheoryControls — rendered at desktop tier
-          // (already configured by the surrounding beforeEach).
-          //
-          // Simplified focus contract (post UAT polish): the disclosure no
-          // longer paints a custom box-shadow glow on a `::before` layer. It
-          // uses a native `outline: 1.5px solid var(--interactive-focus)` with
-          // an offset, in both themes. Color comes from the tokenized
-          // --interactive-focus value (cyan-family).
-          const theoryControls = page.getByTestId("theory-controls");
-          await expect(theoryControls).toBeVisible();
-
-          const disclosureBtn = theoryControls.getByRole("button", { name: /^Chords/i });
-          await expect(disclosureBtn).toBeVisible();
-          // Ensure it is collapsed before focusing
-          if (await disclosureBtn.getAttribute("aria-expanded") === "true") {
-            await disclosureBtn.click();
-            await expect(disclosureBtn).toHaveAttribute("aria-expanded", "false");
-          }
-
-          await disclosureBtn.focus();
-          const focusStyles = await disclosureBtn.evaluate((el) => {
-            const cs = getComputedStyle(el);
-            return {
-              outlineStyle: cs.outlineStyle,
-              outlineColor: cs.outlineColor,
-            };
-          });
-
-          // Both themes use the same native solid outline contract.
-          expect(focusStyles.outlineStyle).toBe("solid");
-          // Outline color must resolve to the tokenized cyan-family
-          // --interactive-focus value (light: #0891b2; dark: --neon-cyan).
-          expect(isCyanLike(focusStyles.outlineColor)).toBe(true);
-        });
       });
     }
   });
@@ -846,18 +808,6 @@ test.describe("Theme Contract", () => {
       const bg = await card.evaluate((el) => getComputedStyle(el).backgroundColor);
       // surface-card-top = #fcf9f5 → rgb(252, 249, 245) (Phase 1 surface ladder recalibration)
       expect(bg.replace(/\s/g, "")).toBe("rgb(252,249,245)");
-    });
-
-    test("theory sections stay flat inside the top-level card in light mode", async ({ page }) => {
-      await loadVisualState(page, { theme: "light", chordType: "Major 7th" }, { width: 1280, height: 900 });
-      await expect(page.getByTestId("theory-controls")).toBeVisible();
-
-      const panelSurfaces = page.getByTestId("theory-controls").locator(".panel-surface");
-      await expect(panelSurfaces).toHaveCount(0);
-
-      const sections = page.getByTestId("theory-controls").locator("section[data-open]");
-      // Scale + Chords + Progression = 3 theory sections (Progression added in redesign)
-      await expect(sections).toHaveCount(3);
     });
 
     test("chord practice strip aligns with card surface in light mode", async ({ page }) => {
@@ -988,10 +938,14 @@ test.describe("Theme Contract", () => {
     test("selected controls use cyan identity in both themes", async ({ page }) => {
       for (const theme of ["light", "dark"] as const) {
         await loadVisualState(page, { theme }, { width: 1280, height: 900 });
-        await expect(page.getByTestId("theory-controls")).toBeVisible();
 
-        // Find any active (selected) toggle button
-        const activeBtn = page.getByTestId("theory-controls").locator('button[aria-pressed="true"]').first();
+        // Selected controls live in the Inspector's Scale tab.
+        await page.getByRole("tab", { name: "Scale" }).click();
+        const panel = page.getByRole("tabpanel");
+        await expect(panel).toBeVisible();
+
+        // Find any active (selected) toggle button inside the Inspector panel.
+        const activeBtn = panel.locator('button[aria-pressed="true"]').first();
         await expect(activeBtn).toBeVisible();
 
         const styles = await activeBtn.evaluate((el) => {
@@ -1039,55 +993,36 @@ test.describe("Theme Contract", () => {
       }
     });
 
-    test("theory scale and chord sections share the same flat section treatment in light mode", async ({ page }) => {
-      await loadVisualState(page, { theme: "light", chordType: "Major 7th" }, { width: 1280, height: 900 });
-      await expect(page.getByTestId("theory-controls")).toBeVisible();
-
-      const sections = page.getByTestId("theory-controls").locator("section[data-open]");
-      // Scale + Chords + Progression = 3 theory sections (Progression added in redesign)
-      await expect(sections).toHaveCount(3);
-
-      const scaleBg = await sections.nth(0).evaluate((el) => getComputedStyle(el).backgroundColor);
-      const chordBg = await sections.nth(1).evaluate((el) => getComputedStyle(el).backgroundColor);
-      const progressionBg = await sections.nth(2).evaluate((el) => getComputedStyle(el).backgroundColor);
-
-      expect(scaleBg.replace(/\s/g, "")).toBe("rgba(0,0,0,0)");
-      expect(chordBg).toBe(scaleBg);
-      expect(progressionBg).toBe(scaleBg);
-    });
-
-    test("rendered controls remain visually distinct inside flat theory sections", async ({ page }) => {
+    test("rendered controls remain visually distinct inside the inspector panel", async ({ page }) => {
       for (const theme of ["light", "dark"] as const) {
         await loadVisualState(page, { theme }, { width: 1280, height: 900 });
-        await expect(page.getByTestId("theory-controls")).toBeVisible();
 
-        // Scale section opens by default when no chordType is active. It holds
-        // the StepperSelect and combobox controls this test wants to measure.
-        const theorySection = page.locator("section[data-open]").first();
+        // Scale family + toggle controls live in the Inspector's Scale tab.
+        await page.getByRole("tab", { name: "Scale" }).click();
+        const panel = page.getByRole("tabpanel");
         const scaleFamilyStepper = page.getByRole("group", { name: "Browse scale families" });
         const scaleFamilySelect = page.getByRole("combobox", { name: "Scale Family" }).first();
-        const toggleGroup = page.locator('[class*="toggle-group"]').first();
+        const toggleGroup = panel.locator('[class*="toggle-group"]').first();
 
-        await expect(theorySection).toBeVisible();
+        await expect(panel).toBeVisible();
         await expect(scaleFamilyStepper).toBeVisible();
         await expect(scaleFamilySelect).toBeVisible();
         await expect(toggleGroup).toBeVisible();
 
-        const sectionBg = await theorySection.evaluate((el) => getComputedStyle(el).backgroundColor);
+        const panelBg = await panel.evaluate((el) => getComputedStyle(el).backgroundColor);
         const stepperBg = await scaleFamilyStepper.evaluate((el) => getComputedStyle(el).backgroundColor);
         const selectBg = await scaleFamilySelect.evaluate((el) => getComputedStyle(el).backgroundColor);
         const toggleBg = await toggleGroup.evaluate((el) => getComputedStyle(el).backgroundColor);
 
-        expect(sectionBg.replace(/\s/g, "")).toBe("rgba(0,0,0,0)");
-        expect(stepperBg).not.toBe(sectionBg);
-        expect(toggleBg).not.toBe(sectionBg);
+        expect(stepperBg).not.toBe(panelBg);
+        expect(toggleBg).not.toBe(panelBg);
         expect(selectBg.replace(/\s/g, "")).toBe("rgba(0,0,0,0)");
 
         await page.getByLabel("Open settings").click();
         const sectionCard = page.getByTestId("settings-drawer").locator('[class*="overlay-section-card"]').first();
         await expect(sectionCard).toBeVisible();
         const settingsNestedBg = await sectionCard.evaluate((el) => getComputedStyle(el).backgroundColor);
-        expect(settingsNestedBg).not.toBe(sectionBg);
+        expect(settingsNestedBg).not.toBe(panelBg);
       }
     });
   });

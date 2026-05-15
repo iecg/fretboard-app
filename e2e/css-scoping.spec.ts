@@ -44,7 +44,11 @@ test.describe("production css module scoping", () => {
   });
 
   test("circle of fifths renders with scoped styles", async ({ page }) => {
+    await page.setViewportSize({ width: 1200, height: 800 });
     await gotoApp(page);
+
+    // Circle of Fifths now lives in the Inspector's Scale tab.
+    await page.getByRole("tab", { name: "Scale" }).click();
 
     const circle = page.locator('[data-testid="circle-of-fifths-svg"]');
     await expect(circle).toBeVisible();
@@ -55,16 +59,16 @@ test.describe("production css module scoping", () => {
     expect(circleRect!.height, "Circle should have non-zero height").toBeGreaterThan(0);
   });
 
-  test("dashboard panels have scoped module styles", async ({ page }) => {
+  test("inspector panel has scoped module styles", async ({ page }) => {
     await page.setViewportSize({ width: 1200, height: 800 });
     await gotoApp(page);
 
-    const dashboardCards = page.locator('[data-testid="dashboard-card-configuration"]');
-    await expect(dashboardCards.first()).toBeVisible();
-    expect(await dashboardCards.count(), "Dashboard cards should be present").toBeGreaterThan(0);
-    const cardRect = await dashboardCards.first().boundingBox();
-    expect(cardRect, "Dashboard card should be rendered").not.toBeNull();
-    expect(cardRect!.width, "Dashboard card should have non-zero width").toBeGreaterThan(0);
+    // The desktop controls panel is now the Inspector (Radix Tabs).
+    const inspector = page.getByRole("tablist", { name: "Inspector" });
+    await expect(inspector).toBeVisible();
+    const inspectorRect = await inspector.boundingBox();
+    expect(inspectorRect, "Inspector should be rendered").not.toBeNull();
+    expect(inspectorRect!.width, "Inspector should have non-zero width").toBeGreaterThan(0);
   });
 
   test("global design tokens work alongside scoped modules", async ({
@@ -164,17 +168,13 @@ test.describe("production css module scoping", () => {
   });
 
   test("chord overlay controls render with module styles", async ({ page }) => {
-    // Use a desktop viewport so TheoryControls (with its disclosure rows) renders
-    // instead of the mobile tab panel used at <=768 widths.
+    // Use a desktop viewport so the Inspector renders instead of the mobile
+    // tab panel used at <=768 widths.
     await page.setViewportSize({ width: 1280, height: 900 });
     await gotoApp(page);
-    await expect(page.getByTestId("theory-controls")).toBeVisible();
 
-    const chordDisclosure = page.getByTestId("theory-controls").getByRole("button", { name: /^Chords/i });
-    await expect(chordDisclosure).toBeVisible();
-    if ((await chordDisclosure.getAttribute("aria-expanded")) !== "true") {
-      await chordDisclosure.click();
-    }
+    // Chord overlay controls now live in the Inspector's Chord tab.
+    await page.getByRole("tab", { name: "Chord" }).click();
     await page.getByRole("button", { name: "Manual" }).click();
     // Chord Type was migrated from a <select> combobox to a ToggleBar (group of
     // buttons). The ToggleBar renders role="group" with aria-label="Chord Type".

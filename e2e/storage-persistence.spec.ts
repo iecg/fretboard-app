@@ -12,7 +12,8 @@ test.describe("storage persistence", () => {
   test("root note persists across page reload", async ({ page }) => {
     await gotoApp(page);
 
-    // Confirm the Circle of Fifths SVG is rendered
+    // The Circle of Fifths now lives in the Inspector's Scale tab.
+    await page.getByRole("tab", { name: "Scale" }).click();
     const svg = page.locator('[data-testid="circle-of-fifths-svg"]');
     await expect(svg).toBeVisible();
 
@@ -44,6 +45,8 @@ test.describe("storage persistence", () => {
     // Reload the page — localStorage survives the reload.
     await page.reload({ waitUntil: "domcontentloaded" });
     await expect(page.locator('[data-testid="app-container"]')).toBeVisible();
+    // The Inspector resets to the View tab on reload — reopen the Scale tab.
+    await page.getByRole("tab", { name: "Scale" }).click();
     await expect(
       page.locator('[data-testid="circle-of-fifths-svg"]'),
     ).toBeVisible();
@@ -84,10 +87,10 @@ test.describe("storage persistence", () => {
     // Tempo is now a read-only readout in the track header. Verify the
     // persisted value made the round trip.
     await expect(track.getByText(/132\s*BPM/i)).toBeVisible();
-    // Open the Progression drawer to verify chord-row state survived too.
-    await page.locator('button:has-text("Progression")').filter({ hasText: "bars" }).click();
-    // Chord rows no longer have a "Step N" prefix — check degree + chord name
-    // in the drawer specifically (the track's chord block also matches).
-    await expect(page.getByRole("button", { name: "V G Dominant 7th 2 bars" })).toBeVisible();
+    // Chord-row state lives directly in the progression timeline now. Verify
+    // the persisted second step (degree V, Dominant 7th, 2 bars) survived.
+    await expect(
+      page.getByRole("button", { name: /Step 2, V, G Dominant 7th, 2 bars/i }),
+    ).toBeVisible();
   });
 });
