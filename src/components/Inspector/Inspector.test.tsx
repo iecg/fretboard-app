@@ -1,22 +1,19 @@
 import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
-import { Provider, createStore } from "jotai";
+import { screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
 import { Inspector } from "./Inspector";
 
 function renderInspector() {
-  return render(
-    <Provider store={createStore()}>
-      <Inspector />
-    </Provider>,
-  );
+  return renderWithAtoms(<Inspector />);
 }
 
 describe("Inspector", () => {
   it("renders View, Scale, and Chord tabs", () => {
     renderInspector();
-    expect(screen.getByRole("tab", { name: "View" })).toBeTruthy();
-    expect(screen.getByRole("tab", { name: "Scale" })).toBeTruthy();
-    expect(screen.getByRole("tab", { name: "Chord" })).toBeTruthy();
+    expect(screen.getByRole("tab", { name: "View" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Scale" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Chord" })).toBeInTheDocument();
   });
 
   it("activates View tab by default", () => {
@@ -28,5 +25,13 @@ describe("Inspector", () => {
     renderInspector();
     const panel = screen.getByRole("tabpanel");
     expect(panel.getAttribute("data-tab-id")).toBe("view");
+  });
+
+  it("clicking Scale tab makes it active and deactivates View tab", async () => {
+    const user = userEvent.setup();
+    renderInspector();
+    await user.click(screen.getByRole("tab", { name: "Scale" }));
+    expect(screen.getByRole("tab", { name: "Scale" }).getAttribute("aria-selected")).toBe("true");
+    expect(screen.getByRole("tab", { name: "View" }).getAttribute("aria-selected")).toBe("false");
   });
 });
