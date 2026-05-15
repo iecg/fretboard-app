@@ -146,6 +146,19 @@ describe("ProgressionControls PRESET", () => {
     expect(select.value).toBe("one-five-six-four"); // default I-V-vi-IV preset
   });
 
+  it("renders preset selector with category groups", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+    ]);
+    renderWithStore(<ProgressionControls />, store);
+
+    const select = screen.getByLabelText(/preset/i);
+    const optgroups = select.querySelectorAll("optgroup");
+    expect(optgroups.length).toBeGreaterThan(0);
+  });
+
   it("only lists presets that are available for the selected scale", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],

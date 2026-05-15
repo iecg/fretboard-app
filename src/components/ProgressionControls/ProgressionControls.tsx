@@ -10,14 +10,23 @@ import {
 } from "../../progressions/progressionDomain";
 import { useProgressionState } from "../../hooks/useProgressionState";
 import { useScaleState } from "../../hooks/useScaleState";
+import type { ProgressionPresetCategory } from "../../progressions/progressionDomain";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { Switch } from "../Switch/Switch";
 import { StepperControl } from "../StepperControl/StepperControl";
-import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
 import shared from "../shared/shared.module.css";
 import { buildDegreeToggleOptions, buildQualityToggleOptions, CHORD_QUALITY_DIATONIC_VALUE } from "../shared/chordControlOptions";
 import { CUSTOM_PRESET_ID } from "../../store/atoms";
 import styles from "./ProgressionControls.module.css";
+
+const CATEGORY_LABELS: Record<ProgressionPresetCategory, string> = {
+  "pop-rock": "Pop / Rock",
+  blues: "Blues",
+  jazz: "Jazz",
+  folk: "Folk / Country",
+  modal: "Modal",
+  minor: "Minor",
+};
 
 export function ProgressionControls() {
   const { scaleName } = useScaleState();
@@ -43,6 +52,13 @@ export function ProgressionControls() {
 
   const activeStep = progressionSteps[activeProgressionStepIndex] ?? null;
   const availablePresets = getAvailableProgressionPresets(scaleName);
+  const groupedPresets = (Object.keys(CATEGORY_LABELS) as ProgressionPresetCategory[])
+    .map((cat) => ({
+      cat,
+      label: CATEGORY_LABELS[cat],
+      presets: availablePresets.filter((p) => p.category === cat),
+    }))
+    .filter((g) => g.presets.length > 0);
   const qualityValue = activeStep?.qualityOverride ?? CHORD_QUALITY_DIATONIC_VALUE;
   const degreeOptions = buildDegreeToggleOptions({
     scaleName,
@@ -81,18 +97,28 @@ export function ProgressionControls() {
       </div>
 
       <div className={shared["control-section"]}>
-        <LabeledSelect
-          label="Preset"
+        <span className={shared["section-label"]}>Preset</span>
+        <select
+          className={styles["preset-select"]}
+          aria-label="Preset"
           value={currentProgressionPresetId}
-          onChange={(id) => {
+          onChange={(event) => {
+            const id = event.target.value;
             if (id === CUSTOM_PRESET_ID) return;
             startTransition(() => loadProgressionPreset(id));
           }}
-          options={[
-            { value: CUSTOM_PRESET_ID, label: "Custom", disabled: currentProgressionPresetId !== CUSTOM_PRESET_ID },
-            ...availablePresets.map((preset) => ({ value: preset.id, label: preset.label })),
-          ]}
-        />
+        >
+          <option value={CUSTOM_PRESET_ID} disabled={currentProgressionPresetId !== CUSTOM_PRESET_ID}>
+            Custom
+          </option>
+          {groupedPresets.map((group) => (
+            <optgroup key={group.cat} label={group.label}>
+              {group.presets.map((preset) => (
+                <option key={preset.id} value={preset.id}>{preset.label}</option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
       </div>
 
       <div className={shared["control-section"]}>

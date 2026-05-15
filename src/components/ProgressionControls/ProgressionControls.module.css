@@ -5,6 +5,24 @@
 }
 
 
+.preset-select {
+  width: 100%;
+  min-height: 2.4rem;
+  padding: 0.42rem 0.55rem;
+  border: 1px solid var(--surface-control-border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-control);
+  color: var(--surface-control-fg);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.preset-select:focus-visible {
+  outline: 2px solid var(--focus-ring, currentColor);
+  outline-offset: 2px;
+}
+
 .step-list {
   display: flex;
   flex-direction: column;
