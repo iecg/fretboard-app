@@ -250,9 +250,10 @@ test.describe("production css module scoping", () => {
     // These were historically used as global CSS classes and have been migrated to CSS Modules.
     // Format: class name without the dot prefix.
     const staleGlobalClasses = [
-      "controls-panel",    // Migrated to .controls-panel in ExpandedControlsPanel.module.css
+      // `controls-panel` and `key-column` were removed in Phase 3 along with
+      // ExpandedControlsPanel; the Inspector module CSS introduces no global
+      // classes that need allowlisting here.
       "header-btn",        // Migrated to module scoped in AppHeader.tsx
-      "key-column",        // Migrated to :global([data-layout-column="key"]) in ExpandedControlsPanel.module.css
       "control-btn",       // Migrated to module scoped components
       "scale-selector",    // Migrated to .scale-selector in ScaleSelector.module.css
     ];

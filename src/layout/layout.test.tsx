@@ -4,8 +4,8 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { BREAKPOINTS } from "../layout/breakpoints";
 
-const expandedPanelCSS = readFileSync(
-  resolve(__dirname, "../components/ExpandedControlsPanel/ExpandedControlsPanel.module.css"),
+const inspectorCSS = readFileSync(
+  resolve(__dirname, "../components/Inspector/Inspector.module.css"),
   "utf-8",
 );
 import {
@@ -16,26 +16,15 @@ import {
   isCompactHeight,
 } from "../layout/responsive";
 
-// Regression guard: if ExpandedControlsPanel.css is unimported or its grid rule
-// is removed, the dashboard silently falls back to flex — this test catches it.
-describe("dashboard panel CSS contract", () => {
-  it("declares display: grid on .controls-panel", () => {
-    expect(expandedPanelCSS).toContain(".controls-panel");
-    expect(expandedPanelCSS).toContain("display: grid");
-  });
-
-  it("3col mode declares grid-template-columns", () => {
-    expect(expandedPanelCSS).toContain('[data-mode="3col"]');
-    expect(expandedPanelCSS).toContain("grid-template-columns");
-  });
-
-  it("split mode declares grid-template-columns", () => {
-    expect(expandedPanelCSS).toContain('[data-mode="split"]');
-    // Verify split has its own column definition (not just inherited from 3col)
-    const splitBlock = expandedPanelCSS.slice(
-      expandedPanelCSS.indexOf('[data-mode="split"]'),
-    );
-    expect(splitBlock).toContain("grid-template-columns");
+// Regression guard: the Inspector controls panel depends on its CSS module
+// shipping. If the module is unimported or its core selectors are removed,
+// the panel loses its faceplate chrome and tab layout. This reads the file
+// directly to ensure it ships with the expected structural selectors.
+describe("inspector panel CSS contract", () => {
+  it("declares the root, tab list, and tab panel selectors", () => {
+    expect(inspectorCSS).toContain(".root");
+    expect(inspectorCSS).toContain(".tabList");
+    expect(inspectorCSS).toContain(".tabPanel");
   });
 });
 

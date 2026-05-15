@@ -1001,9 +1001,10 @@ describe("App", () => {
       expect(document.querySelector(".mobile-tab-content")).toBeNull();
     });
 
-    // The ExpandedControlsPanel.module.css grid regression guards moved to
-    // layout.test.tsx in Phase 3 Task 7 — the Inspector is now the default
-    // controls panel and no longer renders the `.controls-panel` grid.
+    // ExpandedControlsPanel and its `.controls-panel` grid were deleted in
+    // Phase 3 — the Inspector (a Radix-Tabs flex shell) is now the default
+    // controls panel. The old grid CSS guards were replaced by an Inspector
+    // CSS-module guard in layout.test.tsx.
   });
 
   describe("Mobile settings interactions", () => {
