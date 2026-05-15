@@ -1,0 +1,233 @@
+/* ----------------------------------------------------------------------------
+ * Transport bar — playback + backing-instrument controls for the DAW track.
+ *
+ * Extracted verbatim from ProgressionTrack. The `.transportBar` root uses
+ * `display: contents` so its children behave as direct flex children of the
+ * host `.transportRow` (preserving desktop spacing and mobile wrapping). The
+ * three `--track-*` custom properties are re-declared here so the component
+ * renders identically whether nested in ProgressionTrack or mounted alone.
+ * ------------------------------------------------------------------------- */
+
+.transportBar {
+  /* `display: contents` removes this box from the layout tree; the children
+     lay out against the host `.transportRow`. Custom properties still
+     inherit through a `display: contents` element. */
+  display: contents;
+
+  --track-accent: var(--faceplate-accent, #4DE4FF);
+  --track-accent-dim: rgb(77 228 255 / 0.55);
+  --track-text-muted: rgb(193 218 235 / 0.32);
+}
+
+/* ----------------------------------------------------------------------------
+ * Transport cluster — previous / play-pause / next / loop
+ * ------------------------------------------------------------------------- */
+
+.transportCluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22rem;
+  flex-shrink: 0;
+}
+
+.transportButton {
+  --tb-fg: var(--track-accent-dim);
+  --tb-border: rgb(77 228 255 / 0.18);
+  --tb-bg: rgb(77 228 255 / 0.03);
+
+  width: 1.85rem;
+  height: 1.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--tb-border);
+  border-radius: 7px;
+  background: var(--tb-bg);
+  color: var(--tb-fg);
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 200ms ease,
+    transform 120ms ease;
+}
+
+.transportButton:hover:not(:disabled) {
+  --tb-fg: var(--track-accent);
+  --tb-border: rgb(77 228 255 / 0.45);
+  --tb-bg: rgb(77 228 255 / 0.08);
+}
+
+.transportButton:active:not(:disabled) {
+  transform: translateY(0.5px) scale(0.97);
+}
+
+.transportButton:focus-visible {
+  outline: none;
+  --tb-border: var(--track-accent);
+  box-shadow:
+    0 0 0 1px var(--track-accent),
+    0 0 10px rgb(77 228 255 / 0.45);
+}
+
+.transportButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.transportButton--accent {
+  --tb-fg: var(--track-accent);
+  --tb-border: rgb(77 228 255 / 0.6);
+  --tb-bg: rgb(77 228 255 / 0.1);
+
+  box-shadow:
+    0 0 0 1px rgb(77 228 255 / 0.55),
+    0 0 14px rgb(77 228 255 / 0.32),
+    inset 0 0 14px rgb(77 228 255 / 0.1);
+}
+
+.playButton {
+  color: var(--track-accent);
+}
+
+/* ----------------------------------------------------------------------------
+ * Status lights — small dot + uppercase label, stacked
+ * ------------------------------------------------------------------------- */
+
+.statusLights {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.15rem;
+  flex-shrink: 0;
+  padding-inline: 0.08rem 0.2rem;
+}
+
+.statusLight {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  color: var(--track-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transition: color 180ms ease;
+}
+
+.statusDot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: rgb(193 218 235 / 0.2);
+  box-shadow: inset 0 0 0 1px rgb(193 218 235 / 0.15);
+  transition: background-color 200ms ease, box-shadow 200ms ease;
+}
+
+.statusLight[data-active="true"] {
+  color: var(--track-accent);
+}
+
+.statusLight[data-active="true"] .statusDot {
+  background: var(--track-accent);
+  box-shadow:
+    0 0 5px var(--track-accent),
+    0 0 10px rgb(77 228 255 / 0.5);
+  animation: track-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes track-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+/* ----------------------------------------------------------------------------
+ * Instrument cluster — strum / bass / drums / metronome
+ *
+ * Visually a continuation of the transport cluster: same buttons, same
+ * sizing, same accent treatment. A faint vertical divider separates the two
+ * functional groups.
+ * ------------------------------------------------------------------------- */
+
+.instrumentCluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22rem;
+  flex-shrink: 0;
+}
+
+/* Standalone divider sibling of the two clusters; the host row's `gap`
+ * provides even spacing on both sides automatically. */
+.clusterDivider {
+  width: 1px;
+  height: 1.1rem;
+  align-self: center;
+  flex-shrink: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgb(193 218 235 / 0.18),
+    transparent
+  );
+}
+
+/* =========================================================================
+ * Light-mode overrides — moved verbatim from ProgressionTrack.module.css.
+ * `--track-accent` follows the theme-adaptive `--faceplate-accent` token, so
+ * only the dim/muted tokens and the per-element treatments need overriding.
+ * ========================================================================= */
+
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global([data-theme="modern-light"]) .transportBar {
+  --track-accent-dim: rgb(46 181 204 / 0.6);
+  --track-text-muted: rgb(15 23 42 / 0.42);
+}
+
+/* Transport buttons: teal-tinted with subtle depth instead of neon glow */
+:global([data-theme="modern-light"]) .transportButton {
+  --tb-fg: rgb(46 181 204 / 0.7);
+  --tb-border: rgb(46 181 204 / 0.3);
+  --tb-bg: rgb(46 181 204 / 0.05);
+}
+
+:global([data-theme="modern-light"]) .transportButton:hover:not(:disabled) {
+  --tb-fg: #2EB5CC;
+  --tb-border: rgb(46 181 204 / 0.55);
+  --tb-bg: rgb(46 181 204 / 0.1);
+}
+
+:global([data-theme="modern-light"]) .transportButton:focus-visible {
+  --tb-border: #2EB5CC;
+  box-shadow:
+    0 0 0 1px #2EB5CC,
+    0 0 6px rgb(46 181 204 / 0.25);
+}
+
+:global([data-theme="modern-light"]) .transportButton--accent {
+  --tb-fg: #2EB5CC;
+  --tb-border: rgb(46 181 204 / 0.65);
+  --tb-bg: rgb(46 181 204 / 0.1);
+
+  box-shadow:
+    0 0 0 1px rgb(46 181 204 / 0.45),
+    0 2px 8px rgb(46 181 204 / 0.15);
+}
+
+/* Status dots: opaque on light surface instead of luminous glow */
+:global([data-theme="modern-light"]) .statusDot {
+  background: rgb(15 23 42 / 0.15);
+  box-shadow: inset 0 0 0 1px rgb(15 23 42 / 0.1);
+}
+
+:global([data-theme="modern-light"]) .statusLight[data-active="true"] .statusDot {
+  background: #2EB5CC;
+  box-shadow: 0 0 4px rgb(46 181 204 / 0.35);
+}
+
+/* Cluster divider */
+:global([data-theme="modern-light"]) .clusterDivider {
+  background: linear-gradient(to bottom, transparent, rgb(15 23 42 / 0.12), transparent);
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
