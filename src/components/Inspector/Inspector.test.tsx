@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
-import { progressionEnabledAtom } from "../../store/atoms";
+import { progressionEnabledAtom, progressionStepsAtom, rootNoteAtom, scaleNameAtom } from "../../store/atoms";
 import { Inspector } from "./Inspector";
 
 function renderInspector() {
@@ -67,5 +67,24 @@ describe("Inspector", () => {
     await user.click(screen.getByRole("tab", { name: "Chord" }));
     expect(screen.getByRole("tabpanel").getAttribute("data-tab-id")).toBe("chord");
     expect(screen.getByText(/chord mode/i)).toBeInTheDocument();
+  });
+
+  it("populates the Progression tab body with the ProgressionControls editor", async () => {
+    const user = userEvent.setup();
+    renderWithAtoms(<Inspector />, [
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [
+        progressionStepsAtom,
+        [{ id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null }],
+      ],
+    ]);
+
+    await user.click(screen.getByRole("tab", { name: /progression/i }));
+
+    expect(
+      screen.getByRole("switch", { name: "Progression mode" }),
+    ).toBeInTheDocument();
   });
 });
