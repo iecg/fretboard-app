@@ -87,4 +87,33 @@ describe("Inspector", () => {
       screen.getByRole("switch", { name: "Progression mode" }),
     ).toBeInTheDocument();
   });
+
+  it("defaults to top placement with no tab icons visible", () => {
+    const { container } = renderInspector();
+    const root = container.querySelector('[role="tablist"]')?.closest("[data-placement]");
+    expect(root?.getAttribute("data-placement")).toBe("top");
+  });
+
+  it("renders bottom placement with a data-placement attribute when placement is bottom", () => {
+    const { container } = renderWithAtoms(<Inspector placement="bottom" />);
+    const root = container.querySelector('[role="tablist"]')?.closest("[data-placement]");
+    expect(root?.getAttribute("data-placement")).toBe("bottom");
+  });
+
+  it("renders an aria-hidden icon span inside every tab trigger", () => {
+    renderWithAtoms(<Inspector placement="bottom" />);
+    for (const name of ["View", "Scale", "Chord", "Progression"]) {
+      const trigger = screen.getByRole("tab", { name });
+      const icon = trigger.querySelector('[aria-hidden="true"]');
+      expect(icon).not.toBeNull();
+    }
+  });
+
+  it("keeps keyboard arrow navigation working in bottom placement", async () => {
+    const user = userEvent.setup();
+    renderWithAtoms(<Inspector placement="bottom" />);
+    screen.getByRole("tab", { name: "View" }).focus();
+    await user.keyboard("{ArrowRight}");
+    expect(screen.getByRole("tab", { name: "Scale" }).getAttribute("aria-selected")).toBe("true");
+  });
 });

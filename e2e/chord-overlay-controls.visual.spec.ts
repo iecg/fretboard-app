@@ -82,18 +82,20 @@ test.describe("Chord Overlay Controls Visual", () => {
 
   test("chord-overlay-controls-manual-mobile-390x844", async ({ page }) => {
     // Mobile viewport validates the scroll-overflow CSS added in plan 01-03.
-    // Seed mobileTab="chords" so the Chords tab panel is active on boot —
-    // on mobile the theory controls live in a tab strip, not a sidebar.
+    // After the mobile rehost, chord controls live in the Inspector's Chord tab
+    // (mobileTabAtom was removed). Navigate via tab click.
     await loadVisualState(
       page,
       {
         chordOverlayMode: "manual",
         chordQualityOverride: "Major Triad",
         chordRootOverride: "C",
-        mobileTab: "chords",
       },
       { width: 390, height: 844 },
     );
+
+    // Activate the Chord tab so ChordOverlayControls is visible.
+    await page.getByRole("tab", { name: "Chord" }).click();
 
     // Wait for the chord-type toggle bar to be visible in the chords tab.
     const toggleBar = page.getByRole("group", { name: "Chord Type" }).first();

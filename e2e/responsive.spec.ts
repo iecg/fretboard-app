@@ -8,23 +8,10 @@ async function gotoApp(page: Page, width: number, height: number) {
   await page.goto("/", { waitUntil: "networkidle" });
   await expect(page.locator('[data-testid="app-container"]')).toBeVisible();
 
-  const container = page.locator('[data-testid="app-container"]');
-  const tier = await container.getAttribute("data-layout-tier");
-  const variant = await container.getAttribute("data-layout-variant");
-
-  // Layouts that use the mobile tab panel: mobile + tablet-split.
-  const usesMobileTabs =
-    tier === "mobile" || variant === "tablet-split";
-
-  if (usesMobileTabs) {
-    // Wait for the lazy-loaded mobile tab content to mount before continuing.
-    await expect(page.locator('[data-testid="mobile-tab-content"]')).toBeVisible();
-  } else {
-    // Wait for the Inspector controls panel to mount on tablet/desktop layouts.
-    await expect(
-      page.getByRole("tablist", { name: "Inspector" }),
-    ).toBeVisible();
-  }
+  // Wait for the Inspector controls panel to mount.
+  await expect(
+    page.getByRole("tablist", { name: "Inspector" }),
+  ).toBeVisible();
 }
 
 async function getMetrics(page: Page) {
@@ -167,11 +154,11 @@ test.describe("responsive layout regressions", () => {
     expect(initial.headerActionsMode).toBe("compact");
     expect(initial.headerSubtitle).toBe("hidden");
 
-    // Tablet-split now renders the mobile tab panel rather than a side-by-side
-    // controls/key split. Verify the fretboard and tab content are visible
+    // Tablet-split renders the Inspector rather than a side-by-side
+    // controls/key split. Verify the fretboard and Inspector are visible
     // without horizontal overflow.
     await expect(page.locator('[data-testid="fretboard-outer"]')).toBeVisible();
-    await expect(page.locator('[data-testid="mobile-tab-content"]')).toBeVisible();
+    await expect(page.getByRole("tablist", { name: "Inspector" })).toBeVisible();
     expect(initial.scrollWidth).toBeLessThanOrEqual(initial.innerWidth);
 
     await page.getByRole("button", { name: "Open settings" }).click();

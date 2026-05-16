@@ -37,7 +37,6 @@ import {
 import {
   displayFormatAtom,
   scaleDegreeColorsEnabledAtom,
-  mobileTabAtom,
   themeAtom,
 } from "./uiAtoms";
 import {
@@ -143,6 +142,5 @@ export const resetAtom = atom(null, (_get, set) => {
   set(accidentalModeAtom, "auto");
   set(enharmonicDisplayAtom, "auto");
   set(isMutedAtom, RESET);
-  set(mobileTabAtom, RESET);
   set(themeAtom, RESET);
 });

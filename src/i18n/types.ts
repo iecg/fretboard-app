@@ -32,13 +32,6 @@ export interface Dictionary {
       themeHint: string;
     };
   };
-  tabs: {
-    scales: string;
-    chords: string;
-    progression: string;
-    cof: string;
-    view: string;
-  };
   inspector: {
     viewTab: string;
     scaleTab: string;

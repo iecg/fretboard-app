@@ -93,7 +93,6 @@ export {
 export {
   displayFormatAtom,
   scaleDegreeColorsEnabledAtom,
-  mobileTabAtom,
   settingsOverlayOpenAtom,
   themeAtom,
 } from "./uiAtoms";

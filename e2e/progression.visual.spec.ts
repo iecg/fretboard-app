@@ -28,11 +28,13 @@ test.describe("Progression Visual", () => {
   });
 
   test("progression-mobile-390x844", async ({ page }) => {
+    // After the mobile rehost, progression controls live in the Inspector's
+    // Progression tab. mobileTabAtom was removed; navigate via tab click.
+    // The old MobileTabPanel card heading is gone — check for the switch label.
     await loadVisualState(
       page,
       {
         progressionEnabled: true,
-        mobileTab: "progression",
         progressionSteps: [
           { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
           { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
@@ -41,7 +43,10 @@ test.describe("Progression Visual", () => {
       { width: 390, height: 844 },
     );
 
-    await expect(page.getByRole("heading", { name: "Progression" })).toBeVisible();
+    // Navigate to the Progression tab in the Inspector bottom tab bar.
+    await page.getByRole("tab", { name: "Progression" }).click();
+
+    await expect(page.getByRole("switch", { name: "Progression mode" })).toBeVisible();
     await expect(page.getByRole("group", { name: "Progression track" })).toBeVisible();
     await expectFullPageVisual(page, "progression-mobile-390x844", linuxTolerance);
   });
