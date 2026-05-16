@@ -44,6 +44,12 @@ export interface Dictionary {
     scaleTab: string;
     chordTab: string;
     progressionTab: string;
+    chordCalloutOverlayTitle: string;
+    chordCalloutProgressionTitle: string;
+    chordCalloutStep: string;
+    chordCalloutDuplicate: string;
+    chordCalloutRemove: string;
+    chordCalloutUnavailable: string;
   };
   common: {
     mute: string;

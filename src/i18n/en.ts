@@ -46,6 +46,12 @@ export const en: Dictionary = {
     scaleTab: "Scale",
     chordTab: "Chord",
     progressionTab: "Progression",
+    chordCalloutOverlayTitle: "Chord overlay",
+    chordCalloutProgressionTitle: "Progression chord",
+    chordCalloutStep: "Step",
+    chordCalloutDuplicate: "Duplicate",
+    chordCalloutRemove: "Remove",
+    chordCalloutUnavailable: "Unavailable in key",
   },
   common: {
     mute: "Mute audio",
