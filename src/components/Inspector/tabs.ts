@@ -7,13 +7,9 @@ export interface InspectorTabConfig {
   labelKey: keyof Dictionary["inspector"];
 }
 
-export const ALWAYS_VISIBLE_TABS: InspectorTabConfig[] = [
+export const INSPECTOR_TABS: InspectorTabConfig[] = [
   { id: "view", labelKey: "viewTab" },
   { id: "scale", labelKey: "scaleTab" },
   { id: "chord", labelKey: "chordTab" },
+  { id: "progression", labelKey: "progressionTab" },
 ];
-
-export const PROGRESSION_TAB: InspectorTabConfig = {
-  id: "progression",
-  labelKey: "progressionTab",
-};

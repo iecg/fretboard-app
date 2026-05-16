@@ -434,6 +434,29 @@ export const moveProgressionStepAtom = atom(null, (get, set, update: { id: strin
   set(activeProgressionStepIndexAtom, to);
 });
 
+export const duplicateProgressionStepAtom = atom(
+  null,
+  (get, set, stepId: string) => {
+    const steps = get(progressionStepsAtom);
+    const index = steps.findIndex((step) => step.id === stepId);
+    if (index === -1) {
+      return;
+    }
+    const source = steps[index];
+    const copy = createProgressionStep({
+      degree: source.degree,
+      duration: { ...source.duration },
+      qualityOverride: source.qualityOverride,
+    });
+    set(progressionStepsAtom, [
+      ...steps.slice(0, index + 1),
+      copy,
+      ...steps.slice(index + 1),
+    ]);
+    set(activeProgressionStepIndexAtom, index + 1);
+  },
+);
+
 export const updateProgressionStepDegreeAtom = atom(null, (get, set, update: { id: string; degree: string }) => {
   set(progressionStepsAtom, get(progressionStepsAtom).map((step) =>
     step.id === update.id ? { ...step, degree: update.degree, qualityOverride: null } : step,

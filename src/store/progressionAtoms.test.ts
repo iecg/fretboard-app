@@ -9,6 +9,7 @@ import {
   beatsPerBarAtom,
   currentProgressionBarAtom,
   currentProgressionPresetIdAtom,
+  duplicateProgressionStepAtom,
   loadProgressionPresetAtom,
   moveProgressionStepAtom,
   progressionEnabledAtom,
@@ -285,5 +286,36 @@ describe("derived progression atoms", () => {
     const steps = store.get(progressionStepsAtom);
     store.set(progressionStepsAtom, [...steps, { id: "new", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null }]);
     expect(store.get(currentProgressionPresetIdAtom)).toBe("custom");
+  });
+
+  describe("duplicateProgressionStepAtom", () => {
+    it("inserts a copy of the source step directly after it and selects the copy", () => {
+      const store = createStore();
+      store.set(progressionStepsAtom, [
+        { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+        { id: "b", degree: "V", duration: { value: 2, unit: "beat" }, qualityOverride: "Dominant 7th" },
+      ]);
+
+      store.set(duplicateProgressionStepAtom, "b");
+
+      const steps = store.get(progressionStepsAtom);
+      expect(steps).toHaveLength(3);
+      expect(steps.map((s) => s.degree)).toEqual(["I", "V", "V"]);
+      expect(steps[2].id).not.toBe("b");
+      expect(steps[2].duration).toEqual({ value: 2, unit: "beat" });
+      expect(steps[2].qualityOverride).toBe("Dominant 7th");
+      expect(store.get(activeProgressionStepIndexAtom)).toBe(2);
+    });
+
+    it("is a no-op when the step id is unknown", () => {
+      const store = createStore();
+      store.set(progressionStepsAtom, [
+        { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      ]);
+
+      store.set(duplicateProgressionStepAtom, "missing");
+
+      expect(store.get(progressionStepsAtom)).toHaveLength(1);
+    });
   });
 });
