@@ -206,9 +206,13 @@ test.describe("production css module scoping", () => {
     // mobile. Switch to the Chord tab and assert touch targets there instead.
     await page.waitForSelector('[data-tab-id]');
     await page.getByRole("tab", { name: "Chord" }).click();
+    // Radix keeps every Tabs.Content mounted (inactive panels carry `hidden`),
+    // so target the active Chord panel specifically — a bare [data-tab-id]
+    // query would grab the first (hidden) panel and see zero visible buttons.
+    await page.waitForSelector('[data-tab-id="chord"]:not([hidden])');
 
     const result = await page.evaluate(() => {
-      const tabContent = document.querySelector('[data-tab-id]');
+      const tabContent = document.querySelector('[data-tab-id="chord"]:not([hidden])');
       if (!tabContent) return { found: false, buttons: [] };
 
       const buttons = tabContent.querySelectorAll('button');
