@@ -187,6 +187,19 @@ describe("ProgressionTrack", () => {
     expect(screen.getByLabelText("Chord instrument")).toBeInTheDocument();
   });
 
+  it("renders the extracted TransportBar with the timeline intact", () => {
+    const { container } = renderWithAtoms(<ProgressionTrack />, [
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, fourStepProgression],
+      [beatsPerBarAtom, 4],
+    ]);
+
+    expect(container.querySelector("[data-testid='transport-bar']")).toBeTruthy();
+    // Timeline + position readout stay in ProgressionTrack, not TransportBar.
+    expect(container.querySelector("[aria-label='Progression timeline']")).toBeTruthy();
+    expect(screen.getByText("Position")).toBeTruthy();
+  });
+
   it("play and loop controls reflect active state", () => {
     const store = makeAtomStore([
       [progressionEnabledAtom, true],
