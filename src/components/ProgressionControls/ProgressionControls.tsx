@@ -15,6 +15,7 @@ import type { ProgressionPresetCategory } from "../../progressions/progressionDo
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { Switch } from "../Switch/Switch";
 import { StepperControl } from "../StepperControl/StepperControl";
+import { LabeledSelect, type LabeledSelectGroup } from "../LabeledSelect/LabeledSelect";
 import shared from "../shared/shared.module.css";
 import { buildDegreeToggleOptions, buildQualityToggleOptions, CHORD_QUALITY_DIATONIC_VALUE } from "../shared/chordControlOptions";
 import { CUSTOM_PRESET_ID } from "../../store/atoms";
@@ -63,6 +64,44 @@ export function ProgressionControls() {
     }))
     .filter((g) => g.presets.length > 0);
   const suggestedPresets = generateCommonProgressions(scaleName, rootNote);
+  const presetGroups: LabeledSelectGroup[] = [
+    {
+      options: [
+        {
+          value: CUSTOM_PRESET_ID,
+          label: "Custom",
+          disabled: currentProgressionPresetId !== CUSTOM_PRESET_ID,
+        },
+      ],
+    },
+    ...groupedPresets.map((group) => ({
+      groupLabel: group.label,
+      options: group.presets.map((preset) => ({
+        value: preset.id,
+        label: preset.label,
+      })),
+    })),
+    ...(suggestedPresets.length > 0
+      ? [
+          {
+            groupLabel: `Suggested for ${scaleName}`,
+            options: suggestedPresets.map((preset) => ({
+              value: preset.id,
+              label: preset.label,
+            })),
+          },
+        ]
+      : []),
+  ];
+  const handlePresetChange = (id: string) => {
+    if (id === CUSTOM_PRESET_ID) return;
+    const suggested = suggestedPresets.find((p) => p.id === id);
+    if (suggested) {
+      startTransition(() => loadProgressionSteps(suggested.steps));
+      return;
+    }
+    startTransition(() => loadProgressionPreset(id));
+  };
   const qualityValue = activeStep?.qualityOverride ?? CHORD_QUALITY_DIATONIC_VALUE;
   const degreeOptions = buildDegreeToggleOptions({
     scaleName,
@@ -102,39 +141,13 @@ export function ProgressionControls() {
 
       <div className={shared["control-section"]}>
         <span className={shared["section-label"]}>Preset</span>
-        <select
-          className={styles["preset-select"]}
-          aria-label="Preset"
+        <LabeledSelect
+          label="Preset"
+          hideLabel
           value={currentProgressionPresetId}
-          onChange={(event) => {
-            const id = event.target.value;
-            if (id === CUSTOM_PRESET_ID) return;
-            const suggested = suggestedPresets.find((p) => p.id === id);
-            if (suggested) {
-              startTransition(() => loadProgressionSteps(suggested.steps));
-              return;
-            }
-            startTransition(() => loadProgressionPreset(id));
-          }}
-        >
-          <option value={CUSTOM_PRESET_ID} disabled={currentProgressionPresetId !== CUSTOM_PRESET_ID}>
-            Custom
-          </option>
-          {groupedPresets.map((group) => (
-            <optgroup key={group.cat} label={group.label}>
-              {group.presets.map((preset) => (
-                <option key={preset.id} value={preset.id}>{preset.label}</option>
-              ))}
-            </optgroup>
-          ))}
-          {suggestedPresets.length > 0 && (
-            <optgroup label={`Suggested for ${scaleName}`}>
-              {suggestedPresets.map((preset) => (
-                <option key={preset.id} value={preset.id}>{preset.label}</option>
-              ))}
-            </optgroup>
-          )}
-        </select>
+          groups={presetGroups}
+          onChange={handlePresetChange}
+        />
       </div>
 
       <div className={shared["control-section"]}>

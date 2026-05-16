@@ -4,25 +4,6 @@
   gap: 0.9rem;
 }
 
-
-.preset-select {
-  width: 100%;
-  min-height: 2.4rem;
-  padding: 0.42rem 0.55rem;
-  border: 1px solid var(--surface-control-border);
-  border-radius: var(--radius-sm);
-  background: var(--surface-control);
-  color: var(--surface-control-fg);
-  font-family: inherit;
-  font-size: var(--text-sm);
-  cursor: pointer;
-}
-
-.preset-select:focus-visible {
-  outline: 2px solid var(--focus-ring, currentColor);
-  outline-offset: 2px;
-}
-
 .step-list {
   display: flex;
   flex-direction: column;
@@ -40,17 +21,19 @@
   gap: 0.5rem;
   min-height: 2.4rem;
   padding: 0.42rem 0.55rem;
-  border: 1px solid var(--surface-control-border);
-  border-radius: var(--radius-sm);
-  background: var(--surface-control);
-  color: var(--surface-control-fg);
+  border: 1px solid var(--dc-border);
+  border-radius: var(--dc-radius);
+  background: var(--dc-bg);
+  color: var(--dc-fg);
   text-align: left;
   cursor: pointer;
+  transition: var(--dc-transition);
 }
 
 .step-row:hover {
-  border-color: var(--surface-control-hover-border);
-  background: var(--surface-control-hover-bg);
+  border-color: var(--dc-border-hover);
+  background: var(--dc-bg-hover);
+  color: var(--dc-fg-strong);
 }
 
 .step-row:focus-visible {
@@ -59,9 +42,10 @@
 }
 
 .step-row--active {
-  border-color: var(--selected-border);
-  background: var(--selected-bg);
-  color: var(--selected-fg);
+  border-color: var(--dc-border-active);
+  background: var(--dc-bg-active);
+  color: var(--dc-fg-strong);
+  box-shadow: var(--dc-glow-active);
 }
 
 .step-row[data-unavailable="true"] {

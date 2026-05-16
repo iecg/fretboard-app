@@ -1,7 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { LabeledSelect, type LabeledSelectOption } from './LabeledSelect';
+import {
+  LabeledSelect,
+  type LabeledSelectGroup,
+  type LabeledSelectOption,
+} from './LabeledSelect';
 import { axe } from '../../test-utils/a11y';
 
 const scaleOptions: LabeledSelectOption[] = [
@@ -19,43 +23,43 @@ describe('LabeledSelect/LabeledSelect', () => {
         value="major-modes"
         options={scaleOptions}
         onChange={vi.fn()}
-      />
+      />,
     );
     expect(screen.getAllByText('Scale Family').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('renders a native combobox showing the current display value', () => {
+  it('renders a combobox labelled by the field, showing the current value', () => {
     render(
       <LabeledSelect
         label="Scale Family"
         value="major-modes"
         options={scaleOptions}
         onChange={vi.fn()}
-      />
+      />,
     );
-    const select = screen.getByRole('combobox', { name: /Scale Family/i }) as HTMLSelectElement;
-    expect(select).toBeTruthy();
-    expect(select.value).toBe('major-modes');
-    expect(select.selectedOptions[0]?.textContent).toBe('Major Modes');
+    const trigger = screen.getByRole('combobox', { name: /Scale Family/i });
+    expect(trigger).toBeTruthy();
+    expect(within(trigger).getByText('Major Modes')).toBeInTheDocument();
   });
 
-  it('renders all options in the native select', () => {
+  it('renders all options once the listbox is open', async () => {
+    const user = userEvent.setup();
     render(
       <LabeledSelect
         label="Scale Family"
         value="major-modes"
         options={scaleOptions}
         onChange={vi.fn()}
-      />
+      />,
     );
-    const select = screen.getByRole('combobox', { name: /Scale Family/i }) as HTMLSelectElement;
-    const optionLabels = Array.from(select.options).map((option) => option.textContent);
+    await user.click(screen.getByRole('combobox', { name: /Scale Family/i }));
     for (const opt of scaleOptions) {
-      expect(optionLabels).toContain(opt.label);
+      expect(screen.getByRole('option', { name: opt.label })).toBeInTheDocument();
     }
   });
 
   it('selecting an option fires onChange with the value key', async () => {
+    const user = userEvent.setup();
     const onChange = vi.fn();
     render(
       <LabeledSelect
@@ -63,11 +67,26 @@ describe('LabeledSelect/LabeledSelect', () => {
         value="major-modes"
         options={scaleOptions}
         onChange={onChange}
-      />
+      />,
     );
-    const select = screen.getByRole('combobox', { name: /Scale Family/i });
-    await userEvent.selectOptions(select, 'pentatonic');
+    await user.click(screen.getByRole('combobox', { name: /Scale Family/i }));
+    await user.click(screen.getByRole('option', { name: 'Pentatonic' }));
     expect(onChange).toHaveBeenCalledWith('pentatonic');
+  });
+
+  it('renders grouped options with group headings', async () => {
+    const user = userEvent.setup();
+    const groups: LabeledSelectGroup[] = [
+      { groupLabel: 'Major', options: [{ value: 'a', label: 'Alpha' }] },
+      { groupLabel: 'Minor', options: [{ value: 'b', label: 'Beta' }] },
+    ];
+    render(
+      <LabeledSelect label="Preset" value="a" groups={groups} onChange={vi.fn()} />,
+    );
+    await user.click(screen.getByRole('combobox', { name: /Preset/i }));
+    expect(screen.getByText('Major')).toBeInTheDocument();
+    expect(screen.getByText('Minor')).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Beta' })).toBeInTheDocument();
   });
 
   it('has no accessibility violations (default render)', async () => {
@@ -77,7 +96,7 @@ describe('LabeledSelect/LabeledSelect', () => {
         value="major-modes"
         options={scaleOptions}
         onChange={vi.fn()}
-      />
+      />,
     );
     expect(await axe(container)).toHaveNoViolations();
   });
@@ -90,7 +109,7 @@ describe('LabeledSelect/LabeledSelect', () => {
         options={scaleOptions}
         onChange={vi.fn()}
         disabled
-      />
+      />,
     );
     expect(await axe(container)).toHaveNoViolations();
   });
