@@ -27,11 +27,11 @@ describe("shared.module.css responsive selectors", () => {
     // Compact is the universal default — no tier-based overrides for
     // toggle-btn or note-btn remain in shared.module.css. The DAW restyle
     // aligns the baseline to the 1.85rem transport-bar control height.
-    expect(sharedCSS).toContain("min-height: 1.85rem");
+    expect(sharedCSS).toMatch(/\.toggle-btn[^{]*\{[^}]*min-height:\s*1\.85rem/);
   });
 
   it("compact density is the default: note-btn base min-height is 1.85rem", () => {
-    expect(sharedCSS).toContain("min-height: 1.85rem");
+    expect(sharedCSS).toMatch(/\.note-btn[^{]*\{[^}]*min-height:\s*1\.85rem/);
   });
 
   it("no tier-specific toggle-btn or note-btn overrides exist (compact is universal default)", () => {

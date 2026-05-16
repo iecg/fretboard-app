@@ -16,13 +16,9 @@ export interface LabeledSelectGroup {
   options: LabeledSelectOption[];
 }
 
-export interface LabeledSelectProps {
+interface LabeledSelectBaseProps {
   label: string;
   value: string;
-  /** Flat option list. Provide this OR `groups`. */
-  options?: LabeledSelectOption[];
-  /** Grouped option list. Provide this OR `options`. */
-  groups?: LabeledSelectGroup[];
   onChange: (value: string) => void;
   id?: string;
   className?: string;
@@ -31,6 +27,13 @@ export interface LabeledSelectProps {
   disabled?: boolean;
   hideLabel?: boolean;
 }
+
+/** Exactly one of `options` (flat) or `groups` (grouped) must be provided. */
+export type LabeledSelectProps = LabeledSelectBaseProps &
+  (
+    | { options: LabeledSelectOption[]; groups?: never }
+    | { groups: LabeledSelectGroup[]; options?: never }
+  );
 
 function LabeledSelectItem({ value, label, disabled }: LabeledSelectOption) {
   return (
