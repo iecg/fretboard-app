@@ -1,8 +1,8 @@
 /* stylelint-disable selector-pseudo-class-no-unknown */
 .card {
   background: var(--surface-card-top);
-  border: 1px solid var(--surface-card-border);
-  border-radius: var(--radius-card);
+  border: 1px solid var(--faceplate-border);
+  border-radius: 12px;
   /* Inset top-edge gleam for dark mode, elevation shadow for both. */
   box-shadow: var(--elevation-card);
   overflow: hidden;
@@ -14,7 +14,7 @@
   justify-content: space-between;
   gap: 0.8rem;
   padding: 1.15rem 1.3rem 0.9rem;
-  border-bottom: 1px solid var(--surface-card-header-border);
+  border-bottom: 1px solid var(--faceplate-divider);
 }
 
 .card-header-title-row {

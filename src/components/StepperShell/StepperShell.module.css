@@ -4,26 +4,19 @@
   align-items: stretch;
   gap: 0.22rem;
   padding: 0.25rem;
-  border: 1px solid var(--surface-control-border);
-  border-radius: 1rem;
-  background-color: var(--surface-control);
-  background-image: var(--surface-control-bg-image);
-  transition:
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast),
-    background-color var(--transition-fast);
+  border: 1px solid var(--dc-border);
+  border-radius: var(--dc-radius);
+  background-color: var(--dc-bg);
+  transition: var(--dc-transition);
 }
 
 .shell:hover {
-  /* Parent-tier hover: shell is the outer container; it consumes --chrome-hover-bg so that
-   * child buttons (which consume --surface-control-hover-bg) are visually raised above it. */
-  background-color: var(--chrome-hover-bg);
-  background-image: var(--surface-control-hover-bg-image);
-  border-color: var(--surface-control-hover-border);
+  background-color: var(--dc-bg-hover);
+  border-color: var(--dc-border-hover);
 }
 
 .shell:focus-within {
-  border-color: var(--surface-control-hover-border);
+  border-color: var(--dc-border-active);
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
 }
@@ -32,21 +25,20 @@
   appearance: none;
   border: none;
   background: transparent;
-  color: var(--surface-control-fg-muted);
+  color: var(--dc-fg);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   line-height: 1;
-  border-radius: 0.78rem;
-  transition: var(--transition-surface);
+  border-radius: calc(var(--dc-radius) - 2px);
+  transition: var(--dc-transition);
 }
 
 .button:hover:not(:disabled) {
-  background-color: var(--surface-control-hover-bg);
-  background-image: none;
-  color: var(--surface-control-hover-fg);
+  background-color: var(--dc-bg-hover);
+  color: var(--dc-fg-strong);
 }
 
 .button:active:not(:disabled) {
@@ -78,9 +70,11 @@
   align-items: center;
   justify-content: center;
   padding: 0 0.85rem;
+  font-family: var(--font-mono);
   font-size: 0.85rem;
   font-weight: 700;
-  color: var(--surface-control-fg);
+  font-variant-numeric: tabular-nums;
+  color: var(--dc-fg-strong);
   text-align: center;
   white-space: nowrap;
 }

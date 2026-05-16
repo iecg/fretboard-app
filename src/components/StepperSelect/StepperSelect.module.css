@@ -11,41 +11,40 @@
   align-items: stretch;
   min-width: 0;
   flex: 1;
-  border-radius: 0.78rem;
-  transition: var(--transition-surface);
+  border-radius: calc(var(--dc-radius) - 2px);
+  transition: var(--dc-transition);
 }
 
-.select-slot > div,
-.select-slot label {
+.select-slot > div {
   display: flex;
   flex: 1;
   min-width: 0;
 }
 
-.select-slot label {
-  flex-direction: row;
-  gap: 0;
-  align-items: stretch;
-}
-
-.select-slot label > div {
+/* The LabeledSelect trigger is borderless/transparent inside the StepperShell —
+   the surrounding shell supplies the control surface and the focus ring. */
+.select-slot button {
   flex: 1;
+  min-width: 0;
+  min-height: unset;
+  padding: 0 0.4rem 0 0.55rem;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--dc-fg-strong);
+  box-shadow: none;
+  font-size: 0.82rem;
+  line-height: 1.1;
 }
 
-.select-slot select {
-  border: none !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  color: var(--surface-control-fg) !important;
-  outline: none !important;
-  box-shadow: none !important;
-  padding-left: 0.55rem !important;
-  padding-right: 1.7rem !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  font-size: 0.82rem;
-  line-height: 1.1 !important;
-  min-height: unset !important;
+.select-slot button:hover:not([data-disabled]) {
+  background: transparent;
+  border-color: transparent;
+}
+
+.select-slot button:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 .nav-button {
@@ -53,7 +52,7 @@
   width: 2rem;
   min-height: 1.8rem;
   display: inline-flex;
-  color: var(--surface-control-fg);
+  color: var(--dc-fg-strong);
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */

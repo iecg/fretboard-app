@@ -1,4 +1,6 @@
-import { useId } from 'react';
+import { Fragment, useId } from 'react';
+import * as Select from '@radix-ui/react-select';
+import { Check, ChevronDown } from 'lucide-react';
 import clsx from 'clsx';
 import styles from './LabeledSelect.module.css';
 
@@ -8,10 +10,19 @@ export interface LabeledSelectOption {
   disabled?: boolean;
 }
 
+export interface LabeledSelectGroup {
+  /** Optional group heading. Omit for an ungrouped run of items. */
+  groupLabel?: string;
+  options: LabeledSelectOption[];
+}
+
 export interface LabeledSelectProps {
   label: string;
   value: string;
-  options: LabeledSelectOption[];
+  /** Flat option list. Provide this OR `groups`. */
+  options?: LabeledSelectOption[];
+  /** Grouped option list. Provide this OR `options`. */
+  groups?: LabeledSelectGroup[];
   onChange: (value: string) => void;
   id?: string;
   className?: string;
@@ -21,10 +32,26 @@ export interface LabeledSelectProps {
   hideLabel?: boolean;
 }
 
+function LabeledSelectItem({ value, label, disabled }: LabeledSelectOption) {
+  return (
+    <Select.Item
+      value={value}
+      disabled={disabled}
+      className={styles['labeled-select-item']}
+    >
+      <Select.ItemText>{label}</Select.ItemText>
+      <Select.ItemIndicator className={styles['labeled-select-item-indicator']}>
+        <Check size={14} aria-hidden="true" />
+      </Select.ItemIndicator>
+    </Select.Item>
+  );
+}
+
 export function LabeledSelect({
   label,
   value,
   options,
+  groups,
   onChange,
   id,
   className,
@@ -35,6 +62,7 @@ export function LabeledSelect({
 }: LabeledSelectProps) {
   const generatedId = useId();
   const selectId = id ?? generatedId;
+  const labelId = `${selectId}-label`;
 
   return (
     <div
@@ -47,33 +75,58 @@ export function LabeledSelect({
         className,
       )}
     >
-      <label className={styles['labeled-select-label']} htmlFor={selectId}>
-        <span className={styles['labeled-select-label-text']}>{label}</span>
-        <div className={styles['labeled-select-field']}>
-          <select
-            id={selectId}
-            className={styles['labeled-select-native']}
-            data-testid={dataTestId}
-            value={value}
-            onChange={(event) => onChange(event.target.value)}
-            aria-describedby={ariaDescribedBy}
-            disabled={disabled}
+      <span id={labelId} className={styles['labeled-select-label-text']}>
+        {label}
+      </span>
+      <Select.Root value={value} onValueChange={onChange} disabled={disabled}>
+        <Select.Trigger
+          id={selectId}
+          className={styles['labeled-select-trigger']}
+          aria-labelledby={labelId}
+          aria-describedby={ariaDescribedBy}
+          data-testid={dataTestId}
+        >
+          <Select.Value />
+          <Select.Icon className={styles['labeled-select-chevron']}>
+            <ChevronDown size={16} aria-hidden="true" />
+          </Select.Icon>
+        </Select.Trigger>
+        <Select.Portal>
+          <Select.Content
+            className={styles['labeled-select-content']}
+            position="popper"
+            sideOffset={4}
           >
-            {options.map((option) => (
-              <option
-                key={option.value}
-                value={option.value}
-                disabled={option.disabled}
-              >
-                {option.label}
-              </option>
-            ))}
-          </select>
-          <span className={styles['labeled-select-chevron']} aria-hidden="true">
-            ▾
-          </span>
-        </div>
-      </label>
+            <Select.Viewport className={styles['labeled-select-viewport']}>
+              {groups
+                ? groups.map((group, index) => (
+                    <Fragment key={group.groupLabel ?? `group-${index}`}>
+                      {index > 0 && (
+                        <Select.Separator
+                          className={styles['labeled-select-separator']}
+                        />
+                      )}
+                      <Select.Group>
+                        {group.groupLabel && (
+                          <Select.Label
+                            className={styles['labeled-select-group-label']}
+                          >
+                            {group.groupLabel}
+                          </Select.Label>
+                        )}
+                        {group.options.map((option) => (
+                          <LabeledSelectItem key={option.value} {...option} />
+                        ))}
+                      </Select.Group>
+                    </Fragment>
+                  ))
+                : (options ?? []).map((option) => (
+                    <LabeledSelectItem key={option.value} {...option} />
+                  ))}
+            </Select.Viewport>
+          </Select.Content>
+        </Select.Portal>
+      </Select.Root>
     </div>
   );
 }

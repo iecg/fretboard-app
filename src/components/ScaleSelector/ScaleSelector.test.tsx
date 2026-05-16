@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from "vitest";
-import { screen, act } from "@testing-library/react";
+import { screen, act, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
@@ -36,13 +36,19 @@ describe("ScaleSelector/ScaleSelector", () => {
 
     it("renders Scale Family as a selectable dropdown", async () => {
       renderWithAtoms(<ScaleSelector />, [...BASE_SEEDS]);
+      const user = userEvent.setup();
       const familySelect = screen.getByRole("combobox", { name: "Scale Family" });
 
-      expect((familySelect as HTMLSelectElement).value).toBe("Major Modes");
+      expect(within(familySelect).getByText("Major Modes")).toBeInTheDocument();
 
-      await userEvent.selectOptions(familySelect, "Pentatonic");
+      await user.click(familySelect);
+      await user.click(screen.getByRole("option", { name: "Pentatonic" }));
 
-      expect((familySelect as HTMLSelectElement).value).toBe("Pentatonic");
+      expect(
+        within(screen.getByRole("combobox", { name: "Scale Family" })).getByText(
+          "Pentatonic",
+        ),
+      ).toBeInTheDocument();
       expect(screen.getByRole("combobox", { name: "Variant" })).toBeInTheDocument();
     });
 
@@ -55,8 +61,8 @@ describe("ScaleSelector/ScaleSelector", () => {
         await userEvent.click(screen.getByRole("button", { name: "Next scale family" }));
       });
 
-      const familySelect = screen.getByRole("combobox", { name: "Scale Family" }) as HTMLSelectElement;
-      expect(familySelect.value).toBe(secondFamily);
+      const familySelect = screen.getByRole("combobox", { name: "Scale Family" });
+      expect(within(familySelect).getByText(secondFamily)).toBeInTheDocument();
     });
 
     it("clicking Prev from first family wraps to last (Blues)", async () => {
@@ -68,8 +74,8 @@ describe("ScaleSelector/ScaleSelector", () => {
         await userEvent.click(screen.getByRole("button", { name: "Previous scale family" }));
       });
 
-      const familySelect = screen.getByRole("combobox", { name: "Scale Family" }) as HTMLSelectElement;
-      expect(familySelect.value).toBe(lastFamily);
+      const familySelect = screen.getByRole("combobox", { name: "Scale Family" });
+      expect(within(familySelect).getByText(lastFamily)).toBeInTheDocument();
     });
 
     it("clicking Next from last family wraps to first (Major Modes)", async () => {
@@ -84,8 +90,8 @@ describe("ScaleSelector/ScaleSelector", () => {
         await userEvent.click(screen.getByRole("button", { name: "Next scale family" }));
       });
 
-      const familySelect = screen.getByRole("combobox", { name: "Scale Family" }) as HTMLSelectElement;
-      expect(familySelect.value).toBe(firstFamily);
+      const familySelect = screen.getByRole("combobox", { name: "Scale Family" });
+      expect(within(familySelect).getByText(firstFamily)).toBeInTheDocument();
     });
   });
 

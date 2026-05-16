@@ -1040,14 +1040,18 @@ describe("App", () => {
       });
 
       const tuningSelect = await screen.findByRole("combobox", { name: /Tuning/i });
-      expect(tuningSelect).toHaveValue("Standard");
-      
-      fireEvent.change(tuningSelect, { target: { value: "Drop D" } });
+      expect(within(tuningSelect).getByText("Standard")).toBeInTheDocument();
+
+      const user = userEvent.setup();
+      await user.click(tuningSelect);
+      await user.click(screen.getByRole("option", { name: "Drop D" }));
 
       await waitFor(() => {
         expect(localStorage.getItem(k("tuningName"))).toBe("Drop D");
-        expect(tuningSelect).toHaveValue("Drop D");
       });
+      expect(
+        within(screen.getByRole("combobox", { name: /Tuning/i })).getByText("Drop D"),
+      ).toBeInTheDocument();
     });
 
     it("adjusts fret range via buttons", async () => {

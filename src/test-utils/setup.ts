@@ -35,6 +35,12 @@ window.HTMLElement.prototype.scrollTo = () => {};
 // jsdom does not implement scrollIntoView on DOM elements
 window.HTMLElement.prototype.scrollIntoView = () => {};
 
+// jsdom does not implement Pointer Capture. Radix Select calls these on its
+// trigger during pointer interactions; stub them so the listbox can open.
+window.HTMLElement.prototype.hasPointerCapture = () => false;
+window.HTMLElement.prototype.setPointerCapture = () => {};
+window.HTMLElement.prototype.releasePointerCapture = () => {};
+
 // jsdom does not implement matchMedia
 window.matchMedia = vi.fn().mockImplementation((query: string) => ({
   matches: query === '(prefers-color-scheme: dark)',

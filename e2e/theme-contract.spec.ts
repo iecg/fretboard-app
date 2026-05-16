@@ -216,54 +216,30 @@ test.describe("Theme Contract", () => {
     // Shared controls now live in the Inspector. Open the Scale tab where the
     // root note grid + scale family controls render.
     await page.getByRole("tab", { name: "Scale" }).click();
-    await expect(page.getByRole("group", { name: "Note selector" })).toBeVisible();
 
-    // Check representative active controls: Root C, scale relationship toggle, etc.
-    // Using aria-pressed="true" as a stable selector for active state
-    const selectors = [
-      'button[aria-pressed="true"]',
-      'button[aria-selected="true"]'
-    ];
+    const noteGroup = page.getByRole("group", { name: "Note selector" });
+    await expect(noteGroup).toBeVisible();
 
-    let found = false;
-    for (const selector of selectors) {
-      const activeEls = page.locator(selector);
-      const count = await activeEls.count();
+    // The active root note button and an active toggle both adopt the DAW
+    // active recipe: a cyan accent label plus a cyan glow box-shadow
+    // (--dc-glow-active). No gradient fill — the transport-bar treatment.
+    const activeNote = noteGroup.locator('button[aria-pressed="true"]').first();
+    const activeToggle = page
+      .getByRole("tabpanel")
+      .locator('[class*="toggle-group"] button[aria-pressed="true"]')
+      .first();
 
-      for (let i = 0; i < count; i++) {
-        const activeEl = activeEls.nth(i);
-        // Only check buttons that are shared controls inside the Inspector panel.
-        const isSharedControl = await activeEl.evaluate((el) => {
-          return el.closest('[role="tabpanel"]');
-        });
-
-        if (!isSharedControl) continue;
-        found = true;
-
-        const styles = await activeEl.evaluate((el) => {
-          const cs = getComputedStyle(el);
-          return {
-            backgroundImage: cs.backgroundImage,
-            borderColor: cs.borderColor,
-            color: cs.color
-          };
-        });
-
-        // Assert it's a gradient, not "none"
-        expect(styles.backgroundImage).not.toBe('none');
-        
-        // Assert borderColor is cyan-like: high G and B channels
-        const rgbMatch = styles.borderColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-        if (rgbMatch) {
-          const g = Number(rgbMatch[2]);
-          const b = Number(rgbMatch[3]);
-          // Blue token (59, 130, 246) has G=130. Cyan-like should be higher.
-          expect(g).toBeGreaterThan(140);
-          expect(b).toBeGreaterThan(180);
-        }
-      }
+    for (const activeEl of [activeNote, activeToggle]) {
+      await expect(activeEl).toBeVisible();
+      const styles = await activeEl.evaluate((el) => {
+        const cs = getComputedStyle(el);
+        return { boxShadow: cs.boxShadow, color: cs.color };
+      });
+      const norm = (s: string) => s.replace(/\s/g, "");
+      expect(styles.boxShadow).not.toBe("none");
+      expect(norm(styles.boxShadow)).toContain("77,228,255");
+      expect(norm(styles.color)).toContain("77,228,255");
     }
-    expect(found).toBe(true);
   });
 
   test("modern-light active shared controls should use app cyan", async ({ page }) => {
@@ -284,15 +260,15 @@ test.describe("Theme Contract", () => {
       const cs = getComputedStyle(el);
       return {
         backgroundImage: cs.backgroundImage,
-        backgroundColor: cs.backgroundColor,
+        color: cs.color,
       };
     });
 
     // Light mode should NOT have a gradient background
     expect(styles.backgroundImage).toBe('none');
-    
-    // Should be the app cyan: #0891b2 -> rgb(8, 145, 178)
-    expect(styles.backgroundColor.replace(/\s/g, "")).toBe("rgb(8,145,178)");
+
+    // Light-mode active DAW controls carry the teal accent label: #2EB5CC.
+    expect(styles.color.replace(/\s/g, "")).toBe("rgb(46,181,204)");
   });
 
   test("Circle of Fifths should use light colors in light mode", async ({ page }) => {
@@ -445,7 +421,6 @@ test.describe("Theme Contract", () => {
             "Note Button": page.getByRole("group", { name: "Note selector" }).getByRole("button", { pressed: false }).first(),
             "Toggle Group": page.locator('[class*="toggle-group"]').first(),
             "Stepper Select": page.getByRole("group", { name: "Browse scale families" }),
-            "Settings Trigger": page.getByLabel("Open settings")
           };
 
           const results: Record<string, { bg: string; bgImg: string; border: string }> = {};
@@ -492,11 +467,13 @@ test.describe("Theme Contract", () => {
           });
 
           if (theme === "light") {
-            expect(hoverStyles.color.replace(/\s/g, "")).toBe("rgb(15,23,42)");
-            expect(hoverStyles.borderColor.replace(/\s/g, "")).toBe("rgb(8,145,178)");
+            // DAW hover: teal accent label + teal-tinted border.
+            expect(hoverStyles.color.replace(/\s/g, "")).toBe("rgb(46,181,204)");
+            expect(hoverStyles.borderColor.replace(/\s/g, "")).toContain("46,181,204");
           } else {
-            expect(hoverStyles.color.replace(/\s/g, "")).toBe("rgb(255,255,255)");
-            expect(isCyanLike(hoverStyles.borderColor)).toBe(true);
+            // DAW hover: cyan accent label + cyan-tinted border.
+            expect(hoverStyles.color.replace(/\s/g, "")).toBe("rgb(77,228,255)");
+            expect(hoverStyles.borderColor.replace(/\s/g, "")).toContain("77,228,255");
           }
         });
 
@@ -613,17 +590,10 @@ test.describe("Theme Contract", () => {
           const activeBefore = await activeToggle.evaluate((el) => getComputedStyle(el).color);
           await activeToggle.hover();
           const activeAfter = await activeToggle.evaluate((el) => getComputedStyle(el).color);
-          
-          if (theme === "light") {
-             expect(activeAfter).toBe(activeBefore);
-          } else {
-             const isWhiteOrNearWhite = (c: string) => {
-               const match = c.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-               if (!match) return false;
-               return Number(match[1]) > 230 && Number(match[2]) > 230 && Number(match[3]) > 230;
-             };
-             expect(isWhiteOrNearWhite(activeAfter)).toBe(true);
-          }
+
+          // The active toggle keeps its accent label on hover in both themes —
+          // only the unselected buttons respond to hover.
+          expect(activeAfter).toBe(activeBefore);
         });
 
         test("labeled select should have correct hover and focus behavior", async ({ page }) => {
@@ -637,7 +607,8 @@ test.describe("Theme Contract", () => {
           await shell.hover();
           const hoverBorder = await shell.evaluate((el) => getComputedStyle(el).borderColor);
           if (theme === "light") {
-            expect(hoverBorder.replace(/\s/g, "")).toBe("rgb(8,145,178)");
+            // DAW shell hover: teal-tinted border (--dc-border-hover).
+            expect(hoverBorder.replace(/\s/g, "")).toContain("46,181,204");
           } else {
             expect(isCyanLike(hoverBorder)).toBe(true);
           }
@@ -705,16 +676,14 @@ test.describe("Theme Contract", () => {
           expect(afterStyles.bg).not.toBe(beforeStyles.bg);
 
           if (theme === "dark") {
-            // In dark mode, it should have a gradient hover
-            expect(afterStyles.bgImg).not.toBe("none");
-            expect(afterStyles.bgImg).toContain("gradient");
+            // DAW shell hover lifts the cyan fill + border tint (--dc-bg-hover
+            // / --dc-border-hover) — a flat tint, no gradient.
+            expect(afterStyles.bg.replace(/\s/g, "")).toContain("77,228,255");
             expect(isCyanLike(afterStyles.border)).toBe(true);
           } else {
-            // In light mode, it should be a solid color change
-            // light surface hover: --surface-highlight = #dde4ef -> rgb(221, 228, 239)
-            expect(afterStyles.bg.replace(/\s/g, "")).toBe("rgb(227,222,215)");
-            // hover border: --surface-control-hover-border = app cyan = #0891b2 -> rgb(8, 145, 178)
-            expect(afterStyles.border.replace(/\s/g, "")).toBe("rgb(8,145,178)");
+            // Light mode: teal-tinted fill + border.
+            expect(afterStyles.bg.replace(/\s/g, "")).toContain("46,181,204");
+            expect(afterStyles.border.replace(/\s/g, "")).toContain("46,181,204");
           }
         });
 
@@ -960,19 +929,11 @@ test.describe("Theme Contract", () => {
         });
 
         if (theme === "light") {
-          // light: --selected-bg = #0891b2 → rgb(8, 145, 178) — cyan solid
-          expect(styles.bg.replace(/\s/g, "")).toBe("rgb(8,145,178)");
-          // text on accent: white
-          expect(styles.color.replace(/\s/g, "")).toBe("rgb(255,255,255)");
+          // Light-mode selected DAW controls: teal accent label (#2EB5CC).
+          expect(styles.color.replace(/\s/g, "")).toBe("rgb(46,181,204)");
         } else {
-          // dark: selected-bg is a gradient; backgroundColor is the base dark navy
-          // Just verify the text is light (near-white)
-          const m = styles.color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-          if (m) {
-            expect(Number(m[1])).toBeGreaterThan(200);
-            expect(Number(m[2])).toBeGreaterThan(200);
-            expect(Number(m[3])).toBeGreaterThan(200);
-          }
+          // Dark-mode selected DAW controls: cyan accent label (#4DE4FF).
+          expect(styles.color.replace(/\s/g, "")).toBe("rgb(77,228,255)");
         }
       }
     });
