@@ -11,7 +11,6 @@ import { describe, it, expect } from "vitest";
  * **Style classes** (intentional, semantic, cross-component):
  * - app-container: layout wrapper, app-level structure
  * - panel-surface: shared panel styling; variants: --compact, --inset
- * - dashboard-card: card wrapper for dashboard layout
  * - icon: icon size/spacing utility for lucide-react icons
  * - icon-active, icon-muted: icon state modifiers
  * - loading-spinner: Suspense fallback animation

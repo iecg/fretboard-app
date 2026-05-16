@@ -161,11 +161,4 @@
   gap: 1rem;
 }
 
-:global([data-layout-scope="mobile-tabs"]) .card-skeleton__header {
-  padding: 0.6rem 0.95rem 0.5rem;
-}
-
-:global([data-layout-scope="mobile-tabs"]) .card-skeleton__body {
-  padding: 0.55rem 0.95rem 0.7rem;
-}
 /* stylelint-enable selector-pseudo-class-no-unknown */
