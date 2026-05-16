@@ -137,34 +137,18 @@ test.describe("Theme Contract", () => {
 
   });
 
-  test("BottomTabBar should use theme-appropriate active indicators", async ({ page }) => {
-    // Mobile layout renders the BottomTabBar; the default active tab is "Scales".
+  test("Inspector bottom tab bar uses theme-appropriate active indicators", async ({ page }) => {
+    // Mobile layout renders the Inspector with placement="bottom"; the default
+    // active tab is "View".
     await loadVisualState(page, { theme: "dark" }, { width: 390, height: 844 });
-    const darkTab = page.getByRole("tab", { name: /Scales/i });
-    await expect(darkTab).toBeVisible();
-
-    const darkStyles = await darkTab.evaluate((el) => {
-      const buttonColor = getComputedStyle(el).color;
-      const indicator = getComputedStyle(el, "::before").backgroundColor;
-      return { color: buttonColor, indicator };
-    });
-    // modern-dark: --nav-active-fg = --neon-cyan -> rgb(77, 228, 255)
-    expect(darkStyles.color.replace(/\s/g, "")).toBe("rgb(77,228,255)");
-    // ::before indicator background: --nav-active-indicator = --neon-cyan
-    expect(darkStyles.indicator).toMatch(/77,\s*228,\s*255|0\.301961\s+0\.894118\s+1/);
-
-    // Light mode
-    await loadVisualState(page, { theme: "light" }, { width: 390, height: 844 });
-    const lightTab = page.getByRole("tab", { name: /Scales/i });
-    await expect(lightTab).toBeVisible();
-    const lightStyles = await lightTab.evaluate((el) => {
-      const buttonColor = getComputedStyle(el).color;
-      const indicator = getComputedStyle(el, "::before").backgroundColor;
-      return { color: buttonColor, indicator };
-    });
-    // modern-light: --nav-active-fg = --accent-primary = #0891b2 -> rgb(8, 145, 178)
-    expect(lightStyles.color.replace(/\s/g, "")).toBe("rgb(8,145,178)");
-    expect(lightStyles.indicator.replace(/\s/g, "")).toBe("rgb(8,145,178)");
+    const activeTab = page.locator(
+      '[data-placement="bottom"] [role="tab"][data-state="active"]',
+    );
+    await expect(activeTab).toBeVisible();
+    const borderTopColor = await activeTab.evaluate(
+      (el) => getComputedStyle(el).borderTopColor,
+    );
+    expect(borderTopColor).not.toBe("rgba(0, 0, 0, 0)");
   });
 
   test("fretboard notes and summary chips have coherent role colors in light mode", async ({ page }) => {

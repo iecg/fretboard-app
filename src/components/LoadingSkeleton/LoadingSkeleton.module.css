@@ -123,14 +123,6 @@
   }
 }
 
-/* Mobile tab skeleton */
-.mobile-tab-skeleton {
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-  padding: 0;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .bone {
     animation: none;

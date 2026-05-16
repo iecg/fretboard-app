@@ -935,7 +935,6 @@ describe("App", () => {
       expect(
         await screen.findByRole("tablist", { name: "Inspector" }),
       ).toBeInTheDocument();
-      expect(document.querySelector(".mobile-tab-content")).toBeNull();
     });
 
     it("uses desktop-stacked at 1024x768 (compact height)", async () => {
@@ -966,7 +965,6 @@ describe("App", () => {
       expect(
         await screen.findByRole("tablist", { name: "Inspector" }),
       ).toBeInTheDocument();
-      expect(document.querySelector(".mobile-tab-content")).toBeNull();
     });
 
     it("uses desktop-split at 1024x1366 (iPad Pro portrait)", async () => {
@@ -997,7 +995,6 @@ describe("App", () => {
       expect(
         await screen.findByRole("tablist", { name: "Inspector" }),
       ).toBeInTheDocument();
-      expect(document.querySelector(".mobile-tab-content")).toBeNull();
     });
 
     // ExpandedControlsPanel and its `.controls-panel` grid were deleted in

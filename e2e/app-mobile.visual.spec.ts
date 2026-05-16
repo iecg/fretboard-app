@@ -6,7 +6,7 @@ test.describe("App Mobile Visual", () => {
     await prepareVisualPage(page, { width: 390, height: 844 });
 
     await expect(page.getByTestId("app-container")).toBeVisible();
-    await expect(page.getByTestId("mobile-tab-content")).toBeVisible();
+    await expect(page.getByRole("tablist", { name: "Inspector" })).toBeVisible();
 
     await expectFullPageVisual(page, "app-mobile-portrait-390x844");
   });
@@ -15,7 +15,7 @@ test.describe("App Mobile Visual", () => {
     await loadVisualState(page, { mobileTab: "cof" }, { width: 390, height: 844 });
 
     await expect(page.getByTestId("app-container")).toBeVisible();
-    await expect(page.getByTestId("mobile-tab-content")).toBeVisible();
+    await expect(page.getByRole("tablist", { name: "Inspector" })).toBeVisible();
 
     const circleLocator = page.getByTestId("circle-of-fifths-svg");
     await expect(circleLocator).toBeVisible();
@@ -40,14 +40,14 @@ test.describe("App Mobile Visual", () => {
   });
 
   // ─── Progression tab shell ─────────────────────────────────────────────────
-  // The progression tab <motion.div> was normalised to the shared
-  // ANIMATION_DURATION_XFADE + ANIMATION_EASE constants in MobileTabPanel.
+  // The progression tab is now rendered inside the Inspector; the Inspector
+  // tab switch is instant (no cross-fade animation).
   // This snapshot locks in the initial appearance of that tab at portrait size.
   test("app-mobile-progression-tab-portrait-390x844", async ({ page }) => {
     await loadVisualState(page, { mobileTab: "progression" }, { width: 390, height: 844 });
 
     await expect(page.getByTestId("app-container")).toBeVisible();
-    await expect(page.getByTestId("mobile-tab-content")).toBeVisible();
+    await expect(page.getByRole("tablist", { name: "Inspector" })).toBeVisible();
 
     await expectFullPageVisual(page, "app-mobile-progression-tab-portrait-390x844");
   });

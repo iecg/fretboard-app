@@ -92,8 +92,6 @@ import { describe, it, expect } from "vitest";
  * - circle-center-signature: CoF signature
  *
  * **Mobile/Responsive**:
- * - mobile-tab-panel, mobile-theory-tab, mobile-view-tab: mobile tab sections
- * - mobile-tab-content: tab content wrapper
  * - cof-container, cof-toggle: mobile CoF container
  * - fret-range-mobile, fret-range-group, fret-range-label: mobile fret range
  *
