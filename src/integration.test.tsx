@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import App from "./App";
 import { k } from "./test-utils/storage";
 // Pre-import lazy-loaded components so React.lazy() resolves from the module
@@ -395,12 +396,13 @@ describe("Integration Tests - User Workflows", () => {
     });
 
     it("Inspector Scale tab is selectable on mobile", async () => {
+      const user = userEvent.setup();
       render(<App />);
 
       const tab = await screen.findByRole("tab", { name: "Scale" });
-      fireEvent.click(tab);
+      await user.click(tab);
 
-      expect(tab).toBeInTheDocument();
+      expect(tab.getAttribute("aria-selected")).toBe("true");
     });
 
     it("Inspector is rendered after remount on mobile", async () => {
