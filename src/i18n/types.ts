@@ -37,6 +37,17 @@ export interface Dictionary {
     scaleTab: string;
     chordTab: string;
     progressionTab: string;
+    groupFingering: string;
+    groupLabels: string;
+    groupDisplay: string;
+    pattern: string;
+    degreeColors: string;
+    fullChords: string;
+    tapToPlay: string;
+    notes: string;
+    intervals: string;
+    none: string;
+    auto: string;
   };
   common: {
     mute: string;
