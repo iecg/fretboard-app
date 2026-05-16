@@ -80,6 +80,19 @@ describe("ChordSelectionCallout", () => {
     expect(store.get(progressionStepsAtom).map((s) => s.degree)).toEqual(["V"]);
   });
 
+  it("Remove button is disabled when only one step remains", () => {
+    renderWithAtoms(<ChordSelectionCallout />, [
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [
+        progressionStepsAtom,
+        [{ id: "only", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null }],
+      ],
+    ]);
+    expect(screen.getByRole("button", { name: /remove/i })).toBeDisabled();
+  });
+
   it("has no accessibility violations", async () => {
     const { container } = renderWithAtoms(<ChordSelectionCallout />, [
       ...PROGRESSION_SEEDS,

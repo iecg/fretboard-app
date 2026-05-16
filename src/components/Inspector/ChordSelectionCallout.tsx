@@ -30,7 +30,7 @@ export function ChordSelectionCallout() {
 
   if (isProgressionSource && activeStep) {
     return (
-      <section className={styles.callout} data-callout-variant="progression">
+      <section className={styles.callout} data-callout-variant="progression" aria-label={t("inspector.chordCalloutProgressionTitle")}>
         <span className={shared["section-label"]}>
           {t("inspector.chordCalloutProgressionTitle")}
         </span>
@@ -68,7 +68,7 @@ export function ChordSelectionCallout() {
   }
 
   return (
-    <section className={styles.callout} data-callout-variant="overlay">
+    <section className={styles.callout} data-callout-variant="overlay" aria-label={t("inspector.chordCalloutOverlayTitle")}>
       <span className={shared["section-label"]}>
         {t("inspector.chordCalloutOverlayTitle")}
       </span>
