@@ -1,6 +1,6 @@
 import { startTransition } from "react";
 import clsx from "clsx";
-import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, CopyPlus, Plus, Trash2 } from "lucide-react";
 import {
   BEATS_PER_BAR_OPTIONS,
   MIN_PROGRESSION_STEP_DURATION_VALUE,
@@ -42,6 +42,7 @@ export function ProgressionControls() {
     loadProgressionSteps,
     setActiveProgressionStepIndex,
     addProgressionStep,
+    duplicateProgressionStep,
     removeProgressionStep,
     moveProgressionStep,
     updateProgressionStepDegree,
@@ -187,6 +188,16 @@ export function ProgressionControls() {
           aria-label="Move chord down"
         >
           <ArrowDown size={16} aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          className={shared["control-button"]}
+          onClick={() => activeStep && duplicateProgressionStep(activeStep.id)}
+          disabled={!activeStep}
+          aria-label="Duplicate chord"
+        >
+          <CopyPlus size={16} aria-hidden="true" />
+          <span>Duplicate</span>
         </button>
         <button
           type="button"

@@ -86,6 +86,20 @@ describe("ProgressionControls", () => {
     expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBeNull();
   });
 
+  it("duplicates the active step via the Duplicate button", async () => {
+    const store = makeAtomStore([...BASE_SEEDS]);
+    renderWithStore(<ProgressionControls />, store);
+
+    // BASE_SEEDS active index defaults to 0 -> the "I" step is active.
+    await userEvent.click(screen.getByRole("button", { name: /duplicate chord/i }));
+
+    expect(store.get(progressionStepsAtom).map((step) => step.degree)).toEqual([
+      "I",
+      "I",
+      "V",
+    ]);
+  });
+
   it("adds, removes, and reorders steps", async () => {
     const store = makeAtomStore([...BASE_SEEDS]);
     renderWithStore(<ProgressionControls />, store);
