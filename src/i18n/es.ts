@@ -46,12 +46,6 @@ export const es: Dictionary = {
     scaleTab: "Escala",
     chordTab: "Acorde",
     progressionTab: "Progresión",
-    chordCalloutOverlayTitle: "Superposición de acorde",
-    chordCalloutProgressionTitle: "Acorde de progresión",
-    chordCalloutStep: "Paso",
-    chordCalloutDuplicate: "Duplicar",
-    chordCalloutRemove: "Eliminar",
-    chordCalloutUnavailable: "No disponible en la tonalidad",
   },
   common: {
     mute: "Silenciar audio",
