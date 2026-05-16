@@ -49,3 +49,4 @@ docs/*
 !docs/superpowers/
 
 .superpowers/
+.pnpm-store/
