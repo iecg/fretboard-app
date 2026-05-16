@@ -48,11 +48,15 @@ test.describe("App Mobile Visual", () => {
   // tab switch is instant (no cross-fade animation).
   // This snapshot locks in the initial appearance of that tab at portrait size.
   test("app-mobile-progression-tab-portrait-390x844", async ({ page }) => {
-    await loadVisualState(page, { mobileTab: "progression" }, { width: 390, height: 844 });
+    await loadVisualState(page, {}, { width: 390, height: 844 });
 
     await expect(page.getByTestId("app-container")).toBeVisible();
     await expect(page.getByRole("tablist", { name: "Inspector" })).toBeVisible();
 
+    // mobileTabAtom was removed in the mobile rehost; navigate via tab click.
+    await page.getByRole("tab", { name: "Progression" }).click();
+
+    await expect(page.getByRole("switch", { name: "Progression mode" })).toBeVisible();
     await expectFullPageVisual(page, "app-mobile-progression-tab-portrait-390x844");
   });
 });
