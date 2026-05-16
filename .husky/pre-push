@@ -20,15 +20,15 @@ echo "Running pre-push checks..."
 
 if [ "$is_pushing_to_main" = true ]; then
     echo "Pushing to main: Running full build and tests in parallel..."
-    npm run test &
+    pnpm run test &
     test_pid=$!
-    npm run build &
+    pnpm run build &
     build_pid=$!
 else
     echo "Pushing to feature branch: Running type-check and tests in parallel..."
-    npm run test &
+    pnpm run test &
     test_pid=$!
-    npm run build:types &
+    pnpm run build:types &
     build_pid=$!
 fi
 

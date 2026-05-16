@@ -11,29 +11,27 @@
       "default": "./packages/core/dist/index.js"
     }
   },
-  "workspaces": [
-    "packages/core"
-  ],
+  "packageManager": "pnpm@11.1.2",
   "engines": {
     "node": ">=24.0.0"
   },
   "scripts": {
     "dev": "vite",
-    "build": "npm run build --workspace @fretflow/core && tsc -b && vite build",
-    "build:types": "npm run build --workspace @fretflow/core && tsc -b",
+    "build": "pnpm --filter @fretflow/core run build && tsc -b && vite build",
+    "build:types": "pnpm --filter @fretflow/core run build && tsc -b",
     "lint": "eslint . && stylelint 'src/**/*.css'",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "test:e2e:production": "npm run build && playwright test --config=playwright.config.production.ts",
+    "test:e2e:production": "pnpm run build && playwright test --config=playwright.config.production.ts",
     "test:e2e:css-scoping": "npm run test:e2e:production -- e2e/css-scoping.spec.ts",
-    "test:visual": "npm run build && playwright test --config=playwright.config.visual.ts",
+    "test:visual": "pnpm run build && playwright test --config=playwright.config.visual.ts",
     "test:visual:ci": "bash scripts/run-linux-visual-tests.sh",
-    "test:visual:update": "npm run build && playwright test --config=playwright.config.visual.ts --update-snapshots",
+    "test:visual:update": "pnpm run build && playwright test --config=playwright.config.visual.ts --update-snapshots",
     "test:visual:update:linux": "bash scripts/update-linux-snapshots.sh",
-    "prepare": "npm run build --workspace @fretflow/core && husky",
+    "prepare": "pnpm --filter @fretflow/core run build && husky",
     "analyze": "source-map-explorer dist/assets/*.js --html dist/bundle-report.html"
   },
   "dependencies": {

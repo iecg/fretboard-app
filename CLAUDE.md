@@ -5,17 +5,17 @@ React 19 + TypeScript guitar fretboard tool. Deployed to GitHub Pages.
 ## Commands
 
 ```bash
-npm run dev                   # start dev server
-npm run build                 # production build (tsc -b && vite build)
-npm run test                  # vitest run
-npm run test:watch            # vitest watch
-npm run test:coverage         # vitest with v8 coverage
-npm run test:e2e              # playwright against dev server
-npm run test:e2e:production   # build + playwright against vite preview
-npm run test:visual           # build + visual regression suite
-npm run test:visual:update    # refresh darwin visual snapshots
-npm run lint                  # eslint + stylelint
-npm run preview               # preview build locally
+pnpm run dev                   # start dev server
+pnpm run build                 # production build (tsc -b && vite build)
+pnpm run test                  # vitest run
+pnpm run test:watch            # vitest watch
+pnpm run test:coverage         # vitest with v8 coverage
+pnpm run test:e2e              # playwright against dev server
+pnpm run test:e2e:production   # build + playwright against vite preview
+pnpm run test:visual           # build + visual regression suite
+pnpm run test:visual:update    # refresh darwin visual snapshots
+pnpm run lint                  # eslint + stylelint
+pnpm run preview               # preview build locally
 ```
 
 **MANDATORY:** Run `lint`, `test`, and `build` locally before PR.
@@ -72,7 +72,7 @@ src/
   - Global foundations under `src/styles/` (`tokens.css`, `semantic.css`, `App.css`, `index.css`) — imported via `src/styles/index.css`.
   - Shared module CSS in `src/components/shared/shared.module.css`.
   - Use `clsx` for conditional classes, `cva` for variant class systems, `motion` (from `motion/react`) for animations.
-  - Stylelint wired into `npm run lint` and `lint-staged`.
+  - Stylelint wired into `pnpm run lint` and `lint-staged`. Package manager is **pnpm** (workspace defined in `pnpm-workspace.yaml`).
 - **A11y:** ARIA labels + semantic HTML + `:focus-visible` styles required. `vitest-axe` available for component tests.
 
 ## CAGED / 3NPS System
@@ -93,7 +93,7 @@ Notes carry a semantic role (`root-active`, `chord-tone`, `note-blue`, `note-act
 
 - **Vitest** + Testing Library for unit/component (jsdom). Coverage via `@vitest/coverage-v8`.
 - **Playwright** for e2e + visual regression. Configs: default (dev server), production (serves `dist/`), production-base, visual.
-- **Visual regression suites** under `e2e/`: `app-components`, `app-layout`, `app-mobile`, `app-overlays`, `fretboard-svg` — each with committed darwin + linux snapshots. Update via `npm run test:visual:update` (darwin) or `npm run test:visual:update:linux` (cross-platform).
+- **Visual regression suites** under `e2e/`: `app-components`, `app-layout`, `app-mobile`, `app-overlays`, `fretboard-svg` — each with committed darwin + linux snapshots. Update via `pnpm run test:visual:update` (darwin) or `pnpm run test:visual:update:linux` (cross-platform).
 - **a11y:** `vitest-axe` + `eslint-plugin-jsx-a11y`.
 
 ## CI / Release
