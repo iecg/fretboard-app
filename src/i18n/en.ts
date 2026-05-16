@@ -39,6 +39,13 @@ export const en: Dictionary = {
     scaleTab: "Scale",
     chordTab: "Chord",
     progressionTab: "Progression",
+    groupFingering: "Fingering",
+    groupLabels: "Labels",
+    groupDisplay: "Display",
+    pattern: "Pattern",
+    degreeColors: "Degree Colors",
+    fullChords: "Full Chords",
+    tapToPlay: "Tap to Play",
   },
   common: {
     mute: "Mute audio",
