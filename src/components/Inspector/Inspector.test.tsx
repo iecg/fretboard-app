@@ -36,12 +36,12 @@ describe("Inspector", () => {
     expect(screen.getByRole("tab", { name: "View" }).getAttribute("aria-selected")).toBe("false");
   });
 
-  it("hides the Progression tab when progressionEnabledAtom is false", () => {
+  it("renders the Progression tab even when progressionEnabledAtom is false", () => {
     renderWithAtoms(<Inspector />, [[progressionEnabledAtom, false]]);
-    expect(screen.queryByRole("tab", { name: "Progression" })).toBeNull();
+    expect(screen.getByRole("tab", { name: "Progression" })).toBeInTheDocument();
   });
 
-  it("shows the Progression tab when progressionEnabledAtom is true", () => {
+  it("renders the Progression tab when progressionEnabledAtom is true", () => {
     renderWithAtoms(<Inspector />, [[progressionEnabledAtom, true]]);
     expect(screen.getByRole("tab", { name: "Progression" })).toBeInTheDocument();
   });
