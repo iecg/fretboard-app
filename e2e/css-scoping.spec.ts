@@ -203,9 +203,9 @@ test.describe("production css module scoping", () => {
     await gotoApp(page);
     // Mobile layout uses the Inspector (bottom placement) — the legacy
     // [data-testid="theory-controls"] disclosure container is not rendered on
-    // mobile. Switch to the Chords tab and assert touch targets there instead.
+    // mobile. Switch to the Chord tab and assert touch targets there instead.
     await page.waitForSelector('[data-tab-id]');
-    await page.getByRole("tab", { name: /Chords/i }).click();
+    await page.getByRole("tab", { name: "Chord" }).click();
 
     const result = await page.evaluate(() => {
       const tabContent = document.querySelector('[data-tab-id]');
