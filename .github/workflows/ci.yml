@@ -45,18 +45,20 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: npm
+          cache: pnpm
 
-      - run: npm ci
+      - run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: npm run lint
+        run: pnpm run lint
 
       - name: Unit tests
-        run: npm run test
+        run: pnpm run test
 
   build:
     name: Build
@@ -66,13 +68,15 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: npm
+          cache: pnpm
 
-      - run: npm ci
-      - run: npm run build
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
 
       - name: Upload dist artifact
         uses: actions/upload-artifact@v7
@@ -89,12 +93,14 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: npm
+          cache: pnpm
 
-      - run: npm ci
+      - run: pnpm install --frozen-lockfile
 
       - name: Download dist artifact
         uses: actions/download-artifact@v8
@@ -106,13 +112,13 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          key: playwright-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
+        run: pnpm exec playwright install --with-deps chromium
 
       - name: Run production E2E tests
-        run: npx playwright test --config=playwright.config.production.ts
+        run: pnpm exec playwright test --config=playwright.config.production.ts
 
       - name: Archive Playwright results
         if: always()
@@ -132,10 +138,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: npm
+          cache: pnpm
 
       - name: Download dist artifact
         uses: actions/download-artifact@v8
@@ -144,7 +152,7 @@ jobs:
           path: dist/
 
       - name: Run visual regression tests
-        run: npm run test:visual:ci
+        run: pnpm run test:visual:ci
 
       - name: Archive Playwright visual results
         if: always()

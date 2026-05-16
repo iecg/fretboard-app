@@ -43,6 +43,6 @@ docker run --rm \
   -v /work/node_modules \
   -w /work \
   "mcr.microsoft.com/playwright:v$PW_VERSION-jammy" \
-  bash -lc 'npm ci && npm run build && npx playwright test --config=playwright.config.visual.ts "$@" --update-snapshots' -- "$@"
+  bash -lc 'corepack enable && pnpm install --frozen-lockfile && pnpm run build && pnpm exec playwright test --config=playwright.config.visual.ts "$@" --update-snapshots' -- "$@"
 
 echo "Linux snapshots updated successfully."

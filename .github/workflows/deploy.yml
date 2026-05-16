@@ -26,12 +26,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: npm
+          cache: pnpm
 
-      - run: npm ci
+      - run: pnpm install --frozen-lockfile
 
       - name: Set version from tag
         run: |
@@ -40,7 +42,7 @@ jobs:
             npm version "${TAG#v}" --no-git-tag-version --allow-same-version
           fi
 
-      - run: npm run build
+      - run: pnpm run build
 
       - uses: actions/configure-pages@v6
 

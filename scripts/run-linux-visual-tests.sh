@@ -18,10 +18,10 @@ if ! docker info >/dev/null 2>&1; then
   exit 1
 fi
 
-PW_VERSION="$(node -p "require('./package-lock.json').packages['node_modules/@playwright/test'].version")"
+PW_VERSION="$(node -p "require('./package.json').devDependencies['@playwright/test']" | sed 's/[\^~]//')"
 
 if [ -z "$PW_VERSION" ] || [ "$PW_VERSION" = "undefined" ]; then
-  echo "Error: Could not determine @playwright/test version from package.json."
+  echo "Error: Could not determine @playwright/test version from package.json"
   exit 1
 fi
 
@@ -37,6 +37,6 @@ docker run --rm \
   -v /work/node_modules \
   -w /work \
   "mcr.microsoft.com/playwright:v$PW_VERSION-jammy" \
-  bash -lc 'npm ci && npx playwright test --config=playwright.config.visual.ts "$@"' -- "$@"
+  bash -lc 'corepack enable && pnpm install --frozen-lockfile && pnpm exec playwright test --config=playwright.config.visual.ts "$@"' -- "$@"
 
 echo "Linux visual regression tests completed successfully."
