@@ -1,9 +1,9 @@
-import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense, useMemo } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from "react";
 import { useSetAtom, useAtomValue, useAtom, createStore, Provider } from "jotai";
 import { AnimatePresence, motion } from "motion/react";
 import clsx from "clsx";
 import { Fretboard } from "./components/Fretboard/Fretboard";
-import { HelpCircle, Music2, ListMusic, Layers, Layout, Compass, Settings2, Volume2, VolumeX } from "lucide-react";
+import { HelpCircle, Settings2, Volume2, VolumeX } from "lucide-react";
 import { synth } from "./core/audio";
 import {
   isMutedAtom,
@@ -14,12 +14,9 @@ import {
   rootNoteAtom,
   scaleNameAtom,
   chordOverlayHiddenAtom,
-  mobileTabAtom,
   audioErrorAtom,
 } from "./store/atoms";
 import audioErrorStyles from "./components/AudioErrorBanner/AudioErrorBanner.module.css";
-import { BottomTabBar, type BottomTabItem } from "./components/BottomTabBar/BottomTabBar";
-import { TAB_LABELS } from "./constants/tabLabels";
 import useLayoutMode from "./hooks/useLayoutMode";
 import { useResolvedTheme } from "./hooks/useResolvedTheme";
 import { useTranslation } from "./hooks/useTranslation";
@@ -32,7 +29,7 @@ import { ProgressionSummarySlot } from "./components/ProgressionSummarySlot/Prog
 import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
 import { TooltipProvider } from "./components/Tooltip/Tooltip";
 import sharedStyles from "./components/shared/shared.module.css";
-import { ControlsPanelSkeleton, MobileTabSkeleton } from "./components/LoadingSkeleton/LoadingSkeleton";
+import { ControlsPanelSkeleton } from "./components/LoadingSkeleton/LoadingSkeleton";
 import { ANIMATION_DURATION_XFADE } from "@fretflow/core";
 import { AppMotionConfig } from "./components/AppMotionConfig/AppMotionConfig";
 import "./styles/App.css";
@@ -41,37 +38,18 @@ const SettingsOverlay = lazy(() => import("./components/SettingsOverlay/Settings
 const HelpModal = lazy(() =>
   import("./components/HelpModal/HelpModal").then((m) => ({ default: m.HelpModal }))
 );
-const MobileTabPanel = lazy(() =>
-  import("./components/MobileTabPanel/MobileTabPanel").then((m) => ({
-    default: m.MobileTabPanel,
-  }))
-);
 const NoteColorAudit = lazy(() =>
   import("./components/NoteColorAudit/NoteColorAudit").then((m) => ({
     default: m.NoteColorAudit,
   }))
 );
 
-const MOBILE_TAB_ITEMS: BottomTabItem[] = [
-  { id: "scales", label: TAB_LABELS.scales, icon: <Music2 size={18} /> },
-  { id: "chords", label: TAB_LABELS.chords, icon: <Layers size={18} /> },
-  { id: "progression", label: TAB_LABELS.progression, icon: <ListMusic size={18} /> },
-  { id: "cof", label: TAB_LABELS.cof, icon: <Compass size={18} /> },
-  { id: "view", label: TAB_LABELS.view, icon: <Layout size={18} /> },
-];
-
 function AppContent() {
   const { t } = useTranslation();
 
-  const translatedTabItems = useMemo(() => MOBILE_TAB_ITEMS.map((item) => ({
-    ...item,
-    label: t(`tabs.${item.id}`),
-  })), [t]);
-
   const chordType = useAtomValue(chordTypeAtom);
   const isMuted = useAtomValue(isMutedAtom);
-  const [mobileTab, setMobileTab] = useAtom(mobileTabAtom);
-  const [settingsOverlayOpen, setSettingsOverlayOpen] = useAtom(settingsOverlayOpenAtom);
+  const setSettingsOverlayOpen = useSetAtom(settingsOverlayOpenAtom);
   const toggleMute = useSetAtom(toggleMuteAtom);
   const chordRoot = useAtomValue(chordRootAtom);
   const rootNote = useAtomValue(rootNoteAtom);
@@ -243,12 +221,12 @@ function AppContent() {
       }
       controlsPanel={
         <Suspense fallback={<ControlsPanelSkeleton mode={layout.panelMode} />}>
-          <Inspector />
+          <Inspector placement="top" />
         </Suspense>
       }
       mobileTabs={
-        <Suspense fallback={<MobileTabSkeleton />}>
-          <MobileTabPanel />
+        <Suspense fallback={<ControlsPanelSkeleton mode={layout.panelMode} />}>
+          <Inspector placement="bottom" />
         </Suspense>
       }
       settingsOverlay={
@@ -261,14 +239,6 @@ function AppContent() {
         stringRowPx={layout.stringRowPx}
       />
     </MainLayoutWrapper>
-    {layout.showMobileTabs && !settingsOverlayOpen && (
-      <BottomTabBar
-        items={translatedTabItems}
-        activeId={mobileTab}
-        onSelect={(id) => setMobileTab(id as "scales" | "chords" | "progression" | "cof" | "view")}
-        aria-label="Mobile navigation"
-      />
-    )}
     {audioError && (
       <div role="alert" className={audioErrorStyles.banner}>
         <span className={audioErrorStyles.message}>{audioError}</span>

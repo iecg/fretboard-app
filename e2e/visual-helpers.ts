@@ -43,7 +43,6 @@ export interface VisualState {
     duration: { value: number; unit: "beat" | "bar" };
     qualityOverride: string | null;
   }>;
-  mobileTab?: string;
   fingeringPattern?: string;
   [key: string]: unknown;
 }

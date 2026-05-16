@@ -505,19 +505,6 @@
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
-:global(.app-container[data-layout-tier="mobile"]) [data-layout-scope="mobile-tabs"] .link-toggle {
-  min-height: 36px;
-}
-
-:global(.app-container[data-layout-tier="mobile"]) [data-layout-scope="mobile-tabs"] .toggle-btn,
-:global(.app-container[data-layout-tier="mobile"]) [data-layout-scope="mobile-tabs"] .note-btn {
-  min-height: 36px;
-}
-
-:global(.app-container[data-layout-tier="mobile"]) [data-layout-scope="mobile-tabs"] .control-section {
-  width: 100%;
-}
-
 :global(.overlay-field--accidentals) .toggle-btn {
   font-size: var(--text-sm, 0.875rem);
 }

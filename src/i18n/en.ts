@@ -34,13 +34,6 @@ export const en: Dictionary = {
       themeHint: "Choose your preferred color theme. System matches your device settings.",
     },
   },
-  tabs: {
-    scales: "Scales",
-    chords: "Chords",
-    progression: "Progression",
-    cof: "Key",
-    view: "View",
-  },
   inspector: {
     viewTab: "View",
     scaleTab: "Scale",
