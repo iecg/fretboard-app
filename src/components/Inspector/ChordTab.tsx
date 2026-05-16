@@ -1,7 +1,6 @@
 import { useAtomValue } from "jotai";
 import { chordSourceIsProgressionAtom } from "../../store/atoms";
 import { ChordOverlayControls } from "../ChordOverlayControls/ChordOverlayControls";
-import { ChordSelectionCallout } from "./ChordSelectionCallout";
 import styles from "./ChordTab.module.css";
 
 export function ChordTab() {
@@ -12,7 +11,6 @@ export function ChordTab() {
       data-inspector-tab="chord"
       data-chord-accent={isProgressionSource ? "progression" : "overlay"}
     >
-      <ChordSelectionCallout />
       <ChordOverlayControls />
     </div>
   );

@@ -33,25 +33,19 @@ describe("ChordTab", () => {
     ).not.toBeNull();
   });
 
-  it("uses the overlay accent and callout when progression mode is off", () => {
+  it("uses the overlay accent when progression mode is off", () => {
     const { container } = renderWithAtoms(<ChordTab />, [
       [progressionEnabledAtom, false],
     ]);
     expect(
       container.querySelector('[data-chord-accent="overlay"]'),
     ).not.toBeNull();
-    expect(
-      container.querySelector('[data-callout-variant="overlay"]'),
-    ).not.toBeNull();
   });
 
-  it("uses the progression accent and callout when a progression step is the chord source", () => {
+  it("uses the progression accent when a progression step is the chord source", () => {
     const { container } = renderWithAtoms(<ChordTab />, [...PROGRESSION_SEEDS]);
     expect(
       container.querySelector('[data-chord-accent="progression"]'),
-    ).not.toBeNull();
-    expect(
-      container.querySelector('[data-callout-variant="progression"]'),
     ).not.toBeNull();
   });
 
