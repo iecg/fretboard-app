@@ -48,6 +48,14 @@ export interface Dictionary {
     intervals: string;
     none: string;
     auto: string;
+    groupKey: string;
+    groupTheory: string;
+    groupWheel: string;
+    factNotes: string;
+    factIntervals: string;
+    factDegrees: string;
+    factTones: string;
+    relationship: string;
   };
   common: {
     mute: string;
