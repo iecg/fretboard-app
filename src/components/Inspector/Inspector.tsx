@@ -11,13 +11,14 @@ import {
 import { ViewTab } from "./ViewTab";
 import { ScaleTab } from "./ScaleTab";
 import { ChordTab } from "./ChordTab";
+import { ProgressionTab } from "./ProgressionTab";
 import styles from "./Inspector.module.css";
 
 const TAB_BODIES: Record<InspectorTabId, () => ReactNode> = {
   view: () => <ViewTab />,
   scale: () => <ScaleTab />,
   chord: () => <ChordTab />,
-  progression: () => null, // Phase 5 will mount ProgressionControls here.
+  progression: () => <ProgressionTab />,
 };
 
 export function Inspector() {
