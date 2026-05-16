@@ -12,10 +12,14 @@ test.describe("App Mobile Visual", () => {
   });
 
   test("app-mobile-key-tab-portrait-390x844", async ({ page }) => {
-    await loadVisualState(page, { mobileTab: "cof" }, { width: 390, height: 844 });
+    await loadVisualState(page, {}, { width: 390, height: 844 });
 
     await expect(page.getByTestId("app-container")).toBeVisible();
     await expect(page.getByRole("tablist", { name: "Inspector" })).toBeVisible();
+
+    // The Circle of Fifths lives in the Scale tab of the Inspector.
+    // mobileTabAtom was removed in the mobile rehost; navigate via click.
+    await page.getByRole("tab", { name: "Scale" }).click();
 
     const circleLocator = page.getByTestId("circle-of-fifths-svg");
     await expect(circleLocator).toBeVisible();
