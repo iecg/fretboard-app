@@ -35,14 +35,6 @@ export function ControlsPanelSkeleton({ mode }: { mode: "3col" | "split" | "stac
   );
 }
 
-export function MobileTabSkeleton() {
-  return (
-    <div className={styles["mobile-tab-skeleton"]} aria-label="Loading tab" role="status">
-      <CardSkeleton rows={4} />
-    </div>
-  );
-}
-
 export function CircleOfFifthsSkeleton() {
   return (
     <div className={styles["cof-skeleton"]} aria-label="Loading circle of fifths" role="status">

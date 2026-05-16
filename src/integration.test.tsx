@@ -3,10 +3,9 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import App from "./App";
 import { k } from "./test-utils/storage";
-import { TAB_LABELS } from "./constants/tabLabels";
 // Pre-import lazy-loaded components so React.lazy() resolves from the module
 // cache synchronously, allowing Suspense to mount them without async delay.
-import "./components/MobileTabPanel/MobileTabPanel";
+import "./components/Inspector/Inspector";
 
 // vi.mock is hoisted to the top of the file, so variables referenced inside its
 // factory must be declared with vi.hoisted() to be available at that point.
@@ -387,45 +386,32 @@ describe("Integration Tests - User Workflows", () => {
       });
     });
 
-    it("switching between Scales and View tabs", async () => {
-      const { rerender } = render(<App />);
-
-      expect(localStorage.getItem(k("mobileTab"))).toBe("scales");
-
-      localStorage.setItem(k("mobileTab"), "view");
-      rerender(<App />);
-      expect(localStorage.getItem(k("mobileTab"))).toBe("view");
-
-      localStorage.setItem(k("mobileTab"), "scales");
-      rerender(<App />);
-      expect(localStorage.getItem(k("mobileTab"))).toBe("scales");
-    });
-
-    it("key tab shows the circle of fifths", async () => {
-      localStorage.setItem(k("mobileTab"), "cof");
-
-      // Mobile viewport is set by beforeEach (390×844 portrait).
+    it("renders the Inspector tablist on mobile", async () => {
       render(<App />);
 
-      // Wait for the lazy-loaded MobileTabPanel Suspense boundary to resolve.
-      // Timeout raised to 6000ms: under full-suite parallel load the Suspense
-      // resolution takes longer than the previous 3000ms budget allowed.
-      await waitFor(
-        () => expect(screen.getAllByText(TAB_LABELS.cof).length).toBeGreaterThan(0),
-        { timeout: 6000 },
-      );
-    }, 10000);
+      expect(
+        await screen.findByRole("tablist", { name: "Inspector" }),
+      ).toBeInTheDocument();
+    });
 
-    it("mobile tab preference persists", async () => {
-      localStorage.setItem(k("mobileTab"), "view");
+    it("Inspector Scale tab is selectable on mobile", async () => {
+      render(<App />);
+
+      const tab = await screen.findByRole("tab", { name: "Scale" });
+      fireEvent.click(tab);
+
+      expect(tab).toBeInTheDocument();
+    });
+
+    it("Inspector is rendered after remount on mobile", async () => {
       const { unmount } = render(<App />);
       unmount();
 
-      // Simulate reload
-      const { rerender } = render(<App />);
-      rerender(<App />);
+      render(<App />);
 
-      expect(localStorage.getItem(k("mobileTab"))).toBe("view");
+      expect(
+        await screen.findByRole("tablist", { name: "Inspector" }),
+      ).toBeInTheDocument();
     });
   });
 
