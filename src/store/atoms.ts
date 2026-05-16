@@ -145,6 +145,7 @@ export {
   loadProgressionStepsAtom,
   remapProgressionStepsForScaleAtom,
   addProgressionStepAtom,
+  duplicateProgressionStepAtom,
   removeProgressionStepAtom,
   moveProgressionStepAtom,
   updateProgressionStepDegreeAtom,
