@@ -49,7 +49,7 @@ describe("Inspector", () => {
   it("renders the View tab body by default", () => {
     renderInspector();
     expect(screen.getByRole("tabpanel").getAttribute("data-tab-id")).toBe("view");
-    expect(screen.getByText(/fingering pattern/i)).toBeInTheDocument();
+    expect(screen.getByText("Fingering")).toBeInTheDocument();
     expect(screen.getByRole("group", { name: /fret range/i })).toBeInTheDocument();
   });
 

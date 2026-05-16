@@ -5,13 +5,16 @@ import {
   accidentalModeAtom,
   enharmonicDisplayAtom,
   scaleDegreeColorsEnabledAtom,
+  fullChordsEnabledAtom,
+  isMutedAtom,
+  displayFormatAtom,
 } from "../../store/atoms";
 import { MAX_FRET } from "@fretflow/core";
 import { FingeringPatternControls } from "../FingeringPatternControls/FingeringPatternControls";
 import { FretRangeControl } from "../FretRangeControl/FretRangeControl";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
+import { PropGrid, Prop, GroupHeader, ToggleProp } from "./InspectorGrid";
 import { useTranslation } from "../../hooks/useTranslation";
-import shared from "../shared/shared.module.css";
 import styles from "./ViewTab.module.css";
 
 const ACCIDENTAL_OPTIONS = [
@@ -26,6 +29,12 @@ const ENHARMONIC_OPTIONS = [
   { label: "Off", value: "off" },
 ] as const;
 
+const NOTE_LABEL_OPTIONS = [
+  { value: "notes", label: "Notes" },
+  { value: "degrees", label: "Intervals" },
+  { value: "none", label: "None" },
+] as const;
+
 export function ViewTab() {
   const { t } = useTranslation();
   const [fretStart, setFretStart] = useAtom(fretStartAtom);
@@ -33,64 +42,70 @@ export function ViewTab() {
   const [accidentalMode, setAccidentalMode] = useAtom(accidentalModeAtom);
   const [enharmonicDisplay, setEnharmonicDisplay] = useAtom(enharmonicDisplayAtom);
   const [scaleDegreeColors, setScaleDegreeColors] = useAtom(scaleDegreeColorsEnabledAtom);
+  const [fullChords, setFullChords] = useAtom(fullChordsEnabledAtom);
+  const [muted, setMuted] = useAtom(isMutedAtom);
+  const [displayFormat, setDisplayFormat] = useAtom(displayFormatAtom);
 
   return (
     <div className={styles.root} data-inspector-tab="view">
-      <FingeringPatternControls />
-      <div className={shared["control-section"]}>
-        <span className={shared["section-label"]}>Fret Range</span>
-        <FretRangeControl
-          startFret={fretStart}
-          endFret={fretEnd}
-          onStartChange={setFretStart}
-          onEndChange={setFretEnd}
-          maxFret={MAX_FRET}
-          layout="dashboard"
+      <PropGrid columns={6}>
+        {/* FINGERING — the group header and pattern cells are emitted by
+            FingeringPatternControls; Fret Range closes the group. */}
+        <FingeringPatternControls />
+        <Prop label={t("settings.fields.fretRange")} span={2}>
+          <FretRangeControl
+            startFret={fretStart}
+            endFret={fretEnd}
+            onStartChange={setFretStart}
+            onEndChange={setFretEnd}
+            maxFret={MAX_FRET}
+            layout="dashboard"
+          />
+        </Prop>
+
+        <GroupHeader>{t("inspector.groupLabels")}</GroupHeader>
+        <Prop label={t("controls.noteLabels")} span={2}>
+          <ToggleBar
+            label={t("controls.noteLabels")}
+            options={NOTE_LABEL_OPTIONS}
+            value={displayFormat}
+            onChange={(v) => setDisplayFormat(v as "notes" | "degrees" | "none")}
+          />
+        </Prop>
+        <Prop label={t("settings.fields.accidentals")} span={2}>
+          <ToggleBar
+            label={t("settings.fields.accidentals")}
+            options={ACCIDENTAL_OPTIONS}
+            value={accidentalMode}
+            onChange={(v) => setAccidentalMode(v as typeof accidentalMode)}
+          />
+        </Prop>
+        <Prop label={t("settings.fields.enharmonicDisplay")} span={2}>
+          <ToggleBar
+            label={t("settings.fields.enharmonicDisplay")}
+            options={ENHARMONIC_OPTIONS}
+            value={enharmonicDisplay}
+            onChange={(v) => setEnharmonicDisplay(v as typeof enharmonicDisplay)}
+          />
+        </Prop>
+
+        <GroupHeader>{t("inspector.groupDisplay")}</GroupHeader>
+        <ToggleProp
+          label={t("inspector.degreeColors")}
+          checked={scaleDegreeColors}
+          onChange={setScaleDegreeColors}
         />
-      </div>
-      <div className={shared["control-section"]}>
-        <span className={shared["section-label"]}>
-          {t("settings.fields.accidentals")}
-        </span>
-        <ToggleBar
-          label={t("settings.fields.accidentals")}
-          options={ACCIDENTAL_OPTIONS}
-          value={accidentalMode}
-          onChange={(v) => setAccidentalMode(v as typeof accidentalMode)}
+        <ToggleProp
+          label={t("inspector.fullChords")}
+          checked={fullChords}
+          onChange={setFullChords}
         />
-        <p className={shared["field-hint"]}>{t("settings.fields.accidentalsHint")}</p>
-      </div>
-      <div className={shared["control-section"]}>
-        <span className={shared["section-label"]}>
-          {t("settings.fields.enharmonicDisplay")}
-        </span>
-        <ToggleBar
-          label={t("settings.fields.enharmonicDisplay")}
-          options={ENHARMONIC_OPTIONS}
-          value={enharmonicDisplay}
-          onChange={(v) => setEnharmonicDisplay(v as typeof enharmonicDisplay)}
+        <ToggleProp
+          label={t("inspector.tapToPlay")}
+          checked={!muted}
+          onChange={(next) => setMuted(!next)}
         />
-        <p className={shared["field-hint"]}>
-          {t("settings.fields.enharmonicDisplayHint")}
-        </p>
-      </div>
-      <div className={shared["control-section"]}>
-        <span className={shared["section-label"]}>
-          {t("settings.fields.scaleDegreeColors")}
-        </span>
-        <ToggleBar
-          label={t("settings.fields.scaleDegreeColors")}
-          options={[
-            { value: "false", label: t("controls.off") },
-            { value: "true", label: t("controls.on") },
-          ]}
-          value={String(scaleDegreeColors)}
-          onChange={(v) => setScaleDegreeColors(v === "true")}
-        />
-        <p className={shared["field-hint"]}>
-          {t("settings.fields.scaleDegreeColorsHint")}
-        </p>
-      </div>
+      </PropGrid>
     </div>
   );
 }
