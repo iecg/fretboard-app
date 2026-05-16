@@ -44,6 +44,10 @@ export interface Dictionary {
     degreeColors: string;
     fullChords: string;
     tapToPlay: string;
+    notes: string;
+    intervals: string;
+    none: string;
+    auto: string;
   };
   common: {
     mute: string;

@@ -70,6 +70,7 @@ export function FingeringPatternControls() {
 
       <Prop label={t("inspector.pattern")} span={2}>
         <ToggleBar
+          label={t("inspector.pattern")}
           options={[
             { value: "none", label: "None" },
             { value: "caged", label: "CAGED" },
@@ -183,6 +184,7 @@ export function FingeringPatternControls() {
         <>
           <Prop label={t("controls.position")} span={2}>
             <ToggleBar
+              label={t("controls.position")}
               options={[1, 2, 3, 4, 5, 6, 7].map((p) => ({
                 value: p,
                 label: String(p),
@@ -193,6 +195,7 @@ export function FingeringPatternControls() {
           </Prop>
           <Prop label={t("controls.octave")} span={2}>
             <ToggleBar
+              label={t("controls.octave")}
               options={[
                 { value: 0, label: "Low" },
                 { value: 1, label: "High" },
@@ -208,6 +211,7 @@ export function FingeringPatternControls() {
         <>
           <Prop label={t("controls.string")} span={2}>
             <ToggleBar
+              label={t("controls.string")}
               options={[1, 2, 3, 4, 5, 6].map((n, i) => ({ value: i, label: String(n) }))}
               value={oneStringIndex}
               onChange={(v) => setOneStringIndex(v as number)}
@@ -219,9 +223,10 @@ export function FingeringPatternControls() {
             hint={oneStringInterval > 0 ? t("controls.showConsecutiveSteps") : undefined}
           >
             <ToggleBar
+              label={t("controls.connectors")}
               options={[
                 { value: 0, label: t("controls.off") },
-                { value: 1, label: "On" },
+                { value: 1, label: t("controls.on") },
               ]}
               value={oneStringInterval}
               onChange={(v) => setOneStringInterval(v as number)}
@@ -234,6 +239,7 @@ export function FingeringPatternControls() {
         <>
           <Prop label={t("controls.strings")} span={2}>
             <ToggleBar
+              label={t("controls.strings")}
               options={
                 twoStringsInterval === 3
                   ? [
@@ -260,6 +266,7 @@ export function FingeringPatternControls() {
             hint={twoStringsInterval > 0 ? t("controls.pairMembersConnected") : undefined}
           >
             <ToggleBar
+              label={t("controls.interval")}
               options={[
                 { value: 0, label: t("controls.off") },
                 { value: 1, label: "3rds" },

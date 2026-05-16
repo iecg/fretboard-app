@@ -53,7 +53,7 @@ export interface GroupHeaderProps {
 export function GroupHeader({ children, right }: GroupHeaderProps) {
   return (
     <div className={styles.groupHeader}>
-      <span className={styles.groupHeaderLabel}>{children}</span>
+      <h3 className={styles.groupHeaderLabel}>{children}</h3>
       <span className={styles.groupHeaderRule} aria-hidden="true" />
       {right}
     </div>

@@ -14,29 +14,31 @@ import { FingeringPatternControls } from "../FingeringPatternControls/FingeringP
 import { FretRangeControl } from "../FretRangeControl/FretRangeControl";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { PropGrid, Prop, GroupHeader, ToggleProp } from "./InspectorGrid";
+import useLayoutMode from "../../hooks/useLayoutMode";
 import { useTranslation } from "../../hooks/useTranslation";
 import styles from "./ViewTab.module.css";
 
-const ACCIDENTAL_OPTIONS = [
-  { label: "Auto", value: "auto" },
-  { label: "♯", value: "sharps" },
-  { label: "♭", value: "flats" },
-] as const;
-
-const ENHARMONIC_OPTIONS = [
-  { label: "Auto", value: "auto" },
-  { label: "On", value: "on" },
-  { label: "Off", value: "off" },
-] as const;
-
-const NOTE_LABEL_OPTIONS = [
-  { value: "notes", label: "Notes" },
-  { value: "degrees", label: "Intervals" },
-  { value: "none", label: "None" },
-] as const;
-
 export function ViewTab() {
   const { t } = useTranslation();
+  const { tier, variant } = useLayoutMode();
+
+  const ACCIDENTAL_OPTIONS = [
+    { label: t("inspector.auto"), value: "auto" },
+    { label: "♯", value: "sharps" },
+    { label: "♭", value: "flats" },
+  ] as const;
+
+  const ENHARMONIC_OPTIONS = [
+    { label: t("inspector.auto"), value: "auto" },
+    { label: t("controls.on"), value: "on" },
+    { label: t("controls.off"), value: "off" },
+  ] as const;
+
+  const NOTE_LABEL_OPTIONS = [
+    { value: "notes", label: t("inspector.notes") },
+    { value: "degrees", label: t("inspector.intervals") },
+    { value: "none", label: t("inspector.none") },
+  ] as const;
   const [fretStart, setFretStart] = useAtom(fretStartAtom);
   const [fretEnd, setFretEnd] = useAtom(fretEndAtom);
   const [accidentalMode, setAccidentalMode] = useAtom(accidentalModeAtom);
@@ -47,7 +49,7 @@ export function ViewTab() {
   const [displayFormat, setDisplayFormat] = useAtom(displayFormatAtom);
 
   return (
-    <div className={styles.root} data-inspector-tab="view">
+    <div className={styles.root} data-inspector-tab="view" data-layout-tier={tier} data-layout-variant={variant}>
       <PropGrid columns={6}>
         {/* FINGERING — the group header and pattern cells are emitted by
             FingeringPatternControls; Fret Range closes the group. */}

@@ -164,8 +164,8 @@ and `--font-mono` tokens. The mockup's `Segmented` control maps to the existing 
 - **LABELS** — Note Labels (`ToggleBar` → `displayFormatAtom`), Accidentals (`ToggleBar` →
   `accidentalModeAtom`), Enharmonic (`ToggleBar` → `enharmonicDisplayAtom`).
 - **DISPLAY** — three `ToggleProp` rows: Degree Colors (`scaleDegreeColorsEnabledAtom`),
-  Full Chords (`fullChordsEnabledAtom`), Tap to Play (`isMutedAtom`, inverted, written via
-  `toggleMuteAtom`).
+  Full Chords (`fullChordsEnabledAtom`), Tap to Play (`isMutedAtom`, inverted — written via
+  `setMuted(!next)`).
 
 `FingeringPatternControls` is refactored so its sub-controls render as `Prop` cells inside
 the View tab's grid; it currently renders its own `control-section` wrappers. **Its

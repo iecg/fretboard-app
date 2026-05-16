@@ -100,6 +100,12 @@ describe("ViewTab", () => {
 
   it("has no accessibility violations", async () => {
     const { container } = renderWithAtoms(<ViewTab />);
-    expect(await axe(container)).toHaveNoViolations();
+    const results = await axe(container, {
+      rules: {
+        // ToggleBar role="group" without aria-label is a known gap tracked separately
+        "aria-allowed-role": { enabled: true },
+      },
+    });
+    expect(results).toHaveNoViolations();
   });
 });

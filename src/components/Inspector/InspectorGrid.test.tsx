@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { axe } from "../../test-utils/a11y";
 import { PropGrid, Prop, GroupHeader, ToggleProp } from "./InspectorGrid";
 
 describe("InspectorGrid", () => {
@@ -65,5 +66,19 @@ describe("InspectorGrid", () => {
   it("ToggleProp shows the status word when provided", () => {
     render(<ToggleProp label="Full Chords" checked onChange={() => {}} status="CAGED" />);
     expect(screen.getByText("CAGED")).toBeInTheDocument();
+  });
+
+  it("has no accessibility violations", async () => {
+    const { container } = render(
+      <PropGrid columns={6}>
+        <GroupHeader>Settings</GroupHeader>
+        <Prop label="Volume" span={2}>
+          <input type="range" aria-label="Volume" />
+        </Prop>
+        <ToggleProp label="Enabled" checked={true} onChange={() => {}} />
+      </PropGrid>,
+    );
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
   });
 });

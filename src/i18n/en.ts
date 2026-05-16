@@ -46,6 +46,10 @@ export const en: Dictionary = {
     degreeColors: "Degree Colors",
     fullChords: "Full Chords",
     tapToPlay: "Tap to Play",
+    notes: "Notes",
+    intervals: "Intervals",
+    none: "None",
+    auto: "Auto",
   },
   common: {
     mute: "Mute audio",
