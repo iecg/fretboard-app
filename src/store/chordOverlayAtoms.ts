@@ -225,6 +225,15 @@ export const effectiveChordQualityOverrideAtom = atom((get): string | null => {
   return get(activeProgressionStepAtom)?.qualityOverride ?? null;
 });
 
+/**
+ * True when the active chord source is a progression step (progression mode on,
+ * a resolvable active step exists, and the fingering pattern does not disable the
+ * chord overlay). Drives the Chord tab's cyan→orange accent switch.
+ */
+export const chordSourceIsProgressionAtom = atom((get) =>
+  progressionIsActiveChordSource(get),
+);
+
 // ---------------------------------------------------------------------------
 // Public writable derived atoms — chordRootAtom and chordTypeAtom
 //

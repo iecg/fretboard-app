@@ -60,6 +60,7 @@ export {
   effectiveChordDegreeAtom,
   effectiveChordOverlayModeAtom,
   effectiveChordQualityOverrideAtom,
+  chordSourceIsProgressionAtom,
   chordOverlayHiddenAtom,
   chordHiddenNotesAtom,
   toggleChordHiddenNoteAtom,
