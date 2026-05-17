@@ -8,7 +8,10 @@ import {
   enharmonicDisplayAtom,
 } from "../../store/atoms";
 import { ScaleSelector } from "../ScaleSelector/ScaleSelector";
+import { ScaleTheoryFacts } from "./ScaleTheoryFacts";
+import { GroupHeader } from "./InspectorGrid";
 import { CircleOfFifthsSkeleton } from "../LoadingSkeleton/LoadingSkeleton";
+import { useTranslation } from "../../hooks/useTranslation";
 import styles from "./ScaleTab.module.css";
 
 const CircleOfFifths = lazy(() =>
@@ -18,6 +21,7 @@ const CircleOfFifths = lazy(() =>
 );
 
 export function ScaleTab() {
+  const { t } = useTranslation();
   const rootNote = useAtomValue(rootNoteAtom);
   const setRootNote = useSetAtom(setRootNoteAtom);
   const [scaleName] = useAtom(scaleNameAtom);
@@ -26,8 +30,16 @@ export function ScaleTab() {
 
   return (
     <div className={styles.root} data-inspector-tab="scale">
-      <ScaleSelector />
-      <div className={styles.cofWrapper}>
+      <div className={styles.col}>
+        <GroupHeader>{t("inspector.groupKey")}</GroupHeader>
+        <ScaleSelector />
+      </div>
+      <div className={styles.col}>
+        <GroupHeader>{t("inspector.groupTheory")}</GroupHeader>
+        <ScaleTheoryFacts />
+      </div>
+      <div className={styles.col} data-scale-col="wheel">
+        <GroupHeader>{t("inspector.groupWheel")}</GroupHeader>
         <Suspense fallback={<CircleOfFifthsSkeleton />}>
           <CircleOfFifths
             rootNote={rootNote}

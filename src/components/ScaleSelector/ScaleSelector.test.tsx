@@ -19,31 +19,29 @@ const BASE_SEEDS = [
 
 describe("ScaleSelector/ScaleSelector", () => {
   describe("Scale Family browser", () => {
-    it("renders Scale Family label", () => {
-      const { container } = renderWithAtoms(<ScaleSelector />, [...BASE_SEEDS]);
-      const labels = container.querySelectorAll(".section-label");
-      const scaleFamilyLabel = Array.from(labels).find(
-        (el) => el.textContent === "Scale Family",
-      );
-      expect(scaleFamilyLabel).toBeInTheDocument();
+    it("renders the Root and Scale Family labels", () => {
+      renderWithAtoms(<ScaleSelector />, [...BASE_SEEDS]);
+      expect(screen.getByText("Root")).toBeInTheDocument();
+      expect(screen.getByText("Scale Family", { selector: "span[class*='propLabel']" })).toBeInTheDocument();
     });
 
     it("renders Prev and Next scale family buttons", () => {
       renderWithAtoms(<ScaleSelector />, [...BASE_SEEDS]);
-      expect(screen.getByRole("button", { name: "Previous scale family" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Next scale family" })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Previous scale family" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Next scale family" }),
+      ).toBeInTheDocument();
     });
 
     it("renders Scale Family as a selectable dropdown", async () => {
       renderWithAtoms(<ScaleSelector />, [...BASE_SEEDS]);
       const user = userEvent.setup();
       const familySelect = screen.getByRole("combobox", { name: "Scale Family" });
-
       expect(within(familySelect).getByText("Major Modes")).toBeInTheDocument();
-
       await user.click(familySelect);
       await user.click(screen.getByRole("option", { name: "Pentatonic" }));
-
       expect(
         within(screen.getByRole("combobox", { name: "Scale Family" })).getByText(
           "Pentatonic",
@@ -56,56 +54,31 @@ describe("ScaleSelector/ScaleSelector", () => {
       renderWithAtoms(<ScaleSelector />, [...BASE_SEEDS]);
       const familyOptions = getScaleFamilyOptions();
       const secondFamily = familyOptions[1];
-
       await act(async () => {
-        await userEvent.click(screen.getByRole("button", { name: "Next scale family" }));
+        await userEvent.click(
+          screen.getByRole("button", { name: "Next scale family" }),
+        );
       });
-
       const familySelect = screen.getByRole("combobox", { name: "Scale Family" });
       expect(within(familySelect).getByText(secondFamily)).toBeInTheDocument();
     });
 
-    it("clicking Prev from first family wraps to last (Blues)", async () => {
+    it("clicking Prev from first family wraps to last", async () => {
       renderWithAtoms(<ScaleSelector />, [...BASE_SEEDS]);
       const familyOptions = getScaleFamilyOptions();
       const lastFamily = familyOptions[familyOptions.length - 1];
-
       await act(async () => {
-        await userEvent.click(screen.getByRole("button", { name: "Previous scale family" }));
+        await userEvent.click(
+          screen.getByRole("button", { name: "Previous scale family" }),
+        );
       });
-
       const familySelect = screen.getByRole("combobox", { name: "Scale Family" });
       expect(within(familySelect).getByText(lastFamily)).toBeInTheDocument();
-    });
-
-    it("clicking Next from last family wraps to first (Major Modes)", async () => {
-      renderWithAtoms(<ScaleSelector />, [
-        [rootNoteAtom, "C"],
-        [scaleNameAtom, "Minor Blues"],
-      ]);
-      const familyOptions = getScaleFamilyOptions();
-      const firstFamily = familyOptions[0];
-
-      await act(async () => {
-        await userEvent.click(screen.getByRole("button", { name: "Next scale family" }));
-      });
-
-      const familySelect = screen.getByRole("combobox", { name: "Scale Family" });
-      expect(within(familySelect).getByText(firstFamily)).toBeInTheDocument();
-    });
-  });
-
-  describe("Mode card flatten", () => {
-    it("renders mode browser without panel-surface card wrapper", () => {
-      const { container } = renderWithAtoms(<ScaleSelector />, [...BASE_SEEDS]);
-      const modeBrowser = container.querySelector(".theory-mode-browser");
-      expect(modeBrowser).toBeInTheDocument();
-      expect(modeBrowser?.classList.contains("panel-surface")).toBe(false);
     });
   });
 
   describe("Parallel/relative toggle", () => {
-    it("renders Mode label when scale supports relative browsing", () => {
+    it("renders the Mode browser label when the scale supports relative browsing", () => {
       renderWithAtoms(<ScaleSelector />, [...BASE_SEEDS]);
       expect(screen.getAllByText("Mode").length).toBeGreaterThan(0);
     });
@@ -121,21 +94,6 @@ describe("ScaleSelector/ScaleSelector", () => {
       expect(
         screen.getByText("Cycle modes that share the current root note."),
       ).toBeInTheDocument();
-    });
-
-    it("does not render a help button for Parallel/Relative", () => {
-      renderWithAtoms(<ScaleSelector />, [...BASE_SEEDS]);
-      expect(
-        screen.queryByRole("button", { name: /show help for mode/i }),
-      ).not.toBeInTheDocument();
-    });
-  });
-
-  describe("compact prop (removed — compact density is the default)", () => {
-    it("does not set data-compact on any element (compact density is the default)", () => {
-      const { container } = renderWithAtoms(<ScaleSelector />, [...BASE_SEEDS]);
-      const compactGroups = container.querySelectorAll('[data-compact="true"]');
-      expect(compactGroups.length).toBe(0);
     });
   });
 

@@ -16,10 +16,15 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { NoteGrid } from "../NoteGrid/NoteGrid";
 import { StepperSelect } from "../StepperSelect/StepperSelect";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
+import { Prop } from "../Inspector/InspectorGrid";
 import { useScaleState } from "../../hooks/useScaleState";
-import shared from "../shared/shared.module.css";
-import styles from "../TheoryControls/TheoryControls.module.css";
 
+/**
+ * Key picker for the Scale tab's first column. Emits a fragment of `Prop`
+ * cells (Root / Scale Family / Variant / Relationship) so it composes into the
+ * Scale tab's column layout. All state is held in existing atoms via
+ * `useScaleState`.
+ */
 export function ScaleSelector() {
   const { t } = useTranslation();
   const {
@@ -117,18 +122,16 @@ export function ScaleSelector() {
 
   return (
     <>
-      <div className={shared["control-section"]}>
-        <span className={shared["section-label"]}>Root</span>
+      <Prop label="Root">
         <NoteGrid
           notes={NOTES}
           selected={rootNote}
           onSelect={applyRootNote}
           useFlats={useFlats}
         />
-      </div>
+      </Prop>
 
-      <div className={shared["control-section"]}>
-        <span className={shared["section-label"]}>Scale Family</span>
+      <Prop label="Scale Family">
         <StepperSelect
           selectLabel="Scale Family"
           groupLabel="Browse scale families"
@@ -140,42 +143,42 @@ export function ScaleSelector() {
           onPrevious={() => handleStepFamily(-1)}
           onNext={() => handleStepFamily(1)}
         />
-      </div>
+      </Prop>
 
-      <div className={shared["control-section"]}>
-        <div className={styles["theory-mode-browser"]}>
-          <span className={shared["section-label"]}>{memberTerm}</span>
-          <StepperSelect
-            selectLabel={memberTerm}
-            groupLabel={`Browse ${memberTerm}`}
-            previousLabel={`Previous ${memberTerm}`}
-            nextLabel={`Next ${memberTerm}`}
-            value={activeBrowseOption.label}
-            options={browseSelectOptions}
-            onChange={handleBrowseSelect}
-            onPrevious={() => handleStepBrowse(-1)}
-            onNext={() => handleStepBrowse(1)}
+      <Prop label={memberTerm}>
+        <StepperSelect
+          selectLabel={memberTerm}
+          groupLabel={`Browse ${memberTerm}`}
+          previousLabel={`Previous ${memberTerm}`}
+          nextLabel={`Next ${memberTerm}`}
+          value={activeBrowseOption.label}
+          options={browseSelectOptions}
+          onChange={handleBrowseSelect}
+          onPrevious={() => handleStepBrowse(-1)}
+          onNext={() => handleStepBrowse(1)}
+        />
+      </Prop>
+
+      {supportsRelativeBrowse ? (
+        <Prop
+          label={t("inspector.relationship")}
+          hint={
+            effectiveBrowseMode === "parallel"
+              ? t("controls.scaleParallelHint")
+              : t("controls.scaleRelativeHint")
+          }
+        >
+          <ToggleBar
+            options={[
+              { value: "parallel", label: "Parallel" },
+              { value: "relative", label: "Relative" },
+            ]}
+            value={effectiveBrowseMode}
+            onChange={(value) => setScaleBrowseMode(value as ScaleBrowseMode)}
+            label="Scale relationship"
           />
-          {supportsRelativeBrowse ? (
-            <div className={styles["theory-mode-toggle-row"]}>
-              <ToggleBar
-                options={[
-                  { value: "parallel", label: "Parallel" },
-                  { value: "relative", label: "Relative" },
-                ]}
-                value={effectiveBrowseMode}
-                onChange={(value) => setScaleBrowseMode(value as ScaleBrowseMode)}
-                label="Scale relationship"
-              />
-              <p className={shared["field-hint"]}>
-                {effectiveBrowseMode === "parallel"
-                  ? t("controls.scaleParallelHint")
-                  : t("controls.scaleRelativeHint")}
-              </p>
-            </div>
-          ) : null}
-        </div>
-      </div>
+        </Prop>
+      ) : null}
     </>
   );
 }
