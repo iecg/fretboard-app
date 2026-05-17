@@ -115,6 +115,8 @@ export function ProgressionControls() {
     qualityOverridden: qualityValue !== CHORD_QUALITY_DIATONIC_VALUE,
     activeDegree: activeStep?.degree ?? null,
   });
+  // totalProgressionBars is fractional (beats / beatsPerBar); round up to whole
+  // bars for the read-only Length readout and clamp to a 1-bar minimum.
   const lengthLabel = formatProgressionDurationLabel({
     value: Math.ceil(Math.max(1, totalProgressionBars)),
     unit: "bar",
