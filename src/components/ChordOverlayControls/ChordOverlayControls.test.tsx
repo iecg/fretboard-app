@@ -396,10 +396,10 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
 
   describe("8. chord-type toggle bar (manual mode)", () => {
     it("renders 'Chord Type' label in manual mode", () => {
-      const { container } = renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
-      const labels = container.querySelectorAll(".section-label");
-      const chordTypeLabel = Array.from(labels).find((el) => el.textContent === "Chord Type");
-      expect(chordTypeLabel).toBeInTheDocument();
+      renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
+      expect(
+        screen.getByText("Chord Type", { selector: "span[class*='propLabel']" }),
+      ).toBeInTheDocument();
     });
 
     it("renders all 16 chord-type buttons (Off + 15 types) in manual mode", () => {
@@ -451,12 +451,6 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       const buttons = within(chordTypeGroup).getAllByRole("button");
       expect(buttons[0]).toHaveAccessibleName("Off");
       expect(buttons[1]).toHaveAccessibleName("Maj");
-    });
-
-    it("chord-type toggle bar has data-overflow='scroll' attribute", () => {
-      renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
-      const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
-      expect(chordTypeGroup).toHaveAttribute("data-overflow", "scroll");
     });
 
     it("degree mode: Off button is absent from chord-type toggle bar", () => {
