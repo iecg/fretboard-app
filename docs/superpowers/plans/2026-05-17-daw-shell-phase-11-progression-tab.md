@@ -195,7 +195,8 @@ describe("BackingTrackControls", () => {
   });
 
   it("reverts the genre selector to custom when an individual control changes", () => {
-    const store = makeAtomStore([[progressionGenreStyleAtom, "custom"]]);
+    // Seed a real genre so the assertion proves a reversion, not a no-op.
+    const store = makeAtomStore([[progressionGenreStyleAtom, "rock"]]);
     renderWithStore(<BackingTrackControls />, store);
     const select = screen.getByLabelText("Drum pattern") as HTMLSelectElement;
     const next = Array.from(select.options).map((o) => o.value).find((v) => v !== select.value);
