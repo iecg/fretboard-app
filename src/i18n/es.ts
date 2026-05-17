@@ -80,6 +80,15 @@ export const es: Dictionary = {
     btDrumPattern: "Patrón de batería",
     btSwing: "Swing",
   },
+  statusBar: {
+    key: "Tonalidad",
+    chord: "Acorde",
+    lens: "Lente",
+    pattern: "Patrón",
+    frets: "Trastes",
+    tempo: "Tempo",
+    tuning: "Afinación",
+  },
   common: {
     mute: "Silenciar audio",
     muteTitle: "Silenciar",

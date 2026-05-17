@@ -80,6 +80,15 @@ export const en: Dictionary = {
     btDrumPattern: "Drum Pattern",
     btSwing: "Swing",
   },
+  statusBar: {
+    key: "Key",
+    chord: "Chord",
+    lens: "Lens",
+    pattern: "Pattern",
+    frets: "Frets",
+    tempo: "Tempo",
+    tuning: "Tuning",
+  },
   common: {
     mute: "Mute audio",
     muteTitle: "Mute",

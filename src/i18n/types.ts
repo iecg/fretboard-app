@@ -78,6 +78,15 @@ export interface Dictionary {
     btDrumPattern: string;
     btSwing: string;
   };
+  statusBar: {
+    key: string;
+    chord: string;
+    lens: string;
+    pattern: string;
+    frets: string;
+    tempo: string;
+    tuning: string;
+  };
   common: {
     mute: string;
     muteTitle: string;
