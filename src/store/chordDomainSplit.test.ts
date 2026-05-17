@@ -10,6 +10,7 @@ import {
   chordMemberFactsAtom,
   chordRootAtom,
   chordTypeAtom,
+  chordOverlayModeAtom,
   rootNoteAtom,
   scaleNameAtom,
   practiceLensAtom,
@@ -26,9 +27,9 @@ describe("chordMemberFactsAtom", () => {
     localStorage.clear();
   });
 
-  it("returns empty array when no chord type is set", () => {
+  it("returns empty array when chord overlay is off", () => {
     const store = makeStore();
-    store.set(chordTypeAtom, null);
+    store.set(chordOverlayModeAtom, "off");
     expect(store.get(chordMemberFactsAtom)).toHaveLength(0);
   });
 
@@ -309,9 +310,9 @@ describe("lensAvailabilityContextAtom", () => {
     localStorage.clear();
   });
 
-  it("hasChordOverlay=false when no chord type", () => {
+  it("hasChordOverlay=false when chord overlay is off", () => {
     const store = makeStore();
-    store.set(chordTypeAtom, null);
+    store.set(chordOverlayModeAtom, "off");
     const ctx = store.get(lensAvailabilityContextAtom);
     expect(ctx.hasChordOverlay).toBe(false);
   });
@@ -404,9 +405,9 @@ describe("lensAvailabilityAtom", () => {
     expect(ids).toContain("tension");
   });
 
-  it("all entries unavailable when no chord overlay", () => {
+  it("all entries unavailable when chord overlay is off", () => {
     const store = makeStore();
-    store.set(chordTypeAtom, null);
+    store.set(chordOverlayModeAtom, "off");
     const entries = store.get(lensAvailabilityAtom);
     expect(entries.every((e) => !e.available)).toBe(true);
   });

@@ -749,9 +749,9 @@ describe("atoms", () => {
   });
 
   describe("chordTonesAtom", () => {
-    it("returns [] when chordTypeAtom is null", () => {
+    it("returns [] when chord overlay mode is off", () => {
       const store = makeStore();
-      store.set(chordTypeAtom, null);
+      store.set(chordOverlayModeAtom, "off");
       expect(store.get(chordTonesAtom)).toEqual([]);
     });
 

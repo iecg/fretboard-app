@@ -58,6 +58,13 @@ export const es: Dictionary = {
     factDegrees: "Grados",
     factTones: "Tonos",
     relationship: "Relación",
+    groupSource: "Fuente",
+    groupChordType: "Tipo de acorde",
+    groupVoicing: "Disposición",
+    showOnBoard: "Mostrar en mástil",
+    fullChordsHintSupported: "Muestra digitaciones CAGED canónicas en lugar de notas sueltas del acorde.",
+    fullChordsHintNon6String: "Acordes completos solo admite afinaciones de 6 cuerdas.",
+    fullChordsHintUnsupportedType: "Acordes completos solo admite Tríada Mayor, Tríada Menor y Séptima Dominante.",
   },
   common: {
     mute: "Silenciar audio",

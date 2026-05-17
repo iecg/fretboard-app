@@ -102,9 +102,9 @@ describe("cross-domain derived atoms", () => {
     expect(store.get(hasOutsideChordMembersAtom)).toBe(true);
   });
 
-  it("hasOutsideChordMembersAtom: false when no chord type is set", () => {
+  it("hasOutsideChordMembersAtom: false when chord overlay is off", () => {
     const store = setupManualChord("C", "");
-    store.set(chordQualityOverrideAtom, null);
+    store.set(chordOverlayModeAtom, "off");
     expect(store.get(hasOutsideChordMembersAtom)).toBe(false);
   });
 
@@ -117,9 +117,9 @@ describe("cross-domain derived atoms", () => {
     expect(rows.every((r) => r.inScale)).toBe(true);
   });
 
-  it("allChordMembersAtom: empty when no chord type", () => {
+  it("allChordMembersAtom: empty when chord overlay is off", () => {
     const store = setupManualChord("C", "");
-    store.set(chordQualityOverrideAtom, null);
+    store.set(chordOverlayModeAtom, "off");
     expect(store.get(allChordMembersAtom)).toEqual([]);
   });
 });
