@@ -58,6 +58,10 @@ export const en: Dictionary = {
     factDegrees: "Degrees",
     factTones: "Tones",
     relationship: "Relationship",
+    groupSource: "Source",
+    groupChordType: "Chord Type",
+    groupVoicing: "Voicing",
+    showOnBoard: "Show on Board",
   },
   common: {
     mute: "Mute audio",

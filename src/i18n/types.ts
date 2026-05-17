@@ -56,6 +56,10 @@ export interface Dictionary {
     factDegrees: string;
     factTones: string;
     relationship: string;
+    groupSource: string;
+    groupChordType: string;
+    groupVoicing: string;
+    showOnBoard: string;
   };
   common: {
     mute: string;
