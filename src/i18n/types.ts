@@ -63,6 +63,20 @@ export interface Dictionary {
     fullChordsHintSupported: string;
     fullChordsHintNon6String: string;
     fullChordsHintUnsupportedType: string;
+    groupMeter: string;
+    groupChords: string;
+    groupBackingTrack: string;
+    progressionMode: string;
+    meterBeats: string;
+    meterLength: string;
+    meterLoop: string;
+    meterPreset: string;
+    btGenre: string;
+    btInstrument: string;
+    btChordPattern: string;
+    btBassPattern: string;
+    btDrumPattern: string;
+    btSwing: string;
   };
   common: {
     mute: string;
