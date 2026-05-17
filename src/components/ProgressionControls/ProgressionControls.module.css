@@ -78,6 +78,13 @@
   gap: var(--space-3);
 }
 
+/* Keep the Beat/Bar unit toggle compact so it sits balanced beside the
+   stepper rather than stretching across the editor cell. */
+.duration-unit {
+  flex: 0 0 9rem;
+  min-width: 0;
+}
+
 .step-actions {
   display: flex;
   align-items: center;

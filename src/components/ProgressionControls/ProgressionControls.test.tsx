@@ -141,7 +141,9 @@ describe("ProgressionControls METER", () => {
       [beatsPerBarAtom, 4],
     ]);
     renderWithStore(<ProgressionControls />, store);
-    expect(screen.getByText("Beats per bar")).toBeTruthy();
+    // The "Beats per bar" stepper label is hidden inside its Prop cell; the
+    // cell's own "Beats/Bar" micro-label is the visible heading.
+    expect(screen.getByText("Beats/Bar")).toBeTruthy();
     expect(screen.getByText("4")).toBeTruthy();
     fireEvent.click(screen.getByLabelText(/Increase Beats per bar/i));
     expect(screen.getByText("6")).toBeTruthy();

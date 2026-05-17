@@ -5,14 +5,14 @@ import { axe } from "../../test-utils/a11y";
 import { PropGrid, Prop, GroupHeader, ToggleProp } from "./InspectorGrid";
 
 describe("InspectorGrid", () => {
-  it("PropGrid sets the grid template columns from the columns prop", () => {
+  it("PropGrid emits the column count via the data-columns attribute", () => {
     const { container } = render(
       <PropGrid columns={4}>
         <Prop label="A">a</Prop>
       </PropGrid>,
     );
     const grid = container.firstElementChild as HTMLElement;
-    expect(grid.style.gridTemplateColumns).toBe("repeat(4, minmax(0, 1fr))");
+    expect(grid.getAttribute("data-columns")).toBe("4");
   });
 
   it("PropGrid defaults to six columns", () => {
@@ -22,7 +22,7 @@ describe("InspectorGrid", () => {
       </PropGrid>,
     );
     const grid = container.firstElementChild as HTMLElement;
-    expect(grid.style.gridTemplateColumns).toBe("repeat(6, minmax(0, 1fr))");
+    expect(grid.getAttribute("data-columns")).toBe("6");
   });
 
   it("Prop renders its label, children, and hint, and applies the span", () => {
@@ -35,7 +35,7 @@ describe("InspectorGrid", () => {
     expect(screen.getByRole("button", { name: "child" })).toBeInTheDocument();
     expect(screen.getByText("Pick one")).toBeInTheDocument();
     const cell = container.firstElementChild as HTMLElement;
-    expect(cell.style.gridColumn).toBe("span 2");
+    expect(cell.getAttribute("data-span")).toBe("2");
   });
 
   it("GroupHeader renders its label text", () => {

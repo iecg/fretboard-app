@@ -1,7 +1,26 @@
 .propGrid {
   display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 0.875rem 1rem;
   align-items: start;
+}
+
+.propGrid[data-columns="3"] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.propGrid[data-columns="4"] {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.propGrid[data-columns="6"] {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+/* Mobile tier — collapse to two columns regardless of the declared column
+   count. Wide cells (span >= 2) clamp to the available tracks automatically. */
+:global(.app-container[data-layout-tier="mobile"]) .propGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .prop {
@@ -9,6 +28,23 @@
   flex-direction: column;
   gap: 0.375rem;
   min-width: 0;
+  grid-column: span 1;
+}
+
+.prop[data-span="2"] {
+  grid-column: span 2;
+}
+
+.prop[data-span="3"] {
+  grid-column: span 3;
+}
+
+.prop[data-span="4"] {
+  grid-column: span 4;
+}
+
+.prop[data-span="6"] {
+  grid-column: span 6;
 }
 
 .propLabel {
@@ -64,6 +100,35 @@
   gap: 0.625rem;
   min-height: 1.625rem;
   min-width: 0;
+  grid-column: span 2;
+}
+
+.toggleProp[data-span="1"] {
+  grid-column: span 1;
+}
+
+.toggleProp[data-span="3"] {
+  grid-column: span 3;
+}
+
+.toggleProp[data-span="4"] {
+  grid-column: span 4;
+}
+
+.toggleProp[data-span="6"] {
+  grid-column: span 6;
+}
+
+/* Mobile tier — clamp every cell to at most the two available tracks. A raw
+   `span 3`/`span 6` would otherwise spill into implicit columns and break the
+   collapsed grid. */
+:global(.app-container[data-layout-tier="mobile"]) .prop[data-span="3"],
+:global(.app-container[data-layout-tier="mobile"]) .prop[data-span="4"],
+:global(.app-container[data-layout-tier="mobile"]) .prop[data-span="6"],
+:global(.app-container[data-layout-tier="mobile"]) .toggleProp[data-span="3"],
+:global(.app-container[data-layout-tier="mobile"]) .toggleProp[data-span="4"],
+:global(.app-container[data-layout-tier="mobile"]) .toggleProp[data-span="6"] {
+  grid-column: span 2;
 }
 
 .togglePropLabel {

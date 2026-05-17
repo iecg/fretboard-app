@@ -10,13 +10,15 @@ export interface PropGridProps {
   className?: string;
 }
 
-/** A CSS-grid container for inspector property cells. */
+/**
+ * A CSS-grid container for inspector property cells. The column count is
+ * emitted as the `data-columns` attribute so the stylesheet owns the track
+ * template and can override it responsively (the mobile tier collapses to
+ * two columns).
+ */
 export function PropGrid({ columns = 6, children, className }: PropGridProps) {
   return (
-    <div
-      className={clsx(styles.propGrid, className)}
-      style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
-    >
+    <div className={clsx(styles.propGrid, className)} data-columns={columns}>
       {children}
     </div>
   );
@@ -32,10 +34,15 @@ export interface PropProps {
   children: ReactNode;
 }
 
-/** A labeled property cell inside a PropGrid. */
+/**
+ * A labeled property cell inside a PropGrid. The column span is emitted as
+ * `data-span` so the stylesheet owns the `grid-column` rule — that lets the
+ * mobile tier clamp wide cells to the two available tracks instead of letting
+ * the span spill into implicit columns.
+ */
 export function Prop({ label, span = 1, hint, children }: PropProps) {
   return (
-    <div className={styles.prop} style={{ gridColumn: `span ${span}` }}>
+    <div className={styles.prop} data-span={span}>
       {label ? <span className={styles.propLabel}>{label}</span> : null}
       <div className={styles.propControl}>{children}</div>
       {hint ? <p className={styles.propHint}>{hint}</p> : null}
@@ -73,7 +80,7 @@ export interface TogglePropProps {
 /** An inline label + Switch row for boolean settings. */
 export function ToggleProp({ label, checked, onChange, status, span = 2 }: TogglePropProps) {
   return (
-    <div className={styles.toggleProp} style={{ gridColumn: `span ${span}` }}>
+    <div className={styles.toggleProp} data-span={span}>
       <span className={styles.togglePropLabel}>{label}</span>
       {status ? <span className={styles.togglePropStatus}>{status}</span> : null}
       <Switch checked={checked} onChange={onChange} label={label} />

@@ -31,6 +31,10 @@ export interface StepperControlProps {
   max: number;
   step?: number;
   label?: string;
+  /** When true, the visible label is omitted but `label` still feeds the
+   * group/button accessible names. Use inside a `Prop` cell that already
+   * supplies a visible label. */
+  hideLabel?: boolean;
   formatValue?: (val: number) => string;
   buttonVariant?: StepperControlVariant;
 }
@@ -42,12 +46,13 @@ export function StepperControl({
   max,
   step = 1,
   label,
+  hideLabel = false,
   formatValue = String,
   buttonVariant = "toolbar",
 }: StepperControlProps) {
   return (
     <div className={stepperControlVariants({ variant: buttonVariant })}>
-      {label && <span className={shared["section-label"]}>{label}</span>}
+      {label && !hideLabel && <span className={shared["section-label"]}>{label}</span>}
       <StepperShell
         className={styles["stepper-group"]}
         role="group"

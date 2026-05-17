@@ -17,7 +17,7 @@ import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { Switch } from "../Switch/Switch";
 import { StepperControl } from "../StepperControl/StepperControl";
 import { LabeledSelect, type LabeledSelectGroup } from "../LabeledSelect/LabeledSelect";
-import { PropGrid, Prop, GroupHeader, ToggleProp } from "../Inspector/InspectorGrid";
+import { PropGrid, Prop, GroupHeader } from "../Inspector/InspectorGrid";
 import { BackingTrackControls } from "./BackingTrackControls";
 import shared from "../shared/shared.module.css";
 import { buildDegreeToggleOptions, buildQualityToggleOptions, CHORD_QUALITY_DIATONIC_VALUE } from "../shared/chordControlOptions";
@@ -125,8 +125,9 @@ export function ProgressionControls() {
   return (
     <PropGrid columns={6}>
       {/* ── METER ────────────────────────────────────────────────────────── */}
+      {/* One uniform 6-column row: Mode · Beats/Bar · Length · Loop · Preset. */}
       <GroupHeader>{t("inspector.groupMeter")}</GroupHeader>
-      <Prop label={t("inspector.progressionMode")} span={2}>
+      <Prop label={t("inspector.progressionMode")} span={1}>
         <Switch
           label="Progression mode"
           checked={progressionEnabled}
@@ -136,6 +137,7 @@ export function ProgressionControls() {
       <Prop label={t("inspector.meterBeats")} span={1}>
         <StepperControl
           label="Beats per bar"
+          hideLabel
           value={beatsPerBar}
           min={BEATS_PER_BAR_OPTIONS[0]}
           max={BEATS_PER_BAR_OPTIONS[BEATS_PER_BAR_OPTIONS.length - 1]}
@@ -153,13 +155,14 @@ export function ProgressionControls() {
       <Prop label={t("inspector.meterLength")} span={1}>
         <span className={styles["length-readout"]}>{lengthLabel}</span>
       </Prop>
-      <ToggleProp
-        label={t("inspector.meterLoop")}
-        checked={progressionLoopEnabled}
-        onChange={setProgressionLoopEnabled}
-        span={2}
-      />
-      <Prop label={t("inspector.meterPreset")} span={6}>
+      <Prop label={t("inspector.meterLoop")} span={1}>
+        <Switch
+          label="Loop"
+          checked={progressionLoopEnabled}
+          onChange={setProgressionLoopEnabled}
+        />
+      </Prop>
+      <Prop label={t("inspector.meterPreset")} span={2}>
         <LabeledSelect
           label="Preset"
           hideLabel
@@ -261,6 +264,7 @@ export function ProgressionControls() {
               <div className={styles["duration-row"]}>
                 <StepperControl
                   label="Duration value"
+                  hideLabel
                   value={activeStep.duration.value}
                   min={MIN_PROGRESSION_STEP_DURATION_VALUE}
                   max={MAX_PROGRESSION_STEP_DURATION_VALUE}
@@ -272,20 +276,22 @@ export function ProgressionControls() {
                     })
                   }
                 />
-                <ToggleBar
-                  label="Duration unit"
-                  value={activeStep.duration.unit}
-                  options={[
-                    { value: "beat", label: "Beat" },
-                    { value: "bar", label: "Bar" },
-                  ]}
-                  onChange={(unit) =>
-                    updateProgressionStepDuration({
-                      id: activeStep.id,
-                      duration: { ...activeStep.duration, unit: unit as "beat" | "bar" },
-                    })
-                  }
-                />
+                <div className={styles["duration-unit"]}>
+                  <ToggleBar
+                    label="Duration unit"
+                    value={activeStep.duration.unit}
+                    options={[
+                      { value: "beat", label: "Beat" },
+                      { value: "bar", label: "Bar" },
+                    ]}
+                    onChange={(unit) =>
+                      updateProgressionStepDuration({
+                        id: activeStep.id,
+                        duration: { ...activeStep.duration, unit: unit as "beat" | "bar" },
+                      })
+                    }
+                  />
+                </div>
               </div>
             </div>
             <div className={shared["control-section"]}>
