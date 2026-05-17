@@ -167,24 +167,20 @@ describe("ProgressionTrack", () => {
     expect(screen.getByRole("button", { name: "Play progression" })).toBeDisabled();
   });
 
-  it("renders genre selector", () => {
+  it("no longer renders the rehosted backing-track controls", () => {
     renderWithAtoms(<ProgressionTrack />, [
       [progressionEnabledAtom, true],
       [progressionStepsAtom, fourStepProgression],
       [beatsPerBarAtom, 4],
     ]);
 
-    expect(screen.getByLabelText("Genre style")).toBeInTheDocument();
-  });
-
-  it("renders chord instrument selector", () => {
-    renderWithAtoms(<ProgressionTrack />, [
-      [progressionEnabledAtom, true],
-      [progressionStepsAtom, fourStepProgression],
-      [beatsPerBarAtom, 4],
-    ]);
-
-    expect(screen.getByLabelText("Chord instrument")).toBeInTheDocument();
+    // The accompaniment controls moved to the Progression tab (Phase 11).
+    expect(screen.queryByLabelText("Genre style")).toBeNull();
+    expect(screen.queryByLabelText("Chord instrument")).toBeNull();
+    expect(screen.queryByLabelText("Chord pattern")).toBeNull();
+    expect(screen.queryByLabelText("Bass pattern")).toBeNull();
+    expect(screen.queryByLabelText("Drum pattern")).toBeNull();
+    expect(screen.queryByLabelText("Swing amount")).toBeNull();
   });
 
   it("renders the extracted TransportBar with the timeline intact", () => {

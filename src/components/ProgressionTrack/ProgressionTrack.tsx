@@ -2,9 +2,6 @@ import { useCallback, type CSSProperties } from "react";
 import clsx from "clsx";
 import { useProgressionState } from "../../hooks/useProgressionState";
 import { useScaleState } from "../../hooks/useScaleState";
-import { GENRE_STYLES } from "../../progressions/audio/genres";
-import { CHORD_PATTERNS, BASS_PATTERNS, DRUM_PATTERNS } from "../../progressions/audio/patterns";
-import type { ChordInstrumentId } from "../../progressions/audio/instruments/types";
 import styles from "./ProgressionTrack.module.css";
 import { ProgressionBlock } from "./ProgressionBlock";
 import { ProgressionPlayhead } from "./ProgressionPlayhead";
@@ -45,18 +42,6 @@ function getProgressionBlockLayouts(
 export function ProgressionTrack() {
   const {
     progressionTempoBpm,
-    progressionGenreStyle,
-    applyGenreStyle,
-    progressionChordInstrument,
-    setProgressionChordInstrument,
-    progressionChordPattern,
-    setProgressionChordPattern,
-    progressionBassPattern,
-    setProgressionBassPattern,
-    progressionDrumPattern,
-    setProgressionDrumPattern,
-    progressionSwing,
-    setProgressionSwing,
     progressionPlaying,
     progressionPlaybackBlockedReason,
     currentProgressionBar,
@@ -126,74 +111,6 @@ export function ProgressionTrack() {
             </span>
           </div>
         </div>
-      </div>
-
-      <div className={styles.accompanimentControls} role="group" aria-label="Accompaniment style">
-        <select
-          aria-label="Genre style"
-          value={progressionGenreStyle}
-          onChange={(e) => applyGenreStyle(e.target.value)}
-          className={styles.genreSelect}
-        >
-          {GENRE_STYLES.map((g) => (
-            <option key={g.id} value={g.id}>{g.label}</option>
-          ))}
-          <option value="custom">Custom</option>
-        </select>
-        <select
-          aria-label="Chord instrument"
-          value={progressionChordInstrument}
-          onChange={(e) => setProgressionChordInstrument(e.target.value as ChordInstrumentId)}
-          className={styles.instrumentSelect}
-        >
-          <option value="strum">Strum</option>
-          <option value="piano">Piano</option>
-          <option value="organ">Organ</option>
-        </select>
-        <select
-          aria-label="Chord pattern"
-          value={progressionChordPattern}
-          onChange={(e) => setProgressionChordPattern(e.target.value)}
-          className={styles.patternSelect}
-        >
-          {CHORD_PATTERNS.map((p) => (
-            <option key={p.id} value={p.id}>{p.label}</option>
-          ))}
-        </select>
-        <select
-          aria-label="Bass pattern"
-          value={progressionBassPattern}
-          onChange={(e) => setProgressionBassPattern(e.target.value)}
-          className={styles.patternSelect}
-        >
-          {BASS_PATTERNS.map((p) => (
-            <option key={p.id} value={p.id}>{p.label}</option>
-          ))}
-        </select>
-        <select
-          aria-label="Drum pattern"
-          value={progressionDrumPattern}
-          onChange={(e) => setProgressionDrumPattern(e.target.value)}
-          className={styles.patternSelect}
-        >
-          {DRUM_PATTERNS.map((p) => (
-            <option key={p.id} value={p.id}>{p.label}</option>
-          ))}
-        </select>
-        <label className={styles.swingControl} htmlFor="progression-swing">
-          Swing
-          <input
-            id="progression-swing"
-            type="range"
-            min={0}
-            max={0.5}
-            step={0.01}
-            value={progressionSwing}
-            onChange={(e) => setProgressionSwing(Number(e.target.value))}
-            aria-label="Swing amount"
-          />
-          <span>{Math.round(progressionSwing * 100)}%</span>
-        </label>
       </div>
 
       <div
