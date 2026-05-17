@@ -9,6 +9,7 @@ import { LENS_REGISTRY } from "@fretflow/core";
 import {
   chordDegreeAtom,
   chordOverlayModeAtom,
+  chordOverlayHiddenAtom,
   chordQualityOverrideAtom,
   chordRootOverrideAtom,
   progressionEnabledAtom,
@@ -318,7 +319,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(pressedButton).toBeInTheDocument();
     });
 
-    it("lens ToggleBar is absent when no chord is active (overlay off)", () => {
+    it("lens ToggleBar is disabled when no chord is active (overlay off)", () => {
       renderWithAtoms(<ChordOverlayControls />, [
         [scaleNameAtom, "Major"],
         [rootNoteAtom, "C"],
@@ -326,7 +327,9 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
         [chordDegreeAtom, null],
       ]);
 
-      expect(screen.queryByRole("group", { name: "Practice lens" })).not.toBeInTheDocument();
+      const lensGroup = screen.getByRole("group", { name: "Practice lens" });
+      const buttons = within(lensGroup).getAllByRole("button");
+      buttons.forEach((btn) => expect(btn).toBeDisabled());
     });
   });
 
@@ -669,6 +672,36 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     it("no legacy lens-hint paragraph remains", () => {
       const { container } = renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
       expect(container.querySelector(".lens-hint")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("Show on Board switch", () => {
+    it("renders when a chord is active in manual mode", () => {
+      renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
+      expect(screen.getByRole("switch", { name: "Show on Board" })).toBeInTheDocument();
+    });
+
+    it("reflects inverted chordOverlayHiddenAtom (hidden=true → checked=false)", () => {
+      const store = makeAtomStore([
+        ...MANUAL_MODE_SEEDS,
+        [chordOverlayHiddenAtom, true],
+      ]);
+      renderWithStore(<ChordOverlayControls />, store);
+      expect(screen.getByRole("switch", { name: "Show on Board" })).toHaveAttribute("aria-checked", "false");
+    });
+
+    it("clicking the switch flips chordOverlayHiddenAtom", async () => {
+      const store = makeAtomStore([
+        ...MANUAL_MODE_SEEDS,
+        [chordOverlayHiddenAtom, false],
+      ]);
+      renderWithStore(<ChordOverlayControls />, store);
+
+      const toggle = screen.getByRole("switch", { name: "Show on Board" });
+      expect(toggle).toHaveAttribute("aria-checked", "true");
+
+      await userEvent.click(toggle);
+      expect(store.get(chordOverlayHiddenAtom)).toBe(true);
     });
   });
 });

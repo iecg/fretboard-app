@@ -126,14 +126,15 @@ export function ChordOverlayControls() {
     (chordOverlayMode === "manual" ||
       (chordOverlayMode === "degree" && Boolean(chordDegree)));
   const showRoot = !isPatternDisabled && chordOverlayMode === "manual";
-  const showChordTypeGroup = showChordTypeGrid || showRoot;
-  const showVoicing = !isPatternDisabled && Boolean(chordType);
+  const hasActiveChord = Boolean(chordType);
+  const showDisplay = !isPatternDisabled;
+  const displayDisabled = !hasActiveChord;
 
   const fullChordsHint = fullChordsSupported
-    ? "Show canonical CAGED voicings instead of scattered chord tones."
+    ? t("inspector.fullChordsHintSupported")
     : currentTuning.length !== 6
-      ? "Full Chords currently supports 6-string tunings only."
-      : "Full Chords currently supports Major Triad, Minor Triad, and Dominant 7th.";
+      ? t("inspector.fullChordsHintNon6String")
+      : t("inspector.fullChordsHintUnsupportedType");
 
   return (
     <div
@@ -189,21 +190,6 @@ export function ChordOverlayControls() {
             />
           </Prop>
         )}
-        {showVoicing && (
-          <Prop label={t("controls.lens")} span={6} hint={activeLensDescription}>
-            <ToggleBar
-              options={lensOptions}
-              value={practiceLens}
-              onChange={setPracticeLens}
-              label="Practice lens"
-            />
-          </Prop>
-        )}
-
-        {/* ── CHORD TYPE ───────────────────────────────────────────────── */}
-        {showChordTypeGroup && (
-          <GroupHeader>{t("inspector.groupChordType")}</GroupHeader>
-        )}
         {showChordTypeGrid && (
           <Prop
             label={t("controls.chordType")}
@@ -247,16 +233,24 @@ export function ChordOverlayControls() {
           </Prop>
         )}
 
-        {/* ── VOICING ──────────────────────────────────────────────────── */}
-        {showVoicing && (
+        {/* ── DISPLAY ──────────────────────────────────────────────────── */}
+        {showDisplay && (
           <>
-            <GroupHeader>{t("inspector.groupVoicing")}</GroupHeader>
-            <Prop label="Full Chords" span={3} hint={fullChordsHint}>
+            <GroupHeader>{t("inspector.groupDisplay")}</GroupHeader>
+            <Prop label={t("controls.lens")} span={6} hint={hasActiveChord ? activeLensDescription : undefined}>
+              <ToggleBar
+                options={lensOptions.map((o) => ({ ...o, disabled: displayDisabled || o.disabled }))}
+                value={practiceLens}
+                onChange={displayDisabled ? () => undefined : setPracticeLens}
+                label="Practice lens"
+              />
+            </Prop>
+            <Prop label={t("inspector.fullChords")} span={3} hint={hasActiveChord ? fullChordsHint : undefined}>
               <Switch
-                label="Full Chords"
+                label={t("inspector.fullChords")}
                 checked={fullChordsEnabled}
                 onChange={setFullChordsEnabled}
-                disabled={!fullChordsSupported}
+                disabled={displayDisabled || !fullChordsSupported}
               />
             </Prop>
             <Prop label={t("inspector.showOnBoard")} span={3}>
@@ -264,6 +258,7 @@ export function ChordOverlayControls() {
                 label={t("inspector.showOnBoard")}
                 checked={!chordOverlayHidden}
                 onChange={(next) => setChordOverlayHidden(!next)}
+                disabled={displayDisabled}
               />
             </Prop>
           </>

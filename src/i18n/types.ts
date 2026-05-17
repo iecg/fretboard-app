@@ -60,6 +60,9 @@ export interface Dictionary {
     groupChordType: string;
     groupVoicing: string;
     showOnBoard: string;
+    fullChordsHintSupported: string;
+    fullChordsHintNon6String: string;
+    fullChordsHintUnsupportedType: string;
   };
   common: {
     mute: string;

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { axe } from "../../test-utils/a11y";
 import { ChordTypeGrid } from "./ChordTypeGrid";
 
 const OPTIONS = [
@@ -55,5 +56,12 @@ describe("ChordTypeGrid", () => {
       />,
     );
     expect(screen.getByRole("button", { name: "X" })).toBeDisabled();
+  });
+
+  it("has no accessibility violations", async () => {
+    const { container } = render(
+      <ChordTypeGrid options={OPTIONS} value="Major Triad" onChange={() => {}} label="Chord Type" />,
+    );
+    expect(await axe(container)).toHaveNoViolations();
   });
 });
