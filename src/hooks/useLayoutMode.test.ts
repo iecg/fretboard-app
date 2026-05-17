@@ -72,3 +72,24 @@ describe("useLayoutMode", () => {
     });
   });
 });
+
+describe("useLayoutMode showStatusBar", () => {
+  it("is true on the desktop tier (1280x900)", () => {
+    setViewport(1280, 900);
+    const { result } = renderHook(() => useLayoutMode(), { wrapper });
+    expect(result.current.showStatusBar).toBe(true);
+  });
+
+  it("is false on the tablet-split variant (768x1024)", () => {
+    setViewport(768, 1024);
+    const { result } = renderHook(() => useLayoutMode(), { wrapper });
+    expect(result.current.variant).toBe("tablet-split");
+    expect(result.current.showStatusBar).toBe(false);
+  });
+
+  it("is false on the mobile tier (375x667)", () => {
+    setViewport(375, 667);
+    const { result } = renderHook(() => useLayoutMode(), { wrapper });
+    expect(result.current.showStatusBar).toBe(false);
+  });
+});
