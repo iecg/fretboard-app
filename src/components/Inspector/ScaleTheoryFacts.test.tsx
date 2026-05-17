@@ -35,8 +35,8 @@ describe("ScaleTheoryFacts", () => {
       [scaleNameAtom, "Major"],
     ]);
     const notesRow = screen.getByText("Notes").closest("div");
-    // G major contains F# — the seventh scale degree.
-    expect(notesRow?.textContent).toContain("F");
+    // G major contains F# (or Gb if accidental preference changes).
+    expect(notesRow?.textContent).toMatch(/F[#♯]|Gb/);
   });
 
   it("has no accessibility violations", async () => {
