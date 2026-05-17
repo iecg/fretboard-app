@@ -11,11 +11,14 @@ import {
 import { generateCommonProgressions } from "../../progressions/progressionGeneration";
 import { useProgressionState } from "../../hooks/useProgressionState";
 import { useScaleState } from "../../hooks/useScaleState";
+import { useTranslation } from "../../hooks/useTranslation";
 import type { ProgressionPresetCategory } from "../../progressions/progressionDomain";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { Switch } from "../Switch/Switch";
 import { StepperControl } from "../StepperControl/StepperControl";
 import { LabeledSelect, type LabeledSelectGroup } from "../LabeledSelect/LabeledSelect";
+import { PropGrid, Prop, GroupHeader, ToggleProp } from "../Inspector/InspectorGrid";
+import { BackingTrackControls } from "./BackingTrackControls";
 import shared from "../shared/shared.module.css";
 import { buildDegreeToggleOptions, buildQualityToggleOptions, CHORD_QUALITY_DIATONIC_VALUE } from "../shared/chordControlOptions";
 import { CUSTOM_PRESET_ID } from "../../store/atoms";
@@ -31,6 +34,7 @@ const CATEGORY_LABELS: Record<ProgressionPresetCategory, string> = {
 };
 
 export function ProgressionControls() {
+  const { t } = useTranslation();
   const { scaleName, rootNote } = useScaleState();
   const {
     progressionEnabled,
@@ -52,6 +56,9 @@ export function ProgressionControls() {
     beatsPerBar,
     setBeatsPerBar,
     currentProgressionPresetId,
+    progressionLoopEnabled,
+    setProgressionLoopEnabled,
+    totalProgressionBars,
   } = useProgressionState();
 
   const activeStep = progressionSteps[activeProgressionStepIndex] ?? null;
@@ -108,20 +115,23 @@ export function ProgressionControls() {
     qualityOverridden: qualityValue !== CHORD_QUALITY_DIATONIC_VALUE,
     activeDegree: activeStep?.degree ?? null,
   });
+  const lengthLabel = formatProgressionDurationLabel({
+    value: Math.ceil(Math.max(1, totalProgressionBars)),
+    unit: "bar",
+  });
 
   return (
-    <div className={styles["progression-controls"]}>
-      <div className={shared["switch-row"]}>
-        <span className={shared["section-label"]}>Progression Mode</span>
+    <PropGrid columns={6}>
+      {/* ── METER ────────────────────────────────────────────────────────── */}
+      <GroupHeader>{t("inspector.groupMeter")}</GroupHeader>
+      <Prop label={t("inspector.progressionMode")} span={2}>
         <Switch
           label="Progression mode"
           checked={progressionEnabled}
           onChange={setProgressionEnabled}
         />
-      </div>
-
-      <div className={shared["control-section"]}>
-        <span className={shared["section-label"]}>Meter</span>
+      </Prop>
+      <Prop label={t("inspector.meterBeats")} span={1}>
         <StepperControl
           label="Beats per bar"
           value={beatsPerBar}
@@ -137,10 +147,17 @@ export function ProgressionControls() {
             setBeatsPerBar(BEATS_PER_BAR_OPTIONS[nextIdx]);
           }}
         />
-      </div>
-
-      <div className={shared["control-section"]}>
-        <span className={shared["section-label"]}>Preset</span>
+      </Prop>
+      <Prop label={t("inspector.meterLength")} span={1}>
+        <span className={styles["length-readout"]}>{lengthLabel}</span>
+      </Prop>
+      <ToggleProp
+        label={t("inspector.meterLoop")}
+        checked={progressionLoopEnabled}
+        onChange={setProgressionLoopEnabled}
+        span={2}
+      />
+      <Prop label={t("inspector.meterPreset")} span={6}>
         <LabeledSelect
           label="Preset"
           hideLabel
@@ -148,145 +165,153 @@ export function ProgressionControls() {
           groups={presetGroups}
           onChange={handlePresetChange}
         />
-      </div>
+      </Prop>
 
-      <div className={shared["control-section"]}>
-        <span className={shared["section-label"]}>Chords</span>
-        {resolvedProgressionSteps.length === 0 ? (
-          <p className={shared["field-hint"]}>Add a chord or load a preset.</p>
-        ) : (
-          <ol className={styles["step-list"]}>
-            {resolvedProgressionSteps.map((step, index) => (
-              <li key={step.id}>
-                <button
-                  type="button"
-                  className={clsx(styles["step-row"], index === activeProgressionStepIndex && styles["step-row--active"])}
-                  data-unavailable={step.unavailable ? "true" : undefined}
-                  onClick={() => setActiveProgressionStepIndex(index)}
-                >
-                  <span className={styles["step-index"]}>{index + 1}</span>
-                  <span className={styles["step-degree"]}>{step.degree}</span>
-                  <span className={styles["step-chord"]}>
-                    {step.resolvedChordLabel ?? step.unavailableReason}
-                  </span>
-                  <span className={styles["step-duration"]}>
-                    {formatProgressionDurationLabel(step.duration)}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ol>
-        )}
-      </div>
-
-      <div className={styles["step-actions"]}>
-        <button type="button" className={shared["control-button"]} onClick={() => addProgressionStep()} aria-label="Add chord">
-          <Plus size={16} aria-hidden="true" />
-          <span>Add</span>
-        </button>
-        <button
-          type="button"
-          className={shared["control-button"]}
-          onClick={() => activeStep && moveProgressionStep({ id: activeStep.id, direction: -1 })}
-          disabled={!activeStep || activeProgressionStepIndex === 0}
-          aria-label="Move chord up"
-        >
-          <ArrowUp size={16} aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          className={shared["control-button"]}
-          onClick={() => activeStep && moveProgressionStep({ id: activeStep.id, direction: 1 })}
-          disabled={!activeStep || activeProgressionStepIndex === progressionSteps.length - 1}
-          aria-label="Move chord down"
-        >
-          <ArrowDown size={16} aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          className={shared["control-button"]}
-          onClick={() => activeStep && duplicateProgressionStep(activeStep.id)}
-          disabled={!activeStep}
-          aria-label="Duplicate chord"
-        >
-          <CopyPlus size={16} aria-hidden="true" />
-          <span>Duplicate</span>
-        </button>
-        <button
-          type="button"
-          className={shared["control-button"]}
-          onClick={() => activeStep && removeProgressionStep(activeStep.id)}
-          disabled={!activeStep}
-          aria-label="Remove chord"
-        >
-          <Trash2 size={16} aria-hidden="true" />
-        </button>
-      </div>
-
-      {activeStep ? (
-        <>
-          <div className={shared["control-section"]}>
-            <span className={shared["section-label"]}>Degree</span>
-            <ToggleBar
-              label="Progression degree"
-              options={degreeOptions}
-              value={activeStep.degree}
-              onChange={(degree) => updateProgressionStepDegree({ id: activeStep.id, degree })}
-              overflow="scroll"
-            />
+      {/* ── CHORDS ───────────────────────────────────────────────────────── */}
+      <GroupHeader>{t("inspector.groupChords")}</GroupHeader>
+      <Prop span={3}>
+        <div className={styles["chords-cell"]}>
+          {resolvedProgressionSteps.length === 0 ? (
+            <p className={shared["field-hint"]}>Add a chord or load a preset.</p>
+          ) : (
+            <ol className={styles["step-list"]}>
+              {resolvedProgressionSteps.map((step, index) => (
+                <li key={step.id}>
+                  <button
+                    type="button"
+                    className={clsx(styles["step-row"], index === activeProgressionStepIndex && styles["step-row--active"])}
+                    data-unavailable={step.unavailable ? "true" : undefined}
+                    onClick={() => setActiveProgressionStepIndex(index)}
+                  >
+                    <span className={styles["step-index"]}>{index + 1}</span>
+                    <span className={styles["step-degree"]}>{step.degree}</span>
+                    <span className={styles["step-chord"]}>
+                      {step.resolvedChordLabel ?? step.unavailableReason}
+                    </span>
+                    <span className={styles["step-duration"]}>
+                      {formatProgressionDurationLabel(step.duration)}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ol>
+          )}
+          <div className={styles["step-actions"]}>
+            <button type="button" className={shared["control-button"]} onClick={() => addProgressionStep()} aria-label="Add chord">
+              <Plus size={16} aria-hidden="true" />
+              <span>Add</span>
+            </button>
+            <button
+              type="button"
+              className={shared["control-button"]}
+              onClick={() => activeStep && moveProgressionStep({ id: activeStep.id, direction: -1 })}
+              disabled={!activeStep || activeProgressionStepIndex === 0}
+              aria-label="Move chord up"
+            >
+              <ArrowUp size={16} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className={shared["control-button"]}
+              onClick={() => activeStep && moveProgressionStep({ id: activeStep.id, direction: 1 })}
+              disabled={!activeStep || activeProgressionStepIndex === progressionSteps.length - 1}
+              aria-label="Move chord down"
+            >
+              <ArrowDown size={16} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className={shared["control-button"]}
+              onClick={() => activeStep && duplicateProgressionStep(activeStep.id)}
+              disabled={!activeStep}
+              aria-label="Duplicate chord"
+            >
+              <CopyPlus size={16} aria-hidden="true" />
+              <span>Duplicate</span>
+            </button>
+            <button
+              type="button"
+              className={shared["control-button"]}
+              onClick={() => activeStep && removeProgressionStep(activeStep.id)}
+              disabled={!activeStep}
+              aria-label="Remove chord"
+            >
+              <Trash2 size={16} aria-hidden="true" />
+            </button>
           </div>
-          <div className={shared["control-section"]}>
-            <span className={shared["section-label"]}>Duration</span>
-            <div className={styles["duration-row"]}>
-              <StepperControl
-                label="Duration value"
-                value={activeStep.duration.value}
-                min={MIN_PROGRESSION_STEP_DURATION_VALUE}
-                max={MAX_PROGRESSION_STEP_DURATION_VALUE}
-                step={1}
-                onChange={(next) =>
-                  updateProgressionStepDuration({
-                    id: activeStep.id,
-                    duration: { ...activeStep.duration, value: next },
-                  })
-                }
-              />
+        </div>
+      </Prop>
+      <Prop span={3}>
+        {activeStep ? (
+          <div className={styles["editor-cell"]}>
+            <div className={shared["control-section"]}>
+              <span className={shared["section-label"]}>Degree</span>
               <ToggleBar
-                label="Duration unit"
-                value={activeStep.duration.unit}
-                options={[
-                  { value: "beat", label: "Beat" },
-                  { value: "bar", label: "Bar" },
-                ]}
-                onChange={(unit) =>
-                  updateProgressionStepDuration({
-                    id: activeStep.id,
-                    duration: { ...activeStep.duration, unit: unit as "beat" | "bar" },
-                  })
-                }
+                label="Progression degree"
+                options={degreeOptions}
+                value={activeStep.degree}
+                onChange={(degree) => updateProgressionStepDegree({ id: activeStep.id, degree })}
+                overflow="scroll"
               />
             </div>
+            <div className={shared["control-section"]}>
+              <span className={shared["section-label"]}>Duration</span>
+              <div className={styles["duration-row"]}>
+                <StepperControl
+                  label="Duration value"
+                  value={activeStep.duration.value}
+                  min={MIN_PROGRESSION_STEP_DURATION_VALUE}
+                  max={MAX_PROGRESSION_STEP_DURATION_VALUE}
+                  step={1}
+                  onChange={(next) =>
+                    updateProgressionStepDuration({
+                      id: activeStep.id,
+                      duration: { ...activeStep.duration, value: next },
+                    })
+                  }
+                />
+                <ToggleBar
+                  label="Duration unit"
+                  value={activeStep.duration.unit}
+                  options={[
+                    { value: "beat", label: "Beat" },
+                    { value: "bar", label: "Bar" },
+                  ]}
+                  onChange={(unit) =>
+                    updateProgressionStepDuration({
+                      id: activeStep.id,
+                      duration: { ...activeStep.duration, unit: unit as "beat" | "bar" },
+                    })
+                  }
+                />
+              </div>
+            </div>
+            <div className={shared["control-section"]}>
+              <span className={shared["section-label"]}>Quality</span>
+              <ToggleBar
+                label="Chord quality"
+                options={buildQualityToggleOptions({ diatonicLabel: "Diatonic" })}
+                value={qualityValue}
+                onChange={(quality) => updateProgressionStepQuality({
+                  id: activeStep.id,
+                  qualityOverride: quality === CHORD_QUALITY_DIATONIC_VALUE ? null : quality,
+                })}
+                overflow="scroll"
+              />
+              <p className={shared["field-hint"]}>
+                {activeResolvedProgressionStep?.qualityOverrideApplied
+                  ? "Custom quality on a degree-derived root."
+                  : "Diatonic uses the chord quality from the active scale."}
+              </p>
+            </div>
           </div>
-          <div className={shared["control-section"]}>
-            <span className={shared["section-label"]}>Quality</span>
-            <ToggleBar
-              label="Chord quality"
-              options={buildQualityToggleOptions({ diatonicLabel: "Diatonic" })}
-              value={qualityValue}
-              onChange={(quality) => updateProgressionStepQuality({
-                id: activeStep.id,
-                qualityOverride: quality === CHORD_QUALITY_DIATONIC_VALUE ? null : quality,
-              })}
-              overflow="scroll"
-            />
-            <p className={shared["field-hint"]}>
-              {activeResolvedProgressionStep?.qualityOverrideApplied
-                ? "Custom quality on a degree-derived root."
-                : "Diatonic uses the chord quality from the active scale."}
-            </p>
-          </div>
-        </>
-      ) : null}
-    </div>
+        ) : (
+          <p className={shared["field-hint"]}>Select a chord to edit its degree, duration, and quality.</p>
+        )}
+      </Prop>
+
+      {/* ── BACKING TRACK ────────────────────────────────────────────────── */}
+      <BackingTrackControls />
+    </PropGrid>
   );
 }
