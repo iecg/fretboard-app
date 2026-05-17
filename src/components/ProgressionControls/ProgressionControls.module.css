@@ -1,9 +1,3 @@
-.progression-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-}
-
 .step-list {
   display: flex;
   flex-direction: column;
@@ -84,6 +78,13 @@
   gap: var(--space-3);
 }
 
+/* Keep the Beat/Bar unit toggle compact so it sits balanced beside the
+   stepper rather than stretching across the editor cell. */
+.duration-unit {
+  flex: 0 0 9rem;
+  min-width: 0;
+}
+
 .step-actions {
   display: flex;
   align-items: center;
@@ -98,3 +99,21 @@
   gap: 0.3rem;
 }
 
+.chords-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.editor-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.length-readout {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--dc-fg);
+  font-variant-numeric: tabular-nums;
+}

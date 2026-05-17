@@ -8,6 +8,7 @@ import {
   activeProgressionStepIndexAtom,
   beatsPerBarAtom,
   progressionEnabledAtom,
+  progressionLoopEnabledAtom,
   progressionStepsAtom,
   rootNoteAtom,
   scaleNameAtom,
@@ -140,7 +141,9 @@ describe("ProgressionControls METER", () => {
       [beatsPerBarAtom, 4],
     ]);
     renderWithStore(<ProgressionControls />, store);
-    expect(screen.getByText("Beats per bar")).toBeTruthy();
+    // The "Beats per bar" stepper label is hidden inside its Prop cell; the
+    // cell's own "Beats/Bar" micro-label is the visible heading.
+    expect(screen.getByText("Beats/Bar")).toBeTruthy();
     expect(screen.getByText("4")).toBeTruthy();
     fireEvent.click(screen.getByLabelText(/Increase Beats per bar/i));
     expect(screen.getByText("6")).toBeTruthy();
@@ -266,5 +269,40 @@ describe("ProgressionControls DURATION", () => {
     // The displayed value should now be 2 (within the duration stepper group)
     const durationGroup = getByRole("group", { name: /Duration value/i });
     expect(within(durationGroup).getByText("2")).toBeTruthy();
+  });
+});
+
+describe("ProgressionControls grid layout", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("renders Meter / Chords / Backing Track group headers", () => {
+    renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    expect(screen.getByRole("heading", { name: "Meter" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Chords" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Backing Track" })).toBeInTheDocument();
+  });
+
+  it("renders a Loop switch bound to progressionLoopEnabledAtom", async () => {
+    const store = makeAtomStore([...BASE_SEEDS, [progressionLoopEnabledAtom, false]]);
+    renderWithStore(<ProgressionControls />, store);
+    const loop = screen.getByRole("switch", { name: "Loop" });
+    expect(loop.getAttribute("aria-checked")).toBe("false");
+    await userEvent.click(loop);
+    expect(store.get(progressionLoopEnabledAtom)).toBe(true);
+  });
+
+  it("shows the progression length readout", () => {
+    // BASE_SEEDS is two 1-bar steps -> a 2-bar progression.
+    renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    expect(screen.getByText("2 bars")).toBeInTheDocument();
+  });
+
+  it("renders the rehosted backing-track controls", () => {
+    renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    expect(screen.getByLabelText("Genre style")).toBeInTheDocument();
+    expect(screen.getByLabelText("Chord instrument")).toBeInTheDocument();
+    expect(screen.getByLabelText("Swing amount")).toBeInTheDocument();
   });
 });
