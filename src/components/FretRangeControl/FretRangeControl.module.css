@@ -91,6 +91,32 @@
   min-width: var(--size-touch-target);
 }
 
+/* Inline: unified shell with range bar between start/end buttons */
+.fret-range-control.inline .fret-value-slot {
+  flex: 0 0 auto;
+  min-width: 1.5rem;
+}
+
+.range-bar {
+  flex: 1;
+  height: 4px;
+  min-width: 1rem;
+  border-radius: 2px;
+  background: var(--dc-border);
+  position: relative;
+  align-self: center;
+  overflow: hidden;
+}
+
+.range-fill {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--faceplate-accent, var(--dc-accent));
+  transition: left 0.2s ease, width 0.2s ease;
+}
+
 .fret-range-control.dashboard {
   display: grid;
   grid-template-columns: 1fr 1fr;

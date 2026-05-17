@@ -50,7 +50,7 @@ export function ViewTab() {
 
   return (
     <div className={styles.root} data-inspector-tab="view" data-layout-tier={tier} data-layout-variant={variant}>
-      <PropGrid columns={6}>
+      <PropGrid columns={tier === "mobile" ? 2 : 6}>
         {/* FINGERING — the group header and pattern cells are emitted by
             FingeringPatternControls; Fret Range closes the group. */}
         <FingeringPatternControls />
@@ -61,7 +61,7 @@ export function ViewTab() {
             onStartChange={setFretStart}
             onEndChange={setFretEnd}
             maxFret={MAX_FRET}
-            layout="dashboard"
+            layout="inline"
           />
         </Prop>
 

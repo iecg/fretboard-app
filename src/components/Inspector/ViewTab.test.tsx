@@ -34,8 +34,9 @@ describe("ViewTab", () => {
       [fretStartAtom, 3],
       [fretEndAtom, 8],
     ]);
-    expect(screen.getByRole("group", { name: /start fret/i }).textContent).toContain("3");
-    expect(screen.getByRole("group", { name: /end fret/i }).textContent).toContain("8");
+    const fretRange = screen.getByRole("group", { name: /fret range/i });
+    expect(fretRange.textContent).toContain("3");
+    expect(fretRange.textContent).toContain("8");
   });
 
   it("renders the accidentals and enharmonic controls", () => {
