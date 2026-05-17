@@ -1,0 +1,44 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 0.1875rem;
+}
+
+.cell {
+  min-height: 1.625rem;
+  padding: 0 0.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--dc-fg);
+  background: var(--dc-bg);
+  border: 1px solid var(--dc-border);
+  border-radius: var(--dc-radius);
+  cursor: pointer;
+  transition: var(--dc-transition);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cell:hover:not(:disabled) {
+  background: var(--dc-bg-hover);
+  border-color: var(--dc-border-hover);
+}
+
+.cell:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.cellActive {
+  color: var(--dc-fg-strong);
+  background: var(--dc-bg-active);
+  border-color: var(--dc-border-active);
+  box-shadow: var(--dc-glow-active);
+}
+
+.cell:focus-visible {
+  outline: none;
+  box-shadow: var(--dc-glow-focus);
+}
