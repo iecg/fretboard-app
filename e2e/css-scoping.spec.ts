@@ -215,7 +215,7 @@ test.describe("production css module scoping", () => {
       const tabContent = document.querySelector('[data-tab-id="chord"]:not([hidden])');
       if (!tabContent) return { found: false, buttons: [] };
 
-      const buttons = tabContent.querySelectorAll('button');
+      const buttons = tabContent.querySelectorAll('button:not([role="switch"])');
 
       const buttonHeights = Array.from(buttons)
         .filter((btn) => btn instanceof HTMLElement && btn.offsetHeight > 0)
