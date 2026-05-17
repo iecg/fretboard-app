@@ -693,15 +693,12 @@ describe("App", () => {
       screen.queryAllByTestId(/mobile/i);
     });
 
-    it("persists mobile tab selection to localStorage", async () => {
-      // mobileTabAtom is mounted on every App render (AppContent calls
-      // useAtom(mobileTabAtom) unconditionally), so the default value is
-      // written to localStorage regardless of viewport. setViewport(390, 844)
-      // is kept so MobileTabPanel mounts alongside for parity with sibling
-      // mobile-layout tests.
+    it("renders the Inspector on the mobile tier", async () => {
       setViewport(390, 844);
       render(<App />);
-      expect(localStorage.getItem(k("mobileTab"))).toBe("scales");
+      expect(
+        await screen.findByRole("tablist", { name: "Inspector" }),
+      ).toBeInTheDocument();
     });
 
     it("uses compact mobile header attributes and full-width help modal", async () => {
@@ -889,7 +886,9 @@ describe("App", () => {
         ).toBeTruthy();
       });
 
-      expect(document.querySelector(".mobile-tab-content")).toBeTruthy();
+      expect(
+        await screen.findByRole("tablist", { name: "Inspector" }),
+      ).toBeInTheDocument();
       expect(document.querySelector(".controls-panel")).toBeNull();
     });
 
@@ -936,7 +935,6 @@ describe("App", () => {
       expect(
         await screen.findByRole("tablist", { name: "Inspector" }),
       ).toBeInTheDocument();
-      expect(document.querySelector(".mobile-tab-content")).toBeNull();
     });
 
     it("uses desktop-stacked at 1024x768 (compact height)", async () => {
@@ -967,7 +965,6 @@ describe("App", () => {
       expect(
         await screen.findByRole("tablist", { name: "Inspector" }),
       ).toBeInTheDocument();
-      expect(document.querySelector(".mobile-tab-content")).toBeNull();
     });
 
     it("uses desktop-split at 1024x1366 (iPad Pro portrait)", async () => {
@@ -998,7 +995,6 @@ describe("App", () => {
       expect(
         await screen.findByRole("tablist", { name: "Inspector" }),
       ).toBeInTheDocument();
-      expect(document.querySelector(".mobile-tab-content")).toBeNull();
     });
 
     // ExpandedControlsPanel and its `.controls-panel` grid were deleted in
@@ -1040,14 +1036,18 @@ describe("App", () => {
       });
 
       const tuningSelect = await screen.findByRole("combobox", { name: /Tuning/i });
-      expect(tuningSelect).toHaveValue("Standard");
-      
-      fireEvent.change(tuningSelect, { target: { value: "Drop D" } });
+      expect(within(tuningSelect).getByText("Standard")).toBeInTheDocument();
+
+      const user = userEvent.setup();
+      await user.click(tuningSelect);
+      await user.click(screen.getByRole("option", { name: "Drop D" }));
 
       await waitFor(() => {
         expect(localStorage.getItem(k("tuningName"))).toBe("Drop D");
-        expect(tuningSelect).toHaveValue("Drop D");
       });
+      expect(
+        within(screen.getByRole("combobox", { name: /Tuning/i })).getByText("Drop D"),
+      ).toBeInTheDocument();
     });
 
     it("adjusts fret range via buttons", async () => {

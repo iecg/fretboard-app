@@ -6,17 +6,32 @@ import { rootNoteAtom, scaleNameAtom } from "../../store/atoms";
 import { ScaleTab } from "./ScaleTab";
 
 describe("ScaleTab", () => {
-  it("renders the scale selector (root chips + family selector)", () => {
+  it("renders the Key, Theory, and Wheel column headers", () => {
     renderWithAtoms(<ScaleTab />, [
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
     ]);
-    expect(screen.getByText(/^root$/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/^scale family$/i, {
-        selector: "span[class*='section-label']",
-      }),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Key")).toBeInTheDocument();
+    expect(screen.getByText("Theory")).toBeInTheDocument();
+    expect(screen.getByText("Wheel")).toBeInTheDocument();
+  });
+
+  it("renders the scale selector — root chips and the scale family picker", () => {
+    renderWithAtoms(<ScaleTab />, [
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+    ]);
+    expect(screen.getByText("Root")).toBeInTheDocument();
+    expect(screen.getByText("Scale Family", { selector: "span[class*='propLabel']" })).toBeInTheDocument();
+  });
+
+  it("renders the Theory facts readout", () => {
+    renderWithAtoms(<ScaleTab />, [
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+    ]);
+    expect(screen.getByText("Notes")).toBeInTheDocument();
+    expect(screen.getByText("Degrees")).toBeInTheDocument();
   });
 
   it("lazy-loads and renders the Circle of Fifths", async () => {

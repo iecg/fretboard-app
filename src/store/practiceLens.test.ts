@@ -135,9 +135,9 @@ describe("practiceCuesAtom", () => {
       expect(cues[0]!.notes.map((n) => n.intervalName)).toEqual(["1", "3", "5"]);
     });
 
-    it("returns empty cues when no chord is set", () => {
+    it("returns empty cues when chord overlay is off", () => {
       const store = makeStore();
-      store.set(chordTypeAtom, null);
+      store.set(chordOverlayModeAtom, "off");
       store.set(practiceLensAtom, "targets");
       expect(store.get(practiceCuesAtom)).toHaveLength(0);
     });
@@ -335,9 +335,9 @@ describe("noteSemanticMapAtom", () => {
     expect(fSemantics?.isChordTone).toBe(true);
   });
 
-  it("returns empty map when no chord is active", () => {
+  it("returns empty map when chord overlay is off", () => {
     const store = makeStore();
-    store.set(chordTypeAtom, null);
+    store.set(chordOverlayModeAtom, "off");
     expect(store.get(noteSemanticMapAtom).size).toBe(0);
   });
 
@@ -391,9 +391,9 @@ describe("showChordPracticeBarAtom", () => {
     localStorage.clear();
   });
 
-  it("returns false when no chord is set", () => {
+  it("returns false when chord overlay is off", () => {
     const store = makeStore();
-    store.set(chordTypeAtom, null);
+    store.set(chordOverlayModeAtom, "off");
     expect(store.get(showChordPracticeBarAtom)).toBe(false);
   });
 
@@ -577,9 +577,9 @@ describe("practiceBarLensLabelAtom", () => {
     localStorage.clear();
   });
 
-  it("returns null when no chord is active", () => {
+  it("returns null when chord overlay is off", () => {
     const store = makeStore();
-    store.set(chordTypeAtom, null);
+    store.set(chordOverlayModeAtom, "off");
     expect(store.get(practiceBarLensLabelAtom)).toBeNull();
   });
 

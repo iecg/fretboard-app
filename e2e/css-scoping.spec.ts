@@ -92,7 +92,8 @@ test.describe("production css module scoping", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await gotoApp(page);
 
-    const tabContent = page.locator('[data-testid="mobile-tab-content"]');
+    // Mobile layout uses the Inspector (bottom placement).
+    const tabContent = page.locator('[data-tab-id]');
     await expect(tabContent.first()).toBeVisible();
     expect(await tabContent.count(), "Tab content should be present").toBeGreaterThan(0);
     const contentRect = await tabContent.first().boundingBox();
@@ -200,17 +201,21 @@ test.describe("production css module scoping", () => {
   test("mobile theory buttons enforce touch target min-height", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await gotoApp(page);
-    // Mobile layout uses the BottomTabBar + MobileTabPanel — the legacy
+    // Mobile layout uses the Inspector (bottom placement) — the legacy
     // [data-testid="theory-controls"] disclosure container is not rendered on
-    // mobile. Switch to the Chords tab and assert touch targets there instead.
-    await page.waitForSelector('[data-testid="mobile-tab-content"]');
-    await page.getByRole("tab", { name: /Chords/i }).click();
+    // mobile. Switch to the Chord tab and assert touch targets there instead.
+    await page.waitForSelector('[data-tab-id]');
+    await page.getByRole("tab", { name: "Chord" }).click();
+    // Radix keeps every Tabs.Content mounted (inactive panels carry `hidden`),
+    // so target the active Chord panel specifically — a bare [data-tab-id]
+    // query would grab the first (hidden) panel and see zero visible buttons.
+    await page.waitForSelector('[data-tab-id="chord"]:not([hidden])');
 
     const result = await page.evaluate(() => {
-      const tabContent = document.querySelector('[data-testid="mobile-tab-content"]');
+      const tabContent = document.querySelector('[data-tab-id="chord"]:not([hidden])');
       if (!tabContent) return { found: false, buttons: [] };
 
-      const buttons = tabContent.querySelectorAll('button');
+      const buttons = tabContent.querySelectorAll('button:not([role="switch"])');
 
       const buttonHeights = Array.from(buttons)
         .filter((btn) => btn instanceof HTMLElement && btn.offsetHeight > 0)

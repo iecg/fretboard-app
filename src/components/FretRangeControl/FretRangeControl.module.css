@@ -11,8 +11,8 @@
 
 .fret-btn {
   composes: button from '../StepperShell/StepperShell.module.css';
-  min-width: 1.8rem;
-  min-height: 1.8rem;
+  min-width: 1.85rem;
+  min-height: 1.85rem;
   padding: 0.2rem 0.35rem;
   font-size: 0.8rem;
 }
@@ -31,7 +31,7 @@
   composes: value from '../StepperShell/StepperShell.module.css';
   font-size: 0.78rem;
   font-weight: 700;
-  color: var(--surface-control-fg);
+  color: var(--dc-fg-strong);
   display: block;
   width: 100%;
   padding: 0;
@@ -45,7 +45,7 @@
 
 .range-separator {
   font-size: var(--text-xs);
-  color: var(--text-muted);
+  color: var(--dc-fg-muted);
   padding: 0 var(--space-1);
 }
 
@@ -89,6 +89,32 @@
 .fret-range-control.mobile .fret-btn {
   min-height: var(--size-touch-target);
   min-width: var(--size-touch-target);
+}
+
+/* Inline: unified shell with range bar between start/end buttons */
+.fret-range-control.inline .fret-value-slot {
+  flex: 0 0 auto;
+  min-width: 1.5rem;
+}
+
+.range-bar {
+  flex: 1;
+  height: 4px;
+  min-width: 1rem;
+  border-radius: 2px;
+  background: var(--dc-border);
+  position: relative;
+  align-self: center;
+  overflow: hidden;
+}
+
+.range-fill {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--faceplate-accent, var(--dc-accent));
+  transition: left 0.2s ease, width 0.2s ease;
 }
 
 .fret-range-control.dashboard {

@@ -1,12 +1,12 @@
 import { useCallback, useId, useRef, useState } from "react";
-import { useAtom } from "jotai";
 import { motion } from "motion/react";
 import clsx from "clsx";
 import { CAGED_SHAPES, type CagedShape, ANIMATION_DURATION_FAST } from "@fretflow/core";
 import { useShapeState } from "../../hooks/useShapeState";
-import { displayFormatAtom, type FingeringPattern } from "../../store/atoms";
+import { type FingeringPattern } from "../../store/atoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
+import { GroupHeader, Prop } from "../Inspector/InspectorGrid";
 import shared from "../shared/shared.module.css";
 
 const LONG_PRESS_MS = 500;
@@ -16,6 +16,13 @@ const isTouchPrimary =
   typeof window !== "undefined" &&
   window.matchMedia("(pointer: coarse)").matches;
 
+/**
+ * Renders the FINGERING property-grid group: the group header plus the
+ * pattern selector and its per-pattern sub-controls, as `Prop` cells. It is
+ * designed to be a child of the View tab's `PropGrid` — React fragments are
+ * transparent to CSS grid, so the emitted `GroupHeader`/`Prop` elements become
+ * direct grid items.
+ */
 export function FingeringPatternControls() {
   const { t } = useTranslation();
   const {
@@ -41,9 +48,6 @@ export function FingeringPatternControls() {
     setTwoStringsInterval,
   } = useShapeState();
 
-  const [displayFormat, setDisplayFormat] = useAtom(displayFormatAtom);
-
-  const shapeLabelId = useId();
   const shapeHelpId = useId();
 
   const pressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -62,9 +66,11 @@ export function FingeringPatternControls() {
 
   return (
     <>
-      <div className={shared["control-section"]}>
-        <span className={shared["section-label"]}>Fingering Pattern</span>
+      <GroupHeader>{t("inspector.groupFingering")}</GroupHeader>
+
+      <Prop label={t("inspector.pattern")} span={2}>
         <ToggleBar
+          label={t("inspector.pattern")}
           options={[
             { value: "none", label: "None" },
             { value: "caged", label: "CAGED" },
@@ -74,174 +80,166 @@ export function FingeringPatternControls() {
           ]}
           value={fingeringPattern}
           onChange={(v) => setFingeringPattern(v as FingeringPattern)}
-
         />
-      </div>
+      </Prop>
 
       {fingeringPattern === "caged" && (
-        <>
-          <div className={shared["control-section"]}>
-            <span className={shared["section-label"]} id={shapeLabelId}>{t("controls.shape")}</span>
-            <span id={shapeHelpId} className={shared["sr-only"]}>
-              {isTouchPrimary ? t("controls.shapeHintTouch") : t("controls.shapeHintPointer")}
-            </span>
-            <div
-              className={shared["toggle-group"]}
-              role="group"
-              aria-labelledby={shapeLabelId}
-              aria-describedby={shapeHelpId}
-
+        <Prop
+          label={t("controls.shape")}
+          span={2}
+          hint={isTouchPrimary ? t("controls.longPressToAdd") : t("controls.shiftClickToAdd")}
+        >
+          <span id={shapeHelpId} className={shared["sr-only"]}>
+            {isTouchPrimary ? t("controls.shapeHintTouch") : t("controls.shapeHintPointer")}
+          </span>
+          <div
+            className={shared["toggle-group"]}
+            role="group"
+            aria-label={t("controls.shape")}
+            aria-describedby={shapeHelpId}
+          >
+            <motion.button
+              type="button"
+              className={clsx(
+                shared["toggle-btn"],
+                cagedShapes.size === CAGED_SHAPES.length && shared.active,
+              )}
+              aria-pressed={cagedShapes.size === CAGED_SHAPES.length}
+              onClick={() => setCagedShapes(new Set(CAGED_SHAPES))}
+              whileTap={{ scale: 0.96 }}
+              animate={
+                cagedShapes.size === CAGED_SHAPES.length ? { scale: [1, 1.04, 1] } : { scale: 1 }
+              }
+              transition={{ duration: ANIMATION_DURATION_FAST }}
             >
-              <motion.button
-                type="button"
-                className={clsx(
-                  shared["toggle-btn"],
-                  cagedShapes.size === CAGED_SHAPES.length && shared.active,
-                )}
-                aria-pressed={cagedShapes.size === CAGED_SHAPES.length}
-                onClick={() => setCagedShapes(new Set(CAGED_SHAPES))}
-                whileTap={{ scale: 0.96 }}
-                animate={cagedShapes.size === CAGED_SHAPES.length ? { scale: [1, 1.04, 1] } : { scale: 1 }}
-                transition={{ duration: ANIMATION_DURATION_FAST }}
-              >
-                All
-              </motion.button>
-              {CAGED_SHAPES.map((s) => {
-                const isActive = cagedShapes.has(s);
-                return (
-                  <motion.button
-                    key={s}
-                    type="button"
-                    className={clsx(
-                      shared["toggle-btn"],
-                      isActive && shared.active,
-                    )}
-                    data-pressing={pressingShape === s || undefined}
-                    aria-pressed={isActive}
-                    title={
-                      isTouchPrimary
-                        ? "Tap to select; long press to add/remove"
-                        : "Click to select; Shift+click to toggle multiple"
-                    }
-                    onPointerDown={(e) => {
-                      if (e.pointerType !== "touch" && e.pointerType !== "pen") return;
-                      cancelPress();
+              All
+            </motion.button>
+            {CAGED_SHAPES.map((s) => {
+              const isActive = cagedShapes.has(s);
+              return (
+                <motion.button
+                  key={s}
+                  type="button"
+                  className={clsx(shared["toggle-btn"], isActive && shared.active)}
+                  data-pressing={pressingShape === s || undefined}
+                  aria-pressed={isActive}
+                  title={
+                    isTouchPrimary
+                      ? "Tap to select; long press to add/remove"
+                      : "Click to select; Shift+click to toggle multiple"
+                  }
+                  onPointerDown={(e) => {
+                    if (e.pointerType !== "touch" && e.pointerType !== "pen") return;
+                    cancelPress();
+                    longPressedShapeRef.current = null;
+                    pressStartRef.current = { x: e.clientX, y: e.clientY };
+                    setPressingShape(s);
+                    pressTimerRef.current = setTimeout(() => {
+                      longPressedShapeRef.current = s;
+                      pressTimerRef.current = null;
+                      pressStartRef.current = null;
+                      setPressingShape(null);
+                      toggleCagedShape(s);
+                      navigator.vibrate?.(30);
+                    }, LONG_PRESS_MS);
+                  }}
+                  onPointerMove={(e) => {
+                    if (!pressStartRef.current) return;
+                    const dx = e.clientX - pressStartRef.current.x;
+                    const dy = e.clientY - pressStartRef.current.y;
+                    if (Math.hypot(dx, dy) > MOVE_CANCEL_PX) cancelPress();
+                  }}
+                  onPointerUp={cancelPress}
+                  onPointerCancel={cancelPress}
+                  onPointerLeave={cancelPress}
+                  onContextMenu={(e) => {
+                    if (longPressedShapeRef.current !== null) e.preventDefault();
+                  }}
+                  onClick={(e) => {
+                    if (longPressedShapeRef.current !== null) {
                       longPressedShapeRef.current = null;
-                      pressStartRef.current = { x: e.clientX, y: e.clientY };
-                      setPressingShape(s);
-                      pressTimerRef.current = setTimeout(() => {
-                        longPressedShapeRef.current = s;
-                        pressTimerRef.current = null;
-                        pressStartRef.current = null;
-                        setPressingShape(null);
-                        toggleCagedShape(s);
-                        navigator.vibrate?.(30);
-                      }, LONG_PRESS_MS);
-                    }}
-                    onPointerMove={(e) => {
-                      if (!pressStartRef.current) return;
-                      const dx = e.clientX - pressStartRef.current.x;
-                      const dy = e.clientY - pressStartRef.current.y;
-                      if (Math.hypot(dx, dy) > MOVE_CANCEL_PX) cancelPress();
-                    }}
-                    onPointerUp={cancelPress}
-                    onPointerCancel={cancelPress}
-                    onPointerLeave={cancelPress}
-                    onContextMenu={(e) => {
-                      if (longPressedShapeRef.current !== null) e.preventDefault();
-                    }}
-                    onClick={(e) => {
-                      if (longPressedShapeRef.current !== null) {
-                        longPressedShapeRef.current = null;
-                        return;
-                      }
-                      onShapeClick?.(s);
-                      onRecenter?.();
-                      if (e.shiftKey) {
-                        toggleCagedShape(s);
-                      } else {
-                        selectSingleCagedShape(s);
-                      }
-                    }}
-                    whileTap={{ scale: 0.96 }}
-                    animate={isActive ? { scale: [1, 1.04, 1] } : { scale: 1 }}
-                    transition={{ duration: ANIMATION_DURATION_FAST }}
-                  >
-                    {s}
-                  </motion.button>
-                );
-              })}
-            </div>
-            <p className={shared["field-hint"]}>
-              {isTouchPrimary ? t("controls.longPressToAdd") : t("controls.shiftClickToAdd")}
-            </p>
+                      return;
+                    }
+                    onShapeClick?.(s);
+                    onRecenter?.();
+                    if (e.shiftKey) {
+                      toggleCagedShape(s);
+                    } else {
+                      selectSingleCagedShape(s);
+                    }
+                  }}
+                  whileTap={{ scale: 0.96 }}
+                  animate={isActive ? { scale: [1, 1.04, 1] } : { scale: 1 }}
+                  transition={{ duration: ANIMATION_DURATION_FAST }}
+                >
+                  {s}
+                </motion.button>
+              );
+            })}
           </div>
-        </>
+        </Prop>
       )}
 
       {fingeringPattern === "3nps" && (
         <>
-          <div className={shared["control-section"]}>
-            <span className={shared["section-label"]}>{t("controls.position")}</span>
+          <Prop label={t("controls.position")} span={2}>
             <ToggleBar
+              label={t("controls.position")}
               options={[1, 2, 3, 4, 5, 6, 7].map((p) => ({
                 value: p,
                 label: String(p),
               }))}
               value={npsPosition}
               onChange={(v) => setNpsPosition(v as number)}
-
             />
-          </div>
-          <div className={shared["control-section"]}>
-            <span className={shared["section-label"]}>{t("controls.octave")}</span>
+          </Prop>
+          <Prop label={t("controls.octave")} span={2}>
             <ToggleBar
+              label={t("controls.octave")}
               options={[
                 { value: 0, label: "Low" },
                 { value: 1, label: "High" },
               ]}
               value={npsOctave}
               onChange={(v) => setNpsOctave(v as number)}
-
             />
-          </div>
+          </Prop>
         </>
       )}
 
       {fingeringPattern === "one-string" && (
         <>
-          <div className={shared["control-section"]}>
-            <span className={shared["section-label"]}>{t("controls.string")}</span>
+          <Prop label={t("controls.string")} span={2}>
             <ToggleBar
+              label={t("controls.string")}
               options={[1, 2, 3, 4, 5, 6].map((n, i) => ({ value: i, label: String(n) }))}
               value={oneStringIndex}
               onChange={(v) => setOneStringIndex(v as number)}
-
             />
-          </div>
-          <div className={shared["control-section"]}>
-            <span className={shared["section-label"]}>{t("controls.connectors")}</span>
+          </Prop>
+          <Prop
+            label={t("controls.connectors")}
+            span={2}
+            hint={oneStringInterval > 0 ? t("controls.showConsecutiveSteps") : undefined}
+          >
             <ToggleBar
+              label={t("controls.connectors")}
               options={[
                 { value: 0, label: t("controls.off") },
-                { value: 1, label: "On" },
+                { value: 1, label: t("controls.on") },
               ]}
               value={oneStringInterval}
               onChange={(v) => setOneStringInterval(v as number)}
-
             />
-          </div>
-          {oneStringInterval > 0 && (
-            <p className={shared["field-hint"]}>{t("controls.showConsecutiveSteps")}</p>
-          )}
+          </Prop>
         </>
       )}
 
       {fingeringPattern === "two-strings" && (
         <>
-          <div className={shared["control-section"]}>
-            <span className={shared["section-label"]}>{t("controls.strings")}</span>
+          <Prop label={t("controls.strings")} span={2}>
             <ToggleBar
+              label={t("controls.strings")}
               options={
                 twoStringsInterval === 3
                   ? [
@@ -260,12 +258,15 @@ export function FingeringPatternControls() {
               }
               value={twoStringsPair}
               onChange={(v) => setTwoStringsPair(v as number)}
-
             />
-          </div>
-          <div className={shared["control-section"]}>
-            <span className={shared["section-label"]}>{t("controls.interval")}</span>
+          </Prop>
+          <Prop
+            label={t("controls.interval")}
+            span={2}
+            hint={twoStringsInterval > 0 ? t("controls.pairMembersConnected") : undefined}
+          >
             <ToggleBar
+              label={t("controls.interval")}
               options={[
                 { value: 0, label: t("controls.off") },
                 { value: 1, label: "3rds" },
@@ -274,32 +275,10 @@ export function FingeringPatternControls() {
               ]}
               value={twoStringsInterval}
               onChange={(v) => setTwoStringsInterval(v as number)}
-
             />
-          </div>
-          {twoStringsInterval > 0 && (
-            <p className={shared["field-hint"]}>{t("controls.pairMembersConnected")}</p>
-          )}
+          </Prop>
         </>
       )}
-
-      <div className={shared["control-section"]}>
-        <span className={shared["section-label"]}>{t("controls.noteLabels")}</span>
-        <ToggleBar
-          options={(["notes", "degrees", "none"] as const).map((fmt) => ({
-            value: fmt,
-            label:
-              fmt === "notes"
-                ? "Notes"
-                : fmt === "degrees"
-                  ? "Intervals"
-                  : "None",
-          }))}
-          value={displayFormat}
-          onChange={(v) => setDisplayFormat(v as "notes" | "degrees" | "none")}
-
-        />
-      </div>
     </>
   );
 }

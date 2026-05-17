@@ -1,19 +1,6 @@
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
-import { k, createStorage, rawStringStorage, GET_ON_INIT } from "../utils/storage";
-
-const MOBILE_TABS = ["scales", "chords", "progression", "cof", "view"] as const;
-type MobileTab = (typeof MOBILE_TABS)[number];
-
-const mobileTabStorage = createStorage<MobileTab>({
-  validate: (v) => (MOBILE_TABS as readonly string[]).includes(v),
-  onRead: (v) => {
-    // Migrate legacy values from old tab ids to new tab ids.
-    if (v === ("key" as unknown as string) || v === ("scale" as unknown as string) || v === ("theory" as unknown as string)) return "scales";
-    if (v === ("settings" as unknown as string) || v === ("fretboard" as unknown as string)) return "view";
-    return v;
-  },
-});
+import { k, rawStringStorage, GET_ON_INIT } from "../utils/storage";
 
 export const displayFormatAtom = atomWithStorage<"notes" | "degrees" | "none">(
   k("displayFormat"),
@@ -26,13 +13,6 @@ export const scaleDegreeColorsEnabledAtom = atomWithStorage<boolean>(
   k("scaleDegreeColorsEnabled"),
   false,
   undefined,
-  GET_ON_INIT,
-);
-
-export const mobileTabAtom = atomWithStorage<MobileTab>(
-  k("mobileTab"),
-  "scales",
-  mobileTabStorage,
   GET_ON_INIT,
 );
 

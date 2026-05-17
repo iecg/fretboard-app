@@ -60,6 +60,7 @@ export {
   effectiveChordDegreeAtom,
   effectiveChordOverlayModeAtom,
   effectiveChordQualityOverrideAtom,
+  chordSourceIsProgressionAtom,
   chordOverlayHiddenAtom,
   chordHiddenNotesAtom,
   toggleChordHiddenNoteAtom,
@@ -92,7 +93,6 @@ export {
 export {
   displayFormatAtom,
   scaleDegreeColorsEnabledAtom,
-  mobileTabAtom,
   settingsOverlayOpenAtom,
   themeAtom,
 } from "./uiAtoms";
@@ -145,6 +145,7 @@ export {
   loadProgressionStepsAtom,
   remapProgressionStepsForScaleAtom,
   addProgressionStepAtom,
+  duplicateProgressionStepAtom,
   removeProgressionStepAtom,
   moveProgressionStepAtom,
   updateProgressionStepDegreeAtom,

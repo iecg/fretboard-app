@@ -44,8 +44,12 @@ describe("ProgressionControls", () => {
   it("loads a preset into the editable list", async () => {
     const store = makeAtomStore([...BASE_SEEDS]);
     renderWithStore(<ProgressionControls />, store);
+    const user = userEvent.setup();
 
-    await userEvent.selectOptions(screen.getByRole("combobox", { name: "Preset" }), "two-five-one");
+    await user.click(screen.getByRole("combobox", { name: "Preset" }));
+    // Both the catalog "ii-V-I" preset and the generated suggestion resolve to
+    // the same ii-V-I degrees, so either option is a valid pick.
+    await user.click(screen.getAllByRole("option", { name: "ii-V-I" })[0]);
 
     expect(store.get(progressionStepsAtom).map((step) => step.degree)).toEqual(["ii", "V", "I"]);
     expect(store.get(progressionEnabledAtom)).toBe(true);
@@ -84,6 +88,20 @@ describe("ProgressionControls", () => {
     await userEvent.click(within(screen.getByRole("group", { name: "Chord quality" })).getByRole("button", { name: "Diatonic" }));
 
     expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBeNull();
+  });
+
+  it("duplicates the active step via the Duplicate button", async () => {
+    const store = makeAtomStore([...BASE_SEEDS]);
+    renderWithStore(<ProgressionControls />, store);
+
+    // BASE_SEEDS active index defaults to 0 -> the "I" step is active.
+    await userEvent.click(screen.getByRole("button", { name: /duplicate chord/i }));
+
+    expect(store.get(progressionStepsAtom).map((step) => step.degree)).toEqual([
+      "I",
+      "I",
+      "V",
+    ]);
   });
 
   it("adds, removes, and reorders steps", async () => {
@@ -134,55 +152,55 @@ describe("ProgressionControls PRESET", () => {
     localStorage.clear();
   });
 
-  it("renders a LabeledSelect with default preset value", () => {
+  it("renders a LabeledSelect with the default preset value", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
       [progressionEnabledAtom, true],
     ]);
     renderWithStore(<ProgressionControls />, store);
-    const select = screen.getByLabelText(/Preset/i) as HTMLSelectElement;
-    expect(select.tagName).toBe("SELECT");
-    expect(select.value).toBe("one-five-six-four"); // default I-V-vi-IV preset
+    const trigger = screen.getByRole("combobox", { name: "Preset" });
+    // default I-V-vi-IV preset — the trigger reflects the selected label.
+    expect(within(trigger).getByText("I-V-vi-IV")).toBeInTheDocument();
   });
 
-  it("renders preset selector with category groups", () => {
+  it("renders preset selector with category groups", async () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
       [progressionEnabledAtom, true],
     ]);
     renderWithStore(<ProgressionControls />, store);
+    const user = userEvent.setup();
 
-    const select = screen.getByLabelText(/preset/i);
-    const optgroups = select.querySelectorAll("optgroup");
-    expect(optgroups.length).toBeGreaterThan(0);
+    await user.click(screen.getByRole("combobox", { name: "Preset" }));
+    expect(screen.getByText("Pop / Rock")).toBeInTheDocument();
   });
 
-  it("renders a suggested presets optgroup for the current scale", () => {
+  it("renders a suggested presets group for the current scale", async () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
       [progressionEnabledAtom, true],
     ]);
     renderWithStore(<ProgressionControls />, store);
+    const user = userEvent.setup();
 
-    const select = screen.getByLabelText("Preset");
-    const optgroups = Array.from(select.querySelectorAll("optgroup"));
-    const labels = optgroups.map((g) => g.getAttribute("label"));
-    expect(labels.some((l) => l?.startsWith("Suggested for"))).toBe(true);
+    await user.click(screen.getByRole("combobox", { name: "Preset" }));
+    expect(screen.getByText(/^Suggested for/)).toBeInTheDocument();
   });
 
-  it("only lists presets that are available for the selected scale", () => {
+  it("only lists presets that are available for the selected scale", async () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Minor Blues"],
       [progressionEnabledAtom, true],
     ]);
     renderWithStore(<ProgressionControls />, store);
+    const user = userEvent.setup();
 
-    const select = screen.getByRole("combobox", { name: "Preset" });
-    const optionLabels = within(select)
+    await user.click(screen.getByRole("combobox", { name: "Preset" }));
+    const optionLabels = screen
       .getAllByRole("option")
       .map((option) => option.textContent);
     expect(optionLabels[0]).toBe("Custom");

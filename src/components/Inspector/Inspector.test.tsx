@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
-import { progressionEnabledAtom } from "../../store/atoms";
+import { progressionEnabledAtom, progressionStepsAtom, rootNoteAtom, scaleNameAtom } from "../../store/atoms";
 import { Inspector } from "./Inspector";
 
 function renderInspector() {
@@ -36,12 +36,12 @@ describe("Inspector", () => {
     expect(screen.getByRole("tab", { name: "View" }).getAttribute("aria-selected")).toBe("false");
   });
 
-  it("hides the Progression tab when progressionEnabledAtom is false", () => {
+  it("renders the Progression tab even when progressionEnabledAtom is false", () => {
     renderWithAtoms(<Inspector />, [[progressionEnabledAtom, false]]);
-    expect(screen.queryByRole("tab", { name: "Progression" })).toBeNull();
+    expect(screen.getByRole("tab", { name: "Progression" })).toBeInTheDocument();
   });
 
-  it("shows the Progression tab when progressionEnabledAtom is true", () => {
+  it("renders the Progression tab when progressionEnabledAtom is true", () => {
     renderWithAtoms(<Inspector />, [[progressionEnabledAtom, true]]);
     expect(screen.getByRole("tab", { name: "Progression" })).toBeInTheDocument();
   });
@@ -49,7 +49,7 @@ describe("Inspector", () => {
   it("renders the View tab body by default", () => {
     renderInspector();
     expect(screen.getByRole("tabpanel").getAttribute("data-tab-id")).toBe("view");
-    expect(screen.getByText(/fingering pattern/i)).toBeInTheDocument();
+    expect(screen.getByText("Fingering")).toBeInTheDocument();
     expect(screen.getByRole("group", { name: /fret range/i })).toBeInTheDocument();
   });
 
@@ -67,5 +67,53 @@ describe("Inspector", () => {
     await user.click(screen.getByRole("tab", { name: "Chord" }));
     expect(screen.getByRole("tabpanel").getAttribute("data-tab-id")).toBe("chord");
     expect(screen.getByText(/chord mode/i)).toBeInTheDocument();
+  });
+
+  it("populates the Progression tab body with the ProgressionControls editor", async () => {
+    const user = userEvent.setup();
+    renderWithAtoms(<Inspector />, [
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionEnabledAtom, true],
+      [
+        progressionStepsAtom,
+        [{ id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null }],
+      ],
+    ]);
+
+    await user.click(screen.getByRole("tab", { name: /progression/i }));
+
+    expect(
+      screen.getByRole("switch", { name: "Progression mode" }),
+    ).toBeInTheDocument();
+  });
+
+  it("defaults to top placement with no tab icons visible", () => {
+    const { container } = renderInspector();
+    const root = container.querySelector('[role="tablist"]')?.closest("[data-placement]");
+    expect(root?.getAttribute("data-placement")).toBe("top");
+  });
+
+  it("renders bottom placement with a data-placement attribute when placement is bottom", () => {
+    const { container } = renderWithAtoms(<Inspector placement="bottom" />);
+    const root = container.querySelector('[role="tablist"]')?.closest("[data-placement]");
+    expect(root?.getAttribute("data-placement")).toBe("bottom");
+  });
+
+  it("renders an aria-hidden icon span inside every tab trigger", () => {
+    renderWithAtoms(<Inspector placement="bottom" />);
+    for (const name of ["View", "Scale", "Chord", "Progression"]) {
+      const trigger = screen.getByRole("tab", { name });
+      const icon = trigger.querySelector('[aria-hidden="true"]');
+      expect(icon).not.toBeNull();
+    }
+  });
+
+  it("keeps keyboard arrow navigation working in bottom placement", async () => {
+    const user = userEvent.setup();
+    renderWithAtoms(<Inspector placement="bottom" />);
+    screen.getByRole("tab", { name: "View" }).focus();
+    await user.keyboard("{ArrowRight}");
+    expect(screen.getByRole("tab", { name: "Scale" }).getAttribute("aria-selected")).toBe("true");
   });
 });

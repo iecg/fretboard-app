@@ -6,7 +6,6 @@ import { createStore, Provider } from "jotai";
 import {
   fingeringPatternAtom,
   cagedShapesAtom,
-  displayFormatAtom,
   oneStringIndexAtom,
   oneStringIntervalAtom,
   twoStringsPairAtom,
@@ -116,17 +115,6 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
     const result = store.get(cagedShapesAtom);
     expect(result.has("C")).toBe(true);
     expect(result.has("A")).toBe(true);
-  });
-
-  it("updates display format when Intervals button clicked", () => {
-    const store = createStore();
-    render(
-      <Provider store={store}>
-        <FingeringPatternControls />
-      </Provider>
-    );
-    fireEvent.click(screen.getByText("Intervals"));
-    expect(store.get(displayFormatAtom)).toBe("degrees");
   });
 
   describe("fingering patterns", () => {

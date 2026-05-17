@@ -60,11 +60,11 @@
 
 .chord-practice-bar-badge {
   font-family: var(--font-sans);
-  font-size: 0.7rem;
-  font-weight: var(--font-weight-medium);
-  color: var(--chip-text-inactive);
+  font-size: var(--text-2xs);
+  font-weight: 500;
+  color: var(--surface-control-fg-muted);
   line-height: 1;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   background: var(--chip-surface-inactive);
   border: 1px solid var(--chip-border-inactive);
@@ -98,19 +98,13 @@
 
 .practice-bar-group-label {
   font-family: var(--font-sans);
-  font-size: 0.68rem;
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-muted);
-  letter-spacing: 0.06em;
+  font-size: var(--text-2xs);
+  font-weight: 500;
+  color: var(--surface-control-fg-muted);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   white-space: nowrap;
   flex-shrink: 0;
-  opacity: 0.6;
-}
-
-:global([data-theme="modern-dark"]) .practice-bar-group-label {
-  color: var(--text-muted);
-  opacity: 0.5;
 }
 
 .practice-bar-group[data-group-variant="land-on"] .practice-bar-group-label {

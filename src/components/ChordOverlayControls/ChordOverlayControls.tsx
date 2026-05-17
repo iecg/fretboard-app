@@ -1,18 +1,22 @@
 import { startTransition, useEffect } from "react";
-import { useAtomValue } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import clsx from "clsx";
 import { NOTES, LENS_REGISTRY } from "@fretflow/core";
-import { lensAvailabilityAtom, fingeringPatternAtom } from "../../store/atoms";
+import {
+  lensAvailabilityAtom,
+  fingeringPatternAtom,
+  chordOverlayHiddenAtom,
+} from "../../store/atoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import { NoteGrid } from "../NoteGrid/NoteGrid";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { Switch } from "../Switch/Switch";
+import { PropGrid, Prop, GroupHeader } from "../Inspector/InspectorGrid";
+import { ChordTypeGrid } from "../Inspector/ChordTypeGrid";
 import { useChordState } from "../../hooks/useChordState";
 import { useScaleState } from "../../hooks/useScaleState";
-import theoryStyles from "../TheoryControls/TheoryControls.module.css";
 import panelStyles from "./ChordOverlayControls.module.css";
 import shared from "../shared/shared.module.css";
-import { CHORD_NONE_VALUE } from "./chordTypeOptions";
 import {
   buildDegreeToggleOptions,
   buildQualityToggleOptions,
@@ -27,6 +31,7 @@ const FULL_CHORD_SUPPORTED_TYPES = new Set([
 ]);
 
 export function ChordOverlayControls() {
+  const { t } = useTranslation();
   const { scaleName, useFlats } = useScaleState();
   const {
     chordType,
@@ -44,6 +49,7 @@ export function ChordOverlayControls() {
     chordQualityOverride,
     setChordQualityOverride,
   } = useChordState();
+  const [chordOverlayHidden, setChordOverlayHidden] = useAtom(chordOverlayHiddenAtom);
 
   const lensAvailability = useAtomValue(lensAvailabilityAtom);
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
@@ -59,7 +65,7 @@ export function ChordOverlayControls() {
     scaleName,
     qualityOverridden: hasQualityOverride,
     activeDegree: chordDegree,
-    includeOffSentinel: true,
+    includeOffSentinel: false,
   });
 
   // Hide tension lens when unavailable and not currently active.
@@ -102,21 +108,37 @@ export function ChordOverlayControls() {
 
   const handleDegreeChange = (value: string) => {
     startTransition(() => {
-      setChordDegree(value === CHORD_NONE_VALUE ? null : value);
+      setChordDegree(value);
     });
   };
 
   const handleChordTypeChange = (value: string) => {
     startTransition(() => {
-      setChordQualityOverride(value === CHORD_NONE_VALUE ? null : value);
+      setChordQualityOverride(value);
     });
   };
 
-  const { t } = useTranslation();
+  // ── Visibility ────────────────────────────────────────────────────────
+  const isOff = chordOverlayMode === "off";
+  const showDegree = !isPatternDisabled && chordOverlayMode === "degree";
+  const showChordTypeGrid =
+    !isPatternDisabled &&
+    (chordOverlayMode === "manual" ||
+      (chordOverlayMode === "degree" && Boolean(chordDegree)));
+  const showRoot = !isPatternDisabled && chordOverlayMode === "manual";
+  const hasActiveChord = Boolean(chordType);
+  const showDisplay = !isPatternDisabled && !isOff;
+  const displayDisabled = !hasActiveChord;
+
+  const fullChordsHint = fullChordsSupported
+    ? t("inspector.fullChordsHintSupported")
+    : currentTuning.length !== 6
+      ? t("inspector.fullChordsHintNon6String")
+      : t("inspector.fullChordsHintUnsupportedType");
 
   return (
     <div
-      className={clsx(theoryStyles["theory-chord-content"], isPatternDisabled && panelStyles["panel-disabled"])}
+      className={clsx(panelStyles.root, isPatternDisabled && panelStyles["panel-disabled"])}
       data-disabled={isPatternDisabled ? "true" : undefined}
     >
       {isPatternDisabled && (
@@ -124,71 +146,59 @@ export function ChordOverlayControls() {
           {t("controls.chordOverlayDisabled")}
         </p>
       )}
-      <div className={shared["control-section"]}>
-        <span className={shared["section-label"]}>{t("controls.chordMode")}</span>
-        <ToggleBar
-          options={[
-            { value: "degree", label: isPatternDisabled ? t("controls.disabled") : t("controls.degree"), disabled: isPatternDisabled },
-            { value: "manual", label: t("controls.manual"), disabled: isPatternDisabled },
-          ]}
-          value={chordOverlayMode}
-          onChange={isPatternDisabled ? () => undefined : setChordOverlayMode}
-          label="Chord overlay mode"
-        />
-        {!isPatternDisabled && (
-          <p className={shared["field-hint"]}>
-            {chordOverlayMode === "degree"
-              ? t("controls.degreeModeHint")
-              : t("controls.manualModeHint")}
-          </p>
-        )}
-      </div>
-
-      {!isPatternDisabled && chordOverlayMode === "degree" && (
-        <>
-          <div className={shared["control-section"]}>
-            <span className={shared["section-label"]}>{t("controls.degree")}</span>
+      <PropGrid columns={6} className={panelStyles.grid}>
+        {/* ── SOURCE ───────────────────────────────────────────────────── */}
+        <GroupHeader>{t("inspector.groupSource")}</GroupHeader>
+        <Prop
+          label={t("controls.chordMode")}
+          span={3}
+          hint={
+            isPatternDisabled
+              ? undefined
+              : chordOverlayMode === "degree"
+                ? t("controls.degreeModeHint")
+                : chordOverlayMode === "manual"
+                  ? t("controls.manualModeHint")
+                  : undefined
+          }
+        >
+          <ToggleBar
+            options={[
+              {
+                value: "off",
+                label: isPatternDisabled
+                  ? t("controls.disabled")
+                  : t("controls.off"),
+                disabled: isPatternDisabled,
+              },
+              {
+                value: "degree",
+                label: t("controls.degree"),
+                disabled: isPatternDisabled,
+              },
+              {
+                value: "manual",
+                label: t("controls.manual"),
+                disabled: isPatternDisabled,
+              },
+            ]}
+            value={chordOverlayMode}
+            onChange={isPatternDisabled ? () => undefined : setChordOverlayMode}
+            label="Chord overlay mode"
+          />
+        </Prop>
+        {showDegree && (
+          <Prop label={t("controls.degree")} span={3}>
             <ToggleBar
               options={degreeSelectOptions}
-              value={chordDegree ?? CHORD_NONE_VALUE}
+              value={chordDegree ?? ""}
               onChange={handleDegreeChange}
               label="Chord degree"
             />
-          </div>
-          {chordDegree ? (
-            <div className={shared["control-section"]}>
-              <span className={shared["section-label"]}>{t("controls.chordType")}</span>
-              <ToggleBar
-                label="Chord Type"
-                options={buildQualityToggleOptions({ includeSentinel: false })}
-                value={chordType ?? ""}
-                onChange={handleChordTypeChange}
-                overflow="scroll"
-              />
-              <p className={shared["field-hint"]}>
-                {hasQualityOverride
-                  ? t("controls.customChordHint")
-                  : t("controls.diatonicDefaultHint")}
-              </p>
-            </div>
-          ) : null}
-        </>
-      )}
-
-      {!isPatternDisabled && chordOverlayMode === "manual" && (
-        <>
-          <div className={shared["control-section"]}>
-            <span className={shared["section-label"]}>{t("controls.chordType")}</span>
-            <ToggleBar
-              label="Chord Type"
-              options={buildQualityToggleOptions({ diatonicLabel: t("controls.off") })}
-              value={chordQualityOverride ?? CHORD_NONE_VALUE}
-              onChange={handleChordTypeChange}
-              overflow="scroll"
-            />
-          </div>
-          <div className={shared["control-section"]}>
-            <span className={shared["section-label"]}>{t("controls.root")}</span>
+          </Prop>
+        )}
+        {showRoot && (
+          <Prop label={t("controls.root")} span={4}>
             <NoteGrid
               notes={NOTES}
               selected={chordRootOverride}
@@ -199,45 +209,64 @@ export function ChordOverlayControls() {
               }}
               useFlats={useFlats}
             />
-          </div>
-        </>
-      )}
-
-      {!isPatternDisabled && chordType ? (
-        <div className={shared["control-section"]}>
-          <div className={shared["switch-row"]}>
-            <span className={shared["section-label"]}>Full Chords</span>
-            <Switch
-              label="Full Chords"
-              checked={fullChordsEnabled}
-              onChange={setFullChordsEnabled}
-              disabled={!fullChordsSupported}
+          </Prop>
+        )}
+        {showChordTypeGrid && (
+          <Prop
+            label={t("controls.chordType")}
+            span={4}
+            hint={
+              chordOverlayMode === "degree"
+                ? hasQualityOverride
+                  ? t("controls.customChordHint")
+                  : t("controls.diatonicDefaultHint")
+                : undefined
+            }
+          >
+            <ChordTypeGrid
+              label="Chord Type"
+              options={buildQualityToggleOptions({ includeSentinel: false })}
+              value={
+                chordOverlayMode === "degree"
+                  ? chordType ?? ""
+                  : chordQualityOverride ?? ""
+              }
+              onChange={handleChordTypeChange}
             />
-          </div>
-          <p className={shared["field-hint"]}>
-            {fullChordsSupported
-              ? "Show canonical CAGED voicings instead of scattered chord tones."
-              : currentTuning.length !== 6
-                ? "Full Chords currently supports 6-string tunings only."
-                : "Full Chords currently supports Major Triad, Minor Triad, and Dominant 7th."}
-          </p>
-        </div>
-      ) : null}
+          </Prop>
+        )}
 
-      {!isPatternDisabled && chordType ? (
-        <div className={shared["control-section"]}>
-          <span className={shared["section-label"]}>{t("controls.lens")}</span>
-          <ToggleBar
-            options={lensOptions}
-            value={practiceLens}
-            onChange={setPracticeLens}
-            label="Practice lens"
-          />
-          {activeLensDescription ? (
-            <p className={shared["field-hint"]}>{activeLensDescription}</p>
-          ) : null}
-        </div>
-      ) : null}
+        {/* ── DISPLAY ──────────────────────────────────────────────────── */}
+        {showDisplay && (
+          <>
+            <GroupHeader>{t("inspector.groupDisplay")}</GroupHeader>
+            <Prop label={t("controls.lens")} span={4} hint={hasActiveChord ? activeLensDescription : undefined}>
+              <ToggleBar
+                options={lensOptions.map((o) => ({ ...o, disabled: displayDisabled || o.disabled }))}
+                value={practiceLens}
+                onChange={displayDisabled ? () => undefined : setPracticeLens}
+                label="Practice lens"
+              />
+            </Prop>
+            <Prop label={t("inspector.fullChords")} span={3} hint={hasActiveChord ? fullChordsHint : undefined}>
+              <Switch
+                label={t("inspector.fullChords")}
+                checked={fullChordsEnabled}
+                onChange={setFullChordsEnabled}
+                disabled={displayDisabled || !fullChordsSupported}
+              />
+            </Prop>
+            <Prop label={t("inspector.showOnBoard")} span={3}>
+              <Switch
+                label={t("inspector.showOnBoard")}
+                checked={!chordOverlayHidden}
+                onChange={(next) => setChordOverlayHidden(!next)}
+                disabled={displayDisabled}
+              />
+            </Prop>
+          </>
+        )}
+      </PropGrid>
     </div>
   );
 }

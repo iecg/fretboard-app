@@ -17,6 +17,7 @@ import {
   progressionEnabledAtom,
   progressionStepsAtom,
 } from "./progressionAtoms";
+import { chordSourceIsProgressionAtom } from "./atoms";
 import { fingeringPatternAtom } from "./fingeringAtoms";
 import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
@@ -738,6 +739,14 @@ describe("allChordMembersAtom — scaleInterval for out-of-scale notes", () => {
     expect(gsEntry!.inScale).toBe(false);
     expect(gsEntry!.scaleInterval).toBe("♭6");
     expect(gsEntry!.scaleDegree).toBeUndefined();
+  });
+});
+
+describe("chordSourceIsProgressionAtom", () => {
+  it("is false when progression mode is disabled", () => {
+    const store = createStore();
+    store.set(progressionEnabledAtom, false);
+    expect(store.get(chordSourceIsProgressionAtom)).toBe(false);
   });
 });
 

@@ -9,14 +9,24 @@ import {
   accidentalModeAtom,
   enharmonicDisplayAtom,
   scaleDegreeColorsEnabledAtom,
+  fullChordsEnabledAtom,
+  isMutedAtom,
+  displayFormatAtom,
 } from "../../store/atoms";
 import { ViewTab } from "./ViewTab";
 
 describe("ViewTab", () => {
-  it("renders the fingering pattern controls and the fret range group", () => {
+  it("renders the Fingering, Labels, and Display group headers", () => {
+    renderWithAtoms(<ViewTab />);
+    expect(screen.getByText("Fingering")).toBeInTheDocument();
+    expect(screen.getByText("Labels")).toBeInTheDocument();
+    expect(screen.getByText("Display")).toBeInTheDocument();
+  });
+
+  it("renders the fingering pattern control and the fret range group", () => {
     renderWithAtoms(<ViewTab />);
     expect(screen.getByRole("group", { name: /fret range/i })).toBeInTheDocument();
-    expect(screen.getByText(/fingering pattern/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "CAGED" })).toBeInTheDocument();
   });
 
   it("reflects atom-seeded fret start/end values in the steppers", () => {
@@ -24,22 +34,18 @@ describe("ViewTab", () => {
       [fretStartAtom, 3],
       [fretEndAtom, 8],
     ]);
-    const startGroup = screen.getByRole("group", { name: /start fret/i });
-    expect(startGroup.textContent).toContain("3");
-    const endGroup = screen.getByRole("group", { name: /end fret/i });
-    expect(endGroup.textContent).toContain("8");
+    const fretRange = screen.getByRole("group", { name: /fret range/i });
+    expect(fretRange.textContent).toContain("3");
+    expect(fretRange.textContent).toContain("8");
   });
 
-  it("renders the accidentals, enharmonic, and scale-degree-color controls", () => {
+  it("renders the accidentals and enharmonic controls", () => {
     renderWithAtoms(<ViewTab />, [
       [accidentalModeAtom, "flats"],
       [enharmonicDisplayAtom, "on"],
-      [scaleDegreeColorsEnabledAtom, true],
     ]);
     expect(screen.getByRole("group", { name: /accidentals/i })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: /enharmonic display/i })).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: /scale degree colors/i })).toBeInTheDocument();
-    // Seeded accidental mode "flats" → the ♭ option button is pressed.
     expect(screen.getByRole("button", { name: "♭" })).toHaveAttribute("aria-pressed", "true");
   });
 
@@ -50,8 +56,57 @@ describe("ViewTab", () => {
     expect(screen.getByRole("button", { name: "♯" })).toHaveAttribute("aria-pressed", "true");
   });
 
+  it("updates the display format atom when a Note Labels option is clicked", async () => {
+    const user = userEvent.setup();
+    renderWithAtoms(<ViewTab />, [[displayFormatAtom, "notes"]]);
+    await user.click(screen.getByRole("button", { name: "Intervals" }));
+    expect(screen.getByRole("button", { name: "Intervals" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
+  it("renders the Display group toggles bound to their atoms", () => {
+    renderWithAtoms(<ViewTab />, [
+      [scaleDegreeColorsEnabledAtom, true],
+      [fullChordsEnabledAtom, false],
+      [isMutedAtom, false],
+    ]);
+    expect(screen.getByRole("switch", { name: "Degree Colors" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+    expect(screen.getByRole("switch", { name: "Full Chords" })).toHaveAttribute(
+      "aria-checked",
+      "false",
+    );
+    // Tap to Play is the inverse of isMuted — not muted → checked.
+    expect(screen.getByRole("switch", { name: "Tap to Play" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+  });
+
+  it("turns Tap to Play on (unmutes) when switched from a muted state", async () => {
+    const user = userEvent.setup();
+    renderWithAtoms(<ViewTab />, [[isMutedAtom, true]]);
+    const tapToPlay = screen.getByRole("switch", { name: "Tap to Play" });
+    expect(tapToPlay).toHaveAttribute("aria-checked", "false");
+    await user.click(tapToPlay);
+    expect(screen.getByRole("switch", { name: "Tap to Play" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+  });
+
   it("has no accessibility violations", async () => {
     const { container } = renderWithAtoms(<ViewTab />);
-    expect(await axe(container)).toHaveNoViolations();
+    const results = await axe(container, {
+      rules: {
+        // ToggleBar role="group" without aria-label is a known gap tracked separately
+        "aria-allowed-role": { enabled: true },
+      },
+    });
+    expect(results).toHaveNoViolations();
   });
 });

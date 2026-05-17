@@ -144,9 +144,9 @@ export const chordDegreeAtom = atomWithStorage<DegreeId | null>(
   GET_ON_INIT,
 );
 
-const chordOverlayModeStorage = createStorage<"degree" | "manual">({
-  validate: (v) => v === "degree" || v === "manual",
-  migrate: (): "degree" | "manual" | undefined => {
+const chordOverlayModeStorage = createStorage<ChordOverlayMode>({
+  validate: (v) => v === "off" || v === "degree" || v === "manual",
+  migrate: (): ChordOverlayMode | undefined => {
     // NOTE: Seventh chords ("Major 7th", "Minor 7th", "Dominant 7th") and "Power Chord (5)"
     // are NOT in the DEGREE_DIATONIC_QUALITY table and always fall back to manual mode here.
     // This is intentional — not a bug. Diatonic inference is triad-only.
@@ -163,8 +163,7 @@ const chordOverlayModeStorage = createStorage<"degree" | "manual">({
   },
 });
 
-/** Explicit user intent: "degree" = chord follows the active scale degree; "manual" = pinned. */
-export type ChordOverlayMode = "degree" | "manual";
+export type ChordOverlayMode = "off" | "degree" | "manual";
 
 export const chordOverlayModeAtom = atomWithStorage<ChordOverlayMode>(
   k("chordOverlayMode"),
@@ -225,6 +224,15 @@ export const effectiveChordQualityOverrideAtom = atom((get): string | null => {
   return get(activeProgressionStepAtom)?.qualityOverride ?? null;
 });
 
+/**
+ * True when the active chord source is a progression step (progression mode on,
+ * a resolvable active step exists, and the fingering pattern does not disable the
+ * chord overlay). Drives the Chord tab's cyan→orange accent switch.
+ */
+export const chordSourceIsProgressionAtom = atom((get) =>
+  progressionIsActiveChordSource(get),
+);
+
 // ---------------------------------------------------------------------------
 // Public writable derived atoms — chordRootAtom and chordTypeAtom
 //
@@ -243,9 +251,9 @@ export const chordRootAtom = atom(
     }
 
     const mode = get(chordOverlayModeAtom);
-    if (mode === "manual") return get(chordRootOverrideAtom);
+    if (mode === "off" || mode === "manual") return get(chordRootOverrideAtom);
     const degree = get(chordDegreeAtom);
-    if (!degree) return get(chordRootOverrideAtom); // overlay off: return last-known root
+    if (!degree) return get(chordRootOverrideAtom); // no degree selected yet
     const rootNote = get(rootNoteAtom);
     const scaleName = get(scaleNameAtom);
     const result = getDiatonicChord(degree, scaleName, rootNote);
@@ -275,9 +283,10 @@ export const chordTypeAtom = atom(
     }
 
     const mode = get(chordOverlayModeAtom);
-    if (mode === "manual") return get(chordQualityOverrideAtom);
+    if (mode === "off") return null;
+    if (mode === "manual") return get(chordQualityOverrideAtom) ?? "Major Triad";
     const degree = get(chordDegreeAtom);
-    if (!degree) return null; // overlay off
+    if (!degree) return null; // no degree selected yet
     // Degree mode: prefer the user's quality override when set so the user can
     // pin a specific quality (e.g. Dominant 7th on V) while keeping the chord
     // root bound to the active scale degree. Without an override, fall back to

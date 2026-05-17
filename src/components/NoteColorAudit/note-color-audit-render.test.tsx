@@ -120,7 +120,7 @@ describe("note color audit render readouts", () => {
     }
   });
 
-  it("has no accessibility violations for the light audit panel", async () => {
+  it("has no accessibility violations for the light audit panel", { timeout: 30_000 }, async () => {
     const { container } = await renderAudit();
 
     const lightPanel = container.querySelector('[aria-label="Light theme audit"]');

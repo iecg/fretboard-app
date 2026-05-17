@@ -19,7 +19,6 @@ import {
   fretZoomAtom,
   tuningNameAtom,
   accidentalModeAtom,
-  mobileTabAtom,
   npsPositionAtom,
   chordFretSpreadAtom,
   practiceLensAtom,
@@ -247,74 +246,6 @@ describe("atoms", () => {
       expect(warnSpy).toHaveBeenCalledWith("localStorage.getItem failed", expect.objectContaining({ key: k("fretZoom") }));
       spy.mockRestore();
       warnSpy.mockRestore();
-      unsub();
-    });
-  });
-
-  describe("mobileTabStorage", () => {
-    it("migrates legacy key tab values to scales", () => {
-      localStorage.setItem(k("mobileTab"), "key");
-      const store = makeStore();
-      const unsub = mount(store, mobileTabAtom);
-
-      expect(store.get(mobileTabAtom)).toBe("scales");
-      expect(localStorage.getItem(k("mobileTab"))).toBe("scales");
-
-      unsub();
-    });
-
-    it("migrates legacy scale tab values to scales", () => {
-      localStorage.setItem(k("mobileTab"), "scale");
-      const store = makeStore();
-      const unsub = mount(store, mobileTabAtom);
-
-      expect(store.get(mobileTabAtom)).toBe("scales");
-      expect(localStorage.getItem(k("mobileTab"))).toBe("scales");
-
-      unsub();
-    });
-
-    it("migrates legacy theory tab values to scales", () => {
-      localStorage.setItem(k("mobileTab"), "theory");
-      const store = makeStore();
-      const unsub = mount(store, mobileTabAtom);
-
-      expect(store.get(mobileTabAtom)).toBe("scales");
-      expect(localStorage.getItem(k("mobileTab"))).toBe("scales");
-
-      unsub();
-    });
-
-    it("migrates legacy settings tab values to view", () => {
-      localStorage.setItem(k("mobileTab"), "settings");
-      const store = makeStore();
-      const unsub = mount(store, mobileTabAtom);
-
-      expect(store.get(mobileTabAtom)).toBe("view");
-      expect(localStorage.getItem(k("mobileTab"))).toBe("view");
-
-      unsub();
-    });
-
-    it("keeps valid stored tab values unchanged", () => {
-      localStorage.setItem(k("mobileTab"), "view");
-      const store = makeStore();
-      const unsub = mount(store, mobileTabAtom);
-
-      expect(store.get(mobileTabAtom)).toBe("view");
-      expect(localStorage.getItem(k("mobileTab"))).toBe("view");
-
-      unsub();
-    });
-
-    it("falls back to scales for invalid stored tab values", () => {
-      localStorage.setItem(k("mobileTab"), "invalid-tab");
-      const store = makeStore();
-      const unsub = mount(store, mobileTabAtom);
-
-      expect(store.get(mobileTabAtom)).toBe("scales");
-      expect(localStorage.getItem(k("mobileTab"))).toBe("scales");
-
       unsub();
     });
   });
@@ -703,7 +634,6 @@ describe("atoms", () => {
       store.set(fretStartAtom, 3);
       store.set(fretEndAtom, 12);
       store.set(accidentalModeAtom, "flats");
-      store.set(mobileTabAtom, "view");
 
       store.set(resetAtom);
 
@@ -717,7 +647,6 @@ describe("atoms", () => {
       expect(store.get(fretStartAtom)).toBe(0);
       expect(store.get(fretEndAtom)).toBe(25);
       expect(store.get(accidentalModeAtom)).toBe("auto");
-      expect(store.get(mobileTabAtom)).toBe("scales");
     });
 
     it("resets chord overlay backing atoms to defaults", () => {
@@ -820,9 +749,9 @@ describe("atoms", () => {
   });
 
   describe("chordTonesAtom", () => {
-    it("returns [] when chordTypeAtom is null", () => {
+    it("returns [] when chord overlay mode is off", () => {
       const store = makeStore();
-      store.set(chordTypeAtom, null);
+      store.set(chordOverlayModeAtom, "off");
       expect(store.get(chordTonesAtom)).toEqual([]);
     });
 

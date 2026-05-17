@@ -32,18 +32,37 @@ export interface Dictionary {
       themeHint: string;
     };
   };
-  tabs: {
-    scales: string;
-    chords: string;
-    progression: string;
-    cof: string;
-    view: string;
-  };
   inspector: {
     viewTab: string;
     scaleTab: string;
     chordTab: string;
     progressionTab: string;
+    groupFingering: string;
+    groupLabels: string;
+    groupDisplay: string;
+    pattern: string;
+    degreeColors: string;
+    fullChords: string;
+    tapToPlay: string;
+    notes: string;
+    intervals: string;
+    none: string;
+    auto: string;
+    groupKey: string;
+    groupTheory: string;
+    groupWheel: string;
+    factNotes: string;
+    factIntervals: string;
+    factDegrees: string;
+    factTones: string;
+    relationship: string;
+    groupSource: string;
+    groupChordType: string;
+    groupVoicing: string;
+    showOnBoard: string;
+    fullChordsHintSupported: string;
+    fullChordsHintNon6String: string;
+    fullChordsHintUnsupportedType: string;
   };
   common: {
     mute: string;

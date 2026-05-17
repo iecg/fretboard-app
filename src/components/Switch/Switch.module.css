@@ -78,3 +78,33 @@
   box-shadow: 0 0 6px var(--neon-orange, #ff9a4d);
   transform: translateX(17px);
 }
+
+/* ===========================================================================
+ * Light-mode overrides — teal/amber on-state with subtle depth instead of
+ * neon glow, mirroring the TransportBar [data-theme="modern-light"] treatment.
+ * The :root rules above hardcode the dark-mode neon values as a default.
+ * ======================================================================== */
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global([data-theme="modern-light"]) .switch[data-on]:not([data-tone="warm"]) {
+  background: rgb(46 181 204 / 0.18);
+  border-color: rgb(46 181 204 / 0.6);
+  box-shadow: 0 0 0 1px rgb(46 181 204 / 0.25);
+}
+
+:global([data-theme="modern-light"])
+  .switch[data-on]:not([data-tone="warm"])::before {
+  background: #2eb5cc;
+  box-shadow: 0 1px 2px rgb(46 181 204 / 0.4);
+}
+
+:global([data-theme="modern-light"]) .switch[data-on][data-tone="warm"] {
+  background: rgb(234 88 12 / 0.16);
+  border-color: rgb(234 88 12 / 0.55);
+  box-shadow: 0 0 0 1px rgb(234 88 12 / 0.2);
+}
+
+:global([data-theme="modern-light"]) .switch[data-on][data-tone="warm"]::before {
+  background: #ea580c;
+  box-shadow: 0 1px 2px rgb(234 88 12 / 0.4);
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */

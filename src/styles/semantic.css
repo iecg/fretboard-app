@@ -213,6 +213,28 @@
   --faceplate-shadow: 0 1px 0 rgb(255 255 255 / 0.02) inset, 0 18px 40px -28px rgb(0 0 0 / 0.7);
   --faceplate-accent: var(--neon-cyan);
   --faceplate-accent-glow: var(--glow-cyan-sm);
+
+  /* DAW control recipe — compact cyan-on-navy interactive surface. Generalizes
+     the TransportBar --tb-* pattern for shared input controls (toggles,
+     steppers, note grid, select trigger). :root carries the dark-mode values;
+     the [data-theme] blocks below override per theme. */
+  --dc-bg: rgb(77 228 255 / 0.03);
+  --dc-bg-hover: rgb(77 228 255 / 0.08);
+  --dc-bg-active: rgb(77 228 255 / 0.1);
+  --dc-border: rgb(77 228 255 / 0.18);
+  --dc-border-hover: rgb(77 228 255 / 0.45);
+  --dc-border-active: rgb(77 228 255 / 0.6);
+  --dc-fg: rgb(193 218 235 / 0.55);
+  --dc-fg-strong: #4de4ff;
+  --dc-fg-muted: rgb(193 218 235 / 0.45);
+  --dc-glow-focus: 0 0 0 1px var(--dc-fg-strong), 0 0 10px rgb(77 228 255 / 0.45);
+  --dc-glow-active:
+    0 0 0 1px rgb(77 228 255 / 0.55), 0 0 14px rgb(77 228 255 / 0.32),
+    inset 0 0 14px rgb(77 228 255 / 0.1);
+  --dc-radius: 7px;
+  --dc-transition:
+    color 160ms ease, border-color 160ms ease, background-color 160ms ease,
+    box-shadow 200ms ease;
 }
 
 [data-theme="modern-light"] {
@@ -252,6 +274,21 @@
   --faceplate-shadow: 0 1px 0 rgb(255 255 255 / 0.6) inset, 0 12px 28px -22px rgb(0 0 0 / 0.25);
   --faceplate-accent: var(--neon-cyan-dim);
   --faceplate-accent-glow: 0 0 4px rgb(46 181 204 / 0.30);
+
+  /* DAW control — light mode: teal-tinted with subtle depth instead of neon
+     glow. Mirrors the TransportBar [data-theme="modern-light"] treatment. */
+  --dc-bg: rgb(46 181 204 / 0.05);
+  --dc-bg-hover: rgb(46 181 204 / 0.1);
+  --dc-bg-active: rgb(46 181 204 / 0.1);
+  --dc-border: rgb(46 181 204 / 0.3);
+  --dc-border-hover: rgb(46 181 204 / 0.55);
+  --dc-border-active: rgb(46 181 204 / 0.65);
+  --dc-fg: rgb(15 23 42 / 0.55);
+  --dc-fg-strong: #2eb5cc;
+  --dc-fg-muted: rgb(15 23 42 / 0.42);
+  --dc-glow-focus: 0 0 0 1px #2eb5cc, 0 0 6px rgb(46 181 204 / 0.25);
+  --dc-glow-active:
+    0 0 0 1px rgb(46 181 204 / 0.45), 0 2px 8px rgb(46 181 204 / 0.15);
 }
 
 [data-theme="modern-dark"] {
@@ -295,6 +332,22 @@
   --faceplate-shadow: 0 1px 0 rgb(255 255 255 / 0.02) inset, 0 18px 40px -28px rgb(0 0 0 / 0.7);
   --faceplate-accent: var(--neon-cyan);
   --faceplate-accent-glow: var(--glow-cyan-sm);
+
+  /* DAW control — dark mode: navy substrate, bright cyan accent, neon glow.
+     Re-declared explicitly to mirror the faceplate token convention. */
+  --dc-bg: rgb(77 228 255 / 0.03);
+  --dc-bg-hover: rgb(77 228 255 / 0.08);
+  --dc-bg-active: rgb(77 228 255 / 0.1);
+  --dc-border: rgb(77 228 255 / 0.18);
+  --dc-border-hover: rgb(77 228 255 / 0.45);
+  --dc-border-active: rgb(77 228 255 / 0.6);
+  --dc-fg: rgb(193 218 235 / 0.55);
+  --dc-fg-strong: #4de4ff;
+  --dc-fg-muted: rgb(193 218 235 / 0.45);
+  --dc-glow-focus: 0 0 0 1px var(--dc-fg-strong), 0 0 10px rgb(77 228 255 / 0.45);
+  --dc-glow-active:
+    0 0 0 1px rgb(77 228 255 / 0.55), 0 0 14px rgb(77 228 255 / 0.32),
+    inset 0 0 14px rgb(77 228 255 / 0.1);
 }
 
 .panel-surface {

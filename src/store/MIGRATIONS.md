@@ -437,3 +437,7 @@ Always test:
 5. **Read legacy state via `readLocalStorage()`** inside migrations — never use `localStorage.getItem()` directly
 6. **Validate all deserialized values** — assume stored values are untrusted
 7. **Test migrations thoroughly** — verify the happy path, edge cases, and cleanup
+
+## Retired Keys
+
+- **2026-05-16 — `fretflow:mobileTab` (Phase 7: mobile rehost):** The `mobileTabAtom` that persisted the active mobile tab selection has been removed. The Inspector now serves every layout tier and holds its active tab in component-local state; the persisted key is no longer needed. The bare `"mobileTab"` entry in `LEGACY_KEYS` (`src/utils/storageConstants.ts`) is intentionally retained to purge the now-orphaned key from users' browsers on next app load.
