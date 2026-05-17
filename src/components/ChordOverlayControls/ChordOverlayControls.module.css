@@ -9,3 +9,8 @@
   pointer-events: none;
   opacity: 0.5;
 }
+
+/* On mobile, collapse the 6-column PropGrid so every child spans full width. */
+:global(.app-container[data-layout-tier="mobile"]) .grid > * {
+  grid-column: 1 / -1 !important;
+}

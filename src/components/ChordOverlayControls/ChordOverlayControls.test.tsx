@@ -26,7 +26,6 @@ import { ChordOverlayControls } from "./ChordOverlayControls";
 // Expected toggle-bar label order — mirrors CHORD_TYPE_DISPLAY_ORDER mapped through CHORD_TYPE_SHORT_LABELS.
 // Kept inline here to avoid importing non-component values from the component file (react-refresh rule).
 const EXPECTED_CHORD_TYPE_LABELS = [
-  "Off",
   "Maj",
   "min",
   "dim",
@@ -83,15 +82,15 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(vButton.getAttribute("aria-pressed")).toBe("true");
     });
 
-    it("clicking Off sets the value to the Off sentinel", async () => {
+    it("switching chord mode to Off deactivates the chord overlay", async () => {
       renderWithAtoms(<ChordOverlayControls />, [
         ...DEGREE_MODE_SEEDS,
         [chordDegreeAtom, "V"],
       ]);
-      const degreeGroup = screen.getByRole("group", { name: "Chord degree" });
-      const offButton = within(degreeGroup).getByRole("button", { name: "Off" });
-      await userEvent.click(offButton);
-      expect(offButton.getAttribute("aria-pressed")).toBe("true");
+      const modeGroup = screen.getByRole("group", { name: "Chord overlay mode" });
+      await userEvent.click(within(modeGroup).getByRole("button", { name: "Off" }));
+      // Degree picker should be hidden when mode is Off
+      expect(screen.queryByRole("group", { name: "Chord degree" })).not.toBeInTheDocument();
     });
   });
 
@@ -177,14 +176,14 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       ).toBe("true");
     });
 
-    it("clicking Off clears chordQualityOverride to null", async () => {
+    it("switching chord mode to Off from manual deactivates the chord overlay", async () => {
       const store = makeAtomStore([...MANUAL_MODE_SEEDS]);
       renderWithStore(<ChordOverlayControls />, store);
-      const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
 
-      await userEvent.click(within(chordTypeGroup).getByRole("button", { name: "Off" }));
+      const modeGroup = screen.getByRole("group", { name: "Chord overlay mode" });
+      await userEvent.click(within(modeGroup).getByRole("button", { name: "Off" }));
 
-      expect(store.get(chordQualityOverrideAtom)).toBeNull();
+      expect(store.get(chordOverlayModeAtom)).toBe("off");
     });
   });
 
@@ -289,13 +288,14 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(screen.getByRole("group", { name: "Chord overlay mode" })).toBeInTheDocument();
     });
 
-    it("degree ToggleBar exposes Off + 7 diatonic degrees", () => {
+    it("degree ToggleBar exposes 7 diatonic degrees (no Off sentinel)", () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
       const degreeGroup = screen.getByRole("group", { name: "Chord degree" });
-      // Off + I, ii, iii, IV, V, vi, vii° = 8 buttons
-      expect(within(degreeGroup).getByRole("button", { name: "Off" })).toBeInTheDocument();
+      // I, ii, iii, IV, V, vi, vii° = 7 buttons (Off moved to Chord Mode)
+      expect(within(degreeGroup).queryByRole("button", { name: "Off" })).not.toBeInTheDocument();
       expect(within(degreeGroup).getByRole("button", { name: "I" })).toBeInTheDocument();
       expect(within(degreeGroup).getByRole("button", { name: "vii°" })).toBeInTheDocument();
+      expect(within(degreeGroup).getAllByRole("button")).toHaveLength(7);
     });
   });
 
@@ -405,12 +405,12 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       ).toBeInTheDocument();
     });
 
-    it("renders all 16 chord-type buttons (Off + 15 types) in manual mode", () => {
+    it("renders all 15 chord-type buttons (no Off sentinel) in manual mode", () => {
       renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
       const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
-      // Off sentinel
-      expect(within(chordTypeGroup).getByRole("button", { name: "Off" })).toBeInTheDocument();
-      // Original types
+      // No Off sentinel (moved to Chord Mode)
+      expect(within(chordTypeGroup).queryByRole("button", { name: "Off" })).not.toBeInTheDocument();
+      // All quality types
       expect(within(chordTypeGroup).getByRole("button", { name: "Maj" })).toBeInTheDocument();
       expect(within(chordTypeGroup).getByRole("button", { name: "min" })).toBeInTheDocument();
       expect(within(chordTypeGroup).getByRole("button", { name: "dim" })).toBeInTheDocument();
@@ -419,7 +419,6 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(within(chordTypeGroup).getByRole("button", { name: "7" })).toBeInTheDocument();
       expect(within(chordTypeGroup).getByRole("button", { name: "sus4" })).toBeInTheDocument();
       expect(within(chordTypeGroup).getByRole("button", { name: "5" })).toBeInTheDocument();
-      // M6 (renamed from "6") + 6 new types
       expect(within(chordTypeGroup).getByRole("button", { name: "M6" })).toBeInTheDocument();
       expect(within(chordTypeGroup).getByRole("button", { name: "aug" })).toBeInTheDocument();
       expect(within(chordTypeGroup).getByRole("button", { name: "sus2" })).toBeInTheDocument();
@@ -427,11 +426,10 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(within(chordTypeGroup).getByRole("button", { name: "dim7" })).toBeInTheDocument();
       expect(within(chordTypeGroup).getByRole("button", { name: "m7♭5" })).toBeInTheDocument();
       expect(within(chordTypeGroup).getByRole("button", { name: "mM7" })).toBeInTheDocument();
-      // Confirm total count: 16 (Off + 15)
-      expect(within(chordTypeGroup).getAllByRole("button")).toHaveLength(16);
+      expect(within(chordTypeGroup).getAllByRole("button")).toHaveLength(15);
     });
 
-    it("chord-type buttons appear in CHORD_TYPE_DISPLAY_ORDER order (Off first)", () => {
+    it("chord-type buttons appear in CHORD_TYPE_DISPLAY_ORDER order (Maj first)", () => {
       renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
       const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
       const buttons = within(chordTypeGroup).getAllByRole("button");
@@ -446,14 +444,6 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       const minBtn = within(chordTypeGroup).getByRole("button", { name: "min" });
       await userEvent.click(minBtn);
       expect(minBtn.getAttribute("aria-pressed")).toBe("true");
-    });
-
-    it("Off is leftmost — Off button appears before Maj in DOM order", () => {
-      renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
-      const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
-      const buttons = within(chordTypeGroup).getAllByRole("button");
-      expect(buttons[0]).toHaveAccessibleName("Off");
-      expect(buttons[1]).toHaveAccessibleName("Maj");
     });
 
     it("degree mode: Off button is absent from chord-type toggle bar", () => {
@@ -594,16 +584,17 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       ]);
       const modeGroup = screen.getByRole("group", { name: "Chord overlay mode" });
       expect(within(modeGroup).getByRole("button", { name: "Disabled" })).toBeInTheDocument();
-      expect(within(modeGroup).queryByRole("button", { name: "Degree" })).not.toBeInTheDocument();
+      // "Disabled" replaces "Off" (the first button) when pattern disables chord overlay
+      expect(within(modeGroup).queryByRole("button", { name: "Off" })).not.toBeInTheDocument();
     });
 
-    it("UAT-23: first Chord Mode button shows 'Degree' label on caged pattern", () => {
+    it("UAT-23: first Chord Mode button shows 'Off' label on caged pattern", () => {
       renderWithAtoms(<ChordOverlayControls />, [
         ...DEGREE_MODE_SEEDS,
         [fingeringPatternAtom, "caged"],
       ]);
       const modeGroup = screen.getByRole("group", { name: "Chord overlay mode" });
-      expect(within(modeGroup).getByRole("button", { name: "Degree" })).toBeInTheDocument();
+      expect(within(modeGroup).getByRole("button", { name: "Off" })).toBeInTheDocument();
       expect(within(modeGroup).queryByRole("button", { name: "Disabled" })).not.toBeInTheDocument();
     });
 
