@@ -57,8 +57,6 @@ export function ProgressionControls() {
     beatsPerBar,
     setBeatsPerBar,
     currentProgressionPresetId,
-    progressionLoopEnabled,
-    setProgressionLoopEnabled,
     totalProgressionBars,
   } = useProgressionState();
 
@@ -126,7 +124,7 @@ export function ProgressionControls() {
   return (
     <PropGrid columns={6}>
       {/* ── METER ────────────────────────────────────────────────────────── */}
-      {/* One uniform 6-column row: Mode · Beats/Bar · Length · Loop · Preset. */}
+      {/* One uniform 6-column row: Mode · Beats/Bar · Length · Preset. */}
       <GroupHeader>{t("inspector.groupMeter")}</GroupHeader>
       <Prop label={t("inspector.progressionMode")} span={1}>
         <Switch
@@ -156,14 +154,7 @@ export function ProgressionControls() {
       <Prop label={t("inspector.meterLength")} span={1}>
         <span className={styles["length-readout"]}>{lengthLabel}</span>
       </Prop>
-      <Prop label={t("inspector.meterLoop")} span={1}>
-        <Switch
-          label="Loop"
-          checked={progressionLoopEnabled}
-          onChange={setProgressionLoopEnabled}
-        />
-      </Prop>
-      <Prop label={t("inspector.meterPreset")} span={2}>
+      <Prop label={t("inspector.meterPreset")} span={3}>
         <LabeledSelect
           label="Preset"
           hideLabel
@@ -255,6 +246,10 @@ export function ProgressionControls() {
       <Prop span={3}>
         {activeStep ? (
           <div className={styles["editor-cell"]}>
+            <span className={styles["editor-selected"]}>
+              Selected — {activeStep.degree} ·{" "}
+              {activeResolvedProgressionStep?.resolvedChordLabel ?? "—"}
+            </span>
             <div className={shared["control-section"]}>
               <span className={shared["section-label"]}>Degree</span>
               <ToggleBar

@@ -8,7 +8,6 @@ import {
   activeProgressionStepIndexAtom,
   beatsPerBarAtom,
   progressionEnabledAtom,
-  progressionLoopEnabledAtom,
   progressionStepsAtom,
   rootNoteAtom,
   scaleNameAtom,
@@ -314,13 +313,14 @@ describe("ProgressionControls grid layout", () => {
     expect(screen.getByRole("heading", { name: "Backing Track" })).toBeInTheDocument();
   });
 
-  it("renders a Loop switch bound to progressionLoopEnabledAtom", async () => {
-    const store = makeAtomStore([...BASE_SEEDS, [progressionLoopEnabledAtom, false]]);
-    renderWithStore(<ProgressionControls />, store);
-    const loop = screen.getByRole("switch", { name: "Loop" });
-    expect(loop.getAttribute("aria-checked")).toBe("false");
-    await userEvent.click(loop);
-    expect(store.get(progressionLoopEnabledAtom)).toBe(true);
+  it("does not render a Loop control", () => {
+    renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    expect(screen.queryByRole("switch", { name: "Loop" })).not.toBeInTheDocument();
+  });
+
+  it("shows a SELECTED header naming the active chord", () => {
+    renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    expect(screen.getByText(/^Selected —/i)).toBeInTheDocument();
   });
 
   it("shows the progression length readout", () => {

@@ -119,3 +119,12 @@
   color: var(--dc-fg);
   font-variant-numeric: tabular-nums;
 }
+
+.editor-selected {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dc-fg);
+}
