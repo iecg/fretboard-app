@@ -4,7 +4,7 @@
   gap: var(--space-3, 0.75rem);
 }
 
-/* Three columns on desktop — Key (widest) / Theory / Wheel. Gated on the
+/* Three columns on desktop — Key (widest) / Circle of Fifths / Theory. Gated on the
    layout-tier attribute per the project's responsive-CSS contract; mobile and
    tablet stack the columns vertically. */
 :global(.app-container[data-layout-tier="desktop"]) .root {
