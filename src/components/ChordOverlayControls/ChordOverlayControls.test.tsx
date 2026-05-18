@@ -685,6 +685,23 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
   });
 
+  describe("16. VOICING group controls (Type, Inversion, String Set)", () => {
+    it("renders Type, Inversion and String Set in the VOICING group", () => {
+      renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
+      expect(screen.getByRole("group", { name: "Voicing type" })).toBeInTheDocument();
+      expect(screen.getByRole("group", { name: "Voicing inversion" })).toBeInTheDocument();
+      expect(screen.getByRole("radiogroup", { name: "String set" })).toBeInTheDocument();
+    });
+
+    it("disables the 3rd inversion for a triad", () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        ...MANUAL_MODE_SEEDS,
+        [chordQualityOverrideAtom, "Major Triad"],
+      ]);
+      expect(screen.getByRole("button", { name: "3rd" })).toBeDisabled();
+    });
+  });
+
   describe("Show on Board switch", () => {
     it("renders when a chord is active in manual mode", () => {
       renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);

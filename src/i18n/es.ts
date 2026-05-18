@@ -86,6 +86,12 @@ export const es: Dictionary = {
     btDrumPattern: "Patrón de batería",
     btSwing: "Swing",
     panelLabel: "Inspector",
+    voicingType: "Tipo",
+    voicingInversion: "Inversión",
+    voicingStringSet: "Juego de cuerdas",
+    voicingTypeCaged: "CAGED completo",
+    voicingTypeDrop2: "Drop 2",
+    voicingTypeTriad: "Tríada",
   },
   statusBar: {
     key: "Tonalidad",

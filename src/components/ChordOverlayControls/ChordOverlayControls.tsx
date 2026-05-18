@@ -6,7 +6,12 @@ import {
   lensAvailabilityAtom,
   fingeringPatternAtom,
   chordOverlayHiddenAtom,
+  voicingTypeAtom,
+  voicingInversionAtom,
+  voicingStringSetAtom,
+  availableInversionsAtom,
 } from "../../store/atoms";
+import { StringSetPicker } from "../Inspector/StringSetPicker";
 import { useTranslation } from "../../hooks/useTranslation";
 import { NoteGrid } from "../NoteGrid/NoteGrid";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
@@ -50,6 +55,10 @@ export function ChordOverlayControls() {
     setChordQualityOverride,
   } = useChordState();
   const [chordOverlayHidden, setChordOverlayHidden] = useAtom(chordOverlayHiddenAtom);
+  const [voicingType, setVoicingType] = useAtom(voicingTypeAtom);
+  const [voicingInversion, setVoicingInversion] = useAtom(voicingInversionAtom);
+  const [voicingStringSet, setVoicingStringSet] = useAtom(voicingStringSetAtom);
+  const availableInversions = useAtomValue(availableInversionsAtom);
 
   const lensAvailability = useAtomValue(lensAvailabilityAtom);
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
@@ -255,6 +264,33 @@ export function ChordOverlayControls() {
         {showDisplay && (
           <>
             <GroupHeader>{t("inspector.groupVoicing")}</GroupHeader>
+            <Prop label={t("inspector.voicingType")} span={3}>
+              <ToggleBar
+                label="Voicing type"
+                options={[
+                  { value: "caged" as const, label: t("inspector.voicingTypeCaged") },
+                  { value: "drop2" as const, label: t("inspector.voicingTypeDrop2") },
+                  { value: "triad" as const, label: t("inspector.voicingTypeTriad") },
+                ]}
+                value={voicingType}
+                onChange={setVoicingType}
+              />
+            </Prop>
+            <Prop label={t("inspector.voicingInversion")} span={3}>
+              <ToggleBar
+                label="Voicing inversion"
+                options={(["root", "1st", "2nd", "3rd"] as const).map((v) => ({
+                  value: v,
+                  label: v === "root" ? t("controls.root") : v,
+                  disabled: !availableInversions.includes(v),
+                }))}
+                value={voicingInversion}
+                onChange={setVoicingInversion}
+              />
+            </Prop>
+            <Prop label={t("inspector.voicingStringSet")} span={6}>
+              <StringSetPicker value={voicingStringSet} onChange={setVoicingStringSet} />
+            </Prop>
             <Prop label={t("inspector.fullChords")} span={3} hint={hasActiveChord ? fullChordsHint : undefined}>
               <Switch
                 label={t("inspector.fullChords")}

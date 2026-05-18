@@ -86,6 +86,12 @@ export const en: Dictionary = {
     btDrumPattern: "Drum Pattern",
     btSwing: "Swing",
     panelLabel: "Inspector",
+    voicingType: "Type",
+    voicingInversion: "Inversion",
+    voicingStringSet: "String Set",
+    voicingTypeCaged: "Full CAGED",
+    voicingTypeDrop2: "Drop 2",
+    voicingTypeTriad: "Triad",
   },
   statusBar: {
     key: "Key",

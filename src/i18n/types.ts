@@ -84,6 +84,12 @@ export interface Dictionary {
     btDrumPattern: string;
     btSwing: string;
     panelLabel: string;
+    voicingType: string;
+    voicingInversion: string;
+    voicingStringSet: string;
+    voicingTypeCaged: string;
+    voicingTypeDrop2: string;
+    voicingTypeTriad: string;
   };
   statusBar: {
     key: string;
