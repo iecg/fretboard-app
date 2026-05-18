@@ -18,6 +18,7 @@ import { Switch } from "../Switch/Switch";
 import { StepperControl } from "../StepperControl/StepperControl";
 import { LabeledSelect, type LabeledSelectGroup } from "../LabeledSelect/LabeledSelect";
 import { PropGrid, Prop, GroupHeader } from "../Inspector/InspectorGrid";
+import { ChordTypeGrid } from "../Inspector/ChordTypeGrid";
 import { BackingTrackControls } from "./BackingTrackControls";
 import shared from "../shared/shared.module.css";
 import { buildDegreeToggleOptions, buildQualityToggleOptions, CHORD_QUALITY_DIATONIC_VALUE } from "../shared/chordControlOptions";
@@ -296,16 +297,24 @@ export function ProgressionControls() {
             </div>
             <div className={shared["control-section"]}>
               <span className={shared["section-label"]}>Quality</span>
-              <ToggleBar
-                label="Chord quality"
-                options={buildQualityToggleOptions({ diatonicLabel: "Diatonic" })}
-                value={qualityValue}
-                onChange={(quality) => updateProgressionStepQuality({
-                  id: activeStep.id,
-                  qualityOverride: quality === CHORD_QUALITY_DIATONIC_VALUE ? null : quality,
-                })}
-                overflow="scroll"
-              />
+              <div className={styles["quality-row"]}>
+                <button
+                  type="button"
+                  className={clsx(shared["toggle-btn"], qualityValue === CHORD_QUALITY_DIATONIC_VALUE && shared.active)}
+                  aria-pressed={qualityValue === CHORD_QUALITY_DIATONIC_VALUE}
+                  onClick={() => updateProgressionStepQuality({ id: activeStep.id, qualityOverride: null })}
+                >
+                  Diatonic
+                </button>
+                <ChordTypeGrid
+                  label="Chord quality"
+                  options={buildQualityToggleOptions({ includeSentinel: false })}
+                  value={qualityValue === CHORD_QUALITY_DIATONIC_VALUE ? "" : qualityValue}
+                  onChange={(quality) =>
+                    updateProgressionStepQuality({ id: activeStep.id, qualityOverride: quality })
+                  }
+                />
+              </div>
               <p className={shared["field-hint"]}>
                 {activeResolvedProgressionStep?.qualityOverrideApplied
                   ? "Custom quality on a degree-derived root."

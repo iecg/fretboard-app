@@ -86,7 +86,7 @@ describe("ProgressionControls", () => {
     ]);
     renderWithStore(<ProgressionControls />, store);
 
-    await userEvent.click(within(screen.getByRole("group", { name: "Chord quality" })).getByRole("button", { name: "Diatonic" }));
+    await userEvent.click(screen.getByRole("button", { name: "Diatonic" }));
 
     expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBeNull();
   });
@@ -238,6 +238,19 @@ describe("ProgressionControls CHORDS list", () => {
   it("rows show the new duration label ('1 bar', '2 bars' etc.)", () => {
     const { getAllByText } = renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
     expect(getAllByText("1 bar").length).toBeGreaterThan(0);
+  });
+});
+
+describe("ProgressionControls QUALITY grid", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("renders the selected-chord Quality as a grid, not a scrolling bar", () => {
+    renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    const qualityGroup = screen.getByRole("group", { name: "Chord quality" });
+    expect(qualityGroup).not.toHaveAttribute("data-overflow");
+    expect(within(qualityGroup).getByRole("button", { name: "Maj" })).toBeInTheDocument();
   });
 });
 
