@@ -468,6 +468,5 @@ export const lensAvailabilityAtom = atom((get) => {
     description: entry.description,
     available: entry.isAvailable(ctx),
     reason: entry.unavailableReason(ctx),
-    hideWhenUnavailable: entry.hideWhenUnavailable ?? false,
   }));
 });

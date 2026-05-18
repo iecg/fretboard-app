@@ -490,24 +490,4 @@ describe("lensAvailabilityAtom", () => {
     expect(tEntry!.available).toBe(true);
     expect(tEntry!.reason).toBeNull();
   });
-
-  it("tension entry has hideWhenUnavailable=true in resolved availability", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordRootAtom, "C");
-    store.set(chordTypeAtom, "Major Triad");
-    const entries = store.get(lensAvailabilityAtom);
-    const tensionEntry = entries.find((e) => e.id === "tension");
-    expect(tensionEntry!.hideWhenUnavailable).toBe(true);
-  });
-
-  it("non-tension entries have hideWhenUnavailable=false in resolved availability", () => {
-    const store = makeStore();
-    const entries = store.get(lensAvailabilityAtom);
-    const others = entries.filter((e) => e.id !== "tension");
-    for (const e of others) {
-      expect(e.hideWhenUnavailable).toBe(false);
-    }
-  });
 });

@@ -1,7 +1,7 @@
 import { startTransition, useEffect } from "react";
 import { useAtom, useAtomValue } from "jotai";
 import clsx from "clsx";
-import { NOTES } from "@fretflow/core";
+import { NOTES, type PracticeLens } from "@fretflow/core";
 import {
   lensAvailabilityAtom,
   fingeringPatternAtom,
@@ -27,12 +27,13 @@ import {
   buildQualityToggleOptions,
 } from "../shared/chordControlOptions";
 
-/** Compact lens labels for the narrow Source-row Lens toggle. */
-const LENS_SHORT_LABELS: Record<string, string> = {
+/** Compact lens labels for the narrow Source-row Lens toggle. The `satisfies`
+ * clause makes a new lens added to `LENS_REGISTRY` without a label fail to compile. */
+const LENS_SHORT_LABELS = {
   targets: "Chord",
   "guide-tones": "Guide",
   tension: "Tension",
-};
+} satisfies Partial<Record<PracticeLens, string>>;
 
 export function ChordOverlayControls() {
   const { t } = useTranslation();
