@@ -44,6 +44,12 @@ export interface Dictionary {
     degreeColors: string;
     fullChords: string;
     tapToPlay: string;
+    statusByDegree: string;
+    statusUniform: string;
+    statusVisible: string;
+    statusHidden: string;
+    statusAudioOn: string;
+    statusMuted: string;
     notes: string;
     intervals: string;
     none: string;
