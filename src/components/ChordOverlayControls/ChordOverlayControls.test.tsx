@@ -587,7 +587,10 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
         ...MANUAL_MODE_SEEDS,
       ]);
       const lens = screen.getByText("Lens");
+      const sourceHeader = screen.getByRole("heading", { name: "Source" });
       const chordTypeHeader = screen.getByRole("heading", { name: "Chord Type" });
+      // Lens sits after the SOURCE header and before the CHORD TYPE header.
+      expect(sourceHeader.compareDocumentPosition(lens) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
       expect(lens.compareDocumentPosition(chordTypeHeader) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
   });
