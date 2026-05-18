@@ -92,4 +92,11 @@ describe("useLayoutMode showStatusBar", () => {
     const { result } = renderHook(() => useLayoutMode(), { wrapper });
     expect(result.current.showStatusBar).toBe(false);
   });
+
+  it("is true on the tablet-stacked variant", () => {
+    setViewport(900, 700);
+    const { result } = renderHook(() => useLayoutMode(), { wrapper });
+    expect(result.current.variant).toBe("tablet-stacked");
+    expect(result.current.showStatusBar).toBe(true);
+  });
 });

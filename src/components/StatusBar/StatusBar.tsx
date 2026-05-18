@@ -58,7 +58,7 @@ export function StatusBar() {
 
   const patternValue =
     pattern === "caged"
-      ? `CAGED · ${CAGED_SHAPES.filter((s) => cagedShapes.has(s)).join("") || EMPTY}`
+      ? `${PATTERN_LABELS.caged} · ${CAGED_SHAPES.filter((s) => cagedShapes.has(s)).join("") || EMPTY}`
       : PATTERN_LABELS[pattern];
 
   const fields: ReadonlyArray<{ id: string; label: string; value: string }> = [
