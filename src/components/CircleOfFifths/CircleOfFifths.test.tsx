@@ -24,7 +24,7 @@ describe("CircleOfFifths/CircleOfFifths", () => {
       render(<CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} />);
 
       const svg = document.querySelector("svg");
-      expect(svg?.getAttribute("viewBox")).toBe("-10 -10 340 340");
+      expect(svg?.getAttribute("viewBox")).toBe("-10 -10 280 280");
     });
 
     it("renders all 12 notes in circle", () => {

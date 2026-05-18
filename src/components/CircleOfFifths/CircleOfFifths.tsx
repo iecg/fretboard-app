@@ -15,7 +15,7 @@ import { getScaleCatalogEntry } from "@fretflow/core";
 import { getCircleNoteLabels } from "@fretflow/core";
 import styles from "./CircleOfFifths.module.css";
 
-const SIZE = 320;
+const SIZE = 260;
 const CX = SIZE / 2;
 const CY = SIZE / 2;
 const OUTER_RADIUS = SIZE * 0.48;

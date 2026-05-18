@@ -49,9 +49,9 @@
 
 .nav-button {
   composes: button from '../StepperShell/StepperShell.module.css';
-  width: 2rem;
-  min-height: 1.8rem;
-  display: inline-flex;
+  align-self: stretch;
+  min-width: 1.6rem;
+  padding: 0.1rem 0.3rem;
   color: var(--dc-fg-strong);
 }
 
@@ -59,9 +59,5 @@
 .nav-button :global(.icon) {
   width: 0.95rem;
   height: 0.95rem;
-}
-
-:global(.app-container[data-layout-tier="mobile"]) .nav-button {
-  min-height: 36px;
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
