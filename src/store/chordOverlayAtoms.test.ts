@@ -779,6 +779,14 @@ describe("voicing atoms", () => {
     expect(store.get(availableInversionsAtom)).toEqual(["root", "1st", "2nd", "3rd"]);
   });
 
+  it("availableInversionsAtom exposes only root for a dyad", () => {
+    const store = createStore();
+    store.set(chordRootOverrideAtom, "C");
+    store.set(chordQualityOverrideAtom, "Power Chord (5)");
+    store.set(chordOverlayModeAtom, "manual");
+    expect(store.get(availableInversionsAtom)).toEqual(["root"]);
+  });
+
   it("voicingMatchesAtom returns engine output when a chord is active, regardless of Full Chords", () => {
     const store = createStore();
     store.set(chordOverlayModeAtom, "manual");

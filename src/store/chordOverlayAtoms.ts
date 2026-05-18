@@ -480,6 +480,8 @@ export const availableInversionsAtom = atom((get): VoicingInversion[] => {
   const chordType = get(chordTypeAtom);
   const def = chordType ? CHORD_DEFINITIONS[chordType] : undefined;
   const count = def ? def.members.length : 4;
+  // Dyads (e.g. power chords) expose only the root position.
+  if (count <= 2) return VOICING_INVERSIONS.slice(0, 1);
   return VOICING_INVERSIONS.slice(0, Math.min(count, 4));
 });
 
