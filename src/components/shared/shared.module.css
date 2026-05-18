@@ -176,8 +176,8 @@
 .toggle-btn {
   flex: 1 1 0;
   min-width: 0;
-  min-height: 1.85rem;
-  padding: 0.18rem 0.55rem;
+  min-height: 1.6rem;
+  padding: 0.12rem 0.5rem;
   font-size: 0.78rem;
   line-height: 1.1;
   font-weight: 500;
@@ -218,6 +218,12 @@
   color: var(--dc-fg-strong);
   border: 1px solid var(--dc-border-active);
   box-shadow: var(--dc-glow-active);
+}
+
+/* Mobile touch-target guard — the Inspector docks at the bottom on mobile,
+   so these buttons are touch-reachable and need a full-size hit area. */
+:global(.app-container[data-layout-tier="mobile"]) .toggle-btn {
+  min-height: var(--size-touch-target);
 }
 
 .accidental-toggle {
@@ -277,7 +283,7 @@
 
 .note-btn {
   width: 100%;
-  min-height: 1.85rem;
+  min-height: 1.65rem;
   padding: 0;
   font-family: var(--font-mono);
   font-size: 0.82rem;
@@ -333,6 +339,12 @@
   color: var(--dc-fg-strong);
   border-color: var(--dc-border-active);
   box-shadow: var(--dc-glow-active);
+}
+
+/* Mobile touch-target guard — the Inspector docks at the bottom on mobile,
+   so these buttons are touch-reachable and need a full-size hit area. */
+:global(.app-container[data-layout-tier="mobile"]) .note-btn {
+  min-height: var(--size-touch-target);
 }
 
 /* Horizontal scroll variant — opt-in via overflow="scroll" prop on ToggleBar.
