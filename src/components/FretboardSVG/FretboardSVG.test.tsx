@@ -342,6 +342,40 @@ describe("FretboardSVG/FretboardSVG", () => {
     ).toHaveStyle({ fill: "var(--caged-e-fg)" });
   });
 
+  it("hides chord connectors when showChordConnectors is false", () => {
+    const fullChordVoicings: Array<{
+      shape: CagedShape;
+      voicingKey: string;
+      notes: Array<{ stringIndex: number; fretIndex: number; noteName: string }>;
+    }> = [
+      {
+        shape: "E",
+        voicingKey: "e-shape-c-major",
+        notes: [
+          { stringIndex: 0, fretIndex: 8, noteName: "C" },
+          { stringIndex: 1, fretIndex: 8, noteName: "G" },
+          { stringIndex: 2, fretIndex: 9, noteName: "E" },
+          { stringIndex: 3, fretIndex: 10, noteName: "C" },
+          { stringIndex: 4, fretIndex: 10, noteName: "G" },
+          { stringIndex: 5, fretIndex: 8, noteName: "C" },
+        ],
+      },
+    ];
+
+    const { container } = render(
+      <FretboardSVG
+        {...BASE_PROPS}
+        chordTones={["C", "E", "G"]}
+        chordRoot="C"
+        highlightNotes={["C", "E", "G"]}
+        fullChordVoicings={fullChordVoicings}
+        showChordConnectors={false}
+      />,
+    );
+
+    expect(container.querySelector(".chord-connectors")).toBeNull();
+  });
+
   it("replaces the full-chord connector group when full chords are toggled off", () => {
     const fullChordVoicings: Array<{
       shape: CagedShape;

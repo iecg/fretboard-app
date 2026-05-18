@@ -118,6 +118,8 @@ interface FretboardSVGProps {
     notes: FullChordMatchNote[];
     shape?: CagedShape;
   }>;
+  /** When false, chord voicing connector polylines are not rendered. Defaults to true. */
+  showChordConnectors?: boolean;
   /** Optional DOM id applied to the SVG wrapper for stable external references. */
   id?: string;
   /** Callback fired when the user clicks a note bubble; receives string index, fret index, and note name. */
@@ -157,6 +159,7 @@ export const FretboardSVG = memo(function FretboardSVG({
   noteSemantics,
   fullChordPositionKeys,
   fullChordVoicings,
+  showChordConnectors = true,
   id,
   onNoteClick,
 }: FretboardSVGProps) {
@@ -534,7 +537,7 @@ export const FretboardSVG = memo(function FretboardSVG({
             pointerEvents="none"
           >
             <AnimatePresence mode="wait">
-              {connectorPolylines.length > 0 && (
+              {showChordConnectors && connectorPolylines.length > 0 && (
                 motionPolicy.connectorMode === "group" ? (
                   <motion.g
                     key={`chord-connectors-${connectorSource}-${chordRoot}-${chordTones?.join("-") ?? "none"}`}

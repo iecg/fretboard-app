@@ -22,6 +22,7 @@ import {
   cagedShapesAtom,
   npsPositionAtom,
   fullChordMatchesAtom,
+  voicingConnectorsAtom,
 } from "../store/atoms";
 import type { CagedShape, Voicing, VoicingNote, ShapePolygon } from "@fretflow/core";
 
@@ -139,6 +140,7 @@ export function useFretboardState() {
   const cagedShapes = useAtomValue(cagedShapesAtom);
   const npsPosition = useAtomValue(npsPositionAtom);
   const fullChordMatches = useAtomValue(fullChordMatchesAtom);
+  const showChordConnectors = useAtomValue(voicingConnectorsAtom);
 
   let activePattern: ActivePatternType | undefined;
   let activeShape: ActiveShapeType;
@@ -213,5 +215,6 @@ export function useFretboardState() {
     shapeScope,
     fullChordMatches: visibleFullChordMatches,
     fullChordPositions: visibleFullChordPositions,
+    showChordConnectors,
   };
 }
