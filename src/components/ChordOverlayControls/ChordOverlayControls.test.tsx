@@ -666,6 +666,25 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
   });
 
+  describe("13. group headers order and Lens placement", () => {
+    it("renders SOURCE, CHORD TYPE and VOICING group headers in order", () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        ...MANUAL_MODE_SEEDS,
+      ]);
+      const headers = screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent);
+      expect(headers).toEqual(["Source", "Chord Type", "Voicing"]);
+    });
+
+    it("places the Lens control inside the SOURCE group", () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        ...MANUAL_MODE_SEEDS,
+      ]);
+      const lens = screen.getByText("Lens");
+      const chordTypeHeader = screen.getByRole("heading", { name: "Chord Type" });
+      expect(lens.compareDocumentPosition(chordTypeHeader) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+  });
+
   describe("Show on Board switch", () => {
     it("renders when a chord is active in manual mode", () => {
       renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);

@@ -197,6 +197,16 @@ export function ChordOverlayControls() {
             />
           </Prop>
         )}
+        {showDisplay && (
+          <Prop label={t("controls.lens")} span={3} hint={hasActiveChord ? activeLensDescription : undefined}>
+            <ToggleBar
+              options={lensOptions.map((o) => ({ ...o, disabled: displayDisabled || o.disabled }))}
+              value={practiceLens}
+              onChange={displayDisabled ? () => undefined : setPracticeLens}
+              label="Practice lens"
+            />
+          </Prop>
+        )}
         {showRoot && (
           <Prop label={t("controls.root")} span={4}>
             <NoteGrid
@@ -211,43 +221,40 @@ export function ChordOverlayControls() {
             />
           </Prop>
         )}
-        {showChordTypeGrid && (
-          <Prop
-            label={t("controls.chordType")}
-            span={4}
-            hint={
-              chordOverlayMode === "degree"
-                ? hasQualityOverride
-                  ? t("controls.customChordHint")
-                  : t("controls.diatonicDefaultHint")
-                : undefined
-            }
-          >
-            <ChordTypeGrid
-              label="Chord Type"
-              options={buildQualityToggleOptions({ includeSentinel: false })}
-              value={
-                chordOverlayMode === "degree"
-                  ? chordType ?? ""
-                  : chordQualityOverride ?? ""
-              }
-              onChange={handleChordTypeChange}
-            />
-          </Prop>
-        )}
 
-        {/* ── DISPLAY ──────────────────────────────────────────────────── */}
-        {showDisplay && (
+        {/* ── CHORD TYPE ───────────────────────────────────────────────── */}
+        {showChordTypeGrid && (
           <>
-            <GroupHeader>{t("inspector.groupDisplay")}</GroupHeader>
-            <Prop label={t("controls.lens")} span={4} hint={hasActiveChord ? activeLensDescription : undefined}>
-              <ToggleBar
-                options={lensOptions.map((o) => ({ ...o, disabled: displayDisabled || o.disabled }))}
-                value={practiceLens}
-                onChange={displayDisabled ? () => undefined : setPracticeLens}
-                label="Practice lens"
+            <GroupHeader>{t("inspector.groupChordType")}</GroupHeader>
+            <Prop
+              label={t("controls.chordType")}
+              span={6}
+              hint={
+                chordOverlayMode === "degree"
+                  ? hasQualityOverride
+                    ? t("controls.customChordHint")
+                    : t("controls.diatonicDefaultHint")
+                  : undefined
+              }
+            >
+              <ChordTypeGrid
+                label="Chord Type"
+                options={buildQualityToggleOptions({ includeSentinel: false })}
+                value={
+                  chordOverlayMode === "degree"
+                    ? chordType ?? ""
+                    : chordQualityOverride ?? ""
+                }
+                onChange={handleChordTypeChange}
               />
             </Prop>
+          </>
+        )}
+
+        {/* ── VOICING ──────────────────────────────────────────────────── */}
+        {showDisplay && (
+          <>
+            <GroupHeader>{t("inspector.groupVoicing")}</GroupHeader>
             <Prop label={t("inspector.fullChords")} span={3} hint={hasActiveChord ? fullChordsHint : undefined}>
               <Switch
                 label={t("inspector.fullChords")}
