@@ -22,7 +22,8 @@ describe("StatusBar", () => {
     for (const label of ["Key", "Chord", "Lens", "Pattern", "Frets", "Tempo", "Tuning"]) {
       expect(screen.getByText(label)).toBeInTheDocument();
     }
-    expect(screen.getByTestId("version-badge")).toBeInTheDocument();
+    expect(screen.getByTestId("status-version")).toBeInTheDocument();
+    expect(screen.getByTestId("status-version")).toHaveTextContent("FretFlow Studio");
   });
 
   it("shows the fret window from fretStartAtom/fretEndAtom", () => {

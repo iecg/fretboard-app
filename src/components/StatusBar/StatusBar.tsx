@@ -14,7 +14,6 @@ import {
   tuningNameAtom,
 } from "../../store/atoms";
 import { useTranslation } from "../../hooks/useTranslation";
-import { VersionBadge } from "../VersionBadge/VersionBadge";
 import styles from "./StatusBar.module.css";
 
 /** Placeholder for a field with no current value. */
@@ -83,7 +82,9 @@ export function StatusBar() {
           </div>
         ))}
       </dl>
-      <VersionBadge />
+      <span className={styles.version} data-testid="status-version">
+        FretFlow Studio · v{__APP_VERSION__}
+      </span>
     </div>
   );
 }
