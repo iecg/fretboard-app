@@ -331,8 +331,8 @@ describe("ProgressionControls grid layout", () => {
 
   it("renders the rehosted backing-track controls", () => {
     renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
-    expect(screen.getByLabelText("Genre style")).toBeInTheDocument();
-    expect(screen.getByLabelText("Chord instrument")).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Genre style" })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Chord instrument" })).toBeInTheDocument();
     expect(screen.getByLabelText("Swing amount")).toBeInTheDocument();
   });
 });
