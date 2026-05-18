@@ -9,8 +9,6 @@ import {
   accidentalModeAtom,
   enharmonicDisplayAtom,
   scaleDegreeColorsEnabledAtom,
-  fullChordsEnabledAtom,
-  isMutedAtom,
   displayFormatAtom,
 } from "../../store/atoms";
 import { ViewTab } from "./ViewTab";
@@ -66,48 +64,28 @@ describe("ViewTab", () => {
     );
   });
 
-  it("renders the Display group toggles bound to their atoms", () => {
+  it("renders the Degree Colors toggle bound to its atom", () => {
     renderWithAtoms(<ViewTab />, [
       [scaleDegreeColorsEnabledAtom, true],
-      [fullChordsEnabledAtom, false],
-      [isMutedAtom, false],
     ]);
     expect(screen.getByRole("switch", { name: "Degree Colors" })).toHaveAttribute(
       "aria-checked",
       "true",
     );
-    expect(screen.getByRole("switch", { name: "Full Chords" })).toHaveAttribute(
-      "aria-checked",
-      "false",
-    );
-    // Tap to Play is the inverse of isMuted — not muted → checked.
-    expect(screen.getByRole("switch", { name: "Tap to Play" })).toHaveAttribute(
-      "aria-checked",
-      "true",
-    );
   });
 
-  it("turns Tap to Play on (unmutes) when switched from a muted state", async () => {
-    const user = userEvent.setup();
-    renderWithAtoms(<ViewTab />, [[isMutedAtom, true]]);
-    const tapToPlay = screen.getByRole("switch", { name: "Tap to Play" });
-    expect(tapToPlay).toHaveAttribute("aria-checked", "false");
-    await user.click(tapToPlay);
-    expect(screen.getByRole("switch", { name: "Tap to Play" })).toHaveAttribute(
-      "aria-checked",
-      "true",
-    );
-  });
-
-  it("shows state words on the three DISPLAY toggles", () => {
+  it("shows state word on the Degree Colors toggle", () => {
     renderWithAtoms(<ViewTab />, [
       [scaleDegreeColorsEnabledAtom, false],
-      [fullChordsEnabledAtom, true],
-      [isMutedAtom, false],
     ]);
     expect(screen.getByText("Uniform")).toBeInTheDocument();
-    expect(screen.getByText("Visible")).toBeInTheDocument();
-    expect(screen.getByText("Audio on")).toBeInTheDocument();
+  });
+
+  it("omits the Full Chords and Tap to Play toggles", () => {
+    renderWithAtoms(<ViewTab />);
+    expect(screen.queryByText("Full Chords")).not.toBeInTheDocument();
+    expect(screen.queryByText("Tap to Play")).not.toBeInTheDocument();
+    expect(screen.getByRole("group", { name: /fret range/i })).toBeInTheDocument();
   });
 
   it("has no accessibility violations", async () => {
