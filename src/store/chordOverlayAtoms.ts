@@ -463,6 +463,18 @@ export const voicingStringSetAtom = atomWithStorage<VoicingStringSet>(
   GET_ON_INIT,
 );
 
+/**
+ * Whether the voicing connector lines render on the fretboard. Drives the
+ * Chord tab's VOICING-header "Connectors" toggle. Default off — the design
+ * screenshot shows connectors hidden.
+ */
+export const voicingConnectorsAtom = atomWithStorage<boolean>(
+  k("voicingConnectors"),
+  false,
+  booleanStorage,
+  GET_ON_INIT,
+);
+
 /** Inversions valid for the active chord — triads drop "3rd", dyads keep "root" only. */
 export const availableInversionsAtom = atom((get): VoicingInversion[] => {
   const chordType = get(chordTypeAtom);
@@ -473,7 +485,6 @@ export const availableInversionsAtom = atom((get): VoicingInversion[] => {
 
 /** The renderer's voicing source. */
 export const voicingMatchesAtom = atom((get) => {
-  if (!get(fullChordsEnabledAtom)) return [];
   if (get(chordOverlayHiddenAtom)) return [];
   const chordType = get(chordTypeAtom);
   if (!chordType) return [];

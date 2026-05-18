@@ -69,6 +69,7 @@ export {
   voicingTypeAtom,
   voicingInversionAtom,
   voicingStringSetAtom,
+  voicingConnectorsAtom,
   availableInversionsAtom,
   voicingMatchesAtom,
 } from "./chordOverlayAtoms";

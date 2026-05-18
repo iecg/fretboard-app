@@ -13,6 +13,7 @@ import {
   setChordDegreeAtom,
   availableInversionsAtom,
   voicingMatchesAtom,
+  voicingConnectorsAtom,
   fullChordsEnabledAtom,
 } from "./chordOverlayAtoms";
 import { allChordMembersAtom } from "./composableSelectors";
@@ -778,10 +779,18 @@ describe("voicing atoms", () => {
     expect(store.get(availableInversionsAtom)).toEqual(["root", "1st", "2nd", "3rd"]);
   });
 
-  it("voicingMatchesAtom is empty when Full Chords is off", () => {
+  it("voicingMatchesAtom returns engine output when a chord is active, regardless of Full Chords", () => {
     const store = createStore();
+    store.set(chordOverlayModeAtom, "manual");
+    store.set(chordRootOverrideAtom, "C");
+    store.set(chordQualityOverrideAtom, "Major Triad");
     store.set(fullChordsEnabledAtom, false);
-    expect(store.get(voicingMatchesAtom)).toEqual([]);
+    expect(store.get(voicingMatchesAtom).length).toBeGreaterThan(0);
+  });
+
+  it("voicingConnectorsAtom defaults to false", () => {
+    const store = createStore();
+    expect(store.get(voicingConnectorsAtom)).toBe(false);
   });
 });
 
