@@ -25,6 +25,7 @@
 | `src/components/StepperSelect/StepperSelect.module.css` | Family/Variant stepper | Compact sizing |
 | `src/components/ProgressionControls/ProgressionControls.tsx` / `.module.css` | Progression tab | Header actions, quality picker, SELECTED header, Loop removal, compact steppers |
 | `src/components/ProgressionControls/BackingTrackControls.tsx` / `.module.css` | Backing track | LabeledSelect swap, styled Swing slider |
+| `src/components/TransportBar/TransportBar.tsx` / `.module.css` | Playback transport | Add editable tempo stepper |
 
 ---
 
@@ -1082,7 +1083,154 @@ git commit -m "feat(inspector): restyle Backing Track selects and Swing slider"
 
 ---
 
-## Task 11: Full verification and visual snapshot refresh
+## Task 11: TransportBar — editable tempo stepper
+
+The tempo state already exists (`progressionTempoBpmAtom`, exposed by `useProgressionState` as `progressionTempoBpm` / `setProgressionTempoBpm`); only an editable control is missing. Add a BPM stepper to the `TransportBar`, styled in the existing transport chrome.
+
+**Files:**
+- Modify: `src/components/TransportBar/TransportBar.tsx`
+- Modify: `src/components/TransportBar/TransportBar.module.css`
+- Test: `src/components/TransportBar/TransportBar.test.tsx`
+
+- [ ] **Step 1: Add a tempo-stepper test**
+
+In `src/components/TransportBar/TransportBar.test.tsx`, add (reconcile imports with the existing file — it already renders `<TransportBar />` via `renderWithAtoms`):
+
+```tsx
+import { progressionTempoBpmAtom } from "../../store/atoms";
+
+describe("TransportBar tempo", () => {
+  it("renders the current tempo in BPM", () => {
+    renderWithAtoms(<TransportBar />, [[progressionTempoBpmAtom, 90]]);
+    expect(screen.getByText(/90 BPM/)).toBeInTheDocument();
+  });
+
+  it("increases the tempo by 5 BPM when the increment button is pressed", async () => {
+    const user = userEvent.setup();
+    renderWithAtoms(<TransportBar />, [[progressionTempoBpmAtom, 90]]);
+    await user.click(screen.getByRole("button", { name: /increase tempo/i }));
+    expect(screen.getByText(/95 BPM/)).toBeInTheDocument();
+  });
+
+  it("does not raise the tempo above 240 BPM", async () => {
+    const user = userEvent.setup();
+    renderWithAtoms(<TransportBar />, [[progressionTempoBpmAtom, 238]]);
+    await user.click(screen.getByRole("button", { name: /increase tempo/i }));
+    expect(screen.getByText(/240 BPM/)).toBeInTheDocument();
+  });
+});
+```
+
+If the file does not already import `userEvent` / `screen` / `renderWithAtoms`, add them — match the import style used by `ViewTab.test.tsx`.
+
+- [ ] **Step 2: Run the test to verify it fails**
+
+Run: `pnpm run test -- TransportBar`
+Expected: FAIL — no tempo control rendered.
+
+- [ ] **Step 3: Add the tempo stepper to `TransportBar.tsx`**
+
+In `src/components/TransportBar/TransportBar.tsx`:
+
+(a) Add `Minus` and `Plus` to the `lucide-react` import list.
+
+(b) Add the tempo domain constants to the imports:
+
+```tsx
+import {
+  MAX_PROGRESSION_TEMPO_BPM,
+  MIN_PROGRESSION_TEMPO_BPM,
+} from "../../progressions/progressionDomain";
+```
+
+(c) Add `progressionTempoBpm` and `setProgressionTempoBpm` to the `useProgressionState()` destructure.
+
+(d) After the destructure, add a clamped setter:
+
+```tsx
+  const adjustTempo = (delta: number) =>
+    setProgressionTempoBpm(
+      Math.min(
+        MAX_PROGRESSION_TEMPO_BPM,
+        Math.max(MIN_PROGRESSION_TEMPO_BPM, progressionTempoBpm + delta),
+      ),
+    );
+```
+
+(e) At the end of the transport row — after the `instrumentCluster` `<div>` and before the closing `</div>` of `.transportBar` — add a divider and the tempo cluster:
+
+```tsx
+      <span className={styles.clusterDivider} aria-hidden="true" />
+
+      <div className={styles.tempoCluster} role="group" aria-label="Tempo">
+        <button
+          type="button"
+          className={styles.transportButton}
+          onClick={() => adjustTempo(-5)}
+          disabled={progressionTempoBpm <= MIN_PROGRESSION_TEMPO_BPM}
+          aria-label="Decrease tempo"
+        >
+          <Minus size={13} strokeWidth={2.4} aria-hidden="true" />
+        </button>
+        <span className={styles.tempoValue} data-testid="transport-tempo">
+          {progressionTempoBpm} BPM
+        </span>
+        <button
+          type="button"
+          className={styles.transportButton}
+          onClick={() => adjustTempo(5)}
+          disabled={progressionTempoBpm >= MAX_PROGRESSION_TEMPO_BPM}
+          aria-label="Increase tempo"
+        >
+          <Plus size={13} strokeWidth={2.4} aria-hidden="true" />
+        </button>
+      </div>
+```
+
+- [ ] **Step 4: Add the tempo-cluster styles**
+
+In `src/components/TransportBar/TransportBar.module.css`, append:
+
+```css
+.tempoCluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22rem;
+  flex-shrink: 0;
+}
+
+.tempoValue {
+  min-width: 3.6rem;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--track-accent);
+  letter-spacing: 0.04em;
+}
+```
+
+- [ ] **Step 5: Run the test to verify it passes**
+
+Run: `pnpm run test -- TransportBar`
+Expected: PASS.
+
+- [ ] **Step 6: Run lint**
+
+Run: `pnpm run lint`
+Expected: PASS — no unused imports.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add src/components/TransportBar/TransportBar.tsx src/components/TransportBar/TransportBar.module.css src/components/TransportBar/TransportBar.test.tsx
+git commit -m "feat(transport): add editable tempo stepper to the TransportBar"
+```
+
+---
+
+## Task 12: Full verification and visual snapshot refresh
 
 **Files:** none (verification only).
 
@@ -1107,6 +1255,7 @@ Start the dev server and confirm:
 - **View tab:** Fret Range sits in the DISPLAY group; no Full Chords or Tap to Play toggles; the fret-range stepper is the same height as the Notes/Accidentals toggle bars.
 - **Scale tab:** columns read KEY · CIRCLE OF FIFTHS · THEORY; the header reads "CIRCLE OF FIFTHS"; the circle is visibly smaller; the Theory column shows a diatonic chord list and no Tones row; the Family/Variant steppers match the toggle-bar height.
 - **Progression tab:** the Add/move/duplicate/delete actions sit on the CHORDS header row; the chord list is denser; the editor shows a "SELECTED — …" header; the quality picker is the `ChordTypeGrid` with no Diatonic button and the active degree shows `*` when a quality is set; no Loop control; the Swing slider has a filled cyan track; the Backing Track dropdowns match the inspector's styled selects.
+- **TransportBar:** an editable BPM stepper (`− / value / +`) sits in the transport row; pressing the buttons changes the tempo in 5 BPM steps and clamps at 40 / 240; the StatusBar tempo field mirrors the value.
 
 - [ ] **Step 5: Refresh the visual regression snapshots**
 
@@ -1126,6 +1275,6 @@ git commit -m "test(inspector): refresh visual snapshots for tab refinements"
 
 ## Self-Review Notes
 
-- **Spec coverage:** Cross-cutting height (Task 2); View tab moves/removals (Task 3); Scale column order + header rename (Tasks 1, 4); Tones→chord list (Tasks 1, 5); compact circle + StepperSelect (Task 6); Progression header actions + list shrink (Task 7); unified quality picker with `*` (Task 8); SELECTED header + Loop removal + compact steppers (Tasks 2, 9); Swing + Backing Track restyle (Task 10). All spec sections map to a task.
+- **Spec coverage:** Cross-cutting height (Task 2); View tab moves/removals (Task 3); Scale column order + header rename (Tasks 1, 4); Tones→chord list (Tasks 1, 5); compact circle + StepperSelect (Task 6); Progression header actions + list shrink (Task 7); unified quality picker with `*` (Task 8); SELECTED header + Loop removal + compact steppers (Tasks 2, 9); Swing + Backing Track restyle (Task 10); TransportBar tempo stepper (Task 11). All spec sections map to a task.
 - **Loop relocation** is explicitly out of scope per the spec — Task 9 only removes it from the Progression tab.
 - **`factTones` / `fullChordsEnabledAtom` / `isMutedAtom`** are intentionally left in the codebase; only their Scale/View tab exposure changes.

@@ -132,10 +132,32 @@ Files: `src/components/ProgressionControls/ProgressionControls.tsx`,
 
 **Resulting meter row:** Mode · Beats/Bar · Length · Preset.
 
+## 5. Tempo control (TransportBar)
+
+File: `src/components/TransportBar/TransportBar.tsx` + its CSS module.
+
+There is currently no UI to change the playback tempo. The state already exists —
+`progressionTempoBpmAtom` (`src/store/progressionAtoms.ts`, range 40–240 BPM, default 90),
+exposed by `useProgressionState` as `progressionTempoBpm` / `setProgressionTempoBpm`. The
+`StatusBar` displays the tempo but is a documented read-only surface.
+
+**Change:** add an editable BPM **stepper** to the `TransportBar` — the dedicated playback
+control surface that already hosts Play, Loop, and the instrument toggles. Tempo is a
+transport parameter, the same category as Loop, so it belongs alongside it rather than in
+the Progression tab's authoring controls.
+
+- A `−` / value / `+` stepper styled to match the existing `.transportButton` chrome
+  (neon-cyan transport language), grouped in its own cluster in the transport row.
+- Bound to `progressionTempoBpm` / `setProgressionTempoBpm`; clamped to
+  `MIN_PROGRESSION_TEMPO_BPM` (40) … `MAX_PROGRESSION_TEMPO_BPM` (240); step of 5 BPM.
+- The value reads e.g. `90 BPM`.
+- The `StatusBar` keeps mirroring the tempo read-only — consistent with how it mirrors
+  Frets / Key.
+
 ## Out of scope / follow-ups
 
-- **Loop relocation.** This spec removes the Loop toggle from the Progression tab. Finding
-  it a home on a transport/playback surface is a separate task, not covered here.
+- **Loop relocation.** This spec removes the Loop toggle from the Progression tab. Loop
+  already exists in the `TransportBar`; relocating/consolidating it is not covered here.
 - The `fullChordsEnabledAtom` and `isMutedAtom` atoms are untouched — only their exposure
   in the View tab changes.
 
@@ -150,6 +172,8 @@ Files: `src/components/ProgressionControls/ProgressionControls.tsx`,
   Theory column renders the diatonic chord list (no Tones row, no key-sig/parent rows).
 - Verify the Progression tab: header-row action toolbar, unified quality picker with
   `*`-on-degree behavior, no Loop toggle, `SELECTED` editor header.
+- Verify the TransportBar renders an editable BPM stepper that writes
+  `progressionTempoBpmAtom`, clamped to 40–240.
 - Visual regression suites under `e2e/` (`app-components`, `app-overlays`) will need
   refreshed darwin/linux snapshots for the affected tabs.
 - `vitest-axe` checks remain green for each tab.
