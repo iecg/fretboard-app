@@ -11,7 +11,7 @@ interface StringSetCard {
   id: VoicingStringSet;
   label: string;
   sub: string;
-  /** mask top→bottom = string 6 (low E) → string 1 (high E). */
+  /** mask index 0→5 = string 6 (low E) → string 1 (high E). Rendered reversed (low E at bottom). */
   mask: boolean[];
 }
 
@@ -39,6 +39,7 @@ export function StringSetPicker({ value, onChange }: StringSetPickerProps) {
             onClick={() => onChange(card.id)}
           >
             <span className={styles.diagram} aria-hidden="true">
+              {/* Reverse so low-E (thick) renders at the bottom, high-E (thin) at the top. */}
               {[...card.mask].reverse().map((on, i) => (
                 <span
                   key={i}
