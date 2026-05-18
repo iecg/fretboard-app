@@ -4,33 +4,39 @@
   gap: 0.375rem;
 }
 
+/* Card states mirror the ChordTypeGrid cell / ToggleBar button contract so the
+   picker reads as part of the same control family — same --dc-* tokens for the
+   resting, hover, active and focus states. */
 .card {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem;
   min-height: 3.25rem;
-  background: var(--surface-well);
-  border: 1px solid var(--surface-card-border);
+  color: var(--dc-fg);
+  background: var(--dc-bg);
+  border: 1px solid var(--dc-border);
   border-radius: var(--dc-radius);
   cursor: pointer;
   text-align: left;
   transition: var(--dc-transition);
 }
 
-.card:hover {
-  border-color: var(--surface-highlight);
+.card:hover:not(.cardActive) {
+  background: var(--dc-bg-hover);
+  border-color: var(--dc-border-hover);
 }
 
 .cardActive {
-  background: var(--accent-glow);
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 10px -4px var(--accent-primary);
+  color: var(--dc-fg-strong);
+  background: var(--dc-bg-active);
+  border-color: var(--dc-border-active);
+  box-shadow: var(--dc-glow-active);
 }
 
 .card:focus-visible {
-  outline: 2px solid var(--neon-cyan);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: var(--dc-glow-focus);
 }
 
 .diagram {
@@ -59,13 +65,13 @@
 .label {
   font-size: 0.72rem;
   font-weight: 600;
-  color: var(--text-main);
+  color: inherit;
   line-height: 1.1;
 }
 
 .sub {
   font-family: var(--font-mono);
   font-size: 0.6rem;
-  color: var(--text-muted);
+  color: var(--dc-fg-muted);
   margin-top: 0.2rem;
 }
