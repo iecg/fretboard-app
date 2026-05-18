@@ -195,6 +195,9 @@ function cagedVoicings(params: GenerateVoicingsParams): Voicing[] {
   const openMidis = tuning.map(openStringMidi);
   if (openMidis.some((m) => m === null)) return [];
   const bassPC = inversionBassPitchClass(chordRoot, chordType, inversion);
+  // The requested inversion has no corresponding chord tone (e.g. a "3rd"
+  // inversion of a triad) — there is nothing valid to generate.
+  if (inversion !== "root" && bassPC === null) return [];
 
   const matches = getFullChordShapeMatches({ chordRoot, chordType, tuning, maxFret });
   const voicings: Voicing[] = [];
