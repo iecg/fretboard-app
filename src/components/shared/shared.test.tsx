@@ -23,18 +23,22 @@ describe("shared.module.css responsive selectors", () => {
     expect(sharedCSS).not.toMatch(barePattern);
   });
 
-  it("compact density is the default: toggle-btn base min-height is 1.85rem", () => {
-    // Compact is the universal default — no tier-based overrides for
-    // toggle-btn or note-btn remain in shared.module.css. The DAW restyle
-    // aligns the baseline to the 1.85rem transport-bar control height.
-    expect(sharedCSS).toMatch(/\.toggle-btn[^{]*\{[^}]*min-height:\s*1\.85rem/);
+  it("compact density is the default: toggle-btn base min-height is 1.6rem", () => {
+    // Compact is the universal default — the compact DAW-inspector density
+    // sets the baseline toggle-btn height to 1.6rem. Mobile gets a separate
+    // touch-target override; desktop and tablet use this base value.
+    expect(sharedCSS).toMatch(/\.toggle-btn[^{]*\{[^}]*min-height:\s*1\.6rem/);
   });
 
-  it("compact density is the default: note-btn base min-height is 1.85rem", () => {
-    expect(sharedCSS).toMatch(/\.note-btn[^{]*\{[^}]*min-height:\s*1\.85rem/);
+  it("compact density is the default: note-btn base min-height is 1.65rem", () => {
+    // The compact DAW-inspector density sets the baseline note-btn height to
+    // 1.65rem. Mobile gets a separate touch-target override.
+    expect(sharedCSS).toMatch(/\.note-btn[^{]*\{[^}]*min-height:\s*1\.65rem/);
   });
 
-  it("no tier-specific toggle-btn or note-btn overrides exist (compact is universal default)", () => {
+  it("no desktop or tablet tier overrides for toggle-btn or note-btn (mobile touch-target overrides are expected)", () => {
+    // Desktop and tablet use the compact base values. Mobile gets a dedicated
+    // touch-target override for accessibility on small screens.
     expect(sharedCSS).not.toContain(
       ':global(.app-container[data-layout-tier="desktop"]) .toggle-btn',
     );
