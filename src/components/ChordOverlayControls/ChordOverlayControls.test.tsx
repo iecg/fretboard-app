@@ -550,7 +550,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
   });
 
-  describe("12. lens hint uses LENS_REGISTRY description", () => {
+  describe("12. lens Prop shows static hint", () => {
     it("does not render a lens help-button when chord is active", () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
       expect(
