@@ -17,6 +17,10 @@
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
+.propGrid[data-columns="7"] {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
 /* Mobile tier — collapse to two columns regardless of the declared column
    count. Wide cells (span >= 2) clamp to the available tracks automatically. */
 :global(.app-container[data-layout-tier="mobile"]) .propGrid {
@@ -45,6 +49,10 @@
 
 .prop[data-span="6"] {
   grid-column: span 6;
+}
+
+.prop[data-span="7"] {
+  grid-column: span 7;
 }
 
 .propLabel {
@@ -125,6 +133,7 @@
 :global(.app-container[data-layout-tier="mobile"]) .prop[data-span="3"],
 :global(.app-container[data-layout-tier="mobile"]) .prop[data-span="4"],
 :global(.app-container[data-layout-tier="mobile"]) .prop[data-span="6"],
+:global(.app-container[data-layout-tier="mobile"]) .prop[data-span="7"],
 :global(.app-container[data-layout-tier="mobile"]) .toggleProp[data-span="3"],
 :global(.app-container[data-layout-tier="mobile"]) .toggleProp[data-span="4"],
 :global(.app-container[data-layout-tier="mobile"]) .toggleProp[data-span="6"] {

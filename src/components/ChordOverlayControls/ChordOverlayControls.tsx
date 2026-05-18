@@ -142,12 +142,12 @@ export function ChordOverlayControls() {
           {t("controls.chordOverlayDisabled")}
         </p>
       )}
-      <PropGrid columns={6} className={panelStyles.grid}>
+      <PropGrid columns={7} className={panelStyles.grid}>
         {/* ── SOURCE ───────────────────────────────────────────────────── */}
         <GroupHeader>{t("inspector.groupSource")}</GroupHeader>
         <Prop
           label={t("controls.mode")}
-          span={showRoot ? 3 : 2}
+          span={2}
           hint={isPatternDisabled ? undefined : t("controls.modeHint")}
         >
           <ToggleBar
@@ -176,7 +176,7 @@ export function ChordOverlayControls() {
           />
         </Prop>
         {showDegree && (
-          <Prop label={t("controls.degree")} span={2}>
+          <Prop label={t("controls.degree")} span={3}>
             <ToggleBar
               options={degreeSelectOptions}
               value={chordDegree ?? ""}
@@ -185,25 +185,8 @@ export function ChordOverlayControls() {
             />
           </Prop>
         )}
-        {showDisplay && (
-          <Prop
-            label={t("controls.lens")}
-            span={showRoot ? 3 : 2}
-            hint={t("controls.lensHint")}
-          >
-            <ToggleBar
-              options={lensOptions.map((o) => ({
-                ...o,
-                disabled: displayDisabled || o.disabled,
-              }))}
-              value={practiceLens}
-              onChange={displayDisabled ? () => undefined : setPracticeLens}
-              label="Practice lens"
-            />
-          </Prop>
-        )}
         {showRoot && (
-          <Prop label={t("controls.root")} span={6}>
+          <Prop label={t("controls.root")} span={3}>
             <NoteGrid
               notes={NOTES}
               selected={chordRootOverride}
@@ -216,6 +199,19 @@ export function ChordOverlayControls() {
             />
           </Prop>
         )}
+        {showDisplay && (
+          <Prop label={t("controls.lens")} span={2} hint={t("controls.lensHint")}>
+            <ToggleBar
+              options={lensOptions.map((o) => ({
+                ...o,
+                disabled: displayDisabled || o.disabled,
+              }))}
+              value={practiceLens}
+              onChange={displayDisabled ? () => undefined : setPracticeLens}
+              label="Practice lens"
+            />
+          </Prop>
+        )}
 
         {/* ── CHORD TYPE ───────────────────────────────────────────────── */}
         {showChordTypeGrid && (
@@ -223,7 +219,7 @@ export function ChordOverlayControls() {
             <GroupHeader>{t("inspector.groupChordType")}</GroupHeader>
             <Prop
               label={t("controls.quality")}
-              span={6}
+              span={7}
               hint={
                 chordOverlayMode === "degree"
                   ? hasQualityOverride
@@ -280,7 +276,7 @@ export function ChordOverlayControls() {
             </Prop>
             <Prop
               label={t("inspector.voicingInversion")}
-              span={3}
+              span={4}
               hint={t("inspector.voicingInversionHint")}
             >
               <ToggleBar
@@ -296,7 +292,7 @@ export function ChordOverlayControls() {
             </Prop>
             <Prop
               label={t("inspector.voicingStringSet")}
-              span={6}
+              span={7}
               hint={t("inspector.voicingStringSetHint")}
             >
               <StringSetPicker value={voicingStringSet} onChange={setVoicingStringSet} />
