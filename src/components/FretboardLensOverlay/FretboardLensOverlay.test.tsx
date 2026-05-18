@@ -42,10 +42,10 @@ describe("FretboardLensOverlay", () => {
     expect(screen.queryByTestId("fretboard-lens-overlay")).toBeNull();
   });
 
-  it("tags the overlay with the current layout tier", () => {
+  it("tags the overlay with the current layout tier and variant", () => {
     renderWithAtoms(<FretboardLensOverlay />, [[progressionEnabledAtom, false]]);
-    expect(screen.getByTestId("fretboard-lens-overlay")).toHaveAttribute(
-      "data-layout-tier",
-    );
+    const overlay = screen.getByTestId("fretboard-lens-overlay");
+    expect(overlay).toHaveAttribute("data-layout-tier");
+    expect(overlay).toHaveAttribute("data-layout-variant");
   });
 });

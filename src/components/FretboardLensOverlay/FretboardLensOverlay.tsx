@@ -23,6 +23,7 @@ export function FretboardLensOverlay() {
     <div
       className={styles.overlay}
       data-layout-tier={layout.tier}
+      data-layout-variant={layout.variant}
       data-testid="fretboard-lens-overlay"
     >
       <TopBandSummary />
