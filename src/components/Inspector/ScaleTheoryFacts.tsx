@@ -8,6 +8,7 @@ import {
 } from "../../store/atoms";
 import { DegreeChordList } from "../CircleOfFifths/DegreeChordList";
 import { useTranslation } from "../../hooks/useTranslation";
+import { getScaleKeyInfo } from "./scaleTheoryDerivations";
 import styles from "./ScaleTheoryFacts.module.css";
 
 /**
@@ -22,6 +23,7 @@ export function ScaleTheoryFacts() {
   const rootNote = useAtomValue(rootNoteAtom);
   const scaleName = useAtomValue(scaleNameAtom);
   const useFlats = useAtomValue(useFlatsAtom);
+  const keyInfo = getScaleKeyInfo(rootNote, scaleName, useFlats);
 
   return (
     <dl className={styles.facts}>
@@ -42,6 +44,8 @@ export function ScaleTheoryFacts() {
       <FactRow label={t("inspector.factDegrees")}>
         {chips.map((chip) => chip.scaleDegree).join(" · ")}
       </FactRow>
+      <FactRow label="Key Sig">{keyInfo.keySignature}</FactRow>
+      <FactRow label={keyInfo.relativeLabel}>{keyInfo.relativeValue}</FactRow>
       <FactRow label={t("inspector.factChords")} stacked>
         <DegreeChordList
           rootNote={rootNote}

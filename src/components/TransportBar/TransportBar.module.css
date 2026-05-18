@@ -35,8 +35,8 @@
   --tb-border: rgb(77 228 255 / 0.18);
   --tb-bg: rgb(77 228 255 / 0.03);
 
-  width: 1.85rem;
-  height: 1.85rem;
+  width: var(--control-height);
+  height: var(--control-height);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -233,23 +233,19 @@
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
 /* ----------------------------------------------------------------------------
- * Tempo cluster — decrement / value / increment
+ * Tempo cluster — wraps the shared StepperControl (− / value / +)
  * ------------------------------------------------------------------------- */
 
 .tempoCluster {
   display: inline-flex;
   align-items: center;
-  gap: 0.22rem;
   flex-shrink: 0;
 }
 
-.tempoValue {
-  min-width: 3.6rem;
-  text-align: center;
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: var(--track-accent);
-  letter-spacing: 0.04em;
+/* The transport row is `align-items: stretch`, so this cluster stretches to
+   the full row height. StepperControl's wrapper carries `align-self:
+   flex-start` (correct inside inspector Prop columns) — override it here so
+   the BPM stepper sits centered in the transport row. */
+.tempoCluster > * {
+  align-self: center;
 }

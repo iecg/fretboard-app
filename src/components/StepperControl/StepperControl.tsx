@@ -37,6 +37,8 @@ export interface StepperControlProps {
   hideLabel?: boolean;
   formatValue?: (val: number) => string;
   buttonVariant?: StepperControlVariant;
+  /** Optional test hook forwarded to the StepperShell group element. */
+  testId?: string;
 }
 
 export function StepperControl({
@@ -49,6 +51,7 @@ export function StepperControl({
   hideLabel = false,
   formatValue = String,
   buttonVariant = "toolbar",
+  testId,
 }: StepperControlProps) {
   return (
     <div className={stepperControlVariants({ variant: buttonVariant })}>
@@ -57,6 +60,7 @@ export function StepperControl({
         className={styles["stepper-group"]}
         role="group"
         aria-label={label ?? "Stepper control"}
+        data-testid={testId}
       >
         <motion.button
           type="button"

@@ -32,10 +32,11 @@ describe("inspector panel CSS contract", () => {
     expect(root).toContain("flex-direction: column");
   });
 
-  it("lays the tab list out as a row with a divider", () => {
+  it("lays the tab list out as a row, with the divider on the header", () => {
     const tabList = ruleBlock(inspectorCSS, ".tabList {");
     expect(tabList).toContain("display: flex");
-    expect(tabList).toContain("border-bottom");
+    const tabHeader = ruleBlock(inspectorCSS, ".tabHeader {");
+    expect(tabHeader).toContain("border-bottom");
   });
 
   it("gives the tab panel a minimum height", () => {

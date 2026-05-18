@@ -1,5 +1,4 @@
 import { startTransition } from "react";
-import { NOTES } from "@fretflow/core";
 import {
   getActiveScaleBrowseOption,
   getAdjacentScaleBrowseOption,
@@ -13,7 +12,7 @@ import {
   type ScaleBrowseMode,
 } from "@fretflow/core";
 import { useTranslation } from "../../hooks/useTranslation";
-import { NoteGrid } from "../NoteGrid/NoteGrid";
+import { RootNoteSelect } from "../shared/RootNoteSelect";
 import { StepperSelect } from "../StepperSelect/StepperSelect";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { Prop } from "../Inspector/InspectorGrid";
@@ -123,9 +122,8 @@ export function ScaleSelector() {
   return (
     <>
       <Prop label="Root">
-        <NoteGrid
-          notes={NOTES}
-          selected={rootNote}
+        <RootNoteSelect
+          value={rootNote}
           onSelect={applyRootNote}
           useFlats={useFlats}
         />

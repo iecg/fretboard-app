@@ -9,8 +9,8 @@
   padding: var(--space-3, 0.75rem);
 }
 
-/* DAW Shell Phase 13b — a mono "Inspector" kicker above the tab row, top
-   placement only. */
+/* DAW Shell Phase 13b — a mono "Inspector" kicker. Top placement renders it
+   inline with the tab row inside `.tabHeader`. */
 .panelLabel {
   font-family: var(--font-mono);
   font-size: 10px;
@@ -19,12 +19,23 @@
   letter-spacing: 0.2em;
   color: var(--faceplate-accent);
   padding-inline: var(--space-1, 0.25rem);
+  white-space: nowrap;
+}
+
+/* Top-placement header row — the "Inspector" kicker and the tab pills share
+   one baseline. The divider rule sits on this row, with `padding-bottom`
+   opening a gap between the pills and the line. */
+.tabHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 0.75rem);
+  padding-bottom: var(--space-2, 0.5rem);
+  border-bottom: 1px solid var(--faceplate-divider);
 }
 
 .tabList {
   display: flex;
   gap: var(--space-1, 0.25rem);
-  border-bottom: 1px solid var(--faceplate-divider);
 }
 
 .tab {
@@ -58,22 +69,25 @@
   text-shadow: var(--faceplate-accent-glow);
 }
 
-/* Top-placement tabs are rounded pills with a cyan fill when active,
-   replacing the bottom-underline indicator (DAW Shell Phase 13b). The
-   bottom-docked (mobile) tab bar keeps the Phase 7 underline treatment —
-   these rules are scoped to `[data-placement="top"]` so they never reach it. */
+/* Top-placement tabs are no-fill rounded pills — the active tab is outlined
+   in the accent color rather than filled, replacing the bottom-underline
+   indicator (DAW Shell Phase 13b). The bottom-docked (mobile) tab bar keeps
+   the Phase 7 underline treatment — these rules are scoped to
+   `[data-placement="top"]` so they never reach it. */
 .root[data-placement="top"] .tab {
-  border-bottom: 0;
+  border: 1px solid transparent;
   border-radius: 999px;
   padding: var(--space-1, 0.25rem) var(--space-3, 0.75rem);
 }
 
+.root[data-placement="top"] .tab:hover:not([data-state="active"]) {
+  border-color: var(--faceplate-divider);
+}
+
 .root[data-placement="top"] .tab[data-state="active"] {
-  /* Fixed dark ink — `--faceplate-bg` is theme-adaptive and goes pale in the
-     light theme, which fails contrast on the cyan pill fill. */
-  color: #0a121d;
-  background: var(--faceplate-accent);
-  border-bottom-color: transparent;
+  color: var(--faceplate-accent);
+  background: transparent;
+  border-color: var(--faceplate-accent);
   text-shadow: none;
 }
 

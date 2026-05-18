@@ -1,6 +1,7 @@
 import { memo, useMemo } from "react";
 import clsx from "clsx";
 import {
+  getChordNotes,
   getDegreeSequence,
   formatAccidental,
   getDiatonicChord,
@@ -31,7 +32,7 @@ export interface DegreeChordListProps {
 }
 
 /**
- * Compact chord-quality labels for the third column.
+ * Compact chord-quality labels for the quality column.
  * Maps internal CHORD_DEFINITIONS keys (returned by getDiatonicChord)
  * to short human-readable labels suitable for a tabular row.
  */
@@ -55,6 +56,7 @@ interface DegreeRowData {
   degreeId: DegreeId;
   rootDisplay: string;
   qualityLabel: string;
+  notesLabel: string;
   enabled: boolean;
 }
 
@@ -78,16 +80,21 @@ function DegreeChordListImpl({
           degreeId,
           rootDisplay: "—",
           qualityLabel: "—",
+          notesLabel: "",
           enabled: false,
         };
       }
       const rootDisplay = formatAccidental(
         getNoteDisplay(chord.root, rootNote, useFlats),
       );
+      const notesLabel = getChordNotes(chord.root, chord.quality)
+        .map((note) => formatAccidental(getNoteDisplay(note, rootNote, useFlats)))
+        .join(" ");
       return {
         degreeId,
         rootDisplay,
         qualityLabel: shortQuality(chord.quality),
+        notesLabel,
         enabled: true,
       };
     });
@@ -106,7 +113,7 @@ function DegreeChordListImpl({
       {rows.map((row) => {
         const isActive = row.enabled && activeDegreeId === row.degreeId;
         const buttonAriaLabel = row.enabled
-          ? `Select ${row.degreeId} chord — ${row.rootDisplay} ${row.qualityLabel}`
+          ? `Select ${row.degreeId} chord — ${row.rootDisplay} ${row.qualityLabel}, ${row.notesLabel}`
           : `${row.degreeId} chord unavailable for this scale`;
         return (
           <li key={row.degreeId} className={styles.item}>
@@ -126,8 +133,11 @@ function DegreeChordListImpl({
               }
             >
               <span className={styles.numeral}>{row.degreeId}</span>
-              <span className={styles.root}>{row.rootDisplay}</span>
-              <span className={styles.quality}>{row.qualityLabel}</span>
+              <span className={styles.chord}>
+                <span className={styles.root}>{row.rootDisplay}</span>
+                <span className={styles.quality}>{row.qualityLabel}</span>
+              </span>
+              <span className={styles.notes}>{row.notesLabel}</span>
             </button>
           </li>
         );

@@ -82,8 +82,8 @@ describe("ProgressionTrack", () => {
     ]);
 
     expect(screen.getByText("112")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Increase tempo" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Decrease tempo" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Increase Tempo/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Decrease Tempo/ })).toBeTruthy();
   });
 
   it("clicking a chord block selects that progression step", () => {

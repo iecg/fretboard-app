@@ -20,6 +20,6 @@
   min-width: 0;
 }
 
-.col[data-scale-col="wheel"] {
-  align-items: center;
-}
+/* The wheel column keeps default cross-axis stretch so its GroupHeader spans
+   the full width (and renders its divider rule). The CircleOfFifths element
+   centers itself via its own `margin: 0 auto` + max-width. */

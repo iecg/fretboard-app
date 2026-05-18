@@ -118,21 +118,21 @@ describe("TransportBar tempo", () => {
   it("increases the tempo by 5 BPM when the increment button is pressed", () => {
     const store = makeAtomStore([[progressionTempoBpmAtom, 90]]);
     renderWithStore(<TransportBar />, store);
-    fireEvent.click(screen.getByRole("button", { name: "Increase tempo" }));
+    fireEvent.click(screen.getByRole("button", { name: /Increase Tempo/ }));
     expect(store.get(progressionTempoBpmAtom)).toBe(95);
   });
 
   it("does not raise the tempo above 240 BPM", () => {
     const store = makeAtomStore([[progressionTempoBpmAtom, 238]]);
     renderWithStore(<TransportBar />, store);
-    fireEvent.click(screen.getByRole("button", { name: "Increase tempo" }));
+    fireEvent.click(screen.getByRole("button", { name: /Increase Tempo/ }));
     expect(store.get(progressionTempoBpmAtom)).toBe(240);
   });
 
   it("does not lower the tempo below 40 BPM", () => {
     const store = makeAtomStore([[progressionTempoBpmAtom, 42]]);
     renderWithStore(<TransportBar />, store);
-    fireEvent.click(screen.getByRole("button", { name: "Decrease tempo" }));
+    fireEvent.click(screen.getByRole("button", { name: /Decrease Tempo/ }));
     expect(store.get(progressionTempoBpmAtom)).toBe(40);
   });
 });

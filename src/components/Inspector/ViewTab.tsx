@@ -11,7 +11,8 @@ import { MAX_FRET } from "@fretflow/core";
 import { FingeringPatternControls } from "../FingeringPatternControls/FingeringPatternControls";
 import { FretRangeControl } from "../FretRangeControl/FretRangeControl";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
-import { PropGrid, Prop, GroupHeader, ToggleProp } from "./InspectorGrid";
+import { Switch } from "../Switch/Switch";
+import { PropGrid, Prop, GroupHeader } from "./InspectorGrid";
 import useLayoutMode from "../../hooks/useLayoutMode";
 import { useTranslation } from "../../hooks/useTranslation";
 import styles from "./ViewTab.module.css";
@@ -78,12 +79,6 @@ export function ViewTab() {
         </Prop>
 
         <GroupHeader>{t("inspector.groupDisplay")}</GroupHeader>
-        <ToggleProp
-          label={t("inspector.degreeColors")}
-          checked={scaleDegreeColors}
-          onChange={setScaleDegreeColors}
-          status={scaleDegreeColors ? t("inspector.statusByDegree") : t("inspector.statusUniform")}
-        />
         <Prop label={t("settings.fields.fretRange")} span={2}>
           <FretRangeControl
             startFret={fretStart}
@@ -92,6 +87,17 @@ export function ViewTab() {
             onEndChange={setFretEnd}
             maxFret={MAX_FRET}
             layout="inline"
+          />
+        </Prop>
+        <Prop
+          label={t("inspector.degreeColors")}
+          span={1}
+          hint={scaleDegreeColors ? t("inspector.statusByDegree") : t("inspector.statusUniform")}
+        >
+          <Switch
+            label={t("inspector.degreeColors")}
+            checked={scaleDegreeColors}
+            onChange={setScaleDegreeColors}
           />
         </Prop>
       </PropGrid>

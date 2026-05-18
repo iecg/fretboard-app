@@ -67,7 +67,11 @@
 /* ===== Shared Control Button Chrome ===== */
 /* Base button styles for stepper, fret range, and other interactive controls */
 .control-button {
-  padding: var(--space-1) var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--control-height);
+  padding: 0 var(--space-2);
   font-size: var(--text-xs);
   background-color: var(--dc-bg);
   border: 1px solid var(--dc-border);
@@ -162,7 +166,7 @@
   display: flex;
   align-items: stretch;
   gap: 0.1rem;
-  min-height: 2rem;
+  min-height: var(--control-height);
   background-color: var(--dc-bg);
   border: 1px solid var(--dc-border);
   border-radius: calc(var(--dc-radius) - 1px);
@@ -285,7 +289,7 @@
 
 .note-btn {
   width: 100%;
-  min-height: 1.65rem;
+  min-height: var(--control-height);
   padding: 0;
   font-family: var(--font-mono);
   font-size: 0.82rem;

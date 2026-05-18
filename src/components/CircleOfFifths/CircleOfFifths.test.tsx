@@ -176,37 +176,8 @@ describe("CircleOfFifths/CircleOfFifths", () => {
     });
   });
 
-  describe("Relative Scale Logic", () => {
-    const findFooterValue = (container: HTMLElement, labelText: string) => {
-      const items = Array.from(container.querySelectorAll<HTMLElement>('[class*="circle-footer-item"]'));
-      const item = items.find(
-        (el) => el.querySelector('[class*="circle-footer-label"]')?.textContent === labelText,
-      );
-      return item?.querySelector('[class*="circle-footer-value"]')?.textContent ?? null;
-    };
-
-    it("Major mode shows Relative Minor", () => {
-      const { container } = render(
-        <CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} scaleName="Major" />
-      );
-      expect(findFooterValue(container, "Relative Minor")).toBe("Am");
-    });
-
-    it("Natural Minor mode shows Relative Major", () => {
-      const { container } = render(
-        <CircleOfFifths rootNote="A" setRootNote={mockSetRootNote} scaleName="Natural Minor" />
-      );
-      expect(findFooterValue(container, "Relative Major")).toBe("C");
-    });
-
-    it("Dorian mode shows Parent Scale and computes modal parent correctly", () => {
-      // D Dorian -> C Major
-      const { container } = render(
-        <CircleOfFifths rootNote="D" setRootNote={mockSetRootNote} scaleName="Dorian" />
-      );
-      expect(findFooterValue(container, "Parent Scale")).toBe("C");
-    });
-  });
+  // The key-signature and relative-key readouts moved out of CircleOfFifths
+  // into the Scale tab's Theory column — see scaleTheoryDerivations.test.ts.
 
   describe("Accidentals", () => {
     it("displays sharps by default", () => {

@@ -18,10 +18,11 @@ import { Switch } from "../Switch/Switch";
 import { StepperControl } from "../StepperControl/StepperControl";
 import { LabeledSelect, type LabeledSelectGroup } from "../LabeledSelect/LabeledSelect";
 import { PropGrid, Prop, GroupHeader } from "../Inspector/InspectorGrid";
-import { ChordTypeGrid } from "../Inspector/ChordTypeGrid";
+import { DegreeSelect } from "../shared/DegreeSelect";
+import { ChordQualitySelect } from "../shared/ChordQualitySelect";
 import { BackingTrackControls } from "./BackingTrackControls";
 import shared from "../shared/shared.module.css";
-import { buildDegreeToggleOptions, buildQualityToggleOptions, CHORD_QUALITY_DIATONIC_VALUE } from "../shared/chordControlOptions";
+import { CHORD_QUALITY_DIATONIC_VALUE } from "../shared/chordControlOptions";
 import { CUSTOM_PRESET_ID } from "../../store/atoms";
 import styles from "./ProgressionControls.module.css";
 
@@ -109,11 +110,6 @@ export function ProgressionControls() {
     startTransition(() => loadProgressionPreset(id));
   };
   const qualityValue = activeStep?.qualityOverride ?? CHORD_QUALITY_DIATONIC_VALUE;
-  const degreeOptions = buildDegreeToggleOptions({
-    scaleName,
-    qualityOverridden: qualityValue !== CHORD_QUALITY_DIATONIC_VALUE,
-    activeDegree: activeStep?.degree ?? null,
-  });
   // totalProgressionBars is fractional (beats / beatsPerBar); round up to whole
   // bars for the read-only Length readout and clamp to a 1-bar minimum.
   const lengthLabel = formatProgressionDurationLabel({
@@ -251,17 +247,18 @@ export function ProgressionControls() {
               {activeResolvedProgressionStep?.resolvedChordLabel ?? "—"}
             </span>
             <div className={shared["control-section"]}>
-              <span className={shared["section-label"]}>Degree</span>
-              <ToggleBar
+              <span className={styles["field-label"]}>Degree</span>
+              <DegreeSelect
+                scaleName={scaleName}
                 label="Progression degree"
-                options={degreeOptions}
                 value={activeStep.degree}
                 onChange={(degree) => updateProgressionStepDegree({ id: activeStep.id, degree })}
-                overflow="scroll"
+                activeDegree={activeStep.degree}
+                qualityOverridden={qualityValue !== CHORD_QUALITY_DIATONIC_VALUE}
               />
             </div>
             <div className={shared["control-section"]}>
-              <span className={shared["section-label"]}>Duration</span>
+              <span className={styles["field-label"]}>Duration</span>
               <div className={styles["duration-row"]}>
                 <StepperControl
                   label="Duration value"
@@ -296,10 +293,9 @@ export function ProgressionControls() {
               </div>
             </div>
             <div className={shared["control-section"]}>
-              <span className={shared["section-label"]}>Quality</span>
-              <ChordTypeGrid
+              <span className={styles["field-label"]}>Quality</span>
+              <ChordQualitySelect
                 label="Chord quality"
-                options={buildQualityToggleOptions({ includeSentinel: false })}
                 value={qualityValue === CHORD_QUALITY_DIATONIC_VALUE ? "" : qualityValue}
                 onChange={(quality) =>
                   updateProgressionStepQuality({
