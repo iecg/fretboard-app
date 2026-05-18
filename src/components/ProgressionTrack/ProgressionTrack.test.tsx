@@ -138,13 +138,13 @@ describe("ProgressionTrack", () => {
     const fourth = screen.getByRole("button", { name: /Step 4, IV, F Major Triad, 1 bar/i });
 
     expect(first.style.left).toBe("0%");
-    expect(first.style.width).toBe("40%");
+    expect(first.style.width).toBe("calc(40% - 3px)");
     expect(second.style.left).toBe("40%");
-    expect(second.style.width).toBe("20%");
+    expect(second.style.width).toBe("calc(20% - 3px)");
     expect(third.style.left).toBe("60%");
-    expect(third.style.width).toBe("20%");
+    expect(third.style.width).toBe("calc(20% - 3px)");
     expect(fourth.style.left).toBe("80%");
-    expect(fourth.style.width).toBe("20%");
+    expect(fourth.style.width).toBe("calc(20% - 3px)");
   });
 
   it("shows spelled-out bar/beat labels in the visible duration span", () => {

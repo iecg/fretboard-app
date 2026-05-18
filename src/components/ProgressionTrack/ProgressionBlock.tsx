@@ -40,7 +40,7 @@ function ProgressionBlockComponent({
       style={{
         "--duration-bars": String(durationBars),
         left: `${startPercent}%`,
-        width: `${widthPercent}%`,
+        width: `calc(${widthPercent}% - 3px)`,
       } as CSSProperties}
       data-active={active ? "true" : undefined}
       data-unavailable={step.unavailable ? "true" : undefined}
