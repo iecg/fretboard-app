@@ -7,6 +7,7 @@ interface MainLayoutWrapperProps {
   summary?: ReactNode;
   controlsPanel?: ReactNode;
   mobileTabs?: ReactNode;
+  statusBar?: ReactNode;
   helpModal?: ReactNode;
   settingsOverlay?: ReactNode;
   layoutTier: string;
@@ -15,6 +16,7 @@ interface MainLayoutWrapperProps {
   showSummary: boolean;
   showControlsPanel: boolean;
   showMobileTabs: boolean;
+  showStatusBar: boolean;
 }
 
 export function MainLayoutWrapper({
@@ -23,6 +25,7 @@ export function MainLayoutWrapper({
   summary,
   controlsPanel,
   mobileTabs,
+  statusBar,
   helpModal,
   settingsOverlay,
   layoutTier,
@@ -31,6 +34,7 @@ export function MainLayoutWrapper({
   showSummary,
   showControlsPanel,
   showMobileTabs,
+  showStatusBar,
 }: MainLayoutWrapperProps) {
   return (
     <div
@@ -69,6 +73,12 @@ export function MainLayoutWrapper({
       {showMobileTabs && (
         <div className={styles["mobile-tabs-shell"]}>
           {mobileTabs}
+        </div>
+      )}
+
+      {showStatusBar && !!statusBar && (
+        <div className={styles["status-bar-shell"]} data-testid="status-bar-shell">
+          {statusBar}
         </div>
       )}
 

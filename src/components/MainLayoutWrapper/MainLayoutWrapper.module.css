@@ -10,6 +10,12 @@
   width: 100%;
 }
 
+.status-bar-shell {
+  width: 100%;
+  flex: 0 0 auto;
+  margin-top: auto;
+}
+
 /* Pull summary closer to header for tighter top band. Same value across every
    variant of the tier — the band hugs the header in all desktop/tablet layouts. */
 .summary-shell[data-layout-tier="desktop"][data-layout-variant="desktop-split"],

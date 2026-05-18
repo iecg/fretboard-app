@@ -25,6 +25,7 @@ import { BrandMark } from "./components/BrandMark/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark";
 import { Inspector } from "./components/Inspector/Inspector";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
+import { StatusBar } from "./components/StatusBar/StatusBar";
 import { ProgressionSummarySlot } from "./components/ProgressionSummarySlot/ProgressionSummarySlot";
 import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
 import { TooltipProvider } from "./components/Tooltip/Tooltip";
@@ -152,6 +153,7 @@ function AppContent() {
       showSummary={layout.showSummary}
       showControlsPanel={layout.showControlsPanel}
       showMobileTabs={layout.showMobileTabs}
+      showStatusBar={layout.showStatusBar}
       header={
         <AppHeader
           brandTitle="FretFlow"
@@ -210,6 +212,7 @@ function AppContent() {
         />
       }
       summary={<ProgressionSummarySlot />}
+      statusBar={<StatusBar />}
       helpModal={
         <Suspense fallback={null}>
           <HelpModal
