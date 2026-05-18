@@ -84,9 +84,10 @@ test.describe("storage persistence", () => {
     await page.reload({ waitUntil: "domcontentloaded" });
     const track = page.getByRole("group", { name: "Progression track" });
     await expect(track).toBeVisible();
-    // Tempo is now a read-only readout in the track header. Verify the
-    // persisted value made the round trip.
-    await expect(track.getByText(/132\s*BPM/i)).toBeVisible();
+    // The track header renders tempo twice — a context readout and the
+    // editable TransportBar stepper. Target the stepper's stable test id so
+    // the locator is unambiguous, and verify the persisted value round-tripped.
+    await expect(track.getByTestId("transport-tempo")).toHaveText(/132\s*BPM/i);
     // Chord-row state lives directly in the progression timeline now. Verify
     // the persisted second step (degree V, Dominant 7th, 2 bars) survived.
     await expect(
