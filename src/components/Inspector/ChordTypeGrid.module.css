@@ -1,14 +1,14 @@
 .grid {
   display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
-  gap: 0.1875rem;
+  grid-template-columns: repeat(15, minmax(0, 1fr));
+  gap: 0.125rem;
 }
 
 .cell {
-  min-height: 1.625rem;
-  padding: 0 0.25rem;
+  min-height: 1.5rem;
+  padding: 0 0.125rem;
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: 0.625rem;
   font-weight: 500;
   color: var(--dc-fg);
   background: var(--dc-bg);

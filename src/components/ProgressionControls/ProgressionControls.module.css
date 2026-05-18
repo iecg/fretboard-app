@@ -111,6 +111,12 @@
   gap: 0.6rem;
 }
 
+.quality-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+}
+
 .length-readout {
   font-family: var(--font-mono);
   font-size: 0.75rem;

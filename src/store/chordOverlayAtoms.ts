@@ -5,16 +5,19 @@ import {
   NOTES,
   CHORD_DEFINITIONS,
   LENS_REGISTRY,
-  getFullChordShapeMatches,
   getChordNotes,
   getNoteDisplay,
   formatAccidental,
   getDiatonicChord,
+  generateVoicings,
 } from "@fretflow/core";
 import type {
   ChordMemberFact,
   ResolvedChordMember,
   PracticeLens,
+  VoicingType,
+  VoicingInversion,
+  VoicingStringSet,
 } from "@fretflow/core";
 import {
   getDegreesForScale,
@@ -47,6 +50,7 @@ import {
   isChordOverlayPatternDisabled,
 } from "./fingeringAtoms";
 import { currentTuningAtom } from "./layoutAtoms";
+import { formatChordShortLabel } from "../progressions/progressionDomain";
 
 const chordFretSpreadStorage = constrainedNumberStorage({
   min: 0,
@@ -437,15 +441,86 @@ export const fullChordsEnabledAtom = atomWithStorage<boolean>(
   GET_ON_INIT,
 );
 
-export const fullChordMatchesAtom = atom((get) => {
-  if (!get(fullChordsEnabledAtom)) return [];
-  return getFullChordShapeMatches({
+const VOICING_INVERSIONS: VoicingInversion[] = ["root", "1st", "2nd", "3rd"];
+const VOICING_TYPES: VoicingType[] = ["caged", "drop2", "triad"];
+const VOICING_STRING_SETS: VoicingStringSet[] = ["all", "low", "mid", "mid-hi", "top"];
+
+// Validated storage — a stale or corrupt localStorage entry that is not a
+// member of the union falls back to the atom's default at read time.
+const voicingTypeStorage = createStorage<VoicingType>({
+  validate: (v) => (VOICING_TYPES as string[]).includes(v),
+});
+const voicingInversionStorage = createStorage<VoicingInversion>({
+  validate: (v) => (VOICING_INVERSIONS as string[]).includes(v),
+});
+const voicingStringSetStorage = createStorage<VoicingStringSet>({
+  validate: (v) => (VOICING_STRING_SETS as string[]).includes(v),
+});
+
+export const voicingTypeAtom = atomWithStorage<VoicingType>(
+  k("voicingType"),
+  "caged",
+  voicingTypeStorage,
+  GET_ON_INIT,
+);
+
+export const voicingInversionAtom = atomWithStorage<VoicingInversion>(
+  k("voicingInversion"),
+  "root",
+  voicingInversionStorage,
+  GET_ON_INIT,
+);
+
+export const voicingStringSetAtom = atomWithStorage<VoicingStringSet>(
+  k("voicingStringSet"),
+  "all",
+  voicingStringSetStorage,
+  GET_ON_INIT,
+);
+
+/**
+ * Whether the voicing connector lines render on the fretboard. Drives the
+ * Chord tab's VOICING-header "Connectors" toggle. Default on so the voicing
+ * engine's output is visible without an extra click.
+ */
+export const voicingConnectorsAtom = atomWithStorage<boolean>(
+  k("voicingConnectors"),
+  true,
+  booleanStorage,
+  GET_ON_INIT,
+);
+
+/** Inversions valid for the active chord — triads drop "3rd", dyads keep "root" only. */
+export const availableInversionsAtom = atom((get): VoicingInversion[] => {
+  const chordType = get(chordTypeAtom);
+  const def = chordType ? CHORD_DEFINITIONS[chordType] : undefined;
+  const count = def ? def.members.length : 4;
+  // Dyads (e.g. power chords) expose only the root position.
+  if (count <= 2) return VOICING_INVERSIONS.slice(0, 1);
+  return VOICING_INVERSIONS.slice(0, Math.min(count, 4));
+});
+
+/** The renderer's voicing source. */
+export const voicingMatchesAtom = atom((get) => {
+  if (get(chordOverlayHiddenAtom)) return [];
+  const chordType = get(chordTypeAtom);
+  if (!chordType) return [];
+  const available = get(availableInversionsAtom);
+  const inversion = get(voicingInversionAtom);
+  return generateVoicings({
     chordRoot: get(chordRootAtom),
-    chordType: get(chordTypeAtom) ?? "",
+    chordType,
     tuning: get(currentTuningAtom),
     maxFret: 24,
+    voicingType: get(voicingTypeAtom),
+    inversion: available.includes(inversion) ? inversion : "root",
+    stringSet: get(voicingStringSetAtom),
   });
 });
+
+// Back-compat alias: existing consumers read fullChordMatchesAtom; the voicing
+// engine is now the source. Drop2/triad voicings have no CAGED `shape`.
+export const fullChordMatchesAtom = atom((get) => get(voicingMatchesAtom));
 
 export const fullChordPositionsAtom = atom((get) =>
   get(fullChordMatchesAtom).flatMap((match) => match.positionKeys),
@@ -490,6 +565,16 @@ export const chordLabelAtom = atom((get) => {
   const useFlats = get(useFlatsAtom);
   if (!chordType) return null;
   return `${formatAccidental(getNoteDisplay(chordRoot, chordRoot, useFlats))} ${chordType}`;
+});
+
+/** Compact chord symbol (e.g. "Am", "Cmaj7", "G7") for tight readouts. */
+export const chordShortLabelAtom = atom((get) => {
+  const chordRoot = get(chordRootAtom);
+  const chordType = get(chordTypeAtom);
+  const useFlats = get(useFlatsAtom);
+  if (!chordType) return null;
+  const rootLabel = formatAccidental(getNoteDisplay(chordRoot, chordRoot, useFlats));
+  return formatChordShortLabel(rootLabel, chordType);
 });
 
 export const chordSummaryNotesAtom = atom((get) => {

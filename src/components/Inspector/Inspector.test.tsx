@@ -66,7 +66,7 @@ describe("Inspector", () => {
     renderInspector();
     await user.click(screen.getByRole("tab", { name: "Chord" }));
     expect(screen.getByRole("tabpanel").getAttribute("data-tab-id")).toBe("chord");
-    expect(screen.getByText(/chord mode/i)).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Chord overlay mode" })).toBeInTheDocument();
   });
 
   it("populates the Progression tab body with the ProgressionControls editor", async () => {

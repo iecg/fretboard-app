@@ -1,12 +1,17 @@
 import { startTransition, useEffect } from "react";
 import { useAtom, useAtomValue } from "jotai";
 import clsx from "clsx";
-import { NOTES, LENS_REGISTRY } from "@fretflow/core";
+import { NOTES, type PracticeLens } from "@fretflow/core";
 import {
   lensAvailabilityAtom,
   fingeringPatternAtom,
-  chordOverlayHiddenAtom,
+  voicingTypeAtom,
+  voicingInversionAtom,
+  voicingStringSetAtom,
+  voicingConnectorsAtom,
+  availableInversionsAtom,
 } from "../../store/atoms";
+import { StringSetPicker } from "../Inspector/StringSetPicker";
 import { useTranslation } from "../../hooks/useTranslation";
 import { NoteGrid } from "../NoteGrid/NoteGrid";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
@@ -22,22 +27,19 @@ import {
   buildQualityToggleOptions,
 } from "../shared/chordControlOptions";
 
-// Subset of chord types that have full-chord shape data on the fretboard.
-// Used to gate the Full Chord overlay toggle in the UI.
-const FULL_CHORD_SUPPORTED_TYPES = new Set([
-  "Major Triad",
-  "Minor Triad",
-  "Dominant 7th",
-]);
+/** Compact lens labels for the narrow Source-row Lens toggle. The `satisfies`
+ * clause makes a new lens added to `LENS_REGISTRY` without a label fail to compile. */
+const LENS_SHORT_LABELS = {
+  targets: "Chord",
+  "guide-tones": "Guide",
+  tension: "Tension",
+} satisfies Partial<Record<PracticeLens, string>>;
 
 export function ChordOverlayControls() {
   const { t } = useTranslation();
   const { scaleName, useFlats } = useScaleState();
   const {
     chordType,
-    currentTuning,
-    fullChordsEnabled,
-    setFullChordsEnabled,
     practiceLens,
     setPracticeLens,
     chordDegree,
@@ -49,16 +51,16 @@ export function ChordOverlayControls() {
     chordQualityOverride,
     setChordQualityOverride,
   } = useChordState();
-  const [chordOverlayHidden, setChordOverlayHidden] = useAtom(chordOverlayHiddenAtom);
+  const [voicingType, setVoicingType] = useAtom(voicingTypeAtom);
+  const [voicingInversion, setVoicingInversion] = useAtom(voicingInversionAtom);
+  const [voicingStringSet, setVoicingStringSet] = useAtom(voicingStringSetAtom);
+  const [voicingConnectors, setVoicingConnectors] = useAtom(voicingConnectorsAtom);
+  const availableInversions = useAtomValue(availableInversionsAtom);
 
   const lensAvailability = useAtomValue(lensAvailabilityAtom);
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
   const isPatternDisabled =
     fingeringPattern === "one-string" || fingeringPattern === "two-strings";
-  const fullChordsSupported =
-    chordType != null &&
-    FULL_CHORD_SUPPORTED_TYPES.has(chordType) &&
-    currentTuning.length === 6;
 
   const hasQualityOverride = chordQualityOverride != null;
   const degreeSelectOptions = buildDegreeToggleOptions({
@@ -68,29 +70,21 @@ export function ChordOverlayControls() {
     includeOffSentinel: false,
   });
 
-  // Hide tension lens when unavailable and not currently active.
-  const lensOptions = lensAvailability.flatMap((entry) => {
+  // All three lenses are always shown; an unavailable lens renders disabled.
+  const lensOptions = lensAvailability.map((entry) => {
     const { id } = entry;
     const isActive = id === practiceLens;
-    const available = entry.available;
     const reason = entry.reason ?? undefined;
-
-    if (!available && !isActive && entry?.hideWhenUnavailable) return [];
-
-    return [
-      {
-        value: id,
-        label: entry?.label ?? id,
-        disabled: !isActive && !available,
-        title: !isActive && reason ? reason : undefined,
-        description: !isActive && reason ? reason : undefined,
-      },
-    ];
+    return {
+      value: id,
+      label: LENS_SHORT_LABELS[id] ?? entry.label,
+      disabled: !isActive && !entry.available,
+      title: !isActive && reason ? reason : undefined,
+      description: !isActive && reason ? reason : undefined,
+    };
   });
 
   const currentLensEntry = lensAvailability.find((l) => l.id === practiceLens);
-  const activeLensDescription =
-    LENS_REGISTRY.find((l) => l.id === practiceLens)?.description ?? undefined;
 
   // Auto-exit unavailable lenses (except "targets").
   useEffect(() => {
@@ -105,6 +99,14 @@ export function ChordOverlayControls() {
       }
     }
   }, [currentLensEntry, lensAvailability, setPracticeLens]);
+
+  // Normalize a persisted voicing inversion the active chord no longer offers
+  // (e.g. a 7th-chord "3rd" inversion after switching to a triad).
+  useEffect(() => {
+    if (!availableInversions.includes(voicingInversion)) {
+      setVoicingInversion(availableInversions[0] ?? "root");
+    }
+  }, [availableInversions, voicingInversion, setVoicingInversion]);
 
   const handleDegreeChange = (value: string) => {
     startTransition(() => {
@@ -130,12 +132,6 @@ export function ChordOverlayControls() {
   const showDisplay = !isPatternDisabled && !isOff;
   const displayDisabled = !hasActiveChord;
 
-  const fullChordsHint = fullChordsSupported
-    ? t("inspector.fullChordsHintSupported")
-    : currentTuning.length !== 6
-      ? t("inspector.fullChordsHintNon6String")
-      : t("inspector.fullChordsHintUnsupportedType");
-
   return (
     <div
       className={clsx(panelStyles.root, isPatternDisabled && panelStyles["panel-disabled"])}
@@ -146,21 +142,13 @@ export function ChordOverlayControls() {
           {t("controls.chordOverlayDisabled")}
         </p>
       )}
-      <PropGrid columns={6} className={panelStyles.grid}>
+      <PropGrid columns={7} className={panelStyles.grid}>
         {/* ── SOURCE ───────────────────────────────────────────────────── */}
         <GroupHeader>{t("inspector.groupSource")}</GroupHeader>
         <Prop
-          label={t("controls.chordMode")}
-          span={3}
-          hint={
-            isPatternDisabled
-              ? undefined
-              : chordOverlayMode === "degree"
-                ? t("controls.degreeModeHint")
-                : chordOverlayMode === "manual"
-                  ? t("controls.manualModeHint")
-                  : undefined
-          }
+          label={t("controls.mode")}
+          span={2}
+          hint={isPatternDisabled ? undefined : t("controls.modeHint")}
         >
           <ToggleBar
             options={[
@@ -198,7 +186,7 @@ export function ChordOverlayControls() {
           </Prop>
         )}
         {showRoot && (
-          <Prop label={t("controls.root")} span={4}>
+          <Prop label={t("controls.root")} span={3}>
             <NoteGrid
               notes={NOTES}
               selected={chordRootOverride}
@@ -211,58 +199,103 @@ export function ChordOverlayControls() {
             />
           </Prop>
         )}
-        {showChordTypeGrid && (
-          <Prop
-            label={t("controls.chordType")}
-            span={4}
-            hint={
-              chordOverlayMode === "degree"
-                ? hasQualityOverride
-                  ? t("controls.customChordHint")
-                  : t("controls.diatonicDefaultHint")
-                : undefined
-            }
-          >
-            <ChordTypeGrid
-              label="Chord Type"
-              options={buildQualityToggleOptions({ includeSentinel: false })}
-              value={
-                chordOverlayMode === "degree"
-                  ? chordType ?? ""
-                  : chordQualityOverride ?? ""
-              }
-              onChange={handleChordTypeChange}
+        {showDisplay && (
+          <Prop label={t("controls.lens")} span={2} hint={t("controls.lensHint")}>
+            <ToggleBar
+              options={lensOptions.map((o) => ({
+                ...o,
+                disabled: displayDisabled || o.disabled,
+              }))}
+              value={practiceLens}
+              onChange={displayDisabled ? () => undefined : setPracticeLens}
+              label="Practice lens"
             />
           </Prop>
         )}
 
-        {/* ── DISPLAY ──────────────────────────────────────────────────── */}
+        {/* ── CHORD TYPE ───────────────────────────────────────────────── */}
+        {showChordTypeGrid && (
+          <>
+            <GroupHeader>{t("inspector.groupChordType")}</GroupHeader>
+            <Prop
+              label={t("controls.quality")}
+              span={7}
+              hint={
+                chordOverlayMode === "degree"
+                  ? hasQualityOverride
+                    ? t("controls.customChordHint")
+                    : t("controls.diatonicDefaultHint")
+                  : t("controls.manualQualityHint")
+              }
+            >
+              <ChordTypeGrid
+                label="Chord Type"
+                options={buildQualityToggleOptions({ includeSentinel: false })}
+                value={chordType ?? ""}
+                onChange={handleChordTypeChange}
+              />
+            </Prop>
+          </>
+        )}
+
+        {/* ── VOICING ──────────────────────────────────────────────────── */}
         {showDisplay && (
           <>
-            <GroupHeader>{t("inspector.groupDisplay")}</GroupHeader>
-            <Prop label={t("controls.lens")} span={4} hint={hasActiveChord ? activeLensDescription : undefined}>
+            <GroupHeader
+              right={
+                <span className={panelStyles.connectorsToggle}>
+                  <span className={panelStyles.connectorsToggleLabel}>
+                    {t("controls.connectors")}
+                  </span>
+                  <Switch
+                    label={t("controls.connectors")}
+                    checked={voicingConnectors}
+                    onChange={setVoicingConnectors}
+                    disabled={displayDisabled}
+                  />
+                </span>
+              }
+            >
+              {t("inspector.groupVoicing")}
+            </GroupHeader>
+            <Prop
+              label={t("inspector.voicingType")}
+              span={3}
+              hint={t("inspector.voicingTypeHint")}
+            >
               <ToggleBar
-                options={lensOptions.map((o) => ({ ...o, disabled: displayDisabled || o.disabled }))}
-                value={practiceLens}
-                onChange={displayDisabled ? () => undefined : setPracticeLens}
-                label="Practice lens"
+                label="Voicing type"
+                options={[
+                  { value: "caged" as const, label: t("inspector.voicingTypeCaged") },
+                  { value: "drop2" as const, label: t("inspector.voicingTypeDrop2") },
+                  { value: "triad" as const, label: t("inspector.voicingTypeTriad") },
+                ]}
+                value={voicingType}
+                onChange={setVoicingType}
               />
             </Prop>
-            <Prop label={t("inspector.fullChords")} span={3} hint={hasActiveChord ? fullChordsHint : undefined}>
-              <Switch
-                label={t("inspector.fullChords")}
-                checked={fullChordsEnabled}
-                onChange={setFullChordsEnabled}
-                disabled={displayDisabled || !fullChordsSupported}
+            <Prop
+              label={t("inspector.voicingInversion")}
+              span={4}
+              hint={t("inspector.voicingInversionHint")}
+            >
+              <ToggleBar
+                label="Voicing inversion"
+                options={(["root", "1st", "2nd", "3rd"] as const).map((v) => ({
+                  value: v,
+                  label: v === "root" ? t("controls.root") : v,
+                  disabled: !availableInversions.includes(v),
+                }))}
+                value={voicingInversion}
+                onChange={setVoicingInversion}
               />
             </Prop>
-            <Prop label={t("inspector.showOnBoard")} span={3}>
-              <Switch
-                label={t("inspector.showOnBoard")}
-                checked={!chordOverlayHidden}
-                onChange={(next) => setChordOverlayHidden(!next)}
-                disabled={displayDisabled}
-              />
+            <Prop
+              label={t("inspector.voicingStringSet")}
+              span={7}
+              hint={t("inspector.voicingStringSetHint")}
+            >
+              <StringSetPicker value={voicingStringSet} onChange={setVoicingStringSet} />
             </Prop>
           </>
         )}

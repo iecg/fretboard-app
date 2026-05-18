@@ -44,6 +44,12 @@ export interface Dictionary {
     degreeColors: string;
     fullChords: string;
     tapToPlay: string;
+    statusByDegree: string;
+    statusUniform: string;
+    statusVisible: string;
+    statusHidden: string;
+    statusAudioOn: string;
+    statusMuted: string;
     notes: string;
     intervals: string;
     none: string;
@@ -78,6 +84,25 @@ export interface Dictionary {
     btDrumPattern: string;
     btSwing: string;
     panelLabel: string;
+    voicingType: string;
+    voicingInversion: string;
+    voicingStringSet: string;
+    voicingTypeHint: string;
+    voicingInversionHint: string;
+    voicingStringSetHint: string;
+    stringSetAll: string;
+    stringSetAllSub: string;
+    stringSetBass: string;
+    stringSetBassSub: string;
+    stringSetLowerMid: string;
+    stringSetLowerMidSub: string;
+    stringSetUpperMid: string;
+    stringSetUpperMidSub: string;
+    stringSetTreble: string;
+    stringSetTrebleSub: string;
+    voicingTypeCaged: string;
+    voicingTypeDrop2: string;
+    voicingTypeTriad: string;
   };
   statusBar: {
     key: string;
@@ -112,6 +137,10 @@ export interface Dictionary {
     showConsecutiveSteps: string;
     pairMembersConnected: string;
     chordMode: string;
+    mode: string;
+    modeHint: string;
+    quality: string;
+    lensHint: string;
     degree: string;
     chordType: string;
     root: string;
@@ -127,6 +156,7 @@ export interface Dictionary {
     manualModeHint: string;
     customChordHint: string;
     diatonicDefaultHint: string;
+    manualQualityHint: string;
     scaleParallelHint: string;
     scaleRelativeHint: string;
   };

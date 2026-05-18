@@ -11,6 +11,10 @@ import {
   chordTypeAtom,
   chordQualityOverrideAtom,
   setChordDegreeAtom,
+  availableInversionsAtom,
+  voicingMatchesAtom,
+  voicingConnectorsAtom,
+  fullChordsEnabledAtom,
 } from "./chordOverlayAtoms";
 import { allChordMembersAtom } from "./composableSelectors";
 import {
@@ -747,6 +751,54 @@ describe("chordSourceIsProgressionAtom", () => {
     const store = createStore();
     store.set(progressionEnabledAtom, false);
     expect(store.get(chordSourceIsProgressionAtom)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Group G — voicing atoms
+// ---------------------------------------------------------------------------
+
+describe("voicing atoms", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("availableInversionsAtom excludes 3rd for a triad", () => {
+    const store = createStore();
+    store.set(chordRootOverrideAtom, "C");
+    store.set(chordQualityOverrideAtom, "Major Triad");
+    store.set(chordOverlayModeAtom, "manual");
+    expect(store.get(availableInversionsAtom)).toEqual(["root", "1st", "2nd"]);
+  });
+
+  it("availableInversionsAtom includes 3rd for a seventh chord", () => {
+    const store = createStore();
+    store.set(chordRootOverrideAtom, "C");
+    store.set(chordQualityOverrideAtom, "Major 7th");
+    store.set(chordOverlayModeAtom, "manual");
+    expect(store.get(availableInversionsAtom)).toEqual(["root", "1st", "2nd", "3rd"]);
+  });
+
+  it("availableInversionsAtom exposes only root for a dyad", () => {
+    const store = createStore();
+    store.set(chordRootOverrideAtom, "C");
+    store.set(chordQualityOverrideAtom, "Power Chord (5)");
+    store.set(chordOverlayModeAtom, "manual");
+    expect(store.get(availableInversionsAtom)).toEqual(["root"]);
+  });
+
+  it("voicingMatchesAtom returns engine output when a chord is active, regardless of Full Chords", () => {
+    const store = createStore();
+    store.set(chordOverlayModeAtom, "manual");
+    store.set(chordRootOverrideAtom, "C");
+    store.set(chordQualityOverrideAtom, "Major Triad");
+    store.set(fullChordsEnabledAtom, false);
+    expect(store.get(voicingMatchesAtom).length).toBeGreaterThan(0);
+  });
+
+  it("voicingConnectorsAtom defaults to true", () => {
+    const store = createStore();
+    expect(store.get(voicingConnectorsAtom)).toBe(true);
   });
 });
 

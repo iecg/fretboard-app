@@ -51,6 +51,7 @@ export {
   chordTonesAtom,
   chordMembersAtom,
   chordLabelAtom,
+  chordShortLabelAtom,
   chordSummaryNotesAtom,
   chordMemberFactsAtom,
   chordDegreeAtom,
@@ -66,6 +67,12 @@ export {
   toggleChordHiddenNoteAtom,
   toggleChordOverlayHiddenAtom,
   setChordDegreeAtom,
+  voicingTypeAtom,
+  voicingInversionAtom,
+  voicingStringSetAtom,
+  voicingConnectorsAtom,
+  availableInversionsAtom,
+  voicingMatchesAtom,
 } from "./chordOverlayAtoms";
 
 export {

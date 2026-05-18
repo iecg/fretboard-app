@@ -1,10 +1,14 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { NoteGrid } from "../NoteGrid/NoteGrid";
+import { NoteGrid, NOTE_GRID_COLUMNS } from "../NoteGrid/NoteGrid";
 import { NOTES } from "@fretflow/core";
 
 describe("NoteGrid/NoteGrid", () => {
+  it("uses 12 grid columns", () => {
+    expect(NOTE_GRID_COLUMNS).toBe(12);
+  });
+
   it("renders 12 note buttons", () => {
     render(
       <NoteGrid

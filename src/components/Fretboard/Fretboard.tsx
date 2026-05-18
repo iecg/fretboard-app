@@ -319,6 +319,7 @@ export function Fretboard(props: FretboardProps) {
           noteSemantics={noteSemantics}
           fullChordPositionKeys={fullChordPositionKeys}
           fullChordVoicings={fullChordVoicings}
+          showChordConnectors={state.showChordConnectors}
           id={id}
           onNoteClick={handleFretClick}
         />

@@ -163,8 +163,8 @@
   gap: 0.1rem;
   background-color: var(--dc-bg);
   border: 1px solid var(--dc-border);
-  border-radius: var(--dc-radius);
-  padding: 0.12rem;
+  border-radius: calc(var(--dc-radius) - 1px);
+  padding: 0.1rem;
 }
 
 .toggle-group--default {
@@ -176,12 +176,12 @@
 .toggle-btn {
   flex: 1 1 0;
   min-width: 0;
-  min-height: 1.85rem;
-  padding: 0.18rem 0.55rem;
+  min-height: 1.4rem;
+  padding: 0.1rem 0.4rem;
   font-size: 0.78rem;
   line-height: 1.1;
   font-weight: 500;
-  border-radius: calc(var(--dc-radius) - 2px);
+  border-radius: calc(var(--dc-radius) - 3px);
   transition: var(--dc-transition), transform var(--transition-fast);
   text-transform: none;
   background: transparent;
@@ -218,6 +218,12 @@
   color: var(--dc-fg-strong);
   border: 1px solid var(--dc-border-active);
   box-shadow: var(--dc-glow-active);
+}
+
+/* Mobile touch-target guard — the Inspector docks at the bottom on mobile,
+   so these buttons are touch-reachable and need a full-size hit area. */
+:global(.app-container[data-layout-tier="mobile"]) .toggle-btn {
+  min-height: var(--size-touch-target);
 }
 
 .accidental-toggle {
@@ -271,13 +277,13 @@
 
 .note-grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(12, 1fr);
   gap: 0.22rem;
 }
 
 .note-btn {
   width: 100%;
-  min-height: 1.85rem;
+  min-height: 1.65rem;
   padding: 0;
   font-family: var(--font-mono);
   font-size: 0.82rem;
@@ -333,6 +339,12 @@
   color: var(--dc-fg-strong);
   border-color: var(--dc-border-active);
   box-shadow: var(--dc-glow-active);
+}
+
+/* Mobile touch-target guard — the Inspector docks at the bottom on mobile,
+   so these buttons are touch-reachable and need a full-size hit area. */
+:global(.app-container[data-layout-tier="mobile"]) .note-btn {
+  min-height: var(--size-touch-target);
 }
 
 /* Horizontal scroll variant — opt-in via overflow="scroll" prop on ToggleBar.

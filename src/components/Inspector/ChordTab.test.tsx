@@ -23,7 +23,7 @@ const PROGRESSION_SEEDS = [
 describe("ChordTab", () => {
   it("renders ChordOverlayControls", () => {
     renderWithAtoms(<ChordTab />);
-    expect(screen.getByText(/chord mode/i)).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Chord overlay mode" })).toBeInTheDocument();
   });
 
   it("tags its root container with data-inspector-tab=chord", () => {

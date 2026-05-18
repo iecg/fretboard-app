@@ -96,16 +96,19 @@ export function ViewTab() {
           label={t("inspector.degreeColors")}
           checked={scaleDegreeColors}
           onChange={setScaleDegreeColors}
+          status={scaleDegreeColors ? t("inspector.statusByDegree") : t("inspector.statusUniform")}
         />
         <ToggleProp
           label={t("inspector.fullChords")}
           checked={fullChords}
           onChange={setFullChords}
+          status={fullChords ? t("inspector.statusVisible") : t("inspector.statusHidden")}
         />
         <ToggleProp
           label={t("inspector.tapToPlay")}
           checked={!muted}
           onChange={(next) => setMuted(!next)}
+          status={muted ? t("inspector.statusMuted") : t("inspector.statusAudioOn")}
         />
       </PropGrid>
     </div>

@@ -101,18 +101,20 @@ describe("Fretboard wiring", () => {
     expect(lastCall.fullChordPositionKeys?.has("5-0")).toBe(true);
 
     // Wiring test: verify state.fullChordMatches flows into fullChordVoicings
+    // Notes use expect.objectContaining because VoicingNote includes a `midi` field
+    // that FullChordMatchNote did not; we only assert on the fretboard-position fields.
     expect(lastCall.fullChordVoicings).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           shape: "E",
           voicingKey: "0,0|1,0|2,1|3,2|4,2|5,0",
           notes: [
-            { stringIndex: 0, fretIndex: 0, noteName: "E" },
-            { stringIndex: 1, fretIndex: 0, noteName: "B" },
-            { stringIndex: 2, fretIndex: 1, noteName: "G#" },
-            { stringIndex: 3, fretIndex: 2, noteName: "E" },
-            { stringIndex: 4, fretIndex: 2, noteName: "B" },
-            { stringIndex: 5, fretIndex: 0, noteName: "E" },
+            expect.objectContaining({ stringIndex: 0, fretIndex: 0, noteName: "E" }),
+            expect.objectContaining({ stringIndex: 1, fretIndex: 0, noteName: "B" }),
+            expect.objectContaining({ stringIndex: 2, fretIndex: 1, noteName: "G#" }),
+            expect.objectContaining({ stringIndex: 3, fretIndex: 2, noteName: "E" }),
+            expect.objectContaining({ stringIndex: 4, fretIndex: 2, noteName: "B" }),
+            expect.objectContaining({ stringIndex: 5, fretIndex: 0, noteName: "E" }),
           ],
         }),
       ]),

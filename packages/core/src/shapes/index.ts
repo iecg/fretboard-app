@@ -10,3 +10,11 @@ export { getCagedCoordinates } from "./polygons";
 export { findMainShape, getShapeCenterFret, isShapeOutOfView, hasWrappedNotes } from "./analytics";
 
 export { get3NPSCoordinates } from "./threeNPS";
+
+export type {
+  Voicing, VoicingNote, VoicingType, VoicingInversion, VoicingStringSet,
+  GenerateVoicingsParams,
+} from "./voicings";
+export {
+  generateVoicings, stringSetMask, inversionBassPitchClass, openStringMidi,
+} from "./voicings";

@@ -11,7 +11,7 @@ interface NoteGridProps {
   useFlats: boolean;
 }
 
-const GRID_COLS = 6;
+export const NOTE_GRID_COLUMNS = 12;
 
 export function NoteGrid({
   notes,
@@ -31,43 +31,22 @@ export function NoteGrid({
   }, [selectedIndex]);
 
   const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
-    const cols = GRID_COLS;
-
     switch (e.key) {
-      case "ArrowRight": {
+      // Single-row grid: Down/Up mirror Right/Left.
+      case "ArrowRight":
+      case "ArrowDown": {
         e.preventDefault();
         keyboardDrivenRef.current = true;
         const nextIndex = index < notes.length - 1 ? index + 1 : 0;
         onSelect(notes[nextIndex]);
         break;
       }
-      case "ArrowLeft": {
+      case "ArrowLeft":
+      case "ArrowUp": {
         e.preventDefault();
         keyboardDrivenRef.current = true;
         const prevIndex = index > 0 ? index - 1 : notes.length - 1;
         onSelect(notes[prevIndex]);
-        break;
-      }
-      case "ArrowDown": {
-        e.preventDefault();
-        keyboardDrivenRef.current = true;
-        const nextIndex = index + cols;
-        if (nextIndex < notes.length) {
-          onSelect(notes[nextIndex]);
-        } else {
-          onSelect(notes[nextIndex - notes.length]);
-        }
-        break;
-      }
-      case "ArrowUp": {
-        e.preventDefault();
-        keyboardDrivenRef.current = true;
-        const prevIndex = index - cols;
-        if (prevIndex >= 0) {
-          onSelect(notes[prevIndex]);
-        } else {
-          onSelect(notes[prevIndex + notes.length]);
-        }
         break;
       }
       case "Home": {

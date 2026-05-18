@@ -11,9 +11,9 @@
 
 .fret-btn {
   composes: button from '../StepperShell/StepperShell.module.css';
-  min-width: 1.85rem;
-  min-height: 1.85rem;
-  padding: 0.2rem 0.35rem;
+  min-width: 1.55rem;
+  min-height: 1.55rem;
+  padding: 0.12rem 0.3rem;
   font-size: 0.8rem;
 }
 

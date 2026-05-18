@@ -4,22 +4,18 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
 import { renderWithAtoms, renderWithStore, makeAtomStore } from "../../test-utils/renderWithAtoms";
-import { act } from "react";
-import { LENS_REGISTRY } from "@fretflow/core";
 import {
   chordDegreeAtom,
   chordOverlayModeAtom,
-  chordOverlayHiddenAtom,
   chordQualityOverrideAtom,
   chordRootOverrideAtom,
   progressionEnabledAtom,
   progressionStepsAtom,
-  fullChordsEnabledAtom,
   scaleNameAtom,
   rootNoteAtom,
   practiceLensAtom,
   fingeringPatternAtom,
-  tuningNameAtom,
+  voicingConnectorsAtom,
 } from "../../store/atoms";
 import { ChordOverlayControls } from "./ChordOverlayControls";
 
@@ -333,75 +329,11 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
   });
 
-  describe("7b. full chords control", () => {
-    it.each(["Major Triad", "Minor Triad", "Dominant 7th"])(
-      "renders the Full Chords switch for supported quality %s",
-      (quality) => {
-        renderWithAtoms(<ChordOverlayControls />, [
-          ...MANUAL_MODE_SEEDS,
-          [chordQualityOverrideAtom, quality],
-        ]);
-
-        const sw = screen.getByRole("switch", { name: "Full Chords" });
-        expect(sw).not.toBeDisabled();
-      },
-    );
-
-    it("clicking the Full Chords switch writes fullChordsEnabledAtom = true", async () => {
-      const store = makeAtomStore([...MANUAL_MODE_SEEDS, [fullChordsEnabledAtom, false]]);
-      renderWithStore(<ChordOverlayControls />, store);
-
-      await userEvent.click(screen.getByRole("switch", { name: "Full Chords" }));
-
-      expect(store.get(fullChordsEnabledAtom)).toBe(true);
-    });
-
-    it("switching to an unsupported quality keeps the Full Chords preference sticky", async () => {
-      const store = makeAtomStore([
-        ...MANUAL_MODE_SEEDS,
-        [fullChordsEnabledAtom, true],
-        [chordQualityOverrideAtom, "Major Triad"],
-      ]);
-      renderWithStore(<ChordOverlayControls />, store);
-
-      const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
-      await userEvent.click(within(chordTypeGroup).getByRole("button", { name: "M7" }));
-
-      const sw = screen.getByRole("switch", { name: "Full Chords" });
-      expect(store.get(fullChordsEnabledAtom)).toBe(true);
-      expect(sw).toBeDisabled();
-      expect(sw.getAttribute("aria-checked")).toBe("true");
-      expect(
-        screen.getByText(
-          "Full Chords currently supports Major Triad, Minor Triad, and Dominant 7th.",
-        ),
-      ).toBeInTheDocument();
-
-      await userEvent.click(within(chordTypeGroup).getByRole("button", { name: "Maj" }));
-
-      expect(store.get(fullChordsEnabledAtom)).toBe(true);
-      expect(sw).not.toBeDisabled();
-      expect(sw.getAttribute("aria-checked")).toBe("true");
-    });
-
-    it("disables the switch for unsupported tunings and shows the 6-string helper text", () => {
-      renderWithAtoms(<ChordOverlayControls />, [
-        ...MANUAL_MODE_SEEDS,
-        [tuningNameAtom, "Bass Standard (4 String)"],
-      ]);
-
-      expect(screen.getByRole("switch", { name: "Full Chords" })).toBeDisabled();
-      expect(
-        screen.getByText("Full Chords currently supports 6-string tunings only."),
-      ).toBeInTheDocument();
-    });
-  });
-
   describe("8. chord-type toggle bar (manual mode)", () => {
-    it("renders 'Chord Type' label in manual mode", () => {
+    it("renders 'Quality' label in manual mode", () => {
       renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
       expect(
-        screen.getByText("Chord Type", { selector: "span[class*='propLabel']" }),
+        screen.getByText("Quality", { selector: "span[class*='propLabel']" }),
       ).toBeInTheDocument();
     });
 
@@ -474,15 +406,15 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
   });
 
   describe("10. Mode label and hint (Degree/Manual toggle)", () => {
-    it("renders visible 'Chord Mode' label adjacent to the toggle", () => {
+    it("renders visible 'Mode' label adjacent to the toggle", () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
-      expect(screen.getByText("Chord Mode")).toBeInTheDocument();
+      expect(screen.getByText("Mode")).toBeInTheDocument();
     });
 
     it("renders a short mode hint", () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
       expect(
-        screen.getByText("Picks a chord by scale degree — diatonic to the key."),
+        screen.getByText("Off · Diatonic degree · Free root."),
       ).toBeInTheDocument();
     });
 
@@ -618,7 +550,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
   });
 
-  describe("12. lens hint uses LENS_REGISTRY description", () => {
+  describe("12. lens Prop shows static hint", () => {
     it("does not render a lens help-button when chord is active", () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
       expect(
@@ -626,38 +558,13 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       ).not.toBeInTheDocument();
     });
 
-    it("shows LENS_REGISTRY description for active lens", () => {
-      renderWithAtoms(<ChordOverlayControls />, [
-        ...DEGREE_MODE_SEEDS,
-        [practiceLensAtom, "targets"],
-      ]);
-      const targetsDescription = LENS_REGISTRY.find((r) => r.id === "targets")?.description ?? "";
-      expect(targetsDescription).not.toBe("");
-
-      expect(screen.getByText(targetsDescription)).toBeInTheDocument();
-    });
-
-    it("lens hint text updates when active lens changes", () => {
-      const store = makeAtomStore([
-        ...DEGREE_MODE_SEEDS,
-        [practiceLensAtom, "targets"],
-      ]);
-      renderWithStore(<ChordOverlayControls />, store);
-
-      const targetsDesc = LENS_REGISTRY.find((r) => r.id === "targets")?.description ?? "";
-      const guideDesc = LENS_REGISTRY.find((r) => r.id === "guide-tones")?.description ?? "";
-      expect(targetsDesc).not.toBe("");
-      expect(guideDesc).not.toBe("");
-      expect(guideDesc).not.toBe(targetsDesc);
-
-      expect(screen.getByText(targetsDesc)).toBeInTheDocument();
-
-      act(() => {
-        store.set(practiceLensAtom, "guide-tones");
-      });
-
-      expect(screen.getByText(guideDesc)).toBeInTheDocument();
-      expect(screen.queryByText(targetsDesc)).not.toBeInTheDocument();
+    it("renders the static lens hint", () => {
+      renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
+      expect(
+        screen.getByText(
+          "Landing tones · Tension shows chord notes outside the scale.",
+        ),
+      ).toBeInTheDocument();
     });
 
     it("no legacy lens-hint paragraph remains", () => {
@@ -666,33 +573,93 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
   });
 
-  describe("Show on Board switch", () => {
-    it("renders when a chord is active in manual mode", () => {
+  describe("13. group headers order and Lens placement", () => {
+    it("renders SOURCE, CHORD TYPE and VOICING group headers in order", () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        ...MANUAL_MODE_SEEDS,
+      ]);
+      const headers = screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent);
+      expect(headers).toEqual(["Source", "Chord Type", "Voicing"]);
+    });
+
+    it("places the Lens control inside the SOURCE group", () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        ...MANUAL_MODE_SEEDS,
+      ]);
+      const lens = screen.getByText("Lens");
+      const sourceHeader = screen.getByRole("heading", { name: "Source" });
+      const chordTypeHeader = screen.getByRole("heading", { name: "Chord Type" });
+      // Lens sits after the SOURCE header and before the CHORD TYPE header.
+      expect(sourceHeader.compareDocumentPosition(lens) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(lens.compareDocumentPosition(chordTypeHeader) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+  });
+
+  describe("16. VOICING group controls (Type, Inversion, String Set)", () => {
+    it("renders Type, Inversion and String Set in the VOICING group", () => {
       renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
-      expect(screen.getByRole("switch", { name: "Show on Board" })).toBeInTheDocument();
+      expect(screen.getByRole("group", { name: "Voicing type" })).toBeInTheDocument();
+      expect(screen.getByRole("group", { name: "Voicing inversion" })).toBeInTheDocument();
+      expect(screen.getByRole("radiogroup", { name: "String Set" })).toBeInTheDocument();
     });
 
-    it("reflects inverted chordOverlayHiddenAtom (hidden=true → checked=false)", () => {
-      const store = makeAtomStore([
+    it("disables the 3rd inversion for a triad", () => {
+      renderWithAtoms(<ChordOverlayControls />, [
         ...MANUAL_MODE_SEEDS,
-        [chordOverlayHiddenAtom, true],
+        [chordQualityOverrideAtom, "Major Triad"],
       ]);
-      renderWithStore(<ChordOverlayControls />, store);
-      expect(screen.getByRole("switch", { name: "Show on Board" })).toHaveAttribute("aria-checked", "false");
+      expect(screen.getByRole("button", { name: "3rd" })).toBeDisabled();
+    });
+  });
+
+  describe("17. chord-tab design parity", () => {
+    it("Lens toggle shows all three options", () => {
+      renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
+      const lens = screen.getByRole("group", { name: "Practice lens" });
+      expect(within(lens).getByRole("button", { name: "Chord" })).toBeInTheDocument();
+      expect(within(lens).getByRole("button", { name: "Guide" })).toBeInTheDocument();
+      expect(within(lens).getByRole("button", { name: "Tension" })).toBeInTheDocument();
     });
 
-    it("clicking the switch flips chordOverlayHiddenAtom", async () => {
+    it("Tension lens option is disabled when unavailable", () => {
+      // C Major triad on degree I has no outside tones → Tension unavailable.
+      renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
+      const lens = screen.getByRole("group", { name: "Practice lens" });
+      expect(within(lens).getByRole("button", { name: "Tension" })).toBeDisabled();
+    });
+
+    it("renders the Connectors toggle in the VOICING group and writes voicingConnectorsAtom", async () => {
       const store = makeAtomStore([
         ...MANUAL_MODE_SEEDS,
-        [chordOverlayHiddenAtom, false],
+        [voicingConnectorsAtom, false],
       ]);
       renderWithStore(<ChordOverlayControls />, store);
-
-      const toggle = screen.getByRole("switch", { name: "Show on Board" });
-      expect(toggle).toHaveAttribute("aria-checked", "true");
-
+      const toggle = screen.getByRole("switch", { name: "Connectors" });
+      expect(toggle).toBeInTheDocument();
+      expect(store.get(voicingConnectorsAtom)).toBe(false);
       await userEvent.click(toggle);
-      expect(store.get(chordOverlayHiddenAtom)).toBe(true);
+      expect(store.get(voicingConnectorsAtom)).toBe(true);
+    });
+
+    it("no longer renders the Full Chords or Show on Board switches", () => {
+      renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
+      expect(screen.queryByRole("switch", { name: "Full Chords" })).toBeNull();
+      expect(screen.queryByRole("switch", { name: "Show on Board" })).toBeNull();
+    });
+
+    it("shows hints for the voicing Type, Inversion and String Set controls", () => {
+      renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
+      expect(
+        screen.getByText("How densely the chord is voiced."),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText("Which chord tone is the lowest note."),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          "Full CAGED uses all six strings — pick a subset for partial voicings.",
+        ),
+      ).toBeInTheDocument();
     });
   });
 });

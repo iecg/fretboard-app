@@ -99,6 +99,17 @@ describe("ViewTab", () => {
     );
   });
 
+  it("shows state words on the three DISPLAY toggles", () => {
+    renderWithAtoms(<ViewTab />, [
+      [scaleDegreeColorsEnabledAtom, false],
+      [fullChordsEnabledAtom, true],
+      [isMutedAtom, false],
+    ]);
+    expect(screen.getByText("Uniform")).toBeInTheDocument();
+    expect(screen.getByText("Visible")).toBeInTheDocument();
+    expect(screen.getByText("Audio on")).toBeInTheDocument();
+  });
+
   it("has no accessibility violations", async () => {
     const { container } = renderWithAtoms(<ViewTab />);
     const results = await axe(container, {
