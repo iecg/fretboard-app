@@ -6,6 +6,7 @@ import {
   openStringMidi,
   generateVoicings,
 } from "./voicings";
+import { getFullChordShapeMatches } from "./fullChordShapes";
 
 describe("voicing helpers", () => {
   it("maps string-set ids to high→low string indices", () => {
@@ -166,6 +167,42 @@ describe("generateVoicings — drop2", () => {
     for (const v of voicings) {
       const lowest = v.notes.reduce((a, b) => (a.midi <= b.midi ? a : b));
       expect(lowest.midi % 12).toBe(11);
+    }
+  });
+});
+
+describe("generateVoicings — caged routing", () => {
+  it("unconstrained caged matches getFullChordShapeMatches position keys", () => {
+    const voicings = generateVoicings({
+      tuning: STANDARD_TUNING, maxFret: 12,
+      chordRoot: "E", chordType: "Major Triad",
+      voicingType: "caged", inversion: "root", stringSet: "all",
+    });
+    const direct = getFullChordShapeMatches({
+      chordRoot: "E", chordType: "Major Triad", tuning: STANDARD_TUNING, maxFret: 12,
+    });
+    expect(voicings.map((v) => v.positionKeys.join("|")).sort())
+      .toEqual(direct.map((m) => m.positionKeys.join("|")).sort());
+  });
+
+  it("caged voicings carry their CAGED shape", () => {
+    const voicings = generateVoicings({
+      tuning: STANDARD_TUNING, maxFret: 12,
+      chordRoot: "E", chordType: "Major Triad",
+      voicingType: "caged", inversion: "root", stringSet: "all",
+    });
+    expect(voicings.length).toBeGreaterThan(0);
+    expect(voicings.every((v) => v.shape !== undefined)).toBe(true);
+  });
+
+  it("caged with a string set drops voicings that use excluded strings", () => {
+    const voicings = generateVoicings({
+      tuning: STANDARD_TUNING, maxFret: 12,
+      chordRoot: "E", chordType: "Major Triad",
+      voicingType: "caged", inversion: "root", stringSet: "top",
+    });
+    for (const v of voicings) {
+      for (const n of v.notes) expect([0, 1, 2]).toContain(n.stringIndex);
     }
   });
 });

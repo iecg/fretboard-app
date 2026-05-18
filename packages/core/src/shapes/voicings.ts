@@ -1,6 +1,7 @@
 import { NOTES, CHORD_DEFINITIONS } from "../theory";
 import { parseNote } from "../guitar";
 import type { CagedShape } from "./templates";
+import { getFullChordShapeMatches } from "./fullChordShapes";
 
 export type VoicingType = "caged" | "drop2" | "triad";
 export type VoicingInversion = "root" | "1st" | "2nd" | "3rd";
@@ -188,8 +189,28 @@ export function generateVoicings(params: GenerateVoicingsParams): Voicing[] {
   return searchVoicings(params, Math.min(3, def.members.length), false);
 }
 
-// Temporary stub — replaced by the real CAGED adapter in the next task.
 function cagedVoicings(params: GenerateVoicingsParams): Voicing[] {
-  void params;
-  return [];
+  const { chordRoot, chordType, tuning, maxFret, inversion, stringSet } = params;
+  const allowed = new Set(stringSetMask(stringSet));
+  const openMidis = tuning.map(openStringMidi);
+  if (openMidis.some((m) => m === null)) return [];
+  const bassPC = inversionBassPitchClass(chordRoot, chordType, inversion);
+
+  const matches = getFullChordShapeMatches({ chordRoot, chordType, tuning, maxFret });
+  const voicings: Voicing[] = [];
+  for (const match of matches) {
+    const notes: VoicingNote[] = match.notes.map((n) => ({
+      stringIndex: n.stringIndex,
+      fretIndex: n.fretIndex,
+      noteName: n.noteName,
+      midi: (openMidis[n.stringIndex] as number) + n.fretIndex,
+    }));
+    if (!notes.every((n) => allowed.has(n.stringIndex))) continue;
+    if (inversion !== "root" && bassPC !== null) {
+      const lowest = notes.reduce((a, b) => (a.midi <= b.midi ? a : b));
+      if (lowest.midi % 12 !== bassPC) continue;
+    }
+    voicings.push({ positionKeys: match.positionKeys, notes, shape: match.shape });
+  }
+  return voicings;
 }
