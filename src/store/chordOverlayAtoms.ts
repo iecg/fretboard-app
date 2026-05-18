@@ -5,16 +5,19 @@ import {
   NOTES,
   CHORD_DEFINITIONS,
   LENS_REGISTRY,
-  getFullChordShapeMatches,
   getChordNotes,
   getNoteDisplay,
   formatAccidental,
   getDiatonicChord,
+  generateVoicings,
 } from "@fretflow/core";
 import type {
   ChordMemberFact,
   ResolvedChordMember,
   PracticeLens,
+  VoicingType,
+  VoicingInversion,
+  VoicingStringSet,
 } from "@fretflow/core";
 import {
   getDegreesForScale,
@@ -437,15 +440,59 @@ export const fullChordsEnabledAtom = atomWithStorage<boolean>(
   GET_ON_INIT,
 );
 
-export const fullChordMatchesAtom = atom((get) => {
+const VOICING_INVERSIONS: VoicingInversion[] = ["root", "1st", "2nd", "3rd"];
+
+export const voicingTypeAtom = atomWithStorage<VoicingType>(
+  k("voicingType"),
+  "caged",
+  rawStringStorage<VoicingType>(),
+  GET_ON_INIT,
+);
+
+export const voicingInversionAtom = atomWithStorage<VoicingInversion>(
+  k("voicingInversion"),
+  "root",
+  rawStringStorage<VoicingInversion>(),
+  GET_ON_INIT,
+);
+
+export const voicingStringSetAtom = atomWithStorage<VoicingStringSet>(
+  k("voicingStringSet"),
+  "all",
+  rawStringStorage<VoicingStringSet>(),
+  GET_ON_INIT,
+);
+
+/** Inversions valid for the active chord — triads drop "3rd", dyads keep "root" only. */
+export const availableInversionsAtom = atom((get): VoicingInversion[] => {
+  const chordType = get(chordTypeAtom);
+  const def = chordType ? CHORD_DEFINITIONS[chordType] : undefined;
+  const count = def ? def.members.length : 4;
+  return VOICING_INVERSIONS.slice(0, Math.min(count, 4));
+});
+
+/** The renderer's voicing source. */
+export const voicingMatchesAtom = atom((get) => {
   if (!get(fullChordsEnabledAtom)) return [];
-  return getFullChordShapeMatches({
+  if (get(chordOverlayHiddenAtom)) return [];
+  const chordType = get(chordTypeAtom);
+  if (!chordType) return [];
+  const available = get(availableInversionsAtom);
+  const inversion = get(voicingInversionAtom);
+  return generateVoicings({
     chordRoot: get(chordRootAtom),
-    chordType: get(chordTypeAtom) ?? "",
+    chordType,
     tuning: get(currentTuningAtom),
     maxFret: 24,
+    voicingType: get(voicingTypeAtom),
+    inversion: available.includes(inversion) ? inversion : "root",
+    stringSet: get(voicingStringSetAtom),
   });
 });
+
+// Back-compat alias: existing consumers read fullChordMatchesAtom; the voicing
+// engine is now the source. Drop2/triad voicings have no CAGED `shape`.
+export const fullChordMatchesAtom = atom((get) => get(voicingMatchesAtom));
 
 export const fullChordPositionsAtom = atom((get) =>
   get(fullChordMatchesAtom).flatMap((match) => match.positionKeys),

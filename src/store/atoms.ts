@@ -66,6 +66,11 @@ export {
   toggleChordHiddenNoteAtom,
   toggleChordOverlayHiddenAtom,
   setChordDegreeAtom,
+  voicingTypeAtom,
+  voicingInversionAtom,
+  voicingStringSetAtom,
+  availableInversionsAtom,
+  voicingMatchesAtom,
 } from "./chordOverlayAtoms";
 
 export {

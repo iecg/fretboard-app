@@ -11,6 +11,9 @@ import {
   chordTypeAtom,
   chordQualityOverrideAtom,
   setChordDegreeAtom,
+  availableInversionsAtom,
+  voicingMatchesAtom,
+  fullChordsEnabledAtom,
 } from "./chordOverlayAtoms";
 import { allChordMembersAtom } from "./composableSelectors";
 import {
@@ -747,6 +750,38 @@ describe("chordSourceIsProgressionAtom", () => {
     const store = createStore();
     store.set(progressionEnabledAtom, false);
     expect(store.get(chordSourceIsProgressionAtom)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Group G — voicing atoms
+// ---------------------------------------------------------------------------
+
+describe("voicing atoms", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("availableInversionsAtom excludes 3rd for a triad", () => {
+    const store = createStore();
+    store.set(chordRootOverrideAtom, "C");
+    store.set(chordQualityOverrideAtom, "Major Triad");
+    store.set(chordOverlayModeAtom, "manual");
+    expect(store.get(availableInversionsAtom)).toEqual(["root", "1st", "2nd"]);
+  });
+
+  it("availableInversionsAtom includes 3rd for a seventh chord", () => {
+    const store = createStore();
+    store.set(chordRootOverrideAtom, "C");
+    store.set(chordQualityOverrideAtom, "Major 7th");
+    store.set(chordOverlayModeAtom, "manual");
+    expect(store.get(availableInversionsAtom)).toEqual(["root", "1st", "2nd", "3rd"]);
+  });
+
+  it("voicingMatchesAtom is empty when Full Chords is off", () => {
+    const store = createStore();
+    store.set(fullChordsEnabledAtom, false);
+    expect(store.get(voicingMatchesAtom)).toEqual([]);
   });
 });
 
