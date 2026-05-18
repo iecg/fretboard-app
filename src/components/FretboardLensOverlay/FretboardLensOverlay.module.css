@@ -1,0 +1,40 @@
+.overlay {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  /* The container spans the full board width; only the panel itself is
+     interactive, so clicks in the empty margins fall through to the board. */
+  pointer-events: none;
+}
+
+.overlay > * {
+  pointer-events: auto;
+}
+
+/* Desktop & tablet: float over the top of the fretboard region. */
+.overlay[data-layout-tier="desktop"],
+.overlay[data-layout-tier="tablet"] {
+  position: absolute;
+  inset-block-start: 0.5rem;
+  inset-inline: 0;
+  z-index: 2;
+}
+
+/* The floating panel reads through to the board behind it: a translucent
+   faceplate fill plus a backdrop blur. The blur + the faceplate border are
+   applied to the panel itself (the TopBandSummary root). */
+.overlay[data-layout-tier="desktop"] > *,
+.overlay[data-layout-tier="tablet"] > * {
+  background: color-mix(in srgb, var(--faceplate-bg) 82%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow:
+    var(--faceplate-shadow),
+    0 10px 30px -12px rgb(0 0 0 / 0.6);
+}
+
+/* Mobile: stacked above the fretboard — no occlusion, no absolute positioning. */
+.overlay[data-layout-tier="mobile"] {
+  position: static;
+  margin-block-end: 0.5rem;
+}
