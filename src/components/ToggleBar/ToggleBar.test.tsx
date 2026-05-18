@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 
 const options = [
@@ -127,5 +128,24 @@ describe("ToggleBar/ToggleBar", () => {
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper).not.toHaveAttribute("data-overflow");
     });
+  });
+
+  it("renders a disabled option as a disabled, non-clickable button", async () => {
+    const onChange = vi.fn();
+    render(
+      <ToggleBar
+        label="Inversion"
+        value="root"
+        onChange={onChange}
+        options={[
+          { value: "root", label: "Root" },
+          { value: "3rd", label: "3rd", disabled: true },
+        ]}
+      />,
+    );
+    const thirdBtn = screen.getByRole("button", { name: "3rd" });
+    expect(thirdBtn).toBeDisabled();
+    await userEvent.click(thirdBtn);
+    expect(onChange).not.toHaveBeenCalled();
   });
 });
