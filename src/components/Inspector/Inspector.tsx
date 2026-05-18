@@ -36,6 +36,9 @@ export function Inspector({ placement = "top" }: InspectorProps) {
       value={active}
       onValueChange={(value) => setActive(value as InspectorTabId)}
     >
+      {placement === "top" && (
+        <span className={styles.panelLabel}>{t("inspector.panelLabel")}</span>
+      )}
       <RadixTabs.List className={styles.tabList} aria-label="Inspector">
         {INSPECTOR_TABS.map((tab) => (
           <RadixTabs.Trigger key={tab.id} value={tab.id} className={styles.tab}>

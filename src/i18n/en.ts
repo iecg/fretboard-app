@@ -79,6 +79,7 @@ export const en: Dictionary = {
     btBassPattern: "Bass Pattern",
     btDrumPattern: "Drum Pattern",
     btSwing: "Swing",
+    panelLabel: "Inspector",
   },
   statusBar: {
     key: "Key",

@@ -77,6 +77,7 @@ export interface Dictionary {
     btBassPattern: string;
     btDrumPattern: string;
     btSwing: string;
+    panelLabel: string;
   };
   statusBar: {
     key: string;
