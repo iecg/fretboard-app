@@ -118,19 +118,10 @@
   --block-name-fg: rgb(120 55 10 / 0.92);
   --block-badge-fg: #cc7a3d;
 
-  border-block-color: rgb(204 122 61 / 0.5);
-  border-inline-start-color: rgb(204 122 61 / 0.5);
+  border-color: rgb(204 122 61 / 0.5);
   box-shadow:
     inset 0 0 16px rgb(204 122 61 / 0.08),
     0 2px 8px rgb(204 122 61 / 0.1);
-}
-
-:global([data-theme="modern-light"]) .block[data-active="true"] + .block {
-  border-inline-start-color: rgb(204 122 61 / 0.5);
-}
-
-:global([data-theme="modern-light"]) .block[data-active="true"]:last-of-type {
-  border-inline-end-color: rgb(204 122 61 / 0.5);
 }
 
 :global([data-theme="modern-light"]) .block[data-active="true"] .degreeBadge {
@@ -148,7 +139,7 @@
 
 /* Playhead: solid teal with soft shadow instead of neon glow */
 :global([data-theme="modern-light"]) .playheadArrow {
-  border-block-start-color: #2EB5CC;
+  background: #2EB5CC;
   filter: drop-shadow(0 0 2px rgb(46 181 204 / 0.4));
 }
 
@@ -467,13 +458,14 @@
 }
 
 .playheadArrow {
-  width: 0;
-  height: 0;
-  border-inline: 0.3rem solid transparent;
-  border-block-start: 0.38rem solid var(--track-accent);
-  /* Pull the arrow down by 1px so its tapering tip overlaps the 2px line
-     that follows. Without this, the arrow's single-pixel tip and the line's
-     squared top create a sub-pixel anti-aliasing gap. */
+  width: 0.5rem;
+  height: 0.5rem;
+  background: var(--track-accent);
+  /* Diamond marker (DAW Shell Phase 13b) — replaces the triangular
+     arrowhead. The clip-path rhombus points down into the playhead line. */
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  /* Overlap the line below by 1px so the diamond's bottom vertex and the
+     line's squared top meet without a sub-pixel anti-aliasing gap. */
   margin-block-end: -1px;
   filter: drop-shadow(0 0 4px rgb(77 228 255 / 0.7));
 }
@@ -509,13 +501,11 @@
   align-items: center;
   gap: 0.42rem;
   padding: 0.28rem 0.45rem 0.28rem 0.4rem;
-  /* Borders: top/bottom always visible, left/right resolved per-position so
-     adjacent blocks share a single 1px divider instead of each carrying
-     their own (which would stack into a 2px line at every boundary). */
-  border-block: 1px solid var(--block-border);
-  border-inline-start: 1px solid transparent;
-  border-inline-end: none;
-  border-radius: 0;
+  /* Discrete rounded clip — each block is fully bordered and rounded
+     (DAW Shell Phase 13b). The 3px width gap (set inline in ProgressionBlock)
+     separates adjacent clips. */
+  border: 1px solid var(--block-border);
+  border-radius: 7px;
   background: var(--block-bg);
   color: var(--block-fg);
   text-align: left;
@@ -525,26 +515,6 @@
     background-color 180ms ease,
     box-shadow 220ms ease,
     transform 120ms ease;
-}
-
-/* Outer edges of the lane use the regular block border. Inner boundaries
-   are owned by the next block's inline-start border (see below) so the
-   total is always exactly 1px at every divider. */
-.block:first-of-type {
-  border-inline-start: 1px solid var(--block-border);
-  border-start-start-radius: 9px;
-  border-end-start-radius: 9px;
-}
-
-.block:last-of-type {
-  border-inline-end: 1px solid var(--block-border);
-  border-start-end-radius: 9px;
-  border-end-end-radius: 9px;
-}
-
-/* Single shared divider between adjacent blocks. */
-.block + .block {
-  border-inline-start: 1px solid var(--track-divider);
 }
 
 .block:hover:not([data-active="true"]) {
@@ -569,25 +539,11 @@
   --block-name-fg: rgb(255 224 195 / 0.98);
   --block-badge-fg: var(--track-warm);
 
-  border-block-color: rgb(255 154 77 / 0.55);
-  border-inline-start-color: rgb(255 154 77 / 0.55);
+  border-color: rgb(255 154 77 / 0.55);
   box-shadow:
     inset 0 0 22px rgb(255 154 77 / 0.12),
     0 0 12px rgb(255 154 77 / 0.15);
   z-index: 1;
-}
-
-/* When the active block isn't the last in the lane, its right edge belongs
-   to the next block's inline-start divider — paint that amber too so the
-   active block reads as fully outlined. */
-.block[data-active="true"] + .block {
-  border-inline-start-color: rgb(255 154 77 / 0.55);
-}
-
-/* When the active block IS the last in the lane, give it its own amber
-   inline-end border so it isn't open on the right. */
-.block[data-active="true"]:last-of-type {
-  border-inline-end-color: rgb(255 154 77 / 0.55);
 }
 
 .block[data-unavailable="true"] {

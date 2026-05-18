@@ -1,0 +1,54 @@
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  min-width: 0;
+  padding: 0.3rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--dc-fg);
+  background: var(--dc-bg);
+  border-top: 1px solid var(--dc-border);
+  overflow: hidden;
+}
+
+.fields {
+  display: flex;
+  align-items: baseline;
+  gap: 1.1rem;
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.field {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+
+.label {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.5625rem;
+  color: var(--neon-cyan);
+}
+
+.value {
+  margin: 0;
+  color: var(--dc-fg-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.version {
+  flex: 0 0 auto;
+  font-size: 0.5625rem;
+  letter-spacing: 0.06em;
+  color: var(--dc-fg);
+  opacity: 0.7;
+  white-space: nowrap;
+}

@@ -100,6 +100,16 @@ describe("Inspector", () => {
     expect(root?.getAttribute("data-placement")).toBe("bottom");
   });
 
+  it("renders the Inspector panel label on the top placement", () => {
+    renderWithAtoms(<Inspector placement="top" />);
+    expect(screen.getByText("Inspector")).toBeInTheDocument();
+  });
+
+  it("does not render the panel label on the bottom placement", () => {
+    renderWithAtoms(<Inspector placement="bottom" />);
+    expect(screen.queryByText("Inspector")).toBeNull();
+  });
+
   it("renders an aria-hidden icon span inside every tab trigger", () => {
     renderWithAtoms(<Inspector placement="bottom" />);
     for (const name of ["View", "Scale", "Chord", "Progression"]) {

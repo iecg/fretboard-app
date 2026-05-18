@@ -25,7 +25,9 @@ import { BrandMark } from "./components/BrandMark/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark";
 import { Inspector } from "./components/Inspector/Inspector";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
+import { StatusBar } from "./components/StatusBar/StatusBar";
 import { ProgressionSummarySlot } from "./components/ProgressionSummarySlot/ProgressionSummarySlot";
+import { FretboardLensOverlay } from "./components/FretboardLensOverlay/FretboardLensOverlay";
 import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
 import { TooltipProvider } from "./components/Tooltip/Tooltip";
 import sharedStyles from "./components/shared/shared.module.css";
@@ -152,10 +154,11 @@ function AppContent() {
       showSummary={layout.showSummary}
       showControlsPanel={layout.showControlsPanel}
       showMobileTabs={layout.showMobileTabs}
+      showStatusBar={layout.showStatusBar}
       header={
         <AppHeader
           brandTitle="FretFlow"
-          brandSubtitle="Interactive Fretboard & Music Theory"
+          brandSubtitle="Fretboard Studio"
           brandWordmark={<FretFlowWordmark />}
           brandIcon={<BrandMark />}
           actions={
@@ -210,6 +213,7 @@ function AppContent() {
         />
       }
       summary={<ProgressionSummarySlot />}
+      statusBar={<StatusBar />}
       helpModal={
         <Suspense fallback={null}>
           <HelpModal
@@ -235,6 +239,7 @@ function AppContent() {
         </Suspense>
       }
     >
+      <FretboardLensOverlay />
       <Fretboard
         stringRowPx={layout.stringRowPx}
       />

@@ -79,6 +79,16 @@ export const en: Dictionary = {
     btBassPattern: "Bass Pattern",
     btDrumPattern: "Drum Pattern",
     btSwing: "Swing",
+    panelLabel: "Inspector",
+  },
+  statusBar: {
+    key: "Key",
+    chord: "Chord",
+    lens: "Lens",
+    pattern: "Pattern",
+    frets: "Frets",
+    tempo: "Tempo",
+    tuning: "Tuning",
   },
   common: {
     mute: "Mute audio",

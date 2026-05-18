@@ -29,10 +29,15 @@
 .app-header-brand-icon {
   display: flex;
   align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  /* BrandMark now handles its own per-path neon glow (cyan body, orange
-     neck) via internal feDropShadow filters, so we don't apply an outer
-     monochrome drop-shadow here — that would muddy the two-tone palette. */
+  /* Brand glyph sits in a rounded tile with an orange-tinted hairline
+     border (DAW Shell Phase 13b). BrandMark keeps its own per-path neon
+     glow — the tile adds only the frame, not an outer drop-shadow. */
+  padding: clamp(0.25rem, 0.6vw, 0.4rem);
+  border: 1px solid rgb(255 154 77 / 0.35);
+  border-radius: clamp(0.5rem, 1vw, 0.75rem);
+  background: rgb(255 154 77 / 0.04);
 }
 
 .app-header-brand-icon :global(.brand-mark) {
@@ -118,10 +123,12 @@
 }
 
 .app-header-brand-subtitle {
-  font-size: clamp(0.66rem, 1vw, 0.8rem);
-  color: rgb(197 213 230 / 0.72);
+  font-family: var(--font-mono);
+  font-size: clamp(0.56rem, 0.85vw, 0.68rem);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: rgb(197 213 230 / 0.6);
   line-height: 1.2;
-  letter-spacing: 0.04em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -142,6 +149,12 @@
   align-items: center;
   gap: clamp(0.35rem, 1vw, 0.6rem);
   flex-shrink: 0;
+}
+
+/* DAW Shell Phase 13b — the header utility buttons are round, not the
+   rounded-square the shared `.icon-button` class gives them elsewhere. */
+.app-header-actions button {
+  border-radius: 50%;
 }
 
 :global(.app-container[data-layout-tier="mobile"]) .app-header {

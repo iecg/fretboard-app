@@ -9,6 +9,18 @@
   padding: var(--space-3, 0.75rem);
 }
 
+/* DAW Shell Phase 13b — a mono "Inspector" kicker above the tab row, top
+   placement only. */
+.panelLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--faceplate-accent);
+  padding-inline: var(--space-1, 0.25rem);
+}
+
 .tabList {
   display: flex;
   gap: var(--space-1, 0.25rem);
@@ -44,6 +56,25 @@
   color: var(--faceplate-accent);
   border-bottom-color: var(--faceplate-accent);
   text-shadow: var(--faceplate-accent-glow);
+}
+
+/* Top-placement tabs are rounded pills with a cyan fill when active,
+   replacing the bottom-underline indicator (DAW Shell Phase 13b). The
+   bottom-docked (mobile) tab bar keeps the Phase 7 underline treatment —
+   these rules are scoped to `[data-placement="top"]` so they never reach it. */
+.root[data-placement="top"] .tab {
+  border-bottom: 0;
+  border-radius: 999px;
+  padding: var(--space-1, 0.25rem) var(--space-3, 0.75rem);
+}
+
+.root[data-placement="top"] .tab[data-state="active"] {
+  /* Fixed dark ink — `--faceplate-bg` is theme-adaptive and goes pale in the
+     light theme, which fails contrast on the cyan pill fill. */
+  color: #0a121d;
+  background: var(--faceplate-accent);
+  border-bottom-color: transparent;
+  text-shadow: none;
 }
 
 .tabPanel {

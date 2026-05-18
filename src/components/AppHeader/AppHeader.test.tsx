@@ -15,8 +15,10 @@ describe('AppHeader/AppHeader', () => {
   });
 
   it('renders brandSubtitle when provided', () => {
-    render(<AppHeader brandTitle="FretFlow" brandSubtitle="Interactive Fretboard" />);
-    expect(screen.getByText('Interactive Fretboard')).toBeTruthy();
+    render(<AppHeader brandTitle="FretFlow" brandSubtitle="Fretboard Studio" />);
+    expect(screen.getByTestId('app-header-brand-subtitle')).toHaveTextContent(
+      'Fretboard Studio',
+    );
   });
 
   it('renders actions slot', () => {

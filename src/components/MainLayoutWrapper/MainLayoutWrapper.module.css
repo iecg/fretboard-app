@@ -2,12 +2,27 @@
   width: 100%;
   flex: 0 0 auto;
   min-width: 0;
+  /* Positioning context for the scale-mode lens overlay (Phase 13a). */
+  position: relative;
 }
 
 .summary-shell {
   display: flex;
   justify-content: center;
   width: 100%;
+}
+
+/* In scale mode `ProgressionSummarySlot` renders nothing — collapse the band
+   so it contributes no height or `gap` spacing. The progression-mode path
+   (a non-empty `ProgressionTrack`) is unaffected. */
+.summary-shell:empty {
+  display: none;
+}
+
+.status-bar-shell {
+  width: 100%;
+  flex: 0 0 auto;
+  margin-top: auto;
 }
 
 /* Pull summary closer to header for tighter top band. Same value across every

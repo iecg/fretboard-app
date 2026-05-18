@@ -20,6 +20,7 @@ export interface ResponsiveLayout {
   showControlsPanel: boolean;
   showMobileTabs: boolean;
   showSummary: boolean;
+  showStatusBar: boolean;
   isSplitPanel: boolean;
   panelMode: DashboardPanelMode;
 }
@@ -104,6 +105,7 @@ export function getResponsiveLayout(
     showControlsPanel: tier !== "mobile" && variant !== "tablet-split",
     showMobileTabs,
     showSummary: true,
+    showStatusBar: tier !== "mobile" && variant !== "tablet-split",
     isSplitPanel,
     panelMode,
   };
