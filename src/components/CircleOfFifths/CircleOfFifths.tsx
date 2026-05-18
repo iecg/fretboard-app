@@ -4,18 +4,16 @@ import clsx from "clsx";
 import {
   CIRCLE_OF_FIFTHS,
   getNoteDisplayInScale,
-  getKeySignatureForDisplay,
   formatAccidental,
   SCALES,
   ANIMATION_DURATION_FAST,
   ANIMATION_EASE,
 } from "@fretflow/core";
 import { getDegreesForScale } from "@fretflow/core";
-import { getScaleCatalogEntry } from "@fretflow/core";
 import { getCircleNoteLabels } from "@fretflow/core";
 import styles from "./CircleOfFifths.module.css";
 
-const SIZE = 320;
+const SIZE = 260;
 const CX = SIZE / 2;
 const CY = SIZE / 2;
 const OUTER_RADIUS = SIZE * 0.48;
@@ -69,45 +67,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
     scaleIntervals,
     useFlats,
   );
-  const keySig = getKeySignatureForDisplay(
-    rootDisplayLabel,
-    scaleName,
-    useFlats,
-  );
-  const keySigText =
-    keySig === 0 ? "♮" : keySig > 0 ? `${keySig}♯` : `${Math.abs(keySig)}♭`;
   const degreeMap = getDegreesForScale(scaleName);
-
-  const scaleEntry = getScaleCatalogEntry(scaleName);
-  const parentMajorOffset = scaleEntry?.member.parentMajorOffset ?? 0;
-  
-  const SEMITONES_TO_CIRCLE_STEPS = [0, 7, 2, 9, 4, 11, 6, 1, 8, 3, 10, 5];
-
-  let relLabel = "Relative Minor";
-  let relScaleName = "Natural Minor";
-  let relIndex = (rootIndex + 3) % 12;
-  let relSuffix = "m";
-  
-  if (scaleName === "Natural Minor" || scaleName === "Minor") {
-    relLabel = "Relative Major";
-    relScaleName = "Major";
-    relIndex = (rootIndex + 9) % 12;
-    relSuffix = "";
-  } else if (scaleName !== "Major") {
-    relLabel = "Parent Scale";
-    relScaleName = "Major";
-    const circleSteps = SEMITONES_TO_CIRCLE_STEPS[parentMajorOffset] ?? 0;
-    relIndex = (rootIndex + circleSteps) % 12;
-    relSuffix = "";
-  }
-
-  const relNote = CIRCLE_OF_FIFTHS[relIndex];
-  const relDisplay = getNoteDisplayInScale(
-    relNote,
-    relNote,
-    SCALES[relScaleName] || [],
-    useFlats,
-  );
 
   const [focusedIndex, setFocusedIndex] = React.useState<number>(0);
   const [keyboardFocused, setKeyboardFocused] = React.useState<boolean>(false);
@@ -403,39 +363,6 @@ export const CircleOfFifths = memo(function CircleOfFifths({
             </motion.text>
           </AnimatePresence>
         </svg>
-      </div>
-
-      <div className={styles["circle-footer"]}>
-        <div className={styles["circle-footer-item"]}>
-          <span className={styles["circle-footer-label"]}>Key Signature</span>
-          <AnimatePresence mode="wait">
-            <motion.span
-              key={keySigText}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
-              className={styles["circle-footer-value"]}
-            >
-              {keySigText}
-            </motion.span>
-          </AnimatePresence>
-        </div>
-        <div className={styles["circle-footer-item"]}>
-          <span className={styles["circle-footer-label"]}>{relLabel}</span>
-          <AnimatePresence mode="wait">
-            <motion.span
-              key={`${relDisplay}-${relSuffix}`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
-              className={styles["circle-footer-value"]}
-            >
-              {formatAccidental(relDisplay)}{relSuffix}
-            </motion.span>
-          </AnimatePresence>
-        </div>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import { startTransition, useEffect } from "react";
 import { useAtom, useAtomValue } from "jotai";
 import clsx from "clsx";
-import { NOTES, type PracticeLens } from "@fretflow/core";
+import { type PracticeLens } from "@fretflow/core";
 import {
   lensAvailabilityAtom,
   fingeringPatternAtom,
@@ -13,19 +13,16 @@ import {
 } from "../../store/atoms";
 import { StringSetPicker } from "../Inspector/StringSetPicker";
 import { useTranslation } from "../../hooks/useTranslation";
-import { NoteGrid } from "../NoteGrid/NoteGrid";
+import { RootNoteSelect } from "../shared/RootNoteSelect";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { Switch } from "../Switch/Switch";
 import { PropGrid, Prop, GroupHeader } from "../Inspector/InspectorGrid";
-import { ChordTypeGrid } from "../Inspector/ChordTypeGrid";
+import { DegreeSelect } from "../shared/DegreeSelect";
+import { ChordQualitySelect } from "../shared/ChordQualitySelect";
 import { useChordState } from "../../hooks/useChordState";
 import { useScaleState } from "../../hooks/useScaleState";
 import panelStyles from "./ChordOverlayControls.module.css";
 import shared from "../shared/shared.module.css";
-import {
-  buildDegreeToggleOptions,
-  buildQualityToggleOptions,
-} from "../shared/chordControlOptions";
 
 /** Compact lens labels for the narrow Source-row Lens toggle. The `satisfies`
  * clause makes a new lens added to `LENS_REGISTRY` without a label fail to compile. */
@@ -63,12 +60,6 @@ export function ChordOverlayControls() {
     fingeringPattern === "one-string" || fingeringPattern === "two-strings";
 
   const hasQualityOverride = chordQualityOverride != null;
-  const degreeSelectOptions = buildDegreeToggleOptions({
-    scaleName,
-    qualityOverridden: hasQualityOverride,
-    activeDegree: chordDegree,
-    includeOffSentinel: false,
-  });
 
   // All three lenses are always shown; an unavailable lens renders disabled.
   const lensOptions = lensAvailability.map((entry) => {
@@ -177,19 +168,20 @@ export function ChordOverlayControls() {
         </Prop>
         {showDegree && (
           <Prop label={t("controls.degree")} span={3}>
-            <ToggleBar
-              options={degreeSelectOptions}
+            <DegreeSelect
+              scaleName={scaleName}
               value={chordDegree ?? ""}
               onChange={handleDegreeChange}
               label="Chord degree"
+              activeDegree={chordDegree}
+              qualityOverridden={hasQualityOverride}
             />
           </Prop>
         )}
         {showRoot && (
           <Prop label={t("controls.root")} span={3}>
-            <NoteGrid
-              notes={NOTES}
-              selected={chordRootOverride}
+            <RootNoteSelect
+              value={chordRootOverride}
               onSelect={(note) => {
                 startTransition(() => {
                   setChordRootOverride(note);
@@ -228,9 +220,8 @@ export function ChordOverlayControls() {
                   : t("controls.manualQualityHint")
               }
             >
-              <ChordTypeGrid
+              <ChordQualitySelect
                 label="Chord Type"
-                options={buildQualityToggleOptions({ includeSentinel: false })}
                 value={chordType ?? ""}
                 onChange={handleChordTypeChange}
               />

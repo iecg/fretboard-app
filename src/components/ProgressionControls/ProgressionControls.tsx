@@ -18,10 +18,11 @@ import { Switch } from "../Switch/Switch";
 import { StepperControl } from "../StepperControl/StepperControl";
 import { LabeledSelect, type LabeledSelectGroup } from "../LabeledSelect/LabeledSelect";
 import { PropGrid, Prop, GroupHeader } from "../Inspector/InspectorGrid";
-import { ChordTypeGrid } from "../Inspector/ChordTypeGrid";
+import { DegreeSelect } from "../shared/DegreeSelect";
+import { ChordQualitySelect } from "../shared/ChordQualitySelect";
 import { BackingTrackControls } from "./BackingTrackControls";
 import shared from "../shared/shared.module.css";
-import { buildDegreeToggleOptions, buildQualityToggleOptions, CHORD_QUALITY_DIATONIC_VALUE } from "../shared/chordControlOptions";
+import { CHORD_QUALITY_DIATONIC_VALUE } from "../shared/chordControlOptions";
 import { CUSTOM_PRESET_ID } from "../../store/atoms";
 import styles from "./ProgressionControls.module.css";
 
@@ -57,8 +58,6 @@ export function ProgressionControls() {
     beatsPerBar,
     setBeatsPerBar,
     currentProgressionPresetId,
-    progressionLoopEnabled,
-    setProgressionLoopEnabled,
     totalProgressionBars,
   } = useProgressionState();
 
@@ -111,11 +110,6 @@ export function ProgressionControls() {
     startTransition(() => loadProgressionPreset(id));
   };
   const qualityValue = activeStep?.qualityOverride ?? CHORD_QUALITY_DIATONIC_VALUE;
-  const degreeOptions = buildDegreeToggleOptions({
-    scaleName,
-    qualityOverridden: qualityValue !== CHORD_QUALITY_DIATONIC_VALUE,
-    activeDegree: activeStep?.degree ?? null,
-  });
   // totalProgressionBars is fractional (beats / beatsPerBar); round up to whole
   // bars for the read-only Length readout and clamp to a 1-bar minimum.
   const lengthLabel = formatProgressionDurationLabel({
@@ -126,7 +120,7 @@ export function ProgressionControls() {
   return (
     <PropGrid columns={6}>
       {/* ── METER ────────────────────────────────────────────────────────── */}
-      {/* One uniform 6-column row: Mode · Beats/Bar · Length · Loop · Preset. */}
+      {/* One uniform 6-column row: Mode · Beats/Bar · Length · Preset. */}
       <GroupHeader>{t("inspector.groupMeter")}</GroupHeader>
       <Prop label={t("inspector.progressionMode")} span={1}>
         <Switch
@@ -156,14 +150,7 @@ export function ProgressionControls() {
       <Prop label={t("inspector.meterLength")} span={1}>
         <span className={styles["length-readout"]}>{lengthLabel}</span>
       </Prop>
-      <Prop label={t("inspector.meterLoop")} span={1}>
-        <Switch
-          label="Loop"
-          checked={progressionLoopEnabled}
-          onChange={setProgressionLoopEnabled}
-        />
-      </Prop>
-      <Prop label={t("inspector.meterPreset")} span={2}>
+      <Prop label={t("inspector.meterPreset")} span={3}>
         <LabeledSelect
           label="Preset"
           hideLabel
@@ -174,34 +161,8 @@ export function ProgressionControls() {
       </Prop>
 
       {/* ── CHORDS ───────────────────────────────────────────────────────── */}
-      <GroupHeader>{t("inspector.groupChords")}</GroupHeader>
-      <Prop span={3}>
-        <div className={styles["chords-cell"]}>
-          {resolvedProgressionSteps.length === 0 ? (
-            <p className={shared["field-hint"]}>Add a chord or load a preset.</p>
-          ) : (
-            <ol className={styles["step-list"]}>
-              {resolvedProgressionSteps.map((step, index) => (
-                <li key={step.id}>
-                  <button
-                    type="button"
-                    className={clsx(styles["step-row"], index === activeProgressionStepIndex && styles["step-row--active"])}
-                    data-unavailable={step.unavailable ? "true" : undefined}
-                    onClick={() => setActiveProgressionStepIndex(index)}
-                  >
-                    <span className={styles["step-index"]}>{index + 1}</span>
-                    <span className={styles["step-degree"]}>{step.degree}</span>
-                    <span className={styles["step-chord"]}>
-                      {step.resolvedChordLabel ?? step.unavailableReason}
-                    </span>
-                    <span className={styles["step-duration"]}>
-                      {formatProgressionDurationLabel(step.duration)}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ol>
-          )}
+      <GroupHeader
+        right={
           <div className={styles["step-actions"]}>
             <button type="button" className={shared["control-button"]} onClick={() => addProgressionStep()} aria-label="Add chord">
               <Plus size={16} aria-hidden="true" />
@@ -245,23 +206,59 @@ export function ProgressionControls() {
               <Trash2 size={16} aria-hidden="true" />
             </button>
           </div>
+        }
+      >
+        {t("inspector.groupChords")}
+      </GroupHeader>
+      <Prop span={3}>
+        <div className={styles["chords-cell"]}>
+          {resolvedProgressionSteps.length === 0 ? (
+            <p className={shared["field-hint"]}>Add a chord or load a preset.</p>
+          ) : (
+            <ol className={styles["step-list"]}>
+              {resolvedProgressionSteps.map((step, index) => (
+                <li key={step.id}>
+                  <button
+                    type="button"
+                    className={clsx(styles["step-row"], index === activeProgressionStepIndex && styles["step-row--active"])}
+                    data-unavailable={step.unavailable ? "true" : undefined}
+                    onClick={() => setActiveProgressionStepIndex(index)}
+                  >
+                    <span className={styles["step-index"]}>{index + 1}</span>
+                    <span className={styles["step-degree"]}>{step.degree}</span>
+                    <span className={styles["step-chord"]}>
+                      {step.resolvedChordLabel ?? step.unavailableReason}
+                    </span>
+                    <span className={styles["step-duration"]}>
+                      {formatProgressionDurationLabel(step.duration)}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ol>
+          )}
         </div>
       </Prop>
       <Prop span={3}>
         {activeStep ? (
           <div className={styles["editor-cell"]}>
+            <span className={styles["editor-selected"]}>
+              Selected — {activeStep.degree} ·{" "}
+              {activeResolvedProgressionStep?.resolvedChordLabel ?? "—"}
+            </span>
             <div className={shared["control-section"]}>
-              <span className={shared["section-label"]}>Degree</span>
-              <ToggleBar
+              <span className={styles["field-label"]}>Degree</span>
+              <DegreeSelect
+                scaleName={scaleName}
                 label="Progression degree"
-                options={degreeOptions}
                 value={activeStep.degree}
                 onChange={(degree) => updateProgressionStepDegree({ id: activeStep.id, degree })}
-                overflow="scroll"
+                activeDegree={activeStep.degree}
+                qualityOverridden={qualityValue !== CHORD_QUALITY_DIATONIC_VALUE}
               />
             </div>
             <div className={shared["control-section"]}>
-              <span className={shared["section-label"]}>Duration</span>
+              <span className={styles["field-label"]}>Duration</span>
               <div className={styles["duration-row"]}>
                 <StepperControl
                   label="Duration value"
@@ -296,29 +293,21 @@ export function ProgressionControls() {
               </div>
             </div>
             <div className={shared["control-section"]}>
-              <span className={shared["section-label"]}>Quality</span>
-              <div className={styles["quality-row"]}>
-                <button
-                  type="button"
-                  className={clsx(shared["toggle-btn"], qualityValue === CHORD_QUALITY_DIATONIC_VALUE && shared.active)}
-                  aria-pressed={qualityValue === CHORD_QUALITY_DIATONIC_VALUE}
-                  onClick={() => updateProgressionStepQuality({ id: activeStep.id, qualityOverride: null })}
-                >
-                  Diatonic
-                </button>
-                <ChordTypeGrid
-                  label="Chord quality"
-                  options={buildQualityToggleOptions({ includeSentinel: false })}
-                  value={qualityValue === CHORD_QUALITY_DIATONIC_VALUE ? "" : qualityValue}
-                  onChange={(quality) =>
-                    updateProgressionStepQuality({ id: activeStep.id, qualityOverride: quality })
-                  }
-                />
-              </div>
+              <span className={styles["field-label"]}>Quality</span>
+              <ChordQualitySelect
+                label="Chord quality"
+                value={qualityValue === CHORD_QUALITY_DIATONIC_VALUE ? "" : qualityValue}
+                onChange={(quality) =>
+                  updateProgressionStepQuality({
+                    id: activeStep.id,
+                    qualityOverride: quality === qualityValue ? null : quality,
+                  })
+                }
+              />
               <p className={shared["field-hint"]}>
                 {activeResolvedProgressionStep?.qualityOverrideApplied
                   ? "Custom quality on a degree-derived root."
-                  : "Diatonic uses the chord quality from the active scale."}
+                  : "No quality selected uses the diatonic chord from the active scale."}
               </p>
             </div>
           </div>

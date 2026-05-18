@@ -8,7 +8,6 @@ import {
   activeProgressionStepIndexAtom,
   beatsPerBarAtom,
   progressionEnabledAtom,
-  progressionLoopEnabledAtom,
   progressionStepsAtom,
   rootNoteAtom,
   scaleNameAtom,
@@ -77,7 +76,7 @@ describe("ProgressionControls", () => {
     });
   });
 
-  it("clears a quality override with Diatonic", async () => {
+  it("clears a quality override by re-clicking the active quality", async () => {
     const store = makeAtomStore([
       ...BASE_SEEDS,
       [progressionStepsAtom, [
@@ -85,9 +84,9 @@ describe("ProgressionControls", () => {
       ]],
     ]);
     renderWithStore(<ProgressionControls />, store);
-
-    await userEvent.click(screen.getByRole("button", { name: "Diatonic" }));
-
+    const qualityGroup = screen.getByRole("group", { name: "Chord quality" });
+    // "7" is the short label for Dominant 7th — it is the active cell.
+    await userEvent.click(within(qualityGroup).getByRole("button", { name: "7" }));
     expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBeNull();
   });
 
@@ -252,6 +251,23 @@ describe("ProgressionControls QUALITY grid", () => {
     expect(qualityGroup).not.toHaveAttribute("data-overflow");
     expect(within(qualityGroup).getByRole("button", { name: "Maj" })).toBeInTheDocument();
   });
+
+  it("has no standalone Diatonic button", () => {
+    renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    expect(screen.queryByRole("button", { name: "Diatonic" })).not.toBeInTheDocument();
+  });
+
+  it("marks the active degree with * when a quality override is set", () => {
+    const store = makeAtomStore([
+      ...BASE_SEEDS,
+      [progressionStepsAtom, [
+        { id: "one", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+      ]],
+    ]);
+    renderWithStore(<ProgressionControls />, store);
+    const degreeGroup = screen.getByRole("group", { name: "Progression degree" });
+    expect(within(degreeGroup).getByRole("button", { name: "V*" })).toBeInTheDocument();
+  });
 });
 
 describe("ProgressionControls DEGREE", () => {
@@ -297,13 +313,14 @@ describe("ProgressionControls grid layout", () => {
     expect(screen.getByRole("heading", { name: "Backing Track" })).toBeInTheDocument();
   });
 
-  it("renders a Loop switch bound to progressionLoopEnabledAtom", async () => {
-    const store = makeAtomStore([...BASE_SEEDS, [progressionLoopEnabledAtom, false]]);
-    renderWithStore(<ProgressionControls />, store);
-    const loop = screen.getByRole("switch", { name: "Loop" });
-    expect(loop.getAttribute("aria-checked")).toBe("false");
-    await userEvent.click(loop);
-    expect(store.get(progressionLoopEnabledAtom)).toBe(true);
+  it("does not render a Loop control", () => {
+    renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    expect(screen.queryByRole("switch", { name: "Loop" })).not.toBeInTheDocument();
+  });
+
+  it("shows a SELECTED header naming the active chord", () => {
+    renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    expect(screen.getByText(/^Selected —/i)).toBeInTheDocument();
   });
 
   it("shows the progression length readout", () => {
@@ -314,8 +331,8 @@ describe("ProgressionControls grid layout", () => {
 
   it("renders the rehosted backing-track controls", () => {
     renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
-    expect(screen.getByLabelText("Genre style")).toBeInTheDocument();
-    expect(screen.getByLabelText("Chord instrument")).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Genre style" })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Chord instrument" })).toBeInTheDocument();
     expect(screen.getByLabelText("Swing amount")).toBeInTheDocument();
   });
 });

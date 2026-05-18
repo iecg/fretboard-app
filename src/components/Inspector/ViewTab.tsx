@@ -5,15 +5,14 @@ import {
   accidentalModeAtom,
   enharmonicDisplayAtom,
   scaleDegreeColorsEnabledAtom,
-  fullChordsEnabledAtom,
-  isMutedAtom,
   displayFormatAtom,
 } from "../../store/atoms";
 import { MAX_FRET } from "@fretflow/core";
 import { FingeringPatternControls } from "../FingeringPatternControls/FingeringPatternControls";
 import { FretRangeControl } from "../FretRangeControl/FretRangeControl";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
-import { PropGrid, Prop, GroupHeader, ToggleProp } from "./InspectorGrid";
+import { Switch } from "../Switch/Switch";
+import { PropGrid, Prop, GroupHeader } from "./InspectorGrid";
 import useLayoutMode from "../../hooks/useLayoutMode";
 import { useTranslation } from "../../hooks/useTranslation";
 import styles from "./ViewTab.module.css";
@@ -44,26 +43,14 @@ export function ViewTab() {
   const [accidentalMode, setAccidentalMode] = useAtom(accidentalModeAtom);
   const [enharmonicDisplay, setEnharmonicDisplay] = useAtom(enharmonicDisplayAtom);
   const [scaleDegreeColors, setScaleDegreeColors] = useAtom(scaleDegreeColorsEnabledAtom);
-  const [fullChords, setFullChords] = useAtom(fullChordsEnabledAtom);
-  const [muted, setMuted] = useAtom(isMutedAtom);
   const [displayFormat, setDisplayFormat] = useAtom(displayFormatAtom);
 
   return (
     <div className={styles.root} data-inspector-tab="view" data-layout-tier={tier} data-layout-variant={variant}>
       <PropGrid columns={tier === "mobile" ? 2 : 6}>
         {/* FINGERING — the group header and pattern cells are emitted by
-            FingeringPatternControls; Fret Range closes the group. */}
+            FingeringPatternControls. */}
         <FingeringPatternControls />
-        <Prop label={t("settings.fields.fretRange")} span={2}>
-          <FretRangeControl
-            startFret={fretStart}
-            endFret={fretEnd}
-            onStartChange={setFretStart}
-            onEndChange={setFretEnd}
-            maxFret={MAX_FRET}
-            layout="inline"
-          />
-        </Prop>
 
         <GroupHeader>{t("inspector.groupLabels")}</GroupHeader>
         <Prop label={t("controls.noteLabels")} span={2}>
@@ -92,24 +79,27 @@ export function ViewTab() {
         </Prop>
 
         <GroupHeader>{t("inspector.groupDisplay")}</GroupHeader>
-        <ToggleProp
+        <Prop label={t("settings.fields.fretRange")} span={2}>
+          <FretRangeControl
+            startFret={fretStart}
+            endFret={fretEnd}
+            onStartChange={setFretStart}
+            onEndChange={setFretEnd}
+            maxFret={MAX_FRET}
+            layout="inline"
+          />
+        </Prop>
+        <Prop
           label={t("inspector.degreeColors")}
-          checked={scaleDegreeColors}
-          onChange={setScaleDegreeColors}
-          status={scaleDegreeColors ? t("inspector.statusByDegree") : t("inspector.statusUniform")}
-        />
-        <ToggleProp
-          label={t("inspector.fullChords")}
-          checked={fullChords}
-          onChange={setFullChords}
-          status={fullChords ? t("inspector.statusVisible") : t("inspector.statusHidden")}
-        />
-        <ToggleProp
-          label={t("inspector.tapToPlay")}
-          checked={!muted}
-          onChange={(next) => setMuted(!next)}
-          status={muted ? t("inspector.statusMuted") : t("inspector.statusAudioOn")}
-        />
+          span={1}
+          hint={scaleDegreeColors ? t("inspector.statusByDegree") : t("inspector.statusUniform")}
+        >
+          <Switch
+            label={t("inspector.degreeColors")}
+            checked={scaleDegreeColors}
+            onChange={setScaleDegreeColors}
+          />
+        </Prop>
       </PropGrid>
     </div>
   );

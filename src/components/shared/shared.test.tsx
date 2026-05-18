@@ -30,10 +30,12 @@ describe("shared.module.css responsive selectors", () => {
     expect(sharedCSS).toMatch(/\.toggle-btn[^{]*\{[^}]*min-height:\s*1\.4rem/);
   });
 
-  it("compact density is the default: note-btn base min-height is 1.65rem", () => {
-    // The compact DAW-inspector density sets the baseline note-btn height to
-    // 1.65rem. Mobile gets a separate touch-target override.
-    expect(sharedCSS).toMatch(/\.note-btn[^{]*\{[^}]*min-height:\s*1\.65rem/);
+  it("note-btn base min-height uses the shared --control-height token", () => {
+    // The note grid sits on the canonical control height like every other
+    // control. Mobile gets a separate touch-target override.
+    expect(sharedCSS).toMatch(
+      /\.note-btn[^{]*\{[^}]*min-height:\s*var\(--control-height\)/,
+    );
   });
 
   it("no desktop or tablet tier overrides for toggle-btn or note-btn (mobile touch-target overrides are expected)", () => {

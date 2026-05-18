@@ -60,6 +60,7 @@ export interface Dictionary {
     factNotes: string;
     factIntervals: string;
     factDegrees: string;
+    factChords: string;
     factTones: string;
     relationship: string;
     groupSource: string;

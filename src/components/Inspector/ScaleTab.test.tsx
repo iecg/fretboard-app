@@ -6,14 +6,10 @@ import { rootNoteAtom, scaleNameAtom } from "../../store/atoms";
 import { ScaleTab } from "./ScaleTab";
 
 describe("ScaleTab", () => {
-  it("renders the Key, Theory, and Wheel column headers", () => {
-    renderWithAtoms(<ScaleTab />, [
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
-    ]);
-    expect(screen.getByText("Key")).toBeInTheDocument();
-    expect(screen.getByText("Theory")).toBeInTheDocument();
-    expect(screen.getByText("Wheel")).toBeInTheDocument();
+  it("renders columns in Key, Circle of Fifths, Theory order", () => {
+    renderWithAtoms(<ScaleTab />);
+    const headers = screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent);
+    expect(headers).toEqual(["Key", "Circle of Fifths", "Theory"]);
   });
 
   it("renders the scale selector — root chips and the scale family picker", () => {

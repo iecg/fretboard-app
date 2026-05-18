@@ -17,6 +17,11 @@
 
   --size-touch-target: 2.25rem;
 
+  /* Canonical height for every single-line control container — steppers,
+     toggle bars, selects, sliders, list rows, and icon/text buttons all sit
+     at this height so the UI reads as one consistent system. */
+  --control-height: 30px;
+
   --text-xxs: 0.65rem;
   --text-2xs: 0.72rem;
   --text-xs: 0.75rem;

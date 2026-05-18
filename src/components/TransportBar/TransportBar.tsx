@@ -11,6 +11,11 @@ import {
   Timer,
 } from "lucide-react";
 import { useProgressionState } from "../../hooks/useProgressionState";
+import {
+  MAX_PROGRESSION_TEMPO_BPM,
+  MIN_PROGRESSION_TEMPO_BPM,
+} from "../../progressions/progressionDomain";
+import { StepperControl } from "../StepperControl/StepperControl";
 import styles from "./TransportBar.module.css";
 
 /**
@@ -34,6 +39,8 @@ export function TransportBar() {
     setProgressionDrumsEnabled,
     progressionMetronomeEnabled,
     setProgressionMetronomeEnabled,
+    progressionTempoBpm,
+    setProgressionTempoBpm,
   } = useProgressionState();
 
   const canPlay = !progressionPlaybackBlockedReason;
@@ -138,6 +145,24 @@ export function TransportBar() {
           <Timer size={13} strokeWidth={2.4} aria-hidden="true" />
         </button>
       </div>
+
+      <span className={styles.clusterDivider} aria-hidden="true" />
+
+      <div className={styles.tempoCluster}>
+        <StepperControl
+          label="Tempo"
+          hideLabel
+          testId="transport-tempo"
+          value={progressionTempoBpm}
+          min={MIN_PROGRESSION_TEMPO_BPM}
+          max={MAX_PROGRESSION_TEMPO_BPM}
+          step={5}
+          formatValue={(bpm) => `${bpm} BPM`}
+          onChange={setProgressionTempoBpm}
+        />
+      </div>
+
+      <span className={styles.clusterDivider} aria-hidden="true" />
     </div>
   );
 }

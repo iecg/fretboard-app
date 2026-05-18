@@ -34,10 +34,6 @@ export function ScaleTab() {
         <GroupHeader>{t("inspector.groupKey")}</GroupHeader>
         <ScaleSelector />
       </div>
-      <div className={styles.col}>
-        <GroupHeader>{t("inspector.groupTheory")}</GroupHeader>
-        <ScaleTheoryFacts />
-      </div>
       <div className={styles.col} data-scale-col="wheel">
         <GroupHeader>{t("inspector.groupWheel")}</GroupHeader>
         <Suspense fallback={<CircleOfFifthsSkeleton />}>
@@ -49,6 +45,10 @@ export function ScaleTab() {
             enharmonicDisplay={enharmonicDisplay}
           />
         </Suspense>
+      </div>
+      <div className={styles.col}>
+        <GroupHeader>{t("inspector.groupTheory")}</GroupHeader>
+        <ScaleTheoryFacts />
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { GENRE_STYLES } from "../../progressions/audio/genres";
 import { CHORD_PATTERNS, BASS_PATTERNS, DRUM_PATTERNS } from "../../progressions/audio/patterns";
 import type { ChordInstrumentId } from "../../progressions/audio/instruments/types";
 import { Prop, GroupHeader } from "../Inspector/InspectorGrid";
+import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
 import styles from "./BackingTrackControls.module.css";
 
 /**
@@ -34,65 +35,56 @@ export function BackingTrackControls() {
     <>
       <GroupHeader>{t("inspector.groupBackingTrack")}</GroupHeader>
       <Prop label={t("inspector.btGenre")} span={1}>
-        <select
-          aria-label="Genre style"
+        <LabeledSelect
+          label="Genre style"
+          hideLabel
           value={progressionGenreStyle}
-          onChange={(e) => applyGenreStyle(e.target.value)}
-          className={styles.select}
-        >
-          {GENRE_STYLES.map((g) => (
-            <option key={g.id} value={g.id}>{g.label}</option>
-          ))}
-          <option value="custom">Custom</option>
-        </select>
+          options={[
+            ...GENRE_STYLES.map((g) => ({ value: g.id, label: g.label })),
+            { value: "custom", label: "Custom" },
+          ]}
+          onChange={applyGenreStyle}
+        />
       </Prop>
       <Prop label={t("inspector.btInstrument")} span={1}>
-        <select
-          aria-label="Chord instrument"
+        <LabeledSelect
+          label="Chord instrument"
+          hideLabel
           value={progressionChordInstrument}
-          onChange={(e) => setProgressionChordInstrument(e.target.value as ChordInstrumentId)}
-          className={styles.select}
-        >
-          <option value="strum">Strum</option>
-          <option value="piano">Piano</option>
-          <option value="organ">Organ</option>
-        </select>
+          options={[
+            { value: "strum", label: "Strum" },
+            { value: "piano", label: "Piano" },
+            { value: "organ", label: "Organ" },
+          ]}
+          onChange={(v) => setProgressionChordInstrument(v as ChordInstrumentId)}
+        />
       </Prop>
       <Prop label={t("inspector.btChordPattern")} span={1}>
-        <select
-          aria-label="Chord pattern"
+        <LabeledSelect
+          label="Chord pattern"
+          hideLabel
           value={progressionChordPattern}
-          onChange={(e) => setProgressionChordPattern(e.target.value)}
-          className={styles.select}
-        >
-          {CHORD_PATTERNS.map((p) => (
-            <option key={p.id} value={p.id}>{p.label}</option>
-          ))}
-        </select>
+          options={CHORD_PATTERNS.map((p) => ({ value: p.id, label: p.label }))}
+          onChange={setProgressionChordPattern}
+        />
       </Prop>
       <Prop label={t("inspector.btBassPattern")} span={1}>
-        <select
-          aria-label="Bass pattern"
+        <LabeledSelect
+          label="Bass pattern"
+          hideLabel
           value={progressionBassPattern}
-          onChange={(e) => setProgressionBassPattern(e.target.value)}
-          className={styles.select}
-        >
-          {BASS_PATTERNS.map((p) => (
-            <option key={p.id} value={p.id}>{p.label}</option>
-          ))}
-        </select>
+          options={BASS_PATTERNS.map((p) => ({ value: p.id, label: p.label }))}
+          onChange={setProgressionBassPattern}
+        />
       </Prop>
       <Prop label={t("inspector.btDrumPattern")} span={1}>
-        <select
-          aria-label="Drum pattern"
+        <LabeledSelect
+          label="Drum pattern"
+          hideLabel
           value={progressionDrumPattern}
-          onChange={(e) => setProgressionDrumPattern(e.target.value)}
-          className={styles.select}
-        >
-          {DRUM_PATTERNS.map((p) => (
-            <option key={p.id} value={p.id}>{p.label}</option>
-          ))}
-        </select>
+          options={DRUM_PATTERNS.map((p) => ({ value: p.id, label: p.label }))}
+          onChange={setProgressionDrumPattern}
+        />
       </Prop>
       <Prop label={t("inspector.btSwing")} span={1}>
         <div className={styles.swing}>
@@ -105,6 +97,7 @@ export function BackingTrackControls() {
             onChange={(e) => setProgressionSwing(Number(e.target.value))}
             aria-label="Swing amount"
             className={styles.swingRange}
+            style={{ ["--swing-fill" as string]: `${(progressionSwing / 0.5) * 100}%` }}
           />
           <span className={styles.swingValue}>{Math.round(progressionSwing * 100)}%</span>
         </div>

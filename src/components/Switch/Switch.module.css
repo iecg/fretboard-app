@@ -1,8 +1,9 @@
 .switch {
-  /* Slim 30 x 13 pill switch with an internal LED thumb.
-   * Replaces ToggleBar for true binary state. */
-  width: 30px;
-  height: 17px;
+  /* 36 x 20 pill switch with an internal LED thumb — sized to read as a
+   * peer of the 32px control row it sits beside. Replaces ToggleBar for
+   * true binary state. */
+  width: 36px;
+  height: 20px;
   border-radius: 999px;
   background: var(--surface-well, #050a13);
   border: 1px solid var(--surface-card-border, rgb(77 228 255 / 0.14));
@@ -23,8 +24,8 @@
   position: absolute;
   top: 1px;
   left: 1px;
-  width: 13px;
-  height: 13px;
+  width: 16px;
+  height: 16px;
   border-radius: 999px;
   background: var(--text-muted, rgb(193 218 235 / 0.45));
   transition:
@@ -61,7 +62,7 @@
   box-shadow:
     0 0 6px var(--neon-cyan, #4de4ff),
     0 0 12px rgb(77 228 255 / 0.6);
-  transform: translateX(13px);
+  transform: translateX(16px);
 }
 
 /* On state — amber (warm tone, used for chord-selected context) */
@@ -76,7 +77,7 @@
 .switch[data-on][data-tone="warm"]::before {
   background: var(--neon-orange, #ff9a4d);
   box-shadow: 0 0 6px var(--neon-orange, #ff9a4d);
-  transform: translateX(13px);
+  transform: translateX(16px);
 }
 
 /* ===========================================================================

@@ -21,9 +21,13 @@
 
 .stepper-btn {
   composes: button from '../StepperShell/StepperShell.module.css';
-  min-width: 1.85rem;
-  min-height: 1.85rem;
-  padding: 0.2rem 0.4rem;
+  /* Square +/- buttons. The shell is --control-height tall with a 1px border
+     and 2px padding per side, so the inner button is (--control-height - 6px)
+     on each axis — a true square that keeps the shell at exactly 32px. */
+  width: calc(var(--control-height) - 6px);
+  height: calc(var(--control-height) - 6px);
+  flex: 0 0 auto;
+  padding: 0;
   font-size: 0.78rem;
 }
 

@@ -29,6 +29,19 @@ export function Inspector({ placement = "top" }: InspectorProps) {
   const { t } = useTranslation();
   const [active, setActive] = useState<InspectorTabId>("view");
 
+  const tabList = (
+    <RadixTabs.List className={styles.tabList} aria-label="Inspector">
+      {INSPECTOR_TABS.map((tab) => (
+        <RadixTabs.Trigger key={tab.id} value={tab.id} className={styles.tab}>
+          <span className={styles.tabIcon} aria-hidden="true">
+            {tab.icon}
+          </span>
+          <span className={styles.tabLabel}>{t(`inspector.${tab.labelKey}`)}</span>
+        </RadixTabs.Trigger>
+      ))}
+    </RadixTabs.List>
+  );
+
   return (
     <RadixTabs.Root
       className={clsx(styles.root, placement === "bottom" && styles.placementBottom)}
@@ -36,19 +49,14 @@ export function Inspector({ placement = "top" }: InspectorProps) {
       value={active}
       onValueChange={(value) => setActive(value as InspectorTabId)}
     >
-      {placement === "top" && (
-        <span className={styles.panelLabel}>{t("inspector.panelLabel")}</span>
+      {placement === "top" ? (
+        <div className={styles.tabHeader}>
+          <span className={styles.panelLabel}>{t("inspector.panelLabel")}</span>
+          {tabList}
+        </div>
+      ) : (
+        tabList
       )}
-      <RadixTabs.List className={styles.tabList} aria-label="Inspector">
-        {INSPECTOR_TABS.map((tab) => (
-          <RadixTabs.Trigger key={tab.id} value={tab.id} className={styles.tab}>
-            <span className={styles.tabIcon} aria-hidden="true">
-              {tab.icon}
-            </span>
-            <span className={styles.tabLabel}>{t(`inspector.${tab.labelKey}`)}</span>
-          </RadixTabs.Trigger>
-        ))}
-      </RadixTabs.List>
       {INSPECTOR_TABS.map((tab) => (
         <RadixTabs.Content
           key={tab.id}

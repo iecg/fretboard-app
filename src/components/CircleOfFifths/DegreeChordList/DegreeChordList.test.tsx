@@ -11,12 +11,14 @@ function getRows(container: HTMLElement) {
 
 function rowCells(row: HTMLLIElement) {
   const button = row.querySelector("button")!;
-  const spans = button.querySelectorAll("span");
+  // Row structure: [span.numeral, span.chord > [span.root, span.quality], span.notes]
+  const [numeralEl, chordEl, notesEl] = Array.from(button.children) as HTMLElement[];
   return {
     button,
-    numeral: spans[0]?.textContent ?? "",
-    root: spans[1]?.textContent ?? "",
-    quality: spans[2]?.textContent ?? "",
+    numeral: numeralEl?.textContent ?? "",
+    root: chordEl?.children[0]?.textContent ?? "",
+    quality: chordEl?.children[1]?.textContent ?? "",
+    notes: notesEl?.textContent ?? "",
   };
 }
 

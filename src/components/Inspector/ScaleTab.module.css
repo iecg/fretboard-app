@@ -4,11 +4,11 @@
   gap: var(--space-3, 0.75rem);
 }
 
-/* Three columns on desktop — Key (widest) / Theory / Wheel. Gated on the
+/* Three columns on desktop — Key (widest) / Circle of Fifths / Theory. Gated on the
    layout-tier attribute per the project's responsive-CSS contract; mobile and
    tablet stack the columns vertically. */
 :global(.app-container[data-layout-tier="desktop"]) .root {
-  grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) minmax(0, 3fr);
+  grid-template-columns: minmax(0, 5fr) minmax(0, 3fr) minmax(0, 4fr);
   gap: 1.25rem;
   align-items: start;
 }
@@ -20,6 +20,6 @@
   min-width: 0;
 }
 
-.col[data-scale-col="wheel"] {
-  align-items: center;
-}
+/* The wheel column keeps default cross-axis stretch so its GroupHeader spans
+   the full width (and renders its divider rule). The CircleOfFifths element
+   centers itself via its own `margin: 0 auto` + max-width. */

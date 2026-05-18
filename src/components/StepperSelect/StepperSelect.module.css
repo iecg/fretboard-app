@@ -49,9 +49,9 @@
 
 .nav-button {
   composes: button from '../StepperShell/StepperShell.module.css';
-  width: 2rem;
-  min-height: 1.8rem;
-  display: inline-flex;
+  align-self: stretch;
+  min-width: 1.6rem;
+  padding: 0.1rem 0.3rem;
   color: var(--dc-fg-strong);
 }
 

@@ -13,6 +13,7 @@ import {
   progressionPlayingAtom,
   progressionStepsAtom,
   progressionStrumEnabledAtom,
+  progressionTempoBpmAtom,
 } from "../../store/atoms";
 import { TransportBar } from "./TransportBar";
 
@@ -101,5 +102,37 @@ describe("TransportBar", () => {
   it("has no accessibility violations", async () => {
     const { container } = renderWithAtoms(<TransportBar />, [...playableAtoms]);
     expect(await axe(container)).toHaveNoViolations();
+  });
+});
+
+describe("TransportBar tempo", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("renders the current tempo in BPM", () => {
+    renderWithAtoms(<TransportBar />, [[progressionTempoBpmAtom, 90]]);
+    expect(screen.getByText(/90 BPM/)).toBeInTheDocument();
+  });
+
+  it("increases the tempo by 5 BPM when the increment button is pressed", () => {
+    const store = makeAtomStore([[progressionTempoBpmAtom, 90]]);
+    renderWithStore(<TransportBar />, store);
+    fireEvent.click(screen.getByRole("button", { name: /Increase Tempo/ }));
+    expect(store.get(progressionTempoBpmAtom)).toBe(95);
+  });
+
+  it("does not raise the tempo above 240 BPM", () => {
+    const store = makeAtomStore([[progressionTempoBpmAtom, 238]]);
+    renderWithStore(<TransportBar />, store);
+    fireEvent.click(screen.getByRole("button", { name: /Increase Tempo/ }));
+    expect(store.get(progressionTempoBpmAtom)).toBe(240);
+  });
+
+  it("does not lower the tempo below 40 BPM", () => {
+    const store = makeAtomStore([[progressionTempoBpmAtom, 42]]);
+    renderWithStore(<TransportBar />, store);
+    fireEvent.click(screen.getByRole("button", { name: /Decrease Tempo/ }));
+    expect(store.get(progressionTempoBpmAtom)).toBe(40);
   });
 });

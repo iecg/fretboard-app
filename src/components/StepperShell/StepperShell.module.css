@@ -1,9 +1,10 @@
 .shell {
   min-width: 0;
+  min-height: var(--control-height);
   display: flex;
   align-items: stretch;
   gap: 0.22rem;
-  padding: 0.25rem;
+  padding: 2px;
   border: 1px solid var(--dc-border);
   border-radius: var(--dc-radius);
   background-color: var(--dc-bg);
