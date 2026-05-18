@@ -441,36 +441,50 @@ export const fullChordsEnabledAtom = atomWithStorage<boolean>(
 );
 
 const VOICING_INVERSIONS: VoicingInversion[] = ["root", "1st", "2nd", "3rd"];
+const VOICING_TYPES: VoicingType[] = ["caged", "drop2", "triad"];
+const VOICING_STRING_SETS: VoicingStringSet[] = ["all", "low", "mid", "mid-hi", "top"];
+
+// Validated storage — a stale or corrupt localStorage entry that is not a
+// member of the union falls back to the atom's default at read time.
+const voicingTypeStorage = createStorage<VoicingType>({
+  validate: (v) => (VOICING_TYPES as string[]).includes(v),
+});
+const voicingInversionStorage = createStorage<VoicingInversion>({
+  validate: (v) => (VOICING_INVERSIONS as string[]).includes(v),
+});
+const voicingStringSetStorage = createStorage<VoicingStringSet>({
+  validate: (v) => (VOICING_STRING_SETS as string[]).includes(v),
+});
 
 export const voicingTypeAtom = atomWithStorage<VoicingType>(
   k("voicingType"),
   "caged",
-  rawStringStorage<VoicingType>(),
+  voicingTypeStorage,
   GET_ON_INIT,
 );
 
 export const voicingInversionAtom = atomWithStorage<VoicingInversion>(
   k("voicingInversion"),
   "root",
-  rawStringStorage<VoicingInversion>(),
+  voicingInversionStorage,
   GET_ON_INIT,
 );
 
 export const voicingStringSetAtom = atomWithStorage<VoicingStringSet>(
   k("voicingStringSet"),
   "all",
-  rawStringStorage<VoicingStringSet>(),
+  voicingStringSetStorage,
   GET_ON_INIT,
 );
 
 /**
  * Whether the voicing connector lines render on the fretboard. Drives the
- * Chord tab's VOICING-header "Connectors" toggle. Default off — the design
- * screenshot shows connectors hidden.
+ * Chord tab's VOICING-header "Connectors" toggle. Default on so the voicing
+ * engine's output is visible without an extra click.
  */
 export const voicingConnectorsAtom = atomWithStorage<boolean>(
   k("voicingConnectors"),
-  false,
+  true,
   booleanStorage,
   GET_ON_INIT,
 );

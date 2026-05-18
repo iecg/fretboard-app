@@ -796,9 +796,9 @@ describe("voicing atoms", () => {
     expect(store.get(voicingMatchesAtom).length).toBeGreaterThan(0);
   });
 
-  it("voicingConnectorsAtom defaults to false", () => {
+  it("voicingConnectorsAtom defaults to true", () => {
     const store = createStore();
-    expect(store.get(voicingConnectorsAtom)).toBe(false);
+    expect(store.get(voicingConnectorsAtom)).toBe(true);
   });
 });
 
