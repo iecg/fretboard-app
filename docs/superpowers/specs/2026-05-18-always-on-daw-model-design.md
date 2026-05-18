@@ -303,3 +303,21 @@ status-bar unpin) and Part 2 (voicing engine) are independent of this restructur
 be built before, after, or interleaved with phases A-C. The one shared region is the
 status bar (parity §4f unpins it; this spec does not touch it) and the lens (parity does
 not touch it; Phase C here does) — no contention.
+
+## 9. Phase D — Faceplate framing (deferred from the Chord-tab parity review)
+
+A side-by-side review of the Chord tab against the updated design surfaced three app-shell
+framing differences. They are recorded here for a future phase; they are not Chord-tab
+content and are out of scope for `2026-05-18-chord-tab-design-parity-design.md`.
+
+- **Inspector is a full-width section, not a card.** The design renders the Inspector as a
+  full-bleed band, not inside a bordered/rounded card. Drop the Inspector's card chrome
+  (border, radius, inset background) so it reads as a flush section.
+- **Fretboard sits inside a card.** Conversely, the fretboard region gains card chrome — a
+  bordered, rounded container — making it the visually framed "stage."
+- **Status bar is full-width.** The bottom status bar spans the full viewport width with no
+  side gutters or card inset.
+
+These three are a coherent "faceplate framing" pass: the framed element moves from the
+Inspector to the fretboard, and the chrome bands (status bar, Inspector) go full-bleed.
+Sequence after phases A-C, or as an independent phase — none of A-C depend on it.
