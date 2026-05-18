@@ -75,15 +75,15 @@ describe("ProgressionTrack", () => {
     expect(screen.getByText("F", { selector: "span" })).toBeTruthy();
   });
 
-  it("renders tempo as readout instead of editable tempo controls", () => {
-    const { queryByLabelText } = renderWithAtoms(<ProgressionTrack />, [
+  it("renders tempo readout and editable tempo controls in the TransportBar", () => {
+    renderWithAtoms(<ProgressionTrack />, [
       [progressionEnabledAtom, true],
       [progressionTempoBpmAtom, 112],
     ]);
 
     expect(screen.getByText("112")).toBeTruthy();
-    expect(queryByLabelText(/Increase Tempo/i)).toBeNull();
-    expect(queryByLabelText(/Decrease Tempo/i)).toBeNull();
+    expect(screen.getByRole("button", { name: "Increase tempo" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Decrease tempo" })).toBeTruthy();
   });
 
   it("clicking a chord block selects that progression step", () => {

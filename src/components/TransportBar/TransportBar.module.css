@@ -231,3 +231,25 @@
   background: linear-gradient(to bottom, transparent, rgb(15 23 42 / 0.12), transparent);
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
+
+/* ----------------------------------------------------------------------------
+ * Tempo cluster — decrement / value / increment
+ * ------------------------------------------------------------------------- */
+
+.tempoCluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22rem;
+  flex-shrink: 0;
+}
+
+.tempoValue {
+  min-width: 3.6rem;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--track-accent);
+  letter-spacing: 0.04em;
+}

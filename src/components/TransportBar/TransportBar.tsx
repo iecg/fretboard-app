@@ -3,14 +3,20 @@ import {
   AudioWaveform,
   Drum,
   Guitar,
+  Minus,
   Pause,
   Play,
+  Plus,
   Repeat,
   SkipBack,
   SkipForward,
   Timer,
 } from "lucide-react";
 import { useProgressionState } from "../../hooks/useProgressionState";
+import {
+  MAX_PROGRESSION_TEMPO_BPM,
+  MIN_PROGRESSION_TEMPO_BPM,
+} from "../../progressions/progressionDomain";
 import styles from "./TransportBar.module.css";
 
 /**
@@ -34,9 +40,19 @@ export function TransportBar() {
     setProgressionDrumsEnabled,
     progressionMetronomeEnabled,
     setProgressionMetronomeEnabled,
+    progressionTempoBpm,
+    setProgressionTempoBpm,
   } = useProgressionState();
 
   const canPlay = !progressionPlaybackBlockedReason;
+
+  const adjustTempo = (delta: number) =>
+    setProgressionTempoBpm(
+      Math.min(
+        MAX_PROGRESSION_TEMPO_BPM,
+        Math.max(MIN_PROGRESSION_TEMPO_BPM, progressionTempoBpm + delta),
+      ),
+    );
 
   return (
     <div className={styles.transportBar} data-testid="transport-bar">
@@ -136,6 +152,32 @@ export function TransportBar() {
           title="Metronome"
         >
           <Timer size={13} strokeWidth={2.4} aria-hidden="true" />
+        </button>
+      </div>
+
+      <span className={styles.clusterDivider} aria-hidden="true" />
+
+      <div className={styles.tempoCluster} role="group" aria-label="Tempo">
+        <button
+          type="button"
+          className={styles.transportButton}
+          onClick={() => adjustTempo(-5)}
+          disabled={progressionTempoBpm <= MIN_PROGRESSION_TEMPO_BPM}
+          aria-label="Decrease tempo"
+        >
+          <Minus size={13} strokeWidth={2.4} aria-hidden="true" />
+        </button>
+        <span className={styles.tempoValue} data-testid="transport-tempo">
+          {progressionTempoBpm} BPM
+        </span>
+        <button
+          type="button"
+          className={styles.transportButton}
+          onClick={() => adjustTempo(5)}
+          disabled={progressionTempoBpm >= MAX_PROGRESSION_TEMPO_BPM}
+          aria-label="Increase tempo"
+        >
+          <Plus size={13} strokeWidth={2.4} aria-hidden="true" />
         </button>
       </div>
     </div>
