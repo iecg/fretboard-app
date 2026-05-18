@@ -34,13 +34,14 @@ describe("ProgressionSummarySlot", () => {
     expect(screen.queryByTestId("chord-practice-bar")).toBeNull();
   });
 
-  it("renders the existing top band summary when progression is disabled", () => {
-    renderWithAtoms(<ProgressionSummarySlot />, [
+  it("renders nothing when progression mode is off", () => {
+    const { container } = renderWithAtoms(<ProgressionSummarySlot />, [
       [progressionEnabledAtom, false],
       [chordTypeAtom, "Major Triad"],
     ]);
 
-    expect(screen.getByTestId("top-band-summary")).toBeTruthy();
+    expect(container).toBeEmptyDOMElement();
+    expect(screen.queryByTestId("top-band-summary")).toBeNull();
     expect(screen.queryByRole("group", { name: "Progression track" })).toBeNull();
   });
 
