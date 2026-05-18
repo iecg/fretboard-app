@@ -22,7 +22,6 @@
 .status-bar-shell {
   width: 100%;
   flex: 0 0 auto;
-  margin-top: auto;
 }
 
 /* Pull summary closer to header for tighter top band. Same value across every
