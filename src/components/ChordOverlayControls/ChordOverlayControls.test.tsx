@@ -626,7 +626,10 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
 
     it("renders the Connectors toggle in the VOICING group and writes voicingConnectorsAtom", async () => {
-      const store = makeAtomStore([...MANUAL_MODE_SEEDS]);
+      const store = makeAtomStore([
+        ...MANUAL_MODE_SEEDS,
+        [voicingConnectorsAtom, false],
+      ]);
       renderWithStore(<ChordOverlayControls />, store);
       const toggle = screen.getByRole("switch", { name: "Connectors" });
       expect(toggle).toBeInTheDocument();

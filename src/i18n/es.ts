@@ -159,6 +159,7 @@ export const es: Dictionary = {
     manualModeHint: "Establece cualquier tipo de acorde y raíz — independiente de la tonalidad.",
     customChordHint: "Tipo de acorde personalizado — no es el predeterminado diatónico.",
     diatonicDefaultHint: "Cambiar grados selecciona el predeterminado diatónico automáticamente.",
+    manualQualityHint: "Define la calidad del acorde directamente.",
     scaleParallelHint: "Cicla modos que comparten la nota raíz actual.",
     scaleRelativeHint: "Cicla modos que comparten la armadura actual.",
   },

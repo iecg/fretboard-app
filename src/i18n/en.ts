@@ -159,6 +159,7 @@ export const en: Dictionary = {
     manualModeHint: "Sets any chord type and root — independent of the key.",
     customChordHint: "Custom chord type — not the diatonic default.",
     diatonicDefaultHint: "Switching degrees picks the diatonic default automatically.",
+    manualQualityHint: "Sets the chord quality directly.",
     scaleParallelHint: "Cycle modes that share the current root note.",
     scaleRelativeHint: "Cycle modes that share the current key signature.",
   },

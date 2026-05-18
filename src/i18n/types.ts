@@ -156,6 +156,7 @@ export interface Dictionary {
     manualModeHint: string;
     customChordHint: string;
     diatonicDefaultHint: string;
+    manualQualityHint: string;
     scaleParallelHint: string;
     scaleRelativeHint: string;
   };
