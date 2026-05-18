@@ -77,7 +77,7 @@ describe("ProgressionControls", () => {
     });
   });
 
-  it("clears a quality override with Diatonic", async () => {
+  it("clears a quality override by re-clicking the active quality", async () => {
     const store = makeAtomStore([
       ...BASE_SEEDS,
       [progressionStepsAtom, [
@@ -85,9 +85,9 @@ describe("ProgressionControls", () => {
       ]],
     ]);
     renderWithStore(<ProgressionControls />, store);
-
-    await userEvent.click(screen.getByRole("button", { name: "Diatonic" }));
-
+    const qualityGroup = screen.getByRole("group", { name: "Chord quality" });
+    // "7" is the short label for Dominant 7th — it is the active cell.
+    await userEvent.click(within(qualityGroup).getByRole("button", { name: "7" }));
     expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBeNull();
   });
 
@@ -251,6 +251,23 @@ describe("ProgressionControls QUALITY grid", () => {
     const qualityGroup = screen.getByRole("group", { name: "Chord quality" });
     expect(qualityGroup).not.toHaveAttribute("data-overflow");
     expect(within(qualityGroup).getByRole("button", { name: "Maj" })).toBeInTheDocument();
+  });
+
+  it("has no standalone Diatonic button", () => {
+    renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    expect(screen.queryByRole("button", { name: "Diatonic" })).not.toBeInTheDocument();
+  });
+
+  it("marks the active degree with * when a quality override is set", () => {
+    const store = makeAtomStore([
+      ...BASE_SEEDS,
+      [progressionStepsAtom, [
+        { id: "one", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+      ]],
+    ]);
+    renderWithStore(<ProgressionControls />, store);
+    const degreeGroup = screen.getByRole("group", { name: "Progression degree" });
+    expect(within(degreeGroup).getByRole("button", { name: "V*" })).toBeInTheDocument();
   });
 });
 

@@ -302,28 +302,21 @@ export function ProgressionControls() {
             </div>
             <div className={shared["control-section"]}>
               <span className={shared["section-label"]}>Quality</span>
-              <div className={styles["quality-row"]}>
-                <button
-                  type="button"
-                  className={clsx(shared["toggle-btn"], qualityValue === CHORD_QUALITY_DIATONIC_VALUE && shared.active)}
-                  aria-pressed={qualityValue === CHORD_QUALITY_DIATONIC_VALUE}
-                  onClick={() => updateProgressionStepQuality({ id: activeStep.id, qualityOverride: null })}
-                >
-                  Diatonic
-                </button>
-                <ChordTypeGrid
-                  label="Chord quality"
-                  options={buildQualityToggleOptions({ includeSentinel: false })}
-                  value={qualityValue === CHORD_QUALITY_DIATONIC_VALUE ? "" : qualityValue}
-                  onChange={(quality) =>
-                    updateProgressionStepQuality({ id: activeStep.id, qualityOverride: quality })
-                  }
-                />
-              </div>
+              <ChordTypeGrid
+                label="Chord quality"
+                options={buildQualityToggleOptions({ includeSentinel: false })}
+                value={qualityValue === CHORD_QUALITY_DIATONIC_VALUE ? "" : qualityValue}
+                onChange={(quality) =>
+                  updateProgressionStepQuality({
+                    id: activeStep.id,
+                    qualityOverride: quality === qualityValue ? null : quality,
+                  })
+                }
+              />
               <p className={shared["field-hint"]}>
                 {activeResolvedProgressionStep?.qualityOverrideApplied
                   ? "Custom quality on a degree-derived root."
-                  : "Diatonic uses the chord quality from the active scale."}
+                  : "No quality selected uses the diatonic chord from the active scale."}
               </p>
             </div>
           </div>
