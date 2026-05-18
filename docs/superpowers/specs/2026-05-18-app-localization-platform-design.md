@@ -208,3 +208,43 @@ implementation plan.
 - Numbers, ordinals, and plural messages format for the active locale.
 - Adding a new locale requires only a new partial dictionary file and a registry entry.
 - `pnpm run lint`, `pnpm run test`, `pnpm run build`, `npx tsc -b` pass at every phase.
+
+---
+
+## 8. Addendum — Progression tab string inventory (2026-05-18)
+
+An automated review of the Inspector Tab Refinements branch (PR #414) flagged the
+Progression tab as still English-hardcoded. The strings below are concrete worklist
+items for the phases above — recorded here so the sweep does not miss them. They are
+deliberately *not* fixed in #414: piecemeal localization of a few lines would be
+inconsistent with the surrounding hardcoded siblings and is out of that branch's scope.
+
+### Phase 3 worklist — Progression tab components
+
+- **`src/components/ProgressionControls/BackingTrackControls.tsx`** — `LabeledSelect`
+  `label` props ("Genre style", "Chord instrument", "Chord pattern", "Bass pattern",
+  "Drum pattern"); the `aria-label="Swing amount"`; the inline chord-instrument option
+  labels ("Strum", "Piano", "Organ"); the "Custom" genre option label.
+- **`src/components/ProgressionControls/ProgressionControls.tsx`** — the chord-action
+  toolbar visible text ("Add", "Duplicate") and its `aria-label`s ("Add chord", "Move
+  chord up", "Move chord down", "Duplicate chord", "Remove chord"); the
+  "Selected — &lt;degree&gt; · &lt;chord&gt;" editor header; the "Degree" / "Duration" /
+  "Quality" section labels; the control `aria-label`s ("Progression mode", "Beats per
+  bar", "Preset", "Progression degree", "Duration value", "Duration unit", "Chord
+  quality"); the empty-state hint ("Add a chord or load a preset.") and the quality
+  hint copy.
+
+### Domain-inventory addition — backing-track names
+
+§1.1's domain inventory omits two backing-track value-name sets. The §1.2 "pattern
+value names" entry covers *fingering* patterns (CAGED / 3NPS / …), not these. Add the
+following to the Phase 2 domain-name work:
+
+- **Genre style names** — `GENRE_STYLES[].label` in
+  `src/progressions/audio/genres.ts` ("Pop", "Rock", "Blues", "Jazz", …).
+- **Chord / bass / drum pattern names** — the `label` fields of `CHORD_PATTERNS`,
+  `BASS_PATTERNS`, and `DRUM_PATTERNS` in `src/progressions/audio/patterns.ts`.
+
+These follow the §3c id-keyed contract: each entry already carries a stable `id`, so
+the app gains `genre.*` and `backingPattern.*` namespaces — populated in non-`en`
+locales only — with the domain-name resolver falling back to the English `label`.
