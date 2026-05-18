@@ -174,34 +174,8 @@ export function ProgressionControls() {
       </Prop>
 
       {/* ── CHORDS ───────────────────────────────────────────────────────── */}
-      <GroupHeader>{t("inspector.groupChords")}</GroupHeader>
-      <Prop span={3}>
-        <div className={styles["chords-cell"]}>
-          {resolvedProgressionSteps.length === 0 ? (
-            <p className={shared["field-hint"]}>Add a chord or load a preset.</p>
-          ) : (
-            <ol className={styles["step-list"]}>
-              {resolvedProgressionSteps.map((step, index) => (
-                <li key={step.id}>
-                  <button
-                    type="button"
-                    className={clsx(styles["step-row"], index === activeProgressionStepIndex && styles["step-row--active"])}
-                    data-unavailable={step.unavailable ? "true" : undefined}
-                    onClick={() => setActiveProgressionStepIndex(index)}
-                  >
-                    <span className={styles["step-index"]}>{index + 1}</span>
-                    <span className={styles["step-degree"]}>{step.degree}</span>
-                    <span className={styles["step-chord"]}>
-                      {step.resolvedChordLabel ?? step.unavailableReason}
-                    </span>
-                    <span className={styles["step-duration"]}>
-                      {formatProgressionDurationLabel(step.duration)}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ol>
-          )}
+      <GroupHeader
+        right={
           <div className={styles["step-actions"]}>
             <button type="button" className={shared["control-button"]} onClick={() => addProgressionStep()} aria-label="Add chord">
               <Plus size={16} aria-hidden="true" />
@@ -245,6 +219,37 @@ export function ProgressionControls() {
               <Trash2 size={16} aria-hidden="true" />
             </button>
           </div>
+        }
+      >
+        {t("inspector.groupChords")}
+      </GroupHeader>
+      <Prop span={3}>
+        <div className={styles["chords-cell"]}>
+          {resolvedProgressionSteps.length === 0 ? (
+            <p className={shared["field-hint"]}>Add a chord or load a preset.</p>
+          ) : (
+            <ol className={styles["step-list"]}>
+              {resolvedProgressionSteps.map((step, index) => (
+                <li key={step.id}>
+                  <button
+                    type="button"
+                    className={clsx(styles["step-row"], index === activeProgressionStepIndex && styles["step-row--active"])}
+                    data-unavailable={step.unavailable ? "true" : undefined}
+                    onClick={() => setActiveProgressionStepIndex(index)}
+                  >
+                    <span className={styles["step-index"]}>{index + 1}</span>
+                    <span className={styles["step-degree"]}>{step.degree}</span>
+                    <span className={styles["step-chord"]}>
+                      {step.resolvedChordLabel ?? step.unavailableReason}
+                    </span>
+                    <span className={styles["step-duration"]}>
+                      {formatProgressionDurationLabel(step.duration)}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ol>
+          )}
         </div>
       </Prop>
       <Prop span={3}>
