@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import type { VoicingStringSet } from "@fretflow/core";
+import { useTranslation } from "../../hooks/useTranslation";
 import styles from "./StringSetPicker.module.css";
 
 interface StringSetPickerProps {
@@ -9,32 +10,64 @@ interface StringSetPickerProps {
 
 interface StringSetCard {
   id: VoicingStringSet;
-  label: string;
-  sub: string;
+  labelKey: string;
+  subKey: string;
   /** mask index 0→5 = string 6 (low E) → string 1 (high E). Rendered reversed (low E at bottom). */
   mask: boolean[];
 }
 
 const CARDS: StringSetCard[] = [
-  { id: "all", label: "All", sub: "6 strings", mask: [true, true, true, true, true, true] },
-  { id: "low", label: "Bass", sub: "4·5·6", mask: [true, true, true, false, false, false] },
-  { id: "mid", label: "Lower mid", sub: "3·4·5", mask: [false, true, true, true, false, false] },
-  { id: "mid-hi", label: "Upper mid", sub: "2·3·4", mask: [false, false, true, true, true, false] },
-  { id: "top", label: "Treble", sub: "1·2·3", mask: [false, false, false, true, true, true] },
+  {
+    id: "all",
+    labelKey: "inspector.stringSetAll",
+    subKey: "inspector.stringSetAllSub",
+    mask: [true, true, true, true, true, true],
+  },
+  {
+    id: "low",
+    labelKey: "inspector.stringSetBass",
+    subKey: "inspector.stringSetBassSub",
+    mask: [true, true, true, false, false, false],
+  },
+  {
+    id: "mid",
+    labelKey: "inspector.stringSetLowerMid",
+    subKey: "inspector.stringSetLowerMidSub",
+    mask: [false, true, true, true, false, false],
+  },
+  {
+    id: "mid-hi",
+    labelKey: "inspector.stringSetUpperMid",
+    subKey: "inspector.stringSetUpperMidSub",
+    mask: [false, false, true, true, true, false],
+  },
+  {
+    id: "top",
+    labelKey: "inspector.stringSetTreble",
+    subKey: "inspector.stringSetTrebleSub",
+    mask: [false, false, false, true, true, true],
+  },
 ];
 
 export function StringSetPicker({ value, onChange }: StringSetPickerProps) {
+  const { t } = useTranslation();
   return (
-    <div className={styles.grid} role="radiogroup" aria-label="String set">
+    <div
+      className={styles.grid}
+      role="radiogroup"
+      aria-label={t("inspector.voicingStringSet")}
+    >
       {CARDS.map((card) => {
         const active = value === card.id;
+        const label = t(card.labelKey);
+        const sub = t(card.subKey);
         return (
           <button
             key={card.id}
             type="button"
             role="radio"
             aria-checked={active}
-            aria-label={`${card.label} — ${card.sub}`}
+            aria-label={`${label} — ${sub}`}
             className={clsx(styles.card, active && styles.cardActive)}
             onClick={() => onChange(card.id)}
           >
@@ -49,8 +82,8 @@ export function StringSetPicker({ value, onChange }: StringSetPickerProps) {
               ))}
             </span>
             <span className={styles.text}>
-              <span className={styles.label}>{card.label}</span>
-              <span className={styles.sub}>{card.sub}</span>
+              <span className={styles.label}>{label}</span>
+              <span className={styles.sub}>{sub}</span>
             </span>
           </button>
         );

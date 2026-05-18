@@ -90,6 +90,16 @@ export interface Dictionary {
     voicingTypeHint: string;
     voicingInversionHint: string;
     voicingStringSetHint: string;
+    stringSetAll: string;
+    stringSetAllSub: string;
+    stringSetBass: string;
+    stringSetBassSub: string;
+    stringSetLowerMid: string;
+    stringSetLowerMidSub: string;
+    stringSetUpperMid: string;
+    stringSetUpperMidSub: string;
+    stringSetTreble: string;
+    stringSetTrebleSub: string;
     voicingTypeCaged: string;
     voicingTypeDrop2: string;
     voicingTypeTriad: string;

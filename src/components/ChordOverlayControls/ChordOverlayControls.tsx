@@ -100,6 +100,14 @@ export function ChordOverlayControls() {
     }
   }, [currentLensEntry, lensAvailability, setPracticeLens]);
 
+  // Normalize a persisted voicing inversion the active chord no longer offers
+  // (e.g. a 7th-chord "3rd" inversion after switching to a triad).
+  useEffect(() => {
+    if (!availableInversions.includes(voicingInversion)) {
+      setVoicingInversion(availableInversions[0] ?? "root");
+    }
+  }, [availableInversions, voicingInversion, setVoicingInversion]);
+
   const handleDegreeChange = (value: string) => {
     startTransition(() => {
       setChordDegree(value);

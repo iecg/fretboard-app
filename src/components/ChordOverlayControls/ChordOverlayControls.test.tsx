@@ -597,7 +597,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
       expect(screen.getByRole("group", { name: "Voicing type" })).toBeInTheDocument();
       expect(screen.getByRole("group", { name: "Voicing inversion" })).toBeInTheDocument();
-      expect(screen.getByRole("radiogroup", { name: "String set" })).toBeInTheDocument();
+      expect(screen.getByRole("radiogroup", { name: "String Set" })).toBeInTheDocument();
     });
 
     it("disables the 3rd inversion for a triad", () => {
