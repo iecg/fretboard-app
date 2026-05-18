@@ -160,7 +160,9 @@
 
 .toggle-group {
   display: flex;
+  align-items: stretch;
   gap: 0.1rem;
+  min-height: 2rem;
   background-color: var(--dc-bg);
   border: 1px solid var(--dc-border);
   border-radius: calc(var(--dc-radius) - 1px);
