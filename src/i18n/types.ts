@@ -87,6 +87,9 @@ export interface Dictionary {
     voicingType: string;
     voicingInversion: string;
     voicingStringSet: string;
+    voicingTypeHint: string;
+    voicingInversionHint: string;
+    voicingStringSetHint: string;
     voicingTypeCaged: string;
     voicingTypeDrop2: string;
     voicingTypeTriad: string;
@@ -124,6 +127,10 @@ export interface Dictionary {
     showConsecutiveSteps: string;
     pairMembersConnected: string;
     chordMode: string;
+    mode: string;
+    modeHint: string;
+    quality: string;
+    lensHint: string;
     degree: string;
     chordType: string;
     root: string;
