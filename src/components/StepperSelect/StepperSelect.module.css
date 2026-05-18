@@ -60,4 +60,8 @@
   width: 0.95rem;
   height: 0.95rem;
 }
+
+:global(.app-container[data-layout-tier="mobile"]) .nav-button {
+  min-height: 36px;
+}
 /* stylelint-enable selector-pseudo-class-no-unknown */
