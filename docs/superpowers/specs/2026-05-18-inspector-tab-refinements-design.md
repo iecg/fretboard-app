@@ -61,8 +61,8 @@ Current 3-column layout: `KEY` · `THEORY` · `WHEEL`.
 
 **Changes:**
 
-1. **Reorder columns** to `CIRCLE OF FIFTHS` · `KEY` · `THEORY`. Key moves to the center
-   column; Theory moves to the right; the circle moves to the left. Update the
+1. **Reorder columns** to `KEY` · `CIRCLE OF FIFTHS` · `THEORY`. Key stays in the left
+   column; the circle moves to the center; Theory moves to the right. Update the
    `grid-template-columns` track sizing in `ScaleTab.module.css` accordingly.
 2. **Rename** the `WHEEL` group header to `CIRCLE OF FIFTHS`, rendered through the same
    `GroupHeader` styling as the `KEY` and `THEORY` headers (consistent type, rule, and
@@ -82,8 +82,8 @@ Current 3-column layout: `KEY` · `THEORY` · `WHEEL`.
 
 **Resulting columns:**
 
-- `CIRCLE OF FIFTHS`: compact circle + Key Signature + Relative/Parent footer
 - `KEY`: Root grid, Scale Family, Variant, Relationship
+- `CIRCLE OF FIFTHS`: compact circle + Key Signature + Relative/Parent footer
 - `THEORY`: Notes, Intervals, Degrees, Chords (diatonic chord list)
 
 ## 3. Chord tab
@@ -146,7 +146,7 @@ Files: `src/components/ProgressionControls/ProgressionControls.tsx`,
   `ProgressionControls` tests). Update assertions for moved/removed controls.
 - Verify the View tab no longer renders Full Chords / Tap to Play; Fret Range renders in
   the DISPLAY group.
-- Verify the Scale tab renders columns in `CIRCLE OF FIFTHS · KEY · THEORY` order, the
+- Verify the Scale tab renders columns in `KEY · CIRCLE OF FIFTHS · THEORY` order, the
   Theory column renders the diatonic chord list (no Tones row, no key-sig/parent rows).
 - Verify the Progression tab: header-row action toolbar, unified quality picker with
   `*`-on-degree behavior, no Loop toggle, `SELECTED` editor header.
