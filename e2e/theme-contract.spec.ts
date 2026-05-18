@@ -49,19 +49,19 @@ test.describe("Theme Contract", () => {
     const theme = await page.evaluate(() => document.documentElement.getAttribute("data-theme"));
     expect(theme).toBe("modern-light");
     
-    // Check background color matches modern-light --bg-color (#eef2f7 — cool blue-gray shell)
+    // Check background color matches modern-light --bg-color (#e4eaef — cool blue-gray shell)
     // Playwright returns rgb values
     const bgColor = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue("--bg-color").trim()
     );
-    expect(bgColor.toLowerCase()).toBe("#fcfaf8");
+    expect(bgColor.toLowerCase()).toBe("#e4eaef");
 
     // Check a semantic token
     const chromeBg = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue("--chrome-bg").trim()
     );
-    // --chrome-bg maps to --surface-shell = #eef2f7 in modern-light
-    expect(chromeBg.toLowerCase()).toBe("#fcfaf8");
+    // --chrome-bg maps to --surface-shell = #e4eaef in modern-light
+    expect(chromeBg.toLowerCase()).toBe("#e4eaef");
   });
 
   test("modern-light fretboard should use maple tokens", async ({ page }) => {
@@ -86,14 +86,14 @@ test.describe("Theme Contract", () => {
     const activeBg = await page.evaluate(() => 
       getComputedStyle(document.documentElement).getPropertyValue("--token-chip-active-bg").trim()
     );
-    // #0891b2
-    expect(activeBg.toLowerCase()).toBe("#0891b2");
+    // #0e7a93
+    expect(activeBg.toLowerCase()).toBe("#0e7a93");
 
-    const tonicBg = await page.evaluate(() => 
+    const tonicBg = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue("--token-chip-tonic-bg").trim()
     );
-    // #ea580c
-    expect(tonicBg.toLowerCase()).toBe("#ea580c");
+    // #c44a1f
+    expect(tonicBg.toLowerCase()).toBe("#c44a1f");
   });
 
   test("light shell vars do not resolve to dark navy defaults", async ({ page }) => {
@@ -158,14 +158,14 @@ test.describe("Theme Contract", () => {
     const activeChip = page.locator('li[data-in-scale="true"]:not([data-is-tonic="true"]) button').first();
     await expect(activeChip).toBeVisible();
     const activeChipBorder = await activeChip.evaluate((el) => getComputedStyle(el).borderColor);
-    // app-cyan: rgb(8, 145, 178)
-    expect(activeChipBorder.replace(/\s/g, "")).toBe("rgb(8,145,178)");
+    // app-cyan: --neon-cyan = #0e7a93 → rgb(14, 122, 147)
+    expect(activeChipBorder.replace(/\s/g, "")).toBe("rgb(14,122,147)");
 
     const tonicChip = page.locator('li[data-is-tonic="true"] button').first();
     await expect(tonicChip).toBeVisible();
     const tonicChipBorder = await tonicChip.evaluate((el) => getComputedStyle(el).borderColor);
-    // neon-orange: #ea580c -> rgb(234, 88, 12)
-    expect(tonicChipBorder.replace(/\s/g, "")).toBe("rgb(234,88,12)");
+    // neon-orange: #c44a1f -> rgb(196, 74, 31)
+    expect(tonicChipBorder.replace(/\s/g, "")).toBe("rgb(196,74,31)");
 
     // Check fretboard notes - they use stroke for the ring. 
     // The role class is on the g element, so we look for circle inside.
@@ -695,10 +695,10 @@ test.describe("Theme Contract", () => {
       // Exact light-mode values from themes.css surface ladder.
       // Vite/lightning-css minifies `#ffffff` → `#fff` in production builds, so
       // canonicalize via colorToHex before comparing.
-      expect(colorToHex(tokens.shell)).toBe("#fcfaf8");
-      expect(colorToHex(tokens.cardTop)).toBe("#fcf9f5");
-      expect(colorToHex(tokens.nested)).toBe("#f8f6f4");
-      expect(colorToHex(tokens.well)).toBe("#f0ece7");
+      expect(colorToHex(tokens.shell)).toBe("#e4eaef");
+      expect(colorToHex(tokens.cardTop)).toBe("#ffffff");
+      expect(colorToHex(tokens.nested)).toBe("#f3f6f9");
+      expect(colorToHex(tokens.well)).toBe("#dde4eb");
       expect(colorToHex(tokens.float)).toBe("#ffffff");
 
       // Summary strips intentionally join the card family, while controls remain sunken wells.
@@ -863,11 +863,11 @@ test.describe("Theme Contract", () => {
         };
       });
 
-      // --nested-card-bg = --surface-card-nested = #f2f6fb → rgb(242, 246, 251)
-      expect(styles.backgroundColor.replace(/\s/g, "")).toBe("rgb(248,246,244)");
+      // --nested-card-bg = --surface-card-nested = #f3f6f9 → rgb(243, 246, 249)
+      expect(styles.backgroundColor.replace(/\s/g, "")).toBe("rgb(243,246,249)");
 
-      // --nested-card-border = --surface-card-border = --surface-highlight = #dde4ef → rgb(221, 228, 239)
-      expect(styles.borderColor.replace(/\s/g, "")).toBe("rgb(232,228,223)");
+      // --nested-card-border = --surface-card-border = --surface-highlight = #c9d2da → rgb(201, 210, 218)
+      expect(styles.borderColor.replace(/\s/g, "")).toBe("rgb(201,210,218)");
 
       // --nested-card-radius = --radius-lg = 12px
       expect(styles.borderRadius).toBe("12px");
@@ -883,9 +883,9 @@ test.describe("Theme Contract", () => {
       const modal = page.getByTestId("help-modal");
       await expect(modal).toBeVisible();
 
-      // Modal body uses --surface-panel = --surface-card-top = #fcf9f5 → rgb(252, 249, 245)
+      // Modal body uses --surface-panel = --surface-card-top = #ffffff → rgb(255, 255, 255)
       const bodyBg = await modal.evaluate((el) => getComputedStyle(el).backgroundColor);
-      expect(bodyBg.replace(/\s/g, "")).toBe("rgb(252,249,245)");
+      expect(bodyBg.replace(/\s/g, "")).toBe("rgb(255,255,255)");
 
       // Modal header uses --surface-float (highest elevation) = #ffffff → rgb(255, 255, 255)
       const header = modal.locator('[class*="help-modal-header"]');
@@ -1009,8 +1009,8 @@ test.describe("Theme Contract", () => {
       await expect(inScalePill).toBeVisible();
       const border = await inScalePill.evaluate((el) => getComputedStyle(el).borderColor);
       // In-scale pill border uses --role-scale-border (cyan) in light mode.
-      // --role-scale-border = --neon-cyan = #0891b2 → rgb(8, 145, 178)
-      expect(border.replace(/\s/g, "")).toBe("rgb(8,145,178)");
+      // --role-scale-border = --neon-cyan = #0e7a93 → rgb(14, 122, 147)
+      expect(border.replace(/\s/g, "")).toBe("rgb(14,122,147)");
     });
 
     test("practice pills render with role-chord-border for guide-tone notes in light mode", async ({ page }) => {
@@ -1021,8 +1021,8 @@ test.describe("Theme Contract", () => {
       const guidePill = practiceBar.locator('[data-guide-tone="true"], [data-chord-root="true"]').first();
       await expect(guidePill).toBeVisible();
       const border = await guidePill.evaluate((el) => getComputedStyle(el).borderColor);
-      // --role-chord-border = --neon-orange = #ea580c → rgb(234, 88, 12)
-      expect(border.replace(/\s/g, "")).toBe("rgb(234,88,12)");
+      // --role-chord-border = --neon-orange = #c44a1f → rgb(196, 74, 31)
+      expect(border.replace(/\s/g, "")).toBe("rgb(196,74,31)");
     });
 
     test("degree chips use role-scale-border for in-scale notes in light mode", async ({ page }) => {
@@ -1038,8 +1038,8 @@ test.describe("Theme Contract", () => {
       const chip = inScaleItem.locator('button').first();
       await expect(chip).toBeVisible();
       const border = await chip.evaluate((el) => getComputedStyle(el).borderColor);
-      // --role-scale-border = --neon-cyan = #0891b2 → rgb(8, 145, 178)
-      expect(border.replace(/\s/g, "")).toBe("rgb(8,145,178)");
+      // --role-scale-border = --neon-cyan = #0e7a93 → rgb(14, 122, 147)
+      expect(border.replace(/\s/g, "")).toBe("rgb(14,122,147)");
     });
 
     test("degree chips use role-chord-border for tonic note in light mode", async ({ page }) => {
@@ -1054,8 +1054,8 @@ test.describe("Theme Contract", () => {
       const chip = tonicItem.locator('button').first();
       await expect(chip).toBeVisible();
       const border = await chip.evaluate((el) => getComputedStyle(el).borderColor);
-      // --role-chord-border = --neon-orange = #ea580c → rgb(234, 88, 12)
-      expect(border.replace(/\s/g, "")).toBe("rgb(234,88,12)");
+      // --role-chord-border = --neon-orange = #c44a1f → rgb(196, 74, 31)
+      expect(border.replace(/\s/g, "")).toBe("rgb(196,74,31)");
     });
   });
 });
