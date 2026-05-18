@@ -3,7 +3,7 @@ import { CAGED_SHAPES, LENS_REGISTRY } from "@fretflow/core";
 import {
   type FingeringPattern,
   scaleLabelAtom,
-  chordLabelAtom,
+  chordShortLabelAtom,
   effectiveChordDegreeAtom,
   practiceLensAtom,
   fingeringPatternAtom,
@@ -28,16 +28,30 @@ const PATTERN_LABELS: Record<FingeringPattern, string> = {
   "two-strings": "Two Strings",
 };
 
+/** Compact lens labels — the strip mirrors the Chord tab's short forms. */
+const LENS_SHORT_LABELS: Record<string, string> = {
+  targets: "Chord",
+  "guide-tones": "Guide",
+  tension: "Tension",
+};
+
+interface StatusField {
+  id: string;
+  label: string;
+  value: string;
+}
+
 /**
- * The DAW shell's bottom status bar (Phase 12) — a single-line mono strip
- * reading Key / Chord / Lens / Pattern / Frets / Tempo / Tuning plus the
- * version tag. A pure read-out: it subscribes to existing atoms and never
- * writes. Mounted by `MainLayoutWrapper` on the desktop and tablet tiers.
+ * The DAW shell's bottom status bar — a single-line mono strip. Reading fields
+ * (Key / Chord / Lens / Pattern / Frets) sit flush-left; the session fields
+ * (Tempo / Tuning) and the version tag are pushed flush-right. A pure read-out:
+ * it subscribes to existing atoms and never writes. Mounted by
+ * `MainLayoutWrapper` on the desktop and tablet tiers.
  */
 export function StatusBar() {
   const { t } = useTranslation();
   const scaleLabel = useAtomValue(scaleLabelAtom);
-  const chordLabel = useAtomValue(chordLabelAtom);
+  const chordShortLabel = useAtomValue(chordShortLabelAtom);
   const chordDegree = useAtomValue(effectiveChordDegreeAtom);
   const lens = useAtomValue(practiceLensAtom);
   const pattern = useAtomValue(fingeringPatternAtom);
@@ -47,12 +61,15 @@ export function StatusBar() {
   const tempo = useAtomValue(progressionTempoBpmAtom);
   const tuningName = useAtomValue(tuningNameAtom);
 
-  const lensLabel = LENS_REGISTRY.find((e) => e.id === lens)?.label ?? EMPTY;
+  const lensLabel =
+    LENS_SHORT_LABELS[lens] ??
+    LENS_REGISTRY.find((e) => e.id === lens)?.label ??
+    EMPTY;
 
-  const chordValue = chordLabel
+  const chordValue = chordShortLabel
     ? chordDegree
-      ? `${chordDegree} · ${chordLabel}`
-      : chordLabel
+      ? `${chordDegree} · ${chordShortLabel}`
+      : chordShortLabel
     : EMPTY;
 
   const patternValue =
@@ -60,31 +77,38 @@ export function StatusBar() {
       ? `${PATTERN_LABELS.caged} · ${CAGED_SHAPES.filter((s) => cagedShapes.has(s)).join("") || EMPTY}`
       : PATTERN_LABELS[pattern];
 
-  const fields: ReadonlyArray<{ id: string; label: string; value: string }> = [
+  const leftFields: ReadonlyArray<StatusField> = [
     { id: "key", label: t("statusBar.key"), value: scaleLabel || EMPTY },
     { id: "chord", label: t("statusBar.chord"), value: chordValue },
     { id: "lens", label: t("statusBar.lens"), value: lensLabel },
     { id: "pattern", label: t("statusBar.pattern"), value: patternValue },
     { id: "frets", label: t("statusBar.frets"), value: `${fretStart}–${fretEnd}` },
+  ];
+  const rightFields: ReadonlyArray<StatusField> = [
     { id: "tempo", label: t("statusBar.tempo"), value: `${tempo} BPM` },
     { id: "tuning", label: t("statusBar.tuning"), value: tuningName || EMPTY },
   ];
 
+  const renderField = (f: StatusField) => (
+    <div key={f.id} className={styles.field}>
+      <span className={styles.label}>{f.label}</span>
+      <span className={styles.value} data-testid={`status-${f.id}`}>
+        {f.value}
+      </span>
+    </div>
+  );
+
   return (
     <div className={styles["status-bar"]} data-testid="status-bar">
-      <dl className={styles.fields}>
-        {fields.map((f) => (
-          <div key={f.id} className={styles.field}>
-            <dt className={styles.label}>{f.label}</dt>
-            <dd className={styles.value} data-testid={`status-${f.id}`}>
-              {f.value}
-            </dd>
-          </div>
-        ))}
-      </dl>
-      <span className={styles.version} data-testid="status-version">
-        FretFlow Studio · v{__APP_VERSION__}
-      </span>
+      <div className={styles.group}>{leftFields.map(renderField)}</div>
+      <div className={styles.group}>
+        {rightFields.map(renderField)}
+        <span className={styles.field}>
+          <span className={styles.version} data-testid="status-version">
+            FretFlow Studio {__APP_VERSION__}
+          </span>
+        </span>
+      </div>
     </div>
   );
 }

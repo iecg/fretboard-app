@@ -50,6 +50,7 @@ import {
   isChordOverlayPatternDisabled,
 } from "./fingeringAtoms";
 import { currentTuningAtom } from "./layoutAtoms";
+import { formatChordShortLabel } from "../progressions/progressionDomain";
 
 const chordFretSpreadStorage = constrainedNumberStorage({
   min: 0,
@@ -564,6 +565,16 @@ export const chordLabelAtom = atom((get) => {
   const useFlats = get(useFlatsAtom);
   if (!chordType) return null;
   return `${formatAccidental(getNoteDisplay(chordRoot, chordRoot, useFlats))} ${chordType}`;
+});
+
+/** Compact chord symbol (e.g. "Am", "Cmaj7", "G7") for tight readouts. */
+export const chordShortLabelAtom = atom((get) => {
+  const chordRoot = get(chordRootAtom);
+  const chordType = get(chordTypeAtom);
+  const useFlats = get(useFlatsAtom);
+  if (!chordType) return null;
+  const rootLabel = formatAccidental(getNoteDisplay(chordRoot, chordRoot, useFlats));
+  return formatChordShortLabel(rootLabel, chordType);
 });
 
 export const chordSummaryNotesAtom = atom((get) => {

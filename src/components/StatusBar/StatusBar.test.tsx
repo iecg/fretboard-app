@@ -20,7 +20,8 @@ describe("StatusBar", () => {
     renderWithAtoms(<StatusBar />);
     expect(screen.getByTestId("status-bar")).toBeInTheDocument();
     for (const label of ["Key", "Chord", "Lens", "Pattern", "Frets", "Tempo", "Tuning"]) {
-      expect(screen.getByText(label)).toBeInTheDocument();
+      // Scope to the label span — a value (e.g. the "Chord" lens) can share the text.
+      expect(screen.getByText(label, { selector: ".label" })).toBeInTheDocument();
     }
     expect(screen.getByTestId("status-version")).toBeInTheDocument();
     expect(screen.getByTestId("status-version")).toHaveTextContent("FretFlow Studio");
@@ -46,8 +47,8 @@ describe("StatusBar", () => {
 
   it("shows the active lens label by default", () => {
     renderWithAtoms(<StatusBar />);
-    // practiceLensAtom defaults to "targets" -> LENS_REGISTRY label "Chord Tones".
-    expect(screen.getByTestId("status-lens")).toHaveTextContent("Chord Tones");
+    // practiceLensAtom defaults to "targets" -> compact lens label "Chord".
+    expect(screen.getByTestId("status-lens")).toHaveTextContent("Chord");
   });
 
   it("labels a non-CAGED pattern", () => {
@@ -69,12 +70,12 @@ describe("StatusBar", () => {
     expect(screen.getByTestId("status-chord")).toHaveTextContent("—");
   });
 
-  it("shows the resolved chord label when a chord is active", () => {
+  it("shows the compact chord symbol when a chord is active", () => {
     renderWithAtoms(<StatusBar />, [
       [chordRootAtom, "G"],
-      [chordTypeAtom, "Major Triad"],
+      [chordTypeAtom, "Minor Triad"],
     ]);
-    expect(screen.getByTestId("status-chord")).toHaveTextContent("G Major Triad");
+    expect(screen.getByTestId("status-chord")).toHaveTextContent("Gm");
   });
 
   it("prefixes the chord degree when one is set", () => {
@@ -85,6 +86,6 @@ describe("StatusBar", () => {
       [chordTypeAtom, "Major Triad"],
       [chordDegreeAtom, "V"],
     ]);
-    expect(screen.getByTestId("status-chord")).toHaveTextContent("V · G Major Triad");
+    expect(screen.getByTestId("status-chord")).toHaveTextContent("V · G");
   });
 });

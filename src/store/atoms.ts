@@ -51,6 +51,7 @@ export {
   chordTonesAtom,
   chordMembersAtom,
   chordLabelAtom,
+  chordShortLabelAtom,
   chordSummaryNotesAtom,
   chordMemberFactsAtom,
   chordDegreeAtom,
