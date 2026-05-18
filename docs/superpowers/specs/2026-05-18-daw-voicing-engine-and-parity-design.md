@@ -264,7 +264,7 @@ No other atoms change. The engine is gated by `fullChordsEnabledAtom` and hidden
 New module `packages/core/src/shapes/voicings.ts`, exported through
 `packages/core/src/shapes/index.ts`.
 
-```
+```ts
 generateVoicings({
   chordRoot, chordType, tuning, maxFret,
   voicingType, inversion, stringSet,
