@@ -39,11 +39,11 @@ export function StringSetPicker({ value, onChange }: StringSetPickerProps) {
             onClick={() => onChange(card.id)}
           >
             <span className={styles.diagram} aria-hidden="true">
-              {card.mask.map((on, i) => (
+              {[...card.mask].reverse().map((on, i) => (
                 <span
                   key={i}
                   className={clsx(styles.string, on && styles.stringOn)}
-                  style={{ height: `${2.2 - (i / 5) * 1.4}px` }}
+                  style={{ height: `${1 + i * 0.4}px` }}
                 />
               ))}
             </span>

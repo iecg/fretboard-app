@@ -47,10 +47,6 @@
 }
 
 .stringOn {
-  background: var(--text-muted);
-}
-
-.cardActive .stringOn {
   background: var(--accent-primary);
 }
 
