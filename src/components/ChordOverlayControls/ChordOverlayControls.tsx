@@ -208,7 +208,7 @@ export function ChordOverlayControls() {
           </Prop>
         )}
         {showRoot && (
-          <Prop label={t("controls.root")} span={4}>
+          <Prop label={t("controls.root")} span={6}>
             <NoteGrid
               notes={NOTES}
               selected={chordRootOverride}

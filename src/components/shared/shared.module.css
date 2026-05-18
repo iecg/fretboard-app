@@ -277,7 +277,7 @@
 
 .note-grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(12, 1fr);
   gap: 0.22rem;
 }
 
