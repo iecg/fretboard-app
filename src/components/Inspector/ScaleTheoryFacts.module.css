@@ -42,3 +42,13 @@
   color: var(--neon-orange);
   font-weight: 600;
 }
+
+.rowStacked {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.chordList {
+  width: 100%;
+}
