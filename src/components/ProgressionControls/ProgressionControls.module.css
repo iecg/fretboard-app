@@ -90,6 +90,7 @@
   align-items: center;
   gap: 0.4rem;
   flex-wrap: nowrap;
+  flex-shrink: 0;
   margin: 0;
 }
 
