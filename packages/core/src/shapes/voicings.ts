@@ -68,7 +68,9 @@ export interface GenerateVoicingsParams {
 
 // Span limits tuned in Task 11 Step 5: triad raised 4→5 so close-position
 // C-major triads (which span up to 5 frets across adjacent strings) survive.
-const SPAN_LIMIT: Record<"triad" | "drop2", number> = { triad: 5, drop2: 5 };
+// drop2 is raised to 6 so that spread (pitch-span > 12) triads can be voiced
+// on 3 adjacent strings — their minimum fret span is 6 semitones.
+const SPAN_LIMIT: Record<"triad" | "drop2", number> = { triad: 5, drop2: 6 };
 
 /** Frets >0 only — open strings do not constrain the hand span. */
 function fretSpan(notes: VoicingNote[]): number {
@@ -170,10 +172,14 @@ export function generateVoicings(params: GenerateVoicingsParams): Voicing[] {
   const def = CHORD_DEFINITIONS[params.chordType];
   if (!def) return [];
   if (voicingType === "triad") {
+    // Triad: always the closed-position search, capped at 3 voices.
     return searchVoicings(params, Math.min(3, def.members.length), false);
   }
-  if (def.members.length >= 4) return searchVoicings(params, 4, true);
-  return searchVoicings(params, Math.min(3, def.members.length), false);
+  // drop2: always the spread search. voiceCount uses all chord tones for
+  // 4+ note chords and falls back to the chord's tone count for smaller ones
+  // (a 3-note "drop 2" is the spread/string-skip triad).
+  const voiceCount = def.members.length >= 4 ? 4 : Math.min(3, def.members.length);
+  return searchVoicings(params, voiceCount, true);
 }
 
 function cagedVoicings(params: GenerateVoicingsParams): Voicing[] {
