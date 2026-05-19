@@ -14,13 +14,6 @@ describe('AppHeader/AppHeader', () => {
     expect(title?.textContent).toBe('FretFlow');
   });
 
-  it('renders brandSubtitle when provided', () => {
-    render(<AppHeader brandTitle="FretFlow" brandSubtitle="Fretboard Studio" />);
-    expect(screen.getByTestId('app-header-brand-subtitle')).toHaveTextContent(
-      'Fretboard Studio',
-    );
-  });
-
   it('renders actions slot', () => {
     render(
       <AppHeader
@@ -35,6 +28,24 @@ describe('AppHeader/AppHeader', () => {
     );
     expect(screen.getByRole('button', { name: 'Help' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Settings' })).toBeTruthy();
+  });
+
+  it('renders transport slot between brand and actions', () => {
+    render(
+      <AppHeader
+        brandTitle="FretFlow"
+        transport={<div data-testid="transport-cluster">transport</div>}
+        actions={<button aria-label="Settings">⚙</button>}
+      />
+    );
+    const slot = screen.getByTestId('app-header-transport');
+    expect(slot).toBeTruthy();
+    expect(screen.getByTestId('transport-cluster')).toBeTruthy();
+  });
+
+  it('omits the transport slot when no transport node is passed', () => {
+    render(<AppHeader brandTitle="FretFlow" />);
+    expect(screen.queryByTestId('app-header-transport')).toBeNull();
   });
 
   it('renders brandIcon slot', () => {
@@ -68,7 +79,6 @@ describe('AppHeader/AppHeader', () => {
     const { container } = render(
       <AppHeader
         brandTitle="FretFlow"
-        brandSubtitle="Interactive Fretboard & Music Theory"
         actions={
           <>
             <button aria-label="Help">?</button>

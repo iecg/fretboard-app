@@ -4,7 +4,7 @@ import {
   formatProgressionPlaybackPosition,
   type FormattedPlaybackPositionParts,
 } from "../../progressions/progressionDomain";
-import styles from "./ProgressionTrack.module.css";
+import styles from "./HeaderTransportCluster.module.css";
 
 interface ProgressionPositionReadoutProps {
   playing: boolean;

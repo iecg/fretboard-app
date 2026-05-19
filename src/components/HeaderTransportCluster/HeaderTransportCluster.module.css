@@ -1,0 +1,244 @@
+/* ----------------------------------------------------------------------------
+ * Header Transport Cluster — the DAW transport + readouts, hosted in AppHeader.
+ *
+ * Extracted from ProgressionTrack's former `.transportRow` (Always-On DAW
+ * Phase A). Composes TransportBar + the position / tempo / scale readouts as
+ * one compact flex row in the unified header. The readout boxes keep their
+ * faceplate-substrate styling (deep navy LCD readouts) but are sized down to
+ * a slim single-row density matching the always-on DAW design reference.
+ * ------------------------------------------------------------------------- */
+
+.cluster {
+  /* Map track tokens → theme-adaptive faceplate tokens (the readouts below
+     reference these). Mirrors ProgressionTrack's `.track` token block so the
+     LCD readouts look consistent with the chord track. */
+  --track-accent: var(--faceplate-accent, #4DE4FF);
+  --track-accent-dim: rgb(77 228 255 / 0.55);
+  --track-bg-readout: #050a13;
+  --track-border: var(--faceplate-border);
+  --track-text-dim: rgb(193 218 235 / 0.55);
+  --track-text-muted: rgb(193 218 235 / 0.32);
+
+  display: flex;
+  align-items: center;
+  gap: 0.34rem;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--font-sans);
+}
+
+/* Light-mode token flip — definition from borders, dimmer teal accent,
+   dark slate text on a pale readout surface. */
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global([data-theme="modern-light"]) .cluster {
+  --track-bg-readout: #e3e8ed;
+  --track-text-dim: rgb(15 23 42 / 0.7);
+  --track-text-muted: rgb(15 23 42 / 0.42);
+}
+
+:global([data-theme="modern-light"]) .digitBar {
+  text-shadow: none;
+}
+
+:global([data-theme="modern-light"]) .tempoValue {
+  text-shadow: none;
+}
+
+:global([data-theme="modern-light"]) .scalePrimary {
+  text-shadow: none;
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
+
+/* ----------------------------------------------------------------------------
+ * Readout boxes (Position, Tempo, Scale) — compact LCD chips
+ * ------------------------------------------------------------------------- */
+
+.positionReadout,
+.contextBox {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.05rem;
+  padding: 0.13rem 0.42rem 0.14rem;
+  border: 1px solid var(--track-border);
+  border-radius: 6px;
+  background: var(--track-bg-readout);
+}
+
+.positionReadout {
+  /* Size to content; a little extra leading space separates it from the
+     transport's instrument buttons so the two groups read distinctly. */
+  flex: 0 0 auto;
+  margin-inline-start: 0.55rem;
+}
+
+.contextReadouts {
+  display: grid;
+  grid-template-columns: minmax(3.2rem, auto) minmax(5.2rem, auto);
+  gap: 0.3rem;
+  flex-shrink: 0;
+  /* Push the tempo / scale readouts to the trailing edge of the cluster,
+     leaving negative space after the position readout (design reference). */
+  margin-inline-start: auto;
+}
+
+.contextBox {
+  padding-inline: 0.42rem;
+}
+
+.readoutLabel {
+  color: var(--track-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.45rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* Position readout — bar / beat / subdivision hierarchy ------------------- */
+
+.positionValue {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.34rem;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums slashed-zero;
+  line-height: 1;
+}
+
+.positionCurrent,
+.positionTotal {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.positionSeparator {
+  color: var(--track-text-muted);
+  font-size: 0.58rem;
+  font-weight: 400;
+  align-self: center;
+}
+
+.digits {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.04rem;
+}
+
+.digitBar {
+  color: var(--track-accent);
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-shadow: 0 0 8px rgb(77 228 255 / 0.4);
+}
+
+.digitDot {
+  color: var(--track-accent-dim);
+  font-size: 0.88rem;
+  font-weight: 700;
+  margin-inline: 0.02em;
+}
+
+.digitBeat {
+  color: var(--track-accent);
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.digitSub {
+  color: var(--track-accent-dim);
+  font-size: 0.54rem;
+  font-weight: 500;
+  padding-inline-start: 0.05em;
+}
+
+/* The total/denominator renders as a single uniform small readout rather
+   than reusing the bar / beat / subdivision size hierarchy. */
+.digits--muted {
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.digits--muted .digitBar,
+.digits--muted .digitDot,
+.digits--muted .digitBeat,
+.digits--muted .digitSub {
+  color: var(--track-text-muted);
+  text-shadow: none;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  padding-inline-start: 0;
+}
+
+/* Tempo readout ------------------------------------------------------------ */
+
+.tempoValue {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.24rem;
+  color: var(--track-accent);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums slashed-zero;
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: 0 0 8px rgb(77 228 255 / 0.35);
+}
+
+.tempoUnit {
+  color: var(--track-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.45rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-shadow: none;
+}
+
+/* Scale readout ------------------------------------------------------------ */
+
+.scaleValue {
+  display: inline-flex;
+  align-items: baseline;
+  min-width: 0;
+  line-height: 1.05;
+}
+
+.scalePrimary {
+  color: var(--track-accent);
+  font-family: var(--font-sans);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  text-shadow: 0 0 8px rgb(77 228 255 / 0.35);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ----------------------------------------------------------------------------
+ * Responsive — on the mobile tier the cluster wraps within the header so the
+ * readouts never clip. Gated on the layout tier attribute, matching the
+ * convention used across the app.
+ * ------------------------------------------------------------------------- */
+
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global(.app-container[data-layout-tier="mobile"]) .cluster {
+  flex-wrap: wrap;
+  row-gap: 0.35rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .positionReadout {
+  flex: 1 1 100%;
+  min-width: 0;
+  margin-inline-start: 0;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .contextReadouts {
+  flex: 1 1 100%;
+  grid-template-columns: minmax(3.4rem, 0.7fr) minmax(6rem, 1.3fr);
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */

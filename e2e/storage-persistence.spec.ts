@@ -84,10 +84,11 @@ test.describe("storage persistence", () => {
     await page.reload({ waitUntil: "domcontentloaded" });
     const track = page.getByRole("group", { name: "Progression track" });
     await expect(track).toBeVisible();
-    // The track header renders tempo twice — a context readout and the
-    // editable TransportBar stepper. Target the stepper's stable test id so
-    // the locator is unambiguous, and verify the persisted value round-tripped.
-    await expect(track.getByTestId("transport-tempo")).toHaveText(/132\s*BPM/i);
+    // Tempo now lives in the unified header transport cluster (Always-On DAW
+    // Phase A) — the inline stepper moved to the Progression inspector tab.
+    // Target the header readout's stable test id and verify the persisted
+    // value round-tripped.
+    await expect(page.getByTestId("header-tempo")).toHaveText(/132\s*BPM/i);
     // Chord-row state lives directly in the progression timeline now. Verify
     // the persisted second step (degree V, Dominant 7th, 2 bars) survived.
     await expect(

@@ -588,7 +588,12 @@ describe("App", () => {
         expect(screen.getByText("Settings")).toBeInTheDocument();
       });
 
-      const lightButton = screen.getByRole("button", { name: /light/i });
+      // Scope to the Settings dialog so this doesn't also match the header
+      // theme-toggle button ("Switch to light theme").
+      const settingsDialog = screen.getByRole("dialog");
+      const lightButton = within(settingsDialog).getByRole("button", {
+        name: /^light$/i,
+      });
       fireEvent.click(lightButton);
 
       await waitFor(() => {

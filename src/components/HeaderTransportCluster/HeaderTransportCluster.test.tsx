@@ -1,0 +1,62 @@
+// @vitest-environment jsdom
+import { describe, expect, it } from "vitest";
+import { fireEvent, screen } from "@testing-library/react";
+import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
+import { axe } from "../../test-utils/a11y";
+import {
+  beatsPerBarAtom,
+  progressionEnabledAtom,
+  progressionLoopEnabledAtom,
+  progressionPlayingAtom,
+  progressionStepsAtom,
+  progressionTempoBpmAtom,
+} from "../../store/atoms";
+import { HeaderTransportCluster } from "./HeaderTransportCluster";
+
+const fourStepProgression = [
+  { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+  { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+] as const;
+
+describe("HeaderTransportCluster", () => {
+  it("renders transport controls, status lights, and the position/tempo/scale readouts", async () => {
+    const { container } = renderWithAtoms(<HeaderTransportCluster />, [
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, fourStepProgression],
+      [progressionTempoBpmAtom, 90],
+      [beatsPerBarAtom, 4],
+    ]);
+
+    expect(screen.getByTestId("header-transport-cluster")).toBeTruthy();
+    expect(screen.getByTestId("transport-bar")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Previous chord" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Play progression" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Next chord" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Loop progression" })).toBeTruthy();
+    expect(screen.getByText("Play")).toBeTruthy();
+    expect(screen.getByText("Loop")).toBeTruthy();
+    expect(screen.getByText("Position")).toBeTruthy();
+    expect(screen.getByText("90")).toBeTruthy();
+    expect(screen.getByText("BPM")).toBeTruthy();
+    // Scale readout shows only the headline — the parenthetical mode is dropped.
+    expect(screen.getByText("C Major")).toBeTruthy();
+    expect(screen.queryByText(/Ionian/)).toBeNull();
+
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("transport controls still drive the playback atoms", () => {
+    const store = makeAtomStore([
+      [progressionEnabledAtom, true],
+      [progressionStepsAtom, fourStepProgression],
+      [progressionLoopEnabledAtom, false],
+    ]);
+    renderWithStore(<HeaderTransportCluster />, store);
+
+    fireEvent.click(screen.getByRole("button", { name: "Loop progression" }));
+    expect(store.get(progressionLoopEnabledAtom)).toBe(true);
+
+    fireEvent.click(screen.getByRole("button", { name: "Play progression" }));
+    expect(store.get(progressionPlayingAtom)).toBe(true);
+  });
+});

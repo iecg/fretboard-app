@@ -1,18 +1,9 @@
 import { useCallback, type CSSProperties } from "react";
 import clsx from "clsx";
 import { useProgressionState } from "../../hooks/useProgressionState";
-import { useScaleState } from "../../hooks/useScaleState";
 import styles from "./ProgressionTrack.module.css";
 import { ProgressionBlock } from "./ProgressionBlock";
 import { ProgressionPlayhead } from "./ProgressionPlayhead";
-import { ProgressionPositionReadout } from "./ProgressionPositionReadout";
-import { TransportBar } from "../TransportBar/TransportBar";
-
-function splitScaleLabel(label: string): { primary: string; secondary: string | null } {
-  const match = label.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
-  if (match) return { primary: match[1].trim(), secondary: match[2].trim() };
-  return { primary: label, secondary: null };
-}
 
 function durationToBars(
   duration: { value: number; unit: "bar" | "beat" },
@@ -41,7 +32,6 @@ function getProgressionBlockLayouts(
 
 export function ProgressionTrack() {
   const {
-    progressionTempoBpm,
     progressionPlaying,
     progressionPlaybackBlockedReason,
     currentProgressionBar,
@@ -51,14 +41,11 @@ export function ProgressionTrack() {
     setActiveProgressionStepIndex,
     beatsPerBar,
   } = useProgressionState();
-  const { scaleLabel } = useScaleState();
 
   const canPlay = !progressionPlaybackBlockedReason;
   const activeStep = resolvedProgressionSteps[activeProgressionStepIndex] ?? null;
-  const activeStepBars = activeStep ? durationToBars(activeStep.duration, beatsPerBar) : 0;
   const totalDurationBars = Math.max(1, totalProgressionBars);
   const totalBarsForDisplay = Math.max(1, Math.ceil(totalProgressionBars));
-  const scale = splitScaleLabel(scaleLabel);
   const subdivisionsPerBar = Math.max(1, Math.floor(beatsPerBar));
   const blockLayouts = getProgressionBlockLayouts(
     resolvedProgressionSteps,
@@ -81,38 +68,6 @@ export function ProgressionTrack() {
       data-playing={progressionPlaying ? "true" : undefined}
       title={progressionPlaybackBlockedReason ?? undefined}
     >
-      <div className={styles.transportRow}>
-        <TransportBar />
-
-        <ProgressionPositionReadout
-          playing={progressionPlaying && canPlay}
-          stepStartBar={currentProgressionBar}
-          stepBars={activeStepBars}
-          stepIndex={activeProgressionStepIndex}
-          totalProgressionBars={totalProgressionBars}
-          beatsPerBar={beatsPerBar}
-        />
-
-        <div className={styles.contextReadouts}>
-          <div className={styles.contextBox}>
-            <span className={styles.readoutLabel}>Tempo</span>
-            <span className={styles.tempoValue}>
-              {progressionTempoBpm}
-              <span className={styles.tempoUnit}>BPM</span>
-            </span>
-          </div>
-          <div className={styles.contextBox}>
-            <span className={styles.readoutLabel}>Scale</span>
-            <span className={styles.scaleValue}>
-              <span className={styles.scalePrimary}>{scale.primary}</span>
-              {scale.secondary ? (
-                <span className={styles.scaleSecondary}>{scale.secondary}</span>
-              ) : null}
-            </span>
-          </div>
-        </div>
-      </div>
-
       <div
         className={styles.timeline}
         style={{
