@@ -1,4 +1,4 @@
-import { startTransition, useEffect, useMemo } from "react";
+import { startTransition, useEffect, useMemo, useRef } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import clsx from "clsx";
 import { type PracticeLens } from "@fretflow/core";
@@ -15,6 +15,7 @@ import {
   controlRecencyAtom,
   noteControlChangeAtom,
   nearestValidTriple,
+  type VoicingControlId,
 } from "../../store/atoms";
 import { StringSetPicker } from "../Inspector/StringSetPicker";
 import { useTranslation } from "../../hooks/useTranslation";
@@ -41,6 +42,7 @@ export function ChordOverlayControls() {
   const { t } = useTranslation();
   const { scaleName, useFlats } = useScaleState();
   const {
+    chordRoot,
     chordType,
     practiceLens,
     setPracticeLens,
@@ -103,8 +105,24 @@ export function ChordOverlayControls() {
   // Unified auto-heal: whenever the active (type, inversion, stringSet) is
   // not a valid triple, pin the most-recently-touched control and snap the
   // other two to the nearest valid assignment.
+  //
+  // Spec §5c point 2: on a chord change (no control was "just changed"),
+  // override the live recency for this run only — pin `type` and let
+  // inversion + string set heal. The user's actual recency is unchanged so
+  // the next user-driven heal still respects it.
+  const prevChordRef = useRef<{ root: string; type: string | null } | null>(null);
   useEffect(() => {
-    if (voicingType === "caged") return; // caged is force-resolved upstream.
+    if (voicingType === "caged") {
+      prevChordRef.current = { root: chordRoot, type: chordType };
+      return; // caged is force-resolved upstream.
+    }
+    const chord = { root: chordRoot, type: chordType };
+    const chordChanged =
+      prevChordRef.current !== null &&
+      (prevChordRef.current.root !== chord.root ||
+        prevChordRef.current.type !== chord.type);
+    prevChordRef.current = chord;
+
     const current = {
       type: voicingType,
       inversion: voicingInversion,
@@ -117,11 +135,17 @@ export function ChordOverlayControls() {
         t.stringSet === current.stringSet,
     );
     if (isValid) return;
-    const next = nearestValidTriple(validCombos.triples, current, recency);
+
+    const effectiveRecency: readonly VoicingControlId[] = chordChanged
+      ? ["type", "stringSet", "inversion"]
+      : recency;
+    const next = nearestValidTriple(validCombos.triples, current, effectiveRecency);
     if (next.type !== current.type) setVoicingType(next.type);
     if (next.inversion !== current.inversion) setVoicingInversion(next.inversion);
     if (next.stringSet !== current.stringSet) setVoicingStringSet(next.stringSet);
   }, [
+    chordRoot,
+    chordType,
     voicingType,
     voicingInversion,
     voicingStringSet,
