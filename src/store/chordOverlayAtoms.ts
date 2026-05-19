@@ -17,7 +17,6 @@ import type {
   PracticeLens,
   VoicingType,
   VoicingInversion,
-  VoicingStringSet,
 } from "@fretflow/core";
 import {
   getDegreesForScale,
@@ -49,6 +48,7 @@ import {
   isChordOverlayPatternDisabled,
 } from "./fingeringAtoms";
 import { currentTuningAtom } from "./layoutAtoms";
+import { buildStringSetOptions } from "./voicingStringSets";
 import { formatChordShortLabel } from "../progressions/progressionDomain";
 
 const chordFretSpreadStorage = constrainedNumberStorage({
@@ -441,7 +441,6 @@ export const fullChordsEnabledAtom = atomWithStorage<boolean>(
 
 const VOICING_INVERSIONS: VoicingInversion[] = ["root", "1st", "2nd", "3rd"];
 const VOICING_TYPES: VoicingType[] = ["caged", "drop2", "triad"];
-const VOICING_STRING_SETS: VoicingStringSet[] = ["all", "low", "mid", "mid-hi", "top"];
 
 // Validated storage — a stale or corrupt localStorage entry that is not a
 // member of the union falls back to the atom's default at read time.
@@ -450,9 +449,6 @@ const voicingTypeStorage = createStorage<VoicingType>({
 });
 const voicingInversionStorage = createStorage<VoicingInversion>({
   validate: (v) => (VOICING_INVERSIONS as string[]).includes(v),
-});
-const voicingStringSetStorage = createStorage<VoicingStringSet>({
-  validate: (v) => (VOICING_STRING_SETS as string[]).includes(v),
 });
 
 export const voicingTypeAtom = atomWithStorage<VoicingType>(
@@ -469,12 +465,40 @@ export const voicingInversionAtom = atomWithStorage<VoicingInversion>(
   GET_ON_INIT,
 );
 
-export const voicingStringSetAtom = atomWithStorage<VoicingStringSet>(
+/**
+ * The selected string set, stored as a stable id ("all" or a string-number
+ * window like "4·5·6"). The id encodes the exact strings, so it survives a
+ * chord change when still valid; `effectiveStringSetAtom` resolves it and
+ * falls back to "all" when it no longer exists for the active chord.
+ */
+export const voicingStringSetAtom = atomWithStorage<string>(
   k("voicingStringSet"),
   "all",
-  voicingStringSetStorage,
+  rawStringStorage(),
   GET_ON_INIT,
 );
+
+/**
+ * The ordered String Set options for the active chord. The option list
+ * rebuilds whenever the chord's tone count changes.
+ */
+export const stringSetOptionsAtom = atom((get) => {
+  const chordType = get(chordTypeAtom);
+  const def = chordType ? CHORD_DEFINITIONS[chordType] : undefined;
+  return buildStringSetOptions(def ? def.members.length : 0);
+});
+
+/**
+ * The stored string-set id resolved to its string-index array against the
+ * active chord. When the id is not a current option (the chord changed),
+ * this falls back to all six strings — the engine and picker both self-heal.
+ */
+export const effectiveStringSetAtom = atom((get): readonly number[] => {
+  const options = get(stringSetOptionsAtom);
+  const stored = get(voicingStringSetAtom);
+  const match = options.find((o) => o.id === stored);
+  return match ? match.strings : [0, 1, 2, 3, 4, 5];
+});
 
 /**
  * Whether the voicing connector lines render on the fretboard. Drives the
@@ -503,6 +527,8 @@ export const voicingMatchesAtom = atom((get) => {
   if (get(chordOverlayHiddenAtom)) return [];
   const chordType = get(chordTypeAtom);
   if (!chordType) return [];
+  const voicingType = get(voicingTypeAtom);
+  const isCaged = voicingType === "caged";
   const available = get(availableInversionsAtom);
   const inversion = get(voicingInversionAtom);
   return generateVoicings({
@@ -510,9 +536,15 @@ export const voicingMatchesAtom = atom((get) => {
     chordType,
     tuning: get(currentTuningAtom),
     maxFret: 24,
-    voicingType: get(voicingTypeAtom),
-    inversion: available.includes(inversion) ? inversion : "root",
-    stringSet: get(voicingStringSetAtom),
+    voicingType,
+    // A CAGED shape is a fixed root-position object — it has no meaningful
+    // string subset or inversion, so caged ignores both controls.
+    inversion: isCaged
+      ? "root"
+      : available.includes(inversion)
+        ? inversion
+        : "root",
+    stringSet: isCaged ? [0, 1, 2, 3, 4, 5] : get(effectiveStringSetAtom),
   });
 });
 
