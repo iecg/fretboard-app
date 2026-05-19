@@ -52,3 +52,38 @@ describe("StringSetPicker", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 });
+
+describe("StringSetPicker — diagram orientation and thickness", () => {
+  it("renders bars top-to-bottom as high E (index 0) → low E (index 5)", () => {
+    const triadOptions = buildStringSetOptions(3);
+    render(
+      <StringSetPicker options={triadOptions} value="all" onChange={() => {}} />,
+    );
+    // Bass card highlights string indices [3, 4, 5] — the BOTTOM three bars.
+    const bassCard = screen.getByRole("radio", { name: /Bass/ });
+    const bars = bassCard.querySelectorAll("[data-string-index]");
+    expect(bars).toHaveLength(6);
+    bars.forEach((bar, i) => {
+      expect(bar.getAttribute("data-string-index")).toBe(String(i));
+    });
+    [0, 1, 2].forEach((i) => {
+      expect(bars[i].className).not.toMatch(/stringOn/);
+    });
+    [3, 4, 5].forEach((i) => {
+      expect(bars[i].className).toMatch(/stringOn/);
+    });
+  });
+
+  it("uses the boosted taper thicknesses (low E thickest)", () => {
+    const triadOptions = buildStringSetOptions(3);
+    const { container } = render(
+      <StringSetPicker options={triadOptions} value="all" onChange={() => {}} />,
+    );
+    const firstCard = container.querySelector('[role="radio"]') as HTMLElement;
+    const bars = firstCard.querySelectorAll<HTMLElement>("[data-string-index]");
+    const heights = Array.from(bars).map((b) => b.style.height);
+    expect(heights).toEqual([
+      "1.5px", "2.1px", "2.7px", "3.6px", "4.5px", "5.4px",
+    ]);
+  });
+});
