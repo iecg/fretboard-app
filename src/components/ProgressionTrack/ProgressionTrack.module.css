@@ -15,6 +15,13 @@
 .track {
   composes: faceplate from "../shared/shared.module.css";
 
+  /* The reference design renders the timeline as a flush band, not a
+     rounded card — drop the faceplate's radius, side borders, and shadow so
+     only the dark substrate and top/bottom hairlines remain. */
+  border-radius: 0;
+  border-inline: none;
+  box-shadow: none;
+
   /* Map track tokens → theme-adaptive faceplate tokens */
   --track-accent: var(--faceplate-accent, #4DE4FF);
   --track-accent-dim: rgb(77 228 255 / 0.55);
@@ -34,8 +41,8 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
-  padding: 0.55rem 0.7rem 0.5rem;
+  gap: 0.28rem;
+  padding: 0.34rem 0.7rem 0.32rem;
   color: var(--track-text-dim);
   font-family: var(--font-sans);
 }
@@ -59,20 +66,6 @@
   --track-bg-readout: #e3e8ed;
   --track-text-dim: rgb(15 23 42 / 0.7);
   --track-text-muted: rgb(15 23 42 / 0.42);
-}
-
-/* Digit readouts: remove text-shadow glows, use solid accent */
-:global([data-theme="modern-light"]) .digitBar {
-  text-shadow: none;
-}
-
-:global([data-theme="modern-light"]) .tempoValue {
-  text-shadow: none;
-}
-
-/* Scale primary text: dark instead of near-white */
-:global([data-theme="modern-light"]) .scalePrimary {
-  color: rgb(15 23 42 / 0.88);
 }
 
 /* Ruler: darker ticks and baseline for definition on light surface */
@@ -149,198 +142,6 @@
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
-/* Transport row — container for TransportBar + readouts */
-
-.transportRow {
-  display: flex;
-  align-items: stretch;
-  gap: 0.45rem;
-  min-width: 0;
-}
-
-/* ----------------------------------------------------------------------------
- * Readout boxes (Position, Tempo, Scale)
- * ------------------------------------------------------------------------- */
-
-.positionReadout,
-.contextBox {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.18rem;
-  padding: 0.3rem 0.6rem 0.32rem;
-  border: 1px solid var(--track-border);
-  border-radius: 7px;
-  background: var(--track-bg-readout);
-}
-
-.positionReadout {
-  /* Size to content (digits + label) and stay adjacent to the transport
-     cluster so the playback group reads as one continuous unit. */
-  flex: 0 0 auto;
-}
-
-.contextReadouts {
-  display: grid;
-  grid-template-columns: minmax(3.8rem, auto) minmax(6rem, auto);
-  gap: 0.35rem;
-  flex-shrink: 0;
-  /* Push the contextual readouts to the trailing edge of the row, leaving
-     the negative space between Position and Tempo (mimicking a hardware
-     faceplate where playback and context indicators sit on opposite
-     halves of the panel). */
-  margin-inline-start: auto;
-}
-
-.contextBox {
-  padding-inline: 0.55rem;
-}
-
-.readoutLabel {
-  color: var(--track-text-muted);
-  font-family: var(--font-mono);
-  font-size: 0.58rem;
-  font-weight: 500;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-}
-
-/* Position readout — bar / beat / subdivision hierarchy ------------------- */
-
-.positionValue {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.42rem;
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums slashed-zero;
-  line-height: 1;
-}
-
-.positionCurrent,
-.positionTotal {
-  display: inline-flex;
-  align-items: baseline;
-}
-
-.positionSeparator {
-  color: var(--track-text-muted);
-  font-size: 0.78rem;
-  font-weight: 400;
-  align-self: center;
-}
-
-.digits {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.04rem;
-}
-
-.digitBar {
-  color: var(--track-accent);
-  font-size: 1.3rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  text-shadow: 0 0 12px rgb(77 228 255 / 0.45);
-}
-
-.digitDot {
-  color: var(--track-accent-dim);
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin-inline: 0.02em;
-}
-
-.digitBeat {
-  color: var(--track-accent);
-  font-size: 0.95rem;
-  font-weight: 600;
-}
-
-.digitSub {
-  color: var(--track-accent-dim);
-  font-size: 0.72rem;
-  font-weight: 500;
-  padding-inline-start: 0.05em;
-}
-
-/* The total/denominator renders as a single uniform small readout rather
-   than reusing the bar / beat / subdivision size hierarchy. This matches
-   the reference faceplate where `/ 05.4.000` sits visually beneath the
-   bright current position digits. */
-.digits--muted {
-  font-size: 0.78rem;
-  font-weight: 500;
-  letter-spacing: 0;
-}
-
-.digits--muted .digitBar,
-.digits--muted .digitDot,
-.digits--muted .digitBeat,
-.digits--muted .digitSub {
-  color: var(--track-text-muted);
-  text-shadow: none;
-  font-size: inherit;
-  font-weight: inherit;
-  letter-spacing: inherit;
-  padding-inline-start: 0;
-}
-
-/* Tempo readout ------------------------------------------------------------ */
-
-.tempoValue {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.28rem;
-  color: var(--track-accent);
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums slashed-zero;
-  font-size: 1.18rem;
-  font-weight: 700;
-  line-height: 1;
-  text-shadow: 0 0 12px rgb(77 228 255 / 0.4);
-}
-
-.tempoUnit {
-  color: var(--track-text-muted);
-  font-family: var(--font-mono);
-  font-size: 0.58rem;
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  text-shadow: none;
-}
-
-/* Scale readout ------------------------------------------------------------ */
-
-.scaleValue {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.36rem;
-  min-width: 0;
-  line-height: 1.05;
-}
-
-.scalePrimary {
-  color: rgb(232 243 252 / 0.95);
-  font-family: var(--font-sans);
-  font-size: 0.93rem;
-  font-weight: 700;
-  letter-spacing: -0.005em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.scaleSecondary {
-  color: var(--track-text-dim);
-  font-family: var(--font-sans);
-  font-size: 0.74rem;
-  font-weight: 400;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 /* ----------------------------------------------------------------------------
  * Timeline — ruler + blocks share the same flex parent with zero gap so
  * positions are mathematically exact.
@@ -352,7 +153,7 @@
 
   display: flex;
   flex-direction: column;
-  gap: 0.18rem;
+  gap: 0.1rem;
   min-width: 0;
 }
 
@@ -361,10 +162,10 @@
   display: flex;
   align-items: stretch;
   gap: 0;
-  height: 1.05rem;
+  height: 0.82rem;
   color: var(--track-text-muted);
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-variant-numeric: tabular-nums;
 }
 
@@ -434,7 +235,7 @@
 
 .blocks {
   position: relative;
-  min-height: 2.5rem;
+  min-height: 1.95rem;
 }
 
 .blockSpacer {
@@ -499,13 +300,13 @@
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 0.42rem;
-  padding: 0.28rem 0.45rem 0.28rem 0.4rem;
-  /* Discrete rounded clip — each block is fully bordered and rounded
-     (DAW Shell Phase 13b). The 3px width gap (set inline in ProgressionBlock)
-     separates adjacent clips. */
+  gap: 0.34rem;
+  padding: 0.18rem 0.38rem 0.18rem 0.32rem;
+  /* Flat clip — a thin hairline border and a slight radius, not a raised
+     card. The 3px width gap (set inline in ProgressionBlock) separates
+     adjacent clips. */
   border: 1px solid var(--block-border);
-  border-radius: 7px;
+  border-radius: 4px;
   background: var(--block-bg);
   color: var(--block-fg);
   text-align: left;
@@ -540,9 +341,7 @@
   --block-badge-fg: var(--track-warm);
 
   border-color: rgb(255 154 77 / 0.55);
-  box-shadow:
-    inset 0 0 22px rgb(255 154 77 / 0.12),
-    0 0 12px rgb(255 154 77 / 0.15);
+  box-shadow: inset 0 0 12px rgb(255 154 77 / 0.08);
   z-index: 1;
 }
 
@@ -552,14 +351,14 @@
 
 .degreeBadge {
   flex: 0 0 auto;
-  min-width: 1.4rem;
-  height: 1.4rem;
+  min-width: 1.2rem;
+  height: 1.2rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding-inline: 0.3rem;
+  padding-inline: 0.28rem;
   border: 1px solid var(--block-border);
-  border-radius: 5px;
+  border-radius: 4px;
   background: rgb(255 255 255 / 0.025);
   color: var(--block-badge-fg);
   font-family: var(--font-mono);
@@ -588,7 +387,7 @@
   white-space: nowrap;
   color: var(--block-name-fg);
   font-family: var(--font-sans);
-  font-size: 0.88rem;
+  font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: -0.005em;
   line-height: 1.1;
@@ -627,39 +426,4 @@
   padding: 0.5rem 0.55rem 0.45rem;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .transportRow {
-  flex-wrap: wrap;
-  row-gap: 0.4rem;
-}
-
-:global(.app-container[data-layout-tier="mobile"]) .positionReadout {
-  flex: 1 1 100%;
-  min-width: 0;
-  margin-inline-end: 0;
-}
-
-:global(.app-container[data-layout-tier="mobile"]) .contextReadouts {
-  flex: 1 1 100%;
-  grid-template-columns: minmax(4rem, 0.7fr) minmax(7rem, 1.3fr);
-}
-
-:global(.app-container[data-layout-tier="mobile"]) .digitBar {
-  font-size: 1.1rem;
-}
-
-:global(.app-container[data-layout-tier="mobile"]) .digitBeat {
-  font-size: 0.88rem;
-}
-
-:global(.app-container[data-layout-tier="mobile"]) .digitSub {
-  font-size: 0.68rem;
-}
-
-:global(.app-container[data-layout-tier="mobile"]) .tempoValue {
-  font-size: 1.05rem;
-}
-
-:global(.app-container[data-layout-tier="mobile"]) .scalePrimary {
-  font-size: 0.88rem;
-}
 /* stylelint-enable selector-pseudo-class-no-unknown */

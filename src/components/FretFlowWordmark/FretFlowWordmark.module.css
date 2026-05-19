@@ -1,18 +1,19 @@
-/* FretFlowWordmark SVG sizing — adaptive height per layout tier */
+/* FretFlowWordmark SVG sizing — adaptive height per layout tier.
+   Sized down to the compact always-on DAW header density. */
 .fretflow-wordmark {
-  height: clamp(1.55rem, 3.1vw, 2.45rem);
+  height: clamp(1.1rem, 2vw, 1.5rem);
   width: auto;
   display: block;
 }
 
 :global(.app-container[data-layout-tier="mobile"]) .fretflow-wordmark {
-  height: clamp(1.1rem, 5.5vw, 1.5rem);
+  height: clamp(1rem, 4.8vw, 1.32rem);
 }
 
 :global(.app-container[data-layout-tier="desktop"]) .fretflow-wordmark {
-  height: clamp(1.22rem, 2.1vw, 1.72rem);
+  height: clamp(1rem, 1.6vw, 1.3rem);
 }
 
 :global(.app-container[data-layout-tier="tablet"]) .fretflow-wordmark {
-  height: clamp(1.35rem, 2.65vw, 2.05rem);
+  height: clamp(1.05rem, 1.9vw, 1.4rem);
 }

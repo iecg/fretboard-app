@@ -9,6 +9,9 @@ export interface AppHeaderProps {
    *  rendering. `brandTitle` is still used as an accessible label. */
   brandWordmark?: ReactNode;
   brandIcon?: ReactNode;
+  /** The DAW transport cluster, rendered between the brand and the utility
+   *  actions so the header is the single chrome row of the always-on model. */
+  transport?: ReactNode;
   actions?: ReactNode;
   className?: string;
 }
@@ -29,6 +32,7 @@ export function AppHeader({
   brandSubtitle,
   brandWordmark,
   brandIcon,
+  transport,
   actions,
   className,
 }: AppHeaderProps) {
@@ -41,31 +45,36 @@ export function AppHeader({
             {brandIcon}
           </span>
         )}
-        <div className={styles['app-header-brand-text']}>
-          {brandWordmark ? (
-            <span
-              className={styles['app-header-brand-wordmark']}
-              aria-label={brandTitle}
-              role="img"
-              data-testid="app-header-brand-wordmark"
-            >
-              {brandWordmark}
-            </span>
-          ) : (
-            <span className={styles['app-header-brand-title']} data-testid="app-header-brand-title">
-              <span className={styles['app-header-brand-title-primary']}>{titlePrimary}</span>
-              {titleSecondary && (
-                <span className={styles['app-header-brand-title-secondary']}>
-                  {titleSecondary}
-                </span>
-              )}
-            </span>
-          )}
-          {brandSubtitle && (
-            <span className={styles['app-header-brand-subtitle']} data-testid="app-header-brand-subtitle">{brandSubtitle}</span>
-          )}
-        </div>
+        {brandWordmark ? (
+          <span
+            className={styles['app-header-brand-wordmark']}
+            aria-label={brandTitle}
+            role="img"
+            data-testid="app-header-brand-wordmark"
+          >
+            {brandWordmark}
+          </span>
+        ) : (
+          <span className={styles['app-header-brand-title']} data-testid="app-header-brand-title">
+            <span className={styles['app-header-brand-title-primary']}>{titlePrimary}</span>
+            {titleSecondary && (
+              <span className={styles['app-header-brand-title-secondary']}>
+                {titleSecondary}
+              </span>
+            )}
+          </span>
+        )}
+        {brandSubtitle && (
+          <span className={styles['app-header-brand-pill']} data-testid="app-header-brand-subtitle">
+            {brandSubtitle}
+          </span>
+        )}
       </div>
+      {transport && (
+        <div className={styles['app-header-transport']} data-testid="app-header-transport">
+          {transport}
+        </div>
+      )}
       {actions && (
         <div className={styles['app-header-actions']} data-testid="app-header-actions">
           {actions}

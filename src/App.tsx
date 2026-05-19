@@ -3,7 +3,7 @@ import { useSetAtom, useAtomValue, useAtom, createStore, Provider } from "jotai"
 import { AnimatePresence, motion } from "motion/react";
 import clsx from "clsx";
 import { Fretboard } from "./components/Fretboard/Fretboard";
-import { HelpCircle, Settings2, Volume2, VolumeX } from "lucide-react";
+import { HelpCircle, Moon, Settings2, Sun, Volume2, VolumeX } from "lucide-react";
 import { synth } from "./core/audio";
 import {
   isMutedAtom,
@@ -15,12 +15,14 @@ import {
   scaleNameAtom,
   chordOverlayHiddenAtom,
   audioErrorAtom,
+  themeAtom,
 } from "./store/atoms";
 import audioErrorStyles from "./components/AudioErrorBanner/AudioErrorBanner.module.css";
 import useLayoutMode from "./hooks/useLayoutMode";
 import { useResolvedTheme } from "./hooks/useResolvedTheme";
 import { useTranslation } from "./hooks/useTranslation";
 import { AppHeader } from "./components/AppHeader/AppHeader";
+import { HeaderTransportCluster } from "./components/HeaderTransportCluster/HeaderTransportCluster";
 import { BrandMark } from "./components/BrandMark/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark";
 import { Inspector } from "./components/Inspector/Inspector";
@@ -58,6 +60,7 @@ function AppContent() {
   const scaleName = useAtomValue(scaleNameAtom);
   const setChordOverlayHidden = useSetAtom(chordOverlayHiddenAtom);
   const [audioError, setAudioError] = useAtom(audioErrorAtom);
+  const setTheme = useSetAtom(themeAtom);
 
   const [showHelp, setShowHelp] = useState(false);
   const helpTriggerRef = useRef<HTMLButtonElement>(null);
@@ -158,11 +161,25 @@ function AppContent() {
       header={
         <AppHeader
           brandTitle="FretFlow"
-          brandSubtitle="Fretboard Studio"
+          brandSubtitle="Studio"
           brandWordmark={<FretFlowWordmark />}
           brandIcon={<BrandMark />}
+          transport={<HeaderTransportCluster />}
           actions={
             <>
+              <button
+                type="button"
+                onClick={() => setTheme(theme === "modern-dark" ? "light" : "dark")}
+                className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--lg"])}
+                title={theme === "modern-dark" ? t("common.themeToLight") : t("common.themeToDark")}
+                aria-label={theme === "modern-dark" ? t("common.themeToLight") : t("common.themeToDark")}
+              >
+                {theme === "modern-dark" ? (
+                  <Sun className="icon" />
+                ) : (
+                  <Moon className="icon" />
+                )}
+              </button>
               <SettingsTooltip>
                 <button
                   type="button"

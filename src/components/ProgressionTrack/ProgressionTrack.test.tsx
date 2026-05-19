@@ -6,11 +6,7 @@ import {
   activeProgressionStepIndexAtom,
   beatsPerBarAtom,
   progressionEnabledAtom,
-  progressionLoopEnabledAtom,
-  progressionPlayingAtom,
   progressionStepsAtom,
-  progressionTempoBpmAtom,
-  setProgressionPlayingAtom,
 } from "../../store/atoms";
 import { ProgressionTrack } from "./ProgressionTrack";
 
@@ -34,30 +30,21 @@ const twoBarLeadingProgression = [
 ] as const;
 
 describe("ProgressionTrack", () => {
-  it("renders transport, status, position, tempo, scale, ruler, and chord blocks", () => {
-    renderWithAtoms(<ProgressionTrack />, [
+  it("renders the timeline group, ruler, and chord blocks", () => {
+    const { container } = renderWithAtoms(<ProgressionTrack />, [
       [progressionEnabledAtom, true],
       [progressionStepsAtom, fourStepProgression],
-      [progressionTempoBpmAtom, 90],
       [beatsPerBarAtom, 4],
     ]);
 
     expect(screen.getByRole("group", { name: "Progression track" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Previous chord" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Play progression" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Next chord" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Loop progression" })).toBeTruthy();
-    expect(screen.getByText("Play")).toBeTruthy();
-    expect(screen.getByText("Loop")).toBeTruthy();
-    expect(screen.getByText("Position")).toBeTruthy();
-    expect(screen.getByLabelText("Position 01.1.000 of 05.4.000")).toBeTruthy();
-    expect(screen.getByText("90")).toBeTruthy();
-    expect(screen.getByText("BPM")).toBeTruthy();
-    // Scale label is split into primary + secondary (in parentheses).
-    expect(screen.getByText("C Major")).toBeTruthy();
-    expect(screen.getByText("Ionian")).toBeTruthy();
+    expect(container.querySelector("[aria-label='Progression timeline']")).toBeTruthy();
     expect(screen.getByRole("button", { name: /Step 1, I, C Major Triad, 1 bar, active/i })).toBeTruthy();
     expect(screen.getByRole("button", { name: /Step 3, vi, A Minor Triad, 2 bars/i })).toBeTruthy();
+    // Transport, status lights, and the position/tempo/scale readouts moved
+    // to the header transport cluster (Always-On DAW Phase A).
+    expect(screen.queryByRole("button", { name: "Play progression" })).toBeNull();
+    expect(screen.queryByText("Position")).toBeNull();
   });
 
   it("renders short chord labels (e.g. C, G7, Am, F) in the visible block text", () => {
@@ -73,17 +60,6 @@ describe("ProgressionTrack", () => {
     expect(screen.getByText("G7", { selector: "span" })).toBeTruthy();
     expect(screen.getByText("Am", { selector: "span" })).toBeTruthy();
     expect(screen.getByText("F", { selector: "span" })).toBeTruthy();
-  });
-
-  it("renders tempo readout and editable tempo controls in the TransportBar", () => {
-    renderWithAtoms(<ProgressionTrack />, [
-      [progressionEnabledAtom, true],
-      [progressionTempoBpmAtom, 112],
-    ]);
-
-    expect(screen.getByText("112")).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Increase Tempo/ })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Decrease Tempo/ })).toBeTruthy();
   });
 
   it("clicking a chord block selects that progression step", () => {
@@ -159,14 +135,6 @@ describe("ProgressionTrack", () => {
     expect(screen.getByText("2 bars", { selector: "span" })).toBeTruthy();
   });
 
-  it("disables playback when progression playback is blocked", () => {
-    renderWithAtoms(<ProgressionTrack />, [
-      [progressionEnabledAtom, false],
-    ]);
-
-    expect(screen.getByRole("button", { name: "Play progression" })).toBeDisabled();
-  });
-
   it("no longer renders the rehosted backing-track controls", () => {
     renderWithAtoms(<ProgressionTrack />, [
       [progressionEnabledAtom, true],
@@ -183,29 +151,17 @@ describe("ProgressionTrack", () => {
     expect(screen.queryByLabelText("Swing amount")).toBeNull();
   });
 
-  it("renders the extracted TransportBar with the timeline intact", () => {
+  it("no longer hosts the transport bar — only the timeline", () => {
     const { container } = renderWithAtoms(<ProgressionTrack />, [
       [progressionEnabledAtom, true],
       [progressionStepsAtom, fourStepProgression],
       [beatsPerBarAtom, 4],
     ]);
 
-    expect(container.querySelector("[data-testid='transport-bar']")).toBeTruthy();
-    // Timeline + position readout stay in ProgressionTrack, not TransportBar.
+    // TransportBar + position readout moved to the header transport cluster
+    // (Always-On DAW Phase A); only the timeline stays in ProgressionTrack.
+    expect(container.querySelector("[data-testid='transport-bar']")).toBeNull();
     expect(container.querySelector("[aria-label='Progression timeline']")).toBeTruthy();
-    expect(screen.getByText("Position")).toBeTruthy();
-  });
-
-  it("play and loop controls reflect active state", () => {
-    const store = makeAtomStore([
-      [progressionEnabledAtom, true],
-      [progressionLoopEnabledAtom, true],
-    ]);
-    store.set(setProgressionPlayingAtom, true);
-    renderWithStore(<ProgressionTrack />, store);
-
-    expect(screen.getByRole("button", { name: "Pause progression" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Loop progression" }).getAttribute("aria-pressed")).toBe("true");
-    expect(store.get(progressionPlayingAtom)).toBe(true);
+    expect(screen.queryByText("Position")).toBeNull();
   });
 });

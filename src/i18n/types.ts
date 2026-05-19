@@ -75,6 +75,7 @@ export interface Dictionary {
     groupBackingTrack: string;
     progressionMode: string;
     meterBeats: string;
+    meterTempo: string;
     meterLength: string;
     meterLoop: string;
     meterPreset: string;
@@ -121,6 +122,8 @@ export interface Dictionary {
     unmuteTitle: string;
     help: string;
     helpTitle: string;
+    themeToLight: string;
+    themeToDark: string;
     dismiss: string;
     rotateMessage: string;
   };

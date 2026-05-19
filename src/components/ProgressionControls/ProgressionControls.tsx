@@ -5,6 +5,8 @@ import {
   BEATS_PER_BAR_OPTIONS,
   MIN_PROGRESSION_STEP_DURATION_VALUE,
   MAX_PROGRESSION_STEP_DURATION_VALUE,
+  MIN_PROGRESSION_TEMPO_BPM,
+  MAX_PROGRESSION_TEMPO_BPM,
   formatProgressionDurationLabel,
   getAvailableProgressionPresets,
 } from "../../progressions/progressionDomain";
@@ -57,6 +59,8 @@ export function ProgressionControls() {
     updateProgressionStepQuality,
     beatsPerBar,
     setBeatsPerBar,
+    progressionTempoBpm,
+    setProgressionTempoBpm,
     currentProgressionPresetId,
     totalProgressionBars,
   } = useProgressionState();
@@ -120,7 +124,7 @@ export function ProgressionControls() {
   return (
     <PropGrid columns={6}>
       {/* ── METER ────────────────────────────────────────────────────────── */}
-      {/* One uniform 6-column row: Mode · Beats/Bar · Length · Preset. */}
+      {/* One uniform 6-column row: Mode · Beats/Bar · Tempo · Length · Preset. */}
       <GroupHeader>{t("inspector.groupMeter")}</GroupHeader>
       <Prop label={t("inspector.progressionMode")} span={1}>
         <Switch
@@ -147,10 +151,22 @@ export function ProgressionControls() {
           }}
         />
       </Prop>
+      <Prop label={t("inspector.meterTempo")} span={1}>
+        <StepperControl
+          label="Tempo"
+          hideLabel
+          value={progressionTempoBpm}
+          min={MIN_PROGRESSION_TEMPO_BPM}
+          max={MAX_PROGRESSION_TEMPO_BPM}
+          step={5}
+          formatValue={(bpm) => `${bpm} BPM`}
+          onChange={setProgressionTempoBpm}
+        />
+      </Prop>
       <Prop label={t("inspector.meterLength")} span={1}>
         <span className={styles["length-readout"]}>{lengthLabel}</span>
       </Prop>
-      <Prop label={t("inspector.meterPreset")} span={3}>
+      <Prop label={t("inspector.meterPreset")} span={2}>
         <LabeledSelect
           label="Preset"
           hideLabel
