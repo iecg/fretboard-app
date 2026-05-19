@@ -18,7 +18,7 @@ export interface StringSetOption {
   strings: readonly number[];
 }
 
-const ALL_STRINGS: readonly number[] = [0, 1, 2, 3, 4, 5];
+export const ALL_STRINGS: readonly number[] = [0, 1, 2, 3, 4, 5];
 
 const ALL_OPTION: StringSetOption = {
   id: "all",

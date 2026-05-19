@@ -48,7 +48,7 @@ import {
   isChordOverlayPatternDisabled,
 } from "./fingeringAtoms";
 import { currentTuningAtom } from "./layoutAtoms";
-import { buildStringSetOptions } from "./voicingStringSets";
+import { buildStringSetOptions, ALL_STRINGS } from "./voicingStringSets";
 import { formatChordShortLabel } from "../progressions/progressionDomain";
 
 const chordFretSpreadStorage = constrainedNumberStorage({
@@ -497,7 +497,7 @@ export const effectiveStringSetAtom = atom((get): readonly number[] => {
   const options = get(stringSetOptionsAtom);
   const stored = get(voicingStringSetAtom);
   const match = options.find((o) => o.id === stored);
-  return match ? match.strings : [0, 1, 2, 3, 4, 5];
+  return match ? match.strings : ALL_STRINGS;
 });
 
 /**
@@ -544,7 +544,7 @@ export const voicingMatchesAtom = atom((get) => {
       : available.includes(inversion)
         ? inversion
         : "root",
-    stringSet: isCaged ? [0, 1, 2, 3, 4, 5] : get(effectiveStringSetAtom),
+    stringSet: isCaged ? ALL_STRINGS : get(effectiveStringSetAtom),
   });
 });
 

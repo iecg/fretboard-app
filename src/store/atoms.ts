@@ -77,7 +77,7 @@ export {
   effectiveStringSetAtom,
 } from "./chordOverlayAtoms";
 
-export { buildStringSetOptions } from "./voicingStringSets";
+export { buildStringSetOptions, ALL_STRINGS } from "./voicingStringSets";
 export type { StringSetOption } from "./voicingStringSets";
 
 export {
