@@ -177,14 +177,18 @@ describe("generateVoicings — drop2", () => {
     }
   });
 
-  it("drop2 on a plain triad falls back to a 3-voice voicing", () => {
+  it("drop2 on a plain triad produces spread voicings (pitch span > 12)", () => {
     const voicings = generateVoicings({
       tuning: STANDARD_TUNING, maxFret: 12,
       chordRoot: "C", chordType: "Major Triad",
       voicingType: "drop2", inversion: "root", stringSet: [0, 1, 2, 3, 4, 5],
     });
     expect(voicings.length).toBeGreaterThan(0);
-    for (const v of voicings) expect(v.notes.length).toBe(3);
+    for (const v of voicings) {
+      const midis = v.notes.map((n) => n.midi);
+      const span = Math.max(...midis) - Math.min(...midis);
+      expect(span).toBeGreaterThan(12);
+    }
   });
 
   it("3rd-inversion drop2 voicings have the major 7th as the lowest note", () => {
@@ -198,6 +202,51 @@ describe("generateVoicings — drop2", () => {
       const lowest = v.notes.reduce((a, b) => (a.midi <= b.midi ? a : b));
       expect(lowest.midi % 12).toBe(11);
     }
+  });
+});
+
+describe("generateVoicings — triad vs drop2 on a triad chord", () => {
+  const base = { tuning: STANDARD_TUNING, maxFret: 12 } as const;
+  const allStrings: readonly number[] = [0, 1, 2, 3, 4, 5];
+
+  it("triad on a triad chord stays closed (pitch span ≤ 12)", () => {
+    const voicings = generateVoicings({
+      ...base, chordRoot: "C", chordType: "Major Triad",
+      voicingType: "triad", inversion: "root", stringSet: allStrings,
+    });
+    expect(voicings.length).toBeGreaterThan(0);
+    for (const v of voicings) {
+      const midis = v.notes.map((n) => n.midi);
+      const span = Math.max(...midis) - Math.min(...midis);
+      expect(span).toBeLessThanOrEqual(12);
+    }
+  });
+
+  it("drop2 on a triad chord is always spread (pitch span > 12)", () => {
+    const voicings = generateVoicings({
+      ...base, chordRoot: "C", chordType: "Major Triad",
+      voicingType: "drop2", inversion: "root", stringSet: allStrings,
+    });
+    expect(voicings.length).toBeGreaterThan(0);
+    for (const v of voicings) {
+      const midis = v.notes.map((n) => n.midi);
+      const span = Math.max(...midis) - Math.min(...midis);
+      expect(span).toBeGreaterThan(12);
+    }
+  });
+
+  it("triad and drop2 on a triad chord are not equal", () => {
+    const triad = generateVoicings({
+      ...base, chordRoot: "C", chordType: "Major Triad",
+      voicingType: "triad", inversion: "root", stringSet: allStrings,
+    });
+    const drop2 = generateVoicings({
+      ...base, chordRoot: "C", chordType: "Major Triad",
+      voicingType: "drop2", inversion: "root", stringSet: allStrings,
+    });
+    const triadKeys = new Set(triad.map((v) => v.positionKeys.join("|")));
+    const drop2Keys = new Set(drop2.map((v) => v.positionKeys.join("|")));
+    for (const k of drop2Keys) expect(triadKeys.has(k)).toBe(false);
   });
 });
 

@@ -3,6 +3,13 @@ import type { StringSetOption } from "../../store/voicingStringSets";
 import { useTranslation } from "../../hooks/useTranslation";
 import styles from "./StringSetPicker.module.css";
 
+/**
+ * Per-string bar thickness in pixels, indexed by string index
+ * (0 = high E … 5 = low E). The fretboard's `--string-taper-*` proportional
+ * curve, scaled up so the difference is legible in a small diagram.
+ */
+const STRING_BAR_THICKNESS_PX: readonly number[] = [1.5, 2.1, 2.7, 3.6, 4.5, 5.4];
+
 interface StringSetPickerProps {
   /** The chord-appropriate option list (from `buildStringSetOptions`). */
   options: readonly StringSetOption[];
@@ -11,10 +18,10 @@ interface StringSetPickerProps {
   onChange: (value: string) => void;
 }
 
-/** Six-string on/off mask for a diagram, index 0 = high E … 5 = low E. */
-function diagramMask(strings: readonly number[]): boolean[] {
+/** Set lookup for the active string indices on a card. */
+function isStringActive(strings: readonly number[]): (i: number) => boolean {
   const set = new Set(strings);
-  return [0, 1, 2, 3, 4, 5].map((i) => set.has(i));
+  return (i) => set.has(i);
 }
 
 /**
@@ -34,29 +41,42 @@ export function StringSetPicker({ options, value, onChange }: StringSetPickerPro
       aria-label={t("inspector.voicingStringSet")}
     >
       {options.map((option) => {
-        const active = value === option.id;
+        const selected = value === option.id;
         const label = t(option.labelKey);
         const sub = subText(option, t);
-        const mask = diagramMask(option.strings);
+        const active = isStringActive(option.strings);
         return (
           <button
             key={option.id}
             type="button"
             role="radio"
-            aria-checked={active}
+            aria-checked={selected}
             aria-label={`${label} — ${sub}`}
-            className={clsx(styles.card, active && styles.cardActive)}
-            onClick={() => onChange(option.id)}
+            disabled={option.disabled}
+            className={clsx(
+              styles.card,
+              selected && styles.cardActive,
+              option.disabled && styles.cardDisabled,
+            )}
+            onClick={() => {
+              if (option.disabled) return;
+              onChange(option.id);
+            }}
           >
             <span className={styles.diagram} aria-hidden="true">
-              {/* Reverse so low-E (thick) renders at the bottom, high-E (thin) at the top. */}
-              {[...mask].reverse().map((on, i) => (
-                <span
-                  key={i}
-                  className={clsx(styles.string, on && styles.stringOn)}
-                  style={{ height: `${1 + i * 0.4}px` }}
-                />
-              ))}
+              {/* Render bars in string-index order 0 (high E, thinnest) → 5
+                  (low E, thickest). CSS lays them out top-to-bottom. */}
+              {STRING_BAR_THICKNESS_PX.map((thicknessPx, stringIndex) => {
+                const on = active(stringIndex);
+                return (
+                  <span
+                    key={stringIndex}
+                    data-string-index={stringIndex}
+                    className={clsx(styles.string, on && styles.stringOn)}
+                    style={{ height: `${thicknessPx}px` }}
+                  />
+                );
+              })}
             </span>
             <span className={styles.text}>
               <span className={styles.label}>{label}</span>

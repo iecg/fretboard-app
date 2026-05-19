@@ -18,6 +18,10 @@ import {
   voicingConnectorsAtom,
   voicingTypeAtom,
   voicingStringSetAtom,
+  voicingInversionAtom,
+  validVoicingCombosAtom,
+  controlRecencyAtom,
+  noteControlChangeAtom,
 } from "../../store/atoms";
 import { ChordOverlayControls } from "./ChordOverlayControls";
 
@@ -684,7 +688,10 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(within(radiogroup).getAllByRole("radio")).toHaveLength(4);
     });
 
-    it("normalizer: switching from triad to 4-tone chord resets a stale '4·5·6' string set to 'all'", async () => {
+    it("normalizer: switching from triad to 4-tone chord removes the stale '4·5·6' string set option", async () => {
+      // The 3-string "4·5·6" window exists for a 3-tone chord but not for a 4-tone chord.
+      // After the chord change, stringSetOptionsAtom rebuilds with 4-string windows only —
+      // "4·5·6" disappears from the option list entirely. The 4-tone "Bass" window is "3·4·5·6".
       const store = makeAtomStore([
         ...TRIAD_MANUAL_SEEDS,
         [voicingTypeAtom, "triad"],
@@ -692,19 +699,196 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       ]);
       renderWithStore(<ChordOverlayControls />, store);
 
-      // Initially: Bass card ("4·5·6") should be checked for a 3-tone chord
+      // Initially: Bass card ("4·5·6") present and checked for a 3-tone chord
       const radiogroup = screen.getByRole("radiogroup", { name: /String Set/i });
-      const bassCard = within(radiogroup).getByRole("radio", { name: /Bass/i });
-      expect(bassCard).toHaveAttribute("aria-checked", "true");
+      expect(within(radiogroup).getByRole("radio", { name: /Bass.*4·5·6/i })).toHaveAttribute("aria-checked", "true");
 
       // Switch to a 4-tone chord — "4·5·6" is no longer a valid window
       await act(async () => {
         store.set(chordQualityOverrideAtom, "Major 7th");
       });
 
-      // Normalizer should snap the selection back to "all"
-      const allCard = await screen.findByRole("radio", { name: /All/i });
-      expect(allCard).toHaveAttribute("aria-checked", "true");
+      // The 4-tone chord renders 4-string windows; "4·5·6" disappears.
+      // A new Bass window "3·4·5·6" appears — confirm the 3-string window is gone.
+      const radiogroupAfter = await screen.findByRole("radiogroup", { name: /String Set/i });
+      // 4-tone chord: 3 windows + All = 4 cards total
+      expect(within(radiogroupAfter).getAllByRole("radio")).toHaveLength(4);
+      // The old 3-string "4·5·6" id is no longer present (the 4-tone Bass window is "3·4·5·6")
+      expect(within(radiogroupAfter).queryByRole("radio", { name: /— 4·5·6/ })).not.toBeInTheDocument();
+    });
+  });
+
+  describe("19. disabled state + unified heal coupling", () => {
+    const TRIAD_SEEDS = [
+      [scaleNameAtom, "Major"],
+      [rootNoteAtom, "C"],
+      [chordOverlayModeAtom, "manual"],
+      [chordQualityOverrideAtom, "Major Triad"],
+      [chordRootOverrideAtom, "C"],
+      [fingeringPatternAtom, "caged"],
+      [progressionStepsAtom, []],
+      [voicingTypeAtom, "triad"],
+    ] as const;
+
+    it("disabled options: '3rd' inversion button disabled for triad (not in validCombos.enabledInversions)", () => {
+      // A triad has no 3rd inversion → validCombos.enabledInversions must not contain it
+      renderWithAtoms(<ChordOverlayControls />, [...TRIAD_SEEDS]);
+      const inversionGroup = screen.getByRole("group", { name: "Voicing inversion" });
+      expect(within(inversionGroup).getByRole("button", { name: "3rd" })).toBeDisabled();
+    });
+
+    it("heal: after chord change to 4-tone chord, active triple is valid in validVoicingCombosAtom.triples", async () => {
+      // Seed: drop2 + 1st inversion + a 3-string window stringSet — valid configuration
+      // for a 3-tone chord won't be valid for a 4-tone chord because the string-set ids
+      // change (3-string → 4-string windows). Spec §5c point 2: on chord change, type is
+      // pinned and inversion + string set heal.
+      const store = makeAtomStore([
+        ...TRIAD_SEEDS,
+        [voicingTypeAtom, "drop2"],
+        [voicingInversionAtom, "1st"],
+        [voicingStringSetAtom, "4·5·6"],
+      ]);
+      renderWithStore(<ChordOverlayControls />, store);
+
+      // Switch to a 4-tone chord — "4·5·6" is no longer a valid window id
+      await act(async () => {
+        store.set(chordQualityOverrideAtom, "Major 7th");
+      });
+
+      // Read the final triple
+      const finalType = store.get(voicingTypeAtom);
+      const finalInversion = store.get(voicingInversionAtom);
+      const finalStringSet = store.get(voicingStringSetAtom);
+      const validCombos = store.get(validVoicingCombosAtom);
+
+      // The final triple must be valid (chord-change pinned type=drop2; heal snapped stringSet)
+      const isValid = validCombos.triples.some(
+        (t) =>
+          t.type === finalType &&
+          t.inversion === finalInversion &&
+          t.stringSet === finalStringSet,
+      );
+      expect(isValid).toBe(true);
+    });
+
+    it("user-driven heal: picking an incompatible inversion heals the other two to a valid triple", async () => {
+      // Spec §8: a user picks a control value that is globally enabled but yields zero
+      // voicings combined with the current other two. The heal pins the just-changed
+      // control and snaps the others. Here we set up `drop2 + all` on Major 7th, then
+      // pick an inversion that — combined with `(drop2, all)` — yields a valid triple,
+      // OR if the user picked one that's NOT valid for that combination, the heal moves
+      // the other two. We choose the situation dynamically to find a guaranteed bad combo.
+      const store = makeAtomStore([
+        [scaleNameAtom, "Major"],
+        [rootNoteAtom, "C"],
+        [chordOverlayModeAtom, "manual"],
+        [chordQualityOverrideAtom, "Major 7th"],
+        [chordRootOverrideAtom, "C"],
+        [fingeringPatternAtom, "caged"],
+        [progressionStepsAtom, []],
+        [voicingTypeAtom, "drop2"],
+        [voicingInversionAtom, "root"],
+        [voicingStringSetAtom, "all"],
+      ]);
+      renderWithStore(<ChordOverlayControls />, store);
+
+      const combos = store.get(validVoicingCombosAtom);
+      // Find an inversion that's globally enabled but invalid with (drop2, all).
+      // For every enabled inversion, check if any triple has (drop2, inv, all).
+      const enabledInversions = [...combos.enabledInversions];
+      const badInversion = enabledInversions.find((inv) =>
+        !combos.triples.some(
+          (t) => t.type === "drop2" && t.stringSet === "all" && t.inversion === inv,
+        ),
+      );
+
+      if (badInversion) {
+        // Drive the click via the recency-recording onChange path.
+        await act(async () => {
+          store.set(noteControlChangeAtom, "inversion");
+          store.set(voicingInversionAtom, badInversion);
+        });
+
+        const finalType = store.get(voicingTypeAtom);
+        const finalInversion = store.get(voicingInversionAtom);
+        const finalStringSet = store.get(voicingStringSetAtom);
+        const validCombos = store.get(validVoicingCombosAtom);
+        const isValid = validCombos.triples.some(
+          (t) =>
+            t.type === finalType &&
+            t.inversion === finalInversion &&
+            t.stringSet === finalStringSet,
+        );
+        expect(isValid).toBe(true);
+        // The inversion the user picked should be preserved (pinned).
+        expect(finalInversion).toBe(badInversion);
+      } else {
+        // If no such inversion exists for Major 7th (all enabled inversions are valid
+        // with drop2+all), the heal path is implicitly covered by the chord-change test.
+        // Assert the invariant holds: every enabled inversion forms a valid triple with
+        // (drop2, all) — meaning no heal would be needed for an inversion click here.
+        for (const inv of enabledInversions) {
+          expect(
+            combos.triples.some(
+              (t) => t.type === "drop2" && t.stringSet === "all" && t.inversion === inv,
+            ),
+          ).toBe(true);
+        }
+      }
+    });
+
+    it("toggling caged → triad heals the persisted inversion/string-set values", async () => {
+      // Seed caged with persisted inversion/stringSet values that would be invalid for
+      // the active chord under triad. Switching voicingType to triad re-engages the heal.
+      const store = makeAtomStore([
+        [scaleNameAtom, "Major"],
+        [rootNoteAtom, "C"],
+        [chordOverlayModeAtom, "manual"],
+        [chordQualityOverrideAtom, "Major Triad"],
+        [chordRootOverrideAtom, "C"],
+        [fingeringPatternAtom, "caged"],
+        [progressionStepsAtom, []],
+        [voicingTypeAtom, "caged"],
+        // "3rd" inversion isn't available for a triad; "1·2·3·4" is a 4-string window id
+        // not present in a 3-tone chord's option list — both are stale/invalid for triad.
+        [voicingInversionAtom, "3rd"],
+        [voicingStringSetAtom, "1·2·3·4"],
+      ]);
+      renderWithStore(<ChordOverlayControls />, store);
+
+      // Switch voicing type from caged to triad — the heal effect now engages.
+      await act(async () => {
+        store.set(noteControlChangeAtom, "type");
+        store.set(voicingTypeAtom, "triad");
+      });
+
+      const finalType = store.get(voicingTypeAtom);
+      const finalInversion = store.get(voicingInversionAtom);
+      const finalStringSet = store.get(voicingStringSetAtom);
+      const validCombos = store.get(validVoicingCombosAtom);
+      const isValid = validCombos.triples.some(
+        (t) =>
+          t.type === finalType &&
+          t.inversion === finalInversion &&
+          t.stringSet === finalStringSet,
+      );
+      expect(isValid).toBe(true);
+      expect(finalType).toBe("triad");
+    });
+
+    it("recency: clicking an inversion option moves 'inversion' to front of controlRecencyAtom", async () => {
+      const store = makeAtomStore([...TRIAD_SEEDS]);
+      renderWithStore(<ChordOverlayControls />, store);
+
+      // Default recency order
+      expect(store.get(controlRecencyAtom)).toEqual(["type", "stringSet", "inversion"]);
+
+      // Click the "1st" inversion button
+      const inversionGroup = screen.getByRole("group", { name: "Voicing inversion" });
+      await userEvent.click(within(inversionGroup).getByRole("button", { name: "1st" }));
+
+      // "inversion" should now be at the front
+      expect(store.get(controlRecencyAtom)[0]).toBe("inversion");
     });
   });
 
