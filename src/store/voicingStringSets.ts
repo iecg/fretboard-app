@@ -16,6 +16,9 @@ export interface StringSetOption {
   labelKey: string;
   /** Allowed string indices, ascending (0 = high E … 5 = low E). */
   strings: readonly number[];
+  /** Set by consumers (not by `buildStringSetOptions`) to indicate the
+   *  option appears in no valid triple for the active chord. */
+  disabled?: boolean;
 }
 
 export const ALL_STRINGS: readonly number[] = [0, 1, 2, 3, 4, 5];

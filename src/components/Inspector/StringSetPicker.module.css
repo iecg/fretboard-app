@@ -39,6 +39,13 @@
   box-shadow: var(--dc-glow-focus);
 }
 
+.card:disabled,
+.cardDisabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .diagram {
   display: flex;
   flex-direction: column;

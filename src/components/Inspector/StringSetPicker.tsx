@@ -52,8 +52,16 @@ export function StringSetPicker({ options, value, onChange }: StringSetPickerPro
             role="radio"
             aria-checked={selected}
             aria-label={`${label} — ${sub}`}
-            className={clsx(styles.card, selected && styles.cardActive)}
-            onClick={() => onChange(option.id)}
+            disabled={option.disabled}
+            className={clsx(
+              styles.card,
+              selected && styles.cardActive,
+              option.disabled && styles.cardDisabled,
+            )}
+            onClick={() => {
+              if (option.disabled) return;
+              onChange(option.id);
+            }}
           >
             <span className={styles.diagram} aria-hidden="true">
               {/* Render bars in string-index order 0 (high E, thinnest) → 5

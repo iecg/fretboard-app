@@ -18,6 +18,9 @@ import {
   voicingConnectorsAtom,
   voicingTypeAtom,
   voicingStringSetAtom,
+  voicingInversionAtom,
+  validVoicingCombosAtom,
+  controlRecencyAtom,
 } from "../../store/atoms";
 import { ChordOverlayControls } from "./ChordOverlayControls";
 
@@ -684,7 +687,10 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(within(radiogroup).getAllByRole("radio")).toHaveLength(4);
     });
 
-    it("normalizer: switching from triad to 4-tone chord resets a stale '4·5·6' string set to 'all'", async () => {
+    it("normalizer: switching from triad to 4-tone chord removes the stale '4·5·6' string set option", async () => {
+      // The 3-string "4·5·6" window exists for a 3-tone chord but not for a 4-tone chord.
+      // After the chord change, stringSetOptionsAtom rebuilds with 4-string windows only —
+      // "4·5·6" disappears from the option list entirely. The 4-tone "Bass" window is "3·4·5·6".
       const store = makeAtomStore([
         ...TRIAD_MANUAL_SEEDS,
         [voicingTypeAtom, "triad"],
@@ -692,19 +698,92 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       ]);
       renderWithStore(<ChordOverlayControls />, store);
 
-      // Initially: Bass card ("4·5·6") should be checked for a 3-tone chord
+      // Initially: Bass card ("4·5·6") present and checked for a 3-tone chord
       const radiogroup = screen.getByRole("radiogroup", { name: /String Set/i });
-      const bassCard = within(radiogroup).getByRole("radio", { name: /Bass/i });
-      expect(bassCard).toHaveAttribute("aria-checked", "true");
+      expect(within(radiogroup).getByRole("radio", { name: /Bass.*4·5·6/i })).toHaveAttribute("aria-checked", "true");
 
       // Switch to a 4-tone chord — "4·5·6" is no longer a valid window
       await act(async () => {
         store.set(chordQualityOverrideAtom, "Major 7th");
       });
 
-      // Normalizer should snap the selection back to "all"
-      const allCard = await screen.findByRole("radio", { name: /All/i });
-      expect(allCard).toHaveAttribute("aria-checked", "true");
+      // The 4-tone chord renders 4-string windows; "4·5·6" disappears.
+      // A new Bass window "3·4·5·6" appears — confirm the 3-string window is gone.
+      const radiogroupAfter = await screen.findByRole("radiogroup", { name: /String Set/i });
+      // 4-tone chord: 3 windows + All = 4 cards total
+      expect(within(radiogroupAfter).getAllByRole("radio")).toHaveLength(4);
+      // The old 3-string "4·5·6" id is no longer present (the 4-tone Bass window is "3·4·5·6")
+      expect(within(radiogroupAfter).queryByRole("radio", { name: /— 4·5·6/ })).not.toBeInTheDocument();
+    });
+  });
+
+  describe("19. disabled state + unified heal coupling", () => {
+    const TRIAD_SEEDS = [
+      [scaleNameAtom, "Major"],
+      [rootNoteAtom, "C"],
+      [chordOverlayModeAtom, "manual"],
+      [chordQualityOverrideAtom, "Major Triad"],
+      [chordRootOverrideAtom, "C"],
+      [fingeringPatternAtom, "caged"],
+      [progressionStepsAtom, []],
+      [voicingTypeAtom, "triad"],
+    ] as const;
+
+    it("disabled options: '3rd' inversion button disabled for triad (not in validCombos.enabledInversions)", () => {
+      // A triad has no 3rd inversion → validCombos.enabledInversions must not contain it
+      renderWithAtoms(<ChordOverlayControls />, [...TRIAD_SEEDS]);
+      const inversionGroup = screen.getByRole("group", { name: "Voicing inversion" });
+      expect(within(inversionGroup).getByRole("button", { name: "3rd" })).toBeDisabled();
+    });
+
+    it("heal: after chord change to 4-tone chord, active triple is valid in validVoicingCombosAtom.triples", async () => {
+      // Seed: triad + 1st inversion + 4·5·6 string set — valid for a 3-tone chord.
+      // Simulate that inversion was changed most recently by seeding the recency atom.
+      // This ensures nearestValidTriple pins the inversion (which has valid triples for a
+      // 4-tone chord) rather than the voicing type (which does not, since "triad" voicing
+      // type only works on 3-tone chords).
+      const store = makeAtomStore([
+        ...TRIAD_SEEDS,
+        [voicingInversionAtom, "1st"],
+        [voicingStringSetAtom, "4·5·6"],
+        [controlRecencyAtom, ["inversion", "type", "stringSet"]],
+      ]);
+      renderWithStore(<ChordOverlayControls />, store);
+
+      // Switch to a 4-tone chord — the triple (triad, 1st, "4·5·6") becomes invalid
+      await act(async () => {
+        store.set(chordQualityOverrideAtom, "Major 7th");
+      });
+
+      // Read the final triple
+      const finalType = store.get(voicingTypeAtom);
+      const finalInversion = store.get(voicingInversionAtom);
+      const finalStringSet = store.get(voicingStringSetAtom);
+      const validCombos = store.get(validVoicingCombosAtom);
+
+      // The final triple must be valid (heal moved type and stringSet, kept inversion)
+      const isValid = validCombos.triples.some(
+        (t) =>
+          t.type === finalType &&
+          t.inversion === finalInversion &&
+          t.stringSet === finalStringSet,
+      );
+      expect(isValid).toBe(true);
+    });
+
+    it("recency: clicking an inversion option moves 'inversion' to front of controlRecencyAtom", async () => {
+      const store = makeAtomStore([...TRIAD_SEEDS]);
+      renderWithStore(<ChordOverlayControls />, store);
+
+      // Default recency order
+      expect(store.get(controlRecencyAtom)).toEqual(["type", "stringSet", "inversion"]);
+
+      // Click the "1st" inversion button
+      const inversionGroup = screen.getByRole("group", { name: "Voicing inversion" });
+      await userEvent.click(within(inversionGroup).getByRole("button", { name: "1st" }));
+
+      // "inversion" should now be at the front
+      expect(store.get(controlRecencyAtom)[0]).toBe("inversion");
     });
   });
 

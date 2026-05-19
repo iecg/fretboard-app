@@ -1,5 +1,5 @@
-import { startTransition, useEffect } from "react";
-import { useAtom, useAtomValue } from "jotai";
+import { startTransition, useEffect, useMemo } from "react";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import clsx from "clsx";
 import { type PracticeLens } from "@fretflow/core";
 import {
@@ -11,6 +11,10 @@ import {
   voicingConnectorsAtom,
   availableInversionsAtom,
   stringSetOptionsAtom,
+  validVoicingCombosAtom,
+  controlRecencyAtom,
+  noteControlChangeAtom,
+  nearestValidTriple,
 } from "../../store/atoms";
 import { StringSetPicker } from "../Inspector/StringSetPicker";
 import { useTranslation } from "../../hooks/useTranslation";
@@ -55,6 +59,9 @@ export function ChordOverlayControls() {
   const [voicingConnectors, setVoicingConnectors] = useAtom(voicingConnectorsAtom);
   const availableInversions = useAtomValue(availableInversionsAtom);
   const stringSetOptions = useAtomValue(stringSetOptionsAtom);
+  const validCombos = useAtomValue(validVoicingCombosAtom);
+  const recency = useAtomValue(controlRecencyAtom);
+  const recordControlChange = useSetAtom(noteControlChangeAtom);
 
   const lensAvailability = useAtomValue(lensAvailabilityAtom);
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
@@ -93,21 +100,46 @@ export function ChordOverlayControls() {
     }
   }, [currentLensEntry, lensAvailability, setPracticeLens]);
 
-  // Normalize a persisted voicing inversion the active chord no longer offers
-  // (e.g. a 7th-chord "3rd" inversion after switching to a triad).
+  // Unified auto-heal: whenever the active (type, inversion, stringSet) is
+  // not a valid triple, pin the most-recently-touched control and snap the
+  // other two to the nearest valid assignment.
   useEffect(() => {
-    if (!availableInversions.includes(voicingInversion)) {
-      setVoicingInversion(availableInversions[0] ?? "root");
-    }
-  }, [availableInversions, voicingInversion, setVoicingInversion]);
+    if (voicingType === "caged") return; // caged is force-resolved upstream.
+    const current = {
+      type: voicingType,
+      inversion: voicingInversion,
+      stringSet: voicingStringSet,
+    };
+    const isValid = validCombos.triples.some(
+      (t) =>
+        t.type === current.type &&
+        t.inversion === current.inversion &&
+        t.stringSet === current.stringSet,
+    );
+    if (isValid) return;
+    const next = nearestValidTriple(validCombos.triples, current, recency);
+    if (next.type !== current.type) setVoicingType(next.type);
+    if (next.inversion !== current.inversion) setVoicingInversion(next.inversion);
+    if (next.stringSet !== current.stringSet) setVoicingStringSet(next.stringSet);
+  }, [
+    voicingType,
+    voicingInversion,
+    voicingStringSet,
+    validCombos,
+    recency,
+    setVoicingType,
+    setVoicingInversion,
+    setVoicingStringSet,
+  ]);
 
-  // Normalize a persisted string-set id the active chord no longer offers
-  // (e.g. a 3-string triad window after switching to a 4-note chord).
-  useEffect(() => {
-    if (!stringSetOptions.some((o) => o.id === voicingStringSet)) {
-      setVoicingStringSet("all");
-    }
-  }, [stringSetOptions, voicingStringSet, setVoicingStringSet]);
+  const decoratedStringSetOptions = useMemo(
+    () =>
+      stringSetOptions.map((o) => ({
+        ...o,
+        disabled: !validCombos.enabledStringSets.has(o.id),
+      })),
+    [stringSetOptions, validCombos],
+  );
 
   const handleDegreeChange = (value: string) => {
     startTransition(() => {
@@ -266,13 +298,21 @@ export function ChordOverlayControls() {
             >
               <ToggleBar
                 label="Voicing type"
-                options={[
-                  { value: "caged" as const, label: t("inspector.voicingTypeCaged") },
-                  { value: "drop2" as const, label: t("inspector.voicingTypeDrop2") },
-                  { value: "triad" as const, label: t("inspector.voicingTypeTriad") },
-                ]}
+                options={(["caged", "drop2", "triad"] as const).map((v) => ({
+                  value: v,
+                  label:
+                    v === "caged"
+                      ? t("inspector.voicingTypeCaged")
+                      : v === "drop2"
+                        ? t("inspector.voicingTypeDrop2")
+                        : t("inspector.voicingTypeTriad"),
+                  disabled: v !== "caged" && !validCombos.enabledTypes.has(v),
+                }))}
                 value={voicingType}
-                onChange={setVoicingType}
+                onChange={(v) => {
+                  recordControlChange("type");
+                  setVoicingType(v);
+                }}
               />
             </Prop>
             {voicingType !== "caged" && (
@@ -286,10 +326,15 @@ export function ChordOverlayControls() {
                   options={(["root", "1st", "2nd", "3rd"] as const).map((v) => ({
                     value: v,
                     label: v === "root" ? t("controls.root") : v,
-                    disabled: !availableInversions.includes(v),
+                    disabled:
+                      !availableInversions.includes(v) ||
+                      !validCombos.enabledInversions.has(v),
                   }))}
                   value={voicingInversion}
-                  onChange={setVoicingInversion}
+                  onChange={(v) => {
+                    recordControlChange("inversion");
+                    setVoicingInversion(v);
+                  }}
                 />
               </Prop>
             )}
@@ -300,9 +345,12 @@ export function ChordOverlayControls() {
                 hint={t("inspector.voicingStringSetHint")}
               >
                 <StringSetPicker
-                  options={stringSetOptions}
+                  options={decoratedStringSetOptions}
                   value={voicingStringSet}
-                  onChange={setVoicingStringSet}
+                  onChange={(v) => {
+                    recordControlChange("stringSet");
+                    setVoicingStringSet(v);
+                  }}
                 />
               </Prop>
             )}
