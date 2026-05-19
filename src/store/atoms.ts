@@ -73,7 +73,12 @@ export {
   voicingConnectorsAtom,
   availableInversionsAtom,
   voicingMatchesAtom,
+  stringSetOptionsAtom,
+  effectiveStringSetAtom,
 } from "./chordOverlayAtoms";
+
+export { buildStringSetOptions, ALL_STRINGS } from "./voicingStringSets";
+export type { StringSetOption } from "./voicingStringSets";
 
 export {
   practiceBarColorNotesFilteredAtom,

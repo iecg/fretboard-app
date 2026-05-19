@@ -15,6 +15,11 @@ import {
   voicingMatchesAtom,
   voicingConnectorsAtom,
   fullChordsEnabledAtom,
+  stringSetOptionsAtom,
+  effectiveStringSetAtom,
+  voicingTypeAtom,
+  voicingInversionAtom,
+  voicingStringSetAtom,
 } from "./chordOverlayAtoms";
 import { allChordMembersAtom } from "./composableSelectors";
 import { progressionStepsAtom } from "./progressionAtoms";
@@ -750,6 +755,93 @@ describe("chordSourceIsProgressionAtom", () => {
     const store = createStore();
     store.set(progressionStepsAtom, []);
     expect(store.get(chordSourceIsProgressionAtom)).toBe(false);
+  });
+});
+
+describe("voicing string set", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("exposes tone-count-appropriate string-set options for a triad", () => {
+    const store = makeAtomStore([
+      [progressionStepsAtom, []],
+      [chordOverlayModeAtom, "manual"],
+      [chordRootOverrideAtom, "C"],
+      [chordQualityOverrideAtom, "Major Triad"],
+    ]);
+    const optionsTriad = store.get(stringSetOptionsAtom);
+    expect(optionsTriad.map((o) => o.id)).toEqual([
+      "all", "4·5·6", "3·4·5", "2·3·4", "1·2·3",
+    ]);
+  });
+
+  it("exposes tone-count-appropriate string-set options for a seventh chord", () => {
+    const store = makeAtomStore([
+      [progressionStepsAtom, []],
+      [chordOverlayModeAtom, "manual"],
+      [chordRootOverrideAtom, "C"],
+      [chordQualityOverrideAtom, "Major 7th"],
+    ]);
+    const optionsSeventh = store.get(stringSetOptionsAtom);
+    expect(optionsSeventh.map((o) => o.id)).toEqual([
+      "all", "3·4·5·6", "2·3·4·5", "1·2·3·4",
+    ]);
+  });
+
+  it("resolves a valid stored id to its string-index array", () => {
+    const store = makeAtomStore([
+      [progressionStepsAtom, []],
+      [chordOverlayModeAtom, "manual"],
+      [chordRootOverrideAtom, "C"],
+      [chordQualityOverrideAtom, "Major Triad"],
+      [voicingStringSetAtom, "4·5·6"],
+    ]);
+    expect(store.get(effectiveStringSetAtom)).toEqual([3, 4, 5]);
+  });
+
+  it("falls back to all six strings when the stored id is invalid for the chord", () => {
+    // "4·5·6" is a valid triad window but not a valid 7th-chord window, so it
+    // falls back to all-strings when the chord switches to a seventh chord.
+    const store = makeAtomStore([
+      [progressionStepsAtom, []],
+      [chordOverlayModeAtom, "manual"],
+      [chordRootOverrideAtom, "C"],
+      [chordQualityOverrideAtom, "Major 7th"],
+      [voicingStringSetAtom, "4·5·6"],
+    ]);
+    expect(store.get(effectiveStringSetAtom)).toEqual([0, 1, 2, 3, 4, 5]);
+  });
+
+  it("voicingMatchesAtom returns engine output for a valid triad window", () => {
+    const store = makeAtomStore([
+      [progressionStepsAtom, []],
+      [chordOverlayModeAtom, "manual"],
+      [chordRootOverrideAtom, "C"],
+      [chordQualityOverrideAtom, "Major Triad"],
+      [voicingTypeAtom, "triad"],
+      [voicingStringSetAtom, "4·5·6"],
+    ]);
+    const matches = store.get(voicingMatchesAtom);
+    expect(matches.length).toBeGreaterThan(0);
+    for (const m of matches) {
+      for (const n of m.notes) expect([3, 4, 5]).toContain(n.stringIndex);
+    }
+  });
+
+  it("ignores the string set and inversion while voicingType is caged", () => {
+    const store = makeAtomStore([
+      [progressionStepsAtom, []],
+      [chordOverlayModeAtom, "manual"],
+      [chordRootOverrideAtom, "C"],
+      [chordQualityOverrideAtom, "Major Triad"],
+      [voicingTypeAtom, "caged"],
+      [voicingStringSetAtom, "1·2·3"],
+      [voicingInversionAtom, "2nd"],
+    ]);
+    const matches = store.get(voicingMatchesAtom);
+    expect(matches.length).toBeGreaterThan(0);
+    expect(matches.some((m) => m.shape !== undefined)).toBe(true);
   });
 });
 

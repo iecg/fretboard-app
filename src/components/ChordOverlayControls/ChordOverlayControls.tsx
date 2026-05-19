@@ -10,6 +10,7 @@ import {
   voicingStringSetAtom,
   voicingConnectorsAtom,
   availableInversionsAtom,
+  stringSetOptionsAtom,
 } from "../../store/atoms";
 import { StringSetPicker } from "../Inspector/StringSetPicker";
 import { useTranslation } from "../../hooks/useTranslation";
@@ -53,6 +54,7 @@ export function ChordOverlayControls() {
   const [voicingStringSet, setVoicingStringSet] = useAtom(voicingStringSetAtom);
   const [voicingConnectors, setVoicingConnectors] = useAtom(voicingConnectorsAtom);
   const availableInversions = useAtomValue(availableInversionsAtom);
+  const stringSetOptions = useAtomValue(stringSetOptionsAtom);
 
   const lensAvailability = useAtomValue(lensAvailabilityAtom);
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
@@ -98,6 +100,14 @@ export function ChordOverlayControls() {
       setVoicingInversion(availableInversions[0] ?? "root");
     }
   }, [availableInversions, voicingInversion, setVoicingInversion]);
+
+  // Normalize a persisted string-set id the active chord no longer offers
+  // (e.g. a 3-string triad window after switching to a 4-note chord).
+  useEffect(() => {
+    if (!stringSetOptions.some((o) => o.id === voicingStringSet)) {
+      setVoicingStringSet("all");
+    }
+  }, [stringSetOptions, voicingStringSet, setVoicingStringSet]);
 
   const handleDegreeChange = (value: string) => {
     startTransition(() => {
@@ -265,29 +275,37 @@ export function ChordOverlayControls() {
                 onChange={setVoicingType}
               />
             </Prop>
-            <Prop
-              label={t("inspector.voicingInversion")}
-              span={4}
-              hint={t("inspector.voicingInversionHint")}
-            >
-              <ToggleBar
-                label="Voicing inversion"
-                options={(["root", "1st", "2nd", "3rd"] as const).map((v) => ({
-                  value: v,
-                  label: v === "root" ? t("controls.root") : v,
-                  disabled: !availableInversions.includes(v),
-                }))}
-                value={voicingInversion}
-                onChange={setVoicingInversion}
-              />
-            </Prop>
-            <Prop
-              label={t("inspector.voicingStringSet")}
-              span={7}
-              hint={t("inspector.voicingStringSetHint")}
-            >
-              <StringSetPicker value={voicingStringSet} onChange={setVoicingStringSet} />
-            </Prop>
+            {voicingType !== "caged" && (
+              <Prop
+                label={t("inspector.voicingInversion")}
+                span={4}
+                hint={t("inspector.voicingInversionHint")}
+              >
+                <ToggleBar
+                  label="Voicing inversion"
+                  options={(["root", "1st", "2nd", "3rd"] as const).map((v) => ({
+                    value: v,
+                    label: v === "root" ? t("controls.root") : v,
+                    disabled: !availableInversions.includes(v),
+                  }))}
+                  value={voicingInversion}
+                  onChange={setVoicingInversion}
+                />
+              </Prop>
+            )}
+            {voicingType !== "caged" && (
+              <Prop
+                label={t("inspector.voicingStringSet")}
+                span={7}
+                hint={t("inspector.voicingStringSetHint")}
+              >
+                <StringSetPicker
+                  options={stringSetOptions}
+                  value={voicingStringSet}
+                  onChange={setVoicingStringSet}
+                />
+              </Prop>
+            )}
           </>
         )}
       </PropGrid>

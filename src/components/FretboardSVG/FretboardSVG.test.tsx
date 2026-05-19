@@ -423,10 +423,10 @@ describe("FretboardSVG/FretboardSVG", () => {
     );
 
     expect(container.querySelectorAll("path[data-caged-shape]").length).toBe(0);
-    expect(container.querySelector(".chord-connectors")).toHaveAttribute(
-      "data-connector-source",
-      "generated",
-    );
+    // When the voicing engine is the active source (chordTones non-empty) but
+    // fullChordVoicings is empty, the connector layer is suppressed entirely —
+    // no generated scatter is shown. The chord-connectors group is absent.
+    expect(container.querySelector(".chord-connectors")).toBeNull();
   });
 
   it("keeps the D-shape light-theme background in the same gray family as dark mode", () => {

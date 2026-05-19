@@ -5,7 +5,6 @@ import { getFullChordShapeMatches } from "./fullChordShapes";
 
 export type VoicingType = "caged" | "drop2" | "triad";
 export type VoicingInversion = "root" | "1st" | "2nd" | "3rd";
-export type VoicingStringSet = "all" | "low" | "mid" | "mid-hi" | "top";
 
 export interface VoicingNote {
   /** 0 = highest string, 5 = lowest. */
@@ -22,25 +21,12 @@ export interface Voicing {
   shape?: CagedShape;
 }
 
-/** Allowed string indices (0 = high E … 5 = low E) for each string set. */
-const STRING_SET_MASKS: Record<VoicingStringSet, number[]> = {
-  all: [0, 1, 2, 3, 4, 5],
-  low: [3, 4, 5],
-  mid: [2, 3, 4],
-  "mid-hi": [1, 2, 3],
-  top: [0, 1, 2],
-};
-
 const INVERSION_INDEX: Record<VoicingInversion, number> = {
   root: 0,
   "1st": 1,
   "2nd": 2,
   "3rd": 3,
 };
-
-export function stringSetMask(set: VoicingStringSet): number[] {
-  return [...STRING_SET_MASKS[set]];
-}
 
 /** MIDI number of an open string written like "E2" / "A#3". null if unparseable. */
 export function openStringMidi(openString: string): number | null {
@@ -76,7 +62,8 @@ export interface GenerateVoicingsParams {
   maxFret: number;
   voicingType: VoicingType;
   inversion: VoicingInversion;
-  stringSet: VoicingStringSet;
+  /** Allowed string indices (0 = high E … 5 = low E). */
+  stringSet: readonly number[];
 }
 
 // Span limits tuned in Task 11 Step 5: triad raised 4→5 so close-position
@@ -114,7 +101,7 @@ function searchVoicings(
 
   const chordPCs = def.members.map((m) => (rootIndex + m.semitone) % 12);
   const chordPCSet = new Set(chordPCs);
-  const allowed = stringSetMask(stringSet);
+  const allowed = [...stringSet].sort((a, b) => a - b);
   const spanLimit = SPAN_LIMIT[voicingType === "drop2" ? "drop2" : "triad"];
 
   const openMidis = tuning.map(openStringMidi);
@@ -191,7 +178,7 @@ export function generateVoicings(params: GenerateVoicingsParams): Voicing[] {
 
 function cagedVoicings(params: GenerateVoicingsParams): Voicing[] {
   const { chordRoot, chordType, tuning, maxFret, inversion, stringSet } = params;
-  const allowed = new Set(stringSetMask(stringSet));
+  const allowed = new Set(stringSet);
   const openMidis = tuning.map(openStringMidi);
   if (openMidis.some((m) => m === null)) return [];
   const bassPC = inversionBassPitchClass(chordRoot, chordType, inversion);

@@ -1743,3 +1743,48 @@ describe("voicingKey field", () => {
     expect(unique.size).toBe(paletteIndices.length);
   });
 });
+
+describe("useChordConnectorPolylines — voicingSourceActive guard", () => {
+  // Three chord-tone positions across three adjacent strings within fret 5.
+  // The legacy buildChordConnectorPolylines generator produces a non-empty
+  // result for this noteData.
+  const chordNoteData = [
+    makeNote(0, 5, "C", "chord-root"),
+    makeNote(1, 5, "E", "chord-tone-in-scale"),
+    makeNote(2, 5, "G", "chord-tone-in-scale"),
+  ];
+  const chordToneNames = ["C", "E", "G"];
+  const chordRoot = "C";
+
+  it("returns [] when voicingSourceActive is true and explicitVoicings is empty, even if noteData has chord-tone positions", () => {
+    const { result } = renderHook(() =>
+      useChordConnectorPolylines({
+        noteData: chordNoteData,
+        chordToneNames,
+        fretCenterX,
+        stringYAt,
+        stringRowPx: STRING_ROW_PX,
+        chordRoot,
+        explicitVoicings: [],
+        voicingSourceActive: true,
+      }),
+    );
+    expect(result.current).toEqual([]);
+  });
+
+  it("still runs the legacy generator when voicingSourceActive is false and explicitVoicings is empty", () => {
+    const { result } = renderHook(() =>
+      useChordConnectorPolylines({
+        noteData: chordNoteData,
+        chordToneNames,
+        fretCenterX,
+        stringYAt,
+        stringRowPx: STRING_ROW_PX,
+        chordRoot,
+        explicitVoicings: [],
+        voicingSourceActive: false,
+      }),
+    );
+    expect(result.current.length).toBeGreaterThan(0);
+  });
+});

@@ -3,6 +3,7 @@ import { beforeEach, describe, it, expect } from "vitest";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
+import { act } from "@testing-library/react";
 import { renderWithAtoms, renderWithStore, makeAtomStore } from "../../test-utils/renderWithAtoms";
 import {
   chordDegreeAtom,
@@ -15,6 +16,8 @@ import {
   practiceLensAtom,
   fingeringPatternAtom,
   voicingConnectorsAtom,
+  voicingTypeAtom,
+  voicingStringSetAtom,
 } from "../../store/atoms";
 import { ChordOverlayControls } from "./ChordOverlayControls";
 
@@ -602,7 +605,10 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
 
   describe("16. VOICING group controls (Type, Inversion, String Set)", () => {
     it("renders Type, Inversion and String Set in the VOICING group", () => {
-      renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
+      renderWithAtoms(<ChordOverlayControls />, [
+        ...MANUAL_MODE_SEEDS,
+        [voicingTypeAtom, "triad"],
+      ]);
       expect(screen.getByRole("group", { name: "Voicing type" })).toBeInTheDocument();
       expect(screen.getByRole("group", { name: "Voicing inversion" })).toBeInTheDocument();
       expect(screen.getByRole("radiogroup", { name: "String Set" })).toBeInTheDocument();
@@ -611,9 +617,94 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     it("disables the 3rd inversion for a triad", () => {
       renderWithAtoms(<ChordOverlayControls />, [
         ...MANUAL_MODE_SEEDS,
+        [voicingTypeAtom, "triad"],
         [chordQualityOverrideAtom, "Major Triad"],
       ]);
       expect(screen.getByRole("button", { name: "3rd" })).toBeDisabled();
+    });
+  });
+
+  describe("18. caged gating — String Set and Inversion hidden for caged voicing type", () => {
+    const TRIAD_MANUAL_SEEDS = [
+      [scaleNameAtom, "Major"],
+      [rootNoteAtom, "C"],
+      [chordOverlayModeAtom, "manual"],
+      [chordQualityOverrideAtom, "Major Triad"],
+      [chordRootOverrideAtom, "C"],
+      [fingeringPatternAtom, "caged"],
+      [progressionStepsAtom, []],
+    ] as const;
+
+    it("caged voicing type: Inversion control and String Set are NOT in the document", () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        ...TRIAD_MANUAL_SEEDS,
+        [voicingTypeAtom, "caged"],
+      ]);
+      expect(screen.queryByLabelText("Voicing inversion")).not.toBeInTheDocument();
+      expect(screen.queryByRole("radiogroup", { name: /String Set/i })).not.toBeInTheDocument();
+    });
+
+    it("triad voicing type: Inversion control and String Set ARE in the document", () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        ...TRIAD_MANUAL_SEEDS,
+        [voicingTypeAtom, "triad"],
+      ]);
+      expect(screen.queryByLabelText("Voicing inversion")).toBeInTheDocument();
+      expect(screen.queryByRole("radiogroup", { name: /String Set/i })).toBeInTheDocument();
+    });
+
+    it("drop2 voicing type: Inversion control and String Set ARE in the document", () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        ...TRIAD_MANUAL_SEEDS,
+        [voicingTypeAtom, "drop2"],
+        [chordQualityOverrideAtom, "Major 7th"],
+      ]);
+      expect(screen.queryByLabelText("Voicing inversion")).toBeInTheDocument();
+      expect(screen.queryByRole("radiogroup", { name: /String Set/i })).toBeInTheDocument();
+    });
+
+    it("triad chord (3 tones) shows 5 radio cards in the String Set picker", () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        ...TRIAD_MANUAL_SEEDS,
+        [voicingTypeAtom, "triad"],
+      ]);
+      const radiogroup = screen.getByRole("radiogroup", { name: /String Set/i });
+      // 3-tone chord: 6 - 3 + 1 = 4 windows + 1 All = 5 total
+      expect(within(radiogroup).getAllByRole("radio")).toHaveLength(5);
+    });
+
+    it("4-tone chord (Major 7th) shows 4 radio cards in the String Set picker", () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        ...TRIAD_MANUAL_SEEDS,
+        [voicingTypeAtom, "triad"],
+        [chordQualityOverrideAtom, "Major 7th"],
+      ]);
+      const radiogroup = screen.getByRole("radiogroup", { name: /String Set/i });
+      // 4-tone chord: 6 - 4 + 1 = 3 windows + 1 All = 4 total
+      expect(within(radiogroup).getAllByRole("radio")).toHaveLength(4);
+    });
+
+    it("normalizer: switching from triad to 4-tone chord resets a stale '4·5·6' string set to 'all'", async () => {
+      const store = makeAtomStore([
+        ...TRIAD_MANUAL_SEEDS,
+        [voicingTypeAtom, "triad"],
+        [voicingStringSetAtom, "4·5·6"],
+      ]);
+      renderWithStore(<ChordOverlayControls />, store);
+
+      // Initially: Bass card ("4·5·6") should be checked for a 3-tone chord
+      const radiogroup = screen.getByRole("radiogroup", { name: /String Set/i });
+      const bassCard = within(radiogroup).getByRole("radio", { name: /Bass/i });
+      expect(bassCard).toHaveAttribute("aria-checked", "true");
+
+      // Switch to a 4-tone chord — "4·5·6" is no longer a valid window
+      await act(async () => {
+        store.set(chordQualityOverrideAtom, "Major 7th");
+      });
+
+      // Normalizer should snap the selection back to "all"
+      const allCard = await screen.findByRole("radio", { name: /All/i });
+      expect(allCard).toHaveAttribute("aria-checked", "true");
     });
   });
 
@@ -653,7 +744,10 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
 
     it("shows hints for the voicing Type, Inversion and String Set controls", () => {
-      renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
+      renderWithAtoms(<ChordOverlayControls />, [
+        ...MANUAL_MODE_SEEDS,
+        [voicingTypeAtom, "triad"],
+      ]);
       expect(
         screen.getByText("How densely the chord is voiced."),
       ).toBeInTheDocument();
