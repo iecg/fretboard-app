@@ -1,0 +1,62 @@
+/* Shared note pill — the common geometry for the scale-degree chips and the
+ * chord-practice tone pills (Always-On DAW lens strip). Role-specific colors
+ * live in the consuming modules; this owns shape, sizing, and layout only. */
+
+.item {
+  /* display:flex blockifies the pill button so it never picks up baseline
+     strut from an inherited line-height — keeps the pill vertically centered. */
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  position: relative;
+  list-style: none;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.14rem;
+  height: var(--chip-size, 1.25rem);
+  padding: 0 0.34rem;
+  border-radius: 999px;
+  border: 1.5px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  line-height: 1;
+  transition:
+    opacity var(--transition-fast),
+    border-color var(--transition-fast),
+    background var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.pill:disabled {
+  cursor: default;
+}
+
+.pill:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  box-shadow: var(--glow-cyan-sm);
+}
+
+.note {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-semibold);
+  font-size: 0.66rem;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--text-main);
+}
+
+.interval {
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-medium);
+  font-size: 0.56rem;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+}

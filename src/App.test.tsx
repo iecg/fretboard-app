@@ -118,10 +118,14 @@ describe("App", () => {
       expect(screen.getByTestId("fretboard")).toHaveTextContent("Fretboard: C");
     });
 
-    it("renders alias-friendly summary labels", () => {
+    it("renders a terse scale label with parentheticals dropped", () => {
+      // The inline lens strip drops "(Ionian)" / "(1st Mode)" suffixes to keep
+      // the label compact (Phase C).
       render(<App />);
       const summary = screen.getByRole("group", { name: /scale degrees/i });
-      expect(within(summary).getByText("C Major (Ionian)")).toBeInTheDocument();
+      // "Major" is abbreviated to "Maj" on the compact strip.
+      expect(within(summary).getByText("C Maj")).toBeInTheDocument();
+      expect(within(summary).queryByText(/Ionian/)).toBeNull();
     });
 
     it("renders the summary above the fretboard", () => {
@@ -132,6 +136,23 @@ describe("App", () => {
 
       expect(
         summary.compareDocumentPosition(fretboard) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    });
+
+    it("mounts the lens strip inside the fretboard region, above the SVG", () => {
+      render(<App />);
+
+      // Phase C: the lens is an inline strip inside the fretboard container
+      // (`.main-fretboard`), not a floating overlay. It must be a descendant
+      // of that region and precede the fretboard SVG in DOM order.
+      const fretboardRegion = screen.getByTestId("main-fretboard");
+      const lensStrip = screen.getByTestId("fretboard-lens-overlay");
+      const fretboard = screen.getByTestId("fretboard");
+
+      expect(fretboardRegion).toContainElement(lensStrip);
+      expect(
+        lensStrip.compareDocumentPosition(fretboard) &
           Node.DOCUMENT_POSITION_FOLLOWING,
       ).toBeTruthy();
     });
@@ -147,22 +168,23 @@ describe("App", () => {
       );
     });
 
-    it("renders melodic minor summary labels with the jazz alias", async () => {
+    it("renders the melodic minor summary label with parentheticals dropped", async () => {
       localStorage.setItem(k("scaleName"), "Melodic Minor");
       render(<App />);
       const summary = await screen.findByRole("group", { name: /scale degrees/i });
-      expect(
-        within(summary).getByText("C Melodic Minor (Jazz Minor)"),
-      ).toBeInTheDocument();
+      // "Melodic Minor" is abbreviated to "Mel Min" on the compact strip.
+      expect(within(summary).getByText("C Mel Min")).toBeInTheDocument();
+      expect(within(summary).queryByText(/Jazz Minor/)).toBeNull();
     });
 
-    it("renders ordinal mode labels in relative browse mode", async () => {
+    it("renders a terse mode label in relative browse mode", async () => {
       localStorage.setItem(k("rootNote"), "D");
       localStorage.setItem(k("scaleName"), "Dorian");
       localStorage.setItem(k("scaleBrowseMode"), "relative");
       render(<App />);
       const summary = await screen.findByRole("group", { name: /scale degrees/i });
-      expect(within(summary).getByText("D Dorian (2nd Mode)")).toBeInTheDocument();
+      expect(within(summary).getByText("D Dorian")).toBeInTheDocument();
+      expect(within(summary).queryByText(/2nd Mode/)).toBeNull();
     });
 
     it("renders Unicode flat intervals in the degree chip strip for Natural Minor", async () => {
@@ -248,6 +270,7 @@ describe("App", () => {
       // skipped — the derived chord root re-resolves via getDiatonicChord against
       // the new scale root, so writing through chordRootAtom is unnecessary and
       // would force mode→manual (the bug Phase 01 fixes).
+      localStorage.setItem(k("progressionSteps"), "[]");
       localStorage.setItem(k("chordOverlayMode"), "manual");
       localStorage.setItem(k("chordType"), "Major Triad");
       localStorage.setItem(k("chordRootOverride"), "C");
@@ -267,6 +290,7 @@ describe("App", () => {
       // Default after migration with a diatonic triad: degree mode, chordDegree="I".
       // Changing the scale root must keep the user in degree mode (the chord root
       // auto-resolves via getDiatonicChord) and must NOT write to chordRootOverride.
+      localStorage.setItem(k("progressionSteps"), "[]");
       localStorage.setItem(k("chordType"), "Major Triad");
       render(<App />);
 
@@ -509,6 +533,7 @@ describe("App", () => {
     });
 
     it("practice bar shows chord label as title", async () => {
+      localStorage.setItem(k("progressionSteps"), "[]");
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("scaleName"), "Major");
       localStorage.setItem(k("chordRoot"), "C");
@@ -519,8 +544,9 @@ describe("App", () => {
         expect(document.querySelector(".chord-practice-bar")).toBeTruthy();
       });
       const title = document.querySelector(".chord-practice-bar-title")!;
+      // "Dominant" is abbreviated to "Dom" on the compact strip.
       expect(title.textContent).toContain("C");
-      expect(title.textContent).toContain("Dominant 7th");
+      expect(title.textContent).toContain("Dom 7th");
     });
 
     it("chord bar and scale strip are siblings, not nested", async () => {
@@ -606,6 +632,7 @@ describe("App", () => {
 
   describe("Chord overlay", () => {
     it("can set chord type via manual mode", async () => {
+      localStorage.setItem(k("progressionSteps"), "[]");
       render(<App />);
       // Chord controls live in the Inspector's Chord tab; ChordOverlayControls
       // is rendered directly there (no accordion section to expand).

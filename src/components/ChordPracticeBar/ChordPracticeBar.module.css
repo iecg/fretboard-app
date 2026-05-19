@@ -1,28 +1,24 @@
 /* Chord practice bar — two-group coaching surface (Chord + Land on). */
 
 .chord-practice-bar {
-  composes: strip-surface from "../shared/shared.module.css";
-
+  /* Phase C — the chord section of the inline lens strip. A single horizontal
+     row: label then the tone pills. No card surface. Tone pills use the shared
+     NotePill geometry (--chip-size, inherited from TopBandSummary). */
   display: flex;
-  flex-direction: column;
-  gap: var(--strip-gap, 0.3rem);
-  width: min(100%, 30rem);
-  margin: 0 auto;
-  padding: var(--strip-padding, 0.38rem 0.85rem 0.42rem);
-  border-radius: var(--strip-radius, 0.85rem);
-  background: var(--strip-bg-override, var(--strip-fill));
-  border: var(--strip-border-override, var(--strip-border));
-  box-shadow: var(--strip-shadow-override, var(--strip-shadow));
-
-}
-
-:global([data-theme="modern-dark"]) .chord-practice-bar {
-  --strip-border: 1px solid rgb(255 255 255 / 0.07);
-  --strip-shadow: 0 4px 14px rgb(0 0 0 / 0.2);
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  background: var(--strip-bg-override, transparent);
+  border: var(--strip-border-override, none);
+  box-shadow: var(--strip-shadow-override, none);
 }
 
 .chord-practice-bar-header {
-  composes: card-section-header from "../shared/shared.module.css";
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 0 0 auto;
 }
 
 .practice-bar-eye-toggle {
@@ -40,21 +36,13 @@
 .practice-bar-eye-toggle[aria-pressed="true"] { opacity: 0.4; }
 
 .chord-practice-bar-title {
-  /* Inherits font, color, weight from .card-section-header parent. */
-  white-space: nowrap;
-}
-
-.chord-practice-bar-lens-label {
+  /* DAW faceplate micro-label — matches the DegreeChipStrip section label. */
   font-family: var(--font-sans);
-  font-size: 0.78rem;
-  font-weight: var(--font-weight-medium);
-  color: var(--chip-text-inactive);
-  line-height: 1;
-  letter-spacing: 0.03em;
-  background: var(--chip-surface-inactive);
-  border: 1px solid var(--chip-border-inactive);
-  border-radius: 0.3rem;
-  padding: 0.15rem 0.35rem;
+  font-size: 0.58rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+  color: var(--surface-control-fg-muted);
   white-space: nowrap;
 }
 
@@ -74,32 +62,40 @@
 }
 
 .chord-practice-bar-groups-container {
-  overflow: hidden;
-  width: 100%;
+  display: flex;
+  align-items: center;
 }
 
 .chord-practice-bar-groups {
   display: flex;
   flex-direction: row;
   align-items: center;
-  column-gap: 1.25rem;
-  row-gap: 0.3rem;
+  column-gap: 0.5rem;
+  row-gap: 0.25rem;
   flex-wrap: wrap;
-  /* Small buffer to keep focus rings/shadows visible despite container's overflow:hidden. */
-  padding-top: 0.15rem;
 }
 
 .practice-bar-group {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.3rem;
   flex-wrap: wrap;
 }
 
+/* The "Chord:" group label is redundant beside the chord title — the chord
+   pills sit directly after the title with no group label. */
+.practice-bar-group[data-group-variant="chord"] .practice-bar-group-label {
+  display: none;
+}
+
 .practice-bar-group-label {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
   font-family: var(--font-sans);
-  font-size: var(--text-2xs);
+  font-size: 0.56rem;
   font-weight: 500;
+  line-height: 1;
   color: var(--surface-control-fg-muted);
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -126,32 +122,14 @@
   padding: 0;
 }
 
-.practice-bar-pill-item {
-  list-style: none;
-}
-
+/* Default tone-pill colors — geometry comes from the shared NotePill `.pill`. */
 .practice-bar-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.22rem;
-  height: var(--practice-pill-h);
-  padding: 0 var(--practice-pill-px);
-  border-radius: var(--radius-pill);
   background: var(--chip-surface-inactive);
-  border: 1.5px solid var(--chip-border-inactive);
-  cursor: pointer;
-  font: inherit;
-  transition: var(--transition-surface);
+  border-color: var(--chip-border-inactive);
 }
 
 .practice-bar-pill:hover {
   filter: brightness(1.1);
-}
-
-.practice-bar-pill:focus-visible {
-  outline: var(--focus-ring);
-  outline-offset: var(--focus-ring-offset);
-  box-shadow: var(--focus-ring-glow);
 }
 
 .practice-bar-pill[data-hidden-note="true"] {
@@ -195,30 +173,12 @@
   background: var(--note-role-root-fill, var(--role-chord-bg-strong));
   border-color: var(--note-role-border, var(--role-chord-border));
   border-style: dashed;
-  box-shadow: 0 0 6px color-mix(in srgb, var(--note-role-border, var(--role-chord-border)) 40%, transparent);
-}
-
-.practice-bar-pill-note {
-  font-family: var(--font-sans);
-  font-size: var(--practice-pill-font);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-main);
-  line-height: 1;
-  letter-spacing: 0.01em;
-}
-
-.practice-bar-pill-interval {
-  font-family: var(--font-sans);
-  font-size: calc(var(--practice-pill-font) - 0.06rem);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-muted);
-  line-height: 1;
-  letter-spacing: 0.02em;
+  box-shadow: 0 0 1.5px color-mix(in srgb, var(--note-role-border, var(--role-chord-border)) 40%, transparent);
 }
 
 .practice-bar-pill-resolve {
   font-family: var(--font-sans);
-  font-size: calc(var(--practice-pill-font) - 0.06rem);
+  font-size: 0.56rem;
   font-weight: var(--font-weight-medium);
   color: var(--role-color-tone-text);
   line-height: 1;
@@ -235,7 +195,6 @@
 }
 
 /* Lens label + badge: sunken warm fill so they read as tags, not ghosts */
-:global([data-theme="modern-light"]) .chord-practice-bar-lens-label,
 :global([data-theme="modern-light"]) .chord-practice-bar-badge {
   background: #f0ede6;
   border-color: #e0dbd3;
@@ -319,32 +278,6 @@
 
 /* Audit rows 9-10 (note-blue, color-tone label overrides for dark) — deferred per Phase 2 02-CONTEXT.md design call. */
 
-:global(.app-container[data-layout-variant="tablet-stacked"]) .chord-practice-bar-groups {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.3rem;
-}
-
-:global(.app-container[data-layout-tier="mobile"]) .chord-practice-bar {
-  border-radius: 0.7rem;
-  padding: 0.38rem 0.7rem 0.42rem;
-  gap: 0.28rem;
-}
-
-:global(.app-container[data-layout-tier="mobile"]) .chord-practice-bar-title {
-  font-size: 0.82rem;
-}
-
 :global(.app-container[data-layout-tier="mobile"]) .practice-bar-group-label {
-  font-size: 0.64rem;
-}
-
-:global(.app-container[data-layout-tier="desktop"]) .chord-practice-bar {
-  padding: 0.3rem 0.85rem 0.34rem;
-  gap: 0.3rem;
-  width: min(100%, 32rem);
-}
-
-:global(.app-container[data-layout-tier="desktop"]) .chord-practice-bar-title {
-  font-size: clamp(0.84rem, 1.2vw, 0.96rem);
+  font-size: 0.54rem;
 }

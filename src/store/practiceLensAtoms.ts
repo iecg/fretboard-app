@@ -59,7 +59,6 @@ import {
 import {
   activeProgressionStepAtom,
   activeResolvedProgressionStepAtom,
-  progressionEnabledAtom,
 } from "./progressionAtoms";
 
 // Guide tone members: 3rd and 7th
@@ -193,7 +192,6 @@ const chordSemanticInputsAtom = atom((get) => {
   if (!chordType) return null;
   if (get(chordOverlayHiddenAtom)) return null;
   const progressionStep =
-    get(progressionEnabledAtom) &&
     !isChordOverlayPatternDisabled(get(fingeringPatternAtom)) &&
     !get(activeResolvedProgressionStepAtom)?.unavailable
       ? get(activeProgressionStepAtom)

@@ -5,7 +5,6 @@ import { makeAtomStore, renderWithStore } from "../test-utils/renderWithAtoms";
 import {
   beatsPerBarAtom,
   chordRootAtom,
-  progressionEnabledAtom,
   progressionStepsAtom,
   progressionTempoBpmAtom,
   rootNoteAtom,
@@ -77,7 +76,6 @@ describe("useProgressionPlaybackLoop", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, threeChordProgression],
       [progressionTempoBpmAtom, tempoBpm],
       [beatsPerBarAtom, 4],
@@ -101,7 +99,6 @@ describe("useProgressionPlaybackLoop", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, threeChordProgression],
       [progressionTempoBpmAtom, tempoBpm],
       [beatsPerBarAtom, 4],
@@ -151,7 +148,6 @@ describe("useProgressionPlaybackLoop", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, threeChordProgression],
       [progressionTempoBpmAtom, tempoBpm],
       [beatsPerBarAtom, 4],

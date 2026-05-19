@@ -9,7 +9,6 @@ import {
   chordOverlayModeAtom,
   chordQualityOverrideAtom,
   chordRootOverrideAtom,
-  progressionEnabledAtom,
   progressionStepsAtom,
   scaleNameAtom,
   rootNoteAtom,
@@ -52,6 +51,8 @@ const DEGREE_MODE_SEEDS = [
   [chordDegreeAtom, "I"],
   [chordQualityOverrideAtom, null],
   [fingeringPatternAtom, "caged"],
+  // Empty progression so the manual/degree chord path is the chord source.
+  [progressionStepsAtom, []],
 ] as const;
 
 const MANUAL_MODE_SEEDS = [
@@ -61,6 +62,8 @@ const MANUAL_MODE_SEEDS = [
   [chordQualityOverrideAtom, "Major Triad"],
   [chordRootOverrideAtom, "C"],
   [fingeringPatternAtom, "caged"],
+  // Empty progression so the manual/degree chord path is the chord source.
+  [progressionStepsAtom, []],
 ] as const;
 
 describe("ChordOverlayControls/ChordOverlayControls", () => {
@@ -190,6 +193,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
         [rootNoteAtom, "C"],
         [chordOverlayModeAtom, "degree"],
         [chordDegreeAtom, "V"],
+        [progressionStepsAtom, []],
       ]);
 
       const degreeGroup = screen.getByRole("group", { name: "Chord degree" });
@@ -204,6 +208,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
         [chordOverlayModeAtom, "manual"],
         [chordQualityOverrideAtom, "Major 7th"],
         [chordRootOverrideAtom, "G"],
+        [progressionStepsAtom, []],
       ]);
 
       const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
@@ -245,7 +250,6 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
         [chordDegreeAtom, null],
         [chordQualityOverrideAtom, null],
         [fingeringPatternAtom, "caged"],
-        [progressionEnabledAtom, true],
         [progressionStepsAtom, [
           { id: "one", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
         ]],
@@ -321,6 +325,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
         [rootNoteAtom, "C"],
         [chordOverlayModeAtom, "degree"],
         [chordDegreeAtom, null],
+        [progressionStepsAtom, []],
       ]);
 
       const lensGroup = screen.getByRole("group", { name: "Practice lens" });

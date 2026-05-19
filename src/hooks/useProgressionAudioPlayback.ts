@@ -156,7 +156,6 @@ function buildSegment(
  */
 export function useProgressionAudioPlayback() {
   const {
-    progressionEnabled,
     progressionPlaying,
     progressionPlaybackBlockedReason,
     progressionLoopEnabled,
@@ -202,8 +201,7 @@ export function useProgressionAudioPlayback() {
     };
 
     if (
-      !progressionEnabled
-      || progressionPlaybackBlockedReason
+      progressionPlaybackBlockedReason
       || isMuted
     ) {
       stopAll();
@@ -376,7 +374,6 @@ export function useProgressionAudioPlayback() {
     lastEnableRef.current = inputs.enable;
     lastConfigRef.current = config;
   }, [
-    progressionEnabled,
     progressionPlaying,
     progressionPlaybackBlockedReason,
     progressionLoopEnabled,

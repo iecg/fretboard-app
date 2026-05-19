@@ -10,6 +10,7 @@ import {
   fingeringPatternAtom,
   fretStartAtom,
   fretEndAtom,
+  progressionStepsAtom,
   progressionTempoBpmAtom,
   tuningNameAtom,
 } from "../../store/atoms";
@@ -66,12 +67,13 @@ describe("StatusBar", () => {
   });
 
   it("shows a dash for the chord when no chord overlay is active", () => {
-    renderWithAtoms(<StatusBar />);
+    renderWithAtoms(<StatusBar />, [[progressionStepsAtom, []]]);
     expect(screen.getByTestId("status-chord")).toHaveTextContent("—");
   });
 
   it("shows the compact chord symbol when a chord is active", () => {
     renderWithAtoms(<StatusBar />, [
+      [progressionStepsAtom, []],
       [chordRootAtom, "G"],
       [chordTypeAtom, "Minor Triad"],
     ]);
@@ -82,6 +84,7 @@ describe("StatusBar", () => {
     // Progression is not the active chord source by default, so
     // effectiveChordDegreeAtom falls back to chordDegreeAtom.
     renderWithAtoms(<StatusBar />, [
+      [progressionStepsAtom, []],
       [chordRootAtom, "G"],
       [chordTypeAtom, "Major Triad"],
       [chordDegreeAtom, "V"],

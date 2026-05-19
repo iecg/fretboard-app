@@ -95,6 +95,17 @@ describe('DegreeChipStrip/DegreeChipStrip', () => {
     expect(container.querySelector('[data-scale-degree="I"]')).toBeTruthy();
   });
 
+  it('renders the note name and interval inline inside each pill', () => {
+    // Phase C: chips are pills — the note name and interval label both live
+    // inside the chip button, no longer split across a column.
+    const { container } = render(
+      <DegreeChipStrip scaleName="A Natural Minor" chips={aMinorChips} />
+    );
+    const firstChip = container.querySelector('.degree-chip');
+    expect(firstChip?.querySelector('.degree-chip-note')?.textContent).toBe('A');
+    expect(firstChip?.querySelector('.degree-chip-interval')?.textContent).toBe('1');
+  });
+
   it('out-of-scale chips do not have data-in-scale attribute', () => {
     const mixedChips: DegreeChip[] = [
       { note: 'C', internalNote: 'C', interval: '1', inScale: true, isTonic: true },

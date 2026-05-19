@@ -30,8 +30,8 @@ const PATTERN_LABELS: Record<FingeringPattern, string> = {
 
 /** Compact lens labels — the strip mirrors the Chord tab's short forms. */
 const LENS_SHORT_LABELS: Record<string, string> = {
-  targets: "Chord",
-  "guide-tones": "Guide",
+  targets: "Chord Tones",
+  "guide-tones": "Guide Tones",
   tension: "Tension",
 };
 

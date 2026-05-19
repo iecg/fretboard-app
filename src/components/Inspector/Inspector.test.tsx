@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
-import { progressionEnabledAtom, progressionStepsAtom, rootNoteAtom, scaleNameAtom } from "../../store/atoms";
+import { progressionStepsAtom, rootNoteAtom, scaleNameAtom } from "../../store/atoms";
 import { Inspector } from "./Inspector";
 
 function renderInspector() {
@@ -36,13 +36,8 @@ describe("Inspector", () => {
     expect(screen.getByRole("tab", { name: "View" }).getAttribute("aria-selected")).toBe("false");
   });
 
-  it("renders the Progression tab even when progressionEnabledAtom is false", () => {
-    renderWithAtoms(<Inspector />, [[progressionEnabledAtom, false]]);
-    expect(screen.getByRole("tab", { name: "Progression" })).toBeInTheDocument();
-  });
-
-  it("renders the Progression tab when progressionEnabledAtom is true", () => {
-    renderWithAtoms(<Inspector />, [[progressionEnabledAtom, true]]);
+  it("renders the Progression tab", () => {
+    renderWithAtoms(<Inspector />, []);
     expect(screen.getByRole("tab", { name: "Progression" })).toBeInTheDocument();
   });
 
@@ -74,7 +69,6 @@ describe("Inspector", () => {
     renderWithAtoms(<Inspector />, [
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
       [
         progressionStepsAtom,
         [{ id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null }],
@@ -84,7 +78,7 @@ describe("Inspector", () => {
     await user.click(screen.getByRole("tab", { name: /progression/i }));
 
     expect(
-      screen.getByRole("switch", { name: "Progression mode" }),
+      screen.getByRole("combobox", { name: "Preset" }),
     ).toBeInTheDocument();
   });
 

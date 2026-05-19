@@ -70,7 +70,6 @@ test.describe("storage persistence", () => {
     await loadVisualState(
       page,
       {
-        progressionEnabled: true,
         progressionTempoBpm: 132,
         progressionLoopEnabled: false,
         progressionSteps: [

@@ -21,12 +21,17 @@ import {
   chordOverlayModeAtom,
   chordHiddenNotesAtom,
   fingeringPatternAtom,
-  progressionEnabledAtom,
   progressionStepsAtom,
 } from "./atoms";
 
 function makeStore() {
-  return createStore();
+  const store = createStore();
+  // Phase B "always-on DAW" removed the progression gate. progressionStepsAtom
+  // defaults to a non-empty progression (I-V-vi-IV), which would drive the
+  // chord overlay. These tests exercise the manual/degree chord path in
+  // isolation, so seed an empty progression to disable the progression source.
+  store.set(progressionStepsAtom, []);
+  return store;
 }
 
 describe("practiceLensAtom", () => {
@@ -364,14 +369,13 @@ describe("noteSemanticMapAtom", () => {
     expect(after!.isChordRoot).toBe(false);
   });
 
-  it("uses manual degree semantics when progression is enabled but chord overlay is disabled by pattern", () => {
+  it("uses manual degree semantics when chord overlay is disabled by pattern", () => {
     const store = makeStore();
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Major");
     store.set(chordDegreeAtom, "I");
     store.set(chordOverlayModeAtom, "degree");
     store.set(chordTypeAtom, "Major Triad");
-    store.set(progressionEnabledAtom, true);
     store.set(progressionStepsAtom, [
       { id: "one", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
     ]);

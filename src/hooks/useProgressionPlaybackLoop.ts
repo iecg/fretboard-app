@@ -17,7 +17,6 @@ import { useProgressionState } from "./useProgressionState";
  */
 export function useProgressionPlaybackLoop() {
   const {
-    progressionEnabled,
     progressionPlaying,
     progressionPlaybackBlockedReason,
     progressionStepDurationMs,
@@ -27,8 +26,7 @@ export function useProgressionPlaybackLoop() {
 
   useEffect(() => {
     if (
-      !progressionEnabled
-      || !progressionPlaying
+      !progressionPlaying
       || progressionPlaybackBlockedReason
     ) {
       return;
@@ -78,7 +76,6 @@ export function useProgressionPlaybackLoop() {
     return () => window.clearTimeout(timeoutId);
   }, [
     advanceProgressionPlayback,
-    progressionEnabled,
     progressionPlaybackBlockedReason,
     progressionPlaying,
     progressionStepDurationMs,

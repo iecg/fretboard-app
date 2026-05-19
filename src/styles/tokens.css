@@ -94,17 +94,18 @@
 }
 
 :root {
-  --glow-cyan-sm: 0 0 6px rgb(77 228 255 / 0.45);
-  --glow-cyan-md: 0 0 12px rgb(77 228 255 / 0.6);
-  --glow-cyan-lg: 0 0 24px rgb(77 228 255 / 0.5);
-  --glow-orange-sm: 0 0 6px rgb(255 154 77 / 0.5);
-  --glow-orange-md: 0 0 12px rgb(255 154 77 / 0.6);
-  --glow-orange-lg: 0 0 24px rgb(255 154 77 / 0.5);
-  --glow-violet-sm: 0 0 6px rgb(167 139 250 / 0.65);
+  /* Glow radii kept tight — a subtle bloom, not a halo. */
+  --glow-cyan-sm: 0 0 1.5px rgb(77 228 255 / 0.45);
+  --glow-cyan-md: 0 0 5px rgb(77 228 255 / 0.6);
+  --glow-cyan-lg: 0 0 10px rgb(77 228 255 / 0.5);
+  --glow-orange-sm: 0 0 1.5px rgb(255 154 77 / 0.5);
+  --glow-orange-md: 0 0 5px rgb(255 154 77 / 0.6);
+  --glow-orange-lg: 0 0 10px rgb(255 154 77 / 0.5);
+  --glow-violet-sm: 0 0 1.5px rgb(167 139 250 / 0.65);
   --glow-violet-border: rgb(167 139 250 / 0.85);
 
-  --glow-filter-cyan: drop-shadow(0 0 6px rgb(77 228 255 / 0.65));
-  --glow-filter-orange: drop-shadow(0 0 6px rgb(255 154 77 / 0.65));
+  --glow-filter-cyan: drop-shadow(0 0 1.5px rgb(77 228 255 / 0.65));
+  --glow-filter-orange: drop-shadow(0 0 1.5px rgb(255 154 77 / 0.65));
 }
 
 :root {
@@ -174,8 +175,8 @@
 :root {
   --chord-chip-size: clamp(2.15rem, 3.4vw, 2.5rem);
   --chord-strip-fill: rgb(22 27 38);
-  --chord-chip-glow-orange: 0 0 6px rgb(255 154 77 / 0.65);
-  --chord-chip-glow-cyan: 0 0 6px rgb(77 228 255 / 0.65);
+  --chord-chip-glow-orange: 0 0 1.5px rgb(255 154 77 / 0.65);
+  --chord-chip-glow-cyan: 0 0 1.5px rgb(77 228 255 / 0.65);
   --chord-chip-border-width: 2px;
 }
 
