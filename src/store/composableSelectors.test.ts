@@ -14,6 +14,7 @@ import {
   chordRootOverrideAtom,
   chordQualityOverrideAtom,
 } from "./chordOverlayAtoms";
+import { progressionStepsAtom } from "./progressionAtoms";
 import type { ResolvedChordMember } from "@fretflow/core";
 
 describe("pure predicates", () => {
@@ -82,6 +83,7 @@ describe("pure predicates", () => {
 describe("cross-domain derived atoms", () => {
   function setupManualChord(root: string, quality: string) {
     const store = createStore();
+    store.set(progressionStepsAtom, []);
     store.set(chordOverlayModeAtom, "manual");
     store.set(chordRootOverrideAtom, root);
     store.set(chordQualityOverrideAtom, quality);

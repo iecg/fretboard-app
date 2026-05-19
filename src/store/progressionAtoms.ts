@@ -81,13 +81,6 @@ const progressionStepsStorage = createStorage<ProgressionStep[]>({
   onWrite: (value) => value.filter(isValidProgressionStep),
 });
 
-export const progressionEnabledAtom = atomWithStorage<boolean>(
-  k("progressionEnabled"),
-  false,
-  booleanStorage,
-  GET_ON_INIT,
-);
-
 export const progressionStepsAtom = atomWithStorage<ProgressionStep[]>(
   k("progressionSteps"),
   DEFAULT_STEPS,
@@ -327,7 +320,6 @@ export const progressionStepDurationMsAtom = atom((get) => {
 });
 
 export const progressionPlaybackBlockedReasonAtom = atom((get) => {
-  if (!get(progressionEnabledAtom)) return "Enable Progression to start playback.";
   if (isChordOverlayPatternDisabled(get(fingeringPatternAtom))) {
     return "Chord overlay disabled for single/two-string patterns.";
   }
@@ -363,7 +355,6 @@ export const loadProgressionPresetAtom = atom(null, (get, set, presetId: string)
   if (!preset) return;
   set(progressionStepsAtom, createStepsFromPreset(preset, get(scaleNameAtom)));
   set(activeProgressionStepIndexAtom, 0);
-  set(progressionEnabledAtom, true);
   set(progressionPlayingStateAtom, false);
   set(progressionStepDeadlineAtom, null);
 });
@@ -374,7 +365,6 @@ export const loadProgressionStepsAtom = atom(
     if (steps.length === 0) return;
     set(progressionStepsAtom, steps.map((step) => createProgressionStep({ ...step })));
     set(activeProgressionStepIndexAtom, 0);
-    set(progressionEnabledAtom, true);
     set(progressionPlayingStateAtom, false);
     set(progressionStepDeadlineAtom, null);
   },
@@ -520,7 +510,6 @@ export const previousProgressionStepAtom = atom(null, (get, set) => {
 });
 
 export const resetProgressionAtomsAtom = atom(null, (_get, set) => {
-  set(progressionEnabledAtom, RESET);
   set(progressionStepsAtom, RESET);
   set(progressionTempoBpmAtom, RESET);
   set(progressionLoopEnabledAtom, RESET);

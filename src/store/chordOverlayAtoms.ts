@@ -41,7 +41,6 @@ import {
 import {
   activeResolvedProgressionStepAtom,
   activeProgressionStepAtom,
-  progressionEnabledAtom,
   updateProgressionStepDegreeAtom,
   updateProgressionStepQualityAtom,
 } from "./progressionAtoms";
@@ -206,7 +205,6 @@ export const chordQualityOverrideAtom = atomWithStorage<string | null>(
 const progressionIsActiveChordSource = (get: Getter) => {
   const activeStep = get(activeResolvedProgressionStepAtom);
   return (
-    get(progressionEnabledAtom) &&
     !isChordOverlayPatternDisabled(get(fingeringPatternAtom)) &&
     !!activeStep &&
     !activeStep.unavailable

@@ -1,10 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
 import { TopBandSummary } from "./TopBandSummary";
-import {
-  progressionEnabledAtom,
-  chordTypeAtom,
-} from "../../store/atoms";
+import { chordTypeAtom } from "../../store/atoms";
 
 // Spy on MotionConfig so we can assert it is NOT called during TopBandSummary rendering.
 // The component previously wrapped its output in a local <MotionConfig reducedMotion="user">;
@@ -61,7 +58,6 @@ describe("TopBandSummary content", () => {
 
   it("never renders a progression-status block", () => {
     const { queryByTestId } = renderWithAtoms(<TopBandSummary />, [
-      [progressionEnabledAtom, true],
       [chordTypeAtom, "Major Triad"],
     ]);
     expect(queryByTestId("progression-status")).toBeNull();
@@ -74,7 +70,7 @@ describe("TopBandSummary motion wiring", () => {
   });
 
   it("does not own a local MotionConfig wrapper", () => {
-    renderWithAtoms(<TopBandSummary />, [[progressionEnabledAtom, false]]);
+    renderWithAtoms(<TopBandSummary />, []);
     // MotionConfig was removed from TopBandSummary in favour of the app-level
     // AppMotionConfig wrapper; verify it is never instantiated here.
     expect(MotionConfigSpy).not.toHaveBeenCalled();

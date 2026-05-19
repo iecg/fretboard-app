@@ -7,7 +7,6 @@ import {
   beatsPerBarAtom,
   progressionBassEnabledAtom,
   progressionDrumsEnabledAtom,
-  progressionEnabledAtom,
   progressionLoopEnabledAtom,
   progressionMetronomeEnabledAtom,
   progressionPlayingAtom,
@@ -23,7 +22,6 @@ const fourStepProgression = [
 
 // A playable progression: enabled, with steps, so playback is not blocked.
 const playableAtoms = [
-  [progressionEnabledAtom, true],
   [progressionStepsAtom, fourStepProgression],
   [beatsPerBarAtom, 4],
 ] as const;
@@ -64,7 +62,8 @@ describe("TransportBar", () => {
   });
 
   it("disables the transport buttons when playback is blocked", () => {
-    renderWithAtoms(<TransportBar />, [[progressionEnabledAtom, false]]);
+    // Empty progression steps → playback blocked.
+    renderWithAtoms(<TransportBar />, [[progressionStepsAtom, []]]);
 
     expect(screen.getByRole("button", { name: "Play progression" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Previous chord" })).toBeDisabled();

@@ -7,7 +7,6 @@ import { makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms
 import {
   activeProgressionStepIndexAtom,
   beatsPerBarAtom,
-  progressionEnabledAtom,
   progressionStepsAtom,
   rootNoteAtom,
   scaleNameAtom,
@@ -17,7 +16,6 @@ import { ProgressionControls } from "./ProgressionControls";
 const BASE_SEEDS = [
   [rootNoteAtom, "C"],
   [scaleNameAtom, "Major"],
-  [progressionEnabledAtom, true],
   [progressionStepsAtom, [
     { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
     { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
@@ -29,10 +27,10 @@ describe("ProgressionControls", () => {
     localStorage.clear();
   });
 
-  it("renders enable toggle, presets, step list, and active step editor", () => {
+  it("renders presets, step list, and active step editor without an on/off toggle", () => {
     renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
 
-    expect(screen.getByRole("switch", { name: "Progression mode" })).toBeInTheDocument();
+    expect(screen.queryByRole("switch", { name: "Progression mode" })).not.toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Preset" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^1.*I.*C Major Triad/i })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Progression degree" })).toBeInTheDocument();
@@ -52,7 +50,6 @@ describe("ProgressionControls", () => {
     await user.click(screen.getAllByRole("option", { name: "ii-V-I" })[0]);
 
     expect(store.get(progressionStepsAtom).map((step) => step.degree)).toEqual(["ii", "V", "I"]);
-    expect(store.get(progressionEnabledAtom)).toBe(true);
   });
 
   it("selects steps and edits degree, duration, and quality", async () => {
@@ -118,13 +115,9 @@ describe("ProgressionControls", () => {
     expect(store.get(progressionStepsAtom)).toHaveLength(2);
   });
 
-  it("toggles progression mode via the Switch", () => {
-    const store = makeAtomStore([[progressionEnabledAtom, false]]);
-    renderWithStore(<ProgressionControls />, store);
-    const sw = screen.getByRole("switch", { name: "Progression mode" });
-    expect(sw.getAttribute("aria-checked")).toBe("false");
-    fireEvent.click(sw);
-    expect(store.get(progressionEnabledAtom)).toBe(true);
+  it("does not render a progression on/off toggle", () => {
+    renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    expect(screen.queryByRole("switch", { name: "Progression mode" })).not.toBeInTheDocument();
   });
 
   it("has no accessibility violations", async () => {
@@ -158,7 +151,6 @@ describe("ProgressionControls PRESET", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
     ]);
     renderWithStore(<ProgressionControls />, store);
     const trigger = screen.getByRole("combobox", { name: "Preset" });
@@ -170,7 +162,6 @@ describe("ProgressionControls PRESET", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
     ]);
     renderWithStore(<ProgressionControls />, store);
     const user = userEvent.setup();
@@ -183,7 +174,6 @@ describe("ProgressionControls PRESET", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
     ]);
     renderWithStore(<ProgressionControls />, store);
     const user = userEvent.setup();
@@ -196,7 +186,6 @@ describe("ProgressionControls PRESET", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Minor Blues"],
-      [progressionEnabledAtom, true],
     ]);
     renderWithStore(<ProgressionControls />, store);
     const user = userEvent.setup();

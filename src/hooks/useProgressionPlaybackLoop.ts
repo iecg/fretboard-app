@@ -1,6 +1,8 @@
 import { useEffect } from "react";
+import { useAtomValue } from "jotai";
 import { ensureProgressionAudio } from "../progressions/audio/bus";
 import { getTimeUntilCurrentStepEndMs, getTimelinePosition } from "../progressions/audio/timeline";
+import { isMutedAtom } from "../store/atoms";
 import { useProgressionState } from "./useProgressionState";
 
 /**
@@ -17,19 +19,21 @@ import { useProgressionState } from "./useProgressionState";
  */
 export function useProgressionPlaybackLoop() {
   const {
-    progressionEnabled,
     progressionPlaying,
     progressionPlaybackBlockedReason,
     progressionStepDurationMs,
     activeProgressionStepIndex,
     advanceProgressionPlayback,
   } = useProgressionState();
+  // While muted, `useProgressionAudioPlayback` clears the timeline; without
+  // this guard the loop would spin re-arming against a null timeline.
+  const isMuted = useAtomValue(isMutedAtom);
 
   useEffect(() => {
     if (
-      !progressionEnabled
-      || !progressionPlaying
+      !progressionPlaying
       || progressionPlaybackBlockedReason
+      || isMuted
     ) {
       return;
     }
@@ -78,9 +82,9 @@ export function useProgressionPlaybackLoop() {
     return () => window.clearTimeout(timeoutId);
   }, [
     advanceProgressionPlayback,
-    progressionEnabled,
     progressionPlaybackBlockedReason,
     progressionPlaying,
+    isMuted,
     progressionStepDurationMs,
     activeProgressionStepIndex,
   ]);

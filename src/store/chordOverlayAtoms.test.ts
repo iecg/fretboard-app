@@ -17,10 +17,7 @@ import {
   fullChordsEnabledAtom,
 } from "./chordOverlayAtoms";
 import { allChordMembersAtom } from "./composableSelectors";
-import {
-  progressionEnabledAtom,
-  progressionStepsAtom,
-} from "./progressionAtoms";
+import { progressionStepsAtom } from "./progressionAtoms";
 import { chordSourceIsProgressionAtom } from "./atoms";
 import { fingeringPatternAtom } from "./fingeringAtoms";
 import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
@@ -66,6 +63,7 @@ describe("chordOverlayAtoms — degree mode (read path)", () => {
 
   it("chordRootAtom returns diatonic root for vi in C Major", () => {
     const store = makeAtomStore([
+      [progressionStepsAtom, []],
       [chordDegreeAtom, "vi"],
       [chordOverlayModeAtom, "degree"],
       [rootNoteAtom, "C"],
@@ -76,6 +74,7 @@ describe("chordOverlayAtoms — degree mode (read path)", () => {
 
   it("chordTypeAtom returns null when chordDegree is null (overlay off)", () => {
     const store = makeAtomStore([
+      [progressionStepsAtom, []],
       [chordDegreeAtom, null],
       [chordOverlayModeAtom, "degree"],
     ]);
@@ -94,14 +93,14 @@ describe("chordOverlayAtoms — manual mode (write path)", () => {
 
   it("writing to chordTypeAtom flips mode to manual", () => {
     // Start: fresh store (mode defaults to "degree")
-    const store = makeAtomStore();
+    const store = makeAtomStore([[progressionStepsAtom, []]]);
     store.set(chordTypeAtom, "Major Triad");
     expect(store.get(chordOverlayModeAtom)).toBe("manual");
     expect(store.get(chordTypeAtom)).toBe("Major Triad");
   });
 
   it("writing to chordRootAtom flips mode to manual", () => {
-    const store = makeAtomStore();
+    const store = makeAtomStore([[progressionStepsAtom, []]]);
     store.set(chordRootAtom, "G#");
     expect(store.get(chordOverlayModeAtom)).toBe("manual");
     expect(store.get(chordRootAtom)).toBe("G#");
@@ -112,6 +111,7 @@ describe("chordOverlayAtoms — manual mode (write path)", () => {
     // This is correct: tests that seed a specific chord type care about chord rendering,
     // not degree alignment.
     const store = makeAtomStore([
+      [progressionStepsAtom, []],
       [chordTypeAtom, "Major Triad"],
       [chordRootAtom, "F#"],
     ]);
@@ -133,6 +133,7 @@ describe("chordOverlayAtoms — degree mode quality override", () => {
 
   it("read path: degree mode + override returns the override quality (V Dom7 in C Major)", () => {
     const store = makeAtomStore([
+      [progressionStepsAtom, []],
       [chordDegreeAtom, "V"],
       [chordOverlayModeAtom, "degree"],
       [rootNoteAtom, "C"],
@@ -146,6 +147,7 @@ describe("chordOverlayAtoms — degree mode quality override", () => {
 
   it("read path: degree mode without override returns diatonic default (V Major Triad in C Major)", () => {
     const store = makeAtomStore([
+      [progressionStepsAtom, []],
       [chordDegreeAtom, "V"],
       [chordOverlayModeAtom, "degree"],
       [rootNoteAtom, "C"],
@@ -158,6 +160,7 @@ describe("chordOverlayAtoms — degree mode quality override", () => {
 
   it("write path: writing chordTypeAtom in degree mode with active degree keeps mode = degree", () => {
     const store = makeAtomStore([
+      [progressionStepsAtom, []],
       [chordDegreeAtom, "V"],
       [chordOverlayModeAtom, "degree"],
       [rootNoteAtom, "C"],
@@ -175,6 +178,7 @@ describe("chordOverlayAtoms — degree mode quality override", () => {
     // null degree means overlay-off, so writing a chord type explicitly should
     // engage manual mode (current contract).
     const store = makeAtomStore([
+      [progressionStepsAtom, []],
       [chordDegreeAtom, null],
       [chordOverlayModeAtom, "degree"],
     ]);
@@ -194,6 +198,7 @@ describe("chordOverlayAtoms — degree mode quality override", () => {
 
   it("setChordDegreeAtom: changing degree clears the quality override", () => {
     const store = makeAtomStore([
+      [progressionStepsAtom, []],
       [chordDegreeAtom, "V"],
       [chordOverlayModeAtom, "degree"],
       [rootNoteAtom, "C"],
@@ -210,6 +215,7 @@ describe("chordOverlayAtoms — degree mode quality override", () => {
 
   it("setChordDegreeAtom: re-selecting the same degree clears the override", () => {
     const store = makeAtomStore([
+      [progressionStepsAtom, []],
       [chordDegreeAtom, "V"],
       [chordOverlayModeAtom, "degree"],
       [rootNoteAtom, "C"],
@@ -224,6 +230,7 @@ describe("chordOverlayAtoms — degree mode quality override", () => {
 
   it("setChordDegreeAtom: turning overlay off (degree=null) clears override", () => {
     const store = makeAtomStore([
+      [progressionStepsAtom, []],
       [chordDegreeAtom, "V"],
       [chordOverlayModeAtom, "degree"],
       [chordQualityOverrideAtom, "Dominant 7th"],
@@ -239,6 +246,7 @@ describe("chordOverlayAtoms — degree mode quality override", () => {
     // remap V → v (minor) which is a different code path (cross-scale degree
     // remapping is outside this fix's scope).
     const store = makeAtomStore([
+      [progressionStepsAtom, []],
       [chordDegreeAtom, "V"],
       [chordOverlayModeAtom, "degree"],
       [rootNoteAtom, "C"],
@@ -263,7 +271,6 @@ describe("chordOverlayAtoms - progression source priority", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, [
         { id: "one", degree: "V", duration: "1-bar", qualityOverride: "Dominant 7th" },
       ]],
@@ -277,7 +284,6 @@ describe("chordOverlayAtoms - progression source priority", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, [
         { id: "one", degree: "V", duration: "1-bar", qualityOverride: null },
       ]],
@@ -294,7 +300,6 @@ describe("chordOverlayAtoms - progression source priority", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, [
         { id: "one", degree: "V", duration: "1-bar", qualityOverride: "Dominant 7th" },
       ]],
@@ -312,7 +317,6 @@ describe("chordOverlayAtoms - progression source priority", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, [
         { id: "one", degree: "V", duration: "1-bar", qualityOverride: null },
       ]],
@@ -330,7 +334,6 @@ describe("chordOverlayAtoms - progression source priority", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, [
         { id: "one", degree: "V", duration: "1-bar", qualityOverride: null },
       ]],
@@ -346,7 +349,6 @@ describe("chordOverlayAtoms - progression source priority", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, [
         { id: "one", degree: "V", duration: "1-bar", qualityOverride: null },
       ]],
@@ -363,7 +365,6 @@ describe("chordOverlayAtoms - progression source priority", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, [
         { id: "one", degree: "V", duration: "1-bar", qualityOverride: null },
       ]],
@@ -380,7 +381,6 @@ describe("chordOverlayAtoms - progression source priority", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, [
         { id: "one", degree: "V", duration: "1-bar", qualityOverride: null },
       ]],
@@ -397,7 +397,6 @@ describe("chordOverlayAtoms - progression source priority", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, [
         { id: "one", degree: "V", duration: "1-bar", qualityOverride: "Dominant 7th" },
       ]],
@@ -419,7 +418,6 @@ describe("chordOverlayAtoms - progression source priority", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, [
         { id: "bad", degree: "not-a-degree", duration: "1-bar", qualityOverride: null },
       ]],
@@ -436,7 +434,6 @@ describe("chordOverlayAtoms - progression source priority", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, [
         { id: "bad", degree: "not-a-degree", duration: "1-bar", qualityOverride: null },
       ]],
@@ -457,7 +454,6 @@ describe("chordOverlayAtoms - progression source priority", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, [
         { id: "bad", degree: "not-a-degree", duration: "1-bar", qualityOverride: null },
       ]],
@@ -483,7 +479,7 @@ describe("chordOverlayAtoms — RESET propagation", () => {
   });
 
   it("RESET on chordTypeAtom resets all backing atoms to defaults", () => {
-    const store = makeAtomStore();
+    const store = makeAtomStore([[progressionStepsAtom, []]]);
     // Put in manual mode with a chord type
     store.set(chordTypeAtom, "Minor Triad");
     expect(store.get(chordOverlayModeAtom)).toBe("manual");
@@ -614,6 +610,7 @@ describe("allChordMembersAtom — scaleDegree population", () => {
   it("out-of-scale chord tone has scaleDegree undefined", () => {
     // D Major = D, F#, A. F# is not in C Major scale.
     const store2 = makeAtomStore([
+      [progressionStepsAtom, []],
       [chordOverlayModeAtom, "manual"],
       [chordRootAtom, "D"],
       [chordTypeAtom, "Major Triad"],
@@ -640,6 +637,7 @@ describe("allChordMembersAtom — scaleInterval for out-of-scale notes", () => {
 
   it("Case 1: C Major + Eb7 — all four chord tones get correct scale-relative scaleInterval", () => {
     const store = makeAtomStore([
+      [progressionStepsAtom, []],
       [chordOverlayModeAtom, "manual"],
       [chordRootAtom, "D#"], // D# = Eb internally
       [chordTypeAtom, "Dominant 7th"],
@@ -679,6 +677,7 @@ describe("allChordMembersAtom — scaleInterval for out-of-scale notes", () => {
 
   it("Case 2: A Natural Minor + E7 — G# (only out-of-scale note) gets scaleInterval='7'", () => {
     const store = makeAtomStore([
+      [progressionStepsAtom, []],
       [chordOverlayModeAtom, "manual"],
       [chordRootAtom, "E"],
       [chordTypeAtom, "Dominant 7th"],
@@ -747,9 +746,9 @@ describe("allChordMembersAtom — scaleInterval for out-of-scale notes", () => {
 });
 
 describe("chordSourceIsProgressionAtom", () => {
-  it("is false when progression mode is disabled", () => {
+  it("is false when there is no resolvable progression step", () => {
     const store = createStore();
-    store.set(progressionEnabledAtom, false);
+    store.set(progressionStepsAtom, []);
     expect(store.get(chordSourceIsProgressionAtom)).toBe(false);
   });
 });
@@ -773,6 +772,7 @@ describe("voicing atoms", () => {
 
   it("availableInversionsAtom includes 3rd for a seventh chord", () => {
     const store = createStore();
+    store.set(progressionStepsAtom, []);
     store.set(chordRootOverrideAtom, "C");
     store.set(chordQualityOverrideAtom, "Major 7th");
     store.set(chordOverlayModeAtom, "manual");
@@ -781,6 +781,7 @@ describe("voicing atoms", () => {
 
   it("availableInversionsAtom exposes only root for a dyad", () => {
     const store = createStore();
+    store.set(progressionStepsAtom, []);
     store.set(chordRootOverrideAtom, "C");
     store.set(chordQualityOverrideAtom, "Power Chord (5)");
     store.set(chordOverlayModeAtom, "manual");

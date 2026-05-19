@@ -9,7 +9,6 @@ test.describe("Progression Visual", () => {
     await loadVisualState(
       page,
       {
-        progressionEnabled: true,
         progressionSteps: [
           { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
           { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
@@ -20,9 +19,9 @@ test.describe("Progression Visual", () => {
       { width: 1280, height: 900 },
     );
 
-    // progressionEnabled is seeded by loadVisualState, so progression mode is
-    // already active at boot. The ProgressionTrack renders in the top band via
-    // ProgressionSummarySlot (not inside the Inspector) — no click required.
+    // The chord track is always visible (Always-On DAW Phase B). The
+    // ProgressionTrack renders in the top band via ProgressionSummarySlot
+    // (not inside the Inspector) — no click required.
     await expect(page.getByRole("group", { name: "Progression track" })).toBeVisible();
     await expectFullPageVisual(page, "progression-desktop-1280x900", linuxTolerance);
   });
@@ -30,11 +29,9 @@ test.describe("Progression Visual", () => {
   test("progression-mobile-390x844", async ({ page }) => {
     // After the mobile rehost, progression controls live in the Inspector's
     // Progression tab. mobileTabAtom was removed; navigate via tab click.
-    // The old MobileTabPanel card heading is gone — check for the switch label.
     await loadVisualState(
       page,
       {
-        progressionEnabled: true,
         progressionSteps: [
           { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
           { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
@@ -46,7 +43,7 @@ test.describe("Progression Visual", () => {
     // Navigate to the Progression tab in the Inspector bottom tab bar.
     await page.getByRole("tab", { name: "Progression" }).click();
 
-    await expect(page.getByRole("switch", { name: "Progression mode" })).toBeVisible();
+    await expect(page.getByRole("combobox", { name: "Preset" })).toBeVisible();
     await expect(page.getByRole("group", { name: "Progression track" })).toBeVisible();
     await expectFullPageVisual(page, "progression-mobile-390x844", linuxTolerance);
   });
@@ -55,7 +52,6 @@ test.describe("Progression Visual", () => {
     await loadVisualState(
       page,
       {
-        progressionEnabled: true,
         fingeringPattern: "one-string",
         progressionSteps: [
           { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },

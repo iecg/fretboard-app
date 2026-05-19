@@ -144,8 +144,10 @@ describe("ChordPracticeBar/ChordPracticeBar", () => {
     expect(screen.getByText("Targets")).toBeTruthy();
   });
 
-  it("renders lensLabel when provided", () => {
-    render(
+  it("never renders the lens-label chip, even when lensLabel is provided", () => {
+    // The "Chord Tones" chip was removed — the active lens is surfaced in the
+    // status bar instead. The prop is still accepted but rendered nowhere.
+    const { container } = render(
       <ChordPracticeBar
         title="G7"
         lensLabel="Guide Tones"
@@ -153,18 +155,8 @@ describe("ChordPracticeBar/ChordPracticeBar", () => {
         landOnGroup={g7GuideToneLandOn}
       />,
     );
-    expect(screen.getByText("Guide Tones")).toBeTruthy();
-  });
-
-  it("does not render lens-label element when lensLabel is omitted", () => {
-    const { container } = render(
-      <ChordPracticeBar
-        title="D Minor 7"
-        chordGroup={dmin7ChordGroup}
-        landOnGroup={dmin7LandOnGroup}
-      />,
-    );
     expect(container.querySelector(".chord-practice-bar-lens-label")).toBeNull();
+    expect(screen.queryByText("Guide Tones")).toBeNull();
   });
 
   it("returns null when both groups are empty", () => {

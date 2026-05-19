@@ -5,7 +5,7 @@ import { makeAtomStore, renderWithStore } from "../test-utils/renderWithAtoms";
 import {
   beatsPerBarAtom,
   chordRootAtom,
-  progressionEnabledAtom,
+  isMutedAtom,
   progressionStepsAtom,
   progressionTempoBpmAtom,
   rootNoteAtom,
@@ -36,6 +36,9 @@ describe("useProgressionPlaybackLoop", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date(0));
+    // isMutedAtom is an atomWithStorage — clear persisted state so a muted
+    // seed in one test never leaks into the next.
+    localStorage.clear();
     _resetTimelineForTests();
     _resetProgressionAudioForTests();
 
@@ -77,7 +80,6 @@ describe("useProgressionPlaybackLoop", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, threeChordProgression],
       [progressionTempoBpmAtom, tempoBpm],
       [beatsPerBarAtom, 4],
@@ -96,12 +98,37 @@ describe("useProgressionPlaybackLoop", () => {
     expect(store.get(chordRootAtom)).toBe("G");
   });
 
+  it("stays inert while muted — no advance and no 0ms hot loop", () => {
+    // While muted, useProgressionAudioPlayback clears the timeline. The loop
+    // must not spin re-arming against a null timeline; advancing fake timers
+    // by a long span here would abort the test if a 0ms hot loop existed.
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, threeChordProgression],
+      [progressionTempoBpmAtom, 60],
+      [beatsPerBarAtom, 4],
+      [isMutedAtom, true],
+    ]);
+    store.set(setProgressionPlayingAtom, true);
+    setActiveStep(0, 0, 1.0, 0, 10);
+
+    renderWithStore(<PlaybackLoopHarness />, store);
+
+    expect(store.get(chordRootAtom)).toBe("C");
+
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
+
+    expect(store.get(chordRootAtom)).toBe("C");
+  });
+
   it("advances multiple chords correctly when the timeline stays in sync", () => {
     const tempoBpm = 60; // 1 beat = 1000ms
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, threeChordProgression],
       [progressionTempoBpmAtom, tempoBpm],
       [beatsPerBarAtom, 4],
@@ -151,7 +178,6 @@ describe("useProgressionPlaybackLoop", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, threeChordProgression],
       [progressionTempoBpmAtom, tempoBpm],
       [beatsPerBarAtom, 4],

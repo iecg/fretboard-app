@@ -8,7 +8,6 @@ import {
   chordTypeAtom,
   chordRootAtom,
   practiceLensAtom,
-  progressionEnabledAtom,
   progressionStepsAtom,
 } from "../../store/atoms";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
@@ -69,7 +68,6 @@ describe("TopBandSummary chord integration", () => {
     renderWithAtoms(<TopBandSummary />, [
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, [
         { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
         { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },

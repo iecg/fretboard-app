@@ -2,7 +2,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { screen } from "@testing-library/react";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
-import { progressionEnabledAtom } from "../../store/atoms";
 import { FretboardLensOverlay } from "./FretboardLensOverlay";
 
 // TopBandSummary pulls in motion/react; stub it for jsdom.
@@ -28,22 +27,14 @@ vi.mock("motion/react", async () => {
 });
 
 describe("FretboardLensOverlay", () => {
-  it("renders the lens panel in scale mode (progression off)", () => {
-    renderWithAtoms(<FretboardLensOverlay />, [[progressionEnabledAtom, false]]);
+  it("always renders the lens panel", () => {
+    renderWithAtoms(<FretboardLensOverlay />, []);
     expect(screen.getByTestId("fretboard-lens-overlay")).toBeInTheDocument();
     expect(screen.getByTestId("top-band-summary")).toBeInTheDocument();
   });
 
-  it("renders nothing in progression mode (progression on)", () => {
-    const { container } = renderWithAtoms(<FretboardLensOverlay />, [
-      [progressionEnabledAtom, true],
-    ]);
-    expect(container).toBeEmptyDOMElement();
-    expect(screen.queryByTestId("fretboard-lens-overlay")).toBeNull();
-  });
-
   it("tags the overlay with the current layout tier and variant", () => {
-    renderWithAtoms(<FretboardLensOverlay />, [[progressionEnabledAtom, false]]);
+    renderWithAtoms(<FretboardLensOverlay />, []);
     const overlay = screen.getByTestId("fretboard-lens-overlay");
     expect(overlay).toHaveAttribute("data-layout-tier");
     expect(overlay).toHaveAttribute("data-layout-variant");

@@ -34,7 +34,6 @@ export interface VisualState {
   practiceLens?: string;
   theme?: "light" | "dark" | "system";
   /** Progression atom seeds (Phase 03+). */
-  progressionEnabled?: boolean;
   progressionTempoBpm?: number;
   progressionLoopEnabled?: boolean;
   progressionSteps?: Array<{

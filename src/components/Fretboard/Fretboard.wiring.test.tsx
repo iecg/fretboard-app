@@ -10,6 +10,7 @@ import {
   chordTypeAtom,
   fingeringPatternAtom,
   fullChordsEnabledAtom,
+  progressionStepsAtom,
   rootNoteAtom,
   scaleNameAtom,
 } from "../../store/atoms";
@@ -26,6 +27,7 @@ vi.mock("../FretboardSVG/FretboardSVG", () => ({
 
 function renderGMajorEPositionChord(chordRoot: string, chordType: string) {
   const store = createStore();
+  store.set(progressionStepsAtom, []);
   store.set(chordOverlayModeAtom, "manual");
   store.set(rootNoteAtom, "G");
   store.set(scaleNameAtom, "Major");
@@ -65,6 +67,7 @@ describe("Fretboard wiring", () => {
 
   it("passes full chord positions and voicings from state into FretboardSVG", () => {
     const store = createStore();
+    store.set(progressionStepsAtom, []);
     store.set(chordOverlayModeAtom, "manual");
     store.set(chordRootAtom, "E");
     store.set(chordTypeAtom, "Major Triad");

@@ -28,7 +28,6 @@ import {
   chordRootOverrideAtom,
   chordOverlayHiddenAtom,
   progressionStepsAtom,
-  progressionEnabledAtom,
   progressionTempoBpmAtom,
   progressionPlayingAtom,
   activeProgressionStepIndexAtom,
@@ -294,6 +293,7 @@ describe("atoms", () => {
     it("reads empty string as null", () => {
       localStorage.setItem(k("chordType"), "");
       const store = makeStore();
+      store.set(progressionStepsAtom, []);
       const unsub = mount(store, chordTypeAtom);
       expect(store.get(chordTypeAtom)).toBeNull();
       unsub();
@@ -309,6 +309,7 @@ describe("atoms", () => {
 
     it("writes null as empty string to chordQualityOverride key", () => {
       const store = makeStore();
+      store.set(progressionStepsAtom, []);
       store.set(chordTypeAtom, null);
       // Phase 02: writes go to chordQualityOverride, not the legacy chordType key.
       expect(localStorage.getItem(k("chordQualityOverride"))).toBe("");
@@ -317,6 +318,7 @@ describe("atoms", () => {
 
     it("writes chord type string to chordQualityOverride key", () => {
       const store = makeStore();
+      store.set(progressionStepsAtom, []);
       store.set(chordTypeAtom, "Minor 7th");
       // Phase 02: writes go to chordQualityOverride, not the legacy chordType key.
       expect(localStorage.getItem(k("chordQualityOverride"))).toBe("Minor 7th");
@@ -376,6 +378,7 @@ describe("atoms", () => {
   describe("setRootNoteAtom", () => {
     it("sets rootNote", () => {
       const store = makeStore();
+      store.set(progressionStepsAtom, []);
       store.set(setRootNoteAtom, "G");
       expect(store.get(rootNoteAtom)).toBe("G");
     });
@@ -384,6 +387,7 @@ describe("atoms", () => {
       // Seed manual mode explicitly. In degree mode the link sync is intentionally
       // skipped because the derived chord root auto-resolves via getDiatonicChord.
       const store = makeStore();
+      store.set(progressionStepsAtom, []);
       store.set(chordOverlayModeAtom, "manual");
       store.set(linkChordRootAtom, true);
       store.set(setRootNoteAtom, "G");
@@ -393,6 +397,7 @@ describe("atoms", () => {
 
     it("does not sync chordRoot when linkChordRoot is false", () => {
       const store = makeStore();
+      store.set(progressionStepsAtom, []);
       store.set(chordRootAtom, "D");
       store.set(linkChordRootAtom, false);
       store.set(setRootNoteAtom, "G");
@@ -402,6 +407,7 @@ describe("atoms", () => {
 
     it("preserves degree mode when scale root changes (I degree)", () => {
       const store = makeStore();
+      store.set(progressionStepsAtom, []);
       store.set(chordOverlayModeAtom, "degree");
       store.set(chordDegreeAtom, "I");
       store.set(rootNoteAtom, "C");
@@ -420,6 +426,7 @@ describe("atoms", () => {
 
     it("preserves degree mode when scale root changes (vi degree)", () => {
       const store = makeStore();
+      store.set(progressionStepsAtom, []);
       store.set(chordOverlayModeAtom, "degree");
       store.set(chordDegreeAtom, "vi");
       store.set(rootNoteAtom, "C");
@@ -444,6 +451,7 @@ describe("atoms", () => {
       // so chordOverlayModeAtom must stay "degree" and the chord re-resolves via
       // getDiatonicChord against the new scaleName automatically.
       const store = makeStore();
+      store.set(progressionStepsAtom, []);
       store.set(chordOverlayModeAtom, "degree");
       store.set(chordDegreeAtom, "ii");
       store.set(rootNoteAtom, "C");
@@ -469,6 +477,7 @@ describe("atoms", () => {
       // The important invariant is chordOverlayModeAtom stays "degree" — the re-resolution
       // is a pure Jotai reactive side-effect, no chord atom writes occur.
       const store = makeStore();
+      store.set(progressionStepsAtom, []);
       store.set(chordOverlayModeAtom, "degree");
       store.set(chordDegreeAtom, "ii");
       store.set(rootNoteAtom, "C");
@@ -485,6 +494,7 @@ describe("atoms", () => {
       // "I" exists in Major and Mixolydian (both uppercase tonic). C Major I → C Major Triad.
       // After browse to G Mixolydian: "I" → G Major Triad.
       const store = makeStore();
+      store.set(progressionStepsAtom, []);
       store.set(chordOverlayModeAtom, "degree");
       store.set(chordDegreeAtom, "I");
       store.set(rootNoteAtom, "C");
@@ -503,6 +513,7 @@ describe("atoms", () => {
   describe("setScaleNameAtom — degree remap on mode change", () => {
     it("Major → Dorian: degree 'I' remaps to 'i' by semitone-equivalence", () => {
       const store = makeStore();
+      store.set(progressionStepsAtom, []);
       store.set(chordOverlayModeAtom, "degree");
       store.set(chordDegreeAtom, "I");
       store.set(rootNoteAtom, "A");
@@ -521,6 +532,7 @@ describe("atoms", () => {
 
     it("Major → Mixolydian: V remaps to v (Mixolydian's 5th-degree is minor)", () => {
       const store = makeStore();
+      store.set(progressionStepsAtom, []);
       store.set(chordOverlayModeAtom, "degree");
       store.set(chordDegreeAtom, "V");
       store.set(rootNoteAtom, "C");
@@ -533,6 +545,7 @@ describe("atoms", () => {
 
     it("Major → Lydian: V stays V (both modes have Major Triad on semitone 7)", () => {
       const store = makeStore();
+      store.set(progressionStepsAtom, []);
       store.set(chordOverlayModeAtom, "degree");
       store.set(chordDegreeAtom, "V");
       store.set(rootNoteAtom, "C");
@@ -543,6 +556,7 @@ describe("atoms", () => {
 
     it("same scale write is a no-op — chord degree unchanged", () => {
       const store = makeStore();
+      store.set(progressionStepsAtom, []);
       store.set(chordOverlayModeAtom, "degree");
       store.set(chordDegreeAtom, "vi");
       store.set(rootNoteAtom, "C");
@@ -553,6 +567,7 @@ describe("atoms", () => {
 
     it("no chord degree set → no-op (overlay-off path)", () => {
       const store = makeStore();
+      store.set(progressionStepsAtom, []);
       store.set(chordOverlayModeAtom, "degree");
       store.set(chordDegreeAtom, null);
       store.set(rootNoteAtom, "C");
@@ -564,6 +579,7 @@ describe("atoms", () => {
 
     it("Major → Phrygian: ii has no semitone-equivalent → degree clears (chord overlay off)", () => {
       const store = makeStore();
+      store.set(progressionStepsAtom, []);
       store.set(chordOverlayModeAtom, "degree");
       store.set(chordDegreeAtom, "ii");
       store.set(rootNoteAtom, "C");
@@ -575,6 +591,7 @@ describe("atoms", () => {
 
     it("preserves chord-quality override across mode changes (sticky on scale change)", () => {
       const store = makeStore();
+      store.set(progressionStepsAtom, []);
       store.set(chordOverlayModeAtom, "degree");
       store.set(chordDegreeAtom, "V");
       store.set(rootNoteAtom, "C");
@@ -602,6 +619,7 @@ describe("atoms", () => {
 
     it("resets core atoms to defaults", () => {
       const store = makeStore();
+      store.set(progressionStepsAtom, []);
       store.set(rootNoteAtom, "G");
       store.set(scaleNameAtom, "Dorian");
       store.set(scaleBrowseModeAtom, "relative");
@@ -611,6 +629,11 @@ describe("atoms", () => {
       store.set(chordTypeAtom, "Major Triad");
 
       store.set(resetAtom);
+      // resetAtom restores progressionStepsAtom to its non-empty default
+      // (DEFAULT_STEPS), which would drive chordTypeAtom via the progression
+      // chord source. Re-seed an empty progression to isolate the manual/degree
+      // chord path being asserted here.
+      store.set(progressionStepsAtom, []);
 
       expect(store.get(rootNoteAtom)).toBe("C");
       expect(store.get(scaleNameAtom)).toBe("Major");
@@ -751,6 +774,7 @@ describe("atoms", () => {
   describe("chordTonesAtom", () => {
     it("returns [] when chord overlay mode is off", () => {
       const store = makeStore();
+      store.set(progressionStepsAtom, []);
       store.set(chordOverlayModeAtom, "off");
       expect(store.get(chordTonesAtom)).toEqual([]);
     });
@@ -764,6 +788,7 @@ describe("atoms", () => {
 
     it("re-derives when chordRootAtom changes", () => {
       const store = makeStore();
+      store.set(progressionStepsAtom, []);
       store.set(chordRootAtom, "C");
       store.set(chordTypeAtom, "Major Triad");
       expect(store.get(chordTonesAtom)).toEqual(["C", "E", "G"]);
@@ -1012,7 +1037,6 @@ describe("atoms", () => {
 
     it("setFingeringPatternAtom pauses progression playback for chord-disabled patterns", () => {
       const store = makeStore();
-      store.set(progressionEnabledAtom, true);
       store.set(progressionStepsAtom, [
         { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
       ]);
@@ -1025,11 +1049,9 @@ describe("atoms", () => {
 
     it("resetAtom resets persisted progression settings", () => {
       const store = makeStore();
-      store.set(progressionEnabledAtom, true);
       store.set(progressionTempoBpmAtom, 140);
       store.set(resetAtom);
 
-      expect(store.get(progressionEnabledAtom)).toBe(false);
       expect(store.get(progressionTempoBpmAtom)).toBe(90);
     });
   });

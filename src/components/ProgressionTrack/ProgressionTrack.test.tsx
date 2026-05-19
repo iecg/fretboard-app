@@ -5,7 +5,6 @@ import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-util
 import {
   activeProgressionStepIndexAtom,
   beatsPerBarAtom,
-  progressionEnabledAtom,
   progressionStepsAtom,
 } from "../../store/atoms";
 import { ProgressionTrack } from "./ProgressionTrack";
@@ -32,7 +31,6 @@ const twoBarLeadingProgression = [
 describe("ProgressionTrack", () => {
   it("renders the timeline group, ruler, and chord blocks", () => {
     const { container } = renderWithAtoms(<ProgressionTrack />, [
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, fourStepProgression],
       [beatsPerBarAtom, 4],
     ]);
@@ -49,7 +47,6 @@ describe("ProgressionTrack", () => {
 
   it("renders short chord labels (e.g. C, G7, Am, F) in the visible block text", () => {
     renderWithAtoms(<ProgressionTrack />, [
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, fourStepProgression],
       [beatsPerBarAtom, 4],
     ]);
@@ -64,7 +61,6 @@ describe("ProgressionTrack", () => {
 
   it("clicking a chord block selects that progression step", () => {
     const store = makeAtomStore([
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, fourStepProgression],
       [activeProgressionStepIndexAtom, 0],
     ]);
@@ -77,7 +73,6 @@ describe("ProgressionTrack", () => {
 
   it("sizes beat-duration blocks proportionally to the active meter", () => {
     const { container } = renderWithAtoms(<ProgressionTrack />, [
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, beatDurationProgression],
       [beatsPerBarAtom, 8],
     ]);
@@ -92,7 +87,6 @@ describe("ProgressionTrack", () => {
 
   it("positions the playhead using exact fractional total duration bars", () => {
     const { container } = renderWithAtoms(<ProgressionTrack />, [
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, beatDurationProgression],
       [beatsPerBarAtom, 8],
       [activeProgressionStepIndexAtom, 1],
@@ -103,7 +97,6 @@ describe("ProgressionTrack", () => {
 
   it("positions chord blocks by exact cumulative bar percentages", () => {
     renderWithAtoms(<ProgressionTrack />, [
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, twoBarLeadingProgression],
       [beatsPerBarAtom, 4],
     ]);
@@ -125,7 +118,6 @@ describe("ProgressionTrack", () => {
 
   it("shows spelled-out bar/beat labels in the visible duration span", () => {
     renderWithAtoms(<ProgressionTrack />, [
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, fourStepProgression],
       [beatsPerBarAtom, 4],
     ]);
@@ -137,7 +129,6 @@ describe("ProgressionTrack", () => {
 
   it("no longer renders the rehosted backing-track controls", () => {
     renderWithAtoms(<ProgressionTrack />, [
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, fourStepProgression],
       [beatsPerBarAtom, 4],
     ]);
@@ -153,7 +144,6 @@ describe("ProgressionTrack", () => {
 
   it("no longer hosts the transport bar — only the timeline", () => {
     const { container } = renderWithAtoms(<ProgressionTrack />, [
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, fourStepProgression],
       [beatsPerBarAtom, 4],
     ]);

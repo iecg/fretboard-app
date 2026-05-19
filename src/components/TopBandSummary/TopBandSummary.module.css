@@ -1,45 +1,48 @@
-/* The top band is a DAW faceplate — the upper half of the same theme-adaptive
- * hardware unit as the Inspector, via the shared .faceplate class. */
+/* Phase C — the lens is a slim inline strip ("a quiet legend, not a popover").
+ * A single horizontal row: scale section, a hairline vertical divider, then the
+ * chord section. No faceplate card — transparent fill, no border, no shadow. */
 .top-band-summary {
-  composes: faceplate from "../shared/shared.module.css";
-
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  width: min(100%, 30rem);
-  margin: 0 auto;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.8rem;
+  width: 100%;
   overflow: visible;
-  transition:
-    box-shadow var(--transition-fast),
-    border-color var(--transition-fast);
 
-  /* Suppress child strip surfaces — the faceplate owns the fill. */
+  /* Shared NotePill height — consumed by both the scale chips and the chord
+     tone pills via the NotePill `.pill` class. */
+  --chip-size: 1.1rem;
+
+  /* Suppress child strip surfaces — the inline strip carries no fill. */
   --strip-bg-override: transparent;
   --strip-border-override: none;
   --strip-shadow-override: none;
-
-  /* Faceplate owns the rounded corners — flatten nested strip corners. */
   --strip-radius: 0;
 }
 
-/* stylelint-disable selector-pseudo-class-no-unknown */
-:global(.app-container[data-layout-tier="desktop"][data-layout-variant^="desktop-"]) .top-band-summary {
-  width: min(100%, 32rem);
-}
-/* stylelint-enable selector-pseudo-class-no-unknown */
-
 .chord-section {
-  width: 100%;
+  display: flex;
+  align-items: center;
 }
 
-/* Inset hairline divider between the chip strip and the chord-practice bar.
-   Rendered inside the animated motion container so it appears/disappears in
-   lockstep with the content — no orphaned lines. */
+/* Hairline vertical divider between the scale pills and the chord section. */
 .chord-section::before {
   content: "";
-  display: block;
-  height: 1px;
-  margin: 0 0;
+  align-self: stretch;
+  width: 1px;
+  min-height: 1.1rem;
+  margin-inline-end: 0.8rem;
   background: var(--chrome-border);
-  opacity: 0.6;
+}
+
+/* Mobile: larger pill touch targets. */
+:global(.app-container[data-layout-tier="mobile"]) .top-band-summary {
+  --chip-size: 1.25rem;
+}
+
+/* Mobile: the chord section wraps below the scale row; swap the vertical
+   divider for no divider — the row break already separates the sections. */
+:global(.app-container[data-layout-tier="mobile"]) .chord-section::before {
+  display: none;
 }

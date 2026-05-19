@@ -3,7 +3,6 @@ import { screen } from "@testing-library/react";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
 import { axe } from "../../test-utils/a11y";
 import {
-  progressionEnabledAtom,
   progressionStepsAtom,
   rootNoteAtom,
   scaleNameAtom,
@@ -13,7 +12,6 @@ import { ChordTab } from "./ChordTab";
 const PROGRESSION_SEEDS = [
   [rootNoteAtom, "C"],
   [scaleNameAtom, "Major"],
-  [progressionEnabledAtom, true],
   [
     progressionStepsAtom,
     [{ id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null }],
@@ -33,10 +31,8 @@ describe("ChordTab", () => {
     ).not.toBeNull();
   });
 
-  it("uses the overlay accent when progression mode is off", () => {
-    const { container } = renderWithAtoms(<ChordTab />, [
-      [progressionEnabledAtom, false],
-    ]);
+  it("uses the overlay accent when no progression step is the chord source", () => {
+    const { container } = renderWithAtoms(<ChordTab />, [[progressionStepsAtom, []]]);
     expect(
       container.querySelector('[data-chord-accent="overlay"]'),
     ).not.toBeNull();

@@ -22,7 +22,6 @@ import {
   progressionDrumPatternAtom,
   progressionDrumsEnabledAtom,
   progressionDrumVariationsAtom,
-  progressionEnabledAtom,
   progressionGenreStyleAtom,
   progressionLoopEnabledAtom,
   progressionMetronomeEnabledAtom,
@@ -45,7 +44,6 @@ import {
 } from "../store/atoms";
 
 export function useProgressionState() {
-  const [progressionEnabled, setProgressionEnabled] = useAtom(progressionEnabledAtom);
   const [progressionTempoBpm, setProgressionTempoBpm] = useAtom(progressionTempoBpmAtom);
   const [progressionLoopEnabled, setProgressionLoopEnabled] = useAtom(progressionLoopEnabledAtom);
   const [progressionStrumEnabled, setProgressionStrumEnabled] = useAtom(progressionStrumEnabledAtom);
@@ -122,8 +120,6 @@ export function useProgressionState() {
   const currentProgressionPresetId = useAtomValue(currentProgressionPresetIdAtom);
 
   return {
-    progressionEnabled,
-    setProgressionEnabled,
     progressionSteps,
     resolvedProgressionSteps,
     activeProgressionStepIndex,

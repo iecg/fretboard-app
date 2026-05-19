@@ -1,38 +1,37 @@
 .degree-chip-strip {
   composes: strip-surface from "../shared/shared.module.css";
 
-  --chip-size: clamp(1.45rem, 2.1vw, 1.65rem);
-  --chip-half: calc(var(--chip-size) / 2);
-
-  --chip-border-width: 2px;
+  /* Pill height (--chip-size) is inherited from TopBandSummary. */
   --chip-border-muted: var(--chip-border-inactive);
   --chip-line-muted:   var(--chip-border-inactive);
   --chip-focus-ring:   var(--accent-primary);
   --chip-hexagon-clip:     polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
   --color-note-inner-fill: var(--surface-base);
 
+  /* Phase C — a single inline row: micro-label on the left, pills on the
+     right. No card surface; the FretboardLensStrip owns the only chrome. */
   display: flex;
-  flex-direction: column;
-  gap: var(--strip-gap, 0.2rem);
-  width: min(100%, 30rem);
-  margin: 0 auto;
-  padding: var(--strip-padding, 0.28rem 0.65rem 0.3rem);
-  border-radius: var(--strip-radius, 0.75rem);
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.28rem 0.45rem;
   background: var(--strip-bg-override, var(--strip-fill));
   border: var(--strip-border-override, var(--strip-border));
   box-shadow: var(--strip-shadow-override, var(--strip-shadow));
-  align-items: center;
-  text-align: center;
 }
 
 .degree-chip-strip-header {
-  composes: card-section-header from "../shared/shared.module.css";
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 0 0 auto;
 
   /* DAW faceplate micro-label — matches the Inspector's section labels. */
-  font-size: var(--text-2xs);
-  font-weight: 500;
+  font-size: 0.58rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.11em;
+  white-space: nowrap;
   color: var(--surface-control-fg-muted);
 }
 
@@ -53,73 +52,42 @@
 .degree-chip-strip-list {
   position: relative;
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 0.3rem;
   list-style: none;
   margin: 0;
   padding: 0;
-  width: 100%;
 }
 
-.degree-chip-strip-list::before {
-  content: "";
-  position: absolute;
-  left: var(--chip-half);
-  right: var(--chip-half);
-  top: calc(var(--chip-half) - 1px);
-  height: 2px;
-  background: var(--chip-line-muted);
-  pointer-events: none;
-  z-index: 0;
-}
-
+/* Item-level hook — geometry comes from the shared NotePill `.item`. The
+   z-index keeps the color-note `::before` ring layered correctly. */
 .degree-chip-item {
-  position: relative;
   z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.28rem;
-  flex: 0 0 auto;
 }
 
+/* Default (out-of-scale) chip colors — geometry comes from NotePill `.pill`. */
 .degree-chip {
-  display: grid;
-  place-items: center;
-  width: var(--chip-size);
-  height: var(--chip-size);
-  border-radius: 50%;
   background: var(--strip-fill);
-  border: var(--chip-border-width) solid var(--chip-border-muted);
-  cursor: pointer;
-  padding: 0;
-  transition:
-    opacity var(--transition-fast),
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast);
-}
-
-.degree-chip:focus-visible {
-  outline: var(--focus-ring);
-  outline-offset: var(--focus-ring-offset);
-  box-shadow: var(--glow-cyan-sm);
+  border-color: var(--chip-border-muted);
 }
 
 .degree-chip-item[data-in-scale='true'] .degree-chip {
   border-color: var(--role-scale-border);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--role-scale-border) 45%, transparent);
+  box-shadow: 0 0 1.5px color-mix(in srgb, var(--role-scale-border) 45%, transparent);
   opacity: 1;
 }
 
 .degree-chip-item[data-is-tonic='true'] .degree-chip {
   border-color: var(--role-chord-border);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--role-chord-border) 50%, transparent);
+  box-shadow: 0 0 1.5px color-mix(in srgb, var(--role-chord-border) 50%, transparent);
   opacity: 1;
 }
 
 /* Apply drop-shadow to item so clip-path doesn't consume the effect. */
 .degree-chip-item[data-is-color-note='true'] {
-  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--role-color-tone-ring) 75%, transparent));
+  filter: drop-shadow(0 0 1.5px color-mix(in srgb, var(--role-color-tone-ring) 75%, transparent));
   will-change: filter;
 }
 
@@ -157,23 +125,9 @@
   z-index: 1;
 }
 
-/* Masks connector line when chip opacity is low. */
-.degree-chip-item[data-hidden='true']::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: var(--chip-size);
-  height: var(--chip-size);
-  border-radius: 50%;
-  background: var(--strip-fill);
-  z-index: -1;
-}
-
 .degree-chip-item[data-hidden='true'] .degree-chip {
   border-color: var(--chip-border-muted);
-  box-shadow: 0 0 6px var(--chip-line-muted);
+  box-shadow: 0 0 1.5px var(--chip-line-muted);
   filter: none;
   opacity: var(--note-hidden-opacity);
 }
@@ -190,7 +144,7 @@
 /* Specificity chain required: degree-color mode must reinstate the color-note drop-shadow that
    the base [data-degree-colors] fill rule (above) would otherwise obscure via stacking context. */
 .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-in-scale='true'][data-is-color-note='true'] {
-  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--role-color-tone-ring) 75%, transparent));
+  filter: drop-shadow(0 0 1.5px color-mix(in srgb, var(--role-color-tone-ring) 75%, transparent));
 }
 
 /* Specificity chain required: must beat the degree-color fill set two rules above. */
@@ -220,7 +174,7 @@
 .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-in-scale='true'][data-hidden='true'] .degree-chip {
   background: var(--strip-fill);
   border-color: var(--chip-border-muted);
-  box-shadow: 0 0 6px var(--chip-line-muted);
+  box-shadow: 0 0 1.5px var(--chip-line-muted);
 }
 
 /* Specificity chain required: hidden + color-note in degree-colors mode must beat both the
@@ -234,28 +188,6 @@
 .degree-chip-strip[data-degree-colors='true'] .degree-chip-item[data-in-scale='true'][data-hidden='true'][data-is-color-note='true'] .degree-chip::before {
   background: var(--color-note-inner-fill);
 }
-
-.degree-chip-note {
-  display: inline-flex;
-  align-items: center;
-  font-family: var(--font-sans);
-  font-weight: var(--font-weight-semibold);
-  font-size: clamp(0.72rem, 1.2vw, 0.84rem);
-  color: var(--text-main);
-  /* Center glyphs past ascender/descender asymmetry. */
-  line-height: calc(var(--chip-size) - var(--chip-border-width) * 2);
-  letter-spacing: 0.01em;
-}
-
-.degree-chip-interval {
-  font-family: var(--font-sans);
-  font-size: 0.62rem;
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-main);
-  line-height: 1;
-  letter-spacing: 0.02em;
-}
-
 
 :global([data-theme="modern-light"]) .degree-chip-strip {
   --color-note-inner-fill: var(--surface-float);
@@ -334,36 +266,10 @@
 
 
 
-:global(.app-container[data-layout-tier="mobile"]) .degree-chip-strip {
-  --chip-size: 2.15rem;
-
-  width: 100%;
-  border-radius: 0.85rem;
-  padding: 0.45rem 0.7rem 0.5rem;
-  gap: 0.35rem;
-}
-
 :global(.app-container[data-layout-tier="mobile"]) .degree-chip-note {
-  font-size: 1.1rem;
+  font-size: 0.72rem;
 }
 
 :global(.app-container[data-layout-tier="mobile"]) .degree-chip-interval {
-  font-size: 0.82rem;
-}
-
-/* Desktop compact chip strip — targets ~82px strip height. */
-:global(.app-container[data-layout-tier="desktop"]) .degree-chip-strip {
-  --chip-size: clamp(1.82rem, 2.45vw, 2.02rem);
-
-  padding: 0.34rem 0.78rem 0.38rem;
-  gap: 0.24rem;
-  width: min(100%, 32rem);
-}
-
-:global(.app-container[data-layout-tier="desktop"]) .degree-chip-note {
-  font-size: clamp(1rem, 1.7vw, 1.15rem);
-}
-
-:global(.app-container[data-layout-tier="desktop"]) .degree-chip-interval {
-  font-size: 0.78rem;
+  font-size: 0.54rem;
 }

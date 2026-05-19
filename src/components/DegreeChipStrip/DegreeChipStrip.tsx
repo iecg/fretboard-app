@@ -5,6 +5,7 @@ import { useAtomValue } from 'jotai';
 import { ANIMATION_DURATION_FAST } from '@fretflow/core';
 
 import { scaleDegreeColorsEnabledAtom } from '../../store/atoms';
+import { NotePill } from '../NotePill/NotePill';
 import styles from './DegreeChipStrip.module.css';
 
 export interface DegreeChip {
@@ -67,38 +68,41 @@ export function DegreeChipStrip({
           <motion.ul
             key="chip-list"
             className={styles['degree-chip-strip-list']}
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: ANIMATION_DURATION_FAST }}
-            style={{ overflow: 'hidden' }}
           >
             {chips.map((chip, i) => {
               const isHidden = hiddenNotes?.has(chip.internalNote) ?? false;
               const isColorNote = colorNotes?.has(chip.internalNote) ?? false;
               return (
-                <li
+                <NotePill
                   key={`${chip.note}-${i}`}
-                  className={styles['degree-chip-item']}
-                  data-in-scale={chip.inScale ? 'true' : undefined}
-                  data-is-tonic={chip.isTonic ? 'true' : undefined}
-                  data-hidden={isHidden ? 'true' : undefined}
-                  data-is-color-note={isColorNote ? 'true' : undefined}
-                  data-scale-degree={degreeColorsEnabled ? chip.scaleDegree : undefined}
-                  style={degreeColorsEnabled && chip.degreeColor ? { '--degree-color': chip.degreeColor } as React.CSSProperties : undefined}
-                >
-                  <button
-                    type="button"
-                    className={styles['degree-chip']}
-                    aria-pressed={isHidden}
-                    aria-label={`${isHidden ? 'Show' : 'Hide'} ${chip.note}`}
-                    onClick={() => onChipToggle?.(chip.internalNote)}
-                    disabled={!onChipToggle}
-                  >
-                    <span className={styles['degree-chip-note']}>{chip.note}</span>
-                  </button>
-                  <span className={styles['degree-chip-interval']}>{chip.interval}</span>
-                </li>
+                  note={chip.note}
+                  interval={chip.interval}
+                  ariaLabel={`${isHidden ? 'Show' : 'Hide'} ${chip.note}`}
+                  pressed={isHidden}
+                  onToggle={
+                    onChipToggle ? () => onChipToggle(chip.internalNote) : undefined
+                  }
+                  itemClassName={styles['degree-chip-item']}
+                  pillClassName={styles['degree-chip']}
+                  noteClassName={styles['degree-chip-note']}
+                  intervalClassName={styles['degree-chip-interval']}
+                  itemStyle={
+                    degreeColorsEnabled && chip.degreeColor
+                      ? ({ '--degree-color': chip.degreeColor } as React.CSSProperties)
+                      : undefined
+                  }
+                  itemData={{
+                    'data-in-scale': chip.inScale ? 'true' : undefined,
+                    'data-is-tonic': chip.isTonic ? 'true' : undefined,
+                    'data-hidden': isHidden ? 'true' : undefined,
+                    'data-is-color-note': isColorNote ? 'true' : undefined,
+                    'data-scale-degree': degreeColorsEnabled ? chip.scaleDegree : undefined,
+                  }}
+                />
               );
             })}
           </motion.ul>

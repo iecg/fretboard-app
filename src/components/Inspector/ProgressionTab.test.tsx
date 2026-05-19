@@ -3,7 +3,6 @@ import { screen } from "@testing-library/react";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
 import { axe } from "../../test-utils/a11y";
 import {
-  progressionEnabledAtom,
   progressionStepsAtom,
   rootNoteAtom,
   scaleNameAtom,
@@ -13,7 +12,6 @@ import { ProgressionTab } from "./ProgressionTab";
 const SEEDS = [
   [rootNoteAtom, "C"],
   [scaleNameAtom, "Major"],
-  [progressionEnabledAtom, true],
   [
     progressionStepsAtom,
     [{ id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null }],
@@ -28,7 +26,7 @@ describe("ProgressionTab", () => {
   it("renders the ProgressionControls editor", () => {
     renderWithAtoms(<ProgressionTab />, [...SEEDS]);
     expect(
-      screen.getByRole("switch", { name: "Progression mode" }),
+      screen.getByRole("combobox", { name: "Preset" }),
     ).toBeInTheDocument();
   });
 

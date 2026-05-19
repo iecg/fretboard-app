@@ -16,10 +16,17 @@ import {
   practiceLensAtom,
   lensAvailabilityContextAtom,
   lensAvailabilityAtom,
+  progressionStepsAtom,
 } from "./atoms";
 
 function makeStore() {
-  return createStore();
+  const store = createStore();
+  // Phase B "always-on DAW" removed the progression gate. progressionStepsAtom
+  // defaults to a non-empty progression (I-V-vi-IV), which would drive the
+  // chord overlay. These tests exercise the manual/degree chord path in
+  // isolation, so seed an empty progression to disable the progression source.
+  store.set(progressionStepsAtom, []);
+  return store;
 }
 
 describe("chordMemberFactsAtom", () => {
@@ -140,12 +147,14 @@ describe("Focus removal", () => {
 
   it("chord domain is scale-free: chordMemberFactsAtom returns same facts for any scale", () => {
     const storeA = createStore();
+    storeA.set(progressionStepsAtom, []);
     storeA.set(chordRootAtom, "C");
     storeA.set(chordTypeAtom, "Major Triad");
     storeA.set(rootNoteAtom, "A");
     storeA.set(scaleNameAtom, "Major");
 
     const storeB = createStore();
+    storeB.set(progressionStepsAtom, []);
     storeB.set(chordRootAtom, "C");
     storeB.set(chordTypeAtom, "Major Triad");
     storeB.set(rootNoteAtom, "F#");

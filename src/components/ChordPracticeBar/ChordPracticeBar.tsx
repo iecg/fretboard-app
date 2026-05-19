@@ -11,6 +11,7 @@ import {
   toggleChordHiddenNoteAtom,
   toggleChordOverlayHiddenAtom,
 } from "../../store/atoms";
+import { NotePill } from "../NotePill/NotePill";
 import shared from "../shared/shared.module.css";
 import styles from "./ChordPracticeBar.module.css";
 
@@ -23,35 +24,39 @@ interface PillProps {
 function Pill({ note, noteHidden, onToggleNote }: PillProps) {
   const aria = [note.displayNote, note.intervalName].filter(Boolean).join(", ");
   return (
-    <li className={styles["practice-bar-pill-item"]}>
-      <button
-        type="button"
-        className={styles["practice-bar-pill"]}
-        data-chord-root={note.isChordRoot ? "true" : undefined}
-        data-guide-tone={note.isGuideTone ? "true" : undefined}
-        data-tension={note.isTension ? "true" : undefined}
-        data-in-scale={note.isInScale ? "true" : undefined}
-        data-scale-degree={note.scaleDegree !== undefined ? note.scaleDegree : undefined}
-        data-hidden-note={noteHidden ? "true" : undefined}
-        style={note.degreeColor ? { "--degree-color": note.degreeColor } as React.CSSProperties : undefined}
-        aria-label={`Toggle visibility of ${aria}`}
-        aria-pressed={!noteHidden}
-        onClick={() => onToggleNote(note.internalNote)}
-      >
-        <span className={styles["practice-bar-pill-note"]}>{note.displayNote}</span>
-        {note.intervalName && (
-          <span className={styles["practice-bar-pill-interval"]}>{note.intervalName}</span>
-        )}
-        {note.resolvesTo && (
-          <span
-            className={styles["practice-bar-pill-resolve"]}
-            aria-label={`resolves to ${note.resolvesTo.displayNote}`}
-          >
-            →{note.resolvesTo.displayNote}
-          </span>
-        )}
-      </button>
-    </li>
+    <NotePill
+      note={note.displayNote}
+      interval={note.intervalName}
+      ariaLabel={`Toggle visibility of ${aria}`}
+      pressed={!noteHidden}
+      onToggle={() => onToggleNote(note.internalNote)}
+      pillClassName={styles["practice-bar-pill"]}
+      noteClassName={styles["practice-bar-pill-note"]}
+      intervalClassName={styles["practice-bar-pill-interval"]}
+      pillStyle={
+        note.degreeColor
+          ? ({ "--degree-color": note.degreeColor } as React.CSSProperties)
+          : undefined
+      }
+      pillData={{
+        "data-chord-root": note.isChordRoot ? "true" : undefined,
+        "data-guide-tone": note.isGuideTone ? "true" : undefined,
+        "data-tension": note.isTension ? "true" : undefined,
+        "data-in-scale": note.isInScale ? "true" : undefined,
+        "data-scale-degree":
+          note.scaleDegree !== undefined ? note.scaleDegree : undefined,
+        "data-hidden-note": noteHidden ? "true" : undefined,
+      }}
+    >
+      {note.resolvesTo && (
+        <span
+          className={styles["practice-bar-pill-resolve"]}
+          aria-label={`resolves to ${note.resolvesTo.displayNote}`}
+        >
+          →{note.resolvesTo.displayNote}
+        </span>
+      )}
+    </NotePill>
   );
 }
 
@@ -88,7 +93,11 @@ function Group({ variant, group, hiddenNotes, onToggleNote }: GroupProps) {
 export interface ChordPracticeBarProps {
   title: string;
   badge?: string | null;
-  /** Active lens label from LENS_REGISTRY. */
+  /**
+   * Active lens label from LENS_REGISTRY. No longer rendered as a chip — the
+   * lens is surfaced in the status bar instead — but kept on the prop surface
+   * for callers that still pass it.
+   */
   lensLabel?: string | null;
   /** All chord members. */
   chordGroup: PracticeBarGroup;
@@ -116,7 +125,6 @@ function landOnMatchesChord(
 export function ChordPracticeBar({
   title,
   badge,
-  lensLabel,
   chordGroup,
   landOnGroup,
   className,
@@ -151,14 +159,11 @@ export function ChordPracticeBar({
         >
           <span className={shared["flex-center"]}>
             {collapsed
-              ? <EyeOff size={18} aria-hidden="true" />
-              : <Eye size={18} aria-hidden="true" />}
+              ? <EyeOff size={14} aria-hidden="true" />
+              : <Eye size={14} aria-hidden="true" />}
           </span>
         </button>
         <span className={styles["chord-practice-bar-title"]}>{title}</span>
-        {lensLabel && (
-          <span className={styles["chord-practice-bar-lens-label"]}>{lensLabel}</span>
-        )}
         {badge && <span className={styles["chord-practice-bar-badge"]}>{badge}</span>}
       </div>
       <AnimatePresence initial={false}>
@@ -166,11 +171,10 @@ export function ChordPracticeBar({
           <motion.div
             key="groups"
             className={styles["chord-practice-bar-groups-container"]}
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
-            style={{ overflow: "hidden" }}
           >
             <div className={styles["chord-practice-bar-groups"]}>
               {!dedupGroups && (

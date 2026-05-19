@@ -121,7 +121,6 @@ export {
 } from "./shapeAtoms";
 
 export {
-  progressionEnabledAtom,
   progressionStepsAtom,
   progressionTempoBpmAtom,
   progressionLoopEnabledAtom,

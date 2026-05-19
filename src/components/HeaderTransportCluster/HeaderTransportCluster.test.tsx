@@ -5,7 +5,6 @@ import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-util
 import { axe } from "../../test-utils/a11y";
 import {
   beatsPerBarAtom,
-  progressionEnabledAtom,
   progressionLoopEnabledAtom,
   progressionPlayingAtom,
   progressionStepsAtom,
@@ -21,7 +20,6 @@ const fourStepProgression = [
 describe("HeaderTransportCluster", () => {
   it("renders transport controls, status lights, and the position/tempo/scale readouts", async () => {
     const { container } = renderWithAtoms(<HeaderTransportCluster />, [
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, fourStepProgression],
       [progressionTempoBpmAtom, 90],
       [beatsPerBarAtom, 4],
@@ -47,7 +45,6 @@ describe("HeaderTransportCluster", () => {
 
   it("transport controls still drive the playback atoms", () => {
     const store = makeAtomStore([
-      [progressionEnabledAtom, true],
       [progressionStepsAtom, fourStepProgression],
       [progressionLoopEnabledAtom, false],
     ]);

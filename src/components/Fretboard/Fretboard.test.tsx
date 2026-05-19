@@ -5,7 +5,7 @@ import userEvent from "@testing-library/user-event";
 import { Provider, createStore } from "jotai";
 import { Fretboard } from "../Fretboard/Fretboard";
 import { STANDARD_TUNING } from "@fretflow/core";
-import { fretEndAtom, fretStartAtom, fretZoomAtom, scaleDegreeColorsEnabledAtom } from "../../store/atoms";
+import { fretEndAtom, fretStartAtom, fretZoomAtom, progressionStepsAtom, scaleDegreeColorsEnabledAtom } from "../../store/atoms";
 
 // Mock audio synth
 vi.mock("../../core/audio", () => ({
@@ -103,8 +103,12 @@ describe("Fretboard/Fretboard", () => {
 
   describe("Note highlighting", () => {
     it("highlights specified notes", () => {
+      const store = createStore();
+      store.set(progressionStepsAtom, []);
       const { container } = render(
-        <Fretboard {...defaultProps} highlightNotes={["E", "G", "B", "C"]} />,
+        <Provider store={store}>
+          <Fretboard {...defaultProps} highlightNotes={["E", "G", "B", "C"]} />
+        </Provider>,
       );
       // Scale root (C) → key-tonic; other scale notes → note-active
       expect(container.querySelectorAll(".key-tonic").length).toBeGreaterThan(
@@ -116,8 +120,12 @@ describe("Fretboard/Fretboard", () => {
     });
 
     it("updates highlight when notes change", () => {
+      const store = createStore();
+      store.set(progressionStepsAtom, []);
       const { container, rerender } = render(
-        <Fretboard {...defaultProps} highlightNotes={["C", "E", "G"]} />,
+        <Provider store={store}>
+          <Fretboard {...defaultProps} highlightNotes={["C", "E", "G"]} />
+        </Provider>,
       );
 
       expect(container.querySelectorAll(".key-tonic").length).toBeGreaterThan(
@@ -128,7 +136,9 @@ describe("Fretboard/Fretboard", () => {
       );
 
       rerender(
-        <Fretboard {...defaultProps} highlightNotes={["D", "F#", "A"]} />,
+        <Provider store={store}>
+          <Fretboard {...defaultProps} highlightNotes={["D", "F#", "A"]} />
+        </Provider>,
       );
 
       // C is rootNote but not in highlight list — no key-tonic
@@ -618,7 +628,9 @@ describe("Fretboard/Fretboard", () => {
 
     it("fires onFretClick when a note is clicked without drag", async () => {
       const onFretClick = vi.fn();
-      renderInteractive(createStore(), { onFretClick });
+      const store = createStore();
+      store.set(progressionStepsAtom, []);
+      renderInteractive(store, { onFretClick });
       const user = userEvent.setup();
       const activeNote = document.querySelector(
         ".note-bubble.root-active, .note-bubble.note-active, .note-bubble.chord-tone",

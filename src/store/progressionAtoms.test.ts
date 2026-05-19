@@ -12,7 +12,6 @@ import {
   duplicateProgressionStepAtom,
   loadProgressionPresetAtom,
   moveProgressionStepAtom,
-  progressionEnabledAtom,
   progressionLoopEnabledAtom,
   progressionPlaybackBlockedReasonAtom,
   progressionPlayingAtom,
@@ -41,7 +40,6 @@ describe("progressionAtoms", () => {
     const store = createStore();
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Major");
-    store.set(progressionEnabledAtom, true);
     store.set(progressionStepsAtom, [
       { id: "v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
     ]);
@@ -119,7 +117,6 @@ describe("progressionAtoms", () => {
 
   it("does not start playback when there are no resolvable steps", () => {
     const store = createStore();
-    store.set(progressionEnabledAtom, true);
     store.set(progressionStepsAtom, []);
 
     store.set(setProgressionPlayingAtom, true);
@@ -130,7 +127,6 @@ describe("progressionAtoms", () => {
 
   it("advances through resolvable steps and stops at the end when loop is off", () => {
     const store = createStore();
-    store.set(progressionEnabledAtom, true);
     store.set(progressionLoopEnabledAtom, false);
     store.set(progressionStepsAtom, [
       { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },

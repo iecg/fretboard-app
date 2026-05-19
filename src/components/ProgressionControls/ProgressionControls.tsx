@@ -16,7 +16,6 @@ import { useScaleState } from "../../hooks/useScaleState";
 import { useTranslation } from "../../hooks/useTranslation";
 import type { ProgressionPresetCategory } from "../../progressions/progressionDomain";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
-import { Switch } from "../Switch/Switch";
 import { StepperControl } from "../StepperControl/StepperControl";
 import { LabeledSelect, type LabeledSelectGroup } from "../LabeledSelect/LabeledSelect";
 import { PropGrid, Prop, GroupHeader } from "../Inspector/InspectorGrid";
@@ -41,8 +40,6 @@ export function ProgressionControls() {
   const { t } = useTranslation();
   const { scaleName, rootNote } = useScaleState();
   const {
-    progressionEnabled,
-    setProgressionEnabled,
     progressionSteps,
     resolvedProgressionSteps,
     activeProgressionStepIndex,
@@ -124,15 +121,8 @@ export function ProgressionControls() {
   return (
     <PropGrid columns={6}>
       {/* ── METER ────────────────────────────────────────────────────────── */}
-      {/* One uniform 6-column row: Mode · Beats/Bar · Tempo · Length · Preset. */}
+      {/* One uniform 6-column row: Beats/Bar · Tempo · Length · Preset. */}
       <GroupHeader>{t("inspector.groupMeter")}</GroupHeader>
-      <Prop label={t("inspector.progressionMode")} span={1}>
-        <Switch
-          label="Progression mode"
-          checked={progressionEnabled}
-          onChange={setProgressionEnabled}
-        />
-      </Prop>
       <Prop label={t("inspector.meterBeats")} span={1}>
         <StepperControl
           label="Beats per bar"
@@ -166,7 +156,7 @@ export function ProgressionControls() {
       <Prop label={t("inspector.meterLength")} span={1}>
         <span className={styles["length-readout"]}>{lengthLabel}</span>
       </Prop>
-      <Prop label={t("inspector.meterPreset")} span={2}>
+      <Prop label={t("inspector.meterPreset")} span={3}>
         <LabeledSelect
           label="Preset"
           hideLabel
