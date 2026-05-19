@@ -58,7 +58,9 @@ export function NotePill({
   pillData,
   children,
 }: NotePillProps) {
-  const enabled = interactive ?? Boolean(onToggle);
+  // A pill is only interactive when it actually has a handler — `interactive`
+  // can opt out, but never opt a handler-less pill back in.
+  const enabled = Boolean(onToggle) && (interactive ?? true);
   return (
     <li className={clsx(styles.item, itemClassName)} style={itemStyle} {...itemData}>
       <button
