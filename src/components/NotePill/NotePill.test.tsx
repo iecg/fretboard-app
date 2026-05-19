@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { axe } from "../../test-utils/a11y";
 import { NotePill } from "./NotePill";
 
 describe("NotePill", () => {
@@ -52,6 +53,16 @@ describe("NotePill", () => {
     expect(container.querySelector("li.role-item")).not.toBeNull();
     expect(container.querySelector('li[data-in-scale="true"]')).not.toBeNull();
     expect(container.querySelector('button.role-pill[data-chord-root="true"]')).not.toBeNull();
+  });
+
+  it("has no accessibility violations", async () => {
+    // Rendered inside a <ul> — a NotePill is a list item by design.
+    const { container } = render(
+      <ul>
+        <NotePill note="C" interval="1" ariaLabel="toggle C" onToggle={() => {}} />
+      </ul>,
+    );
+    expect(await axe(container)).toHaveNoViolations();
   });
 
   it("renders extra children after the interval", () => {
