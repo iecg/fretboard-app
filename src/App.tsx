@@ -161,7 +161,6 @@ function AppContent() {
       header={
         <AppHeader
           brandTitle="FretFlow"
-          brandSubtitle="Studio"
           brandWordmark={<FretFlowWordmark />}
           brandIcon={<BrandMark />}
           transport={<HeaderTransportCluster />}

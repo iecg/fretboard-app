@@ -2,6 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { fireEvent, screen } from "@testing-library/react";
 import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
+import { axe } from "../../test-utils/a11y";
 import {
   beatsPerBarAtom,
   progressionEnabledAtom,
@@ -18,8 +19,8 @@ const fourStepProgression = [
 ] as const;
 
 describe("HeaderTransportCluster", () => {
-  it("renders transport controls, status lights, and the position/tempo/scale readouts", () => {
-    renderWithAtoms(<HeaderTransportCluster />, [
+  it("renders transport controls, status lights, and the position/tempo/scale readouts", async () => {
+    const { container } = renderWithAtoms(<HeaderTransportCluster />, [
       [progressionEnabledAtom, true],
       [progressionStepsAtom, fourStepProgression],
       [progressionTempoBpmAtom, 90],
@@ -40,6 +41,8 @@ describe("HeaderTransportCluster", () => {
     // Scale readout shows only the headline — the parenthetical mode is dropped.
     expect(screen.getByText("C Major")).toBeTruthy();
     expect(screen.queryByText(/Ionian/)).toBeNull();
+
+    expect(await axe(container)).toHaveNoViolations();
   });
 
   it("transport controls still drive the playback atoms", () => {

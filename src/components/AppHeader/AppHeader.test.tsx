@@ -14,13 +14,6 @@ describe('AppHeader/AppHeader', () => {
     expect(title?.textContent).toBe('FretFlow');
   });
 
-  it('renders brandSubtitle when provided', () => {
-    render(<AppHeader brandTitle="FretFlow" brandSubtitle="Fretboard Studio" />);
-    expect(screen.getByTestId('app-header-brand-subtitle')).toHaveTextContent(
-      'Fretboard Studio',
-    );
-  });
-
   it('renders actions slot', () => {
     render(
       <AppHeader
@@ -86,7 +79,6 @@ describe('AppHeader/AppHeader', () => {
     const { container } = render(
       <AppHeader
         brandTitle="FretFlow"
-        brandSubtitle="Interactive Fretboard & Music Theory"
         actions={
           <>
             <button aria-label="Help">?</button>

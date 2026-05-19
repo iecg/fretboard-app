@@ -118,34 +118,6 @@
   align-items: center;
 }
 
-/* "STUDIO" tag — a compact outlined square tag beside the wordmark (matches
-   the always-on DAW design reference). Replaces the former stacked subtitle. */
-.app-header-brand-pill {
-  flex-shrink: 0;
-  font-family: var(--font-mono);
-  font-size: clamp(0.6rem, 0.85vw, 0.72rem);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: rgb(197 213 230 / 0.6);
-  padding: 0.26rem 0.5rem;
-  border: 1px solid rgb(197 213 230 / 0.2);
-  border-radius: 4px;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-:global([data-theme="modern-light"]) .app-header-brand-pill {
-  color: var(--text-muted);
-  border-color: rgb(15 23 42 / 0.16);
-}
-
-@media (max-width: 879px) {
-  .app-header-brand-pill {
-    display: none;
-  }
-}
-
 /* Transport cluster — the DAW transport + readouts, sitting between the
    brand and the utility actions (Always-On DAW Phase A). A hairline divider
    separates it from the brand; it flex-grows so the position readout and the
@@ -159,9 +131,22 @@
   border-inline-start: 1px solid var(--faceplate-divider, rgb(255 255 255 / 0.06));
 }
 
+/* Tablet tier: the brand takes its own row; transport + actions share the
+   row below, so the transport no longer needs a leading divider. A zero
+   flex-basis keeps the transport from claiming the whole second row by its
+   content width — it shrinks so the utility actions stay on the same line,
+   then grows to fill the leftover space. */
+:global(.app-container[data-layout-tier="tablet"]) .app-header-transport {
+  flex: 1 1 0;
+  padding-inline-start: 0;
+  border-inline-start: none;
+}
+
+/* Mobile tier: the brand and the utility actions share the first row; the
+   transport cluster drops to a full-width second row (see the `order` rules
+   below). It carries no leading divider as a standalone band. */
 :global(.app-container[data-layout-tier="mobile"]) .app-header-transport {
-  /* On mobile the cluster wraps onto its own full-width row below the brand;
-     drop the divider so it reads as a standalone band. */
+  order: 2;
   flex: 1 1 100%;
   padding-inline-start: 0;
   border-inline-start: none;
@@ -178,7 +163,11 @@
   border-inline-start: 1px solid var(--faceplate-divider, rgb(255 255 255 / 0.06));
 }
 
+/* Mobile tier: the actions sit on the first row beside the brand (the
+   transport cluster is reordered to the second row), with no leading
+   divider since they no longer follow the transport readouts. */
 :global(.app-container[data-layout-tier="mobile"]) .app-header-actions {
+  order: 1;
   padding-inline-start: 0;
   border-inline-start: none;
 }
@@ -211,8 +200,12 @@
 
 /* Desktop compact header — slim single chrome row holding the unified
    transport cluster. Tight vertical padding keeps the header to one
-   shallow band, matching the always-on DAW design reference. */
+   shallow band, matching the always-on DAW design reference. The row is
+   forced to a single line (no wrap) so brand · transport · utility actions
+   stay aligned even at the compact 1024px width — the transport cluster
+   shrinks via `min-width: 0` rather than wrapping. */
 :global(.app-container[data-layout-tier="desktop"]) .app-header {
+  flex-wrap: nowrap;
   padding-top: clamp(0.34rem, 0.6vw, 0.5rem);
   padding-bottom: clamp(0.34rem, 0.6vw, 0.5rem);
 }
@@ -221,10 +214,16 @@
   width: clamp(1.3rem, 2vw, 1.6rem);
 }
 
-/* Tablet tier: compact header — tighter padding and slightly smaller brand mark. */
+/* Tablet tier: compact header — tighter padding and slightly smaller brand
+   mark. The brand takes the full first row so the transport cluster and the
+   utility actions wrap together onto a single shared second row. */
 :global(.app-container[data-layout-tier="tablet"]) .app-header {
   padding-top: clamp(0.42rem, 0.8vw, 0.58rem);
   padding-bottom: clamp(0.42rem, 0.8vw, 0.58rem);
+}
+
+:global(.app-container[data-layout-tier="tablet"]) .app-header-brand {
+  flex: 1 1 100%;
 }
 
 :global(.app-container[data-layout-tier="tablet"]) .app-header-brand-icon :global(.brand-mark) {

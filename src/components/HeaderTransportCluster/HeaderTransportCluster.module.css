@@ -21,7 +21,7 @@
 
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.34rem;
   flex: 1 1 auto;
   min-width: 0;
   font-family: var(--font-sans);
@@ -59,7 +59,7 @@
   flex-direction: column;
   justify-content: center;
   gap: 0.05rem;
-  padding: 0.16rem 0.5rem 0.18rem;
+  padding: 0.13rem 0.42rem 0.14rem;
   border: 1px solid var(--track-border);
   border-radius: 6px;
   background: var(--track-bg-readout);
@@ -83,13 +83,13 @@
 }
 
 .contextBox {
-  padding-inline: 0.5rem;
+  padding-inline: 0.42rem;
 }
 
 .readoutLabel {
   color: var(--track-text-muted);
   font-family: var(--font-mono);
-  font-size: 0.5rem;
+  font-size: 0.45rem;
   font-weight: 500;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -114,7 +114,7 @@
 
 .positionSeparator {
   color: var(--track-text-muted);
-  font-size: 0.66rem;
+  font-size: 0.58rem;
   font-weight: 400;
   align-self: center;
 }
@@ -127,7 +127,7 @@
 
 .digitBar {
   color: var(--track-accent);
-  font-size: 1rem;
+  font-size: 0.88rem;
   font-weight: 700;
   letter-spacing: -0.01em;
   text-shadow: 0 0 8px rgb(77 228 255 / 0.4);
@@ -135,20 +135,20 @@
 
 .digitDot {
   color: var(--track-accent-dim);
-  font-size: 1rem;
+  font-size: 0.88rem;
   font-weight: 700;
   margin-inline: 0.02em;
 }
 
 .digitBeat {
   color: var(--track-accent);
-  font-size: 0.78rem;
+  font-size: 0.7rem;
   font-weight: 600;
 }
 
 .digitSub {
   color: var(--track-accent-dim);
-  font-size: 0.6rem;
+  font-size: 0.54rem;
   font-weight: 500;
   padding-inline-start: 0.05em;
 }
@@ -156,7 +156,7 @@
 /* The total/denominator renders as a single uniform small readout rather
    than reusing the bar / beat / subdivision size hierarchy. */
 .digits--muted {
-  font-size: 0.66rem;
+  font-size: 0.58rem;
   font-weight: 500;
   letter-spacing: 0;
 }
@@ -182,7 +182,7 @@
   color: var(--track-accent);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums slashed-zero;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 700;
   line-height: 1;
   text-shadow: 0 0 8px rgb(77 228 255 / 0.35);
@@ -191,7 +191,7 @@
 .tempoUnit {
   color: var(--track-text-muted);
   font-family: var(--font-mono);
-  font-size: 0.5rem;
+  font-size: 0.45rem;
   font-weight: 500;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -210,7 +210,7 @@
 .scalePrimary {
   color: var(--track-accent);
   font-family: var(--font-sans);
-  font-size: 0.82rem;
+  font-size: 0.74rem;
   font-weight: 700;
   letter-spacing: -0.005em;
   text-shadow: 0 0 8px rgb(77 228 255 / 0.35);

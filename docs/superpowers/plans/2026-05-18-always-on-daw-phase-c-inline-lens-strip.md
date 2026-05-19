@@ -101,7 +101,7 @@ Delete the `::before` connecting-line track. Pills sit in a simple gap-spaced ro
 - Modify: `src/components/FretboardLensOverlay/FretboardLensOverlay.test.tsx`
 - Modify: App / layout tests covering the fretboard region
 
-- [ ] **Step 1:** `TopBandSummary.test.tsx` — renders inline within the fretboard container; assert it is not absolutely positioned (no overlay testid, or the wrapper has no `position: absolute`).
+- [ ] **Step 1:** `TopBandSummary.test.tsx` — assert *structural placement* rather than CSS: locate the fretboard container, confirm the lens strip is a descendant of it, and confirm it precedes `FretboardSVG` in DOM order (e.g. via `compareDocumentPosition`). Do not assert on `position: absolute` or the absence of an overlay testid — structure, not computed style.
 - [ ] **Step 2:** `DegreeChipStrip.test.tsx` — chips render as pills; the per-note eye toggle still works; assert the connecting-line element is gone.
 - [ ] **Step 3:** `ChordPracticeBar.test.tsx` — behavior unaffected (resize is CSS only); run to confirm.
 - [ ] **Step 4:** `FretboardLensOverlay.test.tsx` — update for the inline strip; the floating overlay is gone.

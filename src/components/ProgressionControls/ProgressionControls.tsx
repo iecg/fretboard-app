@@ -153,7 +153,7 @@ export function ProgressionControls() {
       </Prop>
       <Prop label={t("inspector.meterTempo")} span={1}>
         <StepperControl
-          label="Tempo"
+          label={t("inspector.meterTempo")}
           hideLabel
           value={progressionTempoBpm}
           min={MIN_PROGRESSION_TEMPO_BPM}

@@ -88,7 +88,7 @@ The component runs `useProgressionPlaybackLoop()` and `useProgressionAudioPlayba
 
 - [ ] **Step 2: Ungate `FretboardLensOverlay`**
 
-Remove the `progressionEnabledAtom` import and the `if (progressionEnabled) return null;` early return. The overlay now always renders `TopBandSummary`. (Phase C reworks this component into an inline strip; Phase B only ungates it so the lens is visible in the intermediate state.)
+Remove the `progressionEnabledAtom` import and the early-return guard that hides the overlay while progression is active. Note the *current* guard is `if (progressionEnabled) return null;` — it returns `null` when progression **is** enabled, because the overlay hosts the scale-mode lens (shown only when progression is off). Delete that exact guard (not the inverse) so the overlay always renders `TopBandSummary`. (Phase C reworks this component into an inline strip; Phase B only ungates it so the lens is visible in the intermediate state.)
 
 - [ ] **Step 3: Remove the empty-shell collapse rule**
 

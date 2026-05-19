@@ -64,7 +64,7 @@ export function HeaderTransportCluster() {
       <div className={styles.contextReadouts}>
         <div className={styles.contextBox}>
           <span className={styles.readoutLabel}>Tempo</span>
-          <span className={styles.tempoValue}>
+          <span className={styles.tempoValue} data-testid="header-tempo">
             {progressionTempoBpm}
             <span className={styles.tempoUnit}>BPM</span>
           </span>

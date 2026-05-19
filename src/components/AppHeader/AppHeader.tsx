@@ -4,7 +4,6 @@ import styles from './AppHeader.module.css';
 
 export interface AppHeaderProps {
   brandTitle: string;
-  brandSubtitle?: string;
   /** Optional SVG wordmark. When provided, replaces the text-based title
    *  rendering. `brandTitle` is still used as an accessible label. */
   brandWordmark?: ReactNode;
@@ -29,7 +28,6 @@ function splitBrandTitle(title: string): [string, string] {
 
 export function AppHeader({
   brandTitle,
-  brandSubtitle,
   brandWordmark,
   brandIcon,
   transport,
@@ -62,11 +60,6 @@ export function AppHeader({
                 {titleSecondary}
               </span>
             )}
-          </span>
-        )}
-        {brandSubtitle && (
-          <span className={styles['app-header-brand-pill']} data-testid="app-header-brand-subtitle">
-            {brandSubtitle}
           </span>
         )}
       </div>
