@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { STANDARD_TUNING } from "../guitar";
 import {
-  stringSetMask,
   inversionBassPitchClass,
   openStringMidi,
   generateVoicings,
@@ -9,14 +8,6 @@ import {
 import { getFullChordShapeMatches } from "./fullChordShapes";
 
 describe("voicing helpers", () => {
-  it("maps string-set ids to high→low string indices", () => {
-    expect(stringSetMask("all")).toEqual([0, 1, 2, 3, 4, 5]);
-    expect(stringSetMask("low")).toEqual([3, 4, 5]);
-    expect(stringSetMask("mid")).toEqual([2, 3, 4]);
-    expect(stringSetMask("mid-hi")).toEqual([1, 2, 3]);
-    expect(stringSetMask("top")).toEqual([0, 1, 2]);
-  });
-
   it("computes the inversion bass pitch class", () => {
     expect(inversionBassPitchClass("C", "Major Triad", "root")).toBe(0);
     expect(inversionBassPitchClass("C", "Major Triad", "1st")).toBe(4);
@@ -31,13 +22,52 @@ describe("voicing helpers", () => {
   });
 });
 
+describe("generateVoicings — explicit string set", () => {
+  const base = { tuning: STANDARD_TUNING, maxFret: 12 } as const;
+
+  it("confines a triad search to the requested string indices", () => {
+    const voicings = generateVoicings({
+      ...base, chordRoot: "C", chordType: "Major Triad",
+      voicingType: "triad", inversion: "root", stringSet: [3, 4, 5],
+    });
+    expect(voicings.length).toBeGreaterThan(0);
+    for (const v of voicings) {
+      for (const n of v.notes) {
+        expect([3, 4, 5]).toContain(n.stringIndex);
+      }
+    }
+  });
+
+  it("returns no voicings for an impossible request", () => {
+    // A 4-note chord cannot be voiced inside a 3-string window.
+    const voicings = generateVoicings({
+      ...base, chordRoot: "C", chordType: "Major 7th",
+      voicingType: "drop2", inversion: "root", stringSet: [3, 4, 5],
+    });
+    expect(voicings).toEqual([]);
+  });
+
+  it("searches drop2 voicings on a 4-note chord across a 4-string window", () => {
+    const voicings = generateVoicings({
+      ...base, chordRoot: "C", chordType: "Major 7th",
+      voicingType: "drop2", inversion: "root", stringSet: [2, 3, 4, 5],
+    });
+    expect(voicings.length).toBeGreaterThan(0);
+    for (const v of voicings) {
+      for (const n of v.notes) {
+        expect([2, 3, 4, 5]).toContain(n.stringIndex);
+      }
+    }
+  });
+});
+
 describe("generateVoicings — triad", () => {
   const base = { tuning: STANDARD_TUNING, maxFret: 12 } as const;
 
   it("every triad voicing contains all three chord tones", () => {
     const voicings = generateVoicings({
       ...base, chordRoot: "C", chordType: "Major Triad",
-      voicingType: "triad", inversion: "root", stringSet: "all",
+      voicingType: "triad", inversion: "root", stringSet: [0, 1, 2, 3, 4, 5],
     });
     expect(voicings.length).toBeGreaterThan(0);
     for (const v of voicings) {
@@ -49,7 +79,7 @@ describe("generateVoicings — triad", () => {
   it("root-inversion voicings have the root as the lowest note", () => {
     const voicings = generateVoicings({
       ...base, chordRoot: "C", chordType: "Major Triad",
-      voicingType: "triad", inversion: "root", stringSet: "all",
+      voicingType: "triad", inversion: "root", stringSet: [0, 1, 2, 3, 4, 5],
     });
     for (const v of voicings) {
       const lowest = v.notes.reduce((a, b) => (a.midi <= b.midi ? a : b));
@@ -60,7 +90,7 @@ describe("generateVoicings — triad", () => {
   it("1st-inversion voicings have the 3rd as the lowest note", () => {
     const voicings = generateVoicings({
       ...base, chordRoot: "C", chordType: "Major Triad",
-      voicingType: "triad", inversion: "1st", stringSet: "all",
+      voicingType: "triad", inversion: "1st", stringSet: [0, 1, 2, 3, 4, 5],
     });
     for (const v of voicings) {
       const lowest = v.notes.reduce((a, b) => (a.midi <= b.midi ? a : b));
@@ -71,7 +101,7 @@ describe("generateVoicings — triad", () => {
   it("the string set restricts which strings carry notes", () => {
     const voicings = generateVoicings({
       ...base, chordRoot: "C", chordType: "Major Triad",
-      voicingType: "triad", inversion: "root", stringSet: "top",
+      voicingType: "triad", inversion: "root", stringSet: [0, 1, 2],
     });
     for (const v of voicings) {
       for (const n of v.notes) expect([0, 1, 2]).toContain(n.stringIndex);
@@ -81,14 +111,14 @@ describe("generateVoicings — triad", () => {
   it("returns no voicing for an inversion the chord lacks", () => {
     expect(generateVoicings({
       ...base, chordRoot: "C", chordType: "Major Triad",
-      voicingType: "triad", inversion: "3rd", stringSet: "all",
+      voicingType: "triad", inversion: "3rd", stringSet: [0, 1, 2, 3, 4, 5],
     })).toEqual([]);
   });
 
   it("2nd-inversion voicings have the 5th as the lowest note", () => {
     const voicings = generateVoicings({
       ...base, chordRoot: "C", chordType: "Major Triad",
-      voicingType: "triad", inversion: "2nd", stringSet: "all",
+      voicingType: "triad", inversion: "2nd", stringSet: [0, 1, 2, 3, 4, 5],
     });
     expect(voicings.length).toBeGreaterThan(0);
     for (const v of voicings) {
@@ -100,7 +130,7 @@ describe("generateVoicings — triad", () => {
   it("restricts notes to the low string set", () => {
     const voicings = generateVoicings({
       ...base, chordRoot: "C", chordType: "Major Triad",
-      voicingType: "triad", inversion: "root", stringSet: "low",
+      voicingType: "triad", inversion: "root", stringSet: [3, 4, 5],
     });
     expect(voicings.length).toBeGreaterThan(0);
     for (const v of voicings) {
@@ -112,7 +142,7 @@ describe("generateVoicings — triad", () => {
     expect(generateVoicings({
       tuning: ["E4", "B3", "G3", "D3", "A2"], maxFret: 12,
       chordRoot: "C", chordType: "Major Triad",
-      voicingType: "triad", inversion: "root", stringSet: "all",
+      voicingType: "triad", inversion: "root", stringSet: [0, 1, 2, 3, 4, 5],
     })).toEqual([]);
   });
 
@@ -120,14 +150,14 @@ describe("generateVoicings — triad", () => {
     expect(generateVoicings({
       tuning: ["E4", "B3", "G3", "D3", "A2", "not-a-note"], maxFret: 12,
       chordRoot: "C", chordType: "Major Triad",
-      voicingType: "triad", inversion: "root", stringSet: "all",
+      voicingType: "triad", inversion: "root", stringSet: [0, 1, 2, 3, 4, 5],
     })).toEqual([]);
   });
 
   it("returns [] for an unknown chord type", () => {
     expect(generateVoicings({
       ...base, chordRoot: "C", chordType: "Not A Chord",
-      voicingType: "triad", inversion: "root", stringSet: "all",
+      voicingType: "triad", inversion: "root", stringSet: [0, 1, 2, 3, 4, 5],
     })).toEqual([]);
   });
 });
@@ -137,7 +167,7 @@ describe("generateVoicings — drop2", () => {
     const voicings = generateVoicings({
       tuning: STANDARD_TUNING, maxFret: 14,
       chordRoot: "C", chordType: "Major 7th",
-      voicingType: "drop2", inversion: "root", stringSet: "all",
+      voicingType: "drop2", inversion: "root", stringSet: [0, 1, 2, 3, 4, 5],
     });
     expect(voicings.length).toBeGreaterThan(0);
     for (const v of voicings) {
@@ -151,7 +181,7 @@ describe("generateVoicings — drop2", () => {
     const voicings = generateVoicings({
       tuning: STANDARD_TUNING, maxFret: 12,
       chordRoot: "C", chordType: "Major Triad",
-      voicingType: "drop2", inversion: "root", stringSet: "all",
+      voicingType: "drop2", inversion: "root", stringSet: [0, 1, 2, 3, 4, 5],
     });
     expect(voicings.length).toBeGreaterThan(0);
     for (const v of voicings) expect(v.notes.length).toBe(3);
@@ -161,7 +191,7 @@ describe("generateVoicings — drop2", () => {
     const voicings = generateVoicings({
       tuning: STANDARD_TUNING, maxFret: 14,
       chordRoot: "C", chordType: "Major 7th",
-      voicingType: "drop2", inversion: "3rd", stringSet: "all",
+      voicingType: "drop2", inversion: "3rd", stringSet: [0, 1, 2, 3, 4, 5],
     });
     expect(voicings.length).toBeGreaterThan(0);
     for (const v of voicings) {
@@ -176,7 +206,7 @@ describe("generateVoicings — caged routing", () => {
     const voicings = generateVoicings({
       tuning: STANDARD_TUNING, maxFret: 12,
       chordRoot: "E", chordType: "Major Triad",
-      voicingType: "caged", inversion: "root", stringSet: "all",
+      voicingType: "caged", inversion: "root", stringSet: [0, 1, 2, 3, 4, 5],
     });
     const direct = getFullChordShapeMatches({
       chordRoot: "E", chordType: "Major Triad", tuning: STANDARD_TUNING, maxFret: 12,
@@ -189,7 +219,7 @@ describe("generateVoicings — caged routing", () => {
     const voicings = generateVoicings({
       tuning: STANDARD_TUNING, maxFret: 12,
       chordRoot: "E", chordType: "Major Triad",
-      voicingType: "caged", inversion: "root", stringSet: "all",
+      voicingType: "caged", inversion: "root", stringSet: [0, 1, 2, 3, 4, 5],
     });
     expect(voicings.length).toBeGreaterThan(0);
     expect(voicings.every((v) => v.shape !== undefined)).toBe(true);
@@ -199,7 +229,7 @@ describe("generateVoicings — caged routing", () => {
     const voicings = generateVoicings({
       tuning: STANDARD_TUNING, maxFret: 12,
       chordRoot: "E", chordType: "Major Triad",
-      voicingType: "caged", inversion: "root", stringSet: "top",
+      voicingType: "caged", inversion: "root", stringSet: [0, 1, 2],
     });
     for (const v of voicings) {
       for (const n of v.notes) expect([0, 1, 2]).toContain(n.stringIndex);
