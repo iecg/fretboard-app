@@ -152,8 +152,11 @@ test.describe("Theme Contract", () => {
   });
 
   test("fretboard notes and summary chips have coherent role colors in light mode", async ({ page }) => {
-    await loadVisualState(page, { theme: "light" });
-    
+    // Seed an empty progression so the always-on chord track (Phase B) does not
+    // drive the chord overlay — otherwise the scale tonic note picks up a chord
+    // role instead of `key-tonic`.
+    await loadVisualState(page, { theme: "light", progressionSteps: [] });
+
     // Check summary chips - use a non-tonic scale note to check scale color
     const activeChip = page.locator('li[data-in-scale="true"]:not([data-is-tonic="true"]) button').first();
     await expect(activeChip).toBeVisible();
@@ -924,7 +927,9 @@ test.describe("Theme Contract", () => {
 
     test("tonic note ring uses orange identity in both themes", async ({ page }) => {
       for (const theme of ["light", "dark"] as const) {
-        await loadVisualState(page, { theme });
+        // Empty progression — keep the chord overlay off so the tonic note
+        // keeps its `key-tonic` scale role (Phase B always-on chord track).
+        await loadVisualState(page, { theme, progressionSteps: [] });
         await expect(page.getByTestId("fretboard-svg")).toBeVisible();
 
         const tonicNote = page.locator('g[data-note-role="key-tonic"] circle').first();
