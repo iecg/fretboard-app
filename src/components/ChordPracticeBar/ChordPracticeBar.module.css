@@ -279,5 +279,5 @@
 /* Audit rows 9-10 (note-blue, color-tone label overrides for dark) — deferred per Phase 2 02-CONTEXT.md design call. */
 
 :global(.app-container[data-layout-tier="mobile"]) .practice-bar-group-label {
-  font-size: 0.54rem;
+  font-size: 0.625rem;
 }
