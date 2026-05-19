@@ -936,6 +936,13 @@ export interface UseChordConnectorPolylinesParams {
   chordRoot: string;
   yBounds?: ConnectorYBounds;
   explicitVoicings?: ExplicitChordConnectorVoicing[];
+  /**
+   * True when the voicing engine is the active connector source. When set,
+   * the hook never synthesizes connectors from loose chord tones — an empty
+   * `explicitVoicings` yields `[]` (the plain chord-tone overlay), not the
+   * "generated scatter" fallback.
+   */
+  voicingSourceActive?: boolean;
 }
 
 /**
@@ -963,6 +970,7 @@ export function useChordConnectorPolylines({
   chordRoot,
   yBounds,
   explicitVoicings,
+  voicingSourceActive,
 }: UseChordConnectorPolylinesParams): ChordConnectorVoicing[] {
   return useMemo(
     () => {
@@ -978,6 +986,10 @@ export function useChordConnectorPolylines({
         );
       }
 
+      // A voicing source is active but produced nothing — show no connectors
+      // rather than a misleading scatter over every loose chord tone.
+      if (voicingSourceActive) return [];
+
       return buildChordConnectorPolylines(
         noteData,
         chordToneNames,
@@ -988,6 +1000,6 @@ export function useChordConnectorPolylines({
         yBounds,
       );
     },
-    [noteData, chordToneNames, fretCenterX, stringYAt, stringRowPx, chordRoot, yBounds, explicitVoicings],
+    [noteData, chordToneNames, fretCenterX, stringYAt, stringRowPx, chordRoot, yBounds, explicitVoicings, voicingSourceActive],
   );
 }

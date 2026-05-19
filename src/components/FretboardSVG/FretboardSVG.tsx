@@ -435,8 +435,11 @@ export const FretboardSVG = memo(function FretboardSVG({
     chordRoot: chordRoot ?? "",
     yBounds: connectorYBounds,
     explicitVoicings: fullChordVoicings,
+    voicingSourceActive: hasChordOverlay,
   });
-  const connectorSource = fullChordVoicings?.length ? "full-chord" : "generated";
+  // When a chord overlay is active the voicing engine is the only source —
+  // never label the layer "generated", even when the engine returns nothing.
+  const connectorSource = hasChordOverlay ? "full-chord" : "generated";
 
   const prefersReducedMotion = useReducedMotion() ?? false;
   const motionPolicy = useMemo(
