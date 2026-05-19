@@ -1,7 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from "react";
 import { useSetAtom, useAtomValue, useAtom, createStore, Provider } from "jotai";
 import { AnimatePresence, motion } from "motion/react";
-import clsx from "clsx";
 import { Fretboard } from "./components/Fretboard/Fretboard";
 import { HelpCircle, Moon, Settings2, Sun, Volume2, VolumeX } from "lucide-react";
 import { synth } from "./core/audio";
@@ -169,7 +168,7 @@ function AppContent() {
               <button
                 type="button"
                 onClick={() => setTheme(theme === "modern-dark" ? "light" : "dark")}
-                className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--lg"])}
+                className={sharedStyles["icon-button"]}
                 title={theme === "modern-dark" ? t("common.themeToLight") : t("common.themeToDark")}
                 aria-label={theme === "modern-dark" ? t("common.themeToLight") : t("common.themeToDark")}
               >
@@ -183,7 +182,7 @@ function AppContent() {
                 <button
                   type="button"
                   onClick={() => setSettingsOverlayOpen((v) => !v)}
-                  className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--lg"])}
+                  className={sharedStyles["icon-button"]}
                   title={t("settings.title")}
                   aria-label={t("settings.open")}
                 >
@@ -193,7 +192,7 @@ function AppContent() {
               <button
                 type="button"
                 onClick={toggleMute}
-                className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--lg"])}
+                className={sharedStyles["icon-button"]}
                 title={isMuted ? t("common.unmuteTitle") : t("common.muteTitle")}
                 aria-label={isMuted ? t("common.unmute") : t("common.mute")}
               >
@@ -218,7 +217,7 @@ function AppContent() {
                 ref={helpTriggerRef}
                 type="button"
                 onClick={() => setShowHelp(true)}
-                className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--lg"])}
+                className={sharedStyles["icon-button"]}
                 title={t("common.helpTitle")}
                 aria-label={t("common.help")}
               >
