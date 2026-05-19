@@ -81,6 +81,18 @@ export { buildStringSetOptions, ALL_STRINGS } from "./voicingStringSets";
 export type { StringSetOption } from "./voicingStringSets";
 
 export {
+  validVoicingCombosAtom,
+  controlRecencyAtom,
+  noteControlChangeAtom,
+  nearestValidTriple,
+} from "./voicingCoupling";
+export type {
+  ValidVoicingCombos,
+  VoicingTriple,
+  VoicingControlId,
+} from "./voicingCoupling";
+
+export {
   practiceBarColorNotesFilteredAtom,
   noteSemanticMapAtom,
   practiceCuesAtom,
