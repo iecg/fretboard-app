@@ -4,6 +4,8 @@ import {
   SCALE_TO_PARENT_MAJOR_OFFSET,
 } from "./theoryCatalog";
 import { getDegreesForScale, getQualityForDegree, type DegreeId } from "./degrees";
+import * as Note from "@tonaljs/note";
+import * as Interval from "@tonaljs/interval";
 
 export const NOTES = [
   "C",
@@ -396,11 +398,8 @@ export const CIRCLE_OF_FIFTHS = [
 ];
 
 export function getNoteIndex(noteName: string): number {
-  const norm =
-    ENHARMONICS[noteName] && noteName.includes("b")
-      ? ENHARMONICS[noteName]
-      : noteName;
-  return NOTES.indexOf(norm);
+  const chroma = Note.chroma(noteName);
+  return typeof chroma === "number" && !isNaN(chroma) ? chroma : -1;
 }
 
 export function getNoteDisplay(
@@ -408,16 +407,14 @@ export function getNoteDisplay(
   activeRoot: string,
   useFlats?: boolean,
 ): string {
-  const normNote =
-    ENHARMONICS[noteName] && noteName.includes("b")
-      ? ENHARMONICS[noteName]
-      : noteName;
-  const flats = useFlats ?? FLAT_KEYS.includes(activeRoot);
-
-  if (flats && normNote.includes("#")) return ENHARMONICS[normNote] || normNote;
-  if (!flats && normNote.includes("b"))
-    return ENHARMONICS[normNote] || normNote;
-  return normNote;
+  const wantsFlats = useFlats ?? FLAT_KEYS.includes(activeRoot);
+  if (wantsFlats && noteName.includes("#")) {
+    return Note.enharmonic(noteName);
+  }
+  if (!wantsFlats && noteName.includes("b")) {
+    return Note.enharmonic(noteName);
+  }
+  return noteName;
 }
 
 export function formatAccidental(s: string): string {
@@ -503,11 +500,12 @@ export function getIntervalNotes(
   rootNote: string,
   intervals: number[],
 ): string[] {
-  const rootIndex = getNoteIndex(rootNote);
-  if (rootIndex === -1) return [];
-
-  return intervals.map((interval) => {
-    return NOTES[(rootIndex + interval) % 12];
+  if (getNoteIndex(rootNote) === -1) return [];
+  return intervals.map((semitones) => {
+    const t = Note.transpose(rootNote, Interval.fromSemitones(semitones));
+    // Force sharps-form for chromatic semitone-based operations (matches legacy NOTES contract).
+    const simplified = Note.simplify(t);
+    return simplified.includes("b") ? Note.enharmonic(simplified) : simplified;
   });
 }
 
