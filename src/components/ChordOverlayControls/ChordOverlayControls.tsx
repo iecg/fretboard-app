@@ -16,6 +16,7 @@ import {
   chordFretSpreadAtom,
   chordScopeToPositionAtom,
   activePositionAtom,
+  voicingSectionExpandedAtom,
   type VoicingControlId,
 } from "../../store/atoms";
 import { StringSetPicker } from "../Inspector/StringSetPicker";
@@ -70,6 +71,7 @@ export function ChordOverlayControls() {
   const [chordFretSpread, setChordFretSpread] = useAtom(chordFretSpreadAtom);
   const [chordScopeToPosition, setChordScopeToPosition] = useAtom(chordScopeToPositionAtom);
   const activePosition = useAtomValue(activePositionAtom);
+  const [voicingExpanded, setVoicingExpanded] = useAtom(voicingSectionExpandedAtom);
 
   const hasQualityOverride = chordQualityOverride != null;
 
@@ -291,98 +293,117 @@ export function ChordOverlayControls() {
                 </span>
               }
             >
-              {t("inspector.groupVoicing")}
+              <button
+                type="button"
+                className={panelStyles.voicingDisclosure}
+                aria-expanded={voicingExpanded}
+                aria-controls="voicing-section"
+                onClick={() => setVoicingExpanded((v) => !v)}
+              >
+                <span
+                  aria-hidden="true"
+                  className={panelStyles.voicingChevron}
+                  data-open={voicingExpanded || undefined}
+                >
+                  ▸
+                </span>
+                {t("inspector.voicingSection")}
+              </button>
             </GroupHeader>
-            <Prop
-              label={t("inspector.voicingType")}
-              span={3}
-              hint={t("inspector.voicingTypeHint")}
-            >
-              <ToggleBar
-                label="Voicing type"
-                options={(["caged", "drop2", "triad"] as const).map((v) => ({
-                  value: v,
-                  label:
-                    v === "caged"
-                      ? t("inspector.voicingTypeCaged")
-                      : v === "drop2"
-                        ? t("inspector.voicingTypeDrop2")
-                        : t("inspector.voicingTypeTriad"),
-                  disabled: v !== "caged" && !validCombos.enabledTypes.has(v),
-                }))}
-                value={voicingType}
-                onChange={(v) => {
-                  recordControlChange("type");
-                  setVoicingType(v);
-                }}
-              />
-            </Prop>
-            {voicingType !== "caged" && (
-              <Prop
-                label={t("inspector.voicingInversion")}
-                span={4}
-                hint={t("inspector.voicingInversionHint")}
-              >
-                <ToggleBar
-                  label="Voicing inversion"
-                  options={(["root", "1st", "2nd", "3rd"] as const).map((v) => ({
-                    value: v,
-                    label: v === "root" ? t("controls.root") : v,
-                    disabled:
-                      !availableInversions.includes(v) ||
-                      !validCombos.enabledInversions.has(v),
-                  }))}
-                  value={voicingInversion}
-                  onChange={(v) => {
-                    recordControlChange("inversion");
-                    setVoicingInversion(v);
-                  }}
-                />
-              </Prop>
+            {voicingExpanded && (
+              <>
+                <Prop
+                  label={t("inspector.voicingType")}
+                  span={3}
+                  hint={t("inspector.voicingTypeHint")}
+                >
+                  <ToggleBar
+                    label="Voicing type"
+                    options={(["caged", "drop2", "triad"] as const).map((v) => ({
+                      value: v,
+                      label:
+                        v === "caged"
+                          ? t("inspector.voicingTypeCaged")
+                          : v === "drop2"
+                            ? t("inspector.voicingTypeDrop2")
+                            : t("inspector.voicingTypeTriad"),
+                      disabled: v !== "caged" && !validCombos.enabledTypes.has(v),
+                    }))}
+                    value={voicingType}
+                    onChange={(v) => {
+                      recordControlChange("type");
+                      setVoicingType(v);
+                    }}
+                  />
+                </Prop>
+                {voicingType !== "caged" && (
+                  <Prop
+                    label={t("inspector.voicingInversion")}
+                    span={4}
+                    hint={t("inspector.voicingInversionHint")}
+                  >
+                    <ToggleBar
+                      label="Voicing inversion"
+                      options={(["root", "1st", "2nd", "3rd"] as const).map((v) => ({
+                        value: v,
+                        label: v === "root" ? t("controls.root") : v,
+                        disabled:
+                          !availableInversions.includes(v) ||
+                          !validCombos.enabledInversions.has(v),
+                      }))}
+                      value={voicingInversion}
+                      onChange={(v) => {
+                        recordControlChange("inversion");
+                        setVoicingInversion(v);
+                      }}
+                    />
+                  </Prop>
+                )}
+                {voicingType !== "caged" && (
+                  <Prop
+                    label={t("inspector.voicingStringSet")}
+                    span={7}
+                    hint={t("inspector.voicingStringSetHint")}
+                  >
+                    <StringSetPicker
+                      options={decoratedStringSetOptions}
+                      value={voicingStringSet}
+                      onChange={(v) => {
+                        recordControlChange("stringSet");
+                        setVoicingStringSet(v);
+                      }}
+                    />
+                  </Prop>
+                )}
+                <Prop label={t("inspector.chordSpread")} span={3} hint={t("inspector.chordSpreadHint")}>
+                  <StepperControl
+                    label={t("inspector.chordSpread")}
+                    hideLabel
+                    value={chordFretSpread}
+                    onChange={setChordFretSpread}
+                    min={0}
+                    max={4}
+                    step={1}
+                  />
+                </Prop>
+                <Prop
+                  label={t("inspector.scopeToPosition")}
+                  span={4}
+                  hint={
+                    activePosition
+                      ? t("inspector.scopeToPositionHint")
+                      : t("inspector.scopeToPositionNeedsPosition")
+                  }
+                >
+                  <Switch
+                    label={t("inspector.scopeToPosition")}
+                    checked={chordScopeToPosition && activePosition}
+                    onChange={setChordScopeToPosition}
+                    disabled={!activePosition}
+                  />
+                </Prop>
+              </>
             )}
-            {voicingType !== "caged" && (
-              <Prop
-                label={t("inspector.voicingStringSet")}
-                span={7}
-                hint={t("inspector.voicingStringSetHint")}
-              >
-                <StringSetPicker
-                  options={decoratedStringSetOptions}
-                  value={voicingStringSet}
-                  onChange={(v) => {
-                    recordControlChange("stringSet");
-                    setVoicingStringSet(v);
-                  }}
-                />
-              </Prop>
-            )}
-            <Prop label={t("inspector.chordSpread")} span={3} hint={t("inspector.chordSpreadHint")}>
-              <StepperControl
-                label={t("inspector.chordSpread")}
-                hideLabel
-                value={chordFretSpread}
-                onChange={setChordFretSpread}
-                min={0}
-                max={4}
-                step={1}
-              />
-            </Prop>
-            <Prop
-              label={t("inspector.scopeToPosition")}
-              span={4}
-              hint={
-                activePosition
-                  ? t("inspector.scopeToPositionHint")
-                  : t("inspector.scopeToPositionNeedsPosition")
-              }
-            >
-              <Switch
-                label={t("inspector.scopeToPosition")}
-                checked={chordScopeToPosition && activePosition}
-                onChange={setChordScopeToPosition}
-                disabled={!activePosition}
-              />
-            </Prop>
           </>
         )}
       </PropGrid>

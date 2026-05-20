@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, it, expect } from "vitest";
-import { screen, within } from "@testing-library/react";
+import { screen, within, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
 import { act } from "@testing-library/react";
@@ -23,6 +23,7 @@ import {
   controlRecencyAtom,
   noteControlChangeAtom,
   cagedShapesAtom,
+  voicingSectionExpandedAtom,
 } from "../../store/atoms";
 import { ChordOverlayControls } from "./ChordOverlayControls";
 
@@ -579,8 +580,10 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       renderWithAtoms(<ChordOverlayControls />, [
         ...MANUAL_MODE_SEEDS,
       ]);
-      const headers = screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent);
-      expect(headers).toEqual(["Source", "Chord Type", "Voicing"]);
+      const headers = screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent?.trim());
+      expect(headers[0]).toBe("Source");
+      expect(headers[1]).toBe("Chord Type");
+      expect(headers[2]).toMatch(/Voicing/);
     });
 
     it("places the Lens control inside the SOURCE group", () => {
@@ -601,6 +604,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       renderWithAtoms(<ChordOverlayControls />, [
         ...MANUAL_MODE_SEEDS,
         [voicingTypeAtom, "triad"],
+        [voicingSectionExpandedAtom, true],
       ]);
       expect(screen.getByRole("group", { name: "Voicing type" })).toBeInTheDocument();
       expect(screen.getByRole("group", { name: "Voicing inversion" })).toBeInTheDocument();
@@ -612,6 +616,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
         ...MANUAL_MODE_SEEDS,
         [voicingTypeAtom, "triad"],
         [chordQualityOverrideAtom, "Major Triad"],
+        [voicingSectionExpandedAtom, true],
       ]);
       expect(screen.getByRole("button", { name: "3rd" })).toBeDisabled();
     });
@@ -626,6 +631,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       [chordRootOverrideAtom, "C"],
       [fingeringPatternAtom, "caged"],
       [progressionStepsAtom, []],
+      [voicingSectionExpandedAtom, true],
     ] as const;
 
     it("caged voicing type: Inversion control and String Set are NOT in the document", () => {
@@ -717,6 +723,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       [fingeringPatternAtom, "caged"],
       [progressionStepsAtom, []],
       [voicingTypeAtom, "triad"],
+      [voicingSectionExpandedAtom, true],
     ] as const;
 
     it("disabled options: '3rd' inversion button disabled for triad (not in validCombos.enabledInversions)", () => {
@@ -736,6 +743,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
         [voicingTypeAtom, "drop2"],
         [voicingInversionAtom, "1st"],
         [voicingStringSetAtom, "4·5·6"],
+        [voicingSectionExpandedAtom, true],
       ]);
       renderWithStore(<ChordOverlayControls />, store);
 
@@ -778,6 +786,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
         [voicingTypeAtom, "drop2"],
         [voicingInversionAtom, "root"],
         [voicingStringSetAtom, "all"],
+        [voicingSectionExpandedAtom, true],
       ]);
       renderWithStore(<ChordOverlayControls />, store);
 
@@ -842,6 +851,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
         // not present in a 3-tone chord's option list — both are stale/invalid for triad.
         [voicingInversionAtom, "3rd"],
         [voicingStringSetAtom, "1·2·3·4"],
+        [voicingSectionExpandedAtom, true],
       ]);
       renderWithStore(<ChordOverlayControls />, store);
 
@@ -901,6 +911,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
         [chordRootOverrideAtom, "C"],
         [chordQualityOverrideAtom, "Major Triad"],
         [progressionStepsAtom, []],
+        [voicingSectionExpandedAtom, true],
       ]);
       // The Prop cell renders a label "Chord Spread"; the StepperControl exposes its label as a group aria-label.
       expect(screen.getByText(/chord spread/i)).toBeInTheDocument();
@@ -915,6 +926,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
         [chordQualityOverrideAtom, "Major Triad"],
         [fingeringPatternAtom, "none"],
         [progressionStepsAtom, []],
+        [voicingSectionExpandedAtom, true],
       ]);
       const sw = screen.getByRole("switch", { name: /scope to position/i }) as HTMLInputElement;
       expect(sw).toBeInTheDocument();
@@ -931,6 +943,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
         [fingeringPatternAtom, "caged"],
         [cagedShapesAtom, new Set(["C"])],
         [progressionStepsAtom, []],
+        [voicingSectionExpandedAtom, true],
       ]);
       const sw = screen.getByRole("switch", { name: /scope to position/i }) as HTMLInputElement;
       expect(sw).not.toBeDisabled();
@@ -976,6 +989,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       renderWithAtoms(<ChordOverlayControls />, [
         ...MANUAL_MODE_SEEDS,
         [voicingTypeAtom, "triad"],
+        [voicingSectionExpandedAtom, true],
       ]);
       expect(
         screen.getByText("How densely the chord is voiced."),
@@ -988,6 +1002,50 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
           "Full CAGED uses all six strings — pick a subset for partial voicings.",
         ),
       ).toBeInTheDocument();
+    });
+  });
+
+  describe("Task 10: collapsible VOICING section", () => {
+    it("collapses the Voicing section by default (Task 10)", () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        [chordOverlayModeAtom, "manual"],
+        [chordRootOverrideAtom, "C"],
+        [chordQualityOverrideAtom, "Major Triad"],
+        [progressionStepsAtom, []],
+      ]);
+      // The collapsed header still renders the disclosure button.
+      expect(screen.getByRole("button", { name: /voicing/i })).toBeInTheDocument();
+      // But the Type/Inversion labels are NOT rendered.
+      expect(screen.queryByRole("group", { name: "Voicing type" })).toBeNull();
+      expect(screen.queryByRole("group", { name: "Voicing inversion" })).toBeNull();
+    });
+
+    it("expands the Voicing section on header click (Task 10)", () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        [chordOverlayModeAtom, "manual"],
+        [chordRootOverrideAtom, "C"],
+        [chordQualityOverrideAtom, "Major Triad"],
+        [progressionStepsAtom, []],
+      ]);
+      const disclosure = screen.getByRole("button", { name: /voicing/i });
+      expect(disclosure).toHaveAttribute("aria-expanded", "false");
+      fireEvent.click(disclosure);
+      expect(disclosure).toHaveAttribute("aria-expanded", "true");
+      // After expansion the inner Props are visible.
+      expect(screen.getByRole("group", { name: "Voicing type" })).toBeInTheDocument();
+    });
+
+    it("renders inner Props when voicingSectionExpandedAtom defaults to true (Task 10)", () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        [chordOverlayModeAtom, "manual"],
+        [chordRootOverrideAtom, "C"],
+        [chordQualityOverrideAtom, "Major Triad"],
+        [progressionStepsAtom, []],
+        [voicingSectionExpandedAtom, true],
+        [voicingTypeAtom, "triad"],
+      ]);
+      expect(screen.getByRole("group", { name: "Voicing type" })).toBeInTheDocument();
+      expect(screen.getByRole("group", { name: "Voicing inversion" })).toBeInTheDocument();
     });
   });
 });

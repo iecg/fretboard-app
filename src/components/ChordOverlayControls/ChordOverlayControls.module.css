@@ -27,3 +27,24 @@
   color: var(--faceplate-accent);
   line-height: 1;
 }
+
+.voicingDisclosure {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.voicingChevron {
+  display: inline-flex;
+  transition: transform 120ms ease;
+}
+
+.voicingChevron[data-open] {
+  transform: rotate(90deg);
+}
