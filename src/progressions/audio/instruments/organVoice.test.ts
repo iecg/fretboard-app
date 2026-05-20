@@ -1,47 +1,9 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { organVoice } from "./organVoice";
-
-// Minimal Web Audio mock — tracks node creation so we can assert that
-// scheduling a chord actually builds oscillators.
-function createMockGain() {
-  return {
-    gain: {
-      value: 1,
-      setValueAtTime: vi.fn(),
-      cancelScheduledValues: vi.fn(),
-      linearRampToValueAtTime: vi.fn(),
-      exponentialRampToValueAtTime: vi.fn(),
-      setTargetAtTime: vi.fn(),
-    },
-    connect: vi.fn().mockReturnThis(),
-    disconnect: vi.fn(),
-  };
-}
-
-function createMockOsc() {
-  return {
-    type: "sine" as OscillatorType,
-    frequency: {
-      setValueAtTime: vi.fn(),
-      exponentialRampToValueAtTime: vi.fn(),
-    },
-    connect: vi.fn().mockReturnThis(),
-    disconnect: vi.fn(),
-    start: vi.fn(),
-    stop: vi.fn(),
-    onended: null as null | (() => void),
-  };
-}
-
-function buildMockCtx() {
-  const ctx = {
-    currentTime: 0,
-    sampleRate: 44100,
-    createGain: vi.fn(createMockGain),
-    createOscillator: vi.fn(createMockOsc),
-  };
-  return ctx;
-}
+import {
+  buildMockCtx,
+  createMockGain,
+} from "../../../test-utils/mockWebAudio";
 
 describe("organVoice", () => {
   it("implements ChordVoice interface", () => {
@@ -75,7 +37,7 @@ describe("organVoice", () => {
       { velocity: 0.8 },
     );
 
-    expect(ctx.createOscillator).toHaveBeenCalled();
+    expect(ctx.created.oscillators.length).toBeGreaterThan(0);
   });
 
   it("schedules a stop for every oscillator so notes self-terminate", () => {
@@ -90,7 +52,7 @@ describe("organVoice", () => {
       { velocity: 0.8 },
     );
 
-    const oscs = ctx.createOscillator.mock.results.map((r) => r.value);
+    const oscs = ctx.created.oscillators;
     expect(oscs.length).toBeGreaterThan(0);
     for (const osc of oscs) {
       expect(osc.stop).toHaveBeenCalled();
@@ -111,7 +73,7 @@ describe("organVoice", () => {
       { velocity: 0.8 },
     );
 
-    const gains = ctx.createGain.mock.results.map((r) => r.value);
+    const gains = ctx.created.gains;
     // Every harmonic gain must ramp down to a near-silent target so the
     // note ends on its own instead of sustaining at full level.
     const releasing = gains.filter((g) =>
