@@ -40,35 +40,11 @@ export function polarSort(vertices: Point[]): Point[] {
 // ---------------------------------------------------------------------------
 
 /**
- * Build an SVG path string for the offset outline (Minkowski sum with a disk of
- * radius `r`) of a polygon.
+ * Returns an SVG path string outlining the Minkowski sum of `points` (CCW polygon)
+ * and a circle of radius `radius`. Result has rounded convex corners and the same
+ * winding direction as the input.
  *
- * Dispatches on `polygon.length`:
- * - **0** → empty string.
- * - **1** → circle of radius `r` centred at the single point (two-arc pattern).
- * - **2** → capsule connecting the two points with semicircular end-caps of radius `r`.
- * - **3+** → rounded polygon: each corner is a circular arc of radius `r`
- *   connecting the outward-offset endpoints of the two adjacent edges; straight
- *   line segments connect adjacent arcs along the offset edges.
- *
- * For the 3+ case the function is **winding-agnostic**: it computes the signed
- * area via the shoelace formula to determine whether the polygon is CW or CCW
- * in SVG screen coordinates (y-axis down), then selects the correct outward
- * normal direction automatically. Input may be CCW or CW; outward normal
- * direction is computed from the signed area.
- *
- * **Note on screen-vs-math winding:** in screen coords (y-axis flipped) the
- * shoelace formula's sign is inverted relative to math y-up convention. A
- * polygon whose shoelace area is **positive** in screen coords is **CCW in
- * math** terms — its math-right-hand perpendicular `(dy, -dx)` therefore
- * points outward. A negative shoelace area is **CW in math**, so the same
- * formula points inward and must be negated.
- *
- * All coordinates are rounded to 2 decimal places.
- *
- * @param polygon - Polygon vertices in any consistent winding order.
- * @param r       - Offset radius in pixels (≥ 0).
- * @returns SVG path `d` attribute string closed with `Z`, or `''` for empty input.
+ * @returns SVG path data starting with `M`, suitable for a `<path d=…>` attribute.
  */
 export function offsetOutlinePath(polygon: Array<{ x: number; y: number }>, r: number): string {
   if (polygon.length === 0) return "";
