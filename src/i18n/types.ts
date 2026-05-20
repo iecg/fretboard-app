@@ -102,6 +102,14 @@ export interface Dictionary {
     voicingTypeCaged: string;
     voicingTypeDrop2: string;
     voicingTypeTriad: string;
+    positionCluster: string;
+    stringStudyCluster: string;
+    voicingSection: string;
+    scopeToPosition: string;
+    scopeToPositionHint: string;
+    scopeToPositionNeedsPosition: string;
+    chordSpread: string;
+    chordSpreadHint: string;
   };
   statusBar: {
     key: string;
