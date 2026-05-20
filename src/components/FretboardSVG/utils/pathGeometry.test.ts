@@ -6,6 +6,18 @@ import {
   offsetOpenPolylinePath,
 } from "./pathGeometry";
 
+/** Counts a literal SVG command (single uppercase or lowercase letter) in a path string. */
+function commandCount(path: string, cmd: string): number {
+  // Use word-boundary regex so 'A' doesn't match inside numbers etc.
+  return (path.match(new RegExp(`\\b${cmd}\\b`, "g")) ?? []).length;
+}
+
+function expectClosedPath(d: string) {
+  expect(d).not.toBe("");
+  expect(d.startsWith("M")).toBe(true);
+  expect(d.endsWith("Z")).toBe(true);
+}
+
 describe("polarSort", () => {
   it("sorts a non-monotonic triangle into counterclockwise order", () => {
     // Triangle with points in wrong order — right, top, left (non-monotonic).
@@ -136,42 +148,20 @@ describe("offsetOutlinePath", () => {
     expect(offsetOutlinePath([], 10)).toBe("");
   });
 
-  it("1-point input: returns a path containing M and two 'a' arc commands (circle)", () => {
-    const d = offsetOutlinePath([{ x: 50, y: 50 }], 20);
-    expect(d).not.toBe("");
-    expect(d.startsWith("M")).toBe(true);
-    expect(d.endsWith("Z")).toBe(true);
-    // Must contain two arc commands (lowercase 'a' for relative arcs).
-    const aCount = (d.match(/\ba\b/g) ?? []).length;
-    expect(aCount).toBe(2);
-  });
-
-  it("2-point input: returns a capsule path with 2 A arc commands and 2 L segment commands", () => {
-    const d = offsetOutlinePath([{ x: 50, y: 100 }, { x: 50, y: 200 }], 20);
-    expect(d).not.toBe("");
-    expect(d.startsWith("M")).toBe(true);
-    expect(d.endsWith("Z")).toBe(true);
-    const aCount = (d.match(/\bA\b/g) ?? []).length;
-    const lCount = (d.match(/\bL\b/g) ?? []).length;
-    expect(aCount).toBe(2);
-    expect(lCount).toBe(2);
-  });
-
-  it("3-point triangle hull: returns path with 3 A arc commands and line segments", () => {
-    const hull = [
-      { x: 0, y: 0 },
-      { x: 100, y: 0 },
-      { x: 50, y: 86.6 }, // approximately equilateral triangle
-    ];
-    const d = offsetOutlinePath(hull, 15);
-    expect(d).not.toBe("");
-    expect(d.startsWith("M")).toBe(true);
-    expect(d.endsWith("Z")).toBe(true);
-    const aCount = (d.match(/\bA\b/g) ?? []).length;
-    expect(aCount).toBe(3);
-    // Must have line segments (at least 3 L commands, one per edge between arcs).
-    const lCount = (d.match(/\bL\b/g) ?? []).length;
-    expect(lCount).toBeGreaterThanOrEqual(3);
+  it.each<{ label: string; hull: { x: number; y: number }[]; r: number; aCount: number; arcCmd: "A" | "a"; lMin?: number; lExact?: number }>([
+    { label: "1-point input → circle with two relative-arc commands", hull: [{ x: 50, y: 50 }], r: 20, aCount: 2, arcCmd: "a" },
+    { label: "2-point capsule → 2 absolute arcs + 2 line segments", hull: [{ x: 50, y: 100 }, { x: 50, y: 200 }], r: 20, aCount: 2, arcCmd: "A", lExact: 2 },
+    {
+      label: "3-point triangle hull → 3 absolute arcs + ≥3 line segments",
+      hull: [{ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 50, y: 86.6 }],
+      r: 15, aCount: 3, arcCmd: "A", lMin: 3,
+    },
+  ])("$label", ({ hull, r, aCount, arcCmd, lMin, lExact }) => {
+    const d = offsetOutlinePath(hull, r);
+    expectClosedPath(d);
+    expect(commandCount(d, arcCmd)).toBe(aCount);
+    if (lExact !== undefined) expect(commandCount(d, "L")).toBe(lExact);
+    if (lMin !== undefined) expect(commandCount(d, "L")).toBeGreaterThanOrEqual(lMin);
   });
 
   it("spot-check: vertical collinear hull (2-vertex capsule) has correct arc radius and geometry", () => {
@@ -193,78 +183,28 @@ describe("offsetOutlinePath", () => {
     expect(d).toContain("119.8"); // 100 + 19.8
   });
 
-  it("spot-check: equilateral triangle r=30 — corner offset positions within 0.01", () => {
-    // Equilateral triangle with side 100, bottom-left at origin. Provided in
-    // CCW order (lower-left → lower-right → apex upward in SVG).
-    const hull = [
-      { x: 0, y: 0 },
-      { x: 100, y: 0 },
-      { x: 50, y: -86.60 },
-    ];
-    const r = 30;
+  it.each<{ label: string; hull: { x: number; y: number }[]; r: number; aCount: number }>([
+    { label: "CCW equilateral triangle r=30", hull: [{ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 50, y: -86.60 }], r: 30, aCount: 3 },
+    { label: "r=0 degenerate offset", hull: [{ x: 10, y: 20 }, { x: 50, y: 20 }, { x: 30, y: 60 }], r: 0, aCount: 3 },
+    {
+      label: "thin near-collinear triangle keeps all 3 corners (no interior drops)",
+      hull: polarSort([{ x: 0, y: 0 }, { x: 50, y: 5 }, { x: 100, y: 0 }]),
+      r: 20, aCount: 3,
+    },
+  ])("3-vertex closed path with $aCount arcs: $label", ({ hull, r, aCount }) => {
     const d = offsetOutlinePath(hull, r);
-    expect(d).not.toBe("");
-    // For a CCW equilateral triangle, outgoing normal of bottom edge (0,0)→(100,0) is (0,-1) (upward in SVG).
-    // B_0 = (0 + 30*0, 0 + 30*(-1)) = (0, -30).
-    // Check that (0, -30) appears in the path (allowing for floating point at 2dp).
-    // The path starts with M ... which is A_0 (incoming normal of last edge).
-    // Let's just verify structural and non-empty.
-    expect(d).toContain("A");
-    const aCount = (d.match(/\bA\b/g) ?? []).length;
-    expect(aCount).toBe(3);
+    expectClosedPath(d);
+    if (r > 0) expect(commandCount(d, "A")).toBe(aCount);
   });
 
-  it("r=0 still produces a valid path shape (degenerate offset)", () => {
-    // Pre-ordered CCW triangle (the input was already non-degenerate, so
-    // convexHull would return it unchanged).
-    const hull = [{ x: 10, y: 20 }, { x: 50, y: 20 }, { x: 30, y: 60 }];
-    const d = offsetOutlinePath(hull, 0);
-    expect(d).not.toBe("");
-    expect(d.startsWith("M")).toBe(true);
-    expect(d.endsWith("Z")).toBe(true);
-  });
-
-  it("thin near-collinear triangle: all 3 corners produce 3 A arc commands", () => {
-    // Feed a polar-sorted near-collinear triangle — the kind that polarSort
-    // produces for the G-E-C diagonal triad.  The offset path must include
-    // one arc per vertex (3 total), confirming the middle vertex is not dropped.
-    const triangle = polarSort([
-      { x: 0, y: 0 },
-      { x: 50, y: 5 },
-      { x: 100, y: 0 },
-    ]);
-    const d = offsetOutlinePath(triangle, 20);
-    expect(d).not.toBe("");
-    expect(d.startsWith("M")).toBe(true);
-    expect(d.endsWith("Z")).toBe(true);
-    // One A arc command per vertex → 3 total.
-    const aCount = (d.match(/\bA\b/g) ?? []).length;
-    expect(aCount).toBe(3);
-  });
-
-  it("winding-agnostic: CW and CCW polygon produce outward (not inward) contours", () => {
-    // A right triangle fed in CCW order should produce the same-shape path as
-    // the same triangle reversed (CW order) — both contours must be outside the
-    // triangle (offset points further from centroid than original vertices).
-    const ccw = [
-      { x: 0, y: 0 },
-      { x: 100, y: 0 },
-      { x: 50, y: -86.6 }, // apex upward (negative y in SVG)
-    ];
+  it("winding-agnostic: CW and CCW polygon both produce outward 3-arc contours", () => {
+    const ccw = [{ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 50, y: -86.6 }];
     const cw = [...ccw].reverse();
-
-    const r = 20;
-    const dCCW = offsetOutlinePath(ccw, r);
-    const dCW = offsetOutlinePath(cw, r);
-
-    // Both must produce 3 A arc commands.
-    expect((dCCW.match(/\bA\b/g) ?? []).length).toBe(3);
-    expect((dCW.match(/\bA\b/g) ?? []).length).toBe(3);
-    // Both must be non-empty closed paths.
-    expect(dCCW.startsWith("M")).toBe(true);
-    expect(dCW.startsWith("M")).toBe(true);
-    expect(dCCW.endsWith("Z")).toBe(true);
-    expect(dCW.endsWith("Z")).toBe(true);
+    for (const hull of [ccw, cw]) {
+      const d = offsetOutlinePath(hull, 20);
+      expectClosedPath(d);
+      expect(commandCount(d, "A")).toBe(3);
+    }
   });
 
   it("normals point OUTWARD: every coordinate in path is at least as far from centroid as the polygon vertices", () => {
