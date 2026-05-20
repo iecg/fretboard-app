@@ -1,13 +1,11 @@
 import { useId, useMemo, useCallback, memo, type CSSProperties } from "react";
 import { useAtomValue } from "jotai";
-import { motion, AnimatePresence, useReducedMotion } from "motion/react";
+import { useReducedMotion } from "motion/react";
 import {
   getNoteDisplay,
   getScaleSemitones,
   type PracticeLens,
   type NoteSemantics,
-  ANIMATION_DURATION_FAST,
-  ANIMATION_EASE,
 } from "@fretflow/core";
 import { fingeringPatternAtom } from "../../store/fingeringAtoms";
 import { intervalPairsAtom } from "../../store/shapeAtoms";
@@ -24,6 +22,7 @@ import { FretboardDefs } from "./FretboardDefs";
 import { FretboardShapeLayer } from "./FretboardShapeLayer";
 import { FretboardNoteLayer } from "./FretboardNoteLayer";
 import { FretboardHitTargetLayer } from "./FretboardHitTargetLayer";
+import { FretboardConnectorLayer } from "./FretboardConnectorLayer";
 import { FretNumbersRow } from "./FretNumbersRow";
 import { resolveFretboardMotionPolicy } from "./motionPolicy";
 import type { CagedShape, FullChordMatchNote, ShapePolygon } from "@fretflow/core";
@@ -536,141 +535,16 @@ export const FretboardSVG = memo(function FretboardSVG({
               in the taper-carved corner gaps paint on the app-container backdrop —
               that's an accepted trade-off; the wood gradient stays clipped to the
               taper and does not overflow. */}
-          <g
-            className={styles["fretboard-overlays"]}
-            clipPath={svgDefUrl("fretboard-svg-box")}
-            aria-hidden="true"
-            pointerEvents="none"
-          >
-            <AnimatePresence mode="wait">
-              {showChordConnectors && connectorPolylines.length > 0 && (
-                motionPolicy.connectorMode === "group" ? (
-                  <motion.g
-                    key={`chord-connectors-${connectorSource}-${chordRoot}-${chordTones?.join("-") ?? "none"}`}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
-                    className={styles["chord-connectors"]}
-                    data-connector-source={connectorSource}
-                    data-motion="group"
-                    aria-hidden="true"
-                    pointerEvents="none"
-                  >
-                    {/* Halo pass: wide semi-transparent white stroke for background contrast */}
-                    {connectorPolylines.map((voicing) => (
-                      <path
-                        key={`halo-${voicing.voicingKey}`}
-                        d={voicing.paths.outline}
-                        data-layer="halo"
-                        data-caged-shape={voicing.shape}
-                        data-palette-index={voicing.paletteIndex + 1}
-                      />
-                    ))}
-                    {/* Fill pass: all voicings rendered first (below outlines) */}
-                    {connectorPolylines.map((voicing) => (
-                      <path
-                        key={`fill-${voicing.voicingKey}`}
-                        className={styles["chord-connector-path"]}
-                        d={voicing.paths.fill}
-                        data-layer="fill"
-                        data-caged-shape={voicing.shape}
-                        data-palette-index={voicing.paletteIndex + 1}
-                      />
-                    ))}
-                    {/* Outline pass: all voicings rendered on top */}
-                    {connectorPolylines.map((voicing) => (
-                      <path
-                        key={`outline-${voicing.voicingKey}`}
-                        className={styles["chord-connector-path"]}
-                        d={voicing.paths.outline}
-                        data-layer="outline"
-                        data-caged-shape={voicing.shape}
-                        data-palette-index={voicing.paletteIndex + 1}
-                      />
-                    ))}
-                  </motion.g>
-                ) : (
-                  <g
-                    key={`chord-connectors-${connectorSource}-${chordRoot}-${chordTones?.join("-") ?? "none"}`}
-                    className={styles["chord-connectors"]}
-                    data-connector-source={connectorSource}
-                    data-motion="none"
-                    aria-hidden="true"
-                    pointerEvents="none"
-                  >
-                    {connectorPolylines.map((voicing) => (
-                      <path
-                        key={`halo-${voicing.voicingKey}`}
-                        d={voicing.paths.outline}
-                        data-layer="halo"
-                        data-caged-shape={voicing.shape}
-                        data-palette-index={voicing.paletteIndex + 1}
-                      />
-                    ))}
-                    {connectorPolylines.map((voicing) => (
-                      <path
-                        key={`fill-${voicing.voicingKey}`}
-                        className={styles["chord-connector-path"]}
-                        d={voicing.paths.fill}
-                        data-layer="fill"
-                        data-caged-shape={voicing.shape}
-                        data-palette-index={voicing.paletteIndex + 1}
-                      />
-                    ))}
-                    {connectorPolylines.map((voicing) => (
-                      <path
-                        key={`outline-${voicing.voicingKey}`}
-                        className={styles["chord-connector-path"]}
-                        d={voicing.paths.outline}
-                        data-layer="outline"
-                        data-caged-shape={voicing.shape}
-                        data-palette-index={voicing.paletteIndex + 1}
-                      />
-                    ))}
-                  </g>
-                )
-              )}
-            </AnimatePresence>
-            {/* Interval connectors — capsule/blob shape matching chord-connector visual style.
-                Per-pair color driven by lower-note scale-degree via --chord-connector-color-N.
-                Two render passes (fill + outline) mirror chord-connector convention. */}
-            {intervalConnectorPolylines.length > 0 && (
-              <g
-                className={styles["interval-connectors"]}
-                aria-hidden="true"
-                pointerEvents="none"
-              >
-                {/* Halo pass */}
-                {intervalConnectorPolylines.map((line) => (
-                  <path
-                    key={`iv-halo-${line.key}`}
-                    d={line.paths.outline}
-                    data-layer="halo"
-                    data-palette-index={line.paletteIndex}
-                  />
-                ))}
-                {/* Fill pass */}
-                {intervalConnectorPolylines.map((line) => (
-                  <path
-                    key={`iv-fill-${line.key}`}
-                    d={line.paths.fill}
-                    data-layer="fill"
-                    data-palette-index={line.paletteIndex}
-                  />
-                ))}
-                {/* Outline pass */}
-                {intervalConnectorPolylines.map((line) => (
-                  <path
-                    key={`iv-outline-${line.key}`}
-                    d={line.paths.outline}
-                    data-layer="outline"
-                    data-palette-index={line.paletteIndex}
-                  />
-                ))}
-              </g>
-            )}
-          </g>
+          <FretboardConnectorLayer
+            chordPolylines={connectorPolylines}
+            intervalPolylines={intervalConnectorPolylines}
+            connectorSource={connectorSource}
+            chordRoot={chordRoot}
+            chordTones={chordTones}
+            showChordConnectors={showChordConnectors}
+            connectorMotionMode={motionPolicy.connectorMode}
+            clipPathUrl={svgDefUrl("fretboard-svg-box")}
+          />
 
           {/* Chord notes (or all notes when no overlay) render LAST — on top of connectors. */}
           <g clipPath={svgDefUrl("fretboard-taper")}>
