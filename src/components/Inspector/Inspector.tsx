@@ -5,15 +5,23 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { INSPECTOR_TABS, type InspectorTabId } from "./tabs";
 import { ViewTab } from "./ViewTab";
 import { ScaleTab } from "./ScaleTab";
-import { ChordTab } from "./ChordTab";
-import { ProgressionTab } from "./ProgressionTab";
+import { ChordOverlayControls } from "../ChordOverlayControls/ChordOverlayControls";
+import { ProgressionControls } from "../ProgressionControls/ProgressionControls";
 import styles from "./Inspector.module.css";
 
 const TAB_BODIES: Record<InspectorTabId, () => ReactNode> = {
   view: () => <ViewTab />,
   scale: () => <ScaleTab />,
-  chord: () => <ChordTab />,
-  progression: () => <ProgressionTab />,
+  chord: () => (
+    <div className={styles.tabBody} data-inspector-tab="chord">
+      <ChordOverlayControls />
+    </div>
+  ),
+  progression: () => (
+    <div className={styles.tabBody} data-inspector-tab="progression">
+      <ProgressionControls />
+    </div>
+  ),
 };
 
 export interface InspectorProps {
