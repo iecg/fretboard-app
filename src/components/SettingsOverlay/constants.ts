@@ -26,11 +26,6 @@ export const SETTING_FIELDS: Record<SettingFieldKey, SettingFieldConfig> = {
     key: "tuning",
     labelKey: "settings.fields.tuning",
   },
-  chordSpread: {
-    key: "chordSpread",
-    labelKey: "settings.fields.chordSpread",
-    hintKey: "settings.fields.chordSpreadHint",
-  },
   theme: {
     key: "theme",
     labelKey: "settings.fields.theme",

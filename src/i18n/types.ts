@@ -9,7 +9,6 @@ export interface Dictionary {
       instrument: string;
       appearance: string;
       notation: string;
-      chordLayout: string;
       reset: string;
     };
     view: {
@@ -23,12 +22,10 @@ export interface Dictionary {
       tuning: string;
       accidentals: string;
       enharmonicDisplay: string;
-      chordSpread: string;
       theme: string;
       scaleDegreeColorsHint: string;
       accidentalsHint: string;
       enharmonicDisplayHint: string;
-      chordSpreadHint: string;
       themeHint: string;
     };
   };

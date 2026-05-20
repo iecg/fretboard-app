@@ -4,7 +4,6 @@ import {
   fretStartAtom,
   fretEndAtom,
   tuningNameAtom,
-  chordFretSpreadAtom,
 } from "../../store/atoms";
 
 export function useSettingsForm() {
@@ -12,7 +11,6 @@ export function useSettingsForm() {
   const [fretStart, setFretStart] = useAtom(fretStartAtom);
   const [fretEnd, setFretEnd] = useAtom(fretEndAtom);
   const [tuningName, setTuningName] = useAtom(tuningNameAtom);
-  const [chordFretSpread, setChordFretSpread] = useAtom(chordFretSpreadAtom);
 
   return {
     fretZoom,
@@ -23,7 +21,5 @@ export function useSettingsForm() {
     setFretEnd,
     tuningName,
     setTuningName,
-    chordFretSpread,
-    setChordFretSpread,
   };
 }

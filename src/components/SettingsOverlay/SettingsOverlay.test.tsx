@@ -123,7 +123,6 @@ describe("SettingsOverlay/SettingsOverlay", () => {
       "Instrument",
       "Language",
       "Appearance",
-      "Chord Layout",
       "Reset",
     ]);
   });
@@ -142,7 +141,6 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(screen.getByRole("button", { name: /light/i })).toBeTruthy();
     expect(screen.getByRole("button", { name: /dark/i })).toBeTruthy();
     expect(screen.getByRole("button", { name: /system/i })).toBeTruthy();
-    expect(screen.getByText("Chord Spread")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Reset all settings" })).toBeTruthy();
   });
 
@@ -164,13 +162,6 @@ describe("SettingsOverlay/SettingsOverlay", () => {
 
   it("renders inline hint text for the less-obvious settings and omits it for the rest", () => {
     renderOpenOverlay();
-
-    // Fields with hint copy show their help text inline (no toggle button).
-    expect(
-      screen.getByText(
-        "Limits how far the visible chord tones can span across frets on the fretboard.",
-      ),
-    ).toBeTruthy();
 
     // Fields without help copy stay quiet, and no field renders a help-toggle button.
     expect(screen.queryByLabelText(/Show help for /)).toBeNull();
@@ -278,6 +269,11 @@ describe("SettingsOverlay/SettingsOverlay", () => {
   it("does not render a Compact Controls group", async () => {
     renderWithAtoms(<SettingsOverlay />, [[settingsOverlayOpenAtom, true]]);
     expect(screen.queryByRole("group", { name: /compact controls/i })).toBeNull();
+  });
+
+  it("no longer renders the Chord Layout section (Task 11)", () => {
+    renderWithAtoms(<SettingsOverlay />, [[settingsOverlayOpenAtom, true]]);
+    expect(screen.queryByText(/chord spread/i)).toBeNull();
   });
 
   it("traps focus when tabbing forward from the last control", () => {
