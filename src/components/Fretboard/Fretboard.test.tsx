@@ -276,126 +276,58 @@ describe("Fretboard/Fretboard", () => {
     });
   });
 
-  describe("Chord tones and filtering", () => {
-    it("can highlight chord tones separately", () => {
-      render(
-        <Fretboard
-          {...defaultProps}
-          highlightNotes={["C", "D", "E", "F", "G", "A", "B"]}
-          chordTones={["C", "E", "G"]}
-        />,
-      );
-      expect(document.body).toBeTruthy();
-    });
-
-    it("handles chord fret spread calculation", () => {
-      render(
-        <Fretboard
-          {...defaultProps}
-          chordTones={["C", "E", "G"]}
-          chordFretSpread={0}
-        />,
-      );
-
-      expect(document.body).toBeTruthy();
-    });
+  // Render-only smoke tests covering optional props that the Fretboard wrapper
+  // forwards to FretboardSVG. Detailed behavior is asserted in
+  // FretboardSVG.test.tsx; these only verify the wrapper accepts the shapes.
+  it.each<{ label: string; props: Record<string, unknown> }>([
+    {
+      label: "chord tones with scale highlights",
+      props: { highlightNotes: ["C", "D", "E", "F", "G", "A", "B"], chordTones: ["C", "E", "G"] },
+    },
+    {
+      label: "chord fret spread",
+      props: { chordTones: ["C", "E", "G"], chordFretSpread: 0 },
+    },
+    {
+      label: "shape polygons",
+      props: {
+        shapePolygons: [
+          {
+            vertices: [
+              { string: 0, fret: 0 }, { string: 1, fret: 2 }, { string: 2, fret: 2 },
+              { string: 3, fret: 2 }, { string: 4, fret: 0 }, { string: 5, fret: 0 },
+            ],
+            shape: "E", color: "#6366f1", truncated: false,
+            intendedMin: 0, intendedMax: 2, cagedLabel: "E Shape", modalLabel: "Ionian",
+          },
+        ],
+      },
+    },
+    { label: "wrappedNotes set", props: { wrappedNotes: new Set(["4-24", "3-25"]) } },
+    {
+      label: "colorNotes with full scale",
+      props: { highlightNotes: ["C", "D", "E", "F", "G", "A", "B"], colorNotes: ["F#", "B"] },
+    },
+  ])("renders with $label without crashing", ({ props }) => {
+    render(<Fretboard {...defaultProps} {...props} />);
+    expect(document.body).toBeTruthy();
   });
 
-  describe("Shape polygons and visualization", () => {
-    it("renders shape polygons when provided", () => {
-      const shapePolygons = [
-        {
-          vertices: [
-            { string: 0, fret: 0 },
-            { string: 1, fret: 2 },
-            { string: 2, fret: 2 },
-            { string: 3, fret: 2 },
-            { string: 4, fret: 0 },
-            { string: 5, fret: 0 },
-          ],
-          shape: "E" as const,
-          color: "#6366f1",
-          truncated: false,
-          intendedMin: 0,
-          intendedMax: 2,
-          cagedLabel: "E Shape",
-          modalLabel: "Ionian",
-        },
-      ];
-
-      render(
-        <Fretboard
-          {...defaultProps}
-          shapePolygons={shapePolygons}
-        />,
-      );
-
-      expect(document.body).toBeTruthy();
-    });
-  });
-
-  describe("Wrapped notes", () => {
-    it("handles wrapped notes set", () => {
-      const wrappedNotes = new Set(["4-24", "3-25"]);
-
-      render(<Fretboard {...defaultProps} wrappedNotes={wrappedNotes} />);
-
-      expect(document.body).toBeTruthy();
-    });
-
-    it("displays wrapped notes visually", () => {
-      const wrappedNotes = new Set(["0-2", "1-5"]);
-
-      const { container } = render(
-        <Fretboard {...defaultProps} wrappedNotes={wrappedNotes} />,
-      );
-
-      expect(container).toBeTruthy();
-    });
-  });
-
-  describe("Note coloring", () => {
-    it("colors notes based on colorNotes prop", () => {
-      render(
-        <Fretboard
-          {...defaultProps}
-          highlightNotes={["C", "D", "E", "F", "G", "A", "B"]}
-          colorNotes={["F#", "B"]}
-        />,
-      );
-
-      expect(document.body).toBeTruthy();
-    });
-
-    it("updates colors when colorNotes changes", () => {
-      const { rerender } = render(
-        <Fretboard {...defaultProps} colorNotes={["F", "B"]} />,
-      );
-
-      rerender(<Fretboard {...defaultProps} colorNotes={["F#", "C#"]} />);
-
-      expect(document.body).toBeTruthy();
-    });
+  it("re-renders without crashing when colorNotes changes", () => {
+    const { rerender } = render(<Fretboard {...defaultProps} colorNotes={["F", "B"]} />);
+    rerender(<Fretboard {...defaultProps} colorNotes={["F#", "C#"]} />);
+    expect(document.body).toBeTruthy();
   });
 
   describe("Accidentals", () => {
-    it("displays sharps by default", () => {
-      render(<Fretboard {...defaultProps} useFlats={false} />);
-      expect(document.body).toBeTruthy();
-    });
-
-    it("displays flats when useFlats is true", () => {
-      render(<Fretboard {...defaultProps} useFlats={true} />);
+    it.each([false, true])("renders with useFlats=%s", (useFlats) => {
+      render(<Fretboard {...defaultProps} useFlats={useFlats} />);
       expect(document.body).toBeTruthy();
     });
 
     it("updates display when useFlats changes", () => {
-      const { rerender } = render(
-        <Fretboard {...defaultProps} useFlats={false} />,
-      );
-
+      const { rerender } = render(<Fretboard {...defaultProps} useFlats={false} />);
       rerender(<Fretboard {...defaultProps} useFlats={true} />);
-
       expect(document.body).toBeTruthy();
     });
   });

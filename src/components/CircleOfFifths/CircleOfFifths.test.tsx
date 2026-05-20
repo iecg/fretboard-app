@@ -103,77 +103,22 @@ describe("CircleOfFifths/CircleOfFifths", () => {
   });
 
   describe("Scale-aware display", () => {
-    it("displays degrees for Major scale", () => {
-      render(
-        <CircleOfFifths
-          rootNote="C"
-          setRootNote={mockSetRootNote}
-          scaleName="Major"
-        />,
-      );
-
-      const svg = document.querySelector("svg");
-      expect(svg).toBeTruthy();
-      // Degree information should be rendered
-    });
-
-    it("displays degrees for Minor scale", () => {
-      render(
-        <CircleOfFifths
-          rootNote="A"
-          setRootNote={mockSetRootNote}
-          scaleName="Natural Minor"
-        />,
-      );
-
-      const svg = document.querySelector("svg");
-      expect(svg).toBeTruthy();
+    it.each([
+      { root: "C", scale: "Major" },
+      { root: "A", scale: "Natural Minor" },
+      { root: "F", scale: "Lydian" },
+      { root: "D", scale: "Dorian" },
+    ])("renders for $root $scale", ({ root, scale }) => {
+      render(<CircleOfFifths rootNote={root} setRootNote={mockSetRootNote} scaleName={scale} />);
+      expect(document.querySelector("svg")).toBeTruthy();
     });
 
     it("updates degrees when scale changes", () => {
       const { rerender } = render(
-        <CircleOfFifths
-          rootNote="C"
-          setRootNote={mockSetRootNote}
-          scaleName="Major"
-        />,
+        <CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} scaleName="Major" />,
       );
-
-      rerender(
-        <CircleOfFifths
-          rootNote="C"
-          setRootNote={mockSetRootNote}
-          scaleName="Natural Minor"
-        />,
-      );
-
+      rerender(<CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} scaleName="Natural Minor" />);
       expect(document.body).toBeTruthy();
-    });
-
-    it("displays degrees for Lydian mode", () => {
-      render(
-        <CircleOfFifths
-          rootNote="F"
-          setRootNote={mockSetRootNote}
-          scaleName="Lydian"
-        />,
-      );
-
-      const svg = document.querySelector("svg");
-      expect(svg).toBeTruthy();
-    });
-
-    it("displays degrees for Dorian mode", () => {
-      render(
-        <CircleOfFifths
-          rootNote="D"
-          setRootNote={mockSetRootNote}
-          scaleName="Dorian"
-        />,
-      );
-
-      const svg = document.querySelector("svg");
-      expect(svg).toBeTruthy();
     });
   });
 
@@ -181,70 +126,22 @@ describe("CircleOfFifths/CircleOfFifths", () => {
   // into the Scale tab's Theory column — see scaleTheoryDerivations.test.ts.
 
   describe("Accidentals", () => {
-    it("displays sharps by default", () => {
-      render(
-        <CircleOfFifths
-          rootNote="C"
-          setRootNote={mockSetRootNote}
-          useFlats={false}
-        />,
-      );
-
-      const textElements = document.querySelectorAll("text");
-      expect(textElements.length).toBeGreaterThan(0);
+    it.each([
+      { label: "sharps (default)", useFlats: false, rootNote: "C" },
+      { label: "flats when useFlats=true", useFlats: true, rootNote: "C" },
+    ])("renders text elements with $label", ({ useFlats, rootNote }) => {
+      render(<CircleOfFifths rootNote={rootNote} setRootNote={mockSetRootNote} useFlats={useFlats} />);
+      expect(document.querySelectorAll("text").length).toBeGreaterThan(0);
     });
 
-    it("displays flats when useFlats is true", () => {
-      render(
-        <CircleOfFifths
-          rootNote="C"
-          setRootNote={mockSetRootNote}
-          useFlats={true}
-        />,
-      );
-
-      const textElements = document.querySelectorAll("text");
-      expect(textElements.length).toBeGreaterThan(0);
-    });
-
-    it("switches between sharps and flats correctly", () => {
+    it.each([
+      { label: "switches between sharps and flats correctly", root: "C" },
+      { label: "displays enharmonic equivalents (C# / Db)", root: "C#" },
+    ])("$label", ({ root }) => {
       const { rerender } = render(
-        <CircleOfFifths
-          rootNote="C"
-          setRootNote={mockSetRootNote}
-          useFlats={false}
-        />,
+        <CircleOfFifths rootNote={root} setRootNote={mockSetRootNote} useFlats={false} />,
       );
-
-      rerender(
-        <CircleOfFifths
-          rootNote="C"
-          setRootNote={mockSetRootNote}
-          useFlats={true}
-        />,
-      );
-
-      expect(document.body).toBeTruthy();
-    });
-
-    it("displays enharmonic equivalents correctly", () => {
-      // C# and Db should display differently based on useFlats
-      const { rerender } = render(
-        <CircleOfFifths
-          rootNote="C#"
-          setRootNote={mockSetRootNote}
-          useFlats={false}
-        />,
-      );
-
-      rerender(
-        <CircleOfFifths
-          rootNote="C#"
-          setRootNote={mockSetRootNote}
-          useFlats={true}
-        />,
-      );
-
+      rerender(<CircleOfFifths rootNote={root} setRootNote={mockSetRootNote} useFlats={true} />);
       expect(document.body).toBeTruthy();
     });
   });
