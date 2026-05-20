@@ -6,7 +6,7 @@ import {
 import { getDegreesForScale, getQualityForDegree, type DegreeId } from "./degrees";
 import * as Note from "@tonaljs/note";
 import * as Interval from "@tonaljs/interval";
-import Scale from "@tonaljs/scale";
+import * as Scale from "@tonaljs/scale";
 import { scaleNameToTonal } from "./lib/tonal";
 
 export const NOTES = [
