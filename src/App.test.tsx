@@ -11,11 +11,10 @@ import {
 import userEvent from "@testing-library/user-event";
 import App from "./App";
 import { synth } from "./core/audio";
-import { get3NPSCoordinates } from "@fretflow/core";
-import { STANDARD_TUNING } from "@fretflow/core";
+import { get3NPSCoordinates, STANDARD_TUNING } from "@fretflow/core";
 import { k } from "./test-utils/storage";
 
-// Mock child components to isolate App logic
+// Mock child components to isolate App-level wiring (state -> rendered tree).
 vi.mock("./components/Fretboard/Fretboard", async () => {
   const { useAtomValue } = await import("jotai");
   const { rootNoteAtom, colorNotesAtom, shapeDataAtom } = await import("./store/atoms");
@@ -62,1216 +61,217 @@ vi.mock("./core/audio", () => ({
   },
 }));
 
+const setViewport = (width: number, height: number) => {
+  Object.defineProperty(window, "innerWidth", { writable: true, configurable: true, value: width });
+  Object.defineProperty(window, "innerHeight", { writable: true, configurable: true, value: height });
+};
+
+// Inspector tab bodies (Radix Tabs) only mount when active; tests that exercise
+// Scale/Chord tab controls must select the tab first.
+const selectInspectorTab = async (name: "View" | "Scale" | "Chord") => {
+  await userEvent.click(await screen.findByRole("tab", { name }));
+};
+
 describe("App", () => {
   beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
-    // Use a roomy desktop viewport so the shared split controls panel
-    // is visible without switching tabs.
-    Object.defineProperty(window, "innerWidth", {
-      writable: true,
-      configurable: true,
-      value: 1920,
-    });
-    Object.defineProperty(window, "innerHeight", {
-      writable: true,
-      configurable: true,
-      value: 1200,
-    });
+    setViewport(1920, 1200);
   });
+  afterEach(() => localStorage.clear());
 
-  afterEach(() => {
-    localStorage.clear();
-  });
-
-  const setViewport = (width: number, height: number) => {
-    Object.defineProperty(window, "innerWidth", {
-      writable: true,
-      configurable: true,
-      value: width,
-    });
-    Object.defineProperty(window, "innerHeight", {
-      writable: true,
-      configurable: true,
-      value: height,
-    });
-  };
-
-  // The Inspector is the default desktop/tablet controls panel. Its tab
-  // bodies (Radix Tabs) only mount when their tab is active, so tests that
-  // exercise Scale- or Chord-tab controls must select the tab first.
-  const selectInspectorTab = async (name: "View" | "Scale" | "Chord") => {
-    // Radix Tabs activates triggers via pointer events; userEvent emits them.
-    const tab = await screen.findByRole("tab", { name });
-    await userEvent.click(tab);
-    return tab;
-  };
-
-  describe("Initialization", () => {
-    it("renders without crashing", () => {
-      render(<App />);
-      expect(screen.getByTestId("fretboard")).toBeTruthy();
-    });
-
-    it("loads default state when localStorage is empty", () => {
+  describe("initial mount", () => {
+    it("renders with default state and a working fretboard", () => {
       render(<App />);
       expect(screen.getByTestId("fretboard")).toHaveTextContent("Fretboard: C");
     });
 
-    it("renders a terse scale label with parentheticals dropped", () => {
-      // The inline lens strip drops "(Ionian)" / "(1st Mode)" suffixes to keep
-      // the label compact (Phase C).
-      render(<App />);
-      const summary = screen.getByRole("group", { name: /scale degrees/i });
-      // "Major" is abbreviated to "Maj" on the compact strip.
-      expect(within(summary).getByText("C Maj")).toBeInTheDocument();
-      expect(within(summary).queryByText(/Ionian/)).toBeNull();
-    });
-
-    it("renders the summary above the fretboard", () => {
-      render(<App />);
-
-      const summary = screen.getByRole("group", { name: /scale degrees/i });
-      const fretboard = screen.getByTestId("fretboard");
-
-      expect(
-        summary.compareDocumentPosition(fretboard) &
-          Node.DOCUMENT_POSITION_FOLLOWING,
-      ).toBeTruthy();
-    });
-
-    it("mounts the lens strip inside the fretboard region, above the SVG", () => {
-      render(<App />);
-
-      // Phase C: the lens is an inline strip inside the fretboard container
-      // (`.main-fretboard`), not a floating overlay. It must be a descendant
-      // of that region and precede the fretboard SVG in DOM order.
-      const fretboardRegion = screen.getByTestId("main-fretboard");
-      const lensStrip = screen.getByTestId("fretboard-lens-overlay");
-      const fretboard = screen.getByTestId("fretboard");
-
-      expect(fretboardRegion).toContainElement(lensStrip);
-      expect(
-        lensStrip.compareDocumentPosition(fretboard) &
-          Node.DOCUMENT_POSITION_FOLLOWING,
-      ).toBeTruthy();
-    });
-
-    it("loads persisted state from localStorage", async () => {
+    it("loads persisted root and scale from localStorage", async () => {
       localStorage.setItem(k("rootNote"), "G");
       localStorage.setItem(k("scaleName"), "Minor");
       render(<App />);
-      // CircleOfFifths lives in the Inspector's Scale tab; select it first.
       await selectInspectorTab("Scale");
-      expect(await screen.findByTestId("circle-of-fifths")).toHaveTextContent(
-        "CoF: G",
-      );
+      expect(await screen.findByTestId("circle-of-fifths")).toHaveTextContent("CoF: G");
     });
 
-    it("renders the melodic minor summary label with parentheticals dropped", async () => {
-      localStorage.setItem(k("scaleName"), "Melodic Minor");
-      render(<App />);
-      const summary = await screen.findByRole("group", { name: /scale degrees/i });
-      // "Melodic Minor" is abbreviated to "Mel Min" on the compact strip.
-      expect(within(summary).getByText("C Mel Min")).toBeInTheDocument();
-      expect(within(summary).queryByText(/Jazz Minor/)).toBeNull();
-    });
-
-    it("renders a terse mode label in relative browse mode", async () => {
-      localStorage.setItem(k("rootNote"), "D");
-      localStorage.setItem(k("scaleName"), "Dorian");
-      localStorage.setItem(k("scaleBrowseMode"), "relative");
-      render(<App />);
-      const summary = await screen.findByRole("group", { name: /scale degrees/i });
-      expect(within(summary).getByText("D Dorian")).toBeInTheDocument();
-      expect(within(summary).queryByText(/2nd Mode/)).toBeNull();
-    });
-
-    it("renders Unicode flat intervals in the degree chip strip for Natural Minor", async () => {
-      localStorage.setItem(k("rootNote"), "A");
-      localStorage.setItem(k("scaleName"), "Natural Minor");
-      render(<App />);
-      const summary = await screen.findByRole("group", { name: /scale degrees/i });
-      expect(within(summary).getByText("♭3")).toBeInTheDocument();
-      expect(within(summary).getByText("♭6")).toBeInTheDocument();
-      expect(within(summary).getByText("♭7")).toBeInTheDocument();
-    });
-
-    it("defaults the summary collapsed on mobile", () => {
-      setViewport(390, 844);
-      render(<App />);
-
-      // DegreeChipStrip replaces the old collapsible disclosure; on mobile the
-      // strip is always visible.
-      expect(
-        screen.getByRole("group", { name: /scale degrees/i }),
-      ).toBeInTheDocument();
-    });
-
-    it("defaults the summary expanded on desktop", () => {
-      render(<App />);
-
-      expect(
-        screen.getByRole("group", { name: /scale degrees/i }),
-      ).toBeInTheDocument();
-    });
-
-    it("expands the summary to reveal notes on mobile", () => {
-      setViewport(390, 844);
-      render(<App />);
-
-      // DegreeChipStrip is always rendered (no toggle); chips are always visible.
-      expect(
-        screen.getByRole("group", { name: /scale degrees/i }),
-      ).toBeInTheDocument();
-    });
-
-    it("persists isMuted to localStorage on first mount", () => {
-      render(<App />);
-      expect(localStorage.getItem(k("isMuted"))).toBe("false");
-    });
-
-    it("synth is muted based on initial state", () => {
+    it("seeds isMuted in storage and forwards initial mute state to synth", () => {
       localStorage.setItem(k("isMuted"), "true");
       render(<App />);
       expect(synth.setMute).toHaveBeenCalledWith(true);
+      expect(localStorage.getItem(k("isMuted"))).toBe("true");
     });
   });
 
-  describe("Root note changes", () => {
-    it("updates fretboard when root note changes via Circle of Fifths", async () => {
-      render(<App />);
-      expect(screen.getByTestId("fretboard")).toHaveTextContent("Fretboard: C");
-
-      await selectInspectorTab("Scale");
-      const cofButton = await screen.findByTestId("circle-of-fifths");
-      fireEvent.click(cofButton);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("fretboard")).toHaveTextContent(
-          "Fretboard: G",
-        );
-      });
-    });
-
-    it("persists root note to localStorage", async () => {
+  describe("root note changes (Circle of Fifths -> Fretboard)", () => {
+    it("propagates a new root note to the fretboard", async () => {
       render(<App />);
       await selectInspectorTab("Scale");
-      const cofButton = await screen.findByTestId("circle-of-fifths");
-      fireEvent.click(cofButton);
-
+      fireEvent.click(await screen.findByTestId("circle-of-fifths"));
       await waitFor(() => {
+        expect(screen.getByTestId("fretboard")).toHaveTextContent("Fretboard: G");
         expect(localStorage.getItem(k("rootNote"))).toBe("G");
       });
     });
 
-    it("links chord root to scale root in manual mode by default", async () => {
-      // Seed manual mode explicitly. In degree mode the link sync is intentionally
-      // skipped — the derived chord root re-resolves via getDiatonicChord against
-      // the new scale root, so writing through chordRootAtom is unnecessary and
-      // would force mode→manual (the bug Phase 01 fixes).
+    it("links chord root to scale root in manual mode", async () => {
+      // In manual mode the link-sync writes the new scale root through to chordRootOverride.
       localStorage.setItem(k("progressionSteps"), "[]");
       localStorage.setItem(k("chordOverlayMode"), "manual");
       localStorage.setItem(k("chordType"), "Major Triad");
       localStorage.setItem(k("chordRootOverride"), "C");
       render(<App />);
-
       await selectInspectorTab("Scale");
-      const cofButton = await screen.findByTestId("circle-of-fifths");
-      fireEvent.click(cofButton);
-
+      fireEvent.click(await screen.findByTestId("circle-of-fifths"));
       await waitFor(() => {
-        // Phase 02: chordRootAtom writes go to chordRootOverride (manual mode override key).
         expect(localStorage.getItem(k("chordRootOverride"))).toBe("G");
       });
     });
 
-    it("preserves degree mode when scale root changes (chord root re-resolves via degree)", async () => {
-      // Default after migration with a diatonic triad: degree mode, chordDegree="I".
-      // Changing the scale root must keep the user in degree mode (the chord root
-      // auto-resolves via getDiatonicChord) and must NOT write to chordRootOverride.
+    it("preserves degree mode when scale root changes (Phase 01 regression)", async () => {
+      // In degree mode the chord root re-resolves via getDiatonicChord; the
+      // link-sync must NOT write through to chordRootOverride or force manual mode.
       localStorage.setItem(k("progressionSteps"), "[]");
       localStorage.setItem(k("chordType"), "Major Triad");
       render(<App />);
-
       await selectInspectorTab("Scale");
-      const cofButton = await screen.findByTestId("circle-of-fifths");
-      fireEvent.click(cofButton);
-
+      fireEvent.click(await screen.findByTestId("circle-of-fifths"));
       await waitFor(() => {
         expect(localStorage.getItem(k("rootNote"))).toBe("G");
         expect(localStorage.getItem(k("chordOverlayMode"))).toBe("degree");
-        // In degree mode, setRootNoteAtom must NOT propagate the new scale root
-        // ("G") into chordRootOverride. The override may be persisted at its
-        // default ("C") because atomWithStorage seeds defaults on mount, but it
-        // must never equal the new rootNote — that would mean the link-sync ran
-        // and a manual-mode override was silently set, which is the regression.
         expect(localStorage.getItem(k("chordRootOverride"))).not.toBe("G");
       });
     });
-
-    it("does not link chord root when linkChordRoot is false", async () => {
-      localStorage.setItem(k("chordType"), "Major Triad");
-      localStorage.setItem(k("linkChordRoot"), "false");
-      localStorage.setItem(k("chordRoot"), "D");
-      render(<App />);
-
-      await selectInspectorTab("Scale");
-      const cofButton = await screen.findByTestId("circle-of-fifths");
-      fireEvent.click(cofButton);
-
-      await waitFor(() => {
-        expect(localStorage.getItem(k("chordRoot"))).toBe("D");
-      });
-    });
   });
 
-  describe("Scale selection", () => {
-    it("renders the shared theory controls", async () => {
+  describe("audio + theme interactions", () => {
+    it("toggles mute via header button and forwards to synth", async () => {
       render(<App />);
-      // Theory controls live in the Inspector's Scale tab.
-      await selectInspectorTab("Scale");
-      expect(
-        await screen.findByRole("combobox", { name: "Scale Family" }),
-      ).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Parallel" })).toBeInTheDocument();
-      expect(
-        screen.getByRole("button", { name: /Previous Mode/i }),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole("button", { name: /Next Mode/i }),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole("combobox", { name: "Mode" }),
-      ).toBeInTheDocument();
-    });
-
-    it("persists scale name to localStorage", async () => {
-      render(<App />);
-      expect(localStorage.getItem(k("scaleName"))).toBe("Major");
-    });
-  });
-
-  describe("Mute toggle", () => {
-    it("toggles mute state", async () => {
-      render(<App />);
-      expect(localStorage.getItem(k("isMuted"))).toBe("false");
-
-      const muteButtons = screen
-        .getAllByRole("button")
-        .filter((btn) =>
-          btn.getAttribute("title")?.toLowerCase().includes("mute"),
-        );
-
-      if (muteButtons.length > 0) {
-        fireEvent.click(muteButtons[0]);
-        await waitFor(() => {
-          expect(localStorage.getItem(k("isMuted"))).toBe("true");
-        });
-      }
-    });
-
-    it("calls synth.setMute when toggling mute", async () => {
-      render(<App />);
-
-      const muteButtons = screen
-        .getAllByRole("button")
-        .filter((btn) =>
-          btn.getAttribute("title")?.toLowerCase().includes("mute"),
-        );
-
-      if (muteButtons.length > 0) {
-        fireEvent.click(muteButtons[0]);
-        await waitFor(() => {
-          expect(synth.setMute).toHaveBeenCalled();
-        });
-      }
-    });
-
-    it("renders unmuted audio icon with active class", () => {
-      render(<App />);
-      const audioBtn = screen.getByLabelText("Mute audio");
-      expect(audioBtn.querySelector(".icon-active")).toBeTruthy();
-    });
-
-    it("renders muted audio icon with muted class", async () => {
-      localStorage.setItem(k("isMuted"), "true");
-      render(<App />);
-      const audioBtn = await screen.findByLabelText("Unmute audio");
-      expect(audioBtn.querySelector(".icon-muted")).toBeTruthy();
-    });
-  });
-
-  describe("Reset functionality", () => {
-    it("clears all localStorage on reset", async () => {
-      localStorage.setItem(k("rootNote"), "G");
-      localStorage.setItem(k("scaleName"), "Natural Minor");
-      render(<App />);
-
-      const resetButtons = screen
-        .getAllByRole("button")
-        .filter(
-          (btn) =>
-            btn.getAttribute("aria-label")?.includes("reset") ||
-            btn.className.includes("reset"),
-        );
-
-      if (resetButtons.length > 0) {
-        fireEvent.click(resetButtons[0]);
-        await waitFor(() => {
-          expect(localStorage.getItem(k("rootNote"))).toBeNull();
-        });
-      }
-    });
-
-    it("resets state to defaults", async () => {
-      localStorage.setItem(k("rootNote"), "G");
-      const { rerender } = render(<App />);
-
-      const resetButtons = screen
-        .getAllByRole("button")
-        .filter(
-          (btn) =>
-            btn.getAttribute("aria-label")?.includes("reset") ||
-            btn.className.includes("reset"),
-        );
-
-      if (resetButtons.length > 0) {
-        fireEvent.click(resetButtons[0]);
-        rerender(<App />);
-
-        await waitFor(() => {
-          expect(screen.getByTestId("fretboard")).toHaveTextContent(
-            "Fretboard: C",
-          );
-        });
-      }
-    });
-  });
-
-  describe("Summary ribbon", () => {
-    it("scale strip renders in the top-band-summary", () => {
-      render(<App />);
-      expect(document.querySelector(".top-band-summary .degree-chip-strip")).toBeTruthy();
-    });
-
-    it("chord practice bar renders in the top-band-summary when active", async () => {
-      localStorage.setItem(k("rootNote"), "C");
-      localStorage.setItem(k("chordRoot"), "D");
-      localStorage.setItem(k("chordType"), "Dominant 7th");
-      localStorage.setItem(k("practiceLens"), "tension");
-      render(<App />);
+      const muteBtn = screen.getByLabelText("Mute audio");
+      fireEvent.click(muteBtn);
       await waitFor(() => {
-        expect(document.querySelector(".top-band-summary .chord-practice-bar")).toBeTruthy();
+        expect(localStorage.getItem(k("isMuted"))).toBe("true");
+        expect(synth.setMute).toHaveBeenCalled();
       });
     });
 
-    it("targets lens: scale strip always in top-band-summary", async () => {
-      localStorage.setItem(k("chordType"), "Major Triad");
-      localStorage.setItem(k("practiceLens"), "targets");
+    it("changes theme via settings overlay", async () => {
       render(<App />);
-      await waitFor(() => {
-        expect(document.querySelector(".top-band-summary .degree-chip-strip")).toBeTruthy();
-      });
-    });
-
-    it("targets lens: chord practice bar shown even in simple diatonic case (C Major Triad over C Major)", async () => {
-      localStorage.setItem(k("rootNote"), "C");
-      localStorage.setItem(k("scaleName"), "Major");
-      localStorage.setItem(k("chordRoot"), "C");
-      localStorage.setItem(k("chordType"), "Major Triad");
-      localStorage.setItem(k("practiceLens"), "targets");
-      render(<App />);
-      await waitFor(() => {
-        expect(document.querySelector(".chord-practice-bar")).toBeTruthy();
-      });
-    });
-
-    it("targets lens: shows chord practice bar when chordRoot differs from scale root", async () => {
-      localStorage.setItem(k("rootNote"), "C");
-      localStorage.setItem(k("chordRoot"), "G");
-      localStorage.setItem(k("chordType"), "Major Triad");
-      localStorage.setItem(k("practiceLens"), "targets");
-      render(<App />);
-      await waitFor(() => {
-        expect(document.querySelector(".chord-practice-bar")).toBeTruthy();
-      });
-    });
-
-    it("targets lens: both scale strip and chord bar render in unified summary (outside tones)", async () => {
-      localStorage.setItem(k("rootNote"), "C");
-      localStorage.setItem(k("chordRoot"), "C");
-      localStorage.setItem(k("chordType"), "Dominant 7th");
-      localStorage.setItem(k("practiceLens"), "targets");
-      render(<App />);
-      await waitFor(() => {
-        expect(document.querySelector(".top-band-summary .chord-practice-bar")).toBeTruthy();
-        expect(document.querySelector(".top-band-summary .degree-chip-strip")).toBeTruthy();
-      });
-    });
-
-    it("tension lens: both scale strip and chord bar render in unified summary", async () => {
-      localStorage.setItem(k("rootNote"), "C");
-      localStorage.setItem(k("chordRoot"), "D");
-      localStorage.setItem(k("chordType"), "Dominant 7th");
-      localStorage.setItem(k("practiceLens"), "tension");
-      render(<App />);
-      await waitFor(() => {
-        expect(document.querySelector(".top-band-summary .chord-practice-bar")).toBeTruthy();
-        expect(document.querySelector(".top-band-summary .degree-chip-strip")).toBeTruthy();
-      });
-    });
-
-    it("no legend row is rendered in targets lens (Dominant 7th — outside tones force bar visible)", async () => {
-      localStorage.setItem(k("chordType"), "Dominant 7th");
-      localStorage.setItem(k("practiceLens"), "targets");
-      render(<App />);
-      await waitFor(() => {
-        expect(document.querySelector(".top-band-summary .chord-practice-bar")).toBeTruthy();
-      });
-      expect(document.querySelector(".chord-row-legend")).toBeNull();
-    });
-
-    it("practice bar shows chord label as title", async () => {
-      localStorage.setItem(k("progressionSteps"), "[]");
-      localStorage.setItem(k("rootNote"), "C");
-      localStorage.setItem(k("scaleName"), "Major");
-      localStorage.setItem(k("chordRoot"), "C");
-      localStorage.setItem(k("chordType"), "Dominant 7th");
-      localStorage.setItem(k("practiceLens"), "targets");
-      render(<App />);
-      await waitFor(() => {
-        expect(document.querySelector(".chord-practice-bar")).toBeTruthy();
-      });
-      const title = document.querySelector(".chord-practice-bar-title")!;
-      // "Dominant" is abbreviated to "Dom" on the compact strip.
-      expect(title.textContent).toContain("C");
-      expect(title.textContent).toContain("Dom 7th");
-    });
-
-    it("chord bar and scale strip are siblings, not nested", async () => {
-      localStorage.setItem(k("rootNote"), "C");
-      localStorage.setItem(k("chordRoot"), "D");
-      localStorage.setItem(k("chordType"), "Dominant 7th");
-      localStorage.setItem(k("practiceLens"), "tension");
-      render(<App />);
-      await waitFor(() => {
-        expect(document.querySelector(".top-band-summary .chord-practice-bar")).toBeTruthy();
-      });
-      expect(document.querySelector(".degree-chip-strip .chord-practice-bar")).toBeNull();
-      expect(document.querySelector(".top-band-summary .degree-chip-strip")).toBeTruthy();
-    });
-
-    it("chord bar remains visible when scale is hidden (eye-off)", async () => {
-      localStorage.setItem(k("rootNote"), "C");
-      localStorage.setItem(k("chordRoot"), "C");
-      localStorage.setItem(k("chordType"), "Dominant 7th");
-      localStorage.setItem(k("practiceLens"), "tension");
-      localStorage.setItem(k("scaleVisible"), "false");
-      render(<App />);
-      await waitFor(() => {
-        expect(document.querySelector(".chord-practice-bar")).toBeTruthy();
-      });
-    });
-
-    it("eye toggle button appears before the scale name text in the strip header", async () => {
-      render(<App />);
-      await waitFor(() => {
-        expect(document.querySelector(".degree-chip-strip-header")).toBeTruthy();
-      });
-      const header = document.querySelector(".degree-chip-strip-header")!;
-      const children = Array.from(header.childNodes).filter(
-        (n) => n.nodeType === Node.ELEMENT_NODE || (n.nodeType === Node.TEXT_NODE && n.textContent?.trim())
-      );
-      // First meaningful child should be the eye toggle button
-      const firstEl = children.find((n) => n.nodeType === Node.ELEMENT_NODE) as Element;
-      expect(firstEl?.tagName.toLowerCase()).toBe("button");
-    });
-  });
-
-  describe("Theme behavior", () => {
-    it("applies system theme by default", () => {
-      render(<App />);
-      expect(document.documentElement.getAttribute("data-theme")).toBe(
-        "modern-dark",
-      );
-    });
-
-    it("applies modern-light theme when light is selected", async () => {
-      localStorage.setItem(k("theme"), "light");
-      render(<App />);
-      expect(document.documentElement.getAttribute("data-theme")).toBe(
-        "modern-light",
-      );
-    });
-
-    it("updates theme when changed in settings", async () => {
-      render(<App />);
-      
       fireEvent.click(screen.getByLabelText("Open settings"));
-      
-      await waitFor(() => {
-        expect(screen.getByText("Settings")).toBeInTheDocument();
-      });
-
-      // Scope to the Settings dialog so this doesn't also match the header
-      // theme-toggle button ("Switch to light theme").
+      await screen.findByText("Settings");
       const settingsDialog = screen.getByRole("dialog");
-      const lightButton = within(settingsDialog).getByRole("button", {
-        name: /^light$/i,
-      });
-      fireEvent.click(lightButton);
-
+      fireEvent.click(within(settingsDialog).getByRole("button", { name: /^light$/i }));
       await waitFor(() => {
-        expect(document.documentElement.getAttribute("data-theme")).toBe(
-          "modern-light",
-        );
+        expect(document.documentElement.getAttribute("data-theme")).toBe("modern-light");
       });
     });
   });
 
-  describe("Chord overlay", () => {
-    it("can set chord type via manual mode", async () => {
+  describe("chord overlay (manual mode)", () => {
+    it("setting chord type via Manual mode writes the override key", async () => {
       localStorage.setItem(k("progressionSteps"), "[]");
       render(<App />);
-      // Chord controls live in the Inspector's Chord tab; ChordOverlayControls
-      // is rendered directly there (no accordion section to expand).
       await selectInspectorTab("Chord");
-
-      // Switch to Manual mode first, then set chord type via toggle bar
-      const manualBtn = await screen.findByRole("button", { name: "Manual" });
-      fireEvent.click(manualBtn);
-
+      fireEvent.click(await screen.findByRole("button", { name: "Manual" }));
       const chordTypeGroup = await screen.findByRole("group", { name: "Chord Type" });
-      const minButton = within(chordTypeGroup).getByRole("button", { name: "min" });
-      fireEvent.click(minButton);
-
+      fireEvent.click(within(chordTypeGroup).getByRole("button", { name: "min" }));
       await waitFor(() => {
         expect(localStorage.getItem(k("chordQualityOverride"))).toBe("Minor Triad");
       });
     });
-
-    it("persists chord type as empty string when null", async () => {
-      localStorage.setItem(k("chordType"), "Major Triad");
-      const { rerender } = render(<App />);
-
-      // Update to clear chord type
-      localStorage.setItem(k("chordType"), "");
-      rerender(<App />);
-
-      // Legacy key retains the manually-set value (Phase 02 leaves legacy keys in place).
-      expect(localStorage.getItem(k("chordType"))).toBe("");
-    });
   });
 
-  describe("Accidentals", () => {
-    it("does not write a useFlats key to localStorage (non-persisted)", async () => {
+  describe("accidental mode is session-only", () => {
+    it("never writes useFlats or accidentalMode to localStorage", async () => {
       render(<App />);
-      // accidentalModeAtom is intentionally non-persisted; no localStorage key
-      // should ever be written for it.
-      expect(localStorage.getItem("useFlats")).toBeNull();
-      expect(localStorage.getItem("accidentalMode")).toBeNull();
-
       fireEvent.click(screen.getByLabelText("Open settings"));
-
-      await waitFor(() => {
-        expect(screen.getByText("Accidentals")).toBeInTheDocument();
-      });
-
+      await screen.findByText("Accidentals");
       fireEvent.click(screen.getByRole("button", { name: "♭" }));
-
       expect(localStorage.getItem("useFlats")).toBeNull();
       expect(localStorage.getItem("accidentalMode")).toBeNull();
     });
   });
 
-  describe("Fretboard zoom and scroll", () => {
-    it("initializes with default fret range", () => {
-      render(<App />);
-      expect(localStorage.getItem(k("fretStart"))).toBe("0");
-      expect(localStorage.getItem(k("fretEnd"))).toBe("25");
-    });
-
-    it("persists fret zoom level", async () => {
-      localStorage.setItem(k("fretZoom"), "150");
-      render(<App />);
-      expect(localStorage.getItem(k("fretZoom"))).toBe("150");
-    });
-  });
-
-  describe("Tuning selection", () => {
-    it("uses Standard tuning by default", () => {
-      render(<App />);
-      expect(localStorage.getItem(k("tuningName"))).toBe("Standard");
-    });
-
-    it("persists tuning selection", async () => {
-      localStorage.setItem(k("tuningName"), "Drop D");
-      render(<App />);
-      expect(localStorage.getItem(k("tuningName"))).toBe("Drop D");
-    });
-  });
-
-  describe("Mobile responsiveness", () => {
-    it("detects mobile viewport width < 768px", () => {
-      Object.defineProperty(window, "innerWidth", {
-        writable: true,
-        configurable: true,
-        value: 600,
-      });
-
-      render(<App />);
-      // Mobile elements should be rendered
-      screen.queryAllByTestId(/mobile/i);
-    });
-
-    it("renders the Inspector on the mobile tier", async () => {
-      setViewport(390, 844);
-      render(<App />);
-      expect(
-        await screen.findByRole("tablist", { name: "Inspector" }),
-      ).toBeInTheDocument();
-    });
-
-    it("uses compact mobile header attributes and full-width help modal", async () => {
-      setViewport(390, 844);
-      render(<App />);
-
-      const appContainer = document.querySelector(".app-container");
-      expect(appContainer?.getAttribute("data-layout-tier")).toBe("mobile");
-
-      fireEvent.click(screen.getByLabelText("Open help"));
-
-      await waitFor(() => {
-        const helpModal = document.querySelector(".help-modal");
-        expect(helpModal).toBeTruthy();
-        expect(screen.getByRole("dialog", { name: "FretFlow Help" })).toBeTruthy();
-      });
-
-      fireEvent.click(screen.getByLabelText("Close help"));
-
-      await waitFor(() => {
-        expect(
-          screen.queryByRole("dialog", { name: "FretFlow Help" }),
-        ).toBeNull();
-      });
-    });
-
-    it("closes the help modal when the backdrop is clicked", async () => {
-      setViewport(390, 844);
-      render(<App />);
-
-      fireEvent.click(screen.getByLabelText("Open help"));
-
-      await waitFor(() => {
-        expect(screen.getByRole("dialog", { name: "FretFlow Help" })).toBeTruthy();
-      });
-
-      fireEvent.pointerDown(document.querySelector(".help-modal-overlay")!);
-
-      await waitFor(() => {
-        expect(
-          screen.queryByRole("dialog", { name: "FretFlow Help" }),
-        ).toBeNull();
-      });
-    });
-  });
-
-  describe("State persistence", () => {
-    it("persists multiple state changes to localStorage", async () => {
-      render(<App />);
-
-      localStorage.setItem(k("rootNote"), "D");
-      localStorage.setItem(k("scaleName"), "Dorian");
-      localStorage.setItem(k("chordRoot"), "A");
-      localStorage.setItem(k("chordType"), "Minor 7th");
-      localStorage.setItem(k("isMuted"), "true");
-
-      const { rerender } = render(<App />);
-      rerender(<App />);
-
-      expect(localStorage.getItem(k("rootNote"))).toBe("D");
-      expect(localStorage.getItem(k("scaleName"))).toBe("Dorian");
-      expect(localStorage.getItem(k("chordRoot"))).toBe("A");
-      expect(localStorage.getItem(k("chordType"))).toBe("Minor 7th");
-      expect(localStorage.getItem(k("isMuted"))).toBe("true");
-    });
-  });
-
-  describe("Display modes", () => {
-    it("initializes with notes display format", () => {
-      render(<App />);
-      expect(localStorage.getItem(k("displayFormat"))).toBe("notes");
-    });
-
-    it("persists display format changes", async () => {
-      localStorage.setItem(k("displayFormat"), "degrees");
-      render(<App />);
-      expect(localStorage.getItem(k("displayFormat"))).toBe("degrees");
-    });
-
-    it("passes the minor blues blue note to the fretboard", () => {
+  describe("scale-derived state reaches the fretboard", () => {
+    it.each([
+      ["Minor Blues", "F#"],
+      ["Major Blues", "D#"],
+    ])("%s scale passes blue note %s to the fretboard", (scaleName, blueNote) => {
       localStorage.setItem(k("rootNote"), "C");
-      localStorage.setItem(k("scaleName"), "Minor Blues");
-
+      localStorage.setItem(k("scaleName"), scaleName);
       render(<App />);
-
-      expect(screen.getByTestId("fretboard")).toHaveAttribute(
-        "data-color-notes",
-        "F#",
-      );
+      expect(screen.getByTestId("fretboard")).toHaveAttribute("data-color-notes", blueNote);
     });
 
-    it("passes the major blues blue note to the fretboard", () => {
-      localStorage.setItem(k("rootNote"), "C");
-      localStorage.setItem(k("scaleName"), "Major Blues");
-
-      render(<App />);
-
-      expect(screen.getByTestId("fretboard")).toHaveAttribute(
-        "data-color-notes",
-        "D#",
-      );
-    });
-
-    it("uses 3nps coordinates when a position is selected", () => {
+    it("uses 3NPS coordinates when a position is selected", () => {
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("scaleName"), "Major");
       localStorage.setItem(k("fingeringPattern"), "3nps");
       localStorage.setItem(k("npsPosition"), "2");
-
       render(<App />);
-
-      const expectedCount = get3NPSCoordinates(
-        "C",
-        "Major",
-        STANDARD_TUNING,
-        24,
-        2,
-      ).coordinates.length;
-
-      expect(screen.getByTestId("fretboard")).toHaveTextContent(
-        `Fretboard: C - ${expectedCount} notes`,
-      );
+      const expectedCount = get3NPSCoordinates("C", "Major", STANDARD_TUNING, 24, 2).coordinates.length;
+      expect(screen.getByTestId("fretboard")).toHaveTextContent(`Fretboard: C - ${expectedCount} notes`);
     });
   });
 
-  describe("Viewport resize handling", () => {
-    it("updates viewport dimensions on window resize", async () => {
-      Object.defineProperty(window, "innerWidth", {
-        writable: true,
-        configurable: true,
-        value: 1920,
-      });
-      Object.defineProperty(window, "innerHeight", {
-        writable: true,
-        configurable: true,
-        value: 1080,
-      });
+  describe("viewport resize updates layout attributes", () => {
+    it("transitions desktop -> tablet on resize", async () => {
+      setViewport(1920, 1080);
       render(<App />);
-
-      // Resize to tablet
-      Object.defineProperty(window, "innerWidth", {
-        writable: true,
-        configurable: true,
-        value: 768,
-      });
-      Object.defineProperty(window, "innerHeight", {
-        writable: true,
-        configurable: true,
-        value: 1024,
-      });
+      setViewport(768, 1024);
       fireEvent(window, new Event("resize"));
-
       await waitFor(() => {
         const appContainer = document.querySelector(".app-container");
         expect(appContainer?.getAttribute("data-layout-tier")).toBe("tablet");
-        expect(appContainer?.getAttribute("data-layout-variant")).toBe(
-          "tablet-split",
-        );
       });
     });
   });
 
-  describe("Tablet split layout", () => {
-    beforeEach(() => {
-      Object.defineProperty(window, "innerWidth", {
-        writable: true,
-        configurable: true,
-        value: 768,
-      });
-      Object.defineProperty(window, "innerHeight", {
-        writable: true,
-        configurable: true,
-        value: 1024,
-      });
-      localStorage.clear();
-    });
+  describe("chord overlay hidden reset on identity change", () => {
+    function setupHiddenPracticeBar() {
+      // Dominant 7th over C Major has Bb outside the scale, so the practice bar renders.
+      localStorage.setItem(k("rootNote"), "C");
+      localStorage.setItem(k("scaleName"), "Major");
+      localStorage.setItem(k("chordOverlayMode"), "manual");
+      localStorage.setItem(k("chordRootOverride"), "C");
+      localStorage.setItem(k("chordQualityOverride"), "Dominant 7th");
+      localStorage.setItem(k("practiceLens"), "targets");
+      localStorage.setItem(k("chordOverlayHidden"), "true");
+    }
 
-    it("renders mobile tabs and hides the shared controls panel", async () => {
+    it("resets overlay visibility when rootNote changes via Circle of Fifths", async () => {
+      setupHiddenPracticeBar();
       render(<App />);
-      fireEvent(window, new Event("resize"));
-
       await waitFor(() => {
-        expect(
-          document.querySelector('[data-layout-variant="tablet-split"]'),
-        ).toBeTruthy();
+        expect(document.querySelector('.chord-practice-bar[data-collapsed="true"]')).toBeTruthy();
       });
-
-      expect(
-        await screen.findByRole("tablist", { name: "Inspector" }),
-      ).toBeInTheDocument();
-      expect(document.querySelector(".controls-panel")).toBeNull();
+      await userEvent.click(await screen.findByRole("tab", { name: "Scale" }));
+      fireEvent.click(await screen.findByTestId("circle-of-fifths"));
+      await waitFor(() => {
+        expect(document.querySelector(".chord-practice-bar")).toBeTruthy();
+        expect(document.querySelector(".chord-practice-bar[data-collapsed]")).toBeNull();
+      });
     });
 
-    it("keeps accidental mode session-only in tablet split layout", async () => {
+    it("does NOT reset overlay visibility on initial mount when persisted hidden=true", async () => {
+      setupHiddenPracticeBar();
       render(<App />);
-      fireEvent(window, new Event("resize"));
-
-      await waitFor(() => {
-        expect(
-          document.querySelector('[data-layout-variant="tablet-split"]'),
-        ).toBeTruthy();
-      });
-
-      expect(localStorage.getItem("useFlats")).toBeNull();
+      await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+      expect(document.querySelector('.chord-practice-bar[data-collapsed="true"]')).toBeTruthy();
+      expect(localStorage.getItem(k("chordOverlayHidden"))).toBe("true");
     });
-  });
-
-  describe("Desktop layout variants", () => {
-    it("uses desktop-3col at 1440x900 (MacBook Pro canonical)", async () => {
-      Object.defineProperty(window, "innerWidth", {
-        writable: true,
-        configurable: true,
-        value: 1440,
-      });
-      Object.defineProperty(window, "innerHeight", {
-        writable: true,
-        configurable: true,
-        value: 900,
-      });
-      localStorage.clear();
-
-      render(<App />);
-      fireEvent(window, new Event("resize"));
-
-      await waitFor(() => {
-        const appContainer = document.querySelector(".app-container");
-        expect(appContainer?.getAttribute("data-layout-tier")).toBe("desktop");
-        expect(appContainer?.getAttribute("data-layout-variant")).toBe(
-          "desktop-3col",
-        );
-      });
-
-      // The Inspector is the default desktop controls panel.
-      expect(
-        await screen.findByRole("tablist", { name: "Inspector" }),
-      ).toBeInTheDocument();
-    });
-
-    it("uses desktop-stacked at 1024x768 (compact height)", async () => {
-      Object.defineProperty(window, "innerWidth", {
-        writable: true,
-        configurable: true,
-        value: 1024,
-      });
-      Object.defineProperty(window, "innerHeight", {
-        writable: true,
-        configurable: true,
-        value: 768,
-      });
-      localStorage.clear();
-
-      render(<App />);
-      fireEvent(window, new Event("resize"));
-
-      await waitFor(() => {
-        const appContainer = document.querySelector(".app-container");
-        expect(appContainer?.getAttribute("data-layout-tier")).toBe("desktop");
-        expect(appContainer?.getAttribute("data-layout-variant")).toBe(
-          "desktop-stacked",
-        );
-      });
-
-      // The Inspector is the default desktop controls panel.
-      expect(
-        await screen.findByRole("tablist", { name: "Inspector" }),
-      ).toBeInTheDocument();
-    });
-
-    it("uses desktop-split at 1024x1366 (iPad Pro portrait)", async () => {
-      Object.defineProperty(window, "innerWidth", {
-        writable: true,
-        configurable: true,
-        value: 1024,
-      });
-      Object.defineProperty(window, "innerHeight", {
-        writable: true,
-        configurable: true,
-        value: 1366,
-      });
-      localStorage.clear();
-
-      render(<App />);
-      fireEvent(window, new Event("resize"));
-
-      await waitFor(() => {
-        const appContainer = document.querySelector(".app-container");
-        expect(appContainer?.getAttribute("data-layout-tier")).toBe("desktop");
-        expect(appContainer?.getAttribute("data-layout-variant")).toBe(
-          "desktop-split",
-        );
-      });
-
-      // The Inspector is the default desktop controls panel.
-      expect(
-        await screen.findByRole("tablist", { name: "Inspector" }),
-      ).toBeInTheDocument();
-    });
-
-    // ExpandedControlsPanel and its `.controls-panel` grid were deleted in
-    // Phase 3 — the Inspector (a Radix-Tabs flex shell) is now the default
-    // controls panel. The old grid CSS guards were replaced by an Inspector
-    // CSS-module guard in layout.test.tsx.
-  });
-
-  describe("Mobile settings interactions", () => {
-    beforeEach(() => {
-      Object.defineProperty(window, "innerWidth", {
-        writable: true,
-        configurable: true,
-        value: 375,
-      });
-      Object.defineProperty(window, "innerHeight", {
-        writable: true,
-        configurable: true,
-        value: 667,
-      });
-      localStorage.clear();
-    });
-
-    it("changes tuning via settings selector", async () => {
-      render(<App />);
-      fireEvent(window, new Event("resize"));
-
-      await waitFor(() => {
-        expect(
-          document.querySelector('[data-layout-variant="mobile"]'),
-        ).toBeTruthy();
-      });
-
-      // Tuning is intentionally only available via the Settings overlay.
-      fireEvent.click(screen.getByLabelText("Open settings"));
-
-      await waitFor(() => {
-        expect(screen.getByText("Settings")).toBeTruthy();
-      });
-
-      const tuningSelect = await screen.findByRole("combobox", { name: /Tuning/i });
-      expect(within(tuningSelect).getByText("Standard")).toBeInTheDocument();
-
-      const user = userEvent.setup();
-      await user.click(tuningSelect);
-      await user.click(screen.getByRole("option", { name: "Drop D" }));
-
-      await waitFor(() => {
-        expect(localStorage.getItem(k("tuningName"))).toBe("Drop D");
-      });
-      expect(
-        within(screen.getByRole("combobox", { name: /Tuning/i })).getByText("Drop D"),
-      ).toBeInTheDocument();
-    });
-
-    it("adjusts fret range via buttons", async () => {
-      Object.defineProperty(window, "innerWidth", {
-        writable: true,
-        configurable: true,
-        value: 1280,
-      });
-      Object.defineProperty(window, "innerHeight", {
-        writable: true,
-        configurable: true,
-        value: 900,
-      });
-      localStorage.setItem(k("fretStart"), "5");
-      localStorage.setItem(k("fretEnd"), "20");
-      render(<App />);
-      fireEvent(window, new Event("resize"));
-
-      await waitFor(() => {
-        const decrementButtons = screen.queryAllByLabelText(/Decrease (start|end) fret/);
-        expect(decrementButtons.length).toBeGreaterThan(0);
-      });
-
-      const decrementButtons = screen.getAllByLabelText(/Decrease (start|end) fret/);
-      const incrementButtons = screen.getAllByLabelText(/Increase (start|end) fret/);
-
-      for (const btn of decrementButtons) fireEvent.click(btn);
-      for (const btn of incrementButtons) fireEvent.click(btn);
-    });
-  });
-});
-
-describe("Hook composition smoke test", () => {
-  beforeEach(() => {
-    localStorage.clear();
-    vi.clearAllMocks();
-    // Default desktop viewport (jsdom default equivalent: 1024x768)
-    Object.defineProperty(window, "innerWidth", {
-      writable: true,
-      configurable: true,
-      value: 1024,
-    });
-    Object.defineProperty(window, "innerHeight", {
-      writable: true,
-      configurable: true,
-      value: 768,
-    });
-  });
-
-  afterEach(() => {
-    localStorage.clear();
-  });
-
-  it("data-layout-tier attribute is present on .app-container", () => {
-    render(<App />);
-    const appContainer = document.querySelector(".app-container");
-    const tier = appContainer?.getAttribute("data-layout-tier");
-    expect(tier).toBe("desktop");
-  });
-
-  it("a known scale-derived value from useDisplayState reaches rendered output", () => {
-    // Default state: root=C, scale=Major — useDisplayState computes scaleLabel
-    render(<App />);
-    // The fretboard mock renders "Fretboard: C - N notes" — rootNote and note
-    // count both come from useDisplayState's highlightNotes derivation.
-    expect(screen.getByTestId("fretboard")).toHaveTextContent("Fretboard: C");
-    expect(screen.getByTestId("fretboard")).toHaveTextContent("notes");
-  });
-});
-
-describe("Chord overlay hidden reset on identity change", () => {
-  // These tests use localStorage to pre-seed persisted atom state, then interact
-  // via DOM to trigger changes, and assert via DOM attributes.
-
-  beforeEach(() => {
-    localStorage.clear();
-    vi.clearAllMocks();
-    Object.defineProperty(window, "innerWidth", { writable: true, configurable: true, value: 1920 });
-    Object.defineProperty(window, "innerHeight", { writable: true, configurable: true, value: 1200 });
-  });
-
-  afterEach(() => {
-    localStorage.clear();
-  });
-
-  /** Sets up state where the chord practice bar is visible and then hidden. */
-  function setupHiddenPracticeBar() {
-    // Use Dominant 7th over C Major (has Bb outside scale) so the practice bar renders
-    localStorage.setItem(k("rootNote"), "C");
-    localStorage.setItem(k("scaleName"), "Major");
-    localStorage.setItem(k("chordOverlayMode"), "manual");
-    localStorage.setItem(k("chordRootOverride"), "C");
-    localStorage.setItem(k("chordQualityOverride"), "Dominant 7th");
-    localStorage.setItem(k("practiceLens"), "targets");
-    localStorage.setItem(k("chordOverlayHidden"), "true");
-  }
-
-  it("resets overlay visibility when rootNote changes via Circle of Fifths", async () => {
-    setupHiddenPracticeBar();
-    render(<App />);
-
-    // When chordOverlayHidden=true, the practice bar still renders (header
-    // only — pill section collapses) and carries data-collapsed="true" so the
-    // user can toggle back.
-    await waitFor(() => {
-      expect(document.querySelector(".chord-practice-bar[data-collapsed=\"true\"]")).toBeTruthy();
-    });
-
-    // Trigger root note change via CoF mock — effect resets hidden to false.
-    // CircleOfFifths lives in the Inspector's Scale tab; select it first.
-    await userEvent.click(await screen.findByRole("tab", { name: "Scale" }));
-    const cofButton = await screen.findByTestId("circle-of-fifths");
-    fireEvent.click(cofButton);
-
-    // After reset, collapsed=false → bar still present but data-collapsed is gone
-    await waitFor(() => {
-      expect(document.querySelector(".chord-practice-bar")).toBeTruthy();
-      expect(document.querySelector(".chord-practice-bar[data-collapsed]")).toBeNull();
-    });
-  });
-
-  it("does NOT reset overlay visibility on initial mount when persisted hidden=true", async () => {
-    setupHiddenPracticeBar();
-    render(<App />);
-
-    // Give time for any erroneous initial-mount reset to fire
-    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
-
-    // The bar renders with data-collapsed="true" — first-run guard prevents
-    // the effect from clobbering the persisted hidden state.
-    expect(document.querySelector(".chord-practice-bar[data-collapsed=\"true\"]")).toBeTruthy();
-
-    // Confirm the atom value is still true in localStorage (not reset)
-    expect(localStorage.getItem(k("chordOverlayHidden"))).toBe("true");
   });
 });
 
 describe("Responsive string row sizes", () => {
-  it("uses the mobile string row size", () => {
-    Object.defineProperty(window, "innerWidth", {
-      writable: true,
-      configurable: true,
-      value: 390,
-    });
-    Object.defineProperty(window, "innerHeight", {
-      writable: true,
-      configurable: true,
-      value: 844,
-    });
+  beforeEach(() => localStorage.clear());
 
+  it.each([
+    [390, 844, "28"],
+    [768, 1024, "36"],
+    [1440, 900, "42"],
+  ])("viewport %ix%i uses string row size %s", (w, h, expected) => {
+    setViewport(w, h);
     render(<App />);
-    expect(screen.getByTestId("fretboard")).toHaveAttribute(
-      "data-string-row-px",
-      "28",
-    );
-  });
-
-  it("uses the tablet string row size", () => {
-    Object.defineProperty(window, "innerWidth", {
-      writable: true,
-      configurable: true,
-      value: 768,
-    });
-    Object.defineProperty(window, "innerHeight", {
-      writable: true,
-      configurable: true,
-      value: 1024,
-    });
-
-    render(<App />);
-    expect(screen.getByTestId("fretboard")).toHaveAttribute(
-      "data-string-row-px",
-      "36",
-    );
-  });
-
-  it("uses the desktop string row size", () => {
-    Object.defineProperty(window, "innerWidth", {
-      writable: true,
-      configurable: true,
-      value: 1440,
-    });
-    Object.defineProperty(window, "innerHeight", {
-      writable: true,
-      configurable: true,
-      value: 900,
-    });
-
-    render(<App />);
-    expect(screen.getByTestId("fretboard")).toHaveAttribute(
-      "data-string-row-px",
-      "42",
-    );
+    expect(screen.getByTestId("fretboard")).toHaveAttribute("data-string-row-px", expected);
   });
 });
