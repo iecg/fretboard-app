@@ -6,6 +6,7 @@ import { chordRootVisualRadiusPx } from "../utils/noteSizing";
 import {
   type ConnectorYBounds,
   clampConnectorRadiusToYBounds,
+  resolveConnectorRadiusPx,
   CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
   CHORD_CONNECTOR_RADIUS_FACTORS,
 } from "../utils/connectorRadius";
@@ -13,6 +14,7 @@ import {
 export type { ConnectorYBounds };
 export {
   clampConnectorRadiusToYBounds,
+  resolveConnectorRadiusPx,
   CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
   CHORD_CONNECTOR_RADIUS_FACTORS,
 };
@@ -183,22 +185,6 @@ export const MAX_PLAYABLE_FRET_POSITIONS = 3;
 
 const CONNECTOR_CONFLICT_GAP_PX = 1.5;
 const CHORD_CONNECTOR_MIN_HALO_PX = 2;
-
-export function resolveConnectorRadiusPx({
-  vertices,
-  preferredRadius,
-  yBounds,
-  edgeSafe,
-}: {
-  vertices: ChordConnectorVertex[];
-  preferredRadius: number;
-  yBounds?: ConnectorYBounds;
-  edgeSafe: boolean;
-}): number {
-  return edgeSafe
-    ? clampConnectorRadiusToYBounds(vertices, preferredRadius, yBounds)
-    : preferredRadius;
-}
 
 /**
  * Per-voicing pixel offset deltas added to the base radius.

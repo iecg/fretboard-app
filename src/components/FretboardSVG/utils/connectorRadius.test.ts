@@ -3,6 +3,7 @@ import {
   CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
   CHORD_CONNECTOR_RADIUS_FACTORS,
   clampConnectorRadiusToYBounds,
+  resolveConnectorRadiusPx,
 } from "./connectorRadius";
 
 describe("connectorRadius constants", () => {
@@ -53,5 +54,26 @@ describe("clampConnectorRadiusToYBounds", () => {
   it("returns the preferred radius for empty vertex list", () => {
     const r = clampConnectorRadiusToYBounds([], 10, { minY: 0, maxY: 100 });
     expect(r).toBe(10);
+  });
+});
+
+describe("resolveConnectorRadiusPx", () => {
+  it("returns the preferred radius when edgeSafe is false", () => {
+    const r = resolveConnectorRadiusPx({
+      vertices: [{ x: 0, y: 5 }],
+      preferredRadius: 40,
+      yBounds: { minY: 0, maxY: 100 },
+      edgeSafe: false,
+    });
+    expect(r).toBe(40);
+  });
+  it("clamps when edgeSafe is true", () => {
+    const r = resolveConnectorRadiusPx({
+      vertices: [{ x: 0, y: 5 }],
+      preferredRadius: 40,
+      yBounds: { minY: 0, maxY: 100 },
+      edgeSafe: true,
+    });
+    expect(r).toBeLessThanOrEqual(5);
   });
 });

@@ -46,3 +46,19 @@ export function clampConnectorRadiusToYBounds(
 
   return Math.max(0, Math.min(preferredRadius, availableRadius));
 }
+
+export function resolveConnectorRadiusPx({
+  vertices,
+  preferredRadius,
+  yBounds,
+  edgeSafe,
+}: {
+  vertices: ConnectorVertex[];
+  preferredRadius: number;
+  yBounds?: ConnectorYBounds;
+  edgeSafe: boolean;
+}): number {
+  return edgeSafe
+    ? clampConnectorRadiusToYBounds(vertices, preferredRadius, yBounds)
+    : preferredRadius;
+}
