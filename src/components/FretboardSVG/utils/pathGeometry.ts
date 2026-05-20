@@ -219,50 +219,12 @@ export function offsetOutlinePath(polygon: Array<{ x: number; y: number }>, r: n
 // ---------------------------------------------------------------------------
 
 /**
- * Build an SVG path string for the Minkowski sum of an OPEN polyline with a
- * disk of radius `r`.
+ * Returns an SVG path that traces both sides of an open polyline `points` offset
+ * by `radius` on each side, with semicircular caps at the endpoints and quadratic
+ * fillets at interior corners. Uses sweep-flag = 1 for convex fillets; callers
+ * stroking the result rely on this orientation.
  *
- * The result is a closed "pill" that follows the polyline's vertex order
- * rather than its convex hull. This avoids the awkward acute-triangle
- * silhouette that `offsetOutlinePath(convexHull(...), r)` produces for
- * skinny 3-note voicings — instead the contour reads as a rounded tube
- * tracing the chord's voicing.
- *
- * Dispatches on the (deduplicated) vertex count:
- * - **0** → empty string.
- * - **1** → circle (delegates to `offsetOutlinePath`).
- * - **2** → capsule (delegates to `offsetOutlinePath`).
- * - **3+ collinear** → capsule between the two extreme vertices.
- * - **3+ non-collinear** → analytical perimeter:
- *     forward along "side A" (the math-RHS / screen-LHS normal of each edge),
- *     semicircular cap at the end vertex, backward along "side B"
- *     (the opposite normal), semicircular cap at the start vertex.
- *     Interior corners receive a round arc on the convex/outside side. The
- *     concave/inside side uses a bounded quadratic fillet around the
- *     intersection of the adjacent offset edge lines, matching a centered
- *     thick stroke while avoiding arcs that twist through the corner.
- *
- * Centering the inside corner on the offset-line intersection is essential:
- * an inside arc sweeps through the bend and can visibly twist the tube, while
- * a straight bevel chord can cut across both adjacent offset edges. The small
- * bounded fillet only rounds the local miter point.
- *
- * Inside/outside selection at an interior vertex `V_{i+1}` uses the screen
- * cross-product of the adjacent edges:
- *   - `cross > 0` → screen-right turn → side A (math-RHS / screen-LHS) is
- *     outside (sweep=1 arc on side A, sweep=0 arc on side B).
- *   - `cross < 0` → screen-left turn → side B is outside (sweep=1 arc on
- *     side B, sweep=0 arc on side A).
- *   - `|cross|` near zero → smooth bend, both sides emit a straight line.
- *
- * Coordinates are rounded to 2 decimal places for deterministic snapshotting.
- *
- * @param vertices - Open polyline vertex sequence in traversal order.
- *                   Caller is responsible for ordering (e.g., chord
- *                   connector passes vertices in string-index order so
- *                   the pill traces the voicing across strings).
- * @param r        - Offset radius in pixels (≥ 0).
- * @returns SVG path `d` attribute string closed with `Z`, or `''` for empty input.
+ * @returns SVG path data starting with `M`, closed at the caps (no explicit `Z`).
  */
 export function offsetOpenPolylinePath(
   vertices: Array<{ x: number; y: number }>,
