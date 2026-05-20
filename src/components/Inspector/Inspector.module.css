@@ -112,7 +112,7 @@
  * mobile tier and the tablet-split variant. The panel reserves bottom space
  * so its content is never occluded by the fixed bar. */
 .placementBottom {
-  padding-bottom: calc(3.5rem + env(safe-area-inset-bottom));
+  padding-bottom: 3.5rem;
 }
 
 .placementBottom .tabList {
