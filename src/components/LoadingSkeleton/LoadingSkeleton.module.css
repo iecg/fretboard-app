@@ -99,39 +99,10 @@
   width: min(14rem, 100%);
 }
 
-/* Centered spinner for overlays */
-.overlay-spinner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 8rem;
-}
-
-.spinner {
-  width: 2rem;
-  height: 2rem;
-  border: 2.5px solid var(--token-border-subtle);
-  border-top-color: var(--neon-cyan);
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .bone {
     animation: none;
     background: var(--token-surface-dim);
-  }
-
-  .spinner {
-    animation: none;
-    border-top-color: var(--token-border-subtle);
   }
 }
 

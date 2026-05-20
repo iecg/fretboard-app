@@ -263,7 +263,3 @@ export function scheduleRide(
   return createDrumVoiceHandle(ctx, [noise], [noise, bp, hp, gain]);
 }
 
-export function _resetDrumKitForTests(): void {
-  cachedNoiseBuffer = null;
-  cachedNoiseCtx = null;
-}

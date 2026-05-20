@@ -3,7 +3,7 @@ import { strumVoice } from "./strumVoice";
 import { pianoVoice } from "./pianoVoice";
 import { organVoice } from "./organVoice";
 
-export type { ChordInstrumentId, ChordVoice, ChordVoiceOptions, VoiceHandle } from "./types";
+export type { ChordInstrumentId, ChordVoice } from "./types";
 
 const CHORD_VOICES: Record<ChordInstrumentId, ChordVoice> = {
   strum: strumVoice,

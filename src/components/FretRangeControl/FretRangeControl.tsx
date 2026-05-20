@@ -169,5 +169,3 @@ export function FretRangeControl({
     </div>
   );
 }
-
-export default FretRangeControl;

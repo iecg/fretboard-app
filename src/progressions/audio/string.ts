@@ -118,5 +118,3 @@ export function pluckString(
     },
   };
 }
-
-export const _stringInternals = { ATTACK, DECAY, RELEASE, FADE_OUT };

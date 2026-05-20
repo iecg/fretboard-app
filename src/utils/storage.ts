@@ -1,9 +1,8 @@
 import { STORAGE_PREFIX, LEGACY_KEYS } from "./storageConstants";
 
-export { STORAGE_PREFIX, LEGACY_KEYS };
+export { STORAGE_PREFIX };
 
-export const storageKey = (key: string) => `${STORAGE_PREFIX}${key}`;
-export const k = storageKey;
+export const k = (key: string) => `${STORAGE_PREFIX}${key}`;
 
 /**
  * Single uniform error boundary around localStorage.

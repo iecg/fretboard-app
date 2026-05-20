@@ -352,7 +352,7 @@ export const practiceBarChordGroupAtom = atom((get): PracticeBarGroup => {
  *
  * Shape narrowing applied in atoms.ts to avoid circular imports.
  */
-export const practiceBarLandOnGroupBaseAtom = atom((get): PracticeBarGroup => {
+const practiceBarLandOnGroupBaseAtom = atom((get): PracticeBarGroup => {
   const chordType = get(chordTypeAtom);
   if (!chordType) return { label: "Land on", notes: [] };
 

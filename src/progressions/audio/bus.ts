@@ -106,4 +106,3 @@ export function _resetProgressionAudioForTests(): void {
   unsupported = false;
 }
 
-export const _internals = { BUS_GAIN, SILENCE_RAMP_SECONDS, RESUME_RAMP_SECONDS };

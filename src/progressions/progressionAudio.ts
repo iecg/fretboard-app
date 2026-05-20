@@ -6,20 +6,8 @@ import type { BassNoteRole } from "./audio/patterns";
  * so that triad voicings sit around the middle of a guitar's range without
  * dipping into mud (G3-B3-D4 etc.) or shrieking in the high octaves.
  */
-export const PROGRESSION_CHORD_ROOT_OCTAVE = 3;
-export const PROGRESSION_BASS_ROOT_OCTAVE = 2;
-
-/**
- * Compute the note name (without octave) at `semitone` half-steps above
- * `root`. Wraps the chromatic scale; returns `null` if the root is not in
- * the recognised note list.
- */
-function noteAtOffset(root: string, semitone: number): string | null {
-  const rootIndex = NOTES.indexOf(root);
-  if (rootIndex < 0) return null;
-  const offset = ((rootIndex + semitone) % 12 + 12) % 12;
-  return NOTES[offset];
-}
+const PROGRESSION_CHORD_ROOT_OCTAVE = 3;
+const PROGRESSION_BASS_ROOT_OCTAVE = 2;
 
 /**
  * Resolve the absolute pitched notes (note name + octave) for a chord given
@@ -126,5 +114,3 @@ export function resolveBassNoteForRole(
   }
 }
 
-/** Exported for tests that want to spot-check the chromatic wrap. */
-export const _internals = { noteAtOffset };

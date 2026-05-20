@@ -94,5 +94,3 @@ export function BrandMark({ className }: BrandMarkProps) {
     </svg>
   );
 }
-
-export default BrandMark;

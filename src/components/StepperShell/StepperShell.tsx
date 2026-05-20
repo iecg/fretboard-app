@@ -17,5 +17,3 @@ export function StepperShell({
     </div>
   );
 }
-
-export default StepperShell;

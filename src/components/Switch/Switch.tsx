@@ -2,7 +2,7 @@ import clsx from "clsx";
 import type { KeyboardEvent } from "react";
 import styles from "./Switch.module.css";
 
-export type SwitchTone = "cyan" | "warm";
+type SwitchTone = "cyan" | "warm";
 
 export interface SwitchProps {
   /** Current checked state. Controlled. */

@@ -100,7 +100,7 @@ export function classifyNoteFromSemantics(
   return "note-inactive";
 }
 
-export type NoteShape = "circle" | "squircle" | "diamond" | "hexagon";
+type NoteShape = "circle" | "squircle" | "diamond" | "hexagon";
 
 export type NoteVisuals = {
   radiusScale: number;
