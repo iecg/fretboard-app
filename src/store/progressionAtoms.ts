@@ -33,6 +33,7 @@ import {
   constrainedNumberStorage,
   createStorage,
   k,
+  numberValidator,
   stringValidator,
   withStorageErrorBoundary,
 } from "../utils/storage";
@@ -40,7 +41,7 @@ import {
 const beatsPerBarStorage = createStorage<number>({
   serialize: (v) => String(v),
   deserialize: (raw) => Number(raw),
-  validate: (v): v is number => typeof v === "number" && isBeatsPerBar(v),
+  validate: numberValidator(isBeatsPerBar),
 });
 
 const DEFAULT_STEPS: ProgressionStep[] = [
