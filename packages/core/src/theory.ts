@@ -426,73 +426,52 @@ export function formatAccidental(s: string): string {
 }
 
 
-const LETTER_NAMES = ["C", "D", "E", "F", "G", "A", "B"];
-const LETTER_PITCHES: Record<string, number> = {
-  C: 0,
-  D: 2,
-  E: 4,
-  F: 5,
-  G: 7,
-  A: 9,
-  B: 11,
-};
-
 export function getNoteDisplayInScale(
   noteName: string,
   rootNote: string,
   scaleIntervals: number[],
   useFlats?: boolean,
 ): string {
-  // Apply scale-aware spelling for 7-note scales
   if (scaleIntervals.length !== 7) {
     return getNoteDisplay(noteName, rootNote, useFlats);
   }
 
-  // Normalize to sharps for internal lookup
-  const normNote =
-    noteName.includes("b") && ENHARMONICS[noteName]
-      ? ENHARMONICS[noteName]
-      : noteName;
-  const rootNorm =
-    rootNote.includes("b") && ENHARMONICS[rootNote]
-      ? ENHARMONICS[rootNote]
-      : rootNote;
-
-  const rootIdx = NOTES.indexOf(rootNorm);
-  const noteIdx = NOTES.indexOf(normNote);
-  if (rootIdx === -1 || noteIdx === -1)
+  // Use Tonal for chroma calculation; matches the legacy NOTES.indexOf behavior.
+  const rootChroma = Note.chroma(rootNote);
+  const noteChroma = Note.chroma(noteName);
+  if (
+    typeof rootChroma !== "number" || isNaN(rootChroma) ||
+    typeof noteChroma !== "number" || isNaN(noteChroma)
+  ) {
     return getNoteDisplay(noteName, rootNote, useFlats);
+  }
 
-  const interval = (noteIdx - rootIdx + 12) % 12;
-
+  const interval = (noteChroma - rootChroma + 12) % 12;
   const degreeIndex = scaleIntervals.indexOf(interval);
   if (degreeIndex === -1) {
     return getNoteDisplay(noteName, rootNote, useFlats);
   }
 
-  const rootDisplay = getNoteDisplay(rootNote, rootNote, useFlats);
-  const rootLetter = rootDisplay.charAt(0);
-  const rootLetterIdx = LETTER_NAMES.indexOf(rootLetter);
+  const spelledRoot = getNoteDisplay(rootNote, rootNote, useFlats);
+
+  // Heptatonic letter cycle — used only for scale-aware spelling, scoped to this function.
+  const letterNames = ["C", "D", "E", "F", "G", "A", "B"];
+  const letterPitches: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+
+  const rootLetter = spelledRoot.charAt(0);
+  const rootLetterIdx = letterNames.indexOf(rootLetter);
   if (rootLetterIdx === -1) return getNoteDisplay(noteName, rootNote, useFlats);
 
-  const expectedLetter = LETTER_NAMES[(rootLetterIdx + degreeIndex) % 7];
-  const expectedBasePitch = LETTER_PITCHES[expectedLetter];
-  const targetPitch = (rootIdx + interval) % 12;
-
+  const expectedLetter = letterNames[(rootLetterIdx + degreeIndex) % 7];
+  const expectedBasePitch = letterPitches[expectedLetter];
+  const targetPitch = (rootChroma + interval) % 12;
   const diff = (targetPitch - expectedBasePitch + 12) % 12;
 
-  if (diff === 0) {
-    return expectedLetter;
-  } else if (diff === 1) {
-    return expectedLetter + "#";
-  } else if (diff === 11) {
-    return expectedLetter + "b";
-  } else if (diff === 2) {
-    return expectedLetter + "##";
-  } else if (diff === 10) {
-    return expectedLetter + "bb";
-  }
-
+  if (diff === 0) return expectedLetter;
+  if (diff === 1) return expectedLetter + "#";
+  if (diff === 11) return expectedLetter + "b";
+  if (diff === 2) return expectedLetter + "##";
+  if (diff === 10) return expectedLetter + "bb";
   return getNoteDisplay(noteName, rootNote, useFlats);
 }
 
