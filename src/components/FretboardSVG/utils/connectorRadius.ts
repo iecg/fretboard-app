@@ -17,3 +17,32 @@ export interface ConnectorYBounds {
   minY: number;
   maxY: number;
 }
+
+interface ConnectorVertex {
+  x: number;
+  y: number;
+}
+
+const CONNECTOR_BOUNDARY_GUARD_PX = 1;
+
+export function clampConnectorRadiusToYBounds(
+  vertices: ConnectorVertex[],
+  preferredRadius: number,
+  yBounds?: ConnectorYBounds,
+): number {
+  if (!yBounds || vertices.length === 0) return preferredRadius;
+
+  let minVertexY = Infinity;
+  let maxVertexY = -Infinity;
+  for (const vertex of vertices) {
+    if (vertex.y < minVertexY) minVertexY = vertex.y;
+    if (vertex.y > maxVertexY) maxVertexY = vertex.y;
+  }
+
+  const availableRadius = Math.min(
+    minVertexY - yBounds.minY,
+    yBounds.maxY - maxVertexY,
+  ) - CONNECTOR_BOUNDARY_GUARD_PX;
+
+  return Math.max(0, Math.min(preferredRadius, availableRadius));
+}

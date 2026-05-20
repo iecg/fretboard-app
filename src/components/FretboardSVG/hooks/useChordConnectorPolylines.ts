@@ -3,6 +3,19 @@ import type { NoteData } from "./useNoteData";
 import { offsetOpenPolylinePath } from "../utils/pathGeometry";
 import { NOTES, type CagedShape } from "@fretflow/core";
 import { chordRootVisualRadiusPx } from "../utils/noteSizing";
+import {
+  type ConnectorYBounds,
+  clampConnectorRadiusToYBounds,
+  CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
+  CHORD_CONNECTOR_RADIUS_FACTORS,
+} from "../utils/connectorRadius";
+
+export type { ConnectorYBounds };
+export {
+  clampConnectorRadiusToYBounds,
+  CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
+  CHORD_CONNECTOR_RADIUS_FACTORS,
+};
 
 /**
  * Count the number of distinct fret positions spanned by the **fretted** notes
@@ -168,51 +181,8 @@ export const MAX_FRET_SPAN = 5;
  */
 export const MAX_PLAYABLE_FRET_POSITIONS = 3;
 
-/**
- * Uniform base radius factor for chord-connector outlines. All voicings
- * share this base; differentiation comes only from conflict offsets.
- */
-export const CHORD_CONNECTOR_BASE_RADIUS_FACTOR = 0.42;
-
-/**
- * Legacy per-span factors. Interval connectors still use `compact`.
- */
-export const CHORD_CONNECTOR_RADIUS_FACTORS = {
-  compact: 0.34,
-  medium: 0.38,
-  max: 0.42,
-} as const;
-
-export interface ConnectorYBounds {
-  minY: number;
-  maxY: number;
-}
-
-const CONNECTOR_BOUNDARY_GUARD_PX = 1;
 const CONNECTOR_CONFLICT_GAP_PX = 1.5;
 const CHORD_CONNECTOR_MIN_HALO_PX = 2;
-
-export function clampConnectorRadiusToYBounds(
-  vertices: ChordConnectorVertex[],
-  preferredRadius: number,
-  yBounds?: ConnectorYBounds,
-): number {
-  if (!yBounds || vertices.length === 0) return preferredRadius;
-
-  let minVertexY = Infinity;
-  let maxVertexY = -Infinity;
-  for (const vertex of vertices) {
-    if (vertex.y < minVertexY) minVertexY = vertex.y;
-    if (vertex.y > maxVertexY) maxVertexY = vertex.y;
-  }
-
-  const availableRadius = Math.min(
-    minVertexY - yBounds.minY,
-    yBounds.maxY - maxVertexY,
-  ) - CONNECTOR_BOUNDARY_GUARD_PX;
-
-  return Math.max(0, Math.min(preferredRadius, availableRadius));
-}
 
 export function resolveConnectorRadiusPx({
   vertices,
