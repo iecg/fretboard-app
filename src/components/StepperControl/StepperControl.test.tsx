@@ -2,6 +2,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { StepperControl } from "../StepperControl/StepperControl";
+import { axe } from "../../test-utils/a11y";
 
 describe("StepperControl/StepperControl", () => {
   it("renders label when provided", () => {
@@ -140,5 +141,12 @@ describe("StepperControl/StepperControl", () => {
     render(<StepperControl value={5} onChange={onChange} min={0} max={10} />);
     fireEvent.click(screen.getByRole("button", { name: /increase/i }));
     expect(onChange).toHaveBeenCalledWith(6);
+  });
+
+  it("has no a11y violations", async () => {
+    const { container } = render(
+      <StepperControl label="Fret count" value={5} min={1} max={24} onChange={() => {}} />,
+    );
+    expect(await axe(container)).toHaveNoViolations();
   });
 });
