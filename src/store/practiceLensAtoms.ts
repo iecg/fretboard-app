@@ -53,10 +53,6 @@ import {
 } from "./composableSelectors";
 import { shapeHighlightedNoteSetAtom } from "./shapeAtoms";
 import {
-  fingeringPatternAtom,
-  isChordOverlayPatternDisabled,
-} from "./fingeringAtoms";
-import {
   activeProgressionStepAtom,
   activeResolvedProgressionStepAtom,
 } from "./progressionAtoms";
@@ -192,7 +188,6 @@ const chordSemanticInputsAtom = atom((get) => {
   if (!chordType) return null;
   if (get(chordOverlayHiddenAtom)) return null;
   const progressionStep =
-    !isChordOverlayPatternDisabled(get(fingeringPatternAtom)) &&
     !get(activeResolvedProgressionStepAtom)?.unavailable
       ? get(activeProgressionStepAtom)
       : null;

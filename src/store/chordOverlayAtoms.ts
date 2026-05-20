@@ -43,10 +43,6 @@ import {
   updateProgressionStepDegreeAtom,
   updateProgressionStepQualityAtom,
 } from "./progressionAtoms";
-import {
-  fingeringPatternAtom,
-  isChordOverlayPatternDisabled,
-} from "./fingeringAtoms";
 import { currentTuningAtom } from "./layoutAtoms";
 import { buildStringSetOptions, ALL_STRINGS } from "./voicingStringSets";
 import { formatChordShortLabel } from "../progressions/progressionDomain";
@@ -205,7 +201,6 @@ export const chordQualityOverrideAtom = atomWithStorage<string | null>(
 const progressionIsActiveChordSource = (get: Getter) => {
   const activeStep = get(activeResolvedProgressionStepAtom);
   return (
-    !isChordOverlayPatternDisabled(get(fingeringPatternAtom)) &&
     !!activeStep &&
     !activeStep.unavailable
   );
@@ -228,8 +223,7 @@ export const effectiveChordQualityOverrideAtom = atom((get): string | null => {
 
 /**
  * True when the active chord source is a progression step (progression mode on,
- * a resolvable active step exists, and the fingering pattern does not disable the
- * chord overlay). Drives the Chord tab's cyan→orange accent switch.
+ * a resolvable active step exists). Drives the Chord tab's cyan→orange accent switch.
  */
 export const chordSourceIsProgressionAtom = atom((get) =>
   progressionIsActiveChordSource(get),

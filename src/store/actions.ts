@@ -27,12 +27,10 @@ import {
   cagedShapesAtom,
   npsPositionAtom,
   npsOctaveAtom,
-  isChordOverlayPatternDisabled,
 } from "./fingeringAtoms";
 import {
   remapProgressionStepsForScaleAtom,
   resetProgressionAtomsAtom,
-  setProgressionPlayingAtom,
 } from "./progressionAtoms";
 import {
   displayFormatAtom,
@@ -51,20 +49,13 @@ import {
 } from "./audioAtoms";
 
 /**
- * Action wrapper around `fingeringPatternAtom` that auto-clears the active
- * chord degree when the new pattern is `one-string` or `two-strings`.
- * This prevents the degree overlay from remaining active on patterns where
- * chord overlay is disabled. Use this instead of writing fingeringPatternAtom
- * directly from UI code.
+ * Action wrapper around `fingeringPatternAtom`. Use this instead of writing
+ * fingeringPatternAtom directly from UI code.
  */
 export const setFingeringPatternAtom = atom(
   null,
   (_get, set, pattern: import("./fingeringAtoms").FingeringPattern) => {
     set(fingeringPatternAtom, pattern);
-    if (isChordOverlayPatternDisabled(pattern)) {
-      set(chordDegreeAtom, null);
-      set(setProgressionPlayingAtom, false);
-    }
   },
 );
 

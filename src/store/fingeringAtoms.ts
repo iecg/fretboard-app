@@ -18,10 +18,6 @@ export type FingeringPattern =
   | "one-string"
   | "two-strings";
 
-export function isChordOverlayPatternDisabled(pattern: FingeringPattern): boolean {
-  return pattern === "one-string" || pattern === "two-strings";
-}
-
 const cagedShapesStorage = createStorage<Set<CagedShape>>({
   serialize: (s) => JSON.stringify(Array.from(s)),
   deserialize: (v) => new Set(JSON.parse(v) as CagedShape[]),
