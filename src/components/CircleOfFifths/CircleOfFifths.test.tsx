@@ -63,8 +63,10 @@ describe("CircleOfFifths/CircleOfFifths", () => {
 
     it("updates degrees when scale changes", () => {
       const { rerender } = renderCircle({ scaleName: "Major" });
+      const before = Array.from(document.querySelectorAll("text")).map((el) => el.textContent).join("|");
       rerender(<CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} scaleName="Natural Minor" />);
-      expect(document.body).toBeTruthy();
+      const after = Array.from(document.querySelectorAll("text")).map((el) => el.textContent).join("|");
+      expect(after).not.toBe(before);
     });
   });
 
@@ -76,8 +78,10 @@ describe("CircleOfFifths/CircleOfFifths", () => {
 
     it.each([["C"], ["C#"]])("switches between sharps and flats for %s", (root) => {
       const { rerender } = renderCircle({ rootNote: root, useFlats: false });
+      const before = Array.from(document.querySelectorAll("text")).map((el) => el.textContent).join("|");
       rerender(<CircleOfFifths rootNote={root} setRootNote={mockSetRootNote} useFlats={true} />);
-      expect(document.body).toBeTruthy();
+      const after = Array.from(document.querySelectorAll("text")).map((el) => el.textContent).join("|");
+      expect(after).not.toBe(before);
     });
   });
 
