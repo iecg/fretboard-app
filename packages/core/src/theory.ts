@@ -7,6 +7,7 @@ import { getDegreesForScale, getQualityForDegree, type DegreeId } from "./degree
 import * as Note from "@tonaljs/note";
 import * as Interval from "@tonaljs/interval";
 import * as Scale from "@tonaljs/scale";
+import * as Key from "@tonaljs/key";
 import { scaleNameToTonal, tonalChordSymbol } from "./lib/tonal";
 import * as Chord from "@tonaljs/chord";
 
@@ -583,6 +584,10 @@ export const KEY_SIGNATURES: Record<string, number> = {
 };
 
 export function getKeySignature(rootNote: string): number {
+  const tonalKey = Key.majorKey(rootNote);
+  // Tonal returns `alteration` as a positive integer for sharps, negative for flats.
+  if (typeof tonalKey.alteration === "number") return tonalKey.alteration;
+  // Fallback for inputs Tonal does not recognize (rare; preserves legacy behavior).
   return KEY_SIGNATURES[rootNote] ?? 0;
 }
 
@@ -592,27 +597,37 @@ export function getKeySignatureForDisplay(
   useFlats: boolean,
 ): number {
   const offset = SCALE_TO_PARENT_MAJOR_OFFSET[normalizeScaleName(scaleName)] ?? 0;
+  const rootChroma = Note.chroma(rootNote);
+  if (typeof rootChroma !== "number" || isNaN(rootChroma)) {
+    return KEY_SIGNATURES[rootNote] ?? 0;
+  }
 
-  const sharpRoot =
-    rootNote.includes("b") && ENHARMONICS[rootNote]
-      ? ENHARMONICS[rootNote]
-      : rootNote;
-  const rootIdx = NOTES.indexOf(sharpRoot);
-  if (rootIdx === -1) return KEY_SIGNATURES[rootNote] ?? 0;
+  // The "parent major" is the major key whose tonic is `offset` semitones above the current root.
+  const parentMajorRoot = Note.transpose(rootNote, Interval.fromSemitones(offset));
+  const parentSimplified = Note.simplify(parentMajorRoot);
+  const parentSharp = parentSimplified.includes("b") ? Note.enharmonic(parentSimplified) : parentSimplified;
 
-  const parentIdx = (rootIdx + offset) % 12;
-  const parentSharp = NOTES[parentIdx];
-
-  // Preserve user's intended root spelling for sharp-side key signatures
   const originalIsSharp = rootNote.includes("#");
-  if (!originalIsSharp && useFlats && ENHARMONICS[parentSharp]) {
-    const flatName = ENHARMONICS[parentSharp];
-    if (KEY_SIGNATURES[flatName] !== undefined) {
-      return KEY_SIGNATURES[flatName];
+
+  // When root is not sharp-spelled, prefer the flat enharmonic for any parent key that is
+  // naturally on the flat side (alteration < 0). This covers both useFlats=true and the case
+  // where the root itself is flat-spelled (e.g. Ab → parent G# → prefer Ab key sig -4).
+  if (!originalIsSharp) {
+    const flatName = Note.enharmonic(parentSharp);
+    const flatKey = Key.majorKey(flatName);
+    if (typeof flatKey.alteration === "number" && flatKey.alteration < 0) {
+      // Only return the flat sig if: useFlats is true, OR the root itself is flat-spelled
+      // (meaning the user's intent is a flat-side key even when useFlats=false).
+      const rootIsFlat = rootNote.includes("b");
+      if (useFlats || rootIsFlat || flatName === parentMajorRoot) {
+        return flatKey.alteration;
+      }
     }
   }
-  const sig = KEY_SIGNATURES[parentSharp] ?? 0;
-  // Convert flat-equivalent negative signature to enharmonic sharp count
+
+  const tonalKey = Key.majorKey(parentSharp);
+  const sig = typeof tonalKey.alteration === "number" ? tonalKey.alteration : (KEY_SIGNATURES[parentSharp] ?? 0);
+
   if (originalIsSharp && sig < 0) {
     return 12 + sig;
   }
