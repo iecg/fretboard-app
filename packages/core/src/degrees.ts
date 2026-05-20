@@ -1,4 +1,5 @@
 import { SCALES } from "./theoryCatalog";
+import * as Key from "@tonaljs/key";
 
 /**
  * Opaque type alias for Roman-numeral scale degree identifiers.
@@ -274,4 +275,48 @@ export function getDegreesForScale(scaleName: string): Record<number, string> {
 
   if (intervals.includes(4)) return MODE_DEGREES["Major"];
   return MODE_DEGREES["Natural Minor"];
+}
+
+/**
+ * Extracts a quality symbol ("M", "m", "dim", "aug") from a Tonal triad chord
+ * name by stripping the tonic note prefix.
+ *
+ * @internal
+ */
+function extractTriadQuality(chordName: string, tonicNote: string): string {
+  const suffix = chordName.slice(tonicNote.length);
+  if (suffix === "") return "M";
+  if (suffix === "m") return "m";
+  if (suffix === "dim") return "dim";
+  if (suffix === "aug") return "aug";
+  return suffix;
+}
+
+/**
+ * Validates that the diatonic-chord-quality table for a given scale matches what
+ * Tonal would produce. Used in tests to catch drift; not called in production.
+ *
+ * @internal
+ */
+export function _validateDiatonicQualitiesAgainstTonal(
+  scaleName: string,
+): boolean {
+  if (scaleName === "Major") {
+    const key = Key.majorKey("C");
+    const expectedTriadQualities = ["M", "m", "m", "M", "M", "m", "dim"];
+    return key.triads.every(
+      (triad, i) =>
+        extractTriadQuality(triad, key.scale[i]) === expectedTriadQualities[i],
+    );
+  }
+  if (scaleName === "Natural Minor") {
+    const key = Key.minorKey("A");
+    const expectedTriadQualities = ["m", "dim", "M", "m", "m", "M", "M"];
+    return key.natural.triads.every(
+      (triad, i) =>
+        extractTriadQuality(triad, key.natural.scale[i]) ===
+        expectedTriadQualities[i],
+    );
+  }
+  return true;
 }
