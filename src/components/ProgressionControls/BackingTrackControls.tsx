@@ -41,7 +41,11 @@ export function BackingTrackControls() {
           value={progressionGenreStyle}
           options={[
             ...GENRE_STYLES.map((g) => ({ value: g.id, label: g.label })),
-            { value: "custom", label: "Custom" },
+            // Show "Custom" only when it's the current value — the option is
+            // not user-selectable; it just reflects manually edited settings.
+            ...(progressionGenreStyle === "custom"
+              ? [{ value: "custom", label: "Custom" }]
+              : []),
           ]}
           onChange={applyGenreStyle}
         />

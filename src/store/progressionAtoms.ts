@@ -21,6 +21,7 @@ import {
   remapProgressionStepsForScale,
   resolveProgressionStep,
   totalProgressionBars,
+  type ProgressionPresetCategory,
   type ProgressionStep,
   type ProgressionStepDuration,
 } from "../progressions/progressionDomain";
@@ -346,6 +347,18 @@ export const setProgressionPlayingAtom = atom(null, (get, set, playing: boolean)
   );
 });
 
+// Maps a preset category to the genre style whose backing-track defaults best
+// fit the progression. Loading a preset reapplies the matching genre so the
+// backing track (instrument, patterns, swing) follows the preset.
+const PRESET_CATEGORY_GENRE: Record<ProgressionPresetCategory, string> = {
+  "pop-rock": "rock",
+  blues: "blues",
+  jazz: "jazz",
+  folk: "pop",
+  modal: "rock",
+  minor: "ballad",
+};
+
 export const loadProgressionPresetAtom = atom(null, (get, set, presetId: string) => {
   const preset = PROGRESSION_PRESETS.find((entry) => entry.id === presetId);
   if (!preset) return;
@@ -353,6 +366,8 @@ export const loadProgressionPresetAtom = atom(null, (get, set, presetId: string)
   set(activeProgressionStepIndexAtom, 0);
   set(progressionPlayingStateAtom, false);
   set(progressionStepDeadlineAtom, null);
+  const genreId = PRESET_CATEGORY_GENRE[preset.category];
+  if (genreId) set(applyGenreStyleAtom, genreId);
 });
 
 export const loadProgressionStepsAtom = atom(
