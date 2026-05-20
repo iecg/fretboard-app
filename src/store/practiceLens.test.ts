@@ -40,63 +40,22 @@ describe("practiceLensAtom", () => {
   });
 
   it("defaults to targets", () => {
-    const store = makeStore();
-    expect(store.get(practiceLensAtom)).toBe("targets");
+    expect(makeStore().get(practiceLensAtom)).toBe("targets");
   });
 
-  it("reads stored value", () => {
-    localStorage.setItem(k("practiceLens"), "targets");
+  it.each<{ label: string; key: string; value: string; expected: string }>([
+    { label: "reads stored value", key: "practiceLens", value: "targets", expected: "targets" },
+    { label: "migrates viewMode=chord → targets", key: "viewMode", value: "chord", expected: "targets" },
+    { label: "migrates viewMode=outside → tension", key: "viewMode", value: "outside", expected: "tension" },
+    { label: "migrates viewMode=compare → targets (default)", key: "viewMode", value: "compare", expected: "targets" },
+    { label: "migrates stored targets-color → targets (removed lens)", key: "practiceLens", value: "targets-color", expected: "targets" },
+    { label: "migrates stored color → targets (removed lens)", key: "practiceLens", value: "color", expected: "targets" },
+    { label: "ignores invalid stored value, falls back to default", key: "practiceLens", value: "invalid-lens", expected: "targets" },
+  ])("$label", ({ key, value, expected }) => {
+    localStorage.setItem(k(key), value);
     const store = makeStore();
     const unsub = store.sub(practiceLensAtom, () => {});
-    expect(store.get(practiceLensAtom)).toBe("targets");
-    unsub();
-  });
-
-  it("migrates old viewMode=chord to targets lens", () => {
-    localStorage.setItem(k("viewMode"), "chord");
-    const store = makeStore();
-    const unsub = store.sub(practiceLensAtom, () => {});
-    expect(store.get(practiceLensAtom)).toBe("targets");
-    unsub();
-  });
-
-  it("migrates old viewMode=outside to tension lens", () => {
-    localStorage.setItem(k("viewMode"), "outside");
-    const store = makeStore();
-    const unsub = store.sub(practiceLensAtom, () => {});
-    expect(store.get(practiceLensAtom)).toBe("tension");
-    unsub();
-  });
-
-  it("migrates old viewMode=compare to targets lens (default)", () => {
-    localStorage.setItem(k("viewMode"), "compare");
-    const store = makeStore();
-    const unsub = store.sub(practiceLensAtom, () => {});
-    expect(store.get(practiceLensAtom)).toBe("targets");
-    unsub();
-  });
-
-  it("migrates stored targets-color to targets (removed lens)", () => {
-    localStorage.setItem(k("practiceLens"), "targets-color");
-    const store = makeStore();
-    const unsub = store.sub(practiceLensAtom, () => {});
-    expect(store.get(practiceLensAtom)).toBe("targets");
-    unsub();
-  });
-
-  it("migrates stored color to targets (removed lens)", () => {
-    localStorage.setItem(k("practiceLens"), "color");
-    const store = makeStore();
-    const unsub = store.sub(practiceLensAtom, () => {});
-    expect(store.get(practiceLensAtom)).toBe("targets");
-    unsub();
-  });
-
-  it("ignores invalid stored value and falls back to default", () => {
-    localStorage.setItem(k("practiceLens"), "invalid-lens");
-    const store = makeStore();
-    const unsub = store.sub(practiceLensAtom, () => {});
-    expect(store.get(practiceLensAtom)).toBe("targets");
+    expect(store.get(practiceLensAtom)).toBe(expected);
     unsub();
   });
 });
@@ -198,41 +157,22 @@ describe("practiceCuesAtom", () => {
       store.set(practiceLensAtom, "tension");
       const cues = store.get(practiceCuesAtom);
       const kinds = cues.map((c) => c.kind);
-      expect(kinds).toContain("land-on");
-      expect(kinds).toContain("tension");
+      expect(kinds).toEqual(["land-on", "tension"]);
     });
 
-    it("tension notes include outside chord root (semantic fix)", () => {
-      const store = makeStore();
-      store.set(rootNoteAtom, "C");
-      store.set(scaleNameAtom, "Major");
-      store.set(chordRootAtom, "C#");
-      store.set(chordTypeAtom, "Minor Triad");
-      store.set(practiceLensAtom, "tension");
-      const cues = store.get(practiceCuesAtom);
-      const tensionCue = cues.find((c) => c.kind === "tension");
+    it("tension notes include outside chord root and have resolvesTo targets", () => {
+      const store = makeChordStore("Major", "C", "Minor Triad", "tension");
+      store.set(chordRootAtom, "C#"); // outside the C major scale
+      const tensionCue = store.get(practiceCuesAtom).find((c) => c.kind === "tension");
       expect(tensionCue).toBeDefined();
-      const tensionNotes = tensionCue!.notes.map((n) => n.internalNote);
-      expect(tensionNotes).toContain("C#");
-    });
-
-    it("tension notes have resolution targets (resolvesTo)", () => {
-      const store = makeStore();
-      store.set(rootNoteAtom, "C");
-      store.set(scaleNameAtom, "Major");
-      store.set(chordRootAtom, "C#");
-      store.set(chordTypeAtom, "Minor Triad");
-      store.set(practiceLensAtom, "tension");
-      const cues = store.get(practiceCuesAtom);
-      const tensionCue = cues.find((c) => c.kind === "tension");
-      const hasResolution = tensionCue!.notes.some((n) => n.resolvesTo !== undefined);
-      expect(hasResolution).toBe(true);
+      const notes = tensionCue!.notes;
+      expect(notes.map((n) => n.internalNote)).toContain("C#");
+      expect(notes.some((n) => n.resolvesTo !== undefined)).toBe(true);
     });
 
     it("returns only land-on when chord is fully in-scale (no outside tones)", () => {
       const store = makeChordStore("Major", "C", "Major Triad", "tension");
-      const cues = store.get(practiceCuesAtom);
-      const kinds = cues.map((c) => c.kind);
+      const kinds = store.get(practiceCuesAtom).map((c) => c.kind);
       expect(kinds).toContain("land-on");
       expect(kinds).not.toContain("tension");
     });
@@ -244,23 +184,8 @@ describe("practiceCuesAtom", () => {
       store.set(chordRootAtom, "D");
       store.set(chordTypeAtom, "Minor Triad");
       store.set(practiceLensAtom, "tension");
-      const cues = store.get(practiceCuesAtom);
-      const tensionCue = cues.find((c) => c.kind === "tension");
-      expect(tensionCue).toBeDefined();
-      const dTension = tensionCue!.notes.find((n) => n.internalNote === "D");
-      expect(dTension?.resolvesTo).toBeDefined();
-    });
-
-    it("tension and land-on cues appear together in correct order", () => {
-      const store = makeStore();
-      store.set(rootNoteAtom, "C");
-      store.set(scaleNameAtom, "Major");
-      store.set(chordRootAtom, "C#");
-      store.set(chordTypeAtom, "Minor Triad");
-      store.set(practiceLensAtom, "tension");
-      const cues = store.get(practiceCuesAtom);
-      const kinds = cues.map((c) => c.kind);
-      expect(kinds).toEqual(["land-on", "tension"]);
+      const tensionCue = store.get(practiceCuesAtom).find((c) => c.kind === "tension");
+      expect(tensionCue!.notes.find((n) => n.internalNote === "D")?.resolvesTo).toBeDefined();
     });
   });
 

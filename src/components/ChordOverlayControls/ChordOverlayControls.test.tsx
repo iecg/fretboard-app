@@ -276,31 +276,19 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
   });
 
-  describe("6. a11y: no violations in degree mode and manual mode", () => {
-    it("degree mode has no a11y violations", async () => {
-      const { container } = renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
+  describe("a11y + group labels", () => {
+    it.each([
+      { label: "degree mode", seeds: DEGREE_MODE_SEEDS },
+      { label: "manual mode", seeds: MANUAL_MODE_SEEDS },
+    ])("$label has no a11y violations", async ({ seeds }) => {
+      const { container } = renderWithAtoms(<ChordOverlayControls />, [...seeds]);
       expect(await axe(container)).toHaveNoViolations();
     });
 
-    it("manual mode has no a11y violations", async () => {
-      const { container } = renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
-      expect(await axe(container)).toHaveNoViolations();
-    });
-
-    it("degree mode has Chord degree group with correct aria-label", () => {
-      renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
-      expect(screen.getByRole("group", { name: "Chord degree" })).toBeInTheDocument();
-    });
-
-    it("Chord overlay mode ToggleBar has correct aria-label", () => {
+    it("degree mode exposes the expected group labels and 7 diatonic degrees", () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
       expect(screen.getByRole("group", { name: "Chord overlay mode" })).toBeInTheDocument();
-    });
-
-    it("degree ToggleBar exposes 7 diatonic degrees (no Off sentinel)", () => {
-      renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
       const degreeGroup = screen.getByRole("group", { name: "Chord degree" });
-      // I, ii, iii, IV, V, vi, vii° = 7 buttons (Off moved to Chord Mode)
       expect(within(degreeGroup).queryByRole("button", { name: "Off" })).not.toBeInTheDocument();
       expect(within(degreeGroup).getByRole("button", { name: "I" })).toBeInTheDocument();
       expect(within(degreeGroup).getByRole("button", { name: "vii°" })).toBeInTheDocument();
@@ -351,34 +339,12 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       ).toBeInTheDocument();
     });
 
-    it("renders all 15 chord-type buttons (no Off sentinel) in manual mode", () => {
+    it("renders all 15 chord-type buttons in CHORD_TYPE_DISPLAY_ORDER (no Off sentinel)", () => {
       renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
       const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
-      // No Off sentinel (moved to Chord Mode)
       expect(within(chordTypeGroup).queryByRole("button", { name: "Off" })).not.toBeInTheDocument();
-      // All quality types
-      expect(within(chordTypeGroup).getByRole("button", { name: "Maj" })).toBeInTheDocument();
-      expect(within(chordTypeGroup).getByRole("button", { name: "min" })).toBeInTheDocument();
-      expect(within(chordTypeGroup).getByRole("button", { name: "dim" })).toBeInTheDocument();
-      expect(within(chordTypeGroup).getByRole("button", { name: "M7" })).toBeInTheDocument();
-      expect(within(chordTypeGroup).getByRole("button", { name: "m7" })).toBeInTheDocument();
-      expect(within(chordTypeGroup).getByRole("button", { name: "7" })).toBeInTheDocument();
-      expect(within(chordTypeGroup).getByRole("button", { name: "sus4" })).toBeInTheDocument();
-      expect(within(chordTypeGroup).getByRole("button", { name: "5" })).toBeInTheDocument();
-      expect(within(chordTypeGroup).getByRole("button", { name: "M6" })).toBeInTheDocument();
-      expect(within(chordTypeGroup).getByRole("button", { name: "aug" })).toBeInTheDocument();
-      expect(within(chordTypeGroup).getByRole("button", { name: "sus2" })).toBeInTheDocument();
-      expect(within(chordTypeGroup).getByRole("button", { name: "m6" })).toBeInTheDocument();
-      expect(within(chordTypeGroup).getByRole("button", { name: "dim7" })).toBeInTheDocument();
-      expect(within(chordTypeGroup).getByRole("button", { name: "m7♭5" })).toBeInTheDocument();
-      expect(within(chordTypeGroup).getByRole("button", { name: "mM7" })).toBeInTheDocument();
-      expect(within(chordTypeGroup).getAllByRole("button")).toHaveLength(15);
-    });
-
-    it("chord-type buttons appear in CHORD_TYPE_DISPLAY_ORDER order (Maj first)", () => {
-      renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS]);
-      const chordTypeGroup = screen.getByRole("group", { name: "Chord Type" });
       const buttons = within(chordTypeGroup).getAllByRole("button");
+      expect(buttons).toHaveLength(EXPECTED_CHORD_TYPE_LABELS.length);
       EXPECTED_CHORD_TYPE_LABELS.forEach((label, i) => {
         expect(buttons[i]).toHaveAccessibleName(label);
       });
@@ -448,82 +414,31 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
   });
 
-  describe("15. panel-level disable removed (Task 4 — controls always enabled)", () => {
-    it("panel root never has data-disabled when fingeringPattern is one-string", () => {
+  describe("Task 4: controls always enabled regardless of fingering pattern", () => {
+    const PATTERNS = ["one-string", "two-strings", "caged", "none"] as const;
+
+    it.each(PATTERNS)("panel root has no data-disabled when fingeringPattern is %s", (pattern) => {
       const { container } = renderWithAtoms(<ChordOverlayControls />, [
         ...DEGREE_MODE_SEEDS,
-        [fingeringPatternAtom, "one-string"],
+        [fingeringPatternAtom, pattern],
       ]);
-      const root = container.firstChild as HTMLElement;
-      expect(root).not.toHaveAttribute("data-disabled");
+      expect(container.firstChild as HTMLElement).not.toHaveAttribute("data-disabled");
     });
 
-    it("panel root never has data-disabled when fingeringPattern is two-strings", () => {
-      const { container } = renderWithAtoms(<ChordOverlayControls />, [
-        ...DEGREE_MODE_SEEDS,
-        [fingeringPatternAtom, "two-strings"],
-      ]);
-      const root = container.firstChild as HTMLElement;
-      expect(root).not.toHaveAttribute("data-disabled");
-    });
+    it.each(["one-string", "two-strings", "caged"] as const)(
+      "Chord Mode buttons stay enabled when fingeringPattern is %s",
+      (pattern) => {
+        renderWithAtoms(<ChordOverlayControls />, [
+          ...DEGREE_MODE_SEEDS,
+          [fingeringPatternAtom, pattern],
+        ]);
+        const modeGroup = screen.getByRole("group", { name: "Chord overlay mode" });
+        expect(within(modeGroup).getByRole("button", { name: "Degree" })).not.toBeDisabled();
+        expect(within(modeGroup).getByRole("button", { name: "Manual" })).not.toBeDisabled();
+      },
+    );
 
-    it("panel root does not have data-disabled when fingeringPattern is caged", () => {
-      const { container } = renderWithAtoms(<ChordOverlayControls />, [
-        ...DEGREE_MODE_SEEDS,
-        [fingeringPatternAtom, "caged"],
-      ]);
-      const root = container.firstChild as HTMLElement;
-      expect(root).not.toHaveAttribute("data-disabled");
-    });
-
-    it("panel root does not have data-disabled when fingeringPattern is none", () => {
-      const { container } = renderWithAtoms(<ChordOverlayControls />, [
-        ...DEGREE_MODE_SEEDS,
-        [fingeringPatternAtom, "none"],
-      ]);
-      const root = container.firstChild as HTMLElement;
-      expect(root).not.toHaveAttribute("data-disabled");
-    });
-  });
-
-  describe("14. chord controls always enabled — no pattern-disabled behavior (Task 4)", () => {
-    it("Chord Mode buttons are enabled when fingeringPattern is one-string", () => {
-      renderWithAtoms(<ChordOverlayControls />, [
-        ...DEGREE_MODE_SEEDS,
-        [fingeringPatternAtom, "one-string"],
-      ]);
-      const modeGroup = screen.getByRole("group", { name: "Chord overlay mode" });
-      const degreeButton = within(modeGroup).getByRole("button", { name: "Degree" });
-      const manualButton = within(modeGroup).getByRole("button", { name: "Manual" });
-      expect(degreeButton).not.toBeDisabled();
-      expect(manualButton).not.toBeDisabled();
-    });
-
-    it("Chord Mode buttons are enabled when fingeringPattern is two-strings", () => {
-      renderWithAtoms(<ChordOverlayControls />, [
-        ...DEGREE_MODE_SEEDS,
-        [fingeringPatternAtom, "two-strings"],
-      ]);
-      const modeGroup = screen.getByRole("group", { name: "Chord overlay mode" });
-      const degreeButton = within(modeGroup).getByRole("button", { name: "Degree" });
-      const manualButton = within(modeGroup).getByRole("button", { name: "Manual" });
-      expect(degreeButton).not.toBeDisabled();
-      expect(manualButton).not.toBeDisabled();
-    });
-
-    it("Chord Mode buttons are enabled when fingeringPattern is caged", () => {
-      renderWithAtoms(<ChordOverlayControls />, [
-        ...DEGREE_MODE_SEEDS,
-        [fingeringPatternAtom, "caged"],
-      ]);
-      const modeGroup = screen.getByRole("group", { name: "Chord overlay mode" });
-      const degreeButton = within(modeGroup).getByRole("button", { name: "Degree" });
-      const manualButton = within(modeGroup).getByRole("button", { name: "Manual" });
-      expect(degreeButton).not.toBeDisabled();
-      expect(manualButton).not.toBeDisabled();
-    });
-
-    it("first Chord Mode button always shows 'Off' label regardless of fingering pattern", () => {
+    it("first Chord Mode button always shows 'Off' (no 'Disabled' label)", () => {
       renderWithAtoms(<ChordOverlayControls />, [
         ...DEGREE_MODE_SEEDS,
         [fingeringPatternAtom, "one-string"],
@@ -634,53 +549,34 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       [voicingSectionExpandedAtom, true],
     ] as const;
 
-    it("caged voicing type: Inversion control and String Set are NOT in the document", () => {
-      renderWithAtoms(<ChordOverlayControls />, [
-        ...TRIAD_MANUAL_SEEDS,
-        [voicingTypeAtom, "caged"],
-      ]);
-      expect(screen.queryByLabelText("Voicing inversion")).not.toBeInTheDocument();
-      expect(screen.queryByRole("radiogroup", { name: /String Set/i })).not.toBeInTheDocument();
+    it.each<{ label: string; extras: readonly (readonly [unknown, unknown])[]; visible: boolean }>([
+      { label: "caged", extras: [[voicingTypeAtom, "caged"]], visible: false },
+      { label: "triad", extras: [[voicingTypeAtom, "triad"]], visible: true },
+      { label: "drop2 (Major 7th)", extras: [[voicingTypeAtom, "drop2"], [chordQualityOverrideAtom, "Major 7th"]], visible: true },
+    ])("$label voicing: Inversion + String Set visibility = $visible", ({ extras, visible }) => {
+      renderWithAtoms(<ChordOverlayControls />, [...TRIAD_MANUAL_SEEDS, ...extras] as never);
+      const inv = screen.queryByLabelText("Voicing inversion");
+      const ss = screen.queryByRole("radiogroup", { name: /String Set/i });
+      if (visible) {
+        expect(inv).toBeInTheDocument();
+        expect(ss).toBeInTheDocument();
+      } else {
+        expect(inv).not.toBeInTheDocument();
+        expect(ss).not.toBeInTheDocument();
+      }
     });
 
-    it("triad voicing type: Inversion control and String Set ARE in the document", () => {
-      renderWithAtoms(<ChordOverlayControls />, [
-        ...TRIAD_MANUAL_SEEDS,
-        [voicingTypeAtom, "triad"],
-      ]);
-      expect(screen.queryByLabelText("Voicing inversion")).toBeInTheDocument();
-      expect(screen.queryByRole("radiogroup", { name: /String Set/i })).toBeInTheDocument();
-    });
-
-    it("drop2 voicing type: Inversion control and String Set ARE in the document", () => {
-      renderWithAtoms(<ChordOverlayControls />, [
-        ...TRIAD_MANUAL_SEEDS,
-        [voicingTypeAtom, "drop2"],
-        [chordQualityOverrideAtom, "Major 7th"],
-      ]);
-      expect(screen.queryByLabelText("Voicing inversion")).toBeInTheDocument();
-      expect(screen.queryByRole("radiogroup", { name: /String Set/i })).toBeInTheDocument();
-    });
-
-    it("triad chord (3 tones) shows 5 radio cards in the String Set picker", () => {
-      renderWithAtoms(<ChordOverlayControls />, [
-        ...TRIAD_MANUAL_SEEDS,
-        [voicingTypeAtom, "triad"],
-      ]);
+    it.each<{ label: string; extras: readonly (readonly [unknown, unknown])[]; count: number }>([
+      { label: "3-tone (triad)", extras: [[voicingTypeAtom, "triad"]], count: 5 },
+      {
+        label: "4-tone (Major 7th)",
+        extras: [[voicingTypeAtom, "triad"], [chordQualityOverrideAtom, "Major 7th"]],
+        count: 4,
+      },
+    ])("$label chord shows $count radio cards in the String Set picker", ({ extras, count }) => {
+      renderWithAtoms(<ChordOverlayControls />, [...TRIAD_MANUAL_SEEDS, ...extras] as never);
       const radiogroup = screen.getByRole("radiogroup", { name: /String Set/i });
-      // 3-tone chord: 6 - 3 + 1 = 4 windows + 1 All = 5 total
-      expect(within(radiogroup).getAllByRole("radio")).toHaveLength(5);
-    });
-
-    it("4-tone chord (Major 7th) shows 4 radio cards in the String Set picker", () => {
-      renderWithAtoms(<ChordOverlayControls />, [
-        ...TRIAD_MANUAL_SEEDS,
-        [voicingTypeAtom, "triad"],
-        [chordQualityOverrideAtom, "Major 7th"],
-      ]);
-      const radiogroup = screen.getByRole("radiogroup", { name: /String Set/i });
-      // 4-tone chord: 6 - 4 + 1 = 3 windows + 1 All = 4 total
-      expect(within(radiogroup).getAllByRole("radio")).toHaveLength(4);
+      expect(within(radiogroup).getAllByRole("radio")).toHaveLength(count);
     });
 
     it("normalizer: switching from triad to 4-tone chord removes the stale '4·5·6' string set option", async () => {
@@ -891,62 +787,38 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
   });
 
-  describe("Task 4: no disabled UI for one-string/two-strings fingering", () => {
-    it("does not disable any control when fingering is one-string (Task 4)", () => {
-      renderWithAtoms(<ChordOverlayControls />, [
-        ...DEGREE_MODE_SEEDS,
-        [fingeringPatternAtom, "one-string"],
-      ]);
-      expect(screen.queryByText(/chord overlay disabled/i)).toBeNull();
-      expect(document.querySelector("[data-disabled=\"true\"]")).toBeNull();
-    });
-  });
-
   describe("Task 9: Chord Spread stepper and Scope to position switch", () => {
-    it("renders the Chord Spread stepper inside the Voicing section (Task 9)", () => {
-      renderWithAtoms(<ChordOverlayControls />, [
-        [scaleNameAtom, "Major"],
-        [rootNoteAtom, "C"],
-        [chordOverlayModeAtom, "manual"],
-        [chordRootOverrideAtom, "C"],
-        [chordQualityOverrideAtom, "Major Triad"],
-        [progressionStepsAtom, []],
-        [voicingSectionExpandedAtom, true],
-      ]);
-      // The Prop cell renders a label "Chord Spread"; the StepperControl exposes its label as a group aria-label.
+    const VOICING_SEEDS = [
+      [scaleNameAtom, "Major"],
+      [rootNoteAtom, "C"],
+      [chordOverlayModeAtom, "manual"],
+      [chordRootOverrideAtom, "C"],
+      [chordQualityOverrideAtom, "Major Triad"],
+      [progressionStepsAtom, []],
+      [voicingSectionExpandedAtom, true],
+    ] as const;
+
+    it("renders the Chord Spread stepper inside the Voicing section", () => {
+      renderWithAtoms(<ChordOverlayControls />, [...VOICING_SEEDS]);
       expect(screen.getByText(/chord spread/i)).toBeInTheDocument();
     });
 
-    it("renders the Scope to position switch and disables it when no active position (Task 9)", () => {
-      renderWithAtoms(<ChordOverlayControls />, [
-        [scaleNameAtom, "Major"],
-        [rootNoteAtom, "C"],
-        [chordOverlayModeAtom, "manual"],
-        [chordRootOverrideAtom, "C"],
-        [chordQualityOverrideAtom, "Major Triad"],
-        [fingeringPatternAtom, "none"],
-        [progressionStepsAtom, []],
-        [voicingSectionExpandedAtom, true],
-      ]);
+    it.each<{ label: string; extras: readonly (readonly [unknown, unknown])[]; disabled: boolean }>([
+      {
+        label: "no active position (fingering=none) → disabled",
+        extras: [[fingeringPatternAtom, "none"]],
+        disabled: true,
+      },
+      {
+        label: "single CAGED shape active → enabled",
+        extras: [[fingeringPatternAtom, "caged"], [cagedShapesAtom, new Set(["C"])]],
+        disabled: false,
+      },
+    ])("Scope to position switch: $label", ({ extras, disabled }) => {
+      renderWithAtoms(<ChordOverlayControls />, [...VOICING_SEEDS, ...extras] as never);
       const sw = screen.getByRole("switch", { name: /scope to position/i }) as HTMLInputElement;
-      expect(sw).toBeInTheDocument();
-      expect(sw).toBeDisabled();
-    });
-
-    it("enables the Scope to position switch when a single CAGED shape is active (Task 9)", () => {
-      renderWithAtoms(<ChordOverlayControls />, [
-        [scaleNameAtom, "Major"],
-        [rootNoteAtom, "C"],
-        [chordOverlayModeAtom, "manual"],
-        [chordRootOverrideAtom, "C"],
-        [chordQualityOverrideAtom, "Major Triad"],
-        [fingeringPatternAtom, "caged"],
-        [cagedShapesAtom, new Set(["C"])],
-        [progressionStepsAtom, []],
-        [voicingSectionExpandedAtom, true],
-      ]);
-      const sw = screen.getByRole("switch", { name: /scope to position/i }) as HTMLInputElement;
-      expect(sw).not.toBeDisabled();
+      if (disabled) expect(sw).toBeDisabled();
+      else expect(sw).not.toBeDisabled();
     });
   });
 
