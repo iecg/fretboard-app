@@ -445,103 +445,52 @@ describe("FretboardSVG/FretboardSVG", () => {
   });
 
   describe("role-based shapes", () => {
-    it("chord-root notes have data-note-shape=squircle", () => {
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          chordTones={["C", "E", "G"]}
-          chordRoot="C"
-          rootNote="C"
-          highlightNotes={["C", "E", "G"]}
-        />
-      );
-      const chordRootNotes = container.querySelectorAll('.chord-root[data-note-shape="squircle"]');
-      expect(chordRootNotes.length).toBeGreaterThan(0);
-    });
+    const SCALE_CEG = { rootNote: "C", highlightNotes: ["C", "E", "G"] };
+    const DORIAN = {
+      rootNote: "D",
+      highlightNotes: ["D", "E", "F", "G", "A", "B", "C"],
+      colorNotes: ["B"],
+    };
 
-    it("chord-tone-in-scale notes have data-note-shape=squircle", () => {
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          chordTones={["C", "E", "G"]}
-          chordRoot="C"
-          rootNote="C"
-          highlightNotes={["C", "E", "G"]}
-        />
-      );
-      const inScaleTones = container.querySelectorAll('.chord-tone-in-scale[data-note-shape="squircle"]');
-      expect(inScaleTones.length).toBeGreaterThan(0);
-    });
-
-    it("chord-tone-outside-scale notes have data-note-shape=diamond", () => {
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          chordTones={["C", "E", "G", "A#"]}
-          chordRoot="C"
-          rootNote="C"
-          highlightNotes={["C", "E", "G"]}
-        />
-      );
-      const outsideTones = container.querySelectorAll('.chord-tone-outside-scale[data-note-shape="diamond"]');
-      expect(outsideTones.length).toBeGreaterThan(0);
-    });
-
-    it("scale-only notes have data-note-shape=circle", () => {
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          chordTones={["C"]}
-          chordRoot="C"
-          rootNote="C"
-          highlightNotes={["C", "E", "G"]}
-        />
-      );
-      const scaleOnly = container.querySelectorAll('.scale-only[data-note-shape="circle"]');
-      expect(scaleOnly.length).toBeGreaterThan(0);
-    });
-
-    it("note-active notes (no chord overlay) have data-note-shape=circle", () => {
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          rootNote="C"
-          highlightNotes={["C", "E", "G"]}
-        />
-      );
-      const activeNotes = container.querySelectorAll('.note-active[data-note-shape="circle"]');
-      expect(activeNotes.length).toBeGreaterThan(0);
-    });
-
-    it("color-tone notes have data-note-shape=hexagon when chord overlay active", () => {
-      // D Dorian scale: D E F G A B C. colorNote=B. chordTones=D F A (Dm triad).
-      // B is in scale, is a color note, NOT a chord tone → color-tone (hexagon, scale-owned)
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          rootNote="D"
-          highlightNotes={["D", "E", "F", "G", "A", "B", "C"]}
-          colorNotes={["B"]}
-          chordTones={["D", "F", "A"]}
-          chordRoot="D"
-        />
-      );
-      const colorToneHexagons = container.querySelectorAll('.color-tone[data-note-shape="hexagon"]');
-      expect(colorToneHexagons.length).toBeGreaterThan(0);
-    });
-
-    it("note-blue notes (scale color notes, no chord overlay) have data-note-shape=hexagon", () => {
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          rootNote="D"
-          highlightNotes={["D", "E", "F", "G", "A", "B", "C"]}
-          colorNotes={["B"]}
-        />
-      );
-      // No chord overlay: color notes → note-blue with hexagon shape
-      const colorNoteHexagons = container.querySelectorAll('.note-blue[data-note-shape="hexagon"]');
-      expect(colorNoteHexagons.length).toBeGreaterThan(0);
+    it.each<{ role: string; shape: string; props: Record<string, unknown> }>([
+      {
+        role: "chord-root",
+        shape: "squircle",
+        props: { ...SCALE_CEG, chordTones: ["C", "E", "G"], chordRoot: "C" },
+      },
+      {
+        role: "chord-tone-in-scale",
+        shape: "squircle",
+        props: { ...SCALE_CEG, chordTones: ["C", "E", "G"], chordRoot: "C" },
+      },
+      {
+        role: "chord-tone-outside-scale",
+        shape: "diamond",
+        props: { ...SCALE_CEG, chordTones: ["C", "E", "G", "A#"], chordRoot: "C" },
+      },
+      {
+        role: "scale-only",
+        shape: "circle",
+        props: { ...SCALE_CEG, chordTones: ["C"], chordRoot: "C" },
+      },
+      {
+        role: "note-active",
+        shape: "circle",
+        props: { ...SCALE_CEG },
+      },
+      {
+        role: "color-tone",
+        shape: "hexagon",
+        props: { ...DORIAN, chordTones: ["D", "F", "A"], chordRoot: "D" },
+      },
+      {
+        role: "note-blue",
+        shape: "hexagon",
+        props: { ...DORIAN },
+      },
+    ])("$role notes have data-note-shape=$shape", ({ role, shape, props }) => {
+      const { container } = render(<FretboardSVG {...BASE_PROPS} {...props} />);
+      expect(container.querySelectorAll(`.${role}[data-note-shape="${shape}"]`).length).toBeGreaterThan(0);
     });
 
     it("chord role wins over color-tone when a note is both", () => {
