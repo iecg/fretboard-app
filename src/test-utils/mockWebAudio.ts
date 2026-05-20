@@ -60,3 +60,81 @@ export function createMockOsc(): MockOscillatorNode {
     onended: null,
   };
 }
+
+export type BiquadFilterType =
+  | "lowpass"
+  | "highpass"
+  | "bandpass"
+  | "lowshelf"
+  | "highshelf"
+  | "peaking"
+  | "notch"
+  | "allpass";
+
+export interface MockBiquadFilterNode {
+  type: BiquadFilterType;
+  frequency: MockAudioParam;
+  Q: MockAudioParam;
+  gain: MockAudioParam;
+  detune: MockAudioParam;
+  connect: ReturnType<typeof vi.fn>;
+  disconnect: ReturnType<typeof vi.fn>;
+}
+
+export function createMockFilter(): MockBiquadFilterNode {
+  return {
+    type: "lowpass",
+    frequency: makeParam(350),
+    Q: makeParam(1),
+    gain: makeParam(0),
+    detune: makeParam(0),
+    connect: vi.fn((t: unknown) => t),
+    disconnect: vi.fn(),
+  };
+}
+
+export interface MockAudioBuffer {
+  length: number;
+  duration: number;
+  sampleRate: number;
+  numberOfChannels: number;
+  getChannelData: (i: number) => Float32Array;
+}
+
+export function createMockBuffer(opts: {
+  length: number;
+  sampleRate: number;
+  numberOfChannels?: number;
+}): MockAudioBuffer {
+  const channels = opts.numberOfChannels ?? 1;
+  const data = Array.from({ length: channels }, () => new Float32Array(opts.length));
+  return {
+    length: opts.length,
+    duration: opts.length / opts.sampleRate,
+    sampleRate: opts.sampleRate,
+    numberOfChannels: channels,
+    getChannelData: (i: number) => data[i],
+  };
+}
+
+export interface MockBufferSourceNode {
+  buffer: MockAudioBuffer | null;
+  playbackRate: MockAudioParam;
+  connect: ReturnType<typeof vi.fn>;
+  disconnect: ReturnType<typeof vi.fn>;
+  start: ReturnType<typeof vi.fn>;
+  stop: ReturnType<typeof vi.fn>;
+  onended: (() => void) | null;
+}
+
+export function createMockBufferSource(): MockBufferSourceNode {
+  return {
+    buffer: null,
+    playbackRate: makeParam(1),
+    connect: vi.fn((t: unknown) => t),
+    disconnect: vi.fn(),
+    start: vi.fn(),
+    stop: vi.fn(),
+    onended: null,
+  };
+}

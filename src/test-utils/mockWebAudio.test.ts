@@ -1,5 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
-import { createMockGain, createMockOsc } from "./mockWebAudio";
+import {
+  createMockGain,
+  createMockOsc,
+  createMockFilter,
+  createMockBufferSource,
+  createMockBuffer,
+} from "./mockWebAudio";
 
 describe("createMockGain", () => {
   it("returns a GainNode-shaped object with instrumented methods", () => {
@@ -27,5 +33,35 @@ describe("createMockOsc", () => {
     expect(typeof osc.stop).toBe("function");
     expect(typeof osc.setPeriodicWave).toBe("function");
     expect(osc.type).toBe("sine");
+  });
+});
+
+describe("createMockFilter", () => {
+  it("returns a BiquadFilterNode-shaped object", () => {
+    const f = createMockFilter();
+    expect(f.type).toBe("lowpass");
+    expect(f.frequency.value).toBe(350);
+    expect(f.Q.value).toBe(1);
+    expect(typeof f.connect).toBe("function");
+  });
+});
+
+describe("createMockBufferSource", () => {
+  it("returns an AudioBufferSourceNode-shaped object", () => {
+    const s = createMockBufferSource();
+    expect(s.buffer).toBeNull();
+    expect(typeof s.start).toBe("function");
+    expect(typeof s.stop).toBe("function");
+  });
+});
+
+describe("createMockBuffer", () => {
+  it("returns an AudioBuffer-shaped object with sane defaults", () => {
+    const b = createMockBuffer({ length: 4, sampleRate: 44100, numberOfChannels: 1 });
+    expect(b.length).toBe(4);
+    expect(b.sampleRate).toBe(44100);
+    expect(b.numberOfChannels).toBe(1);
+    expect(b.getChannelData(0)).toBeInstanceOf(Float32Array);
+    expect(b.getChannelData(0).length).toBe(4);
   });
 });
