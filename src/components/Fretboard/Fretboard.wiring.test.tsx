@@ -7,6 +7,7 @@ import {
   cagedShapesAtom,
   chordOverlayModeAtom,
   chordRootAtom,
+  chordScopeToPositionAtom,
   chordTypeAtom,
   fingeringPatternAtom,
   fullChordsEnabledAtom,
@@ -36,6 +37,7 @@ function renderGMajorEPositionChord(chordRoot: string, chordType: string) {
   store.set(fullChordsEnabledAtom, true);
   store.set(fingeringPatternAtom, "caged");
   store.set(cagedShapesAtom, new Set(["E"]));
+  store.set(chordScopeToPositionAtom, true);
 
   const { unmount } = render(
     <Provider store={store}>
