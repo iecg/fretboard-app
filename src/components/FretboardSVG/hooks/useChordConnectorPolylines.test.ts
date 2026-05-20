@@ -590,17 +590,12 @@ describe("per-voicing offset: determinism and paletteIndex independence", () => 
   });
 
   it("(c) uniform base radius regardless of fretted position count; offset adds linearly", () => {
-    const sameFret = notes([[0, 5, "C", "chord-root"], [1, 5, "E"], [2, 5, "G"]]);
-    const twoPositions = notes([[0, 2, "C", "chord-root"], [1, 2, "E"], [2, 3, "G"]]);
-    const threePositions = notes([[0, 2, "C", "chord-root"], [1, 3, "E"], [2, 4, "G"]]);
     // Uniform base: 0.42 × 36 = 15.12, above the 11.47 floor.
-    for (const combo of [sameFret, twoPositions, threePositions]) {
-      expect(computeChordConnectorRadiusPx(combo, STRING_ROW_PX, 0)).toBeCloseTo(15.12);
-    }
-    expect(computeChordConnectorRadiusPx(sameFret, STRING_ROW_PX, 0))
+    expect(computeChordConnectorRadiusPx(STRING_ROW_PX, 0)).toBeCloseTo(15.12);
+    expect(computeChordConnectorRadiusPx(STRING_ROW_PX, 0))
       .toBeGreaterThan(chordRootVisualRadiusPx(STRING_ROW_PX));
-    const base = computeChordConnectorRadiusPx(threePositions, STRING_ROW_PX, 0);
-    expect(computeChordConnectorRadiusPx(threePositions, STRING_ROW_PX, 3)).toBeCloseTo(base + 3);
+    const base = computeChordConnectorRadiusPx(STRING_ROW_PX, 0);
+    expect(computeChordConnectorRadiusPx(STRING_ROW_PX, 3)).toBeCloseTo(base + 3);
   });
 
   it("clamps connector radius to the available SVG y bounds", () => {

@@ -94,7 +94,6 @@ export function applyConnectorRadiusFloor(
  * when two voicings geometrically overlap.
  */
 export function computeChordConnectorRadiusPx(
-  _combo: unknown[],
   stringRowPx: number,
   offsetPx: number,
 ): number {

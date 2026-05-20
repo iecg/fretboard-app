@@ -294,7 +294,7 @@ function assignConflictOffsets(
   const baseRadii = pendingVoicings.map((pv) =>
     resolveConnectorRadiusPx({
       vertices: pv.rawVertices,
-      preferredRadius: computeChordConnectorRadiusPx(pv.sourceCombo, stringRowPx, 0),
+      preferredRadius: computeChordConnectorRadiusPx(stringRowPx, 0),
       yBounds,
       edgeSafe: touchesOuterString(pv.sourceCombo, lowestStringIndex),
     }),
