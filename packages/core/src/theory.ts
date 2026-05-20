@@ -6,6 +6,8 @@ import {
 import { getDegreesForScale, getQualityForDegree, type DegreeId } from "./degrees";
 import * as Note from "@tonaljs/note";
 import * as Interval from "@tonaljs/interval";
+import Scale from "@tonaljs/scale";
+import { scaleNameToTonal } from "./lib/tonal";
 
 export const NOTES = [
   "C",
@@ -489,10 +491,16 @@ export function getIntervalNotes(
 }
 
 export function getScaleNotes(rootNote: string, scaleName: string): string[] {
-  const intervals = SCALES[normalizeScaleName(scaleName)];
-  if (!intervals) return [];
+  const tonalName = scaleNameToTonal(normalizeScaleName(scaleName));
+  if (!tonalName) return [];
   if (getNoteIndex(rootNote) === -1) return [];
-  return getIntervalNotes(rootNote, intervals);
+  const tonalScale = Scale.get(`${rootNote} ${tonalName}`);
+  // Tonal returns spelled notes. Normalize to sharps-form to maintain the
+  // legacy contract (consumers do NOTES.indexOf on the result).
+  return tonalScale.notes.map((n) => {
+    const simplified = Note.simplify(n);
+    return simplified.includes("b") ? Note.enharmonic(simplified) : simplified;
+  });
 }
 
 /**
@@ -525,31 +533,25 @@ export function getDivergentNotes(
   scaleName: string,
 ): string[] {
   const resolvedScaleName = normalizeScaleName(scaleName);
-  const intervals = SCALES[resolvedScaleName];
-  if (!intervals || resolvedScaleName.includes("Blues")) return [];
+  if (resolvedScaleName.includes("Blues")) return [];
+  if (resolvedScaleName === "Major Pentatonic" || resolvedScaleName === "Minor Pentatonic") return [];
+  if (resolvedScaleName === "Major" || resolvedScaleName === "Natural Minor") return [];
 
-  // Pentatonic scales are subsets, not modes — no divergence to show
-  if (
-    resolvedScaleName === "Major Pentatonic" ||
-    resolvedScaleName === "Minor Pentatonic"
-  )
-    return [];
-  // Major and Natural Minor are the references themselves
-  if (resolvedScaleName === "Major" || resolvedScaleName === "Natural Minor")
-    return [];
-
-  const isMajorQuality = intervals.includes(4); // contains major 3rd
-  const refIntervals = isMajorQuality
-    ? SCALES["Major"]
-    : SCALES["Natural Minor"];
+  const semis = getScaleSemitones(rootNote, scaleName);
+  if (semis.length === 0) return [];
 
   const rootIdx = NOTES.indexOf(rootNote);
   if (rootIdx === -1) return [];
 
-  const refSet = new Set(refIntervals);
-  return intervals
-    .filter((interval) => !refSet.has(interval))
-    .map((interval) => NOTES[(rootIdx + interval) % 12]);
+  // Convert absolute NOTES indices to relative semitone intervals from root
+  const relativeIntervals = semis.map((s) => (s - rootIdx + 12) % 12);
+  const isMajorQuality = relativeIntervals.includes(4); // contains major 3rd
+  const refName = isMajorQuality ? "Major" : "Natural Minor";
+  const refSemis = new Set(getScaleSemitones(rootNote, refName));
+
+  return semis
+    .filter((semitone) => !refSemis.has(semitone))
+    .map((semitone) => NOTES[semitone]);
 }
 
 // Key signature accidental counts (+ sharps, - flats)

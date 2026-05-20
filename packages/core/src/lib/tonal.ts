@@ -48,6 +48,23 @@ const SCALE_TO_TONAL: Record<string, string> = {
   "Mixolydian": "mixolydian",
   "Aeolian": "aeolian",
   "Locrian": "locrian",
+  // Harmonic Minor modes
+  "Locrian Natural 6": "locrian 6",
+  "Ionian Augmented": "ionian augmented",
+  "Dorian Sharp 4": "dorian #4",
+  "Phrygian Dominant": "phrygian dominant",
+  "Lydian Sharp 2": "lydian #9",
+  "Altered Diminished": "ultralocrian",
+  // Melodic Minor modes
+  "Dorian Flat 2": "dorian b2",
+  "Lydian Augmented": "lydian augmented",
+  "Lydian Dominant": "lydian dominant",
+  "Mixolydian Flat 6": "mixolydian b6",
+  "Locrian Natural 2": "locrian #2",
+  "Altered": "altered",
+  // Blues variants
+  "Minor Blues": "minor blues",
+  "Major Blues": "major blues",
 };
 
 const TONAL_TO_SCALE: Record<string, string> = Object.fromEntries(
