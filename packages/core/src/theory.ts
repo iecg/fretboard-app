@@ -709,10 +709,12 @@ export function getDiatonicChord(
   if (!semitoneEntry) return undefined;
   const semitone = Number(semitoneEntry[0]);
 
-  // Compute the absolute root note (sharps-only via NOTES)
-  const rootIndex = getNoteIndex(tonicNote);
-  if (rootIndex === -1) return undefined;
-  const root = NOTES[(rootIndex + semitone) % 12];
+  // Compute the absolute root note via Tonal transposition.
+  const tonicChroma = Note.chroma(tonicNote);
+  if (typeof tonicChroma !== "number" || isNaN(tonicChroma)) return undefined;
+  const transposed = Note.transpose(tonicNote, Interval.fromSemitones(semitone));
+  const simplified = Note.simplify(transposed);
+  const root = simplified.includes("b") ? Note.enharmonic(simplified) : simplified;
 
   // Resolve chord quality via the degree quality table
   const quality = getQualityForDegree(degreeId, scaleName);
