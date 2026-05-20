@@ -20,179 +20,19 @@ function r2(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
-// ---------------------------------------------------------------------------
-// centroid
-// ---------------------------------------------------------------------------
-
-/**
- * Compute the geometric centroid (mean x, mean y) of an array of points.
- *
- * @param vertices - At least one point; if the array is empty the result is
- *                   `{ cx: 0, cy: 0 }`.
- * @returns The centroid as `{ cx, cy }`.
- */
-export function centroid(vertices: Point[]): { cx: number; cy: number } {
-  if (vertices.length === 0) return { cx: 0, cy: 0 };
-  const cx = vertices.reduce((sum, v) => sum + v.x, 0) / vertices.length;
-  const cy = vertices.reduce((sum, v) => sum + v.y, 0) / vertices.length;
-  return { cx, cy };
-}
-
-// ---------------------------------------------------------------------------
-// polarSort
-// ---------------------------------------------------------------------------
-
 /**
  * Sort a copy of `vertices` by polar angle around their centroid (ascending
  * from −π to +π, i.e. counter-clockwise starting from the 3-o'clock position).
- *
- * This ordering prevents self-intersection when the path closes — the closing
- * segment always traces the convex hull perimeter rather than crossing the
- * interior.
- *
- * **Does not mutate the input array.**
- *
- * @param vertices - The points to sort.
- * @returns A new array with the same points in polar order.
+ * Does not mutate the input array.
  */
 export function polarSort(vertices: Point[]): Point[] {
-  const { cx, cy } = centroid(vertices);
+  if (vertices.length === 0) return [];
+  const cx = vertices.reduce((sum, v) => sum + v.x, 0) / vertices.length;
+  const cy = vertices.reduce((sum, v) => sum + v.y, 0) / vertices.length;
   return [...vertices].sort(
     (a, b) =>
       Math.atan2(a.y - cy, a.x - cx) - Math.atan2(b.y - cy, b.x - cx),
   );
-}
-
-// ---------------------------------------------------------------------------
-// closedCatmullRomPath
-// ---------------------------------------------------------------------------
-
-/**
- * Convert an ordered array of vertices into a closed cubic Bézier SVG path
- * using the centripetal Catmull-Rom parameterisation (α = 0.5).
- *
- * For each segment from P[i] to P[i+1] (indices modulo N) the Bézier control
- * handles are:
- * ```
- *   H1 = P[i]     + 0.25 * (P[(i+1)%N] − P[(i−1+N)%N])
- *   H2 = P[(i+1)%N] − 0.25 * (P[(i+2)%N] − P[i])
- * ```
- *
- * The resulting path string is:
- * ```
- *   M P0 C H1 H2 P1 C H1' H2' P2 … Z
- * ```
- *
- * All coordinates are rounded to 2 decimal places so the string is
- * deterministic across floating-point environments (suitable for snapshot
- * tests).
- *
- * @param vertices - Polar-sorted control points (caller must pre-sort).
- *                   Returns `''` when `vertices.length < 3`.
- * @returns SVG path `d` attribute string starting with `M` and ending with `Z`.
- */
-export function closedCatmullRomPath(vertices: Point[]): string {
-  const N = vertices.length;
-  if (N < 3) return "";
-
-  const parts: string[] = [];
-
-  // Move to the first vertex.
-  const p0 = vertices[0]!;
-  parts.push(`M ${r2(p0.x)} ${r2(p0.y)}`);
-
-  for (let i = 0; i < N; i++) {
-    const prev = vertices[(i - 1 + N) % N]!;
-    const cur = vertices[i]!;
-    const next = vertices[(i + 1) % N]!;
-    const next2 = vertices[(i + 2) % N]!;
-
-    const h1x = r2(cur.x + 0.25 * (next.x - prev.x));
-    const h1y = r2(cur.y + 0.25 * (next.y - prev.y));
-    const h2x = r2(next.x - 0.25 * (next2.x - cur.x));
-    const h2y = r2(next.y - 0.25 * (next2.y - cur.y));
-
-    parts.push(
-      `C ${h1x} ${h1y} ${h2x} ${h2y} ${r2(next.x)} ${r2(next.y)}`,
-    );
-  }
-
-  parts.push("Z");
-  return parts.join(" ");
-}
-
-// ---------------------------------------------------------------------------
-// convexHull
-// ---------------------------------------------------------------------------
-
-/**
- * Compute the convex hull of a set of 2-D points using Andrew's monotone-chain
- * algorithm.
- *
- * Returns the hull vertices in **counter-clockwise order**.
- *
- * Degenerate cases:
- * - Coincident points (all same coordinate) → 1-vertex hull (the single point).
- * - Collinear points → 2-vertex hull (the two extremes, i.e. the segment endpoints).
- * - Fewer than 1 point → empty array.
- *
- * **Does not mutate the input array.**
- *
- * @param vertices - The input points. Order does not matter.
- * @returns Hull vertices in CCW winding order.
- */
-export function convexHull(vertices: Array<{ x: number; y: number }>): Array<{ x: number; y: number }> {
-  const n = vertices.length;
-  if (n === 0) return [];
-  if (n === 1) return [{ ...vertices[0]! }];
-
-  // Deduplicate coincident points (within floating-point equality).
-  const seen = new Set<string>();
-  const unique: Array<{ x: number; y: number }> = [];
-  for (const v of vertices) {
-    const key = `${v.x},${v.y}`;
-    if (!seen.has(key)) {
-      seen.add(key);
-      unique.push(v);
-    }
-  }
-  if (unique.length === 1) return [{ ...unique[0]! }];
-
-  // Sort by x, then by y as tiebreaker.
-  const pts = [...unique].sort((a, b) => a.x !== b.x ? a.x - b.x : a.y - b.y);
-
-  // Cross product of vectors OA and OB.
-  const cross = (o: { x: number; y: number }, a: { x: number; y: number }, b: { x: number; y: number }) =>
-    (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
-
-  // Build lower hull.
-  const lower: Array<{ x: number; y: number }> = [];
-  for (const p of pts) {
-    while (lower.length >= 2 && cross(lower[lower.length - 2]!, lower[lower.length - 1]!, p) <= 0) {
-      lower.pop();
-    }
-    lower.push(p);
-  }
-
-  // Build upper hull.
-  const upper: Array<{ x: number; y: number }> = [];
-  for (let i = pts.length - 1; i >= 0; i--) {
-    const p = pts[i]!;
-    while (upper.length >= 2 && cross(upper[upper.length - 2]!, upper[upper.length - 1]!, p) <= 0) {
-      upper.pop();
-    }
-    upper.push(p);
-  }
-
-  // Remove last point of each half because it's repeated at the start of the other.
-  lower.pop();
-  upper.pop();
-
-  const hull = [...lower, ...upper];
-
-  // Degenerate: all points collinear → hull has ≤ 2 points. Return them as-is.
-  // Degenerate: all points coincident → hull has 1 point.
-  return hull;
 }
 
 // ---------------------------------------------------------------------------
@@ -710,83 +550,6 @@ export function offsetOpenPolylinePath(
   parts.push(`A ${ri} ${ri} 0 0 1 ${r2(startAx)} ${r2(startAy)}`);
   parts.push("Z");
 
-  return parts.join(" ");
-}
-
-// ---------------------------------------------------------------------------
-// closedPolylinePath
-// ---------------------------------------------------------------------------
-
-/**
- * Emit a closed polyline path (M + L commands + Z) through the given vertices.
- *
- * For polygons with zero signed area (perfectly collinear N vertices), emit an
- * OPEN polyline (no Z) so the dashed stroke doesn't retrace itself.
- *
- * Coordinates are rounded to 2 decimal places.
- *
- * @param vertices - Vertex sequence in traversal order (caller provides ordering).
- * @returns SVG path-d string. Empty string for zero-vertex input. Single-point
- *          input returns "M x y" (a degenerate dot — caller should avoid this).
- */
-export function closedPolylinePath(vertices: Array<{ x: number; y: number }>): string {
-  if (vertices.length === 0) return "";
-  if (vertices.length === 1) {
-    const v = vertices[0]!;
-    return `M ${r2(v.x)} ${r2(v.y)}`;
-  }
-
-  const parts: string[] = [];
-  const first = vertices[0]!;
-  parts.push(`M ${r2(first.x)} ${r2(first.y)}`);
-  for (let i = 1; i < vertices.length; i++) {
-    const v = vertices[i]!;
-    parts.push(`L ${r2(v.x)} ${r2(v.y)}`);
-  }
-
-  // Compute signed area (shoelace formula) to detect collinear input.
-  // In SVG screen coordinates (y-axis down): 2A ≠ 0 means non-degenerate polygon.
-  let twoA = 0;
-  const N = vertices.length;
-  for (let i = 0; i < N; i++) {
-    const a = vertices[i]!;
-    const b = vertices[(i + 1) % N]!;
-    twoA += a.x * b.y - b.x * a.y;
-  }
-
-  // Append Z only for non-collinear polygons (3+ vertices with non-zero area).
-  if (vertices.length >= 3 && Math.abs(twoA) > 1e-9) {
-    parts.push("Z");
-  }
-
-  return parts.join(" ");
-}
-
-// ---------------------------------------------------------------------------
-// openPolylinePath
-// ---------------------------------------------------------------------------
-
-/**
- * Emit an OPEN polyline path (M + L commands, no Z) through the given vertices.
- * Caller is responsible for vertex ordering — typical use passes vertices in
- * string-index order so the polyline traverses the chord across strings.
- *
- * Coordinates rounded to 2 decimal places.
- *
- * @param vertices - vertex sequence in traversal order
- * @returns SVG path-d string. Empty string for zero-vertex input.
- */
-export function openPolylinePath(vertices: Array<{ x: number; y: number }>): string {
-  if (vertices.length === 0) return "";
-  const first = vertices[0]!;
-  if (vertices.length === 1) {
-    return `M ${r2(first.x)} ${r2(first.y)}`;
-  }
-  const parts: string[] = [`M ${r2(first.x)} ${r2(first.y)}`];
-  for (let i = 1; i < vertices.length; i++) {
-    const v = vertices[i]!;
-    parts.push(`L ${r2(v.x)} ${r2(v.y)}`);
-  }
   return parts.join(" ");
 }
 

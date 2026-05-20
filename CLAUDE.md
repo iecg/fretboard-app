@@ -85,10 +85,6 @@ src/
 
 Notes carry a semantic role (`root-active`, `chord-tone`, `note-blue`, `note-active`, `note-scale-only`, `chord-outside`, `note-inactive`). **Lenses** (registered in `src/store/practiceLensAtoms.ts` + `chordOverlayAtoms.ts`) compose emphasis rules (colors, squircles, tension cues) on top of that base model. **Scale and chord are independent domains** — do not cross-wire their visibility, lens, or color state.
 
-## Debug modes
-
-- `?audit=note-colors` — swaps the app for `src/components/NoteColorAudit/` (a contrast/swatch harness). `data-theme` is removed while active so both light- and dark-theme swatches render side-by-side; the previous theme is restored on exit. Wired in `src/App.tsx`.
-
 ## Testing
 
 - **Vitest** + Testing Library for unit/component (jsdom). Coverage via `@vitest/coverage-v8`.

@@ -379,7 +379,7 @@ function polylineDistance(
  * deterministic greedy color pass selects the smallest available radius slot.
  */
 function assignConflictOffsets(
-  pendingVoicings: Array<{
+  pendingVoicings: ReadonlyArray<{
     rawVertices: ChordConnectorVertex[];
     sourceCombo: NoteData[];
     canonicalKey: string;
@@ -435,6 +435,77 @@ function assignConflictOffsets(
   }
 
   return result;
+}
+
+// Shared finalize step for chord-connector voicings: assigns conflict offsets,
+// resolves per-voicing radii (with edge-safe clamps), then runs a post-clamp
+// collision fix so overlapping voicings stay visually distinguishable when
+// yBounds clamping collapses their radii to the same value.
+function computeFinalConnectorRadii(
+  pendingVoicings: ReadonlyArray<{
+    rawVertices: ChordConnectorVertex[];
+    sourceCombo: NoteData[];
+    canonicalKey: string;
+    shape?: CagedShape;
+  }>,
+  stringRowPx: number,
+  lowestStringIndex: number,
+  yBounds: ConnectorYBounds | undefined,
+): number[] {
+  const clusterOffsetMap = assignConflictOffsets(
+    pendingVoicings,
+    stringRowPx,
+    yBounds,
+    lowestStringIndex,
+  );
+  const baseRadius = applyConnectorRadiusFloor(
+    stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
+    stringRowPx,
+  );
+  const radii = pendingVoicings.map((pv) => {
+    const offsetPx = clusterOffsetMap.get(pv.canonicalKey) ?? 0;
+    return resolveConnectorRadiusPx({
+      vertices: pv.rawVertices,
+      preferredRadius: baseRadius + Math.max(offsetPx, 0),
+      yBounds,
+      edgeSafe: touchesOuterString(pv.sourceCombo, lowestStringIndex),
+    });
+  });
+
+  if (yBounds) {
+    for (let i = 0; i < pendingVoicings.length; i++) {
+      for (let j = i + 1; j < pendingVoicings.length; j++) {
+        const dist = polylineDistance(
+          pendingVoicings[i]!.rawVertices,
+          pendingVoicings[j]!.rawVertices,
+        );
+        if (dist > radii[i]! + radii[j]! + CONNECTOR_CONFLICT_GAP_PX) continue;
+        if (Math.abs(radii[i]! - radii[j]!) >= 1) continue;
+
+        const offI = clusterOffsetMap.get(pendingVoicings[i]!.canonicalKey) ?? 0;
+        const offJ = clusterOffsetMap.get(pendingVoicings[j]!.canonicalKey) ?? 0;
+        const prefI = baseRadius + Math.max(offI, 0);
+        const prefJ = baseRadius + Math.max(offJ, 0);
+        const clampedI = radii[i]! < prefI - 0.5;
+        const clampedJ = radii[j]! < prefJ - 0.5;
+
+        const step = OFFSET_BUCKET[1] ?? 3;
+        if (clampedI && !clampedJ) {
+          radii[j] = Math.max(0, radii[i]! - step);
+        } else if (clampedJ && !clampedI) {
+          radii[i] = Math.max(0, radii[j]! - step);
+        } else if (clampedI && clampedJ) {
+          if (prefI <= prefJ) {
+            radii[i] = Math.max(0, radii[i]! - step);
+          } else {
+            radii[j] = Math.max(0, radii[j]! - step);
+          }
+        }
+      }
+    }
+  }
+
+  return radii;
 }
 
 /**
@@ -716,71 +787,19 @@ export function buildChordConnectorPolylines(
   for (const note of noteData) {
     if (note.stringIndex > lowestStringIndex) lowestStringIndex = note.stringIndex;
   }
-  const clusterOffsetMap = assignConflictOffsets(
+
+  const radii = computeFinalConnectorRadii(
     pendingVoicings,
     stringRowPx,
-    yBounds,
     lowestStringIndex,
+    yBounds,
   );
 
-  // Compute initial radii (uniform base + offset, then edge-safe clamp).
-  const baseRadius = applyConnectorRadiusFloor(
-    stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
-    stringRowPx,
-  );
-  const radii = pendingVoicings.map((pv) => {
-    const offsetPx = clusterOffsetMap.get(pv.canonicalKey) ?? 0;
-    return resolveConnectorRadiusPx({
-      vertices: pv.rawVertices,
-      preferredRadius: baseRadius + Math.max(offsetPx, 0),
-      yBounds,
-      edgeSafe: touchesOuterString(pv.sourceCombo, lowestStringIndex),
-    });
-  });
-
-  // Post-clamp collision fix: when yBounds clamping collapses two
-  // overlapping voicings to the same radius, nudge the unclamped one
-  // so they remain visually distinguishable.
-  if (yBounds) {
-    for (let i = 0; i < pendingVoicings.length; i++) {
-      for (let j = i + 1; j < pendingVoicings.length; j++) {
-        const dist = polylineDistance(
-          pendingVoicings[i]!.rawVertices,
-          pendingVoicings[j]!.rawVertices,
-        );
-        if (dist > radii[i]! + radii[j]! + CONNECTOR_CONFLICT_GAP_PX) continue;
-        if (Math.abs(radii[i]! - radii[j]!) >= 1) continue;
-
-        const offI = clusterOffsetMap.get(pendingVoicings[i]!.canonicalKey) ?? 0;
-        const offJ = clusterOffsetMap.get(pendingVoicings[j]!.canonicalKey) ?? 0;
-        const prefI = baseRadius + Math.max(offI, 0);
-        const prefJ = baseRadius + Math.max(offJ, 0);
-        const clampedI = radii[i]! < prefI - 0.5;
-        const clampedJ = radii[j]! < prefJ - 0.5;
-
-        const step = OFFSET_BUCKET[1] ?? 3;
-        if (clampedI && !clampedJ) {
-          radii[j] = Math.max(0, radii[i]! - step);
-        } else if (clampedJ && !clampedI) {
-          radii[i] = Math.max(0, radii[j]! - step);
-        } else if (clampedI && clampedJ) {
-          if (prefI <= prefJ) {
-            radii[i] = Math.max(0, radii[i]! - step);
-          } else {
-            radii[j] = Math.max(0, radii[j]! - step);
-          }
-        }
-      }
-    }
-  }
-
-  const results: ChordConnectorVoicing[] = pendingVoicings.map((pv, idx) => {
+  return pendingVoicings.map((pv, idx) => {
     const pathStr = offsetOpenPolylinePath(pv.rawVertices, radii[idx]!);
     const paths = { fill: pathStr, outline: pathStr };
     return { paths, vertices: pv.rawVertices, paletteIndex: pv.paletteIndex, voicingKey: pv.canonicalKey };
   });
-
-  return results;
 }
 
 function createExplicitSourceCombo(
@@ -822,59 +841,12 @@ function finalizeChordConnectorPolylines(
     }
   }
 
-  const clusterOffsetMap = assignConflictOffsets(
+  const radii = computeFinalConnectorRadii(
     pendingVoicings,
     stringRowPx,
-    yBounds,
     lowestStringIndex,
+    yBounds,
   );
-
-  const baseRadius = applyConnectorRadiusFloor(
-    stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
-    stringRowPx,
-  );
-  const radii = pendingVoicings.map((pv) => {
-    const offsetPx = clusterOffsetMap.get(pv.canonicalKey) ?? 0;
-    return resolveConnectorRadiusPx({
-      vertices: pv.rawVertices,
-      preferredRadius: baseRadius + Math.max(offsetPx, 0),
-      yBounds,
-      edgeSafe: touchesOuterString(pv.sourceCombo, lowestStringIndex),
-    });
-  });
-
-  if (yBounds) {
-    for (let i = 0; i < pendingVoicings.length; i++) {
-      for (let j = i + 1; j < pendingVoicings.length; j++) {
-        const dist = polylineDistance(
-          pendingVoicings[i]!.rawVertices,
-          pendingVoicings[j]!.rawVertices,
-        );
-        if (dist > radii[i]! + radii[j]! + CONNECTOR_CONFLICT_GAP_PX) continue;
-        if (Math.abs(radii[i]! - radii[j]!) >= 1) continue;
-
-        const offI = clusterOffsetMap.get(pendingVoicings[i]!.canonicalKey) ?? 0;
-        const offJ = clusterOffsetMap.get(pendingVoicings[j]!.canonicalKey) ?? 0;
-        const prefI = baseRadius + Math.max(offI, 0);
-        const prefJ = baseRadius + Math.max(offJ, 0);
-        const clampedI = radii[i]! < prefI - 0.5;
-        const clampedJ = radii[j]! < prefJ - 0.5;
-
-        const step = OFFSET_BUCKET[1] ?? 3;
-        if (clampedI && !clampedJ) {
-          radii[j] = Math.max(0, radii[i]! - step);
-        } else if (clampedJ && !clampedI) {
-          radii[i] = Math.max(0, radii[j]! - step);
-        } else if (clampedI && clampedJ) {
-          if (prefI <= prefJ) {
-            radii[i] = Math.max(0, radii[i]! - step);
-          } else {
-            radii[j] = Math.max(0, radii[j]! - step);
-          }
-        }
-      }
-    }
-  }
 
   return pendingVoicings.map((pv, idx) => {
     const pathStr = offsetOpenPolylinePath(pv.rawVertices, radii[idx]!);
