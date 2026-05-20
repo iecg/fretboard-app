@@ -1,25 +1,7 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import {
-  chordRootAtom,
-  chordTypeAtom,
-  currentTuningAtom,
-  linkChordRootAtom,
-  practiceLensAtom,
-  chordTonesAtom,
-  chordMembersAtom,
-  hasOutsideChordMembersAtom,
-  chordLabelAtom,
-  chordFretSpreadAtom,
-  chordOverlayModeAtom,
-  chordRootOverrideAtom,
-  effectiveChordDegreeAtom,
-  effectiveChordOverlayModeAtom,
-  effectiveChordQualityOverrideAtom,
-  fullChordsEnabledAtom,
-  fullChordMatchesAtom,
-  fullChordPositionsAtom,
-  setChordDegreeAtom,
-} from "../store/atoms";
+import { chordRootAtom, chordTypeAtom, linkChordRootAtom, practiceLensAtom, chordTonesAtom, chordMembersAtom, chordLabelAtom, chordFretSpreadAtom, chordOverlayModeAtom, chordRootOverrideAtom, effectiveChordDegreeAtom, effectiveChordOverlayModeAtom, effectiveChordQualityOverrideAtom, fullChordsEnabledAtom, fullChordMatchesAtom, fullChordPositionsAtom, setChordDegreeAtom } from "../store/chordOverlayAtoms";
+import { hasOutsideChordMembersAtom } from "../store/composableSelectors";
+import { currentTuningAtom } from "../store/layoutAtoms";
 
 export function useChordState() {
   const [chordRoot, setChordRoot] = useAtom(chordRootAtom);

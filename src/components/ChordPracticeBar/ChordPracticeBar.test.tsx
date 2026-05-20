@@ -1,18 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { Provider, createStore } from "jotai";
-import { scaleDegreeColorsEnabledAtom } from "../../store/atoms";
+import { scaleDegreeColorsEnabledAtom } from "../../store/uiAtoms";
 import { ChordPracticeBar } from "./ChordPracticeBar";
 import type { PracticeBarGroup, PracticeBarNote } from "@fretflow/core";
 import { axe } from "../../test-utils/a11y";
 import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
-import {
-  chordOverlayHiddenAtom,
-  chordHiddenNotesAtom,
-  chordRootOverrideAtom,
-  chordQualityOverrideAtom,
-  chordOverlayModeAtom,
-} from "../../store/atoms";
+import { chordOverlayHiddenAtom, chordHiddenNotesAtom, chordRootOverrideAtom, chordQualityOverrideAtom, chordOverlayModeAtom } from "../../store/chordOverlayAtoms";
 
 // ── Fixture notes ────────────────────────────────────────────────────────────
 

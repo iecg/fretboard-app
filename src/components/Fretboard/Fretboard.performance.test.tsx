@@ -3,7 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, render } from "@testing-library/react";
 import { Provider, createStore } from "jotai";
 import { Fretboard } from "./Fretboard";
-import { fretZoomAtom, fingeringPatternAtom, cagedShapesAtom } from "../../store/atoms";
+import { fingeringPatternAtom, cagedShapesAtom } from "../../store/fingeringAtoms";
+import { fretZoomAtom } from "../../store/layoutAtoms";
 
 const received: Array<Record<string, unknown>> = [];
 

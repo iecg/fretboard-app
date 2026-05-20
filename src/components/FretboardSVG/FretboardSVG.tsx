@@ -9,11 +9,9 @@ import {
   ANIMATION_DURATION_FAST,
   ANIMATION_EASE,
 } from "@fretflow/core";
-import {
-  scaleDegreeColorsEnabledAtom,
-  fingeringPatternAtom,
-  intervalPairsAtom,
-} from "../../store/atoms";
+import { fingeringPatternAtom } from "../../store/fingeringAtoms";
+import { intervalPairsAtom } from "../../store/shapeAtoms";
+import { scaleDegreeColorsEnabledAtom } from "../../store/uiAtoms";
 import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
 import styles from "./FretboardSVG.module.css";
 import { useFretboardGeometry } from "./hooks/useFretboardGeometry";

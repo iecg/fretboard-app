@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import clsx from "clsx";
 import { CAGED_SHAPES, type CagedShape, ANIMATION_DURATION_FAST } from "@fretflow/core";
 import { useShapeState } from "../../hooks/useShapeState";
-import { type FingeringPattern } from "../../store/atoms";
+import type { FingeringPattern } from "../../store/fingeringAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { GroupHeader, Prop } from "../Inspector/InspectorGrid";

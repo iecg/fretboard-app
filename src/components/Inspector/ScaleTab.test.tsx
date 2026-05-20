@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
 import { axe } from "../../test-utils/a11y";
-import { rootNoteAtom, scaleNameAtom } from "../../store/atoms";
+import { rootNoteAtom, scaleNameAtom } from "../../store/scaleAtoms";
 import { ScaleTab } from "./ScaleTab";
 
 describe("ScaleTab", () => {

@@ -2,11 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { fireEvent, screen } from "@testing-library/react";
 import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
-import {
-  activeProgressionStepIndexAtom,
-  beatsPerBarAtom,
-  progressionStepsAtom,
-} from "../../store/atoms";
+import { activeProgressionStepIndexAtom, beatsPerBarAtom, progressionStepsAtom } from "../../store/progressionAtoms";
 import { ProgressionTrack } from "./ProgressionTrack";
 
 const fourStepProgression = [

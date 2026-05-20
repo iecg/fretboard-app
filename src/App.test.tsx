@@ -17,7 +17,8 @@ import { k } from "./test-utils/storage";
 // Mock child components to isolate App-level wiring (state -> rendered tree).
 vi.mock("./components/Fretboard/Fretboard", async () => {
   const { useAtomValue } = await import("jotai");
-  const { rootNoteAtom, colorNotesAtom, shapeDataAtom } = await import("./store/atoms");
+  const { rootNoteAtom, colorNotesAtom } = await import("./store/scaleAtoms");
+  const { shapeDataAtom } = await import("./store/shapeAtoms");
   return {
     Fretboard: ({ stringRowPx }: { stringRowPx?: number }) => {
       const rootNote = useAtomValue(rootNoteAtom);
@@ -38,7 +39,8 @@ vi.mock("./components/Fretboard/Fretboard", async () => {
 
 vi.mock("./components/CircleOfFifths/CircleOfFifths", async () => {
   const { useAtomValue, useSetAtom } = await import("jotai");
-  const { rootNoteAtom, setRootNoteAtom } = await import("./store/atoms");
+  const { rootNoteAtom } = await import("./store/scaleAtoms");
+  const { setRootNoteAtom } = await import("./store/actions");
   return {
     CircleOfFifths: () => {
       const rootNote = useAtomValue(rootNoteAtom);

@@ -1,6 +1,6 @@
 import { useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
-import { themeAtom } from "../store/atoms";
+import { themeAtom } from "../store/uiAtoms";
 
 export type ResolvedTheme = "modern-dark" | "modern-light";
 

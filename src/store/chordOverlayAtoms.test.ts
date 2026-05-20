@@ -24,7 +24,7 @@ import {
 } from "./chordOverlayAtoms";
 import { allChordMembersAtom } from "./composableSelectors";
 import { progressionStepsAtom } from "./progressionAtoms";
-import { chordSourceIsProgressionAtom } from "./atoms";
+import { chordSourceIsProgressionAtom } from "./chordOverlayAtoms";
 import { fingeringPatternAtom } from "./fingeringAtoms";
 import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";

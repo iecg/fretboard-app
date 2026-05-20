@@ -2,18 +2,10 @@
 import { describe, expect, it } from "vitest";
 import { screen } from "@testing-library/react";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
-import {
-  chordRootAtom,
-  chordTypeAtom,
-  chordDegreeAtom,
-  cagedShapesAtom,
-  fingeringPatternAtom,
-  fretStartAtom,
-  fretEndAtom,
-  progressionStepsAtom,
-  progressionTempoBpmAtom,
-  tuningNameAtom,
-} from "../../store/atoms";
+import { chordRootAtom, chordTypeAtom, chordDegreeAtom } from "../../store/chordOverlayAtoms";
+import { cagedShapesAtom, fingeringPatternAtom } from "../../store/fingeringAtoms";
+import { fretStartAtom, fretEndAtom, tuningNameAtom } from "../../store/layoutAtoms";
+import { progressionStepsAtom, progressionTempoBpmAtom } from "../../store/progressionAtoms";
 import { StatusBar } from "./StatusBar";
 
 describe("StatusBar", () => {

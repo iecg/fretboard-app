@@ -1,31 +1,13 @@
 import { useMemo } from "react";
 import { useAtomValue } from "jotai";
-import {
-  currentTuningAtom,
-  rootNoteAtom,
-  scaleNameAtom,
-  fretStartAtom,
-  fretEndAtom,
-  displayFormatAtom,
-  useFlatsAtom,
-  noteSemanticMapAtom,
-  effectiveShapeDataAtom,
-  autoCenterTargetAtom,
-  recenterKeyAtom,
-  chordTonesAtom,
-  chordRootAtom,
-  chordFretSpreadAtom,
-  practiceLensAtom,
-  effectiveColorNotesAtom,
-  effectiveHiddenNotesAtom,
-  fingeringPatternAtom,
-  cagedShapesAtom,
-  npsPositionAtom,
-  fullChordMatchesAtom,
-  voicingConnectorsAtom,
-  chordScopeToPositionAtom,
-  activePositionAtom,
-} from "../store/atoms";
+import { chordTonesAtom, chordRootAtom, chordFretSpreadAtom, practiceLensAtom, fullChordMatchesAtom, voicingConnectorsAtom } from "../store/chordOverlayAtoms";
+import { chordScopeToPositionAtom, activePositionAtom } from "../store/chordScope";
+import { recenterKeyAtom, fingeringPatternAtom, cagedShapesAtom, npsPositionAtom } from "../store/fingeringAtoms";
+import { currentTuningAtom, fretStartAtom, fretEndAtom } from "../store/layoutAtoms";
+import { noteSemanticMapAtom } from "../store/practiceLensAtoms";
+import { rootNoteAtom, scaleNameAtom, useFlatsAtom, effectiveColorNotesAtom, effectiveHiddenNotesAtom } from "../store/scaleAtoms";
+import { effectiveShapeDataAtom, autoCenterTargetAtom } from "../store/shapeAtoms";
+import { displayFormatAtom } from "../store/uiAtoms";
 import type { CagedShape, Voicing, VoicingNote, ShapePolygon } from "@fretflow/core";
 import type { BoxBound } from "../components/FretboardSVG/utils/semantics";
 

@@ -5,7 +5,9 @@ import userEvent from "@testing-library/user-event";
 import { Provider, createStore } from "jotai";
 import { Fretboard } from "../Fretboard/Fretboard";
 import { STANDARD_TUNING } from "@fretflow/core";
-import { fretEndAtom, fretStartAtom, fretZoomAtom, progressionStepsAtom, scaleDegreeColorsEnabledAtom } from "../../store/atoms";
+import { fretEndAtom, fretStartAtom, fretZoomAtom } from "../../store/layoutAtoms";
+import { progressionStepsAtom } from "../../store/progressionAtoms";
+import { scaleDegreeColorsEnabledAtom } from "../../store/uiAtoms";
 import { axe } from "../../test-utils/a11y";
 
 // Mock audio synth

@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { useResolvedTheme } from "./useResolvedTheme";
-import { themeAtom } from "../store/atoms";
+import { themeAtom } from "../store/uiAtoms";
 import { createStore, Provider } from "jotai";
 import React from "react";
 

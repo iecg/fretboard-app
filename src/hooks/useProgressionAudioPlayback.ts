@@ -15,7 +15,7 @@ import {
   pauseTimeline,
   setActiveStep,
 } from "../progressions/audio/timeline";
-import { isMutedAtom } from "../store/atoms";
+import { isMutedAtom } from "../store/audioAtoms";
 import { resolveBassLineNotes, resolveChordVoicing } from "../progressions/progressionAudio";
 import {
   findNextResolvableStepIndex,

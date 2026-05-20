@@ -1,12 +1,8 @@
 import { useAtom } from "jotai";
-import {
-  fretStartAtom,
-  fretEndAtom,
-  accidentalModeAtom,
-  enharmonicDisplayAtom,
-  scaleDegreeColorsEnabledAtom,
-  displayFormatAtom,
-} from "../../store/atoms";
+import { enharmonicDisplayAtom } from "../../store/audioAtoms";
+import { fretStartAtom, fretEndAtom } from "../../store/layoutAtoms";
+import { accidentalModeAtom } from "../../store/scaleAtoms";
+import { scaleDegreeColorsEnabledAtom, displayFormatAtom } from "../../store/uiAtoms";
 import { MAX_FRET } from "@fretflow/core";
 import { FretRangeControl } from "../FretRangeControl/FretRangeControl";
 import { ToggleBar } from "../ToggleBar/ToggleBar";

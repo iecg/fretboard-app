@@ -2,11 +2,8 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { screen } from "@testing-library/react";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
 import { axe } from "../../test-utils/a11y";
-import {
-  progressionStepsAtom,
-  rootNoteAtom,
-  scaleNameAtom,
-} from "../../store/atoms";
+import { progressionStepsAtom } from "../../store/progressionAtoms";
+import { rootNoteAtom, scaleNameAtom } from "../../store/scaleAtoms";
 import { ProgressionTab } from "./ProgressionTab";
 
 const SEEDS = [

@@ -1,6 +1,6 @@
 import { useAtom } from "jotai";
 import clsx from "clsx";
-import { themeAtom } from "../../../store/atoms";
+import { themeAtom } from "../../../store/uiAtoms";
 import { ToggleBar } from "../../ToggleBar/ToggleBar";
 import { OverlaySection, OverlayFieldHeader } from "../shared";
 import { THEME_OPTIONS, SETTING_FIELDS } from "../constants";

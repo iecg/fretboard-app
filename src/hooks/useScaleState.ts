@@ -1,21 +1,6 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import {
-  rootNoteAtom,
-  scaleNameAtom,
-  scaleBrowseModeAtom,
-  scaleNotesAtom,
-  colorNotesAtom,
-  activeBrowseOptionAtom,
-  scaleLabelAtom,
-  setRootNoteAtom,
-  setScaleNameAtom,
-  useFlatsAtom,
-  hiddenNotesAtom,
-  toggleHiddenNoteAtom,
-  degreeChipsAtom,
-  scaleVisibleAtom,
-  toggleScaleVisibleAtom,
-} from "../store/atoms";
+import { setRootNoteAtom, setScaleNameAtom } from "../store/actions";
+import { rootNoteAtom, scaleNameAtom, scaleBrowseModeAtom, scaleNotesAtom, colorNotesAtom, activeBrowseOptionAtom, scaleLabelAtom, useFlatsAtom, hiddenNotesAtom, toggleHiddenNoteAtom, degreeChipsAtom, scaleVisibleAtom, toggleScaleVisibleAtom } from "../store/scaleAtoms";
 
 export function useScaleState() {
   const rootNote = useAtomValue(rootNoteAtom);

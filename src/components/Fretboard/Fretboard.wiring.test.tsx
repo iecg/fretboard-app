@@ -3,18 +3,11 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render } from "@testing-library/react";
 import { Provider, createStore } from "jotai";
 import { STANDARD_TUNING } from "@fretflow/core";
-import {
-  cagedShapesAtom,
-  chordOverlayModeAtom,
-  chordRootAtom,
-  chordScopeToPositionAtom,
-  chordTypeAtom,
-  fingeringPatternAtom,
-  fullChordsEnabledAtom,
-  progressionStepsAtom,
-  rootNoteAtom,
-  scaleNameAtom,
-} from "../../store/atoms";
+import { chordOverlayModeAtom, chordRootAtom, chordTypeAtom, fullChordsEnabledAtom } from "../../store/chordOverlayAtoms";
+import { chordScopeToPositionAtom } from "../../store/chordScope";
+import { cagedShapesAtom, fingeringPatternAtom } from "../../store/fingeringAtoms";
+import { progressionStepsAtom } from "../../store/progressionAtoms";
+import { rootNoteAtom, scaleNameAtom } from "../../store/scaleAtoms";
 import { Fretboard } from "./Fretboard";
 
 const fretboardSvgSpy = vi.fn();

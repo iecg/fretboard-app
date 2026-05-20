@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from "vitest";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
-import { themeAtom } from "../../store/atoms";
+import { themeAtom } from "../../store/uiAtoms";
 import { FretboardBackground } from "./FretboardBackground";
 import { axe } from "../../test-utils/a11y";
 
