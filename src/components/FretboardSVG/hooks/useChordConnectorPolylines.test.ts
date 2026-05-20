@@ -5,15 +5,17 @@ import {
   buildChordConnectorPolylines,
   MAX_PLAYABLE_FRET_POSITIONS,
   CHORD_TONE_CLASSES,
+  useChordConnectorPolylines,
+  INVERSION_SLOTS,
+  inversionPaletteIndex,
+} from "./useChordConnectorPolylines";
+import {
   clampConnectorRadiusToYBounds,
   CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
   CHORD_CONNECTOR_RADIUS_FACTORS,
   computeChordConnectorRadiusPx,
   resolveConnectorRadiusPx,
-  useChordConnectorPolylines,
-  INVERSION_SLOTS,
-  inversionPaletteIndex,
-} from "./useChordConnectorPolylines";
+} from "../utils/connectorRadius";
 import type { NoteData } from "./useNoteData";
 import { chordRootVisualRadiusPx } from "../utils/noteSizing";
 

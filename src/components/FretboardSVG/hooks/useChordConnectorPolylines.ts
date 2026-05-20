@@ -4,23 +4,11 @@ import { offsetOpenPolylinePath } from "../utils/pathGeometry";
 import { NOTES, type CagedShape } from "@fretflow/core";
 import {
   type ConnectorYBounds,
-  clampConnectorRadiusToYBounds,
   resolveConnectorRadiusPx,
   applyConnectorRadiusFloor,
   computeChordConnectorRadiusPx,
   CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
-  CHORD_CONNECTOR_RADIUS_FACTORS,
 } from "../utils/connectorRadius";
-
-export type { ConnectorYBounds };
-export {
-  clampConnectorRadiusToYBounds,
-  resolveConnectorRadiusPx,
-  applyConnectorRadiusFloor,
-  computeChordConnectorRadiusPx,
-  CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
-  CHORD_CONNECTOR_RADIUS_FACTORS,
-};
 
 /**
  * Count the number of distinct fret positions spanned by the **fretted** notes
