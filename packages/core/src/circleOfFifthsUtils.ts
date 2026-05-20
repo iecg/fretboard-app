@@ -1,4 +1,5 @@
-import { ENHARMONICS, getNoteDisplayInScale, formatAccidental } from "./theory";
+import { getNoteDisplayInScale, formatAccidental } from "./theory";
+import * as Note from "@tonaljs/note";
 
 /** Computes the primary + enharmonic label pair for a Circle of Fifths slice.
  *  Exported for testability. */
@@ -17,9 +18,9 @@ export function getCircleNoteLabels(
 
   if (mode === "on") {
     const primary = formatAccidental(display);
-    // Look up the opposite spelling directly from ENHARMONICS
-    const enh = ENHARMONICS[display];
-    // Guard: if resolution yields the same as primary, suppress duplicate
+    // Use Tonal to resolve the enharmonic spelling
+    const enh = Note.enharmonic(display);
+    // Guard: if resolution yields the same as primary (e.g. naturals), suppress duplicate
     if (!enh || formatAccidental(enh) === primary) {
       return { primary, enharmonic: null };
     }
@@ -31,8 +32,10 @@ export function getCircleNoteLabels(
     return { primary: formatAccidental(display), enharmonic: formatAccidental(note) };
   }
   if (note.includes('#')) {
-    const enh = ENHARMONICS[note] ?? null;
-    return { primary: formatAccidental(note), enharmonic: enh ? formatAccidental(enh) : null };
+    const enh = Note.enharmonic(note);
+    // Guard: if Tonal returns the same note (no true enharmonic), suppress
+    const formatted = enh && enh !== note ? formatAccidental(enh) : null;
+    return { primary: formatAccidental(note), enharmonic: formatted };
   }
   return { primary: formatAccidental(note), enharmonic: null };
 }

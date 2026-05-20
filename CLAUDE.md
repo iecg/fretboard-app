@@ -32,6 +32,7 @@ pnpm run preview               # preview build locally
 
 - **State:** Jotai atoms under `src/store/`, domain-split across `scaleAtoms`, `chordOverlayAtoms`, `practiceLensAtoms`, `fingeringAtoms`, `shapeAtoms`, `layoutAtoms`, `audioAtoms`, `uiAtoms`, `actions`. Import directly from the relevant domain module (e.g. `import { rootNoteAtom } from "../store/scaleAtoms"`). Components subscribe directly to the atoms they consume (atomic reactivity — no prop drilling).
 - **Domain (pure):** `src/core/` — `theory.ts`, `theoryCatalog.ts`, `guitar.ts`, `degrees.ts`, `circleOfFifthsUtils.ts`, `constants.ts`. Plus the `src/shapes/` package (`templates`, `helpers`, `polygons`, `threeNPS`, `analytics`).
+- **Music theory:** `@fretflow/core`'s theory functions (`getNoteDisplay`, `getChordNotes`, `getScaleNotes`, `getDiatonicChord`, `getKeySignature`, etc.) are backed by [Tonal.js](https://github.com/tonaljs/tonal) (`@tonaljs/note`, `@tonaljs/chord`, `@tonaljs/scale`, `@tonaljs/key`, `@tonaljs/interval`). Naming translation lives in `packages/core/src/lib/tonal.ts`.
 - **Audio:** `GuitarSynth` singleton in `src/core/audio.ts` (Web Audio API).
 - **Persistence:** `atomWithStorage` with keys prefixed via `src/utils/storage.ts`.
 

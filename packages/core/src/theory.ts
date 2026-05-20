@@ -4,6 +4,12 @@ import {
   SCALE_TO_PARENT_MAJOR_OFFSET,
 } from "./theoryCatalog";
 import { getDegreesForScale, getQualityForDegree, type DegreeId } from "./degrees";
+import * as Note from "@tonaljs/note";
+import * as Interval from "@tonaljs/interval";
+import * as Scale from "@tonaljs/scale";
+import * as Key from "@tonaljs/key";
+import { scaleNameToTonal, tonalChordSymbol } from "./lib/tonal";
+import * as Chord from "@tonaljs/chord";
 
 export const NOTES = [
   "C",
@@ -396,11 +402,8 @@ export const CIRCLE_OF_FIFTHS = [
 ];
 
 export function getNoteIndex(noteName: string): number {
-  const norm =
-    ENHARMONICS[noteName] && noteName.includes("b")
-      ? ENHARMONICS[noteName]
-      : noteName;
-  return NOTES.indexOf(norm);
+  const chroma = Note.chroma(noteName);
+  return typeof chroma === "number" && !isNaN(chroma) ? chroma : -1;
 }
 
 export function getNoteDisplay(
@@ -408,16 +411,14 @@ export function getNoteDisplay(
   activeRoot: string,
   useFlats?: boolean,
 ): string {
-  const normNote =
-    ENHARMONICS[noteName] && noteName.includes("b")
-      ? ENHARMONICS[noteName]
-      : noteName;
-  const flats = useFlats ?? FLAT_KEYS.includes(activeRoot);
-
-  if (flats && normNote.includes("#")) return ENHARMONICS[normNote] || normNote;
-  if (!flats && normNote.includes("b"))
-    return ENHARMONICS[normNote] || normNote;
-  return normNote;
+  const wantsFlats = useFlats ?? FLAT_KEYS.includes(activeRoot);
+  if (wantsFlats && noteName.includes("#")) {
+    return Note.enharmonic(noteName);
+  }
+  if (!wantsFlats && noteName.includes("b")) {
+    return Note.enharmonic(noteName);
+  }
+  return noteName;
 }
 
 export function formatAccidental(s: string): string {
@@ -429,73 +430,52 @@ export function formatAccidental(s: string): string {
 }
 
 
-const LETTER_NAMES = ["C", "D", "E", "F", "G", "A", "B"];
-const LETTER_PITCHES: Record<string, number> = {
-  C: 0,
-  D: 2,
-  E: 4,
-  F: 5,
-  G: 7,
-  A: 9,
-  B: 11,
-};
-
 export function getNoteDisplayInScale(
   noteName: string,
   rootNote: string,
   scaleIntervals: number[],
   useFlats?: boolean,
 ): string {
-  // Apply scale-aware spelling for 7-note scales
   if (scaleIntervals.length !== 7) {
     return getNoteDisplay(noteName, rootNote, useFlats);
   }
 
-  // Normalize to sharps for internal lookup
-  const normNote =
-    noteName.includes("b") && ENHARMONICS[noteName]
-      ? ENHARMONICS[noteName]
-      : noteName;
-  const rootNorm =
-    rootNote.includes("b") && ENHARMONICS[rootNote]
-      ? ENHARMONICS[rootNote]
-      : rootNote;
-
-  const rootIdx = NOTES.indexOf(rootNorm);
-  const noteIdx = NOTES.indexOf(normNote);
-  if (rootIdx === -1 || noteIdx === -1)
+  // Use Tonal for chroma calculation; matches the legacy NOTES.indexOf behavior.
+  const rootChroma = Note.chroma(rootNote);
+  const noteChroma = Note.chroma(noteName);
+  if (
+    typeof rootChroma !== "number" || isNaN(rootChroma) ||
+    typeof noteChroma !== "number" || isNaN(noteChroma)
+  ) {
     return getNoteDisplay(noteName, rootNote, useFlats);
+  }
 
-  const interval = (noteIdx - rootIdx + 12) % 12;
-
+  const interval = (noteChroma - rootChroma + 12) % 12;
   const degreeIndex = scaleIntervals.indexOf(interval);
   if (degreeIndex === -1) {
     return getNoteDisplay(noteName, rootNote, useFlats);
   }
 
-  const rootDisplay = getNoteDisplay(rootNote, rootNote, useFlats);
-  const rootLetter = rootDisplay.charAt(0);
-  const rootLetterIdx = LETTER_NAMES.indexOf(rootLetter);
+  const spelledRoot = getNoteDisplay(rootNote, rootNote, useFlats);
+
+  // Heptatonic letter cycle — used only for scale-aware spelling, scoped to this function.
+  const letterNames = ["C", "D", "E", "F", "G", "A", "B"];
+  const letterPitches: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+
+  const rootLetter = spelledRoot.charAt(0);
+  const rootLetterIdx = letterNames.indexOf(rootLetter);
   if (rootLetterIdx === -1) return getNoteDisplay(noteName, rootNote, useFlats);
 
-  const expectedLetter = LETTER_NAMES[(rootLetterIdx + degreeIndex) % 7];
-  const expectedBasePitch = LETTER_PITCHES[expectedLetter];
-  const targetPitch = (rootIdx + interval) % 12;
-
+  const expectedLetter = letterNames[(rootLetterIdx + degreeIndex) % 7];
+  const expectedBasePitch = letterPitches[expectedLetter];
+  const targetPitch = (rootChroma + interval) % 12;
   const diff = (targetPitch - expectedBasePitch + 12) % 12;
 
-  if (diff === 0) {
-    return expectedLetter;
-  } else if (diff === 1) {
-    return expectedLetter + "#";
-  } else if (diff === 11) {
-    return expectedLetter + "b";
-  } else if (diff === 2) {
-    return expectedLetter + "##";
-  } else if (diff === 10) {
-    return expectedLetter + "bb";
-  }
-
+  if (diff === 0) return expectedLetter;
+  if (diff === 1) return expectedLetter + "#";
+  if (diff === 11) return expectedLetter + "b";
+  if (diff === 2) return expectedLetter + "##";
+  if (diff === 10) return expectedLetter + "bb";
   return getNoteDisplay(noteName, rootNote, useFlats);
 }
 
@@ -503,19 +483,26 @@ export function getIntervalNotes(
   rootNote: string,
   intervals: number[],
 ): string[] {
-  const rootIndex = getNoteIndex(rootNote);
-  if (rootIndex === -1) return [];
-
-  return intervals.map((interval) => {
-    return NOTES[(rootIndex + interval) % 12];
+  if (getNoteIndex(rootNote) === -1) return [];
+  return intervals.map((semitones) => {
+    const t = Note.transpose(rootNote, Interval.fromSemitones(semitones));
+    // Force sharps-form for chromatic semitone-based operations (matches legacy NOTES contract).
+    const simplified = Note.simplify(t);
+    return simplified.includes("b") ? Note.enharmonic(simplified) : simplified;
   });
 }
 
 export function getScaleNotes(rootNote: string, scaleName: string): string[] {
-  const intervals = SCALES[normalizeScaleName(scaleName)];
-  if (!intervals) return [];
+  const tonalName = scaleNameToTonal(normalizeScaleName(scaleName));
+  if (!tonalName) return [];
   if (getNoteIndex(rootNote) === -1) return [];
-  return getIntervalNotes(rootNote, intervals);
+  const tonalScale = Scale.get(`${rootNote} ${tonalName}`);
+  // Tonal returns spelled notes. Normalize to sharps-form to maintain the
+  // legacy contract (consumers do NOTES.indexOf on the result).
+  return tonalScale.notes.map((n) => {
+    const simplified = Note.simplify(n);
+    return simplified.includes("b") ? Note.enharmonic(simplified) : simplified;
+  });
 }
 
 /**
@@ -532,10 +519,17 @@ export function getScaleSemitones(rootNote: string, scaleName: string): number[]
 }
 
 export function getChordNotes(rootNote: string, chordName: string): string[] {
-  const intervals = CHORDS[chordName];
-  if (!intervals) return [];
-  if (getNoteIndex(rootNote) === -1) return [];
-  return getIntervalNotes(rootNote, intervals);
+  const chroma = Note.chroma(rootNote);
+  if (typeof chroma !== "number" || isNaN(chroma)) return [];
+  const symbol = tonalChordSymbol(rootNote, chordName);
+  if (!symbol) return [];
+  const tonalChord = Chord.get(symbol);
+  if (tonalChord.empty) return [];
+  // Same sharps-form normalization as getIntervalNotes.
+  return tonalChord.notes.map((n) => {
+    const simplified = Note.simplify(n);
+    return simplified.includes("b") ? Note.enharmonic(simplified) : simplified;
+  });
 }
 
 /**
@@ -548,31 +542,25 @@ export function getDivergentNotes(
   scaleName: string,
 ): string[] {
   const resolvedScaleName = normalizeScaleName(scaleName);
-  const intervals = SCALES[resolvedScaleName];
-  if (!intervals || resolvedScaleName.includes("Blues")) return [];
+  if (resolvedScaleName.includes("Blues")) return [];
+  if (resolvedScaleName === "Major Pentatonic" || resolvedScaleName === "Minor Pentatonic") return [];
+  if (resolvedScaleName === "Major" || resolvedScaleName === "Natural Minor") return [];
 
-  // Pentatonic scales are subsets, not modes — no divergence to show
-  if (
-    resolvedScaleName === "Major Pentatonic" ||
-    resolvedScaleName === "Minor Pentatonic"
-  )
-    return [];
-  // Major and Natural Minor are the references themselves
-  if (resolvedScaleName === "Major" || resolvedScaleName === "Natural Minor")
-    return [];
-
-  const isMajorQuality = intervals.includes(4); // contains major 3rd
-  const refIntervals = isMajorQuality
-    ? SCALES["Major"]
-    : SCALES["Natural Minor"];
+  const semis = getScaleSemitones(rootNote, scaleName);
+  if (semis.length === 0) return [];
 
   const rootIdx = NOTES.indexOf(rootNote);
   if (rootIdx === -1) return [];
 
-  const refSet = new Set(refIntervals);
-  return intervals
-    .filter((interval) => !refSet.has(interval))
-    .map((interval) => NOTES[(rootIdx + interval) % 12]);
+  // Convert absolute NOTES indices to relative semitone intervals from root
+  const relativeIntervals = semis.map((s) => (s - rootIdx + 12) % 12);
+  const isMajorQuality = relativeIntervals.includes(4); // contains major 3rd
+  const refName = isMajorQuality ? "Major" : "Natural Minor";
+  const refSemis = new Set(getScaleSemitones(rootNote, refName));
+
+  return semis
+    .filter((semitone) => !refSemis.has(semitone))
+    .map((semitone) => NOTES[semitone]);
 }
 
 // Key signature accidental counts (+ sharps, - flats)
@@ -597,6 +585,10 @@ export const KEY_SIGNATURES: Record<string, number> = {
 };
 
 export function getKeySignature(rootNote: string): number {
+  const tonalKey = Key.majorKey(rootNote);
+  // Tonal returns `alteration` as a positive integer for sharps, negative for flats.
+  if (typeof tonalKey.alteration === "number") return tonalKey.alteration;
+  // Fallback for inputs Tonal does not recognize (rare; preserves legacy behavior).
   return KEY_SIGNATURES[rootNote] ?? 0;
 }
 
@@ -606,27 +598,37 @@ export function getKeySignatureForDisplay(
   useFlats: boolean,
 ): number {
   const offset = SCALE_TO_PARENT_MAJOR_OFFSET[normalizeScaleName(scaleName)] ?? 0;
+  const rootChroma = Note.chroma(rootNote);
+  if (typeof rootChroma !== "number" || isNaN(rootChroma)) {
+    return KEY_SIGNATURES[rootNote] ?? 0;
+  }
 
-  const sharpRoot =
-    rootNote.includes("b") && ENHARMONICS[rootNote]
-      ? ENHARMONICS[rootNote]
-      : rootNote;
-  const rootIdx = NOTES.indexOf(sharpRoot);
-  if (rootIdx === -1) return KEY_SIGNATURES[rootNote] ?? 0;
+  // The "parent major" is the major key whose tonic is `offset` semitones above the current root.
+  const parentMajorRoot = Note.transpose(rootNote, Interval.fromSemitones(offset));
+  const parentSimplified = Note.simplify(parentMajorRoot);
+  const parentSharp = parentSimplified.includes("b") ? Note.enharmonic(parentSimplified) : parentSimplified;
 
-  const parentIdx = (rootIdx + offset) % 12;
-  const parentSharp = NOTES[parentIdx];
-
-  // Preserve user's intended root spelling for sharp-side key signatures
   const originalIsSharp = rootNote.includes("#");
-  if (!originalIsSharp && useFlats && ENHARMONICS[parentSharp]) {
-    const flatName = ENHARMONICS[parentSharp];
-    if (KEY_SIGNATURES[flatName] !== undefined) {
-      return KEY_SIGNATURES[flatName];
+
+  // When root is not sharp-spelled, prefer the flat enharmonic for any parent key that is
+  // naturally on the flat side (alteration < 0). This covers both useFlats=true and the case
+  // where the root itself is flat-spelled (e.g. Ab → parent G# → prefer Ab key sig -4).
+  if (!originalIsSharp) {
+    const flatName = Note.enharmonic(parentSharp);
+    const flatKey = Key.majorKey(flatName);
+    if (typeof flatKey.alteration === "number" && flatKey.alteration < 0) {
+      // Only return the flat sig if: useFlats is true, OR the root itself is flat-spelled
+      // (meaning the user's intent is a flat-side key even when useFlats=false).
+      const rootIsFlat = rootNote.includes("b");
+      if (useFlats || rootIsFlat || flatName === parentMajorRoot) {
+        return flatKey.alteration;
+      }
     }
   }
-  const sig = KEY_SIGNATURES[parentSharp] ?? 0;
-  // Convert flat-equivalent negative signature to enharmonic sharp count
+
+  const tonalKey = Key.majorKey(parentSharp);
+  const sig = typeof tonalKey.alteration === "number" ? tonalKey.alteration : (KEY_SIGNATURES[parentSharp] ?? 0);
+
   if (originalIsSharp && sig < 0) {
     return 12 + sig;
   }
@@ -723,10 +725,12 @@ export function getDiatonicChord(
   if (!semitoneEntry) return undefined;
   const semitone = Number(semitoneEntry[0]);
 
-  // Compute the absolute root note (sharps-only via NOTES)
-  const rootIndex = getNoteIndex(tonicNote);
-  if (rootIndex === -1) return undefined;
-  const root = NOTES[(rootIndex + semitone) % 12];
+  // Compute the absolute root note via Tonal transposition.
+  const tonicChroma = Note.chroma(tonicNote);
+  if (typeof tonicChroma !== "number" || isNaN(tonicChroma)) return undefined;
+  const transposed = Note.transpose(tonicNote, Interval.fromSemitones(semitone));
+  const simplified = Note.simplify(transposed);
+  const root = simplified.includes("b") ? Note.enharmonic(simplified) : simplified;
 
   // Resolve chord quality via the degree quality table
   const quality = getQualityForDegree(degreeId, scaleName);

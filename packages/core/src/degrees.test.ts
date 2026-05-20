@@ -6,6 +6,7 @@ import {
   getDegreesForScale,
   getQualityForDegree,
   remapDegreeForScale,
+  _validateDiatonicQualitiesAgainstTonal,
 } from './degrees';
 
 const BASE_DEGREE_COLOR_KEYS = ["I", "II", "III", "IV", "V", "VI", "VII"] as const;
@@ -758,5 +759,14 @@ describe('remapDegreeForScale', () => {
   it('Major → Harmonic Minor: V (semitone 7) → V (semitone 7) — both Major Triad', () => {
     // Harmonic Minor's V is intentionally raised — semitone 7 stays Major.
     expect(remapDegreeForScale('V', 'Major', 'Harmonic Minor')).toBe('V');
+  });
+});
+
+describe("diatonic-quality alignment with Tonal (drift detection)", () => {
+  it("Major diatonic triads match Tonal", () => {
+    expect(_validateDiatonicQualitiesAgainstTonal("Major")).toBe(true);
+  });
+  it("Natural Minor diatonic triads match Tonal", () => {
+    expect(_validateDiatonicQualitiesAgainstTonal("Natural Minor")).toBe(true);
   });
 });
