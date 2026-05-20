@@ -3,6 +3,7 @@ import { describe, it, expect } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
 import { FingeringPatternControls } from "../FingeringPatternControls/FingeringPatternControls";
 import { createStore, Provider } from "jotai";
+import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
 import {
   fingeringPatternAtom,
   cagedShapesAtom,
@@ -67,7 +68,7 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
     expect(screen.queryAllByText("Shape")).toHaveLength(0);
   });
 
-  it('shows Position section only when fingeringPattern === "3nps"', () => {
+  it('shows 3NPS Position sub-control only when fingeringPattern === "3nps"', () => {
     const store = createStore();
     const { rerender } = render(
       <Provider store={store}>
@@ -75,6 +76,9 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
       </Provider>
     );
 
+    // "Position" cluster label is always present after Task 5 refactor.
+    // The 3NPS sub-control adds a Position ToggleBar (1-7 positions); verify it
+    // by checking for the "7" button which only appears in that sub-control.
     act(() => {
       store.set(fingeringPatternAtom, "3nps");
     });
@@ -83,7 +87,7 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
         <FingeringPatternControls />
       </Provider>
     );
-    expect(screen.getByText("Position")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "7" })).toBeInTheDocument();
 
     act(() => {
       store.set(fingeringPatternAtom, "none");
@@ -93,7 +97,27 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
         <FingeringPatternControls />
       </Provider>
     );
-    expect(screen.queryByText("Position")).toBeNull();
+    expect(screen.queryByRole("button", { name: "7" })).toBeNull();
+  });
+
+  it("renders Position and String study clusters (Task 5)", () => {
+    renderWithAtoms(<FingeringPatternControls />);
+    // ToggleBar applies the label as role="group" aria-label
+    expect(screen.getByRole("group", { name: /^position$/i })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: /string study/i })).toBeInTheDocument();
+  });
+
+  it("selecting Position clears String study selection (Task 5)", () => {
+    renderWithAtoms(<FingeringPatternControls />, [[fingeringPatternAtom, "one-string"]]);
+    // 1-String is initially pressed
+    const oneString = screen.getByRole("button", { name: /^1-String$/ });
+    expect(oneString).toHaveAttribute("aria-pressed", "true");
+
+    fireEvent.click(screen.getByRole("button", { name: /^CAGED$/ }));
+
+    // CAGED becomes pressed; 1-String unpresses
+    expect(screen.getByRole("button", { name: /^CAGED$/ })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: /^1-String$/ })).toHaveAttribute("aria-pressed", "false");
   });
 
   it("handles shift-click multi-select for CAGED shapes", () => {

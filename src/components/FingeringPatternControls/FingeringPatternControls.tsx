@@ -68,17 +68,43 @@ export function FingeringPatternControls() {
     <>
       <GroupHeader>{t("inspector.groupFingering")}</GroupHeader>
 
-      <Prop label={t("inspector.pattern")} span={2}>
+      <Prop label={t("inspector.positionCluster")} span={2}>
         <ToggleBar
-          label={t("inspector.pattern")}
+          label={t("inspector.positionCluster")}
           options={[
             { value: "none", label: "None" },
             { value: "caged", label: "CAGED" },
             { value: "3nps", label: "3NPS" },
+          ]}
+          // Sentinel: when the active pattern belongs to the String study cluster,
+          // no button in this cluster should appear pressed. Cast through a member
+          // type so TypeScript is satisfied — ToggleBar compares value === option.value
+          // and finds no match for the sentinel.
+          value={
+            (fingeringPattern === "none" ||
+            fingeringPattern === "caged" ||
+            fingeringPattern === "3nps"
+              ? fingeringPattern
+              : "__inactive__") as "none"
+          }
+          onChange={(v) => setFingeringPattern(v as FingeringPattern)}
+        />
+      </Prop>
+
+      <Prop label={t("inspector.stringStudyCluster")} span={2}>
+        <ToggleBar
+          label={t("inspector.stringStudyCluster")}
+          options={[
             { value: "one-string", label: "1-String" },
             { value: "two-strings", label: "2-Strings" },
           ]}
-          value={fingeringPattern}
+          // Sentinel: when the active pattern belongs to the Position cluster,
+          // no button in this cluster should appear pressed.
+          value={
+            (fingeringPattern === "one-string" || fingeringPattern === "two-strings"
+              ? fingeringPattern
+              : "__inactive__") as "one-string"
+          }
           onChange={(v) => setFingeringPattern(v as FingeringPattern)}
         />
       </Prop>
