@@ -187,6 +187,11 @@ export function rawStringStorage<T extends string>() {
   return createStorage<T>();
 }
 
+export function stringValidator(opts: { nullable?: boolean } = {}) {
+  return (v: unknown): v is string | null =>
+    typeof v === "string" || (opts.nullable === true && v === null);
+}
+
 export const booleanStorage = createStorage<boolean>({
   serialize: (v) => String(v),
   deserialize: (v) => {

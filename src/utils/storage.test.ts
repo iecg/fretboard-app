@@ -1,5 +1,23 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { withStorageErrorBoundary } from "./storage";
+import { stringValidator, withStorageErrorBoundary } from "./storage";
+
+describe("stringValidator", () => {
+  const isStr = stringValidator();
+  it("accepts strings", () => expect(isStr("hello")).toBe(true));
+  it("accepts empty strings", () => expect(isStr("")).toBe(true));
+  it("rejects non-strings", () => {
+    expect(isStr(1)).toBe(false);
+    expect(isStr(null)).toBe(false);
+    expect(isStr(undefined)).toBe(false);
+    expect(isStr({})).toBe(false);
+  });
+  it("supports nullable variant", () => {
+    const nullable = stringValidator({ nullable: true });
+    expect(nullable(null)).toBe(true);
+    expect(nullable("x")).toBe(true);
+    expect(nullable(1)).toBe(false);
+  });
+});
 
 describe("withStorageErrorBoundary", () => {
   afterEach(() => {
