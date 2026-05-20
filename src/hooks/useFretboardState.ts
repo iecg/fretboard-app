@@ -27,6 +27,7 @@ import {
   activePositionAtom,
 } from "../store/atoms";
 import type { CagedShape, Voicing, VoicingNote, ShapePolygon } from "@fretflow/core";
+import type { BoxBound } from "../components/FretboardSVG/utils/semantics";
 
 type ActivePatternType = "caged" | "3nps" | "none";
 export type ActiveShapeType = CagedShape | number | CagedShape[] | undefined;
@@ -117,6 +118,56 @@ function selectFullChordMatchesForCagedPosition(
   return Array.from(byPosition.values());
 }
 
+/**
+ * 3NPS analogue of `scoreFullChordForCagedPosition`. Where CAGED uses polygon
+ * vertices to derive per-string left/right fret bounds, 3NPS exposes per-string
+ * `boxBounds` directly. Same `outsideCount ≤ 2` tolerance and `chordFretSpread`
+ * buffer so the existing comparator handles both. `selectedShapePriority` is
+ * unused for 3NPS and stays at 0.
+ */
+function scoreFullChordForThreeNpsPosition(
+  match: Voicing,
+  boxBounds: BoxBound[],
+  chordFretSpread: number,
+): FullChordCandidateScore | null {
+  const outsideDistances = match.notes.map((note) => {
+    const b = boxBounds[note.stringIndex];
+    if (!b) return Number.POSITIVE_INFINITY;
+    const minFret = b.minFret - chordFretSpread;
+    const maxFret = b.maxFret + chordFretSpread;
+    if (note.fretIndex < minFret) return minFret - note.fretIndex;
+    if (note.fretIndex > maxFret) return note.fretIndex - maxFret;
+    return 0;
+  });
+  const outsideCount = outsideDistances.filter((d) => d > 0).length;
+  if (outsideCount > 2) return null;
+  return {
+    match,
+    outsideCount,
+    totalOutsideDistance: outsideDistances.reduce((sum, d) => sum + d, 0),
+    maxOutsideDistance: Math.max(...outsideDistances),
+    selectedShapePriority: 0,
+  };
+}
+
+function selectFullChordMatchesForThreeNpsPosition(
+  matches: Voicing[],
+  boxBounds: BoxBound[],
+  chordFretSpread: number,
+): Voicing[] {
+  const byPosition = new Map<string, FullChordCandidateScore>();
+  for (const match of matches) {
+    const score = scoreFullChordForThreeNpsPosition(match, boxBounds, chordFretSpread);
+    if (score === null) continue;
+    const positionKey = getPositionKey(match);
+    const previous = byPosition.get(positionKey);
+    if (!previous || compareFullChordCandidateScores(score, previous) < 0) {
+      byPosition.set(positionKey, score);
+    }
+  }
+  return Array.from(byPosition.values()).map((s) => s.match);
+}
+
 export function useFretboardState() {
   const currentTuning = useAtomValue(currentTuningAtom);
   const rootNote = useAtomValue(rootNoteAtom);
@@ -174,24 +225,33 @@ export function useFretboardState() {
     shapeScope = npsPosition !== undefined && npsPosition > 0 ? "single" : "global";
   }
 
-  const visibleFullChordMatches = useMemo(
-    () =>
-      chordScopeToPosition && activePosition && fingeringPattern === "caged"
-        ? selectFullChordMatchesForCagedPosition(
-            fullChordMatches,
-            shapePolygons,
-            cagedShapes,
-          )
-        : fullChordMatches,
-    [
-      chordScopeToPosition,
-      activePosition,
-      fingeringPattern,
-      fullChordMatches,
-      shapePolygons,
-      cagedShapes,
-    ],
-  );
+  const visibleFullChordMatches = useMemo(() => {
+    if (!chordScopeToPosition || !activePosition) return fullChordMatches;
+    if (fingeringPattern === "caged") {
+      return selectFullChordMatchesForCagedPosition(
+        fullChordMatches,
+        shapePolygons,
+        cagedShapes,
+      );
+    }
+    if (fingeringPattern === "3nps") {
+      return selectFullChordMatchesForThreeNpsPosition(
+        fullChordMatches,
+        boxBounds,
+        chordFretSpread,
+      );
+    }
+    return fullChordMatches;
+  }, [
+    chordScopeToPosition,
+    activePosition,
+    fingeringPattern,
+    fullChordMatches,
+    shapePolygons,
+    cagedShapes,
+    boxBounds,
+    chordFretSpread,
+  ]);
   const visibleFullChordPositions = useMemo(
     () =>
       Array.from(
