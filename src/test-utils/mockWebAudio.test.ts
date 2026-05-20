@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { createMockGain } from "./mockWebAudio";
+import { createMockGain, createMockOsc } from "./mockWebAudio";
 
 describe("createMockGain", () => {
   it("returns a GainNode-shaped object with instrumented methods", () => {
@@ -15,5 +15,17 @@ describe("createMockGain", () => {
     const a = createMockGain();
     const b = createMockGain();
     expect(a.connect(b)).toBe(b);
+  });
+});
+
+describe("createMockOsc", () => {
+  it("returns an OscillatorNode-shaped object", () => {
+    const osc = createMockOsc();
+    expect(osc.frequency.value).toBe(440);
+    expect(osc.detune.value).toBe(0);
+    expect(typeof osc.start).toBe("function");
+    expect(typeof osc.stop).toBe("function");
+    expect(typeof osc.setPeriodicWave).toBe("function");
+    expect(osc.type).toBe("sine");
   });
 });
