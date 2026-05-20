@@ -7,7 +7,7 @@ import { fileURLToPath, URL } from 'node:url'
 const { version } = JSON.parse(readFileSync('./package.json', 'utf-8')) as { version: string }
 
 export default defineConfig({
-  base: '/fretboard-app/',
+  base: process.env.VITE_MOBILE === 'true' ? './' : '/fretboard-app/',
   plugins: [react()],
   resolve: {
     alias: {

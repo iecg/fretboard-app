@@ -18,6 +18,7 @@
   "scripts": {
     "dev": "vite",
     "build": "pnpm --filter @fretflow/core run build && tsc -b && vite build",
+    "build:mobile": "VITE_MOBILE=true pnpm run build",
     "build:types": "pnpm --filter @fretflow/core run build && tsc -b",
     "lint": "eslint . && stylelint 'src/**/*.css'",
     "preview": "vite preview",
