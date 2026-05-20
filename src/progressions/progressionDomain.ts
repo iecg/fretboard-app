@@ -194,193 +194,66 @@ export const DEFAULT_PROGRESSION_TEMPO_BPM = 90;
 export const MIN_PROGRESSION_TEMPO_BPM = 40;
 export const MAX_PROGRESSION_TEMPO_BPM = 240;
 
-const bar = (degree: DegreeId, value = 1, qualityOverride: string | null = null) => ({
-  degree,
-  duration: { value, unit: "bar" as const },
-  qualityOverride,
-});
+// Preset steps are stored as a compact DSL string of space-separated tokens.
+// Token grammar: DEGREE[*BARS][:7]
+//   *N  → step lasts N bars (default 1)
+//   :7  → quality override is "Dominant 7th"
+// Examples: "I V vi IV"  ·  "I*4:7 IV*2:7 V:7"
+function parseSteps(spec: string): Array<Omit<ProgressionStep, "id">> {
+  return spec.split(/\s+/).filter(Boolean).map((tok) => {
+    const m = tok.match(/^([ivIV]+)(?:\*(\d+))?(?::(7))?$/);
+    if (!m) throw new Error(`Invalid preset step token: ${tok}`);
+    const [, degree, value, q] = m;
+    return {
+      degree: degree as DegreeId,
+      duration: { value: value ? Number(value) : 1, unit: "bar" as const },
+      qualityOverride: q === "7" ? "Dominant 7th" : null,
+    };
+  });
+}
 
-export const PROGRESSION_PRESETS: readonly ProgressionPreset[] = [
-  {
-    id: "one-five-six-four",
-    label: "I-V-vi-IV",
-    category: "pop-rock",
-    steps: [bar("I"), bar("V"), bar("vi"), bar("IV")],
-  },
-  {
-    id: "two-five-one",
-    label: "ii-V-I",
-    category: "jazz",
-    steps: [bar("ii"), bar("V", 1, "Dominant 7th"), bar("I")],
-  },
-  {
-    id: "one-six-four-five",
-    label: "I-vi-IV-V",
-    category: "pop-rock",
-    steps: [bar("I"), bar("vi"), bar("IV"), bar("V")],
-  },
-  {
-    id: "one-four-five",
-    label: "I-IV-V",
-    category: "folk",
-    steps: [bar("I"), bar("IV"), bar("V")],
-  },
-  {
-    id: "twelve-bar-blues",
-    label: "12-bar blues",
-    category: "blues",
-    steps: [
-      bar("I", 4, "Dominant 7th"),
-      bar("IV", 2, "Dominant 7th"),
-      bar("I", 2, "Dominant 7th"),
-      bar("V", 1, "Dominant 7th"),
-      bar("IV", 1, "Dominant 7th"),
-      bar("I", 1, "Dominant 7th"),
-      bar("V", 1, "Dominant 7th"),
-    ],
-  },
-  // pop-rock
-  {
-    id: "vi-iv-i-v",
-    label: "vi-IV-I-V",
-    category: "pop-rock",
-    steps: [bar("vi"), bar("IV"), bar("I"), bar("V")],
-  },
-  {
-    id: "i-iv-vi-v",
-    label: "I-IV-vi-V",
-    category: "pop-rock",
-    steps: [bar("I"), bar("IV"), bar("vi"), bar("V")],
-  },
-  {
-    id: "canon",
-    label: "Canon (I-V-vi-iii-IV-I-IV-V)",
-    category: "pop-rock",
-    steps: [bar("I"), bar("V"), bar("vi"), bar("iii"), bar("IV"), bar("I"), bar("IV"), bar("V")],
-  },
-  // blues
-  {
-    id: "eight-bar-blues",
-    label: "8-bar blues",
-    category: "blues",
-    steps: [
-      bar("I", 2, "Dominant 7th"),
-      bar("IV", 2, "Dominant 7th"),
-      bar("I", 1, "Dominant 7th"),
-      bar("V", 1, "Dominant 7th"),
-      bar("I", 1, "Dominant 7th"),
-      bar("V", 1, "Dominant 7th"),
-    ],
-  },
-  {
-    id: "minor-blues",
-    label: "Minor blues",
-    category: "blues",
-    steps: [
-      bar("i", 4),
-      bar("iv", 2),
-      bar("i", 2),
-      bar("V", 1),
-      bar("iv", 1),
-      bar("i", 1),
-      bar("V", 1),
-    ],
-  },
-  // jazz
-  {
-    id: "one-six-two-five",
-    label: "I-vi-ii-V (turnaround)",
-    category: "jazz",
-    steps: [bar("I"), bar("vi"), bar("ii"), bar("V")],
-  },
-  {
-    id: "three-six-two-five",
-    label: "iii-vi-ii-V",
-    category: "jazz",
-    steps: [bar("iii"), bar("vi"), bar("ii"), bar("V")],
-  },
-  {
-    id: "two-five-one-six",
-    label: "ii-V-I-vi (rhythm changes)",
-    category: "jazz",
-    steps: [bar("ii"), bar("V", 1, "Dominant 7th"), bar("I"), bar("vi")],
-  },
-  {
-    id: "one-four-two-five",
-    label: "I-IV-ii-V",
-    category: "jazz",
-    steps: [bar("I"), bar("IV"), bar("ii"), bar("V")],
-  },
-  // folk
-  {
-    id: "one-four-one-five",
-    label: "I-IV-I-V",
-    category: "folk",
-    steps: [bar("I"), bar("IV"), bar("I"), bar("V")],
-  },
-  {
-    id: "one-five-one-four-one-five-one",
-    label: "I-V-I-IV-I-V-I",
-    category: "folk",
-    steps: [bar("I"), bar("V"), bar("I"), bar("IV"), bar("I"), bar("V"), bar("I")],
-  },
-  // modal
-  {
-    id: "dorian-i-iv",
-    label: "Dorian i-IV",
-    category: "modal",
-    steps: [bar("i"), bar("IV")],
-  },
-  {
-    id: "dorian-i-vii-iv",
-    label: "Dorian i-VII-IV",
-    category: "modal",
-    steps: [bar("i"), bar("VII"), bar("IV")],
-  },
-  {
-    id: "mixolydian-i-vii-iv",
-    label: "Mixolydian I-VII-IV",
-    category: "modal",
-    steps: [bar("I"), bar("VII"), bar("IV")],
-  },
-  {
-    id: "phrygian-i-ii",
-    label: "Phrygian i-II",
-    category: "modal",
-    steps: [bar("i"), bar("II")],
-  },
-  {
-    id: "lydian-i-ii",
-    label: "Lydian I-II",
-    category: "modal",
-    steps: [bar("I"), bar("II")],
-  },
-  // minor
-  {
-    id: "minor-i-iv-v",
-    label: "i-iv-v",
-    category: "minor",
-    steps: [bar("i"), bar("iv"), bar("v")],
-  },
-  {
-    id: "minor-i-vi-vii",
-    label: "i-VI-VII",
-    category: "minor",
-    steps: [bar("i"), bar("VI"), bar("VII")],
-  },
-  {
-    id: "andalusian",
-    label: "Andalusian (i-VII-VI-V)",
-    category: "minor",
-    steps: [bar("i"), bar("VII"), bar("VI"), bar("V")],
-  },
-  {
-    id: "minor-i-iv-vii-iii",
-    label: "i-iv-VII-III",
-    category: "minor",
-    steps: [bar("i"), bar("iv"), bar("VII"), bar("III")],
-  },
-] as const;
+const PRESET_SPECS: ReadonlyArray<{
+  id: string;
+  label: string;
+  category: ProgressionPresetCategory;
+  spec: string;
+}> = [
+  { id: "one-five-six-four", label: "I-V-vi-IV", category: "pop-rock", spec: "I V vi IV" },
+  { id: "two-five-one", label: "ii-V-I", category: "jazz", spec: "ii V:7 I" },
+  { id: "one-six-four-five", label: "I-vi-IV-V", category: "pop-rock", spec: "I vi IV V" },
+  { id: "one-four-five", label: "I-IV-V", category: "folk", spec: "I IV V" },
+  { id: "twelve-bar-blues", label: "12-bar blues", category: "blues",
+    spec: "I*4:7 IV*2:7 I*2:7 V:7 IV:7 I:7 V:7" },
+  { id: "vi-iv-i-v", label: "vi-IV-I-V", category: "pop-rock", spec: "vi IV I V" },
+  { id: "i-iv-vi-v", label: "I-IV-vi-V", category: "pop-rock", spec: "I IV vi V" },
+  { id: "canon", label: "Canon (I-V-vi-iii-IV-I-IV-V)", category: "pop-rock",
+    spec: "I V vi iii IV I IV V" },
+  { id: "eight-bar-blues", label: "8-bar blues", category: "blues",
+    spec: "I*2:7 IV*2:7 I:7 V:7 I:7 V:7" },
+  { id: "minor-blues", label: "Minor blues", category: "blues",
+    spec: "i*4 iv*2 i*2 V iv i V" },
+  { id: "one-six-two-five", label: "I-vi-ii-V (turnaround)", category: "jazz", spec: "I vi ii V" },
+  { id: "three-six-two-five", label: "iii-vi-ii-V", category: "jazz", spec: "iii vi ii V" },
+  { id: "two-five-one-six", label: "ii-V-I-vi (rhythm changes)", category: "jazz",
+    spec: "ii V:7 I vi" },
+  { id: "one-four-two-five", label: "I-IV-ii-V", category: "jazz", spec: "I IV ii V" },
+  { id: "one-four-one-five", label: "I-IV-I-V", category: "folk", spec: "I IV I V" },
+  { id: "one-five-one-four-one-five-one", label: "I-V-I-IV-I-V-I", category: "folk",
+    spec: "I V I IV I V I" },
+  { id: "dorian-i-iv", label: "Dorian i-IV", category: "modal", spec: "i IV" },
+  { id: "dorian-i-vii-iv", label: "Dorian i-VII-IV", category: "modal", spec: "i VII IV" },
+  { id: "mixolydian-i-vii-iv", label: "Mixolydian I-VII-IV", category: "modal", spec: "I VII IV" },
+  { id: "phrygian-i-ii", label: "Phrygian i-II", category: "modal", spec: "i II" },
+  { id: "lydian-i-ii", label: "Lydian I-II", category: "modal", spec: "I II" },
+  { id: "minor-i-iv-v", label: "i-iv-v", category: "minor", spec: "i iv v" },
+  { id: "minor-i-vi-vii", label: "i-VI-VII", category: "minor", spec: "i VI VII" },
+  { id: "andalusian", label: "Andalusian (i-VII-VI-V)", category: "minor", spec: "i VII VI V" },
+  { id: "minor-i-iv-vii-iii", label: "i-iv-VII-III", category: "minor", spec: "i iv VII III" },
+];
+
+export const PROGRESSION_PRESETS: readonly ProgressionPreset[] = PRESET_SPECS.map(
+  ({ id, label, category, spec }) => ({ id, label, category, steps: parseSteps(spec) }),
+);
 
 const ROMAN_ORDINALS: Record<string, number> = {
   I: 0,

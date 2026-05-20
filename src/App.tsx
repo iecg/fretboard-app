@@ -41,11 +41,6 @@ const SettingsOverlay = lazy(() => import("./components/SettingsOverlay/Settings
 const HelpModal = lazy(() =>
   import("./components/HelpModal/HelpModal").then((m) => ({ default: m.HelpModal }))
 );
-const NoteColorAudit = lazy(() =>
-  import("./components/NoteColorAudit/NoteColorAudit").then((m) => ({
-    default: m.NoteColorAudit,
-  }))
-);
 
 function AppContent() {
   const { t } = useTranslation();
@@ -65,24 +60,10 @@ function AppContent() {
   const helpTriggerRef = useRef<HTMLButtonElement>(null);
   const layout = useLayoutMode();
   const theme = useResolvedTheme();
-  // Debug mode: visiting `?audit=note-colors` swaps the entire app for the
-  // NoteColorAudit harness (and clears `data-theme` so both light/dark swatches
-  // can be inspected side-by-side). See "Debug modes" in CLAUDE.md.
-  const showNoteColorAudit =
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).get("audit") === "note-colors";
 
   useLayoutEffect(() => {
-    if (showNoteColorAudit) {
-      const previousTheme = document.documentElement.getAttribute("data-theme");
-      document.documentElement.removeAttribute("data-theme");
-      return () => {
-        if (previousTheme) document.documentElement.setAttribute("data-theme", previousTheme);
-        else document.documentElement.removeAttribute("data-theme");
-      };
-    }
     document.documentElement.setAttribute("data-theme", theme);
-  }, [showNoteColorAudit, theme]);
+  }, [theme]);
 
   useEffect(() => {
     synth.setMute(isMuted);
@@ -123,18 +104,9 @@ function AppContent() {
     return () => clearTimeout(id);
   }, []);
   useEffect(() => {
-    if (showNoteColorAudit) return;
     if (!overlayResetReadyRef.current) return;
     setChordOverlayHidden(false);
-  }, [chordRoot, chordType, rootNote, scaleName, setChordOverlayHidden, showNoteColorAudit]);
-
-  if (showNoteColorAudit) {
-    return (
-      <Suspense fallback={null}>
-        <NoteColorAudit />
-      </Suspense>
-    );
-  }
+  }, [chordRoot, chordType, rootNote, scaleName, setChordOverlayHidden]);
 
   return (
   <TooltipProvider>
