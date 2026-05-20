@@ -22,6 +22,7 @@ import {
   validVoicingCombosAtom,
   controlRecencyAtom,
   noteControlChangeAtom,
+  cagedShapesAtom,
 } from "../../store/atoms";
 import { ChordOverlayControls } from "./ChordOverlayControls";
 
@@ -888,6 +889,51 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       ]);
       expect(screen.queryByText(/chord overlay disabled/i)).toBeNull();
       expect(document.querySelector("[data-disabled=\"true\"]")).toBeNull();
+    });
+  });
+
+  describe("Task 9: Chord Spread stepper and Scope to position switch", () => {
+    it("renders the Chord Spread stepper inside the Voicing section (Task 9)", () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        [scaleNameAtom, "Major"],
+        [rootNoteAtom, "C"],
+        [chordOverlayModeAtom, "manual"],
+        [chordRootOverrideAtom, "C"],
+        [chordQualityOverrideAtom, "Major Triad"],
+        [progressionStepsAtom, []],
+      ]);
+      // The Prop cell renders a label "Chord Spread"; the StepperControl exposes its label as a group aria-label.
+      expect(screen.getByText(/chord spread/i)).toBeInTheDocument();
+    });
+
+    it("renders the Scope to position switch and disables it when no active position (Task 9)", () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        [scaleNameAtom, "Major"],
+        [rootNoteAtom, "C"],
+        [chordOverlayModeAtom, "manual"],
+        [chordRootOverrideAtom, "C"],
+        [chordQualityOverrideAtom, "Major Triad"],
+        [fingeringPatternAtom, "none"],
+        [progressionStepsAtom, []],
+      ]);
+      const sw = screen.getByRole("switch", { name: /scope to position/i }) as HTMLInputElement;
+      expect(sw).toBeInTheDocument();
+      expect(sw).toBeDisabled();
+    });
+
+    it("enables the Scope to position switch when a single CAGED shape is active (Task 9)", () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        [scaleNameAtom, "Major"],
+        [rootNoteAtom, "C"],
+        [chordOverlayModeAtom, "manual"],
+        [chordRootOverrideAtom, "C"],
+        [chordQualityOverrideAtom, "Major Triad"],
+        [fingeringPatternAtom, "caged"],
+        [cagedShapesAtom, new Set(["C"])],
+        [progressionStepsAtom, []],
+      ]);
+      const sw = screen.getByRole("switch", { name: /scope to position/i }) as HTMLInputElement;
+      expect(sw).not.toBeDisabled();
     });
   });
 

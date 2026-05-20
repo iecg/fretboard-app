@@ -13,9 +13,13 @@ import {
   controlRecencyAtom,
   noteControlChangeAtom,
   nearestValidTriple,
+  chordFretSpreadAtom,
+  chordScopeToPositionAtom,
+  activePositionAtom,
   type VoicingControlId,
 } from "../../store/atoms";
 import { StringSetPicker } from "../Inspector/StringSetPicker";
+import { StepperControl } from "../StepperControl/StepperControl";
 import { useTranslation } from "../../hooks/useTranslation";
 import { RootNoteSelect } from "../shared/RootNoteSelect";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
@@ -63,6 +67,9 @@ export function ChordOverlayControls() {
   const recordControlChange = useSetAtom(noteControlChangeAtom);
 
   const lensAvailability = useAtomValue(lensAvailabilityAtom);
+  const [chordFretSpread, setChordFretSpread] = useAtom(chordFretSpreadAtom);
+  const [chordScopeToPosition, setChordScopeToPosition] = useAtom(chordScopeToPositionAtom);
+  const activePosition = useAtomValue(activePositionAtom);
 
   const hasQualityOverride = chordQualityOverride != null;
 
@@ -349,6 +356,33 @@ export function ChordOverlayControls() {
                 />
               </Prop>
             )}
+            <Prop label={t("inspector.chordSpread")} span={3} hint={t("inspector.chordSpreadHint")}>
+              <StepperControl
+                label={t("inspector.chordSpread")}
+                hideLabel
+                value={chordFretSpread}
+                onChange={setChordFretSpread}
+                min={0}
+                max={4}
+                step={1}
+              />
+            </Prop>
+            <Prop
+              label={t("inspector.scopeToPosition")}
+              span={4}
+              hint={
+                activePosition
+                  ? t("inspector.scopeToPositionHint")
+                  : t("inspector.scopeToPositionNeedsPosition")
+              }
+            >
+              <Switch
+                label={t("inspector.scopeToPosition")}
+                checked={chordScopeToPosition && activePosition}
+                onChange={setChordScopeToPosition}
+                disabled={!activePosition}
+              />
+            </Prop>
           </>
         )}
       </PropGrid>
