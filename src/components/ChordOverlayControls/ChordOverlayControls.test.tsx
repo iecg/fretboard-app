@@ -331,7 +331,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
   describe("11. 'Degree' label on degree browser", () => {
     it("renders visible 'Degree' label above the degree browser", () => {
       renderDegree();
-      expect(screen.getByText("Degree", { selector: "span" })).toBeInTheDocument();
+      expect(screen.getByText("Degree", { selector: "span[class*='propLabel']" })).toBeInTheDocument();
     });
   });
 
@@ -403,6 +403,10 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
 
     it("places the Lens control inside the SOURCE group", () => {
+      // The PropGrid renders headers and Props as flat siblings (no wrapping
+      // section per group), so "in the Source group" is verified by document
+      // order: Lens follows the Source heading and precedes the next group
+      // heading (Chord Type).
       renderManual();
       const lens = screen.getByText("Lens");
       const sourceHeader = screen.getByRole("heading", { name: "Source" });
