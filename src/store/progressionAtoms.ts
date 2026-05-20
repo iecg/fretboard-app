@@ -33,6 +33,7 @@ import {
   constrainedNumberStorage,
   createStorage,
   k,
+  stringValidator,
   withStorageErrorBoundary,
 } from "../utils/storage";
 
@@ -52,7 +53,7 @@ const DEFAULT_STEPS: ProgressionStep[] = [
 const stringStorage = createStorage<string>({
   serialize: (v) => v,
   deserialize: (raw) => raw,
-  validate: (v): v is string => typeof v === "string",
+  validate: stringValidator(),
 });
 
 const chordInstrumentStorage = createStorage<ChordInstrumentId>({
