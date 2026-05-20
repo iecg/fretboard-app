@@ -165,4 +165,23 @@ describe("ToggleBar/ToggleBar", () => {
     );
     expect(await axe(container)).toHaveNoViolations();
   });
+
+  it("renders every option unpressed when value is undefined (Task 1)", () => {
+    const onChange = vi.fn();
+    render(
+      <ToggleBar
+        label="Cluster"
+        value={undefined}
+        onChange={onChange}
+        options={[
+          { value: "a", label: "A" },
+          { value: "b", label: "B" },
+        ]}
+      />,
+    );
+    for (const name of ["A", "B"]) {
+      const btn = screen.getByRole("button", { name });
+      expect(btn.getAttribute("aria-pressed")).toBe("false");
+    }
+  });
 });

@@ -8,6 +8,11 @@ import {
   chordScopeToPositionAtom,
   fingeringPatternAtom,
   cagedShapesAtom,
+  npsPositionAtom,
+  chordOverlayModeAtom,
+  chordRootOverrideAtom,
+  chordQualityOverrideAtom,
+  fullChordMatchesAtom,
 } from "../store/atoms";
 
 function wrapWithStore(store: ReturnType<typeof makeAtomStore>) {
@@ -55,4 +60,57 @@ describe("useFretboardState — chord box bounds gating (Task 7)", () => {
     // multiple CAGED shapes => activePositionAtom is false => chordBoxBounds null
     expect(result.current.chordBoxBounds).toBeNull();
   });
+});
+
+describe("useFretboardState — 3NPS voicing scope (Task 3)", () => {
+  function seedManualChord(): Array<readonly [unknown, unknown]> {
+    // Manual C major triad — produces a multi-position fullChordMatches set
+    // on a standard-tuned 6-string fretboard, so the scope filter has
+    // something to filter.
+    return [
+      [chordOverlayModeAtom, "manual"],
+      [chordRootOverrideAtom, "C"],
+      [chordQualityOverrideAtom, "major"],
+    ];
+  }
+
+  it("filters voicings when scope is on and a 3NPS position is active", () => {
+    const store = makeAtomStore([
+      ...seedManualChord(),
+      [fingeringPatternAtom, "3nps"],
+      [npsPositionAtom, 1],
+      [chordScopeToPositionAtom, true],
+    ] as Parameters<typeof makeAtomStore>[0]);
+    const { result } = renderHook(() => useFretboardState(), {
+      wrapper: wrapWithStore(store),
+    });
+    const raw = store.get(fullChordMatchesAtom);
+    expect(raw.length).toBeGreaterThan(0);
+    expect(result.current.fullChordMatches.length).toBeLessThanOrEqual(raw.length);
+    // When raw has multiple positions across the neck, the position-1 filter
+    // must drop at least one. (If the test ever sees raw.length === filtered.length,
+    // the seed isn't producing a spread chord — adjust the seed, not this assertion.)
+    if (raw.length > 1) {
+      expect(result.current.fullChordMatches.length).toBeLessThan(raw.length);
+    }
+  });
+
+  it("does not filter when scope is off", () => {
+    const store = makeAtomStore([
+      ...seedManualChord(),
+      [fingeringPatternAtom, "3nps"],
+      [npsPositionAtom, 1],
+      [chordScopeToPositionAtom, false],
+    ] as Parameters<typeof makeAtomStore>[0]);
+    const { result } = renderHook(() => useFretboardState(), {
+      wrapper: wrapWithStore(store),
+    });
+    const raw = store.get(fullChordMatchesAtom);
+    expect(result.current.fullChordMatches).toEqual(raw);
+  });
+
+  // Note: npsPositionAtom storage clamps to [1, 7] (constrainedNumberStorage),
+  // so `npsPosition === 0` is unreachable at runtime — `activePositionAtom` is
+  // always true for 3NPS. The scope toggle is the only way to bypass filtering
+  // in 3NPS mode (covered by the "scope off" case above).
 });
