@@ -73,15 +73,11 @@ export function ProgressionControls() {
     .filter((g) => g.presets.length > 0);
   const suggestedPresets = generateCommonProgressions(scaleName, rootNote);
   const presetGroups: LabeledSelectGroup[] = [
-    {
-      options: [
-        {
-          value: CUSTOM_PRESET_ID,
-          label: "Custom",
-          disabled: currentProgressionPresetId !== CUSTOM_PRESET_ID,
-        },
-      ],
-    },
+    // Show "Custom" only when it's the current value — the option is not
+    // user-selectable; it just reflects an edited (non-preset) progression.
+    ...(currentProgressionPresetId === CUSTOM_PRESET_ID
+      ? [{ options: [{ value: CUSTOM_PRESET_ID, label: "Custom" }] }]
+      : []),
     ...groupedPresets.map((group) => ({
       groupLabel: group.label,
       options: group.presets.map((preset) => ({
