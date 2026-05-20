@@ -163,7 +163,6 @@ export const es: Dictionary = {
     manual: "Manual",
     shapeHintTouch: "Toca para seleccionar una forma. Mantén presionado para alternar múltiples formas.",
     shapeHintPointer: "Clic para seleccionar una forma. Shift+clic para alternar múltiples formas.",
-    chordOverlayDisabled: "Superposición de acorde desactivada para patrones de una/dos cuerdas.",
     degreeModeHint: "Elige un acorde por grado de escala — diatónico a la tonalidad.",
     manualModeHint: "Establece cualquier tipo de acorde y raíz — independiente de la tonalidad.",
     customChordHint: "Tipo de acorde personalizado — no es el predeterminado diatónico.",

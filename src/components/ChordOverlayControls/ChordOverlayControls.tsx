@@ -1,10 +1,8 @@
 import { startTransition, useEffect, useMemo, useRef } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import clsx from "clsx";
 import { type PracticeLens } from "@fretflow/core";
 import {
   lensAvailabilityAtom,
-  fingeringPatternAtom,
   voicingTypeAtom,
   voicingInversionAtom,
   voicingStringSetAtom,
@@ -28,7 +26,6 @@ import { ChordQualitySelect } from "../shared/ChordQualitySelect";
 import { useChordState } from "../../hooks/useChordState";
 import { useScaleState } from "../../hooks/useScaleState";
 import panelStyles from "./ChordOverlayControls.module.css";
-import shared from "../shared/shared.module.css";
 
 /** Compact lens labels for the narrow Source-row Lens toggle. The `satisfies`
  * clause makes a new lens added to `LENS_REGISTRY` without a label fail to compile. */
@@ -66,9 +63,6 @@ export function ChordOverlayControls() {
   const recordControlChange = useSetAtom(noteControlChangeAtom);
 
   const lensAvailability = useAtomValue(lensAvailabilityAtom);
-  const fingeringPattern = useAtomValue(fingeringPatternAtom);
-  const isPatternDisabled =
-    fingeringPattern === "one-string" || fingeringPattern === "two-strings";
 
   const hasQualityOverride = chordQualityOverride != null;
 
@@ -179,56 +173,33 @@ export function ChordOverlayControls() {
 
   // ── Visibility ────────────────────────────────────────────────────────
   const isOff = chordOverlayMode === "off";
-  const showDegree = !isPatternDisabled && chordOverlayMode === "degree";
+  const showDegree = chordOverlayMode === "degree";
   const showChordTypeGrid =
-    !isPatternDisabled &&
-    (chordOverlayMode === "manual" ||
-      (chordOverlayMode === "degree" && Boolean(chordDegree)));
-  const showRoot = !isPatternDisabled && chordOverlayMode === "manual";
+    chordOverlayMode === "manual" ||
+    (chordOverlayMode === "degree" && Boolean(chordDegree));
+  const showRoot = chordOverlayMode === "manual";
   const hasActiveChord = Boolean(chordType);
-  const showDisplay = !isPatternDisabled && !isOff;
+  const showDisplay = !isOff;
   const displayDisabled = !hasActiveChord;
 
   return (
-    <div
-      className={clsx(panelStyles.root, isPatternDisabled && panelStyles["panel-disabled"])}
-      data-disabled={isPatternDisabled ? "true" : undefined}
-    >
-      {isPatternDisabled && (
-        <p className={shared["field-hint"]} aria-live="polite">
-          {t("controls.chordOverlayDisabled")}
-        </p>
-      )}
+    <div className={panelStyles.root}>
       <PropGrid columns={7} className={panelStyles.grid}>
         {/* ── SOURCE ───────────────────────────────────────────────────── */}
         <GroupHeader>{t("inspector.groupSource")}</GroupHeader>
         <Prop
           label={t("controls.mode")}
           span={2}
-          hint={isPatternDisabled ? undefined : t("controls.modeHint")}
+          hint={t("controls.modeHint")}
         >
           <ToggleBar
             options={[
-              {
-                value: "off",
-                label: isPatternDisabled
-                  ? t("controls.disabled")
-                  : t("controls.off"),
-                disabled: isPatternDisabled,
-              },
-              {
-                value: "degree",
-                label: t("controls.degree"),
-                disabled: isPatternDisabled,
-              },
-              {
-                value: "manual",
-                label: t("controls.manual"),
-                disabled: isPatternDisabled,
-              },
+              { value: "off", label: t("controls.off") },
+              { value: "degree", label: t("controls.degree") },
+              { value: "manual", label: t("controls.manual") },
             ]}
             value={chordOverlayMode}
-            onChange={isPatternDisabled ? () => undefined : setChordOverlayMode}
+            onChange={setChordOverlayMode}
             label="Chord overlay mode"
           />
         </Prop>

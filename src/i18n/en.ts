@@ -163,7 +163,6 @@ export const en: Dictionary = {
     manual: "Manual",
     shapeHintTouch: "Tap to select a shape. Long press to toggle multiple shapes.",
     shapeHintPointer: "Click to select a shape. Shift+click to toggle multiple shapes.",
-    chordOverlayDisabled: "Chord overlay disabled for single/two-string patterns.",
     degreeModeHint: "Picks a chord by scale degree — diatonic to the key.",
     manualModeHint: "Sets any chord type and root — independent of the key.",
     customChordHint: "Custom chord type — not the diatonic default.",

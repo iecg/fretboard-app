@@ -160,7 +160,6 @@ export interface Dictionary {
     manual: string;
     shapeHintTouch: string;
     shapeHintPointer: string;
-    chordOverlayDisabled: string;
     degreeModeHint: string;
     manualModeHint: string;
     customChordHint: string;
