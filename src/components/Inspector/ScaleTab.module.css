@@ -1,4 +1,14 @@
 .root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 0.75rem);
+}
+
+.fingeringRow {
+  /* PropGrid manages its own internal layout. */
+}
+
+.columns {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-3, 0.75rem);
@@ -7,7 +17,7 @@
 /* Three columns on desktop — Key (widest) / Circle of Fifths / Theory. Gated on the
    layout-tier attribute per the project's responsive-CSS contract; mobile and
    tablet stack the columns vertically. */
-:global(.app-container[data-layout-tier="desktop"]) .root {
+:global(.app-container[data-layout-tier="desktop"]) .columns {
   grid-template-columns: minmax(0, 5fr) minmax(0, 3fr) minmax(0, 4fr);
   gap: 1.25rem;
   align-items: start;
