@@ -192,6 +192,11 @@ export function stringValidator(opts: { nullable?: boolean } = {}) {
     typeof v === "string" || (opts.nullable === true && v === null);
 }
 
+export function numberValidator(guard?: (n: number) => boolean) {
+  return (v: unknown): v is number =>
+    typeof v === "number" && Number.isFinite(v) && (guard ? guard(v) : true);
+}
+
 export const booleanStorage = createStorage<boolean>({
   serialize: (v) => String(v),
   deserialize: (v) => {
