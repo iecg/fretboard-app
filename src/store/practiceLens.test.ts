@@ -34,6 +34,32 @@ function makeStore() {
   return store;
 }
 
+type Setup = {
+  scaleRoot?: string;
+  scale?: string;
+  chordRoot?: string | null;
+  chordType?: string | null;
+  chordDegree?: string | null;
+  overlayMode?: string;
+  lens?: PracticeLens;
+  scaleVisible?: boolean;
+  hidden?: Set<string>;
+};
+
+function setUp(o: Setup = {}) {
+  const store = makeStore();
+  if (o.scaleRoot !== undefined) store.set(rootNoteAtom, o.scaleRoot);
+  if (o.scale !== undefined) store.set(scaleNameAtom, o.scale);
+  if (o.chordRoot !== undefined) store.set(chordRootAtom, o.chordRoot as never);
+  if (o.chordType !== undefined) store.set(chordTypeAtom, o.chordType as never);
+  if (o.chordDegree !== undefined) store.set(chordDegreeAtom, o.chordDegree as never);
+  if (o.overlayMode !== undefined) store.set(chordOverlayModeAtom, o.overlayMode as never);
+  if (o.lens !== undefined) store.set(practiceLensAtom, o.lens);
+  if (o.scaleVisible !== undefined) store.set(scaleVisibleAtom, o.scaleVisible);
+  if (o.hidden !== undefined) store.set(chordHiddenNotesAtom, o.hidden);
+  return store;
+}
+
 describe("practiceLensAtom", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -65,20 +91,8 @@ describe("practiceCuesAtom", () => {
     localStorage.clear();
   });
 
-  function makeChordStore(
-    scaleName: string,
-    chordRoot: string,
-    chordType: string,
-    lens: PracticeLens,
-  ) {
-    const store = makeStore();
-    store.set(rootNoteAtom, chordRoot);
-    store.set(scaleNameAtom, scaleName);
-    store.set(chordRootAtom, chordRoot);
-    store.set(chordTypeAtom, chordType);
-    store.set(practiceLensAtom, lens);
-    return store;
-  }
+  const makeChordStore = (scale: string, root: string, chordType: string, lens: PracticeLens) =>
+    setUp({ scaleRoot: root, scale, chordRoot: root, chordType, lens });
 
   describe("targets lens", () => {
     it("returns a land-on cue with all chord tones", () => {
@@ -87,22 +101,16 @@ describe("practiceCuesAtom", () => {
       expect(cues.length).toBe(1);
       expect(cues[0]!.kind).toBe("land-on");
       expect(cues[0]!.label).toBe("Land on");
-      const noteNames = cues[0]!.notes.map((n) => n.internalNote);
-      expect(noteNames).toContain("C");
-      expect(noteNames).toContain("E");
-      expect(noteNames).toContain("G");
+      expect(cues[0]!.notes.map((n) => n.internalNote)).toEqual(expect.arrayContaining(["C", "E", "G"]));
     });
 
     it("uses scale degrees for in-scale note labels", () => {
-      const store = makeChordStore("Major", "C", "Major Triad", "targets");
-      const cues = store.get(practiceCuesAtom);
+      const cues = makeChordStore("Major", "C", "Major Triad", "targets").get(practiceCuesAtom);
       expect(cues[0]!.notes.map((n) => n.intervalName)).toEqual(["1", "3", "5"]);
     });
 
     it("returns empty cues when chord overlay is off", () => {
-      const store = makeStore();
-      store.set(chordOverlayModeAtom, "off");
-      store.set(practiceLensAtom, "targets");
+      const store = setUp({ overlayMode: "off", lens: "targets" });
       expect(store.get(practiceCuesAtom)).toHaveLength(0);
     });
   });
@@ -149,15 +157,8 @@ describe("practiceCuesAtom", () => {
 
   describe("tension lens", () => {
     it("returns land-on + tension cues when chord has outside-scale tones", () => {
-      const store = makeStore();
-      store.set(rootNoteAtom, "C");
-      store.set(scaleNameAtom, "Major");
-      store.set(chordRootAtom, "C#");
-      store.set(chordTypeAtom, "Minor Triad");
-      store.set(practiceLensAtom, "tension");
-      const cues = store.get(practiceCuesAtom);
-      const kinds = cues.map((c) => c.kind);
-      expect(kinds).toEqual(["land-on", "tension"]);
+      const store = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C#", chordType: "Minor Triad", lens: "tension" });
+      expect(store.get(practiceCuesAtom).map((c) => c.kind)).toEqual(["land-on", "tension"]);
     });
 
     it("tension notes include outside chord root and have resolvesTo targets", () => {
@@ -165,25 +166,18 @@ describe("practiceCuesAtom", () => {
       store.set(chordRootAtom, "C#"); // outside the C major scale
       const tensionCue = store.get(practiceCuesAtom).find((c) => c.kind === "tension");
       expect(tensionCue).toBeDefined();
-      const notes = tensionCue!.notes;
-      expect(notes.map((n) => n.internalNote)).toContain("C#");
-      expect(notes.some((n) => n.resolvesTo !== undefined)).toBe(true);
+      expect(tensionCue!.notes.map((n) => n.internalNote)).toContain("C#");
+      expect(tensionCue!.notes.some((n) => n.resolvesTo !== undefined)).toBe(true);
     });
 
     it("returns only land-on when chord is fully in-scale (no outside tones)", () => {
-      const store = makeChordStore("Major", "C", "Major Triad", "tension");
-      const kinds = store.get(practiceCuesAtom).map((c) => c.kind);
+      const kinds = makeChordStore("Major", "C", "Major Triad", "tension").get(practiceCuesAtom).map((c) => c.kind);
       expect(kinds).toContain("land-on");
       expect(kinds).not.toContain("tension");
     });
 
     it("finds resolution target within 2 semitones for pentatonic scale", () => {
-      const store = makeStore();
-      store.set(rootNoteAtom, "C");
-      store.set(scaleNameAtom, "Minor Pentatonic");
-      store.set(chordRootAtom, "D");
-      store.set(chordTypeAtom, "Minor Triad");
-      store.set(practiceLensAtom, "tension");
+      const store = setUp({ scaleRoot: "C", scale: "Minor Pentatonic", chordRoot: "D", chordType: "Minor Triad", lens: "tension" });
       const tensionCue = store.get(practiceCuesAtom).find((c) => c.kind === "tension");
       expect(tensionCue!.notes.find((n) => n.internalNote === "D")?.resolvesTo).toBeDefined();
     });
@@ -191,26 +185,16 @@ describe("practiceCuesAtom", () => {
 
   describe("LENS_REGISTRY — chord-overlay lens model", () => {
     it("does not include targets-color or color lenses", () => {
-      const store = makeStore();
-      store.set(chordRootAtom, "C");
-      store.set(chordTypeAtom, "Major Triad");
-      const availability = store.get(lensAvailabilityAtom);
-      const ids = availability.map((l) => l.id);
+      const store = setUp({ chordRoot: "C", chordType: "Major Triad" });
+      const ids = store.get(lensAvailabilityAtom).map((l) => l.id);
       expect(ids).not.toContain("targets-color");
       expect(ids).not.toContain("color");
     });
 
     it("contains exactly Chord Tones, Guide Tones, and Tension", () => {
-      const store = makeStore();
-      store.set(chordRootAtom, "C");
-      store.set(chordTypeAtom, "Major 7th");
-      store.set(rootNoteAtom, "C");
-      store.set(scaleNameAtom, "Major");
-      const availability = store.get(lensAvailabilityAtom);
-      const ids = availability.map((l) => l.id);
-      expect(ids).toContain("targets");
-      expect(ids).toContain("guide-tones");
-      expect(ids).toContain("tension");
+      const store = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C", chordType: "Major 7th" });
+      const ids = store.get(lensAvailabilityAtom).map((l) => l.id);
+      expect(ids).toEqual(expect.arrayContaining(["targets", "guide-tones", "tension"]));
       expect(ids).toHaveLength(3);
     });
   });
@@ -222,74 +206,42 @@ describe("noteSemanticMapAtom", () => {
   });
 
   it("correctly identifies outside chord root as both isChordRoot and isTension", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordRootAtom, "C#");
-    store.set(chordTypeAtom, "Minor Triad");
-
-    const semanticMap = store.get(noteSemanticMapAtom);
-    const cSharpSemantics = semanticMap.get("C#");
-    expect(cSharpSemantics).toBeDefined();
-    expect(cSharpSemantics!.isChordRoot).toBe(true);
-    expect(cSharpSemantics!.isTension).toBe(true);
-    expect(cSharpSemantics!.isInScale).toBe(false);
+    const store = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C#", chordType: "Minor Triad" });
+    const s = store.get(noteSemanticMapAtom).get("C#");
+    expect(s).toBeDefined();
+    expect(s!.isChordRoot).toBe(true);
+    expect(s!.isTension).toBe(true);
+    expect(s!.isInScale).toBe(false);
   });
 
   it("identifies guide tones (3rd and 7th) correctly", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "G");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordRootAtom, "G");
-    store.set(chordTypeAtom, "Dominant 7th");
-
-    const semanticMap = store.get(noteSemanticMapAtom);
-    const bSemantics = semanticMap.get("B");
-    expect(bSemantics?.isGuideTone).toBe(true);
-    const fSemantics = semanticMap.get("F");
-    expect(fSemantics?.isGuideTone).toBe(true);
-    const dSemantics = semanticMap.get("D");
-    expect(dSemantics?.isGuideTone).toBe(false);
+    const map = setUp({ scaleRoot: "G", scale: "Major", chordRoot: "G", chordType: "Dominant 7th" }).get(noteSemanticMapAtom);
+    expect(map.get("B")?.isGuideTone).toBe(true);
+    expect(map.get("F")?.isGuideTone).toBe(true);
+    expect(map.get("D")?.isGuideTone).toBe(false);
   });
 
   it("a note can be both color tone and chord tone", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "G");
-    store.set(scaleNameAtom, "Mixolydian");
-    store.set(chordRootAtom, "G");
-    store.set(chordTypeAtom, "Dominant 7th");
-
-    const semanticMap = store.get(noteSemanticMapAtom);
-    const fSemantics = semanticMap.get("F");
-    expect(fSemantics?.isColorTone).toBe(true);
-    expect(fSemantics?.isChordTone).toBe(true);
+    const f = setUp({ scaleRoot: "G", scale: "Mixolydian", chordRoot: "G", chordType: "Dominant 7th" })
+      .get(noteSemanticMapAtom).get("F");
+    expect(f?.isColorTone).toBe(true);
+    expect(f?.isChordTone).toBe(true);
   });
 
   it("returns empty map when chord overlay is off", () => {
-    const store = makeStore();
-    store.set(chordOverlayModeAtom, "off");
-    expect(store.get(noteSemanticMapAtom).size).toBe(0);
+    expect(setUp({ overlayMode: "off" }).get(noteSemanticMapAtom).size).toBe(0);
   });
 
   it("hidden chord root no longer carries chord-root semantics", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordRootAtom, "C");
-    store.set(chordTypeAtom, "Major Triad");
-
-    // Sanity: before hiding, C is the chord root and is a chord tone.
+    const store = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C", chordType: "Major Triad" });
     const before = store.get(noteSemanticMapAtom).get("C");
     expect(before?.isChordRoot).toBe(true);
     expect(before?.isChordTone).toBe(true);
 
-    // Hide the chord root via per-note hide toggle.
     store.set(chordHiddenNotesAtom, new Set(["C"]));
-
     const after = store.get(noteSemanticMapAtom).get("C");
-    // C is still in the C Major scale, so it remains in the semantic map…
+    // C is still in the C Major scale, so it remains in the map but loses chord roles.
     expect(after).toBeDefined();
-    // …but it is no longer a chord tone or chord root.
     expect(after!.isChordTone).toBe(false);
     expect(after!.isChordRoot).toBe(false);
   });
@@ -297,23 +249,18 @@ describe("noteSemanticMapAtom", () => {
   it("uses progression chord semantics even with one-string fingering pattern", () => {
     // With one-string pattern, chord overlay is no longer disabled.
     // The progression step (V = G Major Triad, diatonic) is the active chord source.
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
+    const store = setUp({ scaleRoot: "C", scale: "Major" });
     store.set(progressionStepsAtom, [
       { id: "one", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
     ]);
     store.set(fingeringPatternAtom, "one-string");
 
-    const semanticMap = store.get(noteSemanticMapAtom);
-
-    // V in C Major = G Major Triad (diatonic) → chord root G, members G, B, D
-    expect(semanticMap.get("G")?.isChordRoot).toBe(true);
-    expect(semanticMap.get("G")?.isDiatonicChord).toBe(true);
-    expect(semanticMap.get("B")?.isDiatonicChord).toBe(true);
-    expect(semanticMap.get("D")?.isDiatonicChord).toBe(true);
-    // C is not a chord tone of G Major Triad
-    expect(semanticMap.get("C")?.isDiatonicChord).toBe(false);
+    const map = store.get(noteSemanticMapAtom);
+    expect(map.get("G")?.isChordRoot).toBe(true);
+    expect(map.get("G")?.isDiatonicChord).toBe(true);
+    expect(map.get("B")?.isDiatonicChord).toBe(true);
+    expect(map.get("D")?.isDiatonicChord).toBe(true);
+    expect(map.get("C")?.isDiatonicChord).toBe(false);
   });
 });
 
@@ -323,31 +270,19 @@ describe("showChordPracticeBarAtom", () => {
   });
 
   it("returns false when chord overlay is off", () => {
-    const store = makeStore();
-    store.set(chordOverlayModeAtom, "off");
-    expect(store.get(showChordPracticeBarAtom)).toBe(false);
+    expect(setUp({ overlayMode: "off" }).get(showChordPracticeBarAtom)).toBe(false);
   });
 
   it.each(["targets", "guide-tones", "tension"] as const)(
     "returns true when chord is active regardless of lens (%s)",
     (lens) => {
-      const store = makeStore();
-      store.set(rootNoteAtom, "C");
-      store.set(scaleNameAtom, "Major");
-      store.set(chordRootAtom, "C");
-      store.set(chordTypeAtom, "Major Triad");
-      store.set(practiceLensAtom, lens);
+      const store = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C", chordType: "Major Triad", lens });
       expect(store.get(showChordPracticeBarAtom)).toBe(true);
     },
   );
 
   it("returns true for Am chord on Am scale (previously suppressed)", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "A");
-    store.set(scaleNameAtom, "Natural Minor");
-    store.set(chordRootAtom, "A");
-    store.set(chordTypeAtom, "Minor Triad");
-    store.set(practiceLensAtom, "targets");
+    const store = setUp({ scaleRoot: "A", scale: "Natural Minor", chordRoot: "A", chordType: "Minor Triad", lens: "targets" });
     expect(store.get(showChordPracticeBarAtom)).toBe(true);
   });
 });
@@ -358,62 +293,33 @@ describe("practiceBarChordGroupAtom", () => {
   });
 
   it("shows scale-relative interval for outside-scale tones (no memberName fallback)", () => {
-    // C# Minor Triad (C#, E, G#) against C Major scale.
-    // C# and G# are out-of-scale — they now receive their scale-relative
-    // scaleInterval (♭2, ♭6) instead of the chord-member name fallback (1, 5).
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordRootAtom, "C#");
-    store.set(chordTypeAtom, "Minor Triad");
-
-    const chordGroup = store.get(practiceBarChordGroupAtom);
-    expect(chordGroup.notes.map((n) => [n.internalNote, n.intervalName])).toEqual([
-      ["C#", "♭2"],
-      ["E", "3"],
-      ["G#", "♭6"],
+    // C# Minor Triad (C#, E, G#) against C Major — C# and G# are outside the scale.
+    const store = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C#", chordType: "Minor Triad" });
+    expect(store.get(practiceBarChordGroupAtom).notes.map((n) => [n.internalNote, n.intervalName])).toEqual([
+      ["C#", "♭2"], ["E", "3"], ["G#", "♭6"],
     ]);
   });
 
   it("is lens-independent — same chord regardless of active lens", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordRootAtom, "C");
-    store.set(chordTypeAtom, "Dominant 7th");
-
+    const store = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C", chordType: "Dominant 7th" });
     const notesByLens: Record<string, string[]> = {};
     for (const lens of ["targets", "guide-tones", "tension"] as const) {
       store.set(practiceLensAtom, lens);
-      notesByLens[lens] = store
-        .get(practiceBarChordGroupAtom)
-        .notes.map((n) => n.internalNote);
+      notesByLens[lens] = store.get(practiceBarChordGroupAtom).notes.map((n) => n.internalNote);
     }
     expect(notesByLens.targets).toEqual(notesByLens["guide-tones"]);
     expect(notesByLens.targets).toEqual(notesByLens.tension);
   });
 
   it("always contains all chord members", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordRootAtom, "G");
-    store.set(chordTypeAtom, "Dominant 7th");
-    const notes = store
-      .get(practiceBarChordGroupAtom)
-      .notes.map((n) => n.internalNote);
+    const notes = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "G", chordType: "Dominant 7th" })
+      .get(practiceBarChordGroupAtom).notes.map((n) => n.internalNote);
     expect(notes).toEqual(expect.arrayContaining(["G", "B", "D", "F"]));
   });
 
   it("outside chord root carries both isChordRoot and isTension", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordRootAtom, "C#");
-    store.set(chordTypeAtom, "Minor Triad");
-
-    const group = store.get(practiceBarChordGroupAtom);
-    const cSharp = group.notes.find((n) => n.internalNote === "C#");
+    const cSharp = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C#", chordType: "Minor Triad" })
+      .get(practiceBarChordGroupAtom).notes.find((n) => n.internalNote === "C#");
     expect(cSharp).toBeDefined();
     expect(cSharp!.isChordRoot).toBe(true);
     expect(cSharp!.isTension).toBe(true);
@@ -421,19 +327,11 @@ describe("practiceBarChordGroupAtom", () => {
   });
 
   it("guide tones carry isGuideTone, ordinary chord tones do not", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "G");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordRootAtom, "G");
-    store.set(chordTypeAtom, "Dominant 7th");
-
-    const group = store.get(practiceBarChordGroupAtom);
-    const b = group.notes.find((n) => n.internalNote === "B");
-    const f = group.notes.find((n) => n.internalNote === "F");
-    const d = group.notes.find((n) => n.internalNote === "D");
-    expect(b?.isGuideTone).toBe(true);
-    expect(f?.isGuideTone).toBe(true);
-    expect(d?.isGuideTone).toBe(false);
+    const group = setUp({ scaleRoot: "G", scale: "Major", chordRoot: "G", chordType: "Dominant 7th" })
+      .get(practiceBarChordGroupAtom);
+    expect(group.notes.find((n) => n.internalNote === "B")?.isGuideTone).toBe(true);
+    expect(group.notes.find((n) => n.internalNote === "F")?.isGuideTone).toBe(true);
+    expect(group.notes.find((n) => n.internalNote === "D")?.isGuideTone).toBe(false);
   });
 });
 
@@ -442,43 +340,23 @@ describe("practiceBarLandOnGroupAtom", () => {
     localStorage.clear();
   });
 
-  function mkStore(lens: "targets" | "guide-tones" | "tension") {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    return { store, lens };
-  }
-
   it("targets lens — contains all chord members", () => {
-    const { store, lens } = mkStore("targets");
-    store.set(chordRootAtom, "C");
-    store.set(chordTypeAtom, "Major Triad");
-    store.set(practiceLensAtom, lens);
-    const notes = store
-      .get(practiceBarLandOnGroupAtom)
-      .notes.map((n) => n.internalNote);
+    const notes = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C", chordType: "Major Triad", lens: "targets" })
+      .get(practiceBarLandOnGroupAtom).notes.map((n) => n.internalNote);
     expect(notes).toEqual(expect.arrayContaining(["C", "E", "G"]));
   });
 
   it("guide-tones lens — contains only 3rd/7th members", () => {
-    const { store, lens } = mkStore("guide-tones");
-    store.set(chordRootAtom, "G");
-    store.set(chordTypeAtom, "Dominant 7th");
-    store.set(practiceLensAtom, lens);
-    const notes = store
-      .get(practiceBarLandOnGroupAtom)
-      .notes.map((n) => n.internalNote);
+    const notes = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "G", chordType: "Dominant 7th", lens: "guide-tones" })
+      .get(practiceBarLandOnGroupAtom).notes.map((n) => n.internalNote);
     expect(notes).toEqual(expect.arrayContaining(["B", "F"]));
     expect(notes).not.toContain("D");
     expect(notes).not.toContain("G");
   });
 
   it("tension lens — contains only outside-scale chord members with resolutions", () => {
-    const { store, lens } = mkStore("tension");
-    store.set(chordRootAtom, "C#");
-    store.set(chordTypeAtom, "Minor Triad");
-    store.set(practiceLensAtom, lens);
-    const notes = store.get(practiceBarLandOnGroupAtom).notes;
+    const notes = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C#", chordType: "Minor Triad", lens: "tension" })
+      .get(practiceBarLandOnGroupAtom).notes;
     const internals = notes.map((n) => n.internalNote);
     expect(internals).toEqual(expect.arrayContaining(["C#", "G#"]));
     expect(internals).not.toContain("E");
@@ -488,17 +366,8 @@ describe("practiceBarLandOnGroupAtom", () => {
     expect(cSharp?.resolvesTo).toBeDefined();
   });
 
-  it("group label is always 'Land on' regardless of lens", () => {
-    const { store, lens } = mkStore("targets");
-    store.set(chordRootAtom, "C");
-    store.set(chordTypeAtom, "Major Triad");
-    store.set(practiceLensAtom, lens);
-    expect(store.get(practiceBarLandOnGroupAtom).label).toBe("Land on");
-
-    store.set(practiceLensAtom, "guide-tones");
-    expect(store.get(practiceBarLandOnGroupAtom).label).toBe("Land on");
-
-    store.set(practiceLensAtom, "tension");
+  it.each(["targets", "guide-tones", "tension"] as const)("group label is 'Land on' for %s lens", (lens) => {
+    const store = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C", chordType: "Major Triad", lens });
     expect(store.get(practiceBarLandOnGroupAtom).label).toBe("Land on");
   });
 });
@@ -509,33 +378,16 @@ describe("practiceBarLensLabelAtom", () => {
   });
 
   it("returns null when chord overlay is off", () => {
-    const store = makeStore();
-    store.set(chordOverlayModeAtom, "off");
-    expect(store.get(practiceBarLensLabelAtom)).toBeNull();
+    expect(setUp({ overlayMode: "off" }).get(practiceBarLensLabelAtom)).toBeNull();
   });
 
-  it("returns the LENS_REGISTRY label for the active lens", () => {
-    const store = makeStore();
-    store.set(chordRootAtom, "C");
-    store.set(chordTypeAtom, "Major Triad");
-    store.set(practiceLensAtom, "targets");
-    expect(store.get(practiceBarLensLabelAtom)).toBe("Chord Tones");
-  });
-
-  it("returns correct labels for every active lens", () => {
-    const store = makeStore();
-    store.set(chordRootAtom, "C");
-    store.set(chordTypeAtom, "Major Triad");
-
-    const expected: Record<string, string> = {
-      targets: "Chord Tones",
-      "guide-tones": "Guide Tones",
-      tension: "Tension",
-    };
-    for (const [lens, label] of Object.entries(expected)) {
-      store.set(practiceLensAtom, lens as PracticeLens);
-      expect(store.get(practiceBarLensLabelAtom)).toBe(label);
-    }
+  it.each<[PracticeLens, string]>([
+    ["targets", "Chord Tones"],
+    ["guide-tones", "Guide Tones"],
+    ["tension", "Tension"],
+  ])("returns %s label = %s", (lens, label) => {
+    const store = setUp({ chordRoot: "C", chordType: "Major Triad", lens });
+    expect(store.get(practiceBarLensLabelAtom)).toBe(label);
   });
 });
 
@@ -544,43 +396,20 @@ describe("showChordPracticeBarAtom — scale visibility independence", () => {
     localStorage.clear();
   });
 
-  it("shows the dock when scale visibility is off (targets lens)", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordRootAtom, "C");
-    store.set(chordTypeAtom, "Major Triad");
-    store.set(practiceLensAtom, "targets");
-    store.set(scaleVisibleAtom, false);
-    expect(store.get(showChordPracticeBarAtom)).toBe(true);
-  });
-
-  it("shows the dock when scale visibility is off (targets with outside tones)", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordRootAtom, "C#");
-    store.set(chordTypeAtom, "Minor Triad");
-    store.set(practiceLensAtom, "targets");
-    store.set(scaleVisibleAtom, false);
+  it.each<[string, string, string]>([
+    ["in-scale chord", "C", "Major Triad"],
+    ["chord with outside tones", "C#", "Minor Triad"],
+  ])("shows the dock when scale visibility is off (%s)", (_label, chordRoot, chordType) => {
+    const store = setUp({ scaleRoot: "C", scale: "Major", chordRoot, chordType, lens: "targets", scaleVisible: false });
     expect(store.get(showChordPracticeBarAtom)).toBe(true);
   });
 
   it("dock visibility does not change when toggling scaleVisibleAtom", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordRootAtom, "C");
-    store.set(chordTypeAtom, "Dominant 7th");
-    store.set(practiceLensAtom, "targets");
-
+    const store = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C", chordType: "Dominant 7th", lens: "targets" });
     store.set(scaleVisibleAtom, true);
     const visibleOn = store.get(showChordPracticeBarAtom);
-
     store.set(scaleVisibleAtom, false);
-    const visibleOff = store.get(showChordPracticeBarAtom);
-
-    expect(visibleOn).toBe(visibleOff);
+    expect(store.get(showChordPracticeBarAtom)).toBe(visibleOn);
   });
 });
 
@@ -597,34 +426,17 @@ describe("chord overlay does not control scale visibility", () => {
   });
 
   it("enabling chord overlay does not change effectiveShapeDataAtom highlightNotes count", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(scaleVisibleAtom, true);
-
+    const store = setUp({ scaleRoot: "C", scale: "Major", scaleVisible: true });
     const before = store.get(effectiveShapeDataAtom).highlightNotes.length;
-
     store.set(chordTypeAtom, "Major Triad");
-
-    const after = store.get(effectiveShapeDataAtom).highlightNotes.length;
-
-    expect(after).toBe(before);
+    expect(store.get(effectiveShapeDataAtom).highlightNotes.length).toBe(before);
   });
 
   it("disabling chord overlay does not change scale highlight notes", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(scaleVisibleAtom, true);
-    store.set(chordTypeAtom, "Major Triad");
-
+    const store = setUp({ scaleRoot: "C", scale: "Major", scaleVisible: true, chordType: "Major Triad" });
     const before = store.get(effectiveShapeDataAtom).highlightNotes.length;
-
     store.set(chordTypeAtom, null);
-
-    const after = store.get(effectiveShapeDataAtom).highlightNotes.length;
-
-    expect(after).toBe(before);
+    expect(store.get(effectiveShapeDataAtom).highlightNotes.length).toBe(before);
   });
 });
 
@@ -634,20 +446,10 @@ describe("Chord Tones lens does not hide scale notes", () => {
   });
 
   it("effectiveShapeDataAtom highlightNotes unchanged when switching between lenses", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(scaleVisibleAtom, true);
-    store.set(chordTypeAtom, "Major Triad");
-    store.set(practiceLensAtom, "targets");
-
+    const store = setUp({ scaleRoot: "C", scale: "Major", scaleVisible: true, chordType: "Major Triad", lens: "targets" });
     const before = store.get(effectiveShapeDataAtom).highlightNotes.length;
-
     store.set(practiceLensAtom, "guide-tones");
-
-    const after = store.get(effectiveShapeDataAtom).highlightNotes.length;
-
-    expect(after).toBe(before);
+    expect(store.get(effectiveShapeDataAtom).highlightNotes.length).toBe(before);
   });
 });
 
@@ -657,36 +459,20 @@ describe("color notes are scale-owned — independent of chord overlay", () => {
   });
 
   it("colorNotesAtom returns color notes for Minor Blues scale without chord overlay", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Minor Blues");
-    expect(store.get(colorNotesAtom).length).toBeGreaterThan(0);
+    expect(setUp({ scaleRoot: "C", scale: "Minor Blues" }).get(colorNotesAtom).length).toBeGreaterThan(0);
   });
 
   it("colorNotesAtom is unaffected by chord type changes", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Minor Blues");
-
+    const store = setUp({ scaleRoot: "C", scale: "Minor Blues" });
     const before = store.get(colorNotesAtom);
-
     store.set(chordTypeAtom, "Dominant 7th");
-    const after = store.get(colorNotesAtom);
-
-    expect(after).toEqual(before);
+    expect(store.get(colorNotesAtom)).toEqual(before);
   });
 
   it("effectiveColorNotesAtom is cleared by scaleVisible=false, not by chord overlay", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Minor Blues");
-    store.set(chordTypeAtom, "Dominant 7th");
-    store.set(scaleVisibleAtom, true);
-
+    const store = setUp({ scaleRoot: "C", scale: "Minor Blues", chordType: "Dominant 7th", scaleVisible: true });
     expect(store.get(effectiveColorNotesAtom).length).toBeGreaterThan(0);
-
     store.set(toggleScaleVisibleAtom);
-
     expect(store.get(effectiveColorNotesAtom)).toHaveLength(0);
   });
 });
@@ -701,113 +487,56 @@ describe("noteSemanticMapAtom — Phase 04 scaleDegree and isDiatonicChord", () 
   });
 
   it("every in-scale note in C Major has a non-undefined scaleDegree", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordRootAtom, "C");
-    store.set(chordTypeAtom, "Major Triad");
-
-    const semanticMap = store.get(noteSemanticMapAtom);
-    // C Major scale: C D E F G A B
+    const map = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C", chordType: "Major Triad" }).get(noteSemanticMapAtom);
     for (const note of ["C", "D", "E", "F", "G", "A", "B"]) {
-      const sem = semanticMap.get(note);
-      expect(sem, `expected semantics for ${note}`).toBeDefined();
-      expect(sem!.scaleDegree, `expected scaleDegree for ${note}`).toBeDefined();
+      expect(map.get(note), `expected semantics for ${note}`).toBeDefined();
+      expect(map.get(note)!.scaleDegree, `expected scaleDegree for ${note}`).toBeDefined();
     }
   });
 
   it("out-of-scale notes have scaleDegree undefined", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    // C# Minor Triad has C#, E, G# — C# and G# are not in C Major
-    store.set(chordRootAtom, "C#");
-    store.set(chordTypeAtom, "Minor Triad");
-
-    const semanticMap = store.get(noteSemanticMapAtom);
-    const cSharpSem = semanticMap.get("C#");
-    expect(cSharpSem).toBeDefined();
-    expect(cSharpSem!.isInScale).toBe(false);
-    expect(cSharpSem!.scaleDegree).toBeUndefined();
+    const map = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C#", chordType: "Minor Triad" }).get(noteSemanticMapAtom);
+    const cSharp = map.get("C#");
+    expect(cSharp).toBeDefined();
+    expect(cSharp!.isInScale).toBe(false);
+    expect(cSharp!.scaleDegree).toBeUndefined();
   });
 
   it("isDiatonicChord is true for chord tone when degree mode matches diatonic chord", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordDegreeAtom, "I");
-    store.set(chordOverlayModeAtom, "degree");
-
-    const semanticMap = store.get(noteSemanticMapAtom);
-    // C Major I chord: C, E, G — all in scale, chord is diatonic
+    const map = setUp({ scaleRoot: "C", scale: "Major", chordDegree: "I", overlayMode: "degree" }).get(noteSemanticMapAtom);
     for (const note of ["E", "G"]) {
-      const sem = semanticMap.get(note);
-      expect(sem, `expected semantics for ${note}`).toBeDefined();
-      expect(sem!.isChordTone).toBe(true);
-      expect(sem!.isDiatonicChord, `isDiatonicChord should be true for ${note}`).toBe(true);
+      const s = map.get(note);
+      expect(s, `expected semantics for ${note}`).toBeDefined();
+      expect(s!.isChordTone).toBe(true);
+      expect(s!.isDiatonicChord, `isDiatonicChord should be true for ${note}`).toBe(true);
     }
   });
 
-  it("isDiatonicChord is false when chordOverlayMode is manual", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordOverlayModeAtom, "manual");
-    store.set(chordRootAtom, "C");
-    store.set(chordTypeAtom, "Major Triad");
-
-    const semanticMap = store.get(noteSemanticMapAtom);
+  it.each<[string, Setup]>([
+    ["chordOverlayMode is manual", { scaleRoot: "C", scale: "Major", overlayMode: "manual", chordRoot: "C", chordType: "Major Triad" }],
+    ["chordDegree is null (overlay off)", { scaleRoot: "C", scale: "Major", chordDegree: null, overlayMode: "degree", chordRoot: "C", chordType: "Major Triad" }],
+  ])("isDiatonicChord is false when %s", (_label, opts) => {
+    const map = setUp(opts).get(noteSemanticMapAtom);
     for (const note of ["C", "E", "G"]) {
-      const sem = semanticMap.get(note);
-      if (sem?.isChordTone) {
-        expect(sem.isDiatonicChord).toBeFalsy();
-      }
-    }
-  });
-
-  it("isDiatonicChord is false when chordDegree is null (overlay off)", () => {
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordDegreeAtom, null);
-    store.set(chordOverlayModeAtom, "degree");
-    store.set(chordRootAtom, "C");
-    store.set(chordTypeAtom, "Major Triad");
-
-    const semanticMap = store.get(noteSemanticMapAtom);
-    for (const note of ["C", "E", "G"]) {
-      const sem = semanticMap.get(note);
-      if (sem?.isChordTone) {
-        expect(sem.isDiatonicChord).toBeFalsy();
-      }
+      const s = map.get(note);
+      if (s?.isChordTone) expect(s.isDiatonicChord).toBeFalsy();
     }
   });
 
   it("isDiatonicChord is false when a non-diatonic quality override is set in degree mode", () => {
     // After the "preserve degree-mode on chord-quality change" fix, writing a
-    // chord type while in degree mode no longer flips to manual — instead the
-    // override is applied on top of the degree binding. The diatonic-chord
-    // check correctly identifies the override chord (C Minor Triad on degree I
-    // in C Major) as non-diatonic since it doesn't match the degree's diatonic
-    // default (C Major Triad).
-    const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    store.set(chordDegreeAtom, "I");
-    store.set(chordOverlayModeAtom, "degree");
-    store.set(chordTypeAtom, "Minor Triad");
+    // chord type while in degree mode no longer flips to manual — the override
+    // is applied on top of the degree binding, and the diatonic-chord check
+    // correctly identifies it as non-diatonic.
+    const store = setUp({ scaleRoot: "C", scale: "Major", chordDegree: "I", overlayMode: "degree", chordType: "Minor Triad" });
 
-    // Mode stays "degree" — the quality override does NOT flip the overlay.
     expect(store.get(chordOverlayModeAtom)).toBe("degree");
     expect(store.get(chordTypeAtom)).toBe("Minor Triad");
 
-    const semanticMap = store.get(noteSemanticMapAtom);
-    expect(semanticMap.size).toBeGreaterThan(0);
-
-    const gSem = semanticMap.get("G");
+    const map = store.get(noteSemanticMapAtom);
+    expect(map.size).toBeGreaterThan(0);
+    const gSem = map.get("G");
     expect(gSem?.isChordTone).toBe(true);
-    // The chord (C Minor Triad: C, Eb, G) is not the diatonic chord for I in
-    // C Major (which is C Major Triad: C, E, G). isDiatonicChord stays false.
     expect(gSem?.isDiatonicChord).toBeFalsy();
   });
 });
