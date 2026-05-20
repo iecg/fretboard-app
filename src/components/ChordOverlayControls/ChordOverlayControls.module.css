@@ -37,6 +37,9 @@
   font: inherit;
   color: inherit;
   cursor: pointer;
+  /* Keep the chevron + label legible while still meeting the mobile compact
+     touch-target floor (≥ 24px) enforced by e2e/css-scoping.spec.ts. */
+  min-height: 24px;
   padding: 0;
 }
 
