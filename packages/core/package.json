@@ -25,5 +25,12 @@
     "fast-check": "^4.8.0",
     "typescript": "~6.0.3",
     "vitest": "^4.1.7"
+  },
+  "dependencies": {
+    "@tonaljs/chord": "^6.1.2",
+    "@tonaljs/interval": "^5.1.0",
+    "@tonaljs/key": "^4.11.2",
+    "@tonaljs/note": "^4.12.1",
+    "@tonaljs/scale": "^4.13.4"
   }
 }
