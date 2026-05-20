@@ -30,6 +30,7 @@ import {
   booleanStorage,
   constrainedNumberStorage,
   GET_ON_INIT,
+  stringValidator,
   withStorageErrorBoundary,
 } from "../utils/storage";
 import {
@@ -100,7 +101,7 @@ const DIATONIC_TRIAD_QUALITIES = new Set([
 const chordDegreeStorage = createStorage<DegreeId | null>({
   serialize: (v) => v ?? "",
   deserialize: (v) => (v === "" ? null : (v as DegreeId)),
-  validate: (v) => v === null || typeof v === "string",
+  validate: stringValidator({ nullable: true }),
   migrate: (): DegreeId | null | undefined => {
     // NOTE: Seventh chords ("Major 7th", "Minor 7th", "Dominant 7th") and "Power Chord (5)"
     // are NOT in the DEGREE_DIATONIC_QUALITY table and always fall back to manual mode here.
