@@ -7,7 +7,8 @@ import { getDegreesForScale, getQualityForDegree, type DegreeId } from "./degree
 import * as Note from "@tonaljs/note";
 import * as Interval from "@tonaljs/interval";
 import * as Scale from "@tonaljs/scale";
-import { scaleNameToTonal } from "./lib/tonal";
+import { scaleNameToTonal, tonalChordSymbol } from "./lib/tonal";
+import * as Chord from "@tonaljs/chord";
 
 export const NOTES = [
   "C",
@@ -517,10 +518,16 @@ export function getScaleSemitones(rootNote: string, scaleName: string): number[]
 }
 
 export function getChordNotes(rootNote: string, chordName: string): string[] {
-  const intervals = CHORDS[chordName];
-  if (!intervals) return [];
-  if (getNoteIndex(rootNote) === -1) return [];
-  return getIntervalNotes(rootNote, intervals);
+  if (Note.chroma(rootNote) === undefined || Number.isNaN(Note.chroma(rootNote))) return [];
+  const symbol = tonalChordSymbol(rootNote, chordName);
+  if (!symbol) return [];
+  const tonalChord = Chord.get(symbol);
+  if (tonalChord.empty) return [];
+  // Same sharps-form normalization as getIntervalNotes.
+  return tonalChord.notes.map((n) => {
+    const simplified = Note.simplify(n);
+    return simplified.includes("b") ? Note.enharmonic(simplified) : simplified;
+  });
 }
 
 /**
