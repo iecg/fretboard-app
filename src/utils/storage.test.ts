@@ -1,5 +1,18 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { numberValidator, stringValidator, withStorageErrorBoundary } from "./storage";
+import { enumValidator, numberValidator, stringValidator, withStorageErrorBoundary } from "./storage";
+
+describe("enumValidator", () => {
+  const isDirection = enumValidator(["up", "down"] as const);
+  it("accepts members", () => {
+    expect(isDirection("up")).toBe(true);
+    expect(isDirection("down")).toBe(true);
+  });
+  it("rejects non-members", () => {
+    expect(isDirection("left")).toBe(false);
+    expect(isDirection(1)).toBe(false);
+    expect(isDirection(null)).toBe(false);
+  });
+});
 
 describe("numberValidator", () => {
   it("accepts finite numbers by default", () => {
