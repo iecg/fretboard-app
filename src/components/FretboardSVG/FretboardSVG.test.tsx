@@ -945,6 +945,7 @@ describe("FretboardSVG/FretboardSVG", () => {
           activePattern="caged"
           activeShape="E"
           shapeScope="single"
+          chordBoxBounds={[]}
         />,
       );
       const chordRootInShape = container.querySelectorAll('.chord-root[data-note-shape="squircle"]');
@@ -1080,6 +1081,7 @@ describe("FretboardSVG/FretboardSVG", () => {
           activeShape="E"
           shapeScope="single"
           chordFretSpread={0}
+          chordBoxBounds={[]}
         />,
       );
       // Notes at high frets (e.g. fret 8) are in-scale chord tones by name but
@@ -1244,6 +1246,7 @@ describe("FretboardSVG/FretboardSVG", () => {
             activeShape="E"
             shapeScope="single"
             chordFretSpread={0}
+            chordBoxBounds={[]}
             noteSemantics={semantics}
           />
         );
@@ -1303,6 +1306,7 @@ describe("FretboardSVG/FretboardSVG", () => {
             activeShape="E"
             shapeScope="single"
             chordFretSpread={0}
+            chordBoxBounds={[]}
             noteSemantics={semantics}
           />
         );

@@ -66,6 +66,7 @@ export interface UseNoteDataProps {
   noteSemantics?: Map<string, NoteSemantics>;
   fullChordPositionKeys?: Set<string>;
   fullChordShapeByPosition?: Map<string, CagedShape>;
+  chordBoxBounds: BoxBound[] | null;
 }
 
 export function useNoteData({
@@ -82,7 +83,6 @@ export function useNoteData({
   chordRoot,
   colorNotes,
   shapePolygons,
-  boxBounds,
   chordFretSpread,
   activePattern,
   shapeScope,
@@ -97,6 +97,7 @@ export function useNoteData({
   noteSemantics,
   fullChordPositionKeys,
   fullChordShapeByPosition,
+  chordBoxBounds,
 }: UseNoteDataProps): NoteData[] {
   return useMemo(() => {
     const notes: NoteData[] = [];
@@ -192,13 +193,21 @@ export function useNoteData({
         // buffer correctly extends the active shape boundary, not any visible shape.
         const isInPlayableContext: boolean = (() => {
           if (!hasChordOverlay) return false;
+
+          // When the user has not opted into position scoping (or no active position
+          // exists), the chord overlay is unbounded — every chord tone receives the
+          // chord-overlay treatment regardless of fingering pattern.
+          if (chordBoxBounds === null) return true;
+
+          // Below this point, chordBoxBounds is non-null — the user opted in and a single
+          // position is active. The existing position-aware clamp follows.
           if (hasFullChordPositionFilter && fullChordPositionKeys.has(positionKey)) {
             return true;
           }
           // 3NPS has no polygon shapes; gate chord overlay by aggregate fret bounds
           // AND by per-coordinate shape membership.
-          if (activePattern === "3nps" && shapeScope !== "global" && boxBounds.length > 0) {
-            const inFretRange = boxBounds.some(
+          if (activePattern === "3nps" && shapeScope !== "global" && chordBoxBounds.length > 0) {
+            const inFretRange = chordBoxBounds.some(
               (b) =>
                 fretIndex >= b.minFret - chordFretSpread &&
                 fretIndex <= b.maxFret + chordFretSpread,
@@ -363,5 +372,5 @@ export function useNoteData({
       }
     }
     return notes;
-  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, boxBounds, chordFretSpread, scaleName, useFlats, displayFormat, degreeColorsEnabled, wrappedNotes, practiceLens, tuning, noteSemantics, activePattern, activeShape, shapeScope, fullChordPositionKeys, fullChordShapeByPosition]);
+  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, chordFretSpread, scaleName, useFlats, displayFormat, degreeColorsEnabled, wrappedNotes, practiceLens, tuning, noteSemantics, activePattern, activeShape, shapeScope, fullChordPositionKeys, fullChordShapeByPosition, chordBoxBounds]);
 }
