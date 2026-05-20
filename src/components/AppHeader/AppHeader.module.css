@@ -229,3 +229,9 @@
 :global(.app-container[data-layout-tier="tablet"]) .app-header-brand-icon :global(.brand-mark) {
   width: clamp(1.4rem, 2.3vw, 1.7rem);
 }
+
+@media (max-width: 767px) {
+  .app-header-actions {
+    gap: 0.35rem; /* Tightened from existing value */
+  }
+}
