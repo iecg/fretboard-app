@@ -1,47 +1,9 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { pianoVoice } from "./pianoVoice";
-
-// Minimal Web Audio mock — tracks node creation so we can assert that
-// scheduling a chord actually builds oscillators.
-function createMockGain() {
-  return {
-    gain: {
-      value: 1,
-      setValueAtTime: vi.fn(),
-      cancelScheduledValues: vi.fn(),
-      linearRampToValueAtTime: vi.fn(),
-      exponentialRampToValueAtTime: vi.fn(),
-      setTargetAtTime: vi.fn(),
-    },
-    connect: vi.fn().mockReturnThis(),
-    disconnect: vi.fn(),
-  };
-}
-
-function createMockOsc() {
-  return {
-    type: "sine" as OscillatorType,
-    frequency: {
-      setValueAtTime: vi.fn(),
-      exponentialRampToValueAtTime: vi.fn(),
-    },
-    connect: vi.fn().mockReturnThis(),
-    disconnect: vi.fn(),
-    start: vi.fn(),
-    stop: vi.fn(),
-    onended: null as null | (() => void),
-  };
-}
-
-function buildMockCtx() {
-  const ctx = {
-    currentTime: 0,
-    sampleRate: 44100,
-    createGain: vi.fn(createMockGain),
-    createOscillator: vi.fn(createMockOsc),
-  };
-  return ctx;
-}
+import {
+  buildMockCtx,
+  createMockGain,
+} from "../../../test-utils/mockWebAudio";
 
 describe("pianoVoice", () => {
   it("implements ChordVoice interface", () => {
@@ -75,7 +37,7 @@ describe("pianoVoice", () => {
       { velocity: 0.8 },
     );
 
-    expect(ctx.createOscillator).toHaveBeenCalled();
+    expect(ctx.created.oscillators.length).toBeGreaterThan(0);
   });
 
   it("calling cancel() does not throw", () => {

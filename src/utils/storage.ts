@@ -187,6 +187,23 @@ export function rawStringStorage<T extends string>() {
   return createStorage<T>();
 }
 
+export function stringValidator(opts: { nullable?: boolean } = {}) {
+  return (v: unknown): v is string | null =>
+    typeof v === "string" || (opts.nullable === true && v === null);
+}
+
+export function numberValidator(guard?: (n: number) => boolean) {
+  return (v: unknown): v is number =>
+    typeof v === "number" && Number.isFinite(v) && (guard ? guard(v) : true);
+}
+
+export function enumValidator<const T extends readonly (string | number)[]>(
+  values: T,
+) {
+  const set = new Set<T[number]>(values);
+  return (v: unknown): v is T[number] => set.has(v as T[number]);
+}
+
 export const booleanStorage = createStorage<boolean>({
   serialize: (v) => String(v),
   deserialize: (v) => {

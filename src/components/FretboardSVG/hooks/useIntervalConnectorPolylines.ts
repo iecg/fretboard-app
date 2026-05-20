@@ -6,7 +6,7 @@ import {
   CHORD_CONNECTOR_RADIUS_FACTORS,
   resolveConnectorRadiusPx,
   type ConnectorYBounds,
-} from "./useChordConnectorPolylines";
+} from "../utils/connectorRadius";
 
 /**
  * Interval connector output — one entry per interval pair.

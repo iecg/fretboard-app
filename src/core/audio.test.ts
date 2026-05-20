@@ -2,43 +2,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { synth } from '../core/audio';
-
-const createMockGainNode = () => ({
-  connect: vi.fn(),
-  disconnect: vi.fn(),
-  gain: {
-    value: 1.0,
-    cancelScheduledValues: vi.fn(),
-    setValueAtTime: vi.fn(),
-    linearRampToValueAtTime: vi.fn(),
-    exponentialRampToValueAtTime: vi.fn(),
-    setTargetAtTime: vi.fn(),
-  },
-});
-
-const createMockOscillator = () => ({
-  type: 'sine',
-  frequency: {
-    setValueAtTime: vi.fn(),
-  },
-  connect: vi.fn(),
-  disconnect: vi.fn(),
-  start: vi.fn(),
-  stop: vi.fn(),
-  onended: null as null | (() => void),
-  setPeriodicWave: vi.fn(),
-});
-
-const createMockFilter = () => ({
-  type: 'lowpass',
-  Q: { value: 1 },
-  frequency: {
-    setValueAtTime: vi.fn(),
-    exponentialRampToValueAtTime: vi.fn(),
-  },
-  connect: vi.fn(),
-  disconnect: vi.fn(),
-});
+import {
+  createMockGain,
+  createMockOsc,
+  createMockFilter,
+} from '../test-utils/mockWebAudio';
 
 const mockAudioContext = {
   createGain: vi.fn(),
@@ -52,7 +20,7 @@ const mockAudioContext = {
 };
 
 describe('GuitarSynth', () => {
-  let masterGain: ReturnType<typeof createMockGainNode>;
+  let masterGain: ReturnType<typeof createMockGain>;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -65,12 +33,12 @@ describe('GuitarSynth', () => {
     (synth as any).voicePool = [];
     (synth as any).guitarWave = null;
 
-    masterGain = createMockGainNode();
+    masterGain = createMockGain();
     
-    mockAudioContext.createGain.mockImplementation(() => createMockGainNode());
+    mockAudioContext.createGain.mockImplementation(() => createMockGain());
     mockAudioContext.createGain.mockReturnValueOnce(masterGain);
     
-    mockAudioContext.createOscillator.mockImplementation(() => createMockOscillator());
+    mockAudioContext.createOscillator.mockImplementation(() => createMockOsc());
     mockAudioContext.createBiquadFilter.mockImplementation(() => createMockFilter());
     mockAudioContext.state = 'running';
 

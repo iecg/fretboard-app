@@ -2,7 +2,13 @@ import { useMemo } from "react";
 import type { NoteData } from "./useNoteData";
 import { offsetOpenPolylinePath } from "../utils/pathGeometry";
 import { NOTES, type CagedShape } from "@fretflow/core";
-import { chordRootVisualRadiusPx } from "../utils/noteSizing";
+import {
+  type ConnectorYBounds,
+  resolveConnectorRadiusPx,
+  applyConnectorRadiusFloor,
+  computeChordConnectorRadiusPx,
+  CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
+} from "../utils/connectorRadius";
 
 /**
  * Count the number of distinct fret positions spanned by the **fretted** notes
@@ -168,67 +174,7 @@ export const MAX_FRET_SPAN = 5;
  */
 export const MAX_PLAYABLE_FRET_POSITIONS = 3;
 
-/**
- * Uniform base radius factor for chord-connector outlines. All voicings
- * share this base; differentiation comes only from conflict offsets.
- */
-export const CHORD_CONNECTOR_BASE_RADIUS_FACTOR = 0.42;
-
-/**
- * Legacy per-span factors. Interval connectors still use `compact`.
- */
-export const CHORD_CONNECTOR_RADIUS_FACTORS = {
-  compact: 0.34,
-  medium: 0.38,
-  max: 0.42,
-} as const;
-
-export interface ConnectorYBounds {
-  minY: number;
-  maxY: number;
-}
-
-const CONNECTOR_BOUNDARY_GUARD_PX = 1;
 const CONNECTOR_CONFLICT_GAP_PX = 1.5;
-const CHORD_CONNECTOR_MIN_HALO_PX = 2;
-
-export function clampConnectorRadiusToYBounds(
-  vertices: ChordConnectorVertex[],
-  preferredRadius: number,
-  yBounds?: ConnectorYBounds,
-): number {
-  if (!yBounds || vertices.length === 0) return preferredRadius;
-
-  let minVertexY = Infinity;
-  let maxVertexY = -Infinity;
-  for (const vertex of vertices) {
-    if (vertex.y < minVertexY) minVertexY = vertex.y;
-    if (vertex.y > maxVertexY) maxVertexY = vertex.y;
-  }
-
-  const availableRadius = Math.min(
-    minVertexY - yBounds.minY,
-    yBounds.maxY - maxVertexY,
-  ) - CONNECTOR_BOUNDARY_GUARD_PX;
-
-  return Math.max(0, Math.min(preferredRadius, availableRadius));
-}
-
-export function resolveConnectorRadiusPx({
-  vertices,
-  preferredRadius,
-  yBounds,
-  edgeSafe,
-}: {
-  vertices: ChordConnectorVertex[];
-  preferredRadius: number;
-  yBounds?: ConnectorYBounds;
-  edgeSafe: boolean;
-}): number {
-  return edgeSafe
-    ? clampConnectorRadiusToYBounds(vertices, preferredRadius, yBounds)
-    : preferredRadius;
-}
 
 /**
  * Per-voicing pixel offset deltas added to the base radius.
@@ -239,45 +185,6 @@ export function resolveConnectorRadiusPx({
  * larger than 5 wrap with modulo (documented, accepted trade-off).
  */
 const OFFSET_BUCKET = [0, 3, 6, 9, 12] as const;
-
-/**
- * Lift a raw span-based connector radius above the chord-root squircle's
- * outer edge plus a small halo so the contour never collapses inside the
- * note bubble. Shared by chord connectors and interval connectors.
- *
- * Computed in pixel space (rather than as a factor of `stringRowPx`) so the
- * halo gap is constant across the adaptive row-height range — at large row
- * heights the relative gap shrinks, which matches the intent that the floor
- * is a "minimum visible separation" rather than a proportional adjustment.
- */
-export function applyConnectorRadiusFloor(
-  spanRadiusPx: number,
-  stringRowPx: number,
-): number {
-  return Math.max(
-    spanRadiusPx,
-    chordRootVisualRadiusPx(stringRowPx) + CHORD_CONNECTOR_MIN_HALO_PX,
-  );
-}
-
-/**
- * Compute the effective connector contour radius for one voicing.
- *
- * All voicings share a single uniform base radius so non-overlapping
- * connectors look identical. Conflict offsets are added on top only
- * when two voicings geometrically overlap.
- */
-export function computeChordConnectorRadiusPx(
-  _combo: NoteData[],
-  stringRowPx: number,
-  offsetPx: number,
-): number {
-  const flooredRadius = applyConnectorRadiusFloor(
-    stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
-    stringRowPx,
-  );
-  return flooredRadius + Math.max(offsetPx, 0);
-}
 
 function touchesOuterString(combo: NoteData[], lowestStringIndex: number): boolean {
   return combo.some((note) =>
@@ -387,7 +294,7 @@ function assignConflictOffsets(
   const baseRadii = pendingVoicings.map((pv) =>
     resolveConnectorRadiusPx({
       vertices: pv.rawVertices,
-      preferredRadius: computeChordConnectorRadiusPx(pv.sourceCombo, stringRowPx, 0),
+      preferredRadius: computeChordConnectorRadiusPx(stringRowPx, 0),
       yBounds,
       edgeSafe: touchesOuterString(pv.sourceCombo, lowestStringIndex),
     }),
