@@ -2,16 +2,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act } from "@testing-library/react";
 import { makeAtomStore, renderWithStore } from "../test-utils/renderWithAtoms";
-import {
-  beatsPerBarAtom,
-  chordRootAtom,
-  isMutedAtom,
-  progressionStepsAtom,
-  progressionTempoBpmAtom,
-  rootNoteAtom,
-  scaleNameAtom,
-  setProgressionPlayingAtom,
-} from "../store/atoms";
+import { isMutedAtom } from "../store/audioAtoms";
+import { chordRootAtom } from "../store/chordOverlayAtoms";
+import { beatsPerBarAtom, progressionStepsAtom, progressionTempoBpmAtom, setProgressionPlayingAtom } from "../store/progressionAtoms";
+import { rootNoteAtom, scaleNameAtom } from "../store/scaleAtoms";
 import {
   _resetTimelineForTests,
   pauseTimeline,

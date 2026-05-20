@@ -6,7 +6,8 @@ import { axe } from "../../test-utils/a11y";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
 import SettingsOverlay from "./SettingsOverlay";
 import { synth } from "../../core/audio";
-import { settingsOverlayOpenAtom, fretZoomAtom, themeAtom } from "../../store/atoms";
+import { fretZoomAtom } from "../../store/layoutAtoms";
+import { settingsOverlayOpenAtom, themeAtom } from "../../store/uiAtoms";
 import styles from "./SettingsOverlay.module.css";
 
 // Spy on AnimatePresence so we can assert the initial={false} prop in the motion-wiring test.

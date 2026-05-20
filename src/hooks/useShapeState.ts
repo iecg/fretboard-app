@@ -1,21 +1,7 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import {
-  fingeringPatternAtom,
-  setFingeringPatternAtom,
-  cagedShapesAtom,
-  toggleCagedShapeAtom,
-  selectSingleCagedShapeAtom,
-  npsPositionAtom,
-  npsOctaveAtom,
-  clickedShapeAtom,
-  recenterKeyAtom,
-  shapeDataAtom,
-  autoCenterTargetAtom,
-  oneStringIndexAtom,
-  oneStringIntervalAtom,
-  twoStringsPairAtom,
-  twoStringsIntervalAtom,
-} from "../store/atoms";
+import { setFingeringPatternAtom } from "../store/actions";
+import { fingeringPatternAtom, cagedShapesAtom, toggleCagedShapeAtom, selectSingleCagedShapeAtom, npsPositionAtom, npsOctaveAtom, clickedShapeAtom, recenterKeyAtom, oneStringIndexAtom, oneStringIntervalAtom, twoStringsPairAtom, twoStringsIntervalAtom } from "../store/fingeringAtoms";
+import { shapeDataAtom, autoCenterTargetAtom } from "../store/shapeAtoms";
 import { type CagedShape } from "@fretflow/core";
 
 export function useShapeState() {

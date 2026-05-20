@@ -5,26 +5,12 @@ import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
 import { act } from "@testing-library/react";
 import { renderWithAtoms, renderWithStore, makeAtomStore } from "../../test-utils/renderWithAtoms";
-import {
-  chordDegreeAtom,
-  chordOverlayModeAtom,
-  chordQualityOverrideAtom,
-  chordRootOverrideAtom,
-  progressionStepsAtom,
-  scaleNameAtom,
-  rootNoteAtom,
-  practiceLensAtom,
-  fingeringPatternAtom,
-  voicingConnectorsAtom,
-  voicingTypeAtom,
-  voicingStringSetAtom,
-  voicingInversionAtom,
-  validVoicingCombosAtom,
-  controlRecencyAtom,
-  noteControlChangeAtom,
-  cagedShapesAtom,
-  voicingSectionExpandedAtom,
-} from "../../store/atoms";
+import { chordDegreeAtom, chordOverlayModeAtom, chordQualityOverrideAtom, chordRootOverrideAtom, practiceLensAtom, voicingConnectorsAtom, voicingTypeAtom, voicingStringSetAtom, voicingInversionAtom } from "../../store/chordOverlayAtoms";
+import { voicingSectionExpandedAtom } from "../../store/chordScope";
+import { fingeringPatternAtom, cagedShapesAtom } from "../../store/fingeringAtoms";
+import { progressionStepsAtom } from "../../store/progressionAtoms";
+import { scaleNameAtom, rootNoteAtom } from "../../store/scaleAtoms";
+import { validVoicingCombosAtom, controlRecencyAtom, noteControlChangeAtom } from "../../store/voicingCoupling";
 import { ChordOverlayControls } from "./ChordOverlayControls";
 
 // Expected toggle-bar label order — mirrors CHORD_TYPE_DISPLAY_ORDER mapped through CHORD_TYPE_SHORT_LABELS.

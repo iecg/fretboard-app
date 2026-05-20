@@ -1,24 +1,11 @@
 import { startTransition, useEffect, useMemo, useRef } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { type PracticeLens } from "@fretflow/core";
-import {
-  lensAvailabilityAtom,
-  voicingTypeAtom,
-  voicingInversionAtom,
-  voicingStringSetAtom,
-  voicingConnectorsAtom,
-  availableInversionsAtom,
-  stringSetOptionsAtom,
-  validVoicingCombosAtom,
-  controlRecencyAtom,
-  noteControlChangeAtom,
-  nearestValidTriple,
-  chordFretSpreadAtom,
-  chordScopeToPositionAtom,
-  activePositionAtom,
-  voicingSectionExpandedAtom,
-  type VoicingControlId,
-} from "../../store/atoms";
+import { voicingTypeAtom, voicingInversionAtom, voicingStringSetAtom, voicingConnectorsAtom, availableInversionsAtom, stringSetOptionsAtom, chordFretSpreadAtom } from "../../store/chordOverlayAtoms";
+import { chordScopeToPositionAtom, activePositionAtom, voicingSectionExpandedAtom } from "../../store/chordScope";
+import { lensAvailabilityAtom } from "../../store/practiceLensAtoms";
+import { validVoicingCombosAtom, controlRecencyAtom, noteControlChangeAtom, nearestValidTriple } from "../../store/voicingCoupling";
+import type { VoicingControlId } from "../../store/voicingCoupling";
 import { StringSetPicker } from "../Inspector/StringSetPicker";
 import { StepperControl } from "../StepperControl/StepperControl";
 import { useTranslation } from "../../hooks/useTranslation";

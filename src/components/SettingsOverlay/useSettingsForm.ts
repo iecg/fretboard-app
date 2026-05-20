@@ -1,10 +1,5 @@
 import { useAtom } from "jotai";
-import {
-  fretZoomAtom,
-  fretStartAtom,
-  fretEndAtom,
-  tuningNameAtom,
-} from "../../store/atoms";
+import { fretZoomAtom, fretStartAtom, fretEndAtom, tuningNameAtom } from "../../store/layoutAtoms";
 
 export function useSettingsForm() {
   const [fretZoom, setFretZoom] = useAtom(fretZoomAtom);

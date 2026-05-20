@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Provider, createStore } from 'jotai';
-import { scaleDegreeColorsEnabledAtom } from '../../store/atoms';
+import { scaleDegreeColorsEnabledAtom } from '../../store/uiAtoms';
 import { DegreeChipStrip, type DegreeChip } from './DegreeChipStrip';
 import { axe } from '../../test-utils/a11y';
 

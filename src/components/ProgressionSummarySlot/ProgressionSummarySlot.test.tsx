@@ -2,14 +2,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, screen } from "@testing-library/react";
 import { makeAtomStore, renderWithAtoms, renderWithStore } from "../../test-utils/renderWithAtoms";
-import {
-  activeProgressionStepIndexAtom,
-  beatsPerBarAtom,
-  chordTypeAtom,
-  progressionStepsAtom,
-  progressionTempoBpmAtom,
-  setProgressionPlayingAtom,
-} from "../../store/atoms";
+import { chordTypeAtom } from "../../store/chordOverlayAtoms";
+import { activeProgressionStepIndexAtom, beatsPerBarAtom, progressionStepsAtom, progressionTempoBpmAtom, setProgressionPlayingAtom } from "../../store/progressionAtoms";
 import { ProgressionSummarySlot } from "./ProgressionSummarySlot";
 
 const twoBeatProgression = [

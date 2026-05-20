@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useAtomValue } from "jotai";
 import { ensureProgressionAudio } from "../progressions/audio/bus";
 import { getTimeUntilCurrentStepEndMs, getTimelinePosition } from "../progressions/audio/timeline";
-import { isMutedAtom } from "../store/atoms";
+import { isMutedAtom } from "../store/audioAtoms";
 import { useProgressionState } from "./useProgressionState";
 
 /**

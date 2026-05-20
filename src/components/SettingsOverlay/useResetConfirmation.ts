@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSetAtom } from "jotai";
-import { resetAtom } from "../../store/atoms";
+import { resetAtom } from "../../store/actions";
 import { synth } from "../../core/audio";
 
 export function useResetConfirmation(onConfirm: () => void) {

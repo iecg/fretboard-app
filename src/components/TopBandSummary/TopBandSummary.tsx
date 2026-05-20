@@ -2,7 +2,7 @@ import { useAtomValue } from "jotai";
 import { AnimatePresence, motion } from "motion/react";
 import { Eye, EyeOff } from "lucide-react";
 import { ANIMATION_DURATION_FAST, ANIMATION_EASE } from "@fretflow/core";
-import { showChordPracticeBarAtom } from "../../store/atoms";
+import { showChordPracticeBarAtom } from "../../store/practiceLensAtoms";
 import { useScaleState } from "../../hooks/useScaleState";
 import { usePracticeBarState } from "../../hooks/usePracticeBarState";
 import { DegreeChipStrip } from "../DegreeChipStrip/DegreeChipStrip";

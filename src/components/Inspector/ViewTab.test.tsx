@@ -3,14 +3,10 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
 import { axe } from "../../test-utils/a11y";
-import {
-  fretStartAtom,
-  fretEndAtom,
-  accidentalModeAtom,
-  enharmonicDisplayAtom,
-  scaleDegreeColorsEnabledAtom,
-  displayFormatAtom,
-} from "../../store/atoms";
+import { enharmonicDisplayAtom } from "../../store/audioAtoms";
+import { fretStartAtom, fretEndAtom } from "../../store/layoutAtoms";
+import { accidentalModeAtom } from "../../store/scaleAtoms";
+import { scaleDegreeColorsEnabledAtom, displayFormatAtom } from "../../store/uiAtoms";
 import { ViewTab } from "./ViewTab";
 
 describe("ViewTab", () => {

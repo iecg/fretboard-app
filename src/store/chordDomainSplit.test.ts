@@ -5,19 +5,10 @@ import {
   LENS_REGISTRY,
   type LensAvailabilityContext,
 } from "@fretflow/core";
-import * as atomsModule from "./atoms";
-import {
-  chordMemberFactsAtom,
-  chordRootAtom,
-  chordTypeAtom,
-  chordOverlayModeAtom,
-  rootNoteAtom,
-  scaleNameAtom,
-  practiceLensAtom,
-  lensAvailabilityContextAtom,
-  lensAvailabilityAtom,
-  progressionStepsAtom,
-} from "./atoms";
+import { chordMemberFactsAtom, chordRootAtom, chordTypeAtom, chordOverlayModeAtom, practiceLensAtom } from "./chordOverlayAtoms";
+import { lensAvailabilityContextAtom, lensAvailabilityAtom } from "./practiceLensAtoms";
+import { progressionStepsAtom } from "./progressionAtoms";
+import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
 
 function makeStore() {
   const store = createStore();
@@ -125,26 +116,6 @@ describe("chordMemberFactsAtom", () => {
 });
 
 describe("Focus removal", () => {
-  it("focusPresetAtom is not exported from atoms", () => {
-    expect("focusPresetAtom" in atomsModule).toBe(false);
-  });
-
-  it("customMembersAtom is not exported from atoms", () => {
-    expect("customMembersAtom" in atomsModule).toBe(false);
-  });
-
-  it("viewModeAtom is not exported from atoms", () => {
-    expect("viewModeAtom" in atomsModule).toBe(false);
-  });
-
-  it("activeChordMembersAtom is not exported from atoms", () => {
-    expect("activeChordMembersAtom" in atomsModule).toBe(false);
-  });
-
-  it("availableFocusPresetsAtom is not exported from atoms", () => {
-    expect("availableFocusPresetsAtom" in atomsModule).toBe(false);
-  });
-
   it("chord domain is scale-free: chordMemberFactsAtom returns same facts for any scale", () => {
     const storeA = createStore();
     storeA.set(progressionStepsAtom, []);

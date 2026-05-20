@@ -1,12 +1,8 @@
 import { lazy, Suspense } from "react";
 import { useAtomValue, useSetAtom, useAtom } from "jotai";
-import {
-  rootNoteAtom,
-  setRootNoteAtom,
-  scaleNameAtom,
-  useFlatsAtom,
-  enharmonicDisplayAtom,
-} from "../../store/atoms";
+import { setRootNoteAtom } from "../../store/actions";
+import { enharmonicDisplayAtom } from "../../store/audioAtoms";
+import { rootNoteAtom, scaleNameAtom, useFlatsAtom } from "../../store/scaleAtoms";
 import { ScaleSelector } from "../ScaleSelector/ScaleSelector";
 import { ScaleTheoryFacts } from "./ScaleTheoryFacts";
 import { GroupHeader, PropGrid } from "./InspectorGrid";

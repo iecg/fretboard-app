@@ -1,18 +1,11 @@
 import { useAtomValue } from "jotai";
 import { CAGED_SHAPES, LENS_REGISTRY } from "@fretflow/core";
-import {
-  type FingeringPattern,
-  scaleLabelAtom,
-  chordShortLabelAtom,
-  effectiveChordDegreeAtom,
-  practiceLensAtom,
-  fingeringPatternAtom,
-  cagedShapesAtom,
-  fretStartAtom,
-  fretEndAtom,
-  progressionTempoBpmAtom,
-  tuningNameAtom,
-} from "../../store/atoms";
+import { chordShortLabelAtom, effectiveChordDegreeAtom, practiceLensAtom } from "../../store/chordOverlayAtoms";
+import { fingeringPatternAtom, cagedShapesAtom } from "../../store/fingeringAtoms";
+import type { FingeringPattern } from "../../store/fingeringAtoms";
+import { fretStartAtom, fretEndAtom, tuningNameAtom } from "../../store/layoutAtoms";
+import { progressionTempoBpmAtom } from "../../store/progressionAtoms";
+import { scaleLabelAtom } from "../../store/scaleAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import styles from "./StatusBar.module.css";
 

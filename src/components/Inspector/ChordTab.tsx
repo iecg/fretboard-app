@@ -1,5 +1,5 @@
 import { useAtomValue } from "jotai";
-import { chordSourceIsProgressionAtom } from "../../store/atoms";
+import { chordSourceIsProgressionAtom } from "../../store/chordOverlayAtoms";
 import { ChordOverlayControls } from "../ChordOverlayControls/ChordOverlayControls";
 import styles from "./ChordTab.module.css";
 

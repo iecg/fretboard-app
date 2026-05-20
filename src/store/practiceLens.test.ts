@@ -3,26 +3,11 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { createStore } from "jotai";
 import type { PracticeLens } from "@fretflow/core";
 import { k } from "../utils/storage";
-import {
-  practiceLensAtom,
-  practiceCuesAtom,
-  showChordPracticeBarAtom,
-  practiceBarLensLabelAtom,
-  practiceBarChordGroupAtom,
-  practiceBarLandOnGroupAtom,
-  lensAvailabilityAtom,
-  noteSemanticMapAtom,
-  rootNoteAtom,
-  scaleNameAtom,
-  scaleVisibleAtom,
-  chordRootAtom,
-  chordTypeAtom,
-  chordDegreeAtom,
-  chordOverlayModeAtom,
-  chordHiddenNotesAtom,
-  fingeringPatternAtom,
-  progressionStepsAtom,
-} from "./atoms";
+import { practiceLensAtom, chordRootAtom, chordTypeAtom, chordDegreeAtom, chordOverlayModeAtom, chordHiddenNotesAtom } from "./chordOverlayAtoms";
+import { fingeringPatternAtom } from "./fingeringAtoms";
+import { practiceCuesAtom, showChordPracticeBarAtom, practiceBarLensLabelAtom, practiceBarChordGroupAtom, practiceBarLandOnGroupAtom, lensAvailabilityAtom, noteSemanticMapAtom } from "./practiceLensAtoms";
+import { progressionStepsAtom } from "./progressionAtoms";
+import { rootNoteAtom, scaleNameAtom, scaleVisibleAtom } from "./scaleAtoms";
 
 function makeStore() {
   const store = createStore();
@@ -413,12 +398,8 @@ describe("showChordPracticeBarAtom — scale visibility independence", () => {
   });
 });
 
-import {
-  colorNotesAtom,
-  effectiveColorNotesAtom,
-  effectiveShapeDataAtom,
-  toggleScaleVisibleAtom,
-} from "./atoms";
+import { colorNotesAtom, effectiveColorNotesAtom, toggleScaleVisibleAtom } from "./scaleAtoms";
+import { effectiveShapeDataAtom } from "./shapeAtoms";
 
 describe("chord overlay does not control scale visibility", () => {
   beforeEach(() => {

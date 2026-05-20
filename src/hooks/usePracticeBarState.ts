@@ -1,13 +1,6 @@
 import { useAtomValue } from "jotai";
-import {
-  showChordPracticeBarAtom,
-  practiceBarTitleAtom,
-  practiceBarBadgeAtom,
-  practiceBarLensLabelAtom,
-  practiceLensAtom,
-  practiceBarChordGroupAtom,
-  practiceBarLandOnGroupAtom,
-} from "../store/atoms";
+import { practiceLensAtom } from "../store/chordOverlayAtoms";
+import { showChordPracticeBarAtom, practiceBarTitleAtom, practiceBarBadgeAtom, practiceBarLensLabelAtom, practiceBarChordGroupAtom, practiceBarLandOnGroupAtom } from "../store/practiceLensAtoms";
 
 export function usePracticeBarState() {
   const showChordPracticeBar = useAtomValue(showChordPracticeBarAtom);

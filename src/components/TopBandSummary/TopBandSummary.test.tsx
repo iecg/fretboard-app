@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
 import { TopBandSummary } from "./TopBandSummary";
-import { chordTypeAtom } from "../../store/atoms";
+import { chordTypeAtom } from "../../store/chordOverlayAtoms";
 
 // Spy on MotionConfig so we can assert it is NOT called during TopBandSummary rendering.
 // The component previously wrapped its output in a local <MotionConfig reducedMotion="user">;
