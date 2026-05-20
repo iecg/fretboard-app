@@ -26,7 +26,7 @@ describe("useNoteData", () => {
         rootNote: "E",
         colorNotes: [],
         shapePolygons: [],
-        boxBounds: [],
+
         chordBoxBounds: null,
         chordFretSpread: 0,
         scaleName: "minor-pentatonic",
@@ -84,7 +84,7 @@ describe("useNoteData", () => {
           chordRoot: "C",
           colorNotes: [],
           shapePolygons: [polyAt5To7],
-          boxBounds: [],
+
           chordBoxBounds: [],
           chordFretSpread,
           activePattern: "caged",
@@ -200,7 +200,7 @@ describe("useNoteData", () => {
           chordRoot: "C",
           colorNotes: [],
           shapePolygons: [polyAt5To7],
-          boxBounds: [],
+
           chordBoxBounds: [],
           chordFretSpread: 0,
           activePattern: "caged",
@@ -239,7 +239,7 @@ describe("useNoteData", () => {
       chordRoot: "C",
       colorNotes: [] as string[],
       shapePolygons: [] as import("@fretflow/core").ShapePolygon[],
-      boxBounds: [] as import("../utils/semantics").BoxBound[],
+
       chordFretSpread: 0,
       scaleName: "Major",
       useFlats: false,
@@ -316,7 +316,7 @@ describe("useNoteData", () => {
         rootNote: "C",
         colorNotes: ["F#"],
         shapePolygons: [],
-        boxBounds: [],
+
         chordBoxBounds: null,
         chordFretSpread: 0,
         scaleName: "Minor Blues",

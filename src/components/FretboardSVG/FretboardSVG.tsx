@@ -65,8 +65,6 @@ interface FretboardSVGProps {
   rootNote: string;
   /** Controls the label style inside note bubbles. */
   displayFormat?: "notes" | "degrees" | "none";
-  /** Per-string fret-range boxes constraining shape/chord highlighting. */
-  boxBounds?: BoxBound[];
   /**
    * Explicit fret-range bounds used exclusively for the chord-tone clamp.
    * Non-null only when the user has opted into position scoping AND a single
@@ -149,7 +147,6 @@ export const FretboardSVG = memo(function FretboardSVG({
   highlightNotes,
   rootNote,
   displayFormat = "notes",
-  boxBounds = [],
   chordBoxBounds = null,
   chordTones = [],
   chordRoot,
@@ -386,7 +383,6 @@ export const FretboardSVG = memo(function FretboardSVG({
     chordRoot,
     colorNotes,
     shapePolygons,
-    boxBounds,
     chordBoxBounds,
     chordFretSpread,
     activePattern,

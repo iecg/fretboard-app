@@ -33,8 +33,6 @@ interface FretboardProps {
   rootNote?: string;
   /** Controls how notes are labeled inside bubbles: note names, scale degrees, or hidden. */
   displayFormat?: "notes" | "degrees" | "none";
-  /** Per-string fret-range boxes that constrain shape/chord highlighting. */
-  boxBounds?: { minFret: number; maxFret: number }[];
   /** Chord tone note names to overlay on the fretboard. */
   chordTones?: string[];
   /** Root note of the active chord overlay. */
@@ -91,7 +89,6 @@ export function Fretboard(props: FretboardProps) {
   const highlightNotes = props.highlightNotes ?? state.highlightNotes;
   const rootNote = props.rootNote ?? state.rootNote;
   const displayFormat = props.displayFormat ?? state.displayFormat;
-  const boxBounds = props.boxBounds ?? state.boxBounds;
   const chordTones = props.chordTones ?? state.chordTones;
   const chordRoot = props.chordRoot ?? state.chordRoot;
   const chordFretSpread = props.chordFretSpread ?? state.chordFretSpread;
@@ -310,7 +307,6 @@ export function Fretboard(props: FretboardProps) {
           highlightNotes={highlightNotes}
           rootNote={rootNote}
           displayFormat={displayFormat}
-          boxBounds={boxBounds}
           chordBoxBounds={chordBoxBounds}
           chordTones={chordTones}
           chordRoot={chordRoot}

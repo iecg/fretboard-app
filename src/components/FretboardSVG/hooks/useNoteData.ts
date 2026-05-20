@@ -51,7 +51,6 @@ export interface UseNoteDataProps {
   chordRoot?: string;
   colorNotes: string[];
   shapePolygons: ShapePolygon[];
-  boxBounds: BoxBound[];
   chordFretSpread: number;
   activePattern?: "caged" | "3nps" | "none";
   shapeScope?: "single" | "multi" | "global";
