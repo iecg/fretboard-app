@@ -4,6 +4,7 @@ import {
   CHORD_CONNECTOR_RADIUS_FACTORS,
   clampConnectorRadiusToYBounds,
   resolveConnectorRadiusPx,
+  applyConnectorRadiusFloor,
 } from "./connectorRadius";
 
 describe("connectorRadius constants", () => {
@@ -75,5 +76,23 @@ describe("resolveConnectorRadiusPx", () => {
       edgeSafe: true,
     });
     expect(r).toBeLessThanOrEqual(5);
+  });
+});
+
+describe("applyConnectorRadiusFloor", () => {
+  it("returns the span radius when it exceeds the chord-root floor", () => {
+    const stringRowPx = 40;
+    const spanRadiusPx = 1000;
+    expect(applyConnectorRadiusFloor(spanRadiusPx, stringRowPx)).toBe(
+      spanRadiusPx,
+    );
+  });
+  it("lifts to the floor when the span radius is below it", () => {
+    const stringRowPx = 40;
+    const result = applyConnectorRadiusFloor(0, stringRowPx);
+    expect(result).toBeGreaterThan(0);
+  });
+  it("returns a finite value for plausible inputs", () => {
+    expect(Number.isFinite(applyConnectorRadiusFloor(12, 40))).toBe(true);
   });
 });

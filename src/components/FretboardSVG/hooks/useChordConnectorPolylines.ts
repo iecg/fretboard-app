@@ -2,11 +2,11 @@ import { useMemo } from "react";
 import type { NoteData } from "./useNoteData";
 import { offsetOpenPolylinePath } from "../utils/pathGeometry";
 import { NOTES, type CagedShape } from "@fretflow/core";
-import { chordRootVisualRadiusPx } from "../utils/noteSizing";
 import {
   type ConnectorYBounds,
   clampConnectorRadiusToYBounds,
   resolveConnectorRadiusPx,
+  applyConnectorRadiusFloor,
   CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
   CHORD_CONNECTOR_RADIUS_FACTORS,
 } from "../utils/connectorRadius";
@@ -15,6 +15,7 @@ export type { ConnectorYBounds };
 export {
   clampConnectorRadiusToYBounds,
   resolveConnectorRadiusPx,
+  applyConnectorRadiusFloor,
   CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
   CHORD_CONNECTOR_RADIUS_FACTORS,
 };
@@ -184,7 +185,6 @@ export const MAX_FRET_SPAN = 5;
 export const MAX_PLAYABLE_FRET_POSITIONS = 3;
 
 const CONNECTOR_CONFLICT_GAP_PX = 1.5;
-const CHORD_CONNECTOR_MIN_HALO_PX = 2;
 
 /**
  * Per-voicing pixel offset deltas added to the base radius.
@@ -195,26 +195,6 @@ const CHORD_CONNECTOR_MIN_HALO_PX = 2;
  * larger than 5 wrap with modulo (documented, accepted trade-off).
  */
 const OFFSET_BUCKET = [0, 3, 6, 9, 12] as const;
-
-/**
- * Lift a raw span-based connector radius above the chord-root squircle's
- * outer edge plus a small halo so the contour never collapses inside the
- * note bubble. Shared by chord connectors and interval connectors.
- *
- * Computed in pixel space (rather than as a factor of `stringRowPx`) so the
- * halo gap is constant across the adaptive row-height range — at large row
- * heights the relative gap shrinks, which matches the intent that the floor
- * is a "minimum visible separation" rather than a proportional adjustment.
- */
-export function applyConnectorRadiusFloor(
-  spanRadiusPx: number,
-  stringRowPx: number,
-): number {
-  return Math.max(
-    spanRadiusPx,
-    chordRootVisualRadiusPx(stringRowPx) + CHORD_CONNECTOR_MIN_HALO_PX,
-  );
-}
 
 /**
  * Compute the effective connector contour radius for one voicing.

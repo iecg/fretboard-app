@@ -23,7 +23,10 @@ interface ConnectorVertex {
   y: number;
 }
 
+import { chordRootVisualRadiusPx } from "./noteSizing";
+
 const CONNECTOR_BOUNDARY_GUARD_PX = 1;
+const CHORD_CONNECTOR_MIN_HALO_PX = 2;
 
 export function clampConnectorRadiusToYBounds(
   vertices: ConnectorVertex[],
@@ -61,4 +64,24 @@ export function resolveConnectorRadiusPx({
   return edgeSafe
     ? clampConnectorRadiusToYBounds(vertices, preferredRadius, yBounds)
     : preferredRadius;
+}
+
+/**
+ * Lift a raw span-based connector radius above the chord-root squircle's
+ * outer edge plus a small halo so the contour never collapses inside the
+ * note bubble. Shared by chord connectors and interval connectors.
+ *
+ * Computed in pixel space (rather than as a factor of `stringRowPx`) so the
+ * halo gap is constant across the adaptive row-height range — at large row
+ * heights the relative gap shrinks, which matches the intent that the floor
+ * is a "minimum visible separation" rather than a proportional adjustment.
+ */
+export function applyConnectorRadiusFloor(
+  spanRadiusPx: number,
+  stringRowPx: number,
+): number {
+  return Math.max(
+    spanRadiusPx,
+    chordRootVisualRadiusPx(stringRowPx) + CHORD_CONNECTOR_MIN_HALO_PX,
+  );
 }
