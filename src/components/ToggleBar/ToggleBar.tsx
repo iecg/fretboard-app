@@ -47,7 +47,7 @@ interface ToggleBarProps<Value extends string | number> extends VariantProps<
   typeof toggleBarVariants
 > {
   options: readonly ToggleBarOption<Value>[];
-  value: Value;
+  value: Value | undefined;
   onChange: (value: Value) => void;
   variant?: "default" | "tabs";
   label?: string;
