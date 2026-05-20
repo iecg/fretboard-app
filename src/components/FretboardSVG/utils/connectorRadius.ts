@@ -85,3 +85,22 @@ export function applyConnectorRadiusFloor(
     chordRootVisualRadiusPx(stringRowPx) + CHORD_CONNECTOR_MIN_HALO_PX,
   );
 }
+
+/**
+ * Compute the effective connector contour radius for one voicing.
+ *
+ * All voicings share a single uniform base radius so non-overlapping
+ * connectors look identical. Conflict offsets are added on top only
+ * when two voicings geometrically overlap.
+ */
+export function computeChordConnectorRadiusPx(
+  _combo: unknown[],
+  stringRowPx: number,
+  offsetPx: number,
+): number {
+  const flooredRadius = applyConnectorRadiusFloor(
+    stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
+    stringRowPx,
+  );
+  return flooredRadius + Math.max(offsetPx, 0);
+}

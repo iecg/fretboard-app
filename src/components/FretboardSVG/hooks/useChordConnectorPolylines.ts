@@ -7,6 +7,7 @@ import {
   clampConnectorRadiusToYBounds,
   resolveConnectorRadiusPx,
   applyConnectorRadiusFloor,
+  computeChordConnectorRadiusPx,
   CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
   CHORD_CONNECTOR_RADIUS_FACTORS,
 } from "../utils/connectorRadius";
@@ -16,6 +17,7 @@ export {
   clampConnectorRadiusToYBounds,
   resolveConnectorRadiusPx,
   applyConnectorRadiusFloor,
+  computeChordConnectorRadiusPx,
   CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
   CHORD_CONNECTOR_RADIUS_FACTORS,
 };
@@ -195,25 +197,6 @@ const CONNECTOR_CONFLICT_GAP_PX = 1.5;
  * larger than 5 wrap with modulo (documented, accepted trade-off).
  */
 const OFFSET_BUCKET = [0, 3, 6, 9, 12] as const;
-
-/**
- * Compute the effective connector contour radius for one voicing.
- *
- * All voicings share a single uniform base radius so non-overlapping
- * connectors look identical. Conflict offsets are added on top only
- * when two voicings geometrically overlap.
- */
-export function computeChordConnectorRadiusPx(
-  _combo: NoteData[],
-  stringRowPx: number,
-  offsetPx: number,
-): number {
-  const flooredRadius = applyConnectorRadiusFloor(
-    stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
-    stringRowPx,
-  );
-  return flooredRadius + Math.max(offsetPx, 0);
-}
 
 function touchesOuterString(combo: NoteData[], lowestStringIndex: number): boolean {
   return combo.some((note) =>

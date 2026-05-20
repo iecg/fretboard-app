@@ -5,6 +5,7 @@ import {
   clampConnectorRadiusToYBounds,
   resolveConnectorRadiusPx,
   applyConnectorRadiusFloor,
+  computeChordConnectorRadiusPx,
 } from "./connectorRadius";
 
 describe("connectorRadius constants", () => {
@@ -94,5 +95,23 @@ describe("applyConnectorRadiusFloor", () => {
   });
   it("returns a finite value for plausible inputs", () => {
     expect(Number.isFinite(applyConnectorRadiusFloor(12, 40))).toBe(true);
+  });
+});
+
+describe("computeChordConnectorRadiusPx", () => {
+  it("returns a finite radius for representative inputs", () => {
+    const r = computeChordConnectorRadiusPx([], 40, 0);
+    expect(Number.isFinite(r)).toBe(true);
+    expect(r).toBeGreaterThan(0);
+  });
+  it("adds non-negative offsetPx on top of the base", () => {
+    const base = computeChordConnectorRadiusPx([], 40, 0);
+    const bumped = computeChordConnectorRadiusPx([], 40, 5);
+    expect(bumped).toBeCloseTo(base + 5, 6);
+  });
+  it("clamps negative offsetPx to 0", () => {
+    const base = computeChordConnectorRadiusPx([], 40, 0);
+    const negative = computeChordConnectorRadiusPx([], 40, -10);
+    expect(negative).toBe(base);
   });
 });
