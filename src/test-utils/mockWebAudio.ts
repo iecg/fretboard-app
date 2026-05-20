@@ -5,6 +5,7 @@ export interface MockAudioParam {
   setValueAtTime: ReturnType<typeof vi.fn>;
   linearRampToValueAtTime: ReturnType<typeof vi.fn>;
   exponentialRampToValueAtTime: ReturnType<typeof vi.fn>;
+  setTargetAtTime: ReturnType<typeof vi.fn>;
   cancelScheduledValues: ReturnType<typeof vi.fn>;
 }
 
@@ -14,6 +15,7 @@ function makeParam(initial = 0): MockAudioParam {
     setValueAtTime: vi.fn(),
     linearRampToValueAtTime: vi.fn(),
     exponentialRampToValueAtTime: vi.fn(),
+    setTargetAtTime: vi.fn(),
     cancelScheduledValues: vi.fn(),
   };
 }
