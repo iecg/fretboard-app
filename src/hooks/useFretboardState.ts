@@ -23,6 +23,8 @@ import {
   npsPositionAtom,
   fullChordMatchesAtom,
   voicingConnectorsAtom,
+  chordScopeToPositionAtom,
+  activePositionAtom,
 } from "../store/atoms";
 import type { CagedShape, Voicing, VoicingNote, ShapePolygon } from "@fretflow/core";
 
@@ -141,6 +143,8 @@ export function useFretboardState() {
   const npsPosition = useAtomValue(npsPositionAtom);
   const fullChordMatches = useAtomValue(fullChordMatchesAtom);
   const showChordConnectors = useAtomValue(voicingConnectorsAtom);
+  const chordScopeToPosition = useAtomValue(chordScopeToPositionAtom);
+  const activePosition = useAtomValue(activePositionAtom);
 
   let activePattern: ActivePatternType | undefined;
   let activeShape: ActiveShapeType;
@@ -172,14 +176,21 @@ export function useFretboardState() {
 
   const visibleFullChordMatches = useMemo(
     () =>
-      fingeringPattern === "caged"
+      chordScopeToPosition && activePosition && fingeringPattern === "caged"
         ? selectFullChordMatchesForCagedPosition(
             fullChordMatches,
             shapePolygons,
             cagedShapes,
           )
         : fullChordMatches,
-    [fingeringPattern, fullChordMatches, shapePolygons, cagedShapes],
+    [
+      chordScopeToPosition,
+      activePosition,
+      fingeringPattern,
+      fullChordMatches,
+      shapePolygons,
+      cagedShapes,
+    ],
   );
   const visibleFullChordPositions = useMemo(
     () =>
@@ -188,6 +199,8 @@ export function useFretboardState() {
       ),
     [visibleFullChordMatches],
   );
+
+  const chordBoxBounds = chordScopeToPosition && activePosition ? boxBounds : null;
 
   return {
     currentTuning,
@@ -216,5 +229,6 @@ export function useFretboardState() {
     fullChordMatches: visibleFullChordMatches,
     fullChordPositions: visibleFullChordPositions,
     showChordConnectors,
+    chordBoxBounds,
   };
 }

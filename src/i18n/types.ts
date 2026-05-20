@@ -9,7 +9,6 @@ export interface Dictionary {
       instrument: string;
       appearance: string;
       notation: string;
-      chordLayout: string;
       reset: string;
     };
     view: {
@@ -23,12 +22,10 @@ export interface Dictionary {
       tuning: string;
       accidentals: string;
       enharmonicDisplay: string;
-      chordSpread: string;
       theme: string;
       scaleDegreeColorsHint: string;
       accidentalsHint: string;
       enharmonicDisplayHint: string;
-      chordSpreadHint: string;
       themeHint: string;
     };
   };
@@ -102,6 +99,14 @@ export interface Dictionary {
     voicingTypeCaged: string;
     voicingTypeDrop2: string;
     voicingTypeTriad: string;
+    positionCluster: string;
+    stringStudyCluster: string;
+    voicingSection: string;
+    scopeToPosition: string;
+    scopeToPositionHint: string;
+    scopeToPositionNeedsPosition: string;
+    chordSpread: string;
+    chordSpreadHint: string;
   };
   statusBar: {
     key: string;
@@ -152,7 +157,6 @@ export interface Dictionary {
     manual: string;
     shapeHintTouch: string;
     shapeHintPointer: string;
-    chordOverlayDisabled: string;
     degreeModeHint: string;
     manualModeHint: string;
     customChordHint: string;

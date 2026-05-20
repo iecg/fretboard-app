@@ -24,7 +24,6 @@ import {
   type ProgressionStep,
   type ProgressionStepDuration,
 } from "../progressions/progressionDomain";
-import { fingeringPatternAtom, isChordOverlayPatternDisabled } from "./fingeringAtoms";
 import { rootNoteAtom, scaleNameAtom, useFlatsAtom } from "./scaleAtoms";
 import type { ChordInstrumentId } from "../progressions/audio/instruments/types";
 import { getGenreStyle } from "../progressions/audio/genres";
@@ -320,9 +319,6 @@ export const progressionStepDurationMsAtom = atom((get) => {
 });
 
 export const progressionPlaybackBlockedReasonAtom = atom((get) => {
-  if (isChordOverlayPatternDisabled(get(fingeringPatternAtom))) {
-    return "Chord overlay disabled for single/two-string patterns.";
-  }
   const resolved = get(resolvedProgressionStepsAtom);
   if (resolved.length === 0) return "Add or load progression steps to start playback.";
   if (findFirstResolvableStepIndex(resolved) === null) {

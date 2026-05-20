@@ -48,7 +48,11 @@ test.describe("Progression Visual", () => {
     await expectFullPageVisual(page, "progression-mobile-390x844", linuxTolerance);
   });
 
-  test("progression-disabled-pattern-1280x900", async ({ page }) => {
+  test("progression-string-study-pattern-1280x900", async ({ page }) => {
+    // After the controls overhaul, the one-string / two-strings patterns no
+    // longer disable the chord overlay — they only change how the scale is
+    // drawn. This snapshot verifies the chord overlay + progression remain
+    // fully usable on top of a string-study fingering.
     await loadVisualState(
       page,
       {
@@ -60,7 +64,6 @@ test.describe("Progression Visual", () => {
       { width: 1280, height: 900 },
     );
 
-    await expect(page.getByText("Chord overlay disabled for single/two-string patterns.")).toBeVisible();
-    await expectFullPageVisual(page, "progression-disabled-pattern-1280x900", linuxTolerance);
+    await expectFullPageVisual(page, "progression-string-study-pattern-1280x900", linuxTolerance);
   });
 });

@@ -44,7 +44,8 @@ describe("Inspector", () => {
   it("renders the View tab body by default", () => {
     renderInspector();
     expect(screen.getByRole("tabpanel").getAttribute("data-tab-id")).toBe("view");
-    expect(screen.getByText("Fingering")).toBeInTheDocument();
+    // Fingering moved to the Scale tab in the controls overhaul; View now
+    // holds only display preferences. Fret range is the canonical landmark.
     expect(screen.getByRole("group", { name: /fret range/i })).toBeInTheDocument();
   });
 

@@ -4,7 +4,6 @@ export type SettingFieldKey =
   | "zoom"
   | "fretRange"
   | "tuning"
-  | "chordSpread"
   | "theme";
 
 export type SettingFieldConfig = {

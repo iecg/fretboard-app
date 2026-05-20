@@ -14,17 +14,17 @@ import {
 import { ViewTab } from "./ViewTab";
 
 describe("ViewTab", () => {
-  it("renders the Fingering, Labels, and Display group headers", () => {
+  it("renders the Labels and Display group headers (Fingering moved to ScaleTab)", () => {
     renderWithAtoms(<ViewTab />);
-    expect(screen.getByText("Fingering")).toBeInTheDocument();
+    expect(screen.queryByText("Fingering")).not.toBeInTheDocument();
     expect(screen.getByText("Labels")).toBeInTheDocument();
     expect(screen.getByText("Display")).toBeInTheDocument();
   });
 
-  it("renders the fingering pattern control and the fret range group", () => {
+  it("renders the fret range group (fingering pattern controls moved to ScaleTab)", () => {
     renderWithAtoms(<ViewTab />);
     expect(screen.getByRole("group", { name: /fret range/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "CAGED" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "CAGED" })).not.toBeInTheDocument();
   });
 
   it("reflects atom-seeded fret start/end values in the steppers", () => {
@@ -86,6 +86,11 @@ describe("ViewTab", () => {
     expect(screen.queryByText("Full Chords")).not.toBeInTheDocument();
     expect(screen.queryByText("Tap to Play")).not.toBeInTheDocument();
     expect(screen.getByRole("group", { name: /fret range/i })).toBeInTheDocument();
+  });
+
+  it("no longer renders the fingering pattern controls (Task 6)", () => {
+    renderWithAtoms(<ViewTab />);
+    expect(screen.queryByRole("group", { name: /^position$/i })).toBeNull();
   });
 
   it("has no accessibility violations", async () => {

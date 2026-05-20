@@ -20,6 +20,7 @@ import {
   MIN_FRET_WIDTH_OVERFLOW_BUFFER
 } from "@fretflow/core";
 import type { ShapePolygon } from "@fretflow/core";
+import type { BoxBound } from "../FretboardSVG/utils/semantics";
 
 interface FretboardProps {
   /** String tuning ordered from high string (index 0) to low string; defaults to atom-driven state. */
@@ -32,14 +33,18 @@ interface FretboardProps {
   rootNote?: string;
   /** Controls how notes are labeled inside bubbles: note names, scale degrees, or hidden. */
   displayFormat?: "notes" | "degrees" | "none";
-  /** Per-string fret-range boxes that constrain shape/chord highlighting. */
-  boxBounds?: { minFret: number; maxFret: number }[];
   /** Chord tone note names to overlay on the fretboard. */
   chordTones?: string[];
   /** Root note of the active chord overlay. */
   chordRoot?: string;
   /** Fret spread of the chord voicing, used to size shape-constrained rendering. */
   chordFretSpread?: number;
+  /**
+   * Explicit fret-range bounds used exclusively for the chord-tone clamp.
+   * Non-null only when the user has opted into position scoping AND a single
+   * position is active. When null, chord tones are unbounded.
+   */
+  chordBoxBounds?: BoxBound[] | null;
   /** Notes to render with a special "color" highlight role. */
   colorNotes?: string[];
   /** CAGED / 3NPS shape polygon definitions to render as filled regions. */
@@ -84,10 +89,10 @@ export function Fretboard(props: FretboardProps) {
   const highlightNotes = props.highlightNotes ?? state.highlightNotes;
   const rootNote = props.rootNote ?? state.rootNote;
   const displayFormat = props.displayFormat ?? state.displayFormat;
-  const boxBounds = props.boxBounds ?? state.boxBounds;
   const chordTones = props.chordTones ?? state.chordTones;
   const chordRoot = props.chordRoot ?? state.chordRoot;
   const chordFretSpread = props.chordFretSpread ?? state.chordFretSpread;
+  const chordBoxBounds = props.chordBoxBounds !== undefined ? props.chordBoxBounds : state.chordBoxBounds;
   const autoCenterTarget = props.autoCenterTarget ?? state.autoCenterTarget;
   const recenterKey = props.recenterKey ?? state.recenterKey;
   const colorNotes = props.colorNotes ?? state.colorNotes;
@@ -302,7 +307,7 @@ export function Fretboard(props: FretboardProps) {
           highlightNotes={highlightNotes}
           rootNote={rootNote}
           displayFormat={displayFormat}
-          boxBounds={boxBounds}
+          chordBoxBounds={chordBoxBounds}
           chordTones={chordTones}
           chordRoot={chordRoot}
           chordFretSpread={chordFretSpread}

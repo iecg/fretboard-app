@@ -369,24 +369,26 @@ describe("noteSemanticMapAtom", () => {
     expect(after!.isChordRoot).toBe(false);
   });
 
-  it("uses manual degree semantics when chord overlay is disabled by pattern", () => {
+  it("uses progression chord semantics even with one-string fingering pattern", () => {
+    // With one-string pattern, chord overlay is no longer disabled.
+    // The progression step (V = G Major Triad, diatonic) is the active chord source.
     const store = makeStore();
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Major");
-    store.set(chordDegreeAtom, "I");
-    store.set(chordOverlayModeAtom, "degree");
-    store.set(chordTypeAtom, "Major Triad");
     store.set(progressionStepsAtom, [
-      { id: "one", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+      { id: "one", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
     ]);
     store.set(fingeringPatternAtom, "one-string");
 
     const semanticMap = store.get(noteSemanticMapAtom);
 
-    expect(semanticMap.get("C")?.isDiatonicChord).toBe(true);
-    expect(semanticMap.get("E")?.isDiatonicChord).toBe(true);
+    // V in C Major = G Major Triad (diatonic) → chord root G, members G, B, D
+    expect(semanticMap.get("G")?.isChordRoot).toBe(true);
     expect(semanticMap.get("G")?.isDiatonicChord).toBe(true);
-    expect(semanticMap.get("G")?.isChordRoot).toBe(false);
+    expect(semanticMap.get("B")?.isDiatonicChord).toBe(true);
+    expect(semanticMap.get("D")?.isDiatonicChord).toBe(true);
+    // C is not a chord tone of G Major Triad
+    expect(semanticMap.get("C")?.isDiatonicChord).toBe(false);
   });
 });
 

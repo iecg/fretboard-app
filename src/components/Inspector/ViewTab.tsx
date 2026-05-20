@@ -8,7 +8,6 @@ import {
   displayFormatAtom,
 } from "../../store/atoms";
 import { MAX_FRET } from "@fretflow/core";
-import { FingeringPatternControls } from "../FingeringPatternControls/FingeringPatternControls";
 import { FretRangeControl } from "../FretRangeControl/FretRangeControl";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { Switch } from "../Switch/Switch";
@@ -48,10 +47,6 @@ export function ViewTab() {
   return (
     <div className={styles.root} data-inspector-tab="view" data-layout-tier={tier} data-layout-variant={variant}>
       <PropGrid columns={tier === "mobile" ? 2 : 6}>
-        {/* FINGERING — the group header and pattern cells are emitted by
-            FingeringPatternControls. */}
-        <FingeringPatternControls />
-
         <GroupHeader>{t("inspector.groupLabels")}</GroupHeader>
         <Prop label={t("controls.noteLabels")} span={2}>
           <ToggleBar

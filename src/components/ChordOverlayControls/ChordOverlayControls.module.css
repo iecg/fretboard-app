@@ -4,12 +4,6 @@
   gap: 0.75rem;
 }
 
-/* Panel-level disabled overlay — applied when fingering pattern is one-string or two-strings */
-.panel-disabled {
-  pointer-events: none;
-  opacity: 0.5;
-}
-
 /* On mobile, collapse the 6-column PropGrid so every child spans full width. */
 :global(.app-container[data-layout-tier="mobile"]) .grid > * {
   grid-column: 1 / -1 !important;
@@ -32,4 +26,28 @@
   text-transform: uppercase;
   color: var(--faceplate-accent);
   line-height: 1;
+}
+
+.voicingDisclosure {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  /* Keep the chevron + label legible while still meeting the mobile compact
+     touch-target floor (≥ 24px) enforced by e2e/css-scoping.spec.ts. */
+  min-height: 24px;
+  padding: 0;
+}
+
+.voicingChevron {
+  display: inline-flex;
+  transition: transform 120ms ease;
+}
+
+.voicingChevron[data-open] {
+  transform: rotate(90deg);
 }

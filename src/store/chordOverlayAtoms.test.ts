@@ -10,6 +10,7 @@ import {
   chordRootOverrideAtom,
   chordTypeAtom,
   chordQualityOverrideAtom,
+  chordTonesAtom,
   setChordDegreeAtom,
   availableInversionsAtom,
   voicingMatchesAtom,
@@ -350,7 +351,9 @@ describe("chordOverlayAtoms - progression source priority", () => {
     expect(store.get(chordOverlayModeAtom)).toBe("degree");
   });
 
-  it("writing chordRootAtom updates fallback root when progression is enabled but pattern-disabled", () => {
+  it("writing chordRootAtom is a no-op when progression is the active chord source (including one-string pattern)", () => {
+    // With one-string pattern, progression is now still the active chord source.
+    // Writing chordRootAtom while progression controls the chord is a no-op.
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
@@ -362,11 +365,14 @@ describe("chordOverlayAtoms - progression source priority", () => {
 
     store.set(chordRootAtom, "D");
 
-    expect(store.get(chordRootAtom)).toBe("D");
-    expect(store.get(chordOverlayModeAtom)).toBe("manual");
+    // Progression still controls the root — write is ignored
+    expect(store.get(chordRootAtom)).toBe("G");
+    expect(store.get(chordOverlayModeAtom)).toBe("degree");
   });
 
-  it("writing chordTypeAtom updates fallback quality without mutating hidden progression when pattern-disabled", () => {
+  it("writing chordTypeAtom updates the active progression step override (including one-string pattern)", () => {
+    // With one-string pattern, progression is now still the active chord source.
+    // Writing chordTypeAtom routes through the progression step override path.
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
@@ -378,11 +384,13 @@ describe("chordOverlayAtoms - progression source priority", () => {
 
     store.set(chordTypeAtom, "Dominant 7th");
 
-    expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBeNull();
+    expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBe("Dominant 7th");
     expect(store.get(chordTypeAtom)).toBe("Dominant 7th");
   });
 
-  it("setChordDegreeAtom updates fallback degree without mutating hidden progression when pattern-disabled", () => {
+  it("setChordDegreeAtom updates the active progression step degree (including one-string pattern)", () => {
+    // With one-string pattern, progression is now still the active chord source.
+    // setChordDegreeAtom routes through the progression step degree path.
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
@@ -394,11 +402,13 @@ describe("chordOverlayAtoms - progression source priority", () => {
 
     store.set(setChordDegreeAtom, "ii");
 
-    expect(store.get(chordDegreeAtom)).toBe("ii");
-    expect(store.get(progressionStepsAtom)[0]?.degree).toBe("V");
+    expect(store.get(progressionStepsAtom)[0]?.degree).toBe("ii");
+    expect(store.get(chordDegreeAtom)).toBeNull();
   });
 
-  it("RESET on chordTypeAtom resets fallback atoms without clearing hidden progression override when pattern-disabled", () => {
+  it("RESET on chordTypeAtom clears the active progression step override (including one-string pattern)", () => {
+    // With one-string pattern, progression is now still the active chord source.
+    // RESET on chordTypeAtom routes through the progression step reset path.
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
@@ -406,17 +416,13 @@ describe("chordOverlayAtoms - progression source priority", () => {
         { id: "one", degree: "V", duration: "1-bar", qualityOverride: "Dominant 7th" },
       ]],
       [fingeringPatternAtom, "one-string"],
-      [chordOverlayModeAtom, "manual"],
-      [chordRootOverrideAtom, "D"],
-      [chordQualityOverrideAtom, "Minor Triad"],
     ]);
 
     store.set(chordTypeAtom, RESET);
 
-    expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBe("Dominant 7th");
+    expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBeNull();
     expect(store.get(chordOverlayModeAtom)).toBe("degree");
-    expect(store.get(chordDegreeAtom)).toBeNull();
-    expect(store.get(chordTypeAtom)).toBeNull();
+    expect(store.get(chordTypeAtom)).toBe("Major Triad"); // V diatonic default in C Major
   });
 
   it("uses fallback chord reads when progression active step is unavailable", () => {
@@ -755,6 +761,52 @@ describe("chordSourceIsProgressionAtom", () => {
     const store = createStore();
     store.set(progressionStepsAtom, []);
     expect(store.get(chordSourceIsProgressionAtom)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Task 3 regression — chord overlay independent of fingering pattern
+// ---------------------------------------------------------------------------
+
+describe("chord overlay independent of fingering pattern (Task 3 regression)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("chord tones still render with one-string fingering", () => {
+    const store = makeAtomStore([
+      [progressionStepsAtom, []],
+      [chordOverlayModeAtom, "manual"],
+      [chordRootOverrideAtom, "C"],
+      [chordQualityOverrideAtom, "Major Triad"],
+      [fingeringPatternAtom, "one-string"],
+    ]);
+    expect(store.get(chordTonesAtom).length).toBeGreaterThan(0);
+  });
+
+  it("chord tones still render with two-strings fingering", () => {
+    const store = makeAtomStore([
+      [progressionStepsAtom, []],
+      [chordOverlayModeAtom, "manual"],
+      [chordRootOverrideAtom, "C"],
+      [chordQualityOverrideAtom, "Major Triad"],
+      [fingeringPatternAtom, "two-strings"],
+    ]);
+    expect(store.get(chordTonesAtom).length).toBeGreaterThan(0);
+  });
+
+  it("progression is the active chord source even with one-string fingering", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, [
+        { id: "one", degree: "V", duration: "1-bar", qualityOverride: null },
+      ]],
+      [fingeringPatternAtom, "one-string"],
+    ]);
+    expect(store.get(chordSourceIsProgressionAtom)).toBe(true);
+    expect(store.get(chordRootAtom)).toBe("G");
+    expect(store.get(chordTypeAtom)).toBe("Major Triad");
   });
 });
 

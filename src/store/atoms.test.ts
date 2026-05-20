@@ -562,23 +562,48 @@ describe("atoms", () => {
     });
   });
 
-  describe("setFingeringPatternAtom — clears degree only for one/two-string patterns", () => {
-    it.each([
-      ["one-string", true],
-      ["two-strings", true],
-      ["caged", false],
-      ["3nps", false],
-      ["none", false],
-    ])("pattern=%s clears chordDegree? %s", (pattern, shouldClear) => {
+  describe("setFingeringPatternAtom — sets pattern without side-effects on chord", () => {
+    it("sets fingeringPatternAtom to the requested value", () => {
+      const store = makeStore();
+      store.set(setFingeringPatternAtom, "caged");
+      expect(store.get(fingeringPatternAtom)).toBe("caged");
+    });
+
+    it("does NOT clear chordDegreeAtom when pattern changes to one-string", () => {
       const store = makeStore();
       store.set(chordDegreeAtom, "I" as import("@fretflow/core").DegreeId);
-      store.set(setFingeringPatternAtom, pattern as Parameters<typeof setFingeringPatternAtom["write"]>[2]);
-      expect(store.get(fingeringPatternAtom)).toBe(pattern);
-      if (shouldClear) {
-        expect(store.get(chordDegreeAtom)).toBeNull();
-      } else {
-        expect(store.get(chordDegreeAtom)).toBe("I");
-      }
+      store.set(setFingeringPatternAtom, "one-string");
+      expect(store.get(fingeringPatternAtom)).toBe("one-string");
+      expect(store.get(chordDegreeAtom)).toBe("I");
+    });
+
+    it("does NOT clear chordDegreeAtom when pattern changes to two-strings", () => {
+      const store = makeStore();
+      store.set(chordDegreeAtom, "V" as import("@fretflow/core").DegreeId);
+      store.set(setFingeringPatternAtom, "two-strings");
+      expect(store.get(fingeringPatternAtom)).toBe("two-strings");
+      expect(store.get(chordDegreeAtom)).toBe("V");
+    });
+
+    it("does NOT clear chordDegreeAtom when pattern changes to caged", () => {
+      const store = makeStore();
+      store.set(chordDegreeAtom, "IV" as import("@fretflow/core").DegreeId);
+      store.set(setFingeringPatternAtom, "caged");
+      expect(store.get(chordDegreeAtom)).toBe("IV");
+    });
+
+    it("does NOT clear chordDegreeAtom when pattern changes to none", () => {
+      const store = makeStore();
+      store.set(chordDegreeAtom, "ii" as import("@fretflow/core").DegreeId);
+      store.set(setFingeringPatternAtom, "none");
+      expect(store.get(chordDegreeAtom)).toBe("ii");
+    });
+
+    it("does NOT clear chordDegreeAtom when pattern changes to 3nps", () => {
+      const store = makeStore();
+      store.set(chordDegreeAtom, "iii" as import("@fretflow/core").DegreeId);
+      store.set(setFingeringPatternAtom, "3nps");
+      expect(store.get(chordDegreeAtom)).toBe("iii");
     });
   });
 
@@ -596,14 +621,15 @@ describe("atoms", () => {
       expect(store.get(activeProgressionStepIndexAtom)).toBe(2);
     });
 
-    it("setFingeringPatternAtom pauses playback for chord-disabled patterns", () => {
+    it("setFingeringPatternAtom does NOT pause progression playback for any pattern", () => {
       const store = makeStore();
       store.set(progressionStepsAtom, [
         { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
       ]);
       store.set(setProgressionPlayingAtom, true);
       store.set(setFingeringPatternAtom, "one-string");
-      expect(store.get(progressionPlayingAtom)).toBe(false);
+
+      expect(store.get(progressionPlayingAtom)).toBe(true);
     });
 
     it("resetAtom resets persisted progression tempo", () => {

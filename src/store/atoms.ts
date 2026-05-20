@@ -200,3 +200,9 @@ export {
 } from "./composableSelectors";
 
 export { languageAtom } from "./languageAtom";
+
+export {
+  chordScopeToPositionAtom,
+  voicingSectionExpandedAtom,
+  activePositionAtom,
+} from "./chordScope";

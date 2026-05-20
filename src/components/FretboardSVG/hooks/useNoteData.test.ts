@@ -26,7 +26,8 @@ describe("useNoteData", () => {
         rootNote: "E",
         colorNotes: [],
         shapePolygons: [],
-        boxBounds: [],
+
+        chordBoxBounds: null,
         chordFretSpread: 0,
         scaleName: "minor-pentatonic",
         useFlats: false,
@@ -83,7 +84,8 @@ describe("useNoteData", () => {
           chordRoot: "C",
           colorNotes: [],
           shapePolygons: [polyAt5To7],
-          boxBounds: [],
+
+          chordBoxBounds: [],
           chordFretSpread,
           activePattern: "caged",
           shapeScope: "single",
@@ -198,7 +200,8 @@ describe("useNoteData", () => {
           chordRoot: "C",
           colorNotes: [],
           shapePolygons: [polyAt5To7],
-          boxBounds: [],
+
+          chordBoxBounds: [],
           chordFretSpread: 0,
           activePattern: "caged",
           shapeScope: "single",
@@ -218,6 +221,86 @@ describe("useNoteData", () => {
     });
   });
 
+  describe("chordBoxBounds — opt-in chord-tone clamp", () => {
+    // Chromatic single-string layout: C(0), C#(1), D(2), D#(3), E(4), F(5), F#(6), G(7)
+    const LAYOUT = [["C", "C#", "D", "D#", "E", "F", "F#", "G"]];
+
+    const BASE_PROPS = {
+      numStrings: 1,
+      fretboardLayout: LAYOUT,
+      totalColumns: 7,
+      startFret: 0,
+      maxFret: 8,
+      hiddenNotes: new Set<string>(),
+      highlightNotes: ["C", "E", "G"],
+      hasChordOverlay: true,
+      chordTones: ["C", "E", "G"],
+      rootNote: "C",
+      chordRoot: "C",
+      colorNotes: [] as string[],
+      shapePolygons: [] as import("@fretflow/core").ShapePolygon[],
+
+      chordFretSpread: 0,
+      scaleName: "Major",
+      useFlats: false,
+      wrappedNotes: new Set<string>(),
+      tuning: ["C4"],
+    };
+
+    const CHORD_EMPHASIS_CLASSES = new Set([
+      "chord-root",
+      "chord-tone-in-scale",
+      "chord-tone-outside-scale",
+      "note-diatonic-chord",
+    ]);
+
+    it("chordBoxBounds=null: all chord tones are emphasized across the whole neck", () => {
+      const { result } = renderHook(() =>
+        useNoteData({ ...BASE_PROPS, chordBoxBounds: null }),
+      );
+      // Chord tones: C@fret0, E@fret4, G@fret7 — all should be emphasized
+      const chordToneNotes = result.current.filter((n) =>
+        CHORD_EMPHASIS_CLASSES.has(n.noteClass),
+      );
+      const frets = chordToneNotes.map((n) => n.fretIndex).sort((a, b) => a - b);
+      expect(frets).toEqual([0, 4, 7]); // unbounded — whole neck
+    });
+
+    it("chordBoxBounds=[{minFret:0, maxFret:4}]: chord tones outside fret 4 are excluded when using CAGED polygon", () => {
+      const polyAt0To4: import("@fretflow/core").ShapePolygon = {
+        shape: "C" as import("@fretflow/core").CagedShape,
+        color: "rgba(0,0,0,0.1)",
+        cagedLabel: "C",
+        modalLabel: null,
+        truncated: false,
+        intendedMin: 0,
+        intendedMax: 4,
+        vertices: [
+          { fret: 0, string: 0 },
+          { fret: 4, string: 0 },
+        ],
+      };
+      const { result } = renderHook(() =>
+        useNoteData({
+          ...BASE_PROPS,
+          shapePolygons: [polyAt0To4],
+          activePattern: "caged",
+          shapeScope: "single",
+          activeShape: "C" as import("@fretflow/core").CagedShape,
+          chordBoxBounds: [{ minFret: 0, maxFret: 4 }],
+        }),
+      );
+      const chordToneNotes = result.current.filter((n) =>
+        CHORD_EMPHASIS_CLASSES.has(n.noteClass),
+      );
+      const frets = chordToneNotes.map((n) => n.fretIndex).sort((a, b) => a - b);
+      // C@fret0 and E@fret4 are inside the polygon; G@fret7 is outside
+      expect(frets).toContain(0);
+      expect(frets).toContain(4);
+      expect(frets).not.toContain(7); // G@fret7 excluded by clamp
+    });
+  });
+
   it("assigns the blue-note color to blues-scale color notes", () => {
     const { result } = renderHook(() =>
       useNoteData({
@@ -233,7 +316,8 @@ describe("useNoteData", () => {
         rootNote: "C",
         colorNotes: ["F#"],
         shapePolygons: [],
-        boxBounds: [],
+
+        chordBoxBounds: null,
         chordFretSpread: 0,
         scaleName: "Minor Blues",
         useFlats: false,

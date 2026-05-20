@@ -65,8 +65,13 @@ interface FretboardSVGProps {
   rootNote: string;
   /** Controls the label style inside note bubbles. */
   displayFormat?: "notes" | "degrees" | "none";
-  /** Per-string fret-range boxes constraining shape/chord highlighting. */
-  boxBounds?: BoxBound[];
+  /**
+   * Explicit fret-range bounds used exclusively for the chord-tone clamp.
+   * Non-null only when the user has opted into position scoping AND a single
+   * position is active. When null, chord tones are unbounded — any chord tone
+   * receives the chord-overlay treatment regardless of fingering pattern.
+   */
+  chordBoxBounds?: BoxBound[] | null;
   /** Chord tone note names to overlay on the fretboard. */
   chordTones?: string[];
   /** Root note of the active chord overlay. */
@@ -142,7 +147,7 @@ export const FretboardSVG = memo(function FretboardSVG({
   highlightNotes,
   rootNote,
   displayFormat = "notes",
-  boxBounds = [],
+  chordBoxBounds = null,
   chordTones = [],
   chordRoot,
   chordFretSpread = 0,
@@ -378,7 +383,7 @@ export const FretboardSVG = memo(function FretboardSVG({
     chordRoot,
     colorNotes,
     shapePolygons,
-    boxBounds,
+    chordBoxBounds,
     chordFretSpread,
     activePattern,
     shapeScope,
