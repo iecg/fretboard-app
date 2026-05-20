@@ -1,108 +1,34 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { getNoteFrequency } from "@fretflow/core";
 import { scheduleProgressionStep } from "./scheduler";
 import { _metronomeInternals } from "./metronome";
+import {
+  buildMockCtx as buildSharedMockCtx,
+  createMockGain,
+  type MockAudioContext,
+  type MockBufferSourceNode,
+  type MockOscillatorNode,
+} from "../../test-utils/mockWebAudio";
 
 // Web Audio mock — counts node creations so tests can assert "drums scheduled
 // X hits" without depending on real audio timing.
-function createMockGain() {
-  return {
-    gain: {
-      value: 1,
-      setValueAtTime: vi.fn(),
-      cancelScheduledValues: vi.fn(),
-      linearRampToValueAtTime: vi.fn(),
-      exponentialRampToValueAtTime: vi.fn(),
-      setTargetAtTime: vi.fn(),
-    },
-    connect: vi.fn().mockReturnThis(),
-    disconnect: vi.fn(),
-  };
-}
-
-function createMockFilter() {
-  return {
-    type: "lowpass" as BiquadFilterType,
-    Q: { value: 1 },
-    frequency: {
-      value: 0,
-      setValueAtTime: vi.fn(),
-      exponentialRampToValueAtTime: vi.fn(),
-    },
-    connect: vi.fn().mockReturnThis(),
-    disconnect: vi.fn(),
-  };
-}
-
-function createMockOsc() {
-  return {
-    type: "sine" as OscillatorType,
-    frequency: {
-      setValueAtTime: vi.fn(),
-      exponentialRampToValueAtTime: vi.fn(),
-    },
-    setPeriodicWave: vi.fn(),
-    connect: vi.fn().mockReturnThis(),
-    disconnect: vi.fn(),
-    start: vi.fn(),
-    stop: vi.fn(),
-    onended: null as null | (() => void),
-  };
-}
-
-function createMockBufferSource() {
-  return {
-    buffer: null as AudioBuffer | null,
-    connect: vi.fn().mockReturnThis(),
-    disconnect: vi.fn(),
-    start: vi.fn(),
-    stop: vi.fn(),
-    onended: null as null | (() => void),
-  };
-}
-
-function createMockBuffer() {
-  return {
-    getChannelData: () => new Float32Array(1),
-  } as unknown as AudioBuffer;
-}
 
 interface MockCtx {
-  ctx: any;
+  ctx: MockAudioContext;
   oscCount: () => number;
   bufferSourceCount: () => number;
-  oscillators: () => ReturnType<typeof createMockOsc>[];
-  bufferSources: () => ReturnType<typeof createMockBufferSource>[];
+  oscillators: () => MockOscillatorNode[];
+  bufferSources: () => MockBufferSourceNode[];
 }
 
 function buildMockCtx(): MockCtx {
-  const oscillators: ReturnType<typeof createMockOsc>[] = [];
-  const sources: ReturnType<typeof createMockBufferSource>[] = [];
-  const ctx = {
-    currentTime: 0,
-    sampleRate: 44100,
-    createGain: vi.fn(createMockGain),
-    createBiquadFilter: vi.fn(createMockFilter),
-    createOscillator: vi.fn(() => {
-      const osc = createMockOsc();
-      oscillators.push(osc);
-      return osc;
-    }),
-    createBufferSource: vi.fn(() => {
-      const src = createMockBufferSource();
-      sources.push(src);
-      return src;
-    }),
-    createBuffer: vi.fn(createMockBuffer),
-    createPeriodicWave: vi.fn().mockReturnValue({} as PeriodicWave),
-  };
+  const ctx = buildSharedMockCtx();
   return {
     ctx,
-    oscCount: () => oscillators.length,
-    bufferSourceCount: () => sources.length,
-    oscillators: () => oscillators,
-    bufferSources: () => sources,
+    oscCount: () => ctx.created.oscillators.length,
+    bufferSourceCount: () => ctx.created.bufferSources.length,
+    oscillators: () => ctx.created.oscillators,
+    bufferSources: () => ctx.created.bufferSources,
   };
 }
 

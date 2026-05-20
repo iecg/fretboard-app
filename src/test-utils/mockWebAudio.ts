@@ -141,6 +141,7 @@ export function createMockBufferSource(): MockBufferSourceNode {
 
 export interface MockAudioContext {
   currentTime: number;
+  sampleRate: number;
   destination: MockGainNode;
   createGain: () => MockGainNode;
   createOscillator: () => MockOscillatorNode;
@@ -160,7 +161,9 @@ export interface MockAudioContext {
   };
 }
 
-export function buildMockCtx(opts: { currentTime?: number } = {}): MockAudioContext {
+export function buildMockCtx(
+  opts: { currentTime?: number; sampleRate?: number } = {},
+): MockAudioContext {
   const created: MockAudioContext["created"] = {
     gains: [],
     oscillators: [],
@@ -171,6 +174,7 @@ export function buildMockCtx(opts: { currentTime?: number } = {}): MockAudioCont
   const destination = createMockGain();
   return {
     currentTime: opts.currentTime ?? 0,
+    sampleRate: opts.sampleRate ?? 44100,
     destination,
     state: "running",
     resume: vi.fn().mockResolvedValue(undefined),
