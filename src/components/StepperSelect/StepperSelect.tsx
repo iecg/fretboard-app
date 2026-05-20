@@ -8,11 +8,9 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { SPRING_TAP, WHILE_TAP_BTN } from "@fretflow/core";
 import styles from "./StepperSelect.module.css";
 
-export type StepperSelectOption = LabeledSelectOption;
-
 export interface StepperSelectProps {
   value: string;
-  options: StepperSelectOption[];
+  options: LabeledSelectOption[];
   onChange: (value: string) => void;
   onPrevious: () => void;
   onNext: () => void;

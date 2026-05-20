@@ -135,7 +135,7 @@ export interface ChordConnectorVoicing {
   voicingKey: string;
 }
 
-export interface ExplicitChordConnectorVoicing {
+interface ExplicitChordConnectorVoicing {
   voicingKey: string;
   shape?: CagedShape;
   notes: Array<{
@@ -183,14 +183,6 @@ export const CHORD_CONNECTOR_RADIUS_FACTORS = {
   max: 0.42,
 } as const;
 
-/**
- * Minimum gap in pixels between the chord-root squircle edge and the
- * connector contour. Ensures the envelope always sits visibly outside the
- * largest chord-note bubble even after the y-bound clamp shaves 1 px for
- * the boundary guard.
- */
-export const CHORD_CONNECTOR_MIN_HALO_PX = 2;
-
 export interface ConnectorYBounds {
   minY: number;
   maxY: number;
@@ -198,6 +190,7 @@ export interface ConnectorYBounds {
 
 const CONNECTOR_BOUNDARY_GUARD_PX = 1;
 const CONNECTOR_CONFLICT_GAP_PX = 1.5;
+const CHORD_CONNECTOR_MIN_HALO_PX = 2;
 
 export function clampConnectorRadiusToYBounds(
   vertices: ChordConnectorVertex[],

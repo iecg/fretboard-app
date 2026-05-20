@@ -7,14 +7,14 @@ import {
   type DegreeId,
 } from "@fretflow/core";
 
-export type ProgressionStepDurationUnit = "beat" | "bar";
+type ProgressionStepDurationUnit = "beat" | "bar";
 
 export interface ProgressionStepDuration {
   value: number;
   unit: ProgressionStepDurationUnit;
 }
 
-export const DEFAULT_PROGRESSION_STEP_DURATION: ProgressionStepDuration = {
+const DEFAULT_PROGRESSION_STEP_DURATION: ProgressionStepDuration = {
   value: 1,
   unit: "bar",
 };
@@ -290,7 +290,7 @@ export function createProgressionStep(
   };
 }
 
-export function createProgressionStepId(): string {
+function createProgressionStepId(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();
   }
@@ -320,7 +320,7 @@ export function normalizeProgressionStep(value: unknown): ProgressionStep | null
   };
 }
 
-export function getDegreeOrdinal(degree: DegreeId): number | null {
+function getDegreeOrdinal(degree: DegreeId): number | null {
   const match = degree.toUpperCase().match(/^(VII|VI|IV|V|III|II|I)/);
   if (!match) return null;
   return ROMAN_ORDINALS[match[1]] ?? null;

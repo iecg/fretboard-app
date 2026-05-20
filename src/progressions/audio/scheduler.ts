@@ -39,7 +39,7 @@ import {
   type DrumHit,
 } from "./patterns";
 
-export interface SchedulerEnableFlags {
+interface SchedulerEnableFlags {
   strum: boolean;
   bass: boolean;
   drums: boolean;

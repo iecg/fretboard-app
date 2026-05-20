@@ -90,5 +90,3 @@ export function scheduleBassNote(
     },
   };
 }
-
-export const _bassInternals = { ATTACK, DECAY, RELEASE };

@@ -10,7 +10,7 @@ export type ResponsiveVariant =
   | "desktop-stacked"
   | "desktop-3col";
 
-export type DashboardPanelMode = "3col" | "split" | "stacked";
+type DashboardPanelMode = "3col" | "split" | "stacked";
 
 export interface ResponsiveLayout {
   tier: ResponsiveTier;
@@ -25,9 +25,9 @@ export interface ResponsiveLayout {
   panelMode: DashboardPanelMode;
 }
 
-export const STRING_ROW_PX_MOBILE = 28;
+const STRING_ROW_PX_MOBILE = 28;
 export const STRING_ROW_PX_TABLET = 36;
-export const STRING_ROW_PX_DESKTOP = 42;
+const STRING_ROW_PX_DESKTOP = 42;
 
 const STRING_ROW_PX_BY_TIER: Record<ResponsiveTier, number> = {
   mobile: STRING_ROW_PX_MOBILE,

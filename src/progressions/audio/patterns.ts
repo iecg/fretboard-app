@@ -11,7 +11,7 @@
  * "groove" object.
  */
 
-export type StrumDirection = "down" | "up";
+type StrumDirection = "down" | "up";
 
 export interface DrumHit {
   beat: number;
@@ -20,7 +20,7 @@ export interface DrumHit {
 
 export type BassNoteRole = "root" | "third" | "fifth" | "octave" | "chromatic-approach";
 
-export interface ChordHit {
+interface ChordHit {
   beat: number;
   velocity: number;
   style?: "staccato" | "sustained";
@@ -34,7 +34,7 @@ export interface ChordPattern {
   hits: readonly ChordHit[];
 }
 
-export interface CatalogBassHit {
+interface CatalogBassHit {
   beat: number;
   velocity: number;
   note: BassNoteRole;

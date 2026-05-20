@@ -22,7 +22,7 @@ const stepperControlVariants = cva(styles["stepper-control"], {
   },
 });
 
-export type StepperControlVariant = VariantProps<typeof stepperControlVariants>["variant"];
+type StepperControlVariant = VariantProps<typeof stepperControlVariants>["variant"];
 
 export interface StepperControlProps {
   value: number;
@@ -102,5 +102,3 @@ export function StepperControl({
     </div>
   );
 }
-
-export default StepperControl;

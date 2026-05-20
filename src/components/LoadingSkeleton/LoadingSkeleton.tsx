@@ -43,10 +43,3 @@ export function CircleOfFifthsSkeleton() {
   );
 }
 
-export function OverlaySpinner() {
-  return (
-    <div className={styles["overlay-spinner"]} aria-label="Loading" role="status">
-      <div className={styles.spinner} />
-    </div>
-  );
-}

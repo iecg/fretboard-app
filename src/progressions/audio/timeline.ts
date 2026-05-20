@@ -168,4 +168,3 @@ export function _resetTimelineForTests(): void {
   state = { active: null, paused: false };
 }
 
-export const _internals = { get state() { return state; } };

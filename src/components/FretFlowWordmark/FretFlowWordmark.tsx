@@ -91,5 +91,3 @@ export function FretFlowWordmark({ className }: FretFlowWordmarkProps) {
     </svg>
   );
 }
-
-export default FretFlowWordmark;

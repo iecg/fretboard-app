@@ -1,6 +1,6 @@
 export type NoteAnimationMode = "css" | "none";
 export type ShapeAnimationMode = "group" | "none";
-export type ConnectorAnimationMode = "group" | "none";
+type ConnectorAnimationMode = "group" | "none";
 
 export interface FretboardMotionPolicyInput {
   prefersReducedMotion: boolean;

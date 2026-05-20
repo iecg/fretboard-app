@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import styles from "./ChordTypeGrid.module.css";
 
-export interface ChordTypeOption {
+interface ChordTypeOption {
   value: string;
   label: string;
   disabled?: boolean;
