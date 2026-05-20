@@ -4,14 +4,7 @@ import { render, screen, fireEvent, act } from "@testing-library/react";
 import { FingeringPatternControls } from "../FingeringPatternControls/FingeringPatternControls";
 import { createStore, Provider } from "jotai";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
-import {
-  fingeringPatternAtom,
-  cagedShapesAtom,
-  oneStringIndexAtom,
-  oneStringIntervalAtom,
-  twoStringsPairAtom,
-  twoStringsIntervalAtom,
-} from "../../store/atoms";
+import { fingeringPatternAtom, cagedShapesAtom, oneStringIndexAtom, oneStringIntervalAtom, twoStringsPairAtom, twoStringsIntervalAtom } from "../../store/fingeringAtoms";
 import { type CagedShape } from "@fretflow/core";
 import { axe } from "../../test-utils/a11y";
 

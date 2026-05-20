@@ -60,6 +60,7 @@ function build(
   noteData: NoteData[],
   chordToneNames: string[],
   rootNote: string = "C",
+  yBounds?: { minY: number; maxY: number },
 ) {
   return buildChordConnectorPolylines(
     noteData,
@@ -68,8 +69,25 @@ function build(
     stringYAt,
     STRING_ROW_PX,
     rootNote,
+    yBounds,
   );
 }
+
+// True iff any vertex sits at the (stringIndex, fretIndex) grid position.
+const hasVertex = (vertices: ReadonlyArray<{ x: number; y: number }>, si: number, fi: number) =>
+  vertices.some((p) => p.x === fretCenterX(fi) && p.y === stringYAt(si, fretCenterX(fi)));
+
+// Find a voicing with vertices at every (string, fret) pair (and exact length if given).
+const findVoicing = (
+  result: ReturnType<typeof buildChordConnectorPolylines>,
+  positions: Array<[number, number]>,
+  exactLen?: number,
+) =>
+  result.find(
+    (v) =>
+      (exactLen === undefined || v.vertices.length === exactLen) &&
+      positions.every(([si, fi]) => hasVertex(v.vertices, si, fi)),
+  );
 
 describe("buildChordConnectorPolylines", () => {
   // -------------------------------------------------------------------------
@@ -352,81 +370,33 @@ describe("buildChordConnectorPolylines", () => {
   // suppress it.  This test guards against that regression.
   // -------------------------------------------------------------------------
 
-  it("(regression) CAGED G shape: emits fret-5 E-C-G voicing on strings 1-2-3", () => {
-    // Simulates C major with CAGED G shape active (first polygon, frets 5-8):
-    //   str0 (E4):  C@8                             — chord root, frets 5-8
-    //   str1 (B3):  E@5, G@8                        — chord tones, frets 5-8
-    //   str2 (G3):  C@5                             — chord root, frets 4-7
-    //   str3 (D3):  G@5                             — chord tone, frets 5-7
-    //   str4 (A2):  E@7                             — chord tone, frets 5-8
-    //   str5 (E2):  C@8                             — chord root, frets 5-8
-    // (scale-only notes omitted; only chord-tone roles feed the connector)
-    const noteData = [
-      makeNote(0, 8, "C", "chord-root"),
-      makeNote(1, 5, "E", "chord-tone-in-scale"),
-      makeNote(1, 8, "G", "chord-tone-in-scale"),
-      makeNote(2, 5, "C", "chord-root"),
-      makeNote(3, 5, "G", "chord-tone-in-scale"),
-      makeNote(4, 7, "E", "chord-tone-in-scale"),
-      makeNote(5, 8, "C", "chord-root"),
-    ];
-    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+  // CAGED G shape in C major. First polygon (frets 5-8) tightest triad is the
+  // E(str1@5)-C(str2@5)-G(str3@5) cluster. Second polygon (frets 17-20) is the
+  // octave repeat. Both must be emitted; before the voicing-aware algorithm,
+  // dedup occasionally suppressed the fret-5 cluster.
+  const cagedGFirstPolygon: NoteSpec[] = [
+    [0, 8, "C", "chord-root"],
+    [1, 5, "E"], [1, 8, "G"],
+    [2, 5, "C", "chord-root"],
+    [3, 5, "G"],
+    [4, 7, "E"],
+    [5, 8, "C", "chord-root"],
+  ];
+  const cagedGSecondPolygon: NoteSpec[] = cagedGFirstPolygon.map(([si, fi, n, role]) =>
+    [si, fi + 12, n, role] as NoteSpec,
+  );
 
-    // The fret-5 voicing on strings 1-2-3 must be present.
-    const fret5Voicing = result.find(
-      (voicing) =>
-        voicing.vertices.length === 3 &&
-        voicing.vertices.some((v) => v.y === stringYAt(1, fretCenterX(5)) && v.x === fretCenterX(5)) &&
-        voicing.vertices.some((v) => v.y === stringYAt(2, fretCenterX(5)) && v.x === fretCenterX(5)) &&
-        voicing.vertices.some((v) => v.y === stringYAt(3, fretCenterX(5)) && v.x === fretCenterX(5)),
-    );
-    expect(fret5Voicing, "fret-5 E(str1)-C(str2)-G(str3) voicing not emitted").toBeDefined();
-    expect(fret5Voicing!.vertices).toHaveLength(3);
+  it("(regression) CAGED G shape: emits fret-5 E-C-G voicing on strings 1-2-3", () => {
+    const result = build(notes(cagedGFirstPolygon), ["C", "E", "G"]);
+    expect(findVoicing(result, [[1, 5], [2, 5], [3, 5]], 3), "fret-5 voicing not emitted").toBeDefined();
   });
 
   it("(regression) CAGED G shape: emits both fret-5 and fret-17 voicings when both polygon instances present", () => {
-    // Both CAGED G polygon instances (fret 5-8 and fret 17-20) are active
-    // simultaneously (getCagedCoordinates returns two polygons for C major G shape).
-    // The fret-5 and fret-17 voicings must each be emitted exactly once and
-    // must not suppress each other via the deduplication set.
-    const noteData = [
-      // First CAGED G polygon (frets 5-8)
-      makeNote(0, 8, "C", "chord-root"),
-      makeNote(1, 5, "E", "chord-tone-in-scale"),
-      makeNote(1, 8, "G", "chord-tone-in-scale"),
-      makeNote(2, 5, "C", "chord-root"),
-      makeNote(3, 5, "G", "chord-tone-in-scale"),
-      makeNote(4, 7, "E", "chord-tone-in-scale"),
-      makeNote(5, 8, "C", "chord-root"),
-      // Second CAGED G polygon (frets 17-20)
-      makeNote(0, 20, "C", "chord-root"),
-      makeNote(1, 17, "E", "chord-tone-in-scale"),
-      makeNote(1, 20, "G", "chord-tone-in-scale"),
-      makeNote(2, 17, "C", "chord-root"),
-      makeNote(3, 17, "G", "chord-tone-in-scale"),
-      makeNote(4, 19, "E", "chord-tone-in-scale"),
-      makeNote(5, 20, "C", "chord-root"),
-    ];
-    const result = buildChordConnectorPolylines(noteData, ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
-
-    const fret5 = result.find(
-      (voicing) =>
-        voicing.vertices.length === 3 &&
-        voicing.vertices.some((v) => v.y === stringYAt(1, fretCenterX(5)) && v.x === fretCenterX(5)) &&
-        voicing.vertices.some((v) => v.y === stringYAt(2, fretCenterX(5)) && v.x === fretCenterX(5)) &&
-        voicing.vertices.some((v) => v.y === stringYAt(3, fretCenterX(5)) && v.x === fretCenterX(5)),
-    );
-    const fret17 = result.find(
-      (voicing) =>
-        voicing.vertices.length === 3 &&
-        voicing.vertices.some((v) => v.y === stringYAt(1, fretCenterX(17)) && v.x === fretCenterX(17)) &&
-        voicing.vertices.some((v) => v.y === stringYAt(2, fretCenterX(17)) && v.x === fretCenterX(17)) &&
-        voicing.vertices.some((v) => v.y === stringYAt(3, fretCenterX(17)) && v.x === fretCenterX(17)),
-    );
-
-    expect(fret5, "fret-5 E(str1)-C(str2)-G(str3) voicing not emitted").toBeDefined();
-    expect(fret17, "fret-17 E(str1)-C(str2)-G(str3) voicing not emitted").toBeDefined();
-    // Each voicing is distinct — dedup must not suppress one in favour of the other.
+    const result = build(notes([...cagedGFirstPolygon, ...cagedGSecondPolygon]), ["C", "E", "G"]);
+    const fret5 = findVoicing(result, [[1, 5], [2, 5], [3, 5]], 3);
+    const fret17 = findVoicing(result, [[1, 17], [2, 17], [3, 17]], 3);
+    expect(fret5, "fret-5 voicing not emitted").toBeDefined();
+    expect(fret17, "fret-17 voicing not emitted").toBeDefined();
     expect(fret5).not.toBe(fret17);
   });
 
@@ -531,17 +501,8 @@ describe("regression: 3NPS Position 2 bottom-string voicing", () => {
 
   it("emits the in-position bottom voicing and drops the fret-15 out-of-position voicing", () => {
     const result = build(position2Notes, ["C", "E", "G"]);
-    const bottom = result.find((v) =>
-      v.vertices.length === 3 &&
-      v.vertices.some((p) => p.y === stringYAt(3, fretCenterX(10)) && p.x === fretCenterX(10)) &&
-      v.vertices.some((p) => p.y === stringYAt(4, fretCenterX(10)) && p.x === fretCenterX(10)) &&
-      v.vertices.some((p) => p.y === stringYAt(5, fretCenterX(12)) && p.x === fretCenterX(12)),
-    );
-    expect(bottom, "in-position bottom voicing not emitted").toBeDefined();
-    const outOfPosition = result.find((v) =>
-      v.vertices.some((p) => p.y === stringYAt(4, fretCenterX(15)) && p.x === fretCenterX(15)) ||
-      v.vertices.some((p) => p.y === stringYAt(5, fretCenterX(15)) && p.x === fretCenterX(15)),
-    );
+    expect(findVoicing(result, [[3, 10], [4, 10], [5, 12]], 3), "in-position bottom voicing not emitted").toBeDefined();
+    const outOfPosition = result.find((v) => hasVertex(v.vertices, 4, 15) || hasVertex(v.vertices, 5, 15));
     expect(outOfPosition, "out-of-position voicing must not be emitted").toBeUndefined();
   });
 });
@@ -678,49 +639,31 @@ describe("per-voicing offset: determinism and paletteIndex independence", () => 
 
 describe("useChordConnectorPolylines", () => {
   it("recomputes paths when resize changes fret/string geometry", () => {
-    const noteData = [
-      makeNote(0, 1, "C", "chord-root"),
-      makeNote(1, 2, "E", "chord-tone-in-scale"),
-      makeNote(2, 3, "G", "chord-tone-in-scale"),
-    ];
-    const chordToneNames = ["C", "E", "G"];
-    const wideFretCenterX = (fi: number) => fi * 20;
-    const compactFretCenterX = (fi: number) => fi * 10;
-    const tallStringYAt = (si: number) => si * 24;
-    const compactStringYAt = (si: number) => si * 18;
+    type GeomProps = {
+      fretCenterX: (fi: number) => number;
+      stringYAt: (si: number, x: number) => number;
+    };
+    const wide: GeomProps = { fretCenterX: (fi) => fi * 20, stringYAt: (si) => si * 24 };
+    const compact: GeomProps = { fretCenterX: (fi) => fi * 10, stringYAt: (si) => si * 18 };
 
     const { result, rerender } = renderHook(
-      ({
-        fretCenterX,
-        stringYAt,
-      }: {
-        fretCenterX: (fretIndex: number) => number;
-        stringYAt: (stringIndex: number, x: number) => number;
-      }) =>
+      (g: GeomProps) =>
         useChordConnectorPolylines({
-          noteData,
-          chordToneNames,
-          fretCenterX,
-          stringYAt,
+          noteData: notes([[0, 1, "C", "chord-root"], [1, 2, "E"], [2, 3, "G"]]),
+          chordToneNames: ["C", "E", "G"],
+          fretCenterX: g.fretCenterX,
+          stringYAt: g.stringYAt,
           stringRowPx: STRING_ROW_PX,
           chordRoot: "C",
         }),
-      {
-        initialProps: {
-          fretCenterX: wideFretCenterX,
-          stringYAt: tallStringYAt,
-        },
-      },
+      { initialProps: wide },
     );
 
     const initialPath = result.current[0]!.paths.fill;
     expect(result.current[0]!.vertices.map((v) => v.x)).toEqual([20, 40, 60]);
     expect(result.current[0]!.vertices.map((v) => v.y)).toEqual([0, 24, 48]);
 
-    rerender({
-      fretCenterX: compactFretCenterX,
-      stringYAt: compactStringYAt,
-    });
+    rerender(compact);
 
     expect(result.current[0]!.paths.fill).not.toBe(initialPath);
     expect(result.current[0]!.vertices.map((v) => v.x)).toEqual([10, 20, 30]);
@@ -816,28 +759,16 @@ describe("adjacency-aware offset assignment", () => {
   // Single cluster of size 6 → 6 distinct OFFSET_BUCKET entries → pairwise distinct paths.
   // -------------------------------------------------------------------------
   it("(5) cluster of 6 voicings: all six paths.fill strings are pairwise distinct", () => {
-    // Cmaj7 pattern C,E,G,B across strings 0-8 at fret 5.
-    // Each 4-string window [s, s+3] covers one rotation of {C,E,G,B}.
-    const pattern = ["C", "E", "G", "B", "C", "E", "G", "B", "C"] as const;
-    const roleMap: Record<string, string> = {
-      C: "chord-root",
-      E: "chord-tone-in-scale",
-      G: "chord-tone-in-scale",
-      B: "chord-tone-in-scale",
-    };
-    const noteData = pattern.map((name, si) => makeNote(si, 5, name, roleMap[name]!));
-
-    const result = buildChordConnectorPolylines(
-      noteData, ["C", "E", "G", "B"], fretCenterX, stringYAt, STRING_ROW_PX, "C",
+    // Cmaj7 pattern C,E,G,B across strings 0-8 at fret 5; each 4-string window
+    // [s, s+3] covers one rotation. 6 windows → 6 voicings, all distinct.
+    const result = build(
+      notes(["C", "E", "G", "B", "C", "E", "G", "B", "C"].map(
+        (n, si) => [si, 5, n, n === "C" ? "chord-root" : "chord-tone-in-scale"] as NoteSpec,
+      )),
+      ["C", "E", "G", "B"],
     );
-
-    // Should emit exactly 6 voicings (one per 4-string window 0-3 through 5-8).
     expect(result).toHaveLength(6);
-
-    // All 6 path strings must be pairwise distinct (cluster-based offset assignment).
-    const fills = result.map((v) => v.paths.fill);
-    const uniqueFills = new Set(fills);
-    expect(uniqueFills.size).toBe(6);
+    expect(new Set(result.map((v) => v.paths.fill)).size).toBe(6);
   });
 });
 
@@ -858,62 +789,37 @@ describe("adjacency-aware offset assignment", () => {
 // -------------------------------------------------------------------------
 
 describe("G major triad overlap offsets (full neck)", () => {
-  // All G-major chord tones on 6 strings, frets 0–22.
-  function gMajorChordTones(): NoteData[] {
-    const tones: Array<[number, number, string, string]> = [
-      // G positions
-      [0, 3, "G", "chord-tone-in-scale"], [0, 15, "G", "chord-tone-in-scale"],
-      [1, 8, "G", "chord-tone-in-scale"], [1, 20, "G", "chord-tone-in-scale"],
-      [2, 0, "G", "chord-root"],          [2, 12, "G", "chord-root"],
-      [3, 5, "G", "chord-tone-in-scale"], [3, 17, "G", "chord-tone-in-scale"],
-      [4, 10, "G", "chord-tone-in-scale"],[4, 22, "G", "chord-tone-in-scale"],
-      [5, 3, "G", "chord-tone-in-scale"], [5, 15, "G", "chord-tone-in-scale"],
-      // B positions
-      [0, 7, "B", "chord-tone-in-scale"], [0, 19, "B", "chord-tone-in-scale"],
-      [1, 0, "B", "chord-tone-in-scale"], [1, 12, "B", "chord-tone-in-scale"],
-      [2, 4, "B", "chord-tone-in-scale"], [2, 16, "B", "chord-tone-in-scale"],
-      [3, 9, "B", "chord-tone-in-scale"], [3, 21, "B", "chord-tone-in-scale"],
-      [4, 2, "B", "chord-tone-in-scale"], [4, 14, "B", "chord-tone-in-scale"],
-      [5, 7, "B", "chord-tone-in-scale"], [5, 19, "B", "chord-tone-in-scale"],
-      // D positions
-      [0, 10, "D", "chord-tone-in-scale"],[0, 22, "D", "chord-tone-in-scale"],
-      [1, 3, "D", "chord-tone-in-scale"], [1, 15, "D", "chord-tone-in-scale"],
-      [2, 7, "D", "chord-tone-in-scale"], [2, 19, "D", "chord-tone-in-scale"],
-      [3, 0, "D", "chord-tone-in-scale"], [3, 12, "D", "chord-tone-in-scale"],
-      [4, 5, "D", "chord-tone-in-scale"], [4, 17, "D", "chord-tone-in-scale"],
-      [5, 10, "D", "chord-tone-in-scale"],[5, 22, "D", "chord-tone-in-scale"],
-    ];
-    return tones.map(([si, fi, name, cls]) => makeNote(si, fi, name, cls));
-  }
+  // G/B/D chord-tone positions across all 6 strings, frets 0-22. Root role on G.
+  const gMajorChordTones = (): NoteData[] => {
+    const POSITIONS: Record<string, ReadonlyArray<readonly [number, number]>> = {
+      G: [[0, 3], [0, 15], [1, 8], [1, 20], [2, 0], [2, 12], [3, 5], [3, 17], [4, 10], [4, 22], [5, 3], [5, 15]],
+      B: [[0, 7], [0, 19], [1, 0], [1, 12], [2, 4], [2, 16], [3, 9], [3, 21], [4, 2], [4, 14], [5, 7], [5, 19]],
+      D: [[0, 10], [0, 22], [1, 3], [1, 15], [2, 7], [2, 19], [3, 0], [3, 12], [4, 5], [4, 17], [5, 10], [5, 22]],
+    };
+    return Object.entries(POSITIONS).flatMap(([name, positions]) =>
+      positions.map(([si, fi]) => makeNote(si, fi, name, name === "G" ? "chord-root" : "chord-tone-in-scale")),
+    );
+  };
 
-  // Helper: extract voicings whose vertices fall within a fret range.
-  function voicingsInFretRange(
+  const voicingsInFretRange = (
     voicings: ReturnType<typeof buildChordConnectorPolylines>,
     minFret: number,
     maxFret: number,
-  ) {
-    return voicings.filter((v) => {
+  ) =>
+    voicings.filter((v) => {
       const frets = v.voicingKey.split("|").map((p) => Number(p.split(",")[1]));
       return frets.every((f) => f >= minFret && f <= maxFret);
     });
-  }
 
-  // Helper: check if two voicingKeys share a (string,fret) position.
-  function keysSharePosition(a: string, b: string): boolean {
-    const setA = new Set(a.split("|"));
-    for (const pos of b.split("|")) {
-      if (setA.has(pos)) return true;
-    }
-    return false;
-  }
-
-  function expectPositionSharingPairsDiffer(
+  const expectPositionSharingPairsDiffer = (
     group: ReturnType<typeof buildChordConnectorPolylines>,
     context: string,
-  ) {
+  ) => {
     for (let i = 0; i < group.length; i++) {
       for (let j = i + 1; j < group.length; j++) {
-        if (keysSharePosition(group[i]!.voicingKey, group[j]!.voicingKey)) {
+        const setA = new Set(group[i]!.voicingKey.split("|"));
+        const overlap = group[j]!.voicingKey.split("|").some((pos) => setA.has(pos));
+        if (overlap) {
           expect(
             group[i]!.paths.fill,
             `${context}: "${group[i]!.voicingKey}" and "${group[j]!.voicingKey}" share a position but have identical paths`,
@@ -921,7 +827,7 @@ describe("G major triad overlap offsets (full neck)", () => {
         }
       }
     }
-  }
+  };
 
   it("low (frets 7-10) and high (19-22) regions both emit ≥3 voicings of equal count", () => {
     const result = build(gMajorChordTones(), ["G", "B", "D"], "G");
@@ -937,9 +843,7 @@ describe("G major triad overlap offsets (full neck)", () => {
     { label: "frets 19-22 unbounded", min: 19, max: 22 },
     { label: "frets 19-22 with yBounds clamping", min: 19, max: 22, yBounds: { minY: 0, maxY: 100 } },
   ])("$label: overlapping voicings have distinct paths", ({ label, min, max, yBounds }) => {
-    const result = buildChordConnectorPolylines(
-      gMajorChordTones(), ["G", "B", "D"], fretCenterX, stringYAt, STRING_ROW_PX, "G", yBounds,
-    );
+    const result = build(gMajorChordTones(), ["G", "B", "D"], "G", yBounds);
     expectPositionSharingPairsDiffer(voicingsInFretRange(result, min, max), label);
   });
 
@@ -1042,32 +946,18 @@ describe("voicingKey field", () => {
   // -------------------------------------------------------------------------
 
   it("augmented triad inversions (E aug: E, G#, C) receive distinct paletteIndex values", () => {
-    const noteData = [
-      makeNote(0, 4, "G#", "chord-tone-in-scale"),
-      makeNote(1, 5, "C", "chord-tone-in-scale"),
-      makeNote(2, 4, "E", "chord-tone-in-scale"),
-      makeNote(0, 8, "C", "chord-tone-in-scale"),
-      makeNote(1, 9, "E", "chord-tone-in-scale"),
-      makeNote(2, 8, "G#", "chord-tone-in-scale"),
-      makeNote(0, 12, "E", "chord-tone-in-scale"),
-      makeNote(1, 13, "G#", "chord-tone-in-scale"),
-      makeNote(2, 12, "C", "chord-tone-in-scale"),
-    ];
-
-    const result = buildChordConnectorPolylines(
-      noteData,
+    const result = build(
+      notes([
+        [0, 4, "G#"], [1, 5, "C"], [2, 4, "E"],
+        [0, 8, "C"], [1, 9, "E"], [2, 8, "G#"],
+        [0, 12, "E"], [1, 13, "G#"], [2, 12, "C"],
+      ]),
       ["E", "G#", "C"],
-      fretCenterX,
-      stringYAt,
-      STRING_ROW_PX,
       "E",
     );
-
     expect(result.length).toBeGreaterThanOrEqual(3);
-
     const paletteIndices = result.map((v) => v.paletteIndex);
-    const unique = new Set(paletteIndices);
-    expect(unique.size).toBe(paletteIndices.length);
+    expect(new Set(paletteIndices).size).toBe(paletteIndices.length);
   });
 });
 

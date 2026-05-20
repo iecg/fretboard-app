@@ -4,16 +4,9 @@ import { renderHook } from "@testing-library/react";
 import { Provider } from "jotai";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
 import { useFretboardState } from "./useFretboardState";
-import {
-  chordScopeToPositionAtom,
-  fingeringPatternAtom,
-  cagedShapesAtom,
-  npsPositionAtom,
-  chordOverlayModeAtom,
-  chordRootOverrideAtom,
-  chordQualityOverrideAtom,
-  fullChordMatchesAtom,
-} from "../store/atoms";
+import { chordOverlayModeAtom, chordRootOverrideAtom, chordQualityOverrideAtom, fullChordMatchesAtom } from "../store/chordOverlayAtoms";
+import { chordScopeToPositionAtom } from "../store/chordScope";
+import { fingeringPatternAtom, cagedShapesAtom, npsPositionAtom } from "../store/fingeringAtoms";
 
 function wrapWithStore(store: ReturnType<typeof makeAtomStore>) {
   return function Wrapper({ children }: { children: React.ReactNode }) {

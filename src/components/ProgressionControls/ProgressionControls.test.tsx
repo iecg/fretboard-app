@@ -4,13 +4,8 @@ import { screen, within, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
 import { makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
-import {
-  activeProgressionStepIndexAtom,
-  beatsPerBarAtom,
-  progressionStepsAtom,
-  rootNoteAtom,
-  scaleNameAtom,
-} from "../../store/atoms";
+import { activeProgressionStepIndexAtom, beatsPerBarAtom, progressionStepsAtom } from "../../store/progressionAtoms";
+import { rootNoteAtom, scaleNameAtom } from "../../store/scaleAtoms";
 import { ProgressionControls } from "./ProgressionControls";
 
 const BASE_SEEDS = [

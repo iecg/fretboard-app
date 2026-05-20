@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Provider, createStore } from 'jotai';
-import { scaleDegreeColorsEnabledAtom } from '../../store/atoms';
+import { scaleDegreeColorsEnabledAtom } from '../../store/uiAtoms';
 import { DegreeChipStrip, type DegreeChip } from './DegreeChipStrip';
 import { axe } from '../../test-utils/a11y';
 
@@ -198,36 +198,22 @@ describe('DegreeChipStrip/DegreeChipStrip', () => {
   });
 
   describe('visible prop (eye toggle)', () => {
-    it("default visible=true renders chip list", () => {
+    it.each([
+      { visible: true, listPresent: true, attr: "true" },
+      { visible: false, listPresent: false, attr: "false" },
+    ])("visible=$visible: chip list rendered=$listPresent and data-scale-visible=$attr", ({ visible, listPresent, attr }) => {
       const { container } = render(
-        <DegreeChipStrip scaleName="A Natural Minor" chips={aMinorChips} />
+        <DegreeChipStrip scaleName="A Natural Minor" chips={aMinorChips} visible={visible} />
       );
-      expect(container.querySelector('.degree-chip-strip-list')).toBeTruthy();
+      if (listPresent) expect(container.querySelector('.degree-chip-strip-list')).toBeTruthy();
+      else expect(container.querySelector('.degree-chip-strip-list')).toBeNull();
+      expect(container.querySelector('.degree-chip-strip')?.getAttribute('data-scale-visible')).toBe(attr);
     });
 
-    it("visible=false hides chip list", () => {
-      const { container } = render(
-        <DegreeChipStrip scaleName="A Natural Minor" chips={aMinorChips} visible={false} />
-      );
-      expect(container.querySelector('.degree-chip-strip-list')).toBeNull();
-    });
-
-    it("visible=false sets data-scale-visible=false on section", () => {
-      const { container } = render(
-        <DegreeChipStrip scaleName="A Natural Minor" chips={aMinorChips} visible={false} />
-      );
-      expect(container.querySelector('.degree-chip-strip')?.getAttribute('data-scale-visible')).toBe('false');
-    });
-
-    it("visible=true sets data-scale-visible=true on section", () => {
-      const { container } = render(
-        <DegreeChipStrip scaleName="A Natural Minor" chips={aMinorChips} visible={true} />
-      );
-      expect(container.querySelector('.degree-chip-strip')?.getAttribute('data-scale-visible')).toBe('true');
-    });
-
-    it("chip buttons are enabled when onChipToggle provided and visible", () => {
-      const toggle = vi.fn();
+    it.each([
+      { label: "enabled when onChipToggle provided", toggle: vi.fn(), expectDisabled: false },
+      { label: "disabled when no onChipToggle provided", toggle: undefined, expectDisabled: true },
+    ])("chip buttons: $label", ({ toggle, expectDisabled }) => {
       const { getAllByRole } = render(
         <DegreeChipStrip
           scaleName="A Natural Minor"
@@ -237,58 +223,35 @@ describe('DegreeChipStrip/DegreeChipStrip', () => {
         />
       );
       const buttons = getAllByRole('button');
-      expect(buttons.every((b) => !b.hasAttribute('disabled'))).toBe(true);
+      expect(buttons.every((b) => b.hasAttribute('disabled'))).toBe(expectDisabled);
     });
 
-    it("chip buttons are disabled when no onChipToggle provided", () => {
-      const { getAllByRole } = render(
-        <DegreeChipStrip scaleName="A Natural Minor" chips={aMinorChips} visible={true} />
-      );
-      const buttons = getAllByRole('button');
-      expect(buttons.every((b) => b.hasAttribute('disabled'))).toBe(true);
-    });
-
-    it("headerAction renders inside the strip", () => {
+    it.each([true, false])("headerAction renders inside the strip when visible=%s", (visible) => {
       const { getByTestId } = render(
         <DegreeChipStrip
           scaleName="A Natural Minor"
           chips={aMinorChips}
+          visible={visible}
           headerAction={<span data-testid="action-slot">ctrl</span>}
         />
       );
       expect(getByTestId('action-slot')).toBeTruthy();
     });
 
-    it("visible=false still renders headerAction", () => {
-      const { getByTestId } = render(
-        <DegreeChipStrip
-          scaleName="A Natural Minor"
-          chips={aMinorChips}
-          visible={false}
-          headerAction={<span data-testid="action-slot">ctrl</span>}
-        />
-      );
-      expect(getByTestId('action-slot')).toBeTruthy();
-    });
-
-    it("hidden chips show data-hidden when visible", () => {
+    it.each([
+      { label: "hidden chips show data-hidden when visible", hidden: new Set(['B']), expectedCount: 1 },
+      { label: "no data-hidden chips when no hiddenNotes passed", hidden: undefined, expectedCount: 0 },
+    ])("$label", ({ hidden, expectedCount }) => {
       const { container } = render(
         <DegreeChipStrip
           scaleName="A Natural Minor"
           chips={aMinorChips}
           visible={true}
-          hiddenNotes={new Set(['B'])}
+          hiddenNotes={hidden}
           onChipToggle={() => {}}
         />
       );
-      expect(container.querySelectorAll('[data-hidden="true"]').length).toBe(1);
-    });
-
-    it("no data-hidden chips rendered when no hiddenNotes passed", () => {
-      const { container } = render(
-        <DegreeChipStrip scaleName="A Natural Minor" chips={aMinorChips} visible={true} />
-      );
-      expect(container.querySelectorAll('[data-hidden="true"]').length).toBe(0);
+      expect(container.querySelectorAll('[data-hidden="true"]').length).toBe(expectedCount);
     });
   });
 

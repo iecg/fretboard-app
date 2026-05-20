@@ -24,7 +24,7 @@ import { ChordQualitySelect } from "../shared/ChordQualitySelect";
 import { BackingTrackControls } from "./BackingTrackControls";
 import shared from "../shared/shared.module.css";
 import { CHORD_QUALITY_DIATONIC_VALUE } from "../shared/chordControlOptions";
-import { CUSTOM_PRESET_ID } from "../../store/atoms";
+import { CUSTOM_PRESET_ID } from "../../store/progressionAtoms";
 import styles from "./ProgressionControls.module.css";
 
 const CATEGORY_LABELS: Record<ProgressionPresetCategory, string> = {

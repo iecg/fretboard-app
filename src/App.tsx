@@ -4,18 +4,10 @@ import { AnimatePresence, motion } from "motion/react";
 import { Fretboard } from "./components/Fretboard/Fretboard";
 import { HelpCircle, Moon, Settings2, Sun, Volume2, VolumeX } from "lucide-react";
 import { synth } from "./core/audio";
-import {
-  isMutedAtom,
-  settingsOverlayOpenAtom,
-  toggleMuteAtom,
-  chordRootAtom,
-  chordTypeAtom,
-  rootNoteAtom,
-  scaleNameAtom,
-  chordOverlayHiddenAtom,
-  audioErrorAtom,
-  themeAtom,
-} from "./store/atoms";
+import { isMutedAtom, toggleMuteAtom, audioErrorAtom } from "./store/audioAtoms";
+import { chordRootAtom, chordTypeAtom, chordOverlayHiddenAtom } from "./store/chordOverlayAtoms";
+import { rootNoteAtom, scaleNameAtom } from "./store/scaleAtoms";
+import { settingsOverlayOpenAtom, themeAtom } from "./store/uiAtoms";
 import audioErrorStyles from "./components/AudioErrorBanner/AudioErrorBanner.module.css";
 import useLayoutMode from "./hooks/useLayoutMode";
 import { useResolvedTheme } from "./hooks/useResolvedTheme";

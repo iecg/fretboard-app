@@ -4,7 +4,7 @@ import { screen, act, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
-import { rootNoteAtom, scaleNameAtom } from "../../store/atoms";
+import { rootNoteAtom, scaleNameAtom } from "../../store/scaleAtoms";
 import { getScaleFamilyOptions } from "@fretflow/core";
 import { ScaleSelector } from "./ScaleSelector";
 

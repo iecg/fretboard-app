@@ -2,10 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { act, renderHook } from "@testing-library/react";
 import { createStore, Provider } from "jotai";
-import {
-  progressionChordPatternAtom,
-  progressionGenreStyleAtom,
-} from "../store/atoms";
+import { progressionChordPatternAtom, progressionGenreStyleAtom } from "../store/progressionAtoms";
 import { useProgressionState } from "./useProgressionState";
 
 function makeWrapper(store: ReturnType<typeof createStore>) {

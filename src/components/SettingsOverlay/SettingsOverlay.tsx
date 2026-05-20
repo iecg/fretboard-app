@@ -3,7 +3,7 @@ import { useAtom } from "jotai";
 import clsx from "clsx";
 import { AnimatePresence, motion } from "motion/react";
 import { X } from "lucide-react";
-import { settingsOverlayOpenAtom } from "../../store/atoms";
+import { settingsOverlayOpenAtom } from "../../store/uiAtoms";
 import {
   getResponsiveLayout,
   getResponsiveTier,

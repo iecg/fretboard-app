@@ -3,51 +3,14 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createStore, type Atom } from "jotai";
 import { RESET } from "jotai/utils";
 import { k } from "../test-utils/storage";
-import {
-  rootNoteAtom,
-  scaleNameAtom,
-  scaleBrowseModeAtom,
-  chordRootAtom,
-  chordTypeAtom,
-  linkChordRootAtom,
-  cagedShapesAtom,
-  fingeringPatternAtom,
-  displayFormatAtom,
-  isMutedAtom,
-  fretStartAtom,
-  fretEndAtom,
-  fretZoomAtom,
-  tuningNameAtom,
-  accidentalModeAtom,
-  npsPositionAtom,
-  chordFretSpreadAtom,
-  practiceLensAtom,
-  chordDegreeAtom,
-  chordOverlayModeAtom,
-  chordQualityOverrideAtom,
-  chordRootOverrideAtom,
-  chordOverlayHiddenAtom,
-  progressionStepsAtom,
-  progressionTempoBpmAtom,
-  progressionPlayingAtom,
-  activeProgressionStepIndexAtom,
-  setProgressionPlayingAtom,
-  setRootNoteAtom,
-  setScaleNameAtom,
-  setFingeringPatternAtom,
-  resetAtom,
-  useFlatsAtom,
-  currentTuningAtom,
-  chordTonesAtom,
-  colorNotesAtom,
-  clickedShapeAtom,
-  scaleVisibleAtom,
-  toggleScaleVisibleAtom,
-  effectiveHiddenNotesAtom,
-  effectiveColorNotesAtom,
-  hiddenNotesAtom,
-  toggleHiddenNoteAtom,
-} from "./atoms";
+import { setRootNoteAtom, setScaleNameAtom, setFingeringPatternAtom, resetAtom } from "./actions";
+import { isMutedAtom } from "./audioAtoms";
+import { chordRootAtom, chordTypeAtom, linkChordRootAtom, chordFretSpreadAtom, practiceLensAtom, chordDegreeAtom, chordOverlayModeAtom, chordQualityOverrideAtom, chordRootOverrideAtom, chordOverlayHiddenAtom, chordTonesAtom } from "./chordOverlayAtoms";
+import { cagedShapesAtom, fingeringPatternAtom, npsPositionAtom, clickedShapeAtom } from "./fingeringAtoms";
+import { fretStartAtom, fretEndAtom, fretZoomAtom, tuningNameAtom, currentTuningAtom } from "./layoutAtoms";
+import { progressionStepsAtom, progressionTempoBpmAtom, progressionPlayingAtom, activeProgressionStepIndexAtom, setProgressionPlayingAtom } from "./progressionAtoms";
+import { rootNoteAtom, scaleNameAtom, scaleBrowseModeAtom, accidentalModeAtom, useFlatsAtom, colorNotesAtom, scaleVisibleAtom, toggleScaleVisibleAtom, effectiveHiddenNotesAtom, effectiveColorNotesAtom, hiddenNotesAtom, toggleHiddenNoteAtom } from "./scaleAtoms";
+import { displayFormatAtom } from "./uiAtoms";
 import { STANDARD_TUNING, TUNINGS } from "@fretflow/core";
 import { CAGED_SHAPES } from "@fretflow/core";
 
@@ -419,10 +382,10 @@ describe("atoms", () => {
     it("copies legacy unprefixed key to prefixed key and removes the original", async () => {
       localStorage.setItem("rootNote", "G");
       vi.resetModules();
-      const atoms = await import("../store/atoms");
+      const scaleAtoms = await import("../store/scaleAtoms");
       const store = makeStore();
-      const unsub = mount(store, atoms.rootNoteAtom);
-      expect(store.get(atoms.rootNoteAtom)).toBe("G");
+      const unsub = mount(store, scaleAtoms.rootNoteAtom);
+      expect(store.get(scaleAtoms.rootNoteAtom)).toBe("G");
       expect(localStorage.getItem("rootNote")).toBeNull();
       expect(localStorage.getItem(k("rootNote"))).toBe("G");
       unsub();
@@ -432,7 +395,7 @@ describe("atoms", () => {
       localStorage.setItem(k("rootNote"), "D");
       localStorage.setItem("rootNote", "G");
       vi.resetModules();
-      await import("../store/atoms");
+      await import("../store/scaleAtoms");
       expect(localStorage.getItem(k("rootNote"))).toBe("D");
       expect(localStorage.getItem("rootNote")).toBeNull();
     });
@@ -569,41 +532,18 @@ describe("atoms", () => {
       expect(store.get(fingeringPatternAtom)).toBe("caged");
     });
 
-    it("does NOT clear chordDegreeAtom when pattern changes to one-string", () => {
+    it.each<[string, "one-string" | "two-strings" | "caged" | "none" | "3nps"]>([
+      ["I", "one-string"],
+      ["V", "two-strings"],
+      ["IV", "caged"],
+      ["ii", "none"],
+      ["iii", "3nps"],
+    ])("preserves chordDegreeAtom='%s' across pattern change to %s", (degree, pattern) => {
       const store = makeStore();
-      store.set(chordDegreeAtom, "I" as import("@fretflow/core").DegreeId);
-      store.set(setFingeringPatternAtom, "one-string");
-      expect(store.get(fingeringPatternAtom)).toBe("one-string");
-      expect(store.get(chordDegreeAtom)).toBe("I");
-    });
-
-    it("does NOT clear chordDegreeAtom when pattern changes to two-strings", () => {
-      const store = makeStore();
-      store.set(chordDegreeAtom, "V" as import("@fretflow/core").DegreeId);
-      store.set(setFingeringPatternAtom, "two-strings");
-      expect(store.get(fingeringPatternAtom)).toBe("two-strings");
-      expect(store.get(chordDegreeAtom)).toBe("V");
-    });
-
-    it("does NOT clear chordDegreeAtom when pattern changes to caged", () => {
-      const store = makeStore();
-      store.set(chordDegreeAtom, "IV" as import("@fretflow/core").DegreeId);
-      store.set(setFingeringPatternAtom, "caged");
-      expect(store.get(chordDegreeAtom)).toBe("IV");
-    });
-
-    it("does NOT clear chordDegreeAtom when pattern changes to none", () => {
-      const store = makeStore();
-      store.set(chordDegreeAtom, "ii" as import("@fretflow/core").DegreeId);
-      store.set(setFingeringPatternAtom, "none");
-      expect(store.get(chordDegreeAtom)).toBe("ii");
-    });
-
-    it("does NOT clear chordDegreeAtom when pattern changes to 3nps", () => {
-      const store = makeStore();
-      store.set(chordDegreeAtom, "iii" as import("@fretflow/core").DegreeId);
-      store.set(setFingeringPatternAtom, "3nps");
-      expect(store.get(chordDegreeAtom)).toBe("iii");
+      store.set(chordDegreeAtom, degree as import("@fretflow/core").DegreeId);
+      store.set(setFingeringPatternAtom, pattern);
+      expect(store.get(fingeringPatternAtom)).toBe(pattern);
+      expect(store.get(chordDegreeAtom)).toBe(degree);
     });
   });
 

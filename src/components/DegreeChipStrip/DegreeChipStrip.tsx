@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useAtomValue } from 'jotai';
 import { ANIMATION_DURATION_FAST } from '@fretflow/core';
 
-import { scaleDegreeColorsEnabledAtom } from '../../store/atoms';
+import { scaleDegreeColorsEnabledAtom } from '../../store/uiAtoms';
 import { NotePill } from '../NotePill/NotePill';
 import styles from './DegreeChipStrip.module.css';
 

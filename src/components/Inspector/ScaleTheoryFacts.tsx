@@ -1,11 +1,6 @@
 import type { ReactNode } from "react";
 import { useAtomValue } from "jotai";
-import {
-  degreeChipsAtom,
-  rootNoteAtom,
-  scaleNameAtom,
-  useFlatsAtom,
-} from "../../store/atoms";
+import { degreeChipsAtom, rootNoteAtom, scaleNameAtom, useFlatsAtom } from "../../store/scaleAtoms";
 import { DegreeChordList } from "../CircleOfFifths/DegreeChordList";
 import { useTranslation } from "../../hooks/useTranslation";
 import { getScaleKeyInfo } from "./scaleTheoryDerivations";

@@ -2,7 +2,8 @@ import { describe, it, expect } from "vitest";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
-import { progressionStepsAtom, rootNoteAtom, scaleNameAtom } from "../../store/atoms";
+import { progressionStepsAtom } from "../../store/progressionAtoms";
+import { rootNoteAtom, scaleNameAtom } from "../../store/scaleAtoms";
 import { Inspector } from "./Inspector";
 
 function renderInspector() {

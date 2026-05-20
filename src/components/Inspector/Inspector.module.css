@@ -96,6 +96,12 @@
   padding: var(--space-3, 0.75rem) 0;
 }
 
+.tabBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 0.75rem);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tab {
     transition: none;

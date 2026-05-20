@@ -4,13 +4,8 @@ import { Eye, EyeOff } from "lucide-react";
 import { AnimatePresence, motion } from 'motion/react';
 import { ANIMATION_DURATION_FAST, ANIMATION_EASE } from "@fretflow/core";
 import type { PracticeBarGroup, PracticeBarNote } from "@fretflow/core";
-import {
-  chordOverlayHiddenAtom,
-  chordHiddenNotesAtom,
-  scaleDegreeColorsEnabledAtom,
-  toggleChordHiddenNoteAtom,
-  toggleChordOverlayHiddenAtom,
-} from "../../store/atoms";
+import { chordOverlayHiddenAtom, chordHiddenNotesAtom, toggleChordHiddenNoteAtom, toggleChordOverlayHiddenAtom } from "../../store/chordOverlayAtoms";
+import { scaleDegreeColorsEnabledAtom } from "../../store/uiAtoms";
 import { NotePill } from "../NotePill/NotePill";
 import shared from "../shared/shared.module.css";
 import styles from "./ChordPracticeBar.module.css";

@@ -8,7 +8,8 @@ import {
   getNoteFrequency,
 } from "@fretflow/core";
 import { synth } from "../../core/audio";
-import { fretZoomAtom, type AutoCenterTarget } from "../../store/atoms";
+import { fretZoomAtom } from "../../store/layoutAtoms";
+import type { AutoCenterTarget } from "../../store/shapeAtoms";
 import { FretboardSVG } from "../FretboardSVG/FretboardSVG";
 import { getFretboardScale, getWireX } from "../FretboardSVG/fretboardGeometry";
 import { useFretboardState, type ShapeScope, type ActiveShapeType } from "../../hooks/useFretboardState";

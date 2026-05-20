@@ -24,7 +24,7 @@ import {
 } from "./chordOverlayAtoms";
 import { allChordMembersAtom } from "./composableSelectors";
 import { progressionStepsAtom } from "./progressionAtoms";
-import { chordSourceIsProgressionAtom } from "./atoms";
+import { chordSourceIsProgressionAtom } from "./chordOverlayAtoms";
 import { fingeringPatternAtom } from "./fingeringAtoms";
 import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
@@ -47,43 +47,24 @@ describe("chordOverlayAtoms — degree mode (read path)", () => {
     localStorage.clear();
   });
 
-  it("chordRootAtom returns diatonic root for I in C Major", () => {
-    const store = makeAtomStore([
-      [chordDegreeAtom, "I"],
-      [chordOverlayModeAtom, "degree"],
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
-    ]);
-    expect(store.get(chordRootAtom)).toBe("C");
-  });
+  const C_MAJOR_DEGREE_SEEDS = [
+    [progressionStepsAtom, []],
+    [chordOverlayModeAtom, "degree"],
+    [rootNoteAtom, "C"],
+    [scaleNameAtom, "Major"],
+  ] as const;
 
-  it("chordTypeAtom returns diatonic quality for I in C Major", () => {
-    const store = makeAtomStore([
-      [chordDegreeAtom, "I"],
-      [chordOverlayModeAtom, "degree"],
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
-    ]);
-    expect(store.get(chordTypeAtom)).toBe("Major Triad");
-  });
-
-  it("chordRootAtom returns diatonic root for vi in C Major", () => {
-    const store = makeAtomStore([
-      [progressionStepsAtom, []],
-      [chordDegreeAtom, "vi"],
-      [chordOverlayModeAtom, "degree"],
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
-    ]);
-    expect(store.get(chordRootAtom)).toBe("A");
+  it.each<{ degree: string; root: string; type: string }>([
+    { degree: "I", root: "C", type: "Major Triad" },
+    { degree: "vi", root: "A", type: "Minor Triad" },
+  ])("degree=$degree → chordRoot=$root, chordType=$type (C Major)", ({ degree, root, type }) => {
+    const store = makeAtomStore([...C_MAJOR_DEGREE_SEEDS, [chordDegreeAtom, degree]]);
+    expect(store.get(chordRootAtom)).toBe(root);
+    expect(store.get(chordTypeAtom)).toBe(type);
   });
 
   it("chordTypeAtom returns null when chordDegree is null (overlay off)", () => {
-    const store = makeAtomStore([
-      [progressionStepsAtom, []],
-      [chordDegreeAtom, null],
-      [chordOverlayModeAtom, "degree"],
-    ]);
+    const store = makeAtomStore([...C_MAJOR_DEGREE_SEEDS, [chordDegreeAtom, null]]);
     expect(store.get(chordTypeAtom)).toBeNull();
   });
 });
@@ -137,133 +118,71 @@ describe("chordOverlayAtoms — degree mode quality override", () => {
     localStorage.clear();
   });
 
-  it("read path: degree mode + override returns the override quality (V Dom7 in C Major)", () => {
-    const store = makeAtomStore([
-      [progressionStepsAtom, []],
-      [chordDegreeAtom, "V"],
-      [chordOverlayModeAtom, "degree"],
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
-      [chordQualityOverrideAtom, "Dominant 7th"],
-    ]);
-    expect(store.get(chordRootAtom)).toBe("G"); // V root from degree
-    expect(store.get(chordTypeAtom)).toBe("Dominant 7th"); // user override
-    expect(store.get(chordOverlayModeAtom)).toBe("degree"); // mode preserved
+  const V_IN_C_MAJOR = [
+    [progressionStepsAtom, []],
+    [chordDegreeAtom, "V"],
+    [chordOverlayModeAtom, "degree"],
+    [rootNoteAtom, "C"],
+    [scaleNameAtom, "Major"],
+  ] as const;
+
+  it("read path: degree mode resolves V to G/Major Triad (diatonic default) or to the override quality", () => {
+    const noOverride = makeAtomStore([...V_IN_C_MAJOR]);
+    expect(noOverride.get(chordRootAtom)).toBe("G");
+    expect(noOverride.get(chordTypeAtom)).toBe("Major Triad");
+
+    const withOverride = makeAtomStore([...V_IN_C_MAJOR, [chordQualityOverrideAtom, "Dominant 7th"]]);
+    expect(withOverride.get(chordRootAtom)).toBe("G");
+    expect(withOverride.get(chordTypeAtom)).toBe("Dominant 7th");
+    expect(withOverride.get(chordOverlayModeAtom)).toBe("degree");
   });
 
-  it("read path: degree mode without override returns diatonic default (V Major Triad in C Major)", () => {
-    const store = makeAtomStore([
-      [progressionStepsAtom, []],
-      [chordDegreeAtom, "V"],
-      [chordOverlayModeAtom, "degree"],
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
-      // chordQualityOverrideAtom intentionally not seeded → null
-    ]);
-    expect(store.get(chordRootAtom)).toBe("G");
-    expect(store.get(chordTypeAtom)).toBe("Major Triad"); // diatonic default
-  });
-
-  it("write path: writing chordTypeAtom in degree mode with active degree keeps mode = degree", () => {
-    const store = makeAtomStore([
-      [progressionStepsAtom, []],
-      [chordDegreeAtom, "V"],
-      [chordOverlayModeAtom, "degree"],
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
-    ]);
+  it("write path: writing chordTypeAtom in degree mode with active degree pins override, keeps mode = degree", () => {
+    const store = makeAtomStore([...V_IN_C_MAJOR]);
     store.set(chordTypeAtom, "Dominant 7th");
-    expect(store.get(chordOverlayModeAtom)).toBe("degree"); // NOT flipped to manual
+    expect(store.get(chordOverlayModeAtom)).toBe("degree");
     expect(store.get(chordQualityOverrideAtom)).toBe("Dominant 7th");
     expect(store.get(chordTypeAtom)).toBe("Dominant 7th");
-    expect(store.get(chordRootAtom)).toBe("G"); // V root still derived from degree
+    expect(store.get(chordRootAtom)).toBe("G");
   });
 
-  it("write path: writing chordTypeAtom in degree mode WITHOUT active degree falls through to manual", () => {
-    // Without a degree set, there's nothing to "preserve" — degree mode with a
-    // null degree means overlay-off, so writing a chord type explicitly should
-    // engage manual mode (current contract).
-    const store = makeAtomStore([
-      [progressionStepsAtom, []],
-      [chordDegreeAtom, null],
-      [chordOverlayModeAtom, "degree"],
-    ]);
-    store.set(chordTypeAtom, "Dominant 7th");
-    expect(store.get(chordOverlayModeAtom)).toBe("manual");
-  });
-
-  it("write path: manual mode unchanged — writing chordTypeAtom keeps mode = manual", () => {
-    const store = makeAtomStore([
-      [chordOverlayModeAtom, "manual"],
-      [chordRootOverrideAtom, "C"],
-    ]);
+  it.each<{ label: string; seeds: readonly (readonly [unknown, unknown])[] }>([
+    {
+      label: "degree mode without active degree → falls through to manual",
+      seeds: [[progressionStepsAtom, []], [chordDegreeAtom, null], [chordOverlayModeAtom, "degree"]],
+    },
+    {
+      label: "already in manual mode → stays in manual",
+      seeds: [[chordOverlayModeAtom, "manual"], [chordRootOverrideAtom, "C"]],
+    },
+  ])("write path: writing chordTypeAtom — $label", ({ seeds }) => {
+    const store = makeAtomStore([...seeds] as never);
     store.set(chordTypeAtom, "Dominant 7th");
     expect(store.get(chordOverlayModeAtom)).toBe("manual");
     expect(store.get(chordTypeAtom)).toBe("Dominant 7th");
   });
 
-  it("setChordDegreeAtom: changing degree clears the quality override", () => {
-    const store = makeAtomStore([
-      [progressionStepsAtom, []],
-      [chordDegreeAtom, "V"],
-      [chordOverlayModeAtom, "degree"],
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
-      [chordQualityOverrideAtom, "Dominant 7th"],
-    ]);
-    expect(store.get(chordTypeAtom)).toBe("Dominant 7th");
-    store.set(setChordDegreeAtom, "ii");
-    expect(store.get(chordDegreeAtom)).toBe("ii");
+  it.each<{ label: string; next: "ii" | "V" | null; expectDegree: string | null; expectType: string | null; expectRoot?: string }>([
+    { label: "changing degree clears override (V→ii)", next: "ii", expectDegree: "ii", expectType: "Minor Triad", expectRoot: "D" },
+    { label: "re-selecting same degree clears override (V→V)", next: "V", expectDegree: "V", expectType: "Major Triad" },
+    { label: "turning overlay off (degree=null) clears override", next: null, expectDegree: null, expectType: null },
+  ])("setChordDegreeAtom: $label", ({ next, expectDegree, expectType, expectRoot }) => {
+    const store = makeAtomStore([...V_IN_C_MAJOR, [chordQualityOverrideAtom, "Dominant 7th"]]);
+    store.set(setChordDegreeAtom, next);
+    expect(store.get(chordDegreeAtom)).toBe(expectDegree);
     expect(store.get(chordQualityOverrideAtom)).toBeNull();
-    expect(store.get(chordTypeAtom)).toBe("Minor Triad"); // ii diatonic default
-    expect(store.get(chordRootAtom)).toBe("D");
-  });
-
-  it("setChordDegreeAtom: re-selecting the same degree clears the override", () => {
-    const store = makeAtomStore([
-      [progressionStepsAtom, []],
-      [chordDegreeAtom, "V"],
-      [chordOverlayModeAtom, "degree"],
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
-      [chordQualityOverrideAtom, "Dominant 7th"],
-    ]);
-    store.set(setChordDegreeAtom, "V"); // re-click same degree clears the pin
-    expect(store.get(chordDegreeAtom)).toBe("V");
-    expect(store.get(chordQualityOverrideAtom)).toBeNull();
-    expect(store.get(chordTypeAtom)).toBe("Major Triad"); // V diatonic default in C major
-  });
-
-  it("setChordDegreeAtom: turning overlay off (degree=null) clears override", () => {
-    const store = makeAtomStore([
-      [progressionStepsAtom, []],
-      [chordDegreeAtom, "V"],
-      [chordOverlayModeAtom, "degree"],
-      [chordQualityOverrideAtom, "Dominant 7th"],
-    ]);
-    store.set(setChordDegreeAtom, null);
-    expect(store.get(chordDegreeAtom)).toBeNull();
-    expect(store.get(chordQualityOverrideAtom)).toBeNull();
+    if (expectType !== null) expect(store.get(chordTypeAtom)).toBe(expectType);
+    if (expectRoot) expect(store.get(chordRootAtom)).toBe(expectRoot);
   });
 
   it("scale change in degree mode preserves both degree and override (sticky on scale change)", () => {
-    // Use Major → Lydian — both define "V" at semitone 7 (Major Triad), so the
-    // degree resolves consistently across the scale change. Dorian etc. would
-    // remap V → v (minor) which is a different code path (cross-scale degree
-    // remapping is outside this fix's scope).
-    const store = makeAtomStore([
-      [progressionStepsAtom, []],
-      [chordDegreeAtom, "V"],
-      [chordOverlayModeAtom, "degree"],
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
-      [chordQualityOverrideAtom, "Dominant 7th"],
-    ]);
+    // Major → Lydian both define V at semitone 7 (Major Triad), so the degree
+    // remains stable across scales. Cross-scale remapping is out of scope here.
+    const store = makeAtomStore([...V_IN_C_MAJOR, [chordQualityOverrideAtom, "Dominant 7th"]]);
     store.set(scaleNameAtom, "Lydian");
     expect(store.get(chordOverlayModeAtom)).toBe("degree");
     expect(store.get(chordQualityOverrideAtom)).toBe("Dominant 7th");
     expect(store.get(chordTypeAtom)).toBe("Dominant 7th");
-    // V in C Lydian → G (degree-derived root re-resolves).
     expect(store.get(chordRootAtom)).toBe("G");
   });
 });
@@ -512,17 +431,17 @@ describe("chordOverlayAtoms — storage migration", () => {
     localStorage.clear();
   });
 
-  it("migration: overlay off (no legacy chordType) → degree=null, mode=degree", () => {
-    // localStorage is already clear (no legacy keys)
-    const store = createStore();
-    const unsubDegree = mount(store, chordDegreeAtom);
-    const unsubMode = mount(store, chordOverlayModeAtom);
+  function mountAtoms(store: ReturnType<typeof createStore>, atoms: ReadonlyArray<Parameters<typeof mount>[1]>) {
+    const unsubs = atoms.map((a) => mount(store, a));
+    return () => unsubs.forEach((u) => u());
+  }
 
+  it("migration: overlay off (no legacy chordType) → degree=null, mode=degree", () => {
+    const store = createStore();
+    const unmount = mountAtoms(store, [chordDegreeAtom, chordOverlayModeAtom]);
     expect(store.get(chordDegreeAtom)).toBeNull();
     expect(store.get(chordOverlayModeAtom)).toBe("degree");
-
-    unsubDegree();
-    unsubMode();
+    unmount();
   });
 
   it("migration: diatonic triad (C Major, I) → degree=I, mode=degree", () => {
@@ -530,34 +449,22 @@ describe("chordOverlayAtoms — storage migration", () => {
     localStorage.setItem(k("chordType"), "Major Triad");
     localStorage.setItem(k("rootNote"), "C");
     localStorage.setItem(k("scaleName"), "Major");
-
     const store = createStore();
-    const unsubDegree = mount(store, chordDegreeAtom);
-    const unsubMode = mount(store, chordOverlayModeAtom);
-
+    const unmount = mountAtoms(store, [chordDegreeAtom, chordOverlayModeAtom]);
     expect(store.get(chordDegreeAtom)).toBe("I");
     expect(store.get(chordOverlayModeAtom)).toBe("degree");
-
-    unsubDegree();
-    unsubMode();
+    unmount();
   });
 
-  it("migration: non-diatonic / seventh chord → mode=manual, overrides populated", () => {
-    // Seventh chords are not in DEGREE_DIATONIC_QUALITY — always manual mode. Intentional.
+  it("migration: non-diatonic / seventh chord → mode=manual, override populated", () => {
+    // Seventh chords are not in DEGREE_DIATONIC_QUALITY — always manual mode.
     localStorage.setItem(k("chordType"), "Major 7th");
     localStorage.setItem(k("chordRoot"), "D");
-
     const store = createStore();
-    const unsubMode = mount(store, chordOverlayModeAtom);
-    const unsubQuality = mount(store, chordQualityOverrideAtom);
-    const unsubRoot = mount(store, chordRootOverrideAtom);
-
+    const unmount = mountAtoms(store, [chordOverlayModeAtom, chordQualityOverrideAtom, chordRootOverrideAtom]);
     expect(store.get(chordOverlayModeAtom)).toBe("manual");
     expect(store.get(chordQualityOverrideAtom)).toBe("Major 7th");
-
-    unsubMode();
-    unsubQuality();
-    unsubRoot();
+    unmount();
   });
 
   it("migration round-trip: load → save → reload yields same in-memory state", () => {
@@ -773,27 +680,19 @@ describe("chord overlay independent of fingering pattern (Task 3 regression)", (
     localStorage.clear();
   });
 
-  it("chord tones still render with one-string fingering", () => {
-    const store = makeAtomStore([
-      [progressionStepsAtom, []],
-      [chordOverlayModeAtom, "manual"],
-      [chordRootOverrideAtom, "C"],
-      [chordQualityOverrideAtom, "Major Triad"],
-      [fingeringPatternAtom, "one-string"],
-    ]);
-    expect(store.get(chordTonesAtom).length).toBeGreaterThan(0);
-  });
-
-  it("chord tones still render with two-strings fingering", () => {
-    const store = makeAtomStore([
-      [progressionStepsAtom, []],
-      [chordOverlayModeAtom, "manual"],
-      [chordRootOverrideAtom, "C"],
-      [chordQualityOverrideAtom, "Major Triad"],
-      [fingeringPatternAtom, "two-strings"],
-    ]);
-    expect(store.get(chordTonesAtom).length).toBeGreaterThan(0);
-  });
+  it.each(["one-string", "two-strings"] as const)(
+    "chord tones still render with %s fingering",
+    (pattern) => {
+      const store = makeAtomStore([
+        [progressionStepsAtom, []],
+        [chordOverlayModeAtom, "manual"],
+        [chordRootOverrideAtom, "C"],
+        [chordQualityOverrideAtom, "Major Triad"],
+        [fingeringPatternAtom, pattern],
+      ]);
+      expect(store.get(chordTonesAtom).length).toBeGreaterThan(0);
+    },
+  );
 
   it("progression is the active chord source even with one-string fingering", () => {
     const store = makeAtomStore([
@@ -815,61 +714,35 @@ describe("voicing string set", () => {
     localStorage.clear();
   });
 
-  it("exposes tone-count-appropriate string-set options for a triad", () => {
-    const store = makeAtomStore([
-      [progressionStepsAtom, []],
-      [chordOverlayModeAtom, "manual"],
-      [chordRootOverrideAtom, "C"],
-      [chordQualityOverrideAtom, "Major Triad"],
-    ]);
-    const optionsTriad = store.get(stringSetOptionsAtom);
-    expect(optionsTriad.map((o) => o.id)).toEqual([
-      "all", "4·5·6", "3·4·5", "2·3·4", "1·2·3",
-    ]);
+  const MANUAL_C = [
+    [progressionStepsAtom, []],
+    [chordOverlayModeAtom, "manual"],
+    [chordRootOverrideAtom, "C"],
+  ] as const;
+
+  it.each<{ quality: string; ids: string[] }>([
+    { quality: "Major Triad", ids: ["all", "4·5·6", "3·4·5", "2·3·4", "1·2·3"] },
+    { quality: "Major 7th", ids: ["all", "3·4·5·6", "2·3·4·5", "1·2·3·4"] },
+  ])("string-set options match tone count for $quality", ({ quality, ids }) => {
+    const store = makeAtomStore([...MANUAL_C, [chordQualityOverrideAtom, quality]]);
+    expect(store.get(stringSetOptionsAtom).map((o) => o.id)).toEqual(ids);
   });
 
-  it("exposes tone-count-appropriate string-set options for a seventh chord", () => {
+  it.each<{ label: string; quality: string; expected: number[] }>([
+    { label: "valid stored id resolves to its string-index array", quality: "Major Triad", expected: [3, 4, 5] },
+    { label: "invalid stored id for chord falls back to all six strings", quality: "Major 7th", expected: [0, 1, 2, 3, 4, 5] },
+  ])("effectiveStringSetAtom: $label", ({ quality, expected }) => {
     const store = makeAtomStore([
-      [progressionStepsAtom, []],
-      [chordOverlayModeAtom, "manual"],
-      [chordRootOverrideAtom, "C"],
-      [chordQualityOverrideAtom, "Major 7th"],
-    ]);
-    const optionsSeventh = store.get(stringSetOptionsAtom);
-    expect(optionsSeventh.map((o) => o.id)).toEqual([
-      "all", "3·4·5·6", "2·3·4·5", "1·2·3·4",
-    ]);
-  });
-
-  it("resolves a valid stored id to its string-index array", () => {
-    const store = makeAtomStore([
-      [progressionStepsAtom, []],
-      [chordOverlayModeAtom, "manual"],
-      [chordRootOverrideAtom, "C"],
-      [chordQualityOverrideAtom, "Major Triad"],
+      ...MANUAL_C,
+      [chordQualityOverrideAtom, quality],
       [voicingStringSetAtom, "4·5·6"],
     ]);
-    expect(store.get(effectiveStringSetAtom)).toEqual([3, 4, 5]);
-  });
-
-  it("falls back to all six strings when the stored id is invalid for the chord", () => {
-    // "4·5·6" is a valid triad window but not a valid 7th-chord window, so it
-    // falls back to all-strings when the chord switches to a seventh chord.
-    const store = makeAtomStore([
-      [progressionStepsAtom, []],
-      [chordOverlayModeAtom, "manual"],
-      [chordRootOverrideAtom, "C"],
-      [chordQualityOverrideAtom, "Major 7th"],
-      [voicingStringSetAtom, "4·5·6"],
-    ]);
-    expect(store.get(effectiveStringSetAtom)).toEqual([0, 1, 2, 3, 4, 5]);
+    expect(store.get(effectiveStringSetAtom)).toEqual(expected);
   });
 
   it("voicingMatchesAtom returns engine output for a valid triad window", () => {
     const store = makeAtomStore([
-      [progressionStepsAtom, []],
-      [chordOverlayModeAtom, "manual"],
-      [chordRootOverrideAtom, "C"],
+      ...MANUAL_C,
       [chordQualityOverrideAtom, "Major Triad"],
       [voicingTypeAtom, "triad"],
       [voicingStringSetAtom, "4·5·6"],
@@ -883,9 +756,7 @@ describe("voicing string set", () => {
 
   it("ignores the string set and inversion while voicingType is caged", () => {
     const store = makeAtomStore([
-      [progressionStepsAtom, []],
-      [chordOverlayModeAtom, "manual"],
-      [chordRootOverrideAtom, "C"],
+      ...MANUAL_C,
       [chordQualityOverrideAtom, "Major Triad"],
       [voicingTypeAtom, "caged"],
       [voicingStringSetAtom, "1·2·3"],
@@ -906,30 +777,17 @@ describe("voicing atoms", () => {
     localStorage.clear();
   });
 
-  it("availableInversionsAtom excludes 3rd for a triad", () => {
-    const store = createStore();
-    store.set(chordRootOverrideAtom, "C");
-    store.set(chordQualityOverrideAtom, "Major Triad");
-    store.set(chordOverlayModeAtom, "manual");
-    expect(store.get(availableInversionsAtom)).toEqual(["root", "1st", "2nd"]);
-  });
-
-  it("availableInversionsAtom includes 3rd for a seventh chord", () => {
+  it.each<{ quality: string; inversions: string[] }>([
+    { quality: "Major Triad", inversions: ["root", "1st", "2nd"] },
+    { quality: "Major 7th", inversions: ["root", "1st", "2nd", "3rd"] },
+    { quality: "Power Chord (5)", inversions: ["root"] },
+  ])("availableInversionsAtom for $quality → $inversions", ({ quality, inversions }) => {
     const store = createStore();
     store.set(progressionStepsAtom, []);
     store.set(chordRootOverrideAtom, "C");
-    store.set(chordQualityOverrideAtom, "Major 7th");
+    store.set(chordQualityOverrideAtom, quality);
     store.set(chordOverlayModeAtom, "manual");
-    expect(store.get(availableInversionsAtom)).toEqual(["root", "1st", "2nd", "3rd"]);
-  });
-
-  it("availableInversionsAtom exposes only root for a dyad", () => {
-    const store = createStore();
-    store.set(progressionStepsAtom, []);
-    store.set(chordRootOverrideAtom, "C");
-    store.set(chordQualityOverrideAtom, "Power Chord (5)");
-    store.set(chordOverlayModeAtom, "manual");
-    expect(store.get(availableInversionsAtom)).toEqual(["root"]);
+    expect(store.get(availableInversionsAtom)).toEqual(inversions);
   });
 
   it("voicingMatchesAtom returns engine output when a chord is active, regardless of Full Chords", () => {

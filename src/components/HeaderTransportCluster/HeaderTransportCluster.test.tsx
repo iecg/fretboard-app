@@ -3,13 +3,7 @@ import { describe, expect, it } from "vitest";
 import { fireEvent, screen } from "@testing-library/react";
 import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
 import { axe } from "../../test-utils/a11y";
-import {
-  beatsPerBarAtom,
-  progressionLoopEnabledAtom,
-  progressionPlayingAtom,
-  progressionStepsAtom,
-  progressionTempoBpmAtom,
-} from "../../store/atoms";
+import { beatsPerBarAtom, progressionLoopEnabledAtom, progressionPlayingAtom, progressionStepsAtom, progressionTempoBpmAtom } from "../../store/progressionAtoms";
 import { HeaderTransportCluster } from "./HeaderTransportCluster";
 
 const fourStepProgression = [
