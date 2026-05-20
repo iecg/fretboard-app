@@ -519,7 +519,8 @@ export function getScaleSemitones(rootNote: string, scaleName: string): number[]
 }
 
 export function getChordNotes(rootNote: string, chordName: string): string[] {
-  if (Note.chroma(rootNote) === undefined || Number.isNaN(Note.chroma(rootNote))) return [];
+  const chroma = Note.chroma(rootNote);
+  if (typeof chroma !== "number" || isNaN(chroma)) return [];
   const symbol = tonalChordSymbol(rootNote, chordName);
   if (!symbol) return [];
   const tonalChord = Chord.get(symbol);

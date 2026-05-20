@@ -40,7 +40,6 @@ const SCALE_TO_TONAL: Record<string, string> = {
   "Major Pentatonic": "major pentatonic",
   "Minor Pentatonic": "minor pentatonic",
   "Blues": "blues",
-  "Blues Major": "major blues",
   "Ionian": "ionian",
   "Dorian": "dorian",
   "Phrygian": "phrygian",
