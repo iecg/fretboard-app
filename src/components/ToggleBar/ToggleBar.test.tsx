@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
+import { axe } from "../../test-utils/a11y";
 
 const options = [
   { value: "a", label: "Option A" },
@@ -147,5 +148,21 @@ describe("ToggleBar/ToggleBar", () => {
     expect(thirdBtn).toBeDisabled();
     await userEvent.click(thirdBtn);
     expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["default", undefined],
+    ["tabs", "tabs"],
+  ] as const)("%s variant has no a11y violations", async (_label, variant) => {
+    const { container } = render(
+      <ToggleBar
+        variant={variant}
+        label="Display mode"
+        options={[{ label: "A", value: "a" }, { label: "B", value: "b" }]}
+        value="a"
+        onChange={() => {}}
+      />,
+    );
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

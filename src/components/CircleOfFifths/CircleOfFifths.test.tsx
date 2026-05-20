@@ -4,6 +4,7 @@ import { render, fireEvent } from "@testing-library/react";
 import { CircleOfFifths } from "../CircleOfFifths/CircleOfFifths";
 import { CIRCLE_OF_FIFTHS, SCALES } from "@fretflow/core";
 import { getCircleNoteLabels } from "@fretflow/core";
+import { axe } from "../../test-utils/a11y";
 
 describe("CircleOfFifths/CircleOfFifths", () => {
   const mockSetRootNote = vi.fn();
@@ -526,5 +527,81 @@ describe("getCircleNoteLabels mode behavior", () => {
     const r = getCircleNoteLabels("C", "C", false, SCALES["Major"], "off");
     expect(r.primary).toBe("C");
     expect(r.enharmonic).toBeNull();
+  });
+
+  describe("Keyboard navigation & a11y", () => {
+    const getSlices = () =>
+      Array.from(
+        document.querySelectorAll<SVGPathElement>(
+          'path[class*="circle-slice"][role="button"]',
+        ),
+      );
+
+    it("has no a11y violations", async () => {
+      const { container } = render(
+        <CircleOfFifths rootNote="C" setRootNote={() => {}} />,
+      );
+      expect(await axe(container)).toHaveNoViolations();
+    });
+
+    it("exposes 12 slices as buttons with a single tab stop", () => {
+      render(<CircleOfFifths rootNote="C" setRootNote={() => {}} />);
+      const slices = getSlices();
+      expect(slices).toHaveLength(12);
+      const focusable = slices.filter((s) => s.getAttribute("tabindex") === "0");
+      expect(focusable).toHaveLength(1);
+    });
+
+    it.each([
+      ["ArrowRight", "clockwise"],
+      ["ArrowDown", "clockwise alias"],
+    ])("%s moves focus %s", (key) => {
+      render(<CircleOfFifths rootNote="C" setRootNote={() => {}} />);
+      const slices = getSlices();
+      fireEvent.keyDown(slices[0], { key });
+      expect(slices[1].getAttribute("tabindex")).toBe("0");
+    });
+
+    it.each([
+      ["ArrowLeft"],
+      ["ArrowUp"],
+    ])("%s from index 0 wraps to index 11", (key) => {
+      render(<CircleOfFifths rootNote="C" setRootNote={() => {}} />);
+      const slices = getSlices();
+      fireEvent.keyDown(slices[0], { key });
+      expect(slices[11].getAttribute("tabindex")).toBe("0");
+    });
+
+    it("ArrowRight from index 11 wraps to index 0", () => {
+      render(<CircleOfFifths rootNote="C" setRootNote={() => {}} />);
+      const slices = getSlices();
+      fireEvent.keyDown(slices[0], { key: "ArrowLeft" });
+      fireEvent.keyDown(slices[11], { key: "ArrowRight" });
+      expect(slices[0].getAttribute("tabindex")).toBe("0");
+    });
+
+    it("Home jumps focus to C (index 0); End jumps to B", () => {
+      render(<CircleOfFifths rootNote="C" setRootNote={() => {}} />);
+      const slices = getSlices();
+      fireEvent.keyDown(slices[0], { key: "ArrowRight" });
+      fireEvent.keyDown(slices[1], { key: "Home" });
+      expect(slices[0].getAttribute("tabindex")).toBe("0");
+      expect(CIRCLE_OF_FIFTHS[0]).toBe("C");
+
+      fireEvent.keyDown(slices[0], { key: "End" });
+      const bIndex = CIRCLE_OF_FIFTHS.indexOf("B");
+      expect(slices[bIndex].getAttribute("tabindex")).toBe("0");
+    });
+
+    it.each([
+      ["Enter"],
+      [" "],
+    ])("%s activates the focused note", (key) => {
+      const setRootNote = vi.fn();
+      render(<CircleOfFifths rootNote="C" setRootNote={setRootNote} />);
+      const slices = getSlices();
+      fireEvent.keyDown(slices[2], { key });
+      expect(setRootNote).toHaveBeenCalledWith(CIRCLE_OF_FIFTHS[2]);
+    });
   });
 });

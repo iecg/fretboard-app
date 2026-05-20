@@ -1412,4 +1412,56 @@ describe("FretboardSVG/FretboardSVG", () => {
       expect(staticWrappers.length).toBeGreaterThan(0);
     });
   });
+
+  describe("note layer a11y contract", () => {
+    const getSvgNotes = () =>
+      Array.from(
+        document.querySelectorAll<SVGGElement>('g[class*="fretboard-note"]'),
+      );
+
+    it("exposes each note as a button with a labelled role and aria-label", () => {
+      render(<FretboardSVG {...BASE_PROPS} onNoteClick={() => {}} />);
+      const notes = getSvgNotes();
+      expect(notes.length).toBeGreaterThan(0);
+      notes.forEach((g) => {
+        expect(g.getAttribute("role")).toBe("button");
+        const label = g.getAttribute("aria-label") || "";
+        expect(label).toMatch(/^[A-G][#♯♭b]?\d\s—\s.+$/);
+      });
+    });
+
+    it("aria-label includes the correct octave for open low/high E strings", () => {
+      render(<FretboardSVG {...BASE_PROPS} highlightNotes={["E"]} onNoteClick={() => {}} />);
+      const labels = getSvgNotes()
+        .map((g) => g.getAttribute("aria-label") || "")
+        .filter(Boolean);
+      expect(labels.some((l) => l.startsWith("E2 — "))).toBe(true);
+      expect(labels.some((l) => l.startsWith("E4 — "))).toBe(true);
+    });
+
+    it("toggles tabIndex based on onNoteClick presence", () => {
+      const { rerender } = render(<FretboardSVG {...BASE_PROPS} onNoteClick={() => {}} />);
+      expect(getSvgNotes().some((g) => g.getAttribute("tabindex") === "0")).toBe(true);
+      rerender(<FretboardSVG {...BASE_PROPS} />);
+      getSvgNotes().forEach((g) => {
+        expect(g.getAttribute("tabindex")).toBe("-1");
+      });
+    });
+
+    it.each([["Enter"], [" "]])("%s key invokes onNoteClick on focused note", (key) => {
+      const onNoteClick = vi.fn();
+      render(<FretboardSVG {...BASE_PROPS} onNoteClick={onNoteClick} />);
+      fireEvent.keyDown(getSvgNotes()[0], { key });
+      expect(onNoteClick).toHaveBeenCalledTimes(1);
+    });
+
+    it("ignores unrelated keys", () => {
+      const onNoteClick = vi.fn();
+      render(<FretboardSVG {...BASE_PROPS} onNoteClick={onNoteClick} />);
+      const note = getSvgNotes()[0];
+      fireEvent.keyDown(note, { key: "a" });
+      fireEvent.keyDown(note, { key: "Tab" });
+      expect(onNoteClick).not.toHaveBeenCalled();
+    });
+  });
 });

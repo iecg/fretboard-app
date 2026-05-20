@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { NoteGrid, NOTE_GRID_COLUMNS } from "../NoteGrid/NoteGrid";
 import { NOTES } from "@fretflow/core";
+import { axe } from "../../test-utils/a11y";
 
 describe("NoteGrid/NoteGrid", () => {
   it("uses 12 grid columns", () => {
@@ -75,5 +76,17 @@ describe("NoteGrid/NoteGrid", () => {
     );
     expect(screen.getByText("A♯")).toBeInTheDocument();
     expect(screen.queryByText("B♭")).not.toBeInTheDocument();
+  });
+
+  it("has no a11y violations", async () => {
+    const { container } = render(
+      <NoteGrid
+        notes={NOTES}
+        selected="C"
+        onSelect={() => {}}
+        useFlats={false}
+      />,
+    );
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

@@ -6,6 +6,7 @@ import { Provider, createStore } from "jotai";
 import { Fretboard } from "../Fretboard/Fretboard";
 import { STANDARD_TUNING } from "@fretflow/core";
 import { fretEndAtom, fretStartAtom, fretZoomAtom, progressionStepsAtom, scaleDegreeColorsEnabledAtom } from "../../store/atoms";
+import { axe } from "../../test-utils/a11y";
 
 // Mock audio synth
 vi.mock("../../core/audio", () => ({
@@ -711,5 +712,10 @@ describe("Fretboard/Fretboard", () => {
 
       globalThis.ResizeObserver = OriginalRO;
     });
+  });
+
+  it("has no a11y violations", async () => {
+    const { container } = renderFretboard();
+    expect(await axe(container)).toHaveNoViolations();
   });
 });
