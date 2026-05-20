@@ -28,6 +28,44 @@ const BASE_PROPS = {
   rootNote: "C",
 };
 
+const C_MAJOR = { chordTones: ["C", "E", "G"], chordRoot: "C", rootNote: "C", highlightNotes: ["C", "E", "G"] };
+const renderCMajor = (extra: Record<string, unknown> = {}) =>
+  render(<FretboardSVG {...BASE_PROPS} {...C_MAJOR} {...extra} />);
+
+const sem = (entries: Array<[string, Partial<NoteSemantics>]>): Map<string, NoteSemantics> =>
+  new Map(entries.map(([name, p]) => [name, {
+    isScaleRoot: false, isChordRoot: false, isChordTone: false, isInScale: false,
+    isColorTone: false, isGuideTone: false, isTension: false, ...p,
+  }]));
+
+const polyRect = (
+  shape: CagedShape,
+  minFret: number,
+  maxFret: number,
+  maxString = 2,
+): ShapePolygon => {
+  const vertices = [];
+  for (let s = 0; s <= maxString; s++) vertices.push({ fret: minFret, string: s });
+  for (let s = maxString; s >= 0; s--) vertices.push({ fret: maxFret, string: s });
+  return {
+    shape, color: "rgba(99,102,241,0.3)", cagedLabel: String(shape),
+    modalLabel: "Ionian", truncated: false, intendedMin: minFret, intendedMax: maxFret, vertices,
+  };
+};
+
+const E_SHAPE_C_MAJOR_VOICING = {
+  shape: "E" as CagedShape,
+  voicingKey: "e-shape-c-major",
+  notes: [
+    { stringIndex: 0, fretIndex: 8, noteName: "C" },
+    { stringIndex: 1, fretIndex: 8, noteName: "G" },
+    { stringIndex: 2, fretIndex: 9, noteName: "E" },
+    { stringIndex: 3, fretIndex: 10, noteName: "C" },
+    { stringIndex: 4, fretIndex: 10, noteName: "G" },
+    { stringIndex: 5, fretIndex: 8, noteName: "C" },
+  ],
+};
+
 describe("FretboardSVG/FretboardSVG", () => {
   it("renders note circles when highlightNotes are provided", () => {
     render(<FretboardSVG {...BASE_PROPS} />);
@@ -41,44 +79,8 @@ describe("FretboardSVG/FretboardSVG", () => {
     expect(rootNotes.length).toBeGreaterThan(0);
   });
 
-  it("classifies chord root with chord-root class when chordRoot is passed", () => {
-    render(
-      <FretboardSVG
-        {...BASE_PROPS}
-        chordTones={["C", "E", "G"]}
-        chordRoot="C"
-        rootNote="C"
-        highlightNotes={["C", "E", "G"]}
-      />
-    );
-    const chordRootNotes = document.querySelectorAll(".chord-root");
-    expect(chordRootNotes.length).toBeGreaterThan(0);
-  });
-
-  it("classifies chord tones with chord-tone-in-scale class when chordTones are passed", () => {
-    render(
-      <FretboardSVG
-        {...BASE_PROPS}
-        chordTones={["C", "E", "G"]}
-        chordRoot="C"
-        rootNote="C"
-        highlightNotes={["C", "E", "G"]}
-      />
-    );
-    const chordToneNotes = document.querySelectorAll(".chord-tone-in-scale");
-    expect(chordToneNotes.length).toBeGreaterThan(0);
-  });
-
-  it("chord root (chord-root) is distinct from non-root chord tones (chord-tone-in-scale)", () => {
-    const { container } = render(
-      <FretboardSVG
-        {...BASE_PROPS}
-        chordTones={["C", "E", "G"]}
-        chordRoot="C"
-        rootNote="C"
-        highlightNotes={["C", "E", "G"]}
-      />
-    );
+  it("classifies chord root and non-root chord tones distinctly", () => {
+    const { container } = renderCMajor();
     expect(container.querySelectorAll(".chord-root").length).toBeGreaterThan(0);
     expect(container.querySelectorAll(".chord-tone-in-scale").length).toBeGreaterThan(0);
   });
@@ -142,57 +144,21 @@ describe("FretboardSVG/FretboardSVG", () => {
   });
 
   it("classifies outside-scale chord tones with chord-tone-outside-scale class", () => {
-    // E is not in scale (scale=C,E,G highlight) when highlighted=[] for that note
-    const { container } = render(
-      <FretboardSVG
-        {...BASE_PROPS}
-        chordTones={["C", "E", "G", "A#"]}
-        chordRoot="C"
-        rootNote="C"
-        highlightNotes={["C", "E", "G"]}
-      />
-    );
-    // A# is a chord tone but not in highlightNotes (scale), so it should be chord-tone-outside-scale
-    const outsideTones = container.querySelectorAll(".chord-tone-outside-scale");
-    expect(outsideTones.length).toBeGreaterThan(0);
+    const { container } = renderCMajor({ chordTones: ["C", "E", "G", "A#"] });
+    expect(container.querySelectorAll(".chord-tone-outside-scale").length).toBeGreaterThan(0);
   });
 
-  it("tension lens (old outside mode) shows all notes — in-scale chord root is not hidden", () => {
-    // The old viewMode="outside" used to hide in-scale notes. The new tension lens
-    // shows all notes and uses the practice bar to coach about outside tones instead.
-    const { container } = render(
-      <FretboardSVG
-        {...BASE_PROPS}
-        chordTones={["C", "A#"]}
-        chordRoot="C"
-        rootNote="C"
-        highlightNotes={["C", "E", "G"]}
-        practiceLens="tension"
-      />
-    );
-    // C (chord root, in scale) must NOT be hidden in tension lens
-    const hiddenChordRoot = container.querySelectorAll(".chord-root.hidden");
-    expect(hiddenChordRoot.length).toBe(0);
-    // A# (outside-scale chord tone) is still visible
-    const visibleOutside = container.querySelectorAll(".chord-tone-outside-scale:not(.hidden)");
-    expect(visibleOutside.length).toBeGreaterThan(0);
+  it("tension lens keeps in-scale chord root and outside chord tones visible", () => {
+    const { container } = renderCMajor({ chordTones: ["C", "A#"], practiceLens: "tension" });
+    expect(container.querySelectorAll(".chord-root.hidden").length).toBe(0);
+    expect(container.querySelectorAll(".chord-tone-outside-scale:not(.hidden)").length).toBeGreaterThan(0);
   });
 
   it("outside chord root is visible and not hidden in tension lens", () => {
-    // D (chord root) is outside the scale notes (C,E,G) → classified as chord-root
-    // and must not be hidden under the tension lens
-    const { container } = render(
-      <FretboardSVG
-        {...BASE_PROPS}
-        chordTones={["D", "F#", "A"]}
-        chordRoot="D"
-        rootNote="C"
-        highlightNotes={["C", "E", "G"]}
-        practiceLens="tension"
-      />
-    );
-    const visibleChordRoot = container.querySelectorAll(".chord-root:not(.hidden)");
-    expect(visibleChordRoot.length).toBeGreaterThan(0);
+    const { container } = renderCMajor({
+      chordTones: ["D", "F#", "A"], chordRoot: "D", practiceLens: "tension",
+    });
+    expect(container.querySelectorAll(".chord-root:not(.hidden)").length).toBeGreaterThan(0);
   });
 
   it("prefixes SVG defs ids per instance and keeps url references resolvable", () => {
@@ -226,88 +192,18 @@ describe("FretboardSVG/FretboardSVG", () => {
   });
 
   it("renders chord roles only for matched full-chord coordinates and drives one explicit connector", () => {
-    const semantics = new Map<string, NoteSemantics>([
-      [
-        "C",
-        {
-          isScaleRoot: true,
-          isChordRoot: true,
-          isChordTone: true,
-          isInScale: true,
-          isColorTone: false,
-          isGuideTone: false,
-          isTension: false,
-          memberName: "root",
-          isFullChordMode: true,
-        },
-      ],
-      [
-        "E",
-        {
-          isScaleRoot: false,
-          isChordRoot: false,
-          isChordTone: true,
-          isInScale: true,
-          isColorTone: false,
-          isGuideTone: false,
-          isTension: false,
-          memberName: "3",
-          isFullChordMode: true,
-        },
-      ],
-      [
-        "G",
-        {
-          isScaleRoot: false,
-          isChordRoot: false,
-          isChordTone: true,
-          isInScale: true,
-          isColorTone: false,
-          isGuideTone: false,
-          isTension: false,
-          memberName: "5",
-          isFullChordMode: true,
-        },
-      ],
+    const semantics = sem([
+      ["C", { isScaleRoot: true, isChordRoot: true, isChordTone: true, isInScale: true, memberName: "root", isFullChordMode: true }],
+      ["E", { isChordTone: true, isInScale: true, memberName: "3", isFullChordMode: true }],
+      ["G", { isChordTone: true, isInScale: true, memberName: "5", isFullChordMode: true }],
     ]);
-    const fullChordPositionKeys = new Set([
-      "0-8",
-      "1-8",
-      "2-9",
-      "3-10",
-      "4-10",
-      "5-8",
-    ]);
-    const fullChordVoicings: Array<{
-      shape: CagedShape;
-      voicingKey: string;
-      notes: Array<{ stringIndex: number; fretIndex: number; noteName: string }>;
-    }> = [
-      {
-        shape: "E",
-        voicingKey: "e-shape-c-major",
-        notes: [
-          { stringIndex: 0, fretIndex: 8, noteName: "C" },
-          { stringIndex: 1, fretIndex: 8, noteName: "G" },
-          { stringIndex: 2, fretIndex: 9, noteName: "E" },
-          { stringIndex: 3, fretIndex: 10, noteName: "C" },
-          { stringIndex: 4, fretIndex: 10, noteName: "G" },
-          { stringIndex: 5, fretIndex: 8, noteName: "C" },
-        ],
-      },
-    ];
+    const fullChordPositionKeys = new Set(["0-8", "1-8", "2-9", "3-10", "4-10", "5-8"]);
 
-    const { container } = render(
-      <FretboardSVG
-        {...BASE_PROPS}
-        chordTones={["C", "E", "G"]}
-        chordRoot="C"
-        highlightNotes={["C", "E", "G"]}
-        noteSemantics={semantics}
-        fullChordPositionKeys={fullChordPositionKeys}
-        fullChordVoicings={fullChordVoicings}
-      />,
-    );
+    const { container } = renderCMajor({
+      noteSemantics: semantics,
+      fullChordPositionKeys,
+      fullChordVoicings: [E_SHAPE_C_MAJOR_VOICING],
+    });
 
     const chordRoleLabels = Array.from(
       container.querySelectorAll(
@@ -328,12 +224,8 @@ describe("FretboardSVG/FretboardSVG", () => {
     expect(container.querySelectorAll('path[data-layer="halo"]').length).toBe(1);
     expect(container.querySelectorAll('path[data-layer="fill"]').length).toBe(1);
     expect(container.querySelectorAll('path[data-layer="outline"]').length).toBe(1);
-    expect(
-      container.querySelector('.chord-root[data-full-chord-shape="E"]'),
-    ).not.toBeNull();
-    expect(
-      container.querySelector('path[data-layer="fill"][data-caged-shape="E"]'),
-    ).not.toBeNull();
+    expect(container.querySelector('.chord-root[data-full-chord-shape="E"]')).not.toBeNull();
+    expect(container.querySelector('path[data-layer="fill"][data-caged-shape="E"]')).not.toBeNull();
     expect(
       container.querySelector('.chord-root[data-full-chord-shape="E"] path:last-of-type'),
     ).toHaveStyle({ fill: "var(--caged-e)" });
@@ -343,66 +235,21 @@ describe("FretboardSVG/FretboardSVG", () => {
   });
 
   it("hides chord connectors when showChordConnectors is false", () => {
-    const fullChordVoicings: Array<{
-      shape: CagedShape;
-      voicingKey: string;
-      notes: Array<{ stringIndex: number; fretIndex: number; noteName: string }>;
-    }> = [
-      {
-        shape: "E",
-        voicingKey: "e-shape-c-major",
-        notes: [
-          { stringIndex: 0, fretIndex: 8, noteName: "C" },
-          { stringIndex: 1, fretIndex: 8, noteName: "G" },
-          { stringIndex: 2, fretIndex: 9, noteName: "E" },
-          { stringIndex: 3, fretIndex: 10, noteName: "C" },
-          { stringIndex: 4, fretIndex: 10, noteName: "G" },
-          { stringIndex: 5, fretIndex: 8, noteName: "C" },
-        ],
-      },
-    ];
-
-    const { container } = render(
-      <FretboardSVG
-        {...BASE_PROPS}
-        chordTones={["C", "E", "G"]}
-        chordRoot="C"
-        highlightNotes={["C", "E", "G"]}
-        fullChordVoicings={fullChordVoicings}
-        showChordConnectors={false}
-      />,
-    );
-
+    const { container } = renderCMajor({
+      fullChordVoicings: [E_SHAPE_C_MAJOR_VOICING],
+      showChordConnectors: false,
+    });
     expect(container.querySelector(".chord-connectors")).toBeNull();
   });
 
   it("replaces the full-chord connector group when full chords are toggled off", () => {
-    const fullChordVoicings: Array<{
-      shape: CagedShape;
-      voicingKey: string;
-      notes: Array<{ stringIndex: number; fretIndex: number; noteName: string }>;
-    }> = [
-      {
-        shape: "E",
-        voicingKey: "0,8|1,8|2,9|3,10|4,10|5,8",
-        notes: [
-          { stringIndex: 0, fretIndex: 8, noteName: "C" },
-          { stringIndex: 1, fretIndex: 8, noteName: "G" },
-          { stringIndex: 2, fretIndex: 9, noteName: "E" },
-          { stringIndex: 3, fretIndex: 10, noteName: "C" },
-          { stringIndex: 4, fretIndex: 10, noteName: "G" },
-          { stringIndex: 5, fretIndex: 8, noteName: "C" },
-        ],
-      },
-    ];
-
     const { container, rerender } = render(
       <FretboardSVG
         {...BASE_PROPS}
         chordTones={["C", "E", "G"]}
         chordRoot="C"
         fullChordPositionKeys={new Set(["0-8", "1-8", "2-9", "3-10", "4-10", "5-8"])}
-        fullChordVoicings={fullChordVoicings}
+        fullChordVoicings={[E_SHAPE_C_MAJOR_VOICING]}
       />,
     );
 
@@ -534,147 +381,45 @@ describe("FretboardSVG/FretboardSVG", () => {
     });
   });
 
-  describe("scale visibility 'off' mode — empty highlightNotes with chord overlay", () => {
-    it("chord root still renders when highlightNotes is empty", () => {
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          highlightNotes={[]}
-          chordTones={["C", "E", "G"]}
-          chordRoot="C"
-          rootNote="C"
-        />
-      );
+  describe("scale visibility 'off' mode — empty highlightNotes", () => {
+    it("with chord overlay: chord root shown, in-scale tones become outside-scale, no scale-only", () => {
+      const { container } = renderCMajor({ highlightNotes: [] });
       expect(container.querySelectorAll(".chord-root").length).toBeGreaterThan(0);
-    });
-
-    it("chord tones render as chord-tone-outside-scale when highlightNotes is empty", () => {
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          highlightNotes={[]}
-          chordTones={["C", "E", "G"]}
-          chordRoot="C"
-          rootNote="C"
-        />
-      );
-      // E and G are chord tones but not "in scale" (no highlightNotes) → outside-scale
       expect(container.querySelectorAll(".chord-tone-outside-scale").length).toBeGreaterThan(0);
-    });
-
-    it("no scale-only or note-active notes rendered when highlightNotes is empty", () => {
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          highlightNotes={[]}
-          chordTones={["C", "E", "G"]}
-          chordRoot="C"
-          rootNote="C"
-        />
-      );
       expect(container.querySelectorAll(".scale-only").length).toBe(0);
       expect(container.querySelectorAll(".note-active").length).toBe(0);
     });
 
-    it("no note-active rendered when highlightNotes is empty and no chord overlay", () => {
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          highlightNotes={[]}
-          rootNote="C"
-        />
-      );
+    it("without chord overlay: no note-active or key-tonic rendered", () => {
+      const { container } = render(<FretboardSVG {...BASE_PROPS} highlightNotes={[]} />);
       expect(container.querySelectorAll(".note-active").length).toBe(0);
       expect(container.querySelectorAll(".key-tonic").length).toBe(0);
     });
   });
 
   describe("composable renderer contract — noteSemantics", () => {
-    it("outside chord root gets data-note-tension when noteSemantics provided", () => {
-      // C# is the chord root but is outside C Major scale (C,E,G highlights)
-      const semantics = new Map<string, NoteSemantics>([
-        [
-          "C#",
-          {
-            isScaleRoot: false,
-            isChordRoot: true,
-            isChordTone: true,
-            isInScale: false,
-            isColorTone: false,
-            isGuideTone: false,
-            isTension: true,
-            memberName: "root",
-          },
-        ],
+    it("outside chord root gets data-note-tension and chord-root visual role", () => {
+      const semantics = sem([
+        ["C#", { isChordRoot: true, isChordTone: true, isTension: true, memberName: "root" }],
       ]);
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          chordTones={["C#", "F", "G#"]}
-          chordRoot="C#"
-          rootNote="C"
-          highlightNotes={["C", "E", "G"]}
-          noteSemantics={semantics}
-        />,
-      );
-      // C# should be classified as chord-root (visual role)
-      const chordRootNotes = container.querySelectorAll(".chord-root");
-      expect(chordRootNotes.length).toBeGreaterThan(0);
-      // AND carry data-note-tension (composable semantic attribute)
-      const tensionChordRoot = container.querySelectorAll(
-        '.chord-root[data-note-tension="true"]',
-      );
-      expect(tensionChordRoot.length).toBeGreaterThan(0);
+      const { container } = renderCMajor({
+        chordTones: ["C#", "F", "G#"], chordRoot: "C#", noteSemantics: semantics,
+      });
+      expect(container.querySelectorAll(".chord-root").length).toBeGreaterThan(0);
+      expect(container.querySelectorAll('.chord-root[data-note-tension="true"]').length).toBeGreaterThan(0);
     });
 
     it("in-scale chord root does NOT get data-note-tension", () => {
-      const semantics = new Map<string, NoteSemantics>([
-        [
-          "C",
-          {
-            isScaleRoot: true,
-            isChordRoot: true,
-            isChordTone: true,
-            isInScale: true,
-            isColorTone: false,
-            isGuideTone: false,
-            isTension: false,
-            memberName: "root",
-          },
-        ],
+      const semantics = sem([
+        ["C", { isScaleRoot: true, isChordRoot: true, isChordTone: true, isInScale: true, memberName: "root" }],
       ]);
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          chordTones={["C", "E", "G"]}
-          chordRoot="C"
-          rootNote="C"
-          highlightNotes={["C", "E", "G"]}
-          noteSemantics={semantics}
-        />,
-      );
-      const tensionChordRoot = container.querySelectorAll(
-        '.chord-root[data-note-tension="true"]',
-      );
-      expect(tensionChordRoot.length).toBe(0);
+      const { container } = renderCMajor({ noteSemantics: semantics });
+      expect(container.querySelectorAll('.chord-root[data-note-tension="true"]').length).toBe(0);
     });
 
     it("guide tone gets data-note-guide-tone attribute", () => {
-      // B is the 3rd of G7 — a guide tone
-      const semantics = new Map<string, NoteSemantics>([
-        [
-          "B",
-          {
-            isScaleRoot: false,
-            isChordRoot: false,
-            isChordTone: true,
-            isInScale: true,
-            isColorTone: false,
-            isGuideTone: true,
-            isTension: false,
-            memberName: "3",
-          },
-        ],
+      const semantics = sem([
+        ["B", { isChordTone: true, isInScale: true, isGuideTone: true, memberName: "3" }],
       ]);
       const { container } = render(
         <FretboardSVG
@@ -686,683 +431,211 @@ describe("FretboardSVG/FretboardSVG", () => {
           noteSemantics={semantics}
         />,
       );
-      const guideToneNotes = container.querySelectorAll(
-        '[data-note-guide-tone="true"]',
-      );
-      expect(guideToneNotes.length).toBeGreaterThan(0);
+      expect(container.querySelectorAll('[data-note-guide-tone="true"]').length).toBeGreaterThan(0);
     });
 
     it("notes without semantics entry have no data-note-tension or data-note-guide-tone", () => {
-      // Pass semantics for C only; E and G should have no extra attributes
-      const semantics = new Map<string, NoteSemantics>([
-        [
-          "C",
-          {
-            isScaleRoot: true,
-            isChordRoot: true,
-            isChordTone: true,
-            isInScale: true,
-            isColorTone: false,
-            isGuideTone: false,
-            isTension: false,
-            memberName: "root",
-          },
-        ],
+      const semantics = sem([
+        ["C", { isScaleRoot: true, isChordRoot: true, isChordTone: true, isInScale: true, memberName: "root" }],
       ]);
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          chordTones={["C", "E", "G"]}
-          chordRoot="C"
-          rootNote="C"
-          highlightNotes={["C", "E", "G"]}
-          noteSemantics={semantics}
-        />,
-      );
-      // Only C has semantics — no tension/guide for E or G
-      const tensionNotes = container.querySelectorAll('[data-note-tension="true"]');
-      expect(tensionNotes.length).toBe(0);
-      const guideNotes = container.querySelectorAll('[data-note-guide-tone="true"]');
-      expect(guideNotes.length).toBe(0);
+      const { container } = renderCMajor({ noteSemantics: semantics });
+      expect(container.querySelectorAll('[data-note-tension="true"]').length).toBe(0);
+      expect(container.querySelectorAll('[data-note-guide-tone="true"]').length).toBe(0);
     });
 
     it("without noteSemantics prop no data-note-tension attributes are emitted", () => {
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          chordTones={["C#", "F", "G#"]}
-          chordRoot="C#"
-          rootNote="C"
-          highlightNotes={["C", "E", "G"]}
-        />,
-      );
-      const tensionNotes = container.querySelectorAll('[data-note-tension="true"]');
-      expect(tensionNotes.length).toBe(0);
+      const { container } = renderCMajor({ chordTones: ["C#", "F", "G#"], chordRoot: "C#" });
+      expect(container.querySelectorAll('[data-note-tension="true"]').length).toBe(0);
     });
   });
 
   describe("shape scope and membership", () => {
-    const singleShapePolygon: ShapePolygon = {
-      shape: "E" as CagedShape,
-      color: "rgba(99,102,241,0.3)",
-      cagedLabel: "E",
-      modalLabel: "Ionian",
-      truncated: false,
-      intendedMin: 0,
-      intendedMax: 4,
-      vertices: [
-        { fret: 0, string: 0 },
-        { fret: 0, string: 1 },
-        { fret: 0, string: 2 },
-        { fret: 4, string: 2 },
-        { fret: 4, string: 1 },
-        { fret: 4, string: 0 },
-      ],
-    };
-
-    const fullShapePolygon: ShapePolygon = {
-      shape: "C" as CagedShape,
-      color: "rgba(236,72,153,0.3)",
-      cagedLabel: "C",
-      modalLabel: "Ionian",
-      truncated: false,
-      intendedMin: 3,
-      intendedMax: 5,
-      vertices: [
-        { fret: 3, string: 0 },
-        { fret: 3, string: 1 },
-        { fret: 3, string: 2 },
-        { fret: 3, string: 3 },
-        { fret: 3, string: 4 },
-        { fret: 3, string: 5 },
-        { fret: 5, string: 5 },
-        { fret: 5, string: 4 },
-        { fret: 5, string: 3 },
-        { fret: 5, string: 2 },
-        { fret: 5, string: 1 },
-        { fret: 5, string: 0 },
-      ],
-    };
+    const singleShapePolygon = polyRect("E" as CagedShape, 0, 4);
+    const fullShapePolygon = polyRect("C" as CagedShape, 3, 5, 5);
+    const tinyEShape = polyRect("E" as CagedShape, 0, 1, 5);
 
     it("single CAGED shape membership - chord tone inside shape is chord-tone-in-scale", () => {
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          chordTones={["C", "E", "G"]}
-          chordRoot="C"
-          highlightNotes={["C", "E", "G"]}
-          shapePolygons={[singleShapePolygon]}
-          activePattern="caged"
-          activeShape="E"
-          shapeScope="single"
-        />,
-      );
-      const inScaleTone = container.querySelectorAll(
-        '.chord-tone-in-scale:not([data-note-role="chord-root"])',
-      );
-      expect(inScaleTone.length).toBeGreaterThan(0);
+      const { container } = renderCMajor({
+        shapePolygons: [singleShapePolygon], activePattern: "caged", activeShape: "E", shapeScope: "single",
+      });
+      expect(
+        container.querySelectorAll('.chord-tone-in-scale:not([data-note-role="chord-root"])').length,
+      ).toBeGreaterThan(0);
     });
 
     it("single CAGED shape membership - chord tone outside shape is suppressed (not scale-only)", () => {
       // activeShape="C" but polygon is shape "E" — no polygon matches active shape,
       // so isInActiveShape=false everywhere. All notes should be note-inactive.
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          chordTones={["C", "E", "G"]}
-          chordRoot="C"
-          highlightNotes={["C", "E", "G"]}
-          shapePolygons={[singleShapePolygon]}
-          activePattern="caged"
-          activeShape="C"
-          shapeScope="single"
-        />,
-      );
-      const scaleOnlyNotes = container.querySelectorAll(".scale-only");
-      expect(scaleOnlyNotes.length).toBe(0);
+      const { container } = renderCMajor({
+        shapePolygons: [singleShapePolygon], activePattern: "caged", activeShape: "C", shapeScope: "single",
+      });
+      expect(container.querySelectorAll(".scale-only").length).toBe(0);
     });
 
     it("global scope shows chord overlay across all visible shapes", () => {
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          rootNote="C"
-          highlightNotes={["C", "E", "G"]}
-          chordTones={["C", "E", "G"]}
-          chordRoot="C"
-          shapeScope="global"
-          activePattern="none"
-        />,
-      );
-      const chordTonesInScale = container.querySelectorAll(".chord-tone-in-scale");
-      expect(chordTonesInScale.length).toBeGreaterThan(0);
+      const { container } = renderCMajor({ shapeScope: "global", activePattern: "none" });
+      expect(container.querySelectorAll(".chord-tone-in-scale").length).toBeGreaterThan(0);
     });
 
     it("multi-shape CAGED membership - chord tones in any active shape get chord-tone-in-scale", () => {
-      const multiPolygons: ShapePolygon[] = [
-        singleShapePolygon,
-        {
-          ...singleShapePolygon,
-          shape: "A" as CagedShape,
-          vertices: singleShapePolygon.vertices.map((v) => ({
-            ...v,
-            fret: v.fret + 2,
-          })),
-        },
-      ];
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          chordTones={["C", "E", "G"]}
-          chordRoot="C"
-          highlightNotes={["C", "E", "G"]}
-          shapePolygons={multiPolygons}
-          activePattern="none"
-          activeShape={["E", "A"]}
-          shapeScope="multi"
-        />,
-      );
-      const chordTonesInScale = container.querySelectorAll(".chord-tone-in-scale");
-      expect(chordTonesInScale.length).toBeGreaterThan(0);
+      const aShape = { ...singleShapePolygon, shape: "A" as CagedShape, vertices: singleShapePolygon.vertices.map(v => ({ ...v, fret: v.fret + 2 })) };
+      const { container } = renderCMajor({
+        shapePolygons: [singleShapePolygon, aShape],
+        activePattern: "none", activeShape: ["E", "A"], shapeScope: "multi",
+      });
+      expect(container.querySelectorAll(".chord-tone-in-scale").length).toBeGreaterThan(0);
     });
 
     it("out-of-scale chord tone outside active shape becomes note-inactive", () => {
-      const cShapeSmall: ShapePolygon = {
-        shape: "E" as CagedShape,
-        color: "rgba(99,102,241,0.3)",
-        cagedLabel: "E",
-        modalLabel: "Ionian",
-        truncated: false,
-        intendedMin: 0,
-        intendedMax: 1,
-        vertices: [
-          { fret: 0, string: 0 },
-          { fret: 0, string: 1 },
-          { fret: 0, string: 2 },
-          { fret: 1, string: 2 },
-          { fret: 1, string: 1 },
-          { fret: 1, string: 0 },
-        ],
-      };
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          chordTones={["C#", "F", "G#"]}
-          chordRoot="C#"
-          highlightNotes={["C", "E", "G"]}
-          shapePolygons={[cShapeSmall]}
-          activePattern="caged"
-          activeShape="E"
-          shapeScope="single"
-          chordBoxBounds={[]}
-        />,
-      );
-      const chordRootInShape = container.querySelectorAll('.chord-root[data-note-shape="squircle"]');
-      expect(chordRootInShape.length).toBe(0);
+      const cShapeSmall = polyRect("E" as CagedShape, 0, 1);
+      const { container } = renderCMajor({
+        chordTones: ["C#", "F", "G#"], chordRoot: "C#",
+        shapePolygons: [cShapeSmall], activePattern: "caged", activeShape: "E", shapeScope: "single", chordBoxBounds: [],
+      });
+      expect(container.querySelectorAll('.chord-root[data-note-shape="squircle"]').length).toBe(0);
     });
 
     it("in-scale chord tone outside active shape is suppressed (not scale-only)", () => {
-      // shapeScope="single" + activeShape="E" — only the E polygon is active.
-      // Notes in the E shape → chord-tone-in-scale. Notes outside → note-inactive.
-      // The C-shape polygon (fullShapePolygon) is visible but not the active shape.
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          chordTones={["C", "E", "G", "A"]}
-          chordRoot="C"
-          highlightNotes={["C", "E", "G", "A"]}
-          shapePolygons={[singleShapePolygon, fullShapePolygon]}
-          activePattern="caged"
-          activeShape="E"
-          shapeScope="single"
-        />,
-      );
-      const scaleOnlyNotes = container.querySelectorAll(".scale-only");
-      expect(scaleOnlyNotes.length).toBe(0);
-      // In-shape chord tones must still render correctly.
-      const chordTonesInShape = container.querySelectorAll(".chord-tone-in-scale");
-      expect(chordTonesInShape.length).toBeGreaterThan(0);
+      const { container } = renderCMajor({
+        chordTones: ["C", "E", "G", "A"], highlightNotes: ["C", "E", "G", "A"],
+        shapePolygons: [singleShapePolygon, fullShapePolygon],
+        activePattern: "caged", activeShape: "E", shapeScope: "single",
+      });
+      expect(container.querySelectorAll(".scale-only").length).toBe(0);
+      expect(container.querySelectorAll(".chord-tone-in-scale").length).toBeGreaterThan(0);
     });
 
     it("REGRESSION: multi-shape without shapeScope would fail membership check", () => {
-      const multiPolygons: ShapePolygon[] = [
-        { ...singleShapePolygon, shape: "E" as CagedShape },
-        { ...singleShapePolygon, shape: "A" as CagedShape, vertices: singleShapePolygon.vertices.map(v => ({...v, fret: v.fret + 2})) },
-      ];
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          chordTones={["C", "E", "G"]}
-          chordRoot="C"
-          highlightNotes={["C", "E", "G"]}
-          shapePolygons={multiPolygons}
-          activePattern="none"
-          activeShape="E"
-          shapeScope="global"
-        />,
-      );
-      const chordTonesInScale = container.querySelectorAll(".chord-tone-in-scale");
-      expect(chordTonesInScale.length).toBeGreaterThan(0);
+      const aShape = { ...singleShapePolygon, shape: "A" as CagedShape, vertices: singleShapePolygon.vertices.map(v => ({ ...v, fret: v.fret + 2 })) };
+      const { container } = renderCMajor({
+        shapePolygons: [singleShapePolygon, aShape],
+        activePattern: "none", activeShape: "E", shapeScope: "global",
+      });
+      expect(container.querySelectorAll(".chord-tone-in-scale").length).toBeGreaterThan(0);
     });
 
     it("spread-aware gating: chord tone within chordFretSpread of active shape gets chord-tone-in-scale", () => {
-      // E shape covers frets 0–4 on strings 0–2. With chordFretSpread=1, fret 5 on those strings
-      // should also receive chord emphasis (spread extends boundary by 1).
-      const eShapeWide: ShapePolygon = {
-        shape: "E" as CagedShape,
-        color: "rgba(99,102,241,0.3)",
-        cagedLabel: "E",
-        modalLabel: "Ionian",
-        truncated: false,
-        intendedMin: 0,
-        intendedMax: 5,
-        vertices: [
-          { fret: 0, string: 0 },
-          { fret: 0, string: 1 },
-          { fret: 0, string: 2 },
-          { fret: 0, string: 3 },
-          { fret: 0, string: 4 },
-          { fret: 0, string: 5 },
-          { fret: 5, string: 5 },
-          { fret: 5, string: 4 },
-          { fret: 5, string: 3 },
-          { fret: 5, string: 2 },
-          { fret: 5, string: 1 },
-          { fret: 5, string: 0 },
-        ],
-      };
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          startFret={0}
-          endFret={12}
-          chordTones={["C", "E", "G"]}
-          chordRoot="C"
-          highlightNotes={["C", "E", "G"]}
-          shapePolygons={[eShapeWide]}
-          activePattern="caged"
-          activeShape="E"
-          shapeScope="single"
-          chordFretSpread={1}
-        />,
-      );
-      // Should have chord-tone-in-scale notes within the shape
-      const chordTonesInScale = container.querySelectorAll(".chord-tone-in-scale");
-      expect(chordTonesInScale.length).toBeGreaterThan(0);
+      const eShapeWide = polyRect("E" as CagedShape, 0, 5, 5);
+      const { container } = renderCMajor({
+        shapePolygons: [eShapeWide],
+        activePattern: "caged", activeShape: "E", shapeScope: "single", chordFretSpread: 1,
+      });
+      expect(container.querySelectorAll(".chord-tone-in-scale").length).toBeGreaterThan(0);
     });
 
     it("spread-aware gating: chord tone outside active shape's spread does not get chord emphasis", () => {
-      // Tiny E shape: frets 0–1 only. A note at fret 8 (C, E, G name) should
-      // not receive chord-tone-in-scale even if it's an in-scale chord tone.
-      const tinyEShape: ShapePolygon = {
-        shape: "E" as CagedShape,
-        color: "rgba(99,102,241,0.3)",
-        cagedLabel: "E",
-        modalLabel: "Ionian",
-        truncated: false,
-        intendedMin: 0,
-        intendedMax: 1,
-        vertices: [
-          { fret: 0, string: 0 },
-          { fret: 0, string: 1 },
-          { fret: 0, string: 2 },
-          { fret: 0, string: 3 },
-          { fret: 0, string: 4 },
-          { fret: 0, string: 5 },
-          { fret: 1, string: 5 },
-          { fret: 1, string: 4 },
-          { fret: 1, string: 3 },
-          { fret: 1, string: 2 },
-          { fret: 1, string: 1 },
-          { fret: 1, string: 0 },
-        ],
-      };
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          startFret={0}
-          endFret={12}
-          chordTones={["C", "E", "G"]}
-          chordRoot="C"
-          highlightNotes={["C", "E", "G"]}
-          shapePolygons={[tinyEShape]}
-          activePattern="caged"
-          activeShape="E"
-          shapeScope="single"
-          chordFretSpread={0}
-          chordBoxBounds={[]}
-        />,
-      );
-      // Notes at high frets (e.g. fret 8) are in-scale chord tones by name but
-      // outside the tiny shape → must not appear as chord-tone-in-scale
-      const allChordInScale = container.querySelectorAll(".chord-tone-in-scale");
-      // Any chord-tone-in-scale that exists must have data-note-role set (not hidden)
-      // All nodes in allChordInScale should be within frets 0–1 range
-      allChordInScale.forEach((el) => {
+      const { container } = renderCMajor({
+        shapePolygons: [tinyEShape], activePattern: "caged", activeShape: "E", shapeScope: "single",
+        chordFretSpread: 0, chordBoxBounds: [],
+      });
+      container.querySelectorAll(".chord-tone-in-scale").forEach((el) => {
         const label = el.querySelector("button")?.getAttribute("aria-label") ?? el.getAttribute("aria-label") ?? "";
-        // We can't check fret directly from DOM label easily, but we can verify
-        // that no chord-tone-in-scale is rendered — the tiny shape at frets 0–1
-        // should only have open string notes (fret 0) at best
         expect(label).not.toMatch(/fret [2-9]/);
       });
     });
 
     it("3NPS position gating: chord tones outside active 3NPS position are not emphasized", () => {
-      const npsShape: ShapePolygon = {
-        shape: 1 as unknown as CagedShape, // 3NPS position 1
-        color: "rgba(99,102,241,0.3)",
-        cagedLabel: "1",
-        modalLabel: "Ionian",
-        truncated: false,
-        intendedMin: 0,
-        intendedMax: 4,
-        vertices: [
-          { fret: 0, string: 0 },
-          { fret: 0, string: 1 },
-          { fret: 0, string: 2 },
-          { fret: 4, string: 2 },
-          { fret: 4, string: 1 },
-          { fret: 4, string: 0 },
-        ],
-      };
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          chordTones={["C", "E", "G"]}
-          chordRoot="C"
-          highlightNotes={["C", "E", "G"]}
-          shapePolygons={[npsShape]}
-          activePattern="3nps"
-          activeShape={1}
-          shapeScope="single"
-        />,
-      );
-      // Notes inside position 1 (frets 0–4, strings 0–2) should get chord emphasis
-      const chordTonesInScale = container.querySelectorAll(".chord-tone-in-scale");
-      // Notes outside the position become scale-only, so we must have some scale-only
-      const scaleOnlyNotes = container.querySelectorAll(".scale-only");
-      // Both populations must exist: in-position chord tones AND out-of-position scale notes
-      expect(chordTonesInScale.length + scaleOnlyNotes.length).toBeGreaterThan(0);
+      const npsShape = { ...polyRect(1 as unknown as CagedShape, 0, 4), cagedLabel: "1" };
+      const { container } = renderCMajor({
+        shapePolygons: [npsShape], activePattern: "3nps", activeShape: 1, shapeScope: "single",
+      });
+      const total =
+        container.querySelectorAll(".chord-tone-in-scale").length +
+        container.querySelectorAll(".scale-only").length;
+      expect(total).toBeGreaterThan(0);
     });
 
-    it("scale-only notes render (not hidden) and have circle shape when chord overlay is active", () => {
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          chordTones={["C"]}
-          chordRoot="C"
-          rootNote="C"
-          highlightNotes={["C", "E", "G"]}
-        />
-      );
-      // Scope to .fretboard-note to exclude accessible button layer (buttons don't carry data-note-shape)
-      const scaleOnly = container.querySelectorAll('.fretboard-note.scale-only:not(.hidden)');
-      expect(scaleOnly.length).toBeGreaterThan(0);
-      scaleOnly.forEach((el) => {
-        expect(el.getAttribute("data-note-shape")).toBe("circle");
-      });
-    });
-
-    it("in-scale chord tone keeps chord-tone-in-scale class (squircle) and is not hidden", () => {
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          chordTones={["C", "E", "G"]}
-          chordRoot="C"
-          rootNote="C"
-          highlightNotes={["C", "E", "G"]}
-        />
-      );
-      // Scope to .fretboard-note to exclude accessible button layer
-      const chordInScale = container.querySelectorAll('.fretboard-note.chord-tone-in-scale:not(.hidden)');
-      expect(chordInScale.length).toBeGreaterThan(0);
-      chordInScale.forEach((el) => {
-        expect(el.getAttribute("data-note-shape")).toBe("squircle");
-      });
+    it.each<[string, string, Record<string, unknown>]>([
+      ["scale-only", "circle", { chordTones: ["C"] }],
+      ["chord-tone-in-scale", "squircle", {}],
+    ])("%s notes render (not hidden) with data-note-shape=%s under chord overlay", (cls, shape, extra) => {
+      const { container } = renderCMajor(extra);
+      const notes = container.querySelectorAll(`.fretboard-note.${cls}:not(.hidden)`);
+      expect(notes.length).toBeGreaterThan(0);
+      notes.forEach((el) => expect(el.getAttribute("data-note-shape")).toBe(shape));
     });
 
     describe("overlay-on shape containment — noteSemantics path (regression)", () => {
       // When noteSemantics is provided (chord overlay active), in-scale notes outside
       // the active shape must NOT render as scale-only or color-tone.
-      // Previously, sem.isInScale alone would classify them — ignoring shape membership.
-
-      const tinyShape: ShapePolygon = {
-        shape: "E" as CagedShape,
-        color: "rgba(99,102,241,0.3)",
-        cagedLabel: "E",
-        modalLabel: "Ionian",
-        truncated: false,
-        intendedMin: 0,
-        intendedMax: 1,
-        vertices: [
-          { fret: 0, string: 0 },
-          { fret: 0, string: 1 },
-          { fret: 0, string: 2 },
-          { fret: 0, string: 3 },
-          { fret: 0, string: 4 },
-          { fret: 0, string: 5 },
-          { fret: 1, string: 5 },
-          { fret: 1, string: 4 },
-          { fret: 1, string: 3 },
-          { fret: 1, string: 2 },
-          { fret: 1, string: 1 },
-          { fret: 1, string: 0 },
-        ],
+      const cRoot: [string, Partial<NoteSemantics>] = [
+        "C", { isScaleRoot: true, isChordRoot: true, isChordTone: true, isInScale: true, memberName: "root" },
+      ];
+      const inShape = (selector: string, container: HTMLElement) => {
+        container.querySelectorAll(selector).forEach((el) => {
+          const label = el.getAttribute("aria-label") ?? "";
+          expect(label).toMatch(/fret \d+/i);
+          expect(label).not.toMatch(/fret (?:[2-9]|1[0-2])\b/i);
+        });
       };
 
-      it("scale-only note outside active shape is note-inactive (not scale-only) with noteSemantics", () => {
-        // E is in scale (highlightNotes) and noteSemantics.isInScale=true,
-        // but E at fret 9 is outside the tiny shape (frets 0-1).
-        // With the fix, classifyNoteFromSemantics must use isHighlighted (shape-aware),
-        // so the out-of-shape E becomes note-inactive rather than scale-only.
-        const semantics = new Map<string, NoteSemantics>([
-          [
-            "C",
-            {
-              isScaleRoot: true,
-              isChordRoot: true,
-              isChordTone: true,
-              isInScale: true,
-              isColorTone: false,
-              isGuideTone: false,
-              isTension: false,
-              memberName: "root",
-            },
-          ],
-          [
-            "E",
-            {
-              isScaleRoot: false,
-              isChordRoot: false,
-              isChordTone: false,
-              isInScale: true,
-              isColorTone: false,
-              isGuideTone: false,
-              isTension: false,
-            },
-          ],
-        ]);
+      it.each<[string, string, string[], Array<[string, Partial<NoteSemantics>]>, Record<string, unknown>]>([
+        [
+          "scale-only", ".note-bubble.scale-only",
+          ["C", "E"],
+          [cRoot, ["E", { isInScale: true }]],
+          {},
+        ],
+        [
+          "color-tone", ".note-bubble.color-tone",
+          ["C", "B"],
+          [cRoot, ["B", { isInScale: true, isColorTone: true }]],
+          { colorNotes: ["B"] },
+        ],
+      ])("%s note outside active shape is note-inactive with noteSemantics", (_label, selector, highlightNotes, entries, extra) => {
         const { container } = render(
           <FretboardSVG
             {...BASE_PROPS}
-            startFret={0}
-            endFret={12}
             chordTones={["C"]}
             chordRoot="C"
-            highlightNotes={["C", "E"]}
-            shapePolygons={[tinyShape]}
+            highlightNotes={highlightNotes}
+            shapePolygons={[tinyEShape]}
             activePattern="caged"
             activeShape="E"
             shapeScope="single"
             chordFretSpread={0}
             chordBoxBounds={[]}
-            noteSemantics={semantics}
+            noteSemantics={sem(entries)}
+            {...extra}
           />
         );
-        // aria-label lives on .note-bubble buttons (a11y layer), not on .fretboard-note SVG elements.
-        // Query buttons directly — they share the same noteClass as the SVG peers.
-        const scaleOnly = container.querySelectorAll('.note-bubble.scale-only');
-        scaleOnly.forEach((el) => {
-          const label = el.getAttribute("aria-label") ?? "";
-          // Each button must carry a fret label — empty means lookup failed.
-          expect(label).toMatch(/fret \d+/i);
-          // Fret 2+ (including 10-12) is outside the tiny shape.
-          expect(label).not.toMatch(/fret (?:[2-9]|1[0-2])\b/i);
-        });
-      });
-
-      it("color-tone note outside active shape is note-inactive with noteSemantics", () => {
-        // B is a color note AND in scale, but outside the tiny shape.
-        // Must not appear as color-tone when outside the shape.
-        const semantics = new Map<string, NoteSemantics>([
-          [
-            "C",
-            {
-              isScaleRoot: true,
-              isChordRoot: true,
-              isChordTone: true,
-              isInScale: true,
-              isColorTone: false,
-              isGuideTone: false,
-              isTension: false,
-              memberName: "root",
-            },
-          ],
-          [
-            "B",
-            {
-              isScaleRoot: false,
-              isChordRoot: false,
-              isChordTone: false,
-              isInScale: true,
-              isColorTone: true,
-              isGuideTone: false,
-              isTension: false,
-            },
-          ],
-        ]);
-        const { container } = render(
-          <FretboardSVG
-            {...BASE_PROPS}
-            startFret={0}
-            endFret={12}
-            chordTones={["C"]}
-            chordRoot="C"
-            highlightNotes={["C", "B"]}
-            colorNotes={["B"]}
-            shapePolygons={[tinyShape]}
-            activePattern="caged"
-            activeShape="E"
-            shapeScope="single"
-            chordFretSpread={0}
-            chordBoxBounds={[]}
-            noteSemantics={semantics}
-          />
-        );
-        // All color-tone notes must be within frets 0-1 (inside the shape)
-        const colorTones = container.querySelectorAll('.note-bubble.color-tone');
-        colorTones.forEach((el) => {
-          const label = el.getAttribute("aria-label") ?? "";
-          expect(label).toMatch(/fret \d+/i);
-          expect(label).not.toMatch(/fret (?:[2-9]|1[0-2])\b/i);
-        });
+        inShape(selector, container as HTMLElement);
       });
     });
   });
 
   describe("lens leakage — no lens effect when chord overlay is off", () => {
-    it("fretboard-board has no data-practice-lens attribute when no chord overlay", () => {
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          practiceLens="guide-tones"
-        />
-      );
-      const board = container.querySelector('.fretboard-board');
-      expect(board?.getAttribute('data-practice-lens')).toBeNull();
-    });
-
-    it("fretboard-board has data-practice-lens when chord overlay is active", () => {
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          chordTones={["C", "E", "G"]}
-          chordRoot="C"
-          practiceLens="guide-tones"
-        />
-      );
-      const board = container.querySelector('.fretboard-board');
-      expect(board?.getAttribute('data-practice-lens')).toBe('guide-tones');
+    it("data-practice-lens only present when chord overlay is active", () => {
+      const { container, rerender } = render(<FretboardSVG {...BASE_PROPS} practiceLens="guide-tones" />);
+      expect(container.querySelector('.fretboard-board')?.getAttribute('data-practice-lens')).toBeNull();
+      rerender(<FretboardSVG {...BASE_PROPS} chordTones={["C", "E", "G"]} chordRoot="C" practiceLens="guide-tones" />);
+      expect(container.querySelector('.fretboard-board')?.getAttribute('data-practice-lens')).toBe('guide-tones');
     });
 
     it("scale notes have normal opacity with no chord overlay regardless of practiceLens", () => {
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          practiceLens="guide-tones"
-          highlightNotes={["C", "E", "G"]}
-        />
-      );
-      const noteElements = container.querySelectorAll('.fretboard-note:not(.hidden)');
-      noteElements.forEach((el) => {
-        // Use computed style — inline style misses stylesheet-applied opacity.
-        const opacity = parseFloat(getComputedStyle(el as Element).opacity);
-        expect(opacity).toBeGreaterThanOrEqual(1);
+      const { container } = render(<FretboardSVG {...BASE_PROPS} practiceLens="guide-tones" />);
+      container.querySelectorAll('.fretboard-note:not(.hidden)').forEach((el) => {
+        expect(parseFloat(getComputedStyle(el as Element).opacity)).toBeGreaterThanOrEqual(1);
       });
     });
   });
 
   describe("motion policy wiring", () => {
-    const MINIMAL_POLYGON: ShapePolygon = {
-      shape: "E" as CagedShape,
-      color: "rgba(255,0,0,0.3)",
-      cagedLabel: "E",
-      modalLabel: "E",
-      truncated: false,
-      intendedMin: 0,
-      intendedMax: 4,
-      vertices: [
-        { fret: 0, string: 0 },
-        { fret: 0, string: 1 },
-        { fret: 4, string: 1 },
-        { fret: 4, string: 0 },
-      ],
-    };
+    const MINIMAL_POLYGON = polyRect("E" as CagedShape, 0, 4, 1);
 
     it("uses group-mode wrappers when policy returns group modes", () => {
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          shapePolygons={[MINIMAL_POLYGON]}
-          chordTones={["C", "E", "G"]}
-          chordRoot="C"
-        />,
-      );
-      // Shape layer advertises data-motion="group"
-      const groupWrappers = container.querySelectorAll('[data-motion="group"]');
-      expect(groupWrappers.length).toBeGreaterThan(0);
+      const { container } = renderCMajor({ shapePolygons: [MINIMAL_POLYGON] });
+      expect(container.querySelectorAll('[data-motion="group"]').length).toBeGreaterThan(0);
       expect(container.querySelector('[data-motion="none"]')).toBeNull();
     });
 
     it("collapses to static wrappers (data-motion=none) when policy returns none modes", () => {
       vi.mocked(resolveFretboardMotionPolicy).mockReturnValueOnce({
-        noteMode: "none",
-        shapeMode: "none",
-        connectorMode: "none",
+        noteMode: "none", shapeMode: "none", connectorMode: "none",
       });
-      const { container } = render(
-        <FretboardSVG
-          {...BASE_PROPS}
-          shapePolygons={[MINIMAL_POLYGON]}
-          chordTones={["C", "E", "G"]}
-          chordRoot="C"
-        />,
-      );
-      // No animated group wrappers
+      const { container } = renderCMajor({ shapePolygons: [MINIMAL_POLYGON] });
       expect(container.querySelector('[data-motion="group"]')).toBeNull();
-      // Static none-wrappers in place of animated ones
-      const staticWrappers = container.querySelectorAll('[data-motion="none"]');
-      expect(staticWrappers.length).toBeGreaterThan(0);
+      expect(container.querySelectorAll('[data-motion="none"]').length).toBeGreaterThan(0);
     });
   });
 

@@ -13,92 +13,40 @@ describe("CircleOfFifths/CircleOfFifths", () => {
     vi.clearAllMocks();
   });
 
-  describe("Rendering", () => {
-    it("renders without crashing", () => {
-      render(<CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} />);
+  const renderCircle = (props: Partial<React.ComponentProps<typeof CircleOfFifths>> = {}) =>
+    render(<CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} {...props} />);
 
+  describe("Rendering", () => {
+    it("renders 12-slice SVG with correct viewBox", () => {
+      renderCircle();
       const svg = document.querySelector("svg");
       expect(svg).toBeTruthy();
-    });
-
-    it("renders SVG with correct viewBox", () => {
-      render(<CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} />);
-
-      const svg = document.querySelector("svg");
       expect(svg?.getAttribute("viewBox")).toBe("-10 -10 280 280");
-    });
-
-    it("renders all 12 notes in circle", () => {
-      render(<CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} />);
-
-      // Each note should have path elements for the slice
-      const paths = document.querySelectorAll("path");
-      // 12 slices + text labels = more than 12 paths
-      expect(paths.length).toBeGreaterThanOrEqual(12);
-    });
-
-    it("renders notes in correct order around circle", () => {
-      render(<CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} />);
-
-      const textElements = document.querySelectorAll("text");
-      // Should have text for all 12 notes
-      expect(textElements.length).toBeGreaterThan(0);
+      expect(document.querySelectorAll("path").length).toBeGreaterThanOrEqual(12);
+      expect(document.querySelectorAll("text").length).toBeGreaterThan(0);
     });
   });
 
   describe("Note selection", () => {
     it("calls setRootNote when a note is clicked", () => {
-      render(<CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} />);
-
+      renderCircle();
       const paths = document.querySelectorAll('path[class*="circle-slice"]');
       expect(paths.length).toBeGreaterThan(0);
       fireEvent.click(paths[0]);
       expect(mockSetRootNote).toHaveBeenCalled();
     });
 
-    it("highlights active root note", () => {
-      const { rerender } = render(
-        <CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} />,
-      );
-
-      // C is active by default
-      const activePaths = document.querySelectorAll("path.active");
-      expect(activePaths.length).toBeGreaterThan(0);
-
-      // Change root note
+    it("highlights active root note across rerenders", () => {
+      const { rerender } = renderCircle();
+      expect(document.querySelectorAll("path.active").length).toBeGreaterThan(0);
       rerender(<CircleOfFifths rootNote="G" setRootNote={mockSetRootNote} />);
-
-      // G should now be active
-      const newActivePaths = document.querySelectorAll("path.active");
-      expect(newActivePaths.length).toBeGreaterThan(0);
+      expect(document.querySelectorAll("path.active").length).toBeGreaterThan(0);
     });
 
-    it("cycles through all notes correctly", () => {
-      const roots = [
-        "C",
-        "G",
-        "D",
-        "A",
-        "E",
-        "B",
-        "F#",
-        "C#",
-        "G#",
-        "D#",
-        "A#",
-        "F",
-      ];
-
-      for (const root of roots) {
-        const { unmount } = render(
-          <CircleOfFifths rootNote={root} setRootNote={mockSetRootNote} />,
-        );
-
-        const activePaths = document.querySelectorAll("path.active");
-        expect(activePaths.length).toBeGreaterThan(0);
-
-        unmount();
-      }
+    it.each(CIRCLE_OF_FIFTHS)("renders %s as active root", (root) => {
+      const { unmount } = renderCircle({ rootNote: root });
+      expect(document.querySelectorAll("path.active").length).toBeGreaterThan(0);
+      unmount();
     });
   });
 
@@ -109,275 +57,115 @@ describe("CircleOfFifths/CircleOfFifths", () => {
       { root: "F", scale: "Lydian" },
       { root: "D", scale: "Dorian" },
     ])("renders for $root $scale", ({ root, scale }) => {
-      render(<CircleOfFifths rootNote={root} setRootNote={mockSetRootNote} scaleName={scale} />);
+      renderCircle({ rootNote: root, scaleName: scale });
       expect(document.querySelector("svg")).toBeTruthy();
     });
 
     it("updates degrees when scale changes", () => {
-      const { rerender } = render(
-        <CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} scaleName="Major" />,
-      );
+      const { rerender } = renderCircle({ scaleName: "Major" });
       rerender(<CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} scaleName="Natural Minor" />);
       expect(document.body).toBeTruthy();
     });
   });
 
-  // The key-signature and relative-key readouts moved out of CircleOfFifths
-  // into the Scale tab's Theory column — see scaleTheoryDerivations.test.ts.
-
   describe("Accidentals", () => {
-    it.each([
-      { label: "sharps (default)", useFlats: false, rootNote: "C" },
-      { label: "flats when useFlats=true", useFlats: true, rootNote: "C" },
-    ])("renders text elements with $label", ({ useFlats, rootNote }) => {
-      render(<CircleOfFifths rootNote={rootNote} setRootNote={mockSetRootNote} useFlats={useFlats} />);
+    it.each([true, false])("renders text elements with useFlats=%s", (useFlats) => {
+      renderCircle({ useFlats });
       expect(document.querySelectorAll("text").length).toBeGreaterThan(0);
     });
 
-    it.each([
-      { label: "switches between sharps and flats correctly", root: "C" },
-      { label: "displays enharmonic equivalents (C# / Db)", root: "C#" },
-    ])("$label", ({ root }) => {
-      const { rerender } = render(
-        <CircleOfFifths rootNote={root} setRootNote={mockSetRootNote} useFlats={false} />,
-      );
+    it.each([["C"], ["C#"]])("switches between sharps and flats for %s", (root) => {
+      const { rerender } = renderCircle({ rootNote: root, useFlats: false });
       rerender(<CircleOfFifths rootNote={root} setRootNote={mockSetRootNote} useFlats={true} />);
       expect(document.body).toBeTruthy();
     });
   });
 
   describe("Visual accuracy", () => {
-    it("positions notes around circle correctly", () => {
-      render(<CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} />);
-
-      const textElements = document.querySelectorAll("text");
-      // Text elements should be positioned around the circle
-      // They should have x and y attributes
-      textElements.forEach((text) => {
-        if (!text.hasAttribute("transform")) {
-          expect(text.getAttribute("x")).toBeTruthy();
-          expect(text.getAttribute("y")).toBeTruthy();
+    it("positions text labels and renders arc paths", () => {
+      renderCircle();
+      document.querySelectorAll("text").forEach((t) => {
+        if (!t.hasAttribute("transform")) {
+          expect(t.getAttribute("x")).toBeTruthy();
+          expect(t.getAttribute("y")).toBeTruthy();
         }
       });
-    });
-
-    it("creates arc paths for slices", () => {
-      render(<CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} />);
-
-      const paths = document.querySelectorAll('path[class*="circle-slice"]');
-      paths.forEach((path) => {
-        const d = path.getAttribute("d");
-        // Path should be an arc path (contains 'A' for arc command)
-        expect(d).toMatch(/[A-Z]/);
+      document.querySelectorAll('path[class*="circle-slice"]').forEach((p) => {
+        expect(p.getAttribute("d")).toMatch(/[A-Z]/);
       });
-    });
-
-    it("renders both outer and inner circles", () => {
-      render(<CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} />);
-
-      const paths = document.querySelectorAll("path");
-      // Should have multiple paths for inner and outer arcs
-      expect(paths.length).toBeGreaterThanOrEqual(12);
     });
   });
 
   describe("Interaction", () => {
-    it("responds to sequential clicks", async () => {
-      render(<CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} />);
-
+    it("responds to sequential clicks", () => {
+      renderCircle();
       const paths = document.querySelectorAll('path[class*="circle-slice"]');
-
-      // Click multiple notes
-      fireEvent.click(paths[1]); // Second note (G)
-      fireEvent.click(paths[4]); // Fifth note
-      fireEvent.click(paths[0]); // Back to first note
-
+      fireEvent.click(paths[1]);
+      fireEvent.click(paths[4]);
+      fireEvent.click(paths[0]);
       expect(mockSetRootNote).toHaveBeenCalledTimes(3);
-    });
-
-    it("maintains state across re-renders", () => {
-      const { rerender } = render(
-        <CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} />,
-      );
-
-      const initialActive = document.querySelectorAll("path.active").length;
-      expect(initialActive).toBeGreaterThan(0);
-
-      rerender(<CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} />);
-
-      const afterRerender = document.querySelectorAll("path.active").length;
-      expect(afterRerender).toBeGreaterThan(0);
-    });
-  });
-
-  describe("Edge cases", () => {
-    it("handles all chromatic notes as root", () => {
-      const notes = CIRCLE_OF_FIFTHS;
-
-      notes.forEach((note) => {
-        const { unmount } = render(
-          <CircleOfFifths rootNote={note} setRootNote={mockSetRootNote} />,
-        );
-
-        const activePaths = document.querySelectorAll("path.active");
-        expect(activePaths.length).toBeGreaterThan(0);
-
-        unmount();
-      });
-    });
-
-    it("handles scale changes at different root notes", () => {
-      const scales = ["Major", "Natural Minor", "Dorian", "Lydian"];
-      const roots = ["C", "G", "A", "F"];
-
-      roots.forEach((root) => {
-        scales.forEach((scale) => {
-          const { unmount } = render(
-            <CircleOfFifths
-              rootNote={root}
-              setRootNote={mockSetRootNote}
-              scaleName={scale}
-            />,
-          );
-
-          const svg = document.querySelector("svg");
-          expect(svg).toBeTruthy();
-
-          unmount();
-        });
-      });
-    });
-
-    it("handles rapid root note changes", async () => {
-      const { rerender } = render(
-        <CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} />,
-      );
-
-      // Rapidly change root note
-      for (const note of ["G", "D", "A", "E", "B"]) {
-        rerender(
-          <CircleOfFifths rootNote={note} setRootNote={mockSetRootNote} />,
-        );
-      }
-
-      expect(document.body).toBeTruthy();
     });
   });
 
   describe("Accessibility", () => {
-    it("renders clickable paths", () => {
-      render(<CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} />);
-
+    it("exposes exactly 12 interactive slices with role=button", () => {
+      renderCircle();
       // 12 interactive base slices + 1 non-interactive active-outline overlay = 13 total
-      // Only the 12 interactive slices carry role="button"
       const interactivePaths = document.querySelectorAll('path[class*="circle-slice"][role="button"]');
       expect(interactivePaths.length).toBe(12);
-
-      interactivePaths.forEach((path) => {
-        expect(path.getAttribute("class")).toContain("circle-slice");
-      });
-    });
-
-    it("paths respond to pointer events", () => {
-      render(<CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} />);
-
-      const paths = document.querySelectorAll('path[class*="circle-slice"]');
-      fireEvent.click(paths[0]);
-
-      expect(mockSetRootNote).toHaveBeenCalled();
     });
   });
 
   describe("CSS classes", () => {
-    it("applies active class to selected note", () => {
-      render(<CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} />);
-
-      const activePaths = document.querySelectorAll("path.active");
-      expect(activePaths.length).toBeGreaterThan(0);
-      expect(activePaths[0].getAttribute("class")).toContain("active");
-    });
-
-    it("removes active class when root changes", () => {
-      const { rerender } = render(
-        <CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} />,
-      );
-
-      let activeCount = document.querySelectorAll("path.active").length;
-      expect(activeCount).toBeGreaterThan(0);
-
+    it("applies active class and updates it when root changes", () => {
+      const { rerender } = renderCircle();
+      const initial = document.querySelectorAll("path.active");
+      expect(initial.length).toBeGreaterThan(0);
+      expect(initial[0].getAttribute("class")).toContain("active");
       rerender(<CircleOfFifths rootNote="G" setRootNote={mockSetRootNote} />);
-
-      activeCount = document.querySelectorAll("path.active").length;
-      expect(activeCount).toBeGreaterThan(0);
+      expect(document.querySelectorAll("path.active").length).toBeGreaterThan(0);
     });
   });
 });
 
 describe("getCircleNoteLabels mode behavior", () => {
-  // mode = "auto"
-  it("auto: sharp note shows flat enharmonic", () => {
-    const r = getCircleNoteLabels("A#", "C", false, SCALES["Major"], "auto");
-    expect(r.primary).toBe("A♯");
-    expect(r.enharmonic).toBe("B♭");
-  });
+  const labels = (note: string, root: string, useFlats: boolean, mode: "auto" | "on" | "off") =>
+    getCircleNoteLabels(note, root, useFlats, SCALES["Major"], mode);
 
-  it("auto: natural note shows no enharmonic", () => {
-    const r = getCircleNoteLabels("C", "C", false, SCALES["Major"], "auto");
-    expect(r.primary).toBe("C");
-    expect(r.enharmonic).toBeNull();
-  });
-
-  it("auto: respelled note shows original as enharmonic", () => {
-    // Root passed as 'A#'; with useFlats=true it displays as B♭ -> primary = B♭, enharmonic = A♯
-    const r = getCircleNoteLabels("A#", "A#", true, SCALES["Major"], "auto");
-    expect(r.primary).toBe("B♭");
-    expect(r.enharmonic).toBe("A♯");
-  });
-
-  // mode = "on"
-  it("on: sharp note always shows flat enharmonic", () => {
-    const r = getCircleNoteLabels("C#", "C", false, SCALES["Major"], "on");
-    expect(r.primary).toBe("C♯");
-    expect(r.enharmonic).toBe("D♭");
-  });
-
-  it("on: natural note with no enharmonic shows primary only", () => {
-    const r = getCircleNoteLabels("C", "C", false, SCALES["Major"], "on");
-    expect(r.primary).toBe("C");
-    expect(r.enharmonic).toBeNull();
+  it.each<[string, string, string, boolean, "auto" | "on" | "off", string, string | null]>([
+    // mode = "auto"
+    ["auto: sharp shows flat enharmonic", "A#", "C", false, "auto", "A♯", "B♭"],
+    ["auto: natural has no enharmonic", "C", "C", false, "auto", "C", null],
+    ["auto: respelled note shows original as enharmonic", "A#", "A#", true, "auto", "B♭", "A♯"],
+    // mode = "on"
+    ["on: sharp always shows flat enharmonic", "C#", "C", false, "on", "C♯", "D♭"],
+    ["on: natural with no enharmonic shows primary only", "C", "C", false, "on", "C", null],
+    ["on: flat-spelled primary shows sharp enharmonic", "A#", "A#", true, "on", "B♭", "A♯"],
+    // mode = "off"
+    ["off: sharp shows primary only", "A#", "C", false, "off", "A♯", null],
+    ["off: respelled shows respelled primary only", "A#", "A#", true, "off", "B♭", null],
+    ["off: natural shows primary only", "C", "C", false, "off", "C", null],
+  ])("%s", (_label, note, root, useFlats, mode, primary, enharmonic) => {
+    const r = labels(note, root, useFlats, mode);
+    expect(r.primary).toBe(primary);
+    expect(r.enharmonic).toBe(enharmonic);
   });
 
   it("on: every enharmonic pair shows both spellings", () => {
     const pairs: [string, string][] = [
-      ["C#", "D♭"],
-      ["D#", "E♭"],
-      ["F#", "G♭"],
-      ["G#", "A♭"],
-      ["A#", "B♭"],
+      ["C#", "D♭"], ["D#", "E♭"], ["F#", "G♭"], ["G#", "A♭"], ["A#", "B♭"],
     ];
-    for (const [note, expectedEnh] of pairs) {
-      const r = getCircleNoteLabels(note, "C", false, SCALES["Major"], "on");
-      expect(r.enharmonic).toBe(expectedEnh);
+    for (const [note, enh] of pairs) {
+      expect(labels(note, "C", false, "on").enharmonic).toBe(enh);
     }
-  });
-
-  it("on: flat-spelled primary shows sharp enharmonic (no duplicate)", () => {
-    // When useFlats=true, A# displays as Bb. Enharmonic should be A#, not Bb again.
-    const r = getCircleNoteLabels("A#", "A#", true, SCALES["Major"], "on");
-    expect(r.primary).toBe("B♭");
-    expect(r.enharmonic).toBe("A♯");
   });
 
   it("on: all flat-spelled pairs show distinct enharmonics", () => {
     const flatPairs: [string, string, string][] = [
-      ["C#", "D♭", "C♯"],
-      ["D#", "E♭", "D♯"],
-      ["F#", "G♭", "F♯"],
-      ["G#", "A♭", "G♯"],
-      ["A#", "B♭", "A♯"],
+      ["C#", "D♭", "C♯"], ["D#", "E♭", "D♯"], ["F#", "G♭", "F♯"], ["G#", "A♭", "G♯"], ["A#", "B♭", "A♯"],
     ];
     for (const [note, expectedPrimary, expectedEnh] of flatPairs) {
-      const r = getCircleNoteLabels(note, note, true, SCALES["Major"], "on");
+      const r = labels(note, note, true, "on");
       expect(r.primary).toBe(expectedPrimary);
       expect(r.enharmonic).toBe(expectedEnh);
       expect(r.primary).not.toBe(r.enharmonic);
@@ -385,45 +173,10 @@ describe("getCircleNoteLabels mode behavior", () => {
   });
 
   it("on: no duplicate labels for any of the 12 chromatic notes", () => {
-    const notes = [
-      "C",
-      "C#",
-      "D",
-      "D#",
-      "E",
-      "F",
-      "F#",
-      "G",
-      "G#",
-      "A",
-      "A#",
-      "B",
-    ];
-    for (const note of notes) {
-      const r = getCircleNoteLabels(note, "C", false, SCALES["Major"], "on");
-      if (r.enharmonic !== null) {
-        expect(r.primary).not.toBe(r.enharmonic);
-      }
+    for (const note of ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]) {
+      const r = labels(note, "C", false, "on");
+      if (r.enharmonic !== null) expect(r.primary).not.toBe(r.enharmonic);
     }
-  });
-
-  // mode = "off"
-  it("off: sharp note shows primary only", () => {
-    const r = getCircleNoteLabels("A#", "C", false, SCALES["Major"], "off");
-    expect(r.primary).toBe("A♯");
-    expect(r.enharmonic).toBeNull();
-  });
-
-  it("off: respelled note shows respelled primary only (no original)", () => {
-    const r = getCircleNoteLabels("A#", "A#", true, SCALES["Major"], "off");
-    expect(r.primary).toBe("B♭");
-    expect(r.enharmonic).toBeNull();
-  });
-
-  it("off: natural note shows primary only", () => {
-    const r = getCircleNoteLabels("C", "C", false, SCALES["Major"], "off");
-    expect(r.primary).toBe("C");
-    expect(r.enharmonic).toBeNull();
   });
 
   describe("Keyboard navigation & a11y", () => {
