@@ -138,3 +138,69 @@ export function createMockBufferSource(): MockBufferSourceNode {
     onended: null,
   };
 }
+
+export interface MockAudioContext {
+  currentTime: number;
+  destination: MockGainNode;
+  createGain: () => MockGainNode;
+  createOscillator: () => MockOscillatorNode;
+  createBiquadFilter: () => MockBiquadFilterNode;
+  createBufferSource: () => MockBufferSourceNode;
+  createBuffer: (channels: number, length: number, sampleRate: number) => MockAudioBuffer;
+  createPeriodicWave: ReturnType<typeof vi.fn>;
+  resume: ReturnType<typeof vi.fn>;
+  suspend: ReturnType<typeof vi.fn>;
+  state: "running" | "suspended" | "closed";
+  created: {
+    gains: MockGainNode[];
+    oscillators: MockOscillatorNode[];
+    filters: MockBiquadFilterNode[];
+    bufferSources: MockBufferSourceNode[];
+    buffers: MockAudioBuffer[];
+  };
+}
+
+export function buildMockCtx(opts: { currentTime?: number } = {}): MockAudioContext {
+  const created: MockAudioContext["created"] = {
+    gains: [],
+    oscillators: [],
+    filters: [],
+    bufferSources: [],
+    buffers: [],
+  };
+  const destination = createMockGain();
+  return {
+    currentTime: opts.currentTime ?? 0,
+    destination,
+    state: "running",
+    resume: vi.fn().mockResolvedValue(undefined),
+    suspend: vi.fn().mockResolvedValue(undefined),
+    createPeriodicWave: vi.fn(),
+    createGain: () => {
+      const g = createMockGain();
+      created.gains.push(g);
+      return g;
+    },
+    createOscillator: () => {
+      const o = createMockOsc();
+      created.oscillators.push(o);
+      return o;
+    },
+    createBiquadFilter: () => {
+      const f = createMockFilter();
+      created.filters.push(f);
+      return f;
+    },
+    createBufferSource: () => {
+      const s = createMockBufferSource();
+      created.bufferSources.push(s);
+      return s;
+    },
+    createBuffer: (numberOfChannels: number, length: number, sampleRate: number) => {
+      const b = createMockBuffer({ length, sampleRate, numberOfChannels });
+      created.buffers.push(b);
+      return b;
+    },
+    created,
+  };
+}

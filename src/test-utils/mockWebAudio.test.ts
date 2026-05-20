@@ -5,6 +5,7 @@ import {
   createMockFilter,
   createMockBufferSource,
   createMockBuffer,
+  buildMockCtx,
 } from "./mockWebAudio";
 
 describe("createMockGain", () => {
@@ -63,5 +64,32 @@ describe("createMockBuffer", () => {
     expect(b.numberOfChannels).toBe(1);
     expect(b.getChannelData(0)).toBeInstanceOf(Float32Array);
     expect(b.getChannelData(0).length).toBe(4);
+  });
+});
+
+describe("buildMockCtx", () => {
+  it("exposes the standard AudioContext factory methods", () => {
+    const ctx = buildMockCtx();
+    expect(ctx.currentTime).toBe(0);
+    expect(ctx.destination).toBeDefined();
+    expect(typeof ctx.createGain).toBe("function");
+    expect(typeof ctx.createOscillator).toBe("function");
+    expect(typeof ctx.createBiquadFilter).toBe("function");
+    expect(typeof ctx.createBufferSource).toBe("function");
+    expect(typeof ctx.createBuffer).toBe("function");
+    expect(typeof ctx.createPeriodicWave).toBe("function");
+  });
+
+  it("records nodes it created", () => {
+    const ctx = buildMockCtx();
+    const g = ctx.createGain();
+    const o = ctx.createOscillator();
+    expect(ctx.created.gains).toContain(g);
+    expect(ctx.created.oscillators).toContain(o);
+  });
+
+  it("allows currentTime override", () => {
+    const ctx = buildMockCtx({ currentTime: 1.5 });
+    expect(ctx.currentTime).toBe(1.5);
   });
 });
