@@ -78,7 +78,7 @@ describe("organVoice", () => {
     // note ends on its own instead of sustaining at full level.
     const releasing = gains.filter((g) =>
       g.gain.exponentialRampToValueAtTime.mock.calls.some(
-        ([target]: [number]) => target <= 0.01,
+        (call) => (call[0] as number) <= 0.01,
       ),
     );
     // One gain node is the note merger (no release ramp); every other gain

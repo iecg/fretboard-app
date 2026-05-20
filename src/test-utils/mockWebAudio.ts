@@ -1,12 +1,12 @@
-import { vi } from "vitest";
+import { vi, type Mock } from "vitest";
 
 export interface MockAudioParam {
   value: number;
-  setValueAtTime: ReturnType<typeof vi.fn>;
-  linearRampToValueAtTime: ReturnType<typeof vi.fn>;
-  exponentialRampToValueAtTime: ReturnType<typeof vi.fn>;
-  setTargetAtTime: ReturnType<typeof vi.fn>;
-  cancelScheduledValues: ReturnType<typeof vi.fn>;
+  setValueAtTime: Mock;
+  linearRampToValueAtTime: Mock;
+  exponentialRampToValueAtTime: Mock;
+  setTargetAtTime: Mock;
+  cancelScheduledValues: Mock;
 }
 
 function makeParam(initial = 0): MockAudioParam {
@@ -22,8 +22,8 @@ function makeParam(initial = 0): MockAudioParam {
 
 export interface MockGainNode {
   gain: MockAudioParam;
-  connect: ReturnType<typeof vi.fn>;
-  disconnect: ReturnType<typeof vi.fn>;
+  connect: Mock;
+  disconnect: Mock;
 }
 
 export function createMockGain(): MockGainNode {
@@ -41,11 +41,11 @@ export interface MockOscillatorNode {
   type: OscillatorType;
   frequency: MockAudioParam;
   detune: MockAudioParam;
-  connect: ReturnType<typeof vi.fn>;
-  disconnect: ReturnType<typeof vi.fn>;
-  start: ReturnType<typeof vi.fn>;
-  stop: ReturnType<typeof vi.fn>;
-  setPeriodicWave: ReturnType<typeof vi.fn>;
+  connect: Mock;
+  disconnect: Mock;
+  start: Mock;
+  stop: Mock;
+  setPeriodicWave: Mock;
   onended: (() => void) | null;
 }
 
@@ -79,8 +79,8 @@ export interface MockBiquadFilterNode {
   Q: MockAudioParam;
   gain: MockAudioParam;
   detune: MockAudioParam;
-  connect: ReturnType<typeof vi.fn>;
-  disconnect: ReturnType<typeof vi.fn>;
+  connect: Mock;
+  disconnect: Mock;
 }
 
 export function createMockFilter(): MockBiquadFilterNode {
@@ -122,10 +122,10 @@ export function createMockBuffer(opts: {
 export interface MockBufferSourceNode {
   buffer: MockAudioBuffer | null;
   playbackRate: MockAudioParam;
-  connect: ReturnType<typeof vi.fn>;
-  disconnect: ReturnType<typeof vi.fn>;
-  start: ReturnType<typeof vi.fn>;
-  stop: ReturnType<typeof vi.fn>;
+  connect: Mock;
+  disconnect: Mock;
+  start: Mock;
+  stop: Mock;
   onended: (() => void) | null;
 }
 
@@ -150,9 +150,9 @@ export interface MockAudioContext {
   createBiquadFilter: () => MockBiquadFilterNode;
   createBufferSource: () => MockBufferSourceNode;
   createBuffer: (channels: number, length: number, sampleRate: number) => MockAudioBuffer;
-  createPeriodicWave: ReturnType<typeof vi.fn>;
-  resume: ReturnType<typeof vi.fn>;
-  suspend: ReturnType<typeof vi.fn>;
+  createPeriodicWave: Mock;
+  resume: Mock;
+  suspend: Mock;
   state: "running" | "suspended" | "closed";
   created: {
     gains: MockGainNode[];

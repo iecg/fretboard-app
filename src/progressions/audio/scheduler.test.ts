@@ -5,7 +5,6 @@ import { _metronomeInternals } from "./metronome";
 import {
   buildMockCtx as buildSharedMockCtx,
   createMockGain,
-  type MockAudioContext,
   type MockBufferSourceNode,
   type MockOscillatorNode,
 } from "../../test-utils/mockWebAudio";
@@ -14,7 +13,7 @@ import {
 // X hits" without depending on real audio timing.
 
 interface MockCtx {
-  ctx: MockAudioContext;
+  ctx: AudioContext;
   oscCount: () => number;
   bufferSourceCount: () => number;
   oscillators: () => MockOscillatorNode[];
@@ -24,7 +23,7 @@ interface MockCtx {
 function buildMockCtx(): MockCtx {
   const ctx = buildSharedMockCtx();
   return {
-    ctx,
+    ctx: ctx as unknown as AudioContext,
     oscCount: () => ctx.created.oscillators.length,
     bufferSourceCount: () => ctx.created.bufferSources.length,
     oscillators: () => ctx.created.oscillators,
