@@ -28,7 +28,7 @@ test.describe("Progression Visual", () => {
 
   test("progression-mobile-390x844", async ({ page }) => {
     // After the mobile rehost, progression controls live in the Inspector's
-    // Progression tab. mobileTabAtom was removed; navigate via tab click.
+    // Song tab. mobileTabAtom was removed; navigate via tab click.
     await loadVisualState(
       page,
       {
@@ -40,8 +40,8 @@ test.describe("Progression Visual", () => {
       { width: 390, height: 844 },
     );
 
-    // Navigate to the Progression tab in the Inspector bottom tab bar.
-    await page.getByRole("tab", { name: "Progression" }).click();
+    // Navigate to the Song tab in the Inspector bottom tab bar.
+    await page.getByRole("tab", { name: "Song" }).click();
 
     await expect(page.getByRole("combobox", { name: "Preset" })).toBeVisible();
     await expect(page.getByRole("group", { name: "Progression track" })).toBeVisible();
