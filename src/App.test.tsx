@@ -6,7 +6,6 @@ import {
   fireEvent,
   waitFor,
   within,
-  act,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "./App";
@@ -252,8 +251,9 @@ describe("App", () => {
       setupHiddenPracticeBar();
       render(<App />);
       // Confirm hidden persists on mount
-      await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
-      expect(localStorage.getItem(k("chordOverlayHidden"))).toBe("true");
+      await waitFor(() => {
+        expect(localStorage.getItem(k("chordOverlayHidden"))).toBe("true");
+      });
       // Changing rootNote via CoF should reset chordOverlayHidden to false
       await userEvent.click(await screen.findByRole("tab", { name: "Scale" }));
       fireEvent.click(await screen.findByTestId("circle-of-fifths"));
@@ -265,8 +265,9 @@ describe("App", () => {
     it("does NOT reset overlay visibility on initial mount when persisted hidden=true", async () => {
       setupHiddenPracticeBar();
       render(<App />);
-      await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
-      expect(localStorage.getItem(k("chordOverlayHidden"))).toBe("true");
+      await waitFor(() => {
+        expect(localStorage.getItem(k("chordOverlayHidden"))).toBe("true");
+      });
     });
   });
 });

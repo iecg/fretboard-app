@@ -127,26 +127,16 @@ test.describe("Theme Contract", () => {
     expect(borderTopColor).not.toBe("rgba(0, 0, 0, 0)");
   });
 
-  test("fretboard notes and summary chips have coherent role colors in light mode", async ({ page }) => {
+  test("fretboard tonic note uses key-tonic role color in light mode", async ({ page }) => {
     // Seed an empty progression so the always-on chord track (Phase B) does not
     // drive the chord overlay — otherwise the scale tonic note picks up a chord
     // role instead of `key-tonic`.
+    // Phase 3: DegreeChipStrip was removed, so the summary-chip half of this
+    // contract is gone; we keep the fretboard-note assertion which still
+    // exercises the `key-tonic` light-mode ring token.
     await loadVisualState(page, { theme: "light", progressionSteps: [] });
 
-    // Check summary chips - use a non-tonic scale note to check scale color
-    const activeChip = page.locator('li[data-in-scale="true"]:not([data-is-tonic="true"]) button').first();
-    await expect(activeChip).toBeVisible();
-    const activeChipBorder = await activeChip.evaluate((el) => getComputedStyle(el).borderColor);
-    // app-cyan: --neon-cyan = #0e7a93 → rgb(14, 122, 147)
-    expect(activeChipBorder.replace(/\s/g, "")).toBe("rgb(14,122,147)");
-
-    const tonicChip = page.locator('li[data-is-tonic="true"] button').first();
-    await expect(tonicChip).toBeVisible();
-    const tonicChipBorder = await tonicChip.evaluate((el) => getComputedStyle(el).borderColor);
-    // neon-orange: #c44a1f -> rgb(196, 74, 31)
-    expect(tonicChipBorder.replace(/\s/g, "")).toBe("rgb(196,74,31)");
-
-    // Check fretboard notes - they use stroke for the ring. 
+    // Check fretboard notes - they use stroke for the ring.
     // The role class is on the g element, so we look for circle inside.
     const tonicNote = page.locator('g[data-note-role="key-tonic"] circle').first();
     await expect(tonicNote).toBeVisible();
