@@ -103,6 +103,50 @@
   color: var(--chrome-fg);
 }
 
+.help-modal-notice {
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-3);
+  background: var(--surface-float);
+  border: 1px solid var(--surface-card-border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.help-modal-notice-title.help-modal-notice-title {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--chrome-fg-muted);
+}
+
+.help-modal-notice p {
+  margin: 0;
+  line-height: var(--leading-snug);
+  color: var(--chrome-fg);
+  font-size: 0.9375rem;
+}
+
+.help-modal-notice-dismiss {
+  align-self: flex-start;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--surface-card-border);
+  background: var(--surface-panel);
+  color: var(--chrome-fg);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.help-modal-notice-dismiss:hover,
+.help-modal-notice-dismiss:focus-visible {
+  background: var(--surface-card-border);
+}
+
 /* stylelint-disable selector-pseudo-class-no-unknown */
 @media (max-height: 520px) {
   .help-modal-overlay {

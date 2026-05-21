@@ -1,4 +1,5 @@
 import { useEffect, useRef, type RefObject } from "react";
+import { useAtom } from "jotai";
 import { X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import clsx from "clsx";
@@ -7,6 +8,8 @@ import {
   ANIMATION_DURATION_FAST,
   ANIMATION_EASE,
 } from "@fretflow/core";
+import { useTranslation } from "../../hooks/useTranslation";
+import { seenChordModeRemovalNoticeAtom } from "../../store/uiAtoms";
 import styles from "./HelpModal.module.css";
 import sharedStyles from "../shared/shared.module.css";
 
@@ -18,6 +21,10 @@ interface HelpModalProps {
 
 export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
   const helpModalRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
+  const [seenChordModeRemovalNotice, setSeenChordModeRemovalNotice] = useAtom(
+    seenChordModeRemovalNoticeAtom,
+  );
 
   useFocusTrap({
     containerRef: helpModalRef,
@@ -74,6 +81,26 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
               </button>
             </div>
             <div className={styles["help-modal-content"]} data-testid="help-modal-content">
+              {!seenChordModeRemovalNotice ? (
+                <aside
+                  className={styles["help-modal-notice"]}
+                  data-testid="help-modal-whats-new"
+                  aria-label={t("help.whatsNew")}
+                >
+                  <h3 className={styles["help-modal-notice-title"]}>
+                    {t("help.whatsNew")}
+                  </h3>
+                  <p>{t("help.chordModeRemoved")}</p>
+                  <button
+                    type="button"
+                    className={styles["help-modal-notice-dismiss"]}
+                    onClick={() => setSeenChordModeRemovalNotice(true)}
+                  >
+                    {t("help.gotIt")}
+                  </button>
+                </aside>
+              ) : null}
+
               <h3>Getting Started</h3>
 
               <p>
@@ -119,10 +146,10 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
               <h3>Chords</h3>
               <ul>
                 <li>
-                  Expand <strong>Chords</strong>, choose <em>Degree</em> to pick
-                  a diatonic chord by Roman numeral or <em>Manual</em> to set
-                  any root and chord type, then watch the matching chord tones
-                  highlight on the fretboard in a distinct color.
+                  Expand <strong>Chords</strong>, choose a diatonic chord by
+                  Roman numeral, then watch the matching chord tones highlight
+                  on the fretboard in a distinct color. To customize root or
+                  quality, edit the active progression step.
                 </li>
                 <li>
                   <strong>Link chord root to scale</strong> keeps the chord root

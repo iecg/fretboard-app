@@ -129,6 +129,11 @@ export interface Dictionary {
     dismiss: string;
     rotateMessage: string;
   };
+  help: {
+    whatsNew: string;
+    chordModeRemoved: string;
+    gotIt: string;
+  };
   controls: {
     shape: string;
     position: string;
@@ -142,9 +147,6 @@ export interface Dictionary {
     shiftClickToAdd: string;
     showConsecutiveSteps: string;
     pairMembersConnected: string;
-    chordMode: string;
-    mode: string;
-    modeHint: string;
     quality: string;
     lensHint: string;
     degree: string;
@@ -154,11 +156,8 @@ export interface Dictionary {
     disabled: string;
     off: string;
     on: string;
-    manual: string;
     shapeHintTouch: string;
     shapeHintPointer: string;
-    degreeModeHint: string;
-    manualModeHint: string;
     customChordHint: string;
     diatonicDefaultHint: string;
     manualQualityHint: string;
