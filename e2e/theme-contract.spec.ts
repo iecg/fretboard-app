@@ -112,34 +112,10 @@ test.describe("Theme Contract", () => {
     expect(bgAppMid.toLowerCase()).toBe("#faf8f3");
   });
 
-  test("practice bar is light-readable in light mode", async ({ page }) => {
-    // Need a chord to show the practice bar. Use the full name from CHORD_DEFINITIONS.
-    await loadVisualState(page, { theme: "light", chordType: "Major 7th" });
-
-    // The practice bar is an aria-role="group" with "Practice cues" in its label
-    const practiceBar = page.locator('section[aria-label^="Practice cues:"]');
-    await expect(practiceBar).toBeVisible();
-
-    const styles = await practiceBar.evaluate((el) => {
-      const cs = getComputedStyle(el);
-      return {
-        backgroundColor: cs.backgroundColor,
-        color: cs.color
-      };
-    });
-
-    // The practice bar now lives inside TopBandSummary, which owns the card fill
-    // via --strip-bg-override: transparent. The bar's own background is therefore
-    // transparent — the visible warm surface comes from the parent card.
-    expect(styles.backgroundColor.replace(/\s/g, "")).toBe("rgba(0,0,0,0)");
-    // text-main: #0f172a -> rgb(15, 23, 42)
-    expect(styles.color.replace(/\s/g, "")).toBe("rgb(15,23,42)");
-
-  });
 
   test("Inspector bottom tab bar uses theme-appropriate active indicators", async ({ page }) => {
     // Mobile layout renders the Inspector with placement="bottom"; the default
-    // active tab is "View".
+    // active tab is "Scale".
     await loadVisualState(page, { theme: "dark" }, { width: 390, height: 844 });
     const activeTab = page.locator(
       '[data-placement="bottom"] [role="tab"][data-state="active"]',
@@ -151,26 +127,16 @@ test.describe("Theme Contract", () => {
     expect(borderTopColor).not.toBe("rgba(0, 0, 0, 0)");
   });
 
-  test("fretboard notes and summary chips have coherent role colors in light mode", async ({ page }) => {
+  test("fretboard tonic note uses key-tonic role color in light mode", async ({ page }) => {
     // Seed an empty progression so the always-on chord track (Phase B) does not
     // drive the chord overlay — otherwise the scale tonic note picks up a chord
     // role instead of `key-tonic`.
+    // Phase 3: DegreeChipStrip was removed, so the summary-chip half of this
+    // contract is gone; we keep the fretboard-note assertion which still
+    // exercises the `key-tonic` light-mode ring token.
     await loadVisualState(page, { theme: "light", progressionSteps: [] });
 
-    // Check summary chips - use a non-tonic scale note to check scale color
-    const activeChip = page.locator('li[data-in-scale="true"]:not([data-is-tonic="true"]) button').first();
-    await expect(activeChip).toBeVisible();
-    const activeChipBorder = await activeChip.evaluate((el) => getComputedStyle(el).borderColor);
-    // app-cyan: --neon-cyan = #0e7a93 → rgb(14, 122, 147)
-    expect(activeChipBorder.replace(/\s/g, "")).toBe("rgb(14,122,147)");
-
-    const tonicChip = page.locator('li[data-is-tonic="true"] button').first();
-    await expect(tonicChip).toBeVisible();
-    const tonicChipBorder = await tonicChip.evaluate((el) => getComputedStyle(el).borderColor);
-    // neon-orange: #c44a1f -> rgb(196, 74, 31)
-    expect(tonicChipBorder.replace(/\s/g, "")).toBe("rgb(196,74,31)");
-
-    // Check fretboard notes - they use stroke for the ring. 
+    // Check fretboard notes - they use stroke for the ring.
     // The role class is on the g element, so we look for circle inside.
     const tonicNote = page.locator('g[data-note-role="key-tonic"] circle').first();
     await expect(tonicNote).toBeVisible();
@@ -769,7 +735,6 @@ test.describe("Theme Contract", () => {
 
     test("faceplate substrate uses the light token in light mode", async ({ page }) => {
       await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
-      await expect(page.getByTestId("top-band-summary")).toBeVisible();
 
       // The faceplate is theme-adaptive: a pale cool substrate in light mode.
       const faceplateBg = await page.evaluate(() =>
@@ -780,7 +745,6 @@ test.describe("Theme Contract", () => {
 
     test("faceplate substrate uses the navy token in dark mode", async ({ page }) => {
       await loadVisualState(page, { theme: "dark" }, { width: 1280, height: 900 });
-      await expect(page.getByTestId("top-band-summary")).toBeVisible();
 
       const faceplateBg = await page.evaluate(() =>
         getComputedStyle(document.documentElement).getPropertyValue("--faceplate-bg").trim(),
@@ -788,50 +752,6 @@ test.describe("Theme Contract", () => {
       expect(colorToHex(faceplateBg)).toBe("#0a121d");
     });
 
-    test("chord practice strip aligns with card surface in light mode", async ({ page }) => {
-      await loadVisualState(page, { theme: "light", chordType: "Major 7th" });
-
-      const practiceBar = page.locator('section[aria-label^="Practice cues:"]');
-      await expect(practiceBar).toBeVisible();
-
-      const bg = await practiceBar.evaluate((el) => getComputedStyle(el).backgroundColor);
-      // Inside TopBandSummary, the strip's own background is transparent — the
-      // visible warm card surface is provided by the parent card.
-      expect(bg.replace(/\s/g, "")).toBe("rgba(0,0,0,0)");
-
-    });
-
-    test("chord practice and degree strips share a transparent surface in light mode", async ({ page }) => {
-      await loadVisualState(page, { theme: "light", chordType: "Major 7th" });
-
-      const practiceBar = page.locator('section[aria-label^="Practice cues:"]');
-      await expect(practiceBar).toBeVisible();
-      const degreeStrip = page.locator('[class*="degree-chip-strip"]').first();
-      await expect(degreeStrip).toBeVisible();
-
-      const practiceBg = await practiceBar.evaluate((el) => getComputedStyle(el).backgroundColor);
-      const degreeBg = await degreeStrip.evaluate((el) => getComputedStyle(el).backgroundColor);
-
-      // Both strips are transparent inside the unified card — they share the
-      // same parent surface rather than each painting their own fill.
-      expect(practiceBg.replace(/\s/g, "")).toBe("rgba(0,0,0,0)");
-      expect(degreeBg.replace(/\s/g, "")).toBe(practiceBg.replace(/\s/g, ""));
-
-    });
-
-    test("degree chip strip uses surface-strip token in light mode", async ({ page }) => {
-      await loadVisualState(page, { theme: "light" });
-
-      // DegreeChipStrip is rendered inside the scale summary area
-      const degreeStrip = page.locator('section[role="group"]').filter({ hasText: /C|D|E|F|G|A|B/ }).first();
-      await expect(degreeStrip).toBeVisible();
-
-      const bg = await degreeStrip.evaluate((el) => getComputedStyle(el).backgroundColor);
-      // Inside TopBandSummary the chip-strip background is transparent — the
-      // parent card supplies the warm card-top surface.
-      expect(bg.replace(/\s/g, "")).toBe("rgba(0,0,0,0)");
-
-    });
 
     test("settings overlay uses surface-float (highest elevation) in light mode", async ({ page }) => {
       await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
@@ -1002,65 +922,5 @@ test.describe("Theme Contract", () => {
       expect(colorToHex(lightVal)).not.toBe(colorToHex(darkVal));
     });
 
-    test("practice pills render with cyan border for in-scale notes in light mode", async ({ page }) => {
-      await loadVisualState(page, { theme: "light", chordType: "Major 7th" });
-      const practiceBar = page.locator('section[aria-label^="Practice cues:"]');
-      await expect(practiceBar).toBeVisible();
-
-      // Exclude chord-root/guide-tone pills (they override to solid orange); target a pure scale note
-      const inScalePill = practiceBar.locator(
-        '[data-in-scale="true"]:not([data-chord-root="true"]):not([data-guide-tone="true"])'
-      ).first();
-      await expect(inScalePill).toBeVisible();
-      const border = await inScalePill.evaluate((el) => getComputedStyle(el).borderColor);
-      // In-scale pill border uses --role-scale-border (cyan) in light mode.
-      // --role-scale-border = --neon-cyan = #0e7a93 → rgb(14, 122, 147)
-      expect(border.replace(/\s/g, "")).toBe("rgb(14,122,147)");
-    });
-
-    test("practice pills render with role-chord-border for guide-tone notes in light mode", async ({ page }) => {
-      await loadVisualState(page, { theme: "light", chordType: "Major 7th" });
-      const practiceBar = page.locator('section[aria-label^="Practice cues:"]');
-      await expect(practiceBar).toBeVisible();
-
-      const guidePill = practiceBar.locator('[data-guide-tone="true"], [data-chord-root="true"]').first();
-      await expect(guidePill).toBeVisible();
-      const border = await guidePill.evaluate((el) => getComputedStyle(el).borderColor);
-      // --role-chord-border = --neon-orange = #c44a1f → rgb(196, 74, 31)
-      expect(border.replace(/\s/g, "")).toBe("rgb(196,74,31)");
-    });
-
-    test("degree chips use role-scale-border for in-scale notes in light mode", async ({ page }) => {
-      await loadVisualState(page, { theme: "light" });
-
-      const degreeStrip = page.locator('[class*="degree-chip-strip"]').first();
-      await expect(degreeStrip).toBeVisible();
-
-      // Exclude tonic chips — their CSS rule is declared after in-scale and overrides to orange
-      const inScaleItem = degreeStrip.locator('[data-in-scale="true"]:not([data-is-tonic="true"])').first();
-      await expect(inScaleItem).toBeVisible();
-
-      const chip = inScaleItem.locator('button').first();
-      await expect(chip).toBeVisible();
-      const border = await chip.evaluate((el) => getComputedStyle(el).borderColor);
-      // --role-scale-border = --neon-cyan = #0e7a93 → rgb(14, 122, 147)
-      expect(border.replace(/\s/g, "")).toBe("rgb(14,122,147)");
-    });
-
-    test("degree chips use role-chord-border for tonic note in light mode", async ({ page }) => {
-      await loadVisualState(page, { theme: "light" });
-
-      const degreeStrip = page.locator('[class*="degree-chip-strip"]').first();
-      await expect(degreeStrip).toBeVisible();
-
-      const tonicItem = degreeStrip.locator('[data-is-tonic="true"]').first();
-      await expect(tonicItem).toBeVisible();
-
-      const chip = tonicItem.locator('button').first();
-      await expect(chip).toBeVisible();
-      const border = await chip.evaluate((el) => getComputedStyle(el).borderColor);
-      // --role-chord-border = --neon-orange = #c44a1f → rgb(196, 74, 31)
-      expect(border.replace(/\s/g, "")).toBe("rgb(196,74,31)");
-    });
   });
 });

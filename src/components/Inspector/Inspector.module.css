@@ -1,5 +1,5 @@
 /* The Inspector panel is a DAW faceplate — a theme-adaptive hardware-style
- * surface shared with TopBandSummary via the .faceplate class. */
+ * surface using the .faceplate class from shared.module.css. */
 .root {
   composes: faceplate from "../shared/shared.module.css";
 

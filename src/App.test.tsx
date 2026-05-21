@@ -6,7 +6,6 @@ import {
   fireEvent,
   waitFor,
   within,
-  act,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "./App";
@@ -70,7 +69,7 @@ const setViewport = (width: number, height: number) => {
 
 // Inspector tab bodies (Radix Tabs) only mount when active; tests that exercise
 // Scale/Chord tab controls must select the tab first.
-const selectInspectorTab = async (name: "View" | "Scale" | "Chord") => {
+const selectInspectorTab = async (name: "Scale" | "Chord" | "Song") => {
   await userEvent.click(await screen.findByRole("tab", { name }));
 };
 
@@ -251,23 +250,24 @@ describe("App", () => {
     it("resets overlay visibility when rootNote changes via Circle of Fifths", async () => {
       setupHiddenPracticeBar();
       render(<App />);
+      // Confirm hidden persists on mount
       await waitFor(() => {
-        expect(document.querySelector('.chord-practice-bar[data-collapsed="true"]')).toBeTruthy();
+        expect(localStorage.getItem(k("chordOverlayHidden"))).toBe("true");
       });
+      // Changing rootNote via CoF should reset chordOverlayHidden to false
       await userEvent.click(await screen.findByRole("tab", { name: "Scale" }));
       fireEvent.click(await screen.findByTestId("circle-of-fifths"));
       await waitFor(() => {
-        expect(document.querySelector(".chord-practice-bar")).toBeTruthy();
-        expect(document.querySelector(".chord-practice-bar[data-collapsed]")).toBeNull();
+        expect(localStorage.getItem(k("chordOverlayHidden"))).toBe("false");
       });
     });
 
     it("does NOT reset overlay visibility on initial mount when persisted hidden=true", async () => {
       setupHiddenPracticeBar();
       render(<App />);
-      await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
-      expect(document.querySelector('.chord-practice-bar[data-collapsed="true"]')).toBeTruthy();
-      expect(localStorage.getItem(k("chordOverlayHidden"))).toBe("true");
+      await waitFor(() => {
+        expect(localStorage.getItem(k("chordOverlayHidden"))).toBe("true");
+      });
     });
   });
 });

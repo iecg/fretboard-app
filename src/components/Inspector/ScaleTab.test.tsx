@@ -48,6 +48,12 @@ describe("ScaleTab", () => {
     expect(screen.getByRole("group", { name: /^position$/i })).toBeInTheDocument();
   });
 
+  it("renders a visibility switch bound to scaleVisibleAtom", () => {
+    renderWithAtoms(<ScaleTab />);
+    const sw = screen.getByRole("switch", { name: /scale layer/i });
+    expect(sw).toBeChecked();
+  });
+
   it("has no accessibility violations", async () => {
     const { container } = renderWithAtoms(<ScaleTab />, [
       [rootNoteAtom, "C"],

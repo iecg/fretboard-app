@@ -255,6 +255,16 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
                 </li>
               </ul>
 
+              <h3>Keyboard Shortcuts</h3>
+              <ul>
+                <li>
+                  <strong>S</strong> — Show/hide the scale layer
+                </li>
+                <li>
+                  <strong>C</strong> — Show/hide the chord layer
+                </li>
+              </ul>
+
               <h3>Tips</h3>
               <ul>
                 <li>

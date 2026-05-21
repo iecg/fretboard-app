@@ -20,12 +20,9 @@ import type {
   PracticeCueNote,
   ChordRowEntry,
 
-  PracticeBarNote,
-  PracticeBarGroup,
 } from "@fretflow/core";
 import {
   getDegreesForScale,
-  DEGREE_COLORS,
   type DegreeId,
 } from "@fretflow/core";
 import {
@@ -39,7 +36,6 @@ import {
 import {
   chordRootAtom,
   chordTypeAtom,
-  chordLabelAtom,
   chordTonesAtom,
   chordMembersAtom,
   practiceLensAtom,
@@ -64,7 +60,6 @@ import {
   hasOutsideChordMembersAtom,
   allChordMembersAtom,
 } from "./composableSelectors";
-import { shapeHighlightedNoteSetAtom } from "./shapeAtoms";
 
 // Guide tone members: 3rd and 7th
 const GUIDE_TONE_RAW = new Set(["b3", "3", "b7", "7"]);
@@ -321,122 +316,6 @@ export const practiceCuesAtom = atom((get) => {
   }
 });
 
-const entryToBarNote = (e: ChordRowEntry): PracticeBarNote => ({
-  internalNote: e.internalNote,
-  displayNote: e.displayNote,
-  intervalName: getDisplayLabel(e),
-  isChordRoot: e.role === "chord-root",
-  isGuideTone: GUIDE_TONE_FORMATTED.has(e.memberName),
-  isTension: !e.inScale,
-  isInScale: e.inScale,
-  scaleDegree: e.scaleDegree,
-  degreeColor: e.scaleDegree ? DEGREE_COLORS[e.scaleDegree] : undefined,
-});
-
-/**
- * Chord group — lens-independent. Always shows all chord members.
- */
-export const practiceBarChordGroupAtom = atom((get): PracticeBarGroup => {
-  const members = get(allChordMembersAtom);
-  return {
-    label: "Chord",
-    notes: members.map(entryToBarNote),
-  };
-});
-
-/**
- * Land-on group base — lens-driven coaching subset.
- *  - tones: 3rd/7th members (falls back to all if none) — temporary bridge to old guide-tones behavior
- *  - lead: outside-scale members with resolutions — temporary bridge to old tension behavior
- *
- * Tasks 4.4/4.5 will rewrite this with the real per-lens logic; the current
- * mapping just keeps the suite green through the enum rename.
- *
- * Shape narrowing applied in atoms.ts to avoid circular imports.
- */
-const practiceBarLandOnGroupBaseAtom = atom((get): PracticeBarGroup => {
-  const chordType = get(chordTypeAtom);
-  if (!chordType) return { label: "Land on", notes: [] };
-
-  const lens = get(practiceLensAtom);
-  const chordRoot = get(chordRootAtom);
-  const useFlats = get(useFlatsAtom);
-  const allMembers = get(allChordMembersAtom);
-  const scaleNotes = get(scaleNotesAtom);
-
-  const displayNote = (note: string) =>
-    formatAccidental(getNoteDisplay(note, chordRoot, useFlats));
-
-  const findResolution = (note: string) =>
-    findNearestScaleResolution(note, scaleNotes, displayNote);
-
-  let subset: ChordRowEntry[];
-  // TODO (Task 4.4/4.5): rewrite land-on subset logic for new lens IDs.
-  // Temporary bridge: "tones" uses guide-tones subset (3rd/7th emphasis);
-  // "lead" uses the old tension subset (outside-scale members).
-  switch (lens) {
-    case "tones": {
-      const gt = allMembers.filter((e) => GUIDE_TONE_FORMATTED.has(e.memberName));
-      subset = gt.length > 0 ? gt : allMembers;
-      break;
-    }
-    case "lead":
-      subset = allMembers.filter((e) => !e.inScale);
-      break;
-    default:
-      subset = allMembers;
-  }
-
-  const notes: PracticeBarNote[] = subset.map((e) => {
-    const base = entryToBarNote(e);
-    return lens === "lead"
-      ? { ...base, resolvesTo: findResolution(e.internalNote) }
-      : base;
-  });
-
-  return { label: "Land on", notes };
-});
-
-/**
- * Shape-aware Land-on group. Narrows the base lens subset to notes present in
- * the active shape context (except for tension, which stays global). The
- * Chord group never goes through this — it is always all chord members.
- */
-export const practiceBarLandOnGroupAtom = atom((get) => {
-  const base = get(practiceBarLandOnGroupBaseAtom);
-  const lens = get(practiceLensAtom);
-  const shapeHighlightedNoteSet = get(shapeHighlightedNoteSetAtom);
-  if (!shapeHighlightedNoteSet || lens === "lead") return base;
-  const filtered = base.notes.filter((n) =>
-    shapeHighlightedNoteSet.has(n.internalNote),
-  );
-  if (filtered.length === 0) return base;
-  return { ...base, notes: filtered };
-});
-
-export const showChordPracticeBarAtom = atom((get) => {
-  return !!get(chordTypeAtom);
-});
-
-export const practiceBarTitleAtom = atom((get) => {
-  const chordType = get(chordTypeAtom);
-  const chordLabel = get(chordLabelAtom);
-  if (!chordType) return "";
-  return chordLabel ?? "";
-});
-
-export const practiceBarBadgeAtom = atom(() => null as string | null);
-
-/**
- * Active lens label from LENS_REGISTRY.
- */
-export const practiceBarLensLabelAtom = atom((get): string | null => {
-  const chordType = get(chordTypeAtom);
-  if (!chordType) return null;
-  const lens = get(practiceLensAtom);
-  const entry = LENS_REGISTRY.find((e) => e.id === lens);
-  return entry?.label ?? null;
-});
 
 /**
  * Context inputs for LENS_REGISTRY predicates.

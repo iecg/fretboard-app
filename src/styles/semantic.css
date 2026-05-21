@@ -202,8 +202,8 @@
   /* Fretboard accessibility chrome — interactive UI layer, not SVG artwork */
   --fretboard-a11y-hover-bg: rgb(255 255 255 / 0.15);
 
-  /* DAW faceplate surface — theme-adaptive panel chrome shared by the
-     Inspector and TopBandSummary. :root carries the dark-mode values as a
+  /* DAW faceplate surface — theme-adaptive panel chrome used by the Inspector
+     and other faceplate consumers. :root carries the dark-mode values as a
      safe default; the [data-theme] blocks below override per theme. */
   --faceplate-bg: #0a121d;
   --faceplate-bg-elevated: #0d1726;
