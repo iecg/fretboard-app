@@ -26,6 +26,18 @@ vi.mock("./bass", () => ({
   })),
 }));
 
+// And the plucked-string voice — now Tone.PluckSynth-backed via strumVoice.
+// Mocking `./string` keeps strum-lane tests asserting on the call count of
+// `pluckString` (one per voicing note per strum hit) rather than the now-
+// empty oscillator pool.
+const pluckStringSpy = vi.hoisted(() => vi.fn());
+const cancelPluckSpy = vi.hoisted(() => vi.fn());
+vi.mock("./string", () => ({
+  pluckString: pluckStringSpy.mockImplementation(() => ({
+    cancel: cancelPluckSpy,
+  })),
+}));
+
 import { scheduleProgressionStep } from "./scheduler";
 import { _metronomeInternals } from "./metronome";
 import {
@@ -84,6 +96,10 @@ describe("scheduleProgressionStep", () => {
     cancelBassSpy.mockReset();
     scheduleBassNoteSpy.mockReset().mockImplementation(() => ({
       cancel: cancelBassSpy,
+    }));
+    cancelPluckSpy.mockReset();
+    pluckStringSpy.mockReset().mockImplementation(() => ({
+      cancel: cancelPluckSpy,
     }));
   });
 
@@ -158,8 +174,9 @@ describe("scheduleProgressionStep", () => {
       enable: { strum: true, bass: false, drums: false, metronome: false },
       ...defaultNewFields,
     });
-    // 6 strum hits × 3-note voicing = 18 oscillators.
-    expect(mock.oscCount()).toBe(18);
+    // 6 strum hits × 3-note voicing = 18 pluckString invocations.
+    // (Tone.PluckSynth-backed — no raw oscillators in the mock ctx.)
+    expect(pluckStringSpy).toHaveBeenCalledTimes(18);
   });
 
   it("schedules bass voices when bass flag is on", () => {
@@ -331,7 +348,7 @@ describe("scheduleProgressionStep", () => {
       enable: { strum: true, bass: false, drums: false, metronome: false },
       ...defaultNewFields,
     });
-    expect(mock.oscCount()).toBe(1);
+    expect(pluckStringSpy).toHaveBeenCalledTimes(1);
   });
 
   it("repeats strum hits once per bar for multi-bar chords", () => {
@@ -345,7 +362,7 @@ describe("scheduleProgressionStep", () => {
       enable: { strum: true, bass: false, drums: false, metronome: false },
       ...defaultNewFields,
     });
-    expect(mock.oscCount()).toBe(12);
+    expect(pluckStringSpy).toHaveBeenCalledTimes(12);
   });
 
   it("accents each bar downbeat when metronome repeats over multi-bar chords", () => {

@@ -1,12 +1,26 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { getNoteFrequency } from "@fretflow/core";
+
+// After the Tone.PluckSynth migration, `pluckString` no longer creates raw
+// oscillators we can count. Mock it with a spy so we can assert on the
+// (ctx, dest, freq, time, options) tuples strumVoice schedules. Typed loosely
+// so the spy's call args remain inspectable by index.
+const pluckStringSpy = vi.hoisted(() =>
+  vi.fn<(...args: unknown[]) => { cancel: () => void }>(() => ({
+    cancel: vi.fn(),
+  })),
+);
+vi.mock("../string", () => ({
+  pluckString: pluckStringSpy,
+}));
+
 import { strumVoice, STRUM_LAG_SECONDS } from "./strumVoice";
-import {
-  buildMockCtx,
-  createMockGain,
-} from "../../../test-utils/mockWebAudio";
 
 describe("strumVoice", () => {
+  beforeEach(() => {
+    pluckStringSpy.mockClear();
+  });
+
   it("implements ChordVoice interface", () => {
     expect(strumVoice.scheduleChord).toBeTypeOf("function");
   });
@@ -16,51 +30,42 @@ describe("strumVoice", () => {
   });
 
   it("strums low-to-high by default (down-stroke)", () => {
-    const ctx = buildMockCtx();
-    const bus = createMockGain();
-    const notes = ["C3", "E3", "G3"];
-
     strumVoice.scheduleChord(
-      ctx as unknown as AudioContext,
-      bus as unknown as AudioNode,
-      notes,
+      {} as AudioContext,
+      {} as AudioNode,
+      ["C3", "E3", "G3"],
       0,
       { velocity: 0.8 },
     );
-
-    const freqs = ctx.created.oscillators.map(
-      (osc) => osc.frequency.setValueAtTime.mock.calls[0]?.[0],
-    );
-    expect(freqs).toEqual(notes.map((n) => getNoteFrequency(n)));
+    expect(pluckStringSpy).toHaveBeenCalledTimes(3);
+    const freqs = pluckStringSpy.mock.calls.map((c) => c[2]);
+    expect(freqs).toEqual(["C3", "E3", "G3"].map(getNoteFrequency));
   });
 
   it("reverses voicing order for an up-strum", () => {
-    const ctx = buildMockCtx();
-    const bus = createMockGain();
-    const notes = ["C3", "E3", "G3"];
-
     strumVoice.scheduleChord(
-      ctx as unknown as AudioContext,
-      bus as unknown as AudioNode,
-      notes,
+      {} as AudioContext,
+      {} as AudioNode,
+      ["C3", "E3", "G3"],
       0,
       { velocity: 0.8, direction: "up" },
     );
+    expect(pluckStringSpy).toHaveBeenCalledTimes(3);
+    const freqs = pluckStringSpy.mock.calls.map((c) => c[2]);
+    expect(freqs).toEqual(["G3", "E3", "C3"].map(getNoteFrequency));
+  });
 
-    const oscillators = ctx.created.oscillators;
-    expect(oscillators).toHaveLength(3);
-
-    // First scheduled note is the LAST note of the input array.
-    const firstFreq = oscillators[0].frequency.setValueAtTime.mock.calls[0]?.[0];
-    expect(firstFreq).toBe(getNoteFrequency("G3"));
-
-    const freqs = oscillators.map(
-      (osc) => osc.frequency.setValueAtTime.mock.calls[0]?.[0],
+  it("staggers strums by STRUM_LAG_SECONDS", () => {
+    strumVoice.scheduleChord(
+      {} as AudioContext,
+      {} as AudioNode,
+      ["C3", "E3", "G3"],
+      1.0,
+      { velocity: 0.8 },
     );
-    expect(freqs).toEqual([
-      getNoteFrequency("G3"),
-      getNoteFrequency("E3"),
-      getNoteFrequency("C3"),
-    ]);
+    const times = pluckStringSpy.mock.calls.map((c) => c[3]);
+    expect(times[0]).toBeCloseTo(1.0, 4);
+    expect(times[1]).toBeCloseTo(1.0 + STRUM_LAG_SECONDS, 4);
+    expect(times[2]).toBeCloseTo(1.0 + 2 * STRUM_LAG_SECONDS, 4);
   });
 });

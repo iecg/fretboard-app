@@ -1,38 +1,24 @@
 /**
- * Plucked-string voice scheduled onto a caller-supplied destination. Mirrors
- * the timbre of `GuitarSynth` (periodic wave + lowpass damping envelope) but
- * is stateless and routes through the progression bus so paused playback can
- * be silenced with a single gain ramp upstream.
+ * Plucked-string voice for the progression backing track. Tone.PluckSynth
+ * (Karplus-Strong) replaces the prior bespoke `PeriodicWave` + lowpass
+ * voice. The comb-filter decay handles the natural ring-out — there's no
+ * separate release envelope to fire on cancel.
  *
- * The voice owns its own envelope so the strum decays cleanly. The caller
- * tracks pending voices via the returned handle and may call `cancel()` to
- * release the voice early on chord change or pause.
+ * Routed through the progression bus (caller-supplied `dest`) so
+ * `silenceProgressionBus()` mutes pluck voices along with the rest of the
+ * backing track.
  */
+import * as Tone from "tone";
 
-const ATTACK = 0.005;
-const DECAY = 0.85;
-const RELEASE = 0.9;
-const FADE_OUT = 0.04;
-const ENVELOPE_MIN = 0.001;
-const FILTER_Q = 1;
-const FILTER_OPEN_MULT = 6;
-const FILTER_BODY_MULT = 1.5;
-const FILTER_DAMP_TIME = 0.15;
-
-let guitarWave: PeriodicWave | null = null;
-let waveCtx: AudioContext | null = null;
-
-function getGuitarWave(ctx: AudioContext): PeriodicWave {
-  if (guitarWave && waveCtx === ctx) return guitarWave;
-  const real = new Float32Array([0, 1, 0.6, 0.4, 0.3, 0.2, 0.1, 0.06]);
-  const imag = new Float32Array(real.length).fill(0);
-  guitarWave = ctx.createPeriodicWave(real, imag);
-  waveCtx = ctx;
-  return guitarWave;
-}
+const ATTACK_NOISE = 1.0;
+const DAMPENING = 4000;
+const RESONANCE = 0.85;
+const RELEASE = 1.0;
+// Defer dispose so the comb filter can ring out past the release tail.
+const DISPOSE_TAIL_MS = (RELEASE + 0.1) * 1000;
 
 export interface PluckedVoiceHandle {
-  /** Fade the voice out and stop the oscillator immediately. */
+  /** Schedule the voice for cleanup (deferred so the ring-out completes). */
   cancel: () => void;
 }
 
@@ -43,78 +29,52 @@ export interface PluckStringOptions {
 
 /**
  * Schedule a single plucked-string note on `dest` starting at `startTime`.
- * Returns a handle for cancelling the voice before its natural release.
+ * Returns a handle for cancelling the voice after its natural decay.
  */
 export function pluckString(
-  ctx: AudioContext,
+  _ctx: AudioContext,
   dest: AudioNode,
   frequency: number,
   startTime: number,
   options: PluckStringOptions = {},
 ): PluckedVoiceHandle {
   const velocity = Math.max(0, Math.min(1, options.velocity ?? 1));
-  const wave = getGuitarWave(ctx);
+  if (velocity <= 0) return { cancel: () => {} };
 
-  const gain = ctx.createGain();
-  const filter = ctx.createBiquadFilter();
-  const osc = ctx.createOscillator();
+  const synth = new Tone.PluckSynth({
+    attackNoise: ATTACK_NOISE,
+    dampening: DAMPENING,
+    resonance: RESONANCE,
+    release: RELEASE,
+  });
+  synth.connect(dest);
+  // PluckSynth.triggerAttack's public signature is (note, time), but the
+  // underlying envelope accepts a velocity multiplier as a third arg (same as
+  // the base Instrument.triggerAttack). We pass it through so strum dynamics
+  // are honored — cast keeps TS happy without losing the ability to schedule
+  // per-pluck velocity.
+  (
+    synth.triggerAttack as unknown as (
+      n: number,
+      t: number,
+      v: number,
+    ) => unknown
+  )(frequency, startTime, velocity);
 
-  osc.setPeriodicWave(wave);
-  osc.frequency.setValueAtTime(frequency, startTime);
-
-  filter.type = "lowpass";
-  filter.Q.value = FILTER_Q;
-  filter.frequency.setValueAtTime(frequency * FILTER_OPEN_MULT, startTime);
-  filter.frequency.exponentialRampToValueAtTime(
-    frequency * FILTER_BODY_MULT,
-    startTime + ATTACK + FILTER_DAMP_TIME,
-  );
-  filter.frequency.exponentialRampToValueAtTime(
-    Math.max(frequency, ENVELOPE_MIN),
-    startTime + ATTACK + DECAY,
-  );
-
-  gain.gain.setValueAtTime(0, startTime);
-  gain.gain.linearRampToValueAtTime(velocity, startTime + ATTACK);
-  gain.gain.exponentialRampToValueAtTime(
-    ENVELOPE_MIN,
-    startTime + ATTACK + DECAY + RELEASE,
-  );
-
-  osc.connect(filter);
-  filter.connect(gain);
-  gain.connect(dest);
-
-  const stopAt = startTime + ATTACK + DECAY + RELEASE + 0.05;
-  osc.start(startTime);
-  osc.stop(stopAt);
-
-  let stopped = false;
-  const dispose = () => {
-    try {
-      osc.disconnect();
-      filter.disconnect();
-      gain.disconnect();
-    } catch {
-      // already disconnected
-    }
-  };
-  osc.onended = dispose;
-
+  let cancelled = false;
   return {
     cancel: () => {
-      if (stopped) return;
-      stopped = true;
-      const now = ctx.currentTime;
-      const fadeEnd = now + FADE_OUT;
-      try {
-        gain.gain.cancelScheduledValues(now);
-        gain.gain.setValueAtTime(Math.max(gain.gain.value, ENVELOPE_MIN), now);
-        gain.gain.exponentialRampToValueAtTime(ENVELOPE_MIN, fadeEnd);
-        osc.stop(fadeEnd + 0.01);
-      } catch {
-        dispose();
-      }
+      if (cancelled) return;
+      cancelled = true;
+      // PluckSynth has no `triggerRelease` — its comb filter decays on its
+      // own. Defer dispose so we don't truncate the natural ring-out.
+      setTimeout(() => {
+        try {
+          synth.dispose();
+        } catch {
+          // already disposed
+        }
+      }, DISPOSE_TAIL_MS);
     },
   };
 }
