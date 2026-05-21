@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useAtomValue } from "jotai";
+import { getTransport } from "tone";
 import { ensureProgressionAudio } from "../progressions/audio/bus";
 import { getTimeUntilCurrentStepEndMs, getTimelinePosition } from "../progressions/audio/timeline";
 import { isMutedAtom } from "../store/audioAtoms";
@@ -39,9 +40,13 @@ export function useProgressionPlaybackLoop() {
     }
 
     // Prefer the audio-clock-driven advance whenever the AudioContext is
-    // ready, since it tracks what the user actually hears.
+    // ready, since it tracks what the user actually hears. We schedule
+    // against `Tone.Transport` (bound to the shared progression context in
+    // `toneBus.ts`), which fires callbacks on the audio clock with no
+    // JS-timer jitter. Transport need not be running — `scheduleOnce`
+    // dispatches on context time regardless.
     if (ensureProgressionAudio()) {
-      let timeoutId: number | null = null;
+      let eventId: number | null = null;
       let cancelled = false;
 
       const armAdvance = () => {
@@ -53,21 +58,37 @@ export function useProgressionPlaybackLoop() {
           // ProgressionSummarySlot, so on a fresh start or a step transition
           // the timeline may not be armed until the next macrotask. Retry once
           // the scheduler has had a chance to publish the active audio segment.
-          timeoutId = window.setTimeout(armAdvance, 0);
+          eventId = window.setTimeout(armAdvance, 0) as unknown as number;
           return;
         }
 
         const remainingMs = getTimeUntilCurrentStepEndMs() ?? 0;
-        timeoutId = window.setTimeout(() => {
+        const audio = ensureProgressionAudio()!;
+        const boundaryTime = audio.ctx.currentTime + remainingMs / 1000;
+
+        eventId = getTransport().scheduleOnce(() => {
           advanceProgressionPlayback();
-        }, remainingMs);
+        }, boundaryTime) as unknown as number;
       };
 
       armAdvance();
       return () => {
         cancelled = true;
-        if (timeoutId !== null) {
-          window.clearTimeout(timeoutId);
+        if (eventId !== null) {
+          // The id may be either a Transport event id (when we armed the
+          // boundary scheduleOnce) or a window.setTimeout id (when we hit
+          // the retry branch because the timeline hadn't caught up yet).
+          // Try both — the wrong one is a no-op.
+          try {
+            getTransport().clear(eventId);
+          } catch {
+            /* not a transport id */
+          }
+          try {
+            window.clearTimeout(eventId);
+          } catch {
+            /* not a timeout id */
+          }
         }
       };
     }
