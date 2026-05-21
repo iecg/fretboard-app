@@ -399,7 +399,37 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       renderManual([[voicingTypeAtom, "triad"], [voicingSectionExpandedAtom, true]]);
       expect(screen.getByRole("group", { name: "Voicing type" })).toBeInTheDocument();
       expect(screen.getByRole("group", { name: "Voicing inversion" })).toBeInTheDocument();
-      expect(screen.getByRole("radiogroup", { name: "String Set" })).toBeInTheDocument();
+      expect(screen.getByRole("combobox", { name: /String Set/i })).toBeInTheDocument();
+    });
+
+    it("renders String Set as a LabeledSelect with named options (Task 5.2)", async () => {
+      renderManual([[voicingTypeAtom, "triad"], [voicingSectionExpandedAtom, true]]);
+      const trigger = screen.getByRole("combobox", { name: /String Set/i });
+      expect(trigger).toBeInTheDocument();
+      await userEvent.click(trigger);
+      // "All" window option appears as "All (6 strings)"
+      expect(screen.getByRole("option", { name: /All \(6 strings\)/i })).toBeInTheDocument();
+      // The Bass window for a 3-tone chord uses the "4·5·6" id.
+      expect(screen.getByRole("option", { name: /Bass \(4·5·6\)/ })).toBeInTheDocument();
+    });
+
+    it("selecting a String Set option calls recordControlChange and updates the atom (Task 5.2)", async () => {
+      const store = makeAtomStore([
+        [scaleNameAtom, "Major"],
+        [rootNoteAtom, "C"],
+        [fingeringPatternAtom, "caged"],
+        [progressionStepsAtom, [
+          { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
+        ]],
+        [voicingTypeAtom, "triad"],
+        [voicingSectionExpandedAtom, true],
+        [voicingStringSetAtom, "all"],
+      ]);
+      renderWithStore(<ChordOverlayControls />, store);
+      await userEvent.click(screen.getByRole("combobox", { name: /String Set/i }));
+      await userEvent.click(screen.getByRole("option", { name: /Bass \(4·5·6\)/ }));
+      expect(store.get(voicingStringSetAtom)).toBe("4·5·6");
+      expect(store.get(controlRecencyAtom)[0]).toBe("stringSet");
     });
 
     it("disables the 3rd inversion for a triad", () => {
@@ -443,7 +473,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     ])("$label voicing: Inversion + String Set visibility = $visible", ({ seeds, visible }) => {
       renderWithAtoms(<ChordOverlayControls />, [...seeds] as never);
       const inv = screen.queryByLabelText("Voicing inversion");
-      const ss = screen.queryByRole("radiogroup", { name: /String Set/i });
+      const ss = screen.queryByRole("combobox", { name: /String Set/i });
       if (visible) {
         expect(inv).toBeInTheDocument();
         expect(ss).toBeInTheDocument();
@@ -456,10 +486,10 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     it.each<{ label: string; seeds: ReturnType<typeof buildSeeds>; count: number }>([
       { label: "3-tone (triad)", seeds: buildSeeds("Major Triad", "triad"), count: 5 },
       { label: "4-tone (Major 7th)", seeds: buildSeeds("Major 7th", "triad"), count: 4 },
-    ])("$label chord shows $count radio cards in the String Set picker", ({ seeds, count }) => {
+    ])("$label chord shows $count options in the String Set select", async ({ seeds, count }) => {
       renderWithAtoms(<ChordOverlayControls />, [...seeds] as never);
-      const radiogroup = screen.getByRole("radiogroup", { name: /String Set/i });
-      expect(within(radiogroup).getAllByRole("radio")).toHaveLength(count);
+      await userEvent.click(screen.getByRole("combobox", { name: /String Set/i }));
+      expect(screen.getAllByRole("option")).toHaveLength(count);
     });
 
     it("normalizer: switching from triad to 4-tone chord removes the stale '4·5·6' string set option", async () => {
@@ -470,18 +500,19 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       ]);
       renderWithStore(<ChordOverlayControls />, store);
 
-      // Initially: Bass card ("4·5·6") present and checked for a 3-tone chord
-      const radiogroup = screen.getByRole("radiogroup", { name: /String Set/i });
-      expect(within(radiogroup).getByRole("radio", { name: /Bass.*4·5·6/i })).toHaveAttribute("aria-checked", "true");
+      // Initially: "4·5·6" id is valid for a 3-tone chord — trigger shows the Bass option label.
+      const trigger = screen.getByRole("combobox", { name: /String Set/i });
+      expect(within(trigger).getByText(/Bass \(4·5·6\)/)).toBeInTheDocument();
 
       // Switch to a 4-tone chord — "4·5·6" is no longer a valid window
       await act(async () => {
         store.set(updateActiveChordAtom, { quality: "Major 7th" });
       });
 
-      const radiogroupAfter = await screen.findByRole("radiogroup", { name: /String Set/i });
-      expect(within(radiogroupAfter).getAllByRole("radio")).toHaveLength(4);
-      expect(within(radiogroupAfter).queryByRole("radio", { name: /— 4·5·6/ })).not.toBeInTheDocument();
+      // Open the select after the heal and verify only 4 options, none of which is the stale 4·5·6 window.
+      await userEvent.click(screen.getByRole("combobox", { name: /String Set/i }));
+      expect(screen.getAllByRole("option")).toHaveLength(4);
+      expect(screen.queryByRole("option", { name: /\(4·5·6\)/ })).not.toBeInTheDocument();
     });
   });
 

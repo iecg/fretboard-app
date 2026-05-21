@@ -13,7 +13,8 @@ import {
   activeChordRootAtom,
   updateActiveChordAtom,
 } from "../../store/songStateAtoms";
-import { StringSetPicker } from "../Inspector/StringSetPicker";
+import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
+import type { StringSetOption } from "../../store/voicingStringSets";
 import { useTranslation } from "../../hooks/useTranslation";
 import { RootNoteSelect } from "../shared/RootNoteSelect";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
@@ -159,6 +160,23 @@ export function ChordOverlayControls() {
         disabled: !validCombos.enabledStringSets.has(o.id),
       })),
     [stringSetOptions, validCombos],
+  );
+
+  /** Display label combines the localized window name with the id suffix in
+   * parens — e.g. `Bass (4·5·6)`, `All (6 strings)`. */
+  const stringSetSelectOptions = useMemo(
+    () =>
+      decoratedStringSetOptions.map((option: StringSetOption) => {
+        const head = t(option.labelKey);
+        const sub =
+          option.id === "all" ? t("inspector.stringSetAllSub") : option.id;
+        return {
+          value: option.id,
+          label: `${head} (${sub})`,
+          disabled: option.disabled,
+        };
+      }),
+    [decoratedStringSetOptions, t],
   );
 
   // Phase 2.4 — picking a degree always re-binds to the diatonic chord:
@@ -343,9 +361,11 @@ export function ChordOverlayControls() {
                 span={7}
                 hint={t("inspector.voicingStringSetHint")}
               >
-                <StringSetPicker
-                  options={decoratedStringSetOptions}
+                <LabeledSelect
+                  label={t("inspector.voicingStringSet")}
+                  hideLabel
                   value={voicingStringSet}
+                  options={stringSetSelectOptions}
                   onChange={(v) => {
                     recordControlChange("stringSet");
                     setVoicingStringSet(v);
