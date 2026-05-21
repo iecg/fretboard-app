@@ -77,9 +77,7 @@ export default function DisplaySettingsSection() {
           />
         </div>
       </div>
-      <div
-        className={clsx(styles["overlay-field"], styles["overlay-field--divided"])}
-      >
+      <div className={clsx(styles["overlay-field"], styles["overlay-field--divided"])}>
         <OverlayFieldHeader label={t(SETTING_FIELDS.zoom.labelKey)} />
         <div className={styles["overlay-field-control"]}>
           <StepperControl

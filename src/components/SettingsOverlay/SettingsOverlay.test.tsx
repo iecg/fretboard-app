@@ -272,6 +272,7 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(screen.getByRole("region", { name: /display/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/note labels/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/accidentals/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/enharmonic/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/fret range/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/degree colors/i)).toBeInTheDocument();
   });
