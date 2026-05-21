@@ -20,7 +20,6 @@ import { Inspector } from "./components/Inspector/Inspector";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
 import { StatusBar } from "./components/StatusBar/StatusBar";
 import { ProgressionSummarySlot } from "./components/ProgressionSummarySlot/ProgressionSummarySlot";
-import { FretboardLensOverlay } from "./components/FretboardLensOverlay/FretboardLensOverlay";
 import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
 import { TooltipProvider } from "./components/Tooltip/Tooltip";
 import sharedStyles from "./components/shared/shared.module.css";
@@ -218,7 +217,6 @@ function AppContent() {
         </Suspense>
       }
     >
-      <FretboardLensOverlay />
       <Fretboard
         stringRowPx={layout.stringRowPx}
       />

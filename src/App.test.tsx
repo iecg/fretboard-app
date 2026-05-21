@@ -251,14 +251,14 @@ describe("App", () => {
     it("resets overlay visibility when rootNote changes via Circle of Fifths", async () => {
       setupHiddenPracticeBar();
       render(<App />);
-      await waitFor(() => {
-        expect(document.querySelector('.chord-practice-bar[data-collapsed="true"]')).toBeTruthy();
-      });
+      // Confirm hidden persists on mount
+      await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+      expect(localStorage.getItem(k("chordOverlayHidden"))).toBe("true");
+      // Changing rootNote via CoF should reset chordOverlayHidden to false
       await userEvent.click(await screen.findByRole("tab", { name: "Scale" }));
       fireEvent.click(await screen.findByTestId("circle-of-fifths"));
       await waitFor(() => {
-        expect(document.querySelector(".chord-practice-bar")).toBeTruthy();
-        expect(document.querySelector(".chord-practice-bar[data-collapsed]")).toBeNull();
+        expect(localStorage.getItem(k("chordOverlayHidden"))).toBe("false");
       });
     });
 
@@ -266,7 +266,6 @@ describe("App", () => {
       setupHiddenPracticeBar();
       render(<App />);
       await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
-      expect(document.querySelector('.chord-practice-bar[data-collapsed="true"]')).toBeTruthy();
       expect(localStorage.getItem(k("chordOverlayHidden"))).toBe("true");
     });
   });
