@@ -182,6 +182,16 @@ describe("getDivergentNotes", () => {
   it("returns empty for blues scales", () => {
     expect(getDivergentNotes("A", "Minor Blues")).toEqual([]);
   });
+
+  it("returns raised 6th for Bb Dorian (vs Natural Minor) — flat root", () => {
+    // Bb Dorian: Bb C Db Eb F G Ab; Bb Natural Minor: Bb C Db Eb F Gb Ab
+    // Divergent semitone = G (chroma 7) → sharps-form "G"
+    expect(getDivergentNotes("Bb", "Dorian")).toEqual(["G"]);
+  });
+
+  it("returns empty for invalid root", () => {
+    expect(getDivergentNotes("Zz", "Dorian")).toEqual([]);
+  });
 });
 
 describe("getKeySignature", () => {
