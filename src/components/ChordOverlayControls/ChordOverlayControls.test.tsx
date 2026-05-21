@@ -280,6 +280,15 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       const pressedButton = within(lensGroup).getByRole("button", { pressed: true });
       expect(pressedButton).toBeInTheDocument();
     });
+
+    it("renders exactly two lens options: Tones, Lead", () => {
+      renderDegree();
+      const group = screen.getByRole("group", { name: "Practice lens" });
+      const buttons = within(group).getAllByRole("button");
+      expect(buttons).toHaveLength(2);
+      expect(buttons[0]).toHaveTextContent(/tones/i);
+      expect(buttons[1]).toHaveTextContent(/lead/i);
+    });
   });
 
   describe("8. chord-type grid (always visible)", () => {
@@ -365,7 +374,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
 
     it("renders the static lens hint", () => {
       renderDegree();
-      expect(screen.getByText("Landing tones · Tension shows chord notes outside the scale.")).toBeInTheDocument();
+      expect(screen.getByText("Tones highlights chord notes with guide-tone (3rd/7th) emphasis · Lead anticipates the next chord.")).toBeInTheDocument();
     });
 
     it("no legacy lens-hint paragraph remains", () => {

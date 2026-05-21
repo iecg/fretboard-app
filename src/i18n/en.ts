@@ -155,7 +155,7 @@ export const en: Dictionary = {
     pairMembersConnected: "Pair members connected",
     quality: "Quality",
     qualityAriaLabel: "Chord Type",
-    lensHint: "Landing tones · Tension shows chord notes outside the scale.",
+    lensHint: "Tones highlights chord notes with guide-tone (3rd/7th) emphasis · Lead anticipates the next chord.",
     degree: "Degree",
     degreeAriaLabel: "Chord degree",
     chordType: "Chord Type",

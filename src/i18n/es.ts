@@ -155,7 +155,7 @@ export const es: Dictionary = {
     pairMembersConnected: "Miembros del par conectados",
     quality: "Calidad",
     qualityAriaLabel: "Tipo de acorde",
-    lensHint: "Notas de aterrizaje · Tensión muestra notas del acorde fuera de la escala.",
+    lensHint: "Tonos resalta notas del acorde con énfasis en tonos guía (3ª/7ª) · Lead anticipa el próximo acorde.",
     degree: "Grado",
     degreeAriaLabel: "Grado de acorde",
     chordType: "Tipo de acorde",
