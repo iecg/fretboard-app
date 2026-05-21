@@ -2,7 +2,6 @@ import { atom, type Atom, type Getter, type Setter } from "jotai";
 import { atomWithStorage, RESET } from "jotai/utils";
 import {
   normalizeScaleName,
-  type ScaleBrowseMode,
   getActiveScaleBrowseOption,
   getScaleFamily,
   type ScaleFamilyId,
@@ -24,11 +23,8 @@ import { gatedAtom, EMPTY_SET, setsEqual } from "./atomUtils";
 import type { CagedShape } from "@fretflow/core";
 import type { PracticeBarColorNote } from "@fretflow/core";
 
-const SCALE_BROWSE_MODES = ["parallel", "relative"] as const;
-
-const scaleBrowseModeStorage = createStorage<ScaleBrowseMode>({
-  validate: (v) => (SCALE_BROWSE_MODES as readonly string[]).includes(v),
-});
+// One-shot cleanup: remove any stale scaleBrowseMode value from localStorage.
+withStorageErrorBoundary(k("scaleBrowseMode"), null).remove();
 
 const scaleNameStorage = createStorage<string>({
   onRead: normalizeScaleName,
@@ -116,13 +112,6 @@ export const scaleFamilyAtom = atom<ScaleFamilyId>(
   (get) => getScaleFamily(get(scaleNameAtom)).id,
 );
 
-export const scaleBrowseModeAtom = atomWithStorage<ScaleBrowseMode>(
-  k("scaleBrowseMode"),
-  "parallel",
-  scaleBrowseModeStorage,
-  GET_ON_INIT,
-);
-
 // Translates legacy "useFlats" to new mode and clears the stale key.
 function readLegacyAccidentalMode(): "sharps" | "flats" | "auto" {
   const legacy = withStorageErrorBoundary<string | null>("useFlats", null);
@@ -171,7 +160,7 @@ export const activeBrowseOptionAtom = atom((get) =>
   getActiveScaleBrowseOption(
     get(rootNoteAtom),
     get(scaleNameAtom),
-    get(scaleBrowseModeAtom),
+    "parallel",
     get(useFlatsAtom),
   ),
 );

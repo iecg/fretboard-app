@@ -47,7 +47,6 @@ export interface Dictionary {
     auto: string;
     groupKey: string;
     groupWheel: string;
-    relationship: string;
     groupSource: string;
     groupChordType: string;
     groupVoicing: string;
@@ -151,8 +150,6 @@ export interface Dictionary {
     customChordHint: string;
     diatonicDefaultHint: string;
     manualQualityHint: string;
-    scaleParallelHint: string;
-    scaleRelativeHint: string;
     region: string;
     regionAriaLabel: string;
     regionHint: string;

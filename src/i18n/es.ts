@@ -49,7 +49,6 @@ export const es: Dictionary = {
     auto: "Auto",
     groupKey: "Tonalidad",
     groupWheel: "Círculo de Quintas",
-    relationship: "Relación",
     groupSource: "Fuente",
     groupChordType: "Tipo de acorde",
     groupVoicing: "Disposición",
@@ -155,8 +154,6 @@ export const es: Dictionary = {
     customChordHint: "Tipo de acorde personalizado — no es el predeterminado diatónico.",
     diatonicDefaultHint: "Cambiar grados selecciona el predeterminado diatónico automáticamente.",
     manualQualityHint: "Define la calidad del acorde directamente.",
-    scaleParallelHint: "Cicla modos que comparten la nota raíz actual.",
-    scaleRelativeHint: "Cicla modos que comparten la armadura actual.",
     region: "Región",
     regionAriaLabel: "Región",
     regionHint:

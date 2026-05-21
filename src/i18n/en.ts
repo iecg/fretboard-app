@@ -49,7 +49,6 @@ export const en: Dictionary = {
     auto: "Auto",
     groupKey: "Key",
     groupWheel: "Circle of Fifths",
-    relationship: "Relationship",
     groupSource: "Source",
     groupChordType: "Chord Type",
     groupVoicing: "Voicing",
@@ -155,8 +154,6 @@ export const en: Dictionary = {
     customChordHint: "Custom chord type — not the diatonic default.",
     diatonicDefaultHint: "Switching degrees picks the diatonic default automatically.",
     manualQualityHint: "Sets the chord quality directly.",
-    scaleParallelHint: "Cycle modes that share the current root note.",
-    scaleRelativeHint: "Cycle modes that share the current key signature.",
     region: "Region",
     regionAriaLabel: "Region",
     regionHint:

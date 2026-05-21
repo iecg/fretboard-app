@@ -10,7 +10,7 @@ import { updateActiveChordAtom, activeChordCachedDegreeAtom } from "./songStateA
 import { cagedShapesAtom, fingeringPatternAtom, npsPositionAtom, clickedShapeAtom } from "./fingeringAtoms";
 import { fretStartAtom, fretEndAtom, fretZoomAtom, tuningNameAtom, currentTuningAtom } from "./layoutAtoms";
 import { progressionStepsAtom, progressionTempoBpmAtom, progressionPlayingAtom, activeProgressionStepIndexAtom, setProgressionPlayingAtom } from "./progressionAtoms";
-import { rootNoteAtom, scaleNameAtom, scaleBrowseModeAtom, accidentalModeAtom, useFlatsAtom, colorNotesAtom, scaleVisibleAtom, toggleScaleVisibleAtom, effectiveHiddenNotesAtom, effectiveColorNotesAtom, hiddenNotesAtom, toggleHiddenNoteAtom } from "./scaleAtoms";
+import { rootNoteAtom, scaleNameAtom, accidentalModeAtom, useFlatsAtom, colorNotesAtom, scaleVisibleAtom, toggleScaleVisibleAtom, effectiveHiddenNotesAtom, effectiveColorNotesAtom, hiddenNotesAtom, toggleHiddenNoteAtom } from "./scaleAtoms";
 import { displayFormatAtom } from "./uiAtoms";
 import { STANDARD_TUNING, TUNINGS } from "@fretflow/core";
 import { CAGED_SHAPES } from "@fretflow/core";
@@ -131,17 +131,6 @@ describe("atoms", () => {
       const unsub = mount(store, scaleNameAtom);
       expect(store.get(scaleNameAtom)).toBe("Natural Minor");
       expect(localStorage.getItem(k("scaleName"))).toBe("Natural Minor");
-      unsub();
-    });
-
-    it.each([
-      ["relative", "relative"],
-      ["sideways", "parallel"], // invalid → fallback
-    ])("scaleBrowseMode: stored '%s' resolves to '%s'", (stored, expected) => {
-      localStorage.setItem(k("scaleBrowseMode"), stored);
-      const store = makeStore();
-      const unsub = mount(store, scaleBrowseModeAtom);
-      expect(store.get(scaleBrowseModeAtom)).toBe(expected);
       unsub();
     });
 
@@ -322,7 +311,6 @@ describe("atoms", () => {
       store.set(chordFretSpreadAtom, 5);
       store.set(fingeringPatternAtom, "caged");
       store.set(npsPositionAtom, 3);
-      store.set(scaleBrowseModeAtom, "relative");
       store.set(tuningNameAtom, "Drop D");
       store.set(fretStartAtom, 3);
       store.set(fretEndAtom, 12);
@@ -339,7 +327,6 @@ describe("atoms", () => {
 
       expect(store.get(rootNoteAtom)).toBe("C");
       expect(store.get(scaleNameAtom)).toBe("Major");
-      expect(store.get(scaleBrowseModeAtom)).toBe("parallel");
       expect(store.get(isMutedAtom)).toBe(false);
       expect(store.get(fretZoomAtom)).toBe(100);
       expect(store.get(displayFormatAtom)).toBe("notes");
