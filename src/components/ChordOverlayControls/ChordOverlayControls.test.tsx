@@ -5,11 +5,18 @@ import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
 import { act } from "@testing-library/react";
 import { renderWithAtoms, renderWithStore, makeAtomStore } from "../../test-utils/renderWithAtoms";
-import { chordDegreeAtom, chordOverlayModeAtom, chordQualityOverrideAtom, chordRootOverrideAtom, practiceLensAtom, voicingConnectorsAtom, voicingTypeAtom, voicingStringSetAtom, voicingInversionAtom } from "../../store/chordOverlayAtoms";
+import { practiceLensAtom, voicingConnectorsAtom, voicingTypeAtom, voicingStringSetAtom, voicingInversionAtom } from "../../store/chordOverlayAtoms";
 import { voicingSectionExpandedAtom } from "../../store/chordScope";
 import { fingeringPatternAtom, cagedShapesAtom } from "../../store/fingeringAtoms";
 import { progressionStepsAtom } from "../../store/progressionAtoms";
 import { scaleNameAtom, rootNoteAtom } from "../../store/scaleAtoms";
+import {
+  activeChordCachedDegreeAtom,
+  activeChordIsManualAtom,
+  activeChordQualityAtom,
+  activeChordRootAtom,
+  updateActiveChordAtom,
+} from "../../store/songStateAtoms";
 import { validVoicingCombosAtom, controlRecencyAtom, noteControlChangeAtom } from "../../store/voicingCoupling";
 import { ChordOverlayControls } from "./ChordOverlayControls";
 
@@ -34,39 +41,38 @@ const EXPECTED_CHORD_TYPE_LABELS = [
 ];
 
 /**
- * Base seeds: C Major scale with degree overlay in degree mode.
- * chordDegreeAtom = "I" causes chordTypeAtom to resolve to "Major Triad",
- * which makes the disclosure open (Boolean(chordType) = true).
- * fingeringPatternAtom = "caged" ensures the chord overlay is not auto-disabled (UAT-16).
+ * Phase 2.4 unified write surface: the chord under edit is the *active
+ * progression step*. The Chord tab reads/writes through
+ * `activeChord*Atom` + `updateActiveChordAtom`, which delegate to the active
+ * step (`activeProgressionStepAtom`).
+ *
+ * Default seeds: C Major, one progression step at degree I (= Major Triad).
+ * `fingeringPatternAtom = "caged"` keeps the overlay enabled.
  */
-const DEGREE_MODE_SEEDS = [
+const DEGREE_SEEDS = [
   [scaleNameAtom, "Major"],
   [rootNoteAtom, "C"],
-  [chordOverlayModeAtom, "degree"],
-  [chordDegreeAtom, "I"],
-  [chordQualityOverrideAtom, null],
   [fingeringPatternAtom, "caged"],
-  // Empty progression so the manual/degree chord path is the chord source.
-  [progressionStepsAtom, []],
+  [progressionStepsAtom, [
+    { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+  ]],
 ] as const;
 
-const MANUAL_MODE_SEEDS = [
+const MANUAL_SEEDS = [
   [scaleNameAtom, "Major"],
   [rootNoteAtom, "C"],
-  [chordOverlayModeAtom, "manual"],
-  [chordQualityOverrideAtom, "Major Triad"],
-  [chordRootOverrideAtom, "C"],
   [fingeringPatternAtom, "caged"],
-  // Empty progression so the manual/degree chord path is the chord source.
-  [progressionStepsAtom, []],
+  [progressionStepsAtom, [
+    { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
+  ]],
 ] as const;
 
 type SeedTuple = readonly [unknown, unknown];
 
 const renderDegree = (extras: ReadonlyArray<SeedTuple> = []) =>
-  renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS, ...extras] as never);
+  renderWithAtoms(<ChordOverlayControls />, [...DEGREE_SEEDS, ...extras] as never);
 const renderManual = (extras: ReadonlyArray<SeedTuple> = []) =>
-  renderWithAtoms(<ChordOverlayControls />, [...MANUAL_MODE_SEEDS, ...extras] as never);
+  renderWithAtoms(<ChordOverlayControls />, [...MANUAL_SEEDS, ...extras] as never);
 
 // `within(screen.getByRole("group", { name })).getByRole("button", { name })`
 // shorthand — the most repeated pattern in this file.
@@ -80,101 +86,121 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     localStorage.clear();
   });
 
-  describe("1. degree selection writes chordDegreeAtom", () => {
-    it("clicking a degree button writes the value", async () => {
+  describe("Phase 2.4 Mode-toggle removal", () => {
+    it("does not render the Off/Degree/Manual Mode toggle", () => {
       renderDegree();
+      expect(screen.queryByRole("group", { name: /chord overlay mode/i })).not.toBeInTheDocument();
+    });
+
+    it("does not render the Mode label", () => {
+      renderDegree();
+      expect(screen.queryByText("Mode")).not.toBeInTheDocument();
+    });
+
+    it("renders Degree picker and Root picker simultaneously (no mode gating)", () => {
+      renderDegree();
+      expect(screen.getByRole("group", { name: "Chord degree" })).toBeInTheDocument();
+      expect(screen.getByRole("group", { name: "Note selector" })).toBeInTheDocument();
+    });
+
+    it("renders the chord-type grid unconditionally (no showChordTypeGrid gate)", () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        [scaleNameAtom, "Major"],
+        [rootNoteAtom, "C"],
+        [fingeringPatternAtom, "caged"],
+        // Step with no degree set yet, no quality override.
+        [progressionStepsAtom, [
+          { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+        ]],
+      ]);
+      expect(screen.getByRole("group", { name: "Chord Type" })).toBeInTheDocument();
+    });
+
+    it("clicking a Root option writes manualRoot through updateActiveChordAtom", async () => {
+      const store = makeAtomStore([...DEGREE_SEEDS]);
+      renderWithStore(<ChordOverlayControls />, store);
+      const rootGroup = screen.getByRole("group", { name: "Note selector" });
+      await userEvent.click(within(rootGroup).getByRole("button", { name: "F♯" }));
+      expect(store.get(activeChordIsManualAtom)).toBe(true);
+      expect(store.get(activeChordRootAtom)).toBe("F#");
+    });
+
+    it("picking a degree clears manualRoot and quality (restores diatonic)", async () => {
+      const store = makeAtomStore([...DEGREE_SEEDS]);
+      renderWithStore(<ChordOverlayControls />, store);
+      // Set manualRoot first to confirm a degree click clears it.
+      act(() => {
+        store.set(updateActiveChordAtom, { root: "F#", quality: "Minor 7th" });
+      });
+      expect(store.get(activeChordIsManualAtom)).toBe(true);
+      // Pick degree V via the degree ToggleBar.
+      await userEvent.click(groupBtn("Chord degree", "V"));
+      expect(store.get(activeChordIsManualAtom)).toBe(false);
+      expect(store.get(activeChordCachedDegreeAtom)).toBe("V");
+      // Quality cleared → diatonic default for V = Major Triad.
+      expect(store.get(activeChordQualityAtom)).toBe("Major Triad");
+    });
+
+    it("clicking a chord-quality option writes through updateActiveChordAtom", async () => {
+      const store = makeAtomStore([...DEGREE_SEEDS]);
+      renderWithStore(<ChordOverlayControls />, store);
+      await userEvent.click(groupBtn("Chord Type", "m7"));
+      expect(store.get(activeChordQualityAtom)).toBe("Minor 7th");
+    });
+  });
+
+  describe("1. degree selection writes the active step's cached degree", () => {
+    it("clicking a degree button writes the value", async () => {
+      const store = makeAtomStore([...DEGREE_SEEDS]);
+      renderWithStore(<ChordOverlayControls />, store);
       const v = groupBtn("Chord degree", "V");
       await userEvent.click(v);
       expect(v.getAttribute("aria-pressed")).toBe("true");
-    });
-
-    it("switching chord mode to Off deactivates the chord overlay", async () => {
-      renderDegree([[chordDegreeAtom, "V"]]);
-      await userEvent.click(groupBtn("Chord overlay mode", "Off"));
-      expect(screen.queryByRole("group", { name: "Chord degree" })).not.toBeInTheDocument();
+      expect(store.get(activeChordCachedDegreeAtom)).toBe("V");
     });
   });
 
-  describe("2. mode toggle switches chordOverlayModeAtom", () => {
-    it("clicking Manual shows NoteGrid and hides degree picker", async () => {
-      renderDegree();
-      expect(screen.getByRole("group", { name: "Chord degree" })).toBeInTheDocument();
-      await userEvent.click(screen.getByRole("button", { name: "Manual" }));
-      expect(screen.getByRole("group", { name: "Note selector" })).toBeInTheDocument();
-      expect(screen.queryByRole("group", { name: "Chord degree" })).not.toBeInTheDocument();
-    });
-
-    it("clicking Degree from manual mode brings degree picker back (no degree set hides chord-type toggle bar)", async () => {
-      // Seed chordDegreeAtom=null explicitly so the degree-mode chord-type
-      // toggle bar is gated off (it only renders when a degree is active).
-      renderWithAtoms(<ChordOverlayControls />, [
-        ...MANUAL_MODE_SEEDS,
-        [chordDegreeAtom, null],
-      ]);
-
-      // Manual mode initially: chord-type toggle bar visible (Maj button present)
-      expect(screen.getByRole("button", { name: "Maj" })).toBeInTheDocument();
-
-      // Click "Degree" toggle
-      await userEvent.click(screen.getByRole("button", { name: "Degree" }));
-
-      // Degree picker visible
-      expect(screen.getByRole("group", { name: "Chord degree" })).toBeInTheDocument();
-      // Without an active degree, the chord-type toggle bar is gated off
-      expect(screen.queryByRole("group", { name: "Chord Type" })).not.toBeInTheDocument();
-    });
-
-    it("clicking Degree from manual mode preserves chord-type toggle bar when a degree is active", async () => {
-      // With an active degree, the chord-type toggle bar appears in degree mode
-      // too — letting the user pick a quality (e.g. Dom7) without leaving degree.
-      renderManual([[chordDegreeAtom, "V"]]);
-      expect(screen.getByRole("button", { name: "Maj" })).toBeInTheDocument();
-      await userEvent.click(screen.getByRole("button", { name: "Degree" }));
-      expect(screen.getByRole("group", { name: "Chord degree" })).toBeInTheDocument();
-      expect(screen.getByRole("group", { name: "Chord Type" })).toBeInTheDocument();
-    });
-  });
-
-  describe("3. manual mode renders NoteGrid and chord-type toggle bar", () => {
-    it("renders chord-type toggle bar and root note grid in manual mode", () => {
+  describe("3. quality grid renders alongside root + degree", () => {
+    it("renders chord-type grid and root note grid simultaneously", () => {
       renderManual();
       expect(screen.getByRole("button", { name: "Maj" })).toBeInTheDocument();
       expect(screen.getByRole("group", { name: "Note selector" })).toBeInTheDocument();
     });
 
-    it("chord-type toggle bar marks seeded value as pressed (Major Triad → Maj)", () => {
+    it("chord-type grid marks seeded quality as pressed (Major Triad → Maj)", () => {
       renderManual();
       expect(groupBtn("Chord Type", "Maj").getAttribute("aria-pressed")).toBe("true");
     });
 
-    it("selecting a chord type from the toggle bar updates manual mode", async () => {
-      renderManual();
+    it("selecting a chord type updates the active chord's quality", async () => {
+      const store = makeAtomStore([...MANUAL_SEEDS]);
+      renderWithStore(<ChordOverlayControls />, store);
       await userEvent.click(groupBtn("Chord Type", "m7"));
       expect(groupBtn("Chord Type", "m7").getAttribute("aria-pressed")).toBe("true");
-    });
-
-    it("switching chord mode to Off from manual deactivates the chord overlay", async () => {
-      const store = makeAtomStore([...MANUAL_MODE_SEEDS]);
-      renderWithStore(<ChordOverlayControls />, store);
-      await userEvent.click(groupBtn("Chord overlay mode", "Off"));
-      expect(store.get(chordOverlayModeAtom)).toBe("off");
+      expect(store.get(activeChordQualityAtom)).toBe("Minor 7th");
     });
   });
 
   describe("4. persistence: seeded atom values are reflected in the UI", () => {
-    it("seeded chordDegreeAtom='V' marks V button as pressed", () => {
+    it("seeded degree='V' marks V button as pressed", () => {
       renderWithAtoms(<ChordOverlayControls />, [
         [scaleNameAtom, "Major"],
         [rootNoteAtom, "C"],
-        [chordOverlayModeAtom, "degree"],
-        [chordDegreeAtom, "V"],
-        [progressionStepsAtom, []],
+        [progressionStepsAtom, [
+          { id: "step-1", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+        ]],
       ]);
       expect(groupBtn("Chord degree", "V").getAttribute("aria-pressed")).toBe("true");
     });
 
-    it("seeded manual mode with chordQualityOverride='Major 7th' marks M7 button as pressed", () => {
-      renderManual([[chordQualityOverrideAtom, "Major 7th"], [chordRootOverrideAtom, "G"]]);
+    it("seeded manual step with qualityOverride='Major 7th' marks M7 button as pressed", () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        [scaleNameAtom, "Major"],
+        [rootNoteAtom, "C"],
+        [progressionStepsAtom, [
+          { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major 7th", manualRoot: "G" },
+        ]],
+      ]);
       expect(groupBtn("Chord Type", "M7").getAttribute("aria-pressed")).toBe("true");
     });
   });
@@ -188,7 +214,14 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
 
     it("clicking I deselects ii (toggle behavior reflects current value)", async () => {
-      renderDegree([[chordDegreeAtom, "ii"]]);
+      renderWithAtoms(<ChordOverlayControls />, [
+        [scaleNameAtom, "Major"],
+        [rootNoteAtom, "C"],
+        [fingeringPatternAtom, "caged"],
+        [progressionStepsAtom, [
+          { id: "step-1", degree: "ii", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+        ]],
+      ]);
       const i = groupBtn("Chord degree", "I");
       const ii = groupBtn("Chord degree", "ii");
       expect(ii.getAttribute("aria-pressed")).toBe("true");
@@ -203,34 +236,29 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       const store = makeAtomStore([
         [scaleNameAtom, "Major"],
         [rootNoteAtom, "C"],
-        [chordOverlayModeAtom, "degree"],
-        [chordDegreeAtom, null],
-        [chordQualityOverrideAtom, null],
         [fingeringPatternAtom, "caged"],
         [progressionStepsAtom, [
-          { id: "one", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "one", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
         ]],
       ]);
       renderWithStore(<ChordOverlayControls />, store);
       expect(groupBtn("Chord degree", "V")).toHaveAttribute("aria-pressed", "true");
       await userEvent.click(groupBtn("Chord Type", "m7"));
       expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBe("Minor 7th");
-      expect(store.get(chordQualityOverrideAtom)).toBeNull();
     });
   });
 
   describe("a11y + group labels", () => {
     it.each([
-      { label: "degree mode", seeds: DEGREE_MODE_SEEDS },
-      { label: "manual mode", seeds: MANUAL_MODE_SEEDS },
+      { label: "diatonic step", seeds: DEGREE_SEEDS },
+      { label: "manual step", seeds: MANUAL_SEEDS },
     ])("$label has no a11y violations", async ({ seeds }) => {
       const { container } = renderWithAtoms(<ChordOverlayControls />, [...seeds]);
       expect(await axe(container)).toHaveNoViolations();
     });
 
-    it("degree mode exposes the expected group labels and 7 diatonic degrees", () => {
+    it("exposes the expected group labels and 7 diatonic degrees", () => {
       renderDegree();
-      expect(screen.getByRole("group", { name: "Chord overlay mode" })).toBeInTheDocument();
       const degreeGroup = screen.getByRole("group", { name: "Chord degree" });
       expect(within(degreeGroup).queryByRole("button", { name: "Off" })).not.toBeInTheDocument();
       expect(within(degreeGroup).getByRole("button", { name: "I" })).toBeInTheDocument();
@@ -240,7 +268,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
   });
 
   describe("7. lens picker remains functional", () => {
-    it("lens ToggleBar is present when chord is active (degree mode with chordDegree=I)", () => {
+    it("lens ToggleBar is present when chord is active", () => {
       renderDegree();
       expect(screen.getByRole("group", { name: "Practice lens" })).toBeInTheDocument();
     });
@@ -252,24 +280,10 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       const pressedButton = within(lensGroup).getByRole("button", { pressed: true });
       expect(pressedButton).toBeInTheDocument();
     });
-
-    it("lens ToggleBar is disabled when no chord is active (overlay off)", () => {
-      renderWithAtoms(<ChordOverlayControls />, [
-        [scaleNameAtom, "Major"],
-        [rootNoteAtom, "C"],
-        [chordOverlayModeAtom, "degree"],
-        [chordDegreeAtom, null],
-        [progressionStepsAtom, []],
-      ]);
-
-      const lensGroup = screen.getByRole("group", { name: "Practice lens" });
-      const buttons = within(lensGroup).getAllByRole("button");
-      buttons.forEach((btn) => expect(btn).toBeDisabled());
-    });
   });
 
-  describe("8. chord-type toggle bar (manual mode)", () => {
-    it("renders 'Quality' label in manual mode", () => {
+  describe("8. chord-type grid (always visible)", () => {
+    it("renders 'Quality' label", () => {
       renderManual();
       expect(screen.getByText("Quality", { selector: "span[class*='propLabel']" })).toBeInTheDocument();
     });
@@ -290,13 +304,12 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(min.getAttribute("aria-pressed")).toBe("true");
     });
 
-    it("degree mode: Off button is absent from chord-type toggle bar", () => {
+    it("Off button is absent from chord-type grid", () => {
       renderDegree();
       expect(queryGroupBtn("Chord Type", "Off")).not.toBeInTheDocument();
     });
 
-    it("degree mode: resolved diatonic chord-type is highlighted without user interaction", () => {
-      // DEGREE_MODE_SEEDS uses degree=I in C Major → diatonic default = Major Triad → Maj button
+    it("resolved diatonic chord-type is highlighted without user interaction (degree I → Maj)", () => {
       renderDegree();
       expect(groupBtn("Chord Type", "Maj").getAttribute("aria-pressed")).toBe("true");
     });
@@ -311,27 +324,17 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
   });
 
-  describe("10. Mode label and hint (Degree/Manual toggle)", () => {
-    it("renders visible 'Mode' label adjacent to the toggle", () => {
-      renderDegree();
-      expect(screen.getByText("Mode")).toBeInTheDocument();
-    });
-
-    it("renders a short mode hint", () => {
-      renderDegree();
-      expect(screen.getByText("Off · Diatonic degree · Free root.")).toBeInTheDocument();
-    });
-
-    it("does not render a chord mode help button", () => {
-      renderDegree();
-      expect(screen.queryByRole("button", { name: /show help for chord mode/i })).not.toBeInTheDocument();
-    });
-  });
-
   describe("11. 'Degree' label on degree browser", () => {
     it("renders visible 'Degree' label above the degree browser", () => {
       renderDegree();
       expect(screen.getByText("Degree", { selector: "span[class*='propLabel']" })).toBeInTheDocument();
+    });
+  });
+
+  describe("11b. 'Root' label on root picker", () => {
+    it("renders visible 'Root' label above the root picker", () => {
+      renderDegree();
+      expect(screen.getByText("Root", { selector: "span[class*='propLabel']" })).toBeInTheDocument();
     });
   });
 
@@ -343,31 +346,9 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(container.firstChild as HTMLElement).not.toHaveAttribute("data-disabled");
     });
 
-    it.each(["one-string", "two-strings", "caged"] as const)(
-      "Chord Mode buttons stay enabled when fingeringPattern is %s",
-      (pattern) => {
-        renderDegree([[fingeringPatternAtom, pattern]]);
-        expect(groupBtn("Chord overlay mode", "Degree")).not.toBeDisabled();
-        expect(groupBtn("Chord overlay mode", "Manual")).not.toBeDisabled();
-      },
-    );
-
-    it("first Chord Mode button always shows 'Off' (no 'Disabled' label)", () => {
-      renderDegree([[fingeringPatternAtom, "one-string"]]);
-      expect(groupBtn("Chord overlay mode", "Off")).toBeInTheDocument();
-      expect(queryGroupBtn("Chord overlay mode", "Disabled")).not.toBeInTheDocument();
-    });
-
-    it("does not show disabled hint when fingeringPattern is one-string", () => {
-      renderDegree([[fingeringPatternAtom, "one-string"]]);
-      expect(
-        screen.queryByText("Chord overlay disabled for single/two-string patterns."),
-      ).not.toBeInTheDocument();
-    });
-
-    it("degree selector is visible when fingeringPattern is two-strings (degree mode)", () => {
+    it("degree selector is visible when fingeringPattern is two-strings", () => {
       renderWithAtoms(<ChordOverlayControls />, [
-        ...DEGREE_MODE_SEEDS,
+        ...DEGREE_SEEDS,
         [fingeringPatternAtom, "two-strings"],
       ]);
       expect(screen.getByRole("group", { name: "Chord degree" })).toBeInTheDocument();
@@ -376,7 +357,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
 
   describe("12. lens Prop shows static hint", () => {
     it("does not render a lens help-button when chord is active", () => {
-      renderWithAtoms(<ChordOverlayControls />, [...DEGREE_MODE_SEEDS]);
+      renderDegree();
       expect(
         screen.queryByRole("button", { name: /show help for lens/i }),
       ).not.toBeInTheDocument();
@@ -403,10 +384,6 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
 
     it("places the Lens control inside the SOURCE group", () => {
-      // The PropGrid renders headers and Props as flat siblings (no wrapping
-      // section per group), so "in the Source group" is verified by document
-      // order: Lens follows the Source heading and precedes the next group
-      // heading (Chord Type).
       renderManual();
       const lens = screen.getByText("Lens");
       const sourceHeader = screen.getByRole("heading", { name: "Source" });
@@ -427,7 +404,6 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     it("disables the 3rd inversion for a triad", () => {
       renderManual([
         [voicingTypeAtom, "triad"],
-        [chordQualityOverrideAtom, "Major Triad"],
         [voicingSectionExpandedAtom, true],
       ]);
       expect(screen.getByRole("button", { name: "3rd" })).toBeDisabled();
@@ -438,20 +414,33 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     const TRIAD_MANUAL_SEEDS = [
       [scaleNameAtom, "Major"],
       [rootNoteAtom, "C"],
-      [chordOverlayModeAtom, "manual"],
-      [chordQualityOverrideAtom, "Major Triad"],
-      [chordRootOverrideAtom, "C"],
       [fingeringPatternAtom, "caged"],
-      [progressionStepsAtom, []],
+      [progressionStepsAtom, [
+        { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
+      ]],
       [voicingSectionExpandedAtom, true],
     ] as const;
 
-    it.each<{ label: string; extras: readonly (readonly [unknown, unknown])[]; visible: boolean }>([
-      { label: "caged", extras: [[voicingTypeAtom, "caged"]], visible: false },
-      { label: "triad", extras: [[voicingTypeAtom, "triad"]], visible: true },
-      { label: "drop2 (Major 7th)", extras: [[voicingTypeAtom, "drop2"], [chordQualityOverrideAtom, "Major 7th"]], visible: true },
-    ])("$label voicing: Inversion + String Set visibility = $visible", ({ extras, visible }) => {
-      renderWithAtoms(<ChordOverlayControls />, [...TRIAD_MANUAL_SEEDS, ...extras] as never);
+    const buildSeeds = (
+      qualityOverride: string,
+      voicingType: "caged" | "triad" | "drop2",
+    ) => [
+      [scaleNameAtom, "Major"],
+      [rootNoteAtom, "C"],
+      [fingeringPatternAtom, "caged"],
+      [progressionStepsAtom, [
+        { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride, manualRoot: "C" },
+      ]],
+      [voicingSectionExpandedAtom, true],
+      [voicingTypeAtom, voicingType],
+    ] as const;
+
+    it.each<{ label: string; seeds: ReturnType<typeof buildSeeds>; visible: boolean }>([
+      { label: "caged", seeds: buildSeeds("Major Triad", "caged"), visible: false },
+      { label: "triad", seeds: buildSeeds("Major Triad", "triad"), visible: true },
+      { label: "drop2 (Major 7th)", seeds: buildSeeds("Major 7th", "drop2"), visible: true },
+    ])("$label voicing: Inversion + String Set visibility = $visible", ({ seeds, visible }) => {
+      renderWithAtoms(<ChordOverlayControls />, [...seeds] as never);
       const inv = screen.queryByLabelText("Voicing inversion");
       const ss = screen.queryByRole("radiogroup", { name: /String Set/i });
       if (visible) {
@@ -463,23 +452,16 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       }
     });
 
-    it.each<{ label: string; extras: readonly (readonly [unknown, unknown])[]; count: number }>([
-      { label: "3-tone (triad)", extras: [[voicingTypeAtom, "triad"]], count: 5 },
-      {
-        label: "4-tone (Major 7th)",
-        extras: [[voicingTypeAtom, "triad"], [chordQualityOverrideAtom, "Major 7th"]],
-        count: 4,
-      },
-    ])("$label chord shows $count radio cards in the String Set picker", ({ extras, count }) => {
-      renderWithAtoms(<ChordOverlayControls />, [...TRIAD_MANUAL_SEEDS, ...extras] as never);
+    it.each<{ label: string; seeds: ReturnType<typeof buildSeeds>; count: number }>([
+      { label: "3-tone (triad)", seeds: buildSeeds("Major Triad", "triad"), count: 5 },
+      { label: "4-tone (Major 7th)", seeds: buildSeeds("Major 7th", "triad"), count: 4 },
+    ])("$label chord shows $count radio cards in the String Set picker", ({ seeds, count }) => {
+      renderWithAtoms(<ChordOverlayControls />, [...seeds] as never);
       const radiogroup = screen.getByRole("radiogroup", { name: /String Set/i });
       expect(within(radiogroup).getAllByRole("radio")).toHaveLength(count);
     });
 
     it("normalizer: switching from triad to 4-tone chord removes the stale '4·5·6' string set option", async () => {
-      // The 3-string "4·5·6" window exists for a 3-tone chord but not for a 4-tone chord.
-      // After the chord change, stringSetOptionsAtom rebuilds with 4-string windows only —
-      // "4·5·6" disappears from the option list entirely. The 4-tone "Bass" window is "3·4·5·6".
       const store = makeAtomStore([
         ...TRIAD_MANUAL_SEEDS,
         [voicingTypeAtom, "triad"],
@@ -493,15 +475,11 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
 
       // Switch to a 4-tone chord — "4·5·6" is no longer a valid window
       await act(async () => {
-        store.set(chordQualityOverrideAtom, "Major 7th");
+        store.set(updateActiveChordAtom, { quality: "Major 7th" });
       });
 
-      // The 4-tone chord renders 4-string windows; "4·5·6" disappears.
-      // A new Bass window "3·4·5·6" appears — confirm the 3-string window is gone.
       const radiogroupAfter = await screen.findByRole("radiogroup", { name: /String Set/i });
-      // 4-tone chord: 3 windows + All = 4 cards total
       expect(within(radiogroupAfter).getAllByRole("radio")).toHaveLength(4);
-      // The old 3-string "4·5·6" id is no longer present (the 4-tone Bass window is "3·4·5·6")
       expect(within(radiogroupAfter).queryByRole("radio", { name: /— 4·5·6/ })).not.toBeInTheDocument();
     });
   });
@@ -510,11 +488,10 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     const TRIAD_SEEDS = [
       [scaleNameAtom, "Major"],
       [rootNoteAtom, "C"],
-      [chordOverlayModeAtom, "manual"],
-      [chordQualityOverrideAtom, "Major Triad"],
-      [chordRootOverrideAtom, "C"],
       [fingeringPatternAtom, "caged"],
-      [progressionStepsAtom, []],
+      [progressionStepsAtom, [
+        { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
+      ]],
       [voicingTypeAtom, "triad"],
       [voicingSectionExpandedAtom, true],
     ] as const;
@@ -525,10 +502,6 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
 
     it("heal: after chord change to 4-tone chord, active triple is valid in validVoicingCombosAtom.triples", async () => {
-      // Seed: drop2 + 1st inversion + a 3-string window stringSet — valid configuration
-      // for a 3-tone chord won't be valid for a 4-tone chord because the string-set ids
-      // change (3-string → 4-string windows). Spec §5c point 2: on chord change, type is
-      // pinned and inversion + string set heal.
       const store = makeAtomStore([
         ...TRIAD_SEEDS,
         [voicingTypeAtom, "drop2"],
@@ -538,18 +511,15 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       ]);
       renderWithStore(<ChordOverlayControls />, store);
 
-      // Switch to a 4-tone chord — "4·5·6" is no longer a valid window id
       await act(async () => {
-        store.set(chordQualityOverrideAtom, "Major 7th");
+        store.set(updateActiveChordAtom, { quality: "Major 7th" });
       });
 
-      // Read the final triple
       const finalType = store.get(voicingTypeAtom);
       const finalInversion = store.get(voicingInversionAtom);
       const finalStringSet = store.get(voicingStringSetAtom);
       const validCombos = store.get(validVoicingCombosAtom);
 
-      // The final triple must be valid (chord-change pinned type=drop2; heal snapped stringSet)
       const isValid = validCombos.triples.some(
         (t) =>
           t.type === finalType &&
@@ -560,20 +530,13 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
 
     it("user-driven heal: picking an incompatible inversion heals the other two to a valid triple", async () => {
-      // Spec §8: a user picks a control value that is globally enabled but yields zero
-      // voicings combined with the current other two. The heal pins the just-changed
-      // control and snaps the others. Here we set up `drop2 + all` on Major 7th, then
-      // pick an inversion that — combined with `(drop2, all)` — yields a valid triple,
-      // OR if the user picked one that's NOT valid for that combination, the heal moves
-      // the other two. We choose the situation dynamically to find a guaranteed bad combo.
       const store = makeAtomStore([
         [scaleNameAtom, "Major"],
         [rootNoteAtom, "C"],
-        [chordOverlayModeAtom, "manual"],
-        [chordQualityOverrideAtom, "Major 7th"],
-        [chordRootOverrideAtom, "C"],
         [fingeringPatternAtom, "caged"],
-        [progressionStepsAtom, []],
+        [progressionStepsAtom, [
+          { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major 7th", manualRoot: "C" },
+        ]],
         [voicingTypeAtom, "drop2"],
         [voicingInversionAtom, "root"],
         [voicingStringSetAtom, "all"],
@@ -582,8 +545,6 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       renderWithStore(<ChordOverlayControls />, store);
 
       const combos = store.get(validVoicingCombosAtom);
-      // Find an inversion that's globally enabled but invalid with (drop2, all).
-      // For every enabled inversion, check if any triple has (drop2, inv, all).
       const enabledInversions = [...combos.enabledInversions];
       const badInversion = enabledInversions.find((inv) =>
         !combos.triples.some(
@@ -592,7 +553,6 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       );
 
       if (badInversion) {
-        // Drive the click via the recency-recording onChange path.
         await act(async () => {
           store.set(noteControlChangeAtom, "inversion");
           store.set(voicingInversionAtom, badInversion);
@@ -609,13 +569,8 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
             t.stringSet === finalStringSet,
         );
         expect(isValid).toBe(true);
-        // The inversion the user picked should be preserved (pinned).
         expect(finalInversion).toBe(badInversion);
       } else {
-        // If no such inversion exists for Major 7th (all enabled inversions are valid
-        // with drop2+all), the heal path is implicitly covered by the chord-change test.
-        // Assert the invariant holds: every enabled inversion forms a valid triple with
-        // (drop2, all) — meaning no heal would be needed for an inversion click here.
         for (const inv of enabledInversions) {
           expect(
             combos.triples.some(
@@ -627,26 +582,20 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
 
     it("toggling caged → triad heals the persisted inversion/string-set values", async () => {
-      // Seed caged with persisted inversion/stringSet values that would be invalid for
-      // the active chord under triad. Switching voicingType to triad re-engages the heal.
       const store = makeAtomStore([
         [scaleNameAtom, "Major"],
         [rootNoteAtom, "C"],
-        [chordOverlayModeAtom, "manual"],
-        [chordQualityOverrideAtom, "Major Triad"],
-        [chordRootOverrideAtom, "C"],
         [fingeringPatternAtom, "caged"],
-        [progressionStepsAtom, []],
+        [progressionStepsAtom, [
+          { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
+        ]],
         [voicingTypeAtom, "caged"],
-        // "3rd" inversion isn't available for a triad; "1·2·3·4" is a 4-string window id
-        // not present in a 3-tone chord's option list — both are stale/invalid for triad.
         [voicingInversionAtom, "3rd"],
         [voicingStringSetAtom, "1·2·3·4"],
         [voicingSectionExpandedAtom, true],
       ]);
       renderWithStore(<ChordOverlayControls />, store);
 
-      // Switch voicing type from caged to triad — the heal effect now engages.
       await act(async () => {
         store.set(noteControlChangeAtom, "type");
         store.set(voicingTypeAtom, "triad");
@@ -679,10 +628,9 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     const VOICING_SEEDS = [
       [scaleNameAtom, "Major"],
       [rootNoteAtom, "C"],
-      [chordOverlayModeAtom, "manual"],
-      [chordRootOverrideAtom, "C"],
-      [chordQualityOverrideAtom, "Major Triad"],
-      [progressionStepsAtom, []],
+      [progressionStepsAtom, [
+        { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
+      ]],
       [voicingSectionExpandedAtom, true],
     ] as const;
 
@@ -723,7 +671,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
 
     it("renders the Connectors toggle in the VOICING group and writes voicingConnectorsAtom", async () => {
-      const store = makeAtomStore([...MANUAL_MODE_SEEDS, [voicingConnectorsAtom, false]]);
+      const store = makeAtomStore([...MANUAL_SEEDS, [voicingConnectorsAtom, false]]);
       renderWithStore(<ChordOverlayControls />, store);
       const toggle = screen.getByRole("switch", { name: "Connectors" });
       expect(toggle).toBeInTheDocument();
@@ -749,10 +697,9 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
 
   describe("Task 10: collapsible VOICING section", () => {
     const VOICING_COLLAPSE_SEEDS = [
-      [chordOverlayModeAtom, "manual"],
-      [chordRootOverrideAtom, "C"],
-      [chordQualityOverrideAtom, "Major Triad"],
-      [progressionStepsAtom, []],
+      [progressionStepsAtom, [
+        { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
+      ]],
     ] as const;
 
     it("collapses the Voicing section by default (Task 10)", () => {
