@@ -46,7 +46,8 @@
     "lucide-react": "^1.14.0",
     "motion": "^12.38.0",
     "react": "^19.2.5",
-    "react-dom": "^19.2.6"
+    "react-dom": "^19.2.6",
+    "tone": "^15.1.22"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.5.2",
