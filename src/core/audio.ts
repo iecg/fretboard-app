@@ -1,226 +1,177 @@
 /**
- * GuitarSynth: A optimized Web Audio synthesizer for guitar-like tones.
- * Uses node pooling and explicit lifecycle management to minimize latency and memory leaks.
+ * GuitarSynth: Tone.js-backed polyphonic synth for guitar-like plucks.
+ *
+ * Replaces the previous hand-rolled Web Audio implementation. Tone.PolySynth
+ * handles voice allocation, while custom partials + envelope + a lowpass
+ * Filter approximate the old plucked-string flavor.
+ *
+ * Public API (preserved verbatim from the prior implementation so callers
+ * — App.tsx, Fretboard.tsx, useResetConfirmation.ts — keep working):
+ *   - init(): void
+ *   - resume(): Promise<void>
+ *   - setMute(mute: boolean): void
+ *   - playNote(frequency: number): Promise<void>
+ *   - onError?: (message: string) => void
  */
+import * as Tone from "tone";
+
+import { ensureToneStarted } from "./toneInit";
 
 const AUDIO_CONFIG = {
+  /** Master volume in linear gain (matches prior MASTER_GAIN = 0.5). */
   MASTER_GAIN: 0.5,
-  POOL_SIZE: 8,
 
+  /** Envelope shaped to approximate the prior decay characteristic. */
   ATTACK_TIME: 0.005,
-  DECAY_TIME: 1.0,
+  DECAY_TIME: 0.4,
+  SUSTAIN: 0.0,
   RELEASE_TIME: 1.0,
 
-  ENVELOPE_MIN_VALUE: 0.001,
+  /** Single-note duration handed to triggerAttackRelease (seconds). */
+  NOTE_DURATION: 1.5,
 
-  FILTER_Q: 1,
-  FILTER_FREQ_INIT_MULTIPLIER: 6,
-  FILTER_FREQ_FIRST_TARGET_MULTIPLIER: 1.5,
-  FILTER_DAMPING_TIME: 0.15,
+  /** Lowpass filter that adds the "muted" plucked-string color. */
+  FILTER_FREQ: 2400,
+  FILTER_Q: 0.8,
 
+  /** Glide time when ramping master volume to/from mute (seconds). */
   MUTE_TRANSITION_TIME: 0.02,
 
-  SILENT_OSC_STOP: 0.001,
-  STOP_BUFFER: 0.1,
-  MAX_TEMPORARY_VOICES: 4,
+  /** Polyphony cap roughly matching prior pool(8) + temp(4). */
+  MAX_POLYPHONY: 12,
 } as const;
 
-interface Voice {
-  gain: GainNode;
-  filter: BiquadFilterNode;
-  active: boolean;
+/** Linear gain -> decibels; -Infinity for fully muted. */
+function gainToDb(gain: number): number {
+  if (gain <= 0) return -Infinity;
+  return 20 * Math.log10(gain);
 }
 
 class GuitarSynth {
-  private ctx: AudioContext | null = null;
-  private isMuted: boolean = false;
-  private masterGain: GainNode | null = null;
-  private unsupported: boolean = false;
-  private guitarWave: PeriodicWave | null = null;
+  private polySynth: Tone.PolySynth<Tone.Synth> | null = null;
+  private filter: Tone.Filter | null = null;
+  private volume: Tone.Volume | null = null;
+  private isMuted = false;
+  private unsupported = false;
   onError?: (message: string) => void;
 
-  // Pool reduces node creation overhead
-  private voicePool: Voice[] = [];
-  private readonly POOL_SIZE = AUDIO_CONFIG.POOL_SIZE;
-  private temporaryVoiceCount: number = 0;
-
-  private getAudioContextConstructor():
-    | (new () => AudioContext)
-    | undefined {
-    const w = window as Window & {
-      AudioContext?: new () => AudioContext;
-      webkitAudioContext?: new () => AudioContext;
-    };
-    return w.AudioContext ?? w.webkitAudioContext;
-  }
-
-  init() {
-    if (this.unsupported || this.ctx) return;
-
-    const AudioContextCtor = this.getAudioContextConstructor();
-    if (!AudioContextCtor) {
-      this.unsupported = true;
-      return;
-    }
+  init(): void {
+    if (this.unsupported || this.polySynth) return;
 
     try {
-      this.ctx = new AudioContextCtor();
-      this.masterGain = this.ctx.createGain();
-      this.masterGain.connect(this.ctx.destination);
-      this.masterGain.gain.value = AUDIO_CONFIG.MASTER_GAIN;
+      // Master volume node — ramped to mute/unmute.
+      this.volume = new Tone.Volume(gainToDb(AUDIO_CONFIG.MASTER_GAIN)).toDestination();
 
-      // Mimic plucked string harmonics
-      const real = new Float32Array([0, 1, 0.6, 0.4, 0.3, 0.2, 0.1, 0.06]);
-      const imag = new Float32Array(real.length).fill(0);
-      this.guitarWave = this.ctx.createPeriodicWave(real, imag);
+      // Lowpass filter approximates the prior dynamic filter-sweep color.
+      // A fixed cutoff is a deliberate simplification: the old impl swept
+      // the filter per-note for damping, but PolySynth voices are shared,
+      // so we trade that motion for predictability.
+      this.filter = new Tone.Filter({
+        type: "lowpass",
+        frequency: AUDIO_CONFIG.FILTER_FREQ,
+        Q: AUDIO_CONFIG.FILTER_Q,
+      }).connect(this.volume);
 
-      // Pre-allocate voice pool
-      for (let i = 0; i < this.POOL_SIZE; i++) {
-        const gain = this.ctx.createGain();
-        const filter = this.ctx.createBiquadFilter();
-        
-        gain.gain.value = 0;
-        filter.connect(gain);
-        gain.connect(this.masterGain);
-
-        this.voicePool.push({ gain, filter, active: false });
-      }
-
-      // Warm up kickstarts context
-      if (this.ctx.state !== 'closed') {
-        const silentOsc = this.ctx.createOscillator();
-        const silentGain = this.ctx.createGain();
-        silentGain.gain.value = 0;
-        silentOsc.connect(silentGain);
-        silentGain.connect(this.ctx.destination);
-        silentOsc.start(0);
-        silentOsc.stop(AUDIO_CONFIG.SILENT_OSC_STOP);
-        silentOsc.onended = () => {
-          silentOsc.disconnect();
-          silentGain.disconnect();
-        };
-      }
-
-    } catch {
+      // Custom partials roughly match the prior PeriodicWave harmonics
+      // [0, 1, 0.6, 0.4, 0.3, 0.2, 0.1, 0.06]. Tone's "custom" partials
+      // omit the DC (index 0) — pass the remainder.
+      this.polySynth = new Tone.PolySynth({
+        voice: Tone.Synth,
+        maxPolyphony: AUDIO_CONFIG.MAX_POLYPHONY,
+        options: {
+          oscillator: {
+            type: "custom",
+            partials: [1, 0.6, 0.4, 0.3, 0.2, 0.1, 0.06],
+          },
+          envelope: {
+            attack: AUDIO_CONFIG.ATTACK_TIME,
+            decay: AUDIO_CONFIG.DECAY_TIME,
+            sustain: AUDIO_CONFIG.SUSTAIN,
+            release: AUDIO_CONFIG.RELEASE_TIME,
+          },
+        },
+      }).connect(this.filter);
+    } catch (e) {
       this.unsupported = true;
-      this.ctx = null;
-      this.masterGain = null;
+      this.polySynth = null;
+      this.filter = null;
+      this.volume = null;
+      console.warn("GuitarSynth init failed:", e);
     }
   }
 
-  async resume() {
+  async resume(): Promise<void> {
     this.init();
-    if (this.ctx && (this.ctx.state === "suspended" || this.ctx.state === "interrupted")) {
-      try {
-        await this.ctx.resume();
-      } catch (e) {
-        console.warn("AudioContext resume failed:", e);
-        this.onError?.("Audio could not be started. Try tapping the screen or interacting with the page.");
-      }
-    }
-  }
-
-  setMute(mute: boolean) {
-    this.isMuted = mute;
-    if (this.masterGain) {
-      // Smooth transition avoids clicks
-      const now = this.ctx?.currentTime ?? 0;
-      this.masterGain.gain.setTargetAtTime(
-        mute ? 0 : AUDIO_CONFIG.MASTER_GAIN,
-        now,
-        AUDIO_CONFIG.MUTE_TRANSITION_TIME,
+    if (this.unsupported) return;
+    try {
+      await ensureToneStarted();
+    } catch (e) {
+      console.warn("Tone.start failed:", e);
+      this.onError?.(
+        "Audio could not be started. Try tapping the screen or interacting with the page.",
       );
     }
-    // Toggling mute is a user gesture; use it to resume the context if needed.
+  }
+
+  setMute(mute: boolean): void {
+    this.isMuted = mute;
+    if (this.volume) {
+      const targetDb = mute ? -Infinity : gainToDb(AUDIO_CONFIG.MASTER_GAIN);
+      // rampTo gives a click-free transition equivalent to the old
+      // setTargetAtTime smoothing.
+      this.volume.volume.rampTo(targetDb, AUDIO_CONFIG.MUTE_TRANSITION_TIME);
+    }
+    // Toggling mute is a user gesture; opportunistically start the context.
     if (!mute) {
       void this.resume();
     }
   }
 
-  private getAvailableVoice(): Voice | null {
-    const voice = this.voicePool.find((v) => !v.active);
-    if (voice) return voice;
-
-    // Create temporary voice if pool exhausted (capped to prevent unbounded allocation)
-    if (this.ctx && this.masterGain) {
-      if (this.temporaryVoiceCount >= AUDIO_CONFIG.MAX_TEMPORARY_VOICES) {
-        console.warn(
-          `GuitarSynth: temporary voice limit (${AUDIO_CONFIG.MAX_TEMPORARY_VOICES}) reached, skipping note`,
-        );
-        return null;
-      }
-      const gain = this.ctx.createGain();
-      const filter = this.ctx.createBiquadFilter();
-      filter.connect(gain);
-      gain.connect(this.masterGain);
-      this.temporaryVoiceCount++;
-      return { gain, filter, active: false };
-    }
-
-    return null;
-  }
-
-  async playNote(frequency: number) {
+  async playNote(frequency: number): Promise<void> {
     if (this.isMuted) return;
     this.init();
-    if (!this.ctx || !this.masterGain || !this.guitarWave) return;
+    if (this.unsupported || !this.polySynth) return;
 
-    // Ensure context is running - Safari often starts suspended.
-    // Interrupted state covers iOS phone calls/siri.
-    if (this.ctx.state !== "running") {
-      try {
-        await this.ctx.resume();
-      } catch (e) {
-        // Fallback for browser gesture blocking
-        console.warn("AudioContext resume failed in playNote:", e);
-        this.onError?.("Audio could not be started. Try tapping the screen or interacting with the page.");
-        return;
-      }
+    try {
+      await ensureToneStarted();
+    } catch (e) {
+      console.warn("Tone.start failed in playNote:", e);
+      this.onError?.(
+        "Audio could not be started. Try tapping the screen or interacting with the page.",
+      );
+      return;
     }
 
-    const voice = this.getAvailableVoice();
-    if (!voice) return;
-
-    voice.active = true;
-    const osc = this.ctx.createOscillator();
-    
-    osc.setPeriodicWave(this.guitarWave);
-    osc.frequency.setValueAtTime(frequency, this.ctx.currentTime);
-
-    const now = this.ctx.currentTime;
-    const { ATTACK_TIME, DECAY_TIME, RELEASE_TIME, ENVELOPE_MIN_VALUE, FILTER_Q, FILTER_FREQ_INIT_MULTIPLIER, FILTER_FREQ_FIRST_TARGET_MULTIPLIER, FILTER_DAMPING_TIME, STOP_BUFFER } = AUDIO_CONFIG;
-
-    // Natural string decay
-    voice.gain.gain.cancelScheduledValues(now);
-    voice.gain.gain.setValueAtTime(0, now);
-    voice.gain.gain.linearRampToValueAtTime(1, now + ATTACK_TIME);
-    voice.gain.gain.exponentialRampToValueAtTime(ENVELOPE_MIN_VALUE, now + ATTACK_TIME + DECAY_TIME + RELEASE_TIME);
-
-    // Dynamic Filter: open for harmonics, then close for damping
-    voice.filter.type = 'lowpass';
-    voice.filter.Q.value = FILTER_Q;
-    voice.filter.frequency.setValueAtTime(frequency * FILTER_FREQ_INIT_MULTIPLIER, now);
-    voice.filter.frequency.exponentialRampToValueAtTime(frequency * FILTER_FREQ_FIRST_TARGET_MULTIPLIER, now + ATTACK_TIME + FILTER_DAMPING_TIME);
-    voice.filter.frequency.exponentialRampToValueAtTime(frequency, now + ATTACK_TIME + DECAY_TIME);
-
-    osc.connect(voice.filter);
-    
-    osc.start(now);
-    const stopTime = now + ATTACK_TIME + DECAY_TIME + RELEASE_TIME + STOP_BUFFER;
-    osc.stop(stopTime);
-
-    osc.onended = () => {
-      osc.disconnect();
-      voice.active = false;
-      
-      // Clean up non-pool voices
-      if (!this.voicePool.includes(voice)) {
-        voice.filter.disconnect();
-        voice.gain.disconnect();
-        this.temporaryVoiceCount--;
-      }
-    };
+    try {
+      this.polySynth.triggerAttackRelease(frequency, AUDIO_CONFIG.NOTE_DURATION);
+    } catch (e) {
+      // PolySynth throws if maxPolyphony is exceeded; swallow and log
+      // rather than surfacing — same UX as the old "skipping note" warn.
+      console.warn("GuitarSynth.playNote failed:", e);
+    }
   }
 }
 
 export const synth = new GuitarSynth();
+
+/**
+ * Test-only hook: reset internal state on the singleton so tests can
+ * re-exercise init/playNote/setMute paths. Not part of the public runtime
+ * API.
+ */
+export function __resetSynthForTests(): void {
+  const s = synth as unknown as {
+    polySynth: unknown;
+    filter: unknown;
+    volume: unknown;
+    isMuted: boolean;
+    unsupported: boolean;
+    onError: undefined;
+  };
+  s.polySynth = null;
+  s.filter = null;
+  s.volume = null;
+  s.isMuted = false;
+  s.unsupported = false;
+  s.onError = undefined;
+}
