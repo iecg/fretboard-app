@@ -47,6 +47,11 @@ export interface Dictionary {
     auto: string;
     groupKey: string;
     groupWheel: string;
+    scaleLabel: string;
+    scaleGroupMajorModes: string;
+    scaleGroupPentatonics: string;
+    scaleGroupBlues: string;
+    scaleGroupHarmonicMelodic: string;
     groupSource: string;
     groupChordType: string;
     groupVoicing: string;

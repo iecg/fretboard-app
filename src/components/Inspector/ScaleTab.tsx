@@ -1,4 +1,4 @@
-import { lazy, Suspense, startTransition } from "react";
+import { lazy, Suspense, startTransition, useMemo } from "react";
 import { useAtomValue, useSetAtom, useAtom } from "jotai";
 import { SCALE_FAMILIES, type ScaleFamily, type ScaleFamilyId } from "@fretflow/core";
 import type { LabeledSelectGroup } from "../LabeledSelect/LabeledSelect";
@@ -25,51 +25,21 @@ function requireFamily(id: ScaleFamilyId): ScaleFamily {
   return family;
 }
 
-// Build the grouped scale options from the catalog.
-// UI groups: Major modes | Pentatonics | Blues | Harmonic / Melodic
-// The last group merges the harmonic-minor and melodic-minor families.
+// Resolve scale families from the catalog once. Module-init `requireFamily`
+// fails loudly if a catalog id ever drifts so empty optgroups can never
+// silently appear in the UI.
 const majorFamily = requireFamily("major");
 const pentatonicFamily = requireFamily("pentatonic");
 const bluesFamily = requireFamily("blues");
 const harmonicMinorFamily = requireFamily("harmonic-minor");
 const melodicMinorFamily = requireFamily("melodic-minor");
 
-const SCALE_GROUPS: LabeledSelectGroup[] = [
-  {
-    groupLabel: "Major modes",
-    options: majorFamily.members.map((m) => ({
-      value: m.scaleName,
-      label: m.displayLabel,
-    })),
-  },
-  {
-    groupLabel: "Pentatonics",
-    options: pentatonicFamily.members.map((m) => ({
-      value: m.scaleName,
-      label: m.displayLabel,
-    })),
-  },
-  {
-    groupLabel: "Blues",
-    options: bluesFamily.members.map((m) => ({
-      value: m.scaleName,
-      label: m.displayLabel,
-    })),
-  },
-  {
-    groupLabel: "Harmonic / Melodic",
-    options: [
-      ...harmonicMinorFamily.members.map((m) => ({
-        value: m.scaleName,
-        label: m.displayLabel,
-      })),
-      ...melodicMinorFamily.members.map((m) => ({
-        value: m.scaleName,
-        label: m.displayLabel,
-      })),
-    ],
-  },
-];
+function familyOptions(family: ScaleFamily) {
+  return family.members.map((m) => ({
+    value: m.scaleName,
+    label: m.displayLabel,
+  }));
+}
 
 const CircleOfFifths = lazy(() =>
   import("../CircleOfFifths/CircleOfFifths").then((m) => ({
@@ -100,6 +70,25 @@ export function ScaleTab() {
     });
   };
 
+  // Translated group labels — content (Greek mode names like Ionian/Dorian) is
+  // catalog-sourced and intentionally not localized; the *group headings* and
+  // the picker's accessible name are.
+  const scaleGroups: LabeledSelectGroup[] = useMemo(
+    () => [
+      { groupLabel: t("inspector.scaleGroupMajorModes"), options: familyOptions(majorFamily) },
+      { groupLabel: t("inspector.scaleGroupPentatonics"), options: familyOptions(pentatonicFamily) },
+      { groupLabel: t("inspector.scaleGroupBlues"), options: familyOptions(bluesFamily) },
+      {
+        groupLabel: t("inspector.scaleGroupHarmonicMelodic"),
+        options: [
+          ...familyOptions(harmonicMinorFamily),
+          ...familyOptions(melodicMinorFamily),
+        ],
+      },
+    ],
+    [t],
+  );
+
   return (
     <div className={styles.root} data-inspector-tab="scale">
       <div className={styles.layerVisibilityRow}>
@@ -119,18 +108,18 @@ export function ScaleTab() {
         <div className={styles.col}>
           <GroupHeader>{t("inspector.groupKey")}</GroupHeader>
           <PropGrid columns={2}>
-            <Prop label="Root" span={2}>
+            <Prop label={t("controls.root")} span={2}>
               <RootNoteSelect
                 value={rootNote}
                 onSelect={handleRootNote}
                 useFlats={useFlats}
               />
             </Prop>
-            <Prop label="Scale" span={2}>
+            <Prop label={t("inspector.scaleLabel")} span={2}>
               <LabeledSelect
-                label="Scale"
+                label={t("inspector.scaleLabel")}
                 value={scaleName}
-                groups={SCALE_GROUPS}
+                groups={scaleGroups}
                 onChange={handleScaleName}
                 hideLabel
               />
