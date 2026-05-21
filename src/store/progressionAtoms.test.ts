@@ -340,9 +340,9 @@ describe("derived progression atoms", () => {
         { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
         { id: "b", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
       ]);
-      store.set(updateProgressionStepRootAtom, { id: "a", manualRoot: "Bb" });
+      store.set(updateProgressionStepRootAtom, { id: "a", manualRoot: "A#" });
       const steps = store.get(progressionStepsAtom);
-      expect(steps[0]!.manualRoot).toBe("Bb");
+      expect(steps[0]!.manualRoot).toBe("A#");
       expect(steps[1]!.manualRoot).toBeNull();
     });
   });

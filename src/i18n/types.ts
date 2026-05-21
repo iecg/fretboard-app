@@ -84,7 +84,9 @@ export interface Dictionary {
     btSwing: string;
     panelLabel: string;
     voicingType: string;
+    voicingTypeAriaLabel: string;
     voicingInversion: string;
+    voicingInversionAriaLabel: string;
     voicingStringSet: string;
     voicingTypeHint: string;
     voicingInversionHint: string;
@@ -148,11 +150,14 @@ export interface Dictionary {
     showConsecutiveSteps: string;
     pairMembersConnected: string;
     quality: string;
+    qualityAriaLabel: string;
     lensHint: string;
     degree: string;
+    degreeAriaLabel: string;
     chordType: string;
     root: string;
     lens: string;
+    lensAriaLabel: string;
     disabled: string;
     off: string;
     on: string;

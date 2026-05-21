@@ -131,17 +131,19 @@ describe("chordMemberFactsAtom", () => {
 
 describe("Focus removal", () => {
   it("chord domain is scale-free: chordMemberFactsAtom returns same facts for any scale", () => {
-    const storeA = createStore();
-    storeA.set(progressionStepsAtom, []);
-    setChord(storeA, "C", "Major Triad");
+    // Set rootNote + scale FIRST, then setChord — otherwise the Phase 2.2
+    // manualRoot transposition listener would shift the seeded chord when
+    // rootNoteAtom changes, defeating the test's "same chord, different scale"
+    // premise.
+    const storeA = makeStore();
     storeA.set(rootNoteAtom, "A");
     storeA.set(scaleNameAtom, "Major");
+    setChord(storeA, "C", "Major Triad");
 
-    const storeB = createStore();
-    storeB.set(progressionStepsAtom, []);
-    setChord(storeB, "C", "Major Triad");
+    const storeB = makeStore();
     storeB.set(rootNoteAtom, "F#");
     storeB.set(scaleNameAtom, "Dorian");
+    setChord(storeB, "C", "Major Triad");
 
     const factsA = storeA.get(chordMemberFactsAtom);
     const factsB = storeB.get(chordMemberFactsAtom);

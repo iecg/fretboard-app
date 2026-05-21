@@ -206,7 +206,7 @@ export function ChordOverlayControls() {
             scaleName={scaleName}
             value={activeDegree ?? ""}
             onChange={handleDegreeChange}
-            label="Chord degree"
+            label={t("controls.degreeAriaLabel")}
             activeDegree={activeDegree}
             qualityOverridden={false}
           />
@@ -230,7 +230,7 @@ export function ChordOverlayControls() {
             }))}
             value={practiceLens}
             onChange={displayDisabled ? () => undefined : setPracticeLens}
-            label="Practice lens"
+            label={t("controls.lensAriaLabel")}
           />
         </Prop>
 
@@ -242,7 +242,7 @@ export function ChordOverlayControls() {
           hint={t("controls.manualQualityHint")}
         >
           <ChordQualitySelect
-            label="Chord Type"
+            label={t("controls.qualityAriaLabel")}
             value={activeQuality ?? chordType ?? ""}
             onChange={handleChordTypeChange}
           />
@@ -289,7 +289,7 @@ export function ChordOverlayControls() {
               hint={t("inspector.voicingTypeHint")}
             >
               <ToggleBar
-                label="Voicing type"
+                label={t("inspector.voicingTypeAriaLabel")}
                 options={(["caged", "drop2", "triad"] as const).map((v) => ({
                   value: v,
                   label:
@@ -314,7 +314,7 @@ export function ChordOverlayControls() {
                 hint={t("inspector.voicingInversionHint")}
               >
                 <ToggleBar
-                  label="Voicing inversion"
+                  label={t("inspector.voicingInversionAriaLabel")}
                   options={(["root", "1st", "2nd", "3rd"] as const).map((v) => ({
                     value: v,
                     label: v === "root" ? t("controls.root") : v,

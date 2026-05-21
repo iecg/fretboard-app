@@ -505,8 +505,8 @@ export const updateProgressionStepQualityAtom = atom(null, (get, set, update: { 
 /**
  * Sets `manualRoot` on the target step. When non-null the step is treated as
  * a manual / out-of-scale chord; when null the step reverts to diatonic
- * resolution from its `degree`. Phase 2.1 of the FretFlow integration —
- * additive only; no consumer reads `manualRoot` yet.
+ * resolution from its `degree`. Consumed via `activeChordRootAtom` (and the
+ * scale-root transposition listener) in songStateAtoms / Phase 2.4–2.5.
  */
 export const updateProgressionStepRootAtom = atom(
   null,

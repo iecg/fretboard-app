@@ -15,22 +15,29 @@ const DEGREE_KEY = k("chordDegree");
  * Phase 2.6 — paired with the model unification in Phase 2.5.
  */
 export function runChordModeMigration(): void {
-  const raw = localStorage.getItem(MODE_KEY);
-  if (raw == null) return;
-
-  let value: unknown;
+  // Fail open: localStorage can throw (e.g. SecurityError in private mode or
+  // restricted contexts). The migration runs at startup before React mounts —
+  // an uncaught throw here would crash app boot.
   try {
-    value = JSON.parse(raw);
+    const raw = localStorage.getItem(MODE_KEY);
+    if (raw == null) return;
+
+    let value: unknown;
+    try {
+      value = JSON.parse(raw);
+    } catch {
+      value = raw; // tolerate legacy un-encoded values
+    }
+
+    if (value === "off") {
+      localStorage.setItem(HIDDEN_KEY, JSON.stringify(true));
+    }
+
+    localStorage.removeItem(MODE_KEY);
+    localStorage.removeItem(ROOT_OVERRIDE_KEY);
+    localStorage.removeItem(QUALITY_OVERRIDE_KEY);
+    localStorage.removeItem(DEGREE_KEY);
   } catch {
-    value = raw; // tolerate legacy un-encoded values
+    // Storage unavailable; nothing to migrate. Continue app boot.
   }
-
-  if (value === "off") {
-    localStorage.setItem(HIDDEN_KEY, JSON.stringify(true));
-  }
-
-  localStorage.removeItem(MODE_KEY);
-  localStorage.removeItem(ROOT_OVERRIDE_KEY);
-  localStorage.removeItem(QUALITY_OVERRIDE_KEY);
-  localStorage.removeItem(DEGREE_KEY);
 }
