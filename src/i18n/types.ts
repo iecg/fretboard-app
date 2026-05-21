@@ -34,12 +34,9 @@ export interface Dictionary {
     chordTab: string;
     songTab: string;
     groupFingering: string;
-    groupLabels: string;
-    groupDisplay: string;
     pattern: string;
     degreeColors: string;
     fullChords: string;
-    tapToPlay: string;
     statusVisible: string;
     statusHidden: string;
     statusAudioOn: string;
