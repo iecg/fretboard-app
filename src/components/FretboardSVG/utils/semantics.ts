@@ -27,8 +27,6 @@ export type LeadLensContext = {
   notePc: string;
   /** Notes shared between the active chord and the next chord (common tones). */
   commonWithNext: Set<string>;
-  /** All pitch classes of the next chord. */
-  nextChordTones: Set<string>;
   /** Guide tones (3rd/7th) of the next chord — shown as anticipation in the last beat. */
   nextGuideTones: Set<string>;
   /** Current beat position within the active progression step (0 = just started). */
@@ -69,11 +67,6 @@ export function getLensEmphasis(
   noteClass: string,
   practiceLens: PracticeLens | undefined,
   isGuideTone: boolean,
-  // isTension was used by the Task 4.1 lead bridge. The Lead lens now derives
-  // tension emphasis from voice-leading context (leadContext), not the semantic
-  // flag. The parameter is retained in the signature for backward-compatibility
-  // with existing call sites.
-  _isTension: boolean,
   leadContext?: LeadLensContext,
 ): LensEmphasis {
   const defaultEmphasis: LensEmphasis = { radiusBoost: 1, opacityBoost: 1 };
@@ -131,6 +124,8 @@ export function getLensEmphasis(
       // 3. Departing: current chord tone that doesn't carry into the next chord.
       //    Departing overrides guide-tone emphasis — Lead lens is about voice-leading
       //    concerns, not chord-quality definition.
+      // TODO (Phase 8 polish): consider a distinct departing visual cue —
+      // currently the 0.6 opacity is close to the scale-only 0.7 dim.
       if (isCurrentChordTone && !commonWithNext.has(notePc)) {
         return { radiusBoost: 0.85, opacityBoost: 0.6 };
       }

@@ -75,7 +75,6 @@ export interface UseNoteDataProps {
    */
   leadLensData?: {
     commonWithNext: Set<string>;
-    nextChordTones: Set<string>;
     nextGuideTones: Set<string>;
     beatPosition: number;
     stepDurationBeats: number;
@@ -345,7 +344,6 @@ export function useNoteData({
           leadContext = {
             notePc: noteName,
             commonWithNext: leadLensData.commonWithNext,
-            nextChordTones: leadLensData.nextChordTones,
             nextGuideTones: leadLensData.nextGuideTones,
             beatPosition: leadLensData.beatPosition,
             stepDurationBeats: leadLensData.stepDurationBeats,
@@ -355,7 +353,6 @@ export function useNoteData({
           noteClass,
           activeLens,
           effectiveSemantics?.isGuideTone ?? false,
-          effectiveSemantics?.isTension ?? false,
           leadContext,
         );
 

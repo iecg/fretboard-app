@@ -12,7 +12,6 @@ import { intervalPairsAtom } from "../../store/shapeAtoms";
 import { scaleDegreeColorsEnabledAtom } from "../../store/uiAtoms";
 import {
   commonTonesWithNextAtom,
-  nextChordTonesAtom,
   nextChordGuideTonesAtom,
   beatPositionAtom,
   activeStepDurationBeatsAtom,
@@ -185,7 +184,6 @@ export const FretboardSVG = memo(function FretboardSVG({
   // advances or the beat position changes. The cost is negligible: atom reads are
   // synchronous and the values are empty sets / 0 when no progression is active.
   const leadCommonWithNext = useAtomValue(commonTonesWithNextAtom);
-  const leadNextChordTones = useAtomValue(nextChordTonesAtom);
   const leadNextGuideTones = useAtomValue(nextChordGuideTonesAtom);
   const leadBeatPosition = useAtomValue(beatPositionAtom);
   const leadStepDurationBeats = useAtomValue(activeStepDurationBeatsAtom);
@@ -414,7 +412,6 @@ export const FretboardSVG = memo(function FretboardSVG({
     fullChordShapeByPosition,
     leadLensData: practiceLens === "lead" ? {
       commonWithNext: leadCommonWithNext,
-      nextChordTones: leadNextChordTones,
       nextGuideTones: leadNextGuideTones,
       beatPosition: leadBeatPosition,
       stepDurationBeats: leadStepDurationBeats,
