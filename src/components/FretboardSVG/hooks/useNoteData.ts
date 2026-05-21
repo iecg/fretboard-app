@@ -18,6 +18,7 @@ import {
   classifyNoteFromSemantics,
   type BoxBound,
   type LensEmphasis,
+  type LeadLensContext,
 } from "../utils/semantics";
 
 export interface NoteData {
@@ -66,6 +67,19 @@ export interface UseNoteDataProps {
   fullChordPositionKeys?: Set<string>;
   fullChordShapeByPosition?: Map<string, CagedShape>;
   chordBoxBounds: BoxBound[] | null;
+  /**
+   * Lead lens context data read from atoms once per render (Task 4.5).
+   * Only populated when practiceLens === "lead". Passed per-note into
+   * getLensEmphasis to drive hold/departing/anticipation emphasis.
+   * Optional — when absent, lead lens falls back to tones-base behavior.
+   */
+  leadLensData?: {
+    commonWithNext: Set<string>;
+    nextChordTones: Set<string>;
+    nextGuideTones: Set<string>;
+    beatPosition: number;
+    stepDurationBeats: number;
+  };
 }
 
 export function useNoteData({
@@ -97,6 +111,7 @@ export function useNoteData({
   fullChordPositionKeys,
   fullChordShapeByPosition,
   chordBoxBounds,
+  leadLensData,
 }: UseNoteDataProps): NoteData[] {
   return useMemo(() => {
     const notes: NoteData[] = [];
@@ -319,11 +334,29 @@ export function useNoteData({
 
         // Lens emphasis only applies when chord overlay is active.
         // Without an overlay, no lens-driven dimming or emphasis should alter scale notes.
+        //
+        // Lead lens (Task 4.5): build per-note LeadLensContext from the pre-read
+        // leadLensData (atoms read once per hook call in FretboardSVG.tsx, never
+        // inside this loop). When leadLensData is absent, getLensEmphasis falls
+        // back to tones-base behavior automatically.
+        const activeLens = hasChordOverlay ? practiceLens : undefined;
+        let leadContext: LeadLensContext | undefined;
+        if (activeLens === "lead" && leadLensData) {
+          leadContext = {
+            notePc: noteName,
+            commonWithNext: leadLensData.commonWithNext,
+            nextChordTones: leadLensData.nextChordTones,
+            nextGuideTones: leadLensData.nextGuideTones,
+            beatPosition: leadLensData.beatPosition,
+            stepDurationBeats: leadLensData.stepDurationBeats,
+          };
+        }
         const lensEmphasis = getLensEmphasis(
           noteClass,
-          hasChordOverlay ? practiceLens : undefined,
+          activeLens,
           effectiveSemantics?.isGuideTone ?? false,
           effectiveSemantics?.isTension ?? false,
+          leadContext,
         );
 
         // Visual hiddenness: inactive notes are not rendered in the note layer.
@@ -371,5 +404,5 @@ export function useNoteData({
       }
     }
     return notes;
-  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, chordFretSpread, scaleName, useFlats, displayFormat, degreeColorsEnabled, wrappedNotes, practiceLens, tuning, noteSemantics, activePattern, activeShape, shapeScope, fullChordPositionKeys, fullChordShapeByPosition, chordBoxBounds]);
+  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, chordFretSpread, scaleName, useFlats, displayFormat, degreeColorsEnabled, wrappedNotes, practiceLens, tuning, noteSemantics, activePattern, activeShape, shapeScope, fullChordPositionKeys, fullChordShapeByPosition, chordBoxBounds, leadLensData]);
 }

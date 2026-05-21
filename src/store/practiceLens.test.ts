@@ -5,7 +5,7 @@ import type { PracticeLens } from "@fretflow/core";
 import { k } from "../utils/storage";
 import { practiceLensAtom, chordHiddenNotesAtom, chordTypeAtom } from "./chordOverlayAtoms";
 import { fingeringPatternAtom } from "./fingeringAtoms";
-import { practiceCuesAtom, showChordPracticeBarAtom, practiceBarLensLabelAtom, practiceBarChordGroupAtom, practiceBarLandOnGroupAtom, lensAvailabilityAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, beatPositionAtom, activeStepDurationBeatsAtom } from "./practiceLensAtoms";
+import { practiceCuesAtom, showChordPracticeBarAtom, practiceBarLensLabelAtom, practiceBarChordGroupAtom, practiceBarLandOnGroupAtom, lensAvailabilityAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, beatPositionAtom, activeStepDurationBeatsAtom } from "./practiceLensAtoms";
 import { progressionStepsAtom, activeProgressionStepIndexAtom, progressionTempoBpmAtom, progressionStepDeadlineAtom, beatsPerBarAtom } from "./progressionAtoms";
 import { rootNoteAtom, scaleNameAtom, scaleVisibleAtom, colorNotesAtom, effectiveColorNotesAtom, toggleScaleVisibleAtom } from "./scaleAtoms";
 import { effectiveShapeDataAtom } from "./shapeAtoms";
@@ -744,5 +744,77 @@ describe("beatPositionAtom (Task 4.3)", () => {
     // Math.max(0, 4 - 20) = 0
     store.set(progressionStepDeadlineAtom, Date.now() + 10000);
     expect(store.get(beatPositionAtom)).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Task 4.5 — nextChordGuideTonesAtom
+// ---------------------------------------------------------------------------
+
+describe("nextChordGuideTonesAtom (Task 4.5)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  function makeDefaultStore() {
+    const store = createStore();
+    // Trigger atomWithStorage initialisation.
+    const unsub = store.sub(progressionStepsAtom, () => {});
+    unsub();
+    return store;
+  }
+
+  it("returns the 3rd and 7th of the next chord (I→V in C Major: G Major has no 7th → returns 3rd B)", () => {
+    const store = makeDefaultStore();
+    // Default: active = 0 (C Major Triad), next = 1 (G Major Triad).
+    // G Major Triad members: root G, 3rd B, 5th D. GUIDE_TONE_RAW = {b3,3,b7,7}.
+    // Only B (3rd) qualifies.
+    const guideTones = store.get(nextChordGuideTonesAtom);
+    expect(guideTones).toEqual(new Set(["B"]));
+  });
+
+  it("returns both 3rd and 7th for a seventh chord", () => {
+    const store = makeDefaultStore();
+    // Override step 1 (G Major Triad → G Dominant 7th via qualityOverride).
+    // G Dominant 7th: G(root), B(3), D(5), F(b7). Guide tones: B (3rd) and F (b7).
+    const steps = store.get(progressionStepsAtom);
+    const updatedSteps = steps.map((s, i) =>
+      i === 1 ? { ...s, qualityOverride: "Dominant 7th" } : s
+    );
+    store.set(progressionStepsAtom, updatedSteps);
+    const guideTones = store.get(nextChordGuideTonesAtom);
+    // G Dominant 7th: G(root), B(3), D(5), F(b7). Guide tones: B and F.
+    expect(guideTones.has("B")).toBe(true);
+    expect(guideTones.has("F")).toBe(true);
+    expect(guideTones.size).toBe(2);
+  });
+
+  it("returns empty set when next chord has no guide tones (power chord)", () => {
+    const store = makeDefaultStore();
+    // Override step 1 with Power Chord (5) via qualityOverride.
+    // Power Chord (5): root + 5th only — no 3rd or 7th → no guide tones.
+    const steps = store.get(progressionStepsAtom);
+    const updatedSteps = steps.map((s, i) =>
+      i === 1 ? { ...s, qualityOverride: "Power Chord (5)" } : s
+    );
+    store.set(progressionStepsAtom, updatedSteps);
+    expect(store.get(nextChordGuideTonesAtom)).toEqual(new Set());
+  });
+
+  it("returns empty set when progression is empty", () => {
+    const store = makeDefaultStore();
+    store.set(progressionStepsAtom, []);
+    expect(store.get(nextChordGuideTonesAtom)).toEqual(new Set());
+  });
+
+  it("wraps around: last step's next guide tones come from the first step", () => {
+    const store = makeDefaultStore();
+    // Set active to the last step (index 3 = IV = F Major Triad).
+    // Next wraps to index 0 = I = C Major Triad {C,E,G}. Guide tone: E (3rd).
+    store.set(activeProgressionStepIndexAtom, 3);
+    const guideTones = store.get(nextChordGuideTonesAtom);
+    expect(guideTones.has("E")).toBe(true);
+    // C Major Triad: only 3rd (E) is a guide tone (no 7th).
+    expect(guideTones.size).toBe(1);
   });
 });

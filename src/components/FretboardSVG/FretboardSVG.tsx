@@ -10,6 +10,13 @@ import {
 import { fingeringPatternAtom } from "../../store/fingeringAtoms";
 import { intervalPairsAtom } from "../../store/shapeAtoms";
 import { scaleDegreeColorsEnabledAtom } from "../../store/uiAtoms";
+import {
+  commonTonesWithNextAtom,
+  nextChordTonesAtom,
+  nextChordGuideTonesAtom,
+  beatPositionAtom,
+  activeStepDurationBeatsAtom,
+} from "../../store/practiceLensAtoms";
 import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
 import styles from "./FretboardSVG.module.css";
 import { useFretboardGeometry } from "./hooks/useFretboardGeometry";
@@ -172,6 +179,16 @@ export const FretboardSVG = memo(function FretboardSVG({
   const degreeColorsEnabled = useAtomValue(scaleDegreeColorsEnabledAtom);
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
   const intervalPairs = useAtomValue(intervalPairsAtom);
+
+  // Lead lens atoms (Task 4.5) — read once per render, passed to useNoteData.
+  // These are always subscribed so the component re-renders when the progression
+  // advances or the beat position changes. The cost is negligible: atom reads are
+  // synchronous and the values are empty sets / 0 when no progression is active.
+  const leadCommonWithNext = useAtomValue(commonTonesWithNextAtom);
+  const leadNextChordTones = useAtomValue(nextChordTonesAtom);
+  const leadNextGuideTones = useAtomValue(nextChordGuideTonesAtom);
+  const leadBeatPosition = useAtomValue(beatPositionAtom);
+  const leadStepDurationBeats = useAtomValue(activeStepDurationBeatsAtom);
   const internalId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const defsPrefix = `fretboard-${id ?? internalId}`;
   const svgDefId = useCallback((id: string) => `${defsPrefix}-${id}`, [defsPrefix]);
@@ -395,6 +412,13 @@ export const FretboardSVG = memo(function FretboardSVG({
     noteSemantics,
     fullChordPositionKeys,
     fullChordShapeByPosition,
+    leadLensData: practiceLens === "lead" ? {
+      commonWithNext: leadCommonWithNext,
+      nextChordTones: leadNextChordTones,
+      nextGuideTones: leadNextGuideTones,
+      beatPosition: leadBeatPosition,
+      stepDurationBeats: leadStepDurationBeats,
+    } : undefined,
   });
 
   // Scale semitone offsets (0-11) drive per-pair color via scale-degree position

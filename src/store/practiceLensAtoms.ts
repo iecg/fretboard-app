@@ -5,6 +5,7 @@ import {
   INTERVAL_NAMES,
 
   LENS_REGISTRY,
+  CHORD_DEFINITIONS,
   getScaleNotes,
   getNoteDisplay,
   formatAccidental,
@@ -516,6 +517,43 @@ export const commonTonesWithNextAtom = atom((get): Set<string> => {
   const activeTones = new Set(getChordNotes(activeStep.root, activeStep.quality));
   const next = get(nextChordTonesAtom);
   return new Set([...activeTones].filter((n) => next.has(n)));
+});
+
+/**
+ * Pitch-class set of guide tones (3rd and 7th) for the chord at the *next*
+ * progression step. Used by the Lead lens anticipation window: when the
+ * beat position enters the last beat of the current step, notes matching
+ * these pitch classes receive "anticipation" emphasis.
+ *
+ * Guide tone detection mirrors `chordMembersAtom` / `GUIDE_TONE_RAW`:
+ * filters ChordDefinition members whose name is b3, 3, b7, or 7, then
+ * resolves the note from root + semitone offset.
+ *
+ * Returns an empty set when:
+ * - The progression is empty.
+ * - The next step is unavailable or missing root/quality.
+ * - The next chord has no recognizable guide tones (e.g. power chords).
+ */
+export const nextChordGuideTonesAtom = atom((get): Set<string> => {
+  const steps = get(resolvedProgressionStepsAtom);
+  if (steps.length === 0) return new Set();
+  const active = get(activeProgressionStepIndexAtom);
+  const nextIndex = (active + 1) % steps.length;
+  const step = steps[nextIndex];
+  if (!step || step.unavailable || step.root === null || step.quality === null) {
+    return new Set();
+  }
+  const def = CHORD_DEFINITIONS[step.quality];
+  if (!def) return new Set();
+  const rootIndex = NOTES.indexOf(step.root);
+  if (rootIndex === -1) return new Set();
+  const guideTones = new Set<string>();
+  for (const member of def.members) {
+    if (GUIDE_TONE_RAW.has(member.name)) {
+      guideTones.add(NOTES[(rootIndex + member.semitone) % 12]);
+    }
+  }
+  return guideTones;
 });
 
 /**
