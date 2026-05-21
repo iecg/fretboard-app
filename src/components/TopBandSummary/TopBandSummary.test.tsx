@@ -1,7 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
 import { TopBandSummary } from "./TopBandSummary";
-import { chordTypeAtom } from "../../store/chordOverlayAtoms";
+import { progressionStepsAtom } from "../../store/progressionAtoms";
+
+const SINGLE_CHORD_STEP = [
+  { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
+] as const;
 
 // Spy on MotionConfig so we can assert it is NOT called during TopBandSummary rendering.
 // The component previously wrapped its output in a local <MotionConfig reducedMotion="user">;
@@ -49,16 +53,16 @@ describe("TopBandSummary content", () => {
   });
 
   it("shows the chord practice bar when chord practice is active", () => {
-    // Setting chordTypeAtom makes showChordPracticeBarAtom resolve true.
+    // Phase 2.5: the chord is owned by the active progression step.
     const { queryByTestId } = renderWithAtoms(<TopBandSummary />, [
-      [chordTypeAtom, "Major Triad"],
+      [progressionStepsAtom, SINGLE_CHORD_STEP],
     ]);
     expect(queryByTestId("chord-practice-bar")).toBeTruthy();
   });
 
   it("never renders a progression-status block", () => {
     const { queryByTestId } = renderWithAtoms(<TopBandSummary />, [
-      [chordTypeAtom, "Major Triad"],
+      [progressionStepsAtom, SINGLE_CHORD_STEP],
     ]);
     expect(queryByTestId("progression-status")).toBeNull();
   });

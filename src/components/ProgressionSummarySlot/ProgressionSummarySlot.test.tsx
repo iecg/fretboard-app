@@ -2,7 +2,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, screen } from "@testing-library/react";
 import { makeAtomStore, renderWithAtoms, renderWithStore } from "../../test-utils/renderWithAtoms";
-import { chordTypeAtom } from "../../store/chordOverlayAtoms";
 import { activeProgressionStepIndexAtom, beatsPerBarAtom, progressionStepsAtom, progressionTempoBpmAtom, setProgressionPlayingAtom } from "../../store/progressionAtoms";
 import { ProgressionSummarySlot } from "./ProgressionSummarySlot";
 
@@ -18,7 +17,9 @@ describe("ProgressionSummarySlot", () => {
 
   it("always renders the progression track", () => {
     renderWithAtoms(<ProgressionSummarySlot />, [
-      [chordTypeAtom, "Major Triad"],
+      [progressionStepsAtom, [
+        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
+      ]],
     ]);
 
     expect(screen.getByRole("group", { name: "Progression track" })).toBeTruthy();

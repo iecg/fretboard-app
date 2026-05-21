@@ -4,9 +4,10 @@ import { renderHook } from "@testing-library/react";
 import { Provider } from "jotai";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
 import { useFretboardState } from "./useFretboardState";
-import { chordOverlayModeAtom, chordRootOverrideAtom, chordQualityOverrideAtom, fullChordMatchesAtom } from "../store/chordOverlayAtoms";
+import { fullChordMatchesAtom } from "../store/chordOverlayAtoms";
 import { chordScopeToPositionAtom } from "../store/chordScope";
 import { fingeringPatternAtom, cagedShapesAtom, npsPositionAtom } from "../store/fingeringAtoms";
+import { progressionStepsAtom } from "../store/progressionAtoms";
 
 function wrapWithStore(store: ReturnType<typeof makeAtomStore>) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
@@ -57,13 +58,19 @@ describe("useFretboardState — chord box bounds gating (Task 7)", () => {
 
 describe("useFretboardState — 3NPS voicing scope (Task 3)", () => {
   function seedManualChord(): Array<readonly [unknown, unknown]> {
-    // Manual C major triad — produces a multi-position fullChordMatches set
-    // on a standard-tuned 6-string fretboard, so the scope filter has
-    // something to filter.
+    // Manual C major triad via the active progression step — produces a
+    // multi-position fullChordMatches set on a standard-tuned 6-string
+    // fretboard, so the scope filter has something to filter.
     return [
-      [chordOverlayModeAtom, "manual"],
-      [chordRootOverrideAtom, "C"],
-      [chordQualityOverrideAtom, "major"],
+      [progressionStepsAtom, [
+        {
+          id: "step-1",
+          degree: "I",
+          duration: { value: 1, unit: "bar" },
+          qualityOverride: "Major Triad",
+          manualRoot: "C",
+        },
+      ]],
     ];
   }
 

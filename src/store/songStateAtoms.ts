@@ -11,12 +11,16 @@ import {
 /**
  * Phase 2.3 — unified "active chord" selectors.
  *
- * These atoms are the single write surface the Chord-tab UI will use to edit
- * "the current chord". They read from / write to the *active progression step*
- * so chord overrides live alongside the step itself (not as a separate
- * `chordRootOverrideAtom` / `chordQualityOverrideAtom`, which Task 2.5 will
- * delete). The resolver doesn't yet honour `manualRoot`, so we short-circuit
- * it here when it's set.
+ * These atoms are the single write surface the Chord-tab UI uses to edit
+ * "the current chord". They read from / write to the *active progression
+ * step* so chord overrides live alongside the step itself. The resolver
+ * doesn't yet honour `manualRoot`, so we short-circuit it here when it's
+ * set.
+ *
+ * Phase 2.5 removed the standalone `chordOverlayModeAtom` /
+ * `chordRootOverrideAtom` / `chordQualityOverrideAtom` / `chordDegreeAtom`
+ * — `chordOverlayAtoms.ts` now exposes `chordRootAtom` / `chordTypeAtom`
+ * as read-only views of the active step.
  */
 
 /** Whether the active step is "manual" (out-of-scale). */

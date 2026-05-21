@@ -41,21 +41,16 @@ import {
   chordTonesAtom,
   chordMembersAtom,
   practiceLensAtom,
-  chordDegreeAtom,
-  chordOverlayModeAtom,
   chordOverlayHiddenAtom,
   chordHiddenNotesAtom,
   fullChordsEnabledAtom,
 } from "./chordOverlayAtoms";
+import { activeChordCachedDegreeAtom } from "./songStateAtoms";
 import {
   hasOutsideChordMembersAtom,
   allChordMembersAtom,
 } from "./composableSelectors";
 import { shapeHighlightedNoteSetAtom } from "./shapeAtoms";
-import {
-  activeProgressionStepAtom,
-  activeResolvedProgressionStepAtom,
-} from "./progressionAtoms";
 
 // Guide tone members: 3rd and 7th
 const GUIDE_TONE_RAW = new Set(["b3", "3", "b7", "7"]);
@@ -187,16 +182,11 @@ const chordSemanticInputsAtom = atom((get) => {
   const chordType = get(chordTypeAtom);
   if (!chordType) return null;
   if (get(chordOverlayHiddenAtom)) return null;
-  const progressionStep =
-    !get(activeResolvedProgressionStepAtom)?.unavailable
-      ? get(activeProgressionStepAtom)
-      : null;
   return {
     chordRoot: get(chordRootAtom),
     chordMembers: get(chordMembersAtom),
     hiddenNotes: get(chordHiddenNotesAtom),
-    chordDegree: progressionStep?.degree ?? get(chordDegreeAtom),
-    chordOverlayMode: progressionStep ? "degree" : get(chordOverlayModeAtom),
+    chordDegree: get(activeChordCachedDegreeAtom),
     chordType,
   };
 });
@@ -226,7 +216,7 @@ export const noteSemanticMapAtom = atom((get) => {
 
   const scaleInputs = get(scaleSemanticInputsAtom);
   const { rootNote, scaleName, colorNotes } = scaleInputs;
-  const { chordRoot, chordMembers, hiddenNotes, chordDegree, chordOverlayMode, chordType } = chordInputs;
+  const { chordRoot, chordMembers, hiddenNotes, chordDegree, chordType } = chordInputs;
 
   const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
   const colorNoteSet = new Set(colorNotes);
@@ -242,12 +232,15 @@ export const noteSemanticMapAtom = atom((get) => {
   for (const m of visibleMembers) memberByNote.set(m.note, m);
   const activeChordToneSet = new Set(visibleMembers.map((m) => m.note));
 
-  // Phase 04: diatonic chord check (computed once per evaluation)
+  // Phase 04: diatonic chord check (computed once per evaluation).
+  // Phase 2.5: degree is sourced from the active progression step; the legacy
+  // `chordOverlayMode === "degree"` gate is gone — the resolver already
+  // returns the diatonic root + quality when no manual override is set.
   const degreesMap = getDegreesForScale(scaleName);
 
   let diatonicChordRoot: string | undefined;
   let diatonicChordQuality: string | undefined;
-  if (chordDegree !== null && chordOverlayMode === "degree") {
+  if (chordDegree !== null) {
     const diatonicResult = getDiatonicChord(chordDegree, scaleName, rootNote);
     diatonicChordRoot = diatonicResult?.root;
     diatonicChordQuality = diatonicResult?.quality;

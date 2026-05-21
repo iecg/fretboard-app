@@ -63,7 +63,9 @@ describe("Inspector", () => {
     renderInspector();
     await user.click(screen.getByRole("tab", { name: "Chord" }));
     expect(screen.getByRole("tabpanel").getAttribute("data-tab-id")).toBe("chord");
-    expect(screen.getByRole("group", { name: "Chord overlay mode" })).toBeInTheDocument();
+    // Phase 2.5: the Mode toggle is gone; the Chord tab exposes a Chord Type
+    // group instead. The unified write surface lives in the active step.
+    expect(screen.getByRole("group", { name: "Chord Type" })).toBeInTheDocument();
   });
 
   it("populates the Progression tab body with the ProgressionControls editor", async () => {

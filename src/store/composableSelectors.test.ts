@@ -9,11 +9,6 @@ import {
   allChordMembersAtom,
 } from "./composableSelectors";
 import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
-import {
-  chordOverlayModeAtom,
-  chordRootOverrideAtom,
-  chordQualityOverrideAtom,
-} from "./chordOverlayAtoms";
 import { progressionStepsAtom } from "./progressionAtoms";
 import type { ResolvedChordMember } from "@fretflow/core";
 
@@ -81,13 +76,25 @@ describe("pure predicates", () => {
 });
 
 describe("cross-domain derived atoms", () => {
-  function setupManualChord(root: string, quality: string) {
+  // Phase 2.5: the chord is owned by the active progression step. Tests seed
+  // a single-step progression whose `manualRoot` + `qualityOverride` fully
+  // specify the chord under test.
+  function setupManualChord(root: string, quality: string | null) {
     const store = createStore();
-    store.set(progressionStepsAtom, []);
-    store.set(chordOverlayModeAtom, "manual");
-    store.set(chordRootOverrideAtom, root);
-    store.set(chordQualityOverrideAtom, quality);
+    store.set(progressionStepsAtom, [
+      {
+        id: "step-1",
+        degree: "I",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: quality,
+        manualRoot: root,
+      },
+    ]);
     return store;
+  }
+
+  function disableChordOverlay(store: ReturnType<typeof createStore>) {
+    store.set(progressionStepsAtom, []);
   }
 
   it("hasOutsideChordMembersAtom: false for diatonic C major triad in C major", () => {
@@ -105,8 +112,8 @@ describe("cross-domain derived atoms", () => {
   });
 
   it("hasOutsideChordMembersAtom: false when chord overlay is off", () => {
-    const store = setupManualChord("C", "");
-    store.set(chordOverlayModeAtom, "off");
+    const store = setupManualChord("C", null);
+    disableChordOverlay(store);
     expect(store.get(hasOutsideChordMembersAtom)).toBe(false);
   });
 
@@ -120,8 +127,8 @@ describe("cross-domain derived atoms", () => {
   });
 
   it("allChordMembersAtom: empty when chord overlay is off", () => {
-    const store = setupManualChord("C", "");
-    store.set(chordOverlayModeAtom, "off");
+    const store = setupManualChord("C", null);
+    disableChordOverlay(store);
     expect(store.get(allChordMembersAtom)).toEqual([]);
   });
 });

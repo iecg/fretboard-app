@@ -5,7 +5,8 @@ import { RESET } from "jotai/utils";
 import { k } from "../test-utils/storage";
 import { setRootNoteAtom, setScaleNameAtom, setFingeringPatternAtom, resetAtom } from "./actions";
 import { isMutedAtom } from "./audioAtoms";
-import { chordRootAtom, chordTypeAtom, linkChordRootAtom, chordFretSpreadAtom, practiceLensAtom, chordDegreeAtom, chordOverlayModeAtom, chordQualityOverrideAtom, chordRootOverrideAtom, chordOverlayHiddenAtom, chordTonesAtom } from "./chordOverlayAtoms";
+import { chordRootAtom, chordTypeAtom, linkChordRootAtom, chordFretSpreadAtom, practiceLensAtom, chordOverlayHiddenAtom, chordTonesAtom } from "./chordOverlayAtoms";
+import { updateActiveChordAtom, activeChordCachedDegreeAtom } from "./songStateAtoms";
 import { cagedShapesAtom, fingeringPatternAtom, npsPositionAtom, clickedShapeAtom } from "./fingeringAtoms";
 import { fretStartAtom, fretEndAtom, fretZoomAtom, tuningNameAtom, currentTuningAtom } from "./layoutAtoms";
 import { progressionStepsAtom, progressionTempoBpmAtom, progressionPlayingAtom, activeProgressionStepIndexAtom, setProgressionPlayingAtom } from "./progressionAtoms";
@@ -167,97 +168,91 @@ describe("atoms", () => {
     });
   });
 
-  // Phase 02: chordTypeAtom is a writable derived atom backed by
-  // chordQualityOverrideAtom. Writing it must flip mode to "manual".
-  describe("chordTypeAtom (derived, manual-mode-flipping)", () => {
-    it.each([
-      [null, ""],
-      ["Minor 7th", "Minor 7th"],
-    ])("writing %s persists '%s' in chordQualityOverride and flips mode to manual", (value, persisted) => {
+  // Phase 2.5: chordTypeAtom is a read-only derived view of the active
+  // progression step's resolved quality. Writes flow through
+  // `updateActiveChordAtom` in songStateAtoms.
+  describe("chordTypeAtom (derived, read-only)", () => {
+    it("reads the active step's qualityOverride", () => {
       const store = makeStore();
-      store.set(progressionStepsAtom, []);
-      store.set(chordTypeAtom, value);
-      expect(localStorage.getItem(k("chordQualityOverride"))).toBe(persisted);
-      expect(localStorage.getItem(k("chordOverlayMode"))).toBe("manual");
+      store.set(progressionStepsAtom, [
+        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Minor 7th", manualRoot: "C" },
+      ]);
+      expect(store.get(chordTypeAtom)).toBe("Minor 7th");
     });
 
-    it("reads empty stored value as null", () => {
-      localStorage.setItem(k("chordType"), "");
+    it("falls back to the diatonic default when no override is set", () => {
+      const store = makeStore();
+      store.set(progressionStepsAtom, [
+        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      ]);
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      expect(store.get(chordTypeAtom)).toBe("Major Triad");
+    });
+
+    it("returns null when the progression is empty (overlay off)", () => {
       const store = makeStore();
       store.set(progressionStepsAtom, []);
-      const unsub = mount(store, chordTypeAtom);
       expect(store.get(chordTypeAtom)).toBeNull();
-      unsub();
     });
   });
 
-  describe("setRootNoteAtom — chord-root linking and degree-mode preservation", () => {
-    it("syncs chordRoot when linkChordRoot is true (manual mode)", () => {
+  describe("setRootNoteAtom — manualRoot transposition", () => {
+    it("transposes manualRoot when the scale root changes (was: link-sync)", () => {
       const store = makeStore();
-      store.set(progressionStepsAtom, []);
-      store.set(chordOverlayModeAtom, "manual");
-      store.set(linkChordRootAtom, true);
+      store.set(progressionStepsAtom, [
+        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
+      ]);
+      store.set(rootNoteAtom, "C");
       store.set(setRootNoteAtom, "G");
+      expect(store.get(progressionStepsAtom)[0]!.manualRoot).toBe("G");
       expect(store.get(chordRootAtom)).toBe("G");
-      expect(store.get(chordOverlayModeAtom)).toBe("manual");
-    });
-
-    it("does not sync chordRoot when linkChordRoot is false", () => {
-      const store = makeStore();
-      store.set(progressionStepsAtom, []);
-      store.set(chordRootAtom, "D");
-      store.set(linkChordRootAtom, false);
-      store.set(setRootNoteAtom, "G");
-      expect(store.get(chordRootAtom)).toBe("D");
     });
 
     it.each([
       ["I", "G", "Major Triad"],
       ["vi", "E", "Minor Triad"],
-    ])("preserves degree mode on scale-root change (degree %s → root %s, %s)", (degree, expectedRoot, expectedType) => {
+    ])("preserves diatonic resolution on scale-root change (degree %s → root %s, %s)", (degree, expectedRoot, expectedType) => {
       const store = makeStore();
-      store.set(progressionStepsAtom, []);
-      store.set(chordOverlayModeAtom, "degree");
-      store.set(chordDegreeAtom, degree as import("@fretflow/core").DegreeId);
+      store.set(progressionStepsAtom, [
+        { id: "x", degree: degree as import("@fretflow/core").DegreeId, duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      ]);
       store.set(rootNoteAtom, "C");
       store.set(scaleNameAtom, "Major");
       store.set(setRootNoteAtom, "G");
-      expect(store.get(chordOverlayModeAtom)).toBe("degree");
       expect(store.get(chordRootAtom)).toBe(expectedRoot);
       expect(store.get(chordTypeAtom)).toBe(expectedType);
     });
   });
 
-  describe("scaleNameAtom — degree mode preserved on direct writes", () => {
-    it("changing scaleNameAtom does NOT flip mode out of degree (no chord-atom writes)", () => {
+  describe("scaleNameAtom — chord re-resolves through the progression step", () => {
+    it("direct scale-name change re-resolves the diatonic chord at the cached degree", () => {
       const store = makeStore();
-      store.set(progressionStepsAtom, []);
-      store.set(chordOverlayModeAtom, "degree");
-      store.set(chordDegreeAtom, "ii");
+      store.set(progressionStepsAtom, [
+        { id: "x", degree: "ii", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      ]);
       store.set(rootNoteAtom, "C");
       store.set(scaleNameAtom, "Major");
       store.set(scaleNameAtom, "Mixolydian");
-      expect(store.get(chordOverlayModeAtom)).toBe("degree");
       expect(store.get(chordRootAtom)).toBe("D");
       expect(store.get(chordTypeAtom)).toBe("Minor Triad");
     });
 
-    it("simultaneous root + scale write re-resolves chord without exiting degree mode", () => {
+    it("simultaneous root + scale write re-resolves the diatonic chord", () => {
       const store = makeStore();
-      store.set(progressionStepsAtom, []);
-      store.set(chordOverlayModeAtom, "degree");
-      store.set(chordDegreeAtom, "I");
+      store.set(progressionStepsAtom, [
+        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      ]);
       store.set(rootNoteAtom, "C");
       store.set(scaleNameAtom, "Major");
       store.set(rootNoteAtom, "G");
       store.set(scaleNameAtom, "Mixolydian");
-      expect(store.get(chordOverlayModeAtom)).toBe("degree");
       expect(store.get(chordRootAtom)).toBe("G");
       expect(store.get(chordTypeAtom)).toBe("Major Triad");
     });
   });
 
-  describe("setScaleNameAtom — degree remap on mode change", () => {
+  describe("setScaleNameAtom — progression degree remap on mode change", () => {
     it.each([
       // Major → Dorian: I (semitone 0) remaps to i (Minor Triad on A).
       ["Major", "Dorian", "I", "A", "i", "A", "Minor Triad"],
@@ -269,49 +264,39 @@ describe("atoms", () => {
       fromScale, toScale, fromDegree, root, toDegree, expectedRoot, expectedType,
     ) => {
       const store = makeStore();
-      store.set(progressionStepsAtom, []);
-      store.set(chordOverlayModeAtom, "degree");
-      store.set(chordDegreeAtom, fromDegree as import("@fretflow/core").DegreeId);
+      store.set(progressionStepsAtom, [
+        { id: "x", degree: fromDegree as import("@fretflow/core").DegreeId, duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      ]);
       store.set(rootNoteAtom, root);
       store.set(scaleNameAtom, fromScale);
       store.set(setScaleNameAtom, toScale);
-      expect(store.get(chordDegreeAtom)).toBe(toDegree);
+      expect(store.get(progressionStepsAtom)[0]!.degree).toBe(toDegree);
       expect(store.get(chordRootAtom)).toBe(expectedRoot);
       expect(store.get(chordTypeAtom)).toBe(expectedType);
     });
 
-    it("clears chordDegreeAtom when target scale has no semitone equivalent", () => {
+    it("remaps the degree by ordinal — ii in C Major → II in C Phrygian (Major Triad on Db)", () => {
       const store = makeStore();
-      store.set(progressionStepsAtom, []);
-      store.set(chordOverlayModeAtom, "degree");
-      store.set(chordDegreeAtom, "ii");
+      store.set(progressionStepsAtom, [
+        { id: "x", degree: "ii", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      ]);
       store.set(rootNoteAtom, "C");
       store.set(scaleNameAtom, "Major");
       store.set(setScaleNameAtom, "Phrygian");
-      // Phrygian degrees are at semitones 0,1,3,5,7,8,10 — none at 2.
-      expect(store.get(chordDegreeAtom)).toBeNull();
+      // Phrygian's ordinal-1 degree is "II" (semitone 1, Major Triad on Db).
+      expect(store.get(progressionStepsAtom)[0]!.degree).toBe("II");
+      expect(store.get(chordTypeAtom)).toBe("Major Triad");
     });
 
-    it("same-scale write is a no-op for chord degree", () => {
+    it("preserves chord-quality override across scale changes (sticky)", () => {
       const store = makeStore();
-      store.set(progressionStepsAtom, []);
-      store.set(chordOverlayModeAtom, "degree");
-      store.set(chordDegreeAtom, "vi");
-      store.set(scaleNameAtom, "Major");
-      store.set(setScaleNameAtom, "Major");
-      expect(store.get(chordDegreeAtom)).toBe("vi");
-    });
-
-    it("preserves chord-quality override across mode changes (sticky)", () => {
-      const store = makeStore();
-      store.set(progressionStepsAtom, []);
-      store.set(chordOverlayModeAtom, "degree");
-      store.set(chordDegreeAtom, "V");
+      store.set(progressionStepsAtom, [
+        { id: "x", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th", manualRoot: null },
+      ]);
       store.set(rootNoteAtom, "C");
       store.set(scaleNameAtom, "Major");
-      store.set(chordQualityOverrideAtom, "Dominant 7th");
       store.set(setScaleNameAtom, "Lydian");
-      expect(store.get(chordQualityOverrideAtom)).toBe("Dominant 7th");
+      expect(store.get(progressionStepsAtom)[0]!.qualityOverride).toBe("Dominant 7th");
       expect(store.get(chordTypeAtom)).toBe("Dominant 7th");
     });
   });
@@ -324,14 +309,14 @@ describe("atoms", () => {
 
       const store = makeStore();
       // Mutate a broad cross-section so the reset has to cover every category.
-      store.set(progressionStepsAtom, []);
+      store.set(progressionStepsAtom, [
+        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Minor Triad", manualRoot: "F#" },
+      ]);
       store.set(rootNoteAtom, "G");
       store.set(scaleNameAtom, "Dorian");
       store.set(isMutedAtom, true);
       store.set(fretZoomAtom, 200);
       store.set(displayFormatAtom, "degrees");
-      store.set(chordTypeAtom, "Major Triad");
-      store.set(chordRootAtom, "G");
       store.set(linkChordRootAtom, false);
       store.set(practiceLensAtom, "targets");
       store.set(chordFretSpreadAtom, 5);
@@ -342,14 +327,11 @@ describe("atoms", () => {
       store.set(fretStartAtom, 3);
       store.set(fretEndAtom, 12);
       store.set(accidentalModeAtom, "flats");
-      store.set(chordOverlayModeAtom, "manual");
-      store.set(chordRootOverrideAtom, "F#");
-      store.set(chordQualityOverrideAtom, "Minor Triad");
       store.set(chordOverlayHiddenAtom, true);
 
       store.set(resetAtom);
-      // resetAtom restores progressionStepsAtom to its non-empty default which
-      // drives chordTypeAtom; clear it again to isolate the manual/degree path.
+      // resetAtom restores progressionStepsAtom to its non-empty default;
+      // clear it here so we can assert chord-tone identity isn't carried over.
       store.set(progressionStepsAtom, []);
 
       expect(localStorage.getItem("unrelatedKey")).toBe("keep");
@@ -371,9 +353,6 @@ describe("atoms", () => {
       expect(store.get(fretStartAtom)).toBe(0);
       expect(store.get(fretEndAtom)).toBe(25);
       expect(store.get(accidentalModeAtom)).toBe("auto");
-      expect(store.get(chordOverlayModeAtom)).toBe("degree");
-      expect(store.get(chordRootOverrideAtom)).toBe("C");
-      expect(store.get(chordQualityOverrideAtom)).toBeNull();
       expect(store.get(chordOverlayHiddenAtom)).toBe(false);
     });
   });
@@ -429,20 +408,19 @@ describe("atoms", () => {
   });
 
   describe("chordTonesAtom (derived)", () => {
-    it("returns [] when chord overlay is off", () => {
+    it("returns [] when chord overlay is off (empty progression)", () => {
       const store = makeStore();
       store.set(progressionStepsAtom, []);
-      store.set(chordOverlayModeAtom, "off");
       expect(store.get(chordTonesAtom)).toEqual([]);
     });
 
-    it("re-derives when chordRoot changes", () => {
+    it("re-derives when the active step's manualRoot changes", () => {
       const store = makeStore();
-      store.set(progressionStepsAtom, []);
-      store.set(chordRootAtom, "C");
-      store.set(chordTypeAtom, "Major Triad");
+      store.set(progressionStepsAtom, [
+        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
+      ]);
       expect(store.get(chordTonesAtom)).toEqual(["C", "E", "G"]);
-      store.set(chordRootAtom, "G");
+      store.set(updateActiveChordAtom, { root: "G" });
       expect(store.get(chordTonesAtom)).toEqual(["G", "B", "D"]);
     });
   });
@@ -538,12 +516,14 @@ describe("atoms", () => {
       ["IV", "caged"],
       ["ii", "none"],
       ["iii", "3nps"],
-    ])("preserves chordDegreeAtom='%s' across pattern change to %s", (degree, pattern) => {
+    ])("preserves the active step's cached degree='%s' across pattern change to %s", (degree, pattern) => {
       const store = makeStore();
-      store.set(chordDegreeAtom, degree as import("@fretflow/core").DegreeId);
+      store.set(progressionStepsAtom, [
+        { id: "x", degree: degree as import("@fretflow/core").DegreeId, duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      ]);
       store.set(setFingeringPatternAtom, pattern);
       expect(store.get(fingeringPatternAtom)).toBe(pattern);
-      expect(store.get(chordDegreeAtom)).toBe(degree);
+      expect(store.get(activeChordCachedDegreeAtom)).toBe(degree);
     });
   });
 

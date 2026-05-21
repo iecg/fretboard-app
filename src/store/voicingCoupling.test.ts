@@ -6,20 +6,22 @@ import {
   nearestValidTriple,
   type VoicingTriple,
 } from "./voicingCoupling";
-import {
-  chordOverlayModeAtom,
-  chordRootOverrideAtom,
-  chordQualityOverrideAtom,
-} from "./chordOverlayAtoms";
 import { progressionStepsAtom } from "./progressionAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
 
+// Phase 2.5: seed a single manual-root progression step so the chord under
+// test (C Major Triad) is what `chordRootAtom` / `chordTypeAtom` resolve to.
 function seedTriadChord() {
   const store = makeAtomStore();
-  store.set(progressionStepsAtom, []);
-  store.set(chordOverlayModeAtom, "manual");
-  store.set(chordRootOverrideAtom, "C");
-  store.set(chordQualityOverrideAtom, "Major Triad");
+  store.set(progressionStepsAtom, [
+    {
+      id: "step-1",
+      degree: "I",
+      duration: { value: 1, unit: "bar" },
+      qualityOverride: "Major Triad",
+      manualRoot: "C",
+    },
+  ]);
   return store;
 }
 

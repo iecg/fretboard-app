@@ -6,7 +6,8 @@ import { ChordPracticeBar } from "./ChordPracticeBar";
 import type { PracticeBarGroup, PracticeBarNote } from "@fretflow/core";
 import { axe } from "../../test-utils/a11y";
 import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
-import { chordOverlayHiddenAtom, chordHiddenNotesAtom, chordRootOverrideAtom, chordQualityOverrideAtom, chordOverlayModeAtom } from "../../store/chordOverlayAtoms";
+import { chordOverlayHiddenAtom, chordHiddenNotesAtom } from "../../store/chordOverlayAtoms";
+import { progressionStepsAtom } from "../../store/progressionAtoms";
 
 // ── Fixture notes ────────────────────────────────────────────────────────────
 
@@ -324,9 +325,15 @@ describe("ChordPracticeBar/ChordPracticeBar", () => {
     ])("clicking the eye button toggles chordOverlayHiddenAtom $initial → $expected", ({ initial, expected }) => {
       const store = makeAtomStore([
         [chordOverlayHiddenAtom, initial],
-        [chordOverlayModeAtom, "manual"],
-        [chordRootOverrideAtom, "D"],
-        [chordQualityOverrideAtom, "Minor 7th"],
+        [progressionStepsAtom, [
+          {
+            id: "step-1",
+            degree: "I",
+            duration: { value: 1, unit: "bar" },
+            qualityOverride: "Minor 7th",
+            manualRoot: "D",
+          },
+        ]],
       ]);
       renderWithStore(<ChordPracticeBar {...DMIN7} />, store);
       fireEvent.click(screen.getByRole("button", { name: "Toggle visibility of chord overlay" }));
