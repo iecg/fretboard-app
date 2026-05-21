@@ -7,6 +7,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => {
   const ensureStartedMock = vi.fn(async () => {});
 
+  // Mirror the toneInit test's getContext stub so we can flip the
+  // AudioContext state from tests and exercise the suspended-vs-unlocked
+  // gate in setMute(false).
+  const contextState = {
+    value: "running" as "suspended" | "running" | "interrupted" | "closed",
+  };
+  const getContextMock = vi.fn(() => ({
+    get state() {
+      return contextState.value;
+    },
+  }));
+
   const triggerAttackRelease = vi.fn();
   const polySynthInstances: any[] = [];
   // Use `function` (not arrow) so the mock is constructable via `new`.
@@ -61,6 +73,8 @@ const mocks = vi.hoisted(() => {
     filterInstances,
     volumeInstances,
     triggerAttackRelease,
+    contextState,
+    getContextMock,
   };
 });
 
@@ -69,6 +83,7 @@ vi.mock("tone", () => ({
   Synth: mocks.Synth,
   Filter: mocks.Filter,
   Volume: mocks.Volume,
+  getContext: mocks.getContextMock,
 }));
 
 vi.mock("./toneInit", () => ({
@@ -83,9 +98,14 @@ beforeEach(() => {
   mocks.Volume.mockClear();
   mocks.triggerAttackRelease.mockClear();
   mocks.ensureStartedMock.mockClear();
+  mocks.getContextMock.mockClear();
   mocks.polySynthInstances.length = 0;
   mocks.filterInstances.length = 0;
   mocks.volumeInstances.length = 0;
+  // Default to "running" so existing tests that don't care about the
+  // gesture gate keep the previous behavior; the regression test below
+  // flips this to "suspended" explicitly.
+  mocks.contextState.value = "running";
   __resetSynthForTests();
 });
 
@@ -118,6 +138,33 @@ describe("GuitarSynth (Tone-backed)", () => {
       // Filter routes into Volume; PolySynth routes into Filter.
       expect(filter.connect).toHaveBeenCalledWith(volume);
       expect(polySynth.connect).toHaveBeenCalledWith(filter);
+    });
+
+    it("locks the PolySynth timbre contract (partials + envelope + polyphony)", () => {
+      synth.init();
+      const opts = (mocks.PolySynth.mock.calls[0] as unknown as [
+        {
+          maxPolyphony: number;
+          options: {
+            oscillator: { type: string; partials: number[] };
+            envelope: { attack: number; decay: number; sustain: number; release: number };
+          };
+        },
+      ])[0];
+      expect(opts.maxPolyphony).toBe(12);
+      expect(opts.options.oscillator.type).toBe("custom");
+      expect(opts.options.oscillator.partials).toEqual([1, 0.6, 0.4, 0.3, 0.2, 0.1, 0.06]);
+      expect(opts.options.envelope.attack).toBeCloseTo(0.005);
+      expect(opts.options.envelope.decay).toBeCloseTo(0.4);
+      expect(opts.options.envelope.sustain).toBeCloseTo(0);
+      expect(opts.options.envelope.release).toBeCloseTo(1.0);
+    });
+
+    it("initializes Volume at the master-gain dB (≈ -6.02 dB for 0.5 gain)", () => {
+      synth.init();
+      const initialDb = (mocks.Volume.mock.calls[0] as unknown as [number])[0];
+      // gainToDb(0.5) === 20 * log10(0.5) ≈ -6.0206
+      expect(initialDb).toBeCloseTo(-6.0206, 2);
     });
   });
 
@@ -200,6 +247,28 @@ describe("GuitarSynth (Tone-backed)", () => {
       await synth.playNote(440);
 
       expect(mocks.triggerAttackRelease).toHaveBeenCalledTimes(1);
+    });
+
+    // Regression: App.tsx runs `synth.setMute(isMuted)` in a mount effect
+    // and `isMutedAtom` defaults to `false`. Before this gate, the unmute
+    // branch unconditionally invoked `resume()` -> `ensureToneStarted()` ->
+    // `Tone.start()`, which rejects on Safari/iOS when no user gesture
+    // has occurred and surfaces the "audio blocked" toast on every fresh
+    // page load. setMute(false) must be a no-op for Tone.start while the
+    // AudioContext is still suspended.
+    it("does NOT call Tone.start when unmuting before a user gesture (context suspended)", () => {
+      mocks.contextState.value = "suspended";
+      synth.init();
+      const volume = mocks.volumeInstances[0];
+      volume.volume.rampTo.mockClear();
+      mocks.ensureStartedMock.mockClear();
+
+      synth.setMute(false);
+
+      expect(mocks.ensureStartedMock).not.toHaveBeenCalled();
+      // The volume ramp still happens — only the gesture-dependent
+      // resume is suppressed.
+      expect(volume.volume.rampTo).toHaveBeenCalledTimes(1);
     });
   });
 
