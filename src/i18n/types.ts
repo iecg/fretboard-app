@@ -30,10 +30,9 @@ export interface Dictionary {
     };
   };
   inspector: {
-    viewTab: string;
     scaleTab: string;
     chordTab: string;
-    progressionTab: string;
+    songTab: string;
     groupFingering: string;
     groupLabels: string;
     groupDisplay: string;

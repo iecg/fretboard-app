@@ -32,10 +32,9 @@ export const en: Dictionary = {
     },
   },
   inspector: {
-    viewTab: "View",
     scaleTab: "Scale",
     chordTab: "Chord",
-    progressionTab: "Progression",
+    songTab: "Song",
     groupFingering: "Fingering",
     groupLabels: "Labels",
     groupDisplay: "Display",

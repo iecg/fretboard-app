@@ -3,22 +3,20 @@ import * as RadixTabs from "@radix-ui/react-tabs";
 import clsx from "clsx";
 import { useTranslation } from "../../hooks/useTranslation";
 import { INSPECTOR_TABS, type InspectorTabId } from "./tabs";
-import { ViewTab } from "./ViewTab";
 import { ScaleTab } from "./ScaleTab";
 import { ChordOverlayControls } from "../ChordOverlayControls/ChordOverlayControls";
 import { ProgressionControls } from "../ProgressionControls/ProgressionControls";
 import styles from "./Inspector.module.css";
 
 const TAB_BODIES: Record<InspectorTabId, () => ReactNode> = {
-  view: () => <ViewTab />,
   scale: () => <ScaleTab />,
   chord: () => (
     <div className={styles.tabBody} data-inspector-tab="chord">
       <ChordOverlayControls />
     </div>
   ),
-  progression: () => (
-    <div className={styles.tabBody} data-inspector-tab="progression">
+  song: () => (
+    <div className={styles.tabBody} data-inspector-tab="song">
       <ProgressionControls />
     </div>
   ),
@@ -35,7 +33,7 @@ export interface InspectorProps {
 
 export function Inspector({ placement = "top" }: InspectorProps) {
   const { t } = useTranslation();
-  const [active, setActive] = useState<InspectorTabId>("view");
+  const [active, setActive] = useState<InspectorTabId>("scale");
 
   const tabList = (
     <RadixTabs.List className={styles.tabList} aria-label="Inspector">
