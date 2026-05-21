@@ -9,6 +9,7 @@ import {
   getNoteDisplay,
   formatAccidental,
   getDiatonicChord,
+  getChordNotes,
 } from "@fretflow/core";
 import type {
   ChordMemberName,
@@ -46,6 +47,10 @@ import {
   fullChordsEnabledAtom,
 } from "./chordOverlayAtoms";
 import { activeChordCachedDegreeAtom } from "./songStateAtoms";
+import {
+  resolvedProgressionStepsAtom,
+  activeProgressionStepIndexAtom,
+} from "./progressionAtoms";
 import {
   hasOutsideChordMembersAtom,
   allChordMembersAtom,
@@ -453,4 +458,50 @@ export const lensAvailabilityAtom = atom((get) => {
     available: entry.isAvailable(ctx),
     reason: entry.unavailableReason(ctx),
   }));
+});
+
+/**
+ * Pitch-class set of the chord at the step *after* the active progression step.
+ * Wraps around so that the last step's next is the first step.
+ *
+ * Notes are in the FretFlow sharps convention (C#, D#, …), matching
+ * `getChordNotes` which already performs the same sharp-normalization.
+ *
+ * Returns an empty set when:
+ * - The progression is empty.
+ * - The resolved next step is unavailable in the current scale.
+ * - The step's quality is not a known FretFlow chord quality.
+ */
+export const nextChordTonesAtom = atom((get): Set<string> => {
+  const steps = get(resolvedProgressionStepsAtom);
+  if (steps.length === 0) return new Set();
+  const active = get(activeProgressionStepIndexAtom);
+  const nextIndex = (active + 1) % steps.length;
+  const step = steps[nextIndex];
+  if (!step || step.unavailable || step.root === null || step.quality === null) {
+    return new Set();
+  }
+  const notes = getChordNotes(step.root, step.quality);
+  return new Set(notes);
+});
+
+/**
+ * Pitch-class set of notes shared between the active chord and the next chord
+ * in the progression (common tones). Useful for the Lead lens to identify
+ * pivot/guide notes when navigating between chords.
+ *
+ * Both sets use the same sharps convention so the intersection is reliable.
+ * Returns an empty set when the progression is empty.
+ */
+export const commonTonesWithNextAtom = atom((get): Set<string> => {
+  const active = get(activeProgressionStepIndexAtom);
+  const steps = get(resolvedProgressionStepsAtom);
+  if (steps.length === 0) return new Set();
+  const activeStep = steps[active];
+  if (!activeStep || activeStep.unavailable || activeStep.root === null || activeStep.quality === null) {
+    return new Set();
+  }
+  const activeTones = new Set(getChordNotes(activeStep.root, activeStep.quality));
+  const next = get(nextChordTonesAtom);
+  return new Set([...activeTones].filter((n) => next.has(n)));
 });

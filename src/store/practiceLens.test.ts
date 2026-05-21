@@ -6,7 +6,7 @@ import { k } from "../utils/storage";
 import { practiceLensAtom, chordHiddenNotesAtom, chordTypeAtom } from "./chordOverlayAtoms";
 import { fingeringPatternAtom } from "./fingeringAtoms";
 import { practiceCuesAtom, showChordPracticeBarAtom, practiceBarLensLabelAtom, practiceBarChordGroupAtom, practiceBarLandOnGroupAtom, lensAvailabilityAtom, noteSemanticMapAtom } from "./practiceLensAtoms";
-import { progressionStepsAtom } from "./progressionAtoms";
+import { progressionStepsAtom, activeProgressionStepIndexAtom } from "./progressionAtoms";
 import { rootNoteAtom, scaleNameAtom, scaleVisibleAtom } from "./scaleAtoms";
 import { updateActiveChordAtom } from "./songStateAtoms";
 import { getDegreesForScale } from "@fretflow/core";
@@ -452,6 +452,7 @@ describe("showChordPracticeBarAtom — scale visibility independence", () => {
   });
 });
 
+import { nextChordTonesAtom, commonTonesWithNextAtom } from "./practiceLensAtoms";
 import { colorNotesAtom, effectiveColorNotesAtom, toggleScaleVisibleAtom } from "./scaleAtoms";
 import { effectiveShapeDataAtom } from "./shapeAtoms";
 
@@ -574,5 +575,60 @@ describe("noteSemanticMapAtom — Phase 04 scaleDegree and isDiatonicChord", () 
     const gSem = map.get("G");
     expect(gSem?.isChordTone).toBe(true);
     expect(gSem?.isDiatonicChord).toBeFalsy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Task 4.2 — nextChordTonesAtom / commonTonesWithNextAtom
+// ---------------------------------------------------------------------------
+
+describe("nextChordTonesAtom / commonTonesWithNextAtom (Task 4.2)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  /**
+   * Uses a raw createStore() with no overrides so the default progression
+   * (I-V-vi-IV in C Major) and active index (0) take effect.
+   * Active step 0 = C Major Triad {C,E,G}; next step (index 1) = G Major Triad {G,B,D}.
+   */
+  function makeDefaultStore() {
+    const store = createStore();
+    // Trigger atomWithStorage initialisation for atoms that read from localStorage.
+    const unsub = store.sub(progressionStepsAtom, () => {});
+    unsub();
+    return store;
+  }
+
+  it("nextChordTonesAtom returns the notes of the step after the active step", () => {
+    const store = makeDefaultStore();
+    // Default: active = 0 (C Major Triad), next = 1 (G Major Triad).
+    expect(store.get(nextChordTonesAtom)).toEqual(new Set(["G", "B", "D"]));
+  });
+
+  it("commonTonesWithNextAtom is the intersection of active and next chord tones", () => {
+    const store = makeDefaultStore();
+    // C Major {C,E,G} ∩ G Major {G,B,D} = {G}
+    expect(store.get(commonTonesWithNextAtom)).toEqual(new Set(["G"]));
+  });
+
+  it("nextChordTonesAtom wraps around when the active step is the last step", () => {
+    const store = makeDefaultStore();
+    // Set active to the last step (index 3 = IV = F Major Triad {F,A,C}).
+    // Next wraps to index 0 = I = C Major Triad {C,E,G}.
+    store.set(activeProgressionStepIndexAtom, 3);
+    expect(store.get(nextChordTonesAtom)).toEqual(new Set(["C", "E", "G"]));
+  });
+
+  it("nextChordTonesAtom returns empty set when progression is empty", () => {
+    const store = makeDefaultStore();
+    store.set(progressionStepsAtom, []);
+    expect(store.get(nextChordTonesAtom)).toEqual(new Set());
+  });
+
+  it("commonTonesWithNextAtom returns empty set when progression is empty", () => {
+    const store = makeDefaultStore();
+    store.set(progressionStepsAtom, []);
+    expect(store.get(commonTonesWithNextAtom)).toEqual(new Set());
   });
 });
