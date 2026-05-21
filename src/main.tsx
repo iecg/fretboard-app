@@ -6,6 +6,9 @@ import './styles/semantic.css'
 import './styles/themes.css'
 import App from './App.tsx'
 import { ErrorBoundary, ErrorFallback } from './components/ErrorBoundary/ErrorBoundary'
+import { runChordModeMigration } from './store/chordModeMigration'
+
+runChordModeMigration();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
