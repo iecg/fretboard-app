@@ -48,18 +48,13 @@ export function pluckString(
     release: RELEASE,
   });
   synth.connect(dest);
-  // PluckSynth.triggerAttack's public signature is (note, time), but the
-  // underlying envelope accepts a velocity multiplier as a third arg (same as
-  // the base Instrument.triggerAttack). We pass it through so strum dynamics
-  // are honored — cast keeps TS happy without losing the ability to schedule
-  // per-pluck velocity.
-  (
-    synth.triggerAttack as unknown as (
-      n: number,
-      t: number,
-      v: number,
-    ) => unknown
-  )(frequency, startTime, velocity);
+  // PluckSynth.triggerAttack(note, time) ignores any third velocity arg at
+  // runtime — the comb filter is excited unconditionally. Apply per-voice
+  // dynamics through the synth's `volume` (dB) instead so strum velocity is
+  // honored. `gainToDb` maps linear gain [0,1] to dB; clamp to a small floor
+  // to avoid -Infinity for vanishingly quiet plucks.
+  synth.volume.value = Tone.gainToDb(Math.max(velocity, 0.01));
+  synth.triggerAttack(frequency, startTime);
 
   let cancelled = false;
   return {

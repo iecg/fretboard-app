@@ -12,6 +12,7 @@ vi.mock("tone", async () => {
   const t = await tone;
   return {
     PluckSynth: t.spies.ctorSpy,
+    gainToDb: (v: number) => 20 * Math.log10(Math.max(1e-6, v)),
     now: () => 0,
   };
 });
@@ -34,7 +35,7 @@ describe("pluckString — Tone.PluckSynth backend", () => {
     expect(opts.release).toBeGreaterThan(0);
   });
 
-  it("triggers attack at requested freq + time + velocity", async () => {
+  it("triggers attack at requested freq + time", async () => {
     const t = await tone;
     pluckString(
       { currentTime: 0 } as AudioContext,
@@ -44,10 +45,29 @@ describe("pluckString — Tone.PluckSynth backend", () => {
       { velocity: 0.7 },
     );
     expect(t.spies.triggerAttack).toHaveBeenCalledTimes(1);
-    const [pitch, time, velocity] = t.spies.triggerAttack.mock.calls[0]!;
+    const [pitch, time] = t.spies.triggerAttack.mock.calls[0]!;
     expect(Number(pitch)).toBeCloseTo(220, 1);
     expect(time).toBeCloseTo(1.5, 3);
-    expect(velocity).toBeCloseTo(0.7, 2);
+  });
+
+  it("applies velocity via synth.volume (gainToDb)", async () => {
+    const t = await tone;
+    pluckString(
+      { currentTime: 0 } as AudioContext,
+      {} as AudioNode,
+      220,
+      0,
+      { velocity: 0.5 },
+    );
+    // Constructor was called as `new Tone.PluckSynth(...)`; the
+    // mockImplementation's return value is the stub instance, captured via
+    // mock.results. Assert its `volume.value` was set to gainToDb(0.5).
+    expect(t.spies.ctorSpy).toHaveBeenCalledTimes(1);
+    const instance = t.spies.ctorSpy.mock.results[0]!.value as {
+      volume: { value: number };
+    };
+    // gainToDb(0.5) = 20 * log10(0.5) ≈ -6.0206 dB
+    expect(instance.volume.value).toBeCloseTo(-6.0206, 2);
   });
 
   it("skips zero-velocity plucks (no synth constructed)", async () => {
