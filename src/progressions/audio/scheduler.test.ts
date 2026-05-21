@@ -38,6 +38,22 @@ vi.mock("./string", () => ({
   })),
 }));
 
+// Drum-kit voices — now Tone-backed (MembraneSynth / NoiseSynth / MetalSynth).
+// Mocking `./drumKit` lets the drum-lane assertions count call surfaces (kick,
+// snare, hi-hat, ride) rather than poking at raw oscillators / buffer sources
+// that no longer exist after the Phase 7B migration.
+const kickSpy = vi.hoisted(() => vi.fn());
+const snareSpy = vi.hoisted(() => vi.fn());
+const hatSpy = vi.hoisted(() => vi.fn());
+const rideSpy = vi.hoisted(() => vi.fn());
+const cancelDrumSpy = vi.hoisted(() => vi.fn());
+vi.mock("./drumKit", () => ({
+  scheduleKick: kickSpy.mockImplementation(() => ({ cancel: cancelDrumSpy })),
+  scheduleSnare: snareSpy.mockImplementation(() => ({ cancel: cancelDrumSpy })),
+  scheduleHiHat: hatSpy.mockImplementation(() => ({ cancel: cancelDrumSpy })),
+  scheduleRide: rideSpy.mockImplementation(() => ({ cancel: cancelDrumSpy })),
+}));
+
 import { scheduleProgressionStep } from "./scheduler";
 import { _metronomeInternals } from "./metronome";
 import {
@@ -101,6 +117,11 @@ describe("scheduleProgressionStep", () => {
     pluckStringSpy.mockReset().mockImplementation(() => ({
       cancel: cancelPluckSpy,
     }));
+    cancelDrumSpy.mockReset();
+    kickSpy.mockReset().mockImplementation(() => ({ cancel: cancelDrumSpy }));
+    snareSpy.mockReset().mockImplementation(() => ({ cancel: cancelDrumSpy }));
+    hatSpy.mockReset().mockImplementation(() => ({ cancel: cancelDrumSpy }));
+    rideSpy.mockReset().mockImplementation(() => ({ cancel: cancelDrumSpy }));
   });
 
   it("returns a no-op handle when beatsAvailable is 0", () => {
@@ -292,7 +313,7 @@ describe("scheduleProgressionStep", () => {
     expect(clickTimes).toEqual([11, 11.5]);
   });
 
-  it("uses buffer sources for the drum kit (kick adds oscillators, snare/hat add buffers)", () => {
+  it("schedules drum voices on the kick/snare/hat lanes only when drums flag is on", () => {
     scheduleProgressionStep(mock.ctx, bus as unknown as AudioNode, {
       voicing: [],
       bassNotes: [],
@@ -303,12 +324,13 @@ describe("scheduleProgressionStep", () => {
       enable: { strum: false, bass: false, drums: true, metronome: false },
       ...defaultNewFields,
     });
-    // 2 kicks × (body + click) = 4 oscillators from kicks
-    // 2 snares × (body) = 2 oscillators from snares
-    // Total kick + snare body oscillators
-    expect(mock.oscCount()).toBeGreaterThanOrEqual(6);
-    // Snares + hats use noise buffers — at minimum 2 snares + 8 hats = 10.
-    expect(mock.bufferSourceCount()).toBeGreaterThanOrEqual(10);
+    // Rock pattern: kicks on 1+3, snares on 2+4, hi-hat on every 8th note.
+    // All drum voices are now Tone-backed — no raw oscillators in the mock ctx.
+    expect(kickSpy).toHaveBeenCalled();
+    expect(snareSpy).toHaveBeenCalled();
+    expect(hatSpy).toHaveBeenCalled();
+    expect(mock.oscCount()).toBe(0);
+    expect(mock.bufferSourceCount()).toBe(0);
   });
 
   it("cancels scheduled drum hits when the step handle is cancelled", () => {
@@ -323,18 +345,19 @@ describe("scheduleProgressionStep", () => {
       ...defaultNewFields,
     });
 
-    const scheduledSources = [
-      ...mock.oscillators(),
-      ...mock.bufferSources(),
-    ];
-    expect(scheduledSources.length).toBeGreaterThan(0);
-    expect(scheduledSources.every((source) => source.stop.mock.calls.length === 1))
-      .toBe(true);
+    // Total drum hits scheduled across the bar = sum of kick/snare/hat calls.
+    const totalHits =
+      kickSpy.mock.calls.length +
+      snareSpy.mock.calls.length +
+      hatSpy.mock.calls.length +
+      rideSpy.mock.calls.length;
+    expect(totalHits).toBeGreaterThan(0);
+    expect(cancelDrumSpy).not.toHaveBeenCalled();
 
     handle.cancelAll();
 
-    expect(scheduledSources.every((source) => source.stop.mock.calls.length >= 2))
-      .toBe(true);
+    // Each scheduled drum voice's cancel() should fire on step cancellation.
+    expect(cancelDrumSpy).toHaveBeenCalledTimes(totalHits);
   });
 
   it("clips strum hits past the available beats", () => {
