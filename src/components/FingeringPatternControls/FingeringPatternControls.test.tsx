@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { FingeringPatternControls } from "../FingeringPatternControls/FingeringPatternControls";
 import { createStore, Provider } from "jotai";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
@@ -425,7 +426,7 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
         expect(combobox).toHaveTextContent("String 1");
       });
 
-      it("one-string: changing LabeledSelect value updates oneStringIndexAtom", async () => {
+      it("one-string: selecting a different option updates oneStringIndexAtom", async () => {
         const store = createStore();
         act(() => {
           store.set(fingeringPatternAtom, "one-string");
@@ -436,13 +437,10 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
             <FingeringPatternControls />
           </Provider>
         );
-        // Simulate Radix Select value change via onValueChange (fireEvent on trigger doesn't work)
-        // Use the onChange of the underlying Select.Root by dispatching to the trigger
-        // instead, test via the select value attribute
-        const combobox = screen.getByRole("combobox", { name: /^String$/i });
-        expect(combobox).toBeInTheDocument();
-        // Default is index 0 → "String 1"
-        expect(combobox).toHaveTextContent("String 1");
+        // Open the Radix Select portal and click "String 3" (index 2)
+        await userEvent.click(screen.getByRole("combobox", { name: /^String$/i }));
+        await userEvent.click(screen.getByRole("option", { name: "String 3" }));
+        expect(store.get(oneStringIndexAtom)).toBe(2);
       });
 
       it("two-strings: pair chooser is a LabeledSelect (combobox role) with options Strings 1-2 etc.", () => {
@@ -479,6 +477,24 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
         expect(combobox).toBeInTheDocument();
         // Default pair 0 → "Strings 1-3" for skip-one topology
         expect(combobox).toHaveTextContent("Strings 1-3");
+      });
+
+      it("two-strings: selecting a different pair option updates twoStringsPairAtom", async () => {
+        const store = createStore();
+        act(() => {
+          store.set(fingeringPatternAtom, "two-strings");
+          store.set(twoStringsIntervalAtom, 0); // adjacent topology
+          store.set(twoStringsPairAtom, 0);
+        });
+        render(
+          <Provider store={store}>
+            <FingeringPatternControls />
+          </Provider>
+        );
+        // Open the Radix Select portal and click "Strings 3-4" (pair index 2)
+        await userEvent.click(screen.getByRole("combobox", { name: /^Strings$/i }));
+        await userEvent.click(screen.getByRole("option", { name: "Strings 3-4" }));
+        expect(store.get(twoStringsPairAtom)).toBe(2);
       });
     });
   });
