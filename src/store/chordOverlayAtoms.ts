@@ -27,6 +27,7 @@ import {
   withStorageErrorBoundary,
 } from "../utils/storage";
 import { useFlatsAtom } from "./scaleAtoms";
+import { chordScopeToPositionAtom } from "./chordScope";
 import { activeResolvedProgressionStepAtom } from "./progressionAtoms";
 import {
   activeChordRootAtom,
@@ -171,6 +172,42 @@ export const chordFretSpreadAtom = atomWithStorage(
   0,
   chordFretSpreadStorage,
   GET_ON_INIT,
+);
+
+/**
+ * Discrete region selector that unifies the chord-overlay `scopeToPosition`
+ * boolean and the `chordFretSpread` 0..4 stepper into a single 4-option
+ * ToggleBar value:
+ *
+ *   - "all"      → scope=false (no positional constraint)
+ *   - "position" → scope=true, spread=0 (strict position window)
+ *   - "+2"       → scope=true, spread=2 (widen ±2 frets)
+ *   - "+4"       → scope=true, spread=4 (widen ±4 frets)
+ *
+ * Reads bucket the underlying spread into the nearest discrete option so a
+ * legacy persisted spread of 1 still surfaces as "+2".
+ */
+export type Region = "position" | "+2" | "+4" | "all";
+
+export const regionAtom = atom(
+  (get): Region => {
+    if (!get(chordScopeToPositionAtom)) return "all";
+    const sp = get(chordFretSpreadAtom);
+    if (sp >= 3) return "+4";
+    if (sp >= 1) return "+2";
+    return "position";
+  },
+  (_get, set, next: Region) => {
+    if (next === "all") {
+      set(chordScopeToPositionAtom, false);
+      return;
+    }
+    set(chordScopeToPositionAtom, true);
+    set(
+      chordFretSpreadAtom,
+      next === "position" ? 0 : next === "+2" ? 2 : 4,
+    );
+  },
 );
 
 export const fullChordsEnabledAtom = atomWithStorage<boolean>(
