@@ -11,6 +11,7 @@ import { settingsOverlayOpenAtom, themeAtom } from "./store/uiAtoms";
 import audioErrorStyles from "./components/AudioErrorBanner/AudioErrorBanner.module.css";
 import useLayoutMode from "./hooks/useLayoutMode";
 import { useResolvedTheme } from "./hooks/useResolvedTheme";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useTranslation } from "./hooks/useTranslation";
 import { AppHeader } from "./components/AppHeader/AppHeader";
 import { HeaderTransportCluster } from "./components/HeaderTransportCluster/HeaderTransportCluster";
@@ -51,6 +52,7 @@ function AppContent() {
   const helpTriggerRef = useRef<HTMLButtonElement>(null);
   const layout = useLayoutMode();
   const theme = useResolvedTheme();
+  useKeyboardShortcuts();
 
   useLayoutEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
