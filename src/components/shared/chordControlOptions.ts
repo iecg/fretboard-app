@@ -28,7 +28,7 @@ export function buildDegreeToggleOptions({
   offLabel = "Off",
 }: BuildDegreeOptionsArgs): ToggleOption[] {
   // ChordOverlayControls historically used getDegreesForScale (object), while
-  // ProgressionControls used getDegreeSequence (array). They return the same
+  // SongControls used getDegreeSequence (array). They return the same
   // degree set; we prefer getDegreeSequence here for stable ordering.
   const degrees = getDegreeSequence(scaleName) ?? Object.values(getDegreesForScale(scaleName));
   const base: ToggleOption[] = degrees.map((deg) => ({

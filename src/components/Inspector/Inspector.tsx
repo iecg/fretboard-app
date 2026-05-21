@@ -5,7 +5,7 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { INSPECTOR_TABS, type InspectorTabId } from "./tabs";
 import { ScaleTab } from "./ScaleTab";
 import { ChordOverlayControls } from "../ChordOverlayControls/ChordOverlayControls";
-import { ProgressionControls } from "../ProgressionControls/ProgressionControls";
+import { SongControls } from "../SongControls/SongControls";
 import styles from "./Inspector.module.css";
 
 const TAB_BODIES: Record<InspectorTabId, () => ReactNode> = {
@@ -17,7 +17,7 @@ const TAB_BODIES: Record<InspectorTabId, () => ReactNode> = {
   ),
   song: () => (
     <div className={styles.tabBody} data-inspector-tab="song">
-      <ProgressionControls />
+      <SongControls />
     </div>
   ),
 };

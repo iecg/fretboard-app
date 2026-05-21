@@ -64,7 +64,7 @@ describe("Inspector", () => {
     expect(screen.getByRole("group", { name: "Chord Type" })).toBeInTheDocument();
   });
 
-  it("populates the Song tab body with the ProgressionControls editor", async () => {
+  it("populates the Song tab body with the SongControls editor", async () => {
     const user = userEvent.setup();
     renderWithAtoms(<Inspector />, [
       [rootNoteAtom, "C"],

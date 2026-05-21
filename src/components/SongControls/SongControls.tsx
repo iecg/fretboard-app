@@ -25,7 +25,7 @@ import { BackingTrackControls } from "./BackingTrackControls";
 import shared from "../shared/shared.module.css";
 import { CHORD_QUALITY_DIATONIC_VALUE } from "../shared/chordControlOptions";
 import { CUSTOM_PRESET_ID } from "../../store/progressionAtoms";
-import styles from "./ProgressionControls.module.css";
+import styles from "./SongControls.module.css";
 
 const CATEGORY_LABELS: Record<ProgressionPresetCategory, string> = {
   "pop-rock": "Pop / Rock",
@@ -36,7 +36,7 @@ const CATEGORY_LABELS: Record<ProgressionPresetCategory, string> = {
   minor: "Minor",
 };
 
-export function ProgressionControls() {
+export function SongControls() {
   const { t } = useTranslation();
   const { scaleName, rootNote } = useScaleState();
   const {
