@@ -93,7 +93,7 @@ describe("TransportBar", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
-  it("no longer renders an inline tempo stepper — tempo moved to the Progression tab", () => {
+  it("no longer renders an inline tempo stepper — tempo moved to the Song tab", () => {
     renderWithAtoms(<TransportBar />, [...playableAtoms]);
     expect(screen.queryByRole("button", { name: /Increase Tempo/ })).toBeNull();
     expect(screen.queryByRole("button", { name: /Decrease Tempo/ })).toBeNull();

@@ -6,7 +6,7 @@ import { axe } from "../../test-utils/a11y";
 import { makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
 import { activeProgressionStepIndexAtom, beatsPerBarAtom, progressionStepsAtom } from "../../store/progressionAtoms";
 import { rootNoteAtom, scaleNameAtom } from "../../store/scaleAtoms";
-import { ProgressionControls } from "./ProgressionControls";
+import { SongControls } from "./SongControls";
 
 const BASE_SEEDS = [
   [rootNoteAtom, "C"],
@@ -17,13 +17,13 @@ const BASE_SEEDS = [
   ]],
 ] as const;
 
-describe("ProgressionControls", () => {
+describe("SongControls", () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
   it("renders presets, step list, and active step editor without an on/off toggle", () => {
-    renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
 
     expect(screen.queryByRole("switch", { name: "Progression mode" })).not.toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Preset" })).toBeInTheDocument();
@@ -36,7 +36,7 @@ describe("ProgressionControls", () => {
 
   it("loads a preset into the editable list", async () => {
     const store = makeAtomStore([...BASE_SEEDS]);
-    renderWithStore(<ProgressionControls />, store);
+    renderWithStore(<SongControls />, store);
     const user = userEvent.setup();
 
     await user.click(screen.getByRole("combobox", { name: "Preset" }));
@@ -49,7 +49,7 @@ describe("ProgressionControls", () => {
 
   it("selects steps and edits degree, duration, and quality", async () => {
     const store = makeAtomStore([...BASE_SEEDS]);
-    renderWithStore(<ProgressionControls />, store);
+    renderWithStore(<SongControls />, store);
 
     await userEvent.click(screen.getByRole("button", { name: /^2.*V/i }));
     expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
@@ -75,7 +75,7 @@ describe("ProgressionControls", () => {
         { id: "one", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
       ]],
     ]);
-    renderWithStore(<ProgressionControls />, store);
+    renderWithStore(<SongControls />, store);
     const qualityGroup = screen.getByRole("group", { name: "Chord quality" });
     // "7" is the short label for Dominant 7th — it is the active cell.
     await userEvent.click(within(qualityGroup).getByRole("button", { name: "7" }));
@@ -84,7 +84,7 @@ describe("ProgressionControls", () => {
 
   it("duplicates the active step via the Duplicate button", async () => {
     const store = makeAtomStore([...BASE_SEEDS]);
-    renderWithStore(<ProgressionControls />, store);
+    renderWithStore(<SongControls />, store);
 
     // BASE_SEEDS active index defaults to 0 -> the "I" step is active.
     await userEvent.click(screen.getByRole("button", { name: /duplicate chord/i }));
@@ -98,7 +98,7 @@ describe("ProgressionControls", () => {
 
   it("adds, removes, and reorders steps", async () => {
     const store = makeAtomStore([...BASE_SEEDS]);
-    renderWithStore(<ProgressionControls />, store);
+    renderWithStore(<SongControls />, store);
 
     await userEvent.click(screen.getByRole("button", { name: "Add chord" }));
     expect(store.get(progressionStepsAtom)).toHaveLength(3);
@@ -111,23 +111,23 @@ describe("ProgressionControls", () => {
   });
 
   it("does not render a progression on/off toggle", () => {
-    renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     expect(screen.queryByRole("switch", { name: "Progression mode" })).not.toBeInTheDocument();
   });
 
   it("has no accessibility violations", async () => {
-    const { container } = renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     expect(await axe(container)).toHaveNoViolations();
   });
 });
 
-describe("ProgressionControls METER", () => {
+describe("SongControls METER", () => {
   it("renders a Beats per bar stepper that cycles 3→4→6→8", () => {
     const store = makeAtomStore([
       ...BASE_SEEDS,
       [beatsPerBarAtom, 4],
     ]);
-    renderWithStore(<ProgressionControls />, store);
+    renderWithStore(<SongControls />, store);
     // The "Beats per bar" stepper label is hidden inside its Prop cell; the
     // cell's own "Beats/Bar" micro-label is the visible heading.
     expect(screen.getByText("Beats/Bar")).toBeTruthy();
@@ -137,7 +137,7 @@ describe("ProgressionControls METER", () => {
   });
 });
 
-describe("ProgressionControls PRESET", () => {
+describe("SongControls PRESET", () => {
   beforeEach(() => {
     localStorage.clear();
   });
@@ -147,7 +147,7 @@ describe("ProgressionControls PRESET", () => {
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
     ]);
-    renderWithStore(<ProgressionControls />, store);
+    renderWithStore(<SongControls />, store);
     const trigger = screen.getByRole("combobox", { name: "Preset" });
     // default I-V-vi-IV preset — the trigger reflects the selected label.
     expect(within(trigger).getByText("I-V-vi-IV")).toBeInTheDocument();
@@ -158,7 +158,7 @@ describe("ProgressionControls PRESET", () => {
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
     ]);
-    renderWithStore(<ProgressionControls />, store);
+    renderWithStore(<SongControls />, store);
     const user = userEvent.setup();
 
     await user.click(screen.getByRole("combobox", { name: "Preset" }));
@@ -170,7 +170,7 @@ describe("ProgressionControls PRESET", () => {
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
     ]);
-    renderWithStore(<ProgressionControls />, store);
+    renderWithStore(<SongControls />, store);
     const user = userEvent.setup();
 
     await user.click(screen.getByRole("combobox", { name: "Preset" }));
@@ -182,7 +182,7 @@ describe("ProgressionControls PRESET", () => {
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Minor Blues"],
     ]);
-    renderWithStore(<ProgressionControls />, store);
+    renderWithStore(<SongControls />, store);
     const user = userEvent.setup();
 
     await user.click(screen.getByRole("combobox", { name: "Preset" }));
@@ -202,42 +202,42 @@ describe("ProgressionControls PRESET", () => {
   });
 });
 
-describe("ProgressionControls CHORDS list", () => {
+describe("SongControls CHORDS list", () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
   it("uses the section label 'Chords' (not 'Steps')", () => {
-    const { getByText, queryByText } = renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    const { getByText, queryByText } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     expect(getByText("Chords")).toBeTruthy();
     expect(queryByText("Steps")).toBeNull();
   });
 
   it("rows do not contain the word 'Step'", () => {
-    const { queryByText } = renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    const { queryByText } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     expect(queryByText(/^Step \d/)).toBeNull();
   });
 
   it("rows show the new duration label ('1 bar', '2 bars' etc.)", () => {
-    const { getAllByText } = renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    const { getAllByText } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     expect(getAllByText("1 bar").length).toBeGreaterThan(0);
   });
 });
 
-describe("ProgressionControls QUALITY grid", () => {
+describe("SongControls QUALITY grid", () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
   it("renders the selected-chord Quality as a grid, not a scrolling bar", () => {
-    renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     const qualityGroup = screen.getByRole("group", { name: "Chord quality" });
     expect(qualityGroup).not.toHaveAttribute("data-overflow");
     expect(within(qualityGroup).getByRole("button", { name: "Maj" })).toBeInTheDocument();
   });
 
   it("has no standalone Diatonic button", () => {
-    renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     expect(screen.queryByRole("button", { name: "Diatonic" })).not.toBeInTheDocument();
   });
 
@@ -248,15 +248,15 @@ describe("ProgressionControls QUALITY grid", () => {
         { id: "one", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
       ]],
     ]);
-    renderWithStore(<ProgressionControls />, store);
+    renderWithStore(<SongControls />, store);
     const degreeGroup = screen.getByRole("group", { name: "Progression degree" });
     expect(within(degreeGroup).getByRole("button", { name: "V*" })).toBeInTheDocument();
   });
 });
 
-describe("ProgressionControls DEGREE", () => {
+describe("SongControls DEGREE", () => {
   it("uses the shared degree option builder (degree-only, no Off sentinel)", () => {
-    const { getByLabelText } = renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    const { getByLabelText } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     const group = getByLabelText("Progression degree");
     expect(group).toBeTruthy();
     // No "Off" button inside the degree toggle group itself
@@ -264,20 +264,20 @@ describe("ProgressionControls DEGREE", () => {
   });
 });
 
-describe("ProgressionControls DURATION", () => {
+describe("SongControls DURATION", () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
   it("renders a numeric stepper + Beat/Bar toggle", () => {
-    const { getByRole, getByText } = renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    const { getByRole, getByText } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     expect(getByRole("group", { name: /Duration value/i })).toBeTruthy();
     expect(getByText("Beat")).toBeTruthy();
     expect(getByText("Bar")).toBeTruthy();
   });
 
   it("increments the active chord's duration value", () => {
-    const { getByRole, getByLabelText } = renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    const { getByRole, getByLabelText } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     fireEvent.click(getByLabelText(/Increase Duration value/i));
     // The displayed value should now be 2 (within the duration stepper group)
     const durationGroup = getByRole("group", { name: /Duration value/i });
@@ -285,36 +285,36 @@ describe("ProgressionControls DURATION", () => {
   });
 });
 
-describe("ProgressionControls grid layout", () => {
+describe("SongControls grid layout", () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
   it("renders Meter / Chords / Backing Track group headers", () => {
-    renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     expect(screen.getByRole("heading", { name: "Meter" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Chords" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Backing Track" })).toBeInTheDocument();
   });
 
   it("does not render a Loop control", () => {
-    renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     expect(screen.queryByRole("switch", { name: "Loop" })).not.toBeInTheDocument();
   });
 
   it("shows a SELECTED header naming the active chord", () => {
-    renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     expect(screen.getByText(/^Selected —/i)).toBeInTheDocument();
   });
 
   it("shows the progression length readout", () => {
     // BASE_SEEDS is two 1-bar steps -> a 2-bar progression.
-    renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     expect(screen.getByText("2 bars")).toBeInTheDocument();
   });
 
   it("renders the rehosted backing-track controls", () => {
-    renderWithStore(<ProgressionControls />, makeAtomStore([...BASE_SEEDS]));
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     expect(screen.getByRole("combobox", { name: "Genre style" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Chord instrument" })).toBeInTheDocument();
     expect(screen.getByLabelText("Swing amount")).toBeInTheDocument();

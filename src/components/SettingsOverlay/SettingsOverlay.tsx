@@ -15,7 +15,7 @@ import {
   ANIMATION_EASE,
 } from "@fretflow/core";
 import { OverlaySection } from "./shared";
-import ViewSettingsSection from "./sections/ViewSettingsSection";
+import DisplaySettingsSection from "./sections/DisplaySettingsSection";
 import InstrumentSettingsSection from "./sections/InstrumentSettingsSection";
 import AppearanceSettingsSection from "./sections/AppearanceSettingsSection";
 import ResetSettingsSection from "./sections/ResetSettingsSection";
@@ -115,8 +115,8 @@ function SettingsOverlaySurface({
           </button>
         </div>
         <div className={clsx(styles["settings-overlay-content"], "custom-scrollbar")}>
-          <OverlaySection id="view" title={t("settings.sections.view")}>
-            <ViewSettingsSection />
+          <OverlaySection id="display" title={t("settings.sections.display")}>
+            <DisplaySettingsSection />
           </OverlaySection>
           <OverlaySection id="instrument" title={t("settings.sections.instrument")}>
             <InstrumentSettingsSection />

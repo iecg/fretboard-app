@@ -5,7 +5,7 @@ export interface Dictionary {
     close: string;
     language: string;
     sections: {
-      view: string;
+      display: string;
       instrument: string;
       appearance: string;
       notation: string;
@@ -30,19 +30,13 @@ export interface Dictionary {
     };
   };
   inspector: {
-    viewTab: string;
     scaleTab: string;
     chordTab: string;
-    progressionTab: string;
+    songTab: string;
     groupFingering: string;
-    groupLabels: string;
-    groupDisplay: string;
     pattern: string;
     degreeColors: string;
     fullChords: string;
-    tapToPlay: string;
-    statusByDegree: string;
-    statusUniform: string;
     statusVisible: string;
     statusHidden: string;
     statusAudioOn: string;
@@ -109,6 +103,8 @@ export interface Dictionary {
     scopeToPositionNeedsPosition: string;
     chordSpread: string;
     chordSpreadHint: string;
+    scaleLayer: string;
+    chordLayer: string;
   };
   statusBar: {
     key: string;

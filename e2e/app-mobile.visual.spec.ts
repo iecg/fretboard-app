@@ -54,7 +54,7 @@ test.describe("App Mobile Visual", () => {
     await expect(page.getByRole("tablist", { name: "Inspector" })).toBeVisible();
 
     // mobileTabAtom was removed in the mobile rehost; navigate via tab click.
-    await page.getByRole("tab", { name: "Progression" }).click();
+    await page.getByRole("tab", { name: "Song" }).click();
 
     await expect(page.getByRole("combobox", { name: "Preset" })).toBeVisible();
     await expectFullPageVisual(page, "app-mobile-progression-tab-portrait-390x844");

@@ -30,6 +30,12 @@
   min-width: 0;
 }
 
+.layerVisibilityRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 /* The wheel column keeps default cross-axis stretch so its GroupHeader spans
    the full width (and renders its divider rule). The CircleOfFifths element
    centers itself via its own `margin: 0 auto` + max-width. */

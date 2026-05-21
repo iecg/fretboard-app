@@ -624,6 +624,14 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
   });
 
+  describe("Task 3.6: per-tab visibility switches", () => {
+    it("renders a visibility switch bound to chordOverlayHiddenAtom (inverted)", () => {
+      renderWithAtoms(<ChordOverlayControls />, [...DEGREE_SEEDS]);
+      const sw = screen.getByRole("switch", { name: /chord layer/i });
+      expect(sw).toBeChecked();
+    });
+  });
+
   describe("Task 9: Chord Spread stepper and Scope to position switch", () => {
     const VOICING_SEEDS = [
       [scaleNameAtom, "Major"],
