@@ -7,7 +7,7 @@ export const en: Dictionary = {
     close: "Close settings",
     language: "Language",
     sections: {
-      view: "View",
+      display: "Display",
       instrument: "Instrument",
       appearance: "Appearance",
       notation: "Notation",

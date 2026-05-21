@@ -5,7 +5,7 @@ export interface Dictionary {
     close: string;
     language: string;
     sections: {
-      view: string;
+      display: string;
       instrument: string;
       appearance: string;
       notation: string;

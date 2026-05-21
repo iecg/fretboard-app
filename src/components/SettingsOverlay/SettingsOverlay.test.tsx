@@ -120,7 +120,7 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     ).map((node) => node.textContent?.trim());
 
     expect(headings).toEqual([
-      "View",
+      "Display",
       "Instrument",
       "Language",
       "Appearance",
@@ -265,6 +265,15 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(screen.getByText("Reset all settings")).toBeTruthy();
     expect(store.get(fretZoomAtom)).toBe(200);
     expect(store.get(settingsOverlayOpenAtom)).toBe(true);
+  });
+
+  it("renders Display section with note-label / accidental / fret-range / degree-color controls", () => {
+    renderWithAtoms(<SettingsOverlay />, [[settingsOverlayOpenAtom, true]]);
+    expect(screen.getByRole("region", { name: /display/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/note labels/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/accidentals/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/fret range/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/degree colors/i)).toBeInTheDocument();
   });
 
   it("does not render a Compact Controls group", async () => {
