@@ -1,5 +1,19 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getNoteFrequency } from "@fretflow/core";
+
+// Mock the metronome module so the scheduler integration test can assert on
+// `scheduleClick` calls directly instead of inspecting Web Audio nodes. The
+// real metronome is built on Tone.Synth (see metronome.ts) and lives outside
+// the `MockCtx` it would have used; we spy on the call surface that matters.
+const scheduleClickSpy = vi.hoisted(() => vi.fn());
+const cancelClickSpy = vi.hoisted(() => vi.fn());
+vi.mock("./metronome", () => ({
+  scheduleClick: scheduleClickSpy.mockImplementation(() => ({
+    cancel: cancelClickSpy,
+  })),
+  _metronomeInternals: { ACCENT_FREQ: 1500, NORMAL_FREQ: 900, DECAY: 0.04 },
+}));
+
 import { scheduleProgressionStep } from "./scheduler";
 import { _metronomeInternals } from "./metronome";
 import {
@@ -51,6 +65,10 @@ describe("scheduleProgressionStep", () => {
   beforeEach(() => {
     mock = buildMockCtx();
     bus = createMockGain();
+    cancelClickSpy.mockReset();
+    scheduleClickSpy.mockReset().mockImplementation(() => ({
+      cancel: cancelClickSpy,
+    }));
   });
 
   it("returns a no-op handle when beatsAvailable is 0", () => {
@@ -177,7 +195,7 @@ describe("scheduleProgressionStep", () => {
       enable: { strum: false, bass: false, drums: false, metronome: true },
       ...defaultNewFields,
     });
-    expect(mock.oscCount()).toBe(4);
+    expect(scheduleClickSpy).toHaveBeenCalledTimes(4);
   });
 
   it("cancels scheduled metronome clicks when the step handle is cancelled", () => {
@@ -192,15 +210,13 @@ describe("scheduleProgressionStep", () => {
       ...defaultNewFields,
     });
 
-    const scheduledSources = mock.oscillators();
-    expect(scheduledSources).toHaveLength(4);
-    expect(scheduledSources.every((source) => source.stop.mock.calls.length === 1))
-      .toBe(true);
+    expect(scheduleClickSpy).toHaveBeenCalledTimes(4);
+    expect(cancelClickSpy).not.toHaveBeenCalled();
 
     handle.cancelAll();
 
-    expect(scheduledSources.every((source) => source.stop.mock.calls.length >= 2))
-      .toBe(true);
+    // Each metronome voice's cancel() should fire on step cancellation.
+    expect(cancelClickSpy).toHaveBeenCalledTimes(4);
   });
 
   it("keeps step timing but skips past hits when rescheduling from a cutoff", () => {
@@ -216,8 +232,9 @@ describe("scheduleProgressionStep", () => {
       ...defaultNewFields,
     });
 
-    const startTimes = mock.oscillators().map((source) => source.start.mock.calls[0]?.[0]);
-    expect(startTimes).toEqual([11, 11.5]);
+    // scheduleClick(ctx, dest, time, options) — extract the `time` arg.
+    const clickTimes = scheduleClickSpy.mock.calls.map((args) => args[2]);
+    expect(clickTimes).toEqual([11, 11.5]);
   });
 
   it("uses buffer sources for the drum kit (kick adds oscillators, snare/hat add buffers)", () => {
@@ -305,8 +322,11 @@ describe("scheduleProgressionStep", () => {
       ...defaultNewFields,
     });
 
-    const frequencies = mock.oscillators().map((osc) =>
-      osc.frequency.setValueAtTime.mock.calls[0]?.[0],
+    // scheduleClick(ctx, dest, time, { accent, velocity }) — pick `accent`
+    // off each call and map back to the internal frequency for parity with
+    // the prior assertion.
+    const frequencies = scheduleClickSpy.mock.calls.map((args) =>
+      args[3]?.accent ? _metronomeInternals.ACCENT_FREQ : _metronomeInternals.NORMAL_FREQ,
     );
     expect(frequencies).toEqual([
       _metronomeInternals.ACCENT_FREQ,

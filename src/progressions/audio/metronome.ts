@@ -1,11 +1,14 @@
 /**
- * Metronome click. A short, bright sine ping with a small filtered-noise
- * transient — high-pitched on beat 1 (accent), lower on the other beats.
+ * Metronome click. A short sine ping triggered via Tone.Synth on the shared
+ * progression context (see `toneBus.ts`). 1500 Hz on accent (beat 1),
+ * 900 Hz on the others. 40 ms decay.
  *
- * Routed through a caller-supplied destination so the click can be tied to
- * the progression bus (silenced on pause) or sent to its own bus if we ever
- * want independent metronome volume.
+ * Tone's `triggerAttackRelease(freq, duration, time, velocity)` schedules a
+ * single note at `time` in audio-context seconds — the same clock space the
+ * existing scheduler uses. `dest` is the progression bus; we route the
+ * synth's output to it so pausing the bus also cuts the click.
  */
+import * as Tone from "tone";
 
 const ACCENT_FREQ = 1500;
 const NORMAL_FREQ = 900;
@@ -20,57 +23,37 @@ export interface ClickHandle {
   cancel: () => void;
 }
 
-/** Schedule a single metronome click at the supplied AudioContext time. */
 export function scheduleClick(
-  ctx: AudioContext,
+  _ctx: AudioContext,
   dest: AudioNode,
   time: number,
   options: ClickOptions = {},
 ): ClickHandle {
   const velocity = Math.max(0, Math.min(1, options.velocity ?? 0.6));
-  // Silent clicks would feed 0 into exponentialRampToValueAtTime, which
-  // throws. Skip scheduling entirely — there's nothing to hear anyway.
   if (velocity <= 0) return { cancel: () => {} };
+
   const frequency = options.accent ? ACCENT_FREQ : NORMAL_FREQ;
+  const synth = new Tone.Synth({
+    oscillator: { type: "sine" },
+    envelope: { attack: 0.001, decay: DECAY, sustain: 0, release: 0.01 },
+  });
+  // Route through the existing progression bus so silenceProgressionBus()
+  // mutes the metronome along with the rest of the backing track.
+  synth.connect(dest);
+  synth.triggerAttackRelease(frequency, DECAY, time, velocity);
 
-  const osc = ctx.createOscillator();
-  osc.type = "sine";
-  osc.frequency.setValueAtTime(frequency, time);
-
-  const gain = ctx.createGain();
-  gain.gain.setValueAtTime(0.0001, time);
-  gain.gain.exponentialRampToValueAtTime(velocity, time + 0.001);
-  gain.gain.exponentialRampToValueAtTime(0.0001, time + DECAY);
-
-  osc.connect(gain).connect(dest);
-  osc.start(time);
-  osc.stop(time + DECAY + 0.02);
-  osc.onended = () => {
-    try {
-      osc.disconnect();
-      gain.disconnect();
-    } catch {
-      // already disconnected
-    }
-  };
-
-  let canceled = false;
+  // Tone's voice manager will release the synth on its own, but the
+  // scheduler's `cancelAll()` contract requires immediate teardown for
+  // pause/stop. Dispose explicitly.
+  let cancelled = false;
   return {
     cancel: () => {
-      if (canceled) return;
-      canceled = true;
+      if (cancelled) return;
+      cancelled = true;
       try {
-        gain.gain.cancelScheduledValues(ctx.currentTime);
-        gain.gain.setValueAtTime(Math.max(gain.gain.value, 0.0001), ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.01);
-        osc.stop(ctx.currentTime + 0.012);
+        synth.dispose();
       } catch {
-        try {
-          osc.disconnect();
-          gain.disconnect();
-        } catch {
-          // already disconnected
-        }
+        /* already disposed */
       }
     },
   };
