@@ -12,10 +12,10 @@ import { progressionStepsAtom } from "../../store/progressionAtoms";
 import { ScaleTab } from "./ScaleTab";
 
 describe("ScaleTab", () => {
-  it("renders the Fingering group header and Key/Circle of Fifths/Theory columns", () => {
+  it("renders the Fingering group header and Key/Circle of Fifths columns", () => {
     renderWithAtoms(<ScaleTab />);
     const headers = screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent);
-    expect(headers).toEqual(["Fingering", "Key", "Circle of Fifths", "Theory"]);
+    expect(headers).toEqual(["Fingering", "Key", "Circle of Fifths"]);
   });
 
   it("renders a single grouped scale combobox with the 4 expected groups", async () => {
@@ -43,15 +43,6 @@ describe("ScaleTab", () => {
       [scaleNameAtom, "Major"],
     ]);
     expect(screen.getByText("Root")).toBeInTheDocument();
-  });
-
-  it("renders the Theory facts readout", () => {
-    renderWithAtoms(<ScaleTab />, [
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
-    ]);
-    expect(screen.getByText("Notes")).toBeInTheDocument();
-    expect(screen.getByText("Degrees")).toBeInTheDocument();
   });
 
   it("lazy-loads and renders the Circle of Fifths", async () => {

@@ -46,13 +46,7 @@ export interface Dictionary {
     none: string;
     auto: string;
     groupKey: string;
-    groupTheory: string;
     groupWheel: string;
-    factNotes: string;
-    factIntervals: string;
-    factDegrees: string;
-    factChords: string;
-    factTones: string;
     relationship: string;
     groupSource: string;
     groupChordType: string;

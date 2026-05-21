@@ -6,7 +6,6 @@ import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
 import { setRootNoteAtom, setScaleNameAtom } from "../../store/actions";
 import { enharmonicDisplayAtom } from "../../store/audioAtoms";
 import { rootNoteAtom, scaleNameAtom, useFlatsAtom, scaleVisibleAtom } from "../../store/scaleAtoms";
-import { ScaleTheoryFacts } from "./ScaleTheoryFacts";
 import { GroupHeader, Prop, PropGrid } from "./InspectorGrid";
 import { CircleOfFifthsSkeleton } from "../LoadingSkeleton/LoadingSkeleton";
 import { FingeringPatternControls } from "../FingeringPatternControls/FingeringPatternControls";
@@ -149,10 +148,6 @@ export function ScaleTab() {
               enharmonicDisplay={enharmonicDisplay}
             />
           </Suspense>
-        </div>
-        <div className={styles.col}>
-          <GroupHeader>{t("inspector.groupTheory")}</GroupHeader>
-          <ScaleTheoryFacts />
         </div>
       </div>
     </div>
