@@ -26,16 +26,16 @@ const toneMocks = vi.hoisted(() => {
       // now. The hook uses this form to avoid TransportTime/ticks ambiguity.
       delayMs = Math.max(0, parseFloat(time.slice(1)) * 1000);
     } else if (typeof time === "number") {
-      // Legacy path — translate as if `time` were context-time seconds.
-      // The current hook doesn't hit this branch, but keep it as a safety
-      // net for any future callers.
-      delayMs = Math.max(0, (time - contextNowRef.fn()) * 1000);
+      // Loud failure on regression: the hook must use the relative-time
+      // string form. Numeric args have ambiguous semantics (ticks vs seconds)
+      // and silently working around them here would mask real bugs.
+      throw new Error("scheduleOnce: numeric time arg no longer supported (use relative-time string)");
     } else {
       delayMs = 0;
     }
     const timerId = setTimeout(() => {
       events.delete(id);
-      cb(typeof time === "number" ? time : contextNowRef.fn());
+      cb(contextNowRef.fn());
     }, delayMs);
     events.set(id, timerId);
     return id;
@@ -351,7 +351,7 @@ describe("useProgressionPlaybackLoop", () => {
     expect(parseFloat((timeArg as string).slice(1))).toBeCloseTo(1.0, 2);
   });
 
-  it("starts Transport when the audio-clock branch arms, stops on cleanup", () => {
+  it("starts Transport when the audio-clock branch arms, and does NOT stop it on cleanup", () => {
     const tempoBpm = 60;
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
@@ -372,7 +372,10 @@ describe("useProgressionPlaybackLoop", () => {
 
     unmount();
 
-    expect(toneMocks.transport.stop).toHaveBeenCalledTimes(1);
+    // Transport is a shared singleton — stop ownership belongs to a future
+    // top-level "all playback ended" path, NOT this hook (which unmounts on
+    // every pause/mute toggle and would otherwise rewind future drum loops).
+    expect(toneMocks.transport.stop).not.toHaveBeenCalled();
   });
 
   it("clears the scheduled callback on effect cleanup", () => {

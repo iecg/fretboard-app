@@ -45,13 +45,23 @@ export function useProgressionPlaybackLoop() {
     // `toneBus.ts`), which fires callbacks on the audio clock with no
     // JS-timer jitter.
     if (ensureProgressionAudio()) {
-      let eventId: number | null = null;
+      // Split event-id refs to keep the two id spaces (Transport vs.
+      // window.setTimeout) cleanly disjoint. Each call to `armAdvance` writes
+      // to exactly one of these depending on which path it takes.
+      let transportEventId: number | null = null;
+      let retryTimeoutId: number | null = null;
       let cancelled = false;
 
       // Transport must be running for `scheduleOnce` callbacks to fire — its
       // tick source only advances in the "started" state. `start()` is
       // idempotent in Tone v15: calling it on an already-running Transport
       // is a no-op.
+      //
+      // We intentionally do NOT call `Transport.stop()` on cleanup: the
+      // Transport is a shared singleton, and future consumers (e.g. Phase 7B
+      // Task 7 drum loops) depend on its state and position. Stop ownership
+      // belongs to a future top-level "all playback ended" path, not to this
+      // hook — which unmounts on every pause/mute toggle.
       getTransport().start();
 
       const armAdvance = () => {
@@ -63,7 +73,7 @@ export function useProgressionPlaybackLoop() {
           // ProgressionSummarySlot, so on a fresh start or a step transition
           // the timeline may not be armed until the next macrotask. Retry once
           // the scheduler has had a chance to publish the active audio segment.
-          eventId = window.setTimeout(armAdvance, 0) as unknown as number;
+          retryTimeoutId = window.setTimeout(armAdvance, 0) as unknown as number;
           return;
         }
 
@@ -72,7 +82,7 @@ export function useProgressionPlaybackLoop() {
         // Relative-time string syntax: Tone interprets `"+x"` as "x seconds
         // from transport now", which is unambiguous regardless of whether
         // the numeric form would have been parsed as ticks or seconds.
-        eventId = getTransport().scheduleOnce(() => {
+        transportEventId = getTransport().scheduleOnce(() => {
           advanceProgressionPlayback();
         }, `+${remainingSec}`) as unknown as number;
       };
@@ -80,36 +90,19 @@ export function useProgressionPlaybackLoop() {
       armAdvance();
       return () => {
         cancelled = true;
-        if (eventId !== null) {
-          // The id may be either a Transport event id (when we armed the
-          // boundary scheduleOnce) or a window.setTimeout id (when we hit
-          // the retry branch because the timeline hadn't caught up yet).
-          // Try both — the wrong one is a no-op.
-          try {
-            getTransport().clear(eventId);
-          } catch {
-            /* not a transport id */
-          }
-          try {
-            window.clearTimeout(eventId);
-          } catch {
-            /* not a timeout id */
-          }
+        if (transportEventId !== null) {
+          getTransport().clear(transportEventId);
         }
-        // Mute/pause/stop all unmount this effect, so stopping the Transport
-        // here matches the user's notion of playback ending. `stop()` is
-        // idempotent in Tone v15.
-        try {
-          getTransport().stop();
-        } catch {
-          /* already stopped */
+        if (retryTimeoutId !== null) {
+          window.clearTimeout(retryTimeoutId);
         }
       };
     }
 
     // No Web Audio support — fall back to the wall-clock timer so the
     // progression still advances (used in tests and locked-autoplay
-    // environments).
+    // environments). With no AudioContext there is no shared audio clock for
+    // Transport to bind to, so `setTimeout` is the only option here.
     if (progressionStepDurationMs <= 0) return;
     const timeoutId = window.setTimeout(() => {
       advanceProgressionPlayback();
