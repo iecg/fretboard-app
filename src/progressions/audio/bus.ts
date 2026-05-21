@@ -11,6 +11,8 @@
  * a click handler (e.g. the play button) before scheduling.
  */
 
+import { _resetToneBusForTests, bindToneToProgressionContext } from "./toneBus";
+
 const BUS_GAIN = 0.55;
 const SILENCE_RAMP_SECONDS = 0.02;
 const RESUME_RAMP_SECONDS = 0.04;
@@ -52,6 +54,7 @@ export function ensureProgressionAudio(): ProgressionAudio | null {
     bus = ctx.createGain();
     bus.gain.value = BUS_GAIN;
     bus.connect(ctx.destination);
+    bindToneToProgressionContext({ ctx, bus });
     return { ctx, bus };
   } catch {
     unsupported = true;
@@ -104,5 +107,6 @@ export function _resetProgressionAudioForTests(): void {
   ctx = null;
   bus = null;
   unsupported = false;
+  _resetToneBusForTests();
 }
 
