@@ -44,16 +44,36 @@ export function scheduleClick(
 
   // Tone's voice manager will release the synth on its own, but the
   // scheduler's `cancelAll()` contract requires immediate teardown for
-  // pause/stop. Dispose explicitly.
+  // pause/stop. Dispose explicitly — but defer it slightly so the release
+  // envelope can settle. `synth.dispose()` truncates the envelope; if the
+  // cancel fires while the voice is mid-decay (a normal pause-mid-bar
+  // scenario), cutting the tail can produce an audible click. We trigger
+  // the release explicitly and let it run for ~10 ms (envelope.release)
+  // before freeing resources. The 20 ms guard covers the release window
+  // plus a small safety margin.
   let cancelled = false;
   return {
     cancel: () => {
       if (cancelled) return;
       cancelled = true;
       try {
-        synth.dispose();
+        // Close the envelope explicitly so the tail isn't truncated mid-decay.
+        synth.triggerRelease(Tone.now());
+        // Give the release ~10 ms to settle, then free the resources.
+        setTimeout(() => {
+          try {
+            synth.dispose();
+          } catch {
+            /* already disposed */
+          }
+        }, 20);
       } catch {
-        /* already disposed */
+        // If triggerRelease throws (already disposed?) fall through to dispose.
+        try {
+          synth.dispose();
+        } catch {
+          /* already disposed */
+        }
       }
     },
   };
