@@ -231,7 +231,7 @@
   color: var(--dc-fg-muted);
 }
 
-.toggle-btn:disabled:hover {
+.toggle-btn:disabled:hover:not(.active) {
   background-color: transparent;
   border-color: transparent;
   color: var(--dc-fg-muted);
