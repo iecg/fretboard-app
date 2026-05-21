@@ -70,7 +70,7 @@ const setViewport = (width: number, height: number) => {
 
 // Inspector tab bodies (Radix Tabs) only mount when active; tests that exercise
 // Scale/Chord tab controls must select the tab first.
-const selectInspectorTab = async (name: "View" | "Scale" | "Chord") => {
+const selectInspectorTab = async (name: "Scale" | "Chord" | "Song") => {
   await userEvent.click(await screen.findByRole("tab", { name }));
 };
 

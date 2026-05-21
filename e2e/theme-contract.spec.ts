@@ -139,7 +139,7 @@ test.describe("Theme Contract", () => {
 
   test("Inspector bottom tab bar uses theme-appropriate active indicators", async ({ page }) => {
     // Mobile layout renders the Inspector with placement="bottom"; the default
-    // active tab is "View".
+    // active tab is "Scale".
     await loadVisualState(page, { theme: "dark" }, { width: 390, height: 844 });
     const activeTab = page.locator(
       '[data-placement="bottom"] [role="tab"][data-state="active"]',

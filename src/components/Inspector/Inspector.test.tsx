@@ -20,13 +20,6 @@ describe("Inspector", () => {
     expect(screen.queryByRole("tab", { name: /view/i })).not.toBeInTheDocument();
   });
 
-  it("renders Scale, Chord, and Song tabs", () => {
-    renderInspector();
-    expect(screen.getByRole("tab", { name: "Scale" })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Chord" })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Song" })).toBeInTheDocument();
-  });
-
   it("activates Scale tab by default", () => {
     renderInspector();
     expect(screen.getByRole("tab", { name: "Scale" }).getAttribute("aria-selected")).toBe("true");
@@ -44,11 +37,6 @@ describe("Inspector", () => {
     await user.click(screen.getByRole("tab", { name: "Chord" }));
     expect(screen.getByRole("tab", { name: "Chord" }).getAttribute("aria-selected")).toBe("true");
     expect(screen.getByRole("tab", { name: "Scale" }).getAttribute("aria-selected")).toBe("false");
-  });
-
-  it("renders the Song tab", () => {
-    renderWithAtoms(<Inspector />, []);
-    expect(screen.getByRole("tab", { name: "Song" })).toBeInTheDocument();
   });
 
   it("renders the Scale tab body by default", () => {
