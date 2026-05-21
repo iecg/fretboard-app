@@ -28,9 +28,8 @@ import panelStyles from "./ChordOverlayControls.module.css";
 /** Compact lens labels for the narrow Source-row Lens toggle. The `satisfies`
  * clause makes a new lens added to `LENS_REGISTRY` without a label fail to compile. */
 const LENS_SHORT_LABELS = {
-  targets: "Chord",
-  "guide-tones": "Guide",
-  tension: "Tension",
+  tones: "Tones",
+  lead: "Lead",
 } satisfies Partial<Record<PracticeLens, string>>;
 
 export function ChordOverlayControls() {
@@ -85,16 +84,16 @@ export function ChordOverlayControls() {
 
   const currentLensEntry = lensAvailability.find((l) => l.id === practiceLens);
 
-  // Auto-exit unavailable lenses (except "targets").
+  // Auto-exit unavailable lenses (except "tones").
   useEffect(() => {
     if (
       currentLensEntry &&
       !currentLensEntry.available &&
-      currentLensEntry.id !== "targets"
+      currentLensEntry.id !== "tones"
     ) {
-      const tAvailable = lensAvailability.find((l) => l.id === "targets")?.available;
+      const tAvailable = lensAvailability.find((l) => l.id === "tones")?.available;
       if (tAvailable) {
-        setPracticeLens("targets");
+        setPracticeLens("tones");
       }
     }
   }, [currentLensEntry, lensAvailability, setPracticeLens]);

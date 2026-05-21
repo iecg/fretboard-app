@@ -148,15 +148,15 @@ describe("FretboardSVG/FretboardSVG", () => {
     expect(container.querySelectorAll(".chord-tone-outside-scale").length).toBeGreaterThan(0);
   });
 
-  it("tension lens keeps in-scale chord root and outside chord tones visible", () => {
-    const { container } = renderCMajor({ chordTones: ["C", "A#"], practiceLens: "tension" });
+  it("lead lens keeps in-scale chord root and outside chord tones visible", () => {
+    const { container } = renderCMajor({ chordTones: ["C", "A#"], practiceLens: "lead" });
     expect(container.querySelectorAll(".chord-root.hidden").length).toBe(0);
     expect(container.querySelectorAll(".chord-tone-outside-scale:not(.hidden)").length).toBeGreaterThan(0);
   });
 
-  it("outside chord root is visible and not hidden in tension lens", () => {
+  it("outside chord root is visible and not hidden in lead lens", () => {
     const { container } = renderCMajor({
-      chordTones: ["D", "F#", "A"], chordRoot: "D", practiceLens: "tension",
+      chordTones: ["D", "F#", "A"], chordRoot: "D", practiceLens: "lead",
     });
     expect(container.querySelectorAll(".chord-root:not(.hidden)").length).toBeGreaterThan(0);
   });
@@ -606,14 +606,14 @@ describe("FretboardSVG/FretboardSVG", () => {
 
   describe("lens leakage — no lens effect when chord overlay is off", () => {
     it("data-practice-lens only present when chord overlay is active", () => {
-      const { container, rerender } = render(<FretboardSVG {...BASE_PROPS} practiceLens="guide-tones" />);
+      const { container, rerender } = render(<FretboardSVG {...BASE_PROPS} practiceLens="tones" />);
       expect(container.querySelector('.fretboard-board')?.getAttribute('data-practice-lens')).toBeNull();
-      rerender(<FretboardSVG {...BASE_PROPS} chordTones={["C", "E", "G"]} chordRoot="C" practiceLens="guide-tones" />);
-      expect(container.querySelector('.fretboard-board')?.getAttribute('data-practice-lens')).toBe('guide-tones');
+      rerender(<FretboardSVG {...BASE_PROPS} chordTones={["C", "E", "G"]} chordRoot="C" practiceLens="tones" />);
+      expect(container.querySelector('.fretboard-board')?.getAttribute('data-practice-lens')).toBe('tones');
     });
 
     it("scale notes have normal opacity with no chord overlay regardless of practiceLens", () => {
-      const { container } = render(<FretboardSVG {...BASE_PROPS} practiceLens="guide-tones" />);
+      const { container } = render(<FretboardSVG {...BASE_PROPS} practiceLens="tones" />);
       container.querySelectorAll('.fretboard-note:not(.hidden)').forEach((el) => {
         expect(parseFloat(getComputedStyle(el as Element).opacity)).toBeGreaterThanOrEqual(1);
       });

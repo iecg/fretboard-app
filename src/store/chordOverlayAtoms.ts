@@ -44,20 +44,31 @@ const chordFretSpreadStorage = constrainedNumberStorage({
 
 const PRACTICE_LENS_VALUES = LENS_REGISTRY.map((e) => e.id) as PracticeLens[];
 
-function migrateViewModeToLens(viewMode: string): PracticeLens {
-  switch (viewMode) {
-    case "chord": return "targets";
-    case "outside": return "tension";
-    default: return "targets";
-  }
+// Map legacy three-lens IDs to the new two-lens IDs (Task 4.1).
+// Applied as onRead so it handles stored values (before validate) in addition
+// to the migrate() path (which only runs when the key is absent).
+function mapLegacyLensId(raw: string): PracticeLens {
+  if (raw === "targets" || raw === "guide-tones") return "tones";
+  if (raw === "tension") return "lead";
+  return raw as PracticeLens;
 }
 
 const practiceLensStorage = createStorage<PracticeLens>({
+  onRead: (v) => mapLegacyLensId(v as string),
   validate: (v) => (PRACTICE_LENS_VALUES as string[]).includes(v),
   migrate: () => {
+    // Migration 2 (Task 4.1): collapse three-lens enum to two.
+    // Note: migrate() only runs when the key is absent. When the key exists
+    // with a legacy value, onRead() handles the mapping instead.
+    const lensRaw = readLocalStorage(k("practiceLens"));
+    if (lensRaw === "targets" || lensRaw === "guide-tones") return "tones";
+    if (lensRaw === "tension") return "lead";
+    // Migration 1 (legacy): viewMode predates the lens key entirely
     const oldViewMode =
       readLocalStorage(k("viewMode")) ?? readLocalStorage("viewMode");
-    if (oldViewMode) return migrateViewModeToLens(oldViewMode);
+    if (oldViewMode === "chord") return "tones";
+    if (oldViewMode === "outside") return "lead";
+    if (oldViewMode) return "tones";
     return undefined;
   },
 });
@@ -300,7 +311,7 @@ export const fullChordPositionsAtom = atom((get) =>
 // Migrates from legacy viewMode value on first access.
 export const practiceLensAtom = atomWithStorage<PracticeLens>(
   k("practiceLens"),
-  "targets",
+  "tones",
   practiceLensStorage,
   GET_ON_INIT,
 );

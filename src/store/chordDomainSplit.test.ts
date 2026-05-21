@@ -153,14 +153,16 @@ describe("Focus removal", () => {
 });
 
 describe("LENS_REGISTRY", () => {
-  it("contains exactly three chord-overlay lenses (color and targets-color removed)", () => {
+  it("contains exactly two chord-overlay lenses (tones + lead)", () => {
     const ids = LENS_REGISTRY.map((e) => e.id);
-    expect(ids).toContain("targets");
-    expect(ids).toContain("guide-tones");
-    expect(ids).toContain("tension");
+    expect(ids).toContain("tones");
+    expect(ids).toContain("lead");
+    expect(ids).not.toContain("targets");
+    expect(ids).not.toContain("guide-tones");
+    expect(ids).not.toContain("tension");
     expect(ids).not.toContain("color");
     expect(ids).not.toContain("targets-color");
-    expect(ids).toHaveLength(3);
+    expect(ids).toHaveLength(2);
   });
 
   it("every entry has a non-empty label and description", () => {
@@ -172,24 +174,23 @@ describe("LENS_REGISTRY", () => {
 
   it("uses correct labels matching the target visible names", () => {
     const byId = Object.fromEntries(LENS_REGISTRY.map((e) => [e.id, e.label]));
-    expect(byId["targets"]).toBe("Chord Tones");
-    expect(byId["guide-tones"]).toBe("Guide Tones");
-    expect(byId["tension"]).toBe("Tension");
+    expect(byId["tones"]).toBe("Tones");
+    expect(byId["lead"]).toBe("Lead");
+    expect(byId["targets"]).toBeUndefined();
+    expect(byId["guide-tones"]).toBeUndefined();
+    expect(byId["tension"]).toBeUndefined();
     expect(byId["targets-color"]).toBeUndefined();
     expect(byId["color"]).toBeUndefined();
   });
 
-  it("tension is the only lens with hideWhenUnavailable=true", () => {
-    const tensionEntry = LENS_REGISTRY.find((e) => e.id === "tension");
-    expect(tensionEntry?.hideWhenUnavailable).toBe(true);
-    const others = LENS_REGISTRY.filter((e) => e.id !== "tension");
-    for (const entry of others) {
+  it("no lens has hideWhenUnavailable=true (Task 4.1 — both lenses always shown)", () => {
+    for (const entry of LENS_REGISTRY) {
       expect(entry.hideWhenUnavailable).toBeFalsy();
     }
   });
 
-  it("targets lens is available with chord overlay only (no color notes required)", () => {
-    const entry = LENS_REGISTRY.find((e) => e.id === "targets")!;
+  it("tones lens is available with chord overlay only", () => {
+    const entry = LENS_REGISTRY.find((e) => e.id === "tones")!;
     const ctx: LensAvailabilityContext = {
       hasChordOverlay: true,
       hasGuideTones: false,
@@ -199,8 +200,8 @@ describe("LENS_REGISTRY", () => {
     expect(entry.isAvailable(ctx)).toBe(true);
   });
 
-  describe("targets lens", () => {
-    const entry = LENS_REGISTRY.find((e) => e.id === "targets")!;
+  describe("tones lens", () => {
+    const entry = LENS_REGISTRY.find((e) => e.id === "tones")!;
 
     it("is available when chord overlay is active", () => {
       const ctx: LensAvailabilityContext = {
@@ -225,43 +226,7 @@ describe("LENS_REGISTRY", () => {
     });
   });
 
-  describe("guide-tones lens", () => {
-    const entry = LENS_REGISTRY.find((e) => e.id === "guide-tones")!;
-
-    it("is available when chord overlay + guide tones both present", () => {
-      const ctx: LensAvailabilityContext = {
-        hasChordOverlay: true,
-        hasGuideTones: true,
-        hasColorNotes: false,
-        hasOutsideTones: false,
-      };
-      expect(entry.isAvailable(ctx)).toBe(true);
-    });
-
-    it("is unavailable when chord has no guide tones", () => {
-      const ctx: LensAvailabilityContext = {
-        hasChordOverlay: true,
-        hasGuideTones: false,
-        hasColorNotes: false,
-        hasOutsideTones: false,
-      };
-      expect(entry.isAvailable(ctx)).toBe(false);
-      expect(entry.unavailableReason(ctx)).toMatch(/guide tones/i);
-    });
-
-    it("is unavailable without chord overlay, reason mentions overlay not guide tones", () => {
-      const ctx: LensAvailabilityContext = {
-        hasChordOverlay: false,
-        hasGuideTones: true,
-        hasColorNotes: false,
-        hasOutsideTones: false,
-      };
-      expect(entry.isAvailable(ctx)).toBe(false);
-      expect(entry.unavailableReason(ctx)).toMatch(/chord overlay/i);
-    });
-  });
-
-  describe("color lens (removed)", () => {
+  describe("removed lenses", () => {
     it("color lens id does not exist in LENS_REGISTRY", () => {
       const entry = LENS_REGISTRY.find((e) => (e.id as string) === "color");
       expect(entry).toBeUndefined();
@@ -271,12 +236,27 @@ describe("LENS_REGISTRY", () => {
       const entry = LENS_REGISTRY.find((e) => (e.id as string) === "targets-color");
       expect(entry).toBeUndefined();
     });
+
+    it("targets lens id does not exist in LENS_REGISTRY", () => {
+      const entry = LENS_REGISTRY.find((e) => (e.id as string) === "targets");
+      expect(entry).toBeUndefined();
+    });
+
+    it("guide-tones lens id does not exist in LENS_REGISTRY", () => {
+      const entry = LENS_REGISTRY.find((e) => (e.id as string) === "guide-tones");
+      expect(entry).toBeUndefined();
+    });
+
+    it("tension lens id does not exist in LENS_REGISTRY", () => {
+      const entry = LENS_REGISTRY.find((e) => (e.id as string) === "tension");
+      expect(entry).toBeUndefined();
+    });
   });
 
-  describe("tension lens", () => {
-    const entry = LENS_REGISTRY.find((e) => e.id === "tension")!;
+  describe("lead lens", () => {
+    const entry = LENS_REGISTRY.find((e) => e.id === "lead")!;
 
-    it("is available when chord has outside tones", () => {
+    it("is available when chord overlay is active", () => {
       const ctx: LensAvailabilityContext = {
         hasChordOverlay: true,
         hasGuideTones: false,
@@ -286,15 +266,15 @@ describe("LENS_REGISTRY", () => {
       expect(entry.isAvailable(ctx)).toBe(true);
     });
 
-    it("is unavailable when chord is fully in-scale", () => {
+    it("is unavailable without chord overlay", () => {
       const ctx: LensAvailabilityContext = {
-        hasChordOverlay: true,
+        hasChordOverlay: false,
         hasGuideTones: true,
         hasColorNotes: false,
         hasOutsideTones: false,
       };
       expect(entry.isAvailable(ctx)).toBe(false);
-      expect(entry.unavailableReason(ctx)).toMatch(/fully within the scale/i);
+      expect(entry.unavailableReason(ctx)).toMatch(/chord overlay/i);
     });
   });
 });
@@ -381,14 +361,13 @@ describe("lensAvailabilityAtom", () => {
     localStorage.clear();
   });
 
-  it("returns three entries matching LENS_REGISTRY ids", () => {
+  it("returns two entries matching LENS_REGISTRY ids (tones + lead)", () => {
     const store = makeStore();
     const entries = store.get(lensAvailabilityAtom);
-    expect(entries).toHaveLength(3);
+    expect(entries).toHaveLength(2);
     const ids = entries.map((e) => e.id);
-    expect(ids).toContain("targets");
-    expect(ids).toContain("guide-tones");
-    expect(ids).toContain("tension");
+    expect(ids).toContain("tones");
+    expect(ids).toContain("lead");
   });
 
   it("all entries unavailable when chord overlay is off", () => {
@@ -407,35 +386,30 @@ describe("lensAvailabilityAtom", () => {
     }
   });
 
-  it("tension lens unavailable when chord fully in-scale (C Major + CMaj triad)", () => {
+  it("both lenses unavailable when chord overlay is off (no hasChordOverlay)", () => {
     const store = makeStore();
-    store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
-    setChord(store, "C", "Major Triad");
+    disableChordOverlay(store);
     const entries = store.get(lensAvailabilityAtom);
-    const tensionEntry = entries.find((e) => e.id === "tension");
-    expect(tensionEntry!.available).toBe(false);
-    expect(tensionEntry!.reason).toMatch(/fully within the scale/i);
+    expect(entries.every((e) => !e.available)).toBe(true);
   });
 
-  it("tension lens available when chord has outside tones", () => {
+  it("lead lens available when chord has outside tones", () => {
     const store = makeStore();
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Major");
     setChord(store, "C#", "Minor Triad");
     const entries = store.get(lensAvailabilityAtom);
-    const tensionEntry = entries.find((e) => e.id === "tension");
-    expect(tensionEntry!.available).toBe(true);
-    expect(tensionEntry!.reason).toBeNull();
+    const leadEntry = entries.find((e) => e.id === "lead");
+    expect(leadEntry!.available).toBe(true);
+    expect(leadEntry!.reason).toBeNull();
   });
 
-  it("guide-tones lens unavailable for power chord", () => {
+  it("tones lens available for power chord (only requires chord overlay)", () => {
     const store = makeStore();
     setChord(store, "E", "Power Chord (5)");
     const entries = store.get(lensAvailabilityAtom);
-    const gtEntry = entries.find((e) => e.id === "guide-tones");
-    expect(gtEntry!.available).toBe(false);
-    expect(gtEntry!.reason).toMatch(/guide tones/i);
+    const tonesEntry = entries.find((e) => e.id === "tones");
+    expect(tonesEntry!.available).toBe(true);
   });
 
   it("color and targets-color lenses are absent from resolved availability", () => {
@@ -453,20 +427,20 @@ describe("lensAvailabilityAtom", () => {
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Major");
     setChord(store, "C", "Major Triad");
-    store.set(practiceLensAtom, "targets");
+    store.set(practiceLensAtom, "tones");
     const entries = store.get(lensAvailabilityAtom);
-    const targetsEntry = entries.find((e) => e.id === "targets");
-    expect(targetsEntry!.available).toBe(true);
-    expect(targetsEntry!.reason).toBeNull();
+    const tonesEntry = entries.find((e) => e.id === "tones");
+    expect(tonesEntry!.available).toBe(true);
+    expect(tonesEntry!.reason).toBeNull();
   });
 
-  it("targets lens available for C Major (chord overlay is all that's required)", () => {
+  it("tones lens available for C Major (chord overlay is all that's required)", () => {
     const store = makeStore();
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Major");
     setChord(store, "C", "Major Triad");
     const entries = store.get(lensAvailabilityAtom);
-    const tEntry = entries.find((e) => e.id === "targets");
+    const tEntry = entries.find((e) => e.id === "tones");
     expect(tEntry!.available).toBe(true);
     expect(tEntry!.reason).toBeNull();
   });

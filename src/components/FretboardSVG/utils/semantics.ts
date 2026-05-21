@@ -26,8 +26,10 @@ export function getLensEmphasis(
 
   if (!practiceLens) return defaultEmphasis;
 
+  // TODO (Task 4.4/4.5): rewrite emphasis logic for new lens IDs.
+  // Temporary bridge: "tones" uses old guide-tones emphasis; "lead" uses old tension emphasis.
   switch (practiceLens) {
-    case "guide-tones":
+    case "tones":
       if (isGuideTone) {
         return { glowColor: "cyan", radiusBoost: 1.15, opacityBoost: 1 };
       }
@@ -36,7 +38,7 @@ export function getLensEmphasis(
       }
       return defaultEmphasis;
 
-    case "tension":
+    case "lead":
       if (isTension) {
         return { glowColor: "orange", radiusBoost: 1.15, opacityBoost: 1 };
       }
@@ -45,7 +47,6 @@ export function getLensEmphasis(
       }
       return defaultEmphasis;
 
-    case "targets":
     default:
       return defaultEmphasis;
   }

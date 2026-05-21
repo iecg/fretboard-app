@@ -10,20 +10,20 @@ describe("semantics utils", () => {
       expect(res).toEqual({ radiusBoost: 1, opacityBoost: 1 });
     });
 
-    it("boosts guide tones in guide-tones lens", () => {
-      const res = getLensEmphasis("chord-tone", "guide-tones", true, false);
+    it("boosts guide tones in tones lens", () => {
+      const res = getLensEmphasis("chord-tone", "tones", true, false);
       expect(res.glowColor).toBe("cyan");
       expect(res.radiusBoost).toBeGreaterThan(1);
     });
 
-    it("dims non-guide chord tones in guide-tones lens", () => {
-      const res = getLensEmphasis("chord-tone", "guide-tones", false, false);
+    it("dims non-guide chord tones in tones lens", () => {
+      const res = getLensEmphasis("chord-tone", "tones", false, false);
       expect(res.radiusBoost).toBeLessThan(1);
       expect(res.opacityBoost).toBeLessThan(1);
     });
 
-    it("boosts tensions in tension lens", () => {
-      const res = getLensEmphasis("chord-tone", "tension", false, true);
+    it("boosts tensions in lead lens", () => {
+      const res = getLensEmphasis("chord-tone", "lead", false, true);
       expect(res.glowColor).toBe("orange");
       expect(res.radiusBoost).toBeGreaterThan(1);
     });

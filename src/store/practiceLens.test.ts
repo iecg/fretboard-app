@@ -104,24 +104,60 @@ describe("practiceLensAtom", () => {
     localStorage.clear();
   });
 
-  it("defaults to targets", () => {
-    expect(makeStore().get(practiceLensAtom)).toBe("targets");
+  it("defaults to tones", () => {
+    expect(makeStore().get(practiceLensAtom)).toBe("tones");
   });
 
   it.each<{ label: string; key: string; value: string; expected: string }>([
-    { label: "reads stored value", key: "practiceLens", value: "targets", expected: "targets" },
-    { label: "migrates viewMode=chord → targets", key: "viewMode", value: "chord", expected: "targets" },
-    { label: "migrates viewMode=outside → tension", key: "viewMode", value: "outside", expected: "tension" },
-    { label: "migrates viewMode=compare → targets (default)", key: "viewMode", value: "compare", expected: "targets" },
-    { label: "migrates stored targets-color → targets (removed lens)", key: "practiceLens", value: "targets-color", expected: "targets" },
-    { label: "migrates stored color → targets (removed lens)", key: "practiceLens", value: "color", expected: "targets" },
-    { label: "ignores invalid stored value, falls back to default", key: "practiceLens", value: "invalid-lens", expected: "targets" },
+    { label: "reads stored value tones", key: "practiceLens", value: "tones", expected: "tones" },
+    { label: "reads stored value lead", key: "practiceLens", value: "lead", expected: "lead" },
+    { label: "migrates viewMode=chord → tones", key: "viewMode", value: "chord", expected: "tones" },
+    { label: "migrates viewMode=outside → lead", key: "viewMode", value: "outside", expected: "lead" },
+    { label: "migrates viewMode=compare → tones (default)", key: "viewMode", value: "compare", expected: "tones" },
+    { label: "migrates stored targets-color → tones (removed lens)", key: "practiceLens", value: "targets-color", expected: "tones" },
+    { label: "migrates stored color → tones (removed lens)", key: "practiceLens", value: "color", expected: "tones" },
+    { label: "ignores invalid stored value, falls back to default", key: "practiceLens", value: "invalid-lens", expected: "tones" },
   ])("$label", ({ key, value, expected }) => {
     localStorage.setItem(k(key), value);
     const store = makeStore();
     const unsub = store.sub(practiceLensAtom, () => {});
     expect(store.get(practiceLensAtom)).toBe(expected);
     unsub();
+  });
+});
+
+describe("practiceLensAtom — migration to tones+lead (Task 4.1)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("migrates legacy targets → tones", () => {
+    localStorage.setItem(k("practiceLens"), "targets");
+    const store = createStore();
+    const unsub = store.sub(practiceLensAtom, () => {});
+    expect(store.get(practiceLensAtom)).toBe("tones");
+    unsub();
+  });
+
+  it("migrates legacy guide-tones → tones", () => {
+    localStorage.setItem(k("practiceLens"), "guide-tones");
+    const store = createStore();
+    const unsub = store.sub(practiceLensAtom, () => {});
+    expect(store.get(practiceLensAtom)).toBe("tones");
+    unsub();
+  });
+
+  it("migrates legacy tension → lead", () => {
+    localStorage.setItem(k("practiceLens"), "tension");
+    const store = createStore();
+    const unsub = store.sub(practiceLensAtom, () => {});
+    expect(store.get(practiceLensAtom)).toBe("lead");
+    unsub();
+  });
+
+  it("lensAvailabilityAtom returns exactly two entries", () => {
+    const store = createStore();
+    expect(store.get(lensAvailabilityAtom)).toHaveLength(2);
   });
 });
 
@@ -133,30 +169,9 @@ describe("practiceCuesAtom", () => {
   const makeChordStore = (scale: string, root: string, chordType: string, lens: PracticeLens) =>
     setUp({ scaleRoot: root, scale, chordRoot: root, chordType, lens });
 
-  describe("targets lens", () => {
-    it("returns a land-on cue with all chord tones", () => {
-      const store = makeChordStore("Major", "C", "Major Triad", "targets");
-      const cues = store.get(practiceCuesAtom);
-      expect(cues.length).toBe(1);
-      expect(cues[0]!.kind).toBe("land-on");
-      expect(cues[0]!.label).toBe("Land on");
-      expect(cues[0]!.notes.map((n) => n.internalNote)).toEqual(expect.arrayContaining(["C", "E", "G"]));
-    });
-
-    it("uses scale degrees for in-scale note labels", () => {
-      const cues = makeChordStore("Major", "C", "Major Triad", "targets").get(practiceCuesAtom);
-      expect(cues[0]!.notes.map((n) => n.intervalName)).toEqual(["1", "3", "5"]);
-    });
-
-    it("returns empty cues when chord overlay is off", () => {
-      const store = setUp({ overlayMode: "off", lens: "targets" });
-      expect(store.get(practiceCuesAtom)).toHaveLength(0);
-    });
-  });
-
-  describe("guide-tones lens", () => {
+  describe("tones lens", () => {
     it("returns land-on + guide-tones cues for a seventh chord (3rd + 7th)", () => {
-      const store = makeChordStore("Major", "G", "Dominant 7th", "guide-tones");
+      const store = makeChordStore("Major", "G", "Dominant 7th", "tones");
       const cues = store.get(practiceCuesAtom);
       expect(cues.length).toBe(2);
       expect(cues[0]!.kind).toBe("land-on");
@@ -168,25 +183,18 @@ describe("practiceCuesAtom", () => {
       expect(noteNames).toContain("F");
     });
 
-    it("guide tones for a triad returns land-on first, then guide-tones with the 3rd", () => {
-      const store = makeChordStore("Major", "C", "Major Triad", "guide-tones");
-      const cues = store.get(practiceCuesAtom);
-      expect(cues.length).toBe(2);
-      expect(cues[0]!.kind).toBe("land-on");
-      expect(cues[1]!.kind).toBe("guide-tones");
-      const noteNames = cues[1]!.notes.map((n) => n.internalNote);
-      expect(noteNames).toContain("E");
+    it("uses scale degrees for in-scale note labels", () => {
+      const cues = makeChordStore("Major", "C", "Major Triad", "tones").get(practiceCuesAtom);
+      expect(cues[0]!.notes.map((n) => n.intervalName)).toEqual(["1", "3", "5"]);
     });
 
-    it("shows only land-on for power chord (no 3rd/7th)", () => {
-      const store = makeChordStore("Major", "G", "Power Chord (5)", "guide-tones");
-      const cues = store.get(practiceCuesAtom);
-      expect(cues.length).toBe(1);
-      expect(cues[0]!.kind).toBe("land-on");
+    it("returns empty cues when chord overlay is off", () => {
+      const store = setUp({ overlayMode: "off", lens: "tones" });
+      expect(store.get(practiceCuesAtom)).toHaveLength(0);
     });
 
     it("guide tone notes have role=guide-tone", () => {
-      const store = makeChordStore("Major", "G", "Dominant 7th", "guide-tones");
+      const store = makeChordStore("Major", "G", "Dominant 7th", "tones");
       const cues = store.get(practiceCuesAtom);
       const guideToneCue = cues.find((c) => c.kind === "guide-tones");
       expect(guideToneCue).toBeDefined();
@@ -194,14 +202,14 @@ describe("practiceCuesAtom", () => {
     });
   });
 
-  describe("tension lens", () => {
+  describe("lead lens", () => {
     it("returns land-on + tension cues when chord has outside-scale tones", () => {
-      const store = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C#", chordType: "Minor Triad", lens: "tension" });
+      const store = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C#", chordType: "Minor Triad", lens: "lead" });
       expect(store.get(practiceCuesAtom).map((c) => c.kind)).toEqual(["land-on", "tension"]);
     });
 
     it("tension notes include outside chord root and have resolvesTo targets", () => {
-      const store = makeChordStore("Major", "C", "Minor Triad", "tension");
+      const store = makeChordStore("Major", "C", "Minor Triad", "lead");
       setChordViaProgression(store, { root: "C#" }); // outside the C major scale
       const tensionCue = store.get(practiceCuesAtom).find((c) => c.kind === "tension");
       expect(tensionCue).toBeDefined();
@@ -210,13 +218,13 @@ describe("practiceCuesAtom", () => {
     });
 
     it("returns only land-on when chord is fully in-scale (no outside tones)", () => {
-      const kinds = makeChordStore("Major", "C", "Major Triad", "tension").get(practiceCuesAtom).map((c) => c.kind);
+      const kinds = makeChordStore("Major", "C", "Major Triad", "lead").get(practiceCuesAtom).map((c) => c.kind);
       expect(kinds).toContain("land-on");
       expect(kinds).not.toContain("tension");
     });
 
     it("finds resolution target within 2 semitones for pentatonic scale", () => {
-      const store = setUp({ scaleRoot: "C", scale: "Minor Pentatonic", chordRoot: "D", chordType: "Minor Triad", lens: "tension" });
+      const store = setUp({ scaleRoot: "C", scale: "Minor Pentatonic", chordRoot: "D", chordType: "Minor Triad", lens: "lead" });
       const tensionCue = store.get(practiceCuesAtom).find((c) => c.kind === "tension");
       expect(tensionCue!.notes.find((n) => n.internalNote === "D")?.resolvesTo).toBeDefined();
     });
@@ -230,11 +238,11 @@ describe("practiceCuesAtom", () => {
       expect(ids).not.toContain("color");
     });
 
-    it("contains exactly Chord Tones, Guide Tones, and Tension", () => {
+    it("contains exactly tones and lead lenses", () => {
       const store = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C", chordType: "Major 7th" });
       const ids = store.get(lensAvailabilityAtom).map((l) => l.id);
-      expect(ids).toEqual(expect.arrayContaining(["targets", "guide-tones", "tension"]));
-      expect(ids).toHaveLength(3);
+      expect(ids).toEqual(expect.arrayContaining(["tones", "lead"]));
+      expect(ids).toHaveLength(2);
     });
   });
 });
@@ -312,7 +320,7 @@ describe("showChordPracticeBarAtom", () => {
     expect(setUp({ overlayMode: "off" }).get(showChordPracticeBarAtom)).toBe(false);
   });
 
-  it.each(["targets", "guide-tones", "tension"] as const)(
+  it.each(["tones", "lead"] as const)(
     "returns true when chord is active regardless of lens (%s)",
     (lens) => {
       const store = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C", chordType: "Major Triad", lens });
@@ -321,7 +329,7 @@ describe("showChordPracticeBarAtom", () => {
   );
 
   it("returns true for Am chord on Am scale (previously suppressed)", () => {
-    const store = setUp({ scaleRoot: "A", scale: "Natural Minor", chordRoot: "A", chordType: "Minor Triad", lens: "targets" });
+    const store = setUp({ scaleRoot: "A", scale: "Natural Minor", chordRoot: "A", chordType: "Minor Triad", lens: "tones" });
     expect(store.get(showChordPracticeBarAtom)).toBe(true);
   });
 });
@@ -342,12 +350,11 @@ describe("practiceBarChordGroupAtom", () => {
   it("is lens-independent — same chord regardless of active lens", () => {
     const store = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C", chordType: "Dominant 7th" });
     const notesByLens: Record<string, string[]> = {};
-    for (const lens of ["targets", "guide-tones", "tension"] as const) {
+    for (const lens of ["tones", "lead"] as const) {
       store.set(practiceLensAtom, lens);
       notesByLens[lens] = store.get(practiceBarChordGroupAtom).notes.map((n) => n.internalNote);
     }
-    expect(notesByLens.targets).toEqual(notesByLens["guide-tones"]);
-    expect(notesByLens.targets).toEqual(notesByLens.tension);
+    expect(notesByLens.tones).toEqual(notesByLens.lead);
   });
 
   it("always contains all chord members", () => {
@@ -379,22 +386,16 @@ describe("practiceBarLandOnGroupAtom", () => {
     localStorage.clear();
   });
 
-  it("targets lens — contains all chord members", () => {
-    const notes = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C", chordType: "Major Triad", lens: "targets" })
-      .get(practiceBarLandOnGroupAtom).notes.map((n) => n.internalNote);
-    expect(notes).toEqual(expect.arrayContaining(["C", "E", "G"]));
-  });
-
-  it("guide-tones lens — contains only 3rd/7th members", () => {
-    const notes = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "G", chordType: "Dominant 7th", lens: "guide-tones" })
+  it("tones lens — contains guide-tone (3rd/7th) members", () => {
+    const notes = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "G", chordType: "Dominant 7th", lens: "tones" })
       .get(practiceBarLandOnGroupAtom).notes.map((n) => n.internalNote);
     expect(notes).toEqual(expect.arrayContaining(["B", "F"]));
     expect(notes).not.toContain("D");
     expect(notes).not.toContain("G");
   });
 
-  it("tension lens — contains only outside-scale chord members with resolutions", () => {
-    const notes = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C#", chordType: "Minor Triad", lens: "tension" })
+  it("lead lens — contains only outside-scale chord members with resolutions", () => {
+    const notes = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C#", chordType: "Minor Triad", lens: "lead" })
       .get(practiceBarLandOnGroupAtom).notes;
     const internals = notes.map((n) => n.internalNote);
     expect(internals).toEqual(expect.arrayContaining(["C#", "G#"]));
@@ -405,7 +406,7 @@ describe("practiceBarLandOnGroupAtom", () => {
     expect(cSharp?.resolvesTo).toBeDefined();
   });
 
-  it.each(["targets", "guide-tones", "tension"] as const)("group label is 'Land on' for %s lens", (lens) => {
+  it.each(["tones", "lead"] as const)("group label is 'Land on' for %s lens", (lens) => {
     const store = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C", chordType: "Major Triad", lens });
     expect(store.get(practiceBarLandOnGroupAtom).label).toBe("Land on");
   });
@@ -421,9 +422,8 @@ describe("practiceBarLensLabelAtom", () => {
   });
 
   it.each<[PracticeLens, string]>([
-    ["targets", "Chord Tones"],
-    ["guide-tones", "Guide Tones"],
-    ["tension", "Tension"],
+    ["tones", "Tones"],
+    ["lead", "Lead"],
   ])("returns %s label = %s", (lens, label) => {
     const store = setUp({ chordRoot: "C", chordType: "Major Triad", lens });
     expect(store.get(practiceBarLensLabelAtom)).toBe(label);
@@ -439,12 +439,12 @@ describe("showChordPracticeBarAtom — scale visibility independence", () => {
     ["in-scale chord", "C", "Major Triad"],
     ["chord with outside tones", "C#", "Minor Triad"],
   ])("shows the dock when scale visibility is off (%s)", (_label, chordRoot, chordType) => {
-    const store = setUp({ scaleRoot: "C", scale: "Major", chordRoot, chordType, lens: "targets", scaleVisible: false });
+    const store = setUp({ scaleRoot: "C", scale: "Major", chordRoot, chordType, lens: "tones", scaleVisible: false });
     expect(store.get(showChordPracticeBarAtom)).toBe(true);
   });
 
   it("dock visibility does not change when toggling scaleVisibleAtom", () => {
-    const store = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C", chordType: "Dominant 7th", lens: "targets" });
+    const store = setUp({ scaleRoot: "C", scale: "Major", chordRoot: "C", chordType: "Dominant 7th", lens: "tones" });
     store.set(scaleVisibleAtom, true);
     const visibleOn = store.get(showChordPracticeBarAtom);
     store.set(scaleVisibleAtom, false);
@@ -484,9 +484,9 @@ describe("Chord Tones lens does not hide scale notes", () => {
   });
 
   it("effectiveShapeDataAtom highlightNotes unchanged when switching between lenses", () => {
-    const store = setUp({ scaleRoot: "C", scale: "Major", scaleVisible: true, chordType: "Major Triad", lens: "targets" });
+    const store = setUp({ scaleRoot: "C", scale: "Major", scaleVisible: true, chordType: "Major Triad", lens: "tones" });
     const before = store.get(effectiveShapeDataAtom).highlightNotes.length;
-    store.set(practiceLensAtom, "guide-tones");
+    store.set(practiceLensAtom, "lead");
     expect(store.get(effectiveShapeDataAtom).highlightNotes.length).toBe(before);
   });
 });

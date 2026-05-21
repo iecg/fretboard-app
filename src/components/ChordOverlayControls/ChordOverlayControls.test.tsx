@@ -274,7 +274,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
 
     it("lens ToggleBar has a pressed button when a lens is active", () => {
-      renderDegree([[practiceLensAtom, "targets"]]);
+      renderDegree([[practiceLensAtom, "tones"]]);
       // Find a button that is aria-pressed="true" inside the Practice lens group
       const lensGroup = screen.getByRole("group", { name: "Practice lens" });
       const pressedButton = within(lensGroup).getByRole("button", { pressed: true });
@@ -659,15 +659,16 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
   });
 
   describe("17. chord-tab design parity", () => {
-    it.each(["Chord", "Guide", "Tension"])("Lens toggle includes the %s option", (name) => {
+    it.each(["Tones", "Lead"])("Lens toggle includes the %s option", (name) => {
       renderDegree();
       expect(groupBtn("Practice lens", name)).toBeInTheDocument();
     });
 
-    it("Tension lens option is disabled when unavailable", () => {
-      // C Major triad on degree I has no outside tones → Tension unavailable.
+    it("both lens options are enabled when chord overlay is active (both only require chord overlay)", () => {
+      // C Major triad on degree I — both tones and lead only require hasChordOverlay.
       renderDegree();
-      expect(groupBtn("Practice lens", "Tension")).toBeDisabled();
+      expect(groupBtn("Practice lens", "Tones")).not.toBeDisabled();
+      expect(groupBtn("Practice lens", "Lead")).not.toBeDisabled();
     });
 
     it("renders the Connectors toggle in the VOICING group and writes voicingConnectorsAtom", async () => {

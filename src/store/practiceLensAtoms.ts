@@ -116,16 +116,6 @@ const cueBaseInputsAtom = atom((get) => {
   };
 });
 
-const targetsCuesAtom = atom((get) => {
-  const base = get(cueBaseInputsAtom);
-  if (!base) return [] as PracticeCue[];
-  const cues: PracticeCue[] = [];
-  if (base.allChordMembers.length > 0) {
-    cues.push(buildLandOnCue(base.allChordMembers));
-  }
-  return cues;
-});
-
 const guideTonesCuesAtom = atom((get) => {
   const base = get(cueBaseInputsAtom);
   if (!base) return [] as PracticeCue[];
@@ -306,10 +296,13 @@ export const noteSemanticMapAtom = atom((get) => {
  */
 export const practiceCuesAtom = atom((get) => {
   const practiceLens = get(practiceLensAtom);
+  // TODO (Task 4.4/4.5): rewrite cue behavior for new lens IDs.
+  // Temporary bridge: "tones" uses combined targets+guide-tones behavior;
+  // "lead" uses the old tension behavior. This keeps the suite green while
+  // the lens enum rename is complete.
   switch (practiceLens) {
-    case "targets": return get(targetsCuesAtom);
-    case "guide-tones": return get(guideTonesCuesAtom);
-    case "tension": return get(tensionCuesAtom);
+    case "tones": return get(guideTonesCuesAtom);
+    case "lead": return get(tensionCuesAtom);
     default: return [] as PracticeCue[];
   }
 });
@@ -362,13 +355,16 @@ const practiceBarLandOnGroupBaseAtom = atom((get): PracticeBarGroup => {
     findNearestScaleResolution(note, scaleNotes, displayNote);
 
   let subset: ChordRowEntry[];
+  // TODO (Task 4.4/4.5): rewrite land-on subset logic for new lens IDs.
+  // Temporary bridge: "tones" uses guide-tones subset (3rd/7th emphasis);
+  // "lead" uses the old tension subset (outside-scale members).
   switch (lens) {
-    case "guide-tones": {
+    case "tones": {
       const gt = allMembers.filter((e) => GUIDE_TONE_FORMATTED.has(e.memberName));
       subset = gt.length > 0 ? gt : allMembers;
       break;
     }
-    case "tension":
+    case "lead":
       subset = allMembers.filter((e) => !e.inScale);
       break;
     default:
@@ -377,7 +373,7 @@ const practiceBarLandOnGroupBaseAtom = atom((get): PracticeBarGroup => {
 
   const notes: PracticeBarNote[] = subset.map((e) => {
     const base = entryToBarNote(e);
-    return lens === "tension"
+    return lens === "lead"
       ? { ...base, resolvesTo: findResolution(e.internalNote) }
       : base;
   });
@@ -394,7 +390,7 @@ export const practiceBarLandOnGroupAtom = atom((get) => {
   const base = get(practiceBarLandOnGroupBaseAtom);
   const lens = get(practiceLensAtom);
   const shapeHighlightedNoteSet = get(shapeHighlightedNoteSetAtom);
-  if (!shapeHighlightedNoteSet || lens === "tension") return base;
+  if (!shapeHighlightedNoteSet || lens === "lead") return base;
   const filtered = base.notes.filter((n) =>
     shapeHighlightedNoteSet.has(n.internalNote),
   );

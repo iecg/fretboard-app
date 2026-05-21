@@ -318,7 +318,7 @@ describe("atoms", () => {
       store.set(fretZoomAtom, 200);
       store.set(displayFormatAtom, "degrees");
       store.set(linkChordRootAtom, false);
-      store.set(practiceLensAtom, "targets");
+      store.set(practiceLensAtom, "tones");
       store.set(chordFretSpreadAtom, 5);
       store.set(fingeringPatternAtom, "caged");
       store.set(npsPositionAtom, 3);
