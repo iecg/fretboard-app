@@ -546,21 +546,28 @@ export function getDivergentNotes(
   if (resolvedScaleName === "Major Pentatonic" || resolvedScaleName === "Minor Pentatonic") return [];
   if (resolvedScaleName === "Major" || resolvedScaleName === "Natural Minor") return [];
 
+  const rootChroma = Note.chroma(rootNote);
+  if (typeof rootChroma !== "number" || isNaN(rootChroma)) return [];
+
   const semis = getScaleSemitones(rootNote, scaleName);
   if (semis.length === 0) return [];
 
-  const rootIdx = NOTES.indexOf(rootNote);
-  if (rootIdx === -1) return [];
-
-  // Convert absolute NOTES indices to relative semitone intervals from root
-  const relativeIntervals = semis.map((s) => (s - rootIdx + 12) % 12);
+  // Convert absolute chroma indices to relative semitone intervals from root
+  const relativeIntervals = semis.map((s) => (s - rootChroma + 12) % 12);
   const isMajorQuality = relativeIntervals.includes(4); // contains major 3rd
   const refName = isMajorQuality ? "Major" : "Natural Minor";
   const refSemis = new Set(getScaleSemitones(rootNote, refName));
 
   return semis
     .filter((semitone) => !refSemis.has(semitone))
-    .map((semitone) => NOTES[semitone]);
+    .map((semitone) => {
+      const t = Note.transpose(
+        rootNote,
+        Interval.fromSemitones((semitone - rootChroma + 12) % 12),
+      );
+      const simplified = Note.simplify(t);
+      return simplified.includes("b") ? Note.enharmonic(simplified) : simplified;
+    });
 }
 
 // Key signature accidental counts (+ sharps, - flats)
