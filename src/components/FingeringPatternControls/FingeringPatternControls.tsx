@@ -6,6 +6,7 @@ import { useShapeState } from "../../hooks/useShapeState";
 import type { FingeringPattern } from "../../store/fingeringAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
+import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
 import { GroupHeader, Prop } from "../Inspector/InspectorGrid";
 import shared from "../shared/shared.module.css";
 
@@ -230,11 +231,15 @@ export function FingeringPatternControls() {
       {fingeringPattern === "one-string" && (
         <>
           <Prop label={t("controls.string")} span={2}>
-            <ToggleBar
+            <LabeledSelect
               label={t("controls.string")}
-              options={[1, 2, 3, 4, 5, 6].map((n, i) => ({ value: i, label: String(n) }))}
-              value={oneStringIndex}
-              onChange={(v) => setOneStringIndex(v as number)}
+              hideLabel
+              value={String(oneStringIndex)}
+              options={[1, 2, 3, 4, 5, 6].map((n, i) => ({
+                value: String(i),
+                label: `String ${n}`,
+              }))}
+              onChange={(v) => setOneStringIndex(Number(v))}
             />
           </Prop>
           <Prop
@@ -258,26 +263,27 @@ export function FingeringPatternControls() {
       {fingeringPattern === "two-strings" && (
         <>
           <Prop label={t("controls.strings")} span={2}>
-            <ToggleBar
+            <LabeledSelect
               label={t("controls.strings")}
+              hideLabel
+              value={String(twoStringsPair)}
               options={
                 twoStringsInterval === 3
                   ? [
-                      { value: 0, label: "1-3" },
-                      { value: 1, label: "2-4" },
-                      { value: 2, label: "3-5" },
-                      { value: 3, label: "4-6" },
+                      { value: "0", label: "Strings 1-3" },
+                      { value: "1", label: "Strings 2-4" },
+                      { value: "2", label: "Strings 3-5" },
+                      { value: "3", label: "Strings 4-6" },
                     ]
                   : [
-                      { value: 0, label: "1-2" },
-                      { value: 1, label: "2-3" },
-                      { value: 2, label: "3-4" },
-                      { value: 3, label: "4-5" },
-                      { value: 4, label: "5-6" },
+                      { value: "0", label: "Strings 1-2" },
+                      { value: "1", label: "Strings 2-3" },
+                      { value: "2", label: "Strings 3-4" },
+                      { value: "3", label: "Strings 4-5" },
+                      { value: "4", label: "Strings 5-6" },
                     ]
               }
-              value={twoStringsPair}
-              onChange={(v) => setTwoStringsPair(v as number)}
+              onChange={(v) => setTwoStringsPair(Number(v))}
             />
           </Prop>
           <Prop
