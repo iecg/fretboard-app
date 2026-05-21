@@ -1,11 +1,18 @@
 import { startTransition, useEffect, useMemo, useRef } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { type PracticeLens } from "@fretflow/core";
-import { voicingTypeAtom, voicingInversionAtom, voicingStringSetAtom, voicingConnectorsAtom, availableInversionsAtom, stringSetOptionsAtom, chordFretSpreadAtom } from "../../store/chordOverlayAtoms";
+import { type PracticeLens, type DegreeId } from "@fretflow/core";
+import { voicingTypeAtom, voicingInversionAtom, voicingStringSetAtom, voicingConnectorsAtom, availableInversionsAtom, stringSetOptionsAtom, chordFretSpreadAtom, practiceLensAtom, chordRootAtom, chordTypeAtom } from "../../store/chordOverlayAtoms";
 import { chordScopeToPositionAtom, activePositionAtom, voicingSectionExpandedAtom } from "../../store/chordScope";
 import { lensAvailabilityAtom } from "../../store/practiceLensAtoms";
 import { validVoicingCombosAtom, controlRecencyAtom, noteControlChangeAtom, nearestValidTriple } from "../../store/voicingCoupling";
 import type { VoicingControlId } from "../../store/voicingCoupling";
+import {
+  activeChordCachedDegreeAtom,
+  activeChordIsManualAtom,
+  activeChordQualityAtom,
+  activeChordRootAtom,
+  updateActiveChordAtom,
+} from "../../store/songStateAtoms";
 import { StringSetPicker } from "../Inspector/StringSetPicker";
 import { StepperControl } from "../StepperControl/StepperControl";
 import { useTranslation } from "../../hooks/useTranslation";
@@ -15,7 +22,6 @@ import { Switch } from "../Switch/Switch";
 import { PropGrid, Prop, GroupHeader } from "../Inspector/InspectorGrid";
 import { DegreeSelect } from "../shared/DegreeSelect";
 import { ChordQualitySelect } from "../shared/ChordQualitySelect";
-import { useChordState } from "../../hooks/useChordState";
 import { useScaleState } from "../../hooks/useScaleState";
 import panelStyles from "./ChordOverlayControls.module.css";
 
@@ -30,20 +36,23 @@ const LENS_SHORT_LABELS = {
 export function ChordOverlayControls() {
   const { t } = useTranslation();
   const { scaleName, useFlats } = useScaleState();
-  const {
-    chordRoot,
-    chordType,
-    practiceLens,
-    setPracticeLens,
-    chordDegree,
-    setChordDegree,
-    chordOverlayMode,
-    setChordOverlayMode,
-    chordRootOverride,
-    setChordRootOverride,
-    chordQualityOverride,
-    setChordQualityOverride,
-  } = useChordState();
+
+  // Phase 2.4 — unified active-chord write surface. The Mode toggle is gone;
+  // Degree + Manual root + Quality controls are always rendered side-by-side
+  // and write through `updateActiveChordAtom`.
+  const activeRoot = useAtomValue(activeChordRootAtom);
+  const activeQuality = useAtomValue(activeChordQualityAtom);
+  const activeDegree = useAtomValue(activeChordCachedDegreeAtom);
+  const activeIsManual = useAtomValue(activeChordIsManualAtom);
+  const updateActiveChord = useSetAtom(updateActiveChordAtom);
+
+  // Read the resolved chord identity used by the rest of the panel (voicing
+  // engine, lens availability). These still flow through the legacy
+  // `chord*Atom` selectors which already prefer the active progression step.
+  const chordRoot = useAtomValue(chordRootAtom);
+  const chordType = useAtomValue(chordTypeAtom);
+
+  const [practiceLens, setPracticeLens] = useAtom(practiceLensAtom);
   const [voicingType, setVoicingType] = useAtom(voicingTypeAtom);
   const [voicingInversion, setVoicingInversion] = useAtom(voicingInversionAtom);
   const [voicingStringSet, setVoicingStringSet] = useAtom(voicingStringSetAtom);
@@ -59,8 +68,6 @@ export function ChordOverlayControls() {
   const [chordScopeToPosition, setChordScopeToPosition] = useAtom(chordScopeToPositionAtom);
   const activePosition = useAtomValue(activePositionAtom);
   const [voicingExpanded, setVoicingExpanded] = useAtom(voicingSectionExpandedAtom);
-
-  const hasQualityOverride = chordQualityOverride != null;
 
   // All three lenses are always shown; an unavailable lens renders disabled.
   const lensOptions = lensAvailability.map((entry) => {
@@ -155,242 +162,217 @@ export function ChordOverlayControls() {
     [stringSetOptions, validCombos],
   );
 
+  // Phase 2.4 — picking a degree always re-binds to the diatonic chord:
+  // clear any manualRoot and qualityOverride so the user lands on the
+  // in-key default. The user can then layer a quality override on top
+  // without losing the degree binding.
   const handleDegreeChange = (value: string) => {
     startTransition(() => {
-      setChordDegree(value);
+      updateActiveChord({
+        degree: value as DegreeId,
+        root: null,
+        quality: null,
+      });
+    });
+  };
+
+  const handleRootChange = (note: string) => {
+    startTransition(() => {
+      updateActiveChord({ root: note });
     });
   };
 
   const handleChordTypeChange = (value: string) => {
     startTransition(() => {
-      setChordQualityOverride(value);
+      updateActiveChord({ quality: value });
     });
   };
 
-  // ── Visibility ────────────────────────────────────────────────────────
-  const isOff = chordOverlayMode === "off";
-  const showDegree = chordOverlayMode === "degree";
-  const showChordTypeGrid =
-    chordOverlayMode === "manual" ||
-    (chordOverlayMode === "degree" && Boolean(chordDegree));
-  const showRoot = chordOverlayMode === "manual";
   const hasActiveChord = Boolean(chordType);
-  const showDisplay = !isOff;
   const displayDisabled = !hasActiveChord;
+
+  // Display root for the manual-root NoteGrid. Falls back to the resolved
+  // root when no manual override is set so the grid still shows a sensible
+  // selection (the diatonic root) without forcing the chord into manual mode.
+  const rootGridValue = activeRoot ?? chordRoot;
 
   return (
     <div className={panelStyles.root}>
       <PropGrid columns={7} className={panelStyles.grid}>
         {/* ── SOURCE ───────────────────────────────────────────────────── */}
         <GroupHeader>{t("inspector.groupSource")}</GroupHeader>
-        <Prop
-          label={t("controls.mode")}
-          span={2}
-          hint={t("controls.modeHint")}
-        >
-          <ToggleBar
-            options={[
-              { value: "off", label: t("controls.off") },
-              { value: "degree", label: t("controls.degree") },
-              { value: "manual", label: t("controls.manual") },
-            ]}
-            value={chordOverlayMode}
-            onChange={setChordOverlayMode}
-            label="Chord overlay mode"
+        <Prop label={t("controls.degree")} span={3}>
+          <DegreeSelect
+            scaleName={scaleName}
+            value={activeDegree ?? ""}
+            onChange={handleDegreeChange}
+            label={t("controls.degreeAriaLabel")}
+            activeDegree={activeDegree}
+            qualityOverridden={false}
           />
         </Prop>
-        {showDegree && (
-          <Prop label={t("controls.degree")} span={3}>
-            <DegreeSelect
-              scaleName={scaleName}
-              value={chordDegree ?? ""}
-              onChange={handleDegreeChange}
-              label="Chord degree"
-              activeDegree={chordDegree}
-              qualityOverridden={hasQualityOverride}
-            />
-          </Prop>
-        )}
-        {showRoot && (
-          <Prop label={t("controls.root")} span={3}>
-            <RootNoteSelect
-              value={chordRootOverride}
-              onSelect={(note) => {
-                startTransition(() => {
-                  setChordRootOverride(note);
-                });
-              }}
-              useFlats={useFlats}
-            />
-          </Prop>
-        )}
-        {showDisplay && (
-          <Prop label={t("controls.lens")} span={2} hint={t("controls.lensHint")}>
-            <ToggleBar
-              options={lensOptions.map((o) => ({
-                ...o,
-                disabled: displayDisabled || o.disabled,
-              }))}
-              value={practiceLens}
-              onChange={displayDisabled ? () => undefined : setPracticeLens}
-              label="Practice lens"
-            />
-          </Prop>
-        )}
+        <Prop
+          label={t("controls.root")}
+          span={4}
+          hint={activeIsManual ? t("controls.customChordHint") : undefined}
+        >
+          <RootNoteSelect
+            value={rootGridValue}
+            onSelect={handleRootChange}
+            useFlats={useFlats}
+          />
+        </Prop>
+        <Prop label={t("controls.lens")} span={2} hint={t("controls.lensHint")}>
+          <ToggleBar
+            options={lensOptions.map((o) => ({
+              ...o,
+              disabled: displayDisabled || o.disabled,
+            }))}
+            value={practiceLens}
+            onChange={displayDisabled ? () => undefined : setPracticeLens}
+            label={t("controls.lensAriaLabel")}
+          />
+        </Prop>
 
         {/* ── CHORD TYPE ───────────────────────────────────────────────── */}
-        {showChordTypeGrid && (
-          <>
-            <GroupHeader>{t("inspector.groupChordType")}</GroupHeader>
-            <Prop
-              label={t("controls.quality")}
-              span={7}
-              hint={
-                chordOverlayMode === "degree"
-                  ? hasQualityOverride
-                    ? t("controls.customChordHint")
-                    : t("controls.diatonicDefaultHint")
-                  : t("controls.manualQualityHint")
-              }
-            >
-              <ChordQualitySelect
-                label="Chord Type"
-                value={chordType ?? ""}
-                onChange={handleChordTypeChange}
-              />
-            </Prop>
-          </>
-        )}
+        <GroupHeader>{t("inspector.groupChordType")}</GroupHeader>
+        <Prop
+          label={t("controls.quality")}
+          span={7}
+          hint={t("controls.manualQualityHint")}
+        >
+          <ChordQualitySelect
+            label={t("controls.qualityAriaLabel")}
+            value={activeQuality ?? chordType ?? ""}
+            onChange={handleChordTypeChange}
+          />
+        </Prop>
 
         {/* ── VOICING ──────────────────────────────────────────────────── */}
-        {showDisplay && (
+        <GroupHeader
+          right={
+            <span className={panelStyles.connectorsToggle}>
+              <span className={panelStyles.connectorsToggleLabel}>
+                {t("controls.connectors")}
+              </span>
+              <Switch
+                label={t("controls.connectors")}
+                checked={voicingConnectors}
+                onChange={setVoicingConnectors}
+                disabled={displayDisabled}
+              />
+            </span>
+          }
+        >
+          <button
+            type="button"
+            className={panelStyles.voicingDisclosure}
+            aria-expanded={voicingExpanded}
+            aria-controls="voicing-section"
+            onClick={() => setVoicingExpanded((v) => !v)}
+          >
+            <span
+              aria-hidden="true"
+              className={panelStyles.voicingChevron}
+              data-open={voicingExpanded || undefined}
+            >
+              ▸
+            </span>
+            {t("inspector.voicingSection")}
+          </button>
+        </GroupHeader>
+        {voicingExpanded && (
           <>
-            <GroupHeader
-              right={
-                <span className={panelStyles.connectorsToggle}>
-                  <span className={panelStyles.connectorsToggleLabel}>
-                    {t("controls.connectors")}
-                  </span>
-                  <Switch
-                    label={t("controls.connectors")}
-                    checked={voicingConnectors}
-                    onChange={setVoicingConnectors}
-                    disabled={displayDisabled}
-                  />
-                </span>
+            <Prop
+              label={t("inspector.voicingType")}
+              span={3}
+              hint={t("inspector.voicingTypeHint")}
+            >
+              <ToggleBar
+                label={t("inspector.voicingTypeAriaLabel")}
+                options={(["caged", "drop2", "triad"] as const).map((v) => ({
+                  value: v,
+                  label:
+                    v === "caged"
+                      ? t("inspector.voicingTypeCaged")
+                      : v === "drop2"
+                        ? t("inspector.voicingTypeDrop2")
+                        : t("inspector.voicingTypeTriad"),
+                  disabled: v !== "caged" && !validCombos.enabledTypes.has(v),
+                }))}
+                value={voicingType}
+                onChange={(v) => {
+                  recordControlChange("type");
+                  setVoicingType(v);
+                }}
+              />
+            </Prop>
+            {voicingType !== "caged" && (
+              <Prop
+                label={t("inspector.voicingInversion")}
+                span={4}
+                hint={t("inspector.voicingInversionHint")}
+              >
+                <ToggleBar
+                  label={t("inspector.voicingInversionAriaLabel")}
+                  options={(["root", "1st", "2nd", "3rd"] as const).map((v) => ({
+                    value: v,
+                    label: v === "root" ? t("controls.root") : v,
+                    disabled:
+                      !availableInversions.includes(v) ||
+                      !validCombos.enabledInversions.has(v),
+                  }))}
+                  value={voicingInversion}
+                  onChange={(v) => {
+                    recordControlChange("inversion");
+                    setVoicingInversion(v);
+                  }}
+                />
+              </Prop>
+            )}
+            {voicingType !== "caged" && (
+              <Prop
+                label={t("inspector.voicingStringSet")}
+                span={7}
+                hint={t("inspector.voicingStringSetHint")}
+              >
+                <StringSetPicker
+                  options={decoratedStringSetOptions}
+                  value={voicingStringSet}
+                  onChange={(v) => {
+                    recordControlChange("stringSet");
+                    setVoicingStringSet(v);
+                  }}
+                />
+              </Prop>
+            )}
+            <Prop label={t("inspector.chordSpread")} span={3} hint={t("inspector.chordSpreadHint")}>
+              <StepperControl
+                label={t("inspector.chordSpread")}
+                hideLabel
+                value={chordFretSpread}
+                onChange={setChordFretSpread}
+                min={0}
+                max={4}
+                step={1}
+              />
+            </Prop>
+            <Prop
+              label={t("inspector.scopeToPosition")}
+              span={4}
+              hint={
+                activePosition
+                  ? t("inspector.scopeToPositionHint")
+                  : t("inspector.scopeToPositionNeedsPosition")
               }
             >
-              <button
-                type="button"
-                className={panelStyles.voicingDisclosure}
-                aria-expanded={voicingExpanded}
-                aria-controls="voicing-section"
-                onClick={() => setVoicingExpanded((v) => !v)}
-              >
-                <span
-                  aria-hidden="true"
-                  className={panelStyles.voicingChevron}
-                  data-open={voicingExpanded || undefined}
-                >
-                  ▸
-                </span>
-                {t("inspector.voicingSection")}
-              </button>
-            </GroupHeader>
-            {voicingExpanded && (
-              <>
-                <Prop
-                  label={t("inspector.voicingType")}
-                  span={3}
-                  hint={t("inspector.voicingTypeHint")}
-                >
-                  <ToggleBar
-                    label="Voicing type"
-                    options={(["caged", "drop2", "triad"] as const).map((v) => ({
-                      value: v,
-                      label:
-                        v === "caged"
-                          ? t("inspector.voicingTypeCaged")
-                          : v === "drop2"
-                            ? t("inspector.voicingTypeDrop2")
-                            : t("inspector.voicingTypeTriad"),
-                      disabled: v !== "caged" && !validCombos.enabledTypes.has(v),
-                    }))}
-                    value={voicingType}
-                    onChange={(v) => {
-                      recordControlChange("type");
-                      setVoicingType(v);
-                    }}
-                  />
-                </Prop>
-                {voicingType !== "caged" && (
-                  <Prop
-                    label={t("inspector.voicingInversion")}
-                    span={4}
-                    hint={t("inspector.voicingInversionHint")}
-                  >
-                    <ToggleBar
-                      label="Voicing inversion"
-                      options={(["root", "1st", "2nd", "3rd"] as const).map((v) => ({
-                        value: v,
-                        label: v === "root" ? t("controls.root") : v,
-                        disabled:
-                          !availableInversions.includes(v) ||
-                          !validCombos.enabledInversions.has(v),
-                      }))}
-                      value={voicingInversion}
-                      onChange={(v) => {
-                        recordControlChange("inversion");
-                        setVoicingInversion(v);
-                      }}
-                    />
-                  </Prop>
-                )}
-                {voicingType !== "caged" && (
-                  <Prop
-                    label={t("inspector.voicingStringSet")}
-                    span={7}
-                    hint={t("inspector.voicingStringSetHint")}
-                  >
-                    <StringSetPicker
-                      options={decoratedStringSetOptions}
-                      value={voicingStringSet}
-                      onChange={(v) => {
-                        recordControlChange("stringSet");
-                        setVoicingStringSet(v);
-                      }}
-                    />
-                  </Prop>
-                )}
-                <Prop label={t("inspector.chordSpread")} span={3} hint={t("inspector.chordSpreadHint")}>
-                  <StepperControl
-                    label={t("inspector.chordSpread")}
-                    hideLabel
-                    value={chordFretSpread}
-                    onChange={setChordFretSpread}
-                    min={0}
-                    max={4}
-                    step={1}
-                  />
-                </Prop>
-                <Prop
-                  label={t("inspector.scopeToPosition")}
-                  span={4}
-                  hint={
-                    activePosition
-                      ? t("inspector.scopeToPositionHint")
-                      : t("inspector.scopeToPositionNeedsPosition")
-                  }
-                >
-                  <Switch
-                    label={t("inspector.scopeToPosition")}
-                    checked={chordScopeToPosition && activePosition}
-                    onChange={setChordScopeToPosition}
-                    disabled={!activePosition}
-                  />
-                </Prop>
-              </>
-            )}
+              <Switch
+                label={t("inspector.scopeToPosition")}
+                checked={chordScopeToPosition && activePosition}
+                onChange={setChordScopeToPosition}
+                disabled={!activePosition}
+              />
+            </Prop>
           </>
         )}
       </PropGrid>

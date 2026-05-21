@@ -1,5 +1,5 @@
-import { atom, type Getter } from "jotai";
-import { atomWithStorage, RESET } from "jotai/utils";
+import { atom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
 import { EMPTY_SET, setsEqual } from "./atomUtils";
 import {
   NOTES,
@@ -8,7 +8,6 @@ import {
   getChordNotes,
   getNoteDisplay,
   formatAccidental,
-  getDiatonicChord,
   generateVoicings,
 } from "@fretflow/core";
 import type {
@@ -19,31 +18,20 @@ import type {
   VoicingInversion,
 } from "@fretflow/core";
 import {
-  getDegreesForScale,
-  getQualityForDegree,
-  type DegreeId,
-} from "@fretflow/core";
-import {
   k,
   createStorage,
   rawStringStorage,
   booleanStorage,
   constrainedNumberStorage,
   GET_ON_INIT,
-  stringValidator,
   withStorageErrorBoundary,
 } from "../utils/storage";
+import { useFlatsAtom } from "./scaleAtoms";
+import { activeResolvedProgressionStepAtom } from "./progressionAtoms";
 import {
-  useFlatsAtom,
-  rootNoteAtom,
-  scaleNameAtom,
-} from "./scaleAtoms";
-import {
-  activeResolvedProgressionStepAtom,
-  activeProgressionStepAtom,
-  updateProgressionStepDegreeAtom,
-  updateProgressionStepQualityAtom,
-} from "./progressionAtoms";
+  activeChordRootAtom,
+  activeChordQualityAtom,
+} from "./songStateAtoms";
 import { currentTuningAtom } from "./layoutAtoms";
 import { buildStringSetOptions, ALL_STRINGS } from "./voicingStringSets";
 import { formatChordShortLabel } from "../progressions/progressionDomain";
@@ -74,289 +62,47 @@ const practiceLensStorage = createStorage<PracticeLens>({
   },
 });
 
-// ---------------------------------------------------------------------------
-// Backing atoms for degree-based chord overlay (Phase 02)
-// ---------------------------------------------------------------------------
-
 /**
  * Helper: read a raw localStorage string value without subscribing to atoms.
  * Used inside migrate() callbacks where atom subscriptions are not allowed.
- * Note: legacy atom values (chordRoot, chordType, rootNote, scaleName) are stored as
- * plain strings — not JSON-encoded — by rawStringStorage/chordTypeStorage serializers.
  */
 function readLocalStorage(key: string): string | null {
   const raw = withStorageErrorBoundary<string | null>(key, null).getRaw();
   if (raw === null) return null;
-  // Return empty string as null (chordTypeStorage serializes null → "")
   return raw === "" ? null : raw;
 }
 
-/** Diatonic triad quality names — the only types that can be inferred from degree. */
-const DIATONIC_TRIAD_QUALITIES = new Set([
-  "Major Triad",
-  "Minor Triad",
-  "Diminished Triad",
-]);
-
-const chordDegreeStorage = createStorage<DegreeId | null>({
-  serialize: (v) => v ?? "",
-  deserialize: (v) => (v === "" ? null : (v as DegreeId)),
-  validate: stringValidator({ nullable: true }),
-  migrate: (): DegreeId | null | undefined => {
-    // NOTE: Seventh chords ("Major 7th", "Minor 7th", "Dominant 7th") and "Power Chord (5)"
-    // are NOT in the DEGREE_DIATONIC_QUALITY table and always fall back to manual mode here.
-    // This is intentional — not a bug. Diatonic inference is triad-only.
-    const chordType = readLocalStorage(k("chordType"));
-
-    // (a) Overlay was off — no migration needed; default null is correct.
-    if (!chordType) return undefined;
-
-    // (b) Only triads can be inferred diatonically.
-    if (!DIATONIC_TRIAD_QUALITIES.has(chordType)) return undefined;
-
-    // Read legacy state from localStorage (no atom subscriptions inside migrate).
-    const chordRoot = readLocalStorage(k("chordRoot")) ?? "C";
-    const tonicNote = readLocalStorage(k("rootNote")) ?? "C";
-    const scaleName = readLocalStorage(k("scaleName")) ?? "Major";
-
-    const tonicIdx = NOTES.indexOf(tonicNote);
-    const rootIdx = NOTES.indexOf(chordRoot);
-    if (tonicIdx === -1 || rootIdx === -1) return undefined;
-
-    const semitone = (rootIdx - tonicIdx + 12) % 12;
-    const degreesMap = getDegreesForScale(scaleName);
-    const degreeId = degreesMap[semitone] as DegreeId | undefined;
-    if (!degreeId) return undefined;
-
-    // Validate: the diatonic quality must match the stored chord type exactly.
-    const expectedQuality = getQualityForDegree(degreeId, scaleName);
-    if (expectedQuality !== chordType) return undefined;
-
-    return degreeId;
-  },
-});
-
-/** The user's chosen scale degree for the chord overlay. null = overlay off. */
-export const chordDegreeAtom = atomWithStorage<DegreeId | null>(
-  k("chordDegree"),
-  null,
-  chordDegreeStorage,
-  GET_ON_INIT,
-);
-
-const chordOverlayModeStorage = createStorage<ChordOverlayMode>({
-  validate: (v) => v === "off" || v === "degree" || v === "manual",
-  migrate: (): ChordOverlayMode | undefined => {
-    // NOTE: Seventh chords ("Major 7th", "Minor 7th", "Dominant 7th") and "Power Chord (5)"
-    // are NOT in the DEGREE_DIATONIC_QUALITY table and always fall back to manual mode here.
-    // This is intentional — not a bug. Diatonic inference is triad-only.
-    const chordType = readLocalStorage(k("chordType"));
-
-    // No legacy chord type stored → default degree mode.
-    if (!chordType) return "degree";
-
-    // Diatonic triads → degree mode.
-    if (DIATONIC_TRIAD_QUALITIES.has(chordType)) return "degree";
-
-    // Seventh chords, Power Chord, or any other non-diatonic type → manual mode.
-    return "manual";
-  },
-});
-
-export type ChordOverlayMode = "off" | "degree" | "manual";
-
-export const chordOverlayModeAtom = atomWithStorage<ChordOverlayMode>(
-  k("chordOverlayMode"),
-  "degree",
-  chordOverlayModeStorage,
-  GET_ON_INIT,
-);
-
-/** Populated only when chordOverlayMode is 'manual'. Ignored in degree mode. */
-export const chordRootOverrideAtom = atomWithStorage<string>(
-  k("chordRootOverride"),
-  "C",
-  rawStringStorage(),
-  GET_ON_INIT,
-);
-
-const chordQualityOverrideStorage = createStorage<string | null>({
-  serialize: (v) => v ?? "",
-  deserialize: (v) => (v === "" ? null : v),
-  migrate: (): string | null | undefined => {
-    const chordType = readLocalStorage(k("chordType"));
-    // Preserve the chord type for manual-mode users.
-    if (chordType) return chordType;
-    return undefined;
-  },
-});
-
-/** Populated only when chordOverlayMode is 'manual'. Ignored in degree mode. */
-export const chordQualityOverrideAtom = atomWithStorage<string | null>(
-  k("chordQualityOverride"),
-  null,
-  chordQualityOverrideStorage,
-  GET_ON_INIT,
-);
-
-const progressionIsActiveChordSource = (get: Getter) => {
-  const activeStep = get(activeResolvedProgressionStepAtom);
-  return (
-    !!activeStep &&
-    !activeStep.unavailable
-  );
-};
-
-export const effectiveChordDegreeAtom = atom((get): DegreeId | null => {
-  if (!progressionIsActiveChordSource(get)) return get(chordDegreeAtom);
-  return get(activeProgressionStepAtom)?.degree ?? null;
-});
-
-export const effectiveChordOverlayModeAtom = atom((get): ChordOverlayMode => {
-  if (progressionIsActiveChordSource(get)) return "degree";
-  return get(chordOverlayModeAtom);
-});
-
-export const effectiveChordQualityOverrideAtom = atom((get): string | null => {
-  if (!progressionIsActiveChordSource(get)) return get(chordQualityOverrideAtom);
-  return get(activeProgressionStepAtom)?.qualityOverride ?? null;
-});
-
-/**
- * True when the active chord source is a progression step (progression mode on,
- * a resolvable active step exists). Drives the Chord tab's cyan→orange accent switch.
- */
-export const chordSourceIsProgressionAtom = atom((get) =>
-  progressionIsActiveChordSource(get),
-);
-
 // ---------------------------------------------------------------------------
-// Public writable derived atoms — chordRootAtom and chordTypeAtom
+// Public read-only chord identity atoms.
 //
-// Read path: composes the four backing atoms via getDiatonicChord.
-// Write path: persists the value into override atoms and flips mode to "manual".
-// RESET path: cascades RESET to all four backing atoms.
+// Phase 2.5: the "chord under edit" is always the active progression step.
+// These atoms compose the unified `activeChord*` selectors so legacy
+// consumers (voicing engine, lens availability, practice-bar) keep reading
+// `chordRootAtom` / `chordTypeAtom` without knowing about the song-state
+// layer. Writes go through `updateActiveChordAtom` in songStateAtoms.
 // ---------------------------------------------------------------------------
 
-export const chordRootAtom = atom(
-  (get): string => {
-    if (progressionIsActiveChordSource(get)) {
-      const progressionStep = get(activeResolvedProgressionStepAtom);
-      if (progressionStep?.root) {
-        return progressionStep.root;
-      }
-    }
+/**
+ * Resolved chord root for the active progression step. Falls back to "C" so
+ * downstream NOTES-index lookups stay valid when no chord is active.
+ */
+export const chordRootAtom = atom((get): string => {
+  return get(activeChordRootAtom) ?? "C";
+});
 
-    const mode = get(chordOverlayModeAtom);
-    if (mode === "off" || mode === "manual") return get(chordRootOverrideAtom);
-    const degree = get(chordDegreeAtom);
-    if (!degree) return get(chordRootOverrideAtom); // no degree selected yet
-    const rootNote = get(rootNoteAtom);
-    const scaleName = get(scaleNameAtom);
-    const result = getDiatonicChord(degree, scaleName, rootNote);
-    return result?.root ?? get(chordRootOverrideAtom);
-  },
-  (get, set, value: string | typeof RESET) => {
-    if (value === RESET) {
-      set(chordDegreeAtom, RESET);
-      set(chordOverlayModeAtom, RESET);
-      set(chordRootOverrideAtom, RESET);
-      set(chordQualityOverrideAtom, RESET);
-      return;
-    }
-    if (progressionIsActiveChordSource(get)) {
-      return;
-    }
-    set(chordRootOverrideAtom, value);
-    set(chordOverlayModeAtom, "manual");
-  },
-);
-
-export const chordTypeAtom = atom(
-  (get): string | null => {
-    if (progressionIsActiveChordSource(get)) {
-      const progressionStep = get(activeResolvedProgressionStepAtom);
-      return progressionStep?.quality ?? null;
-    }
-
-    const mode = get(chordOverlayModeAtom);
-    if (mode === "off") return null;
-    if (mode === "manual") return get(chordQualityOverrideAtom) ?? "Major Triad";
-    const degree = get(chordDegreeAtom);
-    if (!degree) return null; // no degree selected yet
-    // Degree mode: prefer the user's quality override when set so the user can
-    // pin a specific quality (e.g. Dominant 7th on V) while keeping the chord
-    // root bound to the active scale degree. Without an override, fall back to
-    // the diatonic default for this degree + scale.
-    const override = get(chordQualityOverrideAtom);
-    if (override) return override;
-    const rootNote = get(rootNoteAtom);
-    const scaleName = get(scaleNameAtom);
-    const result = getDiatonicChord(degree, scaleName, rootNote);
-    return result?.quality ?? null;
-  },
-  (get, set, value: string | null | typeof RESET) => {
-    if (value === RESET) {
-      if (progressionIsActiveChordSource(get)) {
-        const step = get(activeProgressionStepAtom);
-        if (step) {
-          set(updateProgressionStepQualityAtom, {
-            id: step.id,
-            qualityOverride: null,
-          });
-        }
-      }
-      set(chordDegreeAtom, RESET);
-      set(chordOverlayModeAtom, RESET);
-      set(chordRootOverrideAtom, RESET);
-      set(chordQualityOverrideAtom, RESET);
-      return;
-    }
-    if (progressionIsActiveChordSource(get)) {
-      const step = get(activeProgressionStepAtom);
-      if (step) {
-        set(updateProgressionStepQualityAtom, {
-          id: step.id,
-          qualityOverride: value,
-        });
-      }
-      return;
-    }
-    set(chordQualityOverrideAtom, value);
-    // In degree mode with a degree active, preserve the degree binding —
-    // the override applies on top of the derived chord root. Manual mode
-    // behavior is unchanged: a chord-type write flips the overlay to manual.
-    if (get(chordOverlayModeAtom) === "degree" && get(chordDegreeAtom)) {
-      return;
-    }
-    set(chordOverlayModeAtom, "manual");
-  },
-);
+/** Resolved chord quality for the active progression step. */
+export const chordTypeAtom = atom((get): string | null => {
+  return get(activeChordQualityAtom);
+});
 
 /**
- * Action atom for changing the active scale degree in degree mode. Always
- * clears any `chordQualityOverride` so each click on a degree button starts
- * at its diatonic default (e.g. picking V resolves to Major Triad even if a
- * Dominant 7th override was active, and re-clicking the same degree clears
- * the override too).
+ * True when the active chord source is a resolvable progression step.
+ * Drives the Chord tab's cyan→orange accent switch.
  */
-export const setChordDegreeAtom = atom(
-  null,
-  (get, set, value: DegreeId | null) => {
-    if (progressionIsActiveChordSource(get)) {
-      const step = get(activeProgressionStepAtom);
-      if (step) {
-        set(updateProgressionStepDegreeAtom, {
-          id: step.id,
-          degree: value ?? step.degree,
-        });
-      }
-      return;
-    }
-    set(chordDegreeAtom, value);
-    set(chordQualityOverrideAtom, null);
-  },
-);
+export const chordSourceIsProgressionAtom = atom((get) => {
+  const activeStep = get(activeResolvedProgressionStepAtom);
+  return !!activeStep && !activeStep.unavailable;
+});
 
 export const linkChordRootAtom = atomWithStorage(
   k("linkChordRoot"),

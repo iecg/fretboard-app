@@ -115,32 +115,36 @@ describe("App", () => {
       });
     });
 
-    it("links chord root to scale root in manual mode", async () => {
-      // In manual mode the link-sync writes the new scale root through to chordRootOverride.
-      localStorage.setItem(k("progressionSteps"), "[]");
-      localStorage.setItem(k("chordOverlayMode"), "manual");
-      localStorage.setItem(k("chordType"), "Major Triad");
-      localStorage.setItem(k("chordRootOverride"), "C");
+    it("transposes the active step's manualRoot when the scale root changes", async () => {
+      // Seed a single-step progression with manualRoot=C; changing the scale
+      // root to G must transpose manualRoot to G via the root-change listener.
+      const steps = [
+        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
+      ];
+      localStorage.setItem(k("progressionSteps"), JSON.stringify(steps));
       render(<App />);
       await selectInspectorTab("Scale");
       fireEvent.click(await screen.findByTestId("circle-of-fifths"));
       await waitFor(() => {
-        expect(localStorage.getItem(k("chordRootOverride"))).toBe("G");
+        const persisted = JSON.parse(localStorage.getItem(k("progressionSteps")) ?? "[]") as Array<{ manualRoot: string }>;
+        expect(persisted[0]?.manualRoot).toBe("G");
       });
     });
 
-    it("preserves degree mode when scale root changes (Phase 01 regression)", async () => {
-      // In degree mode the chord root re-resolves via getDiatonicChord; the
-      // link-sync must NOT write through to chordRootOverride or force manual mode.
-      localStorage.setItem(k("progressionSteps"), "[]");
-      localStorage.setItem(k("chordType"), "Major Triad");
+    it("a diatonic step's chord re-resolves through the new scale root without becoming manual", async () => {
+      // A step with manualRoot=null stays diatonic; changing the scale root
+      // re-resolves its chord through getDiatonicChord (no manualRoot write).
+      const steps = [
+        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      ];
+      localStorage.setItem(k("progressionSteps"), JSON.stringify(steps));
       render(<App />);
       await selectInspectorTab("Scale");
       fireEvent.click(await screen.findByTestId("circle-of-fifths"));
       await waitFor(() => {
         expect(localStorage.getItem(k("rootNote"))).toBe("G");
-        expect(localStorage.getItem(k("chordOverlayMode"))).toBe("degree");
-        expect(localStorage.getItem(k("chordRootOverride"))).not.toBe("G");
+        const persisted = JSON.parse(localStorage.getItem(k("progressionSteps")) ?? "[]") as Array<{ manualRoot: string | null }>;
+        expect(persisted[0]?.manualRoot).toBeNull();
       });
     });
   });
@@ -168,16 +172,19 @@ describe("App", () => {
     });
   });
 
-  describe("chord overlay (manual mode)", () => {
-    it("setting chord type via Manual mode writes the override key", async () => {
-      localStorage.setItem(k("progressionSteps"), "[]");
+  describe("chord overlay (quality override)", () => {
+    it("clicking a Chord Type option writes through to the active progression step", async () => {
+      const steps = [
+        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      ];
+      localStorage.setItem(k("progressionSteps"), JSON.stringify(steps));
       render(<App />);
       await selectInspectorTab("Chord");
-      fireEvent.click(await screen.findByRole("button", { name: "Manual" }));
       const chordTypeGroup = await screen.findByRole("group", { name: "Chord Type" });
       fireEvent.click(within(chordTypeGroup).getByRole("button", { name: "min" }));
       await waitFor(() => {
-        expect(localStorage.getItem(k("chordQualityOverride"))).toBe("Minor Triad");
+        const persisted = JSON.parse(localStorage.getItem(k("progressionSteps")) ?? "[]") as Array<{ qualityOverride: string | null }>;
+        expect(persisted[0]?.qualityOverride).toBe("Minor Triad");
       });
     });
   });
@@ -233,9 +240,10 @@ describe("App", () => {
       // Dominant 7th over C Major has Bb outside the scale, so the practice bar renders.
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("scaleName"), "Major");
-      localStorage.setItem(k("chordOverlayMode"), "manual");
-      localStorage.setItem(k("chordRootOverride"), "C");
-      localStorage.setItem(k("chordQualityOverride"), "Dominant 7th");
+      const steps = [
+        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th", manualRoot: "C" },
+      ];
+      localStorage.setItem(k("progressionSteps"), JSON.stringify(steps));
       localStorage.setItem(k("practiceLens"), "targets");
       localStorage.setItem(k("chordOverlayHidden"), "true");
     }

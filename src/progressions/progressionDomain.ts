@@ -4,6 +4,7 @@ import {
   getDegreeSequence,
   getDiatonicChord,
   getNoteDisplay,
+  transposeNoteToSharps,
   type DegreeId,
 } from "@fretflow/core";
 
@@ -155,6 +156,14 @@ export interface ProgressionStep {
   degree: DegreeId;
   duration: ProgressionStepDuration;
   qualityOverride: string | null;
+  /**
+   * When non-null, this step is a manual / out-of-scale chord. The chord's
+   * root is `manualRoot`, the quality comes from `qualityOverride`, and
+   * `degree` is treated as a best-effort cached hint (e.g. for relabelling
+   * if the scale changes). When null, the step resolves diatonically from
+   * `degree` against the active scale + key.
+   */
+  manualRoot: string | null;
 }
 
 export type ProgressionPresetCategory =
@@ -208,6 +217,7 @@ function parseSteps(spec: string): Array<Omit<ProgressionStep, "id">> {
       degree: degree as DegreeId,
       duration: { value: value ? Number(value) : 1, unit: "bar" as const },
       qualityOverride: q === "7" ? "Dominant 7th" : null,
+      manualRoot: null,
     };
   });
 }
@@ -279,7 +289,7 @@ function getProgressionHarmonyScaleName(scaleName: string): string {
 let fallbackId = 0;
 
 export function createProgressionStep(
-  step: Omit<ProgressionStep, "id">,
+  step: Omit<ProgressionStep, "id" | "manualRoot"> & { manualRoot?: string | null },
   id = createProgressionStepId(),
 ): ProgressionStep {
   return {
@@ -287,6 +297,7 @@ export function createProgressionStep(
     degree: step.degree,
     duration: step.duration,
     qualityOverride: step.qualityOverride,
+    manualRoot: step.manualRoot ?? null,
   };
 }
 
@@ -304,7 +315,12 @@ export function isValidProgressionStep(value: unknown): value is ProgressionStep
   return typeof candidate.id === "string"
     && typeof candidate.degree === "string"
     && isProgressionDuration(candidate.duration)
-    && (candidate.qualityOverride === null || typeof candidate.qualityOverride === "string");
+    && (candidate.qualityOverride === null || typeof candidate.qualityOverride === "string")
+    // `manualRoot` is additive (Phase 2.1): treat absent/undefined as null so
+    // pre-Phase-2 persisted shapes and legacy literal seeds still validate.
+    && (candidate.manualRoot === null
+      || candidate.manualRoot === undefined
+      || typeof candidate.manualRoot === "string");
 }
 
 export function normalizeProgressionStep(value: unknown): ProgressionStep | null {
@@ -312,11 +328,18 @@ export function normalizeProgressionStep(value: unknown): ProgressionStep | null
   const candidate = value as ProgressionStep & { duration: unknown };
   if (typeof candidate.id !== "string" || typeof candidate.degree !== "string") return null;
   if (candidate.qualityOverride !== null && typeof candidate.qualityOverride !== "string") return null;
+  const manualRoot =
+    candidate.manualRoot === undefined || candidate.manualRoot === null
+      ? null
+      : typeof candidate.manualRoot === "string"
+        ? candidate.manualRoot
+        : null;
   return {
     id: candidate.id,
     degree: candidate.degree,
     duration: migrateLegacyDuration(candidate.duration),
     qualityOverride: candidate.qualityOverride ?? null,
+    manualRoot,
   };
 }
 
@@ -341,6 +364,30 @@ export function remapProgressionStepsForScale(
     ...step,
     degree: remapDegreeByOrdinal(step.degree, toScaleName),
   }));
+}
+
+/**
+ * Transpose each step's `manualRoot` by the interval from `oldRoot` to
+ * `newRoot`. Steps with `manualRoot === null` pass through unchanged — their
+ * resolved root already follows the active key through `degree`.
+ *
+ * Result roots are normalized to FretFlow's sharps-form contract (e.g. `Eb`
+ * → `D#`) so that downstream consumers indexing into `NOTES` keep working.
+ *
+ * Returns identity-mapped steps when `oldRoot === newRoot` to keep the call
+ * cheap and side-effect-free on no-op changes.
+ */
+export function transposeManualRootForRootChange(
+  steps: readonly ProgressionStep[],
+  oldRoot: string,
+  newRoot: string,
+): ProgressionStep[] {
+  if (oldRoot === newRoot) return steps.map((step) => step);
+  return steps.map((step) =>
+    step.manualRoot == null
+      ? step
+      : { ...step, manualRoot: transposeNoteToSharps(step.manualRoot, oldRoot, newRoot) },
+  );
 }
 
 export function createStepsFromPreset(

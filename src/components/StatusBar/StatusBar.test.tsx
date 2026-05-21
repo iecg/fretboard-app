@@ -2,7 +2,6 @@
 import { describe, expect, it } from "vitest";
 import { screen } from "@testing-library/react";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
-import { chordRootAtom, chordTypeAtom, chordDegreeAtom } from "../../store/chordOverlayAtoms";
 import { cagedShapesAtom, fingeringPatternAtom } from "../../store/fingeringAtoms";
 import { fretStartAtom, fretEndAtom, tuningNameAtom } from "../../store/layoutAtoms";
 import { progressionStepsAtom, progressionTempoBpmAtom } from "../../store/progressionAtoms";
@@ -65,21 +64,31 @@ describe("StatusBar", () => {
 
   it("shows the compact chord symbol when a chord is active", () => {
     renderWithAtoms(<StatusBar />, [
-      [progressionStepsAtom, []],
-      [chordRootAtom, "G"],
-      [chordTypeAtom, "Minor Triad"],
+      [progressionStepsAtom, [
+        {
+          id: "one",
+          degree: "I",
+          duration: { value: 1, unit: "bar" },
+          qualityOverride: "Minor Triad",
+          manualRoot: "G",
+        },
+      ]],
     ]);
     expect(screen.getByTestId("status-chord")).toHaveTextContent("Gm");
   });
 
   it("prefixes the chord degree when one is set", () => {
-    // Progression is not the active chord source by default, so
-    // effectiveChordDegreeAtom falls back to chordDegreeAtom.
+    // Phase 2.5: the degree is sourced from the active progression step.
     renderWithAtoms(<StatusBar />, [
-      [progressionStepsAtom, []],
-      [chordRootAtom, "G"],
-      [chordTypeAtom, "Major Triad"],
-      [chordDegreeAtom, "V"],
+      [progressionStepsAtom, [
+        {
+          id: "one",
+          degree: "V",
+          duration: { value: 1, unit: "bar" },
+          qualityOverride: "Major Triad",
+          manualRoot: "G",
+        },
+      ]],
     ]);
     expect(screen.getByTestId("status-chord")).toHaveTextContent("V · G");
   });

@@ -3,19 +3,41 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { createStore } from "jotai";
 import type { PracticeLens } from "@fretflow/core";
 import { k } from "../utils/storage";
-import { practiceLensAtom, chordRootAtom, chordTypeAtom, chordDegreeAtom, chordOverlayModeAtom, chordHiddenNotesAtom } from "./chordOverlayAtoms";
+import { practiceLensAtom, chordHiddenNotesAtom, chordTypeAtom } from "./chordOverlayAtoms";
 import { fingeringPatternAtom } from "./fingeringAtoms";
 import { practiceCuesAtom, showChordPracticeBarAtom, practiceBarLensLabelAtom, practiceBarChordGroupAtom, practiceBarLandOnGroupAtom, lensAvailabilityAtom, noteSemanticMapAtom } from "./practiceLensAtoms";
 import { progressionStepsAtom } from "./progressionAtoms";
 import { rootNoteAtom, scaleNameAtom, scaleVisibleAtom } from "./scaleAtoms";
+import { updateActiveChordAtom } from "./songStateAtoms";
+import { getDegreesForScale } from "@fretflow/core";
+import type { ProgressionStep } from "../progressions/progressionDomain";
+
+/** Returns the tonic degree (semitone 0) of `scaleName` — every diatonic
+ * scale has one — so a test step seeded with it always resolves. */
+function tonicDegreeFor(scaleName: string): string {
+  const degrees = getDegreesForScale(scaleName);
+  return degrees[0] ?? "i";
+}
 
 function makeStore() {
   const store = createStore();
-  // Phase B "always-on DAW" removed the progression gate. progressionStepsAtom
-  // defaults to a non-empty progression (I-V-vi-IV), which would drive the
-  // chord overlay. These tests exercise the manual/degree chord path in
-  // isolation, so seed an empty progression to disable the progression source.
-  store.set(progressionStepsAtom, []);
+  // Phase 2.5: the chord is owned by the active progression step. Tests
+  // start with a one-step progression seeded to the test's chord; Setup
+  // entries that pass `chordRoot`/`chordType` update the active step via
+  // `updateActiveChordAtom`. To disable the chord overlay, set `chordType: null`.
+  //
+  // `degree: "ii"` resolves in every diatonic scale (Major, Natural Minor,
+  // Dorian, Minor Pentatonic, …) so tests can swap scales freely without
+  // accidentally turning the step `unavailable`.
+  store.set(progressionStepsAtom, [
+    {
+      id: "test-step",
+      degree: "ii",
+      duration: { value: 1, unit: "bar" },
+      qualityOverride: null,
+      manualRoot: "C",
+    },
+  ]);
   return store;
 }
 
@@ -25,6 +47,7 @@ type Setup = {
   chordRoot?: string | null;
   chordType?: string | null;
   chordDegree?: string | null;
+  /** Set to `"off"` to disable the chord overlay (empties the progression). */
   overlayMode?: string;
   lens?: PracticeLens;
   scaleVisible?: boolean;
@@ -34,15 +57,46 @@ type Setup = {
 function setUp(o: Setup = {}) {
   const store = makeStore();
   if (o.scaleRoot !== undefined) store.set(rootNoteAtom, o.scaleRoot);
-  if (o.scale !== undefined) store.set(scaleNameAtom, o.scale);
-  if (o.chordRoot !== undefined) store.set(chordRootAtom, o.chordRoot as never);
-  if (o.chordType !== undefined) store.set(chordTypeAtom, o.chordType as never);
-  if (o.chordDegree !== undefined) store.set(chordDegreeAtom, o.chordDegree as never);
-  if (o.overlayMode !== undefined) store.set(chordOverlayModeAtom, o.overlayMode as never);
+  if (o.scale !== undefined) {
+    store.set(scaleNameAtom, o.scale);
+    // Reseat the step's degree on the tonic of the new scale so the
+    // resolver never returns `unavailable` for legitimate test scenarios.
+    store.set(updateActiveChordAtom, {
+      degree: tonicDegreeFor(o.scale) as import("@fretflow/core").DegreeId,
+    });
+  }
+  // Overlay-off path: empty progression so no active chord exists.
+  if (o.overlayMode === "off") {
+    store.set(progressionStepsAtom, []);
+  } else {
+    // Apply chord patches via the active step's manualRoot / qualityOverride.
+    const patch: { root?: string | null; quality?: string | null; degree?: import("@fretflow/core").DegreeId } = {};
+    if (o.chordRoot !== undefined) patch.root = o.chordRoot;
+    if (o.chordType !== undefined) patch.quality = o.chordType;
+    if (o.chordDegree !== undefined) {
+      // chordDegree=null clears the chord by emptying the progression.
+      if (o.chordDegree === null) {
+        store.set(progressionStepsAtom, []);
+      } else {
+        patch.degree = o.chordDegree as import("@fretflow/core").DegreeId;
+      }
+    }
+    if (Object.keys(patch).length > 0) {
+      store.set(updateActiveChordAtom, patch);
+    }
+  }
   if (o.lens !== undefined) store.set(practiceLensAtom, o.lens);
   if (o.scaleVisible !== undefined) store.set(scaleVisibleAtom, o.scaleVisible);
   if (o.hidden !== undefined) store.set(chordHiddenNotesAtom, o.hidden);
   return store;
+}
+
+function setChordViaProgression(store: ReturnType<typeof createStore>, patch: { root?: string | null; quality?: string | null }) {
+  store.set(updateActiveChordAtom, patch);
+}
+
+function disableChordOverlay(store: ReturnType<typeof createStore>) {
+  store.set(progressionStepsAtom, [] as ProgressionStep[]);
 }
 
 describe("practiceLensAtom", () => {
@@ -148,7 +202,7 @@ describe("practiceCuesAtom", () => {
 
     it("tension notes include outside chord root and have resolvesTo targets", () => {
       const store = makeChordStore("Major", "C", "Minor Triad", "tension");
-      store.set(chordRootAtom, "C#"); // outside the C major scale
+      setChordViaProgression(store, { root: "C#" }); // outside the C major scale
       const tensionCue = store.get(practiceCuesAtom).find((c) => c.kind === "tension");
       expect(tensionCue).toBeDefined();
       expect(tensionCue!.notes.map((n) => n.internalNote)).toContain("C#");
@@ -236,7 +290,7 @@ describe("noteSemanticMapAtom", () => {
     // The progression step (V = G Major Triad, diatonic) is the active chord source.
     const store = setUp({ scaleRoot: "C", scale: "Major" });
     store.set(progressionStepsAtom, [
-      { id: "one", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      { id: "one", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
     ]);
     store.set(fingeringPatternAtom, "one-string");
 
@@ -407,16 +461,19 @@ describe("chord overlay does not control scale visibility", () => {
   });
 
   it("enabling chord overlay does not change effectiveShapeDataAtom highlightNotes count", () => {
-    const store = setUp({ scaleRoot: "C", scale: "Major", scaleVisible: true });
+    // Start with the overlay off (empty progression) then add a chord.
+    const store = setUp({ scaleRoot: "C", scale: "Major", scaleVisible: true, overlayMode: "off" });
     const before = store.get(effectiveShapeDataAtom).highlightNotes.length;
-    store.set(chordTypeAtom, "Major Triad");
+    store.set(progressionStepsAtom, [
+      { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
+    ]);
     expect(store.get(effectiveShapeDataAtom).highlightNotes.length).toBe(before);
   });
 
   it("disabling chord overlay does not change scale highlight notes", () => {
     const store = setUp({ scaleRoot: "C", scale: "Major", scaleVisible: true, chordType: "Major Triad" });
     const before = store.get(effectiveShapeDataAtom).highlightNotes.length;
-    store.set(chordTypeAtom, null);
+    disableChordOverlay(store);
     expect(store.get(effectiveShapeDataAtom).highlightNotes.length).toBe(before);
   });
 });
@@ -446,7 +503,7 @@ describe("color notes are scale-owned — independent of chord overlay", () => {
   it("colorNotesAtom is unaffected by chord type changes", () => {
     const store = setUp({ scaleRoot: "C", scale: "Minor Blues" });
     const before = store.get(colorNotesAtom);
-    store.set(chordTypeAtom, "Dominant 7th");
+    setChordViaProgression(store, { quality: "Dominant 7th" });
     expect(store.get(colorNotesAtom)).toEqual(before);
   });
 
@@ -493,11 +550,10 @@ describe("noteSemanticMapAtom — Phase 04 scaleDegree and isDiatonicChord", () 
     }
   });
 
-  it.each<[string, Setup]>([
-    ["chordOverlayMode is manual", { scaleRoot: "C", scale: "Major", overlayMode: "manual", chordRoot: "C", chordType: "Major Triad" }],
-    ["chordDegree is null (overlay off)", { scaleRoot: "C", scale: "Major", chordDegree: null, overlayMode: "degree", chordRoot: "C", chordType: "Major Triad" }],
-  ])("isDiatonicChord is false when %s", (_label, opts) => {
-    const map = setUp(opts).get(noteSemanticMapAtom);
+  it("isDiatonicChord is false when the quality override does not match the diatonic chord", () => {
+    // Degree=I in C Major's diatonic chord is Major Triad; overriding to
+    // Minor Triad produces a non-diatonic chord.
+    const map = setUp({ scaleRoot: "C", scale: "Major", chordDegree: "I", chordType: "Minor Triad" }).get(noteSemanticMapAtom);
     for (const note of ["C", "E", "G"]) {
       const s = map.get(note);
       if (s?.isChordTone) expect(s.isDiatonicChord).toBeFalsy();
@@ -505,13 +561,12 @@ describe("noteSemanticMapAtom — Phase 04 scaleDegree and isDiatonicChord", () 
   });
 
   it("isDiatonicChord is false when a non-diatonic quality override is set in degree mode", () => {
-    // After the "preserve degree-mode on chord-quality change" fix, writing a
-    // chord type while in degree mode no longer flips to manual — the override
-    // is applied on top of the degree binding, and the diatonic-chord check
-    // correctly identifies it as non-diatonic.
-    const store = setUp({ scaleRoot: "C", scale: "Major", chordDegree: "I", overlayMode: "degree", chordType: "Minor Triad" });
+    // The chord is owned by the active progression step. Seed a step at
+    // degree=I with a qualityOverride of "Minor Triad" — the diatonic
+    // quality at I in C Major is Major Triad, so the override produces a
+    // non-diatonic chord even though the cached degree is "I".
+    const store = setUp({ scaleRoot: "C", scale: "Major", chordDegree: "I", chordType: "Minor Triad" });
 
-    expect(store.get(chordOverlayModeAtom)).toBe("degree");
     expect(store.get(chordTypeAtom)).toBe("Minor Triad");
 
     const map = store.get(noteSemanticMapAtom);

@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render } from "@testing-library/react";
 import { Provider, createStore } from "jotai";
 import { STANDARD_TUNING } from "@fretflow/core";
-import { chordOverlayModeAtom, chordRootAtom, chordTypeAtom, fullChordsEnabledAtom } from "../../store/chordOverlayAtoms";
+import { fullChordsEnabledAtom } from "../../store/chordOverlayAtoms";
 import { chordScopeToPositionAtom } from "../../store/chordScope";
 import { cagedShapesAtom, fingeringPatternAtom } from "../../store/fingeringAtoms";
 import { progressionStepsAtom } from "../../store/progressionAtoms";
@@ -21,12 +21,19 @@ vi.mock("../FretboardSVG/FretboardSVG", () => ({
 
 function renderGMajorEPositionChord(chordRoot: string, chordType: string) {
   const store = createStore();
-  store.set(progressionStepsAtom, []);
-  store.set(chordOverlayModeAtom, "manual");
+  // Set scale root + scale BEFORE seeding the progression step so the
+  // root-change listener doesn't transpose manualRoot from the default key.
   store.set(rootNoteAtom, "G");
   store.set(scaleNameAtom, "Major");
-  store.set(chordRootAtom, chordRoot);
-  store.set(chordTypeAtom, chordType);
+  store.set(progressionStepsAtom, [
+    {
+      id: "step-1",
+      degree: "I",
+      duration: { value: 1, unit: "bar" },
+      qualityOverride: chordType,
+      manualRoot: chordRoot,
+    },
+  ]);
   store.set(fullChordsEnabledAtom, true);
   store.set(fingeringPatternAtom, "caged");
   store.set(cagedShapesAtom, new Set(["E"]));
@@ -62,10 +69,15 @@ describe("Fretboard wiring", () => {
 
   it("passes full chord positions and voicings from state into FretboardSVG", () => {
     const store = createStore();
-    store.set(progressionStepsAtom, []);
-    store.set(chordOverlayModeAtom, "manual");
-    store.set(chordRootAtom, "E");
-    store.set(chordTypeAtom, "Major Triad");
+    store.set(progressionStepsAtom, [
+      {
+        id: "step-1",
+        degree: "I",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: "Major Triad",
+        manualRoot: "E",
+      },
+    ]);
     store.set(fullChordsEnabledAtom, true);
 
     render(

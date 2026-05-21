@@ -6,6 +6,9 @@
  * Every cross-module call into Tonal passes through this file.
  */
 
+import * as Note from "@tonaljs/note";
+import * as Interval from "@tonaljs/interval";
+
 /**
  * App chord-quality name (e.g., "Major Triad") → Tonal chord symbol suffix
  * (e.g., "M"). Suffix is what Tonal.Chord.get() consumes after the root.
@@ -93,4 +96,26 @@ export function tonalToScaleName(tonalName: string): string | undefined {
 export function tonalChordSymbol(root: string, quality: string): string | undefined {
   const suffix = chordQualityToTonal(quality);
   return suffix === undefined ? undefined : `${root}${suffix}`;
+}
+
+/**
+ * Transpose `note` by the interval from `oldRoot` to `newRoot`, returning the
+ * result normalized to the FretFlow sharps-form contract (e.g. `Eb` → `D#`).
+ *
+ * Returns the input unchanged when `oldRoot === newRoot`, or when Tonal cannot
+ * resolve the interval (e.g. malformed roots) — preserving the caller's intent
+ * rather than mangling state on bad input.
+ */
+export function transposeNoteToSharps(
+  note: string,
+  oldRoot: string,
+  newRoot: string,
+): string {
+  if (oldRoot === newRoot) return note;
+  const interval = Interval.distance(oldRoot, newRoot);
+  if (!interval) return note;
+  const transposed = Note.transpose(note, interval);
+  if (!transposed) return note;
+  const simplified = Note.simplify(transposed);
+  return simplified.includes("b") ? Note.enharmonic(simplified) : simplified;
 }

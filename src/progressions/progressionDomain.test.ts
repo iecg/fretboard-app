@@ -13,11 +13,15 @@ import {
   getAvailableProgressionPresets,
   isProgressionDuration,
   isProgressionPresetAvailableForScale,
+  isValidProgressionStep,
   migrateLegacyDuration,
+  normalizeProgressionStep,
   remapDegreeByOrdinal,
   remapProgressionStepsForScale,
   resolveProgressionStep,
   totalProgressionBars,
+  transposeManualRootForRootChange,
+  type ProgressionStep,
   type ProgressionStepDuration,
 } from "./progressionDomain";
 
@@ -120,9 +124,9 @@ describe("progressionDomain", () => {
     ];
 
     expect(remapProgressionStepsForScale(steps, "Natural Minor")).toEqual([
-      { id: "one", degree: "i", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-      { id: "two", degree: "v", duration: { value: 2, unit: "bar" }, qualityOverride: "Dominant 7th" },
-      { id: "three", degree: "VI", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      { id: "one", degree: "i", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "two", degree: "v", duration: { value: 2, unit: "bar" }, qualityOverride: "Dominant 7th", manualRoot: null },
+      { id: "three", degree: "VI", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
     ]);
   });
 
@@ -370,5 +374,149 @@ describe("progression duration math", () => {
     expect(
       totalProgressionBars([{ value: 6, unit: "beat" }], 3),
     ).toBe(2);
+  });
+
+  describe("ProgressionStep manualRoot", () => {
+    it("createProgressionStep defaults manualRoot to null", () => {
+      const step = createProgressionStep({
+        degree: "i",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: null,
+      });
+      expect(step.manualRoot).toBeNull();
+    });
+
+    it("createProgressionStep preserves manualRoot when provided", () => {
+      const step = createProgressionStep({
+        degree: "i",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: "Major Triad",
+        manualRoot: "F#",
+      });
+      expect(step.manualRoot).toBe("F#");
+    });
+
+    it("isValidProgressionStep accepts steps with null manualRoot", () => {
+      const step = {
+        id: "x",
+        degree: "I",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: null,
+        manualRoot: null,
+      };
+      expect(isValidProgressionStep(step)).toBe(true);
+    });
+
+    it("isValidProgressionStep accepts steps with string manualRoot", () => {
+      const step = {
+        id: "x",
+        degree: "I",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: null,
+        manualRoot: "F#",
+      };
+      expect(isValidProgressionStep(step)).toBe(true);
+    });
+
+    it("normalizeProgressionStep fills manualRoot=null for legacy persisted shape", () => {
+      const legacy = {
+        id: "x",
+        degree: "I",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: null,
+      };
+      const normalized = normalizeProgressionStep(legacy);
+      expect(normalized?.manualRoot).toBeNull();
+    });
+
+    it("normalizeProgressionStep round-trips a string manualRoot", () => {
+      const persisted = {
+        id: "x",
+        degree: "I",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: null,
+        manualRoot: "F#",
+      };
+      const normalized = normalizeProgressionStep(persisted);
+      expect(normalized?.manualRoot).toBe("F#");
+    });
+  });
+});
+
+describe("transposeManualRootForRootChange", () => {
+  it("transposes manualRoot by the interval from oldRoot to newRoot", () => {
+    const steps: ProgressionStep[] = [
+      {
+        id: "x",
+        degree: "I",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: "Major Triad",
+        manualRoot: "F#",
+      },
+    ];
+    const next = transposeManualRootForRootChange(steps, "A", "C"); // up a minor third
+    expect(next[0].manualRoot).toBe("A");
+  });
+
+  it("leaves steps with null manualRoot untouched", () => {
+    const steps: ProgressionStep[] = [
+      {
+        id: "x",
+        degree: "I",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: null,
+        manualRoot: null,
+      },
+    ];
+    const next = transposeManualRootForRootChange(steps, "A", "C");
+    expect(next[0].manualRoot).toBeNull();
+  });
+
+  it("returns identity-mapped steps when oldRoot === newRoot", () => {
+    const steps: ProgressionStep[] = [
+      {
+        id: "x",
+        degree: "I",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: null,
+        manualRoot: "F#",
+      },
+    ];
+    const next = transposeManualRootForRootChange(steps, "A", "A");
+    expect(next[0].manualRoot).toBe("F#");
+  });
+
+  it("normalizes flat results to sharps-form to match the rootNoteAtom contract", () => {
+    const steps: ProgressionStep[] = [
+      {
+        id: "x",
+        degree: "I",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: "Major Triad",
+        manualRoot: "C",
+      },
+    ];
+    // C → Bb on a whole-step-down transposition. Should normalize to A#.
+    const next = transposeManualRootForRootChange(steps, "D", "C");
+    expect(next[0].manualRoot).toBe("A#");
+  });
+
+  it("preserves untouched step fields (id, degree, duration, qualityOverride)", () => {
+    const steps: ProgressionStep[] = [
+      {
+        id: "alpha",
+        degree: "V",
+        duration: { value: 2, unit: "beat" },
+        qualityOverride: "Dominant 7th",
+        manualRoot: "F#",
+      },
+    ];
+    const next = transposeManualRootForRootChange(steps, "A", "C");
+    expect(next[0]).toMatchObject({
+      id: "alpha",
+      degree: "V",
+      duration: { value: 2, unit: "beat" },
+      qualityOverride: "Dominant 7th",
+    });
   });
 });

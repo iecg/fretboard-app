@@ -1,5 +1,5 @@
-import { atom, type Atom } from "jotai";
-import { atomWithStorage } from "jotai/utils";
+import { atom, type Atom, type Getter, type Setter } from "jotai";
+import { atomWithStorage, RESET } from "jotai/utils";
 import {
   normalizeScaleName,
   type ScaleBrowseMode,
@@ -33,11 +33,54 @@ const scaleNameStorage = createStorage<string>({
   onWrite: normalizeScaleName,
 });
 
-export const rootNoteAtom = atomWithStorage(
+export const baseRootNoteAtom = atomWithStorage(
   k("rootNote"),
   "C",
   rawStringStorage(),
   GET_ON_INIT,
+);
+
+/**
+ * Side-effect listeners invoked when `rootNoteAtom` is written with a value
+ * that differs from the current root. Modules wanting to react to a root
+ * change (e.g. transposing manual-root progression steps) register here at
+ * module load. Listeners run inside the same setter as the atom write, so
+ * they share the same store / transaction.
+ */
+type RootChangeListener = (
+  prevRoot: string,
+  nextRoot: string,
+  get: Getter,
+  set: Setter,
+) => void;
+
+const rootChangeListeners: RootChangeListener[] = [];
+
+export function registerRootChangeListener(listener: RootChangeListener): () => void {
+  rootChangeListeners.push(listener);
+  return () => {
+    const idx = rootChangeListeners.indexOf(listener);
+    if (idx !== -1) rootChangeListeners.splice(idx, 1);
+  };
+}
+
+/**
+ * Writable wrapper around `baseRootNoteAtom` that fans out to registered
+ * listeners on change. Direct writes (e.g. `store.set(rootNoteAtom, "G")`)
+ * trigger the side effects, so reactions stay wired regardless of whether
+ * callers go through the `setRootNoteAtom` action.
+ */
+export const rootNoteAtom = atom(
+  (get) => get(baseRootNoteAtom),
+  (get, set, value: string | typeof RESET) => {
+    const prev = get(baseRootNoteAtom);
+    set(baseRootNoteAtom, value);
+    const next = get(baseRootNoteAtom);
+    if (prev === next) return;
+    for (const listener of rootChangeListeners) {
+      listener(prev, next, get, set);
+    }
+  },
 );
 
 export const baseScaleNameAtom = atomWithStorage(

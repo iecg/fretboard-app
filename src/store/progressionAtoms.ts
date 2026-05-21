@@ -21,11 +21,17 @@ import {
   remapProgressionStepsForScale,
   resolveProgressionStep,
   totalProgressionBars,
+  transposeManualRootForRootChange,
   type ProgressionPresetCategory,
   type ProgressionStep,
   type ProgressionStepDuration,
 } from "../progressions/progressionDomain";
-import { rootNoteAtom, scaleNameAtom, useFlatsAtom } from "./scaleAtoms";
+import {
+  registerRootChangeListener,
+  rootNoteAtom,
+  scaleNameAtom,
+  useFlatsAtom,
+} from "./scaleAtoms";
 import type { ChordInstrumentId } from "../progressions/audio/instruments/types";
 import { getGenreStyle } from "../progressions/audio/genres";
 import {
@@ -46,10 +52,10 @@ const beatsPerBarStorage = createStorage<number>({
 });
 
 const DEFAULT_STEPS: ProgressionStep[] = [
-  { id: "default-i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-  { id: "default-v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-  { id: "default-vi", degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-  { id: "default-iv", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+  { id: "default-i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+  { id: "default-v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+  { id: "default-vi", degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+  { id: "default-iv", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
 ];
 
 const stringStorage = createStorage<string>({
@@ -89,6 +95,23 @@ export const progressionStepsAtom = atomWithStorage<ProgressionStep[]>(
   progressionStepsStorage,
   GET_ON_INIT,
 );
+
+/**
+ * Phase 2.2: when the user changes the scale **root**, transpose every step's
+ * `manualRoot` by the interval from the old root to the new root. Steps with
+ * `manualRoot === null` are diatonic and already follow the new key through
+ * their `degree`, so they pass through unchanged.
+ *
+ * Scale-NAME changes (e.g. Major → Natural Minor) intentionally leave
+ * `manualRoot` alone — the absolute pitch the user pinned doesn't move when
+ * the parent scale's quality shifts. That path is handled by
+ * `remapProgressionStepsForScaleAtom`, which only rewrites `degree`.
+ */
+registerRootChangeListener((prev, next, get, set) => {
+  const steps = get(progressionStepsAtom);
+  if (steps.every((step) => step.manualRoot == null)) return;
+  set(progressionStepsAtom, transposeManualRootForRootChange(steps, prev, next));
+});
 
 export const progressionTempoBpmAtom = atomWithStorage<number>(
   k("progressionTempoBpm"),
@@ -478,6 +501,38 @@ export const updateProgressionStepQualityAtom = atom(null, (get, set, update: { 
     step.id === update.id ? { ...step, qualityOverride: update.qualityOverride } : step,
   ));
 });
+
+/**
+ * Sets `manualRoot` on the target step. When non-null the step is treated as
+ * a manual / out-of-scale chord; when null the step reverts to diatonic
+ * resolution from its `degree`. Consumed via `activeChordRootAtom` (and the
+ * scale-root transposition listener) in songStateAtoms / Phase 2.4–2.5.
+ */
+export const updateProgressionStepRootAtom = atom(
+  null,
+  (get, set, update: { id: string; manualRoot: string | null }) => {
+    const next = get(progressionStepsAtom).map((step) =>
+      step.id === update.id ? { ...step, manualRoot: update.manualRoot } : step,
+    );
+    set(progressionStepsAtom, next);
+  },
+);
+
+/**
+ * Updates the cached `degree` on the target step without clearing
+ * `qualityOverride` (unlike `updateProgressionStepDegreeAtom`, which resets
+ * the override). Used when the resolver wants to refresh the degree hint for
+ * a manual-root step or otherwise persist a recomputed degree.
+ */
+export const updateProgressionStepCachedDegreeAtom = atom(
+  null,
+  (get, set, update: { id: string; degree: string }) => {
+    const next = get(progressionStepsAtom).map((step) =>
+      step.id === update.id ? { ...step, degree: update.degree } : step,
+    );
+    set(progressionStepsAtom, next);
+  },
+);
 
 export const advanceProgressionPlaybackAtom = atom(null, (get, set) => {
   const next = findNextResolvableStepIndex(

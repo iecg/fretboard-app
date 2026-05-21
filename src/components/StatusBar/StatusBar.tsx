@@ -1,6 +1,7 @@
 import { useAtomValue } from "jotai";
 import { CAGED_SHAPES, LENS_REGISTRY } from "@fretflow/core";
-import { chordShortLabelAtom, effectiveChordDegreeAtom, practiceLensAtom } from "../../store/chordOverlayAtoms";
+import { chordShortLabelAtom, practiceLensAtom } from "../../store/chordOverlayAtoms";
+import { activeChordCachedDegreeAtom } from "../../store/songStateAtoms";
 import { fingeringPatternAtom, cagedShapesAtom } from "../../store/fingeringAtoms";
 import type { FingeringPattern } from "../../store/fingeringAtoms";
 import { fretStartAtom, fretEndAtom, tuningNameAtom } from "../../store/layoutAtoms";
@@ -45,7 +46,7 @@ export function StatusBar() {
   const { t } = useTranslation();
   const scaleLabel = useAtomValue(scaleLabelAtom);
   const chordShortLabel = useAtomValue(chordShortLabelAtom);
-  const chordDegree = useAtomValue(effectiveChordDegreeAtom);
+  const chordDegree = useAtomValue(activeChordCachedDegreeAtom);
   const lens = useAtomValue(practiceLensAtom);
   const pattern = useAtomValue(fingeringPatternAtom);
   const cagedShapes = useAtomValue(cagedShapesAtom);

@@ -1,9 +1,15 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
+import { userEvent } from "@testing-library/user-event";
 import { useRef } from "react";
 import { HelpModal } from "../HelpModal/HelpModal";
 import styles from "./HelpModal.module.css";
+import {
+  makeAtomStore,
+  renderWithStore,
+} from "../../test-utils/renderWithAtoms";
+import { seenChordModeRemovalNoticeAtom } from "../../store/uiAtoms";
 
 // Wrapper component that renders a trigger button + HelpModal together
 // so that the triggerRef can be attached to a real DOM button.
@@ -66,6 +72,37 @@ describe("HelpModal/HelpModal", () => {
     // Removed lenses — must not appear
     expect(screen.queryByText("Chord + Color")).toBeNull();
     expect(screen.queryByText("Color Notes")).toBeNull();
+  });
+
+  it("renders the chord-mode-removed notice when not yet seen", () => {
+    const store = makeAtomStore([[seenChordModeRemovalNoticeAtom, false]]);
+    renderWithStore(<HelpModal isOpen={true} onClose={vi.fn()} />, store);
+    expect(
+      screen.getByText(/manual chord mode has been removed/i),
+    ).toBeInTheDocument();
+  });
+
+  it("hides the chord-mode-removed notice when already seen", () => {
+    const store = makeAtomStore([[seenChordModeRemovalNoticeAtom, true]]);
+    renderWithStore(<HelpModal isOpen={true} onClose={vi.fn()} />, store);
+    expect(
+      screen.queryByText(/manual chord mode has been removed/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it("dismissing the notice sets the seen flag and hides the notice", async () => {
+    const user = userEvent.setup();
+    const store = makeAtomStore([[seenChordModeRemovalNoticeAtom, false]]);
+    const { rerender } = renderWithStore(
+      <HelpModal isOpen={true} onClose={vi.fn()} />,
+      store,
+    );
+    await user.click(screen.getByRole("button", { name: /got it/i }));
+    expect(store.get(seenChordModeRemovalNoticeAtom)).toBe(true);
+    rerender(<HelpModal isOpen={true} onClose={vi.fn()} />);
+    expect(
+      screen.queryByText(/manual chord mode has been removed/i),
+    ).not.toBeInTheDocument();
   });
 
   it("restores focus to trigger button when modal closes", () => {
