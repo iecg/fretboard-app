@@ -4,6 +4,8 @@ import {
   normalizeScaleName,
   type ScaleBrowseMode,
   getActiveScaleBrowseOption,
+  getScaleFamily,
+  type ScaleFamilyId,
 } from "@fretflow/core";
 import {
   resolveAccidentalMode,
@@ -103,6 +105,15 @@ export const scaleNameAtom = atom(
       }
     }
   },
+);
+
+/**
+ * Derived from `scaleNameAtom` — returns the granular `ScaleFamilyId` for the
+ * currently active scale. No storage key needed; the family is fully determined
+ * by the scale name.
+ */
+export const scaleFamilyAtom = atom<ScaleFamilyId>(
+  (get) => getScaleFamily(get(scaleNameAtom)).id,
 );
 
 export const scaleBrowseModeAtom = atomWithStorage<ScaleBrowseMode>(

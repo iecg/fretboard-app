@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
 import { axe } from "../../test-utils/a11y";
 import { rootNoteAtom, scaleNameAtom } from "../../store/scaleAtoms";
@@ -12,13 +13,25 @@ describe("ScaleTab", () => {
     expect(headers).toEqual(["Fingering", "Key", "Circle of Fifths", "Theory"]);
   });
 
-  it("renders the scale selector — root chips and the scale family picker", () => {
+  it("renders a single grouped scale combobox with 4 groups", async () => {
+    const user = userEvent.setup();
+    renderWithAtoms(<ScaleTab />, [
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+    ]);
+    const combobox = screen.getByRole("combobox", { name: /scale/i });
+    expect(combobox).toBeInTheDocument();
+    await user.click(combobox);
+    const groups = screen.getAllByRole("group");
+    expect(groups.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it("renders the scale selector — root chips", () => {
     renderWithAtoms(<ScaleTab />, [
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
     ]);
     expect(screen.getByText("Root")).toBeInTheDocument();
-    expect(screen.getByText("Scale Family", { selector: "span[class*='propLabel']" })).toBeInTheDocument();
   });
 
   it("renders the Theory facts readout", () => {
