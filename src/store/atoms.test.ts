@@ -551,9 +551,9 @@ describe("atoms", () => {
     it("setScaleNameAtom remaps progression degree labels by ordinal and preserves the cursor", () => {
       const store = makeStore();
       store.set(progressionStepsAtom, [
-        { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-        { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-        { id: "three", degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+        { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+        { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+        { id: "three", degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
       ]);
       store.set(activeProgressionStepIndexAtom, 2);
       store.set(setScaleNameAtom, "Natural Minor");
@@ -564,7 +564,7 @@ describe("atoms", () => {
     it("setFingeringPatternAtom does NOT pause progression playback for any pattern", () => {
       const store = makeStore();
       store.set(progressionStepsAtom, [
-        { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+        { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
       ]);
       store.set(setProgressionPlayingAtom, true);
       store.set(setFingeringPatternAtom, "one-string");

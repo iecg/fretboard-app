@@ -23,9 +23,11 @@ import {
   setProgressionActiveStepIndexAtom,
   setProgressionPlayingAtom,
   totalProgressionBarsAtom,
+  updateProgressionStepCachedDegreeAtom,
   updateProgressionStepDegreeAtom,
   updateProgressionStepDurationAtom,
   updateProgressionStepQualityAtom,
+  updateProgressionStepRootAtom,
 } from "./progressionAtoms";
 import { DEFAULT_BEATS_PER_BAR } from "../progressions/progressionDomain";
 import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
@@ -41,7 +43,7 @@ describe("progressionAtoms", () => {
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "Major");
     store.set(progressionStepsAtom, [
-      { id: "v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      { id: "v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
     ]);
 
     expect(store.get(activeResolvedProgressionStepAtom)).toMatchObject({
@@ -70,7 +72,7 @@ describe("progressionAtoms", () => {
   it("updates the active step degree, duration, and quality", () => {
     const store = createStore();
     store.set(progressionStepsAtom, [
-      { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
     ]);
 
     store.set(updateProgressionStepDegreeAtom, { id: "one", degree: "V" });
@@ -82,14 +84,15 @@ describe("progressionAtoms", () => {
       degree: "V",
       duration: { value: 2, unit: "bar" },
       qualityOverride: "Dominant 7th",
+      manualRoot: null,
     });
   });
 
   it("adds, removes, and moves steps while keeping the cursor in range", () => {
     const store = createStore();
     store.set(progressionStepsAtom, [
-      { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-      { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
     ]);
     store.set(setProgressionActiveStepIndexAtom, 1);
 
@@ -109,7 +112,7 @@ describe("progressionAtoms", () => {
     const store = createStore();
     store.set(progressionTempoBpmAtom, 120);
     store.set(progressionStepsAtom, [
-      { id: "one", degree: "I", duration: { value: 2, unit: "bar" }, qualityOverride: null },
+      { id: "one", degree: "I", duration: { value: 2, unit: "bar" }, qualityOverride: null, manualRoot: null },
     ]);
 
     expect(store.get(progressionStepDurationMsAtom)).toBe(4000);
@@ -129,9 +132,9 @@ describe("progressionAtoms", () => {
     const store = createStore();
     store.set(progressionLoopEnabledAtom, false);
     store.set(progressionStepsAtom, [
-      { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-      { id: "two", degree: "not-a-degree", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-      { id: "three", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "two", degree: "not-a-degree", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "three", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
     ]);
     store.set(setProgressionPlayingAtom, true);
 
@@ -280,7 +283,7 @@ describe("derived progression atoms", () => {
   it("currentProgressionPresetIdAtom returns 'custom' after any edit", () => {
     const store = createStore();
     const steps = store.get(progressionStepsAtom);
-    store.set(progressionStepsAtom, [...steps, { id: "new", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null }]);
+    store.set(progressionStepsAtom, [...steps, { id: "new", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null }]);
     expect(store.get(currentProgressionPresetIdAtom)).toBe("custom");
   });
 
@@ -288,8 +291,8 @@ describe("derived progression atoms", () => {
     it("inserts a copy of the source step directly after it and selects the copy", () => {
       const store = createStore();
       store.set(progressionStepsAtom, [
-        { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-        { id: "b", degree: "V", duration: { value: 2, unit: "beat" }, qualityOverride: "Dominant 7th" },
+        { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+        { id: "b", degree: "V", duration: { value: 2, unit: "beat" }, qualityOverride: "Dominant 7th", manualRoot: null },
       ]);
 
       store.set(duplicateProgressionStepAtom, "b");
@@ -306,12 +309,62 @@ describe("derived progression atoms", () => {
     it("is a no-op when the step id is unknown", () => {
       const store = createStore();
       store.set(progressionStepsAtom, [
-        { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+        { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
       ]);
 
       store.set(duplicateProgressionStepAtom, "missing");
 
       expect(store.get(progressionStepsAtom)).toHaveLength(1);
+    });
+  });
+
+  describe("updateProgressionStepRootAtom", () => {
+    it("sets manualRoot on the target step", () => {
+      const store = createStore();
+      const id = store.get(progressionStepsAtom)[0]!.id;
+      store.set(updateProgressionStepRootAtom, { id, manualRoot: "F#" });
+      expect(store.get(progressionStepsAtom)[0]!.manualRoot).toBe("F#");
+    });
+
+    it("clears manualRoot when given null", () => {
+      const store = createStore();
+      const id = store.get(progressionStepsAtom)[0]!.id;
+      store.set(updateProgressionStepRootAtom, { id, manualRoot: "F#" });
+      store.set(updateProgressionStepRootAtom, { id, manualRoot: null });
+      expect(store.get(progressionStepsAtom)[0]!.manualRoot).toBeNull();
+    });
+
+    it("leaves other steps untouched", () => {
+      const store = createStore();
+      store.set(progressionStepsAtom, [
+        { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+        { id: "b", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      ]);
+      store.set(updateProgressionStepRootAtom, { id: "a", manualRoot: "Bb" });
+      const steps = store.get(progressionStepsAtom);
+      expect(steps[0]!.manualRoot).toBe("Bb");
+      expect(steps[1]!.manualRoot).toBeNull();
+    });
+  });
+
+  describe("updateProgressionStepCachedDegreeAtom", () => {
+    it("updates the degree on the target step", () => {
+      const store = createStore();
+      const id = store.get(progressionStepsAtom)[0]!.id;
+      store.set(updateProgressionStepCachedDegreeAtom, { id, degree: "IV" });
+      expect(store.get(progressionStepsAtom)[0]!.degree).toBe("IV");
+    });
+
+    it("does not clear qualityOverride (unlike updateProgressionStepDegreeAtom)", () => {
+      const store = createStore();
+      store.set(progressionStepsAtom, [
+        { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th", manualRoot: null },
+      ]);
+      store.set(updateProgressionStepCachedDegreeAtom, { id: "a", degree: "V" });
+      expect(store.get(progressionStepsAtom)[0]).toMatchObject({
+        degree: "V",
+        qualityOverride: "Dominant 7th",
+      });
     });
   });
 });

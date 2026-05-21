@@ -7,8 +7,8 @@ import { beatsPerBarAtom, progressionBassEnabledAtom, progressionDrumsEnabledAto
 import { TransportBar } from "./TransportBar";
 
 const fourStepProgression = [
-  { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-  { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+  { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+  { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
 ] as const;
 
 // A playable progression: enabled, with steps, so playback is not blocked.

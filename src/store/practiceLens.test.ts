@@ -236,7 +236,7 @@ describe("noteSemanticMapAtom", () => {
     // The progression step (V = G Major Triad, diatonic) is the active chord source.
     const store = setUp({ scaleRoot: "C", scale: "Major" });
     store.set(progressionStepsAtom, [
-      { id: "one", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      { id: "one", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
     ]);
     store.set(fingeringPatternAtom, "one-string");
 

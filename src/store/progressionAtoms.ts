@@ -46,10 +46,10 @@ const beatsPerBarStorage = createStorage<number>({
 });
 
 const DEFAULT_STEPS: ProgressionStep[] = [
-  { id: "default-i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-  { id: "default-v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-  { id: "default-vi", degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-  { id: "default-iv", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+  { id: "default-i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+  { id: "default-v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+  { id: "default-vi", degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+  { id: "default-iv", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
 ];
 
 const stringStorage = createStorage<string>({
@@ -478,6 +478,38 @@ export const updateProgressionStepQualityAtom = atom(null, (get, set, update: { 
     step.id === update.id ? { ...step, qualityOverride: update.qualityOverride } : step,
   ));
 });
+
+/**
+ * Sets `manualRoot` on the target step. When non-null the step is treated as
+ * a manual / out-of-scale chord; when null the step reverts to diatonic
+ * resolution from its `degree`. Phase 2.1 of the FretFlow integration —
+ * additive only; no consumer reads `manualRoot` yet.
+ */
+export const updateProgressionStepRootAtom = atom(
+  null,
+  (get, set, update: { id: string; manualRoot: string | null }) => {
+    const next = get(progressionStepsAtom).map((step) =>
+      step.id === update.id ? { ...step, manualRoot: update.manualRoot } : step,
+    );
+    set(progressionStepsAtom, next);
+  },
+);
+
+/**
+ * Updates the cached `degree` on the target step without clearing
+ * `qualityOverride` (unlike `updateProgressionStepDegreeAtom`, which resets
+ * the override). Used when the resolver wants to refresh the degree hint for
+ * a manual-root step or otherwise persist a recomputed degree.
+ */
+export const updateProgressionStepCachedDegreeAtom = atom(
+  null,
+  (get, set, update: { id: string; degree: string }) => {
+    const next = get(progressionStepsAtom).map((step) =>
+      step.id === update.id ? { ...step, degree: update.degree } : step,
+    );
+    set(progressionStepsAtom, next);
+  },
+);
 
 export const advanceProgressionPlaybackAtom = atom(null, (get, set) => {
   const next = findNextResolvableStepIndex(

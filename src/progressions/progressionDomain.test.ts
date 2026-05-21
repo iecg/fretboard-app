@@ -13,7 +13,9 @@ import {
   getAvailableProgressionPresets,
   isProgressionDuration,
   isProgressionPresetAvailableForScale,
+  isValidProgressionStep,
   migrateLegacyDuration,
+  normalizeProgressionStep,
   remapDegreeByOrdinal,
   remapProgressionStepsForScale,
   resolveProgressionStep,
@@ -120,9 +122,9 @@ describe("progressionDomain", () => {
     ];
 
     expect(remapProgressionStepsForScale(steps, "Natural Minor")).toEqual([
-      { id: "one", degree: "i", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-      { id: "two", degree: "v", duration: { value: 2, unit: "bar" }, qualityOverride: "Dominant 7th" },
-      { id: "three", degree: "VI", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+      { id: "one", degree: "i", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "two", degree: "v", duration: { value: 2, unit: "bar" }, qualityOverride: "Dominant 7th", manualRoot: null },
+      { id: "three", degree: "VI", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
     ]);
   });
 
@@ -370,5 +372,71 @@ describe("progression duration math", () => {
     expect(
       totalProgressionBars([{ value: 6, unit: "beat" }], 3),
     ).toBe(2);
+  });
+
+  describe("ProgressionStep manualRoot", () => {
+    it("createProgressionStep defaults manualRoot to null", () => {
+      const step = createProgressionStep({
+        degree: "i",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: null,
+      });
+      expect(step.manualRoot).toBeNull();
+    });
+
+    it("createProgressionStep preserves manualRoot when provided", () => {
+      const step = createProgressionStep({
+        degree: "i",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: "Major Triad",
+        manualRoot: "F#",
+      });
+      expect(step.manualRoot).toBe("F#");
+    });
+
+    it("isValidProgressionStep accepts steps with null manualRoot", () => {
+      const step = {
+        id: "x",
+        degree: "I",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: null,
+        manualRoot: null,
+      };
+      expect(isValidProgressionStep(step)).toBe(true);
+    });
+
+    it("isValidProgressionStep accepts steps with string manualRoot", () => {
+      const step = {
+        id: "x",
+        degree: "I",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: null,
+        manualRoot: "F#",
+      };
+      expect(isValidProgressionStep(step)).toBe(true);
+    });
+
+    it("normalizeProgressionStep fills manualRoot=null for legacy persisted shape", () => {
+      const legacy = {
+        id: "x",
+        degree: "I",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: null,
+      };
+      const normalized = normalizeProgressionStep(legacy);
+      expect(normalized?.manualRoot).toBeNull();
+    });
+
+    it("normalizeProgressionStep round-trips a string manualRoot", () => {
+      const persisted = {
+        id: "x",
+        degree: "I",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: null,
+        manualRoot: "F#",
+      };
+      const normalized = normalizeProgressionStep(persisted);
+      expect(normalized?.manualRoot).toBe("F#");
+    });
   });
 });
