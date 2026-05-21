@@ -1,9 +1,9 @@
 import { lazy, Suspense, startTransition } from "react";
 import { useAtomValue, useSetAtom, useAtom } from "jotai";
-import { SCALE_FAMILIES } from "@fretflow/core";
+import { SCALE_FAMILIES, type ScaleFamily, type ScaleFamilyId } from "@fretflow/core";
 import type { LabeledSelectGroup } from "../LabeledSelect/LabeledSelect";
 import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
-import { setRootNoteAtom } from "../../store/actions";
+import { setRootNoteAtom, setScaleNameAtom } from "../../store/actions";
 import { enharmonicDisplayAtom } from "../../store/audioAtoms";
 import { rootNoteAtom, scaleNameAtom, useFlatsAtom, scaleVisibleAtom } from "../../store/scaleAtoms";
 import { ScaleTheoryFacts } from "./ScaleTheoryFacts";
@@ -16,33 +16,43 @@ import { useTranslation } from "../../hooks/useTranslation";
 import useLayoutMode from "../../hooks/useLayoutMode";
 import styles from "./ScaleTab.module.css";
 
+// Look up a scale family by id; fail loudly at module init if the catalog id
+// drifts. Prevents silent empty optgroups if `theoryCatalog.ts` is renamed.
+function requireFamily(id: ScaleFamilyId): ScaleFamily {
+  const family = SCALE_FAMILIES.find((f) => f.id === id);
+  if (!family) {
+    throw new Error(`theoryCatalog: scale family '${id}' not found`);
+  }
+  return family;
+}
+
 // Build the grouped scale options from the catalog.
 // UI groups: Major modes | Pentatonics | Blues | Harmonic / Melodic
 // The last group merges the harmonic-minor and melodic-minor families.
-const majorFamily = SCALE_FAMILIES.find((f) => f.id === "major");
-const pentatonicFamily = SCALE_FAMILIES.find((f) => f.id === "pentatonic");
-const bluesFamily = SCALE_FAMILIES.find((f) => f.id === "blues");
-const harmonicMinorFamily = SCALE_FAMILIES.find((f) => f.id === "harmonic-minor");
-const melodicMinorFamily = SCALE_FAMILIES.find((f) => f.id === "melodic-minor");
+const majorFamily = requireFamily("major");
+const pentatonicFamily = requireFamily("pentatonic");
+const bluesFamily = requireFamily("blues");
+const harmonicMinorFamily = requireFamily("harmonic-minor");
+const melodicMinorFamily = requireFamily("melodic-minor");
 
 const SCALE_GROUPS: LabeledSelectGroup[] = [
   {
     groupLabel: "Major modes",
-    options: (majorFamily?.members ?? []).map((m) => ({
+    options: majorFamily.members.map((m) => ({
       value: m.scaleName,
       label: m.displayLabel,
     })),
   },
   {
     groupLabel: "Pentatonics",
-    options: (pentatonicFamily?.members ?? []).map((m) => ({
+    options: pentatonicFamily.members.map((m) => ({
       value: m.scaleName,
       label: m.displayLabel,
     })),
   },
   {
     groupLabel: "Blues",
-    options: (bluesFamily?.members ?? []).map((m) => ({
+    options: bluesFamily.members.map((m) => ({
       value: m.scaleName,
       label: m.displayLabel,
     })),
@@ -50,11 +60,11 @@ const SCALE_GROUPS: LabeledSelectGroup[] = [
   {
     groupLabel: "Harmonic / Melodic",
     options: [
-      ...(harmonicMinorFamily?.members ?? []).map((m) => ({
+      ...harmonicMinorFamily.members.map((m) => ({
         value: m.scaleName,
         label: m.displayLabel,
       })),
-      ...(melodicMinorFamily?.members ?? []).map((m) => ({
+      ...melodicMinorFamily.members.map((m) => ({
         value: m.scaleName,
         label: m.displayLabel,
       })),
@@ -72,7 +82,8 @@ export function ScaleTab() {
   const { t } = useTranslation();
   const rootNote = useAtomValue(rootNoteAtom);
   const setRootNote = useSetAtom(setRootNoteAtom);
-  const [scaleName, setScaleName] = useAtom(scaleNameAtom);
+  const scaleName = useAtomValue(scaleNameAtom);
+  const setScaleName = useSetAtom(setScaleNameAtom);
   const useFlats = useAtomValue(useFlatsAtom);
   const enharmonicDisplay = useAtomValue(enharmonicDisplayAtom);
   const { tier } = useLayoutMode();

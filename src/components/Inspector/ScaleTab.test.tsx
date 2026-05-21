@@ -1,9 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
+import {
+  makeAtomStore,
+  renderWithAtoms,
+  renderWithStore,
+} from "../../test-utils/renderWithAtoms";
 import { axe } from "../../test-utils/a11y";
 import { rootNoteAtom, scaleNameAtom } from "../../store/scaleAtoms";
+import { progressionStepsAtom } from "../../store/progressionAtoms";
 import { ScaleTab } from "./ScaleTab";
 
 describe("ScaleTab", () => {
@@ -71,6 +76,40 @@ describe("ScaleTab", () => {
     renderWithAtoms(<ScaleTab />);
     const sw = screen.getByRole("switch", { name: /scale layer/i });
     expect(sw).toBeChecked();
+  });
+
+  it("changing the scale via the grouped select remaps progression-step degree labels", async () => {
+    const user = userEvent.setup();
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [
+        progressionStepsAtom,
+        [
+          {
+            id: "x",
+            degree: "ii",
+            duration: { value: 1, unit: "bar" },
+            qualityOverride: null,
+            manualRoot: null,
+          },
+        ],
+      ],
+    ]);
+    renderWithStore(<ScaleTab />, store);
+
+    expect(store.get(progressionStepsAtom)[0]!.degree).toBe("ii");
+
+    const combobox = screen.getByRole("combobox", { name: /scale/i });
+    await user.click(combobox);
+    await user.click(screen.getByRole("option", { name: "Phrygian" }));
+
+    // Phrygian's ordinal-1 (ii) → "II" (Major Triad on Db). If the UI bypasses
+    // setScaleNameAtom, the degree stays "ii" and this fails.
+    await waitFor(() => {
+      expect(store.get(progressionStepsAtom)[0]!.degree).toBe("II");
+    });
+    expect(store.get(scaleNameAtom)).toBe("Phrygian");
   });
 
   it("has no accessibility violations", async () => {
