@@ -68,7 +68,7 @@ export function ChordOverlayControls() {
   const activePosition = useAtomValue(activePositionAtom);
   const [voicingExpanded, setVoicingExpanded] = useAtom(voicingSectionExpandedAtom);
 
-  // All three lenses are always shown; an unavailable lens renders disabled.
+  // All lenses are always shown; an unavailable lens renders disabled.
   const lensOptions = lensAvailability.map((entry) => {
     const { id } = entry;
     const isActive = id === practiceLens;

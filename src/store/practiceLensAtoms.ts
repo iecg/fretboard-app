@@ -332,9 +332,11 @@ export const practiceBarChordGroupAtom = atom((get): PracticeBarGroup => {
 
 /**
  * Land-on group base — lens-driven coaching subset.
- *  - targets: all chord members
- *  - guide-tones: 3rd/7th members (falls back to all if none)
- *  - tension: outside-scale members with resolutions
+ *  - tones: 3rd/7th members (falls back to all if none) — temporary bridge to old guide-tones behavior
+ *  - lead: outside-scale members with resolutions — temporary bridge to old tension behavior
+ *
+ * Tasks 4.4/4.5 will rewrite this with the real per-lens logic; the current
+ * mapping just keeps the suite green through the enum rename.
  *
  * Shape narrowing applied in atoms.ts to avoid circular imports.
  */
