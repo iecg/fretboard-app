@@ -8,23 +8,34 @@ import { beatsPerBarAtom, progressionStepsAtom, progressionTempoBpmAtom, setProg
 import { rootNoteAtom, scaleNameAtom } from "../store/scaleAtoms";
 
 // Mock Tone before importing modules that touch it. The production hook calls
-// `getTransport().scheduleOnce(cb, audioCtxTime)` against the shared audio
-// clock — but `Tone.Transport.scheduleOnce` doesn't fire under
+// `getTransport().scheduleOnce(cb, "+<seconds>")` using relative-time string
+// syntax — but `Tone.Transport.scheduleOnce` doesn't fire under
 // `vi.advanceTimersByTime`. We translate the scheduled callback into a
-// real `setTimeout` (which fake timers DO control) by reading the synthetic
-// AudioContext currentTime via `toneContextNow`. The existing tests then
+// real `setTimeout` (which fake timers DO control). The existing tests then
 // continue to drive the loop via `vi.advanceTimersByTime` unchanged.
 const toneMocks = vi.hoisted(() => {
   const contextNowRef = { fn: () => 0 };
   let nextEventId = 1;
   const events = new Map<number, ReturnType<typeof setTimeout>>();
 
-  const scheduleOnce = vi.fn((cb: (time: number) => void, time: number) => {
+  const scheduleOnce = vi.fn((cb: (time: number) => void, time: number | string) => {
     const id = nextEventId++;
-    const delayMs = Math.max(0, (time - contextNowRef.fn()) * 1000);
+    let delayMs: number;
+    if (typeof time === "string" && time.startsWith("+")) {
+      // Relative-time syntax — Tone parses "+x" as x seconds from transport
+      // now. The hook uses this form to avoid TransportTime/ticks ambiguity.
+      delayMs = Math.max(0, parseFloat(time.slice(1)) * 1000);
+    } else if (typeof time === "number") {
+      // Legacy path — translate as if `time` were context-time seconds.
+      // The current hook doesn't hit this branch, but keep it as a safety
+      // net for any future callers.
+      delayMs = Math.max(0, (time - contextNowRef.fn()) * 1000);
+    } else {
+      delayMs = 0;
+    }
     const timerId = setTimeout(() => {
       events.delete(id);
-      cb(time);
+      cb(typeof time === "number" ? time : contextNowRef.fn());
     }, delayMs);
     events.set(id, timerId);
     return id;
@@ -120,6 +131,8 @@ describe("useProgressionPlaybackLoop", () => {
     toneMocks._resetEvents();
     toneMocks.scheduleOnce.mockClear();
     toneMocks.clear.mockClear();
+    toneMocks.transport.start.mockClear();
+    toneMocks.transport.stop.mockClear();
 
     const audioContext = {
       get currentTime() {
@@ -313,7 +326,7 @@ describe("useProgressionPlaybackLoop", () => {
     expect(store.get(chordRootAtom)).toBe("G");
   });
 
-  it("arms advance via Transport.scheduleOnce at the audio-clock boundary", () => {
+  it("arms advance via Transport.scheduleOnce with a relative-time seconds string", () => {
     const tempoBpm = 60; // 1 beat = 1.0s
     const stepDurationSec = 1.0;
     const store = makeAtomStore([
@@ -330,10 +343,36 @@ describe("useProgressionPlaybackLoop", () => {
     renderWithStore(<PlaybackLoopHarness />, store);
 
     expect(toneMocks.scheduleOnce).toHaveBeenCalledTimes(1);
-    const [callback, boundaryTime] = toneMocks.scheduleOnce.mock.calls[0];
+    const [callback, timeArg] = toneMocks.scheduleOnce.mock.calls[0];
     expect(typeof callback).toBe("function");
-    // audio.ctx.currentTime is 0 at this point, remaining = 1s → boundary 1.0.
-    expect(boundaryTime).toBeCloseTo(1.0, 5);
+    // Hook passes "+<seconds>" relative-time string; remaining = 1s.
+    expect(typeof timeArg).toBe("string");
+    expect((timeArg as string).startsWith("+")).toBe(true);
+    expect(parseFloat((timeArg as string).slice(1))).toBeCloseTo(1.0, 2);
+  });
+
+  it("starts Transport when the audio-clock branch arms, stops on cleanup", () => {
+    const tempoBpm = 60;
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, threeChordProgression],
+      [progressionTempoBpmAtom, tempoBpm],
+      [beatsPerBarAtom, 4],
+    ]);
+    store.set(setProgressionPlayingAtom, true);
+    setActiveStep(0, 0, 1.0, 0, 10);
+
+    const { unmount } = renderWithStore(<PlaybackLoopHarness />, store);
+
+    // Transport.start must run before scheduleOnce, otherwise the tick
+    // source never advances and the callback never fires.
+    expect(toneMocks.transport.start).toHaveBeenCalledTimes(1);
+    expect(toneMocks.transport.stop).not.toHaveBeenCalled();
+
+    unmount();
+
+    expect(toneMocks.transport.stop).toHaveBeenCalledTimes(1);
   });
 
   it("clears the scheduled callback on effect cleanup", () => {

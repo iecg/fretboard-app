@@ -43,11 +43,16 @@ export function useProgressionPlaybackLoop() {
     // ready, since it tracks what the user actually hears. We schedule
     // against `Tone.Transport` (bound to the shared progression context in
     // `toneBus.ts`), which fires callbacks on the audio clock with no
-    // JS-timer jitter. Transport need not be running — `scheduleOnce`
-    // dispatches on context time regardless.
+    // JS-timer jitter.
     if (ensureProgressionAudio()) {
       let eventId: number | null = null;
       let cancelled = false;
+
+      // Transport must be running for `scheduleOnce` callbacks to fire — its
+      // tick source only advances in the "started" state. `start()` is
+      // idempotent in Tone v15: calling it on an already-running Transport
+      // is a no-op.
+      getTransport().start();
 
       const armAdvance = () => {
         if (cancelled) return;
@@ -62,13 +67,14 @@ export function useProgressionPlaybackLoop() {
           return;
         }
 
-        const remainingMs = getTimeUntilCurrentStepEndMs() ?? 0;
-        const audio = ensureProgressionAudio()!;
-        const boundaryTime = audio.ctx.currentTime + remainingMs / 1000;
+        const remainingSec = (getTimeUntilCurrentStepEndMs() ?? 0) / 1000;
 
+        // Relative-time string syntax: Tone interprets `"+x"` as "x seconds
+        // from transport now", which is unambiguous regardless of whether
+        // the numeric form would have been parsed as ticks or seconds.
         eventId = getTransport().scheduleOnce(() => {
           advanceProgressionPlayback();
-        }, boundaryTime) as unknown as number;
+        }, `+${remainingSec}`) as unknown as number;
       };
 
       armAdvance();
@@ -89,6 +95,14 @@ export function useProgressionPlaybackLoop() {
           } catch {
             /* not a timeout id */
           }
+        }
+        // Mute/pause/stop all unmount this effect, so stopping the Transport
+        // here matches the user's notion of playback ending. `stop()` is
+        // idempotent in Tone v15.
+        try {
+          getTransport().stop();
+        } catch {
+          /* already stopped */
         }
       };
     }
