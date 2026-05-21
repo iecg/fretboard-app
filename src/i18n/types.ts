@@ -98,11 +98,6 @@ export interface Dictionary {
     positionCluster: string;
     stringStudyCluster: string;
     voicingSection: string;
-    scopeToPosition: string;
-    scopeToPositionHint: string;
-    scopeToPositionNeedsPosition: string;
-    chordSpread: string;
-    chordSpreadHint: string;
     scaleLayer: string;
     chordLayer: string;
   };
@@ -164,6 +159,12 @@ export interface Dictionary {
     manualQualityHint: string;
     scaleParallelHint: string;
     scaleRelativeHint: string;
+    region: string;
+    regionAriaLabel: string;
+    regionHint: string;
+    regionHintNeedsPosition: string;
+    regionPosition: string;
+    regionAll: string;
   };
 }
 

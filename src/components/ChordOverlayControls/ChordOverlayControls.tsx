@@ -1,8 +1,8 @@
 import { startTransition, useEffect, useMemo, useRef } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { type PracticeLens, type DegreeId } from "@fretflow/core";
-import { voicingTypeAtom, voicingInversionAtom, voicingStringSetAtom, voicingConnectorsAtom, availableInversionsAtom, stringSetOptionsAtom, chordFretSpreadAtom, practiceLensAtom, chordRootAtom, chordTypeAtom, chordOverlayHiddenAtom } from "../../store/chordOverlayAtoms";
-import { chordScopeToPositionAtom, activePositionAtom, voicingSectionExpandedAtom } from "../../store/chordScope";
+import { voicingTypeAtom, voicingInversionAtom, voicingStringSetAtom, voicingConnectorsAtom, availableInversionsAtom, stringSetOptionsAtom, practiceLensAtom, chordRootAtom, chordTypeAtom, chordOverlayHiddenAtom, regionAtom, type Region } from "../../store/chordOverlayAtoms";
+import { activePositionAtom, voicingSectionExpandedAtom } from "../../store/chordScope";
 import { lensAvailabilityAtom } from "../../store/practiceLensAtoms";
 import { validVoicingCombosAtom, controlRecencyAtom, noteControlChangeAtom, nearestValidTriple } from "../../store/voicingCoupling";
 import type { VoicingControlId } from "../../store/voicingCoupling";
@@ -13,8 +13,8 @@ import {
   activeChordRootAtom,
   updateActiveChordAtom,
 } from "../../store/songStateAtoms";
-import { StringSetPicker } from "../Inspector/StringSetPicker";
-import { StepperControl } from "../StepperControl/StepperControl";
+import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
+import type { StringSetOption } from "../../store/voicingStringSets";
 import { useTranslation } from "../../hooks/useTranslation";
 import { RootNoteSelect } from "../shared/RootNoteSelect";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
@@ -64,8 +64,7 @@ export function ChordOverlayControls() {
   const recordControlChange = useSetAtom(noteControlChangeAtom);
 
   const lensAvailability = useAtomValue(lensAvailabilityAtom);
-  const [chordFretSpread, setChordFretSpread] = useAtom(chordFretSpreadAtom);
-  const [chordScopeToPosition, setChordScopeToPosition] = useAtom(chordScopeToPositionAtom);
+  const [region, setRegion] = useAtom(regionAtom);
   const activePosition = useAtomValue(activePositionAtom);
   const [voicingExpanded, setVoicingExpanded] = useAtom(voicingSectionExpandedAtom);
   const [chordOverlayHidden, setChordOverlayHidden] = useAtom(chordOverlayHiddenAtom);
@@ -161,6 +160,23 @@ export function ChordOverlayControls() {
         disabled: !validCombos.enabledStringSets.has(o.id),
       })),
     [stringSetOptions, validCombos],
+  );
+
+  /** Display label combines the localized window name with the id suffix in
+   * parens — e.g. `Bass (4·5·6)`, `All (6 strings)`. */
+  const stringSetSelectOptions = useMemo(
+    () =>
+      decoratedStringSetOptions.map((option: StringSetOption) => {
+        const head = t(option.labelKey);
+        const sub =
+          option.id === "all" ? t("inspector.stringSetAllSub") : option.id;
+        return {
+          value: option.id,
+          label: `${head} (${sub})`,
+          disabled: option.disabled,
+        };
+      }),
+    [decoratedStringSetOptions, t],
   );
 
   // Phase 2.4 — picking a degree always re-binds to the diatonic chord:
@@ -345,9 +361,11 @@ export function ChordOverlayControls() {
                 span={7}
                 hint={t("inspector.voicingStringSetHint")}
               >
-                <StringSetPicker
-                  options={decoratedStringSetOptions}
+                <LabeledSelect
+                  label={t("inspector.voicingStringSet")}
+                  hideLabel
                   value={voicingStringSet}
+                  options={stringSetSelectOptions}
                   onChange={(v) => {
                     recordControlChange("stringSet");
                     setVoicingStringSet(v);
@@ -355,31 +373,29 @@ export function ChordOverlayControls() {
                 />
               </Prop>
             )}
-            <Prop label={t("inspector.chordSpread")} span={3} hint={t("inspector.chordSpreadHint")}>
-              <StepperControl
-                label={t("inspector.chordSpread")}
-                hideLabel
-                value={chordFretSpread}
-                onChange={setChordFretSpread}
-                min={0}
-                max={4}
-                step={1}
-              />
-            </Prop>
             <Prop
-              label={t("inspector.scopeToPosition")}
-              span={4}
+              label={t("controls.region")}
+              span={7}
               hint={
                 activePosition
-                  ? t("inspector.scopeToPositionHint")
-                  : t("inspector.scopeToPositionNeedsPosition")
+                  ? t("controls.regionHint")
+                  : t("controls.regionHintNeedsPosition")
               }
             >
-              <Switch
-                label={t("inspector.scopeToPosition")}
-                checked={chordScopeToPosition && activePosition}
-                onChange={setChordScopeToPosition}
-                disabled={!activePosition}
+              <ToggleBar
+                label={t("controls.regionAriaLabel")}
+                options={(["position", "+2", "+4", "all"] as const).map((v) => ({
+                  value: v,
+                  label:
+                    v === "position"
+                      ? t("controls.regionPosition")
+                      : v === "all"
+                        ? t("controls.regionAll")
+                        : v,
+                  disabled: v !== "all" && !activePosition,
+                }))}
+                value={region}
+                onChange={(v: Region) => setRegion(v)}
               />
             </Prop>
           </>

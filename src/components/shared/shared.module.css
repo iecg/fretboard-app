@@ -225,6 +225,18 @@
   box-shadow: var(--dc-glow-active);
 }
 
+.toggle-btn:disabled {
+  opacity: var(--disabled-opacity);
+  cursor: not-allowed;
+  color: var(--dc-fg-muted);
+}
+
+.toggle-btn:disabled:hover:not(.active) {
+  background-color: transparent;
+  border-color: transparent;
+  color: var(--dc-fg-muted);
+}
+
 /* Mobile touch-target guard — the Inspector docks at the bottom on mobile,
    so these buttons are touch-reachable and need a full-size hit area. */
 :global(.app-container[data-layout-tier="mobile"]) .toggle-btn {

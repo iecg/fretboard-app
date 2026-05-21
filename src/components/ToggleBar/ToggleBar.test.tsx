@@ -1,9 +1,16 @@
 // @vitest-environment jsdom
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { axe } from "../../test-utils/a11y";
+
+const sharedCSS = readFileSync(
+  resolve(__dirname, "../shared/shared.module.css"),
+  "utf-8",
+);
 
 const options = [
   { value: "a", label: "Option A" },
@@ -148,6 +155,27 @@ describe("ToggleBar/ToggleBar", () => {
     expect(thirdBtn).toBeDisabled();
     await userEvent.click(thirdBtn);
     expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("disabled option uses reduced opacity and not-allowed cursor", () => {
+    render(
+      <ToggleBar
+        options={[{ value: "a", label: "A", disabled: true }]}
+        value={undefined}
+        onChange={() => {}}
+      />,
+    );
+    const btn = screen.getByRole("button", { name: "A" });
+    expect(btn).toBeDisabled();
+    // jsdom does not compute styles from CSS Modules. Verify the rule exists in
+    // the source stylesheet — combined with the DOM-level disabled assertion,
+    // this guarantees the rule fires in a real browser.
+    expect(sharedCSS).toMatch(
+      /\.toggle-btn:disabled[^{]*\{[^}]*cursor:\s*not-allowed/,
+    );
+    expect(sharedCSS).toMatch(
+      /\.toggle-btn:disabled[^{]*\{[^}]*opacity:\s*var\(--disabled-opacity\)/,
+    );
   });
 
   it.each([
