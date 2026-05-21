@@ -5,7 +5,6 @@ import {
   rootNoteAtom,
   baseScaleNameAtom,
   scaleNameAtom,
-  scaleBrowseModeAtom,
   scaleVisibleAtom,
   accidentalModeAtom,
 } from "./scaleAtoms";
@@ -68,7 +67,7 @@ export const setRootNoteAtom = atom(null, (_get, set, note: string) => {
  *
  * Direct writes to `scaleNameAtom` bypass this remap — useful in tests that
  * want to assert atom-layer behavior without cross-domain coupling. UI paths
- * (TheoryControls / ScaleSelector / Circle of Fifths) flow through this
+ * (TheoryControls / Circle of Fifths) flow through this
  * action via `useScaleState`.
  */
 export const setScaleNameAtom = atom(null, (get, set, value: string) => {
@@ -92,7 +91,6 @@ export const resetAtom = atom(null, (_get, set) => {
   }
   set(rootNoteAtom, RESET);
   set(baseScaleNameAtom, RESET);
-  set(scaleBrowseModeAtom, RESET);
   set(scaleVisibleAtom, RESET);
   set(chordOverlayHiddenAtom, RESET);
   set(linkChordRootAtom, RESET);

@@ -46,14 +46,12 @@ export interface Dictionary {
     none: string;
     auto: string;
     groupKey: string;
-    groupTheory: string;
     groupWheel: string;
-    factNotes: string;
-    factIntervals: string;
-    factDegrees: string;
-    factChords: string;
-    factTones: string;
-    relationship: string;
+    scaleLabel: string;
+    scaleGroupMajorModes: string;
+    scaleGroupPentatonics: string;
+    scaleGroupBlues: string;
+    scaleGroupHarmonicMelodic: string;
     groupSource: string;
     groupChordType: string;
     groupVoicing: string;
@@ -157,8 +155,6 @@ export interface Dictionary {
     customChordHint: string;
     diatonicDefaultHint: string;
     manualQualityHint: string;
-    scaleParallelHint: string;
-    scaleRelativeHint: string;
     region: string;
     regionAriaLabel: string;
     regionHint: string;

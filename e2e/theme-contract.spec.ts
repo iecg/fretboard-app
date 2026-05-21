@@ -373,7 +373,7 @@ test.describe("Theme Contract", () => {
           const locators = {
             "Note Button": page.getByRole("group", { name: "Note selector" }).getByRole("button", { pressed: false }).first(),
             "Toggle Group": page.locator('[class*="toggle-group"]').first(),
-            "Stepper Select": page.getByRole("group", { name: "Browse scale families" }),
+            "Labeled Select": page.getByRole("combobox", { name: "Scale" }),
           };
 
           const results: Record<string, { bg: string; bgImg: string; border: string }> = {};
@@ -550,26 +550,30 @@ test.describe("Theme Contract", () => {
         });
 
         test("labeled select should have correct hover and focus behavior", async ({ page }) => {
-          // Scale family controls live in the Inspector's Scale tab.
+          // The Scale combobox lives in the Inspector's Scale tab.
           await page.getByRole("tab", { name: "Scale" }).click();
-          const shell = page.getByRole("group", { name: "Browse scale families" });
-          const select = page.getByRole("combobox", { name: "Scale Family" });
-          await expect(shell).toBeVisible();
+          const select = page.getByRole("combobox", { name: "Scale" });
           await expect(select).toBeVisible();
 
-          await shell.hover();
-          const hoverBorder = await shell.evaluate((el) => getComputedStyle(el).borderColor);
+          await select.hover();
+          const hoverBorder = await select.evaluate((el) => getComputedStyle(el).borderColor);
           if (theme === "light") {
-            // DAW shell hover: teal-tinted border (--dc-border-hover).
+            // Trigger hover: teal-tinted border (--dc-border-hover).
             expect(hoverBorder.replace(/\s/g, "")).toContain("46,181,204");
           } else {
             expect(isCyanLike(hoverBorder)).toBe(true);
           }
 
-          // Focus ring is on the StepperShell via :focus-within.
+          // Focus ring on the trigger via :focus-visible. Chromium's heuristic
+          // requires a real keyboard event to activate :focus-visible — a bare
+          // .focus() does not. Do a Shift+Tab / Tab round-trip to land focus
+          // on the combobox via the keyboard.
           await select.focus();
-          const shellOutline = await shell.evaluate((el) => getComputedStyle(el).outlineStyle);
-          expect(shellOutline).toBe("solid");
+          await page.keyboard.press("Shift+Tab");
+          await page.keyboard.press("Tab");
+          await expect(select).toBeFocused();
+          const triggerOutline = await select.evaluate((el) => getComputedStyle(el).outlineStyle);
+          expect(triggerOutline).toBe("solid");
         });
 
         test("audio icon should not use accent color when unmuted", async ({ page }) => {
@@ -598,46 +602,6 @@ test.describe("Theme Contract", () => {
 
           expect(normalize(iconColor)).not.toBe(normalize(accentColors.primary));
           expect(normalize(iconColor)).not.toBe(normalize(accentColors.interactive));
-        });
-
-        test("theory stepper shell should use shared control hover treatment", async ({ page }) => {
-          // Scale family stepper lives in the Inspector's Scale tab.
-          await page.getByRole("tab", { name: "Scale" }).click();
-          const stepperShell = page.getByRole("group", { name: "Browse scale families" });
-          await expect(stepperShell).toBeVisible();
-
-          const beforeStyles = await stepperShell.evaluate((el) => {
-            const cs = getComputedStyle(el);
-            return {
-              bg: cs.backgroundColor,
-              bgImg: cs.backgroundImage,
-              border: cs.borderColor
-            };
-          });
-
-          await stepperShell.hover();
-
-          const afterStyles = await stepperShell.evaluate((el) => {
-            const cs = getComputedStyle(el);
-            return {
-              bg: cs.backgroundColor,
-              bgImg: cs.backgroundImage,
-              border: cs.borderColor
-            };
-          });
-
-          expect(afterStyles.bg).not.toBe(beforeStyles.bg);
-
-          if (theme === "dark") {
-            // DAW shell hover lifts the cyan fill + border tint (--dc-bg-hover
-            // / --dc-border-hover) — a flat tint, no gradient.
-            expect(afterStyles.bg.replace(/\s/g, "")).toContain("77,228,255");
-            expect(isCyanLike(afterStyles.border)).toBe(true);
-          } else {
-            // Light mode: teal-tinted fill + border.
-            expect(afterStyles.bg.replace(/\s/g, "")).toContain("46,181,204");
-            expect(afterStyles.border.replace(/\s/g, "")).toContain("46,181,204");
-          }
         });
 
       });
@@ -873,26 +837,22 @@ test.describe("Theme Contract", () => {
       for (const theme of ["light", "dark"] as const) {
         await loadVisualState(page, { theme }, { width: 1280, height: 900 });
 
-        // Scale family + toggle controls live in the Inspector's Scale tab.
+        // Scale combobox + toggle controls live in the Inspector's Scale tab.
         await page.getByRole("tab", { name: "Scale" }).click();
         const panel = page.getByRole("tabpanel");
-        const scaleFamilyStepper = page.getByRole("group", { name: "Browse scale families" });
-        const scaleFamilySelect = page.getByRole("combobox", { name: "Scale Family" }).first();
+        const scaleSelect = page.getByRole("combobox", { name: "Scale" });
         const toggleGroup = panel.locator('[class*="toggle-group"]').first();
 
         await expect(panel).toBeVisible();
-        await expect(scaleFamilyStepper).toBeVisible();
-        await expect(scaleFamilySelect).toBeVisible();
+        await expect(scaleSelect).toBeVisible();
         await expect(toggleGroup).toBeVisible();
 
         const panelBg = await panel.evaluate((el) => getComputedStyle(el).backgroundColor);
-        const stepperBg = await scaleFamilyStepper.evaluate((el) => getComputedStyle(el).backgroundColor);
-        const selectBg = await scaleFamilySelect.evaluate((el) => getComputedStyle(el).backgroundColor);
+        const selectBg = await scaleSelect.evaluate((el) => getComputedStyle(el).backgroundColor);
         const toggleBg = await toggleGroup.evaluate((el) => getComputedStyle(el).backgroundColor);
 
-        expect(stepperBg).not.toBe(panelBg);
+        expect(selectBg).not.toBe(panelBg);
         expect(toggleBg).not.toBe(panelBg);
-        expect(selectBg.replace(/\s/g, "")).toBe("rgba(0,0,0,0)");
 
         await page.getByLabel("Open settings").click();
         const sectionCard = page.getByTestId("settings-drawer").locator('[class*="overlay-section-card"]').first();

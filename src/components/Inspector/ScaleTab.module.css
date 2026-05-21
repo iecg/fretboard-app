@@ -14,11 +14,11 @@
   gap: var(--space-3, 0.75rem);
 }
 
-/* Three columns on desktop — Key (widest) / Circle of Fifths / Theory. Gated on the
+/* Two columns on desktop — Key (widest) / Circle of Fifths. Gated on the
    layout-tier attribute per the project's responsive-CSS contract; mobile and
    tablet stack the columns vertically. */
 :global(.app-container[data-layout-tier="desktop"]) .columns {
-  grid-template-columns: minmax(0, 5fr) minmax(0, 3fr) minmax(0, 4fr);
+  grid-template-columns: minmax(0, 5fr) minmax(0, 3fr);
   gap: 1.25rem;
   align-items: start;
 }
