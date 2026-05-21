@@ -108,7 +108,6 @@ function swingBeat(beat: number, swing: number): number {
  * change or pause.
  */
 export function scheduleProgressionStep(
-  ctx: AudioContext,
   bus: AudioNode,
   input: SchedulerStepInput,
 ): ScheduledStepHandle {
@@ -144,7 +143,7 @@ export function scheduleProgressionStep(
       const hitTime = startTime + swingBeat(hit.beat, swing) * secondsPerBeat;
       if (!shouldScheduleHit(hitTime)) continue;
       voices.push(
-        voice.scheduleChord(ctx, bus, input.voicing, hitTime, {
+        voice.scheduleChord(bus, input.voicing, hitTime, {
           velocity: hit.velocity,
           style: hit.style,
           direction: hit.direction,
@@ -180,7 +179,7 @@ export function scheduleProgressionStep(
       const hitTime = startTime + swingBeat(hit.beat, swing) * secondsPerBeat;
       if (!shouldScheduleHit(hitTime)) continue;
       voices.push(
-        scheduleBassNote(ctx, bus, bassFreq, hitTime, {
+        scheduleBassNote(bus, bassFreq, hitTime, {
           velocity: hit.velocity,
           durationSec: Math.min(0.9, secondsPerBeat * 1.4),
         }),
@@ -210,19 +209,19 @@ export function scheduleProgressionStep(
         }
       };
       scheduleLane(pattern.kicks, (t, v) =>
-        scheduleKick(ctx, bus, t, { velocity: v }),
+        scheduleKick(bus, t, { velocity: v }),
       );
       scheduleLane(pattern.snares, (t, v) =>
-        scheduleSnare(ctx, bus, t, { velocity: v }),
+        scheduleSnare(bus, t, { velocity: v }),
       );
       scheduleLane(pattern.hats, (t, v) =>
-        scheduleHiHat(ctx, bus, t, { velocity: v }),
+        scheduleHiHat(bus, t, { velocity: v }),
       );
       scheduleLane(pattern.openHats, (t, v) =>
-        scheduleHiHat(ctx, bus, t, { velocity: v, open: true }),
+        scheduleHiHat(bus, t, { velocity: v, open: true }),
       );
       scheduleLane(pattern.ride, (t, v) =>
-        scheduleRide(ctx, bus, t, { velocity: v }),
+        scheduleRide(bus, t, { velocity: v }),
       );
     };
 
@@ -252,7 +251,7 @@ export function scheduleProgressionStep(
       const hitTime = startTime + hit.beat * secondsPerBeat;
       if (!shouldScheduleHit(hitTime)) continue;
       voices.push(
-        scheduleClick(ctx, bus, hitTime, {
+        scheduleClick(bus, hitTime, {
           accent: Math.abs(beatInBar) < 1e-9,
           velocity: hit.velocity,
         }),

@@ -25,7 +25,7 @@ describe("pluckString — Tone.PluckSynth backend", () => {
   });
 
   it("constructs PluckSynth with Karplus-Strong options", async () => {
-    pluckString({ currentTime: 0 } as AudioContext, {} as AudioNode, 220, 1.0);
+    pluckString({} as AudioNode, 220, 1.0);
     const t = await tone;
     expect(t.spies.ctorSpy).toHaveBeenCalledTimes(1);
     const [opts] = t.spies.ctorSpy.mock.calls[0]!;
@@ -38,7 +38,6 @@ describe("pluckString — Tone.PluckSynth backend", () => {
   it("triggers attack at requested freq + time", async () => {
     const t = await tone;
     pluckString(
-      { currentTime: 0 } as AudioContext,
       {} as AudioNode,
       220,
       1.5,
@@ -53,7 +52,6 @@ describe("pluckString — Tone.PluckSynth backend", () => {
   it("applies velocity via synth.volume (gainToDb)", async () => {
     const t = await tone;
     pluckString(
-      { currentTime: 0 } as AudioContext,
       {} as AudioNode,
       220,
       0,
@@ -72,7 +70,6 @@ describe("pluckString — Tone.PluckSynth backend", () => {
 
   it("skips zero-velocity plucks (no synth constructed)", async () => {
     pluckString(
-      { currentTime: 0 } as AudioContext,
       {} as AudioNode,
       220,
       0,
@@ -87,7 +84,6 @@ describe("pluckString — Tone.PluckSynth backend", () => {
     try {
       const t = await tone;
       const h = pluckString(
-        { currentTime: 0 } as AudioContext,
         {} as AudioNode,
         220,
         0,
@@ -108,7 +104,6 @@ describe("pluckString — Tone.PluckSynth backend", () => {
     try {
       const t = await tone;
       const h = pluckString(
-        { currentTime: 0 } as AudioContext,
         {} as AudioNode,
         220,
         0,

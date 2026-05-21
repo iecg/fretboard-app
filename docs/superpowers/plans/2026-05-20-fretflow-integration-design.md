@@ -22,7 +22,7 @@
 | 4 | Lens redesign — Tones + Lead | this file, §Phase 4 | Blocked on Phase 2 |
 | 5 | Voicing simplification — Region ToggleBar | this file, §Phase 5 | Blocked on Phase 2 |
 | 6 | Scale simplification — grouped select | this file, §Phase 6 | Blocked on Phase 1 |
-| 7 | Audio (Tone.js) | this file, §Phase 7 | Blocked on Phase 1 |
+| 7 | Audio (Tone.js) | this file, §Phase 7 | Complete (Phase 7 PR #448, Phase 7B PR #TBD) |
 | 8 | Polish — Edit-on-Chord, tooltips, hints | this file, §Phase 8 | Blocked on Phases 2–7 |
 
 **Per-phase discipline:** Each phase ends with a green `pnpm run lint && pnpm run test && pnpm run build && npx tsc -b`, refreshed visual-regression baselines (darwin + linux), and a single PR. Phases 4 and 7 are mutually independent and may run in parallel; Phases 6 and 1 may overlap.

@@ -29,12 +29,8 @@ export interface BassVoiceHandle {
 /**
  * Schedule a single bass note. Returns a handle that can be cancelled on
  * chord change so the next bass note does not bleed into the previous one.
- *
- * The `ctx` argument is unused (Tone manages its own context) but preserved
- * for call-site compatibility with the other scheduler voices.
  */
 export function scheduleBassNote(
-  _ctx: AudioContext,
   dest: AudioNode,
   frequency: number,
   time: number,

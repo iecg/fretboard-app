@@ -65,7 +65,7 @@ describe("drumKit — Tone backend", () => {
 
   describe("scheduleKick", () => {
     it("constructs MembraneSynth with sine oscillator + pitch decay", () => {
-      scheduleKick({ currentTime: 0 } as AudioContext, {} as AudioNode, 1.5);
+      scheduleKick({} as AudioNode, 1.5);
       expect(membraneSpies.ctorSpy).toHaveBeenCalledTimes(1);
       const [opts] = membraneSpies.ctorSpy.mock.calls[0]!;
       expect(opts.oscillator.type).toBe("sine");
@@ -76,7 +76,6 @@ describe("drumKit — Tone backend", () => {
 
     it("triggers C1 at the requested time + velocity", () => {
       scheduleKick(
-        { currentTime: 0 } as AudioContext,
         {} as AudioNode,
         2.5,
         { velocity: 0.8 },
@@ -91,7 +90,6 @@ describe("drumKit — Tone backend", () => {
 
     it("skips zero-velocity hits (no MembraneSynth constructed)", () => {
       scheduleKick(
-        { currentTime: 0 } as AudioContext,
         {} as AudioNode,
         0,
         { velocity: 0 },
@@ -102,7 +100,6 @@ describe("drumKit — Tone backend", () => {
 
     it("cancel() defers dispose past the kick release tail", () => {
       const handle = scheduleKick(
-        { currentTime: 0 } as AudioContext,
         {} as AudioNode,
         0,
       );
@@ -114,7 +111,6 @@ describe("drumKit — Tone backend", () => {
 
     it("cancel() is idempotent — repeated calls dispose only once", () => {
       const handle = scheduleKick(
-        { currentTime: 0 } as AudioContext,
         {} as AudioNode,
         0,
       );
@@ -128,7 +124,7 @@ describe("drumKit — Tone backend", () => {
 
   describe("scheduleSnare", () => {
     it("constructs NoiseSynth with white noise + AD envelope", () => {
-      scheduleSnare({ currentTime: 0 } as AudioContext, {} as AudioNode, 1.5);
+      scheduleSnare({} as AudioNode, 1.5);
       expect(noiseSpies.ctorSpy).toHaveBeenCalledTimes(1);
       const [opts] = noiseSpies.ctorSpy.mock.calls[0]!;
       expect(opts.noise.type).toBe("white");
@@ -139,7 +135,6 @@ describe("drumKit — Tone backend", () => {
 
     it("triggers with NO note arg — (duration, time, velocity) signature", () => {
       scheduleSnare(
-        { currentTime: 0 } as AudioContext,
         {} as AudioNode,
         3.25,
         { velocity: 0.7 },
@@ -155,7 +150,6 @@ describe("drumKit — Tone backend", () => {
 
     it("skips zero-velocity hits (no NoiseSynth constructed)", () => {
       scheduleSnare(
-        { currentTime: 0 } as AudioContext,
         {} as AudioNode,
         0,
         { velocity: 0 },
@@ -166,7 +160,6 @@ describe("drumKit — Tone backend", () => {
 
     it("cancel() defers dispose past the snare release tail and is idempotent", () => {
       const handle = scheduleSnare(
-        { currentTime: 0 } as AudioContext,
         {} as AudioNode,
         0,
       );
@@ -180,7 +173,7 @@ describe("drumKit — Tone backend", () => {
 
   describe("scheduleHiHat", () => {
     it("constructs MetalSynth with short decay (0.05) when closed (default)", () => {
-      scheduleHiHat({ currentTime: 0 } as AudioContext, {} as AudioNode, 1.5);
+      scheduleHiHat({} as AudioNode, 1.5);
       expect(metalSpies.ctorSpy).toHaveBeenCalledTimes(1);
       const [opts] = metalSpies.ctorSpy.mock.calls[0]!;
       expect(opts.envelope.decay).toBeCloseTo(0.05, 3);
@@ -190,7 +183,6 @@ describe("drumKit — Tone backend", () => {
 
     it("constructs MetalSynth with long decay (0.35) when open === true", () => {
       scheduleHiHat(
-        { currentTime: 0 } as AudioContext,
         {} as AudioNode,
         1.5,
         { open: true },
@@ -201,7 +193,6 @@ describe("drumKit — Tone backend", () => {
 
     it("triggers C6 with closed-hat duration at the requested time + velocity", () => {
       scheduleHiHat(
-        { currentTime: 0 } as AudioContext,
         {} as AudioNode,
         1.75,
         { velocity: 0.4 },
@@ -216,7 +207,6 @@ describe("drumKit — Tone backend", () => {
 
     it("skips zero-velocity hits (no MetalSynth constructed)", () => {
       scheduleHiHat(
-        { currentTime: 0 } as AudioContext,
         {} as AudioNode,
         0,
         { velocity: 0 },
@@ -227,7 +217,6 @@ describe("drumKit — Tone backend", () => {
 
     it("cancel() defers dispose past the closed-hat release tail", () => {
       const handle = scheduleHiHat(
-        { currentTime: 0 } as AudioContext,
         {} as AudioNode,
         0,
       );
@@ -239,7 +228,6 @@ describe("drumKit — Tone backend", () => {
 
     it("cancel() on open hat defers dispose past the longer open-hat tail", () => {
       const handle = scheduleHiHat(
-        { currentTime: 0 } as AudioContext,
         {} as AudioNode,
         0,
         { open: true },
@@ -254,7 +242,6 @@ describe("drumKit — Tone backend", () => {
 
     it("cancel() is idempotent — repeated calls dispose only once", () => {
       const handle = scheduleHiHat(
-        { currentTime: 0 } as AudioContext,
         {} as AudioNode,
         0,
       );
@@ -268,7 +255,7 @@ describe("drumKit — Tone backend", () => {
 
   describe("scheduleRide", () => {
     it("constructs MetalSynth with long decay (1.0)", () => {
-      scheduleRide({ currentTime: 0 } as AudioContext, {} as AudioNode, 1.5);
+      scheduleRide({} as AudioNode, 1.5);
       expect(metalSpies.ctorSpy).toHaveBeenCalledTimes(1);
       const [opts] = metalSpies.ctorSpy.mock.calls[0]!;
       expect(opts.envelope.decay).toBeCloseTo(1.0, 3);
@@ -278,7 +265,6 @@ describe("drumKit — Tone backend", () => {
 
     it("triggers D6 at the requested time + velocity", () => {
       scheduleRide(
-        { currentTime: 0 } as AudioContext,
         {} as AudioNode,
         4.0,
         { velocity: 0.6 },
@@ -293,7 +279,6 @@ describe("drumKit — Tone backend", () => {
 
     it("skips zero-velocity hits (no MetalSynth constructed)", () => {
       scheduleRide(
-        { currentTime: 0 } as AudioContext,
         {} as AudioNode,
         0,
         { velocity: 0 },
@@ -304,7 +289,6 @@ describe("drumKit — Tone backend", () => {
 
     it("cancel() defers dispose past the ride release tail and is idempotent", () => {
       const handle = scheduleRide(
-        { currentTime: 0 } as AudioContext,
         {} as AudioNode,
         0,
       );

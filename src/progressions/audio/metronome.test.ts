@@ -36,9 +36,8 @@ describe("scheduleClick — Tone backend", () => {
   });
 
   it("triggers an accented click at 1500 Hz on beat 1", () => {
-    const ctx = { currentTime: 0 } as AudioContext;
     const dest = {} as AudioNode;
-    scheduleClick(ctx, dest, 1.5, { accent: true, velocity: 0.8 });
+    scheduleClick(dest, 1.5, { accent: true, velocity: 0.8 });
     expect(spies.triggerAttackRelease).toHaveBeenCalledTimes(1);
     const [pitch, duration, time, velocity] = spies.triggerAttackRelease.mock.calls[0]!;
     expect(pitch).toBeCloseTo(1500, 0);
@@ -48,17 +47,17 @@ describe("scheduleClick — Tone backend", () => {
   });
 
   it("triggers a normal click at 900 Hz when accent is false", () => {
-    scheduleClick({ currentTime: 0 } as AudioContext, {} as AudioNode, 0, { accent: false });
+    scheduleClick({} as AudioNode, 0, { accent: false });
     expect(spies.triggerAttackRelease.mock.calls[0]![0]).toBeCloseTo(900, 0);
   });
 
   it("skips scheduling when velocity is zero", () => {
-    scheduleClick({ currentTime: 0 } as AudioContext, {} as AudioNode, 0, { velocity: 0 });
+    scheduleClick({} as AudioNode, 0, { velocity: 0 });
     expect(spies.triggerAttackRelease).not.toHaveBeenCalled();
   });
 
   it("cancel() triggers release then disposes the synth after the envelope settles", () => {
-    const handle = scheduleClick({ currentTime: 0 } as AudioContext, {} as AudioNode, 0, {});
+    const handle = scheduleClick({} as AudioNode, 0, {});
     handle.cancel();
     // Release fires immediately so the envelope can decay naturally.
     expect(spies.triggerRelease).toHaveBeenCalledTimes(1);
@@ -69,7 +68,7 @@ describe("scheduleClick — Tone backend", () => {
   });
 
   it("cancel() is idempotent — repeated calls schedule release/dispose only once", () => {
-    const handle = scheduleClick({ currentTime: 0 } as AudioContext, {} as AudioNode, 0, {});
+    const handle = scheduleClick({} as AudioNode, 0, {});
     handle.cancel();
     handle.cancel();
     handle.cancel();

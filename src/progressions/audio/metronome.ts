@@ -24,7 +24,6 @@ export interface ClickHandle {
 }
 
 export function scheduleClick(
-  _ctx: AudioContext,
   dest: AudioNode,
   time: number,
   options: ClickOptions = {},

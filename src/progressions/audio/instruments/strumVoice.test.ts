@@ -31,39 +31,38 @@ describe("strumVoice", () => {
 
   it("strums low-to-high by default (down-stroke)", () => {
     strumVoice.scheduleChord(
-      {} as AudioContext,
       {} as AudioNode,
       ["C3", "E3", "G3"],
       0,
       { velocity: 0.8 },
     );
     expect(pluckStringSpy).toHaveBeenCalledTimes(3);
-    const freqs = pluckStringSpy.mock.calls.map((c) => c[2]);
+    // pluckString(dest, freq, time, options) — freq is arg[1].
+    const freqs = pluckStringSpy.mock.calls.map((c) => c[1]);
     expect(freqs).toEqual(["C3", "E3", "G3"].map(getNoteFrequency));
   });
 
   it("reverses voicing order for an up-strum", () => {
     strumVoice.scheduleChord(
-      {} as AudioContext,
       {} as AudioNode,
       ["C3", "E3", "G3"],
       0,
       { velocity: 0.8, direction: "up" },
     );
     expect(pluckStringSpy).toHaveBeenCalledTimes(3);
-    const freqs = pluckStringSpy.mock.calls.map((c) => c[2]);
+    const freqs = pluckStringSpy.mock.calls.map((c) => c[1]);
     expect(freqs).toEqual(["G3", "E3", "C3"].map(getNoteFrequency));
   });
 
   it("staggers strums by STRUM_LAG_SECONDS", () => {
     strumVoice.scheduleChord(
-      {} as AudioContext,
       {} as AudioNode,
       ["C3", "E3", "G3"],
       1.0,
       { velocity: 0.8 },
     );
-    const times = pluckStringSpy.mock.calls.map((c) => c[3]);
+    // pluckString(dest, freq, time, options) — time is arg[2].
+    const times = pluckStringSpy.mock.calls.map((c) => c[2]);
     expect(times[0]).toBeCloseTo(1.0, 4);
     expect(times[1]).toBeCloseTo(1.0 + STRUM_LAG_SECONDS, 4);
     expect(times[2]).toBeCloseTo(1.0 + 2 * STRUM_LAG_SECONDS, 4);

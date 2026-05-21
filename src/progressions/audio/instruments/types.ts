@@ -13,7 +13,6 @@ export interface ChordVoiceOptions {
 
 export interface ChordVoice {
   scheduleChord(
-    ctx: AudioContext,
     dest: AudioNode,
     notes: readonly string[],
     time: number,

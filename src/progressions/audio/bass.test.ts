@@ -35,7 +35,7 @@ describe("scheduleBassNote — Tone backend", () => {
   });
 
   it("constructs MonoSynth with sawtooth oscillator + lowpass filter envelope", () => {
-    scheduleBassNote({ currentTime: 0 } as AudioContext, {} as AudioNode, 220, 1.0);
+    scheduleBassNote({} as AudioNode, 220, 1.0);
     expect(spies.ctorSpy).toHaveBeenCalledTimes(1);
     const [opts] = spies.ctorSpy.mock.calls[0]!;
     expect(opts.oscillator.type).toBe("sawtooth");
@@ -45,7 +45,6 @@ describe("scheduleBassNote — Tone backend", () => {
 
   it("triggers at the requested frequency and time", () => {
     scheduleBassNote(
-      { currentTime: 0 } as AudioContext,
       {} as AudioNode,
       110,
       2.5,
@@ -60,7 +59,6 @@ describe("scheduleBassNote — Tone backend", () => {
 
   it("skips zero-velocity notes (no synth constructed)", () => {
     scheduleBassNote(
-      { currentTime: 0 } as AudioContext,
       {} as AudioNode,
       110,
       0,
@@ -72,7 +70,6 @@ describe("scheduleBassNote — Tone backend", () => {
 
   it("cancel() releases then disposes the synth after the envelope settles", () => {
     const handle = scheduleBassNote(
-      { currentTime: 0 } as AudioContext,
       {} as AudioNode,
       110,
       0,
@@ -88,7 +85,6 @@ describe("scheduleBassNote — Tone backend", () => {
 
   it("cancel() is idempotent — repeated calls schedule release/dispose only once", () => {
     const handle = scheduleBassNote(
-      { currentTime: 0 } as AudioContext,
       {} as AudioNode,
       110,
       0,

@@ -33,7 +33,6 @@ describe("organVoice — Tone.PolySynth backend", () => {
 
   it("constructs PolySynth with sine partials, organ envelope, -10 dB volume", () => {
     organVoice.scheduleChord(
-      { currentTime: 0 } as AudioContext,
       {} as AudioNode,
       ["C3", "E3", "G3"],
       0,
@@ -54,7 +53,6 @@ describe("organVoice — Tone.PolySynth backend", () => {
 
   it("triggers the full voicing once with the requested time + velocity (sustained default)", () => {
     organVoice.scheduleChord(
-      { currentTime: 0 } as AudioContext,
       {} as AudioNode,
       ["C3", "E3", "G3"],
       4.0,
@@ -71,7 +69,6 @@ describe("organVoice — Tone.PolySynth backend", () => {
 
   it("uses the staccato duration when options.style === 'staccato'", () => {
     organVoice.scheduleChord(
-      { currentTime: 0 } as AudioContext,
       {} as AudioNode,
       ["C3", "E3", "G3"],
       0,
@@ -83,7 +80,6 @@ describe("organVoice — Tone.PolySynth backend", () => {
 
   it("uses the sustained duration when options.style === 'sustained'", () => {
     organVoice.scheduleChord(
-      { currentTime: 0 } as AudioContext,
       {} as AudioNode,
       ["C3", "E3", "G3"],
       0,
@@ -95,7 +91,6 @@ describe("organVoice — Tone.PolySynth backend", () => {
 
   it("skips zero-velocity chords (no PolySynth constructed)", () => {
     organVoice.scheduleChord(
-      { currentTime: 0 } as AudioContext,
       {} as AudioNode,
       ["C3", "E3", "G3"],
       0,
@@ -107,7 +102,6 @@ describe("organVoice — Tone.PolySynth backend", () => {
 
   it("skips empty voicings (no PolySynth constructed)", () => {
     organVoice.scheduleChord(
-      { currentTime: 0 } as AudioContext,
       {} as AudioNode,
       [],
       0,
@@ -119,7 +113,6 @@ describe("organVoice — Tone.PolySynth backend", () => {
 
   it("cancel() releases all voices then defers dispose past the release tail", () => {
     const handle = organVoice.scheduleChord(
-      { currentTime: 0 } as AudioContext,
       {} as AudioNode,
       ["C3", "E3", "G3"],
       0,
@@ -134,7 +127,6 @@ describe("organVoice — Tone.PolySynth backend", () => {
 
   it("cancel() is idempotent — repeated calls schedule release/dispose only once", () => {
     const handle = organVoice.scheduleChord(
-      { currentTime: 0 } as AudioContext,
       {} as AudioNode,
       ["C3", "E3", "G3"],
       0,

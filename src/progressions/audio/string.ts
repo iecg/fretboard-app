@@ -32,7 +32,6 @@ export interface PluckStringOptions {
  * Returns a handle for cancelling the voice after its natural decay.
  */
 export function pluckString(
-  _ctx: AudioContext,
   dest: AudioNode,
   frequency: number,
   startTime: number,

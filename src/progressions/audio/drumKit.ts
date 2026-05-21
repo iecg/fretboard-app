@@ -11,10 +11,6 @@
  * handle whose `cancel()` defers `dispose()` past the voice's release tail to
  * avoid truncation clicks. This matches the pattern used by `metronome.ts`,
  * `bass.ts`, and `string.ts` after the Phase 7B migration.
- *
- * The `ctx` argument is preserved on every signature for call-site
- * compatibility with the scheduler (which still threads an `AudioContext`
- * through) but is unused — Tone manages its own audio context.
  */
 import * as Tone from "tone";
 
@@ -79,7 +75,6 @@ const NOOP_HANDLE: DrumVoiceHandle = { cancel: () => {} };
  * fast attack, ~350 ms decay.
  */
 export function scheduleKick(
-  _ctx: AudioContext,
   dest: AudioNode,
   time: number,
   options: DrumHitOptions = {},
@@ -110,7 +105,6 @@ export function scheduleKick(
  * velocity)` with no note argument, since noise has no pitch.
  */
 export function scheduleSnare(
-  _ctx: AudioContext,
   dest: AudioNode,
   time: number,
   options: DrumHitOptions = {},
@@ -144,7 +138,6 @@ export interface HiHatOptions extends DrumHitOptions {
  * for the open variant prevents the tail from being truncated on `cancel()`.
  */
 export function scheduleHiHat(
-  _ctx: AudioContext,
   dest: AudioNode,
   time: number,
   options: HiHatOptions = {},
@@ -179,7 +172,6 @@ export interface RideOptions extends DrumHitOptions {
  * Tone voice — bell-mode shading is a future refinement.
  */
 export function scheduleRide(
-  _ctx: AudioContext,
   dest: AudioNode,
   time: number,
   options: RideOptions = {},

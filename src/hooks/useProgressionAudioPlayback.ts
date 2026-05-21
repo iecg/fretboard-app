@@ -94,7 +94,6 @@ function sameConfigFlags(a: ConfigFlags | null, b: ConfigFlags): boolean {
 }
 
 function buildSegment(
-  ctx: AudioContext,
   bus: AudioNode,
   stepIndex: number,
   startTime: number,
@@ -114,7 +113,7 @@ function buildSegment(
   const durationSec = beatsAvailable * secondsPerBeat;
 
   const nextStep = inputs.steps[stepIndex + 1];
-  const handle = scheduleProgressionStep(ctx, bus, {
+  const handle = scheduleProgressionStep(bus, {
     voicing,
     bassNotes,
     beatsAvailable,
@@ -312,7 +311,6 @@ export function useProgressionAudioPlayback() {
         : now;
 
       const seg = buildSegment(
-        audio.ctx,
         audio.bus,
         activeProgressionStepIndex,
         startAt,
@@ -366,7 +364,7 @@ export function useProgressionAudioPlayback() {
     ) {
       const tail = segmentsRef.current.find((s) => s.stepIndex === activeProgressionStepIndex);
       const startAt = tail ? tail.endTime : now + SCHEDULE_LEAD_SECONDS;
-      const seg = buildSegment(audio.ctx, audio.bus, nextIdx, startAt, inputs);
+      const seg = buildSegment(audio.bus, nextIdx, startAt, inputs);
       if (seg) segmentsRef.current.push(seg);
     }
 

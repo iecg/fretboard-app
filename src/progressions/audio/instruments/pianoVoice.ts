@@ -20,7 +20,6 @@ const SUSTAINED_DURATION = 1.2;
 
 export const pianoVoice: ChordVoice = {
   scheduleChord(
-    _ctx: AudioContext,
     dest: AudioNode,
     notes: readonly string[],
     time: number,

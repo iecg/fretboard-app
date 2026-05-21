@@ -37,7 +37,6 @@ describe("pianoVoice — Tone.PolySynth backend", () => {
 
   it("constructs PolySynth with triangle partials, piano envelope, -6 dB volume", () => {
     pianoVoice.scheduleChord(
-      { currentTime: 0 } as AudioContext,
       {} as AudioNode,
       ["C3", "E3", "G3"],
       0,
@@ -59,7 +58,6 @@ describe("pianoVoice — Tone.PolySynth backend", () => {
 
   it("triggers the full voicing once with the requested time + velocity (staccato default)", () => {
     pianoVoice.scheduleChord(
-      { currentTime: 0 } as AudioContext,
       {} as AudioNode,
       ["C3", "E3", "G3"],
       2.5,
@@ -76,7 +74,6 @@ describe("pianoVoice — Tone.PolySynth backend", () => {
 
   it("uses the sustained duration when options.style === 'sustained'", () => {
     pianoVoice.scheduleChord(
-      { currentTime: 0 } as AudioContext,
       {} as AudioNode,
       ["C3", "E3", "G3"],
       0,
@@ -88,7 +85,6 @@ describe("pianoVoice — Tone.PolySynth backend", () => {
 
   it("uses the staccato duration when options.style === 'staccato'", () => {
     pianoVoice.scheduleChord(
-      { currentTime: 0 } as AudioContext,
       {} as AudioNode,
       ["C3", "E3", "G3"],
       0,
@@ -100,7 +96,6 @@ describe("pianoVoice — Tone.PolySynth backend", () => {
 
   it("skips zero-velocity chords (no PolySynth constructed)", () => {
     pianoVoice.scheduleChord(
-      { currentTime: 0 } as AudioContext,
       {} as AudioNode,
       ["C3", "E3", "G3"],
       0,
@@ -112,7 +107,6 @@ describe("pianoVoice — Tone.PolySynth backend", () => {
 
   it("skips empty voicings (no PolySynth constructed)", () => {
     pianoVoice.scheduleChord(
-      { currentTime: 0 } as AudioContext,
       {} as AudioNode,
       [],
       0,
@@ -124,7 +118,6 @@ describe("pianoVoice — Tone.PolySynth backend", () => {
 
   it("cancel() releases all voices then defers dispose past the release tail", () => {
     const handle = pianoVoice.scheduleChord(
-      { currentTime: 0 } as AudioContext,
       {} as AudioNode,
       ["C3", "E3", "G3"],
       0,
@@ -140,7 +133,6 @@ describe("pianoVoice — Tone.PolySynth backend", () => {
 
   it("cancel() is idempotent — repeated calls schedule release/dispose only once", () => {
     const handle = pianoVoice.scheduleChord(
-      { currentTime: 0 } as AudioContext,
       {} as AudioNode,
       ["C3", "E3", "G3"],
       0,
