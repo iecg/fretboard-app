@@ -42,8 +42,6 @@ export const en: Dictionary = {
     degreeColors: "Degree Colors",
     fullChords: "Full Chords",
     tapToPlay: "Tap to Play",
-    statusByDegree: "By degree",
-    statusUniform: "Uniform",
     statusVisible: "Visible",
     statusHidden: "Hidden",
     statusAudioOn: "Audio on",
