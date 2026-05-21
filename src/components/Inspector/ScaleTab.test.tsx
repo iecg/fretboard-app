@@ -13,7 +13,7 @@ describe("ScaleTab", () => {
     expect(headers).toEqual(["Fingering", "Key", "Circle of Fifths", "Theory"]);
   });
 
-  it("renders a single grouped scale combobox with 4 groups", async () => {
+  it("renders a single grouped scale combobox with the 4 expected groups", async () => {
     const user = userEvent.setup();
     renderWithAtoms(<ScaleTab />, [
       [rootNoteAtom, "C"],
@@ -22,8 +22,14 @@ describe("ScaleTab", () => {
     const combobox = screen.getByRole("combobox", { name: /scale/i });
     expect(combobox).toBeInTheDocument();
     await user.click(combobox);
-    const groups = screen.getAllByRole("group");
-    expect(groups.length).toBeGreaterThanOrEqual(4);
+    for (const label of [
+      "Major modes",
+      "Pentatonics",
+      "Blues",
+      "Harmonic / Melodic",
+    ]) {
+      expect(screen.getByText(label)).toBeInTheDocument();
+    }
   });
 
   it("renders the scale selector — root chips", () => {
