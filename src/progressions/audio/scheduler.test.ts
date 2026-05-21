@@ -14,6 +14,18 @@ vi.mock("./metronome", () => ({
   _metronomeInternals: { ACCENT_FREQ: 1500, NORMAL_FREQ: 900, DECAY: 0.04 },
 }));
 
+// Same pattern for the bass voice — now Tone.MonoSynth-backed, so the raw
+// `mock.oscillators()` counts no longer reflect bass activity. The spy
+// captures (ctx, dest, frequency, time, options) per scheduleBassNote call
+// and the cancel spy fires when the step handle tears down the lane.
+const scheduleBassNoteSpy = vi.hoisted(() => vi.fn());
+const cancelBassSpy = vi.hoisted(() => vi.fn());
+vi.mock("./bass", () => ({
+  scheduleBassNote: scheduleBassNoteSpy.mockImplementation(() => ({
+    cancel: cancelBassSpy,
+  })),
+}));
+
 import { scheduleProgressionStep } from "./scheduler";
 import { _metronomeInternals } from "./metronome";
 import {
@@ -68,6 +80,10 @@ describe("scheduleProgressionStep", () => {
     cancelClickSpy.mockReset();
     scheduleClickSpy.mockReset().mockImplementation(() => ({
       cancel: cancelClickSpy,
+    }));
+    cancelBassSpy.mockReset();
+    scheduleBassNoteSpy.mockReset().mockImplementation(() => ({
+      cancel: cancelBassSpy,
     }));
   });
 
@@ -157,8 +173,10 @@ describe("scheduleProgressionStep", () => {
       enable: { strum: false, bass: true, drums: false, metronome: false },
       ...defaultNewFields,
     });
-    // Beats 0 and 2 = two bass oscillators.
-    expect(mock.oscCount()).toBe(2);
+    // Beats 0 and 2 = two bass hits. The bass voice is now Tone-backed,
+    // so we inspect the scheduleBassNote spy rather than oscillator count.
+    expect(scheduleBassNoteSpy).toHaveBeenCalledTimes(2);
+    expect(mock.oscCount()).toBe(0);
   });
 
   it("uses the second bass note on beat 3 when available", () => {
@@ -173,15 +191,35 @@ describe("scheduleProgressionStep", () => {
       ...defaultNewFields,
     });
 
-    expect(mock.oscCount()).toBe(2);
-    expect(mock.oscillators()[0].frequency.setValueAtTime).toHaveBeenCalledWith(
-      getNoteFrequency("C2"),
-      0,
-    );
-    expect(mock.oscillators()[1].frequency.setValueAtTime).toHaveBeenCalledWith(
-      getNoteFrequency("G2"),
-      1,
-    );
+    // scheduleBassNote(ctx, dest, frequency, time, options) — pull frequency
+    // and time off each call.
+    expect(scheduleBassNoteSpy).toHaveBeenCalledTimes(2);
+    const calls = scheduleBassNoteSpy.mock.calls.map((args) => [args[2], args[3]]);
+    expect(calls).toEqual([
+      [getNoteFrequency("C2"), 0],
+      [getNoteFrequency("G2"), 1],
+    ]);
+  });
+
+  it("cancels scheduled bass voices when the step handle is cancelled", () => {
+    const handle = scheduleProgressionStep(mock.ctx, bus as unknown as AudioNode, {
+      voicing: [],
+      bassNotes: ["C2", "G2"],
+      beatsAvailable: 4,
+      beatsPerBar: 4,
+      secondsPerBeat: 0.5,
+      startTime: 0,
+      enable: { strum: false, bass: true, drums: false, metronome: false },
+      ...defaultNewFields,
+    });
+
+    expect(scheduleBassNoteSpy).toHaveBeenCalledTimes(2);
+    expect(cancelBassSpy).not.toHaveBeenCalled();
+
+    handle.cancelAll();
+
+    // Each bass voice's cancel() should fire on step cancellation.
+    expect(cancelBassSpy).toHaveBeenCalledTimes(2);
   });
 
   it("schedules metronome clicks (one per beat) only when flag is on", () => {
@@ -352,9 +390,12 @@ describe("scheduleProgressionStep", () => {
       ...defaultNewFields,
     });
 
-    const scheduledNotes = mock.oscillators().map((osc) =>
-      osc.frequency.setValueAtTime.mock.calls[0],
-    );
+    // scheduleBassNote(ctx, dest, frequency, time, options) — pair frequency
+    // with start time for each hit.
+    const scheduledNotes = scheduleBassNoteSpy.mock.calls.map((args) => [
+      args[2],
+      args[3],
+    ]);
     expect(scheduledNotes).toEqual([
       [getNoteFrequency("C2"), 0],
       [getNoteFrequency("G2"), 1],
