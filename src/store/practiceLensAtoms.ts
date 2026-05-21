@@ -55,7 +55,10 @@ import {
   progressionStepDeadlineAtom,
   beatsPerBarAtom,
 } from "./progressionAtoms";
-import { getProgressionDurationBeats } from "../progressions/progressionDomain";
+import {
+  getProgressionDurationBeats,
+  MIN_PROGRESSION_TEMPO_BPM,
+} from "../progressions/progressionDomain";
 import {
   hasOutsideChordMembersAtom,
   allChordMembersAtom,
@@ -523,7 +526,7 @@ export const commonTonesWithNextAtom = atom((get): Set<string> => {
  */
 export const activeStepDurationBeatsAtom = atom((get): number => {
   const step = get(activeResolvedProgressionStepAtom);
-  if (!step) return 0;
+  if (!step || step.unavailable) return 0;
   const beatsPerBar = get(beatsPerBarAtom);
   return getProgressionDurationBeats(step.duration, beatsPerBar);
 });
@@ -547,8 +550,13 @@ export const beatPositionAtom = atom((get): number => {
   const deadline = get(progressionStepDeadlineAtom);
   const stepDurationBeats = get(activeStepDurationBeatsAtom);
   if (deadline == null) return 0;
+  // Guard against tempo === 0 (would yield Infinity for secondsPerBeat).
+  // Storage validation enforces a min, but direct programmatic `set` could
+  // bypass it — mirror `getProgressionDurationMs`'s clamp.
+  const safeTempo = Math.max(MIN_PROGRESSION_TEMPO_BPM, tempo);
   const secondsRemaining = Math.max(0, (deadline - Date.now()) / 1000);
-  const secondsPerBeat = 60 / tempo;
+  const secondsPerBeat = 60 / safeTempo;
   const beatsRemaining = secondsRemaining / secondsPerBeat;
-  return Math.max(0, stepDurationBeats - beatsRemaining);
+  // Clamp to documented [0, stepDurationBeats] invariant for float safety.
+  return Math.min(stepDurationBeats, Math.max(0, stepDurationBeats - beatsRemaining));
 });
