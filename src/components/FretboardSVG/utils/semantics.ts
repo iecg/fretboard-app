@@ -26,16 +26,19 @@ export function getLensEmphasis(
 
   if (!practiceLens) return defaultEmphasis;
 
-  // TODO (Task 4.4/4.5): rewrite emphasis logic for new lens IDs.
-  // Temporary bridge: "tones" uses old guide-tones emphasis; "lead" uses old tension emphasis.
+  // TODO (Task 4.5): rewrite emphasis logic for "lead" lens (still a bridge).
+  // "tones" lens is fully implemented (Task 4.4): guide-tone emphasis + full intensity for other chord tones.
   switch (practiceLens) {
     case "tones":
+      // Guide tones (3rd/7th of active chord) — emphasized.
       if (isGuideTone) {
         return { glowColor: "cyan", radiusBoost: 1.15, opacityBoost: 1 };
       }
-      if (noteClass.includes("chord-") || noteClass.includes("color-") || noteClass === "note-diatonic-chord") {
+      // Scale-only notes (in scale, not in active chord) — dimmed.
+      if (noteClass === "scale-only" || noteClass === "color-tone") {
         return { radiusBoost: 0.85, opacityBoost: 0.7 };
       }
+      // All other chord-tone classes — full intensity (defaultEmphasis).
       return defaultEmphasis;
 
     case "lead":

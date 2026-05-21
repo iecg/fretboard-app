@@ -16,16 +16,61 @@ describe("semantics utils", () => {
       expect(res.radiusBoost).toBeGreaterThan(1);
     });
 
-    it("dims non-guide chord tones in tones lens", () => {
-      const res = getLensEmphasis("chord-tone", "tones", false, false);
-      expect(res.radiusBoost).toBeLessThan(1);
-      expect(res.opacityBoost).toBeLessThan(1);
+    it("renders non-guide chord tones at full intensity in tones lens (no dimming)", () => {
+      const res = getLensEmphasis("chord-tone-in-scale", "tones", false, false);
+      expect(res.radiusBoost).toBe(1);
+      expect(res.opacityBoost).toBe(1);
     });
 
     it("boosts tensions in lead lens", () => {
       const res = getLensEmphasis("chord-tone", "lead", false, true);
       expect(res.glowColor).toBe("orange");
       expect(res.radiusBoost).toBeGreaterThan(1);
+    });
+  });
+
+  describe("getLensEmphasis - tones lens (Task 4.4)", () => {
+    it("emphasizes guide tones with cyan glow and larger radius", () => {
+      expect(getLensEmphasis("chord-tone-in-scale", "tones", true, false)).toEqual({
+        glowColor: "cyan",
+        radiusBoost: 1.15,
+        opacityBoost: 1,
+      });
+    });
+
+    it("emphasizes guide tones regardless of underlying noteClass", () => {
+      // Even an outside-scale chord tone that happens to be a guide tone gets emphasis
+      expect(getLensEmphasis("chord-tone-outside-scale", "tones", true, false)).toMatchObject({
+        glowColor: "cyan",
+      });
+    });
+
+    it("renders non-guide chord tones at full intensity (no dimming)", () => {
+      // chord-root, chord-tone-in-scale, chord-tone-outside-scale, note-diatonic-chord --- none should dim
+      for (const cls of ["chord-root", "chord-tone-in-scale", "chord-tone-outside-scale", "note-diatonic-chord"]) {
+        expect(getLensEmphasis(cls, "tones", false, false)).toEqual({
+          radiusBoost: 1,
+          opacityBoost: 1,
+        });
+      }
+    });
+
+    it("dims scale-only notes (in scale, not in chord)", () => {
+      expect(getLensEmphasis("scale-only", "tones", false, false)).toEqual({
+        radiusBoost: 0.85,
+        opacityBoost: 0.7,
+      });
+      expect(getLensEmphasis("color-tone", "tones", false, false)).toEqual({
+        radiusBoost: 0.85,
+        opacityBoost: 0.7,
+      });
+    });
+
+    it("returns default for inactive notes", () => {
+      expect(getLensEmphasis("note-inactive", "tones", false, false)).toEqual({
+        radiusBoost: 1,
+        opacityBoost: 1,
+      });
     });
   });
 
