@@ -50,6 +50,7 @@ import { activeChordCachedDegreeAtom } from "./songStateAtoms";
 import {
   resolvedProgressionStepsAtom,
   activeProgressionStepIndexAtom,
+  activeResolvedProgressionStepAtom,
 } from "./progressionAtoms";
 import {
   hasOutsideChordMembersAtom,
@@ -462,7 +463,9 @@ export const lensAvailabilityAtom = atom((get) => {
 
 /**
  * Pitch-class set of the chord at the step *after* the active progression step.
- * Wraps around so that the last step's next is the first step.
+ * Wraps around so that the last step's next is the first step. When the
+ * progression has exactly one step, next wraps to that same step (all its
+ * tones are returned).
  *
  * Notes are in the FretFlow sharps convention (C#, D#, …), matching
  * `getChordNotes` which already performs the same sharp-normalization.
@@ -490,14 +493,16 @@ export const nextChordTonesAtom = atom((get): Set<string> => {
  * in the progression (common tones). Useful for the Lead lens to identify
  * pivot/guide notes when navigating between chords.
  *
+ * Reads the active step via `activeResolvedProgressionStepAtom` so the index
+ * is clamped to the current progression length — protects against transient
+ * out-of-range states (e.g. after a step is removed).
+ *
  * Both sets use the same sharps convention so the intersection is reliable.
- * Returns an empty set when the progression is empty.
+ * Returns an empty set when the progression is empty or the active step is
+ * unresolvable.
  */
 export const commonTonesWithNextAtom = atom((get): Set<string> => {
-  const active = get(activeProgressionStepIndexAtom);
-  const steps = get(resolvedProgressionStepsAtom);
-  if (steps.length === 0) return new Set();
-  const activeStep = steps[active];
+  const activeStep = get(activeResolvedProgressionStepAtom);
   if (!activeStep || activeStep.unavailable || activeStep.root === null || activeStep.quality === null) {
     return new Set();
   }

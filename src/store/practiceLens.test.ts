@@ -5,9 +5,10 @@ import type { PracticeLens } from "@fretflow/core";
 import { k } from "../utils/storage";
 import { practiceLensAtom, chordHiddenNotesAtom, chordTypeAtom } from "./chordOverlayAtoms";
 import { fingeringPatternAtom } from "./fingeringAtoms";
-import { practiceCuesAtom, showChordPracticeBarAtom, practiceBarLensLabelAtom, practiceBarChordGroupAtom, practiceBarLandOnGroupAtom, lensAvailabilityAtom, noteSemanticMapAtom } from "./practiceLensAtoms";
+import { practiceCuesAtom, showChordPracticeBarAtom, practiceBarLensLabelAtom, practiceBarChordGroupAtom, practiceBarLandOnGroupAtom, lensAvailabilityAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom } from "./practiceLensAtoms";
 import { progressionStepsAtom, activeProgressionStepIndexAtom } from "./progressionAtoms";
-import { rootNoteAtom, scaleNameAtom, scaleVisibleAtom } from "./scaleAtoms";
+import { rootNoteAtom, scaleNameAtom, scaleVisibleAtom, colorNotesAtom, effectiveColorNotesAtom, toggleScaleVisibleAtom } from "./scaleAtoms";
+import { effectiveShapeDataAtom } from "./shapeAtoms";
 import { updateActiveChordAtom } from "./songStateAtoms";
 import { getDegreesForScale } from "@fretflow/core";
 import type { ProgressionStep } from "../progressions/progressionDomain";
@@ -452,10 +453,6 @@ describe("showChordPracticeBarAtom — scale visibility independence", () => {
   });
 });
 
-import { nextChordTonesAtom, commonTonesWithNextAtom } from "./practiceLensAtoms";
-import { colorNotesAtom, effectiveColorNotesAtom, toggleScaleVisibleAtom } from "./scaleAtoms";
-import { effectiveShapeDataAtom } from "./shapeAtoms";
-
 describe("chord overlay does not control scale visibility", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -617,6 +614,14 @@ describe("nextChordTonesAtom / commonTonesWithNextAtom (Task 4.2)", () => {
     // Set active to the last step (index 3 = IV = F Major Triad {F,A,C}).
     // Next wraps to index 0 = I = C Major Triad {C,E,G}.
     store.set(activeProgressionStepIndexAtom, 3);
+    expect(store.get(nextChordTonesAtom)).toEqual(new Set(["C", "E", "G"]));
+  });
+
+  it("nextChordTonesAtom returns the same step's tones when progression has one step", () => {
+    const store = makeDefaultStore();
+    const allSteps = store.get(progressionStepsAtom);
+    store.set(progressionStepsAtom, [allSteps[0]!]);
+    // Single step = I in C Major = C Major Triad {C, E, G}. Next wraps to itself.
     expect(store.get(nextChordTonesAtom)).toEqual(new Set(["C", "E", "G"]));
   });
 
