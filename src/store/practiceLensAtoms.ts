@@ -5,10 +5,12 @@ import {
   INTERVAL_NAMES,
 
   LENS_REGISTRY,
+  CHORD_DEFINITIONS,
   getScaleNotes,
   getNoteDisplay,
   formatAccidental,
   getDiatonicChord,
+  getChordNotes,
 } from "@fretflow/core";
 import type {
   ChordMemberName,
@@ -42,6 +44,18 @@ import {
   fullChordsEnabledAtom,
 } from "./chordOverlayAtoms";
 import { activeChordCachedDegreeAtom } from "./songStateAtoms";
+import {
+  resolvedProgressionStepsAtom,
+  activeProgressionStepIndexAtom,
+  activeResolvedProgressionStepAtom,
+  progressionTempoBpmAtom,
+  progressionStepDeadlineAtom,
+  beatsPerBarAtom,
+} from "./progressionAtoms";
+import {
+  getProgressionDurationBeats,
+  MIN_PROGRESSION_TEMPO_BPM,
+} from "../progressions/progressionDomain";
 import {
   hasOutsideChordMembersAtom,
   allChordMembersAtom,
@@ -109,16 +123,6 @@ const cueBaseInputsAtom = atom((get) => {
     allChordMembers: get(allChordMembersAtom),
     scaleNotes: get(scaleNotesAtom),
   };
-});
-
-const targetsCuesAtom = atom((get) => {
-  const base = get(cueBaseInputsAtom);
-  if (!base) return [] as PracticeCue[];
-  const cues: PracticeCue[] = [];
-  if (base.allChordMembers.length > 0) {
-    cues.push(buildLandOnCue(base.allChordMembers));
-  }
-  return cues;
 });
 
 const guideTonesCuesAtom = atom((get) => {
@@ -301,10 +305,13 @@ export const noteSemanticMapAtom = atom((get) => {
  */
 export const practiceCuesAtom = atom((get) => {
   const practiceLens = get(practiceLensAtom);
+  // TODO (Task 4.4/4.5): rewrite cue behavior for new lens IDs.
+  // Temporary bridge: "tones" uses combined targets+guide-tones behavior;
+  // "lead" uses the old tension behavior. This keeps the suite green while
+  // the lens enum rename is complete.
   switch (practiceLens) {
-    case "targets": return get(targetsCuesAtom);
-    case "guide-tones": return get(guideTonesCuesAtom);
-    case "tension": return get(tensionCuesAtom);
+    case "tones": return get(guideTonesCuesAtom);
+    case "lead": return get(tensionCuesAtom);
     default: return [] as PracticeCue[];
   }
 });
@@ -339,4 +346,134 @@ export const lensAvailabilityAtom = atom((get) => {
     available: entry.isAvailable(ctx),
     reason: entry.unavailableReason(ctx),
   }));
+});
+
+/**
+ * Pitch-class set of the chord at the step *after* the active progression step.
+ * Wraps around so that the last step's next is the first step. When the
+ * progression has exactly one step, next wraps to that same step (all its
+ * tones are returned).
+ *
+ * Notes are in the FretFlow sharps convention (C#, D#, …), matching
+ * `getChordNotes` which already performs the same sharp-normalization.
+ *
+ * Returns an empty set when:
+ * - The progression is empty.
+ * - The resolved next step is unavailable in the current scale.
+ * - The step's quality is not a known FretFlow chord quality.
+ */
+export const nextChordTonesAtom = atom((get): Set<string> => {
+  const steps = get(resolvedProgressionStepsAtom);
+  if (steps.length === 0) return new Set();
+  const active = get(activeProgressionStepIndexAtom);
+  const nextIndex = (active + 1) % steps.length;
+  const step = steps[nextIndex];
+  if (!step || step.unavailable || step.root === null || step.quality === null) {
+    return new Set();
+  }
+  const notes = getChordNotes(step.root, step.quality);
+  return new Set(notes);
+});
+
+/**
+ * Pitch-class set of notes shared between the active chord and the next chord
+ * in the progression (common tones). Useful for the Lead lens to identify
+ * pivot/guide notes when navigating between chords.
+ *
+ * Reads the active step via `activeResolvedProgressionStepAtom` so the index
+ * is clamped to the current progression length — protects against transient
+ * out-of-range states (e.g. after a step is removed).
+ *
+ * Both sets use the same sharps convention so the intersection is reliable.
+ * Returns an empty set when the progression is empty or the active step is
+ * unresolvable.
+ */
+export const commonTonesWithNextAtom = atom((get): Set<string> => {
+  const activeStep = get(activeResolvedProgressionStepAtom);
+  if (!activeStep || activeStep.unavailable || activeStep.root === null || activeStep.quality === null) {
+    return new Set();
+  }
+  const activeTones = new Set(getChordNotes(activeStep.root, activeStep.quality));
+  const next = get(nextChordTonesAtom);
+  return new Set([...activeTones].filter((n) => next.has(n)));
+});
+
+/**
+ * Pitch-class set of guide tones (3rd and 7th) for the chord at the *next*
+ * progression step. Used by the Lead lens anticipation window: when the
+ * beat position enters the last beat of the current step, notes matching
+ * these pitch classes receive "anticipation" emphasis.
+ *
+ * Guide tone detection mirrors `chordMembersAtom` / `GUIDE_TONE_RAW`:
+ * filters ChordDefinition members whose name is b3, 3, b7, or 7, then
+ * resolves the note from root + semitone offset.
+ *
+ * Returns an empty set when:
+ * - The progression is empty.
+ * - The next step is unavailable or missing root/quality.
+ * - The next chord has no recognizable guide tones (e.g. power chords).
+ */
+export const nextChordGuideTonesAtom = atom((get): Set<string> => {
+  const steps = get(resolvedProgressionStepsAtom);
+  if (steps.length === 0) return new Set();
+  const active = get(activeProgressionStepIndexAtom);
+  const nextIndex = (active + 1) % steps.length;
+  const step = steps[nextIndex];
+  if (!step || step.unavailable || step.root === null || step.quality === null) {
+    return new Set();
+  }
+  const def = CHORD_DEFINITIONS[step.quality];
+  if (!def) return new Set();
+  const rootIndex = NOTES.indexOf(step.root);
+  if (rootIndex === -1) return new Set();
+  const guideTones = new Set<string>();
+  for (const member of def.members) {
+    if (GUIDE_TONE_RAW.has(member.name)) {
+      guideTones.add(NOTES[(rootIndex + member.semitone) % 12]);
+    }
+  }
+  return guideTones;
+});
+
+/**
+ * Duration of the active progression step in beats.
+ *
+ * Exported for reuse in Task 4.5 (anticipation window check:
+ * `beatPosition >= stepDurationBeats - 1`).
+ */
+export const activeStepDurationBeatsAtom = atom((get): number => {
+  const step = get(activeResolvedProgressionStepAtom);
+  if (!step || step.unavailable) return 0;
+  const beatsPerBar = get(beatsPerBarAtom);
+  return getProgressionDurationBeats(step.duration, beatsPerBar);
+});
+
+/**
+ * Current beat position within the active progression step, derived from
+ * the step deadline and tempo. Beat 0 = just started; `stepDurationBeats` = step ended.
+ *
+ * Formula: `stepDurationBeats - beatsRemaining`, clamped to [0, stepDurationBeats].
+ *
+ * This atom reads `Date.now()` directly and is therefore time-dependent.
+ * In Jotai, derived atoms only recompute when their declared dependencies
+ * (tempo, deadline, step) change — NOT on every clock tick.
+ *
+ * TODO (Task 4.5+): consumers need a 60Hz ticker atom to get live updates;
+ * subscribe a raf-driven atom that sets a dummy counter so this recomputes
+ * on every animation frame.
+ */
+export const beatPositionAtom = atom((get): number => {
+  const tempo = get(progressionTempoBpmAtom);
+  const deadline = get(progressionStepDeadlineAtom);
+  const stepDurationBeats = get(activeStepDurationBeatsAtom);
+  if (deadline == null) return 0;
+  // Guard against tempo === 0 (would yield Infinity for secondsPerBeat).
+  // Storage validation enforces a min, but direct programmatic `set` could
+  // bypass it — mirror `getProgressionDurationMs`'s clamp.
+  const safeTempo = Math.max(MIN_PROGRESSION_TEMPO_BPM, tempo);
+  const secondsRemaining = Math.max(0, (deadline - Date.now()) / 1000);
+  const secondsPerBeat = 60 / safeTempo;
+  const beatsRemaining = secondsRemaining / secondsPerBeat;
+  // Clamp to documented [0, stepDurationBeats] invariant for float safety.
+  return Math.min(stepDurationBeats, Math.max(0, stepDurationBeats - beatsRemaining));
 });

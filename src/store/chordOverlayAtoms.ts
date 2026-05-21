@@ -45,20 +45,30 @@ const chordFretSpreadStorage = constrainedNumberStorage({
 
 const PRACTICE_LENS_VALUES = LENS_REGISTRY.map((e) => e.id) as PracticeLens[];
 
-function migrateViewModeToLens(viewMode: string): PracticeLens {
-  switch (viewMode) {
-    case "chord": return "targets";
-    case "outside": return "tension";
-    default: return "targets";
-  }
+// Map legacy three-lens IDs to the new two-lens IDs (Task 4.1).
+// Returns a raw string — narrowing to PracticeLens happens at the validate
+// boundary in onRead. Unknown inputs pass through unchanged so validate()
+// can reject them and fall back to the atom default.
+function mapLegacyLensId(raw: string): string {
+  if (raw === "targets" || raw === "guide-tones") return "tones";
+  if (raw === "tension") return "lead";
+  return raw;
 }
 
 const practiceLensStorage = createStorage<PracticeLens>({
+  onRead: (v) => mapLegacyLensId(v as string) as PracticeLens,
   validate: (v) => (PRACTICE_LENS_VALUES as string[]).includes(v),
   migrate: () => {
+    // migrate() only runs when the storage key is absent (see
+    // createStorage.getItem in src/utils/storage.ts). When the lens key
+    // exists with a legacy value, onRead() handles the mapping instead, so
+    // there's no point checking `k("practiceLens")` here.
+    // Legacy: viewMode predates the lens key entirely.
     const oldViewMode =
       readLocalStorage(k("viewMode")) ?? readLocalStorage("viewMode");
-    if (oldViewMode) return migrateViewModeToLens(oldViewMode);
+    if (oldViewMode === "chord") return "tones";
+    if (oldViewMode === "outside") return "lead";
+    if (oldViewMode) return "tones";
     return undefined;
   },
 });
@@ -337,7 +347,7 @@ export const fullChordPositionsAtom = atom((get) =>
 // Migrates from legacy viewMode value on first access.
 export const practiceLensAtom = atomWithStorage<PracticeLens>(
   k("practiceLens"),
-  "targets",
+  "tones",
   practiceLensStorage,
   GET_ON_INIT,
 );

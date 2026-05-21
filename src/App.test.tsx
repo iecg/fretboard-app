@@ -243,7 +243,7 @@ describe("App", () => {
         { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th", manualRoot: "C" },
       ];
       localStorage.setItem(k("progressionSteps"), JSON.stringify(steps));
-      localStorage.setItem(k("practiceLens"), "targets");
+      localStorage.setItem(k("practiceLens"), "tones");
       localStorage.setItem(k("chordOverlayHidden"), "true");
     }
 

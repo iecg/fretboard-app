@@ -118,9 +118,8 @@ export interface ChordRowEntry {
 
 // Practice lenses replace raw viewMode
 export type PracticeLens =
-  | "targets"       // chord root + active chord tones
-  | "guide-tones"   // 3rd/7th — for strong chord definition
-  | "tension";      // outside/altered tones
+  | "tones"   // chord tones with guide-tone (3rd/7th) emphasis
+  | "lead";   // highlights common tones + anticipates upcoming guide tones
 
 // Composable note semantics
 export interface NoteSemantics {
@@ -175,36 +174,20 @@ export interface LensRegistryEntry {
 
 export const LENS_REGISTRY: readonly LensRegistryEntry[] = [
   {
-    id: "targets",
-    label: "Chord Tones",
-    description: "Shows chord tones — for landing and outlining harmony",
+    id: "tones",
+    label: "Tones",
+    description: "Shows chord tones with guide-tone (3rd/7th) emphasis",
     isAvailable: (ctx) => ctx.hasChordOverlay,
     unavailableReason: (ctx) =>
       ctx.hasChordOverlay ? null : "Requires an active chord overlay",
   },
   {
-    id: "guide-tones",
-    label: "Guide Tones",
-    description: "Highlights 3rd and 7th — the voice-leading tones that define chord quality",
-    isAvailable: (ctx) => ctx.hasChordOverlay && ctx.hasGuideTones,
-    unavailableReason: (ctx) => {
-      if (!ctx.hasChordOverlay) return "Requires an active chord overlay";
-      if (!ctx.hasGuideTones) return "Chord has no guide tones (3rd or 7th)";
-      return null;
-    },
-  },
-  {
-    id: "tension",
-    label: "Tension",
-    description: "Highlights chord tones outside the scale — tones that create tension and need resolution",
-    isAvailable: (ctx) => ctx.hasChordOverlay && ctx.hasOutsideTones,
-    unavailableReason: (ctx) => {
-      if (!ctx.hasChordOverlay) return "Requires an active chord overlay";
-      if (!ctx.hasOutsideTones)
-        return "Chord is fully within the scale — no outside tones";
-      return null;
-    },
-    hideWhenUnavailable: true,
+    id: "lead",
+    label: "Lead",
+    description: "Highlights common tones with the next chord and anticipates upcoming guide tones",
+    isAvailable: (ctx) => ctx.hasChordOverlay,
+    unavailableReason: (ctx) =>
+      ctx.hasChordOverlay ? null : "Requires an active chord overlay",
   },
 ];
 

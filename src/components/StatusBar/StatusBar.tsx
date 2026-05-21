@@ -1,5 +1,6 @@
 import { useAtomValue } from "jotai";
 import { CAGED_SHAPES, LENS_REGISTRY } from "@fretflow/core";
+import type { PracticeLens } from "@fretflow/core";
 import { chordShortLabelAtom, practiceLensAtom } from "../../store/chordOverlayAtoms";
 import { activeChordCachedDegreeAtom } from "../../store/songStateAtoms";
 import { fingeringPatternAtom, cagedShapesAtom } from "../../store/fingeringAtoms";
@@ -22,12 +23,13 @@ const PATTERN_LABELS: Record<FingeringPattern, string> = {
   "two-strings": "Two Strings",
 };
 
-/** Compact lens labels — the strip mirrors the Chord tab's short forms. */
-const LENS_SHORT_LABELS: Record<string, string> = {
-  targets: "Chord Tones",
-  "guide-tones": "Guide Tones",
-  tension: "Tension",
-};
+/** Compact lens labels — the strip mirrors the Chord tab's short forms.
+ * The `satisfies` clause makes a new lens added to `LENS_REGISTRY` without
+ * a label fail to compile. */
+const LENS_SHORT_LABELS = {
+  tones: "Tones",
+  lead: "Lead",
+} satisfies Partial<Record<PracticeLens, string>>;
 
 interface StatusField {
   id: string;

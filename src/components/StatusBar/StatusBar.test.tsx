@@ -39,8 +39,8 @@ describe("StatusBar", () => {
 
   it("shows the active lens label by default", () => {
     renderWithAtoms(<StatusBar />);
-    // practiceLensAtom defaults to "targets" -> compact lens label "Chord".
-    expect(screen.getByTestId("status-lens")).toHaveTextContent("Chord");
+    // practiceLensAtom defaults to "tones" -> compact lens label "Tones".
+    expect(screen.getByTestId("status-lens")).toHaveTextContent("Tones");
   });
 
   it("labels a non-CAGED pattern", () => {
