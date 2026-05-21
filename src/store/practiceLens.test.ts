@@ -1,12 +1,12 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createStore } from "jotai";
 import type { PracticeLens } from "@fretflow/core";
 import { k } from "../utils/storage";
 import { practiceLensAtom, chordHiddenNotesAtom, chordTypeAtom } from "./chordOverlayAtoms";
 import { fingeringPatternAtom } from "./fingeringAtoms";
-import { practiceCuesAtom, showChordPracticeBarAtom, practiceBarLensLabelAtom, practiceBarChordGroupAtom, practiceBarLandOnGroupAtom, lensAvailabilityAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom } from "./practiceLensAtoms";
-import { progressionStepsAtom, activeProgressionStepIndexAtom } from "./progressionAtoms";
+import { practiceCuesAtom, showChordPracticeBarAtom, practiceBarLensLabelAtom, practiceBarChordGroupAtom, practiceBarLandOnGroupAtom, lensAvailabilityAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, beatPositionAtom, activeStepDurationBeatsAtom } from "./practiceLensAtoms";
+import { progressionStepsAtom, activeProgressionStepIndexAtom, progressionTempoBpmAtom, progressionStepDeadlineAtom, beatsPerBarAtom } from "./progressionAtoms";
 import { rootNoteAtom, scaleNameAtom, scaleVisibleAtom, colorNotesAtom, effectiveColorNotesAtom, toggleScaleVisibleAtom } from "./scaleAtoms";
 import { effectiveShapeDataAtom } from "./shapeAtoms";
 import { updateActiveChordAtom } from "./songStateAtoms";
@@ -635,5 +635,114 @@ describe("nextChordTonesAtom / commonTonesWithNextAtom (Task 4.2)", () => {
     const store = makeDefaultStore();
     store.set(progressionStepsAtom, []);
     expect(store.get(commonTonesWithNextAtom)).toEqual(new Set());
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Task 4.3 — activeStepDurationBeatsAtom / beatPositionAtom
+// ---------------------------------------------------------------------------
+
+describe("activeStepDurationBeatsAtom (Task 4.3)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  function makeDefaultStore() {
+    const store = createStore();
+    const unsub = store.sub(progressionStepsAtom, () => {});
+    unsub();
+    return store;
+  }
+
+  it("returns 0 when there are no progression steps", () => {
+    const store = makeDefaultStore();
+    store.set(progressionStepsAtom, []);
+    expect(store.get(activeStepDurationBeatsAtom)).toBe(0);
+  });
+
+  it("returns beatsPerBar for a 1-bar step with default 4/4", () => {
+    const store = makeDefaultStore();
+    // Default step 0 is degree "I", duration { value: 1, unit: "bar" }.
+    // Default beatsPerBar = 4 → 1 * 4 = 4 beats.
+    expect(store.get(activeStepDurationBeatsAtom)).toBe(4);
+  });
+
+  it("reflects beatsPerBar changes", () => {
+    const store = makeDefaultStore();
+    store.set(beatsPerBarAtom, 3);
+    expect(store.get(activeStepDurationBeatsAtom)).toBe(3);
+  });
+
+  it("returns value directly for beat-unit duration", () => {
+    const store = makeDefaultStore();
+    store.set(progressionStepsAtom, [
+      { id: "test-beat", degree: "I", duration: { value: 2, unit: "beat" }, qualityOverride: null, manualRoot: null },
+    ]);
+    expect(store.get(activeStepDurationBeatsAtom)).toBe(2);
+  });
+});
+
+describe("beatPositionAtom (Task 4.3)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function makeDefaultStore() {
+    const store = createStore();
+    const unsub = store.sub(progressionStepsAtom, () => {});
+    unsub();
+    return store;
+  }
+
+  it("returns 0 when deadline is null (paused / not running)", () => {
+    const store = makeDefaultStore();
+    // progressionStepDeadlineAtom defaults to null
+    expect(store.get(progressionStepDeadlineAtom)).toBeNull();
+    expect(store.get(beatPositionAtom)).toBe(0);
+  });
+
+  it("derives beat position from deadline + tempo at two points in time", () => {
+    vi.useFakeTimers();
+    // T=0: 2s until deadline at 120 BPM => 4 beats remaining, stepDuration=4 => position 0
+    {
+      const store = makeDefaultStore();
+      store.set(progressionTempoBpmAtom, 120);
+      store.set(progressionStepDeadlineAtom, Date.now() + 2000);
+      // stepDurationBeats = 4, beatsRemaining = 4 => beatPosition = 0
+      expect(store.get(beatPositionAtom)).toBeCloseTo(0, 1);
+    }
+    vi.advanceTimersByTime(500);
+    // T=500ms: 1.5s until deadline at 120 BPM => 3 beats remaining => position 1
+    {
+      const store = makeDefaultStore();
+      store.set(progressionTempoBpmAtom, 120);
+      store.set(progressionStepDeadlineAtom, Date.now() + 1500);
+      // stepDurationBeats = 4, beatsRemaining = 3 => beatPosition = 1
+      expect(store.get(beatPositionAtom)).toBeCloseTo(1, 1);
+    }
+  });
+
+  it("clamps to stepDurationBeats when deadline is in the past", () => {
+    vi.useFakeTimers();
+    const store = makeDefaultStore();
+    store.set(progressionTempoBpmAtom, 120);
+    // deadline already passed
+    store.set(progressionStepDeadlineAtom, Date.now() - 1000);
+    // secondsRemaining = 0 => beatsRemaining = 0 => beatPosition = stepDurationBeats (4)
+    expect(store.get(beatPositionAtom)).toBe(4);
+  });
+
+  it("clamps to 0 when deadline is far in the future (beatsRemaining > stepDurationBeats)", () => {
+    vi.useFakeTimers();
+    const store = makeDefaultStore();
+    store.set(progressionTempoBpmAtom, 120);
+    // 10s deadline at 120 BPM = 20 beats remaining, stepDurationBeats = 4
+    // Math.max(0, 4 - 20) = 0
+    store.set(progressionStepDeadlineAtom, Date.now() + 10000);
+    expect(store.get(beatPositionAtom)).toBe(0);
   });
 });

@@ -51,7 +51,11 @@ import {
   resolvedProgressionStepsAtom,
   activeProgressionStepIndexAtom,
   activeResolvedProgressionStepAtom,
+  progressionTempoBpmAtom,
+  progressionStepDeadlineAtom,
+  beatsPerBarAtom,
 } from "./progressionAtoms";
+import { getProgressionDurationBeats } from "../progressions/progressionDomain";
 import {
   hasOutsideChordMembersAtom,
   allChordMembersAtom,
@@ -509,4 +513,42 @@ export const commonTonesWithNextAtom = atom((get): Set<string> => {
   const activeTones = new Set(getChordNotes(activeStep.root, activeStep.quality));
   const next = get(nextChordTonesAtom);
   return new Set([...activeTones].filter((n) => next.has(n)));
+});
+
+/**
+ * Duration of the active progression step in beats.
+ *
+ * Exported for reuse in Task 4.5 (anticipation window check:
+ * `beatPosition >= stepDurationBeats - 1`).
+ */
+export const activeStepDurationBeatsAtom = atom((get): number => {
+  const step = get(activeResolvedProgressionStepAtom);
+  if (!step) return 0;
+  const beatsPerBar = get(beatsPerBarAtom);
+  return getProgressionDurationBeats(step.duration, beatsPerBar);
+});
+
+/**
+ * Current beat position within the active progression step, derived from
+ * the step deadline and tempo. Beat 0 = just started; `stepDurationBeats` = step ended.
+ *
+ * Formula: `stepDurationBeats - beatsRemaining`, clamped to [0, stepDurationBeats].
+ *
+ * This atom reads `Date.now()` directly and is therefore time-dependent.
+ * In Jotai, derived atoms only recompute when their declared dependencies
+ * (tempo, deadline, step) change — NOT on every clock tick.
+ *
+ * TODO (Task 4.5+): consumers need a 60Hz ticker atom to get live updates;
+ * subscribe a raf-driven atom that sets a dummy counter so this recomputes
+ * on every animation frame.
+ */
+export const beatPositionAtom = atom((get): number => {
+  const tempo = get(progressionTempoBpmAtom);
+  const deadline = get(progressionStepDeadlineAtom);
+  const stepDurationBeats = get(activeStepDurationBeatsAtom);
+  if (deadline == null) return 0;
+  const secondsRemaining = Math.max(0, (deadline - Date.now()) / 1000);
+  const secondsPerBeat = 60 / tempo;
+  const beatsRemaining = secondsRemaining / secondsPerBeat;
+  return Math.max(0, stepDurationBeats - beatsRemaining);
 });
