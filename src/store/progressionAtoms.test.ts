@@ -367,4 +367,39 @@ describe("derived progression atoms", () => {
       });
     });
   });
+
+  describe("rootNoteAtom change reaction (Phase 2.2)", () => {
+    it("transposes manualRoot on scale-root change", () => {
+      const store = createStore();
+      const id = store.get(progressionStepsAtom)[0]!.id;
+      store.set(rootNoteAtom, "A");
+      store.set(updateProgressionStepRootAtom, { id, manualRoot: "F#" });
+      store.set(rootNoteAtom, "C"); // up minor third
+      expect(
+        store.get(progressionStepsAtom).find((s) => s.id === id)?.manualRoot,
+      ).toBe("A");
+    });
+
+    it("does not touch steps with null manualRoot on root change", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "A");
+      const before = store.get(progressionStepsAtom)[0]!;
+      store.set(rootNoteAtom, "C");
+      const after = store.get(progressionStepsAtom).find((s) => s.id === before.id)!;
+      expect(after.manualRoot).toBeNull();
+      expect(after.degree).toBe(before.degree); // degree-keyed step unaffected
+    });
+
+    it("does NOT transpose manualRoot on scale-name change (only root change)", () => {
+      const store = createStore();
+      store.set(rootNoteAtom, "C");
+      store.set(scaleNameAtom, "Major");
+      const id = store.get(progressionStepsAtom)[0]!.id;
+      store.set(updateProgressionStepRootAtom, { id, manualRoot: "F#" });
+      store.set(scaleNameAtom, "Natural Minor");
+      expect(
+        store.get(progressionStepsAtom).find((s) => s.id === id)?.manualRoot,
+      ).toBe("F#");
+    });
+  });
 });

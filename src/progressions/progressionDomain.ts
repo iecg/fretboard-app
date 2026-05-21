@@ -4,6 +4,7 @@ import {
   getDegreeSequence,
   getDiatonicChord,
   getNoteDisplay,
+  transposeNoteToSharps,
   type DegreeId,
 } from "@fretflow/core";
 
@@ -363,6 +364,30 @@ export function remapProgressionStepsForScale(
     ...step,
     degree: remapDegreeByOrdinal(step.degree, toScaleName),
   }));
+}
+
+/**
+ * Transpose each step's `manualRoot` by the interval from `oldRoot` to
+ * `newRoot`. Steps with `manualRoot === null` pass through unchanged — their
+ * resolved root already follows the active key through `degree`.
+ *
+ * Result roots are normalized to FretFlow's sharps-form contract (e.g. `Eb`
+ * → `D#`) so that downstream consumers indexing into `NOTES` keep working.
+ *
+ * Returns identity-mapped steps when `oldRoot === newRoot` to keep the call
+ * cheap and side-effect-free on no-op changes.
+ */
+export function transposeManualRootForRootChange(
+  steps: readonly ProgressionStep[],
+  oldRoot: string,
+  newRoot: string,
+): ProgressionStep[] {
+  if (oldRoot === newRoot) return steps.map((step) => step);
+  return steps.map((step) =>
+    step.manualRoot == null
+      ? step
+      : { ...step, manualRoot: transposeNoteToSharps(step.manualRoot, oldRoot, newRoot) },
+  );
 }
 
 export function createStepsFromPreset(

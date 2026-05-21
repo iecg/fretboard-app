@@ -21,11 +21,17 @@ import {
   remapProgressionStepsForScale,
   resolveProgressionStep,
   totalProgressionBars,
+  transposeManualRootForRootChange,
   type ProgressionPresetCategory,
   type ProgressionStep,
   type ProgressionStepDuration,
 } from "../progressions/progressionDomain";
-import { rootNoteAtom, scaleNameAtom, useFlatsAtom } from "./scaleAtoms";
+import {
+  registerRootChangeListener,
+  rootNoteAtom,
+  scaleNameAtom,
+  useFlatsAtom,
+} from "./scaleAtoms";
 import type { ChordInstrumentId } from "../progressions/audio/instruments/types";
 import { getGenreStyle } from "../progressions/audio/genres";
 import {
@@ -89,6 +95,23 @@ export const progressionStepsAtom = atomWithStorage<ProgressionStep[]>(
   progressionStepsStorage,
   GET_ON_INIT,
 );
+
+/**
+ * Phase 2.2: when the user changes the scale **root**, transpose every step's
+ * `manualRoot` by the interval from the old root to the new root. Steps with
+ * `manualRoot === null` are diatonic and already follow the new key through
+ * their `degree`, so they pass through unchanged.
+ *
+ * Scale-NAME changes (e.g. Major → Natural Minor) intentionally leave
+ * `manualRoot` alone — the absolute pitch the user pinned doesn't move when
+ * the parent scale's quality shifts. That path is handled by
+ * `remapProgressionStepsForScaleAtom`, which only rewrites `degree`.
+ */
+registerRootChangeListener((prev, next, get, set) => {
+  const steps = get(progressionStepsAtom);
+  if (steps.every((step) => step.manualRoot == null)) return;
+  set(progressionStepsAtom, transposeManualRootForRootChange(steps, prev, next));
+});
 
 export const progressionTempoBpmAtom = atomWithStorage<number>(
   k("progressionTempoBpm"),

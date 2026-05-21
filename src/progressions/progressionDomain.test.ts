@@ -20,6 +20,8 @@ import {
   remapProgressionStepsForScale,
   resolveProgressionStep,
   totalProgressionBars,
+  transposeManualRootForRootChange,
+  type ProgressionStep,
   type ProgressionStepDuration,
 } from "./progressionDomain";
 
@@ -437,6 +439,84 @@ describe("progression duration math", () => {
       };
       const normalized = normalizeProgressionStep(persisted);
       expect(normalized?.manualRoot).toBe("F#");
+    });
+  });
+});
+
+describe("transposeManualRootForRootChange", () => {
+  it("transposes manualRoot by the interval from oldRoot to newRoot", () => {
+    const steps: ProgressionStep[] = [
+      {
+        id: "x",
+        degree: "I",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: "Major Triad",
+        manualRoot: "F#",
+      },
+    ];
+    const next = transposeManualRootForRootChange(steps, "A", "C"); // up a minor third
+    expect(next[0].manualRoot).toBe("A");
+  });
+
+  it("leaves steps with null manualRoot untouched", () => {
+    const steps: ProgressionStep[] = [
+      {
+        id: "x",
+        degree: "I",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: null,
+        manualRoot: null,
+      },
+    ];
+    const next = transposeManualRootForRootChange(steps, "A", "C");
+    expect(next[0].manualRoot).toBeNull();
+  });
+
+  it("returns identity-mapped steps when oldRoot === newRoot", () => {
+    const steps: ProgressionStep[] = [
+      {
+        id: "x",
+        degree: "I",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: null,
+        manualRoot: "F#",
+      },
+    ];
+    const next = transposeManualRootForRootChange(steps, "A", "A");
+    expect(next[0].manualRoot).toBe("F#");
+  });
+
+  it("normalizes flat results to sharps-form to match the rootNoteAtom contract", () => {
+    const steps: ProgressionStep[] = [
+      {
+        id: "x",
+        degree: "I",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: "Major Triad",
+        manualRoot: "C",
+      },
+    ];
+    // C → Bb on a whole-step-down transposition. Should normalize to A#.
+    const next = transposeManualRootForRootChange(steps, "D", "C");
+    expect(next[0].manualRoot).toBe("A#");
+  });
+
+  it("preserves untouched step fields (id, degree, duration, qualityOverride)", () => {
+    const steps: ProgressionStep[] = [
+      {
+        id: "alpha",
+        degree: "V",
+        duration: { value: 2, unit: "beat" },
+        qualityOverride: "Dominant 7th",
+        manualRoot: "F#",
+      },
+    ];
+    const next = transposeManualRootForRootChange(steps, "A", "C");
+    expect(next[0]).toMatchObject({
+      id: "alpha",
+      degree: "V",
+      duration: { value: 2, unit: "beat" },
+      qualityOverride: "Dominant 7th",
     });
   });
 });
