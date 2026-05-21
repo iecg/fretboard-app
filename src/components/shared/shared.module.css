@@ -39,8 +39,7 @@
 .eye-toggle svg { transform: scale(1.2); }
 
 /* ===== Shared Card Section Header ===== */
-/* Compact header pattern used by sections nested inside a unified card
-   (e.g., DegreeChipStrip + ChordPracticeBar inside TopBandSummary). */
+/* Compact header pattern used by sections nested inside a unified card. */
 .card-section-header {
   display: flex;
   align-items: center;
@@ -529,9 +528,9 @@
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
 /* ===== Shared DAW faceplate surface ===== */
-/* Theme-adaptive panel chrome shared by the Inspector and TopBandSummary.
-   Surface treatment only — consumers add their own layout. Driven entirely by
-   the --faceplate-* tokens in semantic.css, so it follows the active theme. */
+/* Theme-adaptive panel chrome used by the Inspector and other faceplate
+   consumers. Surface treatment only — consumers add their own layout. Driven
+   entirely by the --faceplate-* tokens in semantic.css. */
 .faceplate {
   border: 1px solid var(--faceplate-border);
   border-radius: 12px;

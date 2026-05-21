@@ -348,7 +348,7 @@
   --cof-enharmonic-muted: rgb(171 183 197 / 0.58);
   --cof-degree-muted: rgb(165 176 188 / 0.44);
 
-  /* DegreeChipStrip tokens — dark mode chip border and note inner fill */
+  /* Chip tokens — dark mode chip border and note inner fill */
   --chip-border-muted: rgb(255 255 255 / 0.22);
   --chip-line-muted: rgb(255 255 255 / 0.18);
   --color-note-inner-fill: var(--fretboard-note-fill-chord-tone);
