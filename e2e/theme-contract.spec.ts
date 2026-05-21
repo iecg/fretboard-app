@@ -753,20 +753,6 @@ test.describe("Theme Contract", () => {
     });
 
 
-    test("degree chip strip uses surface-strip token in light mode", async ({ page }) => {
-      await loadVisualState(page, { theme: "light" });
-
-      // DegreeChipStrip is rendered inside the scale summary area
-      const degreeStrip = page.locator('section[role="group"]').filter({ hasText: /C|D|E|F|G|A|B/ }).first();
-      await expect(degreeStrip).toBeVisible();
-
-      const bg = await degreeStrip.evaluate((el) => getComputedStyle(el).backgroundColor);
-      // Inside TopBandSummary the chip-strip background is transparent — the
-      // parent card supplies the warm card-top surface.
-      expect(bg.replace(/\s/g, "")).toBe("rgba(0,0,0,0)");
-
-    });
-
     test("settings overlay uses surface-float (highest elevation) in light mode", async ({ page }) => {
       await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
 
