@@ -205,7 +205,7 @@ export function ChordOverlayControls() {
           checked={!chordOverlayHidden}
           onChange={(next) => setChordOverlayHidden(!next)}
         />
-        <span>{t("inspector.chordLayer")}</span>
+        <span aria-hidden="true">{t("inspector.chordLayer")}</span>
       </div>
       <PropGrid columns={7} className={panelStyles.grid}>
         {/* ── SOURCE ───────────────────────────────────────────────────── */}

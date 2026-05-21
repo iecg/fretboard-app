@@ -37,7 +37,7 @@ export function ScaleTab() {
           checked={visible}
           onChange={setVisible}
         />
-        <span>{t("inspector.scaleLayer")}</span>
+        <span aria-hidden="true">{t("inspector.scaleLayer")}</span>
       </div>
       <div className={styles.fingeringRow}>
         <PropGrid columns={tier === "mobile" ? 2 : 6}>
