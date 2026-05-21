@@ -103,6 +103,8 @@ export interface Dictionary {
     scopeToPositionNeedsPosition: string;
     chordSpread: string;
     chordSpreadHint: string;
+    scaleLayer: string;
+    chordLayer: string;
   };
   statusBar: {
     key: string;

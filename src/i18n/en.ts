@@ -106,6 +106,8 @@ export const en: Dictionary = {
     scopeToPositionNeedsPosition: "Pick a single CAGED shape or a 3NPS position to enable.",
     chordSpread: "Chord Spread",
     chordSpreadHint: "How far chord tones may span across frets.",
+    scaleLayer: "Scale layer",
+    chordLayer: "Chord layer",
   },
   statusBar: {
     key: "Key",

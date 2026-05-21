@@ -51,3 +51,9 @@
 .voicingChevron[data-open] {
   transform: rotate(90deg);
 }
+
+.layerVisibilityRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}

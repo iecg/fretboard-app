@@ -106,6 +106,8 @@ export const es: Dictionary = {
     scopeToPositionNeedsPosition: "Elige una forma CAGED única o una posición 3NPS para activarlo.",
     chordSpread: "Extensión de acorde",
     chordSpreadHint: "Hasta dónde pueden extenderse los tonos del acorde entre trastes.",
+    scaleLayer: "Capa de escala",
+    chordLayer: "Capa de acorde",
   },
   statusBar: {
     key: "Tonalidad",

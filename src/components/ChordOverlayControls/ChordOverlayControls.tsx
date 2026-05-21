@@ -1,7 +1,7 @@
 import { startTransition, useEffect, useMemo, useRef } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { type PracticeLens, type DegreeId } from "@fretflow/core";
-import { voicingTypeAtom, voicingInversionAtom, voicingStringSetAtom, voicingConnectorsAtom, availableInversionsAtom, stringSetOptionsAtom, chordFretSpreadAtom, practiceLensAtom, chordRootAtom, chordTypeAtom } from "../../store/chordOverlayAtoms";
+import { voicingTypeAtom, voicingInversionAtom, voicingStringSetAtom, voicingConnectorsAtom, availableInversionsAtom, stringSetOptionsAtom, chordFretSpreadAtom, practiceLensAtom, chordRootAtom, chordTypeAtom, chordOverlayHiddenAtom } from "../../store/chordOverlayAtoms";
 import { chordScopeToPositionAtom, activePositionAtom, voicingSectionExpandedAtom } from "../../store/chordScope";
 import { lensAvailabilityAtom } from "../../store/practiceLensAtoms";
 import { validVoicingCombosAtom, controlRecencyAtom, noteControlChangeAtom, nearestValidTriple } from "../../store/voicingCoupling";
@@ -68,6 +68,7 @@ export function ChordOverlayControls() {
   const [chordScopeToPosition, setChordScopeToPosition] = useAtom(chordScopeToPositionAtom);
   const activePosition = useAtomValue(activePositionAtom);
   const [voicingExpanded, setVoicingExpanded] = useAtom(voicingSectionExpandedAtom);
+  const [chordOverlayHidden, setChordOverlayHidden] = useAtom(chordOverlayHiddenAtom);
 
   // All three lenses are always shown; an unavailable lens renders disabled.
   const lensOptions = lensAvailability.map((entry) => {
@@ -198,6 +199,14 @@ export function ChordOverlayControls() {
 
   return (
     <div className={panelStyles.root}>
+      <div className={panelStyles.layerVisibilityRow}>
+        <Switch
+          label={t("inspector.chordLayer")}
+          checked={!chordOverlayHidden}
+          onChange={(next) => setChordOverlayHidden(!next)}
+        />
+        <span>{t("inspector.chordLayer")}</span>
+      </div>
       <PropGrid columns={7} className={panelStyles.grid}>
         {/* ── SOURCE ───────────────────────────────────────────────────── */}
         <GroupHeader>{t("inspector.groupSource")}</GroupHeader>
