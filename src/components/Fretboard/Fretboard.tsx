@@ -117,13 +117,12 @@ export function Fretboard(props: FretboardProps) {
     [tuning, endFret, maxFret],
   );
 
-  const fullChordPositionKeys = useMemo(
-    () => new Set(state.fullChordPositions),
-    // fullChordPositions is memoized in useFretboardState; state.fullChordMatches is the
-    // stable upstream source used for gating here as fullChordPositions is derived from it.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [state.fullChordMatches],
-  );
+  // `state.fullChordPositions` is already a Set<string> sourced from
+  // chordHighlightPositionsAtom — pass it through directly. The note-highlight
+  // set is the union of ALL fitting voicing candidates' positions, decoupled
+  // from `state.fullChordMatches` (the connector source). Cycling the user's
+  // Close voicing selection updates `state.selectedVoicingKey` only.
+  const fullChordPositionKeys = state.fullChordPositions;
 
   const fullChordVoicings = useMemo(
     () =>
@@ -325,6 +324,7 @@ export function Fretboard(props: FretboardProps) {
           noteSemantics={noteSemantics}
           fullChordPositionKeys={fullChordPositionKeys}
           fullChordVoicings={fullChordVoicings}
+          selectedVoicingKey={state.selectedVoicingKey}
           showChordConnectors={state.showChordConnectors}
           id={id}
           onNoteClick={handleFretClick}

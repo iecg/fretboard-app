@@ -1,13 +1,27 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from "vitest";
+import { beforeEach, describe, it, expect } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { Provider } from "jotai";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
 import { useFretboardState } from "./useFretboardState";
-import { voicingMatchesAtom } from "../store/chordOverlayAtoms";
+import {
+  chordHighlightPositionsAtom,
+  closeCandidatesAtom,
+  selectedCloseVoicingAtom,
+  selectedCloseVoicingKeyAtom,
+  voicingAtom,
+  voicingMatchesAtom,
+} from "../store/chordOverlayAtoms";
 import { chordScopeToPositionAtom } from "../store/chordScope";
 import { fingeringPatternAtom, cagedShapesAtom, npsPositionAtom } from "../store/fingeringAtoms";
 import { progressionStepsAtom } from "../store/progressionAtoms";
+
+beforeEach(() => {
+  // atomWithStorage reads from localStorage on init; tests in earlier describe
+  // blocks set fingeringPattern + cagedShapes, which leak via storage into the
+  // F5c tests below and skew closeCandidatesAtom (it narrows by activeScaleWindow).
+  localStorage.clear();
+});
 
 function wrapWithStore(store: ReturnType<typeof makeAtomStore>) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
@@ -113,4 +127,101 @@ describe("useFretboardState — 3NPS voicing scope (Task 3)", () => {
   // so `npsPosition === 0` is unreachable at runtime — `activePositionAtom` is
   // always true for 3NPS. The scope toggle is the only way to bypass filtering
   // in 3NPS mode (covered by the "scope off" case above).
+});
+
+describe("useFretboardState — F5c: highlight/selection split", () => {
+  function seedManualChord(): Array<readonly [unknown, unknown]> {
+    return [
+      [progressionStepsAtom, [
+        {
+          id: "step-1",
+          degree: "I",
+          duration: { value: 1, unit: "bar" },
+          qualityOverride: "Major Triad",
+          manualRoot: "C",
+        },
+      ]],
+    ];
+  }
+
+  it("fullChordPositions is the union of ALL Close candidates, not just the selected voicing", () => {
+    const store = makeAtomStore([
+      ...seedManualChord(),
+      [voicingAtom, "close"],
+    ] as Parameters<typeof makeAtomStore>[0]);
+
+    const candidates = store.get(closeCandidatesAtom);
+    // Sanity check the test seed: there must be multiple candidates for the
+    // union assertion to be meaningful.
+    expect(candidates.length).toBeGreaterThan(1);
+
+    const { result } = renderHook(() => useFretboardState(), {
+      wrapper: wrapWithStore(store),
+    });
+
+    // The highlight set must equal the union of every candidate's positions,
+    // mirroring chordHighlightPositionsAtom's output exactly.
+    const expectedUnion = store.get(chordHighlightPositionsAtom);
+    expect(result.current.fullChordPositions).toEqual(expectedUnion);
+
+    // And critically, it must be a strict superset of the selected voicing's
+    // own positions (so cycling the selection cannot narrow the highlight).
+    const selected = store.get(selectedCloseVoicingAtom);
+    expect(selected).not.toBeNull();
+    for (const key of selected!.positionKeys) {
+      expect(result.current.fullChordPositions.has(key)).toBe(true);
+    }
+  });
+
+  it("selectedVoicingKey reflects selectedCloseVoicingAtom and changes do not affect fullChordPositions", () => {
+    const store = makeAtomStore([
+      ...seedManualChord(),
+      [voicingAtom, "close"],
+    ] as Parameters<typeof makeAtomStore>[0]);
+
+    const candidates = store.get(closeCandidatesAtom);
+    // Need at least two candidates to demonstrate that cycling selection
+    // changes selectedVoicingKey but leaves fullChordPositions stable.
+    expect(candidates.length).toBeGreaterThan(1);
+
+    const first = candidates[0]!;
+    const second = candidates[1]!;
+
+    // Start with first candidate selected explicitly.
+    store.set(
+      selectedCloseVoicingKeyAtom,
+      first.positionKeys.join("|"),
+    );
+    const { result, rerender } = renderHook(() => useFretboardState(), {
+      wrapper: wrapWithStore(store),
+    });
+    const highlightBefore = result.current.fullChordPositions;
+    expect(result.current.selectedVoicingKey).toBe(first.positionKeys.join("|"));
+
+    // Cycle the selection to the second candidate.
+    const secondKey = second.positionKeys.join("|");
+    store.set(selectedCloseVoicingKeyAtom, secondKey);
+    rerender();
+    expect(result.current.selectedVoicingKey).toBe(secondKey);
+
+    // Highlight set must NOT have changed — it's the union of all candidates,
+    // not the selected one.
+    expect(result.current.fullChordPositions).toEqual(highlightBefore);
+  });
+
+  it("selectedVoicingKey is null when voicing is off (no selection to render)", () => {
+    const store = makeAtomStore([
+      ...seedManualChord(),
+      [voicingAtom, "off"],
+    ] as Parameters<typeof makeAtomStore>[0]);
+
+    const { result } = renderHook(() => useFretboardState(), {
+      wrapper: wrapWithStore(store),
+    });
+
+    // voicing off → closeCandidates is irrelevant; selectedCloseVoicingAtom
+    // still returns candidates[0] if any exist, so selectedVoicingKey may be
+    // non-null. The important invariant is fullChordPositions is empty.
+    expect(result.current.fullChordPositions.size).toBe(0);
+  });
 });

@@ -1,6 +1,14 @@
 import { useMemo } from "react";
 import { useAtomValue } from "jotai";
-import { chordTonesAtom, chordRootAtom, practiceLensAtom, voicingMatchesAtom, voicingAtom } from "../store/chordOverlayAtoms";
+import {
+  chordTonesAtom,
+  chordRootAtom,
+  practiceLensAtom,
+  voicingMatchesAtom,
+  voicingAtom,
+  chordHighlightPositionsAtom,
+  selectedCloseVoicingAtom,
+} from "../store/chordOverlayAtoms";
 import { chordScopeToPositionAtom, activePositionAtom } from "../store/chordScope";
 import { recenterKeyAtom, fingeringPatternAtom, cagedShapesAtom, npsPositionAtom } from "../store/fingeringAtoms";
 import { currentTuningAtom, fretStartAtom, fretEndAtom } from "../store/layoutAtoms";
@@ -174,9 +182,27 @@ export function useFretboardState() {
   const cagedShapes = useAtomValue(cagedShapesAtom);
   const npsPosition = useAtomValue(npsPositionAtom);
   const fullChordMatches = useAtomValue(voicingMatchesAtom);
+  const chordHighlightPositions = useAtomValue(chordHighlightPositionsAtom);
+  const selectedCloseVoicing = useAtomValue(selectedCloseVoicingAtom);
   const showChordConnectors = useAtomValue(voicingAtom) !== "off";
   const chordScopeToPosition = useAtomValue(chordScopeToPositionAtom);
   const activePosition = useAtomValue(activePositionAtom);
+
+  /**
+   * Key of the user-selected Close voicing (or null when none is selected, e.g.
+   * Full voicing mode, voicing off, or no candidates exist). The connector
+   * renderer uses this to mark exactly one polyline as primary (full opacity)
+   * and dim the rest as secondary candidates. Decoupled from
+   * {@link chordHighlightPositions}: switching the selection changes which
+   * connector is bright but never alters which fretboard notes are highlighted.
+   */
+  const selectedVoicingKey = useMemo(
+    () =>
+      selectedCloseVoicing
+        ? selectedCloseVoicing.positionKeys.join("|")
+        : null,
+    [selectedCloseVoicing],
+  );
 
   let activePattern: ActivePatternType | undefined;
   let activeShape: ActiveShapeType;
@@ -232,14 +258,6 @@ export function useFretboardState() {
     cagedShapes,
     boxBounds,
   ]);
-  const visibleFullChordPositions = useMemo(
-    () =>
-      Array.from(
-        new Set(visibleFullChordMatches.flatMap((match) => match.positionKeys)),
-      ),
-    [visibleFullChordMatches],
-  );
-
   const chordBoxBounds = chordScopeToPosition && activePosition ? boxBounds : null;
 
   return {
@@ -267,7 +285,15 @@ export function useFretboardState() {
     activeShape,
     shapeScope,
     fullChordMatches: visibleFullChordMatches,
-    fullChordPositions: visibleFullChordPositions,
+    /**
+     * Set of "stringIndex-fretIndex" keys that should render the chord-tone
+     * emphasis. Sourced from {@link chordHighlightPositionsAtom} (union of
+     * every fitting candidate's positions) — independent of which voicing the
+     * user has selected as primary, so cycling the Close selection never
+     * changes which notes are highlighted.
+     */
+    fullChordPositions: chordHighlightPositions,
+    selectedVoicingKey,
     showChordConnectors,
     chordBoxBounds,
   };
