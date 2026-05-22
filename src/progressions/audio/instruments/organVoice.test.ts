@@ -83,6 +83,21 @@ describe("organVoice — Tone.PolySynth backend", () => {
     expect(spies.ctorSpy.mock.results[0]?.value.maxPolyphony).toBe(32);
   });
 
+  it("disconnects the old destination before reconnecting the shared synth", () => {
+    const firstDest = {} as AudioNode;
+    const secondDest = {} as AudioNode;
+
+    organVoice.scheduleChord(firstDest, ["C3", "E3", "G3"], 0, { velocity: 0.7 });
+    organVoice.scheduleChord(secondDest, ["D3", "F3", "A3"], 1, { velocity: 0.7 });
+
+    expect(spies.ctorSpy).toHaveBeenCalledTimes(1);
+    expect(spies.connect).toHaveBeenCalledTimes(2);
+    expect(spies.disconnect).toHaveBeenCalledTimes(1);
+    expect(spies.disconnect.mock.invocationCallOrder[0]).toBeLessThan(
+      spies.connect.mock.invocationCallOrder[1]!,
+    );
+  });
+
   it("uses the staccato duration when options.style === 'staccato'", () => {
     organVoice.scheduleChord(
       {} as AudioNode,

@@ -26,6 +26,9 @@ export function createReusableChordVoice(
       });
     }
     if (currentDest !== dest) {
+      if (currentDest) {
+        synth.disconnect();
+      }
       synth.connect(dest);
       currentDest = dest;
     }

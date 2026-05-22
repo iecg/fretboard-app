@@ -16,6 +16,7 @@ export interface ToneSynthSpies {
   triggerAttack: Mock;
   releaseAll: Mock;
   connect: Mock;
+  disconnect: Mock;
   dispose: Mock;
 }
 
@@ -35,6 +36,7 @@ export function createToneSynthSpies(): {
     triggerAttack: vi.fn(),
     releaseAll: vi.fn(),
     connect: vi.fn().mockReturnThis(),
+    disconnect: vi.fn().mockReturnThis(),
     dispose: vi.fn(),
   };
   const install = () => {
@@ -45,6 +47,7 @@ export function createToneSynthSpies(): {
         triggerAttack: spies.triggerAttack,
         releaseAll: spies.releaseAll,
         connect: spies.connect,
+        disconnect: spies.disconnect,
         dispose: spies.dispose,
         volume: { value: 0 },
       };
@@ -60,6 +63,7 @@ export function createToneSynthSpies(): {
       spies.triggerAttack.mockReset();
       spies.releaseAll.mockReset();
       spies.connect.mockReset().mockReturnThis();
+      spies.disconnect.mockReset().mockReturnThis();
       spies.dispose.mockReset();
       install();
     },
