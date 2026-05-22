@@ -166,46 +166,42 @@ test.describe("Theme Contract", () => {
     // Desktop layout to ensure all controls are visible
     await loadVisualState(page, { theme: "dark" }, { width: 1280, height: 900 });
 
-    // Shared controls now live in the Inspector. Open the Song tab where the
-    // root note grid + scale family controls render (v2.0 Key group).
+    // Shared controls now live in the Inspector. Open the Song tab — with the
+    // default progression (I, V, vi, IV) step 0 is active, so the editor pane
+    // is visible with the Duration ToggleBar.
+    // E1: Root note is now a LabeledSelect combobox — there are no note buttons.
     await page.getByRole("tab", { name: "Song" }).click();
 
-    const noteGroup = page.getByRole("group", { name: "Note selector" });
-    await expect(noteGroup).toBeVisible();
-
-    // The active root note button and an active toggle both adopt the DAW
-    // active recipe: a cyan accent label plus a cyan glow box-shadow
-    // (--dc-glow-active). No gradient fill — the transport-bar treatment.
-    const activeNote = noteGroup.locator('button[aria-pressed="true"]').first();
+    // The active Duration-unit toggle button (e.g. "Bar") uses the DAW active
+    // recipe: cyan accent label + cyan glow box-shadow.
     const activeToggle = page
       .getByRole("tabpanel")
       .locator('[class*="toggle-group"] button[aria-pressed="true"]')
       .first();
 
-    for (const activeEl of [activeNote, activeToggle]) {
-      await expect(activeEl).toBeVisible();
-      const styles = await activeEl.evaluate((el) => {
-        const cs = getComputedStyle(el);
-        return { boxShadow: cs.boxShadow, color: cs.color };
-      });
-      const norm = (s: string) => s.replace(/\s/g, "");
-      expect(styles.boxShadow).not.toBe("none");
-      expect(norm(styles.boxShadow)).toContain("77,228,255");
-      expect(norm(styles.color)).toContain("77,228,255");
-    }
+    await expect(activeToggle).toBeVisible();
+    const styles = await activeToggle.evaluate((el) => {
+      const cs = getComputedStyle(el);
+      return { boxShadow: cs.boxShadow, color: cs.color };
+    });
+    const norm = (s: string) => s.replace(/\s/g, "");
+    expect(styles.boxShadow).not.toBe("none");
+    expect(norm(styles.boxShadow)).toContain("77,228,255");
+    expect(norm(styles.color)).toContain("77,228,255");
   });
 
   test("modern-light active shared controls should use app cyan", async ({ page }) => {
     await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
 
-    // Shared controls now live in the Inspector. Open the Song tab (v2.0 Key group).
+    // Shared controls now live in the Inspector. Open the Song tab — default
+    // progression makes step 0 active so the Duration ToggleBar is visible.
+    // E1: Root note is now a LabeledSelect combobox — there are no note buttons.
     await page.getByRole("tab", { name: "Song" }).click();
-    await expect(page.getByRole("group", { name: "Note selector" })).toBeVisible();
 
-    // Active root note button (aria-pressed) inside the Inspector panel.
+    // Active Duration-unit toggle button (e.g. "Bar") carries the teal accent.
     const activeEl = page
       .getByRole("tabpanel")
-      .locator('button[aria-pressed="true"]')
+      .locator('[class*="toggle-group"] button[aria-pressed="true"]')
       .first();
     await expect(activeEl).toBeVisible();
 
@@ -366,54 +362,49 @@ test.describe("Theme Contract", () => {
         });
 
         test("shared default chrome should be equivalent across controls", async ({ page }) => {
-          // Note selector + scale family controls live in the Inspector Song tab (v2.0 Key group).
+          // Song tab — E1: Root is now a LabeledSelect combobox, no note buttons.
+          // Verify that LabeledSelect triggers in the KEY group share the same
+          // default chrome (background, border, image) — they are the same
+          // component and must have identical visual treatment.
           await page.getByRole("tab", { name: "Song" }).click();
-          await expect(
-            page.getByRole("group", { name: "Note selector" }),
-          ).toBeVisible();
 
-          const locators = {
-            "Note Button": page.getByRole("group", { name: "Note selector" }).getByRole("button", { pressed: false }).first(),
-            "Toggle Group": page.locator('[class*="toggle-group"]').first(),
-            "Labeled Select": page.getByRole("combobox", { name: "Scale" }),
-          };
+          const rootSelect = page.getByRole("combobox", { name: /^Root$/i });
+          const scaleSelect = page.getByRole("combobox", { name: /^Scale$/i });
 
-          const results: Record<string, { bg: string; bgImg: string; border: string }> = {};
-
-          for (const [name, locator] of Object.entries(locators)) {
+          for (const locator of [rootSelect, scaleSelect]) {
             await expect(locator).toBeVisible();
-            results[name] = await locator.evaluate((el) => {
-              const cs = getComputedStyle(el);
-              return {
-                bg: cs.backgroundColor,
-                bgImg: cs.backgroundImage,
-                border: cs.borderColor
-              };
-            });
           }
 
-          const baseline = results["Note Button"];
-          for (const [name, styles] of Object.entries(results)) {
-            if (name === "Note Button") continue;
-            expect(styles.bg, `${name} background-color should match`).toBe(baseline.bg);
-            expect(styles.bgImg, `${name} background-image should match`).toBe(baseline.bgImg);
-            expect(styles.border, `${name} border-color should match`).toBe(baseline.border);
-          }
+          const rootStyles = await rootSelect.evaluate((el) => {
+            const cs = getComputedStyle(el);
+            return { bg: cs.backgroundColor, bgImg: cs.backgroundImage, border: cs.borderColor };
+          });
+          const scaleStyles = await scaleSelect.evaluate((el) => {
+            const cs = getComputedStyle(el);
+            return { bg: cs.backgroundColor, bgImg: cs.backgroundImage, border: cs.borderColor };
+          });
+
+          // Both LabeledSelect triggers must share identical chrome.
+          expect(scaleStyles.bg, "Scale background-color should match Root").toBe(rootStyles.bg);
+          expect(scaleStyles.bgImg, "Scale background-image should match Root").toBe(rootStyles.bgImg);
+          expect(scaleStyles.border, "Scale border-color should match Root").toBe(rootStyles.border);
         });
 
-        test("note buttons should have correct hover styling", async ({ page }) => {
-          // The Note selector lives in the Inspector's Song tab (v2.0 Key group).
+        test("toggle buttons should have correct hover styling", async ({ page }) => {
+          // E1: Root note is now a LabeledSelect combobox — note buttons are gone.
+          // Use an unselected Duration-unit ToggleBar button instead.
           await page.getByRole("tab", { name: "Song" }).click();
-          const noteBtn = page
-            .getByRole("group", { name: "Note selector" })
-            .getByRole("button", { pressed: false })
+          const panel = page.getByRole("tabpanel");
+          await expect(panel).toBeVisible();
+          const toggleBtn = panel
+            .locator('[class*="toggle-group"] button[aria-pressed="false"]')
             .first();
-          await expect(noteBtn).toBeVisible();
+          await expect(toggleBtn).toBeVisible();
 
           // Hover state — pointer modality is fine here since we only assert
           // hover styles (color, borderColor), not :focus-visible.
-          await noteBtn.hover();
-          const hoverStyles = await noteBtn.evaluate((el) => {
+          await toggleBtn.hover();
+          const hoverStyles = await toggleBtn.evaluate((el) => {
             const cs = getComputedStyle(el);
             return {
               color: cs.color,
@@ -432,36 +423,39 @@ test.describe("Theme Contract", () => {
           }
         });
 
-        test("note buttons should have correct focus-visible styling", async ({ page }) => {
-          // The Note selector lives in the Inspector's Song tab (v2.0 Key group).
+        test("toggle buttons should have correct focus-visible styling", async ({ page }) => {
+          // E1: Root note is now a LabeledSelect combobox — note buttons are gone.
+          // Use an unselected Duration-unit ToggleBar button instead.
           await page.getByRole("tab", { name: "Song" }).click();
-          const noteGroup = page.getByRole("group", { name: "Note selector" });
-          await expect(noteGroup).toBeVisible();
+          const panel = page.getByRole("tabpanel");
+          await expect(panel).toBeVisible();
 
-          // Target an unpressed (non-root) note button.
-          const noteBtn = noteGroup.getByRole("button", { pressed: false }).first();
-          await expect(noteBtn).toBeVisible();
+          // Target an unpressed (non-root) toggle button.
+          const toggleBtn = panel
+            .locator('[class*="toggle-group"] button[aria-pressed="false"]')
+            .first();
+          await expect(toggleBtn).toBeVisible();
 
           // Chromium's :focus-visible heuristic keys off whether the focus
           // change ITSELF came from a keyboard event — a programmatic .focus()
           // never satisfies it, no matter what Tab presses preceded it. So the
-          // FINAL action that lands focus on the note button must be a real
+          // FINAL action that lands focus on the button must be a real
           // keyboard event.
           //
           // Move focus into the button's vicinity programmatically, then do a
           // Shift+Tab / Tab round-trip: Shift+Tab keyboard-moves focus to the
           // previous element, and Tab keyboard-moves it forward, landing back
-          // ON the note button via a genuine keyboard event so :focus-visible
+          // ON the toggle button via a genuine keyboard event so :focus-visible
           // activates.
-          await noteBtn.focus();
+          await toggleBtn.focus();
           await page.keyboard.press("Shift+Tab");
           await page.keyboard.press("Tab");
 
-          // Assert keyboard focus actually landed on the target note button
+          // Assert keyboard focus actually landed on the target button
           // before reading its computed styles.
-          await expect(noteBtn).toBeFocused();
+          await expect(toggleBtn).toBeFocused();
 
-          const focusStyles = await noteBtn.evaluate((el) => {
+          const focusStyles = await toggleBtn.evaluate((el) => {
             const cs = getComputedStyle(el);
             return {
               outlineStyle: cs.outlineStyle,
@@ -477,8 +471,10 @@ test.describe("Theme Contract", () => {
           if (theme === "light") {
             expect(focusStyles.outlineStyle).toBe("solid");
           } else {
+            // Dark-mode ToggleBar :focus-visible uses outline:none + cyan box-shadow
+            // (--control-focus-glow). Border color does not change for ToggleBar
+            // (unlike note-btn which explicitly sets border-color: --neon-cyan).
             expect(focusStyles.outlineStyle).toBe("none");
-            expect(isCyanLike(focusStyles.borderColor)).toBe(true);
             expect(isCyanLike(focusStyles.boxShadow)).toBe(true);
           }
         });
@@ -787,13 +783,18 @@ test.describe("Theme Contract", () => {
       for (const theme of ["light", "dark"] as const) {
         await loadVisualState(page, { theme }, { width: 1280, height: 900 });
 
-        // Selected controls live in the Inspector's Song tab (v2.0 Key group).
+        // Selected controls live in the Inspector's Song tab. With default
+        // progression, step 0 is active and the Duration ToggleBar is visible.
+        // E1: Root is now a combobox — use the ToggleBar active button instead.
         await page.getByRole("tab", { name: "Song" }).click();
         const panel = page.getByRole("tabpanel");
         await expect(panel).toBeVisible();
 
-        // Find any active (selected) toggle button inside the Inspector panel.
-        const activeBtn = panel.locator('button[aria-pressed="true"]').first();
+        // Target the active Duration-unit toggle button specifically (not degree
+        // grid cells which also carry aria-pressed but use different styling).
+        const activeBtn = panel
+          .locator('[class*="toggle-group"] button[aria-pressed="true"]')
+          .first();
         await expect(activeBtn).toBeVisible();
 
         const styles = await activeBtn.evaluate((el) => {

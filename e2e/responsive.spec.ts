@@ -199,11 +199,11 @@ test.describe("responsive layout regressions", () => {
     expect(initial.summaryCount).toBe(1);
 
     // v2.0: Key group (Root + Scale) moved to the Song tab. CoF retired.
+    // E1: Root note is now a LabeledSelect combobox (label="Root"), not a button group.
     await page.getByRole("tab", { name: "Song" }).click();
-    // The RootNoteSelect (Note selector) is the new key group entry point.
-    const noteGroup = page.getByRole("group", { name: "Note selector" });
-    await expect(noteGroup).toBeVisible();
-    await noteGroup.scrollIntoViewIfNeeded();
+    const rootCombobox = page.getByRole("combobox", { name: /^Root$/i });
+    await expect(rootCombobox).toBeVisible();
+    await rootCombobox.scrollIntoViewIfNeeded();
     const after = await getMetrics(page);
     // The key group panel (tabpanel) should be comfortably within the viewport.
     expect(after.keyColumnRect).not.toBeNull();

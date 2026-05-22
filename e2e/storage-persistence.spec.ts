@@ -13,10 +13,10 @@ test.describe("storage persistence", () => {
     await gotoApp(page);
 
     // v2.0: Key group (Root + Scale) now lives in the Inspector's Song tab.
-    // The Circle of Fifths is retired from the main app.
+    // E1: Root note is now a LabeledSelect combobox (label="Root"), not a button group.
     await page.getByRole("tab", { name: "Song" }).click();
-    const noteGroup = page.getByRole("group", { name: "Note selector" });
-    await expect(noteGroup).toBeVisible();
+    const rootCombobox = page.getByRole("combobox", { name: /^Root$/i });
+    await expect(rootCombobox).toBeVisible();
 
     // The default root note is "C". Verify the initial localStorage state is
     // either absent (first visit) or already "C".
@@ -26,11 +26,9 @@ test.describe("storage persistence", () => {
     );
     expect(["C", null]).toContain(initialStored);
 
-    // Click the "G" button to change the root note.
-    // Each note button carries aria-pressed and its note label.
-    const gBtn = noteGroup.getByRole("button", { name: /^G$/ });
-    await expect(gBtn).toBeVisible();
-    await gBtn.click();
+    // Open the Root combobox and select "G".
+    await rootCombobox.click();
+    await page.getByRole("option", { name: /^G$/ }).click();
 
     // Wait until Jotai flushes the atom write to localStorage.
     await page.waitForFunction(
@@ -38,20 +36,18 @@ test.describe("storage persistence", () => {
       STORAGE_KEY_ROOT_NOTE,
     );
 
-    // Confirm the G button is now marked selected.
-    await expect(noteGroup.getByRole("button", { name: /^G$/, pressed: true })).toBeVisible();
+    // Confirm the combobox now displays "G" as the selected value.
+    await expect(rootCombobox).toHaveText(/G/);
 
     // Reload the page — localStorage survives the reload.
     await page.reload({ waitUntil: "domcontentloaded" });
     await expect(page.locator('[data-testid="app-container"]')).toBeVisible();
     // The Inspector resets to the View tab on reload — reopen the Song tab.
     await page.getByRole("tab", { name: "Song" }).click();
-    await expect(page.getByRole("group", { name: "Note selector" })).toBeVisible();
+    await expect(page.getByRole("combobox", { name: /^Root$/i })).toBeVisible();
 
-    // The G button must still be selected after the reload.
-    await expect(
-      page.getByRole("group", { name: "Note selector" }).getByRole("button", { name: /^G$/, pressed: true }),
-    ).toBeVisible();
+    // The Root combobox must still display "G" after the reload.
+    await expect(page.getByRole("combobox", { name: /^Root$/i })).toHaveText(/G/);
 
     // localStorage must still hold "G".
     const persistedValue = await page.evaluate(

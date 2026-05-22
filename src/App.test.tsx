@@ -181,16 +181,25 @@ describe("App", () => {
 
   describe("chord overlay (quality override)", () => {
     it("clicking a Chord quality option in the Song tab writes through to the active progression step", async () => {
+      const user = userEvent.setup();
       const steps = [
         { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
       ];
       localStorage.setItem(k("progressionSteps"), JSON.stringify(steps));
       render(<App />);
-      // v2.0: Quality override is set in the Song tab's editor pane
-      // (ChordQualitySelect with label="Chord quality" via ChordTypeGrid).
+      // v2.0: Quality override is set in the Song tab's editor pane via a
+      // LabeledSelect combobox (label="Quality"). Click the step to ensure the
+      // editor pane is open, then select "min" from the combobox.
       await selectInspectorTab("Song");
-      const chordQualityGroup = await screen.findByRole("group", { name: "Chord quality" });
-      fireEvent.click(within(chordQualityGroup).getByRole("button", { name: "min" }));
+      // Click step 1 to activate the editor pane.
+      const stepBtn = await screen.findByRole("button", { name: /step 1/i });
+      await user.click(stepBtn);
+      // The Quality combobox is labeled "Quality" (t("controls.quality")).
+      const qualityCombobox = await screen.findByRole("combobox", { name: /quality/i });
+      await user.click(qualityCombobox);
+      // Select "min" (Minor Triad) from the dropdown.
+      const minOption = await screen.findByRole("option", { name: /^min$/i });
+      await user.click(minOption);
       await waitFor(() => {
         const persisted = JSON.parse(localStorage.getItem(k("progressionSteps")) ?? "[]") as Array<{ qualityOverride: string | null }>;
         expect(persisted[0]?.qualityOverride).toBe("Minor Triad");
