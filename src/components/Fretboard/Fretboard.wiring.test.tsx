@@ -4,7 +4,6 @@ import { render } from "@testing-library/react";
 import { Provider, createStore } from "jotai";
 import { STANDARD_TUNING } from "@fretflow/core";
 import { fullChordsEnabledAtom } from "../../store/chordOverlayAtoms";
-import { chordScopeToPositionAtom } from "../../store/chordScope";
 import { cagedShapesAtom, fingeringPatternAtom } from "../../store/fingeringAtoms";
 import { progressionStepsAtom } from "../../store/progressionAtoms";
 import { rootNoteAtom, scaleNameAtom } from "../../store/scaleAtoms";
@@ -37,7 +36,11 @@ function renderGMajorEPositionChord(chordRoot: string, chordType: string) {
   store.set(fullChordsEnabledAtom, true);
   store.set(fingeringPatternAtom, "caged");
   store.set(cagedShapesAtom, new Set(["E"]));
-  store.set(chordScopeToPositionAtom, true);
+  // v2.0: shape narrowing happens in voicingMatchesAtom when cagedShapesAtom
+  // has exactly one shape. The legacy chordScopeToPosition flag would invoke
+  // a redundant downstream position filter in useFretboardState and prune
+  // voicings outside the active scale window — leave it off here so the
+  // atom-layer narrowing is what's asserted.
 
   const { unmount } = render(
     <Provider store={store}>
@@ -131,18 +134,22 @@ describe("Fretboard wiring", () => {
     );
   });
 
-  it("chooses the full chord form that fits inside the selected CAGED scale position per chord", () => {
+  it("narrows full-chord voicings to the active CAGED shape per chord", () => {
+    // v2.0: when a single CAGED shape is active, voicingMatchesAtom filters by
+    // literal shape name (every voicing has v.shape === active). The retired
+    // v1 fret-window-overlap selection (which picked A-shape B minor inside
+    // the E-position G-major window, for example) is gone.
     const tonic = renderGMajorEPositionChord("G", "Major Triad");
+    expect(tonic.fullChordVoicings?.length).toBeGreaterThan(0);
     expect(tonic.fullChordVoicings?.every((voicing) => voicing.shape === "E")).toBe(true);
-    expect(tonic.fullChordPositionKeys?.has("5-15")).toBe(true);
 
     const mediant = renderGMajorEPositionChord("B", "Minor Triad");
-    expect(mediant.fullChordVoicings?.every((voicing) => voicing.shape === "A")).toBe(true);
-    expect(mediant.fullChordPositionKeys?.has("4-14")).toBe(true);
+    expect(mediant.fullChordVoicings?.length).toBeGreaterThan(0);
+    expect(mediant.fullChordVoicings?.every((voicing) => voicing.shape === "E")).toBe(true);
 
     const subdominant = renderGMajorEPositionChord("C", "Major Triad");
-    expect(subdominant.fullChordVoicings?.every((voicing) => voicing.shape === "A")).toBe(true);
-    expect(subdominant.fullChordPositionKeys?.has("4-15")).toBe(true);
+    expect(subdominant.fullChordVoicings?.length).toBeGreaterThan(0);
+    expect(subdominant.fullChordVoicings?.every((voicing) => voicing.shape === "E")).toBe(true);
   });
 
   it("keeps exact full-chord notes outside the selected CAGED scale position when the voicing mostly overlaps", () => {
@@ -153,10 +160,13 @@ describe("Fretboard wiring", () => {
     expect(supertonic.fullChordPositionKeys?.has("4-7")).toBe(true);
   });
 
-  it("uses one full-chord form per CAGED position and prefers one that fits fully inside", () => {
+  it("narrows full-chord voicings to the active CAGED shape regardless of fret position", () => {
+    // v2.0: D major's E-shape voicing sits at the 10th-fret area, well outside
+    // the E-position window for G major (~frets 2–6). The v1 engine selected
+    // a C-shape voicing because it overlapped the window; v2.0 returns only
+    // E-shape voicings regardless of overlap.
     const dominant = renderGMajorEPositionChord("D", "Major Triad");
-    expect(dominant.fullChordVoicings?.every((voicing) => voicing.shape === "C")).toBe(true);
-    expect(dominant.fullChordPositionKeys?.has("4-5")).toBe(true);
-    expect(dominant.fullChordPositionKeys?.has("3-0")).toBe(false);
+    expect(dominant.fullChordVoicings?.length).toBeGreaterThan(0);
+    expect(dominant.fullChordVoicings?.every((voicing) => voicing.shape === "E")).toBe(true);
   });
 });
