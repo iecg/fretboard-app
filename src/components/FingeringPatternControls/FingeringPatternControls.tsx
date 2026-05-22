@@ -77,37 +77,28 @@ export function FingeringPatternControls({ hideHeader = false }: FingeringPatter
     <>
       {!hideHeader && <GroupHeader>{t("inspector.groupFingering")}</GroupHeader>}
 
-      <Prop label={t("inspector.positionCluster")} span={2}>
-        <ToggleBar
-          label={t("inspector.positionCluster")}
-          options={[
-            { value: "none", label: "None" },
-            { value: "caged", label: "CAGED" },
-            { value: "3nps", label: "3NPS" },
+      <Prop label={t("inspector.fingeringPatternLabel")} span={4}>
+        <LabeledSelect
+          label={t("inspector.fingeringPatternLabel")}
+          hideLabel
+          value={fingeringPattern}
+          groups={[
+            { options: [{ value: "none", label: t("inspector.none") }] },
+            {
+              groupLabel: t("inspector.fingeringGroupBoxShapes"),
+              options: [
+                { value: "caged", label: "CAGED" },
+                { value: "3nps", label: "3NPS" },
+              ],
+            },
+            {
+              groupLabel: t("inspector.fingeringGroupLinear"),
+              options: [
+                { value: "one-string", label: "1-String" },
+                { value: "two-strings", label: "2-Strings" },
+              ],
+            },
           ]}
-          value={
-            fingeringPattern === "none" ||
-            fingeringPattern === "caged" ||
-            fingeringPattern === "3nps"
-              ? fingeringPattern
-              : undefined
-          }
-          onChange={(v) => setFingeringPattern(v as FingeringPattern)}
-        />
-      </Prop>
-
-      <Prop label={t("inspector.stringStudyCluster")} span={2}>
-        <ToggleBar
-          label={t("inspector.stringStudyCluster")}
-          options={[
-            { value: "one-string", label: "1-String" },
-            { value: "two-strings", label: "2-Strings" },
-          ]}
-          value={
-            fingeringPattern === "one-string" || fingeringPattern === "two-strings"
-              ? fingeringPattern
-              : undefined
-          }
           onChange={(v) => setFingeringPattern(v as FingeringPattern)}
         />
       </Prop>

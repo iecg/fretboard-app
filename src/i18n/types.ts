@@ -92,8 +92,9 @@ export interface Dictionary {
     stringSetMiddle: string;
     stringSetUpperMid: string;
     stringSetTreble: string;
-    positionCluster: string;
-    stringStudyCluster: string;
+    fingeringPatternLabel: string;
+    fingeringGroupBoxShapes: string;
+    fingeringGroupLinear: string;
     scaleLayer: string;
     chordLayer: string;
     groupScaleFingering: string;

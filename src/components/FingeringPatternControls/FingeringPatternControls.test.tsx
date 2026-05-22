@@ -10,26 +10,35 @@ import { type CagedShape } from "@fretflow/core";
 import { axe } from "../../test-utils/a11y";
 
 describe("FingeringPatternControls/FingeringPatternControls", () => {
-  it("renders all fingering pattern options", () => {
+  it("renders all 5 fingering pattern options grouped in the Pattern select", async () => {
     const store = createStore();
     render(
       <Provider store={store}>
         <FingeringPatternControls />
       </Provider>
     );
-    expect(screen.getAllByText("None").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText("CAGED")).toBeInTheDocument();
-    expect(screen.getByText("3NPS")).toBeInTheDocument();
+    // Open the grouped Pattern select to surface options + group headings.
+    await userEvent.click(screen.getByRole("combobox", { name: /pattern/i }));
+    // All 5 options present
+    expect(screen.getByRole("option", { name: "None" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "CAGED" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "3NPS" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "1-String" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "2-Strings" })).toBeInTheDocument();
+    // Group labels rendered (Radix Select.Label → plain text inside Select.Group)
+    expect(screen.getByText("Box Shapes")).toBeInTheDocument();
+    expect(screen.getByText("Linear")).toBeInTheDocument();
   });
 
-  it("updates fingering pattern on button click", () => {
+  it("updates fingering pattern when an option is selected", async () => {
     const store = createStore();
     render(
       <Provider store={store}>
         <FingeringPatternControls />
       </Provider>
     );
-    fireEvent.click(screen.getByText("CAGED"));
+    await userEvent.click(screen.getByRole("combobox", { name: /pattern/i }));
+    await userEvent.click(screen.getByRole("option", { name: "CAGED" }));
     expect(store.get(fingeringPatternAtom)).toBe("caged");
   });
 
@@ -94,24 +103,26 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
     expect(screen.queryByRole("button", { name: "7" })).toBeNull();
   });
 
-  it("renders Position and String study clusters (Task 5)", () => {
+  it("renders a single unified Pattern combobox (F4)", () => {
     renderWithAtoms(<FingeringPatternControls />);
-    // ToggleBar applies the label as role="group" aria-label
-    expect(screen.getByRole("group", { name: /^position$/i })).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: /string study/i })).toBeInTheDocument();
+    // Single combobox replaces the prior Position + String-study ToggleBars.
+    expect(screen.getByRole("combobox", { name: /pattern/i })).toBeInTheDocument();
+    // Old ToggleBar groups must be gone.
+    expect(screen.queryByRole("group", { name: /^position$/i })).toBeNull();
+    expect(screen.queryByRole("group", { name: /string study/i })).toBeNull();
   });
 
-  it("selecting Position clears String study selection (Task 5)", () => {
+  it("selecting a Box-Shapes option from one-string state replaces the linear selection (F4)", async () => {
     renderWithAtoms(<FingeringPatternControls />, [[fingeringPatternAtom, "one-string"]]);
-    // 1-String is initially pressed
-    const oneString = screen.getByRole("button", { name: /^1-String$/ });
-    expect(oneString).toHaveAttribute("aria-pressed", "true");
+    // Current combobox reflects the active "1-String" linear pattern.
+    const combobox = screen.getByRole("combobox", { name: /pattern/i });
+    expect(combobox).toHaveTextContent("1-String");
 
-    fireEvent.click(screen.getByRole("button", { name: /^CAGED$/ }));
+    await userEvent.click(combobox);
+    await userEvent.click(screen.getByRole("option", { name: "CAGED" }));
 
-    // CAGED becomes pressed; 1-String unpresses
-    expect(screen.getByRole("button", { name: /^CAGED$/ })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("button", { name: /^1-String$/ })).toHaveAttribute("aria-pressed", "false");
+    // Mutual exclusion: combobox now shows CAGED; the linear selection is dropped.
+    expect(screen.getByRole("combobox", { name: /pattern/i })).toHaveTextContent("CAGED");
   });
 
   it("renders CAGED octave ToggleBar (Low/High) when CAGED is active and exactly one shape is selected", () => {
@@ -212,23 +223,24 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
   });
 
   describe("fingering patterns", () => {
-    it("renders exactly 5 fingering pattern options", () => {
+    it("renders exactly 5 fingering pattern options", async () => {
       const store = createStore();
       render(
         <Provider store={store}>
           <FingeringPatternControls />
         </Provider>
       );
-      expect(screen.getAllByText("None").length).toBeGreaterThanOrEqual(1);
-      expect(screen.getByText("CAGED")).toBeInTheDocument();
-      expect(screen.getByText("3NPS")).toBeInTheDocument();
-      expect(screen.getByText("1-String")).toBeInTheDocument();
-      expect(screen.getByText("2-Strings")).toBeInTheDocument();
+      await userEvent.click(screen.getByRole("combobox", { name: /pattern/i }));
+      expect(screen.getByRole("option", { name: "None" })).toBeInTheDocument();
+      expect(screen.getByRole("option", { name: "CAGED" })).toBeInTheDocument();
+      expect(screen.getByRole("option", { name: "3NPS" })).toBeInTheDocument();
+      expect(screen.getByRole("option", { name: "1-String" })).toBeInTheDocument();
+      expect(screen.getByRole("option", { name: "2-Strings" })).toBeInTheDocument();
       // Dropped patterns must not appear
-      expect(screen.queryByText("Dbl Stops")).toBeNull();
-      expect(screen.queryByText("2×4 Box")).toBeNull();
-      expect(screen.queryByText("3×3 Box")).toBeNull();
-      expect(screen.queryByText("Stack")).toBeNull();
+      expect(screen.queryByRole("option", { name: "Dbl Stops" })).toBeNull();
+      expect(screen.queryByRole("option", { name: "2×4 Box" })).toBeNull();
+      expect(screen.queryByRole("option", { name: "3×3 Box" })).toBeNull();
+      expect(screen.queryByRole("option", { name: "Stack" })).toBeNull();
     });
 
     it('shows String section only when fingeringPattern === "one-string"', () => {
@@ -256,14 +268,15 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
       expect(screen.queryByText("String")).toBeNull();
     });
 
-    it("clicking 1-String sets fingeringPattern to one-string", () => {
+    it("selecting 1-String sets fingeringPattern to one-string", async () => {
       const store = createStore();
       render(
         <Provider store={store}>
           <FingeringPatternControls />
         </Provider>
       );
-      fireEvent.click(screen.getByText("1-String"));
+      await userEvent.click(screen.getByRole("combobox", { name: /pattern/i }));
+      await userEvent.click(screen.getByRole("option", { name: "1-String" }));
       expect(store.get(fingeringPatternAtom)).toBe("one-string");
     });
 
