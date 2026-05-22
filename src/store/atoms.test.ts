@@ -10,7 +10,7 @@ import { updateActiveChordAtom, activeChordCachedDegreeAtom } from "./songStateA
 import { cagedShapesAtom, fingeringPatternAtom, npsPositionAtom, clickedShapeAtom } from "./fingeringAtoms";
 import { fretStartAtom, fretEndAtom, fretZoomAtom, tuningNameAtom, currentTuningAtom } from "./layoutAtoms";
 import { progressionStepsAtom, progressionTempoBpmAtom, progressionPlayingAtom, activeProgressionStepIndexAtom, setProgressionPlayingAtom } from "./progressionAtoms";
-import { rootNoteAtom, scaleNameAtom, accidentalModeAtom, useFlatsAtom, colorNotesAtom, scaleVisibleAtom, toggleScaleVisibleAtom, effectiveHiddenNotesAtom, effectiveColorNotesAtom, hiddenNotesAtom, toggleHiddenNoteAtom } from "./scaleAtoms";
+import { rootNoteAtom, scaleNameAtom, accidentalModeAtom, preferFlatsAtom, colorNotesAtom, scaleVisibleAtom, toggleScaleVisibleAtom, effectiveHiddenNotesAtom, effectiveColorNotesAtom, hiddenNotesAtom, toggleHiddenNoteAtom } from "./scaleAtoms";
 import { displayFormatAtom } from "./uiAtoms";
 import { STANDARD_TUNING, TUNINGS } from "@fretflow/core";
 import { CAGED_SHAPES } from "@fretflow/core";
@@ -365,18 +365,18 @@ describe("atoms", () => {
     });
   });
 
-  describe("useFlatsAtom (derived)", () => {
+  describe("preferFlatsAtom (derived)", () => {
     it.each([
       ["G", "Major", "auto", false],
       ["F", "Major", "auto", true],
       ["F", "Major", "sharps", false],
       ["G", "Major", "flats", true],
-    ])("root=%s scale=%s mode=%s → useFlats=%s", (root, scale, mode, expected) => {
+    ])("root=%s scale=%s mode=%s → preferFlats=%s", (root, scale, mode, expected) => {
       const store = makeStore();
       store.set(rootNoteAtom, root);
       store.set(scaleNameAtom, scale);
       store.set(accidentalModeAtom, mode as "auto" | "sharps" | "flats");
-      expect(store.get(useFlatsAtom)).toBe(expected);
+      expect(store.get(preferFlatsAtom)).toBe(expected);
     });
   });
 

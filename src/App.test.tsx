@@ -209,12 +209,12 @@ describe("App", () => {
   });
 
   describe("accidental mode is session-only", () => {
-    it("never writes useFlats or accidentalMode to localStorage", async () => {
+    it("never writes preferFlats or accidentalMode to localStorage", async () => {
       render(<App />);
       fireEvent.click(screen.getByLabelText("Open settings"));
       await screen.findByText("Accidentals");
       fireEvent.click(screen.getByRole("button", { name: "♭" }));
-      expect(localStorage.getItem("useFlats")).toBeNull();
+      expect(localStorage.getItem("preferFlats")).toBeNull();
       expect(localStorage.getItem("accidentalMode")).toBeNull();
     });
   });

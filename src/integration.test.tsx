@@ -60,7 +60,7 @@ describe("Integration: real-component user workflows", () => {
       expect(screen.queryAllByText("B♭ Major (Ionian)")).toHaveLength(0);
     });
     // Session-only invariant: no leakage to localStorage.
-    expect(localStorage.getItem("useFlats")).toBeNull();
+    expect(localStorage.getItem("preferFlats")).toBeNull();
     expect(localStorage.getItem("accidentalMode")).toBeNull();
   });
 });

@@ -61,7 +61,7 @@ interface FretboardProps {
     noteName: string,
   ) => void;
   /** When true, renders flat spellings instead of sharps where applicable. */
-  useFlats?: boolean;
+  preferFlats?: boolean;
   /** Name of the active scale (e.g. "Major", "Dorian"). */
   scaleName?: string;
   /** Height in pixels of each string row. */
@@ -81,6 +81,9 @@ interface FretboardProps {
 }
 
 export function Fretboard(props: FretboardProps) {
+  // TODO(react-compiler): It intentionally disables exhaustive-deps for stable refs 
+  // in specific useMemo blocks which confuses the compiler's auto-memoization logic.
+  'use no memo';
   const state = useFretboardState();
   const fretZoom = useAtomValue(fretZoomAtom);
 
@@ -100,7 +103,7 @@ export function Fretboard(props: FretboardProps) {
   const shapePolygons = props.shapePolygons ?? state.shapePolygons;
   const wrappedNotes = props.wrappedNotes ?? state.wrappedNotes;
   const hiddenNotes = props.hiddenNotes ?? state.hiddenNotes;
-  const useFlats = props.useFlats ?? state.useFlats;
+  const preferFlats = props.preferFlats ?? state.preferFlats;
   const scaleName = props.scaleName ?? state.scaleName;
   const activePattern = props.activePattern ?? state.activePattern;
   const activeShape = props.activeShape ?? state.activeShape;
@@ -206,7 +209,8 @@ export function Fretboard(props: FretboardProps) {
     const shapeCenter = (shapeLeft + shapeRight) / 2;
 
     el.scrollTo({ left: Math.max(0, shapeCenter - containerW / 2), behavior: "smooth" });
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- trigger only on target/key changes; geometry derived from current values
+  // eslint-disable-next-line react-compiler/react-compiler
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- trigger only on target/key changes; geometry derived from current values
   }, [autoCenterTarget, recenterKey]);
 
   const updateCursor = useCallback((dragging: boolean) => {
@@ -315,7 +319,7 @@ export function Fretboard(props: FretboardProps) {
           shapePolygons={shapePolygons}
           wrappedNotes={wrappedNotes}
           hiddenNotes={hiddenNotes}
-          useFlats={useFlats}
+          preferFlats={preferFlats}
           scaleName={scaleName}
           activePattern={activePattern}
           activeShape={activeShape}

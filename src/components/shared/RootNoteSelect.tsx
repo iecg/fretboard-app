@@ -7,7 +7,7 @@ export interface RootNoteSelectProps {
   /** Selection handler. */
   onSelect: (note: string) => void;
   /** Render flat spellings when true. */
-  useFlats: boolean;
+  preferFlats: boolean;
 }
 
 /**
@@ -15,13 +15,13 @@ export interface RootNoteSelectProps {
  * 12-note chromatic grid. Wraps `NoteGrid` with the `NOTES` set baked in so
  * both surfaces select a root from one component and never drift apart.
  */
-export function RootNoteSelect({ value, onSelect, useFlats }: RootNoteSelectProps) {
+export function RootNoteSelect({ value, onSelect, preferFlats }: RootNoteSelectProps) {
   return (
     <NoteGrid
       notes={NOTES}
       selected={value}
       onSelect={onSelect}
-      useFlats={useFlats}
+      preferFlats={preferFlats}
     />
   );
 }

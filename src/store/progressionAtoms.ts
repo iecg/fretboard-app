@@ -31,7 +31,7 @@ import {
   registerRootChangeListener,
   rootNoteAtom,
   scaleNameAtom,
-  useFlatsAtom,
+  preferFlatsAtom,
 } from "./scaleAtoms";
 import type { ChordInstrumentId } from "../progressions/audio/instruments/types";
 import { getGenreStyle } from "../progressions/audio/genres";
@@ -293,9 +293,9 @@ export const progressionStepDeadlineAtom = atom<number | null>(null);
 export const resolvedProgressionStepsAtom = atom((get) => {
   const scaleName = get(scaleNameAtom);
   const rootNote = get(rootNoteAtom);
-  const useFlats = get(useFlatsAtom);
+  const preferFlats = get(preferFlatsAtom);
   return get(progressionStepsAtom).map((step, index) =>
-    resolveProgressionStep(step, scaleName, rootNote, index, useFlats),
+    resolveProgressionStep(step, scaleName, rootNote, index, preferFlats),
   );
 });
 

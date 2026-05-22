@@ -30,7 +30,7 @@ import {
   ALL_STRINGS_OPTION,
   type StringSetOption,
 } from "./voicingStringSets";
-import { useFlatsAtom } from "./scaleAtoms";
+import { preferFlatsAtom } from "./scaleAtoms";
 import { activeResolvedProgressionStepAtom } from "./progressionAtoms";
 import {
   activeChordRootAtom,
@@ -433,18 +433,18 @@ export const chordMembersAtom = atom((get) => {
 export const chordLabelAtom = atom((get) => {
   const chordRoot = get(chordRootAtom);
   const chordType = get(chordTypeAtom);
-  const useFlats = get(useFlatsAtom);
+  const preferFlats = get(preferFlatsAtom);
   if (!chordType) return null;
-  return `${formatAccidental(getNoteDisplay(chordRoot, chordRoot, useFlats))} ${chordType}`;
+  return `${formatAccidental(getNoteDisplay(chordRoot, chordRoot, preferFlats))} ${chordType}`;
 });
 
 /** Compact chord symbol (e.g. "Am", "Cmaj7", "G7") for tight readouts. */
 export const chordShortLabelAtom = atom((get) => {
   const chordRoot = get(chordRootAtom);
   const chordType = get(chordTypeAtom);
-  const useFlats = get(useFlatsAtom);
+  const preferFlats = get(preferFlatsAtom);
   if (!chordType) return null;
-  const rootLabel = formatAccidental(getNoteDisplay(chordRoot, chordRoot, useFlats));
+  const rootLabel = formatAccidental(getNoteDisplay(chordRoot, chordRoot, preferFlats));
   return formatChordShortLabel(rootLabel, chordType);
 });
 

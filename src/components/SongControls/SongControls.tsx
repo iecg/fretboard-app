@@ -67,7 +67,7 @@ export function SongControls() {
     rootNote,
     setRootNote,
     setScaleName,
-    useFlats,
+    preferFlats,
   } = useScaleState();
 
   const handleRootNote = (note: string) => {
@@ -190,7 +190,7 @@ export function SongControls() {
           onChange={handleRootNote}
           options={NOTES.map((note) => ({
             value: note,
-            label: getNoteDisplay(note, rootNote, useFlats),
+            label: getNoteDisplay(note, rootNote, preferFlats),
           }))}
         />
       </Prop>
@@ -336,7 +336,7 @@ export function SongControls() {
                 onSelectBorrowed={(note) => {
                   updateProgressionStepRoot({ id: activeStep.id, manualRoot: note });
                 }}
-                useFlats={useFlats}
+                preferFlats={preferFlats}
               />
             </div>
             <div className={shared["control-section"]}>

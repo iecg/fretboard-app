@@ -322,14 +322,14 @@ describe("Fretboard/Fretboard", () => {
   });
 
   describe("Accidentals", () => {
-    it.each([false, true])("renders with useFlats=%s", (useFlats) => {
-      render(<Fretboard {...defaultProps} useFlats={useFlats} />);
+    it.each([false, true])("renders with preferFlats=%s", (preferFlats) => {
+      render(<Fretboard {...defaultProps} preferFlats={preferFlats} />);
       expect(document.body).toBeTruthy();
     });
 
-    it("updates display when useFlats changes", () => {
-      const { rerender } = render(<Fretboard {...defaultProps} useFlats={false} />);
-      rerender(<Fretboard {...defaultProps} useFlats={true} />);
+    it("updates display when preferFlats changes", () => {
+      const { rerender } = render(<Fretboard {...defaultProps} preferFlats={false} />);
+      rerender(<Fretboard {...defaultProps} preferFlats={true} />);
       expect(document.body).toBeTruthy();
     });
   });
