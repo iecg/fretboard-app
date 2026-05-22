@@ -7,8 +7,6 @@ import { useFretboardState } from "./useFretboardState";
 import {
   chordHighlightPositionsAtom,
   closeCandidatesAtom,
-  selectedCloseVoicingAtom,
-  selectedCloseVoicingKeyAtom,
   voicingAtom,
   voicingMatchesAtom,
 } from "../store/chordOverlayAtoms";
@@ -144,7 +142,7 @@ describe("useFretboardState — F5c: highlight/selection split", () => {
     ];
   }
 
-  it("fullChordPositions is the union of ALL Close candidates, not just the selected voicing", () => {
+  it("fullChordPositions is the union of ALL Close candidates", () => {
     const store = makeAtomStore([
       ...seedManualChord(),
       [voicingAtom, "close"],
@@ -163,53 +161,9 @@ describe("useFretboardState — F5c: highlight/selection split", () => {
     // mirroring chordHighlightPositionsAtom's output exactly.
     const expectedUnion = store.get(chordHighlightPositionsAtom);
     expect(result.current.fullChordPositions).toEqual(expectedUnion);
-
-    // And critically, it must be a strict superset of the selected voicing's
-    // own positions (so cycling the selection cannot narrow the highlight).
-    const selected = store.get(selectedCloseVoicingAtom);
-    expect(selected).not.toBeNull();
-    for (const key of selected!.positionKeys) {
-      expect(result.current.fullChordPositions.has(key)).toBe(true);
-    }
   });
 
-  it("selectedVoicingKey reflects selectedCloseVoicingAtom and changes do not affect fullChordPositions", () => {
-    const store = makeAtomStore([
-      ...seedManualChord(),
-      [voicingAtom, "close"],
-    ] as Parameters<typeof makeAtomStore>[0]);
-
-    const candidates = store.get(closeCandidatesAtom);
-    // Need at least two candidates to demonstrate that cycling selection
-    // changes selectedVoicingKey but leaves fullChordPositions stable.
-    expect(candidates.length).toBeGreaterThan(1);
-
-    const first = candidates[0]!;
-    const second = candidates[1]!;
-
-    // Start with first candidate selected explicitly.
-    store.set(
-      selectedCloseVoicingKeyAtom,
-      first.positionKeys.join("|"),
-    );
-    const { result, rerender } = renderHook(() => useFretboardState(), {
-      wrapper: wrapWithStore(store),
-    });
-    const highlightBefore = result.current.fullChordPositions;
-    expect(result.current.selectedVoicingKey).toBe(first.positionKeys.join("|"));
-
-    // Cycle the selection to the second candidate.
-    const secondKey = second.positionKeys.join("|");
-    store.set(selectedCloseVoicingKeyAtom, secondKey);
-    rerender();
-    expect(result.current.selectedVoicingKey).toBe(secondKey);
-
-    // Highlight set must NOT have changed — it's the union of all candidates,
-    // not the selected one.
-    expect(result.current.fullChordPositions).toEqual(highlightBefore);
-  });
-
-  it("selectedVoicingKey is null when voicing is off (no selection to render)", () => {
+  it("fullChordPositions is empty when voicing is off", () => {
     const store = makeAtomStore([
       ...seedManualChord(),
       [voicingAtom, "off"],
@@ -219,9 +173,6 @@ describe("useFretboardState — F5c: highlight/selection split", () => {
       wrapper: wrapWithStore(store),
     });
 
-    // voicing off → closeCandidates is irrelevant; selectedCloseVoicingAtom
-    // still returns candidates[0] if any exist, so selectedVoicingKey may be
-    // non-null. The important invariant is fullChordPositions is empty.
     expect(result.current.fullChordPositions.size).toBe(0);
   });
 });

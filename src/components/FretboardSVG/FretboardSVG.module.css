@@ -486,24 +486,6 @@
 }
 
 /* -----------------------------------------------------------------------
-   Voicing selection emphasis — Close picker only.
-   When the user selects a Close voicing, the matching polyline keeps
-   default opacity (primary); the rest dim to indicate they are alternate
-   candidates rather than the active fingering. Full voicing mode passes
-   `selectedVoicingKey === null`, so every polyline is primary and nothing
-   dims. Applied to all three render layers (halo, fill, outline) so the
-   whole envelope dims together.
-   ----------------------------------------------------------------------- */
-.chord-connector--primary {
-  /* default — no opacity change. Defined for symmetry so the renderer can
-     always emit a class, even in the no-selection case. */
-}
-
-.chord-connector--secondary {
-  opacity: 0.32;
-}
-
-/* -----------------------------------------------------------------------
    Chord-tone connector layer — three-pass halo + fill + outline render.
    Halo layer: wide semi-transparent white stroke for background contrast.
    Fill layer: low-opacity closed polygon beneath note bubbles.

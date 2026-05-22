@@ -12,8 +12,6 @@ import {
   chordSourceIsProgressionAtom,
   chordHighlightPositionsAtom,
   chordOverlayHiddenAtom,
-  selectedCloseVoicingAtom,
-  selectedCloseVoicingKeyAtom,
   chordSnapToScaleAtom,
 } from "./chordOverlayAtoms";
 import { allChordMembersAtom } from "./composableSelectors";
@@ -615,61 +613,6 @@ describe("chordHighlightPositionsAtom", () => {
     expect(actual).toEqual(expected);
     // Explicitly confirm "more than one candidate worth of keys":
     expect(actual.size).toBeGreaterThan(candidates[0]!.positionKeys.length);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Group K — selectedCloseVoicingAtom (v2.0 — picker selection)
-// ---------------------------------------------------------------------------
-
-describe("selectedCloseVoicingAtom", () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
-
-  it("returns null when there are no candidates (no chord active)", () => {
-    const store = makeAtomStore([[progressionStepsAtom, []]]);
-    expect(store.get(selectedCloseVoicingAtom)).toBeNull();
-  });
-
-  it("returns the first candidate when no key has been stored", () => {
-    const store = makeAtomStore([
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
-      [progressionStepsAtom, progressionWith({ degree: "I" })],
-      [voicingAtom, "close"],
-    ]);
-    const candidates = store.get(closeCandidatesAtom);
-    expect(candidates.length).toBeGreaterThan(0);
-    expect(store.get(selectedCloseVoicingAtom)).toBe(candidates[0]);
-  });
-
-  it("returns the matching candidate when a stored key is present in the candidate list", () => {
-    const store = makeAtomStore([
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
-      [progressionStepsAtom, progressionWith({ degree: "I" })],
-      [voicingAtom, "close"],
-    ]);
-    const candidates = store.get(closeCandidatesAtom);
-    expect(candidates.length).toBeGreaterThan(1);
-    const target = candidates[1]!;
-    const targetKey = target.positionKeys.join("|");
-    store.set(selectedCloseVoicingKeyAtom, targetKey);
-    expect(store.get(selectedCloseVoicingAtom)).toBe(target);
-  });
-
-  it("falls back to the first candidate when the stored key matches none (stale after chord change)", () => {
-    const store = makeAtomStore([
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
-      [progressionStepsAtom, progressionWith({ degree: "I" })],
-      [voicingAtom, "close"],
-    ]);
-    store.set(selectedCloseVoicingKeyAtom, "0-99|1-99|2-99");
-    const candidates = store.get(closeCandidatesAtom);
-    expect(candidates.length).toBeGreaterThan(0);
-    expect(store.get(selectedCloseVoicingAtom)).toBe(candidates[0]);
   });
 });
 

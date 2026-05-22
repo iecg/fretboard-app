@@ -24,7 +24,6 @@ import {
   booleanStorage,
   constrainedNumberStorage,
   enumValidator,
-  stringValidator,
   GET_ON_INIT,
   withStorageErrorBoundary,
 } from "../utils/storage";
@@ -193,12 +192,6 @@ const voicingValueStorage = createStorage<VoicingType>({
 
 const closePositionIndexStorage = constrainedNumberStorage({ integer: true });
 
-const selectedCloseVoicingKeyStorage = createStorage<string | null>({
-  serialize: (v) => (v === null ? "" : v),
-  deserialize: (raw) => (raw === "" ? null : raw),
-  validate: stringValidator({ nullable: true }),
-});
-
 /**
  * The single Voicing control. Off = no connector polygons. Full = CAGED full-
  * chord polygon at the active scale shape's position (or all 5 positions when
@@ -216,11 +209,9 @@ export const voicingAtom = atomWithStorage<VoicingType>(
 /**
  * Cycle pointer for Close voicings.
  *
- * @deprecated The Close voicing picker no longer uses a numeric cycle index;
- * selection is content-addressed via {@link selectedCloseVoicingKeyAtom}.
- * This atom is retained temporarily so the legacy `ClosePositionCycle`
- * component and its test continue to compile until Task F5e/f/g remove the
- * consumers and Task F5g retires this export.
+ * @deprecated The Close voicing picker no longer uses a numeric cycle index.
+ * Retained for one more commit until Task F5z overwrites the slot with the
+ * string-set selection atom; no live consumers remain.
  */
 export const closePositionIndexAtom = atomWithStorage<number>(
   k("closePositionIndex"),
@@ -239,21 +230,6 @@ export const chordSnapToScaleAtom = atomWithStorage<boolean>(
   k("chordSnapToScale"),
   true,
   booleanStorage,
-  GET_ON_INIT,
-);
-
-/**
- * Content-addressed key for the currently selected Close voicing. Format:
- * `voicing.positionKeys.join("|")`. Survives chord changes by being keyed off
- * note positions rather than a list index; when the stored key no longer
- * matches any candidate (chord changed, scale window narrowed, etc.) the
- * derived {@link selectedCloseVoicingAtom} gracefully falls back to the first
- * candidate.
- */
-export const selectedCloseVoicingKeyAtom = atomWithStorage<string | null>(
-  k("selectedCloseVoicingKey"),
-  null,
-  selectedCloseVoicingKeyStorage,
   GET_ON_INIT,
 );
 
@@ -343,9 +319,7 @@ export const closeCandidatesAtom = atom((get): Voicing[] => {
 /**
  * The renderer's voicing source. For Full, returns CAGED matches (optionally
  * narrowed to the active CAGED shape). For Close, returns ALL fitting
- * candidates — the renderer is responsible for distinguishing the
- * user-selected voicing (via {@link selectedCloseVoicingAtom}) from the
- * remaining secondary candidates.
+ * candidates — the renderer paints every polyline uniformly.
  */
 export const voicingMatchesAtom = atom((get): Voicing[] => {
   const voicing = get(voicingAtom);
@@ -364,27 +338,8 @@ export const voicingMatchesAtom = atom((get): Voicing[] => {
     }
     return all;
   }
-  // close: return every fitting candidate. Selection vs. dimming of the
-  // non-selected candidates is the renderer's job (Task F5c/d).
+  // close: return every fitting candidate.
   return get(closeCandidatesAtom);
-});
-
-/**
- * The currently selected Close voicing, resolved from
- * {@link selectedCloseVoicingKeyAtom} against the live candidate list. Falls
- * back to the first candidate when the stored key has gone stale (chord
- * changed, scale window narrowed, snap toggled, etc.). Returns null only when
- * there are no candidates at all.
- */
-export const selectedCloseVoicingAtom = atom((get): Voicing | null => {
-  const candidates = get(closeCandidatesAtom);
-  if (candidates.length === 0) return null;
-  const key = get(selectedCloseVoicingKeyAtom);
-  const found =
-    key !== null
-      ? candidates.find((v) => v.positionKeys.join("|") === key)
-      : null;
-  return found ?? candidates[0];
 });
 
 /**

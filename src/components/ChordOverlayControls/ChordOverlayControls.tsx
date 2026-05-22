@@ -1,23 +1,15 @@
-import { useEffect, useRef } from "react";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useEffect } from "react";
+import { useAtom, useAtomValue } from "jotai";
 import { type PracticeLens } from "@fretflow/core";
 import {
   practiceLensAtom,
   chordTypeAtom,
-  voicingAtom,
-  closePositionIndexAtom,
 } from "../../store/chordOverlayAtoms";
 import { lensAvailabilityAtom } from "../../store/practiceLensAtoms";
-import {
-  cagedShapesAtom,
-  fingeringPatternAtom,
-  npsPositionAtom,
-} from "../../store/fingeringAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { PropGrid, Prop } from "../Inspector/InspectorGrid";
 import { VoicingControl } from "./VoicingControl";
-import { ClosePositionCycle } from "./ClosePositionCycle";
 import panelStyles from "./ChordOverlayControls.module.css";
 
 /** Compact lens labels for the narrow Voicing-row Lens toggle. The `satisfies`
@@ -27,37 +19,13 @@ const LENS_SHORT_LABELS = {
   lead: "Lead",
 } satisfies Partial<Record<PracticeLens, string>>;
 
-/**
- * Resets `closePositionIndexAtom` to 0 whenever the active scale-shape window
- * changes. The window is identified by a fingerprint of `(fingeringPattern,
- * cagedShapes, npsPosition)`. On first mount no reset fires — the persisted
- * index is honoured.
- */
-function useResetClosePositionOnShapeChange() {
-  const pattern = useAtomValue(fingeringPatternAtom);
-  const shapes = useAtomValue(cagedShapesAtom);
-  const npsPos = useAtomValue(npsPositionAtom);
-  const setIndex = useSetAtom(closePositionIndexAtom);
-
-  const prevRef = useRef<string>("");
-  useEffect(() => {
-    const fingerprint = `${pattern}|${[...shapes].sort().join(",")}|${npsPos}`;
-    if (prevRef.current !== "" && prevRef.current !== fingerprint) {
-      setIndex(0);
-    }
-    prevRef.current = fingerprint;
-  }, [pattern, shapes, npsPos, setIndex]);
-}
-
 export function ChordOverlayControls() {
-  useResetClosePositionOnShapeChange();
   const { t } = useTranslation();
 
   // Read the resolved chord identity used by the panel (lens availability).
   const chordType = useAtomValue(chordTypeAtom);
 
   const [practiceLens, setPracticeLens] = useAtom(practiceLensAtom);
-  const voicing = useAtomValue(voicingAtom);
   const lensAvailability = useAtomValue(lensAvailabilityAtom);
 
   // All lenses are always shown; an unavailable lens renders disabled.
@@ -111,11 +79,6 @@ export function ChordOverlayControls() {
             label={t("controls.lensAriaLabel")}
           />
         </Prop>
-        {voicing === "close" && (
-          <Prop label={t("inspector.closeCyclePositionLabel")} span={2}>
-            <ClosePositionCycle />
-          </Prop>
-        )}
       </PropGrid>
     </div>
   );

@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, it, expect } from "vitest";
-import { screen, within, act } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
-import { renderWithAtoms, renderWithStore, makeAtomStore } from "../../test-utils/renderWithAtoms";
+import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
 import { practiceLensAtom, voicingAtom } from "../../store/chordOverlayAtoms";
 import { fingeringPatternAtom } from "../../store/fingeringAtoms";
 import { progressionStepsAtom } from "../../store/progressionAtoms";
@@ -12,9 +12,8 @@ import { ChordOverlayControls } from "./ChordOverlayControls";
 
 /**
  * ChordOverlayControls now owns only the VOICING sub-group (VoicingControl +
- * Lens ToggleBar + optional ClosePositionCycle). SOURCE (Degree + Root) and
- * CHORD TYPE (Quality) have moved to SongControls / the Song-tab progression
- * editor.
+ * Lens ToggleBar). SOURCE (Degree + Root) and CHORD TYPE (Quality) have moved
+ * to SongControls / the Song-tab progression editor.
  *
  * Default seeds: C Major, one progression step at degree I (= Major Triad).
  * `fingeringPatternAtom = "caged"` keeps the overlay enabled.
@@ -166,7 +165,7 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
   });
 
-  describe("Voicing group (v2.0 single dropdown + Close cycle)", () => {
+  describe("Voicing group (v2.0 single dropdown)", () => {
     it("renders the Voicing dropdown as a combobox with three options (Off/Full/Close)", async () => {
       renderManual();
       const combobox = screen.getByRole("combobox", { name: /voicing/i });
@@ -177,19 +176,9 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(screen.getByRole("option", { name: /Close/i })).toBeInTheDocument();
     });
 
-    it("renders the Close cycle only when voicing = close", () => {
-      const store = makeAtomStore([
-        ...MANUAL_SEEDS,
-        [voicingAtom, "full"],
-      ]);
-      const { rerender } = renderWithStore(<ChordOverlayControls />, store);
-      expect(screen.queryByTestId("close-cycle-counter")).not.toBeInTheDocument();
-
-      act(() => {
-        store.set(voicingAtom, "close");
-      });
-      rerender(<ChordOverlayControls />);
-      expect(screen.getByTestId("close-cycle-counter")).toBeInTheDocument();
+    it("does not render a Close position picker (rolled back in F5w; string-set picker arrives in F5z)", () => {
+      renderManual([[voicingAtom, "close"]]);
+      expect(screen.queryByTestId("close-position-picker")).not.toBeInTheDocument();
     });
 
     it("does not render legacy Type/Inversion/StringSet/Connectors controls", () => {

@@ -126,14 +126,6 @@ interface FretboardSVGProps {
     notes: FullChordMatchNote[];
     shape?: CagedShape;
   }>;
-  /**
-   * Identifier of the user-selected voicing for the Close picker. When a
-   * connector polyline's `voicingKey` matches, it renders as primary (full
-   * opacity); the rest render as secondary candidates (dimmed). When `null`
-   * (Full voicing mode, single-polyline cases, or no selection) every
-   * polyline renders as primary.
-   */
-  selectedVoicingKey?: string | null;
   /** When false, chord voicing connector polylines are not rendered. Defaults to true. */
   showChordConnectors?: boolean;
   /** Optional DOM id applied to the SVG wrapper for stable external references. */
@@ -175,7 +167,6 @@ export const FretboardSVG = memo(function FretboardSVG({
   noteSemantics,
   fullChordPositionKeys,
   fullChordVoicings,
-  selectedVoicingKey = null,
   showChordConnectors = true,
   id,
   onNoteClick,
@@ -570,7 +561,6 @@ export const FretboardSVG = memo(function FretboardSVG({
             connectorSource={connectorSource}
             chordRoot={chordRoot}
             chordTones={chordTones}
-            selectedVoicingKey={selectedVoicingKey}
             showChordConnectors={showChordConnectors}
             connectorMotionMode={motionPolicy.connectorMode}
             clipPathUrl={svgDefUrl("fretboard-svg-box")}
