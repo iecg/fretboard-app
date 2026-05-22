@@ -160,7 +160,7 @@ export const es: Dictionary = {
     customChordHint: "Tipo de acorde personalizado — no es el predeterminado diatónico.",
     diatonicDefaultHint: "Cambiar grados selecciona el predeterminado diatónico automáticamente.",
     manualQualityHint: "Define la calidad del acorde directamente.",
-    voicingLensCrossRef: "Voicing y lente del acorde están en la pestaña Vista.",
+    voicingLensCrossRef: "Voicing y lente del acorde están en la pestaña Superposición.",
     chordPositionLabel: "Acorde",
     qualityGroupTriads: "Tríadas",
     qualityGroupSus: "Suspendidos / Quinta",

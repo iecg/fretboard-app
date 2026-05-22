@@ -207,8 +207,8 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
                   across the neck. Click a shape (C / A / G / E / D) to isolate
                   it; Shift-click to toggle multiple shapes. Enable{" "}
                   <em>Shape Labels</em> to letter each polygon. "CAGED" names
-                  both the scale-position system (Scale tab, Position cluster)
-                  and the chord-voicing system (View tab, Voicing section) —
+                  both the scale-position system (Overlay tab, Pattern control)
+                  and the chord-voicing system (Overlay tab, Chord section) —
                   they are the same five-shape idea applied to scales vs.
                   chords.
                 </li>
@@ -246,7 +246,7 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
                 <li>
                   <strong>Settings (gear icon):</strong> Opens a drawer for
                   Tuning, Zoom, Fret Range, Accidentals, and Enharmonic
-                  Display. Chord Spread lives in the View tab's Voicing
+                  Display. Chord Spread lives in the Overlay tab's Chord
                   section. Use Settings → Reset to restore all defaults.
                 </li>
                 <li>
