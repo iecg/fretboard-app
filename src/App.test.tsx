@@ -9,7 +9,7 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "./App";
-import { synth } from "./core/audio";
+import { setGuitarMutePreference } from "./core/lazyGuitarAudio";
 import { get3NPSCoordinates, STANDARD_TUNING } from "@fretflow/core";
 import { k } from "./test-utils/storage";
 
@@ -53,13 +53,11 @@ vi.mock("./components/CircleOfFifths/CircleOfFifths", async () => {
   };
 });
 
-vi.mock("./core/audio", () => ({
-  synth: {
-    setMute: vi.fn(),
-    init: vi.fn(),
-    playNote: vi.fn(),
-    resume: vi.fn(),
-  },
+vi.mock("./core/lazyGuitarAudio", () => ({
+  setGuitarMutePreference: vi.fn(),
+  setGuitarAudioErrorHandler: vi.fn(),
+  resumeGuitarAudio: vi.fn(),
+  playGuitarNote: vi.fn(),
 }));
 
 const setViewport = (width: number, height: number) => {
@@ -98,7 +96,7 @@ describe("App", () => {
     it("seeds isMuted in storage and forwards initial mute state to synth", () => {
       localStorage.setItem(k("isMuted"), "true");
       render(<App />);
-      expect(synth.setMute).toHaveBeenCalledWith(true);
+      expect(setGuitarMutePreference).toHaveBeenCalledWith(true);
       expect(localStorage.getItem(k("isMuted"))).toBe("true");
     });
   });
@@ -155,7 +153,7 @@ describe("App", () => {
       fireEvent.click(muteBtn);
       await waitFor(() => {
         expect(localStorage.getItem(k("isMuted"))).toBe("true");
-        expect(synth.setMute).toHaveBeenCalled();
+        expect(setGuitarMutePreference).toHaveBeenCalled();
       });
     });
 

@@ -2,19 +2,20 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import App from "./App";
+import { playGuitarNote } from "./core/lazyGuitarAudio";
 import { k } from "./test-utils/storage";
 // Pre-import lazy-loaded components so React.lazy() resolves from the module
 // cache synchronously, allowing Suspense to mount them without async delay.
 import "./components/Inspector/Inspector";
 
-const mockSynth = vi.hoisted(() => ({
-  playNote: vi.fn(),
-  setMute: vi.fn(),
-  init: vi.fn(),
-  resume: vi.fn(),
+const lazyAudio = vi.hoisted(() => ({
+  playGuitarNote: vi.fn(),
+  setGuitarMutePreference: vi.fn(),
+  setGuitarAudioErrorHandler: vi.fn(),
+  resumeGuitarAudio: vi.fn(),
 }));
 
-vi.mock("./core/audio", () => ({ synth: mockSynth }));
+vi.mock("./core/lazyGuitarAudio", () => lazyAudio);
 
 // Cross-cutting integration tests that App.test.tsx cannot prove because it
 // mocks the Fretboard. Persistence round-trips for individual atoms are
@@ -28,7 +29,7 @@ describe("Integration: real-component user workflows", () => {
   });
   afterEach(() => localStorage.clear());
 
-  it("clicking a real fretboard note button invokes synth.playNote", async () => {
+  it("clicking a real fretboard note button invokes lazy audio playback", async () => {
     localStorage.setItem(k("isMuted"), "false");
     render(<App />);
 
@@ -39,8 +40,8 @@ describe("Integration: real-component user workflows", () => {
     expect(noteButtons.length).toBeGreaterThan(0);
 
     fireEvent.click(noteButtons[0]);
-    expect(mockSynth.playNote).toHaveBeenCalledTimes(1);
-    expect(mockSynth.playNote).toHaveBeenCalledWith(expect.any(Number));
+    expect(playGuitarNote).toHaveBeenCalledTimes(1);
+    expect(playGuitarNote).toHaveBeenCalledWith(expect.any(Number));
   });
 
   it("changing accidental mode in Settings re-renders the scale label without persisting", async () => {

@@ -7,7 +7,7 @@ import {
   getFretNoteWithOctave,
   getNoteFrequency,
 } from "@fretflow/core";
-import { synth } from "../../core/audio";
+import { playGuitarNote } from "../../core/lazyGuitarAudio";
 import { fretZoomAtom } from "../../store/layoutAtoms";
 import type { AutoCenterTarget } from "../../store/shapeAtoms";
 import { FretboardSVG } from "../FretboardSVG/FretboardSVG";
@@ -259,7 +259,7 @@ export function Fretboard(props: FretboardProps) {
     pendingTarget.current = null;
   }, [updateCursor]);
 
-  const handleFretClick = useCallback((
+  const handleFretClick = useCallback(async (
     stringIndex: number,
     fretIndex: number,
     noteName: string,
@@ -270,7 +270,7 @@ export function Fretboard(props: FretboardProps) {
       fretIndex,
     );
     const frequency = getNoteFrequency(fretNoteWithOctave);
-    synth.playNote(frequency);
+    await playGuitarNote(frequency);
     if (onFretClickProp) onFretClickProp(stringIndex, fretIndex, noteName);
   }, [tuning, onFretClickProp]);
 

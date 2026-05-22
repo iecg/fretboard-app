@@ -3,7 +3,11 @@ import { useSetAtom, useAtomValue, useAtom, createStore, Provider } from "jotai"
 import { AnimatePresence, motion } from "motion/react";
 import { Fretboard } from "./components/Fretboard/Fretboard";
 import { HelpCircle, Moon, Settings2, Sun, Volume2, VolumeX } from "lucide-react";
-import { synth } from "./core/audio";
+import {
+  resumeGuitarAudio,
+  setGuitarAudioErrorHandler,
+  setGuitarMutePreference,
+} from "./core/lazyGuitarAudio";
 import { isMutedAtom, toggleMuteAtom, audioErrorAtom } from "./store/audioAtoms";
 import { chordRootAtom, chordTypeAtom, chordOverlayHiddenAtom } from "./store/chordOverlayAtoms";
 import { rootNoteAtom, scaleNameAtom } from "./store/scaleAtoms";
@@ -59,20 +63,20 @@ function AppContent() {
   }, [theme]);
 
   useEffect(() => {
-    synth.setMute(isMuted);
+    setGuitarMutePreference(isMuted);
   }, [isMuted]);
 
   useEffect(() => {
-    synth.onError = (msg) => setAudioError(msg);
+    setGuitarAudioErrorHandler((msg) => setAudioError(msg));
     return () => {
-      synth.onError = undefined;
+      setGuitarAudioErrorHandler(undefined);
     };
   }, [setAudioError]);
 
   // Safari/iOS robustness: resume AudioContext on first interaction
   useEffect(() => {
     const handleGesture = () => {
-      void synth.resume();
+      void resumeGuitarAudio();
       window.removeEventListener("click", handleGesture);
       window.removeEventListener("touchstart", handleGesture);
     };
