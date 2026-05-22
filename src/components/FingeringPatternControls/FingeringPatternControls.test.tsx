@@ -5,7 +5,7 @@ import userEvent from "@testing-library/user-event";
 import { FingeringPatternControls } from "../FingeringPatternControls/FingeringPatternControls";
 import { createStore, Provider } from "jotai";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
-import { fingeringPatternAtom, cagedShapesAtom, oneStringIndexAtom, oneStringIntervalAtom, twoStringsPairAtom, twoStringsIntervalAtom } from "../../store/fingeringAtoms";
+import { fingeringPatternAtom, cagedShapesAtom, cagedOctaveAtom, oneStringIndexAtom, oneStringIntervalAtom, twoStringsPairAtom, twoStringsIntervalAtom } from "../../store/fingeringAtoms";
 import { type CagedShape } from "@fretflow/core";
 import { axe } from "../../test-utils/a11y";
 
@@ -112,6 +112,82 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
     // CAGED becomes pressed; 1-String unpresses
     expect(screen.getByRole("button", { name: /^CAGED$/ })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("button", { name: /^1-String$/ })).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("renders CAGED octave ToggleBar (Low/High) when CAGED is active and exactly one shape is selected", () => {
+    const store = createStore();
+    act(() => {
+      store.set(fingeringPatternAtom, "caged");
+      store.set(cagedShapesAtom, new Set<CagedShape>(["E"]));
+    });
+    render(
+      <Provider store={store}>
+        <FingeringPatternControls />
+      </Provider>
+    );
+    expect(screen.getByRole("group", { name: /CAGED octave/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Low" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "High" })).toBeInTheDocument();
+  });
+
+  it("CAGED octave ToggleBar is hidden when multiple CAGED shapes are selected", () => {
+    const store = createStore();
+    act(() => {
+      store.set(fingeringPatternAtom, "caged");
+      store.set(cagedShapesAtom, new Set<CagedShape>(["C", "A"]));
+    });
+    render(
+      <Provider store={store}>
+        <FingeringPatternControls />
+      </Provider>
+    );
+    expect(screen.queryByRole("group", { name: /CAGED octave/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Low" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "High" })).toBeNull();
+  });
+
+  it("CAGED octave ToggleBar is hidden when fingeringPattern is not caged", () => {
+    const store = createStore();
+    act(() => {
+      store.set(fingeringPatternAtom, "3nps");
+    });
+    render(
+      <Provider store={store}>
+        <FingeringPatternControls />
+      </Provider>
+    );
+    expect(screen.queryByRole("group", { name: /CAGED octave/i })).toBeNull();
+  });
+
+  it("clicking High in CAGED octave toggle updates cagedOctaveAtom to 1", () => {
+    const store = createStore();
+    act(() => {
+      store.set(fingeringPatternAtom, "caged");
+      store.set(cagedShapesAtom, new Set<CagedShape>(["E"]));
+    });
+    render(
+      <Provider store={store}>
+        <FingeringPatternControls />
+      </Provider>
+    );
+    fireEvent.click(screen.getByRole("button", { name: "High" }));
+    expect(store.get(cagedOctaveAtom)).toBe(1);
+  });
+
+  it("clicking Low in CAGED octave toggle updates cagedOctaveAtom to 0", () => {
+    const store = createStore();
+    act(() => {
+      store.set(fingeringPatternAtom, "caged");
+      store.set(cagedShapesAtom, new Set<CagedShape>(["E"]));
+      store.set(cagedOctaveAtom, 1);
+    });
+    render(
+      <Provider store={store}>
+        <FingeringPatternControls />
+      </Provider>
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Low" }));
+    expect(store.get(cagedOctaveAtom)).toBe(0);
   });
 
   it("handles shift-click multi-select for CAGED shapes", () => {

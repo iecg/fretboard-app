@@ -166,5 +166,6 @@ export const en: Dictionary = {
     qualityGroupSus: "Suspended / Power",
     qualityGroupSixths: "6th Chords",
     qualityGroupSevenths: "7th Chords",
+    cagedOctaveAriaLabel: "CAGED octave",
   },
 };

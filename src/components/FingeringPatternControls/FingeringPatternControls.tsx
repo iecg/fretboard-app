@@ -37,6 +37,8 @@ export function FingeringPatternControls({ hideHeader = false }: FingeringPatter
     setFingeringPattern,
     cagedShapes,
     setCagedShapes,
+    cagedOctave,
+    setCagedOctave,
     toggleCagedShape,
     selectSingleCagedShape,
     npsPosition,
@@ -109,6 +111,20 @@ export function FingeringPatternControls({ hideHeader = false }: FingeringPatter
           onChange={(v) => setFingeringPattern(v as FingeringPattern)}
         />
       </Prop>
+
+      {fingeringPattern === "caged" && cagedShapes.size === 1 && (
+        <Prop label={t("controls.cagedOctaveAriaLabel")} span={2}>
+          <ToggleBar
+            label={t("controls.cagedOctaveAriaLabel")}
+            options={[
+              { value: 0, label: "Low" },
+              { value: 1, label: "High" },
+            ]}
+            value={cagedOctave}
+            onChange={(v) => setCagedOctave(v as number)}
+          />
+        </Prop>
+      )}
 
       {fingeringPattern === "caged" && (
         <Prop

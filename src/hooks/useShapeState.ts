@@ -1,6 +1,6 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { setFingeringPatternAtom } from "../store/actions";
-import { fingeringPatternAtom, cagedShapesAtom, toggleCagedShapeAtom, selectSingleCagedShapeAtom, npsPositionAtom, npsOctaveAtom, clickedShapeAtom, recenterKeyAtom, oneStringIndexAtom, oneStringIntervalAtom, twoStringsPairAtom, twoStringsIntervalAtom } from "../store/fingeringAtoms";
+import { fingeringPatternAtom, cagedShapesAtom, cagedOctaveAtom, toggleCagedShapeAtom, selectSingleCagedShapeAtom, npsPositionAtom, npsOctaveAtom, clickedShapeAtom, recenterKeyAtom, oneStringIndexAtom, oneStringIntervalAtom, twoStringsPairAtom, twoStringsIntervalAtom } from "../store/fingeringAtoms";
 import { shapeDataAtom, autoCenterTargetAtom } from "../store/shapeAtoms";
 import { type CagedShape } from "@fretflow/core";
 
@@ -8,6 +8,7 @@ export function useShapeState() {
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
   const setFingeringPattern = useSetAtom(setFingeringPatternAtom);
   const [cagedShapes, setCagedShapes] = useAtom(cagedShapesAtom);
+  const [cagedOctave, setCagedOctave] = useAtom(cagedOctaveAtom);
   const toggleCagedShape = useSetAtom(toggleCagedShapeAtom);
   const selectSingleCagedShape = useSetAtom(selectSingleCagedShapeAtom);
   const [npsPosition, setNpsPosition] = useAtom(npsPositionAtom);
@@ -36,6 +37,8 @@ export function useShapeState() {
     setFingeringPattern,
     cagedShapes,
     setCagedShapes,
+    cagedOctave,
+    setCagedOctave,
     toggleCagedShape,
     selectSingleCagedShape,
     npsPosition,

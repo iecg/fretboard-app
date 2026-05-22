@@ -37,6 +37,7 @@ import { currentTuningAtom } from "./layoutAtoms";
 import { handSizeAtom } from "./settingsAtoms";
 import {
   cagedShapesAtom,
+  cagedOctaveAtom,
   fingeringPatternAtom,
   npsPositionAtom,
 } from "./fingeringAtoms";
@@ -243,14 +244,16 @@ const fullVoicingsAtom = atom((get): Voicing[] => {
  * standalone window table exists in @fretflow/core); for 3NPS, use the
  * stored position. Buffer ±1 fret either side.
  */
-const activeScaleWindowAtom = atom((get): { lo: number; hi: number } | null => {
+export const activeScaleWindowAtom = atom((get): { lo: number; hi: number } | null => {
   const pattern = get(fingeringPatternAtom);
   if (pattern === "caged") {
     const shapes = get(cagedShapesAtom);
     if (shapes.size !== 1) return null;
     const shape = [...shapes][0];
     const fullMatches = get(fullVoicingsAtom);
-    const match = fullMatches.find((v) => v.shape === shape);
+    const matchesOfShape = fullMatches.filter((v) => v.shape === shape);
+    const octave = get(cagedOctaveAtom);
+    const match = matchesOfShape[octave] ?? matchesOfShape[0];
     if (!match) return null;
     const fretted = match.notes.map((n) => n.fretIndex).filter((f) => f > 0);
     if (fretted.length === 0) return null;
