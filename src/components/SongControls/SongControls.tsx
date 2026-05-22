@@ -184,7 +184,7 @@ export function SongControls() {
       <GroupHeader>
         {t("inspector.groupKey")}
       </GroupHeader>
-      <Prop label={t("controls.root")} span={6}>
+      <Prop label={t("controls.root")} span={3}>
         <LabeledSelect
           label={t("controls.root")}
           hideLabel
@@ -196,7 +196,7 @@ export function SongControls() {
           }))}
         />
       </Prop>
-      <Prop label={t("inspector.scaleLabel")} span={6}>
+      <Prop label={t("inspector.scaleLabel")} span={3}>
         <LabeledSelect
           label={t("inspector.scaleLabel")}
           value={scaleName}
@@ -208,10 +208,10 @@ export function SongControls() {
 
       {/* ── TIME ─────────────────────────────────────────────────────────── */}
       <GroupHeader>{t("inspector.groupTime")}</GroupHeader>
-      <Prop label={t("inspector.timeSignature")} span={3}>
+      <Prop label={t("inspector.timeSignature")} span={1}>
         <TimeSignaturePicker />
       </Prop>
-      <Prop label={t("inspector.meterTempo")} span={3}>
+      <Prop label={t("inspector.meterTempo")} span={5}>
         <StepperControl
           label={t("inspector.meterTempo")}
           hideLabel

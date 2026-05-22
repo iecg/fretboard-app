@@ -287,6 +287,16 @@ describe("SongControls DEGREE", () => {
   });
 });
 
+describe("SongControls KEY section layout", () => {
+  it("renders Root and Scale dropdowns in the KEY section", () => {
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    // Both comboboxes must be present — layout is CSS-driven (span={3} each in a 6-col grid)
+    const rootCombos = screen.getAllByRole("combobox", { name: "Root" });
+    expect(rootCombos.length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByRole("combobox", { name: "Scale" })).toBeInTheDocument();
+  });
+});
+
 describe("SongControls ROOT dropdown (KEY section)", () => {
   it("renders the song key Root as a combobox with 12 options", async () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
