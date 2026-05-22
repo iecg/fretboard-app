@@ -17,6 +17,7 @@ import {
 import { OverlaySection } from "./shared";
 import DisplaySettingsSection from "./sections/DisplaySettingsSection";
 import InstrumentSettingsSection from "./sections/InstrumentSettingsSection";
+import HandSizeSection from "./sections/HandSizeSection";
 import AppearanceSettingsSection from "./sections/AppearanceSettingsSection";
 import ResetSettingsSection from "./sections/ResetSettingsSection";
 import LanguageSettingsSection from "./sections/LanguageSettingsSection";
@@ -120,6 +121,7 @@ function SettingsOverlaySurface({
           </OverlaySection>
           <OverlaySection id="instrument" title={t("settings.sections.instrument")}>
             <InstrumentSettingsSection />
+            <HandSizeSection />
           </OverlaySection>
           <LanguageSettingsSection />
           <AppearanceSettingsSection />
