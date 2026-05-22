@@ -6,8 +6,9 @@ import {
   chordTonesAtom,
   voicingAtom,
   voicingMatchesAtom,
+  voicingStringSetAtom,
+  effectiveStringSetAtom,
   activeScaleWindowAtom,
-  closePositionIndexAtom,
   closeCandidatesAtom,
   chordSourceIsProgressionAtom,
   chordHighlightPositionsAtom,
@@ -341,33 +342,6 @@ describe("closeCandidatesAtom — v2.0", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Group H — closePositionIndexAtom (v2.0)
-// ---------------------------------------------------------------------------
-
-describe("closePositionIndexAtom — v2.0", () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
-
-  it("starts at 0", () => {
-    const store = makeAtomStore([]);
-    expect(store.get(closePositionIndexAtom)).toBe(0);
-  });
-
-  it("stores out-of-range values raw (wrapping happens in voicingMatchesAtom)", () => {
-    const store = makeAtomStore([
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
-      [progressionStepsAtom, progressionWith({ degree: "I" })],
-      [voicingAtom, "close"],
-    ]);
-    store.set(closePositionIndexAtom, 9999);
-    expect(store.get(closePositionIndexAtom)).toBe(9999);
-    expect(store.get(closeCandidatesAtom).length).toBeGreaterThan(0);
-  });
-});
-
-// ---------------------------------------------------------------------------
 // Group H-2 — activeScaleWindowAtom CAGED octave switching
 // ---------------------------------------------------------------------------
 
@@ -528,23 +502,6 @@ describe("voicingMatchesAtom — v2.0 dispatch", () => {
     expect(matches).toEqual(candidates);
   });
 
-  it("close branch ignores closePositionIndexAtom (returns full candidate list regardless)", () => {
-    const storeIdx0 = makeAtomStore([
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
-      [progressionStepsAtom, progressionWith({ degree: "I" })],
-      [voicingAtom, "close"],
-      [closePositionIndexAtom, 0],
-    ]);
-    const storeIdx2 = makeAtomStore([
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
-      [progressionStepsAtom, progressionWith({ degree: "I" })],
-      [voicingAtom, "close"],
-      [closePositionIndexAtom, 2],
-    ]);
-    expect(storeIdx0.get(voicingMatchesAtom)).toEqual(storeIdx2.get(voicingMatchesAtom));
-  });
 });
 
 // ---------------------------------------------------------------------------
@@ -697,5 +654,80 @@ describe("chordSnapToScaleAtom + closeCandidatesAtom", () => {
     const snapOn = makeAtomStore([...seeds, [chordSnapToScaleAtom, true]] as Parameters<typeof makeAtomStore>[0]);
     const snapOff = makeAtomStore([...seeds, [chordSnapToScaleAtom, false]] as Parameters<typeof makeAtomStore>[0]);
     expect(snapOff.get(closeCandidatesAtom).length).toBe(snapOn.get(closeCandidatesAtom).length);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Group M — voicingStringSetAtom + effectiveStringSetAtom (v2.0)
+// ---------------------------------------------------------------------------
+
+describe("voicingStringSetAtom + effectiveStringSetAtom", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("defaults to 'all' → all 6 strings", () => {
+    const store = makeAtomStore([]);
+    expect(store.get(voicingStringSetAtom)).toBe("all");
+    expect([...store.get(effectiveStringSetAtom)]).toEqual([0, 1, 2, 3, 4, 5]);
+  });
+
+  it("selecting a window narrows effective strings", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
+    ]);
+    store.set(voicingStringSetAtom, "1-2-3-4");
+    expect([...store.get(effectiveStringSetAtom)]).toEqual([1, 2, 3, 4]);
+  });
+
+  it("falls back to ALL when stored id no longer matches options for the active chord", () => {
+    // Major Triad has 3 notes → options are "0-1-2", "1-2-3", ... "3-4-5".
+    // "0-1-2-3" (a 4-note window) doesn't appear in triad options.
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+    ]);
+    store.set(voicingStringSetAtom, "0-1-2-3");
+    expect([...store.get(effectiveStringSetAtom)]).toEqual([0, 1, 2, 3, 4, 5]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Group N — closeCandidatesAtom × string set (v2.0)
+// ---------------------------------------------------------------------------
+
+describe("closeCandidatesAtom × string set", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("returns all candidates when string set is 'all'", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
+      [voicingAtom, "close"],
+    ]);
+    expect(store.get(closeCandidatesAtom).length).toBeGreaterThan(0);
+  });
+
+  it("'1-2-3-4' excludes voicings using string 0 or string 5", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
+      [voicingAtom, "close"],
+    ]);
+    store.set(voicingStringSetAtom, "1-2-3-4");
+    const v = store.get(closeCandidatesAtom);
+    expect(v.length).toBeGreaterThan(0);
+    for (const voicing of v) {
+      for (const note of voicing.notes) {
+        expect([1, 2, 3, 4]).toContain(note.stringIndex);
+      }
+    }
   });
 });

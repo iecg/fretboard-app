@@ -176,16 +176,35 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(screen.getByRole("option", { name: /Close/i })).toBeInTheDocument();
     });
 
-    it("does not render a Close position picker (rolled back in F5w; string-set picker arrives in F5z)", () => {
+    it("does not render the legacy numeric Close position picker", () => {
       renderManual([[voicingAtom, "close"]]);
       expect(screen.queryByTestId("close-position-picker")).not.toBeInTheDocument();
     });
 
-    it("does not render legacy Type/Inversion/StringSet/Connectors controls", () => {
+    it("renders the string-set picker when voicing is 'close'", () => {
+      renderManual([[voicingAtom, "close"]]);
+      expect(
+        screen.getByRole("combobox", { name: /strings/i }),
+      ).toBeInTheDocument();
+    });
+
+    it("hides the string-set picker when voicing is 'off' or 'full'", () => {
+      const { unmount } = renderManual([[voicingAtom, "off"]]);
+      expect(
+        screen.queryByRole("combobox", { name: /strings/i }),
+      ).not.toBeInTheDocument();
+      unmount();
+
+      renderManual([[voicingAtom, "full"]]);
+      expect(
+        screen.queryByRole("combobox", { name: /strings/i }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("does not render legacy Type/Inversion/Connectors controls", () => {
       renderManual([[voicingAtom, "full"]]);
       expect(screen.queryByRole("group", { name: "Voicing type" })).not.toBeInTheDocument();
       expect(screen.queryByRole("group", { name: "Voicing inversion" })).not.toBeInTheDocument();
-      expect(screen.queryByRole("combobox", { name: /string set/i })).not.toBeInTheDocument();
       expect(screen.queryByRole("switch", { name: "Connectors" })).not.toBeInTheDocument();
     });
 

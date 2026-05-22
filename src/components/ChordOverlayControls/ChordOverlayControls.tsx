@@ -4,12 +4,14 @@ import { type PracticeLens } from "@fretflow/core";
 import {
   practiceLensAtom,
   chordTypeAtom,
+  voicingAtom,
 } from "../../store/chordOverlayAtoms";
 import { lensAvailabilityAtom } from "../../store/practiceLensAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { PropGrid, Prop } from "../Inspector/InspectorGrid";
 import { VoicingControl } from "./VoicingControl";
+import { ChordStringSetPicker } from "./ChordStringSetPicker";
 import panelStyles from "./ChordOverlayControls.module.css";
 
 /** Compact lens labels for the narrow Voicing-row Lens toggle. The `satisfies`
@@ -24,6 +26,7 @@ export function ChordOverlayControls() {
 
   // Read the resolved chord identity used by the panel (lens availability).
   const chordType = useAtomValue(chordTypeAtom);
+  const voicing = useAtomValue(voicingAtom);
 
   const [practiceLens, setPracticeLens] = useAtom(practiceLensAtom);
   const lensAvailability = useAtomValue(lensAvailabilityAtom);
@@ -79,6 +82,11 @@ export function ChordOverlayControls() {
             label={t("controls.lensAriaLabel")}
           />
         </Prop>
+        {voicing === "close" ? (
+          <Prop label={t("inspector.chordStringSetLabel")} span={2}>
+            <ChordStringSetPicker />
+          </Prop>
+        ) : null}
       </PropGrid>
     </div>
   );

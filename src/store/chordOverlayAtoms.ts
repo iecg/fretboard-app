@@ -21,11 +21,15 @@ import {
   k,
   createStorage,
   booleanStorage,
-  constrainedNumberStorage,
   enumValidator,
   GET_ON_INIT,
   withStorageErrorBoundary,
 } from "../utils/storage";
+import {
+  buildStringSetOptions,
+  ALL_STRINGS_OPTION,
+  type StringSetOption,
+} from "./voicingStringSets";
 import { useFlatsAtom } from "./scaleAtoms";
 import { activeResolvedProgressionStepAtom } from "./progressionAtoms";
 import {
@@ -188,7 +192,9 @@ const voicingValueStorage = createStorage<VoicingType>({
   validate: enumValidator(VOICING_VALUES),
 });
 
-const closePositionIndexStorage = constrainedNumberStorage({ integer: true });
+const voicingStringSetStorage = createStorage<string>({
+  validate: (v): v is string => typeof v === "string",
+});
 
 /**
  * The single Voicing control. Off = no connector polygons. Full = CAGED full-
@@ -205,18 +211,40 @@ export const voicingAtom = atomWithStorage<VoicingType>(
 );
 
 /**
- * Cycle pointer for Close voicings.
- *
- * @deprecated The Close voicing picker no longer uses a numeric cycle index.
- * Retained for one more commit until Task F5z overwrites the slot with the
- * string-set selection atom; no live consumers remain.
+ * The user's string-set selection for Close voicings. Stored as the option id
+ * ("all" or "0-1-2-3" style). The active option list depends on the active
+ * chord's voice count; if the stored id no longer matches any option,
+ * {@link effectiveStringSetAtom} falls back to ALL.
  */
-export const closePositionIndexAtom = atomWithStorage<number>(
-  k("closePositionIndex"),
-  0,
-  closePositionIndexStorage,
+export const voicingStringSetAtom = atomWithStorage<string>(
+  k("voicingStringSet"),
+  "all",
+  voicingStringSetStorage,
   GET_ON_INIT,
 );
+
+/**
+ * Options the picker offers for the current chord: always "All" + every
+ * consecutive-string window for the chord's voice count.
+ */
+export const stringSetOptionsAtom = atom((get): readonly StringSetOption[] => {
+  const chordType = get(chordTypeAtom);
+  if (!chordType) return [ALL_STRINGS_OPTION];
+  const def = CHORD_DEFINITIONS[chordType];
+  return buildStringSetOptions(def?.members.length ?? 4);
+});
+
+/**
+ * The string indices the user's stored selection resolves to (falls back to
+ * ALL when the stored id doesn't match any current option — e.g. after a
+ * chord swap that changes voice count).
+ */
+export const effectiveStringSetAtom = atom((get): readonly number[] => {
+  const options = get(stringSetOptionsAtom);
+  const stored = get(voicingStringSetAtom);
+  const match = options.find((o) => o.id === stored);
+  return match ? match.strings : ALL_STRINGS_OPTION.strings;
+});
 
 /**
  * Toggle for "snap close voicings to the active scale window". When true
@@ -297,19 +325,29 @@ export const closeCandidatesAtom = atom((get): Voicing[] => {
     voicingType: "close",
   });
 
-  // User has opted out of scale-window snapping — return every candidate
-  // regardless of scale shape.
-  if (!get(chordSnapToScaleAtom)) return all;
+  // Apply the scale-window snap (if enabled and a window exists), then the
+  // string-set filter. Either step is a no-op when its precondition is unmet.
+  let windowed = all;
+  if (get(chordSnapToScaleAtom)) {
+    const scaleWindow = get(activeScaleWindowAtom);
+    if (scaleWindow) {
+      windowed = all.filter((v) => {
+        const fretted = v.notes.map((n) => n.fretIndex).filter((f) => f > 0);
+        if (fretted.length === 0) return true;
+        const min = Math.min(...fretted);
+        const max = Math.max(...fretted);
+        return min >= scaleWindow.lo && max <= scaleWindow.hi;
+      });
+    }
+  }
 
-  const scaleWindow = get(activeScaleWindowAtom);
-  if (!scaleWindow) return all;
-  return all.filter((v) => {
-    const fretted = v.notes.map((n) => n.fretIndex).filter((f) => f > 0);
-    if (fretted.length === 0) return true;
-    const min = Math.min(...fretted);
-    const max = Math.max(...fretted);
-    return min >= scaleWindow.lo && max <= scaleWindow.hi;
-  });
+  const stringSet = new Set(get(effectiveStringSetAtom));
+  // Fast-path when "all 6 strings" is selected — every voicing satisfies the
+  // membership test, so skip the per-note loop.
+  if (stringSet.size === 6) return windowed;
+  return windowed.filter((v) =>
+    v.notes.every((n) => stringSet.has(n.stringIndex)),
+  );
 });
 
 /**

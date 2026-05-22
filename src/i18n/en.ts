@@ -79,6 +79,8 @@ export const en: Dictionary = {
     voicingOff: "Off",
     voicingFull: "Full",
     voicingClose: "Close",
+    chordStringSetLabel: "Strings",
+    chordStringSetAll: "All",
     stringSetAll: "All",
     stringSetBass: "Bass",
     stringSetLowerMid: "Lower mid",
