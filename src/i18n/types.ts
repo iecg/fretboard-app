@@ -157,7 +157,6 @@ export interface Dictionary {
     customChordHint: string;
     diatonicDefaultHint: string;
     manualQualityHint: string;
-    degreeGridHint: string;
     voicingLensCrossRef: string;
     chordPositionLabel: string;
     qualityGroupTriads: string;

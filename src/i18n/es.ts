@@ -160,7 +160,6 @@ export const es: Dictionary = {
     customChordHint: "Tipo de acorde personalizado — no es el predeterminado diatónico.",
     diatonicDefaultHint: "Cambiar grados selecciona el predeterminado diatónico automáticamente.",
     manualQualityHint: "Define la calidad del acorde directamente.",
-    degreeGridHint: "Los grados de la escala muestran su numeral romano; los acordes prestados usan notación ♭/♯ estándar.",
     voicingLensCrossRef: "Voicing y lente del acorde están en la pestaña Vista.",
     chordPositionLabel: "Acorde",
     qualityGroupTriads: "Tríadas",

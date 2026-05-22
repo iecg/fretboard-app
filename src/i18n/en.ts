@@ -160,7 +160,6 @@ export const en: Dictionary = {
     customChordHint: "Custom chord type — not the diatonic default.",
     diatonicDefaultHint: "Switching degrees picks the diatonic default automatically.",
     manualQualityHint: "Sets the chord quality directly.",
-    degreeGridHint: "In-key degrees show their Roman numeral; borrowed roots use standard ♭/♯ notation.",
     voicingLensCrossRef: "Voicing & lens for this chord live on the View tab.",
     chordPositionLabel: "Chord",
     qualityGroupTriads: "Triads",

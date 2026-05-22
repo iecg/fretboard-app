@@ -327,10 +327,6 @@ export function SongControls() {
               </span>
             </header>
             <div className={shared["control-section"]}>
-              <span className={styles["field-label"]}>{t("controls.root")}</span>
-              <p className={shared["field-hint"]}>
-                {t("controls.degreeGridHint")}
-              </p>
               <DegreeGrid
                 scaleName={scaleName}
                 tonicNote={rootNote}
@@ -394,11 +390,6 @@ export function SongControls() {
                 }
                 groups={qualityGroups}
               />
-              <p className={shared["field-hint"]}>
-                {activeResolvedProgressionStep?.qualityOverrideApplied
-                  ? "Custom quality on a degree-derived root."
-                  : "No quality selected uses the diatonic chord from the active scale."}
-              </p>
             </div>
             <p className={shared["field-hint"]}>
               {t("controls.voicingLensCrossRef")}
