@@ -68,7 +68,7 @@ describe("SongControls", () => {
     });
   });
 
-  it("clears a quality override by re-clicking the active quality", async () => {
+  it("keeps the quality override sticky on re-click (does not null it)", async () => {
     const store = makeAtomStore([
       ...BASE_SEEDS,
       [progressionStepsAtom, [
@@ -78,8 +78,9 @@ describe("SongControls", () => {
     renderWithStore(<SongControls />, store);
     const qualityGroup = screen.getByRole("group", { name: "Chord quality" });
     // "7" is the short label for Dominant 7th — it is the active cell.
+    // Re-clicking the already-active quality should keep the override, not null it.
     await userEvent.click(within(qualityGroup).getByRole("button", { name: "7" }));
-    expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBeNull();
+    expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBe("Dominant 7th");
   });
 
   it("duplicates the active step via the Duplicate button", async () => {

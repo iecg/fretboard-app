@@ -373,7 +373,7 @@ export function SongControls() {
                 onChange={(quality) =>
                   updateProgressionStepQuality({
                     id: activeStep.id,
-                    qualityOverride: quality === qualityValue ? null : quality,
+                    qualityOverride: quality,
                   })
                 }
               />
