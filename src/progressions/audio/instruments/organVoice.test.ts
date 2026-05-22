@@ -15,16 +15,19 @@ vi.mock("tone", async () => {
   };
 });
 
-import { organVoice } from "./organVoice";
+import type { ChordVoice } from "./types";
 
 describe("organVoice — Tone.PolySynth backend", () => {
   let spies: Awaited<typeof tone>["spies"];
+  let organVoice: ChordVoice;
 
   beforeEach(async () => {
     const t = await tone;
     spies = t.spies;
     vi.useFakeTimers();
     t.reset();
+    vi.resetModules();
+    ({ organVoice } = await import("./organVoice"));
   });
 
   afterEach(() => {
@@ -65,6 +68,19 @@ describe("organVoice — Tone.PolySynth backend", () => {
     expect(duration).toBeCloseTo(1.5, 3); // sustained (default)
     expect(time).toBeCloseTo(4.0, 3);
     expect(velocity).toBeCloseTo(0.5, 2);
+  });
+
+  it("reuses one PolySynth across successive organ schedules", () => {
+    organVoice.scheduleChord({} as AudioNode, ["C3", "E3", "G3"], 0, {
+      velocity: 0.7,
+    });
+    organVoice.scheduleChord({} as AudioNode, ["D3", "F3", "A3"], 1, {
+      velocity: 0.7,
+    });
+
+    expect(spies.ctorSpy).toHaveBeenCalledTimes(1);
+    expect(spies.triggerAttackRelease).toHaveBeenCalledTimes(2);
+    expect(spies.ctorSpy.mock.results[0]?.value.maxPolyphony).toBe(32);
   });
 
   it("uses the staccato duration when options.style === 'staccato'", () => {
@@ -111,7 +127,7 @@ describe("organVoice — Tone.PolySynth backend", () => {
     expect(spies.triggerAttackRelease).not.toHaveBeenCalled();
   });
 
-  it("cancel() releases all voices then defers dispose past the release tail", () => {
+  it("cancel() releases all voices immediately", () => {
     const handle = organVoice.scheduleChord(
       {} as AudioNode,
       ["C3", "E3", "G3"],
@@ -121,11 +137,9 @@ describe("organVoice — Tone.PolySynth backend", () => {
     handle.cancel();
     expect(spies.releaseAll).toHaveBeenCalledTimes(1);
     expect(spies.dispose).not.toHaveBeenCalled();
-    vi.advanceTimersByTime(800); // > DISPOSE_TAIL_MS (700)
-    expect(spies.dispose).toHaveBeenCalledTimes(1);
   });
 
-  it("cancel() is idempotent — repeated calls schedule release/dispose only once", () => {
+  it("cancel() is idempotent — repeated calls release only once", () => {
     const handle = organVoice.scheduleChord(
       {} as AudioNode,
       ["C3", "E3", "G3"],
@@ -135,8 +149,7 @@ describe("organVoice — Tone.PolySynth backend", () => {
     handle.cancel();
     handle.cancel();
     handle.cancel();
-    vi.advanceTimersByTime(800);
     expect(spies.releaseAll).toHaveBeenCalledTimes(1);
-    expect(spies.dispose).toHaveBeenCalledTimes(1);
+    expect(spies.dispose).not.toHaveBeenCalled();
   });
 });

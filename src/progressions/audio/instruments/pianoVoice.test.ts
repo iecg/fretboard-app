@@ -19,16 +19,19 @@ vi.mock("tone", async () => {
   };
 });
 
-import { pianoVoice } from "./pianoVoice";
+import type { ChordVoice } from "./types";
 
 describe("pianoVoice — Tone.PolySynth backend", () => {
   let spies: Awaited<typeof tone>["spies"];
+  let pianoVoice: ChordVoice;
 
   beforeEach(async () => {
     const t = await tone;
     spies = t.spies;
     vi.useFakeTimers();
     t.reset();
+    vi.resetModules();
+    ({ pianoVoice } = await import("./pianoVoice"));
   });
 
   afterEach(() => {
@@ -70,6 +73,19 @@ describe("pianoVoice — Tone.PolySynth backend", () => {
     expect(duration).toBeCloseTo(0.4, 3); // staccato (default)
     expect(time).toBeCloseTo(2.5, 3);
     expect(velocity).toBeCloseTo(0.6, 2);
+  });
+
+  it("reuses one PolySynth across successive piano schedules", () => {
+    pianoVoice.scheduleChord({} as AudioNode, ["C3", "E3", "G3"], 0, {
+      velocity: 0.7,
+    });
+    pianoVoice.scheduleChord({} as AudioNode, ["F3", "A3", "C4"], 1, {
+      velocity: 0.7,
+    });
+
+    expect(spies.ctorSpy).toHaveBeenCalledTimes(1);
+    expect(spies.triggerAttackRelease).toHaveBeenCalledTimes(2);
+    expect(spies.ctorSpy.mock.results[0]?.value.maxPolyphony).toBe(32);
   });
 
   it("uses the sustained duration when options.style === 'sustained'", () => {
@@ -116,7 +132,7 @@ describe("pianoVoice — Tone.PolySynth backend", () => {
     expect(spies.triggerAttackRelease).not.toHaveBeenCalled();
   });
 
-  it("cancel() releases all voices then defers dispose past the release tail", () => {
+  it("cancel() releases all voices immediately", () => {
     const handle = pianoVoice.scheduleChord(
       {} as AudioNode,
       ["C3", "E3", "G3"],
@@ -125,13 +141,10 @@ describe("pianoVoice — Tone.PolySynth backend", () => {
     );
     handle.cancel();
     expect(spies.releaseAll).toHaveBeenCalledTimes(1);
-    // Dispose is deferred so the 1.2s release tail isn't truncated.
     expect(spies.dispose).not.toHaveBeenCalled();
-    vi.advanceTimersByTime(1400); // > DISPOSE_TAIL_MS (1300)
-    expect(spies.dispose).toHaveBeenCalledTimes(1);
   });
 
-  it("cancel() is idempotent — repeated calls schedule release/dispose only once", () => {
+  it("cancel() is idempotent — repeated calls release only once", () => {
     const handle = pianoVoice.scheduleChord(
       {} as AudioNode,
       ["C3", "E3", "G3"],
@@ -141,8 +154,7 @@ describe("pianoVoice — Tone.PolySynth backend", () => {
     handle.cancel();
     handle.cancel();
     handle.cancel();
-    vi.advanceTimersByTime(1400);
     expect(spies.releaseAll).toHaveBeenCalledTimes(1);
-    expect(spies.dispose).toHaveBeenCalledTimes(1);
+    expect(spies.dispose).not.toHaveBeenCalled();
   });
 });
