@@ -100,6 +100,9 @@ export function LabeledSelect({
             position="popper"
             sideOffset={4}
           >
+            <Select.ScrollUpButton className={styles['labeled-select-scroll-button']}>
+              ▲
+            </Select.ScrollUpButton>
             <Select.Viewport className={styles['labeled-select-viewport']}>
               {groups
                 ? groups.map((group, index) => (
@@ -127,6 +130,9 @@ export function LabeledSelect({
                     <LabeledSelectItem key={option.value} {...option} />
                   ))}
             </Select.Viewport>
+            <Select.ScrollDownButton className={styles['labeled-select-scroll-button']}>
+              ▼
+            </Select.ScrollDownButton>
           </Select.Content>
         </Select.Portal>
       </Select.Root>

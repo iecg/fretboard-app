@@ -91,7 +91,7 @@
   z-index: var(--z-dropdown);
   overflow: hidden;
   min-width: var(--radix-select-trigger-width);
-  max-height: var(--radix-select-content-available-height);
+  max-height: min(60vh, 480px);
   background:
     radial-gradient(120% 200% at 0% 0%, var(--faceplate-wash), transparent 55%),
     linear-gradient(180deg, var(--faceplate-bg-elevated), var(--faceplate-bg));
@@ -155,4 +155,15 @@
   height: 1px;
   margin: 0.25rem 0.3rem;
   background: var(--faceplate-divider);
+}
+
+.labeled-select-scroll-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.5rem;
+  background: var(--faceplate-bg-elevated, var(--bg-2));
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 10px;
 }
