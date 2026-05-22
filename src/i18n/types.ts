@@ -107,6 +107,7 @@ export interface Dictionary {
     pattern: string;
     frets: string;
     tempo: string;
+    progressionLength: string;
     tuning: string;
   };
   common: {

@@ -6,7 +6,7 @@ import { activeChordCachedDegreeAtom } from "../../store/songStateAtoms";
 import { fingeringPatternAtom, cagedShapesAtom } from "../../store/fingeringAtoms";
 import type { FingeringPattern } from "../../store/fingeringAtoms";
 import { fretStartAtom, fretEndAtom, tuningNameAtom } from "../../store/layoutAtoms";
-import { progressionTempoBpmAtom } from "../../store/progressionAtoms";
+import { progressionTempoBpmAtom, progressionStepsAtom, totalProgressionBarsAtom } from "../../store/progressionAtoms";
 import { scaleLabelAtom } from "../../store/scaleAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import styles from "./StatusBar.module.css";
@@ -55,6 +55,8 @@ export function StatusBar() {
   const fretStart = useAtomValue(fretStartAtom);
   const fretEnd = useAtomValue(fretEndAtom);
   const tempo = useAtomValue(progressionTempoBpmAtom);
+  const totalBars = useAtomValue(totalProgressionBarsAtom);
+  const steps = useAtomValue(progressionStepsAtom);
   const tuningName = useAtomValue(tuningNameAtom);
 
   const lensLabel =
@@ -80,8 +82,12 @@ export function StatusBar() {
     { id: "pattern", label: t("statusBar.pattern"), value: patternValue },
     { id: "frets", label: t("statusBar.frets"), value: `${fretStart}–${fretEnd}` },
   ];
+  const stepCount = steps.length;
+  const progressionValue = `${totalBars} ${totalBars === 1 ? "bar" : "bars"} · ${stepCount} ${stepCount === 1 ? "chord" : "chords"}`;
+
   const rightFields: ReadonlyArray<StatusField> = [
     { id: "tempo", label: t("statusBar.tempo"), value: `${tempo} BPM` },
+    { id: "progression", label: t("statusBar.progressionLength"), value: progressionValue },
     { id: "tuning", label: t("statusBar.tuning"), value: tuningName || EMPTY },
   ];
 

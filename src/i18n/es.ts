@@ -109,6 +109,7 @@ export const es: Dictionary = {
     pattern: "Patrón",
     frets: "Trastes",
     tempo: "Tempo",
+    progressionLength: "Progresión",
     tuning: "Afinación",
   },
   common: {
