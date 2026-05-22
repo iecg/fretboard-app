@@ -79,27 +79,21 @@ export interface Dictionary {
     btBassPattern: string;
     btDrumPattern: string;
     btSwing: string;
-    voicingType: string;
-    voicingTypeAriaLabel: string;
-    voicingInversion: string;
-    voicingInversionAriaLabel: string;
-    voicingStringSet: string;
-    voicingTypeHint: string;
-    voicingInversionHint: string;
-    voicingStringSetHint: string;
+    voicingAriaLabel: string;
+    voicingOff: string;
+    voicingFull: string;
+    voicingClose: string;
+    closeCycleAriaLabel: string;
+    closeCyclePrev: string;
+    closeCycleNext: string;
     stringSetAll: string;
-    stringSetAllSub: string;
     stringSetBass: string;
     stringSetLowerMid: string;
     stringSetMiddle: string;
     stringSetUpperMid: string;
     stringSetTreble: string;
-    voicingTypeCaged: string;
-    voicingTypeDrop2: string;
-    voicingTypeTriad: string;
     positionCluster: string;
     stringStudyCluster: string;
-    voicingSection: string;
     scaleLayer: string;
     chordLayer: string;
     groupScaleFingering: string;
@@ -161,12 +155,6 @@ export interface Dictionary {
     customChordHint: string;
     diatonicDefaultHint: string;
     manualQualityHint: string;
-    region: string;
-    regionAriaLabel: string;
-    regionHint: string;
-    regionHintNeedsPosition: string;
-    regionPosition: string;
-    regionAll: string;
   };
 }
 

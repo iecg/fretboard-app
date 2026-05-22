@@ -1,14 +1,11 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, it, expect } from "vitest";
-import { screen, within, fireEvent } from "@testing-library/react";
+import { screen, within, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
-import { act } from "@testing-library/react";
 import { renderWithAtoms, renderWithStore, makeAtomStore } from "../../test-utils/renderWithAtoms";
-import { practiceLensAtom, voicingConnectorsAtom, voicingTypeAtom, voicingStringSetAtom, voicingInversionAtom, chordFretSpreadAtom, regionAtom } from "../../store/chordOverlayAtoms";
-import { chordScopeToPositionAtom } from "../../store/chordScope";
-import { voicingSectionExpandedAtom } from "../../store/chordScope";
-import { fingeringPatternAtom, cagedShapesAtom } from "../../store/fingeringAtoms";
+import { practiceLensAtom, voicingAtom } from "../../store/chordOverlayAtoms";
+import { fingeringPatternAtom } from "../../store/fingeringAtoms";
 import { progressionStepsAtom } from "../../store/progressionAtoms";
 import { scaleNameAtom, rootNoteAtom } from "../../store/scaleAtoms";
 import {
@@ -18,7 +15,6 @@ import {
   activeChordRootAtom,
   updateActiveChordAtom,
 } from "../../store/songStateAtoms";
-import { validVoicingCombosAtom, controlRecencyAtom, noteControlChangeAtom } from "../../store/voicingCoupling";
 import { ChordOverlayControls } from "./ChordOverlayControls";
 
 // Expected toggle-bar label order — mirrors CHORD_TYPE_DISPLAY_ORDER mapped through CHORD_TYPE_SHORT_LABELS.
@@ -403,265 +399,43 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
   });
 
-  describe("16. VOICING group controls (Type, Inversion, String Set)", () => {
-    it("renders Type, Inversion and String Set in the VOICING group", () => {
-      renderManual([[voicingTypeAtom, "triad"], [voicingSectionExpandedAtom, true]]);
-      expect(screen.getByRole("group", { name: "Voicing type" })).toBeInTheDocument();
-      expect(screen.getByRole("group", { name: "Voicing inversion" })).toBeInTheDocument();
-      expect(screen.getByRole("combobox", { name: /String Set/i })).toBeInTheDocument();
+  describe("Voicing group (v2.0 single dropdown + Close cycle)", () => {
+    it("renders the Voicing dropdown as a combobox with three options (Off/Full/Close)", async () => {
+      renderManual();
+      const combobox = screen.getByRole("combobox", { name: /voicing/i });
+      expect(combobox).toBeInTheDocument();
+      await userEvent.click(combobox);
+      expect(screen.getByRole("option", { name: /Off/i })).toBeInTheDocument();
+      expect(screen.getByRole("option", { name: /Full/i })).toBeInTheDocument();
+      expect(screen.getByRole("option", { name: /Close/i })).toBeInTheDocument();
     });
 
-    it("renders String Set as a LabeledSelect with named options (Task 5.2)", async () => {
-      renderManual([[voicingTypeAtom, "triad"], [voicingSectionExpandedAtom, true]]);
-      const trigger = screen.getByRole("combobox", { name: /String Set/i });
-      expect(trigger).toBeInTheDocument();
-      await userEvent.click(trigger);
-      // "All" window option appears as "All (6 strings)"
-      expect(screen.getByRole("option", { name: /All \(6 strings\)/i })).toBeInTheDocument();
-      // The Bass window for a 3-tone chord uses the "4·5·6" id.
-      expect(screen.getByRole("option", { name: /Bass \(4·5·6\)/ })).toBeInTheDocument();
-    });
-
-    it("selecting a String Set option calls recordControlChange and updates the atom (Task 5.2)", async () => {
+    it("renders the Close cycle only when voicing = close", () => {
       const store = makeAtomStore([
-        [scaleNameAtom, "Major"],
-        [rootNoteAtom, "C"],
-        [fingeringPatternAtom, "caged"],
-        [progressionStepsAtom, [
-          { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
-        ]],
-        [voicingTypeAtom, "triad"],
-        [voicingSectionExpandedAtom, true],
-        [voicingStringSetAtom, "all"],
+        ...MANUAL_SEEDS,
+        [voicingAtom, "full"],
       ]);
-      renderWithStore(<ChordOverlayControls />, store);
-      await userEvent.click(screen.getByRole("combobox", { name: /String Set/i }));
-      await userEvent.click(screen.getByRole("option", { name: /Bass \(4·5·6\)/ }));
-      expect(store.get(voicingStringSetAtom)).toBe("4·5·6");
-      expect(store.get(controlRecencyAtom)[0]).toBe("stringSet");
-    });
+      const { rerender } = renderWithStore(<ChordOverlayControls />, store);
+      expect(screen.queryByTestId("close-cycle-counter")).not.toBeInTheDocument();
 
-    it("disables the 3rd inversion for a triad", () => {
-      renderManual([
-        [voicingTypeAtom, "triad"],
-        [voicingSectionExpandedAtom, true],
-      ]);
-      expect(screen.getByRole("button", { name: "3rd" })).toBeDisabled();
-    });
-  });
-
-  describe("18. caged gating — String Set and Inversion hidden for caged voicing type", () => {
-    const TRIAD_MANUAL_SEEDS = [
-      [scaleNameAtom, "Major"],
-      [rootNoteAtom, "C"],
-      [fingeringPatternAtom, "caged"],
-      [progressionStepsAtom, [
-        { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
-      ]],
-      [voicingSectionExpandedAtom, true],
-    ] as const;
-
-    const buildSeeds = (
-      qualityOverride: string,
-      voicingType: "caged" | "triad" | "drop2",
-    ) => [
-      [scaleNameAtom, "Major"],
-      [rootNoteAtom, "C"],
-      [fingeringPatternAtom, "caged"],
-      [progressionStepsAtom, [
-        { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride, manualRoot: "C" },
-      ]],
-      [voicingSectionExpandedAtom, true],
-      [voicingTypeAtom, voicingType],
-    ] as const;
-
-    it.each<{ label: string; seeds: ReturnType<typeof buildSeeds>; visible: boolean }>([
-      { label: "caged", seeds: buildSeeds("Major Triad", "caged"), visible: false },
-      { label: "triad", seeds: buildSeeds("Major Triad", "triad"), visible: true },
-      { label: "drop2 (Major 7th)", seeds: buildSeeds("Major 7th", "drop2"), visible: true },
-    ])("$label voicing: Inversion + String Set visibility = $visible", ({ seeds, visible }) => {
-      renderWithAtoms(<ChordOverlayControls />, [...seeds] as never);
-      const inv = screen.queryByLabelText("Voicing inversion");
-      const ss = screen.queryByRole("combobox", { name: /String Set/i });
-      if (visible) {
-        expect(inv).toBeInTheDocument();
-        expect(ss).toBeInTheDocument();
-      } else {
-        expect(inv).not.toBeInTheDocument();
-        expect(ss).not.toBeInTheDocument();
-      }
-    });
-
-    it.each<{ label: string; seeds: ReturnType<typeof buildSeeds>; count: number }>([
-      { label: "3-tone (triad)", seeds: buildSeeds("Major Triad", "triad"), count: 5 },
-      { label: "4-tone (Major 7th)", seeds: buildSeeds("Major 7th", "triad"), count: 4 },
-    ])("$label chord shows $count options in the String Set select", async ({ seeds, count }) => {
-      renderWithAtoms(<ChordOverlayControls />, [...seeds] as never);
-      await userEvent.click(screen.getByRole("combobox", { name: /String Set/i }));
-      expect(screen.getAllByRole("option")).toHaveLength(count);
-    });
-
-    it("normalizer: switching from triad to 4-tone chord removes the stale '4·5·6' string set option", async () => {
-      const store = makeAtomStore([
-        ...TRIAD_MANUAL_SEEDS,
-        [voicingTypeAtom, "triad"],
-        [voicingStringSetAtom, "4·5·6"],
-      ]);
-      renderWithStore(<ChordOverlayControls />, store);
-
-      // Initially: "4·5·6" id is valid for a 3-tone chord — trigger shows the Bass option label.
-      const trigger = screen.getByRole("combobox", { name: /String Set/i });
-      expect(within(trigger).getByText(/Bass \(4·5·6\)/)).toBeInTheDocument();
-
-      // Switch to a 4-tone chord — "4·5·6" is no longer a valid window
-      await act(async () => {
-        store.set(updateActiveChordAtom, { quality: "Major 7th" });
+      act(() => {
+        store.set(voicingAtom, "close");
       });
-
-      // Open the select after the heal and verify only 4 options, none of which is the stale 4·5·6 window.
-      await userEvent.click(screen.getByRole("combobox", { name: /String Set/i }));
-      expect(screen.getAllByRole("option")).toHaveLength(4);
-      expect(screen.queryByRole("option", { name: /\(4·5·6\)/ })).not.toBeInTheDocument();
-    });
-  });
-
-  describe("19. disabled state + unified heal coupling", () => {
-    const TRIAD_SEEDS = [
-      [scaleNameAtom, "Major"],
-      [rootNoteAtom, "C"],
-      [fingeringPatternAtom, "caged"],
-      [progressionStepsAtom, [
-        { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
-      ]],
-      [voicingTypeAtom, "triad"],
-      [voicingSectionExpandedAtom, true],
-    ] as const;
-
-    it("disabled options: '3rd' inversion button disabled for triad (not in validCombos.enabledInversions)", () => {
-      renderWithAtoms(<ChordOverlayControls />, [...TRIAD_SEEDS]);
-      expect(groupBtn("Voicing inversion", "3rd")).toBeDisabled();
+      rerender(<ChordOverlayControls />);
+      expect(screen.getByTestId("close-cycle-counter")).toBeInTheDocument();
     });
 
-    it("heal: after chord change to 4-tone chord, active triple is valid in validVoicingCombosAtom.triples", async () => {
-      const store = makeAtomStore([
-        ...TRIAD_SEEDS,
-        [voicingTypeAtom, "drop2"],
-        [voicingInversionAtom, "1st"],
-        [voicingStringSetAtom, "4·5·6"],
-        [voicingSectionExpandedAtom, true],
-      ]);
-      renderWithStore(<ChordOverlayControls />, store);
-
-      await act(async () => {
-        store.set(updateActiveChordAtom, { quality: "Major 7th" });
-      });
-
-      const finalType = store.get(voicingTypeAtom);
-      const finalInversion = store.get(voicingInversionAtom);
-      const finalStringSet = store.get(voicingStringSetAtom);
-      const validCombos = store.get(validVoicingCombosAtom);
-
-      const isValid = validCombos.triples.some(
-        (t) =>
-          t.type === finalType &&
-          t.inversion === finalInversion &&
-          t.stringSet === finalStringSet,
-      );
-      expect(isValid).toBe(true);
+    it("does not render legacy Type/Inversion/StringSet/Connectors controls", () => {
+      renderManual([[voicingAtom, "full"]]);
+      expect(screen.queryByRole("group", { name: "Voicing type" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("group", { name: "Voicing inversion" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("combobox", { name: /string set/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole("switch", { name: "Connectors" })).not.toBeInTheDocument();
     });
 
-    it("user-driven heal: picking an incompatible inversion heals the other two to a valid triple", async () => {
-      const store = makeAtomStore([
-        [scaleNameAtom, "Major"],
-        [rootNoteAtom, "C"],
-        [fingeringPatternAtom, "caged"],
-        [progressionStepsAtom, [
-          { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major 7th", manualRoot: "C" },
-        ]],
-        [voicingTypeAtom, "drop2"],
-        [voicingInversionAtom, "root"],
-        [voicingStringSetAtom, "all"],
-        [voicingSectionExpandedAtom, true],
-      ]);
-      renderWithStore(<ChordOverlayControls />, store);
-
-      const combos = store.get(validVoicingCombosAtom);
-      const enabledInversions = [...combos.enabledInversions];
-      const badInversion = enabledInversions.find((inv) =>
-        !combos.triples.some(
-          (t) => t.type === "drop2" && t.stringSet === "all" && t.inversion === inv,
-        ),
-      );
-
-      if (badInversion) {
-        await act(async () => {
-          store.set(noteControlChangeAtom, "inversion");
-          store.set(voicingInversionAtom, badInversion);
-        });
-
-        const finalType = store.get(voicingTypeAtom);
-        const finalInversion = store.get(voicingInversionAtom);
-        const finalStringSet = store.get(voicingStringSetAtom);
-        const validCombos = store.get(validVoicingCombosAtom);
-        const isValid = validCombos.triples.some(
-          (t) =>
-            t.type === finalType &&
-            t.inversion === finalInversion &&
-            t.stringSet === finalStringSet,
-        );
-        expect(isValid).toBe(true);
-        expect(finalInversion).toBe(badInversion);
-      } else {
-        for (const inv of enabledInversions) {
-          expect(
-            combos.triples.some(
-              (t) => t.type === "drop2" && t.stringSet === "all" && t.inversion === inv,
-            ),
-          ).toBe(true);
-        }
-      }
-    });
-
-    it("toggling caged → triad heals the persisted inversion/string-set values", async () => {
-      const store = makeAtomStore([
-        [scaleNameAtom, "Major"],
-        [rootNoteAtom, "C"],
-        [fingeringPatternAtom, "caged"],
-        [progressionStepsAtom, [
-          { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
-        ]],
-        [voicingTypeAtom, "caged"],
-        [voicingInversionAtom, "3rd"],
-        [voicingStringSetAtom, "1·2·3·4"],
-        [voicingSectionExpandedAtom, true],
-      ]);
-      renderWithStore(<ChordOverlayControls />, store);
-
-      await act(async () => {
-        store.set(noteControlChangeAtom, "type");
-        store.set(voicingTypeAtom, "triad");
-      });
-
-      const finalType = store.get(voicingTypeAtom);
-      const finalInversion = store.get(voicingInversionAtom);
-      const finalStringSet = store.get(voicingStringSetAtom);
-      const validCombos = store.get(validVoicingCombosAtom);
-      const isValid = validCombos.triples.some(
-        (t) =>
-          t.type === finalType &&
-          t.inversion === finalInversion &&
-          t.stringSet === finalStringSet,
-      );
-      expect(isValid).toBe(true);
-      expect(finalType).toBe("triad");
-    });
-
-    it("recency: clicking an inversion option moves 'inversion' to front of controlRecencyAtom", async () => {
-      const store = makeAtomStore([...TRIAD_SEEDS]);
-      renderWithStore(<ChordOverlayControls />, store);
-      expect(store.get(controlRecencyAtom)).toEqual(["type", "stringSet", "inversion"]);
-      await userEvent.click(groupBtn("Voicing inversion", "1st"));
-      expect(store.get(controlRecencyAtom)[0]).toBe("inversion");
+    it("does not render the legacy Region toggle bar", () => {
+      renderManual();
+      expect(screen.queryByRole("group", { name: /^region$/i })).not.toBeInTheDocument();
     });
   });
 
@@ -670,133 +444,6 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_SEEDS]);
       const sw = screen.getByRole("switch", { name: /chord layer/i });
       expect(sw).toBeChecked();
-    });
-  });
-
-  describe("Task 5.1: Region ToggleBar", () => {
-    const VOICING_SEEDS = [
-      [scaleNameAtom, "Major"],
-      [rootNoteAtom, "C"],
-      [fingeringPatternAtom, "caged"],
-      [cagedShapesAtom, new Set(["C"])],
-      [progressionStepsAtom, [
-        { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
-      ]],
-      [voicingSectionExpandedAtom, true],
-    ] as const;
-
-    it("Region ToggleBar has 4 options: Position / +2 / +4 / All", () => {
-      renderWithAtoms(<ChordOverlayControls />, [...VOICING_SEEDS] as never);
-      const group = screen.getByRole("group", { name: /region/i });
-      expect(within(group).getAllByRole("button")).toHaveLength(4);
-    });
-
-    it("renders Position, +2, +4, All option labels", () => {
-      renderWithAtoms(<ChordOverlayControls />, [...VOICING_SEEDS] as never);
-      const group = screen.getByRole("group", { name: /region/i });
-      expect(within(group).getByRole("button", { name: /^position$/i })).toBeInTheDocument();
-      expect(within(group).getByRole("button", { name: /^\+2$/ })).toBeInTheDocument();
-      expect(within(group).getByRole("button", { name: /^\+4$/ })).toBeInTheDocument();
-      expect(within(group).getByRole("button", { name: /^all$/i })).toBeInTheDocument();
-    });
-
-    it("selecting +2 sets scope=true and spread=2", async () => {
-      const store = makeAtomStore([...VOICING_SEEDS]);
-      renderWithStore(<ChordOverlayControls />, store);
-      await userEvent.click(screen.getByRole("button", { name: /^\+2$/ }));
-      expect(store.get(chordScopeToPositionAtom)).toBe(true);
-      expect(store.get(chordFretSpreadAtom)).toBe(2);
-    });
-
-    it("selecting +4 sets scope=true and spread=4", async () => {
-      const store = makeAtomStore([...VOICING_SEEDS]);
-      renderWithStore(<ChordOverlayControls />, store);
-      await userEvent.click(screen.getByRole("button", { name: /^\+4$/ }));
-      expect(store.get(chordScopeToPositionAtom)).toBe(true);
-      expect(store.get(chordFretSpreadAtom)).toBe(4);
-    });
-
-    it("selecting Position sets scope=true and spread=0", async () => {
-      const store = makeAtomStore([
-        ...VOICING_SEEDS,
-        [chordScopeToPositionAtom, false],
-        [chordFretSpreadAtom, 3],
-      ]);
-      renderWithStore(<ChordOverlayControls />, store);
-      await userEvent.click(screen.getByRole("button", { name: /^position$/i }));
-      expect(store.get(chordScopeToPositionAtom)).toBe(true);
-      expect(store.get(chordFretSpreadAtom)).toBe(0);
-    });
-
-    it("selecting All sets scope=false", async () => {
-      const store = makeAtomStore([
-        ...VOICING_SEEDS,
-        [chordScopeToPositionAtom, true],
-        [chordFretSpreadAtom, 2],
-      ]);
-      renderWithStore(<ChordOverlayControls />, store);
-      await userEvent.click(screen.getByRole("button", { name: /^all$/i }));
-      expect(store.get(chordScopeToPositionAtom)).toBe(false);
-    });
-
-    it("disables position options when no active position", () => {
-      renderWithAtoms(<ChordOverlayControls />, [
-        ...VOICING_SEEDS,
-        [fingeringPatternAtom, "none"],
-      ] as never);
-      expect(screen.getByRole("button", { name: /^position$/i })).toBeDisabled();
-    });
-
-    it("disables +2 and +4 when no active position; All remains enabled", () => {
-      renderWithAtoms(<ChordOverlayControls />, [
-        ...VOICING_SEEDS,
-        [fingeringPatternAtom, "none"],
-      ] as never);
-      expect(screen.getByRole("button", { name: /^\+2$/ })).toBeDisabled();
-      expect(screen.getByRole("button", { name: /^\+4$/ })).toBeDisabled();
-      expect(screen.getByRole("button", { name: /^all$/i })).not.toBeDisabled();
-    });
-
-    it("regionAtom reads 'all' when scope is false", () => {
-      const store = makeAtomStore([
-        [chordScopeToPositionAtom, false],
-        [chordFretSpreadAtom, 2],
-      ]);
-      expect(store.get(regionAtom)).toBe("all");
-    });
-
-    it("regionAtom reads 'position' when scope=true and spread=0", () => {
-      const store = makeAtomStore([
-        [chordScopeToPositionAtom, true],
-        [chordFretSpreadAtom, 0],
-      ]);
-      expect(store.get(regionAtom)).toBe("position");
-    });
-
-    it("regionAtom reads '+2' when scope=true and spread in [1,2]", () => {
-      const store = makeAtomStore([
-        [chordScopeToPositionAtom, true],
-        [chordFretSpreadAtom, 2],
-      ]);
-      expect(store.get(regionAtom)).toBe("+2");
-    });
-
-    it("regionAtom reads '+4' when scope=true and spread>=3", () => {
-      const store = makeAtomStore([
-        [chordScopeToPositionAtom, true],
-        [chordFretSpreadAtom, 4],
-      ]);
-      expect(store.get(regionAtom)).toBe("+4");
-    });
-
-    it("does not render the old Chord Spread stepper", () => {
-      renderWithAtoms(<ChordOverlayControls />, [...VOICING_SEEDS] as never);
-      expect(screen.queryByText(/chord spread/i)).not.toBeInTheDocument();
-    });
-
-    it("does not render the old Scope to position switch", () => {
-      renderWithAtoms(<ChordOverlayControls />, [...VOICING_SEEDS] as never);
-      expect(screen.queryByRole("switch", { name: /scope to position/i })).not.toBeInTheDocument();
     });
   });
 
@@ -813,62 +460,9 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(groupBtn("Practice lens", "Lead")).not.toBeDisabled();
     });
 
-    it("renders the Connectors toggle in the VOICING group and writes voicingConnectorsAtom", async () => {
-      const store = makeAtomStore([...MANUAL_SEEDS, [voicingConnectorsAtom, false]]);
-      renderWithStore(<ChordOverlayControls />, store);
-      const toggle = screen.getByRole("switch", { name: "Connectors" });
-      expect(toggle).toBeInTheDocument();
-      expect(store.get(voicingConnectorsAtom)).toBe(false);
-      await userEvent.click(toggle);
-      expect(store.get(voicingConnectorsAtom)).toBe(true);
-    });
-
     it.each(["Full Chords", "Show on Board"])("no longer renders the %s switch", (name) => {
       renderManual();
       expect(screen.queryByRole("switch", { name })).toBeNull();
-    });
-
-    it.each([
-      "How densely the chord is voiced.",
-      "Which chord tone is the lowest note.",
-      "Full CAGED uses all six strings — pick a subset for partial voicings.",
-    ])("renders the hint: %s", (hint) => {
-      renderManual([[voicingTypeAtom, "triad"], [voicingSectionExpandedAtom, true]]);
-      expect(screen.getByText(hint)).toBeInTheDocument();
-    });
-  });
-
-  describe("Task 10: collapsible VOICING section", () => {
-    const VOICING_COLLAPSE_SEEDS = [
-      [progressionStepsAtom, [
-        { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
-      ]],
-    ] as const;
-
-    it("collapses the Voicing section by default (Task 10)", () => {
-      renderWithAtoms(<ChordOverlayControls />, [...VOICING_COLLAPSE_SEEDS] as never);
-      expect(screen.getByRole("button", { name: /voicing/i })).toBeInTheDocument();
-      expect(screen.queryByRole("group", { name: "Voicing type" })).toBeNull();
-      expect(screen.queryByRole("group", { name: "Voicing inversion" })).toBeNull();
-    });
-
-    it("expands the Voicing section on header click (Task 10)", () => {
-      renderWithAtoms(<ChordOverlayControls />, [...VOICING_COLLAPSE_SEEDS] as never);
-      const disclosure = screen.getByRole("button", { name: /voicing/i });
-      expect(disclosure).toHaveAttribute("aria-expanded", "false");
-      fireEvent.click(disclosure);
-      expect(disclosure).toHaveAttribute("aria-expanded", "true");
-      expect(screen.getByRole("group", { name: "Voicing type" })).toBeInTheDocument();
-    });
-
-    it("renders inner Props when voicingSectionExpandedAtom defaults to true (Task 10)", () => {
-      renderWithAtoms(<ChordOverlayControls />, [
-        ...VOICING_COLLAPSE_SEEDS,
-        [voicingSectionExpandedAtom, true],
-        [voicingTypeAtom, "triad"],
-      ] as never);
-      expect(screen.getByRole("group", { name: "Voicing type" })).toBeInTheDocument();
-      expect(screen.getByRole("group", { name: "Voicing inversion" })).toBeInTheDocument();
     });
   });
 });
