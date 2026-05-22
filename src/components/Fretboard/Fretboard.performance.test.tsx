@@ -74,4 +74,24 @@ describe("Fretboard performance wiring", () => {
     expect(second.fullChordPositionKeys).toBe(first.fullChordPositionKeys);
     expect(second.fullChordVoicings).toBe(first.fullChordVoicings);
   });
+
+  it("still reuses expensive derived props when zoom changes after width fallback", () => {
+    const store = createStore();
+
+    render(
+      <Provider store={store}>
+        <Fretboard stringRowPx={40} />
+      </Provider>,
+    );
+
+    const first = received.at(-1)!;
+
+    act(() => {
+      store.set(fretZoomAtom, 150);
+    });
+
+    const second = received.at(-1)!;
+    expect(second.fretboardLayout).toBe(first.fretboardLayout);
+    expect(second.fullChordVoicings).toBe(first.fullChordVoicings);
+  });
 });
