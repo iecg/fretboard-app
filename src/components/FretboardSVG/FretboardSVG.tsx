@@ -1,4 +1,3 @@
-'use memo'
 import { useId, useMemo, useCallback, memo, type CSSProperties } from "react";
 import { useAtomValue } from "jotai";
 import { useReducedMotion } from "motion/react";

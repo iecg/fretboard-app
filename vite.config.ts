@@ -14,10 +14,9 @@ export default defineConfig({
       babel: {
         plugins: [
           ['babel-plugin-react-compiler', {
-            // Annotation mode: only files with a top-level "use memo" string
-            // directive get compiled. Lets us trial the compiler on a few hot
-            // components before flipping the whole app to "infer" mode.
-            compilationMode: 'annotation',
+            // Infer mode: compile every component/hook in `sources` unless it
+            // opts out with 'use no memo'.
+            compilationMode: 'infer',
             // Restrict to app + workspace core. Excludes node_modules and tests.
             sources: (filename: string) =>
               (filename.includes('/src/') || filename.includes('/packages/core/src/')) &&
