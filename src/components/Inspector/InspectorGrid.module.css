@@ -1,24 +1,11 @@
 .propGrid {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, var(--prop-min-width, 11rem)), 1fr)
+  );
   gap: 0.875rem 1rem;
   align-items: start;
-}
-
-.propGrid[data-columns="3"] {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.propGrid[data-columns="4"] {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.propGrid[data-columns="6"] {
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-}
-
-.propGrid[data-columns="7"] {
-  grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 
 /* Mobile tier — collapse to two columns regardless of the declared column
