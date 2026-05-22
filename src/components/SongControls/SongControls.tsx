@@ -388,7 +388,7 @@ export function SongControls() {
               </p>
             </div>
             <p className={shared["field-hint"]}>
-              {t("inspector.voicingLensCrossRef")}
+              {t("controls.voicingLensCrossRef")}
             </p>
           </div>
         ) : (
