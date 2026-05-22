@@ -60,7 +60,6 @@ export const en: Dictionary = {
     scaleGroupHarmonicMelodic: "Harmonic / Melodic",
     groupSource: "Source",
     groupChordType: "Chord Type",
-    groupVoicing: "Voicing",
     showOnBoard: "Show on Board",
     fullChordsHintSupported: "Show canonical CAGED voicings instead of scattered chord tones.",
     fullChordsHintNon6String: "Full Chords currently supports 6-string tunings only.",

@@ -58,7 +58,6 @@ export interface Dictionary {
     scaleGroupHarmonicMelodic: string;
     groupSource: string;
     groupChordType: string;
-    groupVoicing: string;
     showOnBoard: string;
     fullChordsHintSupported: string;
     fullChordsHintNon6String: string;

@@ -63,11 +63,24 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(await axe(container)).toHaveNoViolations();
     });
 
-    it("renders only the VOICING group header (SOURCE and CHORD TYPE removed)", () => {
+    it("renders no group headers (Voicing sub-group header removed; section header lives in the parent tab)", () => {
       renderDegree();
-      const headers = screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent?.trim());
-      expect(headers).toHaveLength(1);
-      expect(headers[0]).toMatch(/Voicing/);
+      const headers = screen.queryAllByRole("heading", { level: 3 });
+      expect(headers).toHaveLength(0);
+    });
+
+    it("does not render a Prop micro-label above the VoicingControl", () => {
+      renderDegree();
+      // The VoicingControl's LabeledSelect still owns aria-label "Voicing" via a
+      // sr-only span (hideLabel) for assistive tech, but the wrapping Prop cell
+      // must no longer render its own visible micro-label. A Prop with a label
+      // emits a `<span>` as its first child; without a label the first child is
+      // the `propControl` `<div>`. Assert the latter.
+      const combobox = screen.getByRole("combobox", { name: /voicing/i });
+      const propCell = combobox.closest("[data-span]");
+      expect(propCell).not.toBeNull();
+      const firstChild = propCell!.firstElementChild as HTMLElement | null;
+      expect(firstChild?.tagName).toBe("DIV");
     });
 
     it("does not render Degree picker or Root picker (moved to SongControls)", () => {
@@ -135,19 +148,21 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
   });
 
   describe("13. group headers order and Lens placement", () => {
-    it("renders only VOICING group header", () => {
+    it("renders no group headers (Voicing sub-group header retired)", () => {
       renderManual();
-      const headers = screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent?.trim());
-      expect(headers).toHaveLength(1);
-      expect(headers[0]).toMatch(/Voicing/);
+      const headers = screen.queryAllByRole("heading", { level: 3 });
+      expect(headers).toHaveLength(0);
     });
 
-    it("places the Lens control inside the VOICING group", () => {
+    it("places the Lens control after the Voicing combobox in the DOM", () => {
       renderManual();
       const lensLabel = screen.getByText("Lens");
-      const voicingHeader = screen.getByRole("heading", { name: /Voicing/i });
-      // Lens label appears after the Voicing header in the DOM
-      expect(voicingHeader.compareDocumentPosition(lensLabel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      const voicingCombobox = screen.getByRole("combobox", { name: /voicing/i });
+      // Lens label appears after the Voicing combobox in document order.
+      expect(
+        voicingCombobox.compareDocumentPosition(lensLabel) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
     });
   });
 

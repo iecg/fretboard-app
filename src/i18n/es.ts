@@ -60,7 +60,6 @@ export const es: Dictionary = {
     scaleGroupHarmonicMelodic: "Armónica / Melódica",
     groupSource: "Fuente",
     groupChordType: "Tipo de acorde",
-    groupVoicing: "Disposición",
     showOnBoard: "Mostrar en mástil",
     fullChordsHintSupported: "Muestra digitaciones CAGED canónicas en lugar de notas sueltas del acorde.",
     fullChordsHintNon6String: "Acordes completos solo admite afinaciones de 6 cuerdas.",

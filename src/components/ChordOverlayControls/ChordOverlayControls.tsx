@@ -15,7 +15,7 @@ import {
 } from "../../store/fingeringAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
-import { PropGrid, Prop, GroupHeader } from "../Inspector/InspectorGrid";
+import { PropGrid, Prop } from "../Inspector/InspectorGrid";
 import { VoicingControl } from "./VoicingControl";
 import { ClosePositionCycle } from "./ClosePositionCycle";
 import panelStyles from "./ChordOverlayControls.module.css";
@@ -97,8 +97,7 @@ export function ChordOverlayControls() {
     <div className={panelStyles.root}>
       <PropGrid columns={7} className={panelStyles.grid}>
         {/* ── VOICING ──────────────────────────────────────────────────── */}
-        <GroupHeader>{t("inspector.groupVoicing")}</GroupHeader>
-        <Prop label={t("inspector.voicingAriaLabel")} span={3}>
+        <Prop span={3}>
           <VoicingControl />
         </Prop>
         <Prop label={t("controls.lens")} span={2} hint={t("controls.lensHint")}>
