@@ -180,16 +180,17 @@ describe("App", () => {
   });
 
   describe("chord overlay (quality override)", () => {
-    it("clicking a Chord Type option writes through to the active progression step", async () => {
+    it("clicking a Chord quality option in the Song tab writes through to the active progression step", async () => {
       const steps = [
         { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
       ];
       localStorage.setItem(k("progressionSteps"), JSON.stringify(steps));
       render(<App />);
-      // v2.0: Chord Voicing lives in the "View" tab (no separate Chord tab).
-      await selectInspectorTab("View");
-      const chordTypeGroup = await screen.findByRole("group", { name: "Chord Type" });
-      fireEvent.click(within(chordTypeGroup).getByRole("button", { name: "min" }));
+      // v2.0: Quality override is set in the Song tab's editor pane
+      // (ChordQualitySelect with label="Chord quality" via ChordTypeGrid).
+      await selectInspectorTab("Song");
+      const chordQualityGroup = await screen.findByRole("group", { name: "Chord quality" });
+      fireEvent.click(within(chordQualityGroup).getByRole("button", { name: "min" }));
       await waitFor(() => {
         const persisted = JSON.parse(localStorage.getItem(k("progressionSteps")) ?? "[]") as Array<{ qualityOverride: string | null }>;
         expect(persisted[0]?.qualityOverride).toBe("Minor Triad");
