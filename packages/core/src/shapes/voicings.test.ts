@@ -125,3 +125,37 @@ describe("generateVoicings — v2.0", () => {
     }
   });
 });
+
+describe("closeVoicings — open-string filter", () => {
+  it("includes open-string voicings for chords in low position", () => {
+    // G major in close voicing: should produce at least one voicing with the open G string.
+    // STD_TUNING = ["E4", "B3", "G3", "D3", "A2", "E2"]; G3 is stringIndex 2.
+    const voicings = generateVoicings({
+      chordRoot: "G",
+      chordType: "Major Triad",
+      tuning: STD_TUNING,
+      maxFret: 12,
+      voicingType: "close",
+    });
+    const hasOpenG = voicings.some((v) =>
+      v.notes.some((n) => n.fretIndex === 0 && n.stringIndex === 2 /* G string */),
+    );
+    expect(hasOpenG).toBe(true);
+  });
+
+  it("does not produce voicings mixing open strings with frets >= 5", () => {
+    const voicings = generateVoicings({
+      chordRoot: "G",
+      chordType: "Major Triad",
+      tuning: STD_TUNING,
+      maxFret: 15,
+      voicingType: "close",
+    });
+    for (const v of voicings) {
+      const hasOpen = v.notes.some((n) => n.fretIndex === 0);
+      if (!hasOpen) continue;
+      const maxFret = Math.max(...v.notes.map((n) => n.fretIndex));
+      expect(maxFret).toBeLessThan(5);
+    }
+  });
+});

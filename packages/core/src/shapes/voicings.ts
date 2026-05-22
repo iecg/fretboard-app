@@ -112,6 +112,15 @@ function closeVoicings(params: GenerateVoicingsParams): Voicing[] {
         if (pcs.size !== chordPCSet.size) return;
         for (const pc of chordPCSet) if (!pcs.has(pc)) return;
 
+        // Reject voicings that mix an open string with high frets — these produce
+        // spread shapes that aren't really "close". An all-open or all-low chord
+        // (max fret < 5) is fine; a fully-fretted chord above the nut is fine.
+        const hasOpen = picked.some((n) => n.fretIndex === 0);
+        if (hasOpen) {
+          const maxFret = Math.max(...picked.map((n) => n.fretIndex));
+          if (maxFret >= 5) return;
+        }
+
         // Raw fret-span gate.
         const frettedFrets = picked
           .map((n) => n.fretIndex)
