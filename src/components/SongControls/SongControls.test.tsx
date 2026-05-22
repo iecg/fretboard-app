@@ -28,7 +28,7 @@ describe("SongControls", () => {
     expect(screen.queryByRole("switch", { name: "Progression mode" })).not.toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Preset" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^1.*I.*C Major Triad/i })).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: "Progression degree" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Chord root" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Duration value" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Duration unit" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Chord quality" })).toBeInTheDocument();
@@ -54,7 +54,7 @@ describe("SongControls", () => {
     await userEvent.click(screen.getByRole("button", { name: /^2.*V/i }));
     expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
 
-    await userEvent.click(within(screen.getByRole("group", { name: "Progression degree" })).getByRole("button", { name: "vi" }));
+    await userEvent.click(within(screen.getByRole("group", { name: "Chord root" })).getByRole("button", { name: "A vi" }));
     // Set duration value to 2 via stepper
     fireEvent.click(screen.getByLabelText(/Increase Duration value/i));
     // Set duration unit to Bar
@@ -238,7 +238,7 @@ describe("SongControls QUALITY grid", () => {
     expect(screen.queryByRole("button", { name: "Diatonic" })).not.toBeInTheDocument();
   });
 
-  it("marks the active degree with * when a quality override is set", () => {
+  it("shows the selected root in the DegreeGrid when a quality override is set", () => {
     const store = makeAtomStore([
       ...BASE_SEEDS,
       [progressionStepsAtom, [
@@ -246,17 +246,20 @@ describe("SongControls QUALITY grid", () => {
       ]],
     ]);
     renderWithStore(<SongControls />, store);
-    const degreeGroup = screen.getByRole("group", { name: "Progression degree" });
-    expect(within(degreeGroup).getByRole("button", { name: "V*" })).toBeInTheDocument();
+    // DegreeGrid shows the resolved root (G for V in C Major) as pressed
+    const degreeGroup = screen.getByRole("group", { name: "Chord root" });
+    expect(within(degreeGroup).getByRole("button", { name: "G V", pressed: true })).toBeInTheDocument();
   });
 });
 
 describe("SongControls DEGREE", () => {
-  it("uses the shared degree option builder (degree-only, no Off sentinel)", () => {
-    const { getByLabelText } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    const group = getByLabelText("Progression degree");
+  it("renders the DegreeGrid with all 12 chromatic root cells", () => {
+    const { getByRole } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    const group = getByRole("group", { name: "Chord root" });
     expect(group).toBeTruthy();
-    // No "Off" button inside the degree toggle group itself
+    // DegreeGrid always renders all 12 notes; no Off sentinel
+    const cells = within(group).getAllByRole("button");
+    expect(cells.length).toBe(12);
     expect(within(group).queryByRole("button", { name: "Off" })).toBeNull();
   });
 });
@@ -303,6 +306,22 @@ describe("SongControls v2.0", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     expect(screen.getByText("Progression")).toBeInTheDocument();
     expect(screen.getByLabelText(/preset/i)).toBeVisible();
+  });
+});
+
+describe("SongControls v2.0 chord-edit pane", () => {
+  it("renders a 12-cell DegreeGrid (no separate Degree ToggleBar in the edit pane)", () => {
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    const degreeGrid = screen.getByRole("group", { name: "Chord root" });
+    const cells = within(degreeGrid).getAllByRole("button");
+    expect(cells.length).toBeGreaterThanOrEqual(12);
+  });
+
+  it("does not render a Roman-numeral-only Degree ToggleBar in the edit pane", () => {
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    const standaloneDegreeButtons = screen
+      .queryAllByRole("button", { name: /^I$|^II$|^IV$|^V$|^VI$|^VII$/ });
+    expect(standaloneDegreeButtons.length).toBe(0);
   });
 });
 

@@ -1,5 +1,6 @@
 import { startTransition, useMemo } from "react";
 import clsx from "clsx";
+import { useSetAtom } from "jotai";
 import { ArrowDown, ArrowUp, CopyPlus, Plus, Trash2 } from "lucide-react";
 import { SCALE_FAMILIES, type ScaleFamily, type ScaleFamilyId } from "@fretflow/core";
 import {
@@ -19,7 +20,7 @@ import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { StepperControl } from "../StepperControl/StepperControl";
 import { LabeledSelect, type LabeledSelectGroup } from "../LabeledSelect/LabeledSelect";
 import { PropGrid, Prop, GroupHeader } from "../Inspector/InspectorGrid";
-import { DegreeSelect } from "../shared/DegreeSelect";
+import { DegreeGrid } from "../shared/DegreeGrid";
 import { ChordQualitySelect } from "../shared/ChordQualitySelect";
 import { TimeSignaturePicker } from "../shared/TimeSignaturePicker";
 import { RootNoteSelect } from "../shared/RootNoteSelect";
@@ -27,7 +28,7 @@ import { Switch } from "../Switch/Switch";
 import { BackingTrackControls } from "./BackingTrackControls";
 import shared from "../shared/shared.module.css";
 import { CHORD_QUALITY_DIATONIC_VALUE } from "../shared/chordControlOptions";
-import { CUSTOM_PRESET_ID } from "../../store/progressionAtoms";
+import { CUSTOM_PRESET_ID, updateProgressionStepRootAtom } from "../../store/progressionAtoms";
 import styles from "./SongControls.module.css";
 
 // Look up a scale family by id; fail loudly at module init if the catalog id
@@ -121,6 +122,8 @@ export function SongControls() {
     setProgressionTempoBpm,
     currentProgressionPresetId,
   } = useProgressionState();
+
+  const updateProgressionStepRoot = useSetAtom(updateProgressionStepRootAtom);
 
   const activeStep = progressionSteps[activeProgressionStepIndex] ?? null;
   const availablePresets = getAvailableProgressionPresets(scaleName);
@@ -313,14 +316,22 @@ export function SongControls() {
               {activeResolvedProgressionStep?.resolvedChordLabel ?? "—"}
             </span>
             <div className={shared["control-section"]}>
-              <span className={styles["field-label"]}>Degree</span>
-              <DegreeSelect
+              <span className={styles["field-label"]}>{t("controls.root")}</span>
+              <p className={shared["field-hint"]}>
+                {t("controls.degreeGridHint")}
+              </p>
+              <DegreeGrid
                 scaleName={scaleName}
-                label="Progression degree"
-                value={activeStep.degree}
-                onChange={(degree) => updateProgressionStepDegree({ id: activeStep.id, degree })}
-                activeDegree={activeStep.degree}
-                qualityOverridden={qualityValue !== CHORD_QUALITY_DIATONIC_VALUE}
+                tonicNote={rootNote}
+                selectedNote={activeResolvedProgressionStep?.root ?? rootNote}
+                onSelectInKey={(_note, degree) => {
+                  updateProgressionStepRoot({ id: activeStep.id, manualRoot: null });
+                  updateProgressionStepDegree({ id: activeStep.id, degree });
+                }}
+                onSelectBorrowed={(note) => {
+                  updateProgressionStepRoot({ id: activeStep.id, manualRoot: note });
+                }}
+                useFlats={useFlats}
               />
             </div>
             <div className={shared["control-section"]}>
