@@ -1,7 +1,11 @@
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { FingeringPatternControls } from "../FingeringPatternControls/FingeringPatternControls";
 import { ChordOverlayControls } from "../ChordOverlayControls/ChordOverlayControls";
 import { GroupHeader, PropGrid } from "./InspectorGrid";
+import { Switch } from "../Switch/Switch";
 import { useTranslation } from "../../hooks/useTranslation";
+import { scaleVisibleAtom, toggleScaleVisibleAtom } from "../../store/scaleAtoms";
+import { chordOverlayHiddenAtom } from "../../store/chordOverlayAtoms";
 import styles from "./ViewTab.module.css";
 
 /**
@@ -18,6 +22,9 @@ import styles from "./ViewTab.module.css";
  */
 export function ViewTab() {
   const { t } = useTranslation();
+  const scaleVisible = useAtomValue(scaleVisibleAtom);
+  const toggleScaleVisible = useSetAtom(toggleScaleVisibleAtom);
+  const [chordOverlayHidden, setChordOverlayHidden] = useAtom(chordOverlayHiddenAtom);
   return (
     <div
       className={styles.root}
@@ -25,7 +32,15 @@ export function ViewTab() {
       data-testid="view-tab"
     >
       <section className={styles.group} aria-labelledby="view-fingering-heading">
-        <GroupHeader>
+        <GroupHeader
+          right={
+            <Switch
+              label={t("inspector.showOnBoard")}
+              checked={scaleVisible}
+              onChange={toggleScaleVisible}
+            />
+          }
+        >
           <span id="view-fingering-heading">{t("inspector.groupScaleFingering")}</span>
         </GroupHeader>
         <PropGrid columns={6}>
@@ -33,7 +48,15 @@ export function ViewTab() {
         </PropGrid>
       </section>
       <section className={styles.group} aria-labelledby="view-voicing-heading">
-        <GroupHeader>
+        <GroupHeader
+          right={
+            <Switch
+              label={t("inspector.showOnBoard")}
+              checked={!chordOverlayHidden}
+              onChange={(next) => setChordOverlayHidden(!next)}
+            />
+          }
+        >
           <span id="view-voicing-heading">{t("inspector.groupChordVoicing")}</span>
         </GroupHeader>
         <ChordOverlayControls />

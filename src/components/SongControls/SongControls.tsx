@@ -24,7 +24,6 @@ import { DegreeGrid } from "../shared/DegreeGrid";
 import { ChordQualitySelect } from "../shared/ChordQualitySelect";
 import { TimeSignaturePicker } from "../shared/TimeSignaturePicker";
 import { RootNoteSelect } from "../shared/RootNoteSelect";
-import { Switch } from "../Switch/Switch";
 import { BackingTrackControls } from "./BackingTrackControls";
 import shared from "../shared/shared.module.css";
 import { CHORD_QUALITY_DIATONIC_VALUE } from "../shared/chordControlOptions";
@@ -71,8 +70,6 @@ export function SongControls() {
     setRootNote,
     setScaleName,
     useFlats,
-    scaleVisible,
-    toggleScaleVisible,
   } = useScaleState();
 
   const handleRootNote = (note: string) => {
@@ -174,15 +171,7 @@ export function SongControls() {
   return (
     <PropGrid columns={6}>
       {/* ── KEY ──────────────────────────────────────────────────────────── */}
-      <GroupHeader
-        right={
-          <Switch
-            label={t("inspector.scaleLayer")}
-            checked={scaleVisible}
-            onChange={toggleScaleVisible}
-          />
-        }
-      >
+      <GroupHeader>
         {t("inspector.groupKey")}
       </GroupHeader>
       <Prop label={t("controls.root")} span={6}>

@@ -440,10 +440,9 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
   });
 
   describe("Task 3.6: per-tab visibility switches", () => {
-    it("renders a visibility switch bound to chordOverlayHiddenAtom (inverted)", () => {
+    it("does not render a visibility switch (moved to ViewTab group header)", () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_SEEDS]);
-      const sw = screen.getByRole("switch", { name: /chord layer/i });
-      expect(sw).toBeChecked();
+      expect(screen.queryByRole("switch", { name: /chord layer/i })).not.toBeInTheDocument();
     });
   });
 

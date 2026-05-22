@@ -5,7 +5,6 @@ import {
   practiceLensAtom,
   chordRootAtom,
   chordTypeAtom,
-  chordOverlayHiddenAtom,
   voicingAtom,
   closePositionIndexAtom,
 } from "../../store/chordOverlayAtoms";
@@ -25,7 +24,6 @@ import {
 import { useTranslation } from "../../hooks/useTranslation";
 import { RootNoteSelect } from "../shared/RootNoteSelect";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
-import { Switch } from "../Switch/Switch";
 import { PropGrid, Prop, GroupHeader } from "../Inspector/InspectorGrid";
 import { DegreeSelect } from "../shared/DegreeSelect";
 import { ChordQualitySelect } from "../shared/ChordQualitySelect";
@@ -86,7 +84,6 @@ export function ChordOverlayControls() {
   const [practiceLens, setPracticeLens] = useAtom(practiceLensAtom);
   const voicing = useAtomValue(voicingAtom);
   const lensAvailability = useAtomValue(lensAvailabilityAtom);
-  const [chordOverlayHidden, setChordOverlayHidden] = useAtom(chordOverlayHiddenAtom);
 
   // All lenses are always shown; an unavailable lens renders disabled.
   const lensOptions = lensAvailability.map((entry) => {
@@ -154,14 +151,6 @@ export function ChordOverlayControls() {
 
   return (
     <div className={panelStyles.root}>
-      <div className={panelStyles.layerVisibilityRow}>
-        <Switch
-          label={t("inspector.chordLayer")}
-          checked={!chordOverlayHidden}
-          onChange={(next) => setChordOverlayHidden(!next)}
-        />
-        <span aria-hidden="true">{t("inspector.chordLayer")}</span>
-      </div>
       <PropGrid columns={7} className={panelStyles.grid}>
         {/* ── SOURCE ───────────────────────────────────────────────────── */}
         <GroupHeader>{t("inspector.groupSource")}</GroupHeader>
