@@ -12,10 +12,11 @@ test.describe("storage persistence", () => {
   test("root note persists across page reload", async ({ page }) => {
     await gotoApp(page);
 
-    // The Circle of Fifths now lives in the Inspector's Scale tab.
-    await page.getByRole("tab", { name: "Scale" }).click();
-    const svg = page.locator('[data-testid="circle-of-fifths-svg"]');
-    await expect(svg).toBeVisible();
+    // v2.0: Key group (Root + Scale) now lives in the Inspector's Song tab.
+    // The Circle of Fifths is retired from the main app.
+    await page.getByRole("tab", { name: "Song" }).click();
+    const noteGroup = page.getByRole("group", { name: "Note selector" });
+    await expect(noteGroup).toBeVisible();
 
     // The default root note is "C". Verify the initial localStorage state is
     // either absent (first visit) or already "C".
@@ -25,11 +26,11 @@ test.describe("storage persistence", () => {
     );
     expect(["C", null]).toContain(initialStored);
 
-    // Click the "G" slice to change the root note.
-    // Each interactive slice carries role="button" and aria-label "<note> — <selected|not selected>".
-    const gSlice = svg.locator('path[role="button"][aria-label^="G —"]');
-    await expect(gSlice).toBeVisible();
-    await gSlice.click();
+    // Click the "G" button to change the root note.
+    // Each note button carries aria-pressed and its note label.
+    const gBtn = noteGroup.getByRole("button", { name: /^G$/ });
+    await expect(gBtn).toBeVisible();
+    await gBtn.click();
 
     // Wait until Jotai flushes the atom write to localStorage.
     await page.waitForFunction(
@@ -37,25 +38,19 @@ test.describe("storage persistence", () => {
       STORAGE_KEY_ROOT_NOTE,
     );
 
-    // Confirm the G slice is now marked selected.
-    await expect(
-      svg.locator('path[role="button"][aria-label="G — selected"]'),
-    ).toBeVisible();
+    // Confirm the G button is now marked selected.
+    await expect(noteGroup.getByRole("button", { name: /^G$/, pressed: true })).toBeVisible();
 
     // Reload the page — localStorage survives the reload.
     await page.reload({ waitUntil: "domcontentloaded" });
     await expect(page.locator('[data-testid="app-container"]')).toBeVisible();
-    // The Inspector resets to the View tab on reload — reopen the Scale tab.
-    await page.getByRole("tab", { name: "Scale" }).click();
-    await expect(
-      page.locator('[data-testid="circle-of-fifths-svg"]'),
-    ).toBeVisible();
+    // The Inspector resets to the View tab on reload — reopen the Song tab.
+    await page.getByRole("tab", { name: "Song" }).click();
+    await expect(page.getByRole("group", { name: "Note selector" })).toBeVisible();
 
-    // The G slice must still be selected after the reload.
+    // The G button must still be selected after the reload.
     await expect(
-      page
-        .locator('[data-testid="circle-of-fifths-svg"]')
-        .locator('path[role="button"][aria-label="G — selected"]'),
+      page.getByRole("group", { name: "Note selector" }).getByRole("button", { name: /^G$/, pressed: true }),
     ).toBeVisible();
 
     // localStorage must still hold "G".

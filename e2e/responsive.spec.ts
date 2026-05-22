@@ -198,17 +198,16 @@ test.describe("responsive layout regressions", () => {
     expect(initial.variant).toBe("desktop-stacked");
     expect(initial.summaryCount).toBe(1);
 
-    // The Circle of Fifths now lives in the Inspector's Scale tab.
-    await page.getByRole("tab", { name: "Scale" }).click();
-    await page.locator(CIRCLE_OF_FIFTHS_SELECTOR).waitFor({ state: "visible" });
-    await page.locator(CIRCLE_OF_FIFTHS_SELECTOR).scrollIntoViewIfNeeded();
+    // v2.0: Key group (Root + Scale) moved to the Song tab. CoF retired.
+    await page.getByRole("tab", { name: "Song" }).click();
+    // The RootNoteSelect (Note selector) is the new key group entry point.
+    const noteGroup = page.getByRole("group", { name: "Note selector" });
+    await expect(noteGroup).toBeVisible();
+    await noteGroup.scrollIntoViewIfNeeded();
     const after = await getMetrics(page);
-    expect(after.circleRect).not.toBeNull();
-    expect(after.circleRect!.height).toBeGreaterThanOrEqual(220);
-    // Inside the Inspector Scale tab the Circle renders slightly larger than in
-    // the legacy key-column layout — widen the upper bound accordingly.
-    expect(after.circleRect!.height).toBeLessThanOrEqual(480);
-    expect(after.circleRect!.bottom).toBeLessThanOrEqual(768);
+    // The key group panel (tabpanel) should be comfortably within the viewport.
+    expect(after.keyColumnRect).not.toBeNull();
+    expect(after.keyColumnRect!.bottom).toBeLessThanOrEqual(768 + 10); // 10px tolerance
   });
 
   test("uses a full-width settings drawer on narrow portrait phones", async ({

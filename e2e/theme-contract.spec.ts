@@ -166,9 +166,9 @@ test.describe("Theme Contract", () => {
     // Desktop layout to ensure all controls are visible
     await loadVisualState(page, { theme: "dark" }, { width: 1280, height: 900 });
 
-    // Shared controls now live in the Inspector. Open the Scale tab where the
-    // root note grid + scale family controls render.
-    await page.getByRole("tab", { name: "Scale" }).click();
+    // Shared controls now live in the Inspector. Open the Song tab where the
+    // root note grid + scale family controls render (v2.0 Key group).
+    await page.getByRole("tab", { name: "Song" }).click();
 
     const noteGroup = page.getByRole("group", { name: "Note selector" });
     await expect(noteGroup).toBeVisible();
@@ -198,8 +198,8 @@ test.describe("Theme Contract", () => {
   test("modern-light active shared controls should use app cyan", async ({ page }) => {
     await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
 
-    // Shared controls now live in the Inspector. Open the Scale tab.
-    await page.getByRole("tab", { name: "Scale" }).click();
+    // Shared controls now live in the Inspector. Open the Song tab (v2.0 Key group).
+    await page.getByRole("tab", { name: "Song" }).click();
     await expect(page.getByRole("group", { name: "Note selector" })).toBeVisible();
 
     // Active root note button (aria-pressed) inside the Inspector panel.
@@ -224,7 +224,8 @@ test.describe("Theme Contract", () => {
     expect(styles.color.replace(/\s/g, "")).toBe("rgb(46,181,204)");
   });
 
-  test("Circle of Fifths should use light colors in light mode", async ({ page }) => {
+  // CoF retired from main app in v2.0; re-evaluate when CoF returns or in v2.1+
+  test.skip("Circle of Fifths should use light colors in light mode", async ({ page }) => {
     await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
 
     // The Circle of Fifths now lives in the Inspector's Scale tab.
@@ -270,7 +271,8 @@ test.describe("Theme Contract", () => {
     expect(b).toBeGreaterThanOrEqual(230);
   });
 
-  test("Circle of Fifths should use dark colors in dark mode", async ({ page }) => {
+  // CoF retired from main app in v2.0; re-evaluate when CoF returns or in v2.1+
+  test.skip("Circle of Fifths should use dark colors in dark mode", async ({ page }) => {
     await loadVisualState(page, { theme: "dark" }, { width: 1280, height: 900 });
 
     // The Circle of Fifths now lives in the Inspector's Scale tab.
@@ -364,8 +366,8 @@ test.describe("Theme Contract", () => {
         });
 
         test("shared default chrome should be equivalent across controls", async ({ page }) => {
-          // Note selector + scale family controls live in the Inspector Scale tab.
-          await page.getByRole("tab", { name: "Scale" }).click();
+          // Note selector + scale family controls live in the Inspector Song tab (v2.0 Key group).
+          await page.getByRole("tab", { name: "Song" }).click();
           await expect(
             page.getByRole("group", { name: "Note selector" }),
           ).toBeVisible();
@@ -400,8 +402,8 @@ test.describe("Theme Contract", () => {
         });
 
         test("note buttons should have correct hover styling", async ({ page }) => {
-          // The Note selector lives in the Inspector's Scale tab.
-          await page.getByRole("tab", { name: "Scale" }).click();
+          // The Note selector lives in the Inspector's Song tab (v2.0 Key group).
+          await page.getByRole("tab", { name: "Song" }).click();
           const noteBtn = page
             .getByRole("group", { name: "Note selector" })
             .getByRole("button", { pressed: false })
@@ -431,8 +433,8 @@ test.describe("Theme Contract", () => {
         });
 
         test("note buttons should have correct focus-visible styling", async ({ page }) => {
-          // The Note selector lives in the Inspector's Scale tab.
-          await page.getByRole("tab", { name: "Scale" }).click();
+          // The Note selector lives in the Inspector's Song tab (v2.0 Key group).
+          await page.getByRole("tab", { name: "Song" }).click();
           const noteGroup = page.getByRole("group", { name: "Note selector" });
           await expect(noteGroup).toBeVisible();
 
@@ -525,8 +527,8 @@ test.describe("Theme Contract", () => {
         });
 
         test("ToggleBar buttons should only change color when unselected", async ({ page }) => {
-          // ToggleBars live inside the Inspector's Chord tab panel.
-          await page.getByRole("tab", { name: "Chord" }).click();
+          // ToggleBars live inside the Inspector's View tab panel (v2.0).
+          await page.getByRole("tab", { name: "View" }).click();
           const panel = page.getByRole("tabpanel");
           await expect(panel).toBeVisible();
           const activeToggle = panel.locator('button[aria-pressed="true"]').first();
@@ -550,8 +552,8 @@ test.describe("Theme Contract", () => {
         });
 
         test("labeled select should have correct hover and focus behavior", async ({ page }) => {
-          // The Scale combobox lives in the Inspector's Scale tab.
-          await page.getByRole("tab", { name: "Scale" }).click();
+          // The Scale combobox lives in the Inspector's Song tab (v2.0 Key group).
+          await page.getByRole("tab", { name: "Song" }).click();
           const select = page.getByRole("combobox", { name: "Scale" });
           await expect(select).toBeVisible();
 
@@ -785,8 +787,8 @@ test.describe("Theme Contract", () => {
       for (const theme of ["light", "dark"] as const) {
         await loadVisualState(page, { theme }, { width: 1280, height: 900 });
 
-        // Selected controls live in the Inspector's Scale tab.
-        await page.getByRole("tab", { name: "Scale" }).click();
+        // Selected controls live in the Inspector's Song tab (v2.0 Key group).
+        await page.getByRole("tab", { name: "Song" }).click();
         const panel = page.getByRole("tabpanel");
         await expect(panel).toBeVisible();
 
@@ -837,23 +839,31 @@ test.describe("Theme Contract", () => {
       for (const theme of ["light", "dark"] as const) {
         await loadVisualState(page, { theme }, { width: 1280, height: 900 });
 
-        // Scale combobox + toggle controls live in the Inspector's Scale tab.
-        await page.getByRole("tab", { name: "Scale" }).click();
-        const panel = page.getByRole("tabpanel");
+        // v2.0: Scale combobox lives in the Song tab (Key group);
+        // ToggleBar lives in the View tab (FingeringPatternControls / ChordOverlayControls).
+        // Verify each control's background is distinct from its host tabpanel.
+
+        // --- Song tab: Scale combobox ---
+        await page.getByRole("tab", { name: "Song" }).click();
+        const songPanel = page.getByRole("tabpanel");
         const scaleSelect = page.getByRole("combobox", { name: "Scale" });
-        const toggleGroup = panel.locator('[class*="toggle-group"]').first();
-
-        await expect(panel).toBeVisible();
+        await expect(songPanel).toBeVisible();
         await expect(scaleSelect).toBeVisible();
-        await expect(toggleGroup).toBeVisible();
-
-        const panelBg = await panel.evaluate((el) => getComputedStyle(el).backgroundColor);
+        const panelBg = await songPanel.evaluate((el) => getComputedStyle(el).backgroundColor);
         const selectBg = await scaleSelect.evaluate((el) => getComputedStyle(el).backgroundColor);
-        const toggleBg = await toggleGroup.evaluate((el) => getComputedStyle(el).backgroundColor);
-
         expect(selectBg).not.toBe(panelBg);
-        expect(toggleBg).not.toBe(panelBg);
 
+        // --- View tab: ToggleBar ---
+        await page.getByRole("tab", { name: "View" }).click();
+        const viewPanel = page.getByRole("tabpanel");
+        const toggleGroup = viewPanel.locator('[class*="toggle-group"]').first();
+        await expect(viewPanel).toBeVisible();
+        await expect(toggleGroup).toBeVisible();
+        const viewPanelBg = await viewPanel.evaluate((el) => getComputedStyle(el).backgroundColor);
+        const toggleBg = await toggleGroup.evaluate((el) => getComputedStyle(el).backgroundColor);
+        expect(toggleBg).not.toBe(viewPanelBg);
+
+        // Settings nested cards should also be distinct from the panel background.
         await page.getByLabel("Open settings").click();
         const sectionCard = page.getByTestId("settings-drawer").locator('[class*="overlay-section-card"]').first();
         await expect(sectionCard).toBeVisible();
