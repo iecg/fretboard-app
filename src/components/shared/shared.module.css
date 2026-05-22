@@ -298,6 +298,12 @@
   gap: 0.22rem;
 }
 
+/* Wrap to 2 rows × 6 cells on mobile so each touch target meets the
+   WCAG 2.5.5 44×44 minimum (12 columns at ~390px viewport = ~32px wide). */
+:global(.app-container[data-layout-tier="mobile"]) .note-grid {
+  grid-template-columns: repeat(6, minmax(44px, 1fr));
+}
+
 .note-btn {
   width: 100%;
   min-height: var(--control-height);
