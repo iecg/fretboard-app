@@ -44,8 +44,18 @@
   font-weight: 500;
 }
 
+.inKey {
+  background: color-mix(in srgb, var(--faceplate-accent) 4%, transparent);
+}
+
 .inKey .numeral {
   color: var(--text-muted);
+}
+
+.borrowed {
+  opacity: 0.55;
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--faceplate-divider) 50%, transparent);
 }
 
 .borrowed .numeral {
