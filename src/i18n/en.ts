@@ -86,6 +86,7 @@ export const en: Dictionary = {
     voicingFull: "Full",
     voicingClose: "Close",
     closeCycleAriaLabel: "Close voicing position",
+    closeCyclePositionLabel: "Position",
     closeCyclePrev: "Previous voicing",
     closeCycleNext: "Next voicing",
     stringSetAll: "All",

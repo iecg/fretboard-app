@@ -70,4 +70,27 @@ describe("ChordOverlayControls/ClosePositionCycle", () => {
       screen.getByRole("group", { name: /close voicing position/i }),
     ).toBeInTheDocument();
   });
+
+  it("renders the visible 'Position' micro-label", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, cMajorOneStep],
+      [voicingAtom, "close"],
+    ]);
+    const { container } = renderWithStore(<ClosePositionCycle />, store);
+    expect(container.querySelector('[class*="section-label"]')).toHaveTextContent("Position");
+  });
+
+  it("both buttons carry the control-button class", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, cMajorOneStep],
+      [voicingAtom, "close"],
+    ]);
+    const { container } = renderWithStore(<ClosePositionCycle />, store);
+    const buttons = container.querySelectorAll('button[class*="control-button"]');
+    expect(buttons).toHaveLength(2);
+  });
 });

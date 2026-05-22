@@ -6,6 +6,7 @@ import {
 } from "../../store/chordOverlayAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import styles from "./ChordOverlayControls.module.css";
+import shared from "../shared/shared.module.css";
 
 /**
  * Prev / counter / next stepper for cycling through Close-voicing candidates
@@ -32,8 +33,10 @@ export function ClosePositionCycle() {
       role="group"
       aria-label={t("inspector.closeCycleAriaLabel")}
     >
+      <span className={shared["section-label"]}>{t("inspector.closeCyclePositionLabel")}</span>
       <button
         type="button"
+        className={shared["control-button"]}
         aria-label={t("inspector.closeCyclePrev")}
         disabled={disabled}
         onClick={() => setIndex(wrapped - 1)}
@@ -49,6 +52,7 @@ export function ClosePositionCycle() {
       </span>
       <button
         type="button"
+        className={shared["control-button"]}
         aria-label={t("inspector.closeCycleNext")}
         disabled={disabled}
         onClick={() => setIndex(wrapped + 1)}

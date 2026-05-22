@@ -113,7 +113,7 @@ export function ChordOverlayControls() {
           />
         </Prop>
         {voicing === "close" && (
-          <Prop label={t("inspector.closeCycleAriaLabel")} span={2}>
+          <Prop label={t("inspector.closeCyclePositionLabel")} span={2}>
             <ClosePositionCycle />
           </Prop>
         )}

@@ -84,6 +84,7 @@ export interface Dictionary {
     voicingFull: string;
     voicingClose: string;
     closeCycleAriaLabel: string;
+    closeCyclePositionLabel: string;
     closeCyclePrev: string;
     closeCycleNext: string;
     stringSetAll: string;
