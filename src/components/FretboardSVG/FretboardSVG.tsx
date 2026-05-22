@@ -455,7 +455,6 @@ export const FretboardSVG = memo(function FretboardSVG({
     fretCenterX,
     stringYAt,
     stringRowPx,
-    chordRoot: chordRoot ?? "",
     yBounds: connectorYBounds,
     explicitVoicings: fullChordVoicings,
     voicingSourceActive: hasChordOverlay,

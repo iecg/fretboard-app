@@ -6,8 +6,6 @@ import {
   MAX_PLAYABLE_FRET_POSITIONS,
   CHORD_TONE_CLASSES,
   useChordConnectorPolylines,
-  INVERSION_SLOTS,
-  inversionPaletteIndex,
 } from "./useChordConnectorPolylines";
 import {
   clampConnectorRadiusToYBounds,
@@ -61,7 +59,6 @@ const notes = (specs: NoteSpec[]): NoteData[] =>
 function build(
   noteData: NoteData[],
   chordToneNames: string[],
-  rootNote: string = "C",
   yBounds?: { minY: number; maxY: number },
 ) {
   return buildChordConnectorPolylines(
@@ -70,7 +67,6 @@ function build(
     fretCenterX,
     stringYAt,
     STRING_ROW_PX,
-    rootNote,
     yBounds,
   );
 }
@@ -97,7 +93,7 @@ describe("buildChordConnectorPolylines", () => {
   // -------------------------------------------------------------------------
 
   it("returns [] for empty noteData", () => {
-    const result = buildChordConnectorPolylines([], ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX, "C");
+    const result = buildChordConnectorPolylines([], ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
     expect(result).toEqual([]);
   });
 
@@ -108,7 +104,7 @@ describe("buildChordConnectorPolylines", () => {
         useChordConnectorPolylines({
           noteData: [],
           chordToneNames: ["C", "E", "G"],
-          fretCenterX, stringYAt, stringRowPx: STRING_ROW_PX, chordRoot: "C",
+          fretCenterX, stringYAt, stringRowPx: STRING_ROW_PX,
           explicitVoicings: [{ shape: "E" as CagedShape, voicingKey, notes }],
         }),
       ).result;
@@ -409,29 +405,29 @@ describe("buildChordConnectorPolylines", () => {
   // dispatch to an inflated capsule. Both produce arc commands ('A').
   // -------------------------------------------------------------------------
 
-  it.each<{ label: string; specs: NoteSpec[]; chord: string[]; root: string; arcs: number }>([
+  it.each<{ label: string; specs: NoteSpec[]; chord: string[]; arcs: number }>([
     {
       label: "non-collinear triad (3 vertices) → tube with 1 corner + 2 caps",
       specs: [[0, 3, "C", "chord-root"], [1, 5, "E"], [2, 4, "G"]],
-      chord: ["C", "E", "G"], root: "C", arcs: 3,
+      chord: ["C", "E", "G"], arcs: 3,
     },
     {
       label: "non-collinear Cmaj7 (4 vertices) → tube with 2 corners + 2 caps",
       specs: [[0, 3, "C", "chord-root"], [1, 4, "E"], [2, 4, "G"], [3, 5, "B"]],
-      chord: ["C", "E", "G", "B"], root: "C", arcs: 4,
+      chord: ["C", "E", "G", "B"], arcs: 4,
     },
     {
       label: "collinear same-fret triad → capsule (arcs present)",
       specs: [[0, 5, "C", "chord-root"], [1, 5, "E"], [2, 5, "G"]],
-      chord: ["C", "E", "G"], root: "C", arcs: -1, // capsule path; just assert presence
+      chord: ["C", "E", "G"], arcs: -1, // capsule path; just assert presence
     },
     {
       label: "(regression) collinear diagonal G-E-C → capsule (arcs present)",
       specs: [[4, 5, "G"], [5, 6, "E"], [6, 7, "C", "chord-root"]],
-      chord: ["C", "E", "G"], root: "C", arcs: -1,
+      chord: ["C", "E", "G"], arcs: -1,
     },
-  ])("contour: $label", ({ specs, chord, root, arcs }) => {
-    const result = build(notes(specs), chord, root);
+  ])("contour: $label", ({ specs, chord, arcs }) => {
+    const result = build(notes(specs), chord);
     expect(result).toHaveLength(1);
     const { paths } = result[0]!;
     expect(paths.fill.startsWith("M")).toBe(true);
@@ -451,7 +447,6 @@ describe("buildChordConnectorPolylines", () => {
     const result = build(
       notes([[3, 0, "D", "chord-root"], [4, 1, "A#"], [5, 3, "G"]]),
       ["D", "A#", "G"],
-      "D",
     );
     expect(result).toHaveLength(1);
     const { fill } = result[0]!.paths;
@@ -509,43 +504,11 @@ describe("regression: 3NPS Position 2 bottom-string voicing", () => {
   });
 });
 
-describe("paletteIndex field", () => {
-  it("paletteIndex is a 0..7 integer present on every voicing", () => {
+describe("paletteIndex field (v2.0 — single accent)", () => {
+  it("every voicing carries paletteIndex === 0 (maps to --chord-connector-color-1)", () => {
     const result = build(notes([[0, 0, "C"], [1, 2, "E"], [2, 4, "G"]]), ["C", "E", "G"]);
     expect(result.length).toBeGreaterThan(0);
-    const idx = result[0]!.paletteIndex;
-    expect(typeof idx).toBe("number");
-    expect(idx).toBeGreaterThanOrEqual(0);
-    expect(idx).toBeLessThan(8);
-  });
-
-  // Bass note (lowest-numbered string in the voicing) determines paletteIndex:
-  // the *interval from chord root* picks a slot in INVERSION_SLOTS. Same bass
-  // role → same index regardless of absolute fret or chord quality.
-  it.each<{ label: string; specs: NoteSpec[]; chord: string[]; root: string; expected: number }>([
-    {
-      label: "G-bass voicing (low position, 2nd inversion)",
-      specs: [[0, 0, "C"], [1, 2, "E"], [2, 4, "G"]],
-      chord: ["C", "E", "G"], root: "C", expected: 6,
-    },
-    {
-      label: "G-bass voicing (high position) → same index as low-position G-bass",
-      specs: [[0, 12, "C"], [1, 13, "E"], [2, 14, "G"]],
-      chord: ["C", "E", "G"], root: "C", expected: 6,
-    },
-    {
-      label: "C-bass voicing (root position) → different index from G-bass",
-      specs: [[0, 0, "G"], [1, 2, "E"], [2, 4, "C"]],
-      chord: ["C", "E", "G"], root: "C", expected: 0,
-    },
-    {
-      label: "F major with C-bass (5th in bass) → same index as C major with G-bass",
-      specs: [[0, 0, "F"], [1, 0, "A"], [2, 0, "C"]],
-      chord: ["F", "A", "C"], root: "F", expected: 6,
-    },
-  ])("$label → paletteIndex $expected", ({ specs, chord, root, expected }) => {
-    const result = build(notes(specs), chord, root);
-    expect(result[0]!.paletteIndex).toBe(expected);
+    for (const v of result) expect(v.paletteIndex).toBe(0);
   });
 });
 
@@ -651,7 +614,6 @@ describe("useChordConnectorPolylines", () => {
           fretCenterX: g.fretCenterX,
           stringYAt: g.stringYAt,
           stringRowPx: STRING_ROW_PX,
-          chordRoot: "C",
         }),
       { initialProps: wide },
     );
@@ -827,7 +789,7 @@ describe("G major triad overlap offsets (full neck)", () => {
   };
 
   it("low (frets 7-10) and high (19-22) regions both emit ≥3 voicings of equal count", () => {
-    const result = build(gMajorChordTones(), ["G", "B", "D"], "G");
+    const result = build(gMajorChordTones(), ["G", "B", "D"]);
     const low = voicingsInFretRange(result, 7, 10);
     const high = voicingsInFretRange(result, 19, 22);
     expect(low.length).toBeGreaterThanOrEqual(3);
@@ -840,12 +802,12 @@ describe("G major triad overlap offsets (full neck)", () => {
     { label: "frets 19-22 unbounded", min: 19, max: 22 },
     { label: "frets 19-22 with yBounds clamping", min: 19, max: 22, yBounds: { minY: 0, maxY: 100 } },
   ])("$label: overlapping voicings have distinct paths", ({ label, min, max, yBounds }) => {
-    const result = build(gMajorChordTones(), ["G", "B", "D"], "G", yBounds);
+    const result = build(gMajorChordTones(), ["G", "B", "D"], yBounds);
     expectPositionSharingPairsDiffer(voicingsInFretRange(result, min, max), label);
   });
 
   it("non-overlapping voicings do not receive conflict-graph inflation (radius near base)", () => {
-    const result = build(gMajorChordTones(), ["G", "B", "D"], "G");
+    const result = build(gMajorChordTones(), ["G", "B", "D"]);
     const base = STRING_ROW_PX * CHORD_CONNECTOR_BASE_RADIUS_FACTOR;
     for (const v of voicingsInFretRange(result, 7, 10)) {
       const rx = parseFloat(v.paths.fill.match(/A ([\d.]+)/)?.[1] ?? "0");
@@ -895,66 +857,18 @@ describe("voicingKey field", () => {
   });
 
   // -------------------------------------------------------------------------
-  // INVERSION_SLOTS — perceptually-separated palette assignment
+  // v2.0 — INVERSION_SLOTS / inversionPaletteIndex retired. Every voicing is
+  // assigned paletteIndex = 0 (single accent). The v1 inversion-driven palette
+  // tests have been removed; the new contract is asserted in the "paletteIndex
+  // field (v2.0 — single accent)" describe near the top of the file.
   // -------------------------------------------------------------------------
+});
 
-  describe("INVERSION_SLOTS", () => {
-    it.each([2, 3, 4])("slot array for %i tones has no duplicate indices", (n) => {
-      const slots = INVERSION_SLOTS[n]!;
-      expect(slots).toBeDefined();
-      expect(new Set(slots).size).toBe(slots.length);
-    });
-
-    it("triad slots span 3 different perceptual groups (warm, cool, purple)", () => {
-      const [a, b, c] = INVERSION_SLOTS[3]!;
-      expect(a).toBeLessThan(3);
-      expect(b).toBeGreaterThanOrEqual(3);
-      expect(b).toBeLessThan(5);
-      expect(c).toBeGreaterThanOrEqual(5);
-    });
-  });
-
-  describe("inversionPaletteIndex", () => {
-    it.each([
-      { name: "augmented triad", root: "G", tones: ["G", "B", "D#"] },
-      { name: "major triad", root: "C", tones: ["C", "E", "G"] },
-      { name: "dominant 7th", root: "G", tones: ["G", "B", "D", "F"] },
-      { name: "diminished 7th", root: "B", tones: ["B", "D", "F", "G#"] },
-      { name: "augmented 7th", root: "C", tones: ["C", "E", "G#", "A#"] },
-    ])("$name inversions all get distinct palette indices", ({ root, tones }) => {
-      const combos = tones.map((bass, idx) => [
-        makeNote(0, idx * 4, tones[(idx + 1) % tones.length]!, "chord-tone-in-scale"),
-        makeNote(1, idx * 4 + 1, tones[(idx + 2) % tones.length]!, "chord-tone-in-scale"),
-        ...(tones.length > 3
-          ? [makeNote(2, idx * 4 + 1, tones[(idx + 3) % tones.length]!, "chord-tone-in-scale")]
-          : []),
-        makeNote(tones.length > 3 ? 3 : 2, idx * 4 + 2, bass, "chord-tone-in-scale"),
-      ]);
-
-      const indices = combos.map((combo) =>
-        inversionPaletteIndex(combo, root, tones),
-      );
-      expect(new Set(indices).size).toBe(tones.length);
-    });
-  });
-
-  // -------------------------------------------------------------------------
-  // Augmented triad inversions — end-to-end through buildChordConnectorPolylines
-  // -------------------------------------------------------------------------
-
-  it("augmented triad inversions (E aug: E, G#, C) receive distinct paletteIndex values", () => {
-    const result = build(
-      notes([
-        [0, 4, "G#"], [1, 5, "C"], [2, 4, "E"],
-        [0, 8, "C"], [1, 9, "E"], [2, 8, "G#"],
-        [0, 12, "E"], [1, 13, "G#"], [2, 12, "C"],
-      ]),
-      ["E", "G#", "C"],
-      "E",
-    );
-    expect(result.length).toBeGreaterThanOrEqual(3);
-    const paletteIndices = result.map((v) => v.paletteIndex);
-    expect(new Set(paletteIndices).size).toBe(paletteIndices.length);
+describe("useChordConnectorPolylines v2.0", () => {
+  it("does not export INVERSION_SLOTS (drop2/triad inversions retired)", async () => {
+    const mod = await import("./useChordConnectorPolylines");
+    expect((mod as Record<string, unknown>).INVERSION_SLOTS).toBeUndefined();
+    expect((mod as Record<string, unknown>).inversionPaletteIndex).toBeUndefined();
   });
 });
 
@@ -972,7 +886,6 @@ describe("useChordConnectorPolylines — voicingSourceActive guard", () => {
         fretCenterX,
         stringYAt,
         stringRowPx: STRING_ROW_PX,
-        chordRoot: "C",
         explicitVoicings: [],
         voicingSourceActive: active,
       }),

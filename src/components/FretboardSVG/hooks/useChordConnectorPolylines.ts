@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import type { NoteData } from "./useNoteData";
 import { offsetOpenPolylinePath } from "../utils/pathGeometry";
-import { NOTES, type CagedShape } from "@fretflow/core";
+import { type CagedShape } from "@fretflow/core";
 import {
   type ConnectorYBounds,
   resolveConnectorRadiusPx,
@@ -36,79 +36,12 @@ function voicingFrettedPositionCount(combo: NoteData[]): number {
 }
 
 /**
- * Hand-picked palette slots per inversion count, maximising perceptual
- * distance across the 8-color canonical Okabe-Ito palette:
- *
- *   slot 0 = vermillion (red-warm)
- *   slot 3 = bluish-green
- *   slot 5 = blue
- *   slot 6 = purple
- *   slot 7 = reddish-purple
- *
- * Each row maps inversion number (0 = root, 1 = 1st inv, …) to a palette
- * slot that sits in a different perceptual colour group from its neighbours.
+ * v2.0: every voicing renders with paletteIndex = 0 → --chord-connector-color-1.
+ * The v1 inversion-by-bass-note palette assignment (INVERSION_SLOTS +
+ * inversionPaletteIndex + bassIntervalSemitones) was retired along with the
+ * drop2 / triad voicing modes.
  */
-export const INVERSION_SLOTS: Record<number, readonly number[]> = {
-  2: [0, 5],
-  3: [0, 3, 6],
-  4: [0, 3, 5, 7],
-};
-
-/**
- * Compute the palette index for a voicing based on its inversion number
- * (which chord tone is in the bass). Ensures distinct, perceptually
- * separated colours for every inversion of any chord type.
- */
-export function inversionPaletteIndex(
-  bestCombo: NoteData[],
-  chordRoot: string,
-  chordToneNames: string[],
-): number {
-  const bassInterval = bassIntervalSemitones(bestCombo, chordRoot);
-  const rootIdx = NOTES.indexOf(chordRoot);
-  if (rootIdx < 0) return 0;
-
-  const toneIntervals = chordToneNames
-    .map((name) => {
-      const idx = NOTES.indexOf(name);
-      return idx < 0 ? -1 : (idx - rootIdx + 12) % 12;
-    })
-    .filter((i) => i >= 0);
-  toneIntervals.sort((a, b) => a - b);
-
-  const unique = [...new Set(toneIntervals)];
-  const invNum = unique.indexOf(bassInterval);
-  if (invNum < 0) return 0;
-
-  const slots = INVERSION_SLOTS[unique.length];
-  if (slots) return slots[invNum] ?? 0;
-
-  const step = Math.max(1, Math.floor(8 / unique.length));
-  return (invNum * step) % 8;
-}
-
-/**
- * Compute the bass-note interval (in semitones, 0-11) from the chord root to
- * the lowest physical note in a voicing.
- *
- * Convention: stringIndex 0 = highest string (high E), stringIndex 5 = lowest
- * string (low E). Within a 5-fret voicing window in standard tuning, the
- * pick on the highest stringIndex is essentially always the lowest pitch.
- *
- * Returns 0 if either chordRoot or the bass-note name is not in the NOTES table
- * — defensive default keeps paletteIndex stable at 0 rather than throwing.
- */
-function bassIntervalSemitones(bestCombo: NoteData[], chordRoot: string): number {
-  if (bestCombo.length === 0) return 0;
-  let bass = bestCombo[0]!;
-  for (let i = 1; i < bestCombo.length; i++) {
-    if (bestCombo[i]!.stringIndex > bass.stringIndex) bass = bestCombo[i]!;
-  }
-  const rootIdx = NOTES.indexOf(chordRoot);
-  const bassIdx = NOTES.indexOf(bass.noteName);
-  if (rootIdx < 0 || bassIdx < 0) return 0;
-  return (bassIdx - rootIdx + 12) % 12;
-}
+const V2_PALETTE_INDEX = 0;
 
 export interface ChordConnectorVertex {
   x: number;
@@ -488,9 +421,6 @@ export const CHORD_TONE_CLASSES = new Set([
  * @param stringYAt       Maps (stringIndex, x) → SVG y coordinate.
  * @param stringRowPx     Row height in pixels; scales the base Minkowski-sum disk
  *                        radius (`computeChordConnectorRadiusPx(...)`).
- * @param chordRoot       Sharps-only chord-root name (e.g. "C", "F#"). Used to
- *                        compute the bass-note interval that drives paletteIndex.
- *                        Empty string = paletteIndex defaults to 0.
  */
 export function buildChordConnectorPolylines(
   noteData: NoteData[],
@@ -498,7 +428,6 @@ export function buildChordConnectorPolylines(
   fretCenterX: (fretIndex: number) => number,
   stringYAt: (stringIndex: number, x: number) => number,
   stringRowPx: number,
-  chordRoot: string,
   yBounds?: ConnectorYBounds,
 ): ChordConnectorVoicing[] {
   // stringRowPx drives the capsule perpOffset for collinear voicings.
@@ -659,7 +588,7 @@ export function buildChordConnectorPolylines(
         return { x, y };
       });
 
-      const paletteIndex = inversionPaletteIndex(bestCombo, chordRoot, chordToneNames);
+      const paletteIndex = V2_PALETTE_INDEX;
 
       // Collect — path generation deferred to pass 2 after conflict assignment.
       pendingVoicings.push({ rawVertices, sourceCombo: bestCombo, paletteIndex, canonicalKey });
@@ -763,11 +692,9 @@ function finalizeChordConnectorPolylines(
 
 function buildExplicitChordConnectorPolylines(
   explicitVoicings: ExplicitChordConnectorVoicing[],
-  chordToneNames: string[],
   fretCenterX: (fretIndex: number) => number,
   stringYAt: (stringIndex: number, x: number) => number,
   stringRowPx: number,
-  chordRoot: string,
   yBounds?: ConnectorYBounds,
 ): ChordConnectorVoicing[] {
   const pendingVoicings = explicitVoicings.map((voicing) => {
@@ -786,7 +713,7 @@ function buildExplicitChordConnectorPolylines(
     return {
       rawVertices,
       sourceCombo,
-      paletteIndex: inversionPaletteIndex(sourceCombo, chordRoot, chordToneNames),
+      paletteIndex: V2_PALETTE_INDEX,
       canonicalKey,
       shape: voicing.shape,
       voicingKey: voicing.voicingKey,
@@ -803,9 +730,6 @@ export interface UseChordConnectorPolylinesParams {
   stringYAt: (stringIndex: number, x: number) => number;
   /** Row height in pixels; used as capsule perpOffset base for collinear voicings. */
   stringRowPx: number;
-  /** Sharps-only chord-root name (e.g. "C", "F#"). Drives bass-interval-based
-   *  paletteIndex assignment. Empty string = paletteIndex defaults to 0. */
-  chordRoot: string;
   yBounds?: ConnectorYBounds;
   explicitVoicings?: ExplicitChordConnectorVoicing[];
   /**
@@ -826,8 +750,9 @@ export interface UseChordConnectorPolylinesParams {
  *   render layers. Byte-identical for non-collinear voicings (closed polygon);
  *   both are capsule paths for collinear voicings.
  * - `vertices` — the original chord-tone pixel positions for debugging.
- * - `paletteIndex` — 0–7, deterministic per shape identity; indexes into
- *   --chord-connector-color-N CSS tokens for per-voicing color differentiation.
+ * - `paletteIndex` — always 0 in v2.0; maps to --chord-connector-color-1
+ *   via the renderer's data-palette-index attribute (every voicing renders
+ *   in the same accent color).
  *
  * Re-runs when noteData, chordToneNames, or geometry helpers change.
  * The geometry helpers are included because resize/layout shifts can change
@@ -839,7 +764,6 @@ export function useChordConnectorPolylines({
   fretCenterX,
   stringYAt,
   stringRowPx,
-  chordRoot,
   yBounds,
   explicitVoicings,
   voicingSourceActive,
@@ -849,11 +773,9 @@ export function useChordConnectorPolylines({
       if (explicitVoicings && explicitVoicings.length > 0) {
         return buildExplicitChordConnectorPolylines(
           explicitVoicings,
-          chordToneNames,
           fretCenterX,
           stringYAt,
           stringRowPx,
-          chordRoot,
           yBounds,
         );
       }
@@ -868,10 +790,9 @@ export function useChordConnectorPolylines({
         fretCenterX,
         stringYAt,
         stringRowPx,
-        chordRoot,
         yBounds,
       );
     },
-    [noteData, chordToneNames, fretCenterX, stringYAt, stringRowPx, chordRoot, yBounds, explicitVoicings, voicingSourceActive],
+    [noteData, chordToneNames, fretCenterX, stringYAt, stringRowPx, yBounds, explicitVoicings, voicingSourceActive],
   );
 }
