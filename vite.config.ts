@@ -8,7 +8,25 @@ const { version } = JSON.parse(readFileSync('./package.json', 'utf-8')) as { ver
 
 export default defineConfig({
   base: process.env.VITE_MOBILE === 'true' ? './' : '/fretboard-app/',
-  plugins: [react()],
+  plugins: [
+    react({
+      // @ts-expect-error - Vite 6 dropped the babel types but we are following the task plan
+      babel: {
+        plugins: [
+          ['babel-plugin-react-compiler', {
+            // Infer mode: compile every component/hook in `sources` unless it
+            // opts out with 'use no memo'.
+            compilationMode: 'infer',
+            // Restrict to app + workspace core. Excludes node_modules and tests.
+            sources: (filename: string) =>
+              (filename.includes('/src/') || filename.includes('/packages/core/src/')) &&
+              !filename.includes('.test.') &&
+              !filename.includes('.spec.'),
+          }],
+        ],
+      },
+    }),
+  ],
   resolve: {
     alias: {
       '@fretflow/core': fileURLToPath(new URL('./packages/core/src/index.ts', import.meta.url)),

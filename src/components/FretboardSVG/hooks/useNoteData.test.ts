@@ -30,7 +30,7 @@ describe("useNoteData", () => {
         chordBoxBounds: null,
         chordFretSpread: 0,
         scaleName: "minor-pentatonic",
-        useFlats: false,
+        preferFlats: false,
         wrappedNotes: new Set(),
         tuning: ["E4", "B3", "G3", "D3", "A2", "E2"]
       })
@@ -91,7 +91,7 @@ describe("useNoteData", () => {
           shapeScope: "single",
           activeShape: "E" as CagedShape,
           scaleName: "Major",
-          useFlats: false,
+          preferFlats: false,
           wrappedNotes: new Set(),
           tuning: ["E2"],
         }),
@@ -207,7 +207,7 @@ describe("useNoteData", () => {
           shapeScope: "single",
           activeShape: "E" as CagedShape,
           scaleName: "Major",
-          useFlats: false,
+          preferFlats: false,
           wrappedNotes: new Set(),
           tuning: ["E2"],
           fullChordPositionKeys: new Set(["0-3"]),
@@ -242,7 +242,7 @@ describe("useNoteData", () => {
 
       chordFretSpread: 0,
       scaleName: "Major",
-      useFlats: false,
+      preferFlats: false,
       wrappedNotes: new Set<string>(),
       tuning: ["C4"],
     };
@@ -320,7 +320,7 @@ describe("useNoteData", () => {
         chordBoxBounds: null,
         chordFretSpread: 0,
         scaleName: "Minor Blues",
-        useFlats: false,
+        preferFlats: false,
         degreeColorsEnabled: true,
         wrappedNotes: new Set(),
         tuning: ["E2"]

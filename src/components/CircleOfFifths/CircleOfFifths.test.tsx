@@ -71,15 +71,15 @@ describe("CircleOfFifths/CircleOfFifths", () => {
   });
 
   describe("Accidentals", () => {
-    it.each([true, false])("renders text elements with useFlats=%s", (useFlats) => {
-      renderCircle({ useFlats });
+    it.each([true, false])("renders text elements with preferFlats=%s", (preferFlats) => {
+      renderCircle({ preferFlats });
       expect(document.querySelectorAll("text").length).toBeGreaterThan(0);
     });
 
     it.each([["C"], ["C#"]])("switches between sharps and flats for %s", (root) => {
-      const { rerender } = renderCircle({ rootNote: root, useFlats: false });
+      const { rerender } = renderCircle({ rootNote: root, preferFlats: false });
       const before = Array.from(document.querySelectorAll("text")).map((el) => el.textContent).join("|");
-      rerender(<CircleOfFifths rootNote={root} setRootNote={mockSetRootNote} useFlats={true} />);
+      rerender(<CircleOfFifths rootNote={root} setRootNote={mockSetRootNote} preferFlats={true} />);
       const after = Array.from(document.querySelectorAll("text")).map((el) => el.textContent).join("|");
       expect(after).not.toBe(before);
     });
@@ -133,8 +133,8 @@ describe("CircleOfFifths/CircleOfFifths", () => {
 });
 
 describe("getCircleNoteLabels mode behavior", () => {
-  const labels = (note: string, root: string, useFlats: boolean, mode: "auto" | "on" | "off") =>
-    getCircleNoteLabels(note, root, useFlats, SCALES["Major"], mode);
+  const labels = (note: string, root: string, preferFlats: boolean, mode: "auto" | "on" | "off") =>
+    getCircleNoteLabels(note, root, preferFlats, SCALES["Major"], mode);
 
   it.each<[string, string, string, boolean, "auto" | "on" | "off", string, string | null]>([
     // mode = "auto"
@@ -149,8 +149,8 @@ describe("getCircleNoteLabels mode behavior", () => {
     ["off: sharp shows primary only", "A#", "C", false, "off", "A♯", null],
     ["off: respelled shows respelled primary only", "A#", "A#", true, "off", "B♭", null],
     ["off: natural shows primary only", "C", "C", false, "off", "C", null],
-  ])("%s", (_label, note, root, useFlats, mode, primary, enharmonic) => {
-    const r = labels(note, root, useFlats, mode);
+  ])("%s", (_label, note, root, preferFlats, mode, primary, enharmonic) => {
+    const r = labels(note, root, preferFlats, mode);
     expect(r.primary).toBe(primary);
     expect(r.enharmonic).toBe(enharmonic);
   });

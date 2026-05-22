@@ -10,7 +10,7 @@ describe("DegreeGrid", () => {
     selectedNote: "C",
     onSelectInKey: vi.fn(),
     onSelectBorrowed: vi.fn(),
-    useFlats: false,
+    preferFlats: false,
   };
 
   it("renders 12 cells (one per chromatic note)", () => {
@@ -43,7 +43,7 @@ describe("DegreeGrid", () => {
     const onSelectBorrowed = vi.fn();
     render(<DegreeGrid {...baseProps} onSelectBorrowed={onSelectBorrowed} />);
     fireEvent.click(screen.getByRole("button", { name: /^C#|C♯/ }));
-    // C major defaults to sharps (useFlats=false), so the numeral spells the
+    // C major defaults to sharps (preferFlats=false), so the numeral spells the
     // root with a sharp too: ♯i (not ♭ii).
     expect(onSelectBorrowed).toHaveBeenCalledWith("C#", "♯i");
   });
@@ -62,7 +62,7 @@ describe("DegreeGrid", () => {
       );
       // In A Natural Minor: in-key = A B C D E F G;
       // borrowed offsets {1,4,6,9,11} → A#, C#, D#, F#, G#.
-      // A natural minor resolves to useFlats=false, so chromatic offsets (1, 6)
+      // A natural minor resolves to preferFlats=false, so chromatic offsets (1, 6)
       // pick the sharp form (♯i, ♯iv); natural-position offsets (4, 9, 11) have
       // no accidental and are unchanged.
       const cases: Array<[string, string]> = [
@@ -94,7 +94,7 @@ describe("DegreeGrid", () => {
       );
       // In D Dorian: in-key = D E F G A B C;
       // borrowed offsets {1,4,6,8,11} → D#, F#, G#, A#, C#.
-      // D Dorian resolves to useFlats=false, so chromatic offsets (1, 6, 8)
+      // D Dorian resolves to preferFlats=false, so chromatic offsets (1, 6, 8)
       // pick the sharp form; natural-position offsets (4, 11) are unchanged.
       const expected: Record<string, string> = {
         "D#": "♯i",
@@ -113,18 +113,18 @@ describe("DegreeGrid", () => {
       }
     });
 
-    it("flips spelling to flats when useFlats=true overrides a sharp-default tonic", () => {
+    it("flips spelling to flats when preferFlats=true overrides a sharp-default tonic", () => {
       const { container } = render(
         <DegreeGrid
           {...baseProps}
           scaleName="Major"
           tonicNote="G"
           selectedNote="G"
-          useFlats={true}
+          preferFlats={true}
         />,
       );
       // G major defaults to sharps — without the override, the C♯ chromatic
-      // slot would display "C♯". With useFlats=true it must render as "D♭",
+      // slot would display "C♯". With preferFlats=true it must render as "D♭",
       // and no note-display span should contain a ♯.
       const noteSpans = Array.from(
         container.querySelectorAll<HTMLElement>(`.${styles.note}`),
@@ -135,7 +135,7 @@ describe("DegreeGrid", () => {
       expect(displays).not.toContain("C♯");
       for (const d of displays) expect(d).not.toMatch(/♯/);
 
-      // Numeral accidentals must follow the same useFlats=true preference —
+      // Numeral accidentals must follow the same preferFlats=true preference —
       // the C#/D♭ chromatic cell (offset 6 from G) reads ♭v, not ♯iv.
       const numeralSpans = Array.from(
         container.querySelectorAll<HTMLElement>(`.${styles.numeral}`),

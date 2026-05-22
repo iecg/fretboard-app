@@ -110,7 +110,7 @@ describe("NoteGrid responsive class membership", () => {
   it("note-btn class is present inside a desktop-tier container", () => {
     render(
       <div className="app-container" data-layout-tier="desktop">
-        <NoteGrid notes={NOTES} selected="C" onSelect={() => {}} useFlats={false} />
+        <NoteGrid notes={NOTES} selected="C" onSelect={() => {}} preferFlats={false} />
       </div>,
     );
     screen.getAllByRole("button").forEach((btn) => {
@@ -121,7 +121,7 @@ describe("NoteGrid responsive class membership", () => {
   it("note-btn class is present inside a tablet-tier container", () => {
     render(
       <div className="app-container" data-layout-tier="tablet">
-        <NoteGrid notes={NOTES} selected="C" onSelect={() => {}} useFlats={false} />
+        <NoteGrid notes={NOTES} selected="C" onSelect={() => {}} preferFlats={false} />
       </div>,
     );
     screen.getAllByRole("button").forEach((btn) => {

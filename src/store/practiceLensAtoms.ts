@@ -30,7 +30,7 @@ import {
   scaleNameAtom,
   scaleNotesAtom,
   colorNotesAtom,
-  useFlatsAtom,
+  preferFlatsAtom,
   practiceBarColorNotesAtom,
 } from "./scaleAtoms";
 import {
@@ -119,7 +119,7 @@ const cueBaseInputsAtom = atom((get) => {
   return {
     chordType,
     chordRoot: get(chordRootAtom),
-    useFlats: get(useFlatsAtom),
+    preferFlats: get(preferFlatsAtom),
     allChordMembers: get(allChordMembersAtom),
     scaleNotes: get(scaleNotesAtom),
   };
@@ -151,10 +151,10 @@ const guideTonesCuesAtom = atom((get) => {
 const tensionCuesAtom = atom((get) => {
   const base = get(cueBaseInputsAtom);
   if (!base) return [] as PracticeCue[];
-  const { allChordMembers, chordRoot, useFlats, scaleNotes } = base;
+  const { allChordMembers, chordRoot, preferFlats, scaleNotes } = base;
 
   const displayNote = (note: string) =>
-    formatAccidental(getNoteDisplay(note, chordRoot, useFlats));
+    formatAccidental(getNoteDisplay(note, chordRoot, preferFlats));
 
   const cues: PracticeCue[] = [];
   if (allChordMembers.length > 0) {
