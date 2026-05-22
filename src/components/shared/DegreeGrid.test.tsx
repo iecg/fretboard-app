@@ -43,7 +43,9 @@ describe("DegreeGrid", () => {
     const onSelectBorrowed = vi.fn();
     render(<DegreeGrid {...baseProps} onSelectBorrowed={onSelectBorrowed} />);
     fireEvent.click(screen.getByRole("button", { name: /^C#|C♯/ }));
-    expect(onSelectBorrowed).toHaveBeenCalledWith("C#", "♭ii");
+    // C major defaults to sharps (useFlats=false), so the numeral spells the
+    // root with a sharp too: ♯i (not ♭ii).
+    expect(onSelectBorrowed).toHaveBeenCalledWith("C#", "♯i");
   });
 
   describe("borrowed numerals across modes", () => {
@@ -60,8 +62,11 @@ describe("DegreeGrid", () => {
       );
       // In A Natural Minor: in-key = A B C D E F G;
       // borrowed offsets {1,4,6,9,11} → A#, C#, D#, F#, G#.
+      // A natural minor resolves to useFlats=false, so chromatic offsets (1, 6)
+      // pick the sharp form (♯i, ♯iv); natural-position offsets (4, 9, 11) have
+      // no accidental and are unchanged.
       const cases: Array<[string, string]> = [
-        ["A#", "♭ii"],
+        ["A#", "♯i"],
         ["C#", "iii"],
         ["D#", "♯iv"],
         ["F#", "vi"],
@@ -89,11 +94,13 @@ describe("DegreeGrid", () => {
       );
       // In D Dorian: in-key = D E F G A B C;
       // borrowed offsets {1,4,6,8,11} → D#, F#, G#, A#, C#.
+      // D Dorian resolves to useFlats=false, so chromatic offsets (1, 6, 8)
+      // pick the sharp form; natural-position offsets (4, 11) are unchanged.
       const expected: Record<string, string> = {
-        "D#": "♭ii",
+        "D#": "♯i",
         "F#": "iii",
         "G#": "♯iv",
-        "A#": "♭vi",
+        "A#": "♯v",
         "C#": "vii",
       };
       for (const [note, numeral] of Object.entries(expected)) {
@@ -127,6 +134,15 @@ describe("DegreeGrid", () => {
       expect(displays).toContain("D♭");
       expect(displays).not.toContain("C♯");
       for (const d of displays) expect(d).not.toMatch(/♯/);
+
+      // Numeral accidentals must follow the same useFlats=true preference —
+      // the C#/D♭ chromatic cell (offset 6 from G) reads ♭v, not ♯iv.
+      const numeralSpans = Array.from(
+        container.querySelectorAll<HTMLElement>(`.${styles.numeral}`),
+      );
+      const numerals = numeralSpans.map((n) => n.textContent ?? "");
+      expect(numerals).toContain("♭v");
+      for (const n of numerals) expect(n).not.toMatch(/♯/);
     });
 
     it("never renders a raw integer numeral as a borrowed label", () => {
