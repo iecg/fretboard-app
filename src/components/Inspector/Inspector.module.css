@@ -1,12 +1,9 @@
-/* The Inspector panel is a DAW faceplate — a theme-adaptive hardware-style
- * surface using the .faceplate class from shared.module.css. */
 .root {
-  composes: faceplate from "../shared/shared.module.css";
-
   display: flex;
   flex-direction: column;
   gap: var(--space-2, 0.5rem);
-  padding: var(--space-3, 0.75rem);
+  padding: var(--space-3, 0.75rem) 0;
+  /* v2.0: no outer card chrome — content flows against the page background. */
 }
 
 /* Top-placement header row — tab pills share one baseline. The divider rule
