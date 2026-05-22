@@ -5,13 +5,14 @@ import {
   chordTypeAtom,
   chordTonesAtom,
   voicingAtom,
+  voicingMatchesAtom,
   closePositionIndexAtom,
   closeCandidatesAtom,
   chordSourceIsProgressionAtom,
 } from "./chordOverlayAtoms";
 import { allChordMembersAtom } from "./composableSelectors";
 import { progressionStepsAtom } from "./progressionAtoms";
-import { fingeringPatternAtom } from "./fingeringAtoms";
+import { cagedShapesAtom, fingeringPatternAtom } from "./fingeringAtoms";
 import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
 import {
   activeChordCachedDegreeAtom,
@@ -19,7 +20,7 @@ import {
 } from "./songStateAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
 import type { ProgressionStep } from "../progressions/progressionDomain";
-import type { DegreeId } from "@fretflow/core";
+import type { CagedShape, DegreeId } from "@fretflow/core";
 
 const STEP_DEFAULTS = {
   duration: { value: 1, unit: "bar" as const },
@@ -359,5 +360,57 @@ describe("closePositionIndexAtom — v2.0", () => {
     store.set(closePositionIndexAtom, 9999);
     expect(store.get(closePositionIndexAtom)).toBe(9999);
     expect(store.get(closeCandidatesAtom).length).toBeGreaterThan(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Group I — voicingMatchesAtom dispatch (v2.0)
+// ---------------------------------------------------------------------------
+
+describe("voicingMatchesAtom — v2.0 dispatch", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("returns [] when voicing is 'off'", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "off"],
+    ]);
+    expect(store.get(voicingMatchesAtom)).toEqual([]);
+  });
+
+  it("narrows 'full' output to the active CAGED shape when exactly one is selected", () => {
+    // Default cagedShapesAtom is the full Set of 5 shapes, so a no-seed store
+    // exercises the "all shapes" branch.
+    const allShapesStore = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "full"],
+      [fingeringPatternAtom, "caged"],
+    ]);
+    const all = allShapesStore.get(voicingMatchesAtom);
+
+    const oneShapeStore = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "full"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["E"])],
+    ]);
+    const one = oneShapeStore.get(voicingMatchesAtom);
+
+    // The "all shapes" set must include shapes other than E.
+    const allShapesSeen = new Set(all.map((v) => v.shape));
+    expect(allShapesSeen.size).toBeGreaterThan(1);
+
+    // Narrowed set must be non-empty and contain only the E shape.
+    expect(one.length).toBeGreaterThan(0);
+    expect(one.every((v) => v.shape === "E")).toBe(true);
+    expect(one.length).toBeLessThan(all.length);
   });
 });

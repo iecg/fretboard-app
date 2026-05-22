@@ -16,6 +16,7 @@ import type {
   ResolvedChordMember,
   PracticeLens,
   Voicing,
+  VoicingType,
 } from "@fretflow/core";
 import {
   k,
@@ -182,11 +183,9 @@ export const fullChordsEnabledAtom = atomWithStorage<boolean>(
   GET_ON_INIT,
 );
 
-export type VoicingValue = "off" | "full" | "close";
+const VOICING_VALUES = ["off", "full", "close"] as const satisfies readonly VoicingType[];
 
-const VOICING_VALUES = ["off", "full", "close"] as const;
-
-const voicingValueStorage = createStorage<VoicingValue>({
+const voicingValueStorage = createStorage<VoicingType>({
   validate: enumValidator(VOICING_VALUES),
 });
 
@@ -199,7 +198,7 @@ const closePositionIndexStorage = constrainedNumberStorage({ integer: true });
  * cycle index inside the scale-shape window (or anywhere on the neck when no
  * scale shape).
  */
-export const voicingAtom = atomWithStorage<VoicingValue>(
+export const voicingAtom = atomWithStorage<VoicingType>(
   k("voicing"),
   "full",
   voicingValueStorage,
@@ -221,6 +220,24 @@ export const closePositionIndexAtom = atomWithStorage<number>(
 const FRET_WINDOW_BUFFER = 1;
 
 /**
+ * All Full (CAGED) voicings for the active chord. Internal — used by both the
+ * `voicingMatchesAtom` 'full' branch and `activeScaleWindowAtom`'s CAGED
+ * window derivation. Centralises the engine call so a chord change recomputes
+ * once per store, not once per consumer.
+ */
+const fullVoicingsAtom = atom((get): Voicing[] => {
+  const chordType = get(chordTypeAtom);
+  if (!chordType) return [];
+  return generateVoicings({
+    chordRoot: get(chordRootAtom),
+    chordType,
+    tuning: get(currentTuningAtom),
+    maxFret: 24,
+    voicingType: "full",
+  });
+});
+
+/**
  * Returns the fret window of the active scale shape, or null when no single
  * shape is active. For CAGED, derive from the matched full-chord polygon (no
  * standalone window table exists in @fretflow/core); for 3NPS, use the
@@ -232,15 +249,7 @@ const activeScaleWindowAtom = atom((get): { lo: number; hi: number } | null => {
     const shapes = get(cagedShapesAtom);
     if (shapes.size !== 1) return null;
     const shape = [...shapes][0];
-    const chordType = get(chordTypeAtom);
-    if (!chordType) return null;
-    const fullMatches = generateVoicings({
-      chordRoot: get(chordRootAtom),
-      chordType,
-      tuning: get(currentTuningAtom),
-      maxFret: 24,
-      voicingType: "full",
-    });
+    const fullMatches = get(fullVoicingsAtom);
     const match = fullMatches.find((v) => v.shape === shape);
     if (!match) return null;
     const fretted = match.notes.map((n) => n.fretIndex).filter((f) => f > 0);
@@ -262,7 +271,6 @@ const activeScaleWindowAtom = atom((get): { lo: number; hi: number } | null => {
  * them when no shape is active) AND pass the hand-span filter.
  */
 export const closeCandidatesAtom = atom((get): Voicing[] => {
-  if (get(chordOverlayHiddenAtom)) return [];
   const chordType = get(chordTypeAtom);
   if (!chordType) return [];
   const all = generateVoicings({
@@ -274,14 +282,14 @@ export const closeCandidatesAtom = atom((get): Voicing[] => {
   });
   const handFiltered = filterByHandSpan(all, get(handSizeAtom));
 
-  const window = get(activeScaleWindowAtom);
-  if (!window) return handFiltered;
+  const scaleWindow = get(activeScaleWindowAtom);
+  if (!scaleWindow) return handFiltered;
   return handFiltered.filter((v) => {
     const fretted = v.notes.map((n) => n.fretIndex).filter((f) => f > 0);
     if (fretted.length === 0) return true;
     const min = Math.min(...fretted);
     const max = Math.max(...fretted);
-    return min >= window.lo && max <= window.hi;
+    return min >= scaleWindow.lo && max <= scaleWindow.hi;
   });
 });
 
@@ -292,17 +300,10 @@ export const closeCandidatesAtom = atom((get): Voicing[] => {
 export const voicingMatchesAtom = atom((get): Voicing[] => {
   const voicing = get(voicingAtom);
   if (voicing === "off") return [];
+  if (get(chordOverlayHiddenAtom)) return [];
   if (voicing === "full") {
-    if (get(chordOverlayHiddenAtom)) return [];
-    const chordType = get(chordTypeAtom);
-    if (!chordType) return [];
-    const all = generateVoicings({
-      chordRoot: get(chordRootAtom),
-      chordType,
-      tuning: get(currentTuningAtom),
-      maxFret: 24,
-      voicingType: "full",
-    });
+    const all = get(fullVoicingsAtom);
+    if (all.length === 0) return [];
     const pattern = get(fingeringPatternAtom);
     if (pattern === "caged") {
       const shapes = get(cagedShapesAtom);
