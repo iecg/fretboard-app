@@ -140,9 +140,82 @@ describe("DegreeGrid", () => {
       );
       const buttons = screen.getAllByRole("button");
       for (const btn of buttons) {
-        // The numeral span never contains a raw single-digit fallback.
         expect(btn.textContent).not.toMatch(/\b\d{1,2}\b/);
       }
     });
+  });
+
+  describe("keyboard navigation (roving tabindex)", () => {
+    it("starts with only the selected cell as tabIndex=0", () => {
+      render(<DegreeGrid {...baseProps} selectedNote="E" />);
+      const buttons = screen.getAllByRole("button");
+      const tabbable = buttons.filter((b) => b.tabIndex === 0);
+      expect(tabbable).toHaveLength(1);
+      expect(tabbable[0].getAttribute("aria-label")).toMatch(/^E/);
+    });
+
+    it("falls back to the first cell when selectedNote is not in the chromatic set", () => {
+      render(<DegreeGrid {...baseProps} selectedNote="Zz" />);
+      const buttons = screen.getAllByRole("button");
+      expect(buttons[0].tabIndex).toBe(0);
+      expect(buttons.slice(1).every((b) => b.tabIndex === -1)).toBe(true);
+    });
+
+    it("moves focus to the next cell on ArrowRight", () => {
+      render(<DegreeGrid {...baseProps} selectedNote="C" />);
+      const buttons = screen.getAllByRole("button");
+      buttons[0].focus();
+      fireEvent.keyDown(buttons[0], { key: "ArrowRight" });
+      expect(document.activeElement).toBe(buttons[1]);
+      expect(buttons[1].tabIndex).toBe(0);
+      expect(buttons[0].tabIndex).toBe(-1);
+    });
+
+    it("moves focus to the previous cell on ArrowLeft", () => {
+      render(<DegreeGrid {...baseProps} selectedNote="C" />);
+      const buttons = screen.getAllByRole("button");
+      buttons[2].focus();
+      fireEvent.keyDown(buttons[2], { key: "ArrowLeft" });
+      expect(document.activeElement).toBe(buttons[1]);
+      expect(buttons[1].tabIndex).toBe(0);
+    });
+
+    it("wraps focus from last cell to first on ArrowRight", () => {
+      render(<DegreeGrid {...baseProps} />);
+      const buttons = screen.getAllByRole("button");
+      buttons[11].focus();
+      fireEvent.keyDown(buttons[11], { key: "ArrowRight" });
+      expect(document.activeElement).toBe(buttons[0]);
+    });
+
+    it("wraps focus from first cell to last on ArrowLeft", () => {
+      render(<DegreeGrid {...baseProps} />);
+      const buttons = screen.getAllByRole("button");
+      buttons[0].focus();
+      fireEvent.keyDown(buttons[0], { key: "ArrowLeft" });
+      expect(document.activeElement).toBe(buttons[11]);
+    });
+
+    it("jumps to first cell on Home and last cell on End", () => {
+      render(<DegreeGrid {...baseProps} />);
+      const buttons = screen.getAllByRole("button");
+      buttons[5].focus();
+      fireEvent.keyDown(buttons[5], { key: "End" });
+      expect(document.activeElement).toBe(buttons[11]);
+      fireEvent.keyDown(buttons[11], { key: "Home" });
+      expect(document.activeElement).toBe(buttons[0]);
+    });
+
+    it("keeps exactly one tabbable cell at any time", () => {
+      render(<DegreeGrid {...baseProps} />);
+      const buttons = screen.getAllByRole("button");
+      buttons[0].focus();
+      fireEvent.keyDown(buttons[0], { key: "ArrowRight" });
+      fireEvent.keyDown(buttons[1], { key: "ArrowRight" });
+      fireEvent.keyDown(buttons[2], { key: "ArrowRight" });
+      const tabbable = buttons.filter((b) => b.tabIndex === 0);
+      expect(tabbable).toHaveLength(1);
+    });
+
   });
 });

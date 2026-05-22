@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useState, type KeyboardEvent } from "react";
 import {
   NOTES,
   getDiatonicNotes,
@@ -74,11 +74,47 @@ export function DegreeGrid({
     });
   }, [scaleName, tonicNote, useFlats]);
 
+  const buttonRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const selectedIndex = cells.findIndex((c) => c.note === selectedNote);
+  const [focusIndex, setFocusIndex] = useState(
+    selectedIndex >= 0 ? selectedIndex : 0,
+  );
+
+  const moveFocus = (next: number) => {
+    const wrapped = ((next % cells.length) + cells.length) % cells.length;
+    setFocusIndex(wrapped);
+    buttonRefs.current[wrapped]?.focus();
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    switch (event.key) {
+      case "ArrowRight":
+        event.preventDefault();
+        moveFocus(index + 1);
+        break;
+      case "ArrowLeft":
+        event.preventDefault();
+        moveFocus(index - 1);
+        break;
+      case "Home":
+        event.preventDefault();
+        moveFocus(0);
+        break;
+      case "End":
+        event.preventDefault();
+        moveFocus(cells.length - 1);
+        break;
+    }
+  };
+
   return (
     <div className={styles.grid} role="group" aria-label="Chord root">
-      {cells.map((cell) => (
+      {cells.map((cell, index) => (
         <button
           key={cell.note}
+          ref={(el) => {
+            buttonRefs.current[index] = el;
+          }}
           type="button"
           className={clsx(
             styles.cell,
@@ -88,6 +124,9 @@ export function DegreeGrid({
           data-in-key={cell.inKey ? "true" : "false"}
           aria-pressed={cell.note === selectedNote}
           aria-label={cell.inKey ? `${cell.display} ${cell.numeral}` : `${cell.numeral} ${cell.display}`}
+          tabIndex={index === focusIndex ? 0 : -1}
+          onKeyDown={(event) => handleKeyDown(event, index)}
+          onFocus={() => setFocusIndex(index)}
           onClick={() =>
             cell.inKey
               ? onSelectInKey(cell.note, cell.numeral)
