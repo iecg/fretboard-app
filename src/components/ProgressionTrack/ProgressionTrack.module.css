@@ -13,13 +13,11 @@
  * ------------------------------------------------------------------------- */
 
 .track {
-  composes: faceplate from "../shared/shared.module.css";
-
-  /* The reference design renders the timeline as a flush band, not a
-     rounded card — drop the faceplate's radius, side borders, and shadow so
-     only the dark substrate and top/bottom hairlines remain. */
+  /* v2.0: no faceplate chrome. Inherit the page background; theming still works
+     via the --track-* custom-property mappings below. */
+  background: transparent;
+  border: 0;
   border-radius: 0;
-  border-inline: none;
   box-shadow: none;
 
   /* Map track tokens → theme-adaptive faceplate tokens */
