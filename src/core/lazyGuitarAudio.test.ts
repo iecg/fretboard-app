@@ -56,8 +56,38 @@ describe("lazyGuitarAudio", () => {
     expect(audioModule.synth.resume).not.toHaveBeenCalled();
   });
 
+  it("uses a fast path for resume after preload resolves", async () => {
+    setGuitarMutePreference(true);
+
+    await waitFor(() => {
+      expect(audioModule.synth.setMute).toHaveBeenCalledWith(true);
+    });
+
+    audioModule.synth.resume.mockClear();
+
+    const resumePromise = resumeGuitarAudio();
+
+    expect(audioModule.synth.resume).toHaveBeenCalledTimes(1);
+    await resumePromise;
+  });
+
   it("delegates note playback through the lazy runtime", async () => {
     await playGuitarNote(440);
     expect(audioModule.synth.playNote).toHaveBeenCalledWith(440);
+  });
+
+  it("uses a fast path for playback after preload resolves", async () => {
+    setGuitarMutePreference(true);
+
+    await waitFor(() => {
+      expect(audioModule.synth.setMute).toHaveBeenCalledWith(true);
+    });
+
+    audioModule.synth.playNote.mockClear();
+
+    const playPromise = playGuitarNote(440);
+
+    expect(audioModule.synth.playNote).toHaveBeenCalledWith(440);
+    await playPromise;
   });
 });
