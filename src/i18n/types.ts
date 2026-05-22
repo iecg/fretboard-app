@@ -30,8 +30,7 @@ export interface Dictionary {
     };
   };
   inspector: {
-    scaleTab: string;
-    chordTab: string;
+    viewTab: string;
     songTab: string;
     groupFingering: string;
     pattern: string;
@@ -59,22 +58,22 @@ export interface Dictionary {
     fullChordsHintSupported: string;
     fullChordsHintNon6String: string;
     fullChordsHintUnsupportedType: string;
-    groupMeter: string;
+    groupTime: string;
+    groupProgression: string;
     groupChords: string;
     groupBackingTrack: string;
     progressionMode: string;
-    meterBeats: string;
     meterTempo: string;
-    meterLength: string;
     meterLoop: string;
-    meterPreset: string;
+    progressionPreset: string;
+    timeSignature: string;
+    timeSignatureAriaLabel: string;
     btGenre: string;
     btInstrument: string;
     btChordPattern: string;
     btBassPattern: string;
     btDrumPattern: string;
     btSwing: string;
-    panelLabel: string;
     voicingType: string;
     voicingTypeAriaLabel: string;
     voicingInversion: string;
