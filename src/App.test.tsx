@@ -38,7 +38,7 @@ vi.mock("./components/Fretboard/Fretboard", async () => {
 
 // v2.0: CircleOfFifths is no longer rendered by App. We need a root-note
 // setter that IS rendered. Mock FingeringPatternControls (rendered in the
-// View tab) to also render a test-only root-note change button.
+// Overlay tab) to also render a test-only root-note change button.
 vi.mock("./components/FingeringPatternControls/FingeringPatternControls", async () => {
   const { useAtomValue, useSetAtom } = await import("jotai");
   const { rootNoteAtom } = await import("./store/scaleAtoms");
@@ -75,9 +75,10 @@ const setViewport = (width: number, height: number) => {
 };
 
 // Inspector tab bodies (Radix Tabs) only mount when active; tests that exercise
-// View/Song tab controls must select the tab first.
-// v2.0 IA: Scale Fingering and Chord Voicing both live in the "View" tab.
-const selectInspectorTab = async (name: "View" | "Song") => {
+// Overlay/Song tab controls must select the tab first.
+// v2.0 IA: Scale and Chord groups both live in the "Overlay" tab (renamed from
+// "View" in Plan F to better reflect that it controls fretboard overlays).
+const selectInspectorTab = async (name: "Overlay" | "Song") => {
   await userEvent.click(await screen.findByRole("tab", { name }));
 };
 
@@ -114,7 +115,7 @@ describe("App", () => {
   describe("root note changes (Circle of Fifths -> Fretboard)", () => {
     it("propagates a new root note to the fretboard", async () => {
       render(<App />);
-      await selectInspectorTab("View");
+      await selectInspectorTab("Overlay");
       fireEvent.click(await screen.findByTestId("set-root-note"));
       await waitFor(() => {
         expect(screen.getByTestId("fretboard")).toHaveTextContent("Fretboard: G");
@@ -130,7 +131,7 @@ describe("App", () => {
       ];
       localStorage.setItem(k("progressionSteps"), JSON.stringify(steps));
       render(<App />);
-      await selectInspectorTab("View");
+      await selectInspectorTab("Overlay");
       fireEvent.click(await screen.findByTestId("set-root-note"));
       await waitFor(() => {
         const persisted = JSON.parse(localStorage.getItem(k("progressionSteps")) ?? "[]") as Array<{ manualRoot: string }>;
@@ -146,7 +147,7 @@ describe("App", () => {
       ];
       localStorage.setItem(k("progressionSteps"), JSON.stringify(steps));
       render(<App />);
-      await selectInspectorTab("View");
+      await selectInspectorTab("Overlay");
       fireEvent.click(await screen.findByTestId("set-root-note"));
       await waitFor(() => {
         expect(localStorage.getItem(k("rootNote"))).toBe("G");
@@ -274,8 +275,8 @@ describe("App", () => {
         expect(localStorage.getItem(k("chordOverlayHidden"))).toBe("true");
       });
       // Changing rootNote resets chordOverlayHidden to false.
-      // v2.0: FingeringPatternControls mock (in View tab) exposes the root-note setter.
-      await userEvent.click(await screen.findByRole("tab", { name: "View" }));
+      // v2.0: FingeringPatternControls mock (in Overlay tab) exposes the root-note setter.
+      await userEvent.click(await screen.findByRole("tab", { name: "Overlay" }));
       fireEvent.click(await screen.findByTestId("set-root-note"));
       await waitFor(() => {
         expect(localStorage.getItem(k("chordOverlayHidden"))).toBe("false");

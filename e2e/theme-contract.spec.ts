@@ -523,8 +523,8 @@ test.describe("Theme Contract", () => {
         });
 
         test("ToggleBar buttons should only change color when unselected", async ({ page }) => {
-          // ToggleBars live inside the Inspector's View tab panel (v2.0).
-          await page.getByRole("tab", { name: "View" }).click();
+          // ToggleBars live inside the Inspector's Overlay tab panel (v2.0).
+          await page.getByRole("tab", { name: "Overlay" }).click();
           const panel = page.getByRole("tabpanel");
           await expect(panel).toBeVisible();
           const activeToggle = panel.locator('button[aria-pressed="true"]').first();
@@ -854,8 +854,8 @@ test.describe("Theme Contract", () => {
         const selectBg = await scaleSelect.evaluate((el) => getComputedStyle(el).backgroundColor);
         expect(selectBg).not.toBe(panelBg);
 
-        // --- View tab: ToggleBar ---
-        await page.getByRole("tab", { name: "View" }).click();
+        // --- Overlay tab: ToggleBar ---
+        await page.getByRole("tab", { name: "Overlay" }).click();
         const viewPanel = page.getByRole("tabpanel");
         const toggleGroup = viewPanel.locator('[class*="toggle-group"]').first();
         await expect(viewPanel).toBeVisible();

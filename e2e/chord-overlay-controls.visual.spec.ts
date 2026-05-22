@@ -28,8 +28,8 @@ test.describe("Chord Overlay Controls Visual", () => {
       { width: 1280, height: 900 },
     );
 
-    // ChordOverlayControls lives in the Inspector's View tab.
-    await page.getByRole("tab", { name: "View" }).click();
+    // ChordOverlayControls lives in the Inspector's Overlay tab.
+    await page.getByRole("tab", { name: "Overlay" }).click();
 
     // Wait for the Practice lens toggle (role=group) to be visible — this
     // confirms ChordOverlayControls is fully mounted after D2 cleanup.
@@ -60,7 +60,7 @@ test.describe("Chord Overlay Controls Visual", () => {
       { width: 1280, height: 900 },
     );
 
-    await page.getByRole("tab", { name: "View" }).click();
+    await page.getByRole("tab", { name: "Overlay" }).click();
 
     await page
       .getByRole("group", { name: "Practice lens" })
@@ -86,8 +86,8 @@ test.describe("Chord Overlay Controls Visual", () => {
       { width: 390, height: 844 },
     );
 
-    // Activate the View tab so ChordOverlayControls is visible.
-    await page.getByRole("tab", { name: "View" }).click();
+    // Activate the Overlay tab so ChordOverlayControls is visible.
+    await page.getByRole("tab", { name: "Overlay" }).click();
 
     // Wait for the Practice lens toggle to confirm the panel is mounted.
     await page

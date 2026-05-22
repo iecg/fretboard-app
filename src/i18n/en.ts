@@ -37,7 +37,7 @@ export const en: Dictionary = {
     },
   },
   inspector: {
-    viewTab: "View",
+    viewTab: "Overlay",
     songTab: "Song",
     groupFingering: "Fingering",
     pattern: "Pattern",
@@ -99,8 +99,8 @@ export const en: Dictionary = {
     stringStudyCluster: "String study",
     scaleLayer: "Scale layer",
     chordLayer: "Chord layer",
-    groupScaleFingering: "Scale Fingering",
-    groupChordVoicing: "Chord Voicing",
+    groupScaleFingering: "Scale",
+    groupChordVoicing: "Chord",
   },
   statusBar: {
     key: "Key",

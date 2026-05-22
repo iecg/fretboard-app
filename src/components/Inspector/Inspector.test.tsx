@@ -9,15 +9,15 @@ describe("Inspector v2.0", () => {
     expect(screen.queryByText("Inspector")).not.toBeInTheDocument();
   });
 
-  it("renders exactly two tab triggers: View and Song", () => {
+  it("renders exactly two tab triggers: Overlay and Song", () => {
     renderWithAtoms(<Inspector />);
     const tabs = screen.getAllByRole("tab");
     expect(tabs).toHaveLength(2);
-    expect(tabs[0]).toHaveTextContent(/view/i);
+    expect(tabs[0]).toHaveTextContent(/overlay/i);
     expect(tabs[1]).toHaveTextContent(/song/i);
   });
 
-  it("defaults to the View tab", () => {
+  it("defaults to the Overlay tab", () => {
     renderWithAtoms(<Inspector />);
     expect(screen.getByTestId("view-tab")).toBeVisible();
   });

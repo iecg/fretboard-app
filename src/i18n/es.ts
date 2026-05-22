@@ -37,7 +37,7 @@ export const es: Dictionary = {
     },
   },
   inspector: {
-    viewTab: "Vista",
+    viewTab: "Superposición",
     songTab: "Canción",
     groupFingering: "Digitación",
     pattern: "Patrón",
@@ -99,8 +99,8 @@ export const es: Dictionary = {
     stringStudyCluster: "Estudio en cuerdas",
     scaleLayer: "Capa de escala",
     chordLayer: "Capa de acorde",
-    groupScaleFingering: "Digitación de escala",
-    groupChordVoicing: "Voicing de acorde",
+    groupScaleFingering: "Escala",
+    groupChordVoicing: "Acorde",
   },
   statusBar: {
     key: "Tonalidad",

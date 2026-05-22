@@ -23,9 +23,9 @@ test.describe("App Components Visual", () => {
 
   test("circle-of-fifths-desktop-1280x900", async ({ page }) => {
     // v2.0: CircleOfFifths is no longer rendered in the app shell.
-    // Capture the Inspector View tab (Scale Fingering + Chord Voicing controls)
+    // Capture the Inspector Overlay tab (Scale + Chord groups)
     // which replaced the old Scale/Chord/Key 3-tab layout.
-    await page.getByRole("tab", { name: "View" }).click();
+    await page.getByRole("tab", { name: "Overlay" }).click();
     const locator = page.getByTestId("view-tab");
     await locator.waitFor({ state: "visible" });
     await locator.scrollIntoViewIfNeeded();
@@ -34,7 +34,7 @@ test.describe("App Components Visual", () => {
 
   test("circle-of-fifths-light-1280x900", async ({ page }) => {
     await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
-    await page.getByRole("tab", { name: "View" }).click();
+    await page.getByRole("tab", { name: "Overlay" }).click();
     const locator = page.getByTestId("view-tab");
     await locator.waitFor({ state: "visible" });
     await locator.scrollIntoViewIfNeeded();
