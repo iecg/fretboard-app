@@ -25,7 +25,6 @@ import { TimeSignaturePicker } from "../shared/TimeSignaturePicker";
 import { BackingTrackControls } from "./BackingTrackControls";
 import { buildQualitySelectGroups } from "./qualityGroups";
 import shared from "../shared/shared.module.css";
-import { CHORD_QUALITY_DIATONIC_VALUE } from "../shared/chordControlOptions";
 import { CUSTOM_PRESET_ID, updateProgressionStepRootAtom } from "../../store/progressionAtoms";
 import styles from "./SongControls.module.css";
 
@@ -176,8 +175,6 @@ export function SongControls() {
     }
     startTransition(() => loadProgressionPreset(id));
   };
-  const qualityValue = activeStep?.qualityOverride ?? CHORD_QUALITY_DIATONIC_VALUE;
-
   return (
     <PropGrid columns={6}>
       {/* ── KEY ──────────────────────────────────────────────────────────── */}
@@ -381,7 +378,12 @@ export function SongControls() {
               <LabeledSelect
                 label={t("controls.quality")}
                 hideLabel
-                value={qualityValue === CHORD_QUALITY_DIATONIC_VALUE ? "" : qualityValue}
+                value={
+                  activeStep?.qualityOverride
+                  ?? activeResolvedProgressionStep?.quality
+                  ?? activeResolvedProgressionStep?.diatonicQuality
+                  ?? ""
+                }
                 onChange={(quality) =>
                   updateProgressionStepQuality({
                     id: activeStep.id,
