@@ -1,6 +1,7 @@
-import { startTransition } from "react";
+import { startTransition, useMemo } from "react";
 import clsx from "clsx";
 import { ArrowDown, ArrowUp, CopyPlus, Plus, Trash2 } from "lucide-react";
+import { SCALE_FAMILIES, type ScaleFamily, type ScaleFamilyId } from "@fretflow/core";
 import {
   MIN_PROGRESSION_STEP_DURATION_VALUE,
   MAX_PROGRESSION_STEP_DURATION_VALUE,
@@ -21,11 +22,36 @@ import { PropGrid, Prop, GroupHeader } from "../Inspector/InspectorGrid";
 import { DegreeSelect } from "../shared/DegreeSelect";
 import { ChordQualitySelect } from "../shared/ChordQualitySelect";
 import { TimeSignaturePicker } from "../shared/TimeSignaturePicker";
+import { RootNoteSelect } from "../shared/RootNoteSelect";
+import { Switch } from "../Switch/Switch";
 import { BackingTrackControls } from "./BackingTrackControls";
 import shared from "../shared/shared.module.css";
 import { CHORD_QUALITY_DIATONIC_VALUE } from "../shared/chordControlOptions";
 import { CUSTOM_PRESET_ID } from "../../store/progressionAtoms";
 import styles from "./SongControls.module.css";
+
+// Look up a scale family by id; fail loudly at module init if the catalog id
+// drifts. Prevents silent empty optgroups if `theoryCatalog.ts` is renamed.
+function requireFamily(id: ScaleFamilyId): ScaleFamily {
+  const family = SCALE_FAMILIES.find((f) => f.id === id);
+  if (!family) {
+    throw new Error(`theoryCatalog: scale family '${id}' not found`);
+  }
+  return family;
+}
+
+const majorFamily = requireFamily("major");
+const pentatonicFamily = requireFamily("pentatonic");
+const bluesFamily = requireFamily("blues");
+const harmonicMinorFamily = requireFamily("harmonic-minor");
+const melodicMinorFamily = requireFamily("melodic-minor");
+
+function familyOptions(family: ScaleFamily) {
+  return family.members.map((m) => ({
+    value: m.scaleName,
+    label: m.displayLabel,
+  }));
+}
 
 const CATEGORY_LABELS: Record<ProgressionPresetCategory, string> = {
   "pop-rock": "Pop / Rock",
@@ -38,7 +64,44 @@ const CATEGORY_LABELS: Record<ProgressionPresetCategory, string> = {
 
 export function SongControls() {
   const { t } = useTranslation();
-  const { scaleName, rootNote } = useScaleState();
+  const {
+    scaleName,
+    rootNote,
+    setRootNote,
+    setScaleName,
+    useFlats,
+    scaleVisible,
+    toggleScaleVisible,
+  } = useScaleState();
+
+  const handleRootNote = (note: string) => {
+    startTransition(() => {
+      setRootNote(note);
+    });
+  };
+
+  const handleScaleName = (name: string) => {
+    startTransition(() => {
+      setScaleName(name);
+    });
+  };
+
+  const scaleGroups: LabeledSelectGroup[] = useMemo(
+    () => [
+      { groupLabel: t("inspector.scaleGroupMajorModes"), options: familyOptions(majorFamily) },
+      { groupLabel: t("inspector.scaleGroupPentatonics"), options: familyOptions(pentatonicFamily) },
+      { groupLabel: t("inspector.scaleGroupBlues"), options: familyOptions(bluesFamily) },
+      {
+        groupLabel: t("inspector.scaleGroupHarmonicMelodic"),
+        options: [
+          ...familyOptions(harmonicMinorFamily),
+          ...familyOptions(melodicMinorFamily),
+        ],
+      },
+    ],
+    [t],
+  );
+
   const {
     progressionSteps,
     resolvedProgressionSteps,
@@ -107,6 +170,35 @@ export function SongControls() {
 
   return (
     <PropGrid columns={6}>
+      {/* ── KEY ──────────────────────────────────────────────────────────── */}
+      <GroupHeader
+        right={
+          <Switch
+            label={t("inspector.scaleLayer")}
+            checked={scaleVisible}
+            onChange={toggleScaleVisible}
+          />
+        }
+      >
+        {t("inspector.groupKey")}
+      </GroupHeader>
+      <Prop label={t("controls.root")} span={6}>
+        <RootNoteSelect
+          value={rootNote}
+          onSelect={handleRootNote}
+          useFlats={useFlats}
+        />
+      </Prop>
+      <Prop label={t("inspector.scaleLabel")} span={6}>
+        <LabeledSelect
+          label={t("inspector.scaleLabel")}
+          value={scaleName}
+          groups={scaleGroups}
+          onChange={handleScaleName}
+          hideLabel
+        />
+      </Prop>
+
       {/* ── TIME ─────────────────────────────────────────────────────────── */}
       <GroupHeader>{t("inspector.groupTime")}</GroupHeader>
       <Prop label={t("inspector.timeSignature")} span={3}>
