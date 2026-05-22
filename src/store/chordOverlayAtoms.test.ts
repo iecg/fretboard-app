@@ -4,15 +4,9 @@ import {
   chordRootAtom,
   chordTypeAtom,
   chordTonesAtom,
-  availableInversionsAtom,
-  voicingMatchesAtom,
-  voicingConnectorsAtom,
-  fullChordsEnabledAtom,
-  stringSetOptionsAtom,
-  effectiveStringSetAtom,
-  voicingTypeAtom,
-  voicingInversionAtom,
-  voicingStringSetAtom,
+  voicingAtom,
+  closePositionIndexAtom,
+  closeCandidatesAtom,
   chordSourceIsProgressionAtom,
 } from "./chordOverlayAtoms";
 import { allChordMembersAtom } from "./composableSelectors";
@@ -293,93 +287,77 @@ describe("chord overlay independent of fingering pattern", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Group F — voicing string set
+// Group F — voicingAtom (v2.0)
 // ---------------------------------------------------------------------------
 
-describe("voicing string set", () => {
+describe("voicingAtom — v2.0", () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  const manualC = (quality: string) => [
-    [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: quality })],
-  ] as const;
-
-  it.each<{ quality: string; ids: string[] }>([
-    { quality: "Major Triad", ids: ["all", "4·5·6", "3·4·5", "2·3·4", "1·2·3"] },
-    { quality: "Major 7th", ids: ["all", "3·4·5·6", "2·3·4·5", "1·2·3·4"] },
-  ])("string-set options match tone count for $quality", ({ quality, ids }) => {
-    const store = makeAtomStore([...manualC(quality)]);
-    expect(store.get(stringSetOptionsAtom).map((o) => o.id)).toEqual(ids);
+  it("defaults to 'full'", () => {
+    const store = makeAtomStore([]);
+    expect(store.get(voicingAtom)).toBe("full");
   });
 
-  it.each<{ label: string; quality: string; expected: number[] }>([
-    { label: "valid stored id resolves to its string-index array", quality: "Major Triad", expected: [3, 4, 5] },
-    { label: "invalid stored id for chord falls back to all six strings", quality: "Major 7th", expected: [0, 1, 2, 3, 4, 5] },
-  ])("effectiveStringSetAtom: $label", ({ quality, expected }) => {
-    const store = makeAtomStore([
-      ...manualC(quality),
-      [voicingStringSetAtom, "4·5·6"],
-    ]);
-    expect(store.get(effectiveStringSetAtom)).toEqual(expected);
-  });
-
-  it("voicingMatchesAtom returns engine output for a valid triad window", () => {
-    const store = makeAtomStore([
-      ...manualC("Major Triad"),
-      [voicingTypeAtom, "triad"],
-      [voicingStringSetAtom, "4·5·6"],
-    ]);
-    const matches = store.get(voicingMatchesAtom);
-    expect(matches.length).toBeGreaterThan(0);
-    for (const m of matches) {
-      for (const n of m.notes) expect([3, 4, 5]).toContain(n.stringIndex);
+  it("accepts off, full, close", () => {
+    const store = makeAtomStore([]);
+    for (const v of ["off", "full", "close"] as const) {
+      store.set(voicingAtom, v);
+      expect(store.get(voicingAtom)).toBe(v);
     }
-  });
-
-  it("ignores the string set and inversion while voicingType is caged", () => {
-    const store = makeAtomStore([
-      ...manualC("Major Triad"),
-      [voicingTypeAtom, "caged"],
-      [voicingStringSetAtom, "1·2·3"],
-      [voicingInversionAtom, "2nd"],
-    ]);
-    const matches = store.get(voicingMatchesAtom);
-    expect(matches.length).toBeGreaterThan(0);
-    expect(matches.some((m) => m.shape !== undefined)).toBe(true);
   });
 });
 
 // ---------------------------------------------------------------------------
-// Group G — voicing atoms
+// Group G — closeCandidatesAtom (v2.0)
 // ---------------------------------------------------------------------------
 
-describe("voicing atoms", () => {
+describe("closeCandidatesAtom — v2.0", () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it.each<{ quality: string; inversions: string[] }>([
-    { quality: "Major Triad", inversions: ["root", "1st", "2nd"] },
-    { quality: "Major 7th", inversions: ["root", "1st", "2nd", "3rd"] },
-    { quality: "Power Chord (5)", inversions: ["root"] },
-  ])("availableInversionsAtom for $quality → $inversions", ({ quality, inversions }) => {
-    const store = makeAtomStore([
-      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: quality })],
-    ]);
-    expect(store.get(availableInversionsAtom)).toEqual(inversions);
+  it("is empty when no chord is active", () => {
+    const store = makeAtomStore([[progressionStepsAtom, []]]);
+    expect(store.get(closeCandidatesAtom)).toEqual([]);
   });
 
-  it("voicingMatchesAtom returns engine output when a chord is active, regardless of Full Chords", () => {
+  it("returns >0 close voicings for an active C major (degree I in C Major)", () => {
     const store = makeAtomStore([
-      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Major Triad" })],
-      [fullChordsEnabledAtom, false],
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "close"],
     ]);
-    expect(store.get(voicingMatchesAtom).length).toBeGreaterThan(0);
+    const candidates = store.get(closeCandidatesAtom);
+    expect(candidates.length).toBeGreaterThan(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Group H — closePositionIndexAtom (v2.0)
+// ---------------------------------------------------------------------------
+
+describe("closePositionIndexAtom — v2.0", () => {
+  beforeEach(() => {
+    localStorage.clear();
   });
 
-  it("voicingConnectorsAtom defaults to true", () => {
-    const store = makeAtomStore();
-    expect(store.get(voicingConnectorsAtom)).toBe(true);
+  it("starts at 0", () => {
+    const store = makeAtomStore([]);
+    expect(store.get(closePositionIndexAtom)).toBe(0);
+  });
+
+  it("stores out-of-range values raw (wrapping happens in voicingMatchesAtom)", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "close"],
+    ]);
+    store.set(closePositionIndexAtom, 9999);
+    expect(store.get(closePositionIndexAtom)).toBe(9999);
+    expect(store.get(closeCandidatesAtom).length).toBeGreaterThan(0);
   });
 });

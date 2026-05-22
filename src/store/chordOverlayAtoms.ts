@@ -9,39 +9,37 @@ import {
   getNoteDisplay,
   formatAccidental,
   generateVoicings,
+  filterByHandSpan,
 } from "@fretflow/core";
 import type {
   ChordMemberFact,
   ResolvedChordMember,
   PracticeLens,
-  VoicingType,
-  VoicingInversion,
+  Voicing,
 } from "@fretflow/core";
 import {
   k,
   createStorage,
-  rawStringStorage,
   booleanStorage,
   constrainedNumberStorage,
+  enumValidator,
   GET_ON_INIT,
   withStorageErrorBoundary,
 } from "../utils/storage";
 import { useFlatsAtom } from "./scaleAtoms";
-import { chordScopeToPositionAtom } from "./chordScope";
 import { activeResolvedProgressionStepAtom } from "./progressionAtoms";
 import {
   activeChordRootAtom,
   activeChordQualityAtom,
 } from "./songStateAtoms";
 import { currentTuningAtom } from "./layoutAtoms";
-import { buildStringSetOptions, ALL_STRINGS } from "./voicingStringSets";
+import { handSizeAtom } from "./settingsAtoms";
+import {
+  cagedShapesAtom,
+  fingeringPatternAtom,
+  npsPositionAtom,
+} from "./fingeringAtoms";
 import { formatChordShortLabel } from "../progressions/progressionDomain";
-
-const chordFretSpreadStorage = constrainedNumberStorage({
-  min: 0,
-  max: 4,
-  integer: true,
-});
 
 const PRACTICE_LENS_VALUES = LENS_REGISTRY.map((e) => e.id) as PracticeLens[];
 
@@ -177,49 +175,6 @@ export const toggleChordOverlayHiddenAtom = atom(null, (get, set) => {
   }
 });
 
-export const chordFretSpreadAtom = atomWithStorage(
-  k("chordFretSpread"),
-  0,
-  chordFretSpreadStorage,
-  GET_ON_INIT,
-);
-
-/**
- * Discrete region selector that unifies the chord-overlay `scopeToPosition`
- * boolean and the `chordFretSpread` 0..4 stepper into a single 4-option
- * ToggleBar value:
- *
- *   - "all"      → scope=false (no positional constraint)
- *   - "position" → scope=true, spread=0 (strict position window)
- *   - "+2"       → scope=true, spread=2 (widen ±2 frets)
- *   - "+4"       → scope=true, spread=4 (widen ±4 frets)
- *
- * Reads bucket the underlying spread into the nearest discrete option so a
- * legacy persisted spread of 1 still surfaces as "+2".
- */
-export type Region = "position" | "+2" | "+4" | "all";
-
-export const regionAtom = atom(
-  (get): Region => {
-    if (!get(chordScopeToPositionAtom)) return "all";
-    const sp = get(chordFretSpreadAtom);
-    if (sp >= 3) return "+4";
-    if (sp >= 1) return "+2";
-    return "position";
-  },
-  (_get, set, next: Region) => {
-    if (next === "all") {
-      set(chordScopeToPositionAtom, false);
-      return;
-    }
-    set(chordScopeToPositionAtom, true);
-    set(
-      chordFretSpreadAtom,
-      next === "position" ? 0 : next === "+2" ? 2 : 4,
-    );
-  },
-);
-
 export const fullChordsEnabledAtom = atomWithStorage<boolean>(
   k("fullChordsEnabled"),
   false,
@@ -227,117 +182,146 @@ export const fullChordsEnabledAtom = atomWithStorage<boolean>(
   GET_ON_INIT,
 );
 
-const VOICING_INVERSIONS: VoicingInversion[] = ["root", "1st", "2nd", "3rd"];
-const VOICING_TYPES: VoicingType[] = ["caged", "drop2", "triad"];
+export type VoicingValue = "off" | "full" | "close";
 
-// Validated storage — a stale or corrupt localStorage entry that is not a
-// member of the union falls back to the atom's default at read time.
-const voicingTypeStorage = createStorage<VoicingType>({
-  validate: (v) => (VOICING_TYPES as string[]).includes(v),
-});
-const voicingInversionStorage = createStorage<VoicingInversion>({
-  validate: (v) => (VOICING_INVERSIONS as string[]).includes(v),
+const VOICING_VALUES = ["off", "full", "close"] as const;
+
+const voicingValueStorage = createStorage<VoicingValue>({
+  validate: enumValidator(VOICING_VALUES),
 });
 
-export const voicingTypeAtom = atomWithStorage<VoicingType>(
-  k("voicingType"),
-  "caged",
-  voicingTypeStorage,
-  GET_ON_INIT,
-);
-
-export const voicingInversionAtom = atomWithStorage<VoicingInversion>(
-  k("voicingInversion"),
-  "root",
-  voicingInversionStorage,
-  GET_ON_INIT,
-);
+const closePositionIndexStorage = constrainedNumberStorage({ integer: true });
 
 /**
- * The selected string set, stored as a stable id ("all" or a string-number
- * window like "4·5·6"). The id encodes the exact strings, so it survives a
- * chord change when still valid; `effectiveStringSetAtom` resolves it and
- * falls back to "all" when it no longer exists for the active chord.
+ * The single Voicing control. Off = no connector polygons. Full = CAGED full-
+ * chord polygon at the active scale shape's position (or all 5 positions when
+ * no scale shape is active). Close = compact 3–5-string polygon at the active
+ * cycle index inside the scale-shape window (or anywhere on the neck when no
+ * scale shape).
  */
-export const voicingStringSetAtom = atomWithStorage<string>(
-  k("voicingStringSet"),
-  "all",
-  rawStringStorage(),
+export const voicingAtom = atomWithStorage<VoicingValue>(
+  k("voicing"),
+  "full",
+  voicingValueStorage,
   GET_ON_INIT,
 );
 
 /**
- * The ordered String Set options for the active chord. The option list
- * rebuilds whenever the chord's tone count changes.
+ * Cycle pointer for Close voicings. Stored raw; wrapping happens in the
+ * derived `voicingMatchesAtom` (modulo candidate count). Reset to 0 by an
+ * effect in ChordOverlayControls when the active scale shape changes.
  */
-export const stringSetOptionsAtom = atom((get) => {
-  const chordType = get(chordTypeAtom);
-  const def = chordType ? CHORD_DEFINITIONS[chordType] : undefined;
-  return buildStringSetOptions(def ? def.members.length : 0);
-});
-
-/**
- * The stored string-set id resolved to its string-index array against the
- * active chord. When the id is not a current option (the chord changed),
- * this falls back to all six strings — the engine and picker both self-heal.
- */
-export const effectiveStringSetAtom = atom((get): readonly number[] => {
-  const options = get(stringSetOptionsAtom);
-  const stored = get(voicingStringSetAtom);
-  const match = options.find((o) => o.id === stored);
-  return match ? match.strings : ALL_STRINGS;
-});
-
-/**
- * Whether the voicing connector lines render on the fretboard. Drives the
- * Chord tab's VOICING-header "Connectors" toggle. Default on so the voicing
- * engine's output is visible without an extra click.
- */
-export const voicingConnectorsAtom = atomWithStorage<boolean>(
-  k("voicingConnectors"),
-  true,
-  booleanStorage,
+export const closePositionIndexAtom = atomWithStorage<number>(
+  k("closePositionIndex"),
+  0,
+  closePositionIndexStorage,
   GET_ON_INIT,
 );
 
-/** Inversions valid for the active chord — triads drop "3rd", dyads keep "root" only. */
-export const availableInversionsAtom = atom((get): VoicingInversion[] => {
-  const chordType = get(chordTypeAtom);
-  const def = chordType ? CHORD_DEFINITIONS[chordType] : undefined;
-  const count = def ? def.members.length : 4;
-  // Dyads (e.g. power chords) expose only the root position.
-  if (count <= 2) return VOICING_INVERSIONS.slice(0, 1);
-  return VOICING_INVERSIONS.slice(0, Math.min(count, 4));
+const FRET_WINDOW_BUFFER = 1;
+
+/**
+ * Returns the fret window of the active scale shape, or null when no single
+ * shape is active. For CAGED, derive from the matched full-chord polygon (no
+ * standalone window table exists in @fretflow/core); for 3NPS, use the
+ * stored position. Buffer ±1 fret either side.
+ */
+const activeScaleWindowAtom = atom((get): { lo: number; hi: number } | null => {
+  const pattern = get(fingeringPatternAtom);
+  if (pattern === "caged") {
+    const shapes = get(cagedShapesAtom);
+    if (shapes.size !== 1) return null;
+    const shape = [...shapes][0];
+    const chordType = get(chordTypeAtom);
+    if (!chordType) return null;
+    const fullMatches = generateVoicings({
+      chordRoot: get(chordRootAtom),
+      chordType,
+      tuning: get(currentTuningAtom),
+      maxFret: 24,
+      voicingType: "full",
+    });
+    const match = fullMatches.find((v) => v.shape === shape);
+    if (!match) return null;
+    const fretted = match.notes.map((n) => n.fretIndex).filter((f) => f > 0);
+    if (fretted.length === 0) return null;
+    const lo = Math.max(0, Math.min(...fretted) - FRET_WINDOW_BUFFER);
+    const hi = Math.max(...fretted) + FRET_WINDOW_BUFFER;
+    return { lo, hi };
+  }
+  if (pattern === "3nps") {
+    const pos = get(npsPositionAtom);
+    if (pos <= 0) return null;
+    return { lo: Math.max(0, pos - FRET_WINDOW_BUFFER), hi: pos + 2 + FRET_WINDOW_BUFFER };
+  }
+  return null;
 });
 
-/** The renderer's voicing source. */
-export const voicingMatchesAtom = atom((get) => {
+/**
+ * All Close voicings that fit within the active scale-shape window (or all of
+ * them when no shape is active) AND pass the hand-span filter.
+ */
+export const closeCandidatesAtom = atom((get): Voicing[] => {
   if (get(chordOverlayHiddenAtom)) return [];
   const chordType = get(chordTypeAtom);
   if (!chordType) return [];
-  const voicingType = get(voicingTypeAtom);
-  const isCaged = voicingType === "caged";
-  const available = get(availableInversionsAtom);
-  const inversion = get(voicingInversionAtom);
-  return generateVoicings({
+  const all = generateVoicings({
     chordRoot: get(chordRootAtom),
     chordType,
     tuning: get(currentTuningAtom),
     maxFret: 24,
-    voicingType,
-    // A CAGED shape is a fixed root-position object — it has no meaningful
-    // string subset or inversion, so caged ignores both controls.
-    inversion: isCaged
-      ? "root"
-      : available.includes(inversion)
-        ? inversion
-        : "root",
-    stringSet: isCaged ? ALL_STRINGS : get(effectiveStringSetAtom),
+    voicingType: "close",
+  });
+  const handFiltered = filterByHandSpan(all, get(handSizeAtom));
+
+  const window = get(activeScaleWindowAtom);
+  if (!window) return handFiltered;
+  return handFiltered.filter((v) => {
+    const fretted = v.notes.map((n) => n.fretIndex).filter((f) => f > 0);
+    if (fretted.length === 0) return true;
+    const min = Math.min(...fretted);
+    const max = Math.max(...fretted);
+    return min >= window.lo && max <= window.hi;
   });
 });
 
-// Back-compat alias: existing consumers read fullChordMatchesAtom; the voicing
-// engine is now the source. Drop2/triad voicings have no CAGED `shape`.
+/**
+ * The renderer's voicing source. Picks Full output (optionally narrowed to the
+ * active CAGED shape), the single Close polygon at the wrapped cycle index, or [].
+ */
+export const voicingMatchesAtom = atom((get): Voicing[] => {
+  const voicing = get(voicingAtom);
+  if (voicing === "off") return [];
+  if (voicing === "full") {
+    if (get(chordOverlayHiddenAtom)) return [];
+    const chordType = get(chordTypeAtom);
+    if (!chordType) return [];
+    const all = generateVoicings({
+      chordRoot: get(chordRootAtom),
+      chordType,
+      tuning: get(currentTuningAtom),
+      maxFret: 24,
+      voicingType: "full",
+    });
+    const pattern = get(fingeringPatternAtom);
+    if (pattern === "caged") {
+      const shapes = get(cagedShapesAtom);
+      if (shapes.size === 1) {
+        const shape = [...shapes][0];
+        return all.filter((v) => v.shape === shape);
+      }
+    }
+    return all;
+  }
+  // close
+  const candidates = get(closeCandidatesAtom);
+  if (candidates.length === 0) return [];
+  const idx = get(closePositionIndexAtom);
+  const wrapped = ((idx % candidates.length) + candidates.length) % candidates.length;
+  return [candidates[wrapped]];
+});
+
+// Back-compat aliases. Task 8 removes these once consumers migrate.
 export const fullChordMatchesAtom = atom((get) => get(voicingMatchesAtom));
 
 export const fullChordPositionsAtom = atom((get) =>
