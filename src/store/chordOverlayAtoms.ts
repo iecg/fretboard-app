@@ -322,13 +322,6 @@ export const voicingMatchesAtom = atom((get): Voicing[] => {
   return [candidates[wrapped]];
 });
 
-// Back-compat aliases. Task 8 removes these once consumers migrate.
-export const fullChordMatchesAtom = atom((get) => get(voicingMatchesAtom));
-
-export const fullChordPositionsAtom = atom((get) =>
-  get(fullChordMatchesAtom).flatMap((match) => match.positionKeys),
-);
-
 // Migrates from legacy viewMode value on first access.
 export const practiceLensAtom = atomWithStorage<PracticeLens>(
   k("practiceLens"),

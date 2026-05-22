@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useAtomValue } from "jotai";
-import { chordTonesAtom, chordRootAtom, practiceLensAtom, fullChordMatchesAtom, voicingAtom } from "../store/chordOverlayAtoms";
+import { chordTonesAtom, chordRootAtom, practiceLensAtom, voicingMatchesAtom, voicingAtom } from "../store/chordOverlayAtoms";
 import { chordScopeToPositionAtom, activePositionAtom } from "../store/chordScope";
 import { recenterKeyAtom, fingeringPatternAtom, cagedShapesAtom, npsPositionAtom } from "../store/fingeringAtoms";
 import { currentTuningAtom, fretStartAtom, fretEndAtom } from "../store/layoutAtoms";
@@ -173,7 +173,7 @@ export function useFretboardState() {
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
   const cagedShapes = useAtomValue(cagedShapesAtom);
   const npsPosition = useAtomValue(npsPositionAtom);
-  const fullChordMatches = useAtomValue(fullChordMatchesAtom);
+  const fullChordMatches = useAtomValue(voicingMatchesAtom);
   const showChordConnectors = useAtomValue(voicingAtom) !== "off";
   const chordScopeToPosition = useAtomValue(chordScopeToPositionAtom);
   const activePosition = useAtomValue(activePositionAtom);

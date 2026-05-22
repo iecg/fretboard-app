@@ -4,7 +4,7 @@ import { renderHook } from "@testing-library/react";
 import { Provider } from "jotai";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
 import { useFretboardState } from "./useFretboardState";
-import { fullChordMatchesAtom } from "../store/chordOverlayAtoms";
+import { voicingMatchesAtom } from "../store/chordOverlayAtoms";
 import { chordScopeToPositionAtom } from "../store/chordScope";
 import { fingeringPatternAtom, cagedShapesAtom, npsPositionAtom } from "../store/fingeringAtoms";
 import { progressionStepsAtom } from "../store/progressionAtoms";
@@ -84,7 +84,7 @@ describe("useFretboardState — 3NPS voicing scope (Task 3)", () => {
     const { result } = renderHook(() => useFretboardState(), {
       wrapper: wrapWithStore(store),
     });
-    const raw = store.get(fullChordMatchesAtom);
+    const raw = store.get(voicingMatchesAtom);
     expect(raw.length).toBeGreaterThan(0);
     expect(result.current.fullChordMatches.length).toBeLessThanOrEqual(raw.length);
     // When raw has multiple positions across the neck, the position-1 filter
@@ -105,7 +105,7 @@ describe("useFretboardState — 3NPS voicing scope (Task 3)", () => {
     const { result } = renderHook(() => useFretboardState(), {
       wrapper: wrapWithStore(store),
     });
-    const raw = store.get(fullChordMatchesAtom);
+    const raw = store.get(voicingMatchesAtom);
     expect(result.current.fullChordMatches).toEqual(raw);
   });
 
