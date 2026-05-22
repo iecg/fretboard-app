@@ -15,8 +15,13 @@ async function loadAudioModule(): Promise<GuitarSynthModule> {
   return modulePromise;
 }
 
+function preloadAudioModule(): void {
+  void loadAudioModule();
+}
+
 export function setGuitarMutePreference(mute: boolean): void {
   desiredMute = mute;
+  preloadAudioModule();
   void modulePromise?.then((mod) => {
     mod.synth.setMute(mute);
   });
@@ -26,6 +31,7 @@ export function setGuitarAudioErrorHandler(
   nextHandler: ((message: string) => void) | undefined,
 ): void {
   errorHandler = nextHandler;
+  preloadAudioModule();
   void modulePromise?.then((mod) => {
     mod.synth.onError = nextHandler;
   });

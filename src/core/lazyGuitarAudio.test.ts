@@ -1,3 +1,4 @@
+import { waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const audioModule = vi.hoisted(() => ({
@@ -40,6 +41,19 @@ describe("lazyGuitarAudio", () => {
     expect(audioModule.synth.setMute).toHaveBeenCalledWith(true);
     expect(audioModule.synth.onError).toBe(onError);
     expect(audioModule.synth.resume).toHaveBeenCalledTimes(1);
+  });
+
+  it("preloads the lazy runtime when audio preferences are registered", async () => {
+    const onError = vi.fn();
+
+    setGuitarMutePreference(true);
+    setGuitarAudioErrorHandler(onError);
+
+    await waitFor(() => {
+      expect(audioModule.synth.setMute).toHaveBeenCalledWith(true);
+    });
+    expect(audioModule.synth.onError).toBe(onError);
+    expect(audioModule.synth.resume).not.toHaveBeenCalled();
   });
 
   it("delegates note playback through the lazy runtime", async () => {
